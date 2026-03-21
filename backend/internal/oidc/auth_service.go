@@ -156,6 +156,7 @@ func (s *AuthService) ClearClientAuthSession() ([]http.Cookie, error) {
 type IdTokenClaims struct {
 	Sub    string   `json:"sub"`
 	Email  string   `json:"email"`
+	Name   string   `json:"name"`
 	Scopes []string `json:"scopes"`
 }
 
@@ -175,6 +176,7 @@ func (t *verifiedIdToken) getUser() ent.User {
 	return ent.User{
 		AuthProviderID: t.idToken.Subject,
 		Email:          t.claims.Email,
+		Name:           t.claims.Name,
 	}
 }
 
@@ -211,11 +213,14 @@ func (s *AuthService) createAuthSessionContext(ctx context.Context, idTokenStr s
 		ctx = access.WithOrganization(ctx, org)
 
 		usr, usrErr = s.users.FindOrCreateFromAuth(ctx, token.getUser())
+		if usrErr != nil {
+			return nil, fmt.Errorf("find or create auth user: %w", usrErr)
+		}
 	} else {
-		usr, usrErr = s.users.GetUserByAuthProviderId(ctx, token.getUser().AuthProviderID)
-	}
-	if usrErr != nil {
-		return nil, fmt.Errorf("find user: %w", usrErr)
+		usr, usrErr = s.users.LookupUserByAuthProviderId(access.SystemContext(ctx), token.getUser().AuthProviderID)
+		if usrErr != nil {
+			return nil, fmt.Errorf("lookup auth provider user: %w", usrErr)
+		}
 	}
 	ctx = access.WithUser(ctx, usr)
 

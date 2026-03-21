@@ -20,7 +20,9 @@
         <span>Rezible</span>
     </a>
 
-    <div class="grid place-items-center">
-        <UserMenu />
-    </div>
+    {#if session.isAuthenticated}
+        <div class="grid place-items-center">
+            <UserMenu />
+        </div>
+    {/if}
 </nav>

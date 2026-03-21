@@ -178,7 +178,7 @@ type (
 
 		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
 
-		GetUserByAuthProviderId(context.Context, string) (*ent.User, error)
+		LookupUserByAuthProviderId(context.Context, string) (*ent.User, error)
 
 		GetById(context.Context, uuid.UUID) (*ent.User, error)
 		GetByEmail(context.Context, string) (*ent.User, error)

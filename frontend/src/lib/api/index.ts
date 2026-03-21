@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "$lib/config";
+import { API_URL } from "$lib/config";
 import { createConfig, type ClientOptions } from "./oapi.gen/client";
 import { client } from "./oapi.gen/client.gen";
 import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
@@ -7,7 +7,7 @@ import { type Options } from "@hey-api/client-fetch";
 import type { CreateQueryOptions } from "@tanstack/svelte-query";
 
 const clientConfig = createConfig<ClientOptions>({ 
-	baseUrl: API_BASE_URL,
+	baseUrl: API_URL,
 	credentials: "include",
 });
 client.setConfig(clientConfig);

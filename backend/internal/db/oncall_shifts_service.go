@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -36,16 +37,28 @@ func NewOncallShiftsService(db *ent.Client, jobSvc rez.JobsService, integrations
 		integrations: integrations,
 	}
 
-	jobs.RegisterPeriodicJob(jobs.ScanOncallShiftsPeriodicJob)
-	jobs.RegisterWorkerFunc(s.periodicScanShifts)
-	jobs.RegisterWorkerFunc(s.ensureShiftHandoverReminderSent)
-	jobs.RegisterWorkerFunc(s.ensureShiftHandoverSent)
+	s.registerJobs()
 
 	return s, nil
 }
 
+func (s *OncallShiftsService) registerJobs() {
+	jobs.RegisterWorkerFunc(s.ensureShiftHandoverReminderSent)
+	jobs.RegisterWorkerFunc(s.ensureShiftHandoverSent)
+
+	periodicScanShiftsJobs := jobs.NewPeriodicJob(
+		jobs.PeriodicInterval(time.Hour),
+		func() (jobs.JobArgs, *jobs.InsertOpts) {
+			return &jobs.ScanOncallShifts{}, nil
+		},
+		&jobs.PeriodicJobOpts{RunOnStart: true},
+	)
+	jobs.RegisterPeriodicJob(periodicScanShiftsJobs)
+	jobs.RegisterWorkerFunc(s.periodicScanShifts)
+}
+
 func (s *OncallShiftsService) periodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
-	return s.scanShifts(ctx)
+	return s.scanShifts(access.SystemContext(ctx))
 }
 
 func (s *OncallShiftsService) ensureShiftHandoverSent(ctx context.Context, args jobs.EnsureShiftHandoverSent) error {

@@ -78,7 +78,7 @@ func (h *eventHandler) withChatService(ctx context.Context, ids installIds, fn f
 	return fn(newChatService(ci))
 }
 
-func (h *eventHandler) withIncidentUpdateProcessor(ctx context.Context, fn func(*incidentUpdateProcessor) error) error {
+func (h *eventHandler) withIncidentUpdateProcessor(ctx context.Context, incId uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
 	intg, lookupErr := h.services.Integrations.GetConfigured(ctx, integrationName)
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
@@ -90,17 +90,21 @@ func (h *eventHandler) withIncidentUpdateProcessor(ctx context.Context, fn func(
 	if !ok {
 		return fmt.Errorf("failed to cast to *ConfiguredIntegration")
 	}
-	return fn(newIncidentUpdateProcessor(newChatService(ci), h.services))
+	p, procErr := newIncidentUpdateProcessor(ctx, newChatService(ci), h.services, incId)
+	if procErr != nil {
+		return fmt.Errorf("creating incident update processor: %w", procErr)
+	}
+	return fn(p)
 }
 
 func (h *eventHandler) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
-	return h.withIncidentUpdateProcessor(ctx, func(p *incidentUpdateProcessor) error {
-		return p.processIncidentUpdate(ctx, ev.IncidentId)
+	return h.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
+		return p.processIncidentUpdate(ctx)
 	})
 }
 
 func (h *eventHandler) onIncidentMilestoneUpdated(ctx context.Context, ev *rez.EventOnIncidentMilestoneUpdated) error {
-	return h.withIncidentUpdateProcessor(ctx, func(p *incidentUpdateProcessor) error {
+	return h.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.processIncidentMilestoneUpdate(ctx, ev.MilestoneId)
 	})
 }
@@ -110,17 +114,18 @@ type cmdCreateIncidentChannel struct {
 }
 
 func (h *eventHandler) createIncidentChannel(ctx context.Context, ev *cmdCreateIncidentChannel) error {
-	return h.withIncidentUpdateProcessor(ctx, func(p *incidentUpdateProcessor) error {
+	return h.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.createIncidentChannel(ctx)
 	})
 }
 
 type cmdSendIncidentMilestoneMessage struct {
-	MilestoneId uuid.UUID `json:"mid"`
+	IncidentId  uuid.UUID
+	MilestoneId uuid.UUID
 }
 
 func (h *eventHandler) sendIncidentMilestoneMessage(ctx context.Context, ev *cmdSendIncidentMilestoneMessage) error {
-	return h.withIncidentUpdateProcessor(ctx, func(p *incidentUpdateProcessor) error {
+	return h.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.sendIncidentMilestoneMessage(ctx, ev.MilestoneId)
 	})
 }

@@ -25,20 +25,20 @@ type incidentUpdateProcessor struct {
 	inc *ent.Incident
 }
 
-func newIncidentUpdateProcessor(chat *ChatService, services *rez.Services) *incidentUpdateProcessor {
+func newIncidentUpdateProcessor(ctx context.Context, chat *ChatService, services *rez.Services, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
+	inc, incErr := services.Incidents.Get(ctx, incident.ID(incidentId))
+	if incErr != nil {
+		return nil, fmt.Errorf("get incident: %w", incErr)
+	}
 	return &incidentUpdateProcessor{
 		chat:      chat,
 		incidents: services.Incidents,
 		messages:  services.Messages,
-	}
+		inc:       inc,
+	}, nil
 }
 
-func (p *incidentUpdateProcessor) processIncidentUpdate(ctx context.Context, incidentId uuid.UUID) error {
-	inc, incErr := p.incidents.Get(ctx, incident.ID(incidentId))
-	if incErr != nil {
-		return fmt.Errorf("get incident: %w", incErr)
-	}
-	p.inc = inc
+func (p *incidentUpdateProcessor) processIncidentUpdate(ctx context.Context) error {
 	if p.inc.ChatChannelID == "" {
 		return p.messages.SendCommand(ctx, &cmdCreateIncidentChannel{IncidentId: p.inc.ID})
 	}
@@ -47,7 +47,7 @@ func (p *incidentUpdateProcessor) processIncidentUpdate(ctx context.Context, inc
 
 func (p *incidentUpdateProcessor) processIncidentMilestoneUpdate(ctx context.Context, msId uuid.UUID) error {
 	// TODO: check if we care about this milestone kind
-	return p.messages.SendCommand(ctx, &cmdSendIncidentMilestoneMessage{MilestoneId: msId})
+	return p.messages.SendCommand(ctx, &cmdSendIncidentMilestoneMessage{IncidentId: p.inc.ID, MilestoneId: msId})
 }
 
 func (p *incidentUpdateProcessor) sendIncidentMilestoneMessage(ctx context.Context, milestoneId uuid.UUID) error {

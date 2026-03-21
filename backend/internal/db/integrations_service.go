@@ -32,18 +32,32 @@ type IntegrationsService struct {
 }
 
 func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, auth rez.AuthService) (*IntegrationsService, error) {
-	syncer := datasync.NewSyncerService(db)
-	jobs.RegisterPeriodicJob(jobs.SyncAllTenantIntegrationsDataPeriodicJob)
-	jobs.RegisterWorkerFunc(syncer.SyncIntegrationsData)
-
 	s := &IntegrationsService{
 		db:     db,
 		jobs:   jobSvc,
 		auth:   auth,
-		syncer: syncer,
+		syncer: datasync.NewSyncerService(db),
 	}
 
+	s.registerJobs()
+
 	return s, nil
+}
+
+func (s *IntegrationsService) registerJobs() {
+	syncAllTenantIntegrationsDataPeriodicJob := jobs.NewPeriodicJob(
+		jobs.PeriodicInterval(time.Hour),
+		func() (jobs.JobArgs, *jobs.InsertOpts) {
+			return &jobs.SyncIntegrationsData{}, &jobs.InsertOpts{
+				UniqueOpts: jobs.UniqueOpts{
+					ByState: jobs.NonCompletedJobStates,
+				},
+			}
+		},
+		&jobs.PeriodicJobOpts{RunOnStart: true},
+	)
+	jobs.RegisterPeriodicJob(syncAllTenantIntegrationsDataPeriodicJob)
+	jobs.RegisterWorkerFunc(s.syncer.SyncIntegrationsData)
 }
 
 func (s *IntegrationsService) ListConfigured(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {

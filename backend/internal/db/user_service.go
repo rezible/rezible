@@ -33,13 +33,13 @@ func nilEmptyString(s string) *string {
 	return &s
 }
 
-func (s *UserService) GetUserByAuthProviderId(ctx context.Context, authProviderID string) (*ent.User, error) {
+func (s *UserService) LookupUserByAuthProviderId(ctx context.Context, authProviderID string) (*ent.User, error) {
 	userQuery := s.db.User.Query().Where(user.AuthProviderID(authProviderID))
 	return userQuery.Only(ctx)
 }
 
 func (s *UserService) FindOrCreateFromAuth(ctx context.Context, pu ent.User) (*ent.User, error) {
-	usr, usrErr := s.GetUserByAuthProviderId(ctx, pu.AuthProviderID)
+	usr, usrErr := s.LookupUserByAuthProviderId(ctx, pu.AuthProviderID)
 	if usrErr != nil && !ent.IsNotFound(usrErr) {
 		return nil, fmt.Errorf("failed to query user: %w", usrErr)
 	}

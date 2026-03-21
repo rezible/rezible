@@ -1,16 +1,12 @@
 <script lang="ts">
   	import { toggleMode } from "mode-watcher";
-	import { mdiCog, mdiUnfoldMoreHorizontal, mdiSunAngle, mdiMoonWaningCrescent, mdiDoorClosed, mdiDoor } from "@mdi/js";
+	import { mdiSunAngle, mdiMoonWaningCrescent, mdiDoor } from "@mdi/js";
 	import { useAuthSessionState } from "$lib/auth.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { Button } from "$components/ui/button";
  	import * as Popover from "$components/ui/popover";
 	import { Separator } from "$components/ui/separator";
-
-	const accountLinks = [
-		{ href: "/settings", title: "Settings", icon: mdiCog },
-	];
 
 	const session = useAuthSessionState();
 	let open = $state(false);
@@ -27,9 +23,11 @@
 		</div>
 		<Separator class="py-0"></Separator>
 		<div class="flex flex-col gap-2 px-2 pt-0">
+			{#if session.isSetup}
 			<Button href="/settings" onclick={() => {open = false}} variant="outline">
 				Settings
 			</Button>
+			{/if}
 			<Button onclick={toggleMode} variant="outline">
 				<span class="sr-only">Toggle theme</span>
 				<Icon data={mdiSunAngle}

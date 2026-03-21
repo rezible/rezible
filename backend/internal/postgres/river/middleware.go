@@ -19,9 +19,13 @@ type accessContextMiddleware struct {
 }
 
 func (m *accessContextMiddleware) InsertMany(ctx context.Context, params []*rivertype.JobInsertParams, doInner func(context.Context) ([]*rivertype.JobInsertResult, error)) ([]*rivertype.JobInsertResult, error) {
-	encodedScope, scopeErr := access.EncodeScope(ctx)
-	if scopeErr != nil {
-		return nil, fmt.Errorf("failed to encode scope: %w", scopeErr)
+	var encodedScope []byte
+	if access.IsScoped(ctx) {
+		var encodeErr error
+		encodedScope, encodeErr = access.EncodeScope(ctx)
+		if encodeErr != nil {
+			return nil, fmt.Errorf("failed to encode access scope: %w", encodeErr)
+		}
 	}
 	for _, p := range params {
 		var meta jobMetadata
@@ -46,9 +50,12 @@ func (m *accessContextMiddleware) Work(ctx context.Context, job *rivertype.JobRo
 	if jsonErr := json.Unmarshal(job.Metadata, &meta); jsonErr != nil {
 		return fmt.Errorf("failed to unmarshal job metadata: %w", jsonErr)
 	}
-	restoredCtx, restoreErr := access.RestoreScope(ctx, meta.EncodedAccessScope)
-	if restoreErr != nil {
-		return fmt.Errorf("invalid (anonymous) access context for job")
+	if len(meta.EncodedAccessScope) > 0 {
+		restoredCtx, restoreErr := access.RestoreScope(ctx, meta.EncodedAccessScope)
+		if restoreErr != nil {
+			return fmt.Errorf("invalid (anonymous) access context for job")
+		}
+		ctx = restoredCtx
 	}
-	return doInner(restoredCtx)
+	return doInner(ctx)
 }

@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/openapi"
@@ -138,10 +137,10 @@ func CreateAuthContext(c huma.Context, auth rez.AuthService) (huma.Context, erro
 		opSecurity = ApiSecurityMethods
 	}
 
-	cookieToken, bearerToken := getRequestTokens(c)
-	token, methodScopes := extractRequestTokenAndMethodScopes(opSecurity, cookieToken, bearerToken)
+	token, methodScopes := extractRequestTokenAndMethodScopes(c, opSecurity)
 	authCtx, authCtxErr := auth.CreateAuthSessionContext(ctx, token)
 	if authCtxErr != nil {
+		log.Debug().Err(authCtxErr).Msg("Error creating auth session context")
 		return nil, authCtxErr
 	}
 	if len(methodScopes) > 0 {
@@ -150,17 +149,9 @@ func CreateAuthContext(c huma.Context, auth rez.AuthService) (huma.Context, erro
 	return huma.WithContext(c, authCtx), nil
 }
 
-func getRequestTokens(c huma.Context) (cookieToken string, bearerToken string) {
-	if cookie, cookieErr := huma.ReadCookie(c, accessTokenCookieName); cookieErr == nil {
-		cookieToken = cookie.Value
-	}
-	if split := strings.Split(c.Header("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
-		bearerToken = split[1]
-	}
-	return cookieToken, bearerToken
-}
+func extractRequestTokenAndMethodScopes(c huma.Context, opSecurity SecurityMethods) (string, []string) {
+	cookieToken, bearerToken := getRequestTokens(c)
 
-func extractRequestTokenAndMethodScopes(opSecurity SecurityMethods, cookieToken, bearerToken string) (string, []string) {
 	for _, methodScopes := range opSecurity {
 		cookieTokenScopes, cookieTokenAllowed := methodScopes[SecurityMethodCookieToken]
 		if cookieToken != "" && cookieTokenAllowed {
@@ -172,6 +163,16 @@ func extractRequestTokenAndMethodScopes(opSecurity SecurityMethods, cookieToken,
 		}
 	}
 	return "", nil
+}
+
+func getRequestTokens(c huma.Context) (cookieToken string, bearerToken string) {
+	if cookie, cookieErr := huma.ReadCookie(c, accessTokenCookieName); cookieErr == nil {
+		cookieToken = cookie.Value
+	}
+	if split := strings.Split(c.Header("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
+		bearerToken = split[1]
+	}
+	return cookieToken, bearerToken
 }
 
 func writeAuthStatusError(api huma.API, c huma.Context, err error) {
@@ -190,10 +191,10 @@ func writeAuthStatusError(api huma.API, c huma.Context, err error) {
 		resp = ErrUnknown
 	}
 
-	_, w := humago.Unwrap(c)
-	for _, cookie := range MakeLogoutAuthSessionCookies() {
-		http.SetCookie(w, &cookie)
-	}
+	//_, w := humago.Unwrap(c)
+	//for _, cookie := range MakeLogoutAuthSessionCookies() {
+	//	http.SetCookie(w, &cookie)
+	//}
 
 	if respErr := huma.WriteErr(api, c, resp.GetStatus(), resp.Error()); respErr != nil {
 		log.Error().Err(respErr).Msg("failed to write api error response")

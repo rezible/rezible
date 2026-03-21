@@ -22,8 +22,8 @@ func NewSyncerService(db *ent.Client) *Syncer {
 	return &Syncer{db: db}
 }
 
-func (s *Syncer) SyncIntegrationsData(baseCtx context.Context, args jobs.SyncIntegrationsData) error {
-	ctx := makeSyncContext(baseCtx, args.IgnoreHistory, args.CreateDefaults)
+func (s *Syncer) SyncIntegrationsData(ctx context.Context, args jobs.SyncIntegrationsData) error {
+	ctx = makeSyncContext(ctx, args.IgnoreHistory, args.CreateDefaults)
 
 	// Sync a single integration
 	if args.IntegrationId != uuid.Nil {
