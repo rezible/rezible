@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"net"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/rezible/rezible/integrations"
@@ -25,104 +24,42 @@ type Server struct {
 	httpServer *http.Server
 }
 
-func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
+func NewServer(auth rez.AuthService, v1h oapiv1.Handler) *Server {
 	var s Server
-
-	rootHandler, rootErr := s.makeRootHandler()
-	if rootErr != nil {
-		return nil, fmt.Errorf("root handler: %w", rootErr)
-	}
-
-	apiBasePath := rez.Config.ApiPath()
-	apiHandler, apiErr := s.makeApiHandler(auth, v1h, apiBasePath)
-	if apiErr != nil {
-		return nil, fmt.Errorf("api handler: %w", apiErr)
-	}
 
 	s.router = chi.NewRouter()
 	s.router.Use(middleware.Logger)
 	s.router.Use(middleware.Recoverer)
 
-	s.router.Mount(apiBasePath, apiHandler)
-	s.router.NotFound(rootHandler.ServeHTTP)
+	s.router.Mount(rez.Config.ApiPath(), s.makeApiHandler(auth, v1h))
 
-	printRoutes("/", s.router.Routes())
-
-	return &s, nil
+	return &s
 }
 
-func printRoutes(prefix string, routes []chi.Route) {
-	for _, r := range routes {
-		var handlers []string
-		for method := range r.Handlers {
-			handlers = append(handlers, method)
-		}
-		path, _ := strings.CutSuffix(r.Pattern, "*")
-		route, _ := url.JoinPath(prefix, path)
-		if r.SubRoutes != nil {
-			printRoutes(route, r.SubRoutes.Routes())
-		}
-	}
-}
-
-func (s *Server) makeRootHandler() (http.Handler, error) {
-	if rez.Config.ServeFrontend() {
-		return makeEmbeddedFrontendFilesServer()
-	}
-	return s.makeNotFoundHandler(), nil
-}
-
-func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler, prefix string) (http.Handler, error) {
-	whHandler, whErr := s.makeWebhooksHandler()
-	if whErr != nil {
-		return nil, fmt.Errorf("make webhooks handler: %w", whErr)
-	}
-
+func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
 	apiRouter := chi.NewRouter()
-	apiRouter.Mount(rez.Config.WebhooksPath(), whHandler)
-	apiRouter.Mount(oapiv1.VersionPrefix, s.makeV1ApiHandler(auth, v1h, prefix))
-	apiRouter.Get("/health", s.makeHealthCheckHandler())
 
-	return apiRouter, nil
+	apiRouter.Get("/health", s.healthCheckHandler)
+	apiRouter.Mount(oapiv1.VersionPrefix, s.makeApiV1Handler(auth, v1h))
+	apiRouter.Mount(rez.Config.WebhooksPath(), s.makeWebhooksHandler())
+
+	return apiRouter
 }
 
-func (s *Server) commonMiddleware() chi.Middlewares {
-	return chi.Chain(middleware.Logger)
+func (s *Server) makeApiV1Handler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
+	return oapiv1.MakeApi(v1h, auth).Adapter()
 }
 
-func (s *Server) makeWebhooksHandler() (http.Handler, error) {
+func (s *Server) makeWebhooksHandler() http.Handler {
 	r := chi.NewMux()
-	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().Msg("webhook handler not found")
-		http.NotFound(w, r)
-	})
 	for route, wh := range integrations.GetWebhookHandlers() {
-		if !strings.HasPrefix(route, "/") {
-			route = "/" + route
-		}
-		log.Debug().
-			Str("route", route).
-			Msg("adding webhook handler")
-		r.Mount(route, wh)
+		r.Mount("/"+strings.TrimPrefix(route, "/"), wh)
 	}
-	return r, nil
+	return r
 }
 
-func (s *Server) makeV1ApiHandler(auth rez.AuthService, h oapiv1.Handler, prefix string) http.Handler {
-	apiHandler := oapiv1.MakeApi(h, prefix, auth)
-	return s.commonMiddleware().Handler(apiHandler.Adapter())
-}
-
-func (s *Server) makeHealthCheckHandler() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	}
-}
-
-func (s *Server) makeNotFoundHandler() http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusNotFound)
-	})
+func (s *Server) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) Start(baseCtx context.Context) error {
@@ -148,4 +85,48 @@ func (s *Server) Stop(ctx context.Context) error {
 		return nil
 	}
 	return s.httpServer.Shutdown(ctx)
+}
+
+var (
+	docsBodyScalar = []byte(`<!doctype html>
+<html lang="en">
+	<head>
+		<title>API Reference</title>
+		<meta charset="utf-8" />
+		<meta
+		name="viewport"
+		content="width=device-width, initial-scale=1" />
+	</head>
+	<body>
+		<script id="api-reference" data-url="/api/v1/openapi.json"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+	</body>
+</html>`)
+
+	docsBodyStoplight = []byte(`<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="referrer" content="same-origin" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <title>API Dev Docs</title>
+    <link href="https://unpkg.com/@stoplight/elements/styles.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/@stoplight/elements/web-components.min.js"></script>
+  </head>
+  <body style="height: 100vh;">
+    <elements-api
+      apiDescriptionUrl="/api/v1/openapi.json"
+      router="hash"
+      layout="sidebar"
+      tryItCredentialsPolicy="same-origin"
+    />
+  </body>
+</html>`)
+)
+
+func serveApiDocs(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	if _, wErr := w.Write(docsBodyScalar); wErr != nil {
+		log.Error().Err(wErr).Msg("failed to write embedded docs body")
+	}
 }

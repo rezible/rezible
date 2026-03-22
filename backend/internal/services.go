@@ -6,18 +6,16 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rs/zerolog/log"
+	"github.com/rezible/rezible/integrations"
+	"github.com/rezible/rezible/internal/apiv1"
+	"github.com/rezible/rezible/internal/http"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/internal/apiv1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/eino"
-	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/oidc"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
@@ -26,70 +24,70 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-func RunIntegrationsDataSync(ctx context.Context, args jobs.SyncIntegrationsData) error {
-	ctx = access.SystemContext(ctx)
-	srv := newServer()
-	if setupErr := srv.setup(ctx); setupErr != nil {
-		return fmt.Errorf("setup server: %s", setupErr)
-	}
-	syncer := datasync.NewSyncerService(srv.database.Client())
-	return syncer.SyncIntegrationsData(ctx, args)
-}
-
-func makeJobService(dbc rez.Database) (rez.JobsService, error) {
-	if pgDb, ok := dbc.(*postgres.DatabaseClient); ok {
-		jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
-		if jobSvcErr != nil {
-			return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
-		}
-		return jobSvc, nil
-	}
-	return nil, fmt.Errorf("unable to create job service")
-}
-
-func makeMessageService() (*watermill.MessageService, error) {
-	msgs, msgsErr := watermill.NewMessageService()
-	if msgsErr != nil {
-		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
-	}
-	return msgs, nil
-}
-
-func RunServer(ctx context.Context) error {
-	ctx = access.AnonymousContext(ctx)
-	srv := newServer()
-
-	setupErr := srv.setup(ctx)
-	if setupErr != nil {
-		return fmt.Errorf("server: %s", setupErr)
-	}
-
-	runErr := srv.start(ctx)
-	if runErr != nil && !errors.Is(runErr, context.Canceled) {
-		runErr = nil
-	}
-
-	stopErr := srv.stop()
-	if stopErr != nil {
-		log.Error().Err(stopErr).Msg("Failed to stop server")
-	}
-
-	return runErr
+type Config struct {
+	StopTimeout time.Duration `koanf:"stop_timeout"`
 }
 
 type Server struct {
 	listeners map[string]rez.EventListener
 	database  rez.Database
+	cfg       Config
 }
 
-func newServer() *Server {
-	return &Server{
+func NewServer(ctx context.Context) (*Server, error) {
+	s := &Server{
 		listeners: make(map[string]rez.EventListener),
+		cfg: Config{
+			StopTimeout: 5 * time.Second,
+		},
 	}
+	if cfgErr := rez.Config.Unmarshal("server", &s.cfg); cfgErr != nil {
+		return nil, fmt.Errorf("failed to get server config: %w", cfgErr)
+	}
+	return s, nil
 }
 
-func (s *Server) addEventListener(name string, l rez.EventListener) {
-	s.listeners[name] = l
+func (s *Server) RunDataSync(ctx context.Context, args jobs.SyncIntegrationsData) error {
+	if setupErr := s.setup(ctx); setupErr != nil {
+		return fmt.Errorf("setup: %s", setupErr)
+	}
+	return datasync.NewSyncerService(s.database.Client()).SyncIntegrationsData(access.SystemContext(ctx), args)
+}
+
+func (s *Server) RunServe(ctx context.Context) error {
+	setupErr := s.setup(ctx)
+	if setupErr != nil {
+		return fmt.Errorf("setup: %s", setupErr)
+	}
+
+	var serveErr error
+	if startErr := s.start(ctx); startErr != nil && !errors.Is(startErr, context.Canceled) {
+		serveErr = fmt.Errorf("start: %w", startErr)
+	}
+	if stopErr := s.stop(); stopErr != nil {
+		serveErr = errors.Join(fmt.Errorf("failed to stop server: %w", stopErr), serveErr)
+	}
+
+	return serveErr
+}
+
+func (s *Server) setup(ctx context.Context) error {
+	services, servicesErr := s.setupServices(ctx)
+	if servicesErr != nil {
+		return fmt.Errorf("setup services: %w", servicesErr)
+	}
+
+	if integrationsErr := integrations.Setup(ctx, services); integrationsErr != nil {
+		return fmt.Errorf("integrations.Setup: %w", integrationsErr)
+	}
+	for name, el := range integrations.GetEventListeners() {
+		s.listeners[name] = el
+	}
+
+	srv := http.NewServer(services.Auth, apiv1.NewHandler(services, s.database.Client()))
+	s.listeners["http_server"] = srv
+
+	return nil
 }
 
 func (s *Server) start(ctx context.Context) error {
@@ -111,8 +109,7 @@ func (s *Server) start(ctx context.Context) error {
 }
 
 func (s *Server) stop() error {
-	timeout := rez.Config.GetDurationOr("stop_timeout", time.Second*10)
-	timeoutCtx, cancelStopCtx := context.WithTimeout(context.Background(), timeout)
+	timeoutCtx, cancelStopCtx := context.WithTimeout(context.Background(), s.cfg.StopTimeout)
 	defer cancelStopCtx()
 
 	var err error
@@ -129,52 +126,37 @@ func (s *Server) stop() error {
 	return err
 }
 
-func (s *Server) setup(ctx context.Context) error {
-	dbc, dbcErr := postgres.NewDatabasePoolClient(ctx)
-	if dbcErr != nil {
-		return fmt.Errorf("postgres.NewDatabasePoolClient: %w", dbcErr)
-	}
-	s.database = dbc
-
-	jobSvc, jobSvcErr := makeJobService(dbc)
-	if jobSvcErr != nil {
-		return fmt.Errorf("job service: %w", jobSvcErr)
-	}
-	s.addEventListener("job_service", jobSvc)
-
-	msgs, msgsErr := makeMessageService()
-	if msgsErr != nil {
-		return fmt.Errorf("message service: %w", msgsErr)
-	}
-	s.addEventListener("message_service", msgs)
-
-	dbClient := dbc.Client()
-	services, servicesErr := s.setupServices(ctx, dbClient, jobSvc, msgs)
-	if servicesErr != nil {
-		return fmt.Errorf("setup services: %w", servicesErr)
-	}
-	if integrationsErr := integrations.Setup(ctx, services); integrationsErr != nil {
-		return fmt.Errorf("integrations.Setup: %w", integrationsErr)
-	}
-	for name, el := range integrations.GetEventListeners() {
-		s.addEventListener(name, el)
-	}
-
-	if !rez.Config.DataSyncMode() {
-		// TODO: this shouldn't need the db client
-		apiv1Handler := apiv1.NewHandler(services, dbClient)
-
-		srv, srvErr := http.NewServer(services.Auth, apiv1Handler)
-		if srvErr != nil {
-			return fmt.Errorf("http.NewServer: %w", srvErr)
+func (s *Server) makeJobService() (rez.JobsService, error) {
+	if pgDb, ok := s.database.(*postgres.DatabaseClient); ok {
+		jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
+		if jobSvcErr != nil {
+			return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
 		}
-		s.addEventListener("http_server", srv)
+		return jobSvc, nil
 	}
-
-	return nil
+	return nil, fmt.Errorf("unable to create job service")
 }
 
-func (s *Server) setupServices(ctx context.Context, dbc *ent.Client, jobSvc rez.JobsService, msgs rez.MessageService) (*rez.Services, error) {
+func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
+	pgClient, pgErr := postgres.NewDatabasePoolClient(ctx)
+	if pgErr != nil {
+		return nil, fmt.Errorf("postgres.NewDatabasePoolClient: %w", pgErr)
+	}
+	s.database = pgClient
+	dbc := s.database.Client()
+
+	jobSvc, jobSvcErr := s.makeJobService()
+	if jobSvcErr != nil {
+		return nil, fmt.Errorf("job service: %w", jobSvcErr)
+	}
+	s.listeners["job_service"] = jobSvc
+
+	msgs, msgsErr := watermill.NewMessageService()
+	if msgsErr != nil {
+		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
+	}
+	s.listeners["message_service"] = msgs
+
 	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
 	if orgsErr != nil {
 		return nil, fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)

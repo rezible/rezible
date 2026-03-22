@@ -10,7 +10,7 @@ import (
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"github.com/spf13/cobra"
+	"github.com/urfave/cli/v3"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
@@ -20,91 +20,81 @@ import (
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "rezible",
-	Short: "",
-	Run:   serveCmd.Run,
-}
-
-var serveCmd = &cobra.Command{
-	Use:   "serve",
-	Short: "runs the rezible server",
-	Run: func(cmd *cobra.Command, args []string) {
-		if runErr := internal.RunServer(cmd.Context()); runErr != nil {
-			log.Fatal().Err(runErr).Msg("failed to run server")
+var rezcli = &cli.Command{
+	Name:  "rezible",
+	Usage: "backend server control",
+	Before: func(ctx context.Context, c *cli.Command) (context.Context, error) {
+		cfgOpts := koanf.ConfigLoaderOptions{
+			LoadEnvironment: true,
 		}
-	},
-}
-
-var printSpecCmd = &cobra.Command{
-	Use:   "openapi",
-	Short: "Print the OpenAPI spec",
-	Run: func(cmd *cobra.Command, args []string) {
-		spec, specErr := oapiv1.GetYamlSpec()
-		if specErr != nil {
-			log.Fatal().Err(specErr).Msg("failed to get OpenAPI spec")
+		var cfgErr error
+		rez.Config, cfgErr = koanf.NewConfigLoader(ctx, cfgOpts)
+		if cfgErr != nil {
+			return nil, fmt.Errorf("failed to load configuration: %w", cfgErr)
 		}
-		fmt.Println(spec)
-	},
-}
-
-var integrationsCmd = &cobra.Command{
-	Use: "integrations",
-}
-
-var integrationsSyncCmd = &cobra.Command{
-	Use:   "sync",
-	Short: "Run integration data sync",
-	Run: func(cmd *cobra.Command, args []string) {
-		ctx := access.SystemContext(cmd.Context())
-		syncArgs := jobs.SyncIntegrationsData{
-			IgnoreHistory: true,
+		if rez.Config.DebugMode() {
+			log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		}
-		if syncErr := internal.RunIntegrationsDataSync(ctx, syncArgs); syncErr != nil {
-			log.Fatal().Err(syncErr).Msg("failed to sync provider data")
-		}
+		return access.AnonymousContext(ctx), nil
 	},
-}
-
-var dbMigrationsCmd = &cobra.Command{
-	Use: "db-migrations",
-}
-
-var dbMigrationsGenerateCmd = &cobra.Command{
-	Use:   "generate [name]",
-	Short: "create a new migration",
-	Args:  cobra.ExactArgs(1),
-	RunE: func(cmd *cobra.Command, args []string) error {
-		return postgres.GenerateEntMigrations(cmd.Context(), args[0])
+	Commands: []*cli.Command{
+		{
+			Name:  "serve",
+			Usage: "Run rezible server",
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				srv, srvErr := internal.NewServer(ctx)
+				if srvErr != nil {
+					return srvErr
+				}
+				return srv.RunServe(ctx)
+			},
+		},
+		{
+			Name:  "spec",
+			Usage: "Print the OpenAPI spec",
+			Flags: []cli.Flag{&cli.BoolFlag{Name: "json"}},
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				spec, specErr := oapiv1.GetSpec(cmd.Bool("json"))
+				if specErr != nil {
+					return fmt.Errorf("failed to marshal OpenAPI spec: %w", specErr)
+				}
+				fmt.Printf("%s", spec)
+				return nil
+			},
+		},
+		{
+			Name:  "sync-integrations",
+			Usage: "Run integration data sync",
+			Flags: []cli.Flag{&cli.BoolFlag{Name: "hard"}},
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				srv, srvErr := internal.NewServer(ctx)
+				if srvErr != nil {
+					return srvErr
+				}
+				return srv.RunDataSync(ctx, jobs.SyncIntegrationsData{IgnoreHistory: cmd.Bool("hard")})
+			},
+		},
+		{
+			Name:  "generate-migration",
+			Usage: "Create a new database migration",
+			Arguments: []cli.Argument{
+				&cli.StringArg{
+					Name:      "name",
+					UsageText: "name of the migration",
+					Config:    cli.StringConfig{TrimSpace: true},
+				},
+			},
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				return postgres.GenerateEntMigrations(ctx, cmd.StringArg("name"))
+			},
+		},
 	},
-}
-
-func init() {
-	cfg, cfgErr := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{LoadEnvironment: true})
-	if cfgErr != nil {
-		log.Fatal().Err(cfgErr).Msg("failed to load config file")
-		os.Exit(1)
-	}
-	rez.Config = cfg
-
-	// TODO: logger package?
-	if rez.Config.DebugMode() {
-		log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
-
-	rootCmd.Run = serveCmd.Run
-	rootCmd.AddCommand(serveCmd, printSpecCmd, integrationsCmd, dbMigrationsCmd)
-
-	integrationsCmd.AddCommand(integrationsSyncCmd)
-
-	dbMigrationsCmd.AddCommand(dbMigrationsGenerateCmd)
 }
 
 func main() {
 	ctx, stopFn := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stopFn()
-
-	if runErr := rootCmd.ExecuteContext(ctx); runErr != nil {
-		os.Exit(1)
+	if runErr := rezcli.Run(ctx, os.Args); runErr != nil {
+		log.Fatal().Err(runErr).Msg("failed to run")
 	}
 }

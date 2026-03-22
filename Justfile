@@ -29,6 +29,10 @@ frontend_dist_dir := "./backend/internal/http/frontend-dist"
     cd backend && go get -u ./... && go mod tidy
     bun update
 
+@format:
+    cd backend && go fmt ./...
+    cd frontend && bun run format
+
 @run-backend *ARGS:
     cd backend && \
         DEBUG_MODE=true \
@@ -61,7 +65,7 @@ frontend_dist_dir := "./backend/internal/http/frontend-dist"
         go test $(go list ./... | grep -v /ent/)
 
 @run-backend-datasync:
-    DATASYNC_MODE="true" just run-backend integrations sync
+    just run-backend sync-integrations
 
 # [group('Code Generation')]
 
@@ -77,11 +81,11 @@ frontend_dist_dir := "./backend/internal/http/frontend-dist"
     cd backend && go generate ./testkit/mocks
 
 @codegen-api:
-    just run-backend openapi > /tmp/rezible-spec.yaml
+    just run-backend spec > /tmp/rezible-spec.yaml
     bun run codegen:api
 
 @codegen-migration NAME:
-    just run-backend db-migrations generate {{NAME}}
+    just run-backend generate-migration {{NAME}}
 
 # [group('Development Servers')]
 
@@ -95,12 +99,8 @@ frontend_dist_dir := "./backend/internal/http/frontend-dist"
     just run-migrations
     process-compose --ordered-shutdown -f ./process-compose.yaml
 
-@format:
-    cd backend && go fmt ./...
-    cd frontend && bun run format
-
 @dev-backend:
-    cd backend && reflex -s -d none -r '\.go$' -- just run-backend
+    cd backend && reflex -s -d none -r '\.go$' -- just run-backend serve
 
 @dev-frontend:
     just run-frontend dev
@@ -116,7 +116,6 @@ migrations_dir := "backend/migrations"
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
     just create-initial-migrations
     just run-migrations
-
 
 @create-initial-migrations:
     rm -f ./{{migrations_dir}}/*.{sql,sum}

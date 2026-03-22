@@ -7,7 +7,6 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/openapi"
-	"gopkg.in/yaml.v3"
 )
 
 const VersionPrefix = "/v1"
@@ -52,7 +51,7 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-func MakeApi(h Handler, prefix string, auth rez.AuthService) openapi.API {
+func MakeApi(h Handler, auth rez.AuthService) openapi.API {
 	cfg := MakeConfig()
 
 	//tranformers := []huma.Transformer{
@@ -60,7 +59,7 @@ func MakeApi(h Handler, prefix string, auth rez.AuthService) openapi.API {
 	//}
 	//cfg.Transformers = append(cfg.Transformers, tranformers...)
 
-	adapter := humago.NewAdapter(http.NewServeMux(), prefix+VersionPrefix)
+	adapter := humago.NewAdapter(http.NewServeMux(), rez.Config.ApiPath()+VersionPrefix)
 	api := huma.NewAPI(cfg, adapter)
 	api.UseMiddleware(MakeSecurityMiddleware(api, auth))
 	huma.AutoRegister(api, operations{Handler: h})
@@ -85,11 +84,10 @@ func MakeConfig() openapi.Config {
 	return cfg
 }
 
-func GetYamlSpec() (string, error) {
-	api := MakeApi(operations{}, "", nil)
-	spec, specErr := yaml.Marshal(api.OpenAPI())
-	if specErr != nil {
-		return "", specErr
+func GetSpec(jsonFmt bool) ([]byte, error) {
+	spec := MakeApi(operations{}, nil).OpenAPI()
+	if jsonFmt {
+		return spec.MarshalJSON()
 	}
-	return string(spec), nil
+	return spec.YAML()
 }

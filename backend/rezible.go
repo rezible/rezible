@@ -39,7 +39,6 @@ type ConfigLoader interface {
 	GetDurationOr(key string, orDefault time.Duration) time.Duration
 
 	DebugMode() bool
-	DataSyncMode() bool
 
 	ListenHost() string
 	ListenPort() string
@@ -47,7 +46,6 @@ type ConfigLoader interface {
 	ApiPath() string
 	WebhooksPath() string
 	AppUrl() string
-	ServeFrontend() bool
 
 	SingleTenantMode() bool
 	AllowTenantCreation() bool

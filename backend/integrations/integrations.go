@@ -30,6 +30,8 @@ var (
 	}
 )
 
+type EventListeners map[string]rez.EventListener
+
 func Setup(ctx context.Context, svcs *rez.Services) error {
 	availablePackages = make([]rez.IntegrationPackage, 0, len(availablePackages))
 	packageNameMap = make(map[string]rez.IntegrationPackage)
@@ -55,12 +57,12 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 		packageNameMap[pkg.Name()] = pkg
 		enabledSupportedDataKinds.Append(pkg.SupportedDataKinds()...)
 	}
-
-	if enabledSupportedDataKinds.Cardinality() == 0 {
-		return fmt.Errorf("no supported data kinds found")
-	}
 	supportedDataKinds = enabledSupportedDataKinds.ToSlice()
+
 	// TODO: check if required data kinds are supported
+	//if enabledSupportedDataKinds.Cardinality() == 0 {
+	//	return nil, fmt.Errorf("no supported data kinds found")
+	//}
 
 	return nil
 }
@@ -81,8 +83,8 @@ type IntegrationWithEventListeners interface {
 	EventListeners() map[string]rez.EventListener
 }
 
-func GetEventListeners() map[string]rez.EventListener {
-	els := make(map[string]rez.EventListener)
+func GetEventListeners() EventListeners {
+	els := make(EventListeners)
 	for _, p := range availablePackages {
 		if elIntegration, ok := p.(IntegrationWithEventListeners); ok {
 			for name, l := range elIntegration.EventListeners() {
