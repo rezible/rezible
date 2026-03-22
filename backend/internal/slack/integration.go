@@ -124,6 +124,7 @@ func (i *integration) Name() string {
 }
 
 func (i *integration) IsAvailable() (bool, error) {
+	fmt.Printf("cfg: %+v\n", i.cfg)
 	if !i.cfg.Enabled {
 		return false, nil
 	}

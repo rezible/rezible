@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/jobs"
 	"github.com/rotisserie/eris"
 	"github.com/texm/prosemirror-go"
@@ -406,8 +407,8 @@ type (
 	}
 
 	RetrospectiveService interface {
-		Create(context.Context, ent.Retrospective) (*ent.Retrospective, error)
 		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
+		Create(ctx context.Context, incidentId uuid.UUID, kind retrospective.Type) (*ent.Retrospective, error)
 
 		//ListReviews(context.Context, ListRetrospectiveReviewsParams) ([]*ent.RetrospectiveReview, error)
 		//GetReview(context.Context, uuid.UUID) (*ent.RetrospectiveReview, error)

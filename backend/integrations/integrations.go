@@ -42,8 +42,13 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 			funcName := runtime.FuncForPC(reflect.ValueOf(setupFn).Pointer()).Name()
 			return fmt.Errorf("%s: %w", funcName, pkgErr)
 		}
-		enabled, configErr := pkg.IsAvailable()
-		if !enabled {
+		available, configErr := pkg.IsAvailable()
+		log.Debug().
+			Str("name", pkg.Name()).
+			AnErr("configErr", configErr).
+			Bool("available", available).
+			Msgf("integration package")
+		if !available {
 			continue
 		}
 		if configErr != nil {

@@ -9,17 +9,18 @@ import {
 } from "@hocuspocus/provider";
 import { onMount } from "svelte";
 import { Context, watch } from "runed";
-import type { Getter } from "$lib/utils.svelte";
+import { useIncidentView } from "$features/incidents/views/incident";
 
 export class IncidentCollaborationController {
-	documentId = $state<string>();
+	incidentView = useIncidentView();
+	documentId = $derived(this.incidentView.documentId);
 	provider = $state<HocuspocusProvider>();
 	awareness = $state<StatesArray>([]);
 	status = $state<WebSocketStatus>(WebSocketStatus.Disconnected);
 	error = $state<Error>();
 
 	constructor() {
-		// watch(idFn, id => { this.connect(id) });
+		watch(() => this.documentId, id => { this.connect(id) });
 		onMount(() => (() => { this.cleanup() }));
 	};
 
@@ -34,7 +35,6 @@ export class IncidentCollaborationController {
 				console.error("failed to disconnect collaboration provider ", e);
 			}
 		}
-		this.documentId = undefined;
 		this.awareness = [];
 		this.status = WebSocketStatus.Disconnected;
 		this.error = undefined;
@@ -58,23 +58,19 @@ export class IncidentCollaborationController {
 	}
 
 	async connect(id?: string) {
-		if (this.documentId === id) return;
-
 		this.cleanup();
-
+		console.log("connect", id);
 		if (!id) return;
-		this.documentId = id;
 
-		// const config: HocuspocusProviderConfiguration = {
-		// 	url: sess.connectionUrl,
-		// 	token: sess.sessionToken,
-		// 	name: sess.documentId,
-		// 	onAwarenessChange: (e) => this.onAwarenessChange(e),
-		// 	onStatus: (e) => this.onConnectionStatusChange(e),
-		// 	onAuthenticated: () => this.onAuthenticated(),
-		// 	onAuthenticationFailed: e => this.onAuthenticationFailed(e),
-		// };
-		// this.provider = new HocuspocusProvider(config);
+		this.provider = new HocuspocusProvider({
+			url: "/ws",
+			token: "",
+			name: id,
+			onAwarenessChange: (e) => this.onAwarenessChange(e),
+			onStatus: (e) => this.onConnectionStatusChange(e),
+			onAuthenticated: () => this.onAuthenticated(),
+			onAuthenticationFailed: e => this.onAuthenticationFailed(e),
+		});
 	};
 }
 

@@ -114,11 +114,11 @@ func (s *AuthService) GetAuthSession(ctx context.Context) rez.AuthSession {
 func (s *AuthService) CompleteClientAuthSessionFlow(ctx context.Context, code string, verifier string) ([]http.Cookie, error) {
 	tokenResp, exchangeErr := s.oauthConfig.Exchange(ctx, code, oauth2.VerifierOption(verifier))
 	if exchangeErr != nil {
-		return nil, fmt.Errorf("failed to exchange token: %w", exchangeErr)
+		return nil, fmt.Errorf("exchange token: %w", exchangeErr)
 	}
 	authCtx, ctxErr := s.createAuthSessionContext(ctx, tokenResp.AccessToken, true)
 	if ctxErr != nil {
-		return nil, fmt.Errorf("failed to create auth session context: %w", ctxErr)
+		return nil, fmt.Errorf("create auth session context: %w", ctxErr)
 	}
 	return oapiv1.MakeAuthSessionCookies(authCtx, *tokenResp), nil
 }
@@ -129,7 +129,7 @@ func (s *AuthService) RefreshClientAuthSession(ctx context.Context, refreshToken
 	}
 	freshToken, refreshErr := s.fetchRefreshedToken(ctx, refreshToken)
 	if refreshErr != nil {
-		log.Error().Err(refreshErr).Msg("failed to exchange token")
+		log.Error().Err(refreshErr).Msg("exchange token")
 		return nil, fmt.Errorf("fetch refreshed token: %w", refreshErr)
 	}
 	return oapiv1.MakeAuthSessionCookies(ctx, *freshToken), nil
@@ -144,7 +144,7 @@ func (s *AuthService) fetchRefreshedToken(ctx context.Context, refreshToken stri
 	tokenSource := s.oauthConfig.TokenSource(ctx, expiredToken)
 	newToken, exchangeErr := tokenSource.Token()
 	if exchangeErr != nil {
-		return nil, fmt.Errorf("exchange token: %w", exchangeErr)
+		return nil, fmt.Errorf("force refresh token exchange: %w", exchangeErr)
 	}
 	return newToken, nil
 }
@@ -186,11 +186,11 @@ func (s *AuthService) getVerifiedIdToken(ctx context.Context, idTokenStr string)
 	}
 	idToken, verifyErr := s.tokenVerifier.Verify(ctx, idTokenStr)
 	if verifyErr != nil {
-		return nil, fmt.Errorf("failed to verify token: %w", verifyErr)
+		return nil, fmt.Errorf("verify: %w", verifyErr)
 	}
 	var claims IdTokenClaims
 	if claimsErr := idToken.Claims(&claims); claimsErr != nil {
-		return nil, fmt.Errorf("id token claims: %w", claimsErr)
+		return nil, fmt.Errorf("get claims: %w", claimsErr)
 	}
 	return &verifiedIdToken{idToken, claims}, nil
 }

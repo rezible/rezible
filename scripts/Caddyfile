@@ -19,7 +19,7 @@ app.dev.rezible.com:80 {
             header_up Host {host}
         }
     }
-    handle /ws/* {
+    handle /ws* {
         reverse_proxy http://host.docker.internal:7003 {
             header_up Host {host}
         }

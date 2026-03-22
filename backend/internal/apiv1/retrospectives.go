@@ -31,15 +31,11 @@ func (h *retrospectivesHandler) CreateRetrospective(ctx context.Context, request
 	var resp oapi.CreateRetrospectiveResponse
 
 	attrs := request.Body.Attributes
-	params := ent.Retrospective{
-		IncidentID: attrs.IncidentId,
-		Type:       retrospective.TypeSimple,
-	}
+	kind := retrospective.TypeSimple
 	if attrs.SystemAnalysis {
-		params.Type = retrospective.TypeFull
+		kind = retrospective.TypeFull
 	}
-
-	retro, createErr := h.retros.Create(ctx, params)
+	retro, createErr := h.retros.Create(ctx, attrs.IncidentId, kind)
 	if createErr != nil {
 		return nil, oapi.Error("create retrospective", createErr)
 	}

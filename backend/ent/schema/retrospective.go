@@ -25,7 +25,7 @@ func (Retrospective) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("incident_id", uuid.UUID{}),
-		field.UUID("document_id", uuid.UUID{}),
+		field.UUID("document_id", uuid.UUID{}).Optional(),
 		field.UUID("system_analysis_id", uuid.UUID{}).Optional(),
 		field.Enum("type").Values("simple", "full"),
 		field.Enum("state").Values("draft", "in_review", "meeting", "closed"),

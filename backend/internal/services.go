@@ -235,7 +235,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
 
-	retros, retrosErr := db.NewRetrospectiveService(dbc)
+	retros, retrosErr := db.NewRetrospectiveService(dbc, msgs, incidents)
 	if retrosErr != nil {
 		return nil, fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
 	}

@@ -2,9 +2,11 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 
 	rez "github.com/rezible/rezible"
@@ -14,15 +16,64 @@ import (
 )
 
 type RetrospectiveService struct {
-	db *ent.Client
+	db        *ent.Client
+	msgs      rez.MessageService
+	incidents rez.IncidentService
 }
 
-func NewRetrospectiveService(db *ent.Client) (*RetrospectiveService, error) {
+func NewRetrospectiveService(db *ent.Client, msgs rez.MessageService, incidents rez.IncidentService) (*RetrospectiveService, error) {
 	svc := &RetrospectiveService{
-		db: db,
+		db:        db,
+		msgs:      msgs,
+		incidents: incidents,
+	}
+
+	if msgsErr := svc.registerMessageHandlers(); msgsErr != nil {
+		return nil, fmt.Errorf("message handlers: %w", msgsErr)
 	}
 
 	return svc, nil
+}
+
+func (s *RetrospectiveService) registerMessageHandlers() error {
+	return errors.Join(
+		s.msgs.AddEventHandlers(
+			rez.NewEventHandler("retrospectives.on_incident_updated", s.onIncidentUpdated),
+		),
+		s.msgs.AddCommandHandlers(
+			rez.NewCommandHandler("retrospectives.create_for_incident", s.createForIncident),
+		),
+	)
+}
+
+func (s *RetrospectiveService) onIncidentUpdated(ctx context.Context, evt *rez.EventOnIncidentUpdated) error {
+	retro, retroErr := s.Get(ctx, retrospective.IncidentID(evt.IncidentId))
+	if retroErr != nil && !ent.IsNotFound(retroErr) {
+		return fmt.Errorf("query retrospective by incident id %q: %w", evt.IncidentId, retroErr)
+	}
+	if retro != nil {
+		// TODO: check if retro needs updating
+		return nil
+	}
+	if cmdErr := s.msgs.SendCommand(ctx, cmdCreateRetrospectiveForIncident{IncidentId: evt.IncidentId}); cmdErr != nil {
+		return fmt.Errorf("send cmdCreateRetrospectiveForIncident: %w", cmdErr)
+	}
+	return nil
+}
+
+type cmdCreateRetrospectiveForIncident struct {
+	IncidentId uuid.UUID
+}
+
+func (s *RetrospectiveService) createForIncident(ctx context.Context, cmd *cmdCreateRetrospectiveForIncident) error {
+	inc, incErr := s.incidents.Get(ctx, incident.ID(cmd.IncidentId))
+	if incErr != nil {
+		return fmt.Errorf("get incident: %w", incErr)
+	}
+	if _, setErr := s.Create(ctx, inc.ID, retrospective.TypeFull); setErr != nil {
+		return fmt.Errorf("create retrospective: %w", setErr)
+	}
+	return nil
 }
 
 func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospective) (*ent.Retrospective, error) {
@@ -38,45 +89,45 @@ func (s *RetrospectiveService) getIncidentRetrospectiveType(ctx context.Context,
 	return retrospective.TypeFull, nil
 }
 
-func (s *RetrospectiveService) Create(ctx context.Context, params ent.Retrospective) (*ent.Retrospective, error) {
-	var createdRetro *ent.Retrospective
-	var createdAnalysis *ent.SystemAnalysis
-
+func (s *RetrospectiveService) Create(ctx context.Context, incidentId uuid.UUID, kind retrospective.Type) (*ent.Retrospective, error) {
+	var created *ent.Retrospective
 	createTxFn := func(tx *ent.Tx) error {
-		var createErr error
-		createdDoc, createErr := s.db.Document.Create().SetContent([]byte("")).Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("create doc: %w", createErr)
+		createdDoc, createDocErr := tx.Document.Create().
+			SetContent([]byte("")).
+			Save(ctx)
+		if createDocErr != nil {
+			return fmt.Errorf("create doc: %w", createDocErr)
 		}
 
-		createdRetro, createErr = tx.Retrospective.Create().
-			SetIncidentID(params.IncidentID).
+		create := tx.Retrospective.Create().
+			SetIncidentID(incidentId).
+			SetType(kind).
 			SetDocumentID(createdDoc.ID).
-			SetType(params.Type).
-			SetState(retrospective.StateDraft).
-			Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("create retrospective: %w", createErr)
+			SetState(retrospective.StateDraft)
+
+		var createRetroErr error
+		created, createRetroErr = create.Save(ctx)
+		if createRetroErr != nil {
+			return fmt.Errorf("create retrospective: %w", createRetroErr)
 		}
-		if params.Type == retrospective.TypeFull {
-			createdAnalysis, createErr = tx.SystemAnalysis.Create().
-				SetRetrospectiveID(createdRetro.ID).
+		created.Edges.Document = createdDoc
+
+		if kind == retrospective.TypeFull {
+			createdAnalysis, createAnalysisErr := tx.SystemAnalysis.Create().
+				SetRetrospectiveID(created.ID).
 				Save(ctx)
-			if createErr != nil {
-				return fmt.Errorf("create analysis: %w", createErr)
+			if createAnalysisErr != nil {
+				return fmt.Errorf("create analysis: %w", createAnalysisErr)
 			}
+			created.SystemAnalysisID = createdAnalysis.ID
+			created.Edges.SystemAnalysis = createdAnalysis
 		}
 		return nil
 	}
 	if txErr := ent.WithTx(ctx, s.db, createTxFn); txErr != nil {
 		return nil, fmt.Errorf("create tx failed: %w", txErr)
 	}
-
-	if createdAnalysis != nil {
-		createdRetro.SystemAnalysisID = createdAnalysis.ID
-		createdRetro.Edges.SystemAnalysis = createdAnalysis
-	}
-	return createdRetro, nil
+	return created, nil
 }
 
 func (s *RetrospectiveService) GetForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {

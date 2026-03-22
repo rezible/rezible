@@ -58,7 +58,9 @@ default_dockerfile := "Dockerfile"
         bun run {{ARGS}}
 
 @run-documents-server *ARGS:
-    cd documents-server && bun run {{ARGS}}
+    cd documents-server && \
+        API_URL="http://localhost:7002/api/v1" \
+        bun run {{ARGS}}
 
 @run-docker-compose *CMD:
     docker compose \
@@ -129,7 +131,7 @@ migrations_dir := "backend/migrations"
 
 @create-initial-migrations:
     rm -f ./{{migrations_dir}}/*.{sql,sum}
-    just run-backend db-migrations generate ent_init
+    just run-backend generate-migration ent_init
     sleep 1
     migrate create -ext sql -dir "{{migrations_dir}}" river_init
     cd backend && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"

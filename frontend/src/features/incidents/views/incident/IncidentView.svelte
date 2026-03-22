@@ -5,8 +5,8 @@
 	import { initIncidentViewController, type IncidentViewParams } from "./controller.svelte";
 	import { initIncidentCollaborationController } from "$features/incidents/lib/collaboration.svelte";
 
-	import ContextSidebar from "$features/incidents/components/context-sidebar/ContextSidebar.svelte";
 	import PageActions from "./PageActions.svelte";
+	import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
 	import IncidentOverview from "./overview/IncidentOverview.svelte";
 	import IncidentAnalysis from "./analysis/IncidentAnalysis.svelte";
 	import IncidentReport from "./report/IncidentReport.svelte";
@@ -17,7 +17,7 @@
 
 	const params = $derived<IncidentViewParams>({ slug, routeParam });
 	const view = initIncidentViewController(() => params);
-	initIncidentCollaborationController();
+	const collab = initIncidentCollaborationController();
 
 	const path = $derived(`/incidents/${slug}`);
 	const incidentBreadcrumb = $derived<PageBreadcrumb>({
@@ -47,6 +47,6 @@
 
 <TabbedViewContainer {tabs} {path} infoBar={IncidentDetailsBar}>
 	{#snippet tabSidebar()}
-		<ContextSidebar />
+		<ContextSidebar {collab} />
 	{/snippet}
 </TabbedViewContainer>
