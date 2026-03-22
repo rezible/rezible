@@ -50,7 +50,7 @@ export type AddWatchedOncallRosterResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster>;
+    data: Array<OncallRoster> | null;
 };
 
 export type Alert = {
@@ -96,7 +96,7 @@ export type AuthSession = {
 };
 
 export type AvailableIntegration = {
-    dataKinds: Array<string>;
+    dataKinds: Array<string> | null;
     name: string;
     oauthRequired: boolean;
 };
@@ -178,7 +178,7 @@ export type CreateEventAnnotationRequestAttributes = {
     eventId: string;
     minutesOccupied: number;
     notes: string;
-    tags: Array<string>;
+    tags: Array<string> | null;
 };
 
 export type CreateEventAnnotationRequestBody = {
@@ -248,7 +248,7 @@ export type CreateIncidentEventResponseBody = {
 export type CreateIncidentFieldAttributes = {
     incidentType?: string;
     name: string;
-    options: Array<CreateIncidentFieldOptionAttributes>;
+    options: Array<CreateIncidentFieldOptionAttributes> | null;
     required: boolean;
 };
 
@@ -449,7 +449,7 @@ export type CreateMeetingSessionResponseBody = {
 };
 
 export type CreateOncallShiftHandoverTemplateRequestAttributes = {
-    sections: Array<OncallShiftHandoverSection>;
+    sections: Array<OncallShiftHandoverSection> | null;
 };
 
 export type CreateOncallShiftHandoverTemplateRequestBody = {
@@ -569,15 +569,15 @@ export type CreateSystemAnalysisRelationshipResponseBody = {
 };
 
 export type CreateSystemComponentAttributes = {
-    constraints: Array<SystemComponentConstraintAttributes>;
-    controls: Array<SystemComponentControlAttributes>;
+    constraints: Array<SystemComponentConstraintAttributes> | null;
+    controls: Array<SystemComponentControlAttributes> | null;
     description: string;
     kindId: string;
     name: string;
     properties: {
         [key: string]: unknown;
     };
-    signals: Array<SystemComponentSignalAttributes>;
+    signals: Array<SystemComponentSignalAttributes> | null;
 };
 
 export type CreateSystemComponentConstraintAttributes = {
@@ -806,7 +806,7 @@ export type ErrorModel = {
     /**
      * Optional list of individual error details
      */
-    errors?: Array<ErrorDetail>;
+    errors?: Array<ErrorDetail> | null;
     /**
      * A URI reference that identifies the specific occurrence of the problem.
      */
@@ -840,7 +840,7 @@ export type EventAnnotationAttributes = {
     event: ExpandableEventAttributes;
     minutesOccupied: number;
     notes: string;
-    tags: Array<string>;
+    tags: Array<string> | null;
 };
 
 export type EventAttributes = {
@@ -1234,18 +1234,18 @@ export type IncidentAttributes = {
     chatChannel: IncidentChatChannel;
     closedAt: string;
     currentStatus: 'started' | 'mitigated' | 'resolved' | 'closed';
-    linkedIncidents: Array<IncidentLink>;
+    linkedIncidents: Array<IncidentLink> | null;
     openedAt: string;
     primaryVideoConference?: VideoConference;
     private: boolean;
     retrospectiveId?: string;
-    roles: Array<IncidentRoleAssignment>;
+    roles: Array<IncidentRoleAssignment> | null;
     severity: IncidentSeverity;
     slug: string;
     summary: string;
-    tags: Array<IncidentTag>;
-    tasks: Array<Task>;
-    teams: Array<IncidentTeamAssignment>;
+    tags: Array<IncidentTag> | null;
+    tasks: Array<Task> | null;
+    teams: Array<IncidentTeamAssignment> | null;
     ticket?: ExternalTicket;
     title: string;
     type: IncidentType;
@@ -1306,15 +1306,15 @@ export type IncidentEvent = {
 };
 
 export type IncidentEventAttributes = {
-    contributingFactors: Array<IncidentEventContributingFactor>;
+    contributingFactors: Array<IncidentEventContributingFactor> | null;
     decisionContext?: IncidentEventDecisionContext;
     description?: string;
-    evidence: Array<IncidentEventEvidence>;
+    evidence: Array<IncidentEventEvidence> | null;
     incidentId: string;
     isKey: boolean;
     kind: 'observation' | 'action' | 'decision' | 'context';
     sequence: number;
-    systemContext: Array<IncidentEventSystemComponent>;
+    systemContext: Array<IncidentEventSystemComponent> | null;
     timestamp: string;
     title: string;
 };
@@ -1327,7 +1327,7 @@ export type IncidentEventContributingFactor = {
 export type IncidentEventContributingFactorAttributes = {
     description: string;
     factorTypeId: string;
-    links: Array<string>;
+    links: Array<string> | null;
 };
 
 export type IncidentEventContributingFactorCategory = {
@@ -1337,7 +1337,7 @@ export type IncidentEventContributingFactorCategory = {
 
 export type IncidentEventContributingFactorCategoryAttributes = {
     description: string;
-    factorTypes: Array<IncidentEventContributingFactorType>;
+    factorTypes: Array<IncidentEventContributingFactorType> | null;
     name: string;
 };
 
@@ -1348,14 +1348,14 @@ export type IncidentEventContributingFactorType = {
 
 export type IncidentEventContributingFactorTypeAttributes = {
     description: string;
-    examples: Array<string>;
+    examples: Array<string> | null;
     name: string;
 };
 
 export type IncidentEventDecisionContext = {
-    constraints: Array<string>;
+    constraints: Array<string> | null;
     decisionRationale: string;
-    optionsConsidered: Array<string>;
+    optionsConsidered: Array<string> | null;
 };
 
 export type IncidentEventEvidence = {
@@ -1392,7 +1392,7 @@ export type IncidentFieldAttributes = {
     description: string;
     incidentType: IncidentType;
     name: string;
-    options: Array<IncidentFieldOption>;
+    options: Array<IncidentFieldOption> | null;
     required: boolean;
 };
 
@@ -1495,7 +1495,7 @@ export type ListAlertIncidentLinksResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AlertIncidentLink>;
+    data: Array<AlertIncidentLink> | null;
     pagination: ResponsePagination;
 };
 
@@ -1504,7 +1504,7 @@ export type ListAlertsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Alert>;
+    data: Array<Alert> | null;
     pagination: ResponsePagination;
 };
 
@@ -1513,7 +1513,7 @@ export type ListAvailableIntegrationsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AvailableIntegration>;
+    data: Array<AvailableIntegration> | null;
     pagination: ResponsePagination;
 };
 
@@ -1522,7 +1522,7 @@ export type ListConfiguredIntegrationsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<ConfiguredIntegration>;
+    data: Array<ConfiguredIntegration> | null;
     pagination: ResponsePagination;
 };
 
@@ -1531,7 +1531,7 @@ export type ListEventAnnotationsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<EventAnnotation>;
+    data: Array<EventAnnotation> | null;
     pagination: ResponsePagination;
 };
 
@@ -1540,7 +1540,7 @@ export type ListEventsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Event>;
+    data: Array<Event> | null;
     pagination: ResponsePagination;
 };
 
@@ -1549,7 +1549,7 @@ export type ListIncidentDebriefMessagesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentDebriefMessage>;
+    data: Array<IncidentDebriefMessage> | null;
 };
 
 export type ListIncidentDebriefQuestionsResponseBody = {
@@ -1557,7 +1557,7 @@ export type ListIncidentDebriefQuestionsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentDebriefQuestion>;
+    data: Array<IncidentDebriefQuestion> | null;
     pagination: ResponsePagination;
 };
 
@@ -1566,7 +1566,7 @@ export type ListIncidentDebriefSuggestionsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentDebriefSuggestion>;
+    data: Array<IncidentDebriefSuggestion> | null;
 };
 
 export type ListIncidentEventContributingFactorsResponseBody = {
@@ -1574,7 +1574,7 @@ export type ListIncidentEventContributingFactorsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentEventContributingFactorCategory>;
+    data: Array<IncidentEventContributingFactorCategory> | null;
     pagination: ResponsePagination;
 };
 
@@ -1583,7 +1583,7 @@ export type ListIncidentEventsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentEvent>;
+    data: Array<IncidentEvent> | null;
     pagination: ResponsePagination;
 };
 
@@ -1592,7 +1592,7 @@ export type ListIncidentFieldsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentField>;
+    data: Array<IncidentField> | null;
     pagination: ResponsePagination;
 };
 
@@ -1601,7 +1601,7 @@ export type ListIncidentMilestonesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentMilestone>;
+    data: Array<IncidentMilestone> | null;
     pagination: ResponsePagination;
 };
 
@@ -1610,7 +1610,7 @@ export type ListIncidentRolesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentRole>;
+    data: Array<IncidentRole> | null;
     pagination: ResponsePagination;
 };
 
@@ -1619,7 +1619,7 @@ export type ListIncidentSeveritiesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentSeverity>;
+    data: Array<IncidentSeverity> | null;
     pagination: ResponsePagination;
 };
 
@@ -1628,7 +1628,7 @@ export type ListIncidentTagsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentTag>;
+    data: Array<IncidentTag> | null;
     pagination: ResponsePagination;
 };
 
@@ -1637,7 +1637,7 @@ export type ListIncidentTypesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentType>;
+    data: Array<IncidentType> | null;
     pagination: ResponsePagination;
 };
 
@@ -1646,7 +1646,7 @@ export type ListIncidentsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Incident>;
+    data: Array<Incident> | null;
     pagination: ResponsePagination;
 };
 
@@ -1655,7 +1655,7 @@ export type ListMeetingSchedulesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<MeetingSchedule>;
+    data: Array<MeetingSchedule> | null;
     pagination: ResponsePagination;
 };
 
@@ -1664,7 +1664,7 @@ export type ListMeetingSessionsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<MeetingSession>;
+    data: Array<MeetingSession> | null;
     pagination: ResponsePagination;
 };
 
@@ -1673,7 +1673,7 @@ export type ListNotificationsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<UserNotification>;
+    data: Array<UserNotification> | null;
     pagination: ResponsePagination;
 };
 
@@ -1682,7 +1682,7 @@ export type ListOncallRostersResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster>;
+    data: Array<OncallRoster> | null;
     pagination: ResponsePagination;
 };
 
@@ -1691,7 +1691,7 @@ export type ListOncallShiftsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallShift>;
+    data: Array<OncallShift> | null;
     pagination: ResponsePagination;
 };
 
@@ -1700,7 +1700,7 @@ export type ListPlaybooksResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Playbook>;
+    data: Array<Playbook> | null;
     pagination: ResponsePagination;
 };
 
@@ -1709,7 +1709,7 @@ export type ListRetrospectiveCommentsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<RetrospectiveComment>;
+    data: Array<RetrospectiveComment> | null;
     pagination: ResponsePagination;
 };
 
@@ -1718,7 +1718,7 @@ export type ListRetrospectiveReviewsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<RetrospectiveReview>;
+    data: Array<RetrospectiveReview> | null;
     pagination: ResponsePagination;
 };
 
@@ -1727,7 +1727,7 @@ export type ListRetrospectivesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Retrospective>;
+    data: Array<Retrospective> | null;
     pagination: ResponsePagination;
 };
 
@@ -1736,7 +1736,7 @@ export type ListSystemAnalysisComponentsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemAnalysisComponent>;
+    data: Array<SystemAnalysisComponent> | null;
     pagination: ResponsePagination;
 };
 
@@ -1745,7 +1745,7 @@ export type ListSystemAnalysisRelationshipsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemAnalysisRelationship>;
+    data: Array<SystemAnalysisRelationship> | null;
     pagination: ResponsePagination;
 };
 
@@ -1754,7 +1754,7 @@ export type ListSystemComponentKindsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemComponentKind>;
+    data: Array<SystemComponentKind> | null;
     pagination: ResponsePagination;
 };
 
@@ -1763,7 +1763,7 @@ export type ListSystemComponentRelationshipsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemComponentRelationship>;
+    data: Array<SystemComponentRelationship> | null;
     pagination: ResponsePagination;
 };
 
@@ -1772,7 +1772,7 @@ export type ListSystemComponentsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemComponent>;
+    data: Array<SystemComponent> | null;
     pagination: ResponsePagination;
 };
 
@@ -1781,7 +1781,7 @@ export type ListTasksResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Task>;
+    data: Array<Task> | null;
     pagination: ResponsePagination;
 };
 
@@ -1790,7 +1790,7 @@ export type ListTeamMembershipsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<TeamMembership>;
+    data: Array<TeamMembership> | null;
     pagination: ResponsePagination;
 };
 
@@ -1799,7 +1799,7 @@ export type ListTeamsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Team>;
+    data: Array<Team> | null;
     pagination: ResponsePagination;
 };
 
@@ -1808,7 +1808,7 @@ export type ListUsersResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<User>;
+    data: Array<User> | null;
     pagination: ResponsePagination;
 };
 
@@ -1817,7 +1817,7 @@ export type ListWatchedOncallRostersResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster>;
+    data: Array<OncallRoster> | null;
 };
 
 export type LoadDocumentResponseBody = {
@@ -1830,8 +1830,8 @@ export type LoadDocumentResponseBody = {
 
 export type MeetingAttendees = {
     private: boolean;
-    teams: Array<string>;
-    users: Array<string>;
+    teams: Array<string> | null;
+    users: Array<string> | null;
 };
 
 export type MeetingSchedule = {
@@ -1881,14 +1881,14 @@ export type OncallRoster = {
 export type OncallRosterAttributes = {
     handoverTemplateId: string;
     name: string;
-    schedules: Array<OncallSchedule>;
+    schedules: Array<OncallSchedule> | null;
     slug: string;
 };
 
 export type OncallRosterMetrics = {
     backlogBurnRate: number;
     handoverCompletion: number;
-    shiftMetrics: Array<OncallShiftMetrics>;
+    shiftMetrics: Array<OncallShiftMetrics> | null;
 };
 
 export type OncallSchedule = {
@@ -1898,7 +1898,7 @@ export type OncallSchedule = {
 
 export type OncallScheduleAttributes = {
     description: string;
-    participants: Array<OncallScheduleParticipant>;
+    participants: Array<OncallScheduleParticipant> | null;
     roster: OncallRoster;
     timezone: string;
 };
@@ -1932,8 +1932,8 @@ export type OncallShiftHandover = {
 };
 
 export type OncallShiftHandoverAttributes = {
-    content: Array<OncallShiftHandoverSection>;
-    pinnedAnnotations: Array<EventAnnotation>;
+    content: Array<OncallShiftHandoverSection> | null;
+    pinnedAnnotations: Array<EventAnnotation> | null;
     sentAt: string;
     shiftId: string;
 };
@@ -1950,7 +1950,7 @@ export type OncallShiftHandoverTemplate = {
 };
 
 export type OncallShiftHandoverTemplateAttributes = {
-    sections: Array<OncallShiftHandoverSection>;
+    sections: Array<OncallShiftHandoverSection> | null;
 };
 
 export type OncallShiftMetrics = {
@@ -2013,7 +2013,7 @@ export type RemoveWatchedOncallRosterResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster>;
+    data: Array<OncallRoster> | null;
 };
 
 export type ResponsePagination = {
@@ -2029,7 +2029,7 @@ export type Retrospective = {
 
 export type RetrospectiveAttributes = {
     documentId: string;
-    reportSections: Array<RetrospectiveReportSection>;
+    reportSections: Array<RetrospectiveReportSection> | null;
     state: 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
     systemAnalysisId?: string;
     type: 'simple' | 'full';
@@ -2042,7 +2042,7 @@ export type RetrospectiveComment = {
 
 export type RetrospectiveCommentAttributes = {
     content: string;
-    replies: Array<RetrospectiveComment>;
+    replies: Array<RetrospectiveComment> | null;
     user: User;
 };
 
@@ -2110,8 +2110,8 @@ export type SystemAnalysis = {
 };
 
 export type SystemAnalysisAttributes = {
-    components: Array<SystemAnalysisComponent>;
-    relationships: Array<SystemAnalysisRelationship>;
+    components: Array<SystemAnalysisComponent> | null;
+    relationships: Array<SystemAnalysisRelationship> | null;
 };
 
 export type SystemAnalysisComponent = {
@@ -2147,15 +2147,15 @@ export type SystemComponent = {
 };
 
 export type SystemComponentAttributes = {
-    constraints: Array<SystemComponentConstraint>;
-    controls: Array<SystemComponentControl>;
+    constraints: Array<SystemComponentConstraint> | null;
+    controls: Array<SystemComponentControl> | null;
     description: string;
     kindId: string;
     name: string;
     properties: {
         [key: string]: unknown;
     };
-    signals: Array<SystemComponentSignal>;
+    signals: Array<SystemComponentSignal> | null;
 };
 
 export type SystemComponentConstraint = {
@@ -2593,7 +2593,7 @@ export type UpdateOncallShiftHandoverResponseBody = {
 };
 
 export type UpdateOncallShiftHandoverTemplateRequestAttributes = {
-    sections: Array<OncallShiftHandoverSection>;
+    sections: Array<OncallShiftHandoverSection> | null;
 };
 
 export type UpdateOncallShiftHandoverTemplateRequestBody = {
@@ -2924,11 +2924,11 @@ export type UserNotificationAttributes = {
 };
 
 export type UserOncallInformation = {
-    activeShifts: Array<OncallShift>;
-    pastShifts: Array<OncallShift>;
-    rosters: Array<OncallRoster>;
-    upcomingShifts: Array<OncallShift>;
-    watchingRosters: Array<OncallRoster>;
+    activeShifts: Array<OncallShift> | null;
+    pastShifts: Array<OncallShift> | null;
+    rosters: Array<OncallRoster> | null;
+    upcomingShifts: Array<OncallShift> | null;
+    watchingRosters: Array<OncallRoster> | null;
 };
 
 export type VideoConference = {
@@ -6288,53 +6288,6 @@ export type ListAvailableIntegrationsResponses = {
 
 export type ListAvailableIntegrationsResponse = ListAvailableIntegrationsResponses[keyof ListAvailableIntegrationsResponses];
 
-export type ConfigureIntegrationData = {
-    body: ConfigureIntegrationRequestBody;
-    path: {
-        name: string;
-    };
-    query?: never;
-    url: '/integrations/{name}';
-};
-
-export type ConfigureIntegrationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ConfigureIntegrationError = ConfigureIntegrationErrors[keyof ConfigureIntegrationErrors];
-
-export type ConfigureIntegrationResponses = {
-    /**
-     * OK
-     */
-    200: ConfigureIntegrationResponseBody;
-};
-
-export type ConfigureIntegrationResponse = ConfigureIntegrationResponses[keyof ConfigureIntegrationResponses];
-
 export type ListConfiguredIntegrationsData = {
     body?: never;
     path?: never;
@@ -6619,6 +6572,53 @@ export type StartIntegrationOauthFlowResponses = {
 };
 
 export type StartIntegrationOauthFlowResponse = StartIntegrationOauthFlowResponses[keyof StartIntegrationOauthFlowResponses];
+
+export type ConfigureIntegrationData = {
+    body: ConfigureIntegrationRequestBody;
+    path: {
+        name: string;
+    };
+    query?: never;
+    url: '/integrations/{name}';
+};
+
+export type ConfigureIntegrationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ConfigureIntegrationError = ConfigureIntegrationErrors[keyof ConfigureIntegrationErrors];
+
+export type ConfigureIntegrationResponses = {
+    /**
+     * OK
+     */
+    200: ConfigureIntegrationResponseBody;
+};
+
+export type ConfigureIntegrationResponse = ConfigureIntegrationResponses[keyof ConfigureIntegrationResponses];
 
 export type ListMeetingSchedulesData = {
     body?: never;

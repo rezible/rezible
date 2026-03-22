@@ -1750,23 +1750,6 @@ export const listAvailableIntegrationsInfiniteOptions = (options?: Options<ListA
     queryKey: listAvailableIntegrationsInfiniteQueryKey(options)
 });
 
-/**
- * Create an Integration
- */
-export const configureIntegrationMutation = (options?: Partial<Options<ConfigureIntegrationData>>): MutationOptions<ConfigureIntegrationResponse, ConfigureIntegrationError, Options<ConfigureIntegrationData>> => {
-    const mutationOptions: MutationOptions<ConfigureIntegrationResponse, ConfigureIntegrationError, Options<ConfigureIntegrationData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await configureIntegration({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const listConfiguredIntegrationsQueryKey = (options?: Options<ListConfiguredIntegrationsData>) => createQueryKey('listConfiguredIntegrations', options);
 
 /**
@@ -1888,6 +1871,23 @@ export const startIntegrationOauthFlowMutation = (options?: Partial<Options<Star
     const mutationOptions: MutationOptions<StartIntegrationOauthFlowResponse, StartIntegrationOauthFlowError, Options<StartIntegrationOauthFlowData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await startIntegrationOauthFlow({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Create an Integration
+ */
+export const configureIntegrationMutation = (options?: Partial<Options<ConfigureIntegrationData>>): MutationOptions<ConfigureIntegrationResponse, ConfigureIntegrationError, Options<ConfigureIntegrationData>> => {
+    const mutationOptions: MutationOptions<ConfigureIntegrationResponse, ConfigureIntegrationError, Options<ConfigureIntegrationData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await configureIntegration({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

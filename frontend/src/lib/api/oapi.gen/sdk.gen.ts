@@ -87,11 +87,6 @@ export const getCurrentAuthSession = <ThrowOnError extends boolean = false>(opti
  * Complete an Auth Session flow
  */
 export const completeAuthSessionFlow = <ThrowOnError extends boolean = false>(options: Options<CompleteAuthSessionFlowData, ThrowOnError>) => (options.client ?? client).post<CompleteAuthSessionFlowResponses, CompleteAuthSessionFlowErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'rez_access_token',
-            type: 'apiKey'
-        }, { scheme: 'bearer', type: 'http' }],
     url: '/auth_session',
     ...options,
     headers: {
@@ -1025,23 +1020,6 @@ export const listAvailableIntegrations = <ThrowOnError extends boolean = false>(
 });
 
 /**
- * Create an Integration
- */
-export const configureIntegration = <ThrowOnError extends boolean = false>(options: Options<ConfigureIntegrationData, ThrowOnError>) => (options.client ?? client).post<ConfigureIntegrationResponses, ConfigureIntegrationErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'rez_access_token',
-            type: 'apiKey'
-        }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/{name}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
  * List Integrations
  */
 export const listConfiguredIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListConfiguredIntegrationsData, ThrowOnError>) => (options?.client ?? client).get<ListConfiguredIntegrationsResponses, ListConfiguredIntegrationsErrors, ThrowOnError>({
@@ -1124,6 +1102,23 @@ export const startIntegrationOauthFlow = <ThrowOnError extends boolean = false>(
             type: 'apiKey'
         }, { scheme: 'bearer', type: 'http' }],
     url: '/integrations/configured/{name}/start_oauth_flow',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Create an Integration
+ */
+export const configureIntegration = <ThrowOnError extends boolean = false>(options: Options<ConfigureIntegrationData, ThrowOnError>) => (options.client ?? client).post<ConfigureIntegrationResponses, ConfigureIntegrationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/{name}',
     ...options,
     headers: {
         'Content-Type': 'application/json',

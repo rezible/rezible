@@ -1181,74 +1181,6 @@ func (_c *MockUserService_GetById_Call) RunAndReturn(run func(context1 context.C
 	return _c
 }
 
-// GetUserByAuthProviderId provides a mock function for the type MockUserService
-func (_mock *MockUserService) GetUserByAuthProviderId(context1 context.Context, s string) (*ent.User, error) {
-	ret := _mock.Called(context1, s)
-
-	if len(ret) == 0 {
-		panic("no return value specified for GetUserByAuthProviderId")
-	}
-
-	var r0 *ent.User
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*ent.User, error)); ok {
-		return returnFunc(context1, s)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *ent.User); ok {
-		r0 = returnFunc(context1, s)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*ent.User)
-		}
-	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
-		r1 = returnFunc(context1, s)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
-}
-
-// MockUserService_GetUserByAuthProviderId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetUserByAuthProviderId'
-type MockUserService_GetUserByAuthProviderId_Call struct {
-	*mock.Call
-}
-
-// GetUserByAuthProviderId is a helper method to define mock.On call
-//   - context1 context.Context
-//   - s string
-func (_e *MockUserService_Expecter) GetUserByAuthProviderId(context1 interface{}, s interface{}) *MockUserService_GetUserByAuthProviderId_Call {
-	return &MockUserService_GetUserByAuthProviderId_Call{Call: _e.mock.On("GetUserByAuthProviderId", context1, s)}
-}
-
-func (_c *MockUserService_GetUserByAuthProviderId_Call) Run(run func(context1 context.Context, s string)) *MockUserService_GetUserByAuthProviderId_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 string
-		if args[1] != nil {
-			arg1 = args[1].(string)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockUserService_GetUserByAuthProviderId_Call) Return(user *ent.User, err error) *MockUserService_GetUserByAuthProviderId_Call {
-	_c.Call.Return(user, err)
-	return _c
-}
-
-func (_c *MockUserService_GetUserByAuthProviderId_Call) RunAndReturn(run func(context1 context.Context, s string) (*ent.User, error)) *MockUserService_GetUserByAuthProviderId_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // ListUsers provides a mock function for the type MockUserService
 func (_mock *MockUserService) ListUsers(context1 context.Context, v rez.ListUsersParams) ([]*ent.User, error) {
 	ret := _mock.Called(context1, v)
@@ -1313,6 +1245,74 @@ func (_c *MockUserService_ListUsers_Call) Return(users []*ent.User, err error) *
 }
 
 func (_c *MockUserService_ListUsers_Call) RunAndReturn(run func(context1 context.Context, v rez.ListUsersParams) ([]*ent.User, error)) *MockUserService_ListUsers_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// LookupUserByAuthProviderId provides a mock function for the type MockUserService
+func (_mock *MockUserService) LookupUserByAuthProviderId(context1 context.Context, s string) (*ent.User, error) {
+	ret := _mock.Called(context1, s)
+
+	if len(ret) == 0 {
+		panic("no return value specified for LookupUserByAuthProviderId")
+	}
+
+	var r0 *ent.User
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) (*ent.User, error)); ok {
+		return returnFunc(context1, s)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, string) *ent.User); ok {
+		r0 = returnFunc(context1, s)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.User)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = returnFunc(context1, s)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockUserService_LookupUserByAuthProviderId_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'LookupUserByAuthProviderId'
+type MockUserService_LookupUserByAuthProviderId_Call struct {
+	*mock.Call
+}
+
+// LookupUserByAuthProviderId is a helper method to define mock.On call
+//   - context1 context.Context
+//   - s string
+func (_e *MockUserService_Expecter) LookupUserByAuthProviderId(context1 interface{}, s interface{}) *MockUserService_LookupUserByAuthProviderId_Call {
+	return &MockUserService_LookupUserByAuthProviderId_Call{Call: _e.mock.On("LookupUserByAuthProviderId", context1, s)}
+}
+
+func (_c *MockUserService_LookupUserByAuthProviderId_Call) Run(run func(context1 context.Context, s string)) *MockUserService_LookupUserByAuthProviderId_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 string
+		if args[1] != nil {
+			arg1 = args[1].(string)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockUserService_LookupUserByAuthProviderId_Call) Return(user *ent.User, err error) *MockUserService_LookupUserByAuthProviderId_Call {
+	_c.Call.Return(user, err)
+	return _c
+}
+
+func (_c *MockUserService_LookupUserByAuthProviderId_Call) RunAndReturn(run func(context1 context.Context, s string) (*ent.User, error)) *MockUserService_LookupUserByAuthProviderId_Call {
 	_c.Call.Return(run)
 	return _c
 }
