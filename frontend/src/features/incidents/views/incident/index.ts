@@ -1,2 +1,2 @@
 export { default } from "./IncidentView.svelte";
-export { useIncidentViewController } from "./controller.svelte";
+export { useIncidentView } from "./controller.svelte";

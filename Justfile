@@ -18,7 +18,6 @@ frontend_dist_dir := "./backend/internal/http/frontend-dist"
     mkdir -p "{{ frontend_dist_dir }}" && echo "<p>this will be replaced by the frontend build</p>" > "{{ frontend_dist_dir }}/index.html"
     just install-dependencies
     just codegen
-    just localias-reload
     just setup-db
 
 @install-dependencies:
@@ -46,9 +45,6 @@ frontend_dist_dir := "./backend/internal/http/frontend-dist"
 
 @run-documents-server *ARGS:
     cd documents-server && bun run {{ARGS}}
-
-@localias-reload:
-    localias reload -c scripts/localias.yaml
 
 @run-docker-compose *CMD:
     docker compose \

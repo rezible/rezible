@@ -3,7 +3,6 @@
 	import { ElementSize } from "runed";
 	import type { Snippet } from "svelte";
 
-
 	type Props = {
 		title: string;
 		containerRect: DOMRect;

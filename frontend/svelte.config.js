@@ -22,6 +22,7 @@ const config = {
 			$lib: path.resolve("./src/lib"),
 			$components: path.resolve("./src/components"),
 			$features: path.resolve("./src/features"),
+			$params: path.resolve("./src/params"),
 		},
 	},
 };

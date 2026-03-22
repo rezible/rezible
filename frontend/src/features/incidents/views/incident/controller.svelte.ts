@@ -1,28 +1,29 @@
-import { createRetrospectiveMutation, getIncidentOptions, getRetrospectiveOptions, type CreateRetrospectiveResponseBody } from "$lib/api";
-import type { Getter } from "$src/lib/utils.svelte";
-import type { IncidentViewRouteParam } from "$src/params/incidentView";
+import { getIncidentOptions, getRetrospectiveOptions } from "$lib/api";
+import type { Getter } from "$lib/utils.svelte";
+import type { IncidentViewRouteParam } from "$params/incidentView";
 import { getLocalTimeZone } from "@internationalized/date";
-import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
+import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
-import { RetrospectiveCollaborationState } from "$features/incidents/lib/collaborationState.svelte";
+
+export type IncidentViewParams = {
+	slug: string;
+	routeParam: IncidentViewRouteParam;
+}
 
 export class IncidentViewController {
 	queryClient = useQueryClient();
 
-	incidentSlug = $state<string>(null!);
-	viewRouteParam = $state<IncidentViewRouteParam>(null!);
+	slug = $state<string>(null!);
+	routeParam = $state<IncidentViewRouteParam>(null!);
 
-	constructor(slugFn: Getter<string>, viewFn: Getter<IncidentViewRouteParam>) {
-		this.incidentSlug = slugFn();
-		watch(slugFn, slug => {this.incidentSlug = slug});
-		watch(viewFn, view => {this.viewRouteParam = view});
-
-		watch(() => this.retroNeedsCreating, create => {
-			if (create) this.maybeCreateRetrospective();
+	constructor(paramsFn: Getter<IncidentViewParams>) {
+		watch(paramsFn, ({slug, routeParam}) => {
+			this.slug = slug;
+			this.routeParam = routeParam;
 		});
 	}
 
-	private incidentQueryOptions = $derived(getIncidentOptions({ path: { id: this.incidentSlug } }));
+	private incidentQueryOptions = $derived(getIncidentOptions({ path: { id: this.slug } }));
 	private incidentQuery = createQuery(() => this.incidentQueryOptions);
 	incident = $derived(this.incidentQuery.data?.data);
 	incidentId = $derived(this.incident?.id ?? "");
@@ -40,38 +41,8 @@ export class IncidentViewController {
 	retrospectiveId = $derived(this.retrospective?.id);
 	documentId = $derived(this.retrospective?.attributes.documentId);
 	systemAnalysisId = $derived(this.retrospective?.attributes.systemAnalysisId);
-
-	collaboration = new RetrospectiveCollaborationState(() => (this.documentId));
-
-	onRetrospectiveCreated(resp: CreateRetrospectiveResponseBody) {
-		const id = resp.data.id;
-		this.queryClient.setQueryData(getRetrospectiveOptions({ path: { id } }).queryKey, resp);
-		this.queryClient.setQueryData(this.incidentQueryOptions.queryKey, body => {
-			if (!body) return;
-			body.data.attributes.retrospectiveId = id;
-			return body;
-		});
-		this.queryClient.invalidateQueries(this.incidentQueryOptions);
-	}
-
-	retroNeedsCreating = $derived(!this.incRetroId && this.incidentQuery.isSuccess);
-	private createRetrospectiveMut = createMutation(() => ({
-		...createRetrospectiveMutation(),
-		onSuccess: resp => {this.onRetrospectiveCreated(resp)},
-	}));
-	private maybeCreateRetrospective() {
-		// TODO: allow configuring retrospective type
-		this.createRetrospectiveMut.mutate({
-			body: {
-				attributes: {
-					incidentId: this.incidentId,
-					systemAnalysis: true,
-				}
-			}
-		});
-	}
 }
 
 const ctx = new Context<IncidentViewController>("IncidentViewController");
-export const initIncidentViewController = (idFn: Getter<string>, viewFn: Getter<IncidentViewRouteParam>) => ctx.set(new IncidentViewController(idFn, viewFn));
-export const useIncidentViewController = () => ctx.get();
+export const initIncidentViewController = (paramsFn: Getter<IncidentViewParams>) => ctx.set(new IncidentViewController(paramsFn));
+export const useIncidentView = () => ctx.get();

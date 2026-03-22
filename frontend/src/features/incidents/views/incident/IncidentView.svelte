@@ -1,32 +1,36 @@
 <script lang="ts">
 	import { appShell, type PageBreadcrumb } from "$features/app";
 	
+	import type { IncidentViewRouteParam } from "$params/incidentView";
+	import { initIncidentViewController, type IncidentViewParams } from "./controller.svelte";
+	import { initIncidentCollaborationController } from "$features/incidents/lib/collaboration.svelte";
+
+	import ContextSidebar from "$features/incidents/components/context-sidebar/ContextSidebar.svelte";
 	import PageActions from "./PageActions.svelte";
-	import IncidentOverview from "./incident-overview/IncidentOverview.svelte";
-	import IncidentAnalysis from "./incident-analysis/IncidentAnalysis.svelte";
-	import IncidentReport from "./incident-report/IncidentReport.svelte";
-	import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
+	import IncidentOverview from "./overview/IncidentOverview.svelte";
+	import IncidentAnalysis from "./analysis/IncidentAnalysis.svelte";
+	import IncidentReport from "./report/IncidentReport.svelte";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import IncidentDetailsBar from "./IncidentDetailsBar.svelte";
-	import { initIncidentViewController } from "./controller.svelte";
-	import type { IncidentViewRouteParam } from "$src/params/incidentView";
 
-	const { slug, viewParam }: { slug: string, viewParam: IncidentViewRouteParam } = $props();
+	const { slug, routeParam }: { slug: string, routeParam: IncidentViewRouteParam } = $props();
 
-	const view = initIncidentViewController(() => slug, () => viewParam);
+	const params = $derived<IncidentViewParams>({ slug, routeParam });
+	const view = initIncidentViewController(() => params);
+	initIncidentCollaborationController();
 
-	const path = $derived(`/incidents/${view.incidentSlug}`);
+	const path = $derived(`/incidents/${slug}`);
 	const incidentBreadcrumb = $derived<PageBreadcrumb>({
 		label: view.incident?.attributes.title,
 		href: path,
 	});
 
 	const retroBreadcrumb = $derived<PageBreadcrumb>({
-		label: viewParam === "analysis" ? "System Analysis" : "Report",
-		href: `${path}/${viewParam}`,
+		label: routeParam === "analysis" ? "System Analysis" : "Report",
+		href: `${path}/analysis`,
 	});
 
-	const isIncidentView = $derived(viewParam === undefined);
+	const isIncidentView = $derived(routeParam === undefined);
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Incidents", href: "/incidents" }, 
 		incidentBreadcrumb,

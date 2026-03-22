@@ -8,9 +8,7 @@
 	} from "$lib/api";
 	import { useQueryClient, createMutation } from "@tanstack/svelte-query";
 
-	type Props = {
-		debrief: IncidentDebrief;
-	};
+	type Props = { debrief: IncidentDebrief };
 
 	let { debrief }: Props = $props();
 
