@@ -20,6 +20,10 @@ import (
 	"github.com/rezible/rezible/ent/entpgx"
 )
 
+type Config struct {
+	Url string `koanf:"connection_url"`
+}
+
 type DatabaseClient struct {
 	pool   *pgxpool.Pool
 	driver dialect.Driver
@@ -67,10 +71,14 @@ func openPgxPool(ctx context.Context) (*pgxpool.Pool, error) {
 }
 
 func GetPgxConfig() (*pgx.ConnConfig, error) {
-	if connStr := rez.Config.GetString("db_url"); connStr != "" {
-		return pgx.ParseConfig(connStr)
+	if connUrl := rez.Config.GetString("db_url"); connUrl != "" {
+		return pgx.ParseConfig(connUrl)
 	}
-	return nil, fmt.Errorf("DB_URL not set")
+	var cfg Config
+	if cfgErr := rez.Config.Unmarshal("postgres", &cfg); cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
+	}
+	return pgx.ParseConfig(cfg.Url)
 }
 
 func (dbc *DatabaseClient) Client() *ent.Client {

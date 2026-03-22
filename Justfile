@@ -2,20 +2,20 @@ set shell := ["bash", "-uc"]
 set dotenv-filename := ".env.dev"
 set dotenv-load
 
-dev_db_database := "rezible"
-db_url := "postgresql://rezible:foobar1@localhost:7010/"
-dev_db_url := db_url+dev_db_database+"?sslmode=disable"
-test_db_url := db_url+"?sslmode=disable"
+set export
+
+DB_URL_BASE := "postgresql://rezible:foobar1@localhost:7010/"
+DEV_DB_DATABASE := "rezible"
+DB_CONN_QUERYOPTS := "?sslmode=disable"
+DB_URL := DB_URL_BASE + DEV_DB_DATABASE + DB_CONN_QUERYOPTS
+TEST_DB_URL := DB_URL_BASE + DB_CONN_QUERYOPTS
 
 _default:
   @just --list
 
 # [group('Setup')]
 
-frontend_dist_dir := "./backend/internal/http/frontend-dist"
-
 @setup:
-    mkdir -p "{{ frontend_dist_dir }}" && echo "<p>this will be replaced by the frontend build</p>" > "{{ frontend_dist_dir }}/index.html"
     just install-dependencies
     just codegen
     just setup-db
@@ -34,10 +34,20 @@ frontend_dist_dir := "./backend/internal/http/frontend-dist"
     cd frontend && bun run format
 
 @run-backend *ARGS:
-    cd backend && \
-        DEBUG_MODE=true \
-        DB_URL="{{dev_db_url}}" \
-        go run ./cmd/rezible {{ARGS}}
+    cd backend && go run ./cmd/rezible {{ARGS}}
+
+default_dockerfile := "Dockerfile"
+@build-backend-docker dockerfile=default_dockerfile:
+    mkdir -p ./scripts/certs && cat $(localias debug cert) > ./scripts/certs/localias-ca.crt
+    docker build -t rezible-backend -f backend/{{dockerfile}} .
+
+@run-backend-docker:
+    docker run \
+      --network host \
+      --env-file ./.env \
+      --env-file ./.env.dev \
+      -e DB_URL \
+      localhost/rezible-backend:latest
 
 @run-frontend *ARGS:
     cd frontend && \
@@ -61,8 +71,8 @@ frontend_dist_dir := "./backend/internal/http/frontend-dist"
 
 @test-backend: run-dev-services
     cd backend && \
-        DB_URL='{{ test_db_url }}' \
-        go test $(go list ./... | grep -v /ent/)
+      DB_URL="${TEST_DB_URL}" \
+      go test $(go list ./... | grep -v /ent/)
 
 @run-backend-datasync:
     just run-backend sync-integrations
@@ -126,7 +136,7 @@ migrations_dir := "backend/migrations"
     cd backend && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
 
 @run-migrations:
-    migrate -source "file://{{migrations_dir}}" -database "{{dev_db_url}}" up
+    migrate -source "file://{{migrations_dir}}" -database "${DB_URL}" up
 
 @run-psql *ARGS:
     just run-docker-compose exec -it postgres psql -U rezible {{ARGS}}

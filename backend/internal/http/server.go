@@ -18,14 +18,30 @@ import (
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
-type Server struct {
-	router *chi.Mux
+type Config struct {
+	Host         string `koanf:"host"`
+	Port         string `koanf:"port"`
+	WebhooksPath string `koanf:"webhooks_path"`
+}
 
+type Server struct {
+	cfg        Config
+	router     *chi.Mux
 	httpServer *http.Server
 }
 
-func NewServer(auth rez.AuthService, v1h oapiv1.Handler) *Server {
-	var s Server
+func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
+	s := Server{
+		cfg: Config{
+			Host:         "0.0.0.0",
+			Port:         "7002",
+			WebhooksPath: "/webhooks",
+		},
+	}
+
+	if cfgErr := rez.Config.Unmarshal("server.http", &s.cfg); cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
+	}
 
 	s.router = chi.NewRouter()
 	s.router.Use(middleware.Logger)
@@ -33,7 +49,14 @@ func NewServer(auth rez.AuthService, v1h oapiv1.Handler) *Server {
 
 	s.router.Mount(rez.Config.ApiPath(), s.makeApiHandler(auth, v1h))
 
-	return &s
+	return &s, nil
+}
+
+func ensureSlashPrefix(s string) string {
+	if !strings.HasPrefix(s, "/") {
+		return "/" + s
+	}
+	return s
 }
 
 func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
@@ -41,7 +64,7 @@ func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.H
 
 	apiRouter.Get("/health", s.healthCheckHandler)
 	apiRouter.Mount(oapiv1.VersionPrefix, s.makeApiV1Handler(auth, v1h))
-	apiRouter.Mount(rez.Config.WebhooksPath(), s.makeWebhooksHandler())
+	apiRouter.Mount(ensureSlashPrefix(s.cfg.WebhooksPath), s.makeWebhooksHandler())
 
 	return apiRouter
 }
@@ -53,7 +76,7 @@ func (s *Server) makeApiV1Handler(auth rez.AuthService, v1h oapiv1.Handler) http
 func (s *Server) makeWebhooksHandler() http.Handler {
 	r := chi.NewMux()
 	for route, wh := range integrations.GetWebhookHandlers() {
-		r.Mount("/"+strings.TrimPrefix(route, "/"), wh)
+		r.Mount(ensureSlashPrefix(route), wh)
 	}
 	return r
 }
@@ -63,9 +86,8 @@ func (s *Server) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) Start(baseCtx context.Context) error {
-	addr := net.JoinHostPort(rez.Config.ListenHost(), rez.Config.ListenPort())
 	s.httpServer = &http.Server{
-		Addr:    addr,
+		Addr:    net.JoinHostPort(s.cfg.Host, s.cfg.Port),
 		Handler: s.router,
 		BaseContext: func(l net.Listener) context.Context {
 			return baseCtx

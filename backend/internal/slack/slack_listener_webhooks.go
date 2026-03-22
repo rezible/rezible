@@ -15,8 +15,6 @@ import (
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
-
-	rez "github.com/rezible/rezible"
 )
 
 type WebhookListener struct {
@@ -24,15 +22,14 @@ type WebhookListener struct {
 	signingSecret string
 }
 
-func newWebhookListener(handler *eventHandler) (*WebhookListener, error) {
-	signingSecret := rez.Config.GetString("slack.webhook_signing_secret")
-	if signingSecret == "" {
-		return nil, fmt.Errorf("slack.webhook_signing_secret not set")
+func (i *integration) newWebhookListener(handler *eventHandler) (*WebhookListener, error) {
+	if i.cfg.Webhooks.SigningSecret == "" {
+		return nil, fmt.Errorf("slack.webhooks.signing_secret not set")
 	}
 
 	return &WebhookListener{
 		handler:       handler,
-		signingSecret: signingSecret,
+		signingSecret: i.cfg.Webhooks.SigningSecret,
 	}, nil
 }
 

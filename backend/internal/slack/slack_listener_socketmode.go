@@ -19,39 +19,12 @@ type SocketModeListener struct {
 	stopFn  func() error
 }
 
-type socketModeListenerConfig struct {
-	AppToken string
-	BotToken string
-}
-
-func getSocketModeListenerConfig() (*socketModeListenerConfig, error) {
+func (i *integration) newSocketModeEventListener(handler *eventHandler) (*SocketModeListener, error) {
 	if !rez.Config.SingleTenantMode() {
 		return nil, errors.New("can't use socket mode in multi-tenant mode")
 	}
-
-	appToken := rez.Config.GetString("slack.app_token")
-	if appToken == "" {
-		return nil, errors.New("slack.app_token not set")
-	}
-
-	botToken := rez.Config.GetString("slack.bot_token")
-	if botToken == "" {
-		return nil, errors.New("slack.bot_token not set")
-	}
-
-	return &socketModeListenerConfig{
-		AppToken: appToken,
-		BotToken: botToken,
-	}, nil
-}
-
-func newSocketModeEventListener(handler *eventHandler) (*SocketModeListener, error) {
-	cfg, cfgErr := getSocketModeListenerConfig()
-	if cfgErr != nil {
-		return nil, cfgErr
-	}
 	return &SocketModeListener{
-		client:  socketmode.New(slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken))),
+		client:  socketmode.New(slack.New(i.cfg.BotToken, slack.OptionAppLevelToken(i.cfg.AppToken))),
 		handler: handler,
 		stopFn:  func() error { return nil },
 	}, nil

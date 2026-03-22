@@ -31,20 +31,9 @@ type ConfigLoader interface {
 	Unmarshal(key string, v any) error
 
 	GetString(key string) string
-	GetStringOr(key string, orDefault string) string
-	GetStrings(key string) []string
-	GetBool(key string) bool
-	GetBoolOr(key string, orDefault bool) bool
-	GetDuration(key string) time.Duration
-	GetDurationOr(key string, orDefault time.Duration) time.Duration
 
 	DebugMode() bool
-
-	ListenHost() string
-	ListenPort() string
-
 	ApiPath() string
-	WebhooksPath() string
 	AppUrl() string
 
 	SingleTenantMode() bool

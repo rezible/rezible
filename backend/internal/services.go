@@ -84,7 +84,10 @@ func (s *Server) setup(ctx context.Context) error {
 		s.listeners[name] = el
 	}
 
-	srv := http.NewServer(services.Auth, apiv1.NewHandler(services, s.database.Client()))
+	srv, srvErr := http.NewServer(services.Auth, apiv1.NewHandler(services, s.database.Client()))
+	if srvErr != nil {
+		return fmt.Errorf("http.NewServer: %w", srvErr)
+	}
 	s.listeners["http_server"] = srv
 
 	return nil

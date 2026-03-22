@@ -92,35 +92,8 @@ func (c *Config) DebugMode() bool {
 	return c.GetBool("debug_mode")
 }
 
-func (c *Config) DataSyncMode() bool {
-	return c.GetBool("datasync_mode")
-}
-
-func (c *Config) ServeFrontend() bool {
-	return c.GetBool("serve_frontend")
-}
-
-func (c *Config) ListenHost() string {
-	return c.GetStringOr("host", "0.0.0.0")
-}
-
-func (c *Config) ListenPort() string {
-	return c.GetStringOr("port", "7002")
-}
-
-func ensureSlashPrefix(s string) string {
-	if !strings.HasPrefix(s, "/") {
-		s = "/" + s
-	}
-	return s
-}
-
 func (c *Config) ApiPath() string {
-	return ensureSlashPrefix(c.GetStringOr("api_path", "/api"))
-}
-
-func (c *Config) WebhooksPath() string {
-	return ensureSlashPrefix(c.GetStringOr("webhooks_path", "/webhooks"))
+	return c.GetStringOr("api_path", "/api")
 }
 
 func (c *Config) AppUrl() string {

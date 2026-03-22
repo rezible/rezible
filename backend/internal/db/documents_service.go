@@ -12,9 +12,12 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type DocumentsServiceConfig struct {
+	ServerUrl string `koanf:"server_url"`
+}
+
 type DocumentsService struct {
-	serverAddress string
-	webhookSecret []byte
+	cfg DocumentsServiceConfig
 
 	db    *ent.Client
 	auth  rez.AuthService
@@ -22,13 +25,15 @@ type DocumentsService struct {
 }
 
 func NewDocumentsService(db *ent.Client, auth rez.AuthService, teams rez.TeamService) (*DocumentsService, error) {
-	serverAddress := rez.Config.GetString("documents.server_url")
-
 	svc := &DocumentsService{
-		serverAddress: serverAddress,
-		db:            db,
-		auth:          auth,
-		teams:         teams,
+		db:    db,
+		auth:  auth,
+		teams: teams,
+		cfg:   DocumentsServiceConfig{},
+	}
+
+	if cfgErr := rez.Config.Unmarshal("documents", &svc.cfg); cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 
 	return svc, nil

@@ -10,14 +10,18 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
+type AnthropicConfig struct {
+	ApiKey string `koanf:"api_key"`
+}
+
 func newClaudeLanguageModelProvider(ctx context.Context) (model.ToolCallingChatModel, error) {
-	apiKey := rez.Config.GetString("anthropic.api_key")
-	if apiKey == "" {
+	var cfg AnthropicConfig
+	if cfgErr := rez.Config.Unmarshal("anthropic", &cfg); cfgErr != nil {
 		return nil, errors.New("anthropic api key not set")
 	}
 
 	claudeCfg := &claude.Config{
-		APIKey: apiKey,
+		APIKey: cfg.ApiKey,
 	}
 	m, mErr := claude.NewChatModel(ctx, claudeCfg)
 	if mErr != nil {
