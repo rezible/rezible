@@ -6,23 +6,25 @@ type Config = {
 	name: string;
 	host: string;
 	port: number;
-
 	apiUrl: string;
 }
 
 const loadConfig = (): Config => {
 	const name = process.env.NAME ?? "document-server";
 
-	let host = process.env.HOST ?? "0.0.0.0";
+	const host = process.env.HOST ?? "0.0.0.0";
 	let port = Number.parseInt(process.env.PORT ?? "7003", 10);
 	if (port < 1024) port = 7003;
 
-	return { name, host, port };
+	const apiUrl = process.env.API_URL ?? "";
+
+	return { name, host, port, apiUrl };
 }
 
-const createServer = async (cfg: Config) => {
+const createServer = () => {
+    const cfg = loadConfig();
 	const logger = new Logger();
-    const rezProxy = new RezibleServerProxy(cfg.apiUrl, cfg.apiSecret);
+    const rezProxy = new RezibleServerProxy(cfg.apiUrl);
 	
 	const server = new Server({
 		name: cfg.name,
@@ -43,9 +45,7 @@ const createServer = async (cfg: Config) => {
 
 const runServer = async () => {
 	try {
-		const cfg = loadConfig();
-		const server = await createServer(cfg);
-		await server.listen();
+		await createServer().listen();
 	} catch (e: unknown) {
 		if (e instanceof Error) {
 			console.error("Failed to create server: %s", e.message);

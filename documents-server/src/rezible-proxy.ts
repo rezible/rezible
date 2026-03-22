@@ -8,68 +8,56 @@ import { Forbidden } from "@hocuspocus/common";
 import * as Y from "yjs";
 
 import { client } from "./lib/api/oapi.gen/client.gen";
-import { Documents, type DocumentEditorSessionAuth } from "./lib/api/oapi.gen";
+import { Documents } from "./lib/api/oapi.gen";
 
 type AuthContext = {
-	token: string;
-	sessionAuth: DocumentEditorSessionAuth;
+	
 };
 
 export class RezibleServerProxy implements Extension {
 	extensionName = "Rezible Proxy";
 
-	constructor(apiUrl: string, apiSecret: string) {
-		if (!apiUrl || !apiSecret) throw new Error("missing proxy config");
+	constructor(apiUrl: string) {
+		if (!apiUrl) throw new Error("missing proxy config");
 
-		client.setConfig({
-			baseUrl: apiUrl,
-			auth: apiSecret,
-		});
+		client.setConfig({baseUrl: apiUrl});
+	}
+
+	getUserAuth(data: any): string {
+
+		return "";
 	}
 
 	async onAuthenticate(payload: onAuthenticatePayload): Promise<AuthContext> {
 		const token = payload.token;
-		const {data: resp, error: verifyErr} = await Documents.verifyDocumentSessionAuth({
-			auth: token,
-			path: { id: payload.documentName },
-		});
-        if (verifyErr) throw new Error("Authentication Failed");
+
+		console.log(payload);
 		
-		const sessionAuth = resp.data;
-		payload.connectionConfig.readOnly = !(sessionAuth.canEdit || sessionAuth.canManage);
+		payload.connectionConfig.readOnly = true;
 
-		return {token, sessionAuth};
-	}
-
-	getAuthContext(data: {context: AuthContext}): AuthContext {
-		const ctx = data.context as AuthContext | undefined;
-		console.log("load context", ctx);
-        if (!ctx?.token) throw Forbidden;
-		return ctx;
+		return {};
 	}
 
     async onLoadDocument(data: onLoadDocumentPayload): Promise<any> {
-		const ctx = this.getAuthContext(data);
-		const res = await Documents.loadDocument({
-			auth: ctx.token,
-			path: { id: data.documentName },
-		});
-        if (res.error) throw new Error("Authentication Failed");
+		// const res = await Documents.loadDocument({
+		// 	auth: this.getUserAuth(data),
+		// 	path: { id: data.documentName },
+		// });
+        // if (res.error) throw new Error("Failed to load document");
 
-		const doc = res.data.data;
-        const state = JSON.parse(doc.attributes.content);
-        const update = new Uint8Array(state.data);
-        if (update) Y.applyUpdate(data.document, update);
+		// const doc = res.data.data;
+        // const state = JSON.parse(doc.attributes.content);
+        // const update = new Uint8Array(state.data);
+        // if (update) Y.applyUpdate(data.document, update);
 	}
 
 	async onStoreDocument(data: onChangePayload) {
-        const ctx = this.getAuthContext(data);
-        const content = Buffer.from(Y.encodeStateAsUpdate(data.document));
-		const res = await Documents.updateDocument({
-			auth: ctx.token,
-			path: { id: data.documentName },
-			body: { attributes: { content }}
-		})
-		if (res.error) console.log("failed to update document");
+        // const content = Buffer.from(Y.encodeStateAsUpdate(data.document));
+		// const res = await Documents.updateDocument({
+		// 	auth: this.getUserAuth(data),
+		// 	path: { id: data.documentName },
+		// 	body: { attributes: { content }}
+		// })
+		// if (res.error) console.log("failed to update document");
 	}
 }
