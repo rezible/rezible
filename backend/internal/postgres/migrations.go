@@ -32,7 +32,6 @@ func GenerateEntMigrations(ctx context.Context, name string) error {
 	if err != nil {
 		return fmt.Errorf("failed creating atlas migration directory: %v", err)
 	}
-	// Migrate diff options.
 	opts := []schema.MigrateOption{
 		schema.WithDir(dir),
 		schema.WithMigrationMode(schema.ModeReplay),

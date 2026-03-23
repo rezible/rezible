@@ -9,12 +9,13 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
+	"github.com/rotisserie/eris"
+	"github.com/texm/prosemirror-go"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/jobs"
-	"github.com/rotisserie/eris"
-	"github.com/texm/prosemirror-go"
 )
 
 var (
@@ -28,28 +29,29 @@ var (
 	ErrNoConfiguredIntegrations = eris.New("no configured integrations")
 )
 
+var Config ConfigLoader
+
 type ConfigLoader interface {
+	Exists(key string) bool
+	GetString(key string, fallback string) string
 	Unmarshal(key string, v any) error
 
-	GetString(key string) string
-
 	DebugMode() bool
+	SingleTenantMode() bool
+
 	ApiPath() string
 	AppUrl() string
 
-	SingleTenantMode() bool
 	AllowTenantCreation() bool
 	AllowUserCreation() bool
 }
-
-var Config ConfigLoader
 
 type EventListener interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context) error
 }
 
-type Database interface {
+type DatabaseClient interface {
 	Client() *ent.Client
 	Close()
 }

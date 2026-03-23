@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/knadh/koanf/providers/env/v2"
 	"github.com/knadh/koanf/v2"
@@ -47,63 +46,37 @@ func NewConfigLoader(ctx context.Context, opts ConfigLoaderOptions) (*Config, er
 	return &Config{k: k}, nil
 }
 
+func (c *Config) Exists(key string) bool {
+	return c.k.Exists(key)
+}
+
 func (c *Config) Unmarshal(key string, v any) error {
 	return c.k.Unmarshal(key, v)
 }
 
-func (c *Config) GetString(key string) string {
-	return c.k.String(key)
-}
-
-func (c *Config) GetStringOr(key string, orDefault string) string {
-	if c.k.Exists(key) {
+func (c *Config) GetString(key string, fallback string) string {
+	if c.Exists(key) {
 		return c.k.String(key)
 	}
-	return orDefault
-}
-
-func (c *Config) GetStrings(key string) []string {
-	return c.k.Strings(key)
-}
-
-func (c *Config) GetBool(key string) bool {
-	return c.k.Bool(key)
-}
-
-func (c *Config) GetBoolOr(key string, orDefault bool) bool {
-	if c.k.Exists(key) {
-		return c.k.Bool(key)
-	}
-	return orDefault
-}
-
-func (c *Config) GetDuration(key string) time.Duration {
-	return c.k.Duration(key)
-}
-
-func (c *Config) GetDurationOr(key string, orDefault time.Duration) time.Duration {
-	if c.k.Exists(key) {
-		return c.k.Duration(key)
-	}
-	return orDefault
+	return fallback
 }
 
 func (c *Config) DebugMode() bool {
-	return c.GetBool("debug_mode")
+	return c.k.Bool("debug_mode")
 }
 
 func (c *Config) ApiPath() string {
-	return c.GetStringOr("api_path", "/api")
+	return c.GetString("api_path", "/api")
 }
 
 func (c *Config) AppUrl() string {
-	return c.GetString("app_url")
+	return c.GetString("app_url", "")
 }
 
 // TODO: tighten these up
 
 func (c *Config) SingleTenantMode() bool {
-	return c.GetBool("single_tenant_mode")
+	return c.k.Bool("single_tenant_mode")
 }
 
 func (c *Config) AllowUserCreation() bool {
@@ -111,5 +84,5 @@ func (c *Config) AllowUserCreation() bool {
 }
 
 func (c *Config) AllowTenantCreation() bool {
-	return !c.SingleTenantMode() && !c.GetBool("disable_tenant_creation")
+	return !c.SingleTenantMode() && !c.k.Bool("disable_tenant_creation")
 }

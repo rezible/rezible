@@ -31,6 +31,7 @@ type Config struct {
 type AuthService struct {
 	orgs  rez.OrganizationService
 	users rez.UserService
+	teams rez.TeamService
 
 	cfg           Config
 	oauthConfig   oauth2.Config
@@ -40,10 +41,11 @@ type AuthService struct {
 
 var _ rez.AuthService = (*AuthService)(nil)
 
-func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthService, error) {
+func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService, teams rez.TeamService) (*AuthService, error) {
 	s := &AuthService{
 		orgs:  orgs,
 		users: users,
+		teams: teams,
 	}
 
 	var cfg Config

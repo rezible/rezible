@@ -4,22 +4,22 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/jobs"
-	"github.com/riverqueue/river/rivertype"
-	"github.com/rs/zerolog/log"
-
 	"log/slog"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	slogzerolog "github.com/samber/slog-zerolog/v2"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/rezible/rezible/ent"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivertype"
+
+	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/jobs"
 )
 
 type (
@@ -68,10 +68,10 @@ func (s *JobService) Start(ctx context.Context) error {
 }
 
 func (s *JobService) Stop(ctx context.Context) error {
-	if s.client == nil {
-		return nil
+	if s.client != nil {
+		return s.client.Stop(ctx)
 	}
-	return s.client.Stop(ctx)
+	return nil
 }
 
 func (s *JobService) Insert(ctx context.Context, args jobs.JobArgs, opts *jobs.InsertOpts) error {
@@ -87,8 +87,7 @@ func (s *JobService) Insert(ctx context.Context, args jobs.JobArgs, opts *jobs.I
 }
 
 func (s *JobService) InsertMany(ctx context.Context, params []jobs.InsertManyParams) error {
-	_, insertErr := s.client.InsertMany(ctx, params)
-	if insertErr != nil {
+	if _, insertErr := s.client.InsertMany(ctx, params); insertErr != nil {
 		return fmt.Errorf("could not insert jobs: %w", insertErr)
 	}
 	return nil
@@ -99,8 +98,7 @@ func (s *JobService) InsertTx(ctx context.Context, tx *ent.Tx, args jobs.JobArgs
 	if pgErr != nil {
 		return fmt.Errorf("not using pgx driver: %w", pgErr)
 	}
-	_, insertErr := s.client.InsertTx(ctx, pgxTx, args, opts)
-	if insertErr != nil {
+	if _, insertErr := s.client.InsertTx(ctx, pgxTx, args, opts); insertErr != nil {
 		return fmt.Errorf("could not insert job in tx: %w", insertErr)
 	}
 	return nil

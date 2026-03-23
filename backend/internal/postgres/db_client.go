@@ -2,16 +2,15 @@ package postgres
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 
+	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/rezible/rezible/ent/runtime"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
@@ -19,10 +18,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/entpgx"
 )
-
-type Config struct {
-	Url string `koanf:"connection_url"`
-}
 
 type DatabaseClient struct {
 	pool   *pgxpool.Pool
@@ -68,6 +63,10 @@ func openPgxPool(ctx context.Context) (*pgxpool.Pool, error) {
 	}
 
 	return pool, nil
+}
+
+type Config struct {
+	Url string `koanf:"connection_url"`
 }
 
 func GetPgxConfig() (*pgx.ConnConfig, error) {

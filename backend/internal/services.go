@@ -13,9 +13,9 @@ import (
 
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/internal/adk"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/db/datasync"
-	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/oidc"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
@@ -24,20 +24,20 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-type Config struct {
-	StopTimeout time.Duration `koanf:"stop_timeout"`
-}
-
 type Server struct {
 	listeners map[string]rez.EventListener
-	database  rez.Database
-	cfg       Config
+	dbClient  rez.DatabaseClient
+	cfg       ServerConfig
+}
+
+type ServerConfig struct {
+	StopTimeout time.Duration `koanf:"stop_timeout"`
 }
 
 func NewServer(ctx context.Context) (*Server, error) {
 	s := &Server{
 		listeners: make(map[string]rez.EventListener),
-		cfg: Config{
+		cfg: ServerConfig{
 			StopTimeout: 5 * time.Second,
 		},
 	}
@@ -51,7 +51,7 @@ func (s *Server) RunDataSync(ctx context.Context, args jobs.SyncIntegrationsData
 	if setupErr := s.setup(ctx); setupErr != nil {
 		return fmt.Errorf("setup: %s", setupErr)
 	}
-	return datasync.NewSyncerService(s.database.Client()).SyncIntegrationsData(access.SystemContext(ctx), args)
+	return datasync.NewSyncerService(s.dbClient.Client()).SyncIntegrationsData(access.SystemContext(ctx), args)
 }
 
 func (s *Server) RunServe(ctx context.Context) error {
@@ -84,7 +84,7 @@ func (s *Server) setup(ctx context.Context) error {
 		s.listeners[name] = el
 	}
 
-	srv, srvErr := http.NewServer(services.Auth, apiv1.NewHandler(services, s.database.Client()))
+	srv, srvErr := http.NewServer(services.Auth, apiv1.NewHandler(services, s.dbClient.Client()))
 	if srvErr != nil {
 		return fmt.Errorf("http.NewServer: %w", srvErr)
 	}
@@ -122,15 +122,15 @@ func (s *Server) stop() error {
 		}
 	}
 
-	if s.database != nil {
-		s.database.Close()
+	if s.dbClient != nil {
+		s.dbClient.Close()
 	}
 
 	return err
 }
 
 func (s *Server) makeJobService() (rez.JobsService, error) {
-	if pgDb, ok := s.database.(*postgres.DatabaseClient); ok {
+	if pgDb, ok := s.dbClient.(*postgres.DatabaseClient); ok {
 		jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
 		if jobSvcErr != nil {
 			return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
@@ -145,8 +145,8 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	if pgErr != nil {
 		return nil, fmt.Errorf("postgres.NewDatabasePoolClient: %w", pgErr)
 	}
-	s.database = pgClient
-	dbc := s.database.Client()
+	s.dbClient = pgClient
+	dbc := s.dbClient.Client()
 
 	jobSvc, jobSvcErr := s.makeJobService()
 	if jobSvcErr != nil {
@@ -170,7 +170,12 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		return nil, fmt.Errorf("postgres.NewUserService: %w", usersErr)
 	}
 
-	auth, authErr := oidc.NewAuthService(ctx, orgs, users)
+	teams, teamsErr := db.NewTeamService(dbc)
+	if teamsErr != nil {
+		return nil, fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
+	}
+
+	auth, authErr := oidc.NewAuthService(ctx, orgs, users, teams)
 	if authErr != nil {
 		return nil, fmt.Errorf("dex.NewAuthService: %w", authErr)
 	}
@@ -178,6 +183,11 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, auth)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
+	}
+
+	agents, agentsErr := adk.NewAgentService()
+	if agentsErr != nil {
+		return nil, fmt.Errorf("adk.NewAgentService: %w", agentsErr)
 	}
 
 	events, eventsErr := db.NewEventsService(dbc, users)
@@ -188,11 +198,6 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	annos, annosErr := db.NewEventAnnotationsService(dbc, events)
 	if annosErr != nil {
 		return nil, fmt.Errorf("postgres.NewEventAnnotationsService: %w", annosErr)
-	}
-
-	teams, teamsErr := db.NewTeamService(dbc)
-	if teamsErr != nil {
-		return nil, fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
 	}
 
 	_, nodesErr := prosemirror.NewNodeService()
@@ -225,12 +230,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		return nil, fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
 	}
 
-	ai, aiErr := eino.NewAiAgentService(ctx)
-	if aiErr != nil {
-		return nil, fmt.Errorf("eino.NewAiAgentService: %w", aiErr)
-	}
-
-	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, ai)
+	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, agents)
 	if debriefsErr != nil {
 		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
 	}
