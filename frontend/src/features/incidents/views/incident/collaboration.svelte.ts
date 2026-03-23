@@ -65,7 +65,7 @@ export class IncidentCollaborationController {
 		if (!id) return;
 
 		this.provider = new HocuspocusProvider({
-			url: "/ws",
+			url: "/api/documents",
 			token: "",
 			name: id,
 			onAwarenessChange: (e) => this.onAwarenessChange(e),

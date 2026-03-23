@@ -13,7 +13,6 @@ import (
 )
 
 type DocumentsServiceConfig struct {
-	ServerUrl string `koanf:"server_url"`
 }
 
 type DocumentsService struct {
