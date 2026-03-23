@@ -7,13 +7,12 @@ web:
 storage:
   type: postgres
   config:
-    host: postgres
-    port: 5432
-    database: dex_db
     user: dex
     password: foobar2
-    ssl:
-      mode: disable
+    host: postgres
+    port: 5432
+    database: dex
+    ssl: {mode: disable}
 
 oauth2:
   skipApprovalScreen: true

@@ -3,7 +3,6 @@ package testkit
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/rezible/rezible/migrations"
@@ -62,7 +61,7 @@ func (s *Suite) BeforeTest(suiteName, testName string) {
 }
 
 func (s *Suite) SetConfigOverrides(overrides map[string]any) {
-	cfg, cfgErr := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{
+	cfg, cfgErr := koanf.NewConfigLoader(s.T().Context(), koanf.ConfigLoaderOptions{
 		LoadEnvironment: true,
 		Overrides:       overrides,
 	})
@@ -85,19 +84,18 @@ func (s *Suite) GetAnonymousContext() context.Context {
 }
 
 func (s *Suite) setupTestDatabase() {
-	pgConnCfg, connCfgErr := postgres.GetPgxConfig()
-	s.Require().NoError(connCfgErr, "failed to get database config")
+	pgCfg, pgCfgErr := postgres.LoadConfig()
+	s.Require().NoError(pgCfgErr, "failed to load database config")
 
-	connUrl, urlErr := url.Parse(pgConnCfg.ConnString())
-	s.Require().NoError(urlErr, "failed to parse conn string")
-
+	fmt.Printf("pg config: %+v\n", pgCfg)
+	
 	pgxConf := pgtestdb.Config{
 		DriverName: "pgx",
-		User:       pgConnCfg.User,
-		Host:       pgConnCfg.Host,
-		Password:   pgConnCfg.Password,
-		Port:       fmt.Sprintf("%d", pgConnCfg.Port),
-		Options:    connUrl.RawQuery,
+		User:       pgCfg.User,
+		Host:       pgCfg.Host,
+		Password:   pgCfg.Password,
+		Port:       pgCfg.Port,
+		Options:    "sslmode=" + pgCfg.SSLMode,
 	}
 	mg := golangmigrator.New(".", golangmigrator.WithFS(migrations.FS))
 	testDb := pgtestdb.New(s.T(), pgxConf, mg)

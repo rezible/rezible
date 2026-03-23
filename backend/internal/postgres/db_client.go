@@ -9,7 +9,6 @@ import (
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rs/zerolog/log"
 
@@ -44,11 +43,11 @@ func MakeClient(driver dialect.Driver) *ent.Client {
 }
 
 func openPgxPool(ctx context.Context) (*pgxpool.Pool, error) {
-	connCfg, cfgErr := GetPgxConfig()
+	connCfg, cfgErr := LoadConfig()
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config: %w", cfgErr)
 	}
-	parsedCfg, parseErr := pgxpool.ParseConfig(connCfg.ConnString())
+	parsedCfg, parseErr := pgxpool.ParseConfig(connCfg.GetDsn())
 	if parseErr != nil {
 		return nil, fmt.Errorf("parse: %w", parseErr)
 	}
@@ -63,21 +62,6 @@ func openPgxPool(ctx context.Context) (*pgxpool.Pool, error) {
 	}
 
 	return pool, nil
-}
-
-type Config struct {
-	Url string `koanf:"connection_url"`
-}
-
-func GetPgxConfig() (*pgx.ConnConfig, error) {
-	if connUrl := rez.Config.GetString("db_url"); connUrl != "" {
-		return pgx.ParseConfig(connUrl)
-	}
-	var cfg Config
-	if cfgErr := rez.Config.Unmarshal("postgres", &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
-	}
-	return pgx.ParseConfig(cfg.Url)
 }
 
 func (dbc *DatabaseClient) Client() *ent.Client {

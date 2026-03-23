@@ -4,7 +4,6 @@ import (
 	"context"
 	"iter"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
@@ -36,9 +35,6 @@ func (p *TeamDataProvider) PullTeams(ctx context.Context) iter.Seq2[*ent.Team, e
 		ExternalID: "test-team",
 		Name:       "Test Team",
 		Edges:      ent.TeamEdges{Users: ent.Users{}},
-	}
-	if debugEmail := rez.Config.GetString("DEBUG_USER_EMAIL"); debugEmail != "" {
-		fakeTeam1.Edges.Users = append(fakeTeam1.Edges.Users, &ent.User{Email: debugEmail})
 	}
 	return func(yield func(*ent.Team, error) bool) {
 		yield(fakeTeam1, nil)

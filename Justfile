@@ -2,14 +2,6 @@ set shell := ["bash", "-uc"]
 set dotenv-filename := ".env.dev"
 set dotenv-load
 
-set export
-
-DB_URL_BASE := "postgresql://rezible:foobar1@localhost:7010/"
-DEV_DB_DATABASE := "rezible"
-DB_CONN_QUERYOPTS := "?sslmode=disable"
-DB_URL := DB_URL_BASE + DEV_DB_DATABASE + DB_CONN_QUERYOPTS
-TEST_DB_URL := DB_URL_BASE + DB_CONN_QUERYOPTS
-
 _default:
   @just --list
 
@@ -36,17 +28,15 @@ _default:
 @run-backend *ARGS:
     cd backend && go run ./cmd/rezible {{ARGS}}
 
-default_dockerfile := "Dockerfile"
-@build-backend-docker dockerfile=default_dockerfile:
-    mkdir -p ./scripts/certs && cat $(localias debug cert) > ./scripts/certs/localias-ca.crt
-    docker build -t rezible-backend -f backend/{{dockerfile}} .
+@build-backend-docker:
+    mkdir -p ./scripts/certs && cat "$(localias debug cert)" > ./scripts/certs/localias-ca.crt
+    docker build -t rezible-backend -f backend/Dockerfile .
 
 @run-backend-docker:
     docker run \
       --network host \
       --env-file ./.env \
       --env-file ./.env.dev \
-      -e DB_URL \
       localhost/rezible-backend:latest
 
 @run-frontend *ARGS:
@@ -73,7 +63,6 @@ default_dockerfile := "Dockerfile"
 
 @test-backend: run-dev-services
     cd backend && \
-      DB_URL="${TEST_DB_URL}" \
       go test $(go list ./... | grep -v /ent/)
 
 @run-backend-datasync:
@@ -129,6 +118,9 @@ migrations_dir := "backend/migrations"
     just create-initial-migrations
     just run-migrations
 
+@run-psql *ARGS:
+    just run-docker-compose exec -it postgres psql {{ARGS}}
+
 @create-initial-migrations:
     rm -f ./{{migrations_dir}}/*.{sql,sum}
     just run-backend generate-migration ent_init
@@ -137,8 +129,14 @@ migrations_dir := "backend/migrations"
     cd backend && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"
     cd backend && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
 
-@run-migrations:
-    migrate -source "file://{{migrations_dir}}" -database "${DB_URL}" up
+DB_URL_BASE := "postgresql://rezible:foobar1@localhost:7010/"
+DEV_DB_DATABASE := "rezible"
+DB_CONN_QUERYOPTS := "?sslmode=disable"
+DB_URL := DB_URL_BASE + DEV_DB_DATABASE + DB_CONN_QUERYOPTS
+TEST_DB_URL := DB_URL_BASE + DB_CONN_QUERYOPTS
 
-@run-psql *ARGS:
-    just run-docker-compose exec -it postgres psql -U rezible {{ARGS}}
+@run-migrations direction="up":
+    migrate \
+        -source "file://{{migrations_dir}}" \
+        -database "postgresql://${POSTGRES__USER}:${POSTGRES__PASSWORD}@${POSTGRES__HOST}:${POSTGRES__PORT}/${POSTGRES__DATABASE}?sslmode=${POSTGRES__SSLMODE}" \
+        {{direction}}

@@ -2,7 +2,6 @@ package adk
 
 import (
 	"context"
-	"fmt"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rotisserie/eris"
