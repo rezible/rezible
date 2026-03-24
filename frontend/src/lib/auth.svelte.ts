@@ -31,6 +31,8 @@ const parseSessionError = (err: ErrorModel): SessionError => {
 		} else if (detail === "invalid_user") {
 			category = "invalid_user";
 		}
+	} else if (status === 403) {
+		category = "invalid";
 	} else if (status === 404) {
 		category = "invalid_user";
 	} else if (status >= 500) {

@@ -2,10 +2,11 @@ package apiv1
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent/user"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -25,7 +26,10 @@ func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *
 	attr := req.Body.Attributes
 	cookies, flowErr := h.auth.CompleteClientAuthSessionFlow(ctx, attr.Code, attr.Verifier)
 	if flowErr != nil {
-		return nil, fmt.Errorf("failed to complete auth session flow: %w", flowErr)
+		if errors.Is(flowErr, rez.ErrDomainNotAllowed) {
+			return nil, oapi.ErrDomainNotAllowed
+		}
+		return nil, oapi.Error("failed to complete auth session flow: %w", flowErr)
 	}
 	resp.SetCookie = cookies
 
@@ -37,7 +41,7 @@ func (h *authSessionsHandler) RefreshAuthSession(ctx context.Context, req *oapi.
 
 	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, req.Cookie.Value)
 	if cookiesErr != nil {
-		return nil, fmt.Errorf("refresh session cookies: %w", cookiesErr)
+		return nil, oapi.Error("refresh session cookies: %w", cookiesErr)
 	}
 	resp.SetCookie = cookies
 
@@ -49,7 +53,7 @@ func (h *authSessionsHandler) ClearAuthSession(ctx context.Context, req *oapi.Cl
 
 	cookies, cookiesErr := h.auth.ClearClientAuthSession()
 	if cookiesErr != nil {
-		return nil, fmt.Errorf("clear auth session: %w", cookiesErr)
+		return nil, oapi.Error("clear auth session: %w", cookiesErr)
 	}
 	resp.SetCookie = cookies
 
@@ -61,7 +65,7 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 
 	sess := h.auth.GetAuthSession(ctx)
 
-	user, userErr := h.users.GetById(ctx, sess.UserId())
+	u, userErr := h.users.Get(ctx, user.ID(sess.UserId()))
 	if userErr != nil {
 		return nil, oapi.Error("failed to get user", userErr)
 	}
@@ -73,7 +77,7 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 
 	resp.Body.Data = oapi.AuthSession{
 		ExpiresAt:    sess.ExpiresAt(),
-		User:         oapi.UserFromEnt(user),
+		User:         oapi.UserFromEnt(u),
 		Organization: oapi.OrganizationFromEnt(org),
 	}
 

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent/user"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -18,7 +19,7 @@ func newUsersHandler(users rez.UserService) *usersHandler {
 func (h *usersHandler) ListUsers(ctx context.Context, request *oapi.ListUsersRequest) (*oapi.ListUsersResponse, error) {
 	var resp oapi.ListUsersResponse
 
-	users, usersErr := h.users.ListUsers(ctx, rez.ListUsersParams{
+	users, usersErr := h.users.List(ctx, rez.ListUsersParams{
 		ListParams: request.ListParams(),
 	})
 	if usersErr != nil {
@@ -36,11 +37,11 @@ func (h *usersHandler) ListUsers(ctx context.Context, request *oapi.ListUsersReq
 func (h *usersHandler) GetUser(ctx context.Context, input *oapi.GetUserRequest) (*oapi.GetUserResponse, error) {
 	var resp oapi.GetUserResponse
 
-	user, getErr := h.users.GetById(ctx, input.Id)
+	u, getErr := h.users.Get(ctx, user.ID(input.Id))
 	if getErr != nil {
 		return nil, oapi.Error("Failed to get user", getErr)
 	}
-	resp.Body.Data = oapi.UserFromEnt(user)
+	resp.Body.Data = oapi.UserFromEnt(u)
 
 	return &resp, nil
 }

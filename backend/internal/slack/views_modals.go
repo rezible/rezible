@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/slack-go/slack"
@@ -18,15 +19,19 @@ const (
 	viewCallbackIdUserHome               = "user_home"
 )
 
-func makeUserHomeView(ctx context.Context, user *ent.User) (*slack.HomeTabViewRequest, error) {
+func makeUserHomeView(ctx context.Context) (*slack.HomeTabViewRequest, error) {
 	var blocks []slack.Block
 	blocks = append(blocks, slack.NewSectionBlock(plainText("Home Tab"), nil, nil))
+	userId, userOk := access.GetUserId(ctx)
+	if !userOk {
+		return nil, fmt.Errorf("no user context")
+	}
 	homeView := slack.HomeTabViewRequest{
 		Type:            slack.VTHomeTab,
 		CallbackID:      viewCallbackIdUserHome,
 		PrivateMetadata: "foo",
 		Blocks:          slack.Blocks{BlockSet: blocks},
-		ExternalID:      user.ID.String(),
+		ExternalID:      userId.String(),
 	}
 	return &homeView, nil
 }
@@ -38,15 +43,19 @@ type annotationModalMetadata struct {
 	AnnotationId uuid.UUID `json:"aid,omitempty"`
 }
 
-func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotationModalMetadata) (*slack.ModalViewRequest, error) {
-	usr, usrCtx, userErr := s.lookupUser(ctx, meta.UserId)
+func (s *ChatService) makeAnnotationModalView(baseCtx context.Context, meta *annotationModalMetadata) (*slack.ModalViewRequest, error) {
+	ctx, userErr := s.createUserContext(baseCtx, meta.UserId)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
+	}
+	userId, userOk := access.GetUserId(ctx)
+	if !userOk {
+		return nil, fmt.Errorf("no user context")
 	}
 
 	ev := &ent.Event{ExternalID: meta.MsgId.String()}
 
-	curr, currErr := s.annos.LookupByUserEvent(usrCtx, usr.ID, ev)
+	curr, currErr := s.annos.LookupByUserEvent(ctx, userId, ev)
 	if currErr != nil && !ent.IsNotFound(currErr) {
 		return nil, fmt.Errorf("failed to lookup existing event annotation: %w", currErr)
 	}
@@ -81,15 +90,19 @@ func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotat
 	}, nil
 }
 
-func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view slack.View) (*ent.EventAnnotation, error) {
+func (s *ChatService) getAnnotationModalAnnotation(baseCtx context.Context, view slack.View) (*ent.EventAnnotation, error) {
 	var meta annotationModalMetadata
 	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
 
-	usr, _, userErr := s.lookupUser(ctx, meta.UserId)
+	ctx, userErr := s.createUserContext(baseCtx, meta.UserId)
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
+	}
+	userId, userOk := access.GetUserId(ctx)
+	if !userOk {
+		return nil, fmt.Errorf("no user context")
 	}
 
 	var notes string
@@ -112,7 +125,7 @@ func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view sla
 
 	anno := &ent.EventAnnotation{
 		ID:        meta.AnnotationId,
-		CreatorID: usr.ID,
+		CreatorID: userId,
 		Notes:     notes,
 		Edges: ent.EventAnnotationEdges{
 			Event: ev,

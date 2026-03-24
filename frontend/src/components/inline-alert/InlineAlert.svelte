@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
 	import type { ErrorModel } from "$src/lib/api";
+	import { mdiAlert } from "@mdi/js";
+	import Icon from "../icon/Icon.svelte";
 
 	type Props = {
 		error: ErrorModel;
@@ -10,7 +12,8 @@
 </script>
 
 <div class="mb-2 rounded border border-danger/40 bg-danger/10 p-3" role="alert">
-	<div class="flex items-start justify-between gap-3">
+	<div class="flex items-center justify-between gap-3">
+		<Icon data={mdiAlert} />
 		<div class="flex flex-col">
 			<span class="font-semibold text-danger">{error.title ?? "An Error Occurred"}</span>
 			<span class="text-sm text-danger/90">{error.detail ?? ""}</span>

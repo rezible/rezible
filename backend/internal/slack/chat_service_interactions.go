@@ -10,6 +10,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
@@ -19,7 +20,7 @@ const (
 )
 
 func (s *ChatService) handleInteractionCallback(baseCtx context.Context, ic *slack.InteractionCallback) error {
-	ctx, usrErr := s.getUserContext(baseCtx, ic.User.ID)
+	ctx, usrErr := s.createUserContext(baseCtx, ic.User.ID)
 	if usrErr != nil {
 		return fmt.Errorf("failed to lookup user: %w", usrErr)
 	}
@@ -176,7 +177,7 @@ func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, 
 		return fmt.Errorf("missing incident details modal view state")
 	}
 
-	usr, userErr := s.users.GetByChatId(ctx, meta.UserId)
+	usr, userErr := s.users.Get(ctx, user.ChatID(meta.UserId))
 	if userErr != nil {
 		return fmt.Errorf("failed to get user: %w", userErr)
 	}
@@ -236,7 +237,7 @@ func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context
 		return fmt.Errorf("getting modal view metadata: %w", metaErr)
 	}
 
-	usr, userErr := s.users.GetByChatId(ctx, meta.UserId)
+	usr, userErr := s.users.Get(ctx, user.ChatID(meta.UserId))
 	if userErr != nil {
 		return fmt.Errorf("failed to get user: %w", userErr)
 	}

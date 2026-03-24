@@ -16,13 +16,14 @@ import (
 )
 
 var (
-	ErrNoSession      = huma.Error401Unauthorized("no_session")
-	ErrSessionExpired = huma.Error401Unauthorized("session_expired")
-	ErrMissingScopes  = huma.Error401Unauthorized("missing_scopes")
-	ErrInvalidUser    = huma.Error401Unauthorized("invalid_user")
-	ErrInvalidTenant  = huma.Error401Unauthorized("invalid_tenant")
-	ErrUnknown        = huma.Error401Unauthorized("unknown")
-	ErrForbidden      = huma.Error403Forbidden("forbidden")
+	ErrNoSession        = huma.Error401Unauthorized("no_session")
+	ErrSessionExpired   = huma.Error401Unauthorized("session_expired")
+	ErrMissingScopes    = huma.Error401Unauthorized("missing_scopes")
+	ErrInvalidUser      = huma.Error401Unauthorized("invalid_user")
+	ErrInvalidTenant    = huma.Error401Unauthorized("invalid_tenant")
+	ErrUnknown          = huma.Error401Unauthorized("unknown")
+	ErrForbidden        = huma.Error403Forbidden("forbidden")
+	ErrDomainNotAllowed = huma.Error403Forbidden("domain_not_allowed")
 )
 
 type SecurityScheme = huma.SecurityScheme
@@ -195,6 +196,8 @@ func writeAuthStatusError(api huma.API, c huma.Context, err error) {
 		resp = ErrInvalidUser
 	} else if errors.Is(err, rez.ErrInvalidTenant) {
 		resp = ErrInvalidTenant
+	} else if errors.Is(err, rez.ErrDomainNotAllowed) {
+		resp = ErrDomainNotAllowed
 	} else {
 		resp = ErrUnknown
 	}

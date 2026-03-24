@@ -46,11 +46,6 @@ export class AuthScreenController {
         })
     });
 
-	errorCategory = $derived(this.session.error?.category);
-    showError = $derived(!!this.session.error && this.errorCategory !== "no_session");
-    showLogoutButton = $derived(this.errorCategory === "invalid_user");
-    errorText = $derived(errorDisplayText[this.errorCategory ?? "unknown"]);
-
     constructor() {
         watch(() => this.callbackCode, code => {this.onCallbackParamsSet(page.url)});
     }
@@ -71,6 +66,15 @@ export class AuthScreenController {
         ...completeAuthSessionFlowMutation(),
         onSuccess: () => {this.session.refetch()}
     }));
+    completeFlowErr = $derived(this.completeMut.error);
+    completeFlowErrText = $derived.by(() => {
+        if (!this.completeFlowErr) return;
+        if (this.completeFlowErr.detail === "domain_not_allowed") {
+            return "Signup is not currently available for your domain";
+        }
+        return this.completeFlowErr.detail;
+    })
+
     responseStateError = $state<string>();
     readingResponseState = $state(false);
     async onCallbackParamsSet(url: URL) {
@@ -103,6 +107,14 @@ export class AuthScreenController {
     }
 
     loading = $derived(this.startingFlow || this.readingResponseState || this.completeMut.isPending);
+
+	sessionErrorCategory = $derived(this.session.error?.category);
+    isInvalidUserErr = $derived(this.sessionErrorCategory === "invalid_user");
+    isNoSessionErr = $derived(this.sessionErrorCategory === "no_session");
+
+    showSessionError = $derived(!!this.session.error && !this.isNoSessionErr);
+    sessionErrorText = $derived(errorDisplayText[this.sessionErrorCategory ?? "unknown"]);
+    showLogoutButton = $derived(this.isInvalidUserErr);
 }
 
 const ctx = new Context<AuthScreenController>("AuthScreenController");

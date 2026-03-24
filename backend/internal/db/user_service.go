@@ -26,96 +26,55 @@ func NewUserService(db *ent.Client, orgs rez.OrganizationService) (*UserService,
 	return s, nil
 }
 
-func nilEmptyString(s string) *string {
-	if s == "" {
-		return nil
-	}
-	return &s
-}
-
-func (s *UserService) LookupUserByAuthProviderId(ctx context.Context, authProviderID string) (*ent.User, error) {
-	userQuery := s.db.User.Query().Where(user.AuthProviderID(authProviderID))
-	return userQuery.Only(ctx)
-}
-
-func (s *UserService) FindOrCreateFromAuth(ctx context.Context, pu ent.User) (*ent.User, error) {
-	usr, usrErr := s.LookupUserByAuthProviderId(ctx, pu.AuthProviderID)
+func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.User) (*ent.User, error) {
+	usr, usrErr := s.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
 	if usrErr != nil && !ent.IsNotFound(usrErr) {
 		return nil, fmt.Errorf("failed to query user: %w", usrErr)
 	}
 	if usr != nil {
 		return usr, nil
-	} else if !rez.Config.AllowUserCreation() {
-		return nil, rez.ErrInvalidUser
 	}
 
 	// tenant exists, user does not exist
-
-	createUser := s.db.User.Create().
-		SetAuthProviderID(pu.AuthProviderID).
-		SetEmail(pu.Email).
-		SetConfirmed(pu.Confirmed).
-		SetNillableName(nilEmptyString(pu.Name)).
-		SetNillableTimezone(nilEmptyString(pu.Timezone))
-
-	created, createErr := createUser.Save(ctx)
-	if createErr != nil {
-		return nil, fmt.Errorf("create user: %w", createErr)
-	}
-	return created, nil
+	return s.Set(ctx, uuid.Nil, func(m *ent.UserMutation) {
+		m.SetAuthProviderID(pu.AuthProviderID)
+		m.SetEmail(pu.Email)
+		m.SetConfirmed(pu.Confirmed)
+		m.SetName(pu.Name)
+		m.SetTimezone(pu.Timezone)
+	})
 }
 
-func (s *UserService) Create(ctx context.Context, user ent.User) (*ent.User, error) {
-	created, createErr := s.db.User.Create().
-		SetEmail(user.Email).
-		SetName(user.Name).
-		Save(ctx)
-	if createErr != nil {
-		return nil, fmt.Errorf("failed to create user: %w", createErr)
-	}
-	return created, nil
-}
-
-func (s *UserService) GetById(ctx context.Context, id uuid.UUID) (*ent.User, error) {
-	return s.db.User.Get(ctx, id)
-}
-
-func (s *UserService) getOneWhere(ctx context.Context, p predicate.User) (*ent.User, error) {
+func (s *UserService) Get(ctx context.Context, p predicate.User) (*ent.User, error) {
 	return s.db.User.Query().Where(p).Only(ctx)
 }
 
-func (s *UserService) GetByEmail(ctx context.Context, email string) (*ent.User, error) {
-	return s.getOneWhere(ctx, user.Email(email))
+func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.UserMutation)) (*ent.User, error) {
+	var savedUser *ent.User
+	setTxFn := func(tx *ent.Tx) error {
+		var mutator ent.EntityMutator[*ent.User, *ent.UserMutation]
+		if id == uuid.Nil {
+			mutator = tx.User.Create().SetID(uuid.New())
+		} else {
+			mutator = tx.User.UpdateOneID(id)
+		}
+
+		setFn(mutator.Mutation())
+
+		var saveErr error
+		savedUser, saveErr = mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("mutate user: %w", saveErr)
+		}
+		return nil
+	}
+	if txErr := ent.WithTx(ctx, s.db, setTxFn); txErr != nil {
+		return nil, txErr
+	}
+	return savedUser, nil
 }
 
-func (s *UserService) GetByChatId(ctx context.Context, chatId string) (*ent.User, error) {
-	return s.getOneWhere(ctx, user.ChatID(chatId))
-}
-
-//
-//func (s *UserService) LookupProviderUser(ctx context.Context, provUser *ent.User) (*ent.User, error) {
-//	// TODO: use provider mapping to match user details, not just by email
-//	email := provUser.Email
-//	if rez.Config.DebugMode() {
-//		defaultEmail := rez.Config.GetString("REZ_DEBUG_DEFAULT_USER_EMAIL")
-//		if defaultEmail != "" {
-//			email = defaultEmail
-//			//log.Debug().Str("email", email).Msg("using debug auth email")
-//		}
-//	}
-//
-//	allowQueryCtx := privacy.DecisionContext(ctx, privacy.Allow)
-//	u, lookupErr := s.GetByEmail(allowQueryCtx, email)
-//	if lookupErr != nil {
-//		if ent.IsNotFound(lookupErr) {
-//			return nil, nil
-//		}
-//		return nil, fmt.Errorf("users.GetByEmail: %w", lookupErr)
-//	}
-//	return u, nil
-//}
-
-func (s *UserService) ListUsers(ctx context.Context, params rez.ListUsersParams) ([]*ent.User, error) {
+func (s *UserService) List(ctx context.Context, params rez.ListUsersParams) ([]*ent.User, error) {
 	query := s.db.User.Query().
 		Order(user.ByID()).
 		Limit(params.GetLimit()).

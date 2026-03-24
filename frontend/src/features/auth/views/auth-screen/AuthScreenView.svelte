@@ -5,6 +5,7 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import { initAuthScreenController } from "./controller.svelte";
 	import { useAuthSessionState } from "$lib/auth.svelte";
+	import InlineAlert from "$src/components/inline-alert/InlineAlert.svelte";
 
 	const session = useAuthSessionState();
 	const view = initAuthScreenController();
@@ -18,10 +19,14 @@
 			{/snippet}
 		</Header>
 
-		{#if view.showError}
+		{#if view.showSessionError}
 			<div class="bg-danger-900/50 border-danger/20 border rounded p-2">
-				<span class="">{view.errorText}</span>
+				<span class="">{view.sessionErrorText}</span>
 			</div>
+		{/if}
+
+		{#if !!view.completeFlowErr}
+			<InlineAlert error={{title: "Signing In Failed", detail: view.completeFlowErrText}} />
 		{/if}
         
         {#if view.showLogoutButton}

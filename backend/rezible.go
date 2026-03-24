@@ -19,8 +19,8 @@ import (
 
 var (
 	ErrTenantContextMissing     = eris.New("tenant access context not set")
-	ErrUserContextMissing       = eris.New("user access context not set")
 	ErrInvalidUser              = eris.New("user does not exist")
+	ErrDomainNotAllowed         = eris.New("domain not allowed")
 	ErrInvalidTenant            = eris.New("tenant does not exist")
 	ErrAuthSessionMissing       = eris.New("no auth session")
 	ErrAuthSessionExpired       = eris.New("auth session expired")
@@ -40,9 +40,6 @@ type ConfigLoader interface {
 
 	ApiPath() string
 	AppUrl() string
-
-	AllowTenantCreation() bool
-	AllowUserCreation() bool
 }
 
 type EventListener interface {
@@ -163,15 +160,11 @@ type (
 	}
 
 	UserService interface {
-		FindOrCreateFromAuth(context.Context, ent.User) (*ent.User, error)
+		FindOrCreateAuthProviderUser(context.Context, ent.User) (*ent.User, error)
 
-		ListUsers(context.Context, ListUsersParams) ([]*ent.User, error)
-
-		LookupUserByAuthProviderId(context.Context, string) (*ent.User, error)
-
-		GetById(context.Context, uuid.UUID) (*ent.User, error)
-		GetByEmail(context.Context, string) (*ent.User, error)
-		GetByChatId(context.Context, string) (*ent.User, error)
+		Get(context.Context, predicate.User) (*ent.User, error)
+		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)
+		List(context.Context, ListUsersParams) ([]*ent.User, error)
 	}
 
 	UserDataProvider interface {

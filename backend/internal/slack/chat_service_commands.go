@@ -17,8 +17,8 @@ var (
 	incidentCommandsFormatted    = strings.Join(supportedIncidentSubcommands, ", ")
 )
 
-func (s *ChatService) handleSlashCommand(ctx context.Context, cmd *slack.SlashCommand) error {
-	userCtx, usrErr := s.getUserContext(ctx, cmd.UserID)
+func (s *ChatService) handleSlashCommand(baseCtx context.Context, cmd *slack.SlashCommand) error {
+	ctx, usrErr := s.createUserContext(baseCtx, cmd.UserID)
 	if usrErr != nil {
 		return fmt.Errorf("failed to lookup user: %w", usrErr)
 	}
@@ -29,7 +29,7 @@ func (s *ChatService) handleSlashCommand(ctx context.Context, cmd *slack.SlashCo
 	switch cmd.Command {
 	case "/incident":
 		handled = true
-		response, handlerErr = s.handleIncidentCommand(userCtx, cmd)
+		response, handlerErr = s.handleIncidentCommand(ctx, cmd)
 	}
 
 	if handlerErr != nil {

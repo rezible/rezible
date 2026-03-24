@@ -63,14 +63,13 @@ func (s *ChatService) onAssistantThreadStartedEvent(ctx context.Context, data *s
 	return nil
 }
 
-func (s *ChatService) onUserHomeOpenedEvent(ctx context.Context, data *slackevents.AppHomeOpenedEvent) error {
-	usr, usrCtx, usrErr := s.lookupUser(ctx, data.User)
+func (s *ChatService) onUserHomeOpenedEvent(baseCtx context.Context, data *slackevents.AppHomeOpenedEvent) error {
+	ctx, usrErr := s.createUserContext(baseCtx, data.User)
 	if usrErr != nil {
 		return fmt.Errorf("failed to lookup user: %w", usrErr)
 	}
-	ctx = usrCtx
 
-	homeView, viewErr := makeUserHomeView(ctx, usr)
+	homeView, viewErr := makeUserHomeView(ctx)
 	if viewErr != nil || homeView == nil {
 		return fmt.Errorf("failed to create user home view: %w", viewErr)
 	}

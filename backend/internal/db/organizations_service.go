@@ -33,10 +33,6 @@ func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organizatio
 }
 
 func (s *OrganizationsService) createForDomain(ctx context.Context, domain string) (*ent.Organization, error) {
-	if !rez.Config.AllowTenantCreation() {
-		return nil, rez.ErrInvalidTenant
-	}
-
 	var createdOrg *ent.Organization
 	createFn := func(tx *ent.Tx) error {
 		tenantCreate := tx.Tenant.Create()

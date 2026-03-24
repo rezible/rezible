@@ -6,7 +6,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/user"
 	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
@@ -32,19 +32,14 @@ func newChatService(ci *ConfiguredIntegration) *ChatService {
 	}
 }
 
-func (s *ChatService) getUserContext(ctx context.Context, userChatId string) (context.Context, error) {
-	_, userCtx, lookupErr := s.lookupUser(ctx, userChatId)
-	return userCtx, lookupErr
-}
-
-func (s *ChatService) lookupUser(ctx context.Context, userChatId string) (*ent.User, context.Context, error) {
+func (s *ChatService) createUserContext(ctx context.Context, userChatId string) (context.Context, error) {
 	ctx = access.TenantContext(ctx, s.ci.intg.TenantID)
-	usr, usrErr := s.users.GetByChatId(ctx, userChatId)
+	usr, usrErr := s.users.Get(ctx, user.ChatID(userChatId))
 	if usrErr != nil {
 		log.Error().Err(usrErr).Str("chat_id", userChatId).Msg("failed to lookup chat user")
-		return nil, nil, fmt.Errorf("lookup user: %w", usrErr)
+		return nil, fmt.Errorf("lookup user: %w", usrErr)
 	}
-	return usr, access.WithUser(ctx, usr), nil
+	return access.WithUser(ctx, usr), nil
 }
 
 func (s *ChatService) postMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {

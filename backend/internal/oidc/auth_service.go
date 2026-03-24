@@ -9,9 +9,11 @@ import (
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/user"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
@@ -26,6 +28,22 @@ type Config struct {
 		IssuerUrl string   `koanf:"issuer_url"`
 		Scopes    []string `koanf:"scopes"`
 	} `koanf:"oidc"`
+	Allow struct {
+		Public  bool     `koanf:"public"`
+		Domains []string `koanf:"domains"`
+	} `koanf:"allow"`
+	allowedDomains mapset.Set[string]
+}
+
+func loadConfig() (*Config, error) {
+	var cfg Config
+	if cfgErr := rez.Config.Unmarshal("auth", &cfg); cfgErr != nil {
+		return nil, cfgErr
+	}
+	if !cfg.Allow.Public {
+		cfg.allowedDomains = mapset.NewSet(cfg.Allow.Domains...)
+	}
+	return &cfg, nil
 }
 
 type AuthService struct {
@@ -47,12 +65,11 @@ func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez
 		users: users,
 		teams: teams,
 	}
-
-	var cfg Config
-	if cfgErr := rez.Config.Unmarshal("auth", &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("auth config error: %w", cfgErr)
+	cfg, cfgErr := loadConfig()
+	if cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
-	s.cfg = cfg
+	s.cfg = *cfg
 
 	if providerErr := s.initOidcProvider(ctx); providerErr != nil {
 		return nil, fmt.Errorf("failed to init oidc provider: %w", providerErr)
@@ -205,21 +222,28 @@ func (s *AuthService) createAuthSessionContext(ctx context.Context, idTokenStr s
 		return nil, fmt.Errorf("get verified id token: %w", tokenErr)
 	}
 
+	domain := token.getDomain()
+	if !s.cfg.Allow.Public {
+		if !s.cfg.allowedDomains.Contains(domain) {
+			return nil, rez.ErrDomainNotAllowed
+		}
+	}
+
 	var usrErr error
 	var usr *ent.User
 	if create {
-		org, orgErr := s.orgs.FindOrCreateFromDomain(ctx, token.getDomain())
+		org, orgErr := s.orgs.FindOrCreateFromDomain(ctx, domain)
 		if orgErr != nil {
 			return nil, fmt.Errorf("find org: %w", orgErr)
 		}
 		ctx = access.WithOrganization(ctx, org)
 
-		usr, usrErr = s.users.FindOrCreateFromAuth(ctx, token.getUser())
+		usr, usrErr = s.users.FindOrCreateAuthProviderUser(ctx, token.getUser())
 		if usrErr != nil {
 			return nil, fmt.Errorf("find or create auth user: %w", usrErr)
 		}
 	} else {
-		usr, usrErr = s.users.LookupUserByAuthProviderId(access.SystemContext(ctx), token.getUser().AuthProviderID)
+		usr, usrErr = s.users.Get(access.SystemContext(ctx), user.AuthProviderID(token.getUser().AuthProviderID))
 		if usrErr != nil {
 			return nil, fmt.Errorf("lookup auth provider user: %w", usrErr)
 		}
