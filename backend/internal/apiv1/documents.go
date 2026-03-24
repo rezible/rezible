@@ -2,7 +2,6 @@ package apiv1
 
 import (
 	"context"
-	"fmt"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -23,7 +22,10 @@ func (h *documentsHandler) GetDocumentAccess(ctx context.Context, request *oapi.
 
 	docAccess, docErr := h.documents.GetDocumentAccess(ctx, request.Id)
 	if docErr != nil {
-		return nil, fmt.Errorf("get access: %w", docErr)
+		return nil, oapi.Error("get access", docErr)
+	}
+	if docAccess == nil {
+		return nil, oapi.ErrForbidden
 	}
 	resp.Body.Data = oapi.DocumentAccessFromEnt(docAccess)
 

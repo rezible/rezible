@@ -40,6 +40,20 @@ func NewDocumentsService(db *ent.Client, auth rez.AuthService, teams rez.TeamSer
 
 func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUID) (*ent.DocumentAccess, error) {
 	sess := s.auth.GetAuthSession(ctx)
+	doc, docErr := s.GetDocument(ctx, docId)
+	if docErr != nil {
+		return nil, fmt.Errorf("get document: %w", docErr)
+	}
+	if !doc.AccessRestricted {
+		defaultAccess := &ent.DocumentAccess{
+			DocumentID: docId,
+			UserID:     sess.UserId(),
+			CanView:    true,
+			CanEdit:    true,
+			CanManage:  true,
+		}
+		return defaultAccess, nil
+	}
 	for _, scope := range sess.Scopes() {
 		parts := strings.Split(scope, ":")
 		if parts[0] != "document" || parts[1] != docId.String() {
@@ -55,14 +69,14 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 		}
 		return acc, nil
 	}
-	sessAccesses, accessesErr := s.getDocumentAccesses(ctx, docId, sess.UserId())
+	bestAccess, accessesErr := s.getBestDocumentAccess(ctx, docId, sess.UserId())
 	if accessesErr != nil {
 		return nil, fmt.Errorf("failed to get document accesses: %w", accessesErr)
 	}
-	return s.getBestDocumentAccess(sessAccesses), nil
+	return bestAccess, nil
 }
 
-func (s *DocumentsService) getDocumentAccesses(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (ent.DocumentAccesses, error) {
+func (s *DocumentsService) getBestDocumentAccess(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*ent.DocumentAccess, error) {
 	accessQuery := s.db.DocumentAccess.Query().
 		Where(da.DocumentID(docId)).
 		Where(da.Or(da.UserID(userId), da.TeamIDNotNil()))
@@ -70,12 +84,13 @@ func (s *DocumentsService) getDocumentAccesses(ctx context.Context, docId uuid.U
 	if accessesErr != nil {
 		return nil, accessesErr
 	}
-	var sessAccesses ent.DocumentAccesses
+
+	var availableAccesses ent.DocumentAccesses
 	teamAccesses := map[uuid.UUID]*ent.DocumentAccess{}
 	var accessTeamIds []uuid.UUID
 	for _, acc := range accesses {
 		if acc.UserID != uuid.Nil && acc.UserID == userId {
-			sessAccesses = append(sessAccesses, acc)
+			availableAccesses = append(availableAccesses, acc)
 		}
 		if acc.TeamID != uuid.Nil {
 			accessTeamIds = append(accessTeamIds, acc.TeamID)
@@ -93,43 +108,24 @@ func (s *DocumentsService) getDocumentAccesses(ctx context.Context, docId uuid.U
 		} else {
 			for _, team := range teams {
 				if acc, ok := teamAccesses[team.ID]; ok {
-					sessAccesses = append(sessAccesses, acc)
+					availableAccesses = append(availableAccesses, acc)
 				}
 			}
 		}
 	}
-	return sessAccesses, nil
-}
-
-func (s *DocumentsService) getBestDocumentAccess(accesses ent.DocumentAccesses) *ent.DocumentAccess {
-	if len(accesses) == 0 {
-		return nil
+	if len(availableAccesses) == 0 {
+		return nil, nil
 	}
 	highest := accesses[0]
 	for _, a := range accesses {
 		if a.CanManage {
-			return a
+			return a, nil
 		}
 		if a.CanEdit && !highest.CanEdit {
 			highest = a
 		}
 	}
-	return highest
-}
-
-func (s *DocumentsService) getDocumentAccessScope(ctx context.Context, doc *ent.Document, userId uuid.UUID) (string, error) {
-	if !doc.AccessRestricted {
-		return "m", nil
-	}
-	sessAccesses, accessErr := s.getDocumentAccesses(ctx, doc.ID, userId)
-	if accessErr != nil {
-		return "", fmt.Errorf("failed to get document accesses: %w", accessErr)
-	}
-	highestAccess := s.getBestDocumentAccess(sessAccesses)
-	if highestAccess == nil {
-		return "", fmt.Errorf("no document access found")
-	}
-	return fmt.Sprintf("document:%s:%s", doc.ID, highestAccess.ID), nil
+	return highest, nil
 }
 
 func (s *DocumentsService) GetDocument(ctx context.Context, id uuid.UUID) (*ent.Document, error) {

@@ -5,6 +5,11 @@ set dotenv-load
 _default:
   @just --list
 
+pg_user_auth := env("POSTGRES__USER") + ":" + env("POSTGRES__PASSWORD")
+pg_addr := env("POSTGRES__HOST") + ":" + env("POSTGRES__PORT")
+pg_conn := env("POSTGRES__DATABASE") + "?sslmode=" + env("POSTGRES__SSLMODE")
+DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
+
 # [group('Setup')]
 
 @setup:
@@ -50,6 +55,7 @@ _default:
 @run-documents-server *ARGS:
     cd documents-server && \
         API_URL="http://localhost:7002/api/v1" \
+        DB_URL="{{DB_URL}}" \
         bun run {{ARGS}}
 
 @run-docker-compose *CMD:
@@ -113,8 +119,11 @@ _default:
 
 migrations_dir := "backend/migrations"
 
-@setup-db:
+@recreate-db:
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
+
+@setup-db:
+    just recreate-db
     just create-initial-migrations
     just run-migrations
 
@@ -129,14 +138,14 @@ migrations_dir := "backend/migrations"
     cd backend && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"
     cd backend && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
 
-DB_URL_BASE := "postgresql://rezible:foobar1@localhost:7010/"
-DEV_DB_DATABASE := "rezible"
-DB_CONN_QUERYOPTS := "?sslmode=disable"
-DB_URL := DB_URL_BASE + DEV_DB_DATABASE + DB_CONN_QUERYOPTS
-TEST_DB_URL := DB_URL_BASE + DB_CONN_QUERYOPTS
+#DB_URL_BASE := "postgresql://rezible:foobar1@localhost:7010/"
+#DEV_DB_DATABASE := "rezible"
+#DB_CONN_QUERYOPTS := "?sslmode=disable"
+#DB_URL := DB_URL_BASE + DEV_DB_DATABASE + DB_CONN_QUERYOPTS
+#TEST_DB_URL := DB_URL_BASE + DB_CONN_QUERYOPTS
 
 @run-migrations direction="up":
     migrate \
         -source "file://{{migrations_dir}}" \
-        -database "postgresql://${POSTGRES__USER}:${POSTGRES__PASSWORD}@${POSTGRES__HOST}:${POSTGRES__PORT}/${POSTGRES__DATABASE}?sslmode=${POSTGRES__SSLMODE}" \
+        -database "{{DB_URL}}" \
         {{direction}}

@@ -6,21 +6,12 @@ export const createConfig = (input: UserConfig["input"], output: UserConfig["out
 		output,
 		plugins: [
 			{name: '@hey-api/client-fetch'},
-			{
-				name: "@hey-api/typescript",
-				enums: "javascript",
-			},
-			{
-				name: "@tanstack/svelte-query",
-			},
+			{name: "@hey-api/typescript", enums: "javascript"},
+			{name: "@tanstack/svelte-query"},
 		],
-		logs: {
-			file: false,
-		},
+		logs: { file: false },
 		parser: {
-			transforms: {
-				readWrite: false,
-			}
+			transforms: { readWrite: false }
 		}
 	})
 };

@@ -18,8 +18,8 @@ type DocumentsHandler interface {
 
 func (o operations) RegisterDocuments(api huma.API) {
 	huma.Register(api, GetDocumentAccess, o.GetDocumentAccess)
-	huma.Register(api, LoadDocument, o.LoadDocument)
-	huma.Register(api, UpdateDocument, o.UpdateDocument)
+	//huma.Register(api, LoadDocument, o.LoadDocument)
+	//huma.Register(api, UpdateDocument, o.UpdateDocument)
 }
 
 type (
@@ -33,7 +33,7 @@ type (
 	}
 
 	DocumentAccess struct {
-		User      User `json:"user"`
+		CanView   bool `json:"canView"`
 		CanEdit   bool `json:"canEdit"`
 		CanManage bool `json:"canManage"`
 	}
@@ -48,12 +48,9 @@ func DocumentFromEnt(doc *ent.Document) Document {
 
 func DocumentAccessFromEnt(acc *ent.DocumentAccess) DocumentAccess {
 	da := DocumentAccess{
-		User:      User{Id: acc.UserID},
+		CanView:   acc.CanView,
 		CanEdit:   acc.CanEdit,
 		CanManage: acc.CanManage,
-	}
-	if acc.Edges.User != nil {
-		da.User = UserFromEnt(acc.Edges.User)
 	}
 	return da
 }

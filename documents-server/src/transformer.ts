@@ -1,13 +1,15 @@
 import { getSchema } from "@tiptap/core";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 
+import * as Y from "yjs";
+import type { MarkSpec, NodeSpec, SchemaSpec } from "@tiptap/pm/model";
+
 import {
   configureBaseExtensions,
   configureUserMentionExtension,
   configureAnnotationExtension,
   getHandoverExtensions,
 } from "@rezible/tiptap-extensions";
-import type { MarkSpec, NodeSpec, SchemaSpec } from "@tiptap/pm/model";
 
 export const extensions = [
 	...configureBaseExtensions(false),
@@ -19,6 +21,11 @@ export const handoverSchema = getSchema(getHandoverExtensions());
 export const schema = getSchema(extensions);
 
 export const documentTransformer = TiptapTransformer.extensions(extensions);
+
+export const emptyDocument = Y.encodeStateAsUpdate(documentTransformer.toYdoc(
+	{ type: 'doc', content: [{ type: 'paragraph' }] },
+	'default',
+));
 
 type transformedSpec = {
 	marks: Object;

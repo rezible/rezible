@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humago"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/openapi"
@@ -21,6 +22,7 @@ var (
 	ErrInvalidUser    = huma.Error401Unauthorized("invalid_user")
 	ErrInvalidTenant  = huma.Error401Unauthorized("invalid_tenant")
 	ErrUnknown        = huma.Error401Unauthorized("unknown")
+	ErrForbidden      = huma.Error403Forbidden("forbidden")
 )
 
 type SecurityScheme = huma.SecurityScheme
@@ -150,7 +152,9 @@ func CreateAuthContext(c huma.Context, auth rez.AuthService) (huma.Context, erro
 }
 
 func extractRequestTokenAndMethodScopes(c huma.Context, opSecurity SecurityMethods) (string, []string) {
-	cookieToken, bearerToken := getRequestTokens(c)
+	r, _ := humago.Unwrap(c)
+	cookieToken := GetRequestAuthCookieToken(r)
+	bearerToken := GetRequestAuthBearerToken(r)
 
 	for _, methodScopes := range opSecurity {
 		cookieTokenScopes, cookieTokenAllowed := methodScopes[SecurityMethodCookieToken]
@@ -165,14 +169,18 @@ func extractRequestTokenAndMethodScopes(c huma.Context, opSecurity SecurityMetho
 	return "", nil
 }
 
-func getRequestTokens(c huma.Context) (cookieToken string, bearerToken string) {
-	if cookie, cookieErr := huma.ReadCookie(c, accessTokenCookieName); cookieErr == nil {
-		cookieToken = cookie.Value
+func GetRequestAuthCookieToken(r *http.Request) string {
+	if cookie, cookieErr := r.Cookie(accessTokenCookieName); cookieErr == nil {
+		return cookie.Value
 	}
-	if split := strings.Split(c.Header("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
-		bearerToken = split[1]
+	return ""
+}
+
+func GetRequestAuthBearerToken(r *http.Request) string {
+	if split := strings.Split(r.Header.Get("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
+		return split[1]
 	}
-	return cookieToken, bearerToken
+	return ""
 }
 
 func writeAuthStatusError(api huma.API, c huma.Context, err error) {

@@ -761,19 +761,10 @@ export type CreateTeamResponseBody = {
     data: Team;
 };
 
-export type Document = {
-    attributes: DocumentAttributes;
-    id: string;
-};
-
 export type DocumentAccess = {
     canEdit: boolean;
     canManage: boolean;
-    user: User;
-};
-
-export type DocumentAttributes = {
-    content: string;
+    canView: boolean;
 };
 
 export type ErrorDetail = {
@@ -1810,14 +1801,6 @@ export type ListWatchedOncallRostersResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type LoadDocumentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Document;
-};
-
 export type MeetingAttendees = {
     private: boolean;
     teams: Array<string> | null;
@@ -2253,26 +2236,6 @@ export type UpdateConfiguredIntegrationPreferencesResponseBody = {
      */
     readonly $schema?: string;
     data: ConfiguredIntegration;
-};
-
-export type UpdateDocumentRequestAttributes = {
-    content: unknown;
-};
-
-export type UpdateDocumentRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateDocumentRequestAttributes;
-};
-
-export type UpdateDocumentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Document;
 };
 
 export type UpdateEventAnnotationRequestAttributes = {
@@ -3674,100 +3637,6 @@ export type GetDocumentAccessResponses = {
 };
 
 export type GetDocumentAccessResponse = GetDocumentAccessResponses[keyof GetDocumentAccessResponses];
-
-export type LoadDocumentData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/documents/{id}/load';
-};
-
-export type LoadDocumentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type LoadDocumentError = LoadDocumentErrors[keyof LoadDocumentErrors];
-
-export type LoadDocumentResponses = {
-    /**
-     * OK
-     */
-    200: LoadDocumentResponseBody;
-};
-
-export type LoadDocumentResponse = LoadDocumentResponses[keyof LoadDocumentResponses];
-
-export type UpdateDocumentData = {
-    body: UpdateDocumentRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/documents/{id}/update';
-};
-
-export type UpdateDocumentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateDocumentError = UpdateDocumentErrors[keyof UpdateDocumentErrors];
-
-export type UpdateDocumentResponses = {
-    /**
-     * OK
-     */
-    200: UpdateDocumentResponseBody;
-};
-
-export type UpdateDocumentResponse = UpdateDocumentResponses[keyof UpdateDocumentResponses];
 
 export type ListEventAnnotationsData = {
     body?: never;

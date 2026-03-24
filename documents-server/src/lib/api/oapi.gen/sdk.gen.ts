@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetDocumentAccessData, GetDocumentAccessErrors, GetDocumentAccessResponses, LoadDocumentData, LoadDocumentErrors, LoadDocumentResponses, UpdateDocumentData, UpdateDocumentErrors, UpdateDocumentResponses } from './types.gen';
+import type { ClearAuthSessionData, ClearAuthSessionErrors, ClearAuthSessionResponses, CompleteAuthSessionFlowData, CompleteAuthSessionFlowErrors, CompleteAuthSessionFlowResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDocumentAccessData, GetDocumentAccessErrors, GetDocumentAccessResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, RefreshAuthSessionData, RefreshAuthSessionErrors, RefreshAuthSessionResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -18,53 +18,92 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
     meta?: Record<string, unknown>;
 };
 
-export class Documents {
-    /**
-     * Get user access for a document
-     */
-    public static getDocumentAccess<ThrowOnError extends boolean = false>(options: Options<GetDocumentAccessData, ThrowOnError>) {
-        return (options.client ?? client).post<GetDocumentAccessResponses, GetDocumentAccessErrors, ThrowOnError>({
-            security: [{
-                    in: 'cookie',
-                    name: 'rez_access_token',
-                    type: 'apiKey'
-                }, { scheme: 'bearer', type: 'http' }],
-            url: '/documents/{id}/access',
-            ...options
-        });
+/**
+ * Get the current Auth Session
+ */
+export const getCurrentAuthSession = <ThrowOnError extends boolean = false>(options?: Options<GetCurrentAuthSessionData, ThrowOnError>) => (options?.client ?? client).get<GetCurrentAuthSessionResponses, GetCurrentAuthSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/auth_session',
+    ...options
+});
+
+/**
+ * Complete an Auth Session flow
+ */
+export const completeAuthSessionFlow = <ThrowOnError extends boolean = false>(options: Options<CompleteAuthSessionFlowData, ThrowOnError>) => (options.client ?? client).post<CompleteAuthSessionFlowResponses, CompleteAuthSessionFlowErrors, ThrowOnError>({
+    url: '/auth_session',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
     }
-    
-    /**
-     * Load document
-     */
-    public static loadDocument<ThrowOnError extends boolean = false>(options: Options<LoadDocumentData, ThrowOnError>) {
-        return (options.client ?? client).get<LoadDocumentResponses, LoadDocumentErrors, ThrowOnError>({
-            security: [{
-                    in: 'cookie',
-                    name: 'rez_access_token',
-                    type: 'apiKey'
-                }, { scheme: 'bearer', type: 'http' }],
-            url: '/documents/{id}/load',
-            ...options
-        });
-    }
-    
-    /**
-     * Update document
-     */
-    public static updateDocument<ThrowOnError extends boolean = false>(options: Options<UpdateDocumentData, ThrowOnError>) {
-        return (options.client ?? client).post<UpdateDocumentResponses, UpdateDocumentErrors, ThrowOnError>({
-            security: [{
-                    in: 'cookie',
-                    name: 'rez_access_token',
-                    type: 'apiKey'
-                }, { scheme: 'bearer', type: 'http' }],
-            url: '/documents/{id}/update',
-            ...options,
-            headers: {
-                'Content-Type': 'application/json',
-                ...options.headers
-            }
-        });
-    }
-}
+});
+
+/**
+ * Clear an active Auth Session
+ */
+export const clearAuthSession = <ThrowOnError extends boolean = false>(options?: Options<ClearAuthSessionData, ThrowOnError>) => (options?.client ?? client).post<ClearAuthSessionResponses, ClearAuthSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }],
+    url: '/auth_session/clear',
+    ...options
+});
+
+/**
+ * List Notifications for the Current User
+ */
+export const listUserNotifications = <ThrowOnError extends boolean = false>(options?: Options<ListUserNotificationsData, ThrowOnError>) => (options?.client ?? client).get<ListUserNotificationsResponses, ListUserNotificationsErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/auth_session/notifications',
+    ...options
+});
+
+/**
+ * Refresh an active Auth Session
+ */
+export const refreshAuthSession = <ThrowOnError extends boolean = false>(options?: Options<RefreshAuthSessionData, ThrowOnError>) => (options?.client ?? client).post<RefreshAuthSessionResponses, RefreshAuthSessionErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }],
+    url: '/auth_session/refresh',
+    ...options
+});
+
+/**
+ * Get user access for a document
+ */
+export const getDocumentAccess = <ThrowOnError extends boolean = false>(options: Options<GetDocumentAccessData, ThrowOnError>) => (options.client ?? client).post<GetDocumentAccessResponses, GetDocumentAccessErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/documents/{id}/access',
+    ...options
+});
+
+/**
+ * Delete a Notification for the Current User
+ */
+export const deleteUserNotification = <ThrowOnError extends boolean = false>(options: Options<DeleteUserNotificationData, ThrowOnError>) => (options.client ?? client).delete<DeleteUserNotificationResponses, DeleteUserNotificationErrors, ThrowOnError>({
+    security: [{
+            in: 'cookie',
+            name: 'rez_access_token',
+            type: 'apiKey'
+        }, { scheme: 'bearer', type: 'http' }],
+    url: '/user_session/notifications/{id}',
+    ...options
+});

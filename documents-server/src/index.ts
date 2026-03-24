@@ -1,12 +1,13 @@
 import { Server } from "@hocuspocus/server";
 import { Logger } from "@hocuspocus/extension-logger";
-import { RezibleServerProxy } from "./rezible-proxy";
+import { DocumentsServerExtension } from "./documents";
 
 type Config = {
 	name: string;
 	host: string;
 	port: number;
 	apiUrl: string;
+	dbUrl: string;
 }
 
 const loadConfig = (): Config => {
@@ -17,15 +18,13 @@ const loadConfig = (): Config => {
 	if (port < 1024) port = 7003;
 
 	const apiUrl = process.env.API_URL ?? "";
+	const dbUrl = process.env.DB_URL ?? "";
 
-	return { name, host, port, apiUrl };
+	return { name, host, port, apiUrl, dbUrl };
 }
 
 const createServer = () => {
     const cfg = loadConfig();
-	const logger = new Logger();
-    const rezProxy = new RezibleServerProxy(cfg.apiUrl);
-	
 	const server = new Server({
 		name: cfg.name,
 		address: cfg.host,
@@ -35,11 +34,10 @@ const createServer = () => {
 		maxDebounce: 30000,
 		quiet: false,
 		extensions: [
-			logger,
-            rezProxy,
+			new Logger(),
+            new DocumentsServerExtension(cfg.apiUrl, cfg.dbUrl),
 		],
 	});
-
 	return server;
 }
 

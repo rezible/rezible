@@ -15,41 +15,38 @@ export type User = {
     id: string;
 };
 
-export type UpdateDocumentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Document;
+export type UserNotificationAttributes = {
+    text: string;
 };
 
-export type DocumentAttributes = {
-    content: string;
-};
-
-export type Document = {
-    attributes: DocumentAttributes;
+export type UserNotification = {
+    attributes: UserNotificationAttributes;
     id: string;
 };
 
-export type UpdateDocumentRequestBody = {
+export type ResponsePagination = {
+    next?: string;
+    previous?: string;
+    total: number;
+};
+
+export type OrganizationAttributes = {
+    name: string;
+    setupRequired: boolean;
+};
+
+export type Organization = {
+    attributes: OrganizationAttributes;
+    id: string;
+};
+
+export type ListNotificationsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateDocumentRequestAttributes;
-};
-
-export type UpdateDocumentRequestAttributes = {
-    content: unknown;
-};
-
-export type LoadDocumentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Document;
+    data: Array<UserNotification>;
+    pagination: ResponsePagination;
 };
 
 export type GetDocumentAccessResponseBody = {
@@ -63,6 +60,20 @@ export type GetDocumentAccessResponseBody = {
 export type DocumentAccess = {
     canEdit: boolean;
     canManage: boolean;
+    canView: boolean;
+};
+
+export type GetCurrentAuthSessionResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AuthSession;
+};
+
+export type AuthSession = {
+    expiresAt: string;
+    organization: Organization;
     user: User;
 };
 
@@ -112,6 +123,266 @@ export type ErrorDetail = {
     value?: unknown;
 };
 
+export type Cookie = {
+    Domain: string;
+    Expires: string;
+    HttpOnly: boolean;
+    MaxAge: number;
+    Name: string;
+    Partitioned: boolean;
+    Path: string;
+    Quoted: boolean;
+    Raw: string;
+    RawExpires: string;
+    SameSite: number;
+    Secure: boolean;
+    Unparsed: Array<string> | null;
+    Value: string;
+};
+
+export type CompleteAuthSessionFlowRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CompleteAuthSessionFlowRequestAttributes;
+};
+
+export type CompleteAuthSessionFlowRequestAttributes = {
+    code: string;
+    verifier: string;
+};
+
+export type GetCurrentAuthSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth_session';
+};
+
+export type GetCurrentAuthSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetCurrentAuthSessionError = GetCurrentAuthSessionErrors[keyof GetCurrentAuthSessionErrors];
+
+export type GetCurrentAuthSessionResponses = {
+    /**
+     * OK
+     */
+    200: GetCurrentAuthSessionResponseBody;
+};
+
+export type GetCurrentAuthSessionResponse = GetCurrentAuthSessionResponses[keyof GetCurrentAuthSessionResponses];
+
+export type CompleteAuthSessionFlowData = {
+    body: CompleteAuthSessionFlowRequestBody;
+    path?: never;
+    query?: never;
+    url: '/auth_session';
+};
+
+export type CompleteAuthSessionFlowErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CompleteAuthSessionFlowError = CompleteAuthSessionFlowErrors[keyof CompleteAuthSessionFlowErrors];
+
+export type CompleteAuthSessionFlowResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type CompleteAuthSessionFlowResponse = CompleteAuthSessionFlowResponses[keyof CompleteAuthSessionFlowResponses];
+
+export type ClearAuthSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth_session/clear';
+};
+
+export type ClearAuthSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ClearAuthSessionError = ClearAuthSessionErrors[keyof ClearAuthSessionErrors];
+
+export type ClearAuthSessionResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ClearAuthSessionResponse = ClearAuthSessionResponses[keyof ClearAuthSessionResponses];
+
+export type ListUserNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/auth_session/notifications';
+};
+
+export type ListUserNotificationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListUserNotificationsError = ListUserNotificationsErrors[keyof ListUserNotificationsErrors];
+
+export type ListUserNotificationsResponses = {
+    /**
+     * OK
+     */
+    200: ListNotificationsResponseBody;
+};
+
+export type ListUserNotificationsResponse = ListUserNotificationsResponses[keyof ListUserNotificationsResponses];
+
+export type RefreshAuthSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/auth_session/refresh';
+};
+
+export type RefreshAuthSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RefreshAuthSessionError = RefreshAuthSessionErrors[keyof RefreshAuthSessionErrors];
+
+export type RefreshAuthSessionResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type RefreshAuthSessionResponse = RefreshAuthSessionResponses[keyof RefreshAuthSessionResponses];
+
 export type GetDocumentAccessData = {
     body?: never;
     path: {
@@ -159,16 +430,16 @@ export type GetDocumentAccessResponses = {
 
 export type GetDocumentAccessResponse = GetDocumentAccessResponses[keyof GetDocumentAccessResponses];
 
-export type LoadDocumentData = {
+export type DeleteUserNotificationData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/documents/{id}/load';
+    url: '/user_session/notifications/{id}';
 };
 
-export type LoadDocumentErrors = {
+export type DeleteUserNotificationErrors = {
     /**
      * Bad Request
      */
@@ -195,60 +466,13 @@ export type LoadDocumentErrors = {
     500: ErrorModel;
 };
 
-export type LoadDocumentError = LoadDocumentErrors[keyof LoadDocumentErrors];
+export type DeleteUserNotificationError = DeleteUserNotificationErrors[keyof DeleteUserNotificationErrors];
 
-export type LoadDocumentResponses = {
+export type DeleteUserNotificationResponses = {
     /**
-     * OK
+     * No Content
      */
-    200: LoadDocumentResponseBody;
+    204: void;
 };
 
-export type LoadDocumentResponse = LoadDocumentResponses[keyof LoadDocumentResponses];
-
-export type UpdateDocumentData = {
-    body: UpdateDocumentRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/documents/{id}/update';
-};
-
-export type UpdateDocumentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateDocumentError = UpdateDocumentErrors[keyof UpdateDocumentErrors];
-
-export type UpdateDocumentResponses = {
-    /**
-     * OK
-     */
-    200: UpdateDocumentResponseBody;
-};
-
-export type UpdateDocumentResponse = UpdateDocumentResponses[keyof UpdateDocumentResponses];
+export type DeleteUserNotificationResponse = DeleteUserNotificationResponses[keyof DeleteUserNotificationResponses];

@@ -7,16 +7,14 @@ export const createConfig = (input: UserConfig["input"], output: UserConfig["out
 		plugins: [
 			{name: "@hey-api/client-fetch"},
 			{name: "@hey-api/typescript", enums: "javascript"},
-			{name: '@hey-api/sdk', asClass: true},
+			{name: "@hey-api/sdk"},
 		],
 		logs: { file: false },
 		parser: {
 			filters: {
-				tags: { include: ["documents"] },
+				tags: { include: ["documents", "Auth Sessions"] },
 			},
-			transforms: {
-				readWrite: false,
-			}
+			transforms: { readWrite: false }
 		}
 	});
 }

@@ -99,6 +99,10 @@ func (s *RetrospectiveService) getRetrospectiveKind(ctx context.Context, inc *en
 }
 
 func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
+	exists, queryErr := s.db.Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Exist(ctx)
+	if exists || queryErr != nil {
+		return nil, queryErr
+	}
 	kind, kindErr := s.getRetrospectiveKind(ctx, inc)
 	if kindErr != nil {
 		return nil, fmt.Errorf("get retrospective kind: %w", kindErr)
@@ -108,6 +112,7 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 	createTxFn := func(tx *ent.Tx) error {
 		createdDoc, createDocErr := tx.Document.Create().
 			SetContent([]byte("")).
+			SetAccessRestricted(false).
 			Save(ctx)
 		if createDocErr != nil {
 			return fmt.Errorf("create doc: %w", createDocErr)

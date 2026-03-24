@@ -15,7 +15,7 @@ CREATE TABLE "documents" ("id" uuid NOT NULL, "content" bytea NOT NULL, "access_
 -- create index "document_tenant_id" to table: "documents"
 CREATE INDEX "document_tenant_id" ON "documents" ("tenant_id");
 -- create "document_accesses" table
-CREATE TABLE "document_accesses" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "can_edit" boolean NOT NULL DEFAULT false, "can_manage" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, "document_id" uuid NOT NULL, "user_id" uuid NULL, "team_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "document_accesses" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "can_view" boolean NOT NULL DEFAULT false, "can_edit" boolean NOT NULL DEFAULT false, "can_manage" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, "document_id" uuid NOT NULL, "user_id" uuid NULL, "team_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "documentaccess_tenant_id" to table: "document_accesses"
 CREATE INDEX "documentaccess_tenant_id" ON "document_accesses" ("tenant_id");
 -- create "events" table
@@ -187,7 +187,7 @@ CREATE TABLE "provider_sync_histories" ("id" uuid NOT NULL, "data_type" characte
 -- create index "providersynchistory_tenant_id" to table: "provider_sync_histories"
 CREATE INDEX "providersynchistory_tenant_id" ON "provider_sync_histories" ("tenant_id");
 -- create "retrospectives" table
-CREATE TABLE "retrospectives" ("id" uuid NOT NULL, "type" character varying NOT NULL, "state" character varying NOT NULL, "document_id" uuid NOT NULL, "incident_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "system_analysis_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "retrospectives" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "state" character varying NOT NULL, "document_id" uuid NOT NULL, "incident_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "system_analysis_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "retrospective_tenant_id" to table: "retrospectives"
 CREATE INDEX "retrospective_tenant_id" ON "retrospectives" ("tenant_id");
 -- create index "retrospectives_document_id_key" to table: "retrospectives"

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/koding/websocketproxy"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rs/zerolog/log"
 
@@ -89,17 +90,45 @@ func ensureSlashPrefix(s string) string {
 
 func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/health", s.healthCheckHandler)
+	r.Get("/health", s.makeHealthCheckHandler())
 	r.Mount(oapiv1.VersionPrefix, s.makeApiV1Handler(auth, v1h))
 	r.Mount(ensureSlashPrefix(s.cfg.WebhooksPath), s.makeWebhooksHandler())
 	if s.cfg.DocumentsProxy.Enabled {
-		r.Handle(s.cfg.DocumentsProxy.ProxyPath, websocketproxy.NewProxy(s.cfg.DocumentsProxy.serverUrl))
+		r.Handle(s.cfg.DocumentsProxy.ProxyPath, s.makeDocumentsProxyHandler(auth))
 	}
 	return r
 }
 
-func (s *Server) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+func (s *Server) makeDocumentsProxyHandler(auth rez.AuthService) http.Handler {
+	headerKey := "X-Rez-Tenant-ID"
+	setAuthContext := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			authCtx, authErr := auth.CreateAuthSessionContext(r.Context(), oapiv1.GetRequestAuthCookieToken(r))
+			if authErr != nil {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			tenantId, tenantOk := access.GetTenantId(authCtx)
+			if !tenantOk {
+				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+				return
+			}
+			r.Header.Set(headerKey, fmt.Sprintf("%d", tenantId))
+			next.ServeHTTP(w, r.WithContext(authCtx))
+		})
+	}
+	copyTenantIdHeaderFn := func(r *http.Request, h http.Header) {
+		h.Set(headerKey, r.Header.Get(headerKey))
+	}
+	proxy := websocketproxy.NewProxy(s.cfg.DocumentsProxy.serverUrl)
+	proxy.Director = copyTenantIdHeaderFn
+	return chi.Chain(setAuthContext).Handler(proxy)
+}
+
+func (s *Server) makeHealthCheckHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func (s *Server) makeApiV1Handler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
