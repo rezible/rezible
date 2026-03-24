@@ -489,11 +489,6 @@ export type CreatePlaybookResponseBody = {
     data: Playbook;
 };
 
-export type CreateRetrospectiveAttributes = {
-    incidentId: string;
-    systemAnalysis: boolean;
-};
-
 export type CreateRetrospectiveCommentAttributes = {
     content: unknown;
 };
@@ -512,22 +507,6 @@ export type CreateRetrospectiveCommentResponseBody = {
      */
     readonly $schema?: string;
     data: RetrospectiveComment;
-};
-
-export type CreateRetrospectiveRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateRetrospectiveAttributes;
-};
-
-export type CreateRetrospectiveResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Retrospective;
 };
 
 export type CreateRetrospectiveReviewRequestBody = {
@@ -1103,14 +1082,6 @@ export type GetRetrospectiveCommentResponseBody = {
      */
     readonly $schema?: string;
     data: RetrospectiveComment;
-};
-
-export type GetRetrospectiveForIncidentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Retrospective;
 };
 
 export type GetRetrospectiveResponseBody = {
@@ -2049,8 +2020,8 @@ export type RetrospectiveCommentAttributes = {
 export type RetrospectiveReportSection = {
     description: string;
     field: string;
+    kind: 'field';
     title: string;
-    type: 'field';
 };
 
 export type RetrospectiveReview = {
@@ -2633,6 +2604,10 @@ export type UpdatePlaybookResponseBody = {
     data: Playbook;
 };
 
+export type UpdateRetrospectiveAttributes = {
+    [key: string]: never;
+};
+
 export type UpdateRetrospectiveCommentAttributes = {
     content?: string;
     resolved?: boolean;
@@ -2652,6 +2627,22 @@ export type UpdateRetrospectiveCommentResponseBody = {
      */
     readonly $schema?: string;
     data: RetrospectiveComment;
+};
+
+export type UpdateRetrospectiveRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateRetrospectiveAttributes;
+};
+
+export type UpdateRetrospectiveResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Retrospective;
 };
 
 export type UpdateRetrospectiveReviewRequestAttributes = {
@@ -6191,53 +6182,6 @@ export type CreateIncidentMilestoneResponses = {
 
 export type CreateIncidentMilestoneResponse = CreateIncidentMilestoneResponses[keyof CreateIncidentMilestoneResponses];
 
-export type GetRetrospectiveForIncidentData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incidents/{id}/retrospective';
-};
-
-export type GetRetrospectiveForIncidentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetRetrospectiveForIncidentError = GetRetrospectiveForIncidentErrors[keyof GetRetrospectiveForIncidentErrors];
-
-export type GetRetrospectiveForIncidentResponses = {
-    /**
-     * OK
-     */
-    200: GetRetrospectiveForIncidentResponseBody;
-};
-
-export type GetRetrospectiveForIncidentResponse = GetRetrospectiveForIncidentResponses[keyof GetRetrospectiveForIncidentResponses];
-
 export type ListAvailableIntegrationsData = {
     body?: never;
     path?: never;
@@ -8573,51 +8517,6 @@ export type ListRetrospectivesResponses = {
 
 export type ListRetrospectivesResponse = ListRetrospectivesResponses[keyof ListRetrospectivesResponses];
 
-export type CreateRetrospectiveData = {
-    body: CreateRetrospectiveRequestBody;
-    path?: never;
-    query?: never;
-    url: '/retrospectives';
-};
-
-export type CreateRetrospectiveErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateRetrospectiveError = CreateRetrospectiveErrors[keyof CreateRetrospectiveErrors];
-
-export type CreateRetrospectiveResponses = {
-    /**
-     * OK
-     */
-    200: CreateRetrospectiveResponseBody;
-};
-
-export type CreateRetrospectiveResponse = CreateRetrospectiveResponses[keyof CreateRetrospectiveResponses];
-
 export type GetRetrospectiveData = {
     body?: never;
     path: {
@@ -8664,6 +8563,53 @@ export type GetRetrospectiveResponses = {
 };
 
 export type GetRetrospectiveResponse = GetRetrospectiveResponses[keyof GetRetrospectiveResponses];
+
+export type UpdateRetrospectiveData = {
+    body: UpdateRetrospectiveRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/retrospectives/{id}';
+};
+
+export type UpdateRetrospectiveErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateRetrospectiveError = UpdateRetrospectiveErrors[keyof UpdateRetrospectiveErrors];
+
+export type UpdateRetrospectiveResponses = {
+    /**
+     * OK
+     */
+    200: UpdateRetrospectiveResponseBody;
+};
+
+export type UpdateRetrospectiveResponse = UpdateRetrospectiveResponses[keyof UpdateRetrospectiveResponses];
 
 export type ListRetrospectiveCommentsData = {
     body?: never;

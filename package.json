@@ -6,7 +6,7 @@
     "codegen:api": "openapi-ts -f ./scripts/openapi-ts.config.ts --no-log-file"
   },
   "devDependencies": {
-    "@hey-api/openapi-ts": "0.88.0"
+    "@hey-api/openapi-ts": "0.94.4"
   },
   "dependencies": {
     "@hey-api/client-fetch": "^0.13.1",
