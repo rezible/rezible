@@ -65,7 +65,7 @@ var ListIncidentRoles = huma.Operation{
 }
 
 type ListIncidentRolesRequest ListRequest
-type ListIncidentRolesResponse PaginatedResponse[IncidentRole]
+type ListIncidentRolesResponse ListResponse[IncidentRole]
 
 var GetIncidentRole = huma.Operation{
 	OperationID: "get-incident-role",

@@ -67,7 +67,7 @@ var ListIncidentSeverities = huma.Operation{
 }
 
 type ListIncidentSeveritiesRequest ListRequest
-type ListIncidentSeveritiesResponse PaginatedResponse[IncidentSeverity]
+type ListIncidentSeveritiesResponse ListResponse[IncidentSeverity]
 
 var GetIncidentSeverity = huma.Operation{
 	OperationID: "get-incident-severity",

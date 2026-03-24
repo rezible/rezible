@@ -1,24 +1,15 @@
 import { API_URL } from "$lib/config";
-import { createConfig, type ClientOptions } from "./oapi.gen/client";
 import { client } from "./oapi.gen/client.gen";
-import type { ErrorModel, ResponsePagination } from "./oapi.gen/types.gen";
+import type { ErrorModel } from "./oapi.gen";
 
-import { type Options } from "@hey-api/client-fetch";
-import type { CreateQueryOptions } from "@tanstack/svelte-query";
-
-const clientConfig = createConfig<ClientOptions>({ 
+client.setConfig({
 	baseUrl: API_URL,
 	credentials: "include",
 });
-client.setConfig(clientConfig);
-
-client.interceptors.error.use(async (err, resp, req, opts) => {
+client.interceptors.error.use(async (rawErr, resp, req, opts) => {
 	const status = resp.status;
-	if (!!err) return unwrapApiError(err as Error, status);
-	return { title: "Unknown Error", status, detail: "" } as ErrorModel;
-});
-
-const unwrapApiError = (err: Error, status = 503): ErrorModel => {
+	if (!rawErr) return { title: "Unknown Error", status, detail: "" } as ErrorModel;
+	const err = rawErr as Error;
 	try {
 		if ("detail" in err) return err as ErrorModel;
 		return JSON.parse(err.message) as ErrorModel;
@@ -29,33 +20,9 @@ const unwrapApiError = (err: Error, status = 503): ErrorModel => {
 			status,
 		};
 	}
-};
-
-export const defaultListQueryLimit = 10;
-
-export type ListQueryParameters = {
-	limit?: number;
-	offset?: number;
-	search?: string;
-	archived?: boolean;
-};
-export type ListFuncQueryOptions = Options<{
-	query?: ListQueryParameters;
-	url: string;
-}>;
-
-export type PaginatedResponse<T> = {
-	readonly $schema?: string;
-	data: Array<T>;
-	pagination: ResponsePagination;
-};
-export type ListQueryOptionsFunc<T> = (
-	opts: ListFuncQueryOptions
-) => CreateQueryOptions<PaginatedResponse<T>, Error, PaginatedResponse<T>, any>;
+});
 
 export { client };
-
-export const simulateApiDelay = async (ms: number) => (await new Promise(res => setTimeout(res, ms)));
 
 export * from "./oapi.gen/@tanstack/svelte-query.gen";
 export * from "./oapi.gen/types.gen";

@@ -151,7 +151,7 @@ type ListIncidentsRequest struct {
 	ListRequest
 	TeamId uuid.UUID `query:"teamId" required:"false"`
 }
-type ListIncidentsResponse PaginatedResponse[Incident]
+type ListIncidentsResponse ListResponse[Incident]
 
 var CreateIncident = huma.Operation{
 	OperationID: "create-incident",

@@ -98,7 +98,7 @@ var ListIncidentFields = huma.Operation{
 }
 
 type ListIncidentFieldsRequest ListRequest
-type ListIncidentFieldsResponse PaginatedResponse[IncidentField]
+type ListIncidentFieldsResponse ListResponse[IncidentField]
 
 var GetIncidentField = huma.Operation{
 	OperationID: "get-incident-field",

@@ -87,7 +87,7 @@ var ListAvailableIntegrations = huma.Operation{
 }
 
 type ListAvailableIntegrationsRequest ListRequest
-type ListAvailableIntegrationsResponse PaginatedResponse[AvailableIntegration]
+type ListAvailableIntegrationsResponse ListResponse[AvailableIntegration]
 
 var ListConfiguredIntegrations = huma.Operation{
 	OperationID: "list-configured-integrations",
@@ -99,7 +99,7 @@ var ListConfiguredIntegrations = huma.Operation{
 }
 
 type ListConfiguredIntegrationsRequest ListRequest
-type ListConfiguredIntegrationsResponse PaginatedResponse[ConfiguredIntegration]
+type ListConfiguredIntegrationsResponse ListResponse[ConfiguredIntegration]
 
 var ConfigureIntegration = huma.Operation{
 	OperationID: "configure-integration",

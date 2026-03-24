@@ -64,7 +64,7 @@ var ListIncidentTypes = huma.Operation{
 }
 
 type ListIncidentTypesRequest ListRequest
-type ListIncidentTypesResponse PaginatedResponse[IncidentType]
+type ListIncidentTypesResponse ListResponse[IncidentType]
 
 var GetIncidentType = huma.Operation{
 	OperationID: "get-incident-type",

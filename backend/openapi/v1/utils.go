@@ -103,12 +103,7 @@ type (
 	}
 	ListResponse[T any] struct {
 		Body struct {
-			Data []T `json:"data"`
-		}
-	}
-	PaginatedResponse[T any] struct {
-		Body struct {
-			Data       []T                `json:"data"`
+			Data       []T                `json:"data" nullable:"false"`
 			Pagination ResponsePagination `json:"pagination"`
 		}
 	}

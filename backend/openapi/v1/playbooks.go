@@ -67,7 +67,7 @@ type ListPlaybooksRequest struct {
 	TeamId  uuid.UUID `query:"teamId" required:"false"`
 	AlertId uuid.UUID `query:"alertId" required:"false"`
 }
-type ListPlaybooksResponse PaginatedResponse[Playbook]
+type ListPlaybooksResponse ListResponse[Playbook]
 
 var GetPlaybook = huma.Operation{
 	OperationID: "get-playbook",

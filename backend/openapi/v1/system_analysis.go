@@ -175,7 +175,7 @@ var ListSystemAnalysisComponents = huma.Operation{
 }
 
 type ListSystemAnalysisComponentsRequest ListIdRequest
-type ListSystemAnalysisComponentsResponse PaginatedResponse[SystemAnalysisComponent]
+type ListSystemAnalysisComponentsResponse ListResponse[SystemAnalysisComponent]
 
 var GetSystemAnalysisComponent = huma.Operation{
 	OperationID: "get-system-analysis-component",
@@ -231,7 +231,7 @@ type ListSystemAnalysisRelationshipsRequest struct {
 	ListIdRequest
 	AnalysisComponentId uuid.UUID `query:"analysisComponentId"`
 }
-type ListSystemAnalysisRelationshipsResponse PaginatedResponse[SystemAnalysisRelationship]
+type ListSystemAnalysisRelationshipsResponse ListResponse[SystemAnalysisRelationship]
 
 var GetSystemAnalysisRelationship = huma.Operation{
 	OperationID: "get-system-analysis-relationship",

@@ -149,7 +149,7 @@ var ListMeetingSchedules = huma.Operation{
 type ListMeetingSchedulesRequest struct {
 	ListRequest
 }
-type ListMeetingSchedulesResponse PaginatedResponse[MeetingSchedule]
+type ListMeetingSchedulesResponse ListResponse[MeetingSchedule]
 
 var GetMeetingSchedule = huma.Operation{
 	OperationID: "get-meeting-schedule",
@@ -232,7 +232,7 @@ type ListMeetingSessionsRequest struct {
 	From              string    `query:"from" required:"false"`
 	To                string    `query:"to" required:"false"`
 }
-type ListMeetingSessionsResponse PaginatedResponse[MeetingSession]
+type ListMeetingSessionsResponse ListResponse[MeetingSession]
 
 var GetMeetingSession = huma.Operation{
 	OperationID: "get-meeting-session",

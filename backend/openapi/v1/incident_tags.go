@@ -61,7 +61,7 @@ var ListIncidentTags = huma.Operation{
 }
 
 type ListIncidentTagsRequest ListRequest
-type ListIncidentTagsResponse PaginatedResponse[IncidentTag]
+type ListIncidentTagsResponse ListResponse[IncidentTag]
 
 var GetIncidentTag = huma.Operation{
 	OperationID: "get-incident-tag",

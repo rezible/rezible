@@ -105,7 +105,7 @@ var ListTeams = huma.Operation{
 }
 
 type ListTeamsRequest ListRequest
-type ListTeamsResponse PaginatedResponse[Team]
+type ListTeamsResponse ListResponse[Team]
 
 var CreateTeam = huma.Operation{
 	OperationID: "create-team",
@@ -175,7 +175,7 @@ type ListTeamMembershipsRequest struct {
 	TeamId uuid.UUID `query:"teamId" required:"false"`
 	UserId uuid.UUID `query:"userId" required:"false"`
 }
-type ListTeamMembershipsResponse PaginatedResponse[TeamMembership]
+type ListTeamMembershipsResponse ListResponse[TeamMembership]
 
 var CreateTeamMembership = huma.Operation{
 	OperationID: "create-team-membership",

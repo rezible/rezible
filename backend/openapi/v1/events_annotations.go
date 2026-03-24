@@ -99,7 +99,7 @@ type ListEventAnnotationsRequest struct {
 	ShiftIds   uuid.UUID `query:"shiftIds"`
 	WithEvents bool      `query:"withEvents"`
 }
-type ListEventAnnotationsResponse PaginatedResponse[EventAnnotation]
+type ListEventAnnotationsResponse ListResponse[EventAnnotation]
 
 var CreateEventAnnotation = huma.Operation{
 	OperationID: "create-event-annotation",

@@ -286,7 +286,7 @@ var ListSystemComponents = huma.Operation{
 type ListSystemComponentsRequest struct {
 	ListRequest
 }
-type ListSystemComponentsResponse PaginatedResponse[SystemComponent]
+type ListSystemComponentsResponse ListResponse[SystemComponent]
 
 var GetSystemComponent = huma.Operation{
 	OperationID: "get-system-component",
@@ -368,7 +368,7 @@ type ListSystemComponentRelationshipsRequest struct {
 	SourceId    uuid.UUID `query:"sourceId"`
 	TargetId    uuid.UUID `query:"targetId"`
 }
-type ListSystemComponentRelationshipsResponse PaginatedResponse[SystemComponentRelationship]
+type ListSystemComponentRelationshipsResponse ListResponse[SystemComponentRelationship]
 
 var GetSystemComponentRelationship = huma.Operation{
 	OperationID: "get-system-component-relationship",
@@ -440,7 +440,7 @@ var ListSystemComponentKinds = huma.Operation{
 type ListSystemComponentKindsRequest struct {
 	ListRequest
 }
-type ListSystemComponentKindsResponse PaginatedResponse[SystemComponentKind]
+type ListSystemComponentKindsResponse ListResponse[SystemComponentKind]
 
 var CreateSystemComponentKind = huma.Operation{
 	OperationID: "create-system-component-kind",

@@ -222,7 +222,7 @@ var ListIncidentDebriefQuestions = huma.Operation{
 }
 
 type ListIncidentDebriefQuestionsRequest ListRequest
-type ListIncidentDebriefQuestionsResponse PaginatedResponse[IncidentDebriefQuestion]
+type ListIncidentDebriefQuestionsResponse ListResponse[IncidentDebriefQuestion]
 
 var GetIncidentDebriefQuestion = huma.Operation{
 	OperationID: "get-debrief-question",

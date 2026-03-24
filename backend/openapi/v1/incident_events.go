@@ -200,7 +200,7 @@ var ListIncidentEvents = huma.Operation{
 }
 
 type ListIncidentEventsRequest ListIdRequest
-type ListIncidentEventsResponse PaginatedResponse[IncidentEvent]
+type ListIncidentEventsResponse ListResponse[IncidentEvent]
 
 var CreateIncidentEvent = huma.Operation{
 	OperationID: "create-incident-event",
@@ -259,4 +259,4 @@ var ListIncidentEventContributingFactors = huma.Operation{
 }
 
 type ListIncidentEventContributingFactorsRequest ListRequest
-type ListIncidentEventContributingFactorsResponse PaginatedResponse[IncidentEventContributingFactorCategory]
+type ListIncidentEventContributingFactorsResponse ListResponse[IncidentEventContributingFactorCategory]

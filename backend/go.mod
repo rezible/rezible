@@ -8,10 +8,10 @@ require (
 	github.com/ThreeDotsLabs/watermill v1.5.1
 	github.com/andygrunwald/go-jira v1.17.0
 	github.com/coreos/go-oidc/v3 v3.17.0
-	github.com/danielgtaylor/huma/v2 v2.35.0
+	github.com/danielgtaylor/huma/v2 v2.37.2
 	github.com/deckarep/golang-set/v2 v2.8.0
 	github.com/elimity-com/scim v0.0.0-20240320110924-172bf2aee9c8
-	github.com/go-chi/chi/v5 v5.2.4
+	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-faker/faker/v4 v4.7.0
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0

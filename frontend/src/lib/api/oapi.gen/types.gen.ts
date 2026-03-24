@@ -50,7 +50,8 @@ export type AddWatchedOncallRosterResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster> | null;
+    data: Array<OncallRoster>;
+    pagination: ResponsePagination;
 };
 
 export type Alert = {
@@ -172,6 +173,23 @@ export type ConfiguredIntegrationAttributes = {
     preferences: {
         [key: string]: unknown;
     };
+};
+
+export type Cookie = {
+    Domain: string;
+    Expires: string;
+    HttpOnly: boolean;
+    MaxAge: number;
+    Name: string;
+    Partitioned: boolean;
+    Path: string;
+    Quoted: boolean;
+    Raw: string;
+    RawExpires: string;
+    SameSite: number;
+    Secure: boolean;
+    Unparsed: Array<string> | null;
+    Value: string;
 };
 
 export type CreateEventAnnotationRequestAttributes = {
@@ -1466,7 +1484,7 @@ export type ListAlertIncidentLinksResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AlertIncidentLink> | null;
+    data: Array<AlertIncidentLink>;
     pagination: ResponsePagination;
 };
 
@@ -1475,7 +1493,7 @@ export type ListAlertsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Alert> | null;
+    data: Array<Alert>;
     pagination: ResponsePagination;
 };
 
@@ -1484,7 +1502,7 @@ export type ListAvailableIntegrationsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AvailableIntegration> | null;
+    data: Array<AvailableIntegration>;
     pagination: ResponsePagination;
 };
 
@@ -1493,7 +1511,7 @@ export type ListConfiguredIntegrationsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<ConfiguredIntegration> | null;
+    data: Array<ConfiguredIntegration>;
     pagination: ResponsePagination;
 };
 
@@ -1502,7 +1520,7 @@ export type ListEventAnnotationsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<EventAnnotation> | null;
+    data: Array<EventAnnotation>;
     pagination: ResponsePagination;
 };
 
@@ -1511,7 +1529,7 @@ export type ListEventsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Event> | null;
+    data: Array<Event>;
     pagination: ResponsePagination;
 };
 
@@ -1528,7 +1546,7 @@ export type ListIncidentDebriefQuestionsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentDebriefQuestion> | null;
+    data: Array<IncidentDebriefQuestion>;
     pagination: ResponsePagination;
 };
 
@@ -1545,7 +1563,7 @@ export type ListIncidentEventContributingFactorsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentEventContributingFactorCategory> | null;
+    data: Array<IncidentEventContributingFactorCategory>;
     pagination: ResponsePagination;
 };
 
@@ -1554,7 +1572,7 @@ export type ListIncidentEventsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentEvent> | null;
+    data: Array<IncidentEvent>;
     pagination: ResponsePagination;
 };
 
@@ -1563,7 +1581,7 @@ export type ListIncidentFieldsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentField> | null;
+    data: Array<IncidentField>;
     pagination: ResponsePagination;
 };
 
@@ -1572,7 +1590,7 @@ export type ListIncidentMilestonesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentMilestone> | null;
+    data: Array<IncidentMilestone>;
     pagination: ResponsePagination;
 };
 
@@ -1581,7 +1599,7 @@ export type ListIncidentRolesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentRole> | null;
+    data: Array<IncidentRole>;
     pagination: ResponsePagination;
 };
 
@@ -1590,7 +1608,7 @@ export type ListIncidentSeveritiesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentSeverity> | null;
+    data: Array<IncidentSeverity>;
     pagination: ResponsePagination;
 };
 
@@ -1599,7 +1617,7 @@ export type ListIncidentTagsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentTag> | null;
+    data: Array<IncidentTag>;
     pagination: ResponsePagination;
 };
 
@@ -1608,7 +1626,7 @@ export type ListIncidentTypesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentType> | null;
+    data: Array<IncidentType>;
     pagination: ResponsePagination;
 };
 
@@ -1617,7 +1635,7 @@ export type ListIncidentsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Incident> | null;
+    data: Array<Incident>;
     pagination: ResponsePagination;
 };
 
@@ -1626,7 +1644,7 @@ export type ListMeetingSchedulesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<MeetingSchedule> | null;
+    data: Array<MeetingSchedule>;
     pagination: ResponsePagination;
 };
 
@@ -1635,7 +1653,7 @@ export type ListMeetingSessionsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<MeetingSession> | null;
+    data: Array<MeetingSession>;
     pagination: ResponsePagination;
 };
 
@@ -1644,7 +1662,7 @@ export type ListNotificationsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<UserNotification> | null;
+    data: Array<UserNotification>;
     pagination: ResponsePagination;
 };
 
@@ -1653,7 +1671,7 @@ export type ListOncallRostersResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster> | null;
+    data: Array<OncallRoster>;
     pagination: ResponsePagination;
 };
 
@@ -1662,7 +1680,7 @@ export type ListOncallShiftsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallShift> | null;
+    data: Array<OncallShift>;
     pagination: ResponsePagination;
 };
 
@@ -1671,7 +1689,7 @@ export type ListPlaybooksResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Playbook> | null;
+    data: Array<Playbook>;
     pagination: ResponsePagination;
 };
 
@@ -1680,7 +1698,7 @@ export type ListRetrospectiveCommentsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<RetrospectiveComment> | null;
+    data: Array<RetrospectiveComment>;
     pagination: ResponsePagination;
 };
 
@@ -1689,7 +1707,7 @@ export type ListRetrospectiveReviewsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<RetrospectiveReview> | null;
+    data: Array<RetrospectiveReview>;
     pagination: ResponsePagination;
 };
 
@@ -1698,7 +1716,7 @@ export type ListRetrospectivesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Retrospective> | null;
+    data: Array<Retrospective>;
     pagination: ResponsePagination;
 };
 
@@ -1707,7 +1725,7 @@ export type ListSystemAnalysisComponentsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemAnalysisComponent> | null;
+    data: Array<SystemAnalysisComponent>;
     pagination: ResponsePagination;
 };
 
@@ -1716,7 +1734,7 @@ export type ListSystemAnalysisRelationshipsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemAnalysisRelationship> | null;
+    data: Array<SystemAnalysisRelationship>;
     pagination: ResponsePagination;
 };
 
@@ -1725,7 +1743,7 @@ export type ListSystemComponentKindsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemComponentKind> | null;
+    data: Array<SystemComponentKind>;
     pagination: ResponsePagination;
 };
 
@@ -1734,7 +1752,7 @@ export type ListSystemComponentRelationshipsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemComponentRelationship> | null;
+    data: Array<SystemComponentRelationship>;
     pagination: ResponsePagination;
 };
 
@@ -1743,7 +1761,7 @@ export type ListSystemComponentsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemComponent> | null;
+    data: Array<SystemComponent>;
     pagination: ResponsePagination;
 };
 
@@ -1752,7 +1770,7 @@ export type ListTasksResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Task> | null;
+    data: Array<Task>;
     pagination: ResponsePagination;
 };
 
@@ -1761,7 +1779,7 @@ export type ListTeamMembershipsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<TeamMembership> | null;
+    data: Array<TeamMembership>;
     pagination: ResponsePagination;
 };
 
@@ -1770,7 +1788,7 @@ export type ListTeamsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<Team> | null;
+    data: Array<Team>;
     pagination: ResponsePagination;
 };
 
@@ -1779,7 +1797,7 @@ export type ListUsersResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<User> | null;
+    data: Array<User>;
     pagination: ResponsePagination;
 };
 
@@ -1788,7 +1806,8 @@ export type ListWatchedOncallRostersResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster> | null;
+    data: Array<OncallRoster>;
+    pagination: ResponsePagination;
 };
 
 export type LoadDocumentResponseBody = {
@@ -1984,7 +2003,8 @@ export type RemoveWatchedOncallRosterResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<OncallRoster> | null;
+    data: Array<OncallRoster>;
+    pagination: ResponsePagination;
 };
 
 export type ResponsePagination = {

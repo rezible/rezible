@@ -147,7 +147,7 @@ type ListOncallRostersRequest struct {
 	UserId uuid.UUID `query:"userId" required:"false" nullable:"false"`
 	Pinned bool      `query:"pinned" required:"false" nullable:"false"`
 }
-type ListOncallRostersResponse PaginatedResponse[OncallRoster]
+type ListOncallRostersResponse ListResponse[OncallRoster]
 
 var GetOncallRoster = huma.Operation{
 	OperationID: "get-oncall-roster",

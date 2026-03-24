@@ -144,7 +144,7 @@ var ListRetrospectives = huma.Operation{
 }
 
 type ListRetrospectivesRequest ListRequest
-type ListRetrospectivesResponse PaginatedResponse[Retrospective]
+type ListRetrospectivesResponse ListResponse[Retrospective]
 
 var GetRetrospective = huma.Operation{
 	OperationID: "get-retrospective",
@@ -184,7 +184,7 @@ var ListRetrospectiveReviews = huma.Operation{
 }
 
 type ListRetrospectiveReviewsRequest ListRequest
-type ListRetrospectiveReviewsResponse PaginatedResponse[RetrospectiveReview]
+type ListRetrospectiveReviewsResponse ListResponse[RetrospectiveReview]
 
 var CreateRetrospectiveReview = huma.Operation{
 	OperationID: "create-retrospective-review",
@@ -234,7 +234,7 @@ var ListRetrospectiveComments = huma.Operation{
 }
 
 type ListRetrospectiveCommentsRequest ListIdRequest
-type ListRetrospectiveCommentsResponse PaginatedResponse[RetrospectiveComment]
+type ListRetrospectiveCommentsResponse ListResponse[RetrospectiveComment]
 
 var CreateRetrospectiveComment = huma.Operation{
 	OperationID: "create-retrospective-comment",
