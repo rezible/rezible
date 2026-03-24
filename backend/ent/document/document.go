@@ -22,10 +22,10 @@ const (
 	FieldAccessRestricted = "access_restricted"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
-	EdgeRetrospective = "retrospective"
 	// EdgeAccesses holds the string denoting the accesses edge name in mutations.
 	EdgeAccesses = "accesses"
+	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
+	EdgeRetrospective = "retrospective"
 	// Table holds the table name of the document in the database.
 	Table = "documents"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -35,13 +35,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// RetrospectiveTable is the table that holds the retrospective relation/edge.
-	RetrospectiveTable = "retrospectives"
-	// RetrospectiveInverseTable is the table name for the Retrospective entity.
-	// It exists in this package in order to avoid circular dependency with the "retrospective" package.
-	RetrospectiveInverseTable = "retrospectives"
-	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
-	RetrospectiveColumn = "document_id"
 	// AccessesTable is the table that holds the accesses relation/edge.
 	AccessesTable = "document_accesses"
 	// AccessesInverseTable is the table name for the DocumentAccess entity.
@@ -49,6 +42,13 @@ const (
 	AccessesInverseTable = "document_accesses"
 	// AccessesColumn is the table column denoting the accesses relation/edge.
 	AccessesColumn = "document_id"
+	// RetrospectiveTable is the table that holds the retrospective relation/edge.
+	RetrospectiveTable = "retrospectives"
+	// RetrospectiveInverseTable is the table name for the Retrospective entity.
+	// It exists in this package in order to avoid circular dependency with the "retrospective" package.
+	RetrospectiveInverseTable = "retrospectives"
+	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
+	RetrospectiveColumn = "document_id"
 )
 
 // Columns holds all SQL columns for document fields.
@@ -108,13 +108,6 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByRetrospectiveField orders the results by retrospective field.
-func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByAccessesCount orders the results by accesses count.
 func ByAccessesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -128,6 +121,13 @@ func ByAccesses(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newAccessesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByRetrospectiveField orders the results by retrospective field.
+func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRetrospectiveStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -135,17 +135,17 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newRetrospectiveStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RetrospectiveInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
-	)
-}
 func newAccessesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AccessesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, AccessesTable, AccessesColumn),
+	)
+}
+func newRetrospectiveStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RetrospectiveInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
 	)
 }

@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { useEdges, useNodes, useSvelteFlow } from "@xyflow/svelte";
 	import { Button } from "$components/ui/button";
-	import { mdiPlusCircle, mdiTrashCan } from "@mdi/js";
 	
 	import { useSystemDiagram } from "./diagramState.svelte";
 	import { useComponentDialog } from "./component-dialog/dialogState.svelte";
-	import AnalysisContextMenu from "$features/incidents/components/analysis-context-menu/AnalysisContextMenu.svelte";
+	import AnalysisContextMenu from "../ContextMenu.svelte";
 
 	type Props = {
 		nodeId?: string;

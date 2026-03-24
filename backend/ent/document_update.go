@@ -51,6 +51,21 @@ func (_u *DocumentUpdate) SetNillableAccessRestricted(v *bool) *DocumentUpdate {
 	return _u
 }
 
+// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
+func (_u *DocumentUpdate) AddAccessIDs(ids ...uuid.UUID) *DocumentUpdate {
+	_u.mutation.AddAccessIDs(ids...)
+	return _u
+}
+
+// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
+func (_u *DocumentUpdate) AddAccesses(v ...*DocumentAccess) *DocumentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAccessIDs(ids...)
+}
+
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
 func (_u *DocumentUpdate) SetRetrospectiveID(id uuid.UUID) *DocumentUpdate {
 	_u.mutation.SetRetrospectiveID(id)
@@ -70,30 +85,9 @@ func (_u *DocumentUpdate) SetRetrospective(v *Retrospective) *DocumentUpdate {
 	return _u.SetRetrospectiveID(v.ID)
 }
 
-// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
-func (_u *DocumentUpdate) AddAccessIDs(ids ...uuid.UUID) *DocumentUpdate {
-	_u.mutation.AddAccessIDs(ids...)
-	return _u
-}
-
-// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
-func (_u *DocumentUpdate) AddAccesses(v ...*DocumentAccess) *DocumentUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAccessIDs(ids...)
-}
-
 // Mutation returns the DocumentMutation object of the builder.
 func (_u *DocumentUpdate) Mutation() *DocumentMutation {
 	return _u.mutation
-}
-
-// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (_u *DocumentUpdate) ClearRetrospective() *DocumentUpdate {
-	_u.mutation.ClearRetrospective()
-	return _u
 }
 
 // ClearAccesses clears all "accesses" edges to the DocumentAccess entity.
@@ -115,6 +109,12 @@ func (_u *DocumentUpdate) RemoveAccesses(v ...*DocumentAccess) *DocumentUpdate {
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAccessIDs(ids...)
+}
+
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+func (_u *DocumentUpdate) ClearRetrospective() *DocumentUpdate {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -176,35 +176,6 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AccessRestricted(); ok {
 		_spec.SetField(document.FieldAccessRestricted, field.TypeBool, value)
 	}
-	if _u.mutation.RetrospectiveCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   document.RetrospectiveTable,
-			Columns: []string{document.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   document.RetrospectiveTable,
-			Columns: []string{document.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.AccessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -243,6 +214,35 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RetrospectiveCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   document.RetrospectiveTable,
+			Columns: []string{document.RetrospectiveColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   document.RetrospectiveTable,
+			Columns: []string{document.RetrospectiveColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -292,6 +292,21 @@ func (_u *DocumentUpdateOne) SetNillableAccessRestricted(v *bool) *DocumentUpdat
 	return _u
 }
 
+// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
+func (_u *DocumentUpdateOne) AddAccessIDs(ids ...uuid.UUID) *DocumentUpdateOne {
+	_u.mutation.AddAccessIDs(ids...)
+	return _u
+}
+
+// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
+func (_u *DocumentUpdateOne) AddAccesses(v ...*DocumentAccess) *DocumentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddAccessIDs(ids...)
+}
+
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
 func (_u *DocumentUpdateOne) SetRetrospectiveID(id uuid.UUID) *DocumentUpdateOne {
 	_u.mutation.SetRetrospectiveID(id)
@@ -311,30 +326,9 @@ func (_u *DocumentUpdateOne) SetRetrospective(v *Retrospective) *DocumentUpdateO
 	return _u.SetRetrospectiveID(v.ID)
 }
 
-// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
-func (_u *DocumentUpdateOne) AddAccessIDs(ids ...uuid.UUID) *DocumentUpdateOne {
-	_u.mutation.AddAccessIDs(ids...)
-	return _u
-}
-
-// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
-func (_u *DocumentUpdateOne) AddAccesses(v ...*DocumentAccess) *DocumentUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAccessIDs(ids...)
-}
-
 // Mutation returns the DocumentMutation object of the builder.
 func (_u *DocumentUpdateOne) Mutation() *DocumentMutation {
 	return _u.mutation
-}
-
-// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (_u *DocumentUpdateOne) ClearRetrospective() *DocumentUpdateOne {
-	_u.mutation.ClearRetrospective()
-	return _u
 }
 
 // ClearAccesses clears all "accesses" edges to the DocumentAccess entity.
@@ -356,6 +350,12 @@ func (_u *DocumentUpdateOne) RemoveAccesses(v ...*DocumentAccess) *DocumentUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveAccessIDs(ids...)
+}
+
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+func (_u *DocumentUpdateOne) ClearRetrospective() *DocumentUpdateOne {
+	_u.mutation.ClearRetrospective()
+	return _u
 }
 
 // Where appends a list predicates to the DocumentUpdate builder.
@@ -447,35 +447,6 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 	if value, ok := _u.mutation.AccessRestricted(); ok {
 		_spec.SetField(document.FieldAccessRestricted, field.TypeBool, value)
 	}
-	if _u.mutation.RetrospectiveCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   document.RetrospectiveTable,
-			Columns: []string{document.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   document.RetrospectiveTable,
-			Columns: []string{document.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	if _u.mutation.AccessesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -514,6 +485,35 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.RetrospectiveCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   document.RetrospectiveTable,
+			Columns: []string{document.RetrospectiveColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   document.RetrospectiveTable,
+			Columns: []string{document.RetrospectiveColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

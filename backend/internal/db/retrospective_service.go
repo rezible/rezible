@@ -41,36 +41,32 @@ func (s *RetrospectiveService) registerMessageHandlers() error {
 			rez.NewEventHandler("retrospectives.on_incident_updated", s.onIncidentUpdated),
 		),
 		s.msgs.AddCommandHandlers(
-			rez.NewCommandHandler("retrospectives.create_for_incident", s.createForIncident),
+			rez.NewCommandHandler("retrospectives.update_for_incident", s.handleUpdateForIncident),
 		),
 	)
 }
 
 func (s *RetrospectiveService) onIncidentUpdated(ctx context.Context, evt *rez.EventOnIncidentUpdated) error {
-	retro, retroErr := s.Get(ctx, retrospective.IncidentID(evt.IncidentId))
-	if retroErr != nil && !ent.IsNotFound(retroErr) {
-		return fmt.Errorf("query retrospective by incident id %q: %w", evt.IncidentId, retroErr)
-	}
-	if retro != nil {
-		// TODO: check if retro needs updating
-		return nil
-	}
-	if cmdErr := s.msgs.SendCommand(ctx, cmdCreateRetrospectiveForIncident{IncidentId: evt.IncidentId}); cmdErr != nil {
+	if cmdErr := s.msgs.SendCommand(ctx, cmdUpdateIncidentRetrospective{IncidentId: evt.IncidentId}); cmdErr != nil {
 		return fmt.Errorf("send cmdCreateRetrospectiveForIncident: %w", cmdErr)
 	}
 	return nil
 }
 
-type cmdCreateRetrospectiveForIncident struct {
+type cmdUpdateIncidentRetrospective struct {
 	IncidentId uuid.UUID
 }
 
-func (s *RetrospectiveService) createForIncident(ctx context.Context, cmd *cmdCreateRetrospectiveForIncident) error {
+func (s *RetrospectiveService) handleUpdateForIncident(ctx context.Context, cmd *cmdUpdateIncidentRetrospective) error {
+	_, retroErr := s.Get(ctx, retrospective.IncidentID(cmd.IncidentId))
+	if retroErr != nil && !ent.IsNotFound(retroErr) {
+		return fmt.Errorf("query retrospective by incident id %q: %w", cmd.IncidentId, retroErr)
+	}
 	inc, incErr := s.incidents.Get(ctx, incident.ID(cmd.IncidentId))
 	if incErr != nil {
 		return fmt.Errorf("get incident: %w", incErr)
 	}
-	if _, setErr := s.Create(ctx, inc.ID, retrospective.TypeFull); setErr != nil {
+	if _, setErr := s.createForIncident(ctx, inc); setErr != nil {
 		return fmt.Errorf("create retrospective: %w", setErr)
 	}
 	return nil
@@ -84,12 +80,30 @@ func (s *RetrospectiveService) GetById(ctx context.Context, id uuid.UUID) (*ent.
 	return s.db.Retrospective.Get(ctx, id)
 }
 
-func (s *RetrospectiveService) getIncidentRetrospectiveType(ctx context.Context, inc *ent.Incident) (retrospective.Type, error) {
-	// TODO: base on severity?
-	return retrospective.TypeFull, nil
+func (s *RetrospectiveService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error) {
+	update := s.db.Retrospective.UpdateOneID(id)
+
+	setFn(update.Mutation())
+
+	updated, updateErr := update.Save(ctx)
+	if updateErr != nil {
+		return nil, updateErr
+	}
+
+	return updated, nil
 }
 
-func (s *RetrospectiveService) Create(ctx context.Context, incidentId uuid.UUID, kind retrospective.Type) (*ent.Retrospective, error) {
+func (s *RetrospectiveService) getRetrospectiveKind(ctx context.Context, inc *ent.Incident) (retrospective.Kind, error) {
+	// TODO: base on severity?
+	return retrospective.KindFull, nil
+}
+
+func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
+	kind, kindErr := s.getRetrospectiveKind(ctx, inc)
+	if kindErr != nil {
+		return nil, fmt.Errorf("get retrospective kind: %w", kindErr)
+	}
+
 	var created *ent.Retrospective
 	createTxFn := func(tx *ent.Tx) error {
 		createdDoc, createDocErr := tx.Document.Create().
@@ -100,9 +114,9 @@ func (s *RetrospectiveService) Create(ctx context.Context, incidentId uuid.UUID,
 		}
 
 		create := tx.Retrospective.Create().
-			SetIncidentID(incidentId).
-			SetType(kind).
-			SetDocumentID(createdDoc.ID).
+			SetIncident(inc).
+			SetDocument(createdDoc).
+			SetKind(kind).
 			SetState(retrospective.StateDraft)
 
 		var createRetroErr error
@@ -110,17 +124,15 @@ func (s *RetrospectiveService) Create(ctx context.Context, incidentId uuid.UUID,
 		if createRetroErr != nil {
 			return fmt.Errorf("create retrospective: %w", createRetroErr)
 		}
-		created.Edges.Document = createdDoc
 
-		if kind == retrospective.TypeFull {
+		if kind == retrospective.KindFull {
 			createdAnalysis, createAnalysisErr := tx.SystemAnalysis.Create().
-				SetRetrospectiveID(created.ID).
+				SetRetrospective(created).
 				Save(ctx)
 			if createAnalysisErr != nil {
 				return fmt.Errorf("create analysis: %w", createAnalysisErr)
 			}
 			created.SystemAnalysisID = createdAnalysis.ID
-			created.Edges.SystemAnalysis = createdAnalysis
 		}
 		return nil
 	}

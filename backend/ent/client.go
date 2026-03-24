@@ -1459,22 +1459,6 @@ func (c *DocumentClient) QueryTenant(_m *Document) *TenantQuery {
 	return query
 }
 
-// QueryRetrospective queries the retrospective edge of a Document.
-func (c *DocumentClient) QueryRetrospective(_m *Document) *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(document.Table, document.FieldID, id),
-			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, document.RetrospectiveTable, document.RetrospectiveColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryAccesses queries the accesses edge of a Document.
 func (c *DocumentClient) QueryAccesses(_m *Document) *DocumentAccessQuery {
 	query := (&DocumentAccessClient{config: c.config}).Query()
@@ -1484,6 +1468,22 @@ func (c *DocumentClient) QueryAccesses(_m *Document) *DocumentAccessQuery {
 			sqlgraph.From(document.Table, document.FieldID, id),
 			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, document.AccessesTable, document.AccessesColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRetrospective queries the retrospective edge of a Document.
+func (c *DocumentClient) QueryRetrospective(_m *Document) *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, id),
+			sqlgraph.To(retrospective.Table, retrospective.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, document.RetrospectiveTable, document.RetrospectiveColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

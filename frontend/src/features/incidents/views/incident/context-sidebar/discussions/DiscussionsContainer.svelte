@@ -2,10 +2,11 @@
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { listRetrospectiveCommentsOptions, type RetrospectiveComment } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import { draft } from "$src/features/incidents/lib/discussions.svelte";
+	import Header from "$components/header/Header.svelte";
+
+	import { draft } from "$features/incidents/views/incident/discussions.svelte";
 	import DiscussionThread from "./DiscussionThread.svelte";
 	import NewDiscussionDrafter from "./NewDiscussionDrafter.svelte";
-	import Header from "$components/header/Header.svelte";
 
 	type Props = {
 		retrospectiveId: string;
@@ -26,6 +27,7 @@
 		queryClient.setQueryData(queryKey, (data) => {
 			if (!data) return { data: [d], pagination: { total: 1 } };
 			const newData = structuredClone(data);
+			newData.data = (newData.data || []);
 			newData.data.push(d);
 			return newData;
 		});
@@ -47,12 +49,12 @@
 	{/if}
 
 	<div class="overflow-y-auto flex flex-col gap-2">
-		<LoadingQueryWrapper {query}>
+		<!-- <LoadingQueryWrapper {query}>
 			{#snippet view(discussions: RetrospectiveComment[])}
 				{#each discussions as discussion (discussion.id)}
 					<DiscussionThread {discussion} />
 				{/each}
 			{/snippet}
-		</LoadingQueryWrapper>
+		</LoadingQueryWrapper> -->
 	</div>
 </div>

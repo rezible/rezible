@@ -15,7 +15,7 @@
 	type Props = { 
 		tabs: Tab<TabView>[];
 		path: string;
-		infoBar?: Component;
+		infoBar?: Snippet;
 		tabSidebar?: Snippet;
 	};
 	const props: Props = $props();
@@ -46,7 +46,7 @@
 
 		{#if props.infoBar}
 			<div class="flex gap-4 h-12 max-h-14 overflow-y-hidden justify-between pb-1">
-				<props.infoBar></props.infoBar>
+				{@render props.infoBar()}
 			</div>
 		{/if}
 	</div>

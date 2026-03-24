@@ -187,6 +187,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			documentaccess.FieldDocumentID: {Type: field.TypeUUID, Column: documentaccess.FieldDocumentID},
 			documentaccess.FieldUserID:     {Type: field.TypeUUID, Column: documentaccess.FieldUserID},
 			documentaccess.FieldTeamID:     {Type: field.TypeUUID, Column: documentaccess.FieldTeamID},
+			documentaccess.FieldCanView:    {Type: field.TypeBool, Column: documentaccess.FieldCanView},
 			documentaccess.FieldCanEdit:    {Type: field.TypeBool, Column: documentaccess.FieldCanEdit},
 			documentaccess.FieldCanManage:  {Type: field.TypeBool, Column: documentaccess.FieldCanManage},
 		},
@@ -890,7 +891,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			retrospective.FieldIncidentID:       {Type: field.TypeUUID, Column: retrospective.FieldIncidentID},
 			retrospective.FieldDocumentID:       {Type: field.TypeUUID, Column: retrospective.FieldDocumentID},
 			retrospective.FieldSystemAnalysisID: {Type: field.TypeUUID, Column: retrospective.FieldSystemAnalysisID},
-			retrospective.FieldType:             {Type: field.TypeEnum, Column: retrospective.FieldType},
+			retrospective.FieldKind:             {Type: field.TypeEnum, Column: retrospective.FieldKind},
 			retrospective.FieldState:            {Type: field.TypeEnum, Column: retrospective.FieldState},
 		},
 	}
@@ -1419,18 +1420,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
-		"retrospective",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   document.RetrospectiveTable,
-			Columns: []string{document.RetrospectiveColumn},
-			Bidi:    false,
-		},
-		"Document",
-		"Retrospective",
-	)
-	graph.MustAddE(
 		"accesses",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1441,6 +1430,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"Document",
 		"DocumentAccess",
+	)
+	graph.MustAddE(
+		"retrospective",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   document.RetrospectiveTable,
+			Columns: []string{document.RetrospectiveColumn},
+			Bidi:    false,
+		},
+		"Document",
+		"Retrospective",
 	)
 	graph.MustAddE(
 		"tenant",
@@ -4844,20 +4845,6 @@ func (f *DocumentFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	})))
 }
 
-// WhereHasRetrospective applies a predicate to check if query has an edge retrospective.
-func (f *DocumentFilter) WhereHasRetrospective() {
-	f.Where(entql.HasEdge("retrospective"))
-}
-
-// WhereHasRetrospectiveWith applies a predicate to check if query has an edge retrospective with a given conditions (other predicates).
-func (f *DocumentFilter) WhereHasRetrospectiveWith(preds ...predicate.Retrospective) {
-	f.Where(entql.HasEdgeWith("retrospective", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
 // WhereHasAccesses applies a predicate to check if query has an edge accesses.
 func (f *DocumentFilter) WhereHasAccesses() {
 	f.Where(entql.HasEdge("accesses"))
@@ -4866,6 +4853,20 @@ func (f *DocumentFilter) WhereHasAccesses() {
 // WhereHasAccessesWith applies a predicate to check if query has an edge accesses with a given conditions (other predicates).
 func (f *DocumentFilter) WhereHasAccessesWith(preds ...predicate.DocumentAccess) {
 	f.Where(entql.HasEdgeWith("accesses", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasRetrospective applies a predicate to check if query has an edge retrospective.
+func (f *DocumentFilter) WhereHasRetrospective() {
+	f.Where(entql.HasEdge("retrospective"))
+}
+
+// WhereHasRetrospectiveWith applies a predicate to check if query has an edge retrospective with a given conditions (other predicates).
+func (f *DocumentFilter) WhereHasRetrospectiveWith(preds ...predicate.Retrospective) {
+	f.Where(entql.HasEdgeWith("retrospective", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -4940,6 +4941,11 @@ func (f *DocumentAccessFilter) WhereUserID(p entql.ValueP) {
 // WhereTeamID applies the entql [16]byte predicate on the team_id field.
 func (f *DocumentAccessFilter) WhereTeamID(p entql.ValueP) {
 	f.Where(p.Field(documentaccess.FieldTeamID))
+}
+
+// WhereCanView applies the entql bool predicate on the can_view field.
+func (f *DocumentAccessFilter) WhereCanView(p entql.BoolP) {
+	f.Where(p.Field(documentaccess.FieldCanView))
 }
 
 // WhereCanEdit applies the entql bool predicate on the can_edit field.
@@ -9408,9 +9414,9 @@ func (f *RetrospectiveFilter) WhereSystemAnalysisID(p entql.ValueP) {
 	f.Where(p.Field(retrospective.FieldSystemAnalysisID))
 }
 
-// WhereType applies the entql string predicate on the type field.
-func (f *RetrospectiveFilter) WhereType(p entql.StringP) {
-	f.Where(p.Field(retrospective.FieldType))
+// WhereKind applies the entql string predicate on the kind field.
+func (f *RetrospectiveFilter) WhereKind(p entql.StringP) {
+	f.Where(p.Field(retrospective.FieldKind))
 }
 
 // WhereState applies the entql string predicate on the state field.

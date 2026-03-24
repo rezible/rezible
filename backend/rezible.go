@@ -14,7 +14,6 @@ import (
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/jobs"
 )
 
@@ -410,7 +409,7 @@ type (
 
 	RetrospectiveService interface {
 		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
-		Create(ctx context.Context, incidentId uuid.UUID, kind retrospective.Type) (*ent.Retrospective, error)
+		Set(context.Context, uuid.UUID, func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error)
 
 		//ListReviews(context.Context, ListRetrospectiveReviewsParams) ([]*ent.RetrospectiveReview, error)
 		//GetReview(context.Context, uuid.UUID) (*ent.RetrospectiveReview, error)

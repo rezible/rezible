@@ -172,12 +172,16 @@ func init() {
 	documentaccess.DefaultUpdatedAt = documentaccessDescUpdatedAt.Default.(func() time.Time)
 	// documentaccess.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	documentaccess.UpdateDefaultUpdatedAt = documentaccessDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// documentaccessDescCanView is the schema descriptor for can_view field.
+	documentaccessDescCanView := documentaccessFields[4].Descriptor()
+	// documentaccess.DefaultCanView holds the default value on creation for the can_view field.
+	documentaccess.DefaultCanView = documentaccessDescCanView.Default.(bool)
 	// documentaccessDescCanEdit is the schema descriptor for can_edit field.
-	documentaccessDescCanEdit := documentaccessFields[4].Descriptor()
+	documentaccessDescCanEdit := documentaccessFields[5].Descriptor()
 	// documentaccess.DefaultCanEdit holds the default value on creation for the can_edit field.
 	documentaccess.DefaultCanEdit = documentaccessDescCanEdit.Default.(bool)
 	// documentaccessDescCanManage is the schema descriptor for can_manage field.
-	documentaccessDescCanManage := documentaccessFields[5].Descriptor()
+	documentaccessDescCanManage := documentaccessFields[6].Descriptor()
 	// documentaccess.DefaultCanManage holds the default value on creation for the can_manage field.
 	documentaccess.DefaultCanManage = documentaccessDescCanManage.Default.(bool)
 	// documentaccessDescID is the schema descriptor for id field.

@@ -148,7 +148,7 @@ const createActiveEditorState = () => {
 		},
 	};
 };
-export let activeEditor = createActiveEditorState();
+export const activeEditor = createActiveEditorState();
 
 const createActiveAnnotationIdState = () => {
 	let id = $state<string>();

@@ -86,6 +86,11 @@ func TeamID(v uuid.UUID) predicate.DocumentAccess {
 	return predicate.DocumentAccess(sql.FieldEQ(FieldTeamID, v))
 }
 
+// CanView applies equality check predicate on the "can_view" field. It's identical to CanViewEQ.
+func CanView(v bool) predicate.DocumentAccess {
+	return predicate.DocumentAccess(sql.FieldEQ(FieldCanView, v))
+}
+
 // CanEdit applies equality check predicate on the "can_edit" field. It's identical to CanEditEQ.
 func CanEdit(v bool) predicate.DocumentAccess {
 	return predicate.DocumentAccess(sql.FieldEQ(FieldCanEdit, v))
@@ -274,6 +279,16 @@ func TeamIDIsNil() predicate.DocumentAccess {
 // TeamIDNotNil applies the NotNil predicate on the "team_id" field.
 func TeamIDNotNil() predicate.DocumentAccess {
 	return predicate.DocumentAccess(sql.FieldNotNull(FieldTeamID))
+}
+
+// CanViewEQ applies the EQ predicate on the "can_view" field.
+func CanViewEQ(v bool) predicate.DocumentAccess {
+	return predicate.DocumentAccess(sql.FieldEQ(FieldCanView, v))
+}
+
+// CanViewNEQ applies the NEQ predicate on the "can_view" field.
+func CanViewNEQ(v bool) predicate.DocumentAccess {
+	return predicate.DocumentAccess(sql.FieldNEQ(FieldCanView, v))
 }
 
 // CanEditEQ applies the EQ predicate on the "can_edit" field.

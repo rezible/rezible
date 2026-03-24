@@ -28,6 +28,8 @@ const (
 	FieldUserID = "user_id"
 	// FieldTeamID holds the string denoting the team_id field in the database.
 	FieldTeamID = "team_id"
+	// FieldCanView holds the string denoting the can_view field in the database.
+	FieldCanView = "can_view"
 	// FieldCanEdit holds the string denoting the can_edit field in the database.
 	FieldCanEdit = "can_edit"
 	// FieldCanManage holds the string denoting the can_manage field in the database.
@@ -81,6 +83,7 @@ var Columns = []string{
 	FieldDocumentID,
 	FieldUserID,
 	FieldTeamID,
+	FieldCanView,
 	FieldCanEdit,
 	FieldCanManage,
 }
@@ -109,6 +112,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// DefaultCanView holds the default value on creation for the "can_view" field.
+	DefaultCanView bool
 	// DefaultCanEdit holds the default value on creation for the "can_edit" field.
 	DefaultCanEdit bool
 	// DefaultCanManage holds the default value on creation for the "can_manage" field.
@@ -153,6 +158,11 @@ func ByUserID(opts ...sql.OrderTermOption) OrderOption {
 // ByTeamID orders the results by the team_id field.
 func ByTeamID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTeamID, opts...).ToFunc()
+}
+
+// ByCanView orders the results by the can_view field.
+func ByCanView(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCanView, opts...).ToFunc()
 }
 
 // ByCanEdit orders the results by the can_edit field.

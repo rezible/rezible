@@ -28,7 +28,6 @@
 	});
 </script>
 
-
 <div
 	style="left: {pos.left}px; top: {pos.top}px;"
 	class="absolute context-menu border bg-surface-200 w-48 h-fit"

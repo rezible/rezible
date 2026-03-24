@@ -71,6 +71,21 @@ func (_c *DocumentCreate) SetTenant(v *Tenant) *DocumentCreate {
 	return _c.SetTenantID(v.ID)
 }
 
+// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
+func (_c *DocumentCreate) AddAccessIDs(ids ...uuid.UUID) *DocumentCreate {
+	_c.mutation.AddAccessIDs(ids...)
+	return _c
+}
+
+// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
+func (_c *DocumentCreate) AddAccesses(v ...*DocumentAccess) *DocumentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAccessIDs(ids...)
+}
+
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
 func (_c *DocumentCreate) SetRetrospectiveID(id uuid.UUID) *DocumentCreate {
 	_c.mutation.SetRetrospectiveID(id)
@@ -88,21 +103,6 @@ func (_c *DocumentCreate) SetNillableRetrospectiveID(id *uuid.UUID) *DocumentCre
 // SetRetrospective sets the "retrospective" edge to the Retrospective entity.
 func (_c *DocumentCreate) SetRetrospective(v *Retrospective) *DocumentCreate {
 	return _c.SetRetrospectiveID(v.ID)
-}
-
-// AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by IDs.
-func (_c *DocumentCreate) AddAccessIDs(ids ...uuid.UUID) *DocumentCreate {
-	_c.mutation.AddAccessIDs(ids...)
-	return _c
-}
-
-// AddAccesses adds the "accesses" edges to the DocumentAccess entity.
-func (_c *DocumentCreate) AddAccesses(v ...*DocumentAccess) *DocumentCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAccessIDs(ids...)
 }
 
 // Mutation returns the DocumentMutation object of the builder.
@@ -231,22 +231,6 @@ func (_c *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.RetrospectiveIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   document.RetrospectiveTable,
-			Columns: []string{document.RetrospectiveColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.AccessesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -256,6 +240,22 @@ func (_c *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.RetrospectiveIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   document.RetrospectiveTable,
+			Columns: []string{document.RetrospectiveColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

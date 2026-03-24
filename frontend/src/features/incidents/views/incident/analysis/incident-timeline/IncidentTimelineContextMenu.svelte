@@ -3,9 +3,8 @@
 	import { ZonedDateTime } from "@internationalized/date";
 	import type { TimelineItem } from "vis-timeline";
 	import { useIncidentTimelineController } from "./controller.svelte";
-	import { mdiPencilCircle, mdiPlusCircle } from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import AnalysisContextMenu from "$features/incidents/components/analysis-context-menu/AnalysisContextMenu.svelte";
+	import AnalysisContextMenu from "../ContextMenu.svelte";
 
 	type Props = {
 		containerRect: DOMRect;

@@ -6,7 +6,7 @@
 	import { WebSocketStatus } from "@hocuspocus/provider";
 	import ComponentSelector from "./add-component-drawer/ComponentSelector.svelte";
 	import Header from "$components/header/Header.svelte";
-	import { IncidentCollaborationController } from '$features/incidents/lib/collaboration.svelte';
+	import { IncidentCollaborationController } from '$features/incidents/views/incident/collaboration.svelte';
 
 	type Props = {
 		collab: IncidentCollaborationController;

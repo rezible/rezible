@@ -96,6 +96,20 @@ func (_c *DocumentAccessCreate) SetNillableTeamID(v *uuid.UUID) *DocumentAccessC
 	return _c
 }
 
+// SetCanView sets the "can_view" field.
+func (_c *DocumentAccessCreate) SetCanView(v bool) *DocumentAccessCreate {
+	_c.mutation.SetCanView(v)
+	return _c
+}
+
+// SetNillableCanView sets the "can_view" field if the given value is not nil.
+func (_c *DocumentAccessCreate) SetNillableCanView(v *bool) *DocumentAccessCreate {
+	if v != nil {
+		_c.SetCanView(*v)
+	}
+	return _c
+}
+
 // SetCanEdit sets the "can_edit" field.
 func (_c *DocumentAccessCreate) SetCanEdit(v bool) *DocumentAccessCreate {
 	_c.mutation.SetCanEdit(v)
@@ -209,6 +223,10 @@ func (_c *DocumentAccessCreate) defaults() error {
 		v := documentaccess.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
+	if _, ok := _c.mutation.CanView(); !ok {
+		v := documentaccess.DefaultCanView
+		_c.mutation.SetCanView(v)
+	}
 	if _, ok := _c.mutation.CanEdit(); !ok {
 		v := documentaccess.DefaultCanEdit
 		_c.mutation.SetCanEdit(v)
@@ -240,6 +258,9 @@ func (_c *DocumentAccessCreate) check() error {
 	}
 	if _, ok := _c.mutation.DocumentID(); !ok {
 		return &ValidationError{Name: "document_id", err: errors.New(`ent: missing required field "DocumentAccess.document_id"`)}
+	}
+	if _, ok := _c.mutation.CanView(); !ok {
+		return &ValidationError{Name: "can_view", err: errors.New(`ent: missing required field "DocumentAccess.can_view"`)}
 	}
 	if _, ok := _c.mutation.CanEdit(); !ok {
 		return &ValidationError{Name: "can_edit", err: errors.New(`ent: missing required field "DocumentAccess.can_edit"`)}
@@ -296,6 +317,10 @@ func (_c *DocumentAccessCreate) createSpec() (*DocumentAccess, *sqlgraph.CreateS
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(documentaccess.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if value, ok := _c.mutation.CanView(); ok {
+		_spec.SetField(documentaccess.FieldCanView, field.TypeBool, value)
+		_node.CanView = value
 	}
 	if value, ok := _c.mutation.CanEdit(); ok {
 		_spec.SetField(documentaccess.FieldCanEdit, field.TypeBool, value)
@@ -497,6 +522,18 @@ func (u *DocumentAccessUpsert) ClearTeamID() *DocumentAccessUpsert {
 	return u
 }
 
+// SetCanView sets the "can_view" field.
+func (u *DocumentAccessUpsert) SetCanView(v bool) *DocumentAccessUpsert {
+	u.Set(documentaccess.FieldCanView, v)
+	return u
+}
+
+// UpdateCanView sets the "can_view" field to the value that was provided on create.
+func (u *DocumentAccessUpsert) UpdateCanView() *DocumentAccessUpsert {
+	u.SetExcluded(documentaccess.FieldCanView)
+	return u
+}
+
 // SetCanEdit sets the "can_edit" field.
 func (u *DocumentAccessUpsert) SetCanEdit(v bool) *DocumentAccessUpsert {
 	u.Set(documentaccess.FieldCanEdit, v)
@@ -653,6 +690,20 @@ func (u *DocumentAccessUpsertOne) UpdateTeamID() *DocumentAccessUpsertOne {
 func (u *DocumentAccessUpsertOne) ClearTeamID() *DocumentAccessUpsertOne {
 	return u.Update(func(s *DocumentAccessUpsert) {
 		s.ClearTeamID()
+	})
+}
+
+// SetCanView sets the "can_view" field.
+func (u *DocumentAccessUpsertOne) SetCanView(v bool) *DocumentAccessUpsertOne {
+	return u.Update(func(s *DocumentAccessUpsert) {
+		s.SetCanView(v)
+	})
+}
+
+// UpdateCanView sets the "can_view" field to the value that was provided on create.
+func (u *DocumentAccessUpsertOne) UpdateCanView() *DocumentAccessUpsertOne {
+	return u.Update(func(s *DocumentAccessUpsert) {
+		s.UpdateCanView()
 	})
 }
 
@@ -983,6 +1034,20 @@ func (u *DocumentAccessUpsertBulk) UpdateTeamID() *DocumentAccessUpsertBulk {
 func (u *DocumentAccessUpsertBulk) ClearTeamID() *DocumentAccessUpsertBulk {
 	return u.Update(func(s *DocumentAccessUpsert) {
 		s.ClearTeamID()
+	})
+}
+
+// SetCanView sets the "can_view" field.
+func (u *DocumentAccessUpsertBulk) SetCanView(v bool) *DocumentAccessUpsertBulk {
+	return u.Update(func(s *DocumentAccessUpsert) {
+		s.SetCanView(v)
+	})
+}
+
+// UpdateCanView sets the "can_view" field to the value that was provided on create.
+func (u *DocumentAccessUpsertBulk) UpdateCanView() *DocumentAccessUpsertBulk {
+	return u.Update(func(s *DocumentAccessUpsert) {
+		s.UpdateCanView()
 	})
 }
 

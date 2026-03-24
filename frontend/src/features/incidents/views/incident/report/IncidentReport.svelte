@@ -4,9 +4,9 @@
 
 	import { useIncidentView } from "$features/incidents/views/incident";
 
-	import { draft } from "$features/incidents/lib/discussions.svelte";
-	import { activeEditor } from "$features/incidents/lib/activeEditor.svelte";
-	import { useIncidentCollaboration } from "$features/incidents/lib/collaboration.svelte";
+	import { useIncidentCollaboration } from "$features/incidents/views/incident/collaboration.svelte";
+	import { draft } from "$features/incidents/views/incident/discussions.svelte";
+	import { activeEditor } from "./activeEditor.svelte";
 
 	import type { AnnotationType } from "./field-editor/BubbleMenu.svelte";
 	import FieldEditorWrapper from "./field-editor/FieldEditorWrapper.svelte";

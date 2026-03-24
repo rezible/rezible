@@ -24,8 +24,8 @@ const (
 	FieldDocumentID = "document_id"
 	// FieldSystemAnalysisID holds the string denoting the system_analysis_id field in the database.
 	FieldSystemAnalysisID = "system_analysis_id"
-	// FieldType holds the string denoting the type field in the database.
-	FieldType = "type"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -84,7 +84,7 @@ var Columns = []string{
 	FieldIncidentID,
 	FieldDocumentID,
 	FieldSystemAnalysisID,
-	FieldType,
+	FieldKind,
 	FieldState,
 }
 
@@ -110,26 +110,26 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// Type defines the type for the "type" enum field.
-type Type string
+// Kind defines the type for the "kind" enum field.
+type Kind string
 
-// Type values.
+// Kind values.
 const (
-	TypeSimple Type = "simple"
-	TypeFull   Type = "full"
+	KindSimple Kind = "simple"
+	KindFull   Kind = "full"
 )
 
-func (_type Type) String() string {
-	return string(_type)
+func (k Kind) String() string {
+	return string(k)
 }
 
-// TypeValidator is a validator for the "type" field enum values. It is called by the builders before save.
-func TypeValidator(_type Type) error {
-	switch _type {
-	case TypeSimple, TypeFull:
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindSimple, KindFull:
 		return nil
 	default:
-		return fmt.Errorf("retrospective: invalid enum value for type field: %q", _type)
+		return fmt.Errorf("retrospective: invalid enum value for kind field: %q", k)
 	}
 }
 
@@ -186,9 +186,9 @@ func BySystemAnalysisID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSystemAnalysisID, opts...).ToFunc()
 }
 
-// ByType orders the results by the type field.
-func ByType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldType, opts...).ToFunc()
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
 // ByState orders the results by the state field.

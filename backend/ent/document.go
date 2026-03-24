@@ -35,10 +35,10 @@ type Document struct {
 type DocumentEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Retrospective holds the value of the retrospective edge.
-	Retrospective *Retrospective `json:"retrospective,omitempty"`
 	// Accesses holds the value of the accesses edge.
 	Accesses []*DocumentAccess `json:"accesses,omitempty"`
+	// Retrospective holds the value of the retrospective edge.
+	Retrospective *Retrospective `json:"retrospective,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -55,24 +55,24 @@ func (e DocumentEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// AccessesOrErr returns the Accesses value or an error if the edge
+// was not loaded in eager-loading.
+func (e DocumentEdges) AccessesOrErr() ([]*DocumentAccess, error) {
+	if e.loadedTypes[1] {
+		return e.Accesses, nil
+	}
+	return nil, &NotLoadedError{edge: "accesses"}
+}
+
 // RetrospectiveOrErr returns the Retrospective value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e DocumentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 	if e.Retrospective != nil {
 		return e.Retrospective, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: retrospective.Label}
 	}
 	return nil, &NotLoadedError{edge: "retrospective"}
-}
-
-// AccessesOrErr returns the Accesses value or an error if the edge
-// was not loaded in eager-loading.
-func (e DocumentEdges) AccessesOrErr() ([]*DocumentAccess, error) {
-	if e.loadedTypes[2] {
-		return e.Accesses, nil
-	}
-	return nil, &NotLoadedError{edge: "accesses"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -145,14 +145,14 @@ func (_m *Document) QueryTenant() *TenantQuery {
 	return NewDocumentClient(_m.config).QueryTenant(_m)
 }
 
-// QueryRetrospective queries the "retrospective" edge of the Document entity.
-func (_m *Document) QueryRetrospective() *RetrospectiveQuery {
-	return NewDocumentClient(_m.config).QueryRetrospective(_m)
-}
-
 // QueryAccesses queries the "accesses" edge of the Document entity.
 func (_m *Document) QueryAccesses() *DocumentAccessQuery {
 	return NewDocumentClient(_m.config).QueryAccesses(_m)
+}
+
+// QueryRetrospective queries the "retrospective" edge of the Document entity.
+func (_m *Document) QueryRetrospective() *RetrospectiveQuery {
+	return NewDocumentClient(_m.config).QueryRetrospective(_m)
 }
 
 // Update returns a builder for updating this Document.

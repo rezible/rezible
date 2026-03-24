@@ -107,6 +107,20 @@ func (_u *DocumentAccessUpdate) ClearTeamID() *DocumentAccessUpdate {
 	return _u
 }
 
+// SetCanView sets the "can_view" field.
+func (_u *DocumentAccessUpdate) SetCanView(v bool) *DocumentAccessUpdate {
+	_u.mutation.SetCanView(v)
+	return _u
+}
+
+// SetNillableCanView sets the "can_view" field if the given value is not nil.
+func (_u *DocumentAccessUpdate) SetNillableCanView(v *bool) *DocumentAccessUpdate {
+	if v != nil {
+		_u.SetCanView(*v)
+	}
+	return _u
+}
+
 // SetCanEdit sets the "can_edit" field.
 func (_u *DocumentAccessUpdate) SetCanEdit(v bool) *DocumentAccessUpdate {
 	_u.mutation.SetCanEdit(v)
@@ -249,6 +263,9 @@ func (_u *DocumentAccessUpdate) sqlSave(ctx context.Context) (_node int, err err
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(documentaccess.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.CanView(); ok {
+		_spec.SetField(documentaccess.FieldCanView, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.CanEdit(); ok {
 		_spec.SetField(documentaccess.FieldCanEdit, field.TypeBool, value)
@@ -439,6 +456,20 @@ func (_u *DocumentAccessUpdateOne) ClearTeamID() *DocumentAccessUpdateOne {
 	return _u
 }
 
+// SetCanView sets the "can_view" field.
+func (_u *DocumentAccessUpdateOne) SetCanView(v bool) *DocumentAccessUpdateOne {
+	_u.mutation.SetCanView(v)
+	return _u
+}
+
+// SetNillableCanView sets the "can_view" field if the given value is not nil.
+func (_u *DocumentAccessUpdateOne) SetNillableCanView(v *bool) *DocumentAccessUpdateOne {
+	if v != nil {
+		_u.SetCanView(*v)
+	}
+	return _u
+}
+
 // SetCanEdit sets the "can_edit" field.
 func (_u *DocumentAccessUpdateOne) SetCanEdit(v bool) *DocumentAccessUpdateOne {
 	_u.mutation.SetCanEdit(v)
@@ -611,6 +642,9 @@ func (_u *DocumentAccessUpdateOne) sqlSave(ctx context.Context) (_node *Document
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(documentaccess.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.CanView(); ok {
+		_spec.SetField(documentaccess.FieldCanView, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.CanEdit(); ok {
 		_spec.SetField(documentaccess.FieldCanEdit, field.TypeBool, value)

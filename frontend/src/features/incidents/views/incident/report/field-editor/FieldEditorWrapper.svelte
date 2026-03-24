@@ -2,8 +2,6 @@
 	import { onMount } from "svelte";
 	import { type RetrospectiveReportSection } from "$lib/api";
 	import { useAuthSessionState } from "$lib/auth.svelte";
-
-	import { activeAnnotation, activeEditor } from "$src/features/incidents/lib/activeEditor.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 	import type { Editor, Extensions } from "@tiptap/core";
@@ -17,6 +15,7 @@
 	import Collaboration from "@tiptap/extension-collaboration";
 	import CollaborationCaret from "@tiptap/extension-collaboration-caret";
 	
+	import { activeAnnotation, activeEditor } from "../activeEditor.svelte";
 	import BubbleMenu, { type AnnotationType } from "./BubbleMenu.svelte";
 	import MenuBar from "./MenuBar.svelte";
 

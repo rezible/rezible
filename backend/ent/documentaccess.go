@@ -34,6 +34,8 @@ type DocumentAccess struct {
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// TeamID holds the value of the "team_id" field.
 	TeamID uuid.UUID `json:"team_id,omitempty"`
+	// CanView holds the value of the "can_view" field.
+	CanView bool `json:"can_view,omitempty"`
 	// CanEdit holds the value of the "can_edit" field.
 	CanEdit bool `json:"can_edit,omitempty"`
 	// CanManage holds the value of the "can_manage" field.
@@ -108,7 +110,7 @@ func (*DocumentAccess) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case documentaccess.FieldCanEdit, documentaccess.FieldCanManage:
+		case documentaccess.FieldCanView, documentaccess.FieldCanEdit, documentaccess.FieldCanManage:
 			values[i] = new(sql.NullBool)
 		case documentaccess.FieldTenantID:
 			values[i] = new(sql.NullInt64)
@@ -172,6 +174,12 @@ func (_m *DocumentAccess) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field team_id", values[i])
 			} else if value != nil {
 				_m.TeamID = *value
+			}
+		case documentaccess.FieldCanView:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field can_view", values[i])
+			} else if value.Valid {
+				_m.CanView = value.Bool
 			}
 		case documentaccess.FieldCanEdit:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -258,6 +266,9 @@ func (_m *DocumentAccess) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("team_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TeamID))
+	builder.WriteString(", ")
+	builder.WriteString("can_view=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CanView))
 	builder.WriteString(", ")
 	builder.WriteString("can_edit=")
 	builder.WriteString(fmt.Sprintf("%v", _m.CanEdit))

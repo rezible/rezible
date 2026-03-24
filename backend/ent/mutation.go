@@ -2618,11 +2618,11 @@ type DocumentMutation struct {
 	clearedFields        map[string]struct{}
 	tenant               *int
 	clearedtenant        bool
-	retrospective        *uuid.UUID
-	clearedretrospective bool
 	accesses             map[uuid.UUID]struct{}
 	removedaccesses      map[uuid.UUID]struct{}
 	clearedaccesses      bool
+	retrospective        *uuid.UUID
+	clearedretrospective bool
 	done                 bool
 	oldValue             func(context.Context) (*Document, error)
 	predicates           []predicate.Document
@@ -2867,45 +2867,6 @@ func (m *DocumentMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by id.
-func (m *DocumentMutation) SetRetrospectiveID(id uuid.UUID) {
-	m.retrospective = &id
-}
-
-// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
-func (m *DocumentMutation) ClearRetrospective() {
-	m.clearedretrospective = true
-}
-
-// RetrospectiveCleared reports if the "retrospective" edge to the Retrospective entity was cleared.
-func (m *DocumentMutation) RetrospectiveCleared() bool {
-	return m.clearedretrospective
-}
-
-// RetrospectiveID returns the "retrospective" edge ID in the mutation.
-func (m *DocumentMutation) RetrospectiveID() (id uuid.UUID, exists bool) {
-	if m.retrospective != nil {
-		return *m.retrospective, true
-	}
-	return
-}
-
-// RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// RetrospectiveID instead. It exists only for internal usage by the builders.
-func (m *DocumentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
-	if id := m.retrospective; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetRetrospective resets all changes to the "retrospective" edge.
-func (m *DocumentMutation) ResetRetrospective() {
-	m.retrospective = nil
-	m.clearedretrospective = false
-}
-
 // AddAccessIDs adds the "accesses" edge to the DocumentAccess entity by ids.
 func (m *DocumentMutation) AddAccessIDs(ids ...uuid.UUID) {
 	if m.accesses == nil {
@@ -2958,6 +2919,45 @@ func (m *DocumentMutation) ResetAccesses() {
 	m.accesses = nil
 	m.clearedaccesses = false
 	m.removedaccesses = nil
+}
+
+// SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by id.
+func (m *DocumentMutation) SetRetrospectiveID(id uuid.UUID) {
+	m.retrospective = &id
+}
+
+// ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
+func (m *DocumentMutation) ClearRetrospective() {
+	m.clearedretrospective = true
+}
+
+// RetrospectiveCleared reports if the "retrospective" edge to the Retrospective entity was cleared.
+func (m *DocumentMutation) RetrospectiveCleared() bool {
+	return m.clearedretrospective
+}
+
+// RetrospectiveID returns the "retrospective" edge ID in the mutation.
+func (m *DocumentMutation) RetrospectiveID() (id uuid.UUID, exists bool) {
+	if m.retrospective != nil {
+		return *m.retrospective, true
+	}
+	return
+}
+
+// RetrospectiveIDs returns the "retrospective" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// RetrospectiveID instead. It exists only for internal usage by the builders.
+func (m *DocumentMutation) RetrospectiveIDs() (ids []uuid.UUID) {
+	if id := m.retrospective; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetRetrospective resets all changes to the "retrospective" edge.
+func (m *DocumentMutation) ResetRetrospective() {
+	m.retrospective = nil
+	m.clearedretrospective = false
 }
 
 // Where appends a list predicates to the DocumentMutation builder.
@@ -3134,11 +3134,11 @@ func (m *DocumentMutation) AddedEdges() []string {
 	if m.tenant != nil {
 		edges = append(edges, document.EdgeTenant)
 	}
-	if m.retrospective != nil {
-		edges = append(edges, document.EdgeRetrospective)
-	}
 	if m.accesses != nil {
 		edges = append(edges, document.EdgeAccesses)
+	}
+	if m.retrospective != nil {
+		edges = append(edges, document.EdgeRetrospective)
 	}
 	return edges
 }
@@ -3151,16 +3151,16 @@ func (m *DocumentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case document.EdgeRetrospective:
-		if id := m.retrospective; id != nil {
-			return []ent.Value{*id}
-		}
 	case document.EdgeAccesses:
 		ids := make([]ent.Value, 0, len(m.accesses))
 		for id := range m.accesses {
 			ids = append(ids, id)
 		}
 		return ids
+	case document.EdgeRetrospective:
+		if id := m.retrospective; id != nil {
+			return []ent.Value{*id}
+		}
 	}
 	return nil
 }
@@ -3194,11 +3194,11 @@ func (m *DocumentMutation) ClearedEdges() []string {
 	if m.clearedtenant {
 		edges = append(edges, document.EdgeTenant)
 	}
-	if m.clearedretrospective {
-		edges = append(edges, document.EdgeRetrospective)
-	}
 	if m.clearedaccesses {
 		edges = append(edges, document.EdgeAccesses)
+	}
+	if m.clearedretrospective {
+		edges = append(edges, document.EdgeRetrospective)
 	}
 	return edges
 }
@@ -3209,10 +3209,10 @@ func (m *DocumentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case document.EdgeTenant:
 		return m.clearedtenant
-	case document.EdgeRetrospective:
-		return m.clearedretrospective
 	case document.EdgeAccesses:
 		return m.clearedaccesses
+	case document.EdgeRetrospective:
+		return m.clearedretrospective
 	}
 	return false
 }
@@ -3238,11 +3238,11 @@ func (m *DocumentMutation) ResetEdge(name string) error {
 	case document.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case document.EdgeRetrospective:
-		m.ResetRetrospective()
-		return nil
 	case document.EdgeAccesses:
 		m.ResetAccesses()
+		return nil
+	case document.EdgeRetrospective:
+		m.ResetRetrospective()
 		return nil
 	}
 	return fmt.Errorf("unknown Document edge %s", name)
@@ -3256,6 +3256,7 @@ type DocumentAccessMutation struct {
 	id              *uuid.UUID
 	created_at      *time.Time
 	updated_at      *time.Time
+	can_view        *bool
 	can_edit        *bool
 	can_manage      *bool
 	clearedFields   map[string]struct{}
@@ -3618,6 +3619,42 @@ func (m *DocumentAccessMutation) ResetTeamID() {
 	delete(m.clearedFields, documentaccess.FieldTeamID)
 }
 
+// SetCanView sets the "can_view" field.
+func (m *DocumentAccessMutation) SetCanView(b bool) {
+	m.can_view = &b
+}
+
+// CanView returns the value of the "can_view" field in the mutation.
+func (m *DocumentAccessMutation) CanView() (r bool, exists bool) {
+	v := m.can_view
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCanView returns the old "can_view" field's value of the DocumentAccess entity.
+// If the DocumentAccess object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentAccessMutation) OldCanView(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCanView is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCanView requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCanView: %w", err)
+	}
+	return oldValue.CanView, nil
+}
+
+// ResetCanView resets all changes to the "can_view" field.
+func (m *DocumentAccessMutation) ResetCanView() {
+	m.can_view = nil
+}
+
 // SetCanEdit sets the "can_edit" field.
 func (m *DocumentAccessMutation) SetCanEdit(b bool) {
 	m.can_edit = &b
@@ -3832,7 +3869,7 @@ func (m *DocumentAccessMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DocumentAccessMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 9)
 	if m.tenant != nil {
 		fields = append(fields, documentaccess.FieldTenantID)
 	}
@@ -3850,6 +3887,9 @@ func (m *DocumentAccessMutation) Fields() []string {
 	}
 	if m.team != nil {
 		fields = append(fields, documentaccess.FieldTeamID)
+	}
+	if m.can_view != nil {
+		fields = append(fields, documentaccess.FieldCanView)
 	}
 	if m.can_edit != nil {
 		fields = append(fields, documentaccess.FieldCanEdit)
@@ -3877,6 +3917,8 @@ func (m *DocumentAccessMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case documentaccess.FieldTeamID:
 		return m.TeamID()
+	case documentaccess.FieldCanView:
+		return m.CanView()
 	case documentaccess.FieldCanEdit:
 		return m.CanEdit()
 	case documentaccess.FieldCanManage:
@@ -3902,6 +3944,8 @@ func (m *DocumentAccessMutation) OldField(ctx context.Context, name string) (ent
 		return m.OldUserID(ctx)
 	case documentaccess.FieldTeamID:
 		return m.OldTeamID(ctx)
+	case documentaccess.FieldCanView:
+		return m.OldCanView(ctx)
 	case documentaccess.FieldCanEdit:
 		return m.OldCanEdit(ctx)
 	case documentaccess.FieldCanManage:
@@ -3956,6 +4000,13 @@ func (m *DocumentAccessMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTeamID(v)
+		return nil
+	case documentaccess.FieldCanView:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCanView(v)
 		return nil
 	case documentaccess.FieldCanEdit:
 		v, ok := value.(bool)
@@ -4055,6 +4106,9 @@ func (m *DocumentAccessMutation) ResetField(name string) error {
 		return nil
 	case documentaccess.FieldTeamID:
 		m.ResetTeamID()
+		return nil
+	case documentaccess.FieldCanView:
+		m.ResetCanView()
 		return nil
 	case documentaccess.FieldCanEdit:
 		m.ResetCanEdit()
@@ -36232,7 +36286,7 @@ type RetrospectiveMutation struct {
 	op                     Op
 	typ                    string
 	id                     *uuid.UUID
-	_type                  *retrospective.Type
+	kind                   *retrospective.Kind
 	state                  *retrospective.State
 	clearedFields          map[string]struct{}
 	tenant                 *int
@@ -36512,40 +36566,40 @@ func (m *RetrospectiveMutation) ResetSystemAnalysisID() {
 	delete(m.clearedFields, retrospective.FieldSystemAnalysisID)
 }
 
-// SetType sets the "type" field.
-func (m *RetrospectiveMutation) SetType(r retrospective.Type) {
-	m._type = &r
+// SetKind sets the "kind" field.
+func (m *RetrospectiveMutation) SetKind(r retrospective.Kind) {
+	m.kind = &r
 }
 
-// GetType returns the value of the "type" field in the mutation.
-func (m *RetrospectiveMutation) GetType() (r retrospective.Type, exists bool) {
-	v := m._type
+// Kind returns the value of the "kind" field in the mutation.
+func (m *RetrospectiveMutation) Kind() (r retrospective.Kind, exists bool) {
+	v := m.kind
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldType returns the old "type" field's value of the Retrospective entity.
+// OldKind returns the old "kind" field's value of the Retrospective entity.
 // If the Retrospective object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *RetrospectiveMutation) OldType(ctx context.Context) (v retrospective.Type, err error) {
+func (m *RetrospectiveMutation) OldKind(ctx context.Context) (v retrospective.Kind, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldType is only allowed on UpdateOne operations")
+		return v, errors.New("OldKind is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldType requires an ID field in the mutation")
+		return v, errors.New("OldKind requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldType: %w", err)
+		return v, fmt.Errorf("querying old value for OldKind: %w", err)
 	}
-	return oldValue.Type, nil
+	return oldValue.Kind, nil
 }
 
-// ResetType resets all changes to the "type" field.
-func (m *RetrospectiveMutation) ResetType() {
-	m._type = nil
+// ResetKind resets all changes to the "kind" field.
+func (m *RetrospectiveMutation) ResetKind() {
+	m.kind = nil
 }
 
 // SetState sets the "state" field.
@@ -36793,8 +36847,8 @@ func (m *RetrospectiveMutation) Fields() []string {
 	if m.system_analysis != nil {
 		fields = append(fields, retrospective.FieldSystemAnalysisID)
 	}
-	if m._type != nil {
-		fields = append(fields, retrospective.FieldType)
+	if m.kind != nil {
+		fields = append(fields, retrospective.FieldKind)
 	}
 	if m.state != nil {
 		fields = append(fields, retrospective.FieldState)
@@ -36815,8 +36869,8 @@ func (m *RetrospectiveMutation) Field(name string) (ent.Value, bool) {
 		return m.DocumentID()
 	case retrospective.FieldSystemAnalysisID:
 		return m.SystemAnalysisID()
-	case retrospective.FieldType:
-		return m.GetType()
+	case retrospective.FieldKind:
+		return m.Kind()
 	case retrospective.FieldState:
 		return m.State()
 	}
@@ -36836,8 +36890,8 @@ func (m *RetrospectiveMutation) OldField(ctx context.Context, name string) (ent.
 		return m.OldDocumentID(ctx)
 	case retrospective.FieldSystemAnalysisID:
 		return m.OldSystemAnalysisID(ctx)
-	case retrospective.FieldType:
-		return m.OldType(ctx)
+	case retrospective.FieldKind:
+		return m.OldKind(ctx)
 	case retrospective.FieldState:
 		return m.OldState(ctx)
 	}
@@ -36877,12 +36931,12 @@ func (m *RetrospectiveMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSystemAnalysisID(v)
 		return nil
-	case retrospective.FieldType:
-		v, ok := value.(retrospective.Type)
+	case retrospective.FieldKind:
+		v, ok := value.(retrospective.Kind)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetType(v)
+		m.SetKind(v)
 		return nil
 	case retrospective.FieldState:
 		v, ok := value.(retrospective.State)
@@ -36964,8 +37018,8 @@ func (m *RetrospectiveMutation) ResetField(name string) error {
 	case retrospective.FieldSystemAnalysisID:
 		m.ResetSystemAnalysisID()
 		return nil
-	case retrospective.FieldType:
-		m.ResetType()
+	case retrospective.FieldKind:
+		m.ResetKind()
 		return nil
 	case retrospective.FieldState:
 		m.ResetState()

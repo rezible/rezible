@@ -9,18 +9,20 @@ import {
 } from "@hocuspocus/provider";
 import { onMount } from "svelte";
 import { Context, watch } from "runed";
-import { useIncidentView } from "$features/incidents/views/incident";
+import type { IncidentViewController } from "./controller.svelte";
+import type { Getter } from "$src/lib/utils.svelte";
 
 export class IncidentCollaborationController {
-	incidentView = useIncidentView();
-	documentId = $derived(this.incidentView.documentId);
+	incidentView: IncidentViewController;
+
 	provider = $state<HocuspocusProvider>();
 	awareness = $state<StatesArray>([]);
 	status = $state<WebSocketStatus>(WebSocketStatus.Disconnected);
 	error = $state<Error>();
 
-	constructor() {
-		watch(() => this.documentId, id => { this.connect(id) });
+	constructor(incidentView: IncidentViewController) {
+		this.incidentView = incidentView;
+		watch(() => incidentView.documentId, id => { this.connect(id) });
 		onMount(() => (() => { this.cleanup() }));
 	};
 
@@ -75,5 +77,5 @@ export class IncidentCollaborationController {
 }
 
 const ctx = new Context<IncidentCollaborationController>("IncidentCollaborationController");
-export const initIncidentCollaborationController = () => ctx.set(new IncidentCollaborationController());
+export const initIncidentCollaborationController = (vc: IncidentViewController) => ctx.set(new IncidentCollaborationController(vc));
 export const useIncidentCollaboration = () => ctx.get();

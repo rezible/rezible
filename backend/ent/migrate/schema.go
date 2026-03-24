@@ -171,6 +171,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "can_view", Type: field.TypeBool, Default: false},
 		{Name: "can_edit", Type: field.TypeBool, Default: false},
 		{Name: "can_manage", Type: field.TypeBool, Default: false},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -186,25 +187,25 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "document_accesses_tenants_tenant",
-				Columns:    []*schema.Column{DocumentAccessesColumns[5]},
+				Columns:    []*schema.Column{DocumentAccessesColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "document_accesses_documents_document",
-				Columns:    []*schema.Column{DocumentAccessesColumns[6]},
+				Columns:    []*schema.Column{DocumentAccessesColumns[7]},
 				RefColumns: []*schema.Column{DocumentsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "document_accesses_users_user",
-				Columns:    []*schema.Column{DocumentAccessesColumns[7]},
+				Columns:    []*schema.Column{DocumentAccessesColumns[8]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
 				Symbol:     "document_accesses_teams_team",
-				Columns:    []*schema.Column{DocumentAccessesColumns[8]},
+				Columns:    []*schema.Column{DocumentAccessesColumns[9]},
 				RefColumns: []*schema.Column{TeamsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
@@ -213,7 +214,7 @@ var (
 			{
 				Name:    "documentaccess_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{DocumentAccessesColumns[5]},
+				Columns: []*schema.Column{DocumentAccessesColumns[6]},
 			},
 		},
 	}
@@ -1582,7 +1583,7 @@ var (
 	// RetrospectivesColumns holds the columns for the "retrospectives" table.
 	RetrospectivesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "type", Type: field.TypeEnum, Enums: []string{"simple", "full"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"simple", "full"}},
 		{Name: "state", Type: field.TypeEnum, Enums: []string{"draft", "in_review", "meeting", "closed"}},
 		{Name: "document_id", Type: field.TypeUUID, Unique: true},
 		{Name: "incident_id", Type: field.TypeUUID, Unique: true},

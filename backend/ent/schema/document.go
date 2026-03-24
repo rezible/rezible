@@ -28,8 +28,8 @@ func (Document) Fields() []ent.Field {
 
 func (Document) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("retrospective", Retrospective.Type).Unique(),
 		edge.From("accesses", DocumentAccess.Type).Ref("document"),
+		edge.To("retrospective", Retrospective.Type).Unique(),
 	}
 }
 
@@ -51,6 +51,7 @@ func (DocumentAccess) Fields() []ent.Field {
 		field.UUID("document_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}).Optional(),
 		field.UUID("team_id", uuid.UUID{}).Optional(),
+		field.Bool("can_view").Default(false),
 		field.Bool("can_edit").Default(false),
 		field.Bool("can_manage").Default(false),
 	}

@@ -29,8 +29,8 @@ type DocumentQuery struct {
 	inters            []Interceptor
 	predicates        []predicate.Document
 	withTenant        *TenantQuery
-	withRetrospective *RetrospectiveQuery
 	withAccesses      *DocumentAccessQuery
+	withRetrospective *RetrospectiveQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -90,28 +90,6 @@ func (_q *DocumentQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryRetrospective chains the current query on the "retrospective" edge.
-func (_q *DocumentQuery) QueryRetrospective() *RetrospectiveQuery {
-	query := (&RetrospectiveClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(document.Table, document.FieldID, selector),
-			sqlgraph.To(retrospective.Table, retrospective.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, document.RetrospectiveTable, document.RetrospectiveColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryAccesses chains the current query on the "accesses" edge.
 func (_q *DocumentQuery) QueryAccesses() *DocumentAccessQuery {
 	query := (&DocumentAccessClient{config: _q.config}).Query()
@@ -127,6 +105,28 @@ func (_q *DocumentQuery) QueryAccesses() *DocumentAccessQuery {
 			sqlgraph.From(document.Table, document.FieldID, selector),
 			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, document.AccessesTable, document.AccessesColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryRetrospective chains the current query on the "retrospective" edge.
+func (_q *DocumentQuery) QueryRetrospective() *RetrospectiveQuery {
+	query := (&RetrospectiveClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(document.Table, document.FieldID, selector),
+			sqlgraph.To(retrospective.Table, retrospective.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, document.RetrospectiveTable, document.RetrospectiveColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -327,8 +327,8 @@ func (_q *DocumentQuery) Clone() *DocumentQuery {
 		inters:            append([]Interceptor{}, _q.inters...),
 		predicates:        append([]predicate.Document{}, _q.predicates...),
 		withTenant:        _q.withTenant.Clone(),
-		withRetrospective: _q.withRetrospective.Clone(),
 		withAccesses:      _q.withAccesses.Clone(),
+		withRetrospective: _q.withRetrospective.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -347,17 +347,6 @@ func (_q *DocumentQuery) WithTenant(opts ...func(*TenantQuery)) *DocumentQuery {
 	return _q
 }
 
-// WithRetrospective tells the query-builder to eager-load the nodes that are connected to
-// the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *DocumentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *DocumentQuery {
-	query := (&RetrospectiveClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withRetrospective = query
-	return _q
-}
-
 // WithAccesses tells the query-builder to eager-load the nodes that are connected to
 // the "accesses" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *DocumentQuery) WithAccesses(opts ...func(*DocumentAccessQuery)) *DocumentQuery {
@@ -366,6 +355,17 @@ func (_q *DocumentQuery) WithAccesses(opts ...func(*DocumentAccessQuery)) *Docum
 		opt(query)
 	}
 	_q.withAccesses = query
+	return _q
+}
+
+// WithRetrospective tells the query-builder to eager-load the nodes that are connected to
+// the "retrospective" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *DocumentQuery) WithRetrospective(opts ...func(*RetrospectiveQuery)) *DocumentQuery {
+	query := (&RetrospectiveClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withRetrospective = query
 	return _q
 }
 
@@ -455,8 +455,8 @@ func (_q *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
-			_q.withRetrospective != nil,
 			_q.withAccesses != nil,
+			_q.withRetrospective != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -486,16 +486,16 @@ func (_q *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 			return nil, err
 		}
 	}
-	if query := _q.withRetrospective; query != nil {
-		if err := _q.loadRetrospective(ctx, query, nodes, nil,
-			func(n *Document, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withAccesses; query != nil {
 		if err := _q.loadAccesses(ctx, query, nodes,
 			func(n *Document) { n.Edges.Accesses = []*DocumentAccess{} },
 			func(n *Document, e *DocumentAccess) { n.Edges.Accesses = append(n.Edges.Accesses, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withRetrospective; query != nil {
+		if err := _q.loadRetrospective(ctx, query, nodes, nil,
+			func(n *Document, e *Retrospective) { n.Edges.Retrospective = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -531,33 +531,6 @@ func (_q *DocumentQuery) loadTenant(ctx context.Context, query *TenantQuery, nod
 	}
 	return nil
 }
-func (_q *DocumentQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*Document, init func(*Document), assign func(*Document, *Retrospective)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Document)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(retrospective.FieldDocumentID)
-	}
-	query.Where(predicate.Retrospective(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(document.RetrospectiveColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.DocumentID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "document_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
 func (_q *DocumentQuery) loadAccesses(ctx context.Context, query *DocumentAccessQuery, nodes []*Document, init func(*Document), assign func(*Document, *DocumentAccess)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Document)
@@ -573,6 +546,33 @@ func (_q *DocumentQuery) loadAccesses(ctx context.Context, query *DocumentAccess
 	}
 	query.Where(predicate.DocumentAccess(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(document.AccessesColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.DocumentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "document_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *DocumentQuery) loadRetrospective(ctx context.Context, query *RetrospectiveQuery, nodes []*Document, init func(*Document), assign func(*Document, *Retrospective)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Document)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(retrospective.FieldDocumentID)
+	}
+	query.Where(predicate.Retrospective(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(document.RetrospectiveColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

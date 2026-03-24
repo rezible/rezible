@@ -27,17 +27,19 @@ func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *o
 	return &resp, nil
 }
 
-func (h *retrospectivesHandler) CreateRetrospective(ctx context.Context, request *oapi.CreateRetrospectiveRequest) (*oapi.CreateRetrospectiveResponse, error) {
-	var resp oapi.CreateRetrospectiveResponse
+func (h *retrospectivesHandler) UpdateRetrospective(ctx context.Context, req *oapi.UpdateRetrospectiveRequest) (*oapi.UpdateRetrospectiveResponse, error) {
+	var resp oapi.UpdateRetrospectiveResponse
 
-	attrs := request.Body.Attributes
-	kind := retrospective.TypeSimple
-	if attrs.SystemAnalysis {
-		kind = retrospective.TypeFull
+	//attrs := req.Body.Attributes
+	setFn := func(m *ent.RetrospectiveMutation) {
+		//kind := retrospective.KindSimple
+		//if attrs.SystemAnalysis {
+		//	kind = retrospective.TypeFull
+		//}
 	}
-	retro, createErr := h.retros.Create(ctx, attrs.IncidentId, kind)
-	if createErr != nil {
-		return nil, oapi.Error("create retrospective", createErr)
+	retro, updateErr := h.retros.Set(ctx, req.Id, setFn)
+	if updateErr != nil {
+		return nil, oapi.Error("update retrospective", updateErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 
@@ -50,18 +52,6 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 	retro, retroErr := h.retros.Get(ctx, retrospective.ID(input.Id))
 	if retroErr != nil {
 		return nil, oapi.Error("failed to get retrospective", retroErr)
-	}
-	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
-
-	return &resp, nil
-}
-
-func (h *retrospectivesHandler) GetRetrospectiveForIncident(ctx context.Context, input *oapi.GetRetrospectiveForIncidentRequest) (*oapi.GetRetrospectiveForIncidentResponse, error) {
-	var resp oapi.GetRetrospectiveForIncidentResponse
-
-	retro, retroErr := h.retros.Get(ctx, retrospective.HasIncidentWith(incidentIdPredicate(input.Id)))
-	if retroErr != nil {
-		return nil, oapi.Error("get retrospective", retroErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 

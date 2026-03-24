@@ -60,9 +60,9 @@ func (_c *RetrospectiveCreate) SetNillableSystemAnalysisID(v *uuid.UUID) *Retros
 	return _c
 }
 
-// SetType sets the "type" field.
-func (_c *RetrospectiveCreate) SetType(v retrospective.Type) *RetrospectiveCreate {
-	_c.mutation.SetType(v)
+// SetKind sets the "kind" field.
+func (_c *RetrospectiveCreate) SetKind(v retrospective.Kind) *RetrospectiveCreate {
+	_c.mutation.SetKind(v)
 	return _c
 }
 
@@ -179,12 +179,12 @@ func (_c *RetrospectiveCreate) check() error {
 	if _, ok := _c.mutation.DocumentID(); !ok {
 		return &ValidationError{Name: "document_id", err: errors.New(`ent: missing required field "Retrospective.document_id"`)}
 	}
-	if _, ok := _c.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Retrospective.type"`)}
+	if _, ok := _c.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "Retrospective.kind"`)}
 	}
-	if v, ok := _c.mutation.GetType(); ok {
-		if err := retrospective.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Retrospective.type": %w`, err)}
+	if v, ok := _c.mutation.Kind(); ok {
+		if err := retrospective.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "Retrospective.kind": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.State(); !ok {
@@ -240,9 +240,9 @@ func (_c *RetrospectiveCreate) createSpec() (*Retrospective, *sqlgraph.CreateSpe
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.GetType(); ok {
-		_spec.SetField(retrospective.FieldType, field.TypeEnum, value)
-		_node.Type = value
+	if value, ok := _c.mutation.Kind(); ok {
+		_spec.SetField(retrospective.FieldKind, field.TypeEnum, value)
+		_node.Kind = value
 	}
 	if value, ok := _c.mutation.State(); ok {
 		_spec.SetField(retrospective.FieldState, field.TypeEnum, value)
@@ -426,15 +426,15 @@ func (u *RetrospectiveUpsert) ClearSystemAnalysisID() *RetrospectiveUpsert {
 	return u
 }
 
-// SetType sets the "type" field.
-func (u *RetrospectiveUpsert) SetType(v retrospective.Type) *RetrospectiveUpsert {
-	u.Set(retrospective.FieldType, v)
+// SetKind sets the "kind" field.
+func (u *RetrospectiveUpsert) SetKind(v retrospective.Kind) *RetrospectiveUpsert {
+	u.Set(retrospective.FieldKind, v)
 	return u
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *RetrospectiveUpsert) UpdateType() *RetrospectiveUpsert {
-	u.SetExcluded(retrospective.FieldType)
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *RetrospectiveUpsert) UpdateKind() *RetrospectiveUpsert {
+	u.SetExcluded(retrospective.FieldKind)
 	return u
 }
 
@@ -550,17 +550,17 @@ func (u *RetrospectiveUpsertOne) ClearSystemAnalysisID() *RetrospectiveUpsertOne
 	})
 }
 
-// SetType sets the "type" field.
-func (u *RetrospectiveUpsertOne) SetType(v retrospective.Type) *RetrospectiveUpsertOne {
+// SetKind sets the "kind" field.
+func (u *RetrospectiveUpsertOne) SetKind(v retrospective.Kind) *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
-		s.SetType(v)
+		s.SetKind(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *RetrospectiveUpsertOne) UpdateType() *RetrospectiveUpsertOne {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *RetrospectiveUpsertOne) UpdateKind() *RetrospectiveUpsertOne {
 	return u.Update(func(s *RetrospectiveUpsert) {
-		s.UpdateType()
+		s.UpdateKind()
 	})
 }
 
@@ -845,17 +845,17 @@ func (u *RetrospectiveUpsertBulk) ClearSystemAnalysisID() *RetrospectiveUpsertBu
 	})
 }
 
-// SetType sets the "type" field.
-func (u *RetrospectiveUpsertBulk) SetType(v retrospective.Type) *RetrospectiveUpsertBulk {
+// SetKind sets the "kind" field.
+func (u *RetrospectiveUpsertBulk) SetKind(v retrospective.Kind) *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
-		s.SetType(v)
+		s.SetKind(v)
 	})
 }
 
-// UpdateType sets the "type" field to the value that was provided on create.
-func (u *RetrospectiveUpsertBulk) UpdateType() *RetrospectiveUpsertBulk {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *RetrospectiveUpsertBulk) UpdateKind() *RetrospectiveUpsertBulk {
 	return u.Update(func(s *RetrospectiveUpsert) {
-		s.UpdateType()
+		s.UpdateKind()
 	})
 }
 
