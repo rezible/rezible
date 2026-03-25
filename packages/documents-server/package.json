@@ -6,7 +6,8 @@
   "source": "src/index.ts",
   "main": "build/main.js",
   "scripts": {
-    "build": "bun build ./src/index.ts --target bun --outdir ./dist",
+    "build": "bun build --target bun ./src/index.ts --outdir ./dist",
+    "build:compile": "bun build --compile --target=bun-linux-x64 ./src/index.ts --outfile documents-server",
     "dev": "bun --watch run ./src/index.ts"
   },
   "devDependencies": {
