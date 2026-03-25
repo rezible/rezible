@@ -11,11 +11,8 @@
     "dev": "bun --watch run ./src/index.ts"
   },
   "devDependencies": {
-    "@types/async-lock": "^1.4.2",
     "@types/node": "^22.15.31",
-    "@types/pg": "^8.15.4",
-    "@types/uuid": "^10.0.0",
-    "@types/ws": "^8.18.1"
+    "@types/pg": "^8.15.4"
   },
   "dependencies": {
     "@hocuspocus/common": "^3.4.4",

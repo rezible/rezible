@@ -20,7 +20,7 @@ processes:
         condition: process_started
 
   frontend:
-    command: just dev-frontend
+    command: just run-frontend dev
     availability:
       restart: on_failure
       max_restarts: 1
@@ -29,7 +29,7 @@ processes:
         condition: process_started
 
   documents-server:
-    command: just dev-documents-server
+    command: just run-documents-server dev
     availability:
       restart: on_failure
       max_restarts: 1

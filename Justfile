@@ -48,14 +48,6 @@ backend_dir := "packages/backend"
       --env-file ./.env.dev \
       localhost/rezible-backend:latest
 
-@run-frontend *ARGS:
-    PUBLIC_APP_URL="${APP_URL}" \
-    PUBLIC_API_URL="${API_URL}" \
-    PUBLIC_API_URL_BASE="/api/v1" \
-    PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
-    PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
-        bun run --filter=@rezible/frontend {{ARGS}}
-
 local_dev_api_url := "http://localhost:7002/api/v1"
 @run-documents-server *ARGS:
     API_URL="{{local_dev_api_url}}" \
@@ -70,6 +62,17 @@ local_dev_api_url := "http://localhost:7002/api/v1"
       -e API_URL="{{local_dev_api_url}}" \
       -e DB_URL="{{DB_URL}}" \
       localhost/rezible-documents-server
+
+@run-frontend *ARGS:
+    PUBLIC_APP_URL="${APP_URL}" \
+    PUBLIC_API_URL="${API_URL}" \
+    PUBLIC_API_URL_BASE="/api/v1" \
+    PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
+    PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
+        bun run --filter=@rezible/frontend {{ARGS}}
+
+@build-frontend:
+    just run-frontend build
 
 # [group('Testing')]
 
@@ -113,12 +116,6 @@ local_dev_api_url := "http://localhost:7002/api/v1"
 
 @dev-backend:
     cd packages/backend && reflex -s -d none -r '\.go$' -- just run-backend serve
-
-@dev-frontend:
-    just run-frontend dev
-
-@dev-documents-server:
-    just run-documents-server dev
 
 # [group('Database')]
 

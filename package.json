@@ -1,8 +1,5 @@
 {
   "name": "rezible",
   "private": true,
-  "workspaces": ["packages/*"],
-  "scripts": {
-    "dev-frontend": "bun run --filter=@rezible/frontend dev"
-  }
+  "workspaces": ["packages/*"]
 }
