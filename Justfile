@@ -27,11 +27,15 @@ backend_dir := "packages/backend"
     go -C {{backend_dir}}  fmt ./...
     bun run format
 
+@run-docker-compose *CMD:
+    docker compose \
+      --env-file .env \
+      --env-file .env.dev \
+      -f ./scripts/docker-compose.yaml \
+      {{CMD}}
+
 @run-backend *ARGS:
     go -C {{backend_dir}} run ./cmd/rezible {{ARGS}}
-
-@build-documents-server-docker:
-    docker build -t rezible-documents-server -f packages/documents-server/Dockerfile .
 
 @build-backend-docker:
     mkdir -p ./scripts/certs && cat "$(localias debug cert)" > ./scripts/certs/localias-ca.crt
@@ -52,17 +56,20 @@ backend_dir := "packages/backend"
     PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
         bun run --filter=@rezible/frontend {{ARGS}}
 
+local_dev_api_url := "http://localhost:7002/api/v1"
 @run-documents-server *ARGS:
-    API_URL="http://localhost:7002/api/v1" \
+    API_URL="{{local_dev_api_url}}" \
     DB_URL="{{DB_URL}}" \
         bun run --filter="@rezible/documents-server" {{ARGS}}
 
-@run-docker-compose *CMD:
-    docker compose \
-      --env-file .env \
-      --env-file .env.dev \
-      -f ./scripts/docker-compose.yaml \
-      {{CMD}}
+@build-documents-server-docker:
+    docker build -t rezible-documents-server -f packages/documents-server/Dockerfile .
+
+@run-documents-server-docker:
+    docker run --network host \
+      -e API_URL="{{local_dev_api_url}}" \
+      -e DB_URL="{{DB_URL}}" \
+      localhost/rezible-documents-server
 
 # [group('Testing')]
 

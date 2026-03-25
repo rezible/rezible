@@ -11,7 +11,7 @@ type Config = {
 }
 
 const loadConfig = (): Config => {
-	const name = process.env.NAME ?? "document-server";
+	const name = process.env.NAME ?? "documents-server";
 
 	const host = process.env.HOST ?? "0.0.0.0";
 	let port = Number.parseInt(process.env.PORT ?? "7003", 10);
