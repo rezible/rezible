@@ -5,8 +5,5 @@ node_modules/
 .idea/
 .vscode/
 scripts/certs/
-scripts/data/
-scripts/localias.local.yaml
-**/openapi-ts-error-*
 **/CLAUDE.md
 **/AGENTS.md
