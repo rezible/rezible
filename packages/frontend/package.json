@@ -1,5 +1,5 @@
 {
-	"name": "frontend",
+	"name": "@rezible/frontend",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -47,12 +47,12 @@
 		"@internationalized/date": "^3.12.0",
 		"@mdi/js": "^7.4.47",
 		"@rezible/tiptap-extensions": "workspace:*",
+		"@rezible/api-client-ts": "workspace:*",
 		"@tailwindcss/vite": "^4.1.18",
 		"@tanstack/svelte-query": "^6.0.18",
-		"@tiptap/extension-bubble-menu": "^3.13.0",
-		"@tiptap/extension-collaboration": "3.13.0",
-		"@tiptap/extension-collaboration-caret": "3.13.0",
-		"@tiptap/suggestion": "3.13",
+		"@tiptap/extension-collaboration": "^3.13.0",
+    	"@tiptap/extension-collaboration-caret": "^3.13.0",
+    	"@tiptap/extension-bubble-menu": "^3.13.0",
 		"@xyflow/svelte": "^1.3.1",
 		"date-fns": "^4.1.0",
 		"echarts": "^6.0.0",
@@ -65,5 +65,10 @@
 		"vis-data": "^8.0.3",
 		"vis-timeline": "^8.3.1",
 		"zod": "^4.1.11"
+	},
+	"peerDependencies": {
+		"@tiptap/core": "^3.13.0",
+		"@tiptap/pm": "^3.13.0",
+		"yjs": "^13"
 	}
 }

@@ -1,6 +1,5 @@
 import { API_URL_BASE } from "$lib/config";
-import { client } from "./oapi.gen/client.gen";
-import type { ErrorModel } from "./oapi.gen";
+import { client, type ErrorModel } from "@rezible/api-client-ts";
 
 client.setConfig({
 	baseUrl: API_URL_BASE,
@@ -22,7 +21,6 @@ client.interceptors.error.use(async (rawErr, resp, req, opts) => {
 	}
 });
 
+export * from "@rezible/api-client-ts";
+export * from "@rezible/api-client-ts/svelte-query";
 export { client };
-
-export * from "./oapi.gen/@tanstack/svelte-query.gen";
-export * from "./oapi.gen/types.gen";

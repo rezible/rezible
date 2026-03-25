@@ -1,5 +1,5 @@
 {
-  "name": "documents-server",
+  "name": "@rezible/documents-server",
   "version": "0.0.1",
   "private": true,
   "description": "",
@@ -23,9 +23,12 @@
     "@hocuspocus/server": "^3.4.4",
     "@hocuspocus/transformer": "^3.4.4",
     "@rezible/tiptap-extensions": "workspace:*",
+    "@rezible/api-client-ts": "workspace:*",
     "pg": "^8.16.0",
     "uuid": "^11.1.0"
   },
-  "author": "",
-  "license": "ISC"
+  "peerDependencies": {
+    "@tiptap/core": "^3.13.0",
+    "yjs": "^13"
+  }
 }

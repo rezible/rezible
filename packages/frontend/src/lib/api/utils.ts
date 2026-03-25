@@ -1,5 +1,5 @@
-import type { Options, ResponsePagination } from "./oapi.gen";
 import type { CreateQueryOptions } from "@tanstack/svelte-query";
+import type { Options, ResponsePagination } from "@rezible/api-client-ts";
 
 export type ListQueryParameters = {
 	limit?: number;

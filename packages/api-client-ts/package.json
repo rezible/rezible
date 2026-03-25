@@ -1,0 +1,20 @@
+{
+  "name": "@rezible/api-client-ts",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./svelte-query": "./src/svelte-query.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@hey-api/openapi-ts": "0.94.4"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "scripts": {
+    "build": "openapi-ts -f ./openapi-ts.config.ts --no-log-file"
+  }
+}

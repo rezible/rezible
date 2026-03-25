@@ -12,33 +12,30 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
 
 # [group('Setup')]
 
+backend_dir := "packages/backend"
+
 @setup:
     just install-dependencies
     just codegen
     just setup-db
 
 @install-dependencies:
-    cd backend && go mod tidy
+    go -C {{backend_dir}} mod tidy
     bun install
 
-@upgrade-dependencies:
-    devbox update
-    cd backend && go get -u ./... && go mod tidy
-    bun update
-
 @format:
-    cd backend && go fmt ./...
-    cd frontend && bun run format
+    go -C {{backend_dir}}  fmt ./...
+    bun run format
 
 @run-backend *ARGS:
-    cd backend && go run ./cmd/rezible {{ARGS}}
+    go -C {{backend_dir}} run ./cmd/rezible {{ARGS}}
 
 @build-documents-server-docker:
-    docker build -t rezible-documents-server -f documents-server/Dockerfile .
+    docker build -t rezible-documents-server -f packages/documents-server/Dockerfile .
 
 @build-backend-docker:
     mkdir -p ./scripts/certs && cat "$(localias debug cert)" > ./scripts/certs/localias-ca.crt
-    docker build -t rezible-backend -f backend/Dockerfile .
+    docker build -t rezible-backend -f packages/backend/Dockerfile .
 
 @run-backend-docker:
     docker run \
@@ -48,19 +45,17 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
       localhost/rezible-backend:latest
 
 @run-frontend *ARGS:
-    cd frontend && \
-        PUBLIC_APP_URL="${APP_URL}" \
-        PUBLIC_API_URL="${API_URL}" \
-        PUBLIC_API_URL_BASE="/api/v1" \
-        PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
-        PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
-        bun run {{ARGS}}
+    PUBLIC_APP_URL="${APP_URL}" \
+    PUBLIC_API_URL="${API_URL}" \
+    PUBLIC_API_URL_BASE="/api/v1" \
+    PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
+    PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
+        bun run --filter=@rezible/frontend {{ARGS}}
 
 @run-documents-server *ARGS:
-    cd documents-server && \
-        API_URL="http://localhost:7002/api/v1" \
-        DB_URL="{{DB_URL}}" \
-        bun run {{ARGS}}
+    API_URL="http://localhost:7002/api/v1" \
+    DB_URL="{{DB_URL}}" \
+        bun run --filter="@rezible/documents-server" {{ARGS}}
 
 @run-docker-compose *CMD:
     docker compose \
@@ -72,8 +67,7 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
 # [group('Testing')]
 
 @test-backend: run-dev-services
-    cd backend && \
-      go test $(go list ./... | grep -v /ent/)
+    go -C {{backend_dir}} test $(go -C {{backend_dir}} list ./... | grep -v /ent/)
 
 @run-backend-datasync:
     just run-backend sync-integrations
@@ -83,17 +77,17 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
 @codegen: codegen-backend && codegen-api
 
 @codegen-backend:
-    cd backend && go generate ./...
+    go -C {{backend_dir}} generate ./...
 
 @codegen-ent:
-    cd backend && go generate ./ent
+    go -C {{backend_dir}} generate ./ent
 
 @codegen-mocks:
-    cd backend && go generate ./testkit/mocks
+    go -C {{backend_dir}} generate ./testkit/mocks
 
 @codegen-api:
     just run-backend spec > /tmp/rezible-spec.yaml
-    bun run codegen:api
+    bun run --filter="@rezible/api-client-ts" build
 
 @codegen-migration NAME:
     just run-backend generate-migration {{NAME}}
@@ -111,7 +105,7 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
     process-compose --ordered-shutdown -f ./process-compose.yaml
 
 @dev-backend:
-    cd backend && reflex -s -d none -r '\.go$' -- just run-backend serve
+    cd packages/backend && reflex -s -d none -r '\.go$' -- just run-backend serve
 
 @dev-frontend:
     just run-frontend dev
@@ -121,7 +115,7 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
 
 # [group('Database')]
 
-migrations_dir := "backend/migrations"
+migrations_dir := "packages/backend/migrations"
 
 @recreate-db:
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
@@ -139,8 +133,8 @@ migrations_dir := "backend/migrations"
     just run-backend generate-migration ent_init
     sleep 1
     migrate create -ext sql -dir "{{migrations_dir}}" river_init
-    cd backend && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"
-    cd backend && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
+    cd packages/backend && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"
+    cd packages/backend && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
 
 #DB_URL_BASE := "postgresql://rezible:foobar1@localhost:7010/"
 #DEV_DB_DATABASE := "rezible"

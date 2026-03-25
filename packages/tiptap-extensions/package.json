@@ -5,9 +5,9 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
+    "yjs": "13.6.27",
     "@tiptap/core": "3.13.0",
     "@tiptap/extension-bold": "^3.13.0",
-    "@tiptap/extension-bubble-menu": "3.13.0",
     "@tiptap/extension-document": "^3.13.0",
     "@tiptap/extension-image": "^3.13.0",
     "@tiptap/extension-italic": "^3.13.0",

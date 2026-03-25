@@ -1,0 +1,1 @@
+export * from "./oapi.gen/@tanstack/svelte-query.gen";

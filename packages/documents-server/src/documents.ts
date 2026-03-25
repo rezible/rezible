@@ -12,17 +12,11 @@ import { Database } from "@hocuspocus/extension-database";
 import pg from "pg";
 import { emptyDocument } from "./transformer";
 
-import { 
-	client, 
-	getCurrentAuthSession,
-	getDocumentAccess,
-	type Auth,
-	type User,
-} from "./lib/api";
+import { client, getCurrentAuthSession, getDocumentAccess, type User, type Options } from "@rezible/api-client-ts";
 
 const tenantIdHeader = "x-rez-tenant-id";
 const authCookieName = "rez_access_token";
-const reqSecurity: Auth[] = [{ scheme: 'bearer', type: 'http' }];
+const reqSecurity: Options["security"] = [{ scheme: 'bearer', type: 'http' }];
 
 const docsTableName = "documents";
 
@@ -70,7 +64,7 @@ export class DocumentsServerExtension implements Extension {
 		await this.dbPool?.end();
 	}
 
-	getRequestAuth(data: {requestHeaders: IncomingHttpHeaders}) {
+	getRequestAuth(data: {requestHeaders: IncomingHttpHeaders}): {auth: string, security: Options["security"]} {
 		const authToken = data.requestHeaders.cookie
 			?.split(';')
 			.find(c => c.trim().startsWith(`${authCookieName}=`))
