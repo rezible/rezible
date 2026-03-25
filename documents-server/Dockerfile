@@ -2,17 +2,9 @@ FROM oven/bun:1 AS build
 
 WORKDIR /app
 
-# Copy workspace manifests first so dependency installation can be cached.
-COPY package.json bun.lock ./
-COPY documents-server/package.json documents-server/package.json
-COPY shared/tiptap-extensions/package.json shared/tiptap-extensions/package.json
+COPY . .
 
 RUN bun install --frozen-lockfile
-
-# Copy only the sources needed to build the documents server bundle.
-COPY tsconfig.json tsconfig.json
-COPY documents-server documents-server
-COPY shared/tiptap-extensions shared/tiptap-extensions
 
 WORKDIR /app/documents-server
 RUN bun run build

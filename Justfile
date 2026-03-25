@@ -33,6 +33,9 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
 @run-backend *ARGS:
     cd backend && go run ./cmd/rezible {{ARGS}}
 
+@build-documents-server-docker:
+    docker build -t rezible-documents-server -f documents-server/Dockerfile .
+
 @build-backend-docker:
     mkdir -p ./scripts/certs && cat "$(localias debug cert)" > ./scripts/certs/localias-ca.crt
     docker build -t rezible-backend -f backend/Dockerfile .
