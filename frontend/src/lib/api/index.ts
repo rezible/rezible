@@ -1,9 +1,9 @@
-import { API_URL } from "$lib/config";
+import { API_URL_BASE } from "$lib/config";
 import { client } from "./oapi.gen/client.gen";
 import type { ErrorModel } from "./oapi.gen";
 
 client.setConfig({
-	baseUrl: API_URL,
+	baseUrl: API_URL_BASE,
 	credentials: "include",
 });
 client.interceptors.error.use(async (rawErr, resp, req, opts) => {

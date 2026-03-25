@@ -47,7 +47,8 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
 @run-frontend *ARGS:
     cd frontend && \
         PUBLIC_APP_URL="${APP_URL}" \
-        PUBLIC_API_URL="/api/v1" \
+        PUBLIC_API_URL="${API_URL}" \
+        PUBLIC_API_URL_BASE="/api/v1" \
         PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
         PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
         bun run {{ARGS}}
