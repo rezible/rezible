@@ -13,10 +13,10 @@ FROM builder_${BUILD_ENV} AS builder
 
 WORKDIR /src/backend
 
-COPY backend/go.mod backend/go.sum ./
+COPY packages/backend/go.mod packages/backend/go.sum ./
 RUN go mod download
 
-COPY backend/ ./
+COPY packages/backend/ ./
 
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
@@ -34,7 +34,7 @@ RUN apk add --no-cache ca-certificates
 COPY --from=builder /out/rezible /usr/local/bin/rezible
 COPY --from=builder /out/migrate /usr/local/bin/migrate
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY backend/migrations /app/migrations
+COPY packages/backend/migrations /app/migrations
 
 EXPOSE 7002
 
