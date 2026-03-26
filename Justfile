@@ -43,6 +43,8 @@ backend_dir := "packages/backend"
 
 @run-backend-docker:
     docker run \
+      -v "./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
+      -e "SSL_CERT_DIR=/usr/local/share/ca-certificates" \
       --network host \
       --env-file ./.env \
       --env-file ./.env.dev \
@@ -123,7 +125,7 @@ migrations_dir := "packages/backend/migrations"
 @setup-db:
     just recreate-db
     just create-initial-migrations
-    just run-migrations
+    just run-migrations "{{DB_URL}}"
 
 @run-psql *ARGS:
     just run-docker-compose exec -it postgres psql {{ARGS}}
@@ -142,8 +144,8 @@ migrations_dir := "packages/backend/migrations"
 #DB_URL := DB_URL_BASE + DEV_DB_DATABASE + DB_CONN_QUERYOPTS
 #TEST_DB_URL := DB_URL_BASE + DB_CONN_QUERYOPTS
 
-@run-migrations direction="up":
+@run-migrations MIGRATION_DB_URL direction="up":
     migrate \
         -source "file://{{migrations_dir}}" \
-        -database "{{DB_URL}}" \
+        -database "{{MIGRATION_DB_URL}}" \
         {{direction}}
