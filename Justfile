@@ -65,8 +65,6 @@ local_dev_api_url := "http://localhost:7002/api/v1"
 
 @run-frontend *ARGS:
     PUBLIC_APP_URL="${APP_URL}" \
-    PUBLIC_API_URL="${API_URL}" \
-    PUBLIC_API_HOST="${API_HOST}" \
     PUBLIC_API_URL_BASE="/api/v1" \
     PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
     PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
