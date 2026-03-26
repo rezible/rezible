@@ -55,7 +55,7 @@ func LoadConfig() (Config, error) {
 		Host:       "localhost",
 		Port:       "5432",
 		Database:   "",
-		SSLMode:    "verify-full",
+		SSLMode:    "require",
 		PoolConfig: nil,
 	}
 	return cfg, rez.Config.Unmarshal("postgres", &cfg)
