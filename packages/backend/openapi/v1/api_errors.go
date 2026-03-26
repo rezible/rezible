@@ -7,6 +7,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
 )
 
 var DefaultErrorCodes = []int{
@@ -20,16 +21,6 @@ var DefaultErrorCodes = []int{
 
 func ErrorCodes(codes ...int) []int {
 	return append(DefaultErrorCodes, codes...)
-}
-
-func isClientError(err error) bool {
-	var statusError huma.StatusError
-	if errors.As(err, &statusError) {
-		if statusError.GetStatus() < 500 {
-			return true
-		}
-	}
-	return false
 }
 
 func NewErrorDetail(msg string, location string, val any) *huma.ErrorDetail {
@@ -50,17 +41,23 @@ var (
 	}
 )
 
-func Error(msg string, err error) error {
-	if isClientError(err) {
-		return err
+func isClientError(err error) bool {
+
+	return false
+}
+
+func asStatusError(msg string, err error) huma.StatusError {
+	var statusError huma.StatusError
+	if errors.As(err, &statusError) {
+		return statusError
 	}
 
 	if ent.IsNotFound(err) {
-		return huma.Error404NotFound("Not found")
+		return huma.Error404NotFound("not found", err)
 	}
 
 	if enumValidationErrFieldRe.MatchString(err.Error()) {
-		return err
+		return huma.Error400BadRequest("validation error", err)
 	}
 
 	if ent.IsConstraintError(err) {
@@ -78,4 +75,20 @@ func Error(msg string, err error) error {
 	}
 
 	return huma.Error500InternalServerError(msg, err)
+}
+
+func Error(msg string, err error) error {
+	statusErr := asStatusError(msg, err)
+
+	logEvent := log.Warn()
+	if statusErr.GetStatus() >= 500 {
+		logEvent = log.Error()
+	}
+	logEvent.
+		Str("message", msg).
+		Int("status", statusErr.GetStatus()).
+		AnErr("error", err).
+		Msg("API Error")
+
+	return statusErr
 }

@@ -109,7 +109,6 @@ local_dev_api_url := "http://localhost:7002/api/v1"
     just run-docker-compose down
 
 @dev: run-dev-services && stop-dev-services
-    just run-migrations
     process-compose --ordered-shutdown -f ./process-compose.yaml
 
 @dev-backend:

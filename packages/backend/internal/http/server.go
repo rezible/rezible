@@ -74,7 +74,7 @@ func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
 	s := Server{cfg: cfg}
 
 	s.router = chi.NewRouter()
-	s.router.Use(middleware.Logger)
+	s.router.Use(s.loggerMiddleware)
 	s.router.Use(middleware.Recoverer)
 	s.router.Mount(rez.Config.ApiPath(), s.makeApiHandler(auth, v1h))
 
@@ -88,9 +88,23 @@ func ensureSlashPrefix(s string) string {
 	return s
 }
 
+const healthCheckPath = "/health"
+
+func (s *Server) loggerMiddleware(next http.Handler) http.Handler {
+	chiLogger := middleware.Logger(next)
+	mountedHealthPath := rez.Config.ApiPath() + healthCheckPath
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != mountedHealthPath {
+			chiLogger.ServeHTTP(w, r)
+		} else {
+			next.ServeHTTP(w, r)
+		}
+	})
+}
+
 func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
 	r := chi.NewRouter()
-	r.Get("/health", s.makeHealthCheckHandler())
+	r.Get(healthCheckPath, s.makeHealthCheckHandler())
 	r.Mount(oapiv1.VersionPrefix, s.makeApiV1Handler(auth, v1h))
 	r.Mount(ensureSlashPrefix(s.cfg.WebhooksPath), s.makeWebhooksHandler())
 	if s.cfg.DocumentsProxy.Enabled {

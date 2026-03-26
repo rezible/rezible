@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -144,7 +145,7 @@ func CreateAuthContext(c huma.Context, auth rez.AuthService) (huma.Context, erro
 	authCtx, authCtxErr := auth.CreateAuthSessionContext(ctx, token)
 	if authCtxErr != nil {
 		log.Debug().Err(authCtxErr).Msg("Error creating auth session context")
-		return nil, authCtxErr
+		return nil, fmt.Errorf("failed to create auth session")
 	}
 	if len(methodScopes) > 0 {
 		log.Debug().Strs("scopes", methodScopes).Msg("TODO: verify scopes")

@@ -29,7 +29,7 @@ func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *
 		if errors.Is(flowErr, rez.ErrDomainNotAllowed) {
 			return nil, oapi.ErrDomainNotAllowed
 		}
-		return nil, oapi.Error("failed to complete auth session flow: %w", flowErr)
+		return nil, oapi.Error("failed to complete auth session flow", flowErr)
 	}
 	resp.SetCookie = cookies
 
@@ -41,7 +41,7 @@ func (h *authSessionsHandler) RefreshAuthSession(ctx context.Context, req *oapi.
 
 	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, req.Cookie.Value)
 	if cookiesErr != nil {
-		return nil, oapi.Error("refresh session cookies: %w", cookiesErr)
+		return nil, oapi.Error("failed to refresh session cookies", cookiesErr)
 	}
 	resp.SetCookie = cookies
 
@@ -53,7 +53,7 @@ func (h *authSessionsHandler) ClearAuthSession(ctx context.Context, req *oapi.Cl
 
 	cookies, cookiesErr := h.auth.ClearClientAuthSession()
 	if cookiesErr != nil {
-		return nil, oapi.Error("clear auth session: %w", cookiesErr)
+		return nil, oapi.Error("failed to clear auth session", cookiesErr)
 	}
 	resp.SetCookie = cookies
 
