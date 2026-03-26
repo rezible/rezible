@@ -14,7 +14,6 @@
 	},
 	"devDependencies": {
 		"@lucide/svelte": "^0.563.1",
-		"@sveltejs/adapter-cloudflare": "^7.2.8",
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.43.7",

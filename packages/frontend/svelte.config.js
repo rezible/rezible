@@ -1,7 +1,6 @@
 import path from "path";
 import adapterStatic from "@sveltejs/adapter-static";
 import adapterNode from "@sveltejs/adapter-node";
-import adapterCloudflare from "@sveltejs/adapter-cloudflare";
 
 const getAdapter = () => {
 	const adapter = process.env.SVELTEKIT_ADAPTER;
@@ -10,13 +9,6 @@ const getAdapter = () => {
 			out: 'build',
             precompress: true
 		});
-	} else if (adapter === "cloudflare") {
-		return adapterCloudflare({
-			fallback: "spa",
-			routes: {
-				include: ["/api*"],
-			}
-		})
 	}
 	return adapterStatic({
 		pages: "dist",

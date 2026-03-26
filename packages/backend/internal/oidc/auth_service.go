@@ -29,7 +29,7 @@ type Config struct {
 		Scopes    []string `koanf:"scopes"`
 	} `koanf:"oidc"`
 	Allow struct {
-		Public  bool     `koanf:"public"`
+		Public  bool     `koanf:"public_signup"`
 		Domains []string `koanf:"domains"`
 	} `koanf:"allow"`
 	allowedDomains mapset.Set[string]
