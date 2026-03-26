@@ -1,4 +1,4 @@
-ARG BUILDER_BASE_IMAGE=golang:1.25-alpine
+ARG BUILDER_BASE_IMAGE=golang:1.26-alpine
 ARG BUILD_ENV=default
 
 FROM ${BUILDER_BASE_IMAGE} AS builder_default
@@ -13,6 +13,8 @@ FROM builder_${BUILD_ENV} AS builder
 
 WORKDIR /src/backend
 
+RUN GOBIN=/out go install github.com/golang-migrate/migrate/v4/cmd/migrate@v4.18.1
+
 COPY packages/backend/go.mod packages/backend/go.sum ./
 RUN go mod download
 
@@ -23,7 +25,6 @@ ARG TARGETARCH=amd64
 
 RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} \
     go build -trimpath -ldflags="-s -w" -o /out/rezible ./cmd/rezible
-RUN GOBIN=/out go install github.com/golang-migrate/migrate/v4/cmd/migrate@v4.18.1
 
 FROM alpine:3.22 AS rez_final
 
