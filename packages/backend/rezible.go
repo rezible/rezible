@@ -38,8 +38,8 @@ type ConfigLoader interface {
 	DebugMode() bool
 	SingleTenantMode() bool
 
-	ApiPath() string
 	AppUrl() string
+	BasePath() string
 }
 
 type EventListener interface {

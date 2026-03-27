@@ -66,6 +66,13 @@ type Server struct {
 	httpServer *http.Server
 }
 
+func ensureSlashPrefix(s string) string {
+	if !strings.HasPrefix(s, "/") {
+		return "/" + s
+	}
+	return s
+}
+
 func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
 	cfg, cfgErr := loadConfig()
 	if cfgErr != nil {
@@ -76,25 +83,19 @@ func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
 	s.router = chi.NewRouter()
 	s.router.Use(s.loggerMiddleware)
 	s.router.Use(middleware.Recoverer)
-	s.router.Mount(rez.Config.ApiPath(), s.makeApiHandler(auth, v1h))
+
+	basePath := rez.Config.BasePath()
+	s.router.Mount(ensureSlashPrefix(basePath), http.StripPrefix(basePath, s.makeApiHandler(auth, v1h)))
 
 	return &s, nil
-}
-
-func ensureSlashPrefix(s string) string {
-	if !strings.HasPrefix(s, "/") {
-		return "/" + s
-	}
-	return s
 }
 
 const healthCheckPath = "/health"
 
 func (s *Server) loggerMiddleware(next http.Handler) http.Handler {
 	chiLogger := middleware.Logger(next)
-	mountedHealthPath := rez.Config.ApiPath() + healthCheckPath
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != mountedHealthPath {
+		if r.URL.Path != healthCheckPath {
 			chiLogger.ServeHTTP(w, r)
 		} else {
 			next.ServeHTTP(w, r)
@@ -105,7 +106,7 @@ func (s *Server) loggerMiddleware(next http.Handler) http.Handler {
 func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
 	r := chi.NewRouter()
 	r.Get(healthCheckPath, s.makeHealthCheckHandler())
-	r.Mount(oapiv1.VersionPrefix, s.makeApiV1Handler(auth, v1h))
+	r.Mount(oapiv1.VersionPrefix, oapiv1.MakeApi(v1h, auth).Adapter())
 	r.Mount(ensureSlashPrefix(s.cfg.WebhooksPath), s.makeWebhooksHandler())
 	if s.cfg.DocumentsProxy.Enabled {
 		r.Handle(s.cfg.DocumentsProxy.ProxyPath, s.makeDocumentsProxyHandler(auth))
@@ -143,10 +144,6 @@ func (s *Server) makeHealthCheckHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
-}
-
-func (s *Server) makeApiV1Handler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
-	return oapiv1.MakeApi(v1h, auth).Adapter()
 }
 
 func (s *Server) makeWebhooksHandler() http.Handler {

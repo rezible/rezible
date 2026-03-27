@@ -13,7 +13,7 @@ processes:
         scheme: http
         host: localhost
         port: 7002
-        path: "/api/health"
+        path: "/health"
       initial_delay_seconds: 3
     depends_on:
       documents-server:

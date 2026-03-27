@@ -4,13 +4,13 @@ volumes:
   postgres-data:
 
 services:
-  proxy:
-    image: caddy:2
-    restart: unless-stopped
-    ports: ["5482:80", "5483:2019"]
-    volumes: ["./configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro"]
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+#  proxy:
+#    image: caddy:2
+#    restart: unless-stopped
+#    ports: ["5482:80", "5483:2019"]
+#    volumes: ["./configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro"]
+#    extra_hosts:
+#      - "host.docker.internal:host-gateway"
 
   postgres:
     image: postgres:17

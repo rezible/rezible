@@ -59,7 +59,7 @@ func MakeApi(h Handler, auth rez.AuthService) openapi.API {
 	//}
 	//cfg.Transformers = append(cfg.Transformers, tranformers...)
 
-	adapter := humago.NewAdapter(http.NewServeMux(), rez.Config.ApiPath()+VersionPrefix)
+	adapter := humago.NewAdapter(http.NewServeMux(), VersionPrefix)
 	api := huma.NewAPI(cfg, adapter)
 	api.UseMiddleware(MakeSecurityMiddleware(api, auth))
 	huma.AutoRegister(api, operations{Handler: h})

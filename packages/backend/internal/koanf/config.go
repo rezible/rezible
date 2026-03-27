@@ -65,8 +65,8 @@ func (c *Config) DebugMode() bool {
 	return c.k.Bool("debug_mode")
 }
 
-func (c *Config) ApiPath() string {
-	return c.GetString("api_path", "/api")
+func (c *Config) BasePath() string {
+	return c.GetString("base_path", "")
 }
 
 func (c *Config) AppUrl() string {
