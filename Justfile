@@ -27,6 +27,10 @@ backend_dir := "packages/backend"
     go -C {{backend_dir}}  fmt ./...
     bun run format
 
+@reload-localias:
+    localias stop && localias start
+    mkdir -p ./scripts/certs && cat "$(localias debug cert)" > ./scripts/certs/localias-ca.crt
+
 @run-docker-compose *CMD:
     docker compose \
       --env-file .env \
@@ -38,7 +42,6 @@ backend_dir := "packages/backend"
     go -C {{backend_dir}} run ./cmd/rezible {{ARGS}}
 
 @build-backend-docker:
-    mkdir -p ./scripts/certs && cat "$(localias debug cert)" > ./scripts/certs/localias-ca.crt
     docker build -t rezible-backend -f packages/backend/Dockerfile .
 
 @run-backend-docker:
@@ -70,6 +73,8 @@ local_dev_api_url := "http://localhost:7002/api/v1"
     PUBLIC_API_URL_BASE="/api/v1" \
     PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
     PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
+    PUBLIC_AUTH_CLIENT_SCOPES="${AUTH__OIDC__CLIENT_SCOPES}" \
+    PUBLIC_AUTH_CLIENT_REDIRECT_URI="${AUTH__OIDC__CLIENT_REDIRECT_URI}" \
         bun run --filter="@rezible/frontend" {{ARGS}}
 
 # [group('Testing')]

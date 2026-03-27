@@ -17,35 +17,37 @@ import (
 )
 
 type Config struct {
-	SessionSecret  []byte            `koanf:"session_secret"`
-	Oidc           configOidc        `koanf:"oidc"`
-	Allow          configAllowAccess `koanf:"allow"`
-	allowedDomains mapset.Set[string]
+	SessionSecret []byte            `koanf:"session_secret"`
+	Oidc          configOidc        `koanf:"oidc"`
+	AllowAccess   configAllowAccess `koanf:"allow_access"`
 }
 
 type configOidc struct {
-	ClientId    string   `koanf:"client_id"`
-	IssuerUrl   string   `koanf:"issuer_url"`
-	RedirectUrl string   `koanf:"redirect_url"`
-	Scopes      []string `koanf:"scopes"`
+	IssuerUrl         string   `koanf:"issuer_url"`
+	ClientId          string   `koanf:"client_id"`
+	ClientRedirectUri string   `koanf:"client_redirect_uri"`
+	ClientScopes      []string `koanf:"client_scopes"`
+}
+type configAllowAccess struct {
+	Public         bool     `koanf:"public_signup"`
+	Domains        []string `koanf:"domains"`
+	allowedDomains mapset.Set[string]
 }
 
-var defaultScopes = []string{"openid", "offline_access", "profile", "email", "groups", "federated:id", "federated_claims"}
-
-type configAllowAccess struct {
-	Public  bool     `koanf:"public_signup"`
-	Domains []string `koanf:"domains"`
+func (a *configAllowAccess) DomainAllowed(domain string) bool {
+	return a.Public || a.allowedDomains.Contains(domain)
 }
 
 func loadConfig() (*Config, error) {
+	var defaultClientScopes = []string{"openid", "offline_access", "profile", "email", "groups", "federated:id", "federated_claims"}
 	cfg := Config{
-		Oidc: configOidc{Scopes: defaultScopes},
+		Oidc: configOidc{ClientScopes: defaultClientScopes},
 	}
 	if cfgErr := rez.Config.Unmarshal("auth", &cfg); cfgErr != nil {
 		return nil, cfgErr
 	}
-	if !cfg.Allow.Public {
-		cfg.allowedDomains = mapset.NewSet(cfg.Allow.Domains...)
+	if !cfg.AllowAccess.Public {
+		cfg.AllowAccess.allowedDomains = mapset.NewSet(cfg.AllowAccess.Domains...)
 	}
 	return &cfg, nil
 }
@@ -147,10 +149,8 @@ func (s *AuthService) createAuthSessionContext(ctx context.Context, idTokenStr s
 		return nil, fmt.Errorf("get verified id token: %w", tokenErr)
 	}
 
-	if !s.cfg.Allow.Public {
-		if !s.cfg.allowedDomains.Contains(token.getDomain()) {
-			return nil, rez.ErrDomainNotAllowed
-		}
+	if !s.cfg.AllowAccess.DomainAllowed(token.getDomain()) {
+		return nil, rez.ErrDomainNotAllowed
 	}
 
 	usr, usrErr := s.matchAuthUser(ctx, token, create)

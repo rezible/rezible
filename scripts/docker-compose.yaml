@@ -8,13 +8,14 @@ services:
     image: caddy:2
     restart: unless-stopped
     ports: ["5482:80", "5483:2019"]
-    volumes: ["./Caddyfile:/etc/caddy/Caddyfile:ro"]
+    volumes: ["./configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro"]
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
   postgres:
     image: postgres:17
     restart: unless-stopped
+    ports: ["7010:5432"]
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
@@ -26,25 +27,29 @@ services:
       retries: 5
     volumes:
       - postgres-data:/var/lib/postgresql/data
-      - ./postgres-init:/docker-entrypoint-initdb.d:ro
-    ports: ["7010:5432"]
+      - ./configs/postgres-init.d:/docker-entrypoint-initdb.d:ro
 
   dex:
     image: dexidp/dex:v2.41.1
     restart: unless-stopped
     ports: ["7011:7011"]
-    volumes: ["./dex-config.yaml:/etc/dex/config.yaml:ro"]
+    volumes:
+      - "./configs/dex/config.yaml:/etc/dex/config.yaml:ro"
+      - "./certs/localias-ca.crt:/etc/ssl/localias.crt:ro"
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     environment:
-      - ISSUER_URL=${AUTH__OIDC__ISSUER_URL}
-      - CLIENT_ID=${AUTH__OIDC__CLIENT_ID}
       - APP_URL=${APP_URL}
+      - ISSUER_URL=${AUTH__OIDC__ISSUER_URL}
+      - OIDC_CLIENT_ID=${AUTH__OIDC__CLIENT_ID}
+      - OIDC_CLIENT_REDIRECT_URI=${AUTH__OIDC__CLIENT_REDIRECT_URI}
+      - GOOGLE_OIDC_CLIENT_ID=${GOOGLE_OIDC_CLIENT_ID}
+      - GOOGLE_OIDC_CLIENT_SECRET=${GOOGLE_OIDC_CLIENT_SECRET}
+      - GOOGLE_OIDC_CLIENT_REDIRECT_URI=${AUTH__OIDC__ISSUER_URL}/callback
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider",
-             "http://localhost:7011/.well-known/openid-configuration"]
+      test: ["CMD", "wget", "-q", "-t 1", "--spider", "http://localhost:7011/.well-known/openid-configuration"]
       interval: 3s
       timeout: 1s
       retries: 1

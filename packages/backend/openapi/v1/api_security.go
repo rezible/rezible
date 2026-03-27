@@ -121,7 +121,10 @@ func MakeSecurityMiddleware(api openapi.API, auth rez.AuthService) openapi.Middl
 	return func(c openapi.Context, next func(openapi.Context)) {
 		authCtx, authCtxErr := CreateAuthContext(c, auth)
 		if authCtxErr != nil {
-			writeAuthStatusError(api, c, authCtxErr)
+			statusErr := convertAuthStatusError(api, c, authCtxErr)
+			if respErr := huma.WriteErr(api, c, statusErr.GetStatus(), statusErr.Error()); respErr != nil {
+				log.Error().Err(respErr).Msg("failed to write api error response")
+			}
 			return
 		}
 		next(authCtx)
@@ -144,8 +147,7 @@ func CreateAuthContext(c huma.Context, auth rez.AuthService) (huma.Context, erro
 	token, methodScopes := extractRequestTokenAndMethodScopes(c, opSecurity)
 	authCtx, authCtxErr := auth.CreateAuthSessionContext(ctx, token)
 	if authCtxErr != nil {
-		log.Debug().Err(authCtxErr).Msg("Error creating auth session context")
-		return nil, fmt.Errorf("failed to create auth session")
+		return nil, fmt.Errorf("failed to create auth session: %w", authCtxErr)
 	}
 	if len(methodScopes) > 0 {
 		log.Debug().Strs("scopes", methodScopes).Msg("TODO: verify scopes")
@@ -185,30 +187,20 @@ func GetRequestAuthBearerToken(r *http.Request) string {
 	return ""
 }
 
-func writeAuthStatusError(api huma.API, c huma.Context, err error) {
-	var resp huma.StatusError
+func convertAuthStatusError(api huma.API, c huma.Context, err error) huma.StatusError {
 	if errors.Is(err, rez.ErrAuthSessionMissing) {
-		resp = ErrNoSession
+		return ErrNoSession
 	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
-		resp = ErrSessionExpired
+		return ErrSessionExpired
 	} else if errors.Is(err, rez.ErrAuthSessionInvalid) {
-		resp = ErrInvalidUser
+		return ErrInvalidUser
 	} else if errors.Is(err, rez.ErrInvalidUser) {
-		resp = ErrInvalidUser
+		return ErrInvalidUser
 	} else if errors.Is(err, rez.ErrInvalidTenant) {
-		resp = ErrInvalidTenant
+		return ErrInvalidTenant
 	} else if errors.Is(err, rez.ErrDomainNotAllowed) {
-		resp = ErrDomainNotAllowed
-	} else {
-		resp = ErrUnknown
+		return ErrDomainNotAllowed
 	}
-
-	//_, w := humago.Unwrap(c)
-	//for _, cookie := range MakeLogoutAuthSessionCookies() {
-	//	http.SetCookie(w, &cookie)
-	//}
-
-	if respErr := huma.WriteErr(api, c, resp.GetStatus(), resp.Error()); respErr != nil {
-		log.Error().Err(respErr).Msg("failed to write api error response")
-	}
+	log.Warn().Err(err).Msg("unknown auth status error")
+	return ErrUnknown
 }

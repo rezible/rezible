@@ -15,9 +15,30 @@ storage:
     ssl: {mode: disable}
 
 oauth2:
-  skipApprovalScreen: true
   responseTypes: ["code"]
-  passwordConnector: local
+  skipApprovalScreen: true
+  alwaysShowLoginScreen: true
+  # passwordConnector: local
+  grantTypes:
+    - "authorization_code"
+    - "refresh_token"
+    - "urn:ietf:params:oauth:grant-type:token-exchange"
+
+staticClients:
+  - id: "{{ .Env.OIDC_CLIENT_ID }}"
+    name: "Rezible"
+    public: true
+    redirectURIs: ["{{ .Env.OIDC_CLIENT_REDIRECT_URI }}"]
+
+connectors:
+  - type: google
+    id: google
+    name: Google (OIDC)
+    config:
+      clientID: $GOOGLE_OIDC_CLIENT_ID
+      clientSecret: $GOOGLE_OIDC_CLIENT_SECRET
+      redirectURI: $GOOGLE_OIDC_CLIENT_REDIRECT_URI
+      promptType: ""
 
 enablePasswordDB: true
 staticPasswords:
@@ -30,9 +51,3 @@ staticPasswords:
     username: "user"
     userID: "00cb6dd1-6be0-4b2a-83ad-4f16468f9055"
     hash: "$2y$10$NI22AXHCKIordm2Y3pf0RuNVEUHvktOYruQ6/hli8UcvTEBhpX2KG"
-
-staticClients:
-  - id: "{{ .Env.CLIENT_ID }}"
-    name: "Rezible"
-    public: true
-    redirectURIs: ["{{ .Env.APP_URL }}/auth/callback"]

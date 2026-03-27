@@ -1,10 +1,10 @@
 import { Context, watch } from "runed";
 import { useAuthSessionState, type SessionErrorCategory } from "$lib/auth.svelte";
 import { OidcClient, WebStorageStateStore, type CreateSigninRequestArgs } from "oidc-client-ts";
-import { APP_URL, AUTH_ISSUER_URL, AUTH_CLIENT_ID } from "$lib/config";
+import { APP_URL, AUTH_ISSUER_URL, AUTH_CLIENT_ID, AUTH_CLIENT_SCOPES, AUTH_CLIENT_REDIRECT_URI } from "$lib/config";
 import { page } from "$app/state";
 import { createMutation } from "@tanstack/svelte-query";
-import { completeAuthSessionFlowMutation } from "$src/lib/api";
+import { completeAuthSessionFlowMutation } from "$lib/api";
 import { z } from "zod";
 import { useSearchParams } from "runed/kit";
 
@@ -21,14 +21,6 @@ const oidcCallbackParamsSchema = z.object({
     state: z.string().default(""),
 });
 
-const scopes = [
-    "openid",
-    "offline_access",
-    "profile",
-    "email",
-    "groups",
-];
-
 export class AuthScreenController {
     private session = useAuthSessionState();
     private callbackParams = useSearchParams(oidcCallbackParamsSchema);
@@ -37,9 +29,9 @@ export class AuthScreenController {
     oidc = new OidcClient({
         authority: AUTH_ISSUER_URL,
         client_id: AUTH_CLIENT_ID,
-        redirect_uri: `${APP_URL}/auth/callback`,
+        redirect_uri: AUTH_CLIENT_REDIRECT_URI,
+        scope: AUTH_CLIENT_SCOPES,
         response_type: "code",
-        scope: scopes.join(" "),
         stateStore: new WebStorageStateStore({ 
             prefix: "rez_auth.",
             store: window.sessionStorage, 

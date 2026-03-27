@@ -26,8 +26,8 @@ func (cfg *configOidc) makeTokenProvider(ctx context.Context) (*tokenProvider, e
 		verifier: oidcProv.VerifierContext(ctx, &oidc.Config{ClientID: cfg.ClientId}),
 		oauthConfig: oauth2.Config{
 			ClientID:    cfg.ClientId,
-			RedirectURL: cfg.RedirectUrl,
-			Scopes:      cfg.Scopes,
+			RedirectURL: cfg.ClientRedirectUri,
+			Scopes:      cfg.ClientScopes,
 			Endpoint:    oidcProv.Endpoint(),
 		},
 	}, nil
