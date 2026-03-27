@@ -12,7 +12,6 @@ import (
 type scopedContext struct {
 	System   bool       `json:"sys"`
 	TenantId *int       `json:"tid"`
-	OrgId    *uuid.UUID `json:"oid"`
 	UserId   *uuid.UUID `json:"uid"`
 }
 
@@ -84,22 +83,6 @@ func GetTenantId(ctx context.Context) (int, bool) {
 		return *s.TenantId, true
 	}
 	return -1, false
-}
-
-func WithOrganization(ctx context.Context, o *ent.Organization) context.Context {
-	tenantId := o.TenantID
-	orgId := o.ID
-	c := getOrInitScopedContext(ctx)
-	c.TenantId = &tenantId
-	c.OrgId = &orgId
-	return setContext(ctx, c)
-}
-
-func GetOrganizationId(ctx context.Context) (uuid.UUID, bool) {
-	if c := getOrInitScopedContext(ctx); c.OrgId != nil {
-		return *c.OrgId, true
-	}
-	return uuid.Nil, false
 }
 
 func WithUser(ctx context.Context, u *ent.User) context.Context {

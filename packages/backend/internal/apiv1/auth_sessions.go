@@ -39,7 +39,11 @@ func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *
 func (h *authSessionsHandler) RefreshAuthSession(ctx context.Context, req *oapi.RefreshAuthSessionRequest) (*oapi.RefreshAuthSessionResponse, error) {
 	var resp oapi.RefreshAuthSessionResponse
 
-	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, req.Cookie.Value)
+	refreshToken := req.Cookie.Value
+	if refreshToken == "" {
+		return nil, oapi.Error("no refresh cookie", oapi.ErrNoSession)
+	}
+	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, refreshToken)
 	if cookiesErr != nil {
 		return nil, oapi.Error("failed to refresh session cookies", cookiesErr)
 	}

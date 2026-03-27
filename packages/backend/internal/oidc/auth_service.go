@@ -4,39 +4,43 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 
-	"github.com/coreos/go-oidc/v3/oidc"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 	"github.com/rs/zerolog/log"
-	"golang.org/x/oauth2"
-
-	rez "github.com/rezible/rezible"
 )
 
 type Config struct {
-	SessionSecret []byte `koanf:"session_secret"`
-	Oidc          struct {
-		ClientId  string   `koanf:"client_id"`
-		IssuerUrl string   `koanf:"issuer_url"`
-		Scopes    []string `koanf:"scopes"`
-	} `koanf:"oidc"`
-	Allow struct {
-		Public  bool     `koanf:"public_signup"`
-		Domains []string `koanf:"domains"`
-	} `koanf:"allow"`
+	SessionSecret  []byte            `koanf:"session_secret"`
+	Oidc           configOidc        `koanf:"oidc"`
+	Allow          configAllowAccess `koanf:"allow"`
 	allowedDomains mapset.Set[string]
 }
 
+type configOidc struct {
+	ClientId    string   `koanf:"client_id"`
+	IssuerUrl   string   `koanf:"issuer_url"`
+	RedirectUrl string   `koanf:"redirect_url"`
+	Scopes      []string `koanf:"scopes"`
+}
+
+var defaultScopes = []string{"openid", "offline_access", "profile", "email", "groups", "federated:id", "federated_claims"}
+
+type configAllowAccess struct {
+	Public  bool     `koanf:"public_signup"`
+	Domains []string `koanf:"domains"`
+}
+
 func loadConfig() (*Config, error) {
-	var cfg Config
+	cfg := Config{
+		Oidc: configOidc{Scopes: defaultScopes},
+	}
 	if cfgErr := rez.Config.Unmarshal("auth", &cfg); cfgErr != nil {
 		return nil, cfgErr
 	}
@@ -51,75 +55,41 @@ type AuthService struct {
 	users rez.UserService
 	teams rez.TeamService
 
-	cfg           Config
-	oauthConfig   oauth2.Config
-	provider      *oidc.Provider
-	tokenVerifier *oidc.IDTokenVerifier
+	cfg      Config
+	provider *tokenProvider
 }
 
 var _ rez.AuthService = (*AuthService)(nil)
 
 func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService, teams rez.TeamService) (*AuthService, error) {
-	s := &AuthService{
-		orgs:  orgs,
-		users: users,
-		teams: teams,
-	}
 	cfg, cfgErr := loadConfig()
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
-	s.cfg = *cfg
 
-	if providerErr := s.initOidcProvider(ctx); providerErr != nil {
-		return nil, fmt.Errorf("failed to init oidc provider: %w", providerErr)
+	s := &AuthService{
+		orgs:  orgs,
+		users: users,
+		teams: teams,
+		cfg:   *cfg,
 	}
 
-	if oauthCfgErr := s.initOAuthConfig(); oauthCfgErr != nil {
-		return nil, fmt.Errorf("failed to init oauth config: %w", oauthCfgErr)
+	if _, provErr := s.getTokenProvider(ctx); provErr != nil {
+		log.Warn().Err(provErr).Msg("failed to load token provider")
 	}
 
 	return s, nil
 }
 
-func (s *AuthService) initOidcProvider(ctx context.Context) error {
-	prov, provErr := oidc.NewProvider(ctx, s.cfg.Oidc.IssuerUrl)
-	if provErr != nil {
-		return fmt.Errorf("failed to create oidc provider: %w", provErr)
+func (s *AuthService) getTokenProvider(ctx context.Context) (*tokenProvider, error) {
+	if s.provider == nil {
+		prov, provErr := s.cfg.Oidc.makeTokenProvider(ctx)
+		if provErr != nil {
+			return nil, fmt.Errorf("make token provider: %w", provErr)
+		}
+		s.provider = prov
 	}
-	s.provider = prov
-
-	s.tokenVerifier = prov.VerifierContext(ctx, &oidc.Config{
-		ClientID:                   s.cfg.Oidc.ClientId,
-		SkipClientIDCheck:          false,
-		SkipExpiryCheck:            false,
-		SkipIssuerCheck:            false,
-		InsecureSkipSignatureCheck: false,
-	})
-
-	return nil
-}
-
-func (s *AuthService) initOAuthConfig() error {
-	redirectUrl, redirectErr := url.JoinPath(rez.Config.AppUrl(), "auth", "callback")
-	if redirectErr != nil {
-		return fmt.Errorf("failed to create oidc redirect url: %w", redirectErr)
-	}
-
-	const defaultScopes = "openid offline_access profile email groups federated:id federated_claims"
-	scopes := s.cfg.Oidc.Scopes
-	if len(scopes) == 0 {
-		scopes = strings.Split(defaultScopes, " ")
-	}
-
-	s.oauthConfig = oauth2.Config{
-		ClientID:    s.cfg.Oidc.ClientId,
-		Endpoint:    s.provider.Endpoint(),
-		RedirectURL: redirectUrl,
-		Scopes:      scopes,
-	}
-
-	return nil
+	return s.provider, nil
 }
 
 func (s *AuthService) CreateAuthSessionContext(ctx context.Context, idTokenStr string) (context.Context, error) {
@@ -131,126 +101,89 @@ func (s *AuthService) GetAuthSession(ctx context.Context) rez.AuthSession {
 }
 
 func (s *AuthService) CompleteClientAuthSessionFlow(ctx context.Context, code string, verifier string) ([]http.Cookie, error) {
-	tokenResp, exchangeErr := s.oauthConfig.Exchange(ctx, code, oauth2.VerifierOption(verifier))
+	prov, provErr := s.getTokenProvider(ctx)
+	if provErr != nil {
+		return nil, provErr
+	}
+	token, exchangeErr := prov.exchangeToken(ctx, code, verifier)
 	if exchangeErr != nil {
 		return nil, fmt.Errorf("exchange token: %w", exchangeErr)
 	}
-	authCtx, ctxErr := s.createAuthSessionContext(ctx, tokenResp.AccessToken, true)
+	authCtx, ctxErr := s.createAuthSessionContext(ctx, token.AccessToken, true)
 	if ctxErr != nil {
 		return nil, fmt.Errorf("create auth session context: %w", ctxErr)
 	}
-	return oapiv1.MakeAuthSessionCookies(authCtx, *tokenResp), nil
+	return oapiv1.MakeAuthSessionCookies(authCtx, *token), nil
 }
 
 func (s *AuthService) RefreshClientAuthSession(ctx context.Context, refreshToken string) ([]http.Cookie, error) {
-	if refreshToken == "" {
-		return nil, fmt.Errorf("no refresh cookie provided")
+	prov, provErr := s.getTokenProvider(ctx)
+	if provErr != nil {
+		return nil, provErr
 	}
-	freshToken, refreshErr := s.fetchRefreshedToken(ctx, refreshToken)
+	freshToken, refreshErr := prov.refreshToken(ctx, refreshToken)
 	if refreshErr != nil {
-		log.Error().Err(refreshErr).Msg("exchange token")
 		return nil, fmt.Errorf("fetch refreshed token: %w", refreshErr)
 	}
 	return oapiv1.MakeAuthSessionCookies(ctx, *freshToken), nil
-}
-
-func (s *AuthService) fetchRefreshedToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
-	expiredToken := &oauth2.Token{
-		RefreshToken: refreshToken,
-		// set expired to force refetch
-		Expiry: time.Now().Add(-time.Second),
-	}
-	tokenSource := s.oauthConfig.TokenSource(ctx, expiredToken)
-	newToken, exchangeErr := tokenSource.Token()
-	if exchangeErr != nil {
-		return nil, fmt.Errorf("force refresh token exchange: %w", exchangeErr)
-	}
-	return newToken, nil
 }
 
 func (s *AuthService) ClearClientAuthSession() ([]http.Cookie, error) {
 	return oapiv1.MakeLogoutAuthSessionCookies(), nil
 }
 
-type IdTokenClaims struct {
-	Sub    string   `json:"sub"`
-	Email  string   `json:"email"`
-	Name   string   `json:"name"`
-	Scopes []string `json:"scopes"`
-}
-
-type verifiedIdToken struct {
-	idToken *oidc.IDToken
-	claims  IdTokenClaims
-}
-
-func (t *verifiedIdToken) getDomain() string {
-	if parts := strings.Split(t.claims.Email, "@"); len(parts) == 2 {
-		return parts[1]
-	}
-	return ""
-}
-
-func (t *verifiedIdToken) getUser() ent.User {
-	return ent.User{
-		AuthProviderID: t.idToken.Subject,
-		Email:          t.claims.Email,
-		Name:           t.claims.Name,
-	}
-}
-
-func (s *AuthService) getVerifiedIdToken(ctx context.Context, idTokenStr string) (*verifiedIdToken, error) {
-	if idTokenStr == "" {
-		return nil, rez.ErrAuthSessionMissing
-	}
-	idToken, verifyErr := s.tokenVerifier.Verify(ctx, idTokenStr)
-	if verifyErr != nil {
-		return nil, fmt.Errorf("verify: %w", verifyErr)
-	}
-	var claims IdTokenClaims
-	if claimsErr := idToken.Claims(&claims); claimsErr != nil {
-		return nil, fmt.Errorf("get claims: %w", claimsErr)
-	}
-	return &verifiedIdToken{idToken, claims}, nil
-}
-
 type authUserSessionContextKey struct{}
 
 func (s *AuthService) createAuthSessionContext(ctx context.Context, idTokenStr string, create bool) (context.Context, error) {
-	token, tokenErr := s.getVerifiedIdToken(ctx, idTokenStr)
+	if idTokenStr == "" {
+		return nil, rez.ErrAuthSessionMissing
+	}
+	prov, provErr := s.getTokenProvider(ctx)
+	if provErr != nil {
+		return nil, provErr
+	}
+	token, tokenErr := prov.verifyIdToken(ctx, idTokenStr)
 	if tokenErr != nil {
 		return nil, fmt.Errorf("get verified id token: %w", tokenErr)
 	}
 
-	domain := token.getDomain()
 	if !s.cfg.Allow.Public {
-		if !s.cfg.allowedDomains.Contains(domain) {
+		if !s.cfg.allowedDomains.Contains(token.getDomain()) {
 			return nil, rez.ErrDomainNotAllowed
 		}
 	}
 
-	var usrErr error
-	var usr *ent.User
-	if create {
-		org, orgErr := s.orgs.FindOrCreateFromDomain(ctx, domain)
-		if orgErr != nil {
-			return nil, fmt.Errorf("find org: %w", orgErr)
-		}
-		ctx = access.WithOrganization(ctx, org)
+	usr, usrErr := s.matchAuthUser(ctx, token, create)
+	if usrErr != nil {
+		return nil, fmt.Errorf("match auth user: %w", usrErr)
+	}
+	return s.makeAuthSessionContext(ctx, usr, token), nil
+}
 
-		usr, usrErr = s.users.FindOrCreateAuthProviderUser(ctx, token.getUser())
-		if usrErr != nil {
-			return nil, fmt.Errorf("find or create auth user: %w", usrErr)
-		}
-	} else {
-		usr, usrErr = s.users.Get(access.SystemContext(ctx), user.AuthProviderID(token.getUser().AuthProviderID))
+func (s *AuthService) matchAuthUser(ctx context.Context, token *verifiedIdToken, create bool) (*ent.User, error) {
+	if !create {
+		usr, usrErr := s.users.Get(access.SystemContext(ctx), user.AuthProviderID(token.getUser().AuthProviderID))
 		if usrErr != nil {
 			return nil, fmt.Errorf("lookup auth provider user: %w", usrErr)
 		}
+		return usr, nil
 	}
-	ctx = access.WithUser(ctx, usr)
 
-	return context.WithValue(ctx, authUserSessionContextKey{}, newAuthSession(usr, token)), nil
+	org, orgErr := s.orgs.FindOrCreateFromDomain(ctx, token.getDomain())
+	if orgErr != nil {
+		return nil, fmt.Errorf("find org: %w", orgErr)
+	}
+	ctx = access.TenantContext(ctx, org.TenantID)
+
+	usr, usrErr := s.users.FindOrCreateAuthProviderUser(ctx, token.getUser())
+	if usrErr != nil {
+		return nil, fmt.Errorf("find or create auth user: %w", usrErr)
+	}
+	return usr, nil
+}
+
+func (s *AuthService) makeAuthSessionContext(ctx context.Context, usr *ent.User, token *verifiedIdToken) context.Context {
+	return context.WithValue(access.WithUser(ctx, usr), authUserSessionContextKey{}, newAuthSession(usr, token))
 }
 
 func (s *AuthService) getAuthSessionContext(ctx context.Context) AuthSession {
