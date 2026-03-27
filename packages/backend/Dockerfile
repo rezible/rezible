@@ -20,7 +20,7 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /out/rezible /usr/local/bin/rezible
-COPY --from=builder /out/migrate /usr/local/bin/migrate
+COPY packages/backend/migrations /app/migrations
 
 EXPOSE 7002
 
