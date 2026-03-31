@@ -34,6 +34,8 @@ type Incident struct {
 	Slug string `json:"slug,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
+	// Title2 holds the value of the "title2" field.
+	Title2 string `json:"title2,omitempty"`
 	// SeverityID holds the value of the "severity_id" field.
 	SeverityID uuid.UUID `json:"severity_id,omitempty"`
 	// TypeID holds the value of the "type_id" field.
@@ -259,7 +261,7 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incident.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case incident.FieldExternalID, incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID:
+		case incident.FieldExternalID, incident.FieldSlug, incident.FieldTitle, incident.FieldTitle2, incident.FieldSummary, incident.FieldChatChannelID:
 			values[i] = new(sql.NullString)
 		case incident.FieldCreatedAt, incident.FieldUpdatedAt, incident.FieldOpenedAt:
 			values[i] = new(sql.NullTime)
@@ -321,6 +323,12 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				_m.Title = value.String
+			}
+		case incident.FieldTitle2:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field title2", values[i])
+			} else if value.Valid {
+				_m.Title2 = value.String
 			}
 		case incident.FieldSeverityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -490,6 +498,9 @@ func (_m *Incident) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
+	builder.WriteString(", ")
+	builder.WriteString("title2=")
+	builder.WriteString(_m.Title2)
 	builder.WriteString(", ")
 	builder.WriteString("severity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SeverityID))

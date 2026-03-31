@@ -99,6 +99,20 @@ func (_c *IncidentCreate) SetTitle(v string) *IncidentCreate {
 	return _c
 }
 
+// SetTitle2 sets the "title2" field.
+func (_c *IncidentCreate) SetTitle2(v string) *IncidentCreate {
+	_c.mutation.SetTitle2(v)
+	return _c
+}
+
+// SetNillableTitle2 sets the "title2" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableTitle2(v *string) *IncidentCreate {
+	if v != nil {
+		_c.SetTitle2(*v)
+	}
+	return _c
+}
+
 // SetSeverityID sets the "severity_id" field.
 func (_c *IncidentCreate) SetSeverityID(v uuid.UUID) *IncidentCreate {
 	_c.mutation.SetSeverityID(v)
@@ -556,6 +570,10 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
 		_node.Title = value
 	}
+	if value, ok := _c.mutation.Title2(); ok {
+		_spec.SetField(incident.FieldTitle2, field.TypeString, value)
+		_node.Title2 = value
+	}
 	if value, ok := _c.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
 		_node.Summary = value
@@ -985,6 +1003,24 @@ func (u *IncidentUpsert) UpdateTitle() *IncidentUpsert {
 	return u
 }
 
+// SetTitle2 sets the "title2" field.
+func (u *IncidentUpsert) SetTitle2(v string) *IncidentUpsert {
+	u.Set(incident.FieldTitle2, v)
+	return u
+}
+
+// UpdateTitle2 sets the "title2" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateTitle2() *IncidentUpsert {
+	u.SetExcluded(incident.FieldTitle2)
+	return u
+}
+
+// ClearTitle2 clears the value of the "title2" field.
+func (u *IncidentUpsert) ClearTitle2() *IncidentUpsert {
+	u.SetNull(incident.FieldTitle2)
+	return u
+}
+
 // SetSeverityID sets the "severity_id" field.
 func (u *IncidentUpsert) SetSeverityID(v uuid.UUID) *IncidentUpsert {
 	u.Set(incident.FieldSeverityID, v)
@@ -1182,6 +1218,27 @@ func (u *IncidentUpsertOne) SetTitle(v string) *IncidentUpsertOne {
 func (u *IncidentUpsertOne) UpdateTitle() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateTitle()
+	})
+}
+
+// SetTitle2 sets the "title2" field.
+func (u *IncidentUpsertOne) SetTitle2(v string) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetTitle2(v)
+	})
+}
+
+// UpdateTitle2 sets the "title2" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateTitle2() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateTitle2()
+	})
+}
+
+// ClearTitle2 clears the value of the "title2" field.
+func (u *IncidentUpsertOne) ClearTitle2() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearTitle2()
 	})
 }
 
@@ -1561,6 +1618,27 @@ func (u *IncidentUpsertBulk) SetTitle(v string) *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) UpdateTitle() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateTitle()
+	})
+}
+
+// SetTitle2 sets the "title2" field.
+func (u *IncidentUpsertBulk) SetTitle2(v string) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetTitle2(v)
+	})
+}
+
+// UpdateTitle2 sets the "title2" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateTitle2() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateTitle2()
+	})
+}
+
+// ClearTitle2 clears the value of the "title2" field.
+func (u *IncidentUpsertBulk) ClearTitle2() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearTitle2()
 	})
 }
 

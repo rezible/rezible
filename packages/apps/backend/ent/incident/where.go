@@ -87,6 +87,11 @@ func Title(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTitle, v))
 }
 
+// Title2 applies equality check predicate on the "title2" field. It's identical to Title2EQ.
+func Title2(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldTitle2, v))
+}
+
 // SeverityID applies equality check predicate on the "severity_id" field. It's identical to SeverityIDEQ.
 func SeverityID(v uuid.UUID) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldSeverityID, v))
@@ -415,6 +420,81 @@ func TitleEqualFold(v string) predicate.Incident {
 // TitleContainsFold applies the ContainsFold predicate on the "title" field.
 func TitleContainsFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldContainsFold(FieldTitle, v))
+}
+
+// Title2EQ applies the EQ predicate on the "title2" field.
+func Title2EQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldTitle2, v))
+}
+
+// Title2NEQ applies the NEQ predicate on the "title2" field.
+func Title2NEQ(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldTitle2, v))
+}
+
+// Title2In applies the In predicate on the "title2" field.
+func Title2In(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldTitle2, vs...))
+}
+
+// Title2NotIn applies the NotIn predicate on the "title2" field.
+func Title2NotIn(vs ...string) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldTitle2, vs...))
+}
+
+// Title2GT applies the GT predicate on the "title2" field.
+func Title2GT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGT(FieldTitle2, v))
+}
+
+// Title2GTE applies the GTE predicate on the "title2" field.
+func Title2GTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldGTE(FieldTitle2, v))
+}
+
+// Title2LT applies the LT predicate on the "title2" field.
+func Title2LT(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLT(FieldTitle2, v))
+}
+
+// Title2LTE applies the LTE predicate on the "title2" field.
+func Title2LTE(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldLTE(FieldTitle2, v))
+}
+
+// Title2Contains applies the Contains predicate on the "title2" field.
+func Title2Contains(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContains(FieldTitle2, v))
+}
+
+// Title2HasPrefix applies the HasPrefix predicate on the "title2" field.
+func Title2HasPrefix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasPrefix(FieldTitle2, v))
+}
+
+// Title2HasSuffix applies the HasSuffix predicate on the "title2" field.
+func Title2HasSuffix(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldHasSuffix(FieldTitle2, v))
+}
+
+// Title2IsNil applies the IsNil predicate on the "title2" field.
+func Title2IsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldTitle2))
+}
+
+// Title2NotNil applies the NotNil predicate on the "title2" field.
+func Title2NotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldTitle2))
+}
+
+// Title2EqualFold applies the EqualFold predicate on the "title2" field.
+func Title2EqualFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldEqualFold(FieldTitle2, v))
+}
+
+// Title2ContainsFold applies the ContainsFold predicate on the "title2" field.
+func Title2ContainsFold(v string) predicate.Incident {
+	return predicate.Incident(sql.FieldContainsFold(FieldTitle2, v))
 }
 
 // SeverityIDEQ applies the EQ predicate on the "severity_id" field.

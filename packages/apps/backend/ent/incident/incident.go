@@ -28,6 +28,8 @@ const (
 	FieldSlug = "slug"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
+	// FieldTitle2 holds the string denoting the title2 field in the database.
+	FieldTitle2 = "title2"
 	// FieldSeverityID holds the string denoting the severity_id field in the database.
 	FieldSeverityID = "severity_id"
 	// FieldTypeID holds the string denoting the type_id field in the database.
@@ -191,6 +193,7 @@ var Columns = []string{
 	FieldUpdatedAt,
 	FieldSlug,
 	FieldTitle,
+	FieldTitle2,
 	FieldSeverityID,
 	FieldTypeID,
 	FieldSummary,
@@ -282,6 +285,11 @@ func BySlug(opts ...sql.OrderTermOption) OrderOption {
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
+}
+
+// ByTitle2 orders the results by the title2 field.
+func ByTitle2(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTitle2, opts...).ToFunc()
 }
 
 // BySeverityID orders the results by the severity_id field.

@@ -5,7 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"text/template"
 
+	"ariga.io/atlas/sql/migrate"
 	"ariga.io/atlas/sql/sqltool"
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
@@ -31,27 +33,6 @@ const (
 	migrationsTable = "migrations"
 )
 
-func GenerateEntMigrations(ctx context.Context, name string, dbUrlOverride string) error {
-	dir, dirErr := sqltool.NewGolangMigrateDir(migrations.OutputDir)
-	if dirErr != nil {
-		return fmt.Errorf("failed creating atlas migration directory: %w", dirErr)
-	}
-	opts := []schema.MigrateOption{
-		schema.WithDir(dir),
-		schema.WithDialect(dialect.Postgres),
-		schema.WithSchemaName(SchemaName),
-		schema.WithDiffOptions(),
-		schema.WithMigrationMode(schema.ModeInspect),
-	}
-	return withMigratorDb(ctx, dbUrlOverride, func(db *sql.DB) error {
-		m, mErr := schema.NewMigrate(entsql.OpenDB(dialect.Postgres, db), opts...)
-		if mErr != nil {
-			return fmt.Errorf("failed creating migrate: %w", mErr)
-		}
-		return m.NamedDiff(ctx, name, entmigrate.Tables...)
-	})
-}
-
 func RunMigrations(ctx context.Context, direction string, dbUrlOverride string) error {
 	if direction == "down" {
 		panic("only migrating up is supported")
@@ -67,6 +48,64 @@ func RunMigrations(ctx context.Context, direction string, dbUrlOverride string) 
 
 		return nil
 	})
+}
+
+func UpdateMigrationsChecksum() error {
+	dir, dirErr := sqltool.NewGolangMigrateDir(migrations.OutputDir)
+	if dirErr != nil {
+		return fmt.Errorf("creating atlas migration directory: %w", dirErr)
+	}
+	sum, sumErr := dir.Checksum()
+	if sumErr != nil {
+		return fmt.Errorf("calculating checksum: %w", sumErr)
+	}
+	if writeErr := migrate.WriteSumFile(dir, sum); writeErr != nil {
+		return fmt.Errorf("writing sum: %w", writeErr)
+	}
+	return nil
+}
+
+func GenerateEntMigrations(ctx context.Context, name string, dbUrlOverride string) error {
+	dir, dirErr := sqltool.NewGolangMigrateDir(migrations.OutputDir)
+	if dirErr != nil {
+		return fmt.Errorf("failed creating atlas migration directory: %w", dirErr)
+	}
+	formatter, fmtErr := makeMigrationFormatter()
+	if fmtErr != nil {
+		return fmt.Errorf("failed creating atlas migration formatter: %w", fmtErr)
+	}
+	opts := []schema.MigrateOption{
+		schema.WithDir(dir),
+		schema.WithDialect(dialect.Postgres),
+		schema.WithDiffOptions(),
+		schema.WithMigrationMode(schema.ModeInspect),
+		schema.WithFormatter(formatter),
+	}
+	return withMigratorDb(ctx, dbUrlOverride, func(db *sql.DB) error {
+		m, mErr := schema.NewMigrate(entsql.OpenDB(dialect.Postgres, db), opts...)
+		if mErr != nil {
+			return fmt.Errorf("failed creating migrate: %w", mErr)
+		}
+		return m.NamedDiff(ctx, name, entmigrate.Tables...)
+	})
+}
+
+func makeMigrationFormatter() (migrate.Formatter, error) {
+	version, versionErr := migrations.GetLatestVersion()
+	if versionErr != nil {
+		return nil, fmt.Errorf("failed to get latest migration version: %w", versionErr)
+	}
+	nextVersion := version + 1
+	df, ok := sqltool.GolangMigrateFormatter.(migrate.TemplateFormatter)
+	if !ok || len(df) != 2 {
+		return nil, fmt.Errorf("unsupported migration formatter")
+	}
+	namePrefix := fmt.Sprintf("%04d{{ with .Name }}_{{ . }}{{ end }}", nextVersion)
+	upNameTemplate := template.Must(template.New("").Parse(namePrefix + ".up.sql"))
+	upContentTemplate := df[0].C
+	downNameTemplate := template.Must(template.New("").Parse(namePrefix + ".down.sql"))
+	downContentTemplate := df[1].C
+	return migrate.NewTemplateFormatter(upNameTemplate, upContentTemplate, downNameTemplate, downContentTemplate)
 }
 
 func withMigratorDb(ctx context.Context, dbUrlOverride string, fn func(db *sql.DB) error) error {
@@ -180,7 +219,7 @@ func getMigrationStatusFromDB(ctx context.Context, db *sql.DB) (MigrationStatus,
 	}
 	s.LatestVersion = latest
 
-	row := db.QueryRowContext(ctx, "SELECT version, dirty FROM rezible.migrations LIMIT 1")
+	row := db.QueryRowContext(ctx, `SELECT version, dirty FROM rezible.migrations LIMIT 1`)
 	if scanErr := row.Scan(&s.CurrentVersion, &s.Dirty); scanErr != nil && !errors.Is(scanErr, sql.ErrNoRows) {
 		return s, scanErr
 	}

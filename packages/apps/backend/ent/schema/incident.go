@@ -29,6 +29,7 @@ func (Incident) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("slug").Unique(),
 		field.String("title"),
+		field.String("title2").Optional(),
 		field.UUID("severity_id", uuid.UUID{}),
 		field.UUID("type_id", uuid.UUID{}),
 		field.String("summary").Optional(),

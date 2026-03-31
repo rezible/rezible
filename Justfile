@@ -49,17 +49,18 @@ scripts_dir := "./scripts"
 
 @build-backend-docker:
     docker build \
-      -t rezible-backend \
+      -t localhost/rezible-backend:latest \
       {{backend_dir}}
 
-@run-backend-docker:
+@run-backend-docker *ARGS:
     docker run \
       -v "{{scripts_dir}}/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
       -e "SSL_CERT_DIR=/usr/local/share/ca-certificates" \
       --network host \
       --env-file ./.env \
       --env-file ./.env.dev \
-      localhost/rezible-backend:latest
+      localhost/rezible-backend:latest \
+      {{ARGS}}
 
 local_dev_api_url := "http://localhost:7002/api/v1"
 @run-documents-server *ARGS:
@@ -74,11 +75,12 @@ local_dev_api_url := "http://localhost:7002/api/v1"
       -f "{{documents_server_dir}}/Dockerfile" \
       .
 
-@run-documents-server-docker:
+@run-documents-server-docker *ARGS:
     docker run --network host \
       -e API_URL="{{local_dev_api_url}}" \
       -e DOCUMENTS_DB_URL="{{DOCUMENTS_DB_URL}}" \
-      localhost/rezible-documents-server
+      localhost/rezible-documents-server \
+      {{ARGS}}
 
 @run-frontend *ARGS:
     PUBLIC_APP_URL="${APP_URL}" \
@@ -139,20 +141,32 @@ local_dev_api_url := "http://localhost:7002/api/v1"
 
 # [group('Database')]
 
-@setup-db: recreate-db && run-migrations
-
-@recreate-db:
-    just run-docker-compose down postgres -v && \
-      just run-docker-compose up postgres --wait
+setup-db: recreate-db bootstrap-db run-migrations
 
 @run-psql *ARGS:
-    just run-docker-compose \
-        exec -it postgres psql {{ARGS}}
+    just run-docker-compose exec -it postgres psql {{ARGS}}
+
+@recreate-db:
+    just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
+
+@bootstrap-db:
+    BOOTSTRAP__DEX_PASSWORD="${POSTGRES_DEX_PASSWORD}" \
+    BOOTSTRAP__REZ_MIGRATOR_PASSWORD="${POSTGRES__MIGRATIONS__PASSWORD}" \
+    BOOTSTRAP__REZ_APP_PASSWORD="${POSTGRES__PASSWORD}" \
+    BOOTSTRAP__REZ_DOCUMENTS_PASSWORD="${POSTGRES_DOCUMENTS_SERVER_PASSWORD}" \
+    just run-backend bootstrap-db \
+      --database-url="postgresql://${POSTGRES_ADMIN_USER}:${POSTGRES_ADMIN_PASSWORD}@${POSTGRES__HOST}:${POSTGRES__PORT}/?sslmode=disable"
+
+@run-migrations:
+    just run-backend migrate up
+
+documents_role_grant_migration_file := backend_dir / "migrations/0002_documents_role_grant"
+documents_role_grant_up_sql := 'GRANT SELECT, INSERT, UPDATE ON TABLE "documents" TO rez_documents;'
+documents_role_grant_down_sql := 'REVOKE SELECT, INSERT, UPDATE ON TABLE "documents" FROM rez_documents;'
 
 @create-initial-migrations: recreate-db
     rm -f {{backend_dir}}/migrations/*.{sql,sum}
     just run-backend generate-migration init
-
-migrator_pg_user_auth := f'{{env("POSTGRES__MIGRATIONS__USER")}}:{{env("POSTGRES__MIGRATIONS__PASSWORD")}}'
-@run-migrations:
-    just run-backend migrate up
+    echo "{{documents_role_grant_up_sql}}" > "{{documents_role_grant_migration_file}}.up.sql"
+    echo "{{documents_role_grant_down_sql}}" > "{{documents_role_grant_migration_file}}.down.sql"
+    just run-backend generate-migration --update-checksum

@@ -6184,6 +6184,7 @@ type IncidentMutation struct {
 	updated_at               *time.Time
 	slug                     *string
 	title                    *string
+	title2                   *string
 	summary                  *string
 	chat_channel_id          *string
 	opened_at                *time.Time
@@ -6571,6 +6572,55 @@ func (m *IncidentMutation) OldTitle(ctx context.Context) (v string, err error) {
 // ResetTitle resets all changes to the "title" field.
 func (m *IncidentMutation) ResetTitle() {
 	m.title = nil
+}
+
+// SetTitle2 sets the "title2" field.
+func (m *IncidentMutation) SetTitle2(s string) {
+	m.title2 = &s
+}
+
+// Title2 returns the value of the "title2" field in the mutation.
+func (m *IncidentMutation) Title2() (r string, exists bool) {
+	v := m.title2
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTitle2 returns the old "title2" field's value of the Incident entity.
+// If the Incident object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentMutation) OldTitle2(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTitle2 is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTitle2 requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTitle2: %w", err)
+	}
+	return oldValue.Title2, nil
+}
+
+// ClearTitle2 clears the value of the "title2" field.
+func (m *IncidentMutation) ClearTitle2() {
+	m.title2 = nil
+	m.clearedFields[incident.FieldTitle2] = struct{}{}
+}
+
+// Title2Cleared returns if the "title2" field was cleared in this mutation.
+func (m *IncidentMutation) Title2Cleared() bool {
+	_, ok := m.clearedFields[incident.FieldTitle2]
+	return ok
+}
+
+// ResetTitle2 resets all changes to the "title2" field.
+func (m *IncidentMutation) ResetTitle2() {
+	m.title2 = nil
+	delete(m.clearedFields, incident.FieldTitle2)
 }
 
 // SetSeverityID sets the "severity_id" field.
@@ -7635,7 +7685,7 @@ func (m *IncidentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+	fields := make([]string, 0, 12)
 	if m.tenant != nil {
 		fields = append(fields, incident.FieldTenantID)
 	}
@@ -7653,6 +7703,9 @@ func (m *IncidentMutation) Fields() []string {
 	}
 	if m.title != nil {
 		fields = append(fields, incident.FieldTitle)
+	}
+	if m.title2 != nil {
+		fields = append(fields, incident.FieldTitle2)
 	}
 	if m.severity != nil {
 		fields = append(fields, incident.FieldSeverityID)
@@ -7689,6 +7742,8 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.Slug()
 	case incident.FieldTitle:
 		return m.Title()
+	case incident.FieldTitle2:
+		return m.Title2()
 	case incident.FieldSeverityID:
 		return m.SeverityID()
 	case incident.FieldTypeID:
@@ -7720,6 +7775,8 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldSlug(ctx)
 	case incident.FieldTitle:
 		return m.OldTitle(ctx)
+	case incident.FieldTitle2:
+		return m.OldTitle2(ctx)
 	case incident.FieldSeverityID:
 		return m.OldSeverityID(ctx)
 	case incident.FieldTypeID:
@@ -7780,6 +7837,13 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTitle(v)
+		return nil
+	case incident.FieldTitle2:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTitle2(v)
 		return nil
 	case incident.FieldSeverityID:
 		v, ok := value.(uuid.UUID)
@@ -7852,6 +7916,9 @@ func (m *IncidentMutation) ClearedFields() []string {
 	if m.FieldCleared(incident.FieldExternalID) {
 		fields = append(fields, incident.FieldExternalID)
 	}
+	if m.FieldCleared(incident.FieldTitle2) {
+		fields = append(fields, incident.FieldTitle2)
+	}
 	if m.FieldCleared(incident.FieldSummary) {
 		fields = append(fields, incident.FieldSummary)
 	}
@@ -7874,6 +7941,9 @@ func (m *IncidentMutation) ClearField(name string) error {
 	switch name {
 	case incident.FieldExternalID:
 		m.ClearExternalID()
+		return nil
+	case incident.FieldTitle2:
+		m.ClearTitle2()
 		return nil
 	case incident.FieldSummary:
 		m.ClearSummary()
@@ -7906,6 +7976,9 @@ func (m *IncidentMutation) ResetField(name string) error {
 		return nil
 	case incident.FieldTitle:
 		m.ResetTitle()
+		return nil
+	case incident.FieldTitle2:
+		m.ResetTitle2()
 		return nil
 	case incident.FieldSeverityID:
 		m.ResetSeverityID()

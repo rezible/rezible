@@ -27,7 +27,7 @@ CREATE TABLE "event_annotations" ("id" uuid NOT NULL, "created_at" timestamptz N
 -- create index "eventannotation_tenant_id" to table: "event_annotations"
 CREATE INDEX "eventannotation_tenant_id" ON "event_annotations" ("tenant_id");
 -- create "incidents" table
-CREATE TABLE "incidents" ("id" uuid NOT NULL, "external_id" character varying NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "slug" character varying NOT NULL, "title" character varying NOT NULL, "summary" character varying NULL, "chat_channel_id" character varying NULL, "opened_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "severity_id" uuid NOT NULL, "type_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "incidents" ("id" uuid NOT NULL, "external_id" character varying NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "slug" character varying NOT NULL, "title" character varying NOT NULL, "title2" character varying NULL, "summary" character varying NULL, "chat_channel_id" character varying NULL, "opened_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "severity_id" uuid NOT NULL, "type_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidents_slug_key" to table: "incidents"
 CREATE UNIQUE INDEX "incidents_slug_key" ON "incidents" ("slug");
 -- create index "incident_tenant_id" to table: "incidents"

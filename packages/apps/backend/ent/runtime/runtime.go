@@ -260,7 +260,7 @@ func init() {
 	// incident.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	incident.UpdateDefaultUpdatedAt = incidentDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// incidentDescOpenedAt is the schema descriptor for opened_at field.
-	incidentDescOpenedAt := incidentFields[7].Descriptor()
+	incidentDescOpenedAt := incidentFields[8].Descriptor()
 	// incident.DefaultOpenedAt holds the default value on creation for the opened_at field.
 	incident.DefaultOpenedAt = incidentDescOpenedAt.Default.(func() time.Time)
 	// incidentDescID is the schema descriptor for id field.

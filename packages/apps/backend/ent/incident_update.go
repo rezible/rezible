@@ -113,6 +113,26 @@ func (_u *IncidentUpdate) SetNillableTitle(v *string) *IncidentUpdate {
 	return _u
 }
 
+// SetTitle2 sets the "title2" field.
+func (_u *IncidentUpdate) SetTitle2(v string) *IncidentUpdate {
+	_u.mutation.SetTitle2(v)
+	return _u
+}
+
+// SetNillableTitle2 sets the "title2" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableTitle2(v *string) *IncidentUpdate {
+	if v != nil {
+		_u.SetTitle2(*v)
+	}
+	return _u
+}
+
+// ClearTitle2 clears the value of the "title2" field.
+func (_u *IncidentUpdate) ClearTitle2() *IncidentUpdate {
+	_u.mutation.ClearTitle2()
+	return _u
+}
+
 // SetSeverityID sets the "severity_id" field.
 func (_u *IncidentUpdate) SetSeverityID(v uuid.UUID) *IncidentUpdate {
 	_u.mutation.SetSeverityID(v)
@@ -806,6 +826,12 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Title2(); ok {
+		_spec.SetField(incident.FieldTitle2, field.TypeString, value)
+	}
+	if _u.mutation.Title2Cleared() {
+		_spec.ClearField(incident.FieldTitle2, field.TypeString)
 	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
@@ -1652,6 +1678,26 @@ func (_u *IncidentUpdateOne) SetNillableTitle(v *string) *IncidentUpdateOne {
 	return _u
 }
 
+// SetTitle2 sets the "title2" field.
+func (_u *IncidentUpdateOne) SetTitle2(v string) *IncidentUpdateOne {
+	_u.mutation.SetTitle2(v)
+	return _u
+}
+
+// SetNillableTitle2 sets the "title2" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableTitle2(v *string) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetTitle2(*v)
+	}
+	return _u
+}
+
+// ClearTitle2 clears the value of the "title2" field.
+func (_u *IncidentUpdateOne) ClearTitle2() *IncidentUpdateOne {
+	_u.mutation.ClearTitle2()
+	return _u
+}
+
 // SetSeverityID sets the "severity_id" field.
 func (_u *IncidentUpdateOne) SetSeverityID(v uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.SetSeverityID(v)
@@ -2375,6 +2421,12 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Title2(); ok {
+		_spec.SetField(incident.FieldTitle2, field.TypeString, value)
+	}
+	if _u.mutation.Title2Cleared() {
+		_spec.ClearField(incident.FieldTitle2, field.TypeString)
 	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)

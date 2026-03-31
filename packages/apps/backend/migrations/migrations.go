@@ -11,6 +11,9 @@ import (
 //go:embed *
 var FS embed.FS
 
+//go:embed 0_bootstrap.sql.tpl
+var BootstrapQueryTemplate string
+
 const Path = "."
 
 const OutputDir = "migrations"

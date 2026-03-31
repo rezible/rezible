@@ -249,6 +249,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			incident.FieldUpdatedAt:     {Type: field.TypeTime, Column: incident.FieldUpdatedAt},
 			incident.FieldSlug:          {Type: field.TypeString, Column: incident.FieldSlug},
 			incident.FieldTitle:         {Type: field.TypeString, Column: incident.FieldTitle},
+			incident.FieldTitle2:        {Type: field.TypeString, Column: incident.FieldTitle2},
 			incident.FieldSeverityID:    {Type: field.TypeUUID, Column: incident.FieldSeverityID},
 			incident.FieldTypeID:        {Type: field.TypeUUID, Column: incident.FieldTypeID},
 			incident.FieldSummary:       {Type: field.TypeString, Column: incident.FieldSummary},
@@ -5344,6 +5345,11 @@ func (f *IncidentFilter) WhereSlug(p entql.StringP) {
 // WhereTitle applies the entql string predicate on the title field.
 func (f *IncidentFilter) WhereTitle(p entql.StringP) {
 	f.Where(p.Field(incident.FieldTitle))
+}
+
+// WhereTitle2 applies the entql string predicate on the title2 field.
+func (f *IncidentFilter) WhereTitle2(p entql.StringP) {
+	f.Where(p.Field(incident.FieldTitle2))
 }
 
 // WhereSeverityID applies the entql [16]byte predicate on the severity_id field.

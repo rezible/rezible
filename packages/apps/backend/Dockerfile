@@ -24,4 +24,5 @@ COPY migrations /app/migrations
 
 EXPOSE 7002
 
-CMD ["rezible", "serve"]
+ENTRYPOINT ["rezible"]
+CMD ["serve"]

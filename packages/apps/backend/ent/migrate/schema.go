@@ -302,6 +302,7 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "slug", Type: field.TypeString, Unique: true},
 		{Name: "title", Type: field.TypeString},
+		{Name: "title2", Type: field.TypeString, Nullable: true},
 		{Name: "summary", Type: field.TypeString, Nullable: true},
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
 		{Name: "opened_at", Type: field.TypeTime},
@@ -317,19 +318,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "incidents_tenants_tenant",
-				Columns:    []*schema.Column{IncidentsColumns[9]},
+				Columns:    []*schema.Column{IncidentsColumns[10]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incidents_incident_severities_severity",
-				Columns:    []*schema.Column{IncidentsColumns[10]},
+				Columns:    []*schema.Column{IncidentsColumns[11]},
 				RefColumns: []*schema.Column{IncidentSeveritiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "incidents_incident_types_type",
-				Columns:    []*schema.Column{IncidentsColumns[11]},
+				Columns:    []*schema.Column{IncidentsColumns[12]},
 				RefColumns: []*schema.Column{IncidentTypesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -338,7 +339,7 @@ var (
 			{
 				Name:    "incident_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IncidentsColumns[9]},
+				Columns: []*schema.Column{IncidentsColumns[10]},
 			},
 		},
 	}

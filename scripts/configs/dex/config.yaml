@@ -7,11 +7,11 @@ web:
 storage:
   type: postgres
   config:
-    user: "{{ .Env.POSTGRES_USER }}"
+    user: dex
     password: "{{ .Env.POSTGRES_PASSWORD }}"
-    host: "{{ .Env.POSTGRES_HOST }}"
+    host: postgres
     port: {{ .Env.POSTGRES_PORT }}
-    database: "{{ .Env.POSTGRES_DATABASE }}"
+    database: dex
     ssl:
       mode: disable
 

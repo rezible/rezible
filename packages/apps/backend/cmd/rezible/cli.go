@@ -75,6 +75,20 @@ var rezcli = &cli.Command{
 			},
 		},
 		{
+			Name:      "bootstrap-db",
+			Usage:     "Bootstrap postgres database",
+			Arguments: []cli.Argument{},
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:  "database-url",
+					Usage: "override the migration database connection URL",
+				},
+			},
+			Action: func(ctx context.Context, cmd *cli.Command) error {
+				return postgres.RunBootstrap(ctx, cmd.String("database-url"))
+			},
+		},
+		{
 			Name:  "generate-migration",
 			Usage: "Create a new database migration",
 			Arguments: []cli.Argument{
@@ -89,25 +103,18 @@ var rezcli = &cli.Command{
 					Name:  "database-url",
 					Usage: "override the migration database connection URL",
 				},
+				&cli.BoolFlag{
+					Name:  "update-checksum",
+					Usage: "just update the checksum file",
+				},
 			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
+				if cmd.Bool("update-checksum") {
+					return postgres.UpdateMigrationsChecksum()
+				}
 				return postgres.GenerateEntMigrations(ctx, cmd.StringArg("name"), cmd.String("database-url"))
 			},
 		},
-		//{
-		//	Name:  "generate-river-migration",
-		//	Usage: "Create a new River database migration",
-		//	Arguments: []cli.Argument{
-		//		&cli.StringArg{
-		//			Name:      "name",
-		//			UsageText: "name of the migration",
-		//			Config:    cli.StringConfig{TrimSpace: true},
-		//		},
-		//	},
-		//	Action: func(ctx context.Context, cmd *cli.Command) error {
-		//		return postgres.GenerateRiverMigration(cmd.StringArg("name"))
-		//	},
-		//},
 		{
 			Name:  "migrate",
 			Usage: "Manage database migrations",
