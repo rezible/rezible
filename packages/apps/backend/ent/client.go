@@ -94,8 +94,6 @@ type Client struct {
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
 	AlertInstance *AlertInstanceClient
-	// AlertMetrics is the client for interacting with the AlertMetrics builders.
-	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DocumentAccess is the client for interacting with the DocumentAccess builders.
@@ -230,7 +228,6 @@ func (c *Client) init() {
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertInstance = NewAlertInstanceClient(c.config)
-	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.DocumentAccess = NewDocumentAccessClient(c.config)
 	c.Event = NewEventClient(c.config)
@@ -388,7 +385,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
 		AlertInstance:                    NewAlertInstanceClient(cfg),
-		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Document:                         NewDocumentClient(cfg),
 		DocumentAccess:                   NewDocumentAccessClient(cfg),
 		Event:                            NewEventClient(cfg),
@@ -471,7 +467,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
 		AlertInstance:                    NewAlertInstanceClient(cfg),
-		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Document:                         NewDocumentClient(cfg),
 		DocumentAccess:                   NewDocumentAccessClient(cfg),
 		Event:                            NewEventClient(cfg),
@@ -589,8 +584,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.Document,
-		c.DocumentAccess, c.Event, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.Alert, c.AlertFeedback, c.AlertInstance, c.Document, c.DocumentAccess,
+		c.Event, c.EventAnnotation, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
@@ -1337,36 +1332,6 @@ func (c *AlertInstanceClient) mutate(ctx context.Context, m *AlertInstanceMutati
 	default:
 		return nil, fmt.Errorf("ent: unknown AlertInstance mutation op: %q", m.Op())
 	}
-}
-
-// AlertMetricsClient is a client for the AlertMetrics schema.
-type AlertMetricsClient struct {
-	config
-}
-
-// NewAlertMetricsClient returns a client for the AlertMetrics from the given config.
-func NewAlertMetricsClient(c config) *AlertMetricsClient {
-	return &AlertMetricsClient{config: c}
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `alertmetrics.Intercept(f(g(h())))`.
-func (c *AlertMetricsClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AlertMetrics = append(c.inters.AlertMetrics, interceptors...)
-}
-
-// Query returns a query builder for AlertMetrics.
-func (c *AlertMetricsClient) Query() *AlertMetricsQuery {
-	return &AlertMetricsQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeAlertMetrics},
-		inters: c.Interceptors(),
-	}
-}
-
-// Interceptors returns the client interceptors.
-func (c *AlertMetricsClient) Interceptors() []Interceptor {
-	return c.inters.AlertMetrics
 }
 
 // DocumentClient is a client for the Document schema.
@@ -14094,8 +14059,8 @@ type (
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
 	inters struct {
-		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, DocumentAccess,
-		Event, EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
+		Alert, AlertFeedback, AlertInstance, Document, DocumentAccess, Event,
+		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,

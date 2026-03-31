@@ -15,7 +15,7 @@ type SystemComponentRelationship struct {
 
 func (SystemComponentRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}
@@ -59,7 +59,7 @@ type SystemRelationshipControlAction struct {
 
 func (SystemRelationshipControlAction) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }
@@ -94,7 +94,7 @@ type SystemRelationshipFeedbackSignal struct {
 
 func (SystemRelationshipFeedbackSignal) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

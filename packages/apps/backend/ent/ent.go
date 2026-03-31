@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertinstance"
-	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/event"
@@ -139,7 +138,6 @@ func checkColumn(t, c string) error {
 			alert.Table:                            alert.ValidColumn,
 			alertfeedback.Table:                    alertfeedback.ValidColumn,
 			alertinstance.Table:                    alertinstance.ValidColumn,
-			alertmetrics.Table:                     alertmetrics.ValidColumn,
 			document.Table:                         document.ValidColumn,
 			documentaccess.Table:                   documentaccess.ValidColumn,
 			event.Table:                            event.ValidColumn,

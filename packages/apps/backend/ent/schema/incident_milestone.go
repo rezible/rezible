@@ -14,7 +14,7 @@ type IncidentMilestone struct {
 
 func (IncidentMilestone) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

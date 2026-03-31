@@ -17,7 +17,7 @@ type IncidentEvent struct {
 
 func (IncidentEvent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }
@@ -78,7 +78,7 @@ type IncidentEventSystemComponent struct {
 
 func (IncidentEventSystemComponent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }
@@ -109,7 +109,7 @@ type IncidentEventContext struct {
 
 func (IncidentEventContext) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }
@@ -137,7 +137,7 @@ type IncidentEventContributingFactor struct {
 
 func (IncidentEventContributingFactor) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }
@@ -163,7 +163,7 @@ type IncidentEventEvidence struct {
 
 func (IncidentEventEvidence) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

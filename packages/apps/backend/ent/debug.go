@@ -28,14 +28,6 @@ func (c *AlertInstanceClient) Debug() *AlertInstanceClient {
 	return &AlertInstanceClient{config: cfg}
 }
 
-func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AlertMetricsClient{config: cfg}
-}
-
 func (c *DocumentClient) Debug() *DocumentClient {
 	if c.debug {
 		return c

@@ -15,7 +15,7 @@ type Retrospective struct {
 
 func (Retrospective) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }
@@ -59,7 +59,7 @@ type RetrospectiveComment struct {
 
 func (RetrospectiveComment) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }
@@ -102,7 +102,7 @@ type RetrospectiveReview struct {
 
 func (RetrospectiveReview) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

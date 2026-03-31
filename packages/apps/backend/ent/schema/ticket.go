@@ -15,7 +15,7 @@ type Ticket struct {
 
 func (Ticket) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}

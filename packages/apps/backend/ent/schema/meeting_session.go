@@ -16,7 +16,7 @@ type MeetingSession struct {
 
 func (MeetingSession) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

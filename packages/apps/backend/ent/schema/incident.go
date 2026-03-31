@@ -16,7 +16,7 @@ type Incident struct {
 
 func (Incident) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 		TimestampsMixin{},
@@ -80,7 +80,7 @@ type IncidentLink struct {
 
 func (IncidentLink) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

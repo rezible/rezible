@@ -14,7 +14,7 @@ type Team struct {
 
 func (Team) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}

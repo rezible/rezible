@@ -29,7 +29,7 @@ type MeetingSchedule struct {
 
 func (MeetingSchedule) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
 	}

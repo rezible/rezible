@@ -50,15 +50,12 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 		Queues:  queues,
 		Logger:  slog.New(slogOpts.NewZerologHandler()),
 	}
-
 	client, clientErr := river.NewClient(riverpgxv5.New(pool), cfg)
 	if clientErr != nil {
 		return nil, fmt.Errorf("failed to create client: %w", clientErr)
 	}
 
-	svc := &JobService{client: client}
-
-	return svc, nil
+	return &JobService{client: client}, nil
 }
 
 func (s *JobService) Start(ctx context.Context) error {

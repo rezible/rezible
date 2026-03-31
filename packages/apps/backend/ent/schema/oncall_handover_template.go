@@ -16,7 +16,7 @@ type OncallHandoverTemplate struct {
 
 func (OncallHandoverTemplate) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

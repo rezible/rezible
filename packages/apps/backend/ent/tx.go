@@ -18,8 +18,6 @@ type Tx struct {
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
 	AlertInstance *AlertInstanceClient
-	// AlertMetrics is the client for interacting with the AlertMetrics builders.
-	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DocumentAccess is the client for interacting with the DocumentAccess builders.
@@ -274,7 +272,6 @@ func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertInstance = NewAlertInstanceClient(tx.config)
-	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.DocumentAccess = NewDocumentAccessClient(tx.config)
 	tx.Event = NewEventClient(tx.config)

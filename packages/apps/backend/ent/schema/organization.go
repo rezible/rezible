@@ -12,7 +12,7 @@ type Organization struct {
 
 func (Organization) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

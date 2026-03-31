@@ -19,11 +19,11 @@ import (
 	"github.com/rezible/rezible/ent/schema/rules"
 )
 
-type AccessScopeMixin struct {
+type BaseMixin struct {
 	mixin.Schema
 }
 
-func (AccessScopeMixin) Policy() ent.Policy {
+func (BaseMixin) Policy() ent.Policy {
 	return privacy.Policy{
 		Query: privacy.QueryPolicy{
 			rules.DenyIfNoAccessScope(),

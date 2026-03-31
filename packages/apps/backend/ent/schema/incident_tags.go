@@ -14,7 +14,7 @@ type IncidentTag struct {
 
 func (IncidentTag) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
 	}

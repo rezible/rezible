@@ -14,7 +14,7 @@ type OncallRoster struct {
 
 func (OncallRoster) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
 		IntegrationDataMixin{},
@@ -62,7 +62,7 @@ type OncallRosterMetrics struct {
 
 func (OncallRosterMetrics) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }

@@ -18,7 +18,7 @@ type Integration struct {
 
 func (Integration) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
 	}
@@ -49,7 +49,7 @@ type IntegrationOAuthState struct {
 
 func (IntegrationOAuthState) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		AccessScopeMixin{},
+		BaseMixin{},
 		TenantMixin{},
 	}
 }
