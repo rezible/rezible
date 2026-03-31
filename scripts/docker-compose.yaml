@@ -17,9 +17,9 @@ services:
     restart: unless-stopped
     ports: ["7010:5432"]
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: postgres
+      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_ADMIN_DB}
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-U", "postgres"]
       interval: 5s

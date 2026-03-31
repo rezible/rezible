@@ -94,6 +94,8 @@ type Client struct {
 	AlertFeedback *AlertFeedbackClient
 	// AlertInstance is the client for interacting with the AlertInstance builders.
 	AlertInstance *AlertInstanceClient
+	// AlertMetrics is the client for interacting with the AlertMetrics builders.
+	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DocumentAccess is the client for interacting with the DocumentAccess builders.
@@ -228,6 +230,7 @@ func (c *Client) init() {
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertInstance = NewAlertInstanceClient(c.config)
+	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.DocumentAccess = NewDocumentAccessClient(c.config)
 	c.Event = NewEventClient(c.config)
@@ -313,6 +316,7 @@ type (
 // newConfig creates a new config for the client.
 func newConfig(opts ...Option) config {
 	cfg := config{log: log.Println, hooks: &hooks{}, inters: &inters{}}
+	cfg.schemaConfig = DefaultSchemaConfig
 	cfg.options(opts...)
 	return cfg
 }
@@ -385,6 +389,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
 		AlertInstance:                    NewAlertInstanceClient(cfg),
+		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Document:                         NewDocumentClient(cfg),
 		DocumentAccess:                   NewDocumentAccessClient(cfg),
 		Event:                            NewEventClient(cfg),
@@ -467,6 +472,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Alert:                            NewAlertClient(cfg),
 		AlertFeedback:                    NewAlertFeedbackClient(cfg),
 		AlertInstance:                    NewAlertInstanceClient(cfg),
+		AlertMetrics:                     NewAlertMetricsClient(cfg),
 		Document:                         NewDocumentClient(cfg),
 		DocumentAccess:                   NewDocumentAccessClient(cfg),
 		Event:                            NewEventClient(cfg),
@@ -584,8 +590,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertFeedback, c.AlertInstance, c.Document, c.DocumentAccess,
-		c.Event, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.Document,
+		c.DocumentAccess, c.Event, c.EventAnnotation, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
@@ -1332,6 +1338,36 @@ func (c *AlertInstanceClient) mutate(ctx context.Context, m *AlertInstanceMutati
 	default:
 		return nil, fmt.Errorf("ent: unknown AlertInstance mutation op: %q", m.Op())
 	}
+}
+
+// AlertMetricsClient is a client for the AlertMetrics schema.
+type AlertMetricsClient struct {
+	config
+}
+
+// NewAlertMetricsClient returns a client for the AlertMetrics from the given config.
+func NewAlertMetricsClient(c config) *AlertMetricsClient {
+	return &AlertMetricsClient{config: c}
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `alertmetrics.Intercept(f(g(h())))`.
+func (c *AlertMetricsClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AlertMetrics = append(c.inters.AlertMetrics, interceptors...)
+}
+
+// Query returns a query builder for AlertMetrics.
+func (c *AlertMetricsClient) Query() *AlertMetricsQuery {
+	return &AlertMetricsQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlertMetrics},
+		inters: c.Interceptors(),
+	}
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlertMetricsClient) Interceptors() []Interceptor {
+	return c.inters.AlertMetrics
 }
 
 // DocumentClient is a client for the Document schema.
@@ -14059,8 +14095,8 @@ type (
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
 	inters struct {
-		Alert, AlertFeedback, AlertInstance, Document, DocumentAccess, Event,
-		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
+		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, DocumentAccess,
+		Event, EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
@@ -14076,6 +14112,94 @@ type (
 		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
 	}
+)
+
+var (
+	// DefaultSchemaConfig represents the default schema names for all tables as defined in ent/schema.
+	DefaultSchemaConfig = SchemaConfig{
+		Alert:                                 tableSchemas[0],
+		AlertFeedback:                         tableSchemas[0],
+		AlertInstance:                         tableSchemas[0],
+		AlertMetrics:                          tableSchemas[0],
+		Document:                              tableSchemas[0],
+		DocumentAccess:                        tableSchemas[0],
+		Event:                                 tableSchemas[0],
+		EventAnnotation:                       tableSchemas[0],
+		Incident:                              tableSchemas[0],
+		IncidentFieldSelections:               tableSchemas[0],
+		IncidentTagAssignments:                tableSchemas[0],
+		IncidentReviewSessions:                tableSchemas[0],
+		IncidentDebrief:                       tableSchemas[0],
+		IncidentDebriefMessage:                tableSchemas[0],
+		IncidentDebriefQuestion:               tableSchemas[0],
+		IncidentDebriefQuestionIncidentFields: tableSchemas[0],
+		IncidentDebriefQuestionIncidentRoles:  tableSchemas[0],
+		IncidentDebriefQuestionIncidentSeverities: tableSchemas[0],
+		IncidentDebriefQuestionIncidentTags:       tableSchemas[0],
+		IncidentDebriefQuestionIncidentTypes:      tableSchemas[0],
+		IncidentDebriefSuggestion:                 tableSchemas[0],
+		IncidentEvent:                             tableSchemas[0],
+		IncidentEventContext:                      tableSchemas[0],
+		IncidentEventContributingFactor:           tableSchemas[0],
+		IncidentEventEvidence:                     tableSchemas[0],
+		IncidentEventSystemComponent:              tableSchemas[0],
+		IncidentField:                             tableSchemas[0],
+		IncidentFieldOption:                       tableSchemas[0],
+		IncidentLink:                              tableSchemas[0],
+		IncidentMilestone:                         tableSchemas[0],
+		IncidentRole:                              tableSchemas[0],
+		IncidentRoleAssignment:                    tableSchemas[0],
+		IncidentSeverity:                          tableSchemas[0],
+		IncidentTag:                               tableSchemas[0],
+		IncidentType:                              tableSchemas[0],
+		Integration:                               tableSchemas[0],
+		IntegrationOAuthState:                     tableSchemas[0],
+		MeetingSchedule:                           tableSchemas[0],
+		MeetingScheduleOwningTeam:                 tableSchemas[0],
+		MeetingSession:                            tableSchemas[0],
+		OncallHandoverTemplate:                    tableSchemas[0],
+		OncallRoster:                              tableSchemas[0],
+		OncallRosterMetrics:                       tableSchemas[0],
+		OncallSchedule:                            tableSchemas[0],
+		OncallScheduleParticipant:                 tableSchemas[0],
+		OncallShift:                               tableSchemas[0],
+		OncallShiftHandover:                       tableSchemas[0],
+		OncallShiftHandoverPinnedAnnotations:      tableSchemas[0],
+		OncallShiftMetrics:                        tableSchemas[0],
+		Organization:                              tableSchemas[0],
+		Playbook:                                  tableSchemas[0],
+		PlaybookAlerts:                            tableSchemas[0],
+		ProviderSyncHistory:                       tableSchemas[0],
+		Retrospective:                             tableSchemas[0],
+		RetrospectiveComment:                      tableSchemas[0],
+		RetrospectiveReview:                       tableSchemas[0],
+		SystemAnalysis:                            tableSchemas[0],
+		SystemAnalysisComponent:                   tableSchemas[0],
+		SystemAnalysisRelationship:                tableSchemas[0],
+		SystemComponent:                           tableSchemas[0],
+		SystemComponentConstraint:                 tableSchemas[0],
+		SystemComponentControl:                    tableSchemas[0],
+		SystemComponentKind:                       tableSchemas[0],
+		SystemComponentRelationship:               tableSchemas[0],
+		SystemComponentSignal:                     tableSchemas[0],
+		SystemHazard:                              tableSchemas[0],
+		SystemHazardComponents:                    tableSchemas[0],
+		SystemHazardConstraints:                   tableSchemas[0],
+		SystemHazardRelationships:                 tableSchemas[0],
+		SystemRelationshipControlAction:           tableSchemas[0],
+		SystemRelationshipFeedbackSignal:          tableSchemas[0],
+		Task:                                      tableSchemas[0],
+		TaskTickets:                               tableSchemas[0],
+		Team:                                      tableSchemas[0],
+		TeamOncallRosters:                         tableSchemas[0],
+		TeamMembership:                            tableSchemas[0],
+		Tenant:                                    tableSchemas[0],
+		Ticket:                                    tableSchemas[0],
+		User:                                      tableSchemas[0],
+		UserWatchedOncallRosters:                  tableSchemas[0],
+		VideoConference:                           tableSchemas[0],
+	}
+	tableSchemas = [...]string{"rezible"}
 )
 
 // SchemaConfig represents alternative schema names for all tables

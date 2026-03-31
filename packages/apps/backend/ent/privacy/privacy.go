@@ -183,6 +183,18 @@ func (f AlertInstanceMutationRuleFunc) EvalMutation(ctx context.Context, m ent.M
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertInstanceMutation", m)
 }
 
+// The AlertMetricsQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AlertMetricsQueryRuleFunc func(context.Context, *ent.AlertMetricsQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AlertMetricsQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertMetricsQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertMetricsQuery", q)
+}
+
 // The DocumentQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type DocumentQueryRuleFunc func(context.Context, *ent.DocumentQuery) error
@@ -1663,6 +1675,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.AlertFeedbackQuery:
 		return q.Filter(), nil
 	case *ent.AlertInstanceQuery:
+		return q.Filter(), nil
+	case *ent.AlertMetricsQuery:
 		return q.Filter(), nil
 	case *ent.DocumentQuery:
 		return q.Filter(), nil

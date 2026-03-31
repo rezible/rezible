@@ -64,7 +64,7 @@ func (dbc *DatabaseClient) requireUpToDateMigrations(ctx context.Context) error 
 	if status.Dirty {
 		return fmt.Errorf("database migrations are dirty: %s", status)
 	}
-	if status.Pending {
+	if status.Pending() {
 		return fmt.Errorf("database migrations are pending: %s", status)
 	}
 	return nil

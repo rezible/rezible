@@ -3,7 +3,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"entgo.io/ent/entc"
@@ -11,12 +10,6 @@ import (
 )
 
 func main() {
-	addSchemaHook := func(next gen.Generator) gen.Generator {
-		return gen.GenerateFunc(func(graph *gen.Graph) error {
-			fmt.Printf("graph:%v\n\n", graph)
-			return next.Generate(graph)
-		})
-	}
 	cfg := &gen.Config{
 		Features: []gen.Feature{
 			gen.FeatureSnapshot,
@@ -30,9 +23,6 @@ func main() {
 		},
 		Templates: []*gen.Template{
 			gen.MustParse(gen.NewTemplate("debug").ParseFiles("./debug.go.tmpl")),
-		},
-		Hooks: []gen.Hook{
-			addSchemaHook,
 		},
 	}
 	if genErr := entc.Generate("./schema", cfg); genErr != nil {

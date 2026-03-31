@@ -90,6 +90,7 @@ const (
 	TypeAlert                            = "Alert"
 	TypeAlertFeedback                    = "AlertFeedback"
 	TypeAlertInstance                    = "AlertInstance"
+	TypeAlertMetrics                     = "AlertMetrics"
 	TypeDocument                         = "Document"
 	TypeDocumentAccess                   = "DocumentAccess"
 	TypeEvent                            = "Event"

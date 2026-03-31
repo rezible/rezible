@@ -10,6 +10,7 @@ type SchemaConfig struct {
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.
 	AlertInstance                             string // AlertInstance table.
+	AlertMetrics                              string // AlertMetrics table.
 	Document                                  string // Document table.
 	DocumentAccess                            string // DocumentAccess table.
 	Event                                     string // Event table.

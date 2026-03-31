@@ -6,7 +6,9 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -21,6 +23,12 @@ import (
 
 type BaseMixin struct {
 	mixin.Schema
+}
+
+func (BaseMixin) Annotations() []schema.Annotation {
+	return []schema.Annotation{
+		entsql.Schema("rezible"),
+	}
 }
 
 func (BaseMixin) Policy() ent.Policy {

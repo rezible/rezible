@@ -2,6 +2,7 @@ package testkit
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
 	entsql "entgo.io/ent/dialect/sql"
@@ -88,11 +89,12 @@ func (s *Suite) setupTestDatabase() {
 	s.Require().NoError(pgCfgErr, "loading postgres config")
 	s.Require().NotNil(pgCfg.Migrations, "migrations config nil")
 
+	opts := fmt.Sprintf("sslmode=%s&search_path=%s", pgCfg.SSLMode, postgres.SchemaName)
 	pgxConf := pgtestdb.Config{
 		DriverName: "pgx",
 		Host:       pgCfg.Host,
 		Port:       fmt.Sprintf("%d", pgCfg.Port),
-		Options:    "sslmode=" + pgCfg.SSLMode,
+		Options:    opts,
 		User:       pgCfg.Migrations.User,
 		Password:   pgCfg.Migrations.Password,
 		TestRole: &pgtestdb.Role{
@@ -100,8 +102,38 @@ func (s *Suite) setupTestDatabase() {
 			Password: pgCfg.Password,
 		},
 	}
-	testDb := pgtestdb.New(s.T(), pgxConf, golangmigrator.New(migrations.Path, golangmigrator.WithFS(migrations.FS)))
+	testDb := pgtestdb.New(s.T(), pgxConf, newTestDbMigrator(pgCfg))
 	s.dbClient = postgres.MakeEntClient(entsql.OpenDB("postgres", testDb))
+}
+
+type testDbMigrator struct {
+	cfg postgres.Config
+	gm  *golangmigrator.GolangMigrator
+}
+
+func newTestDbMigrator(cfg postgres.Config) *testDbMigrator {
+	return &testDbMigrator{
+		cfg: cfg,
+		gm:  golangmigrator.New(migrations.Path, golangmigrator.WithFS(migrations.FS)),
+	}
+}
+
+func (m *testDbMigrator) Hash() (string, error) {
+	return m.gm.Hash()
+}
+
+func (m *testDbMigrator) Migrate(ctx context.Context, db *sql.DB, config pgtestdb.Config) error {
+	var setupDbQueryTemplate = `
+		CREATE SCHEMA IF NOT EXISTS %[1]s;
+		GRANT USAGE ON SCHEMA %[1]s TO %[2]s;
+		ALTER DEFAULT PRIVILEGES IN SCHEMA %[1]s GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO %[2]s;
+		ALTER DEFAULT PRIVILEGES IN SCHEMA %[1]s GRANT USAGE, SELECT ON SEQUENCES TO %[2]s;
+		ALTER ROLE %[2]s SET search_path TO %[1]s;`
+	setupQuery := fmt.Sprintf(setupDbQueryTemplate, postgres.SchemaName, config.TestRole.Username)
+	if _, setupErr := db.ExecContext(ctx, setupQuery); setupErr != nil {
+		return fmt.Errorf("setup schema setupQuery: %s", setupErr)
+	}
+	return m.gm.Migrate(ctx, db, config)
 }
 
 func (s *Suite) closeTestDatabase() {

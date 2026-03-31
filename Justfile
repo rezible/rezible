@@ -93,7 +93,10 @@ local_dev_api_url := "http://localhost:7002/api/v1"
 # [group('Testing')]
 
 @test-backend: run-dev-services
-    go -C {{backend_dir}} test $(go -C {{backend_dir}} list ./... | grep -v /ent/)
+    POSTGRES__MIGRATIONS__USER="${POSTGRES_ADMIN_USER}" \
+    POSTGRES__MIGRATIONS__PASSWORD="${POSTGRES_ADMIN_PASSWORD}" \
+        go -C {{backend_dir}} test \
+            $(go -C {{backend_dir}} list ./... | grep -v /ent/)
 
 @run-backend-datasync:
     just run-backend sync-integrations
@@ -136,22 +139,18 @@ local_dev_api_url := "http://localhost:7002/api/v1"
 
 # [group('Database')]
 
-migrations_dir := backend_dir + "/migrations"
+@setup-db: recreate-db && run-migrations
 
 @recreate-db:
     just run-docker-compose down postgres -v && \
       just run-docker-compose up postgres --wait
-
-@setup-db:
-    just recreate-db
-    just run-migrations
 
 @run-psql *ARGS:
     just run-docker-compose \
         exec -it postgres psql {{ARGS}}
 
 @create-initial-migrations: recreate-db
-    rm -f {{migrations_dir}}/*.{sql,sum}
+    rm -f {{backend_dir}}/migrations/*.{sql,sum}
     just run-backend generate-migration init
 
 migrator_pg_user_auth := f'{{env("POSTGRES__MIGRATIONS__USER")}}:{{env("POSTGRES__MIGRATIONS__PASSWORD")}}'
