@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/videoconference"
@@ -421,6 +422,7 @@ func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err er
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.VideoConference
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
@@ -434,6 +436,7 @@ func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err er
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.VideoConference
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -450,6 +453,7 @@ func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err er
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.VideoConference
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.MeetingSessionIDs(); len(nodes) > 0 {
@@ -463,11 +467,14 @@ func (_u *VideoConferenceUpdate) sqlSave(ctx context.Context) (_node int, err er
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.VideoConference
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.VideoConference
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -907,6 +914,7 @@ func (_u *VideoConferenceUpdateOne) sqlSave(ctx context.Context) (_node *VideoCo
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.VideoConference
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
@@ -920,6 +928,7 @@ func (_u *VideoConferenceUpdateOne) sqlSave(ctx context.Context) (_node *VideoCo
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.VideoConference
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -936,6 +945,7 @@ func (_u *VideoConferenceUpdateOne) sqlSave(ctx context.Context) (_node *VideoCo
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.VideoConference
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.MeetingSessionIDs(); len(nodes) > 0 {
@@ -949,11 +959,14 @@ func (_u *VideoConferenceUpdateOne) sqlSave(ctx context.Context) (_node *VideoCo
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.VideoConference
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.VideoConference
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &VideoConference{config: _u.config}
 	_spec.Assign = _node.assignValues

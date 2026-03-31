@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallschedule"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/predicate"
@@ -83,6 +84,9 @@ func (_q *OncallScheduleParticipantQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallscheduleparticipant.TenantTable, oncallscheduleparticipant.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallScheduleParticipant
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -105,6 +109,9 @@ func (_q *OncallScheduleParticipantQuery) QuerySchedule() *OncallScheduleQuery {
 			sqlgraph.To(oncallschedule.Table, oncallschedule.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oncallscheduleparticipant.ScheduleTable, oncallscheduleparticipant.ScheduleColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallSchedule
+		step.Edge.Schema = schemaConfig.OncallScheduleParticipant
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -127,6 +134,9 @@ func (_q *OncallScheduleParticipantQuery) QueryUser() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallscheduleparticipant.UserTable, oncallscheduleparticipant.UserColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.OncallScheduleParticipant
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -467,6 +477,8 @@ func (_q *OncallScheduleParticipantQuery) sqlAll(ctx context.Context, hooks ...q
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.OncallScheduleParticipant
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -590,6 +602,8 @@ func (_q *OncallScheduleParticipantQuery) loadUser(ctx context.Context, query *U
 
 func (_q *OncallScheduleParticipantQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.OncallScheduleParticipant
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -664,6 +678,9 @@ func (_q *OncallScheduleParticipantQuery) sqlQuery(ctx context.Context) *sql.Sel
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.OncallScheduleParticipant)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

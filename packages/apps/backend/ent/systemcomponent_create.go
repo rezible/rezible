@@ -409,6 +409,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 		_node = &SystemComponent{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemcomponent.Table, sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.SystemComponent
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -449,6 +450,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -466,6 +468,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -483,6 +486,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponentRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -506,6 +510,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -529,6 +534,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventSystemComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -552,6 +558,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentconstraint.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponentConstraint
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -568,6 +575,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponentControl
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -584,6 +592,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponentSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -600,6 +609,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemHazardComponents
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -616,6 +626,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponentRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -632,6 +643,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -648,6 +660,7 @@ func (_c *SystemComponentCreate) createSpec() (*SystemComponent, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventSystemComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

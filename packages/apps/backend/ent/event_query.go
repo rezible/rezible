@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incidentevent"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -86,6 +87,9 @@ func (_q *EventQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, event.TenantTable, event.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Event
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -108,6 +112,9 @@ func (_q *EventQuery) QueryAlertInstance() *AlertInstanceQuery {
 			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, event.AlertInstanceTable, event.AlertInstanceColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertInstance
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -130,6 +137,9 @@ func (_q *EventQuery) QueryIncidentEvent() *IncidentEventQuery {
 			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, event.IncidentEventTable, event.IncidentEventColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentEvent
+		step.Edge.Schema = schemaConfig.IncidentEvent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -152,6 +162,9 @@ func (_q *EventQuery) QueryAnnotations() *EventAnnotationQuery {
 			sqlgraph.To(eventannotation.Table, eventannotation.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, event.AnnotationsTable, event.AnnotationsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.EventAnnotation
+		step.Edge.Schema = schemaConfig.EventAnnotation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -505,6 +518,8 @@ func (_q *EventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Event,
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.Event
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -670,6 +685,8 @@ func (_q *EventQuery) loadAnnotations(ctx context.Context, query *EventAnnotatio
 
 func (_q *EventQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.Event
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -738,6 +755,9 @@ func (_q *EventQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.Event)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

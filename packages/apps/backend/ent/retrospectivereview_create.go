@@ -220,6 +220,7 @@ func (_c *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgra
 		_node = &RetrospectiveReview{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(retrospectivereview.Table, sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.RetrospectiveReview
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -240,6 +241,7 @@ func (_c *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveReview
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -257,6 +259,7 @@ func (_c *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveReview
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -274,6 +277,7 @@ func (_c *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveReview
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -291,6 +295,7 @@ func (_c *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveReview
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -308,6 +313,7 @@ func (_c *RetrospectiveReviewCreate) createSpec() (*RetrospectiveReview, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveReview
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

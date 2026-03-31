@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysiscomponent"
@@ -101,6 +102,9 @@ func (_q *SystemComponentQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponent.TenantTable, systemcomponent.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -123,6 +127,9 @@ func (_q *SystemComponentQuery) QueryKind() *SystemComponentKindQuery {
 			sqlgraph.To(systemcomponentkind.Table, systemcomponentkind.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponent.KindTable, systemcomponent.KindColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponentKind
+		step.Edge.Schema = schemaConfig.SystemComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -145,6 +152,9 @@ func (_q *SystemComponentQuery) QueryRelated() *SystemComponentQuery {
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponent.RelatedTable, systemcomponent.RelatedPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -167,6 +177,9 @@ func (_q *SystemComponentQuery) QuerySystemAnalyses() *SystemAnalysisQuery {
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponent.SystemAnalysesTable, systemcomponent.SystemAnalysesPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -189,6 +202,9 @@ func (_q *SystemComponentQuery) QueryEvents() *IncidentEventQuery {
 			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.EventsTable, systemcomponent.EventsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentEvent
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -211,6 +227,9 @@ func (_q *SystemComponentQuery) QueryConstraints() *SystemComponentConstraintQue
 			sqlgraph.To(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ConstraintsTable, systemcomponent.ConstraintsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponentConstraint
+		step.Edge.Schema = schemaConfig.SystemComponentConstraint
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -233,6 +252,9 @@ func (_q *SystemComponentQuery) QueryControls() *SystemComponentControlQuery {
 			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ControlsTable, systemcomponent.ControlsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponentControl
+		step.Edge.Schema = schemaConfig.SystemComponentControl
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -255,6 +277,9 @@ func (_q *SystemComponentQuery) QuerySignals() *SystemComponentSignalQuery {
 			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.SignalsTable, systemcomponent.SignalsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponentSignal
+		step.Edge.Schema = schemaConfig.SystemComponentSignal
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -277,6 +302,9 @@ func (_q *SystemComponentQuery) QueryHazards() *SystemHazardQuery {
 			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.HazardsTable, systemcomponent.HazardsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemHazard
+		step.Edge.Schema = schemaConfig.SystemHazardComponents
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -299,6 +327,9 @@ func (_q *SystemComponentQuery) QueryComponentRelationships() *SystemComponentRe
 			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ComponentRelationshipsTable, systemcomponent.ComponentRelationshipsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemComponentRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -321,6 +352,9 @@ func (_q *SystemComponentQuery) QuerySystemAnalysisComponents() *SystemAnalysisC
 			sqlgraph.To(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.SystemAnalysisComponentsTable, systemcomponent.SystemAnalysisComponentsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisComponent
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -343,6 +377,9 @@ func (_q *SystemComponentQuery) QueryEventComponents() *IncidentEventSystemCompo
 			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.EventComponentsTable, systemcomponent.EventComponentsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentEventSystemComponent
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -800,6 +837,8 @@ func (_q *SystemComponentQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.SystemComponent
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -978,6 +1017,7 @@ func (_q *SystemComponentQuery) loadRelated(ctx context.Context, query *SystemCo
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemcomponent.RelatedTable)
+		joinT.Schema(_q.schemaConfig.SystemComponentRelationship)
 		s.Join(joinT).On(s.C(systemcomponent.FieldID), joinT.C(systemcomponent.RelatedPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(systemcomponent.RelatedPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1039,6 +1079,7 @@ func (_q *SystemComponentQuery) loadSystemAnalyses(ctx context.Context, query *S
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemcomponent.SystemAnalysesTable)
+		joinT.Schema(_q.schemaConfig.SystemAnalysisComponent)
 		s.Join(joinT).On(s.C(systemanalysis.FieldID), joinT.C(systemcomponent.SystemAnalysesPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(systemcomponent.SystemAnalysesPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1100,6 +1141,7 @@ func (_q *SystemComponentQuery) loadEvents(ctx context.Context, query *IncidentE
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemcomponent.EventsTable)
+		joinT.Schema(_q.schemaConfig.IncidentEventSystemComponent)
 		s.Join(joinT).On(s.C(incidentevent.FieldID), joinT.C(systemcomponent.EventsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(systemcomponent.EventsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1251,6 +1293,7 @@ func (_q *SystemComponentQuery) loadHazards(ctx context.Context, query *SystemHa
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemcomponent.HazardsTable)
+		joinT.Schema(_q.schemaConfig.SystemHazardComponents)
 		s.Join(joinT).On(s.C(systemhazard.FieldID), joinT.C(systemcomponent.HazardsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(systemcomponent.HazardsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1392,6 +1435,8 @@ func (_q *SystemComponentQuery) loadEventComponents(ctx context.Context, query *
 
 func (_q *SystemComponentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.SystemComponent
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -1463,6 +1508,9 @@ func (_q *SystemComponentQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.SystemComponent)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

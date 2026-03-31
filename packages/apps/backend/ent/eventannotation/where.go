@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -298,6 +299,9 @@ func HasTenant() predicate.EventAnnotation {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.EventAnnotation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -306,6 +310,9 @@ func HasTenant() predicate.EventAnnotation {
 func HasTenantWith(preds ...predicate.Tenant) predicate.EventAnnotation {
 	return predicate.EventAnnotation(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.EventAnnotation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -321,6 +328,9 @@ func HasEvent() predicate.EventAnnotation {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Event
+		step.Edge.Schema = schemaConfig.EventAnnotation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -329,6 +339,9 @@ func HasEvent() predicate.EventAnnotation {
 func HasEventWith(preds ...predicate.Event) predicate.EventAnnotation {
 	return predicate.EventAnnotation(func(s *sql.Selector) {
 		step := newEventStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Event
+		step.Edge.Schema = schemaConfig.EventAnnotation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -344,6 +357,9 @@ func HasCreator() predicate.EventAnnotation {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, CreatorTable, CreatorColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.EventAnnotation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -352,6 +368,9 @@ func HasCreator() predicate.EventAnnotation {
 func HasCreatorWith(preds ...predicate.User) predicate.EventAnnotation {
 	return predicate.EventAnnotation(func(s *sql.Selector) {
 		step := newCreatorStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.EventAnnotation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -367,6 +386,9 @@ func HasHandovers() predicate.EventAnnotation {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, HandoversTable, HandoversPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallShiftHandover
+		step.Edge.Schema = schemaConfig.OncallShiftHandoverPinnedAnnotations
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -375,6 +397,9 @@ func HasHandovers() predicate.EventAnnotation {
 func HasHandoversWith(preds ...predicate.OncallShiftHandover) predicate.EventAnnotation {
 	return predicate.EventAnnotation(func(s *sql.Selector) {
 		step := newHandoversStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallShiftHandover
+		step.Edge.Schema = schemaConfig.OncallShiftHandoverPinnedAnnotations
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

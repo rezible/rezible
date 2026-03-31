@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentrole"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -259,6 +260,7 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAssignmentsIDs(); len(nodes) > 0 && !_u.mutation.AssignmentsCleared() {
@@ -272,6 +274,7 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -288,6 +291,7 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -304,6 +308,7 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !_u.mutation.DebriefQuestionsCleared() {
@@ -317,6 +322,7 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -333,11 +339,14 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.IncidentRole
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -617,6 +626,7 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAssignmentsIDs(); len(nodes) > 0 && !_u.mutation.AssignmentsCleared() {
@@ -630,6 +640,7 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -646,6 +657,7 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -662,6 +674,7 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedDebriefQuestionsIDs(); len(nodes) > 0 && !_u.mutation.DebriefQuestionsCleared() {
@@ -675,6 +688,7 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -691,11 +705,14 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.IncidentRole
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentRole{config: _u.config}
 	_spec.Assign = _node.assignValues

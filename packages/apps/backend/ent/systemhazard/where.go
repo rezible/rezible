@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -398,6 +399,9 @@ func HasTenant() predicate.SystemHazard {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemHazard
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -406,6 +410,9 @@ func HasTenant() predicate.SystemHazard {
 func HasTenantWith(preds ...predicate.Tenant) predicate.SystemHazard {
 	return predicate.SystemHazard(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemHazard
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -421,6 +428,9 @@ func HasComponents() predicate.SystemHazard {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, ComponentsTable, ComponentsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemHazardComponents
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -429,6 +439,9 @@ func HasComponents() predicate.SystemHazard {
 func HasComponentsWith(preds ...predicate.SystemComponent) predicate.SystemHazard {
 	return predicate.SystemHazard(func(s *sql.Selector) {
 		step := newComponentsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemHazardComponents
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -444,6 +457,9 @@ func HasConstraints() predicate.SystemHazard {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, ConstraintsTable, ConstraintsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentConstraint
+		step.Edge.Schema = schemaConfig.SystemHazardConstraints
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -452,6 +468,9 @@ func HasConstraints() predicate.SystemHazard {
 func HasConstraintsWith(preds ...predicate.SystemComponentConstraint) predicate.SystemHazard {
 	return predicate.SystemHazard(func(s *sql.Selector) {
 		step := newConstraintsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentConstraint
+		step.Edge.Schema = schemaConfig.SystemHazardConstraints
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -467,6 +486,9 @@ func HasRelationships() predicate.SystemHazard {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, RelationshipsTable, RelationshipsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemHazardRelationships
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -475,6 +497,9 @@ func HasRelationships() predicate.SystemHazard {
 func HasRelationshipsWith(preds ...predicate.SystemComponentRelationship) predicate.SystemHazard {
 	return predicate.SystemHazard(func(s *sql.Selector) {
 		step := newRelationshipsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemHazardRelationships
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/tenant"
@@ -82,6 +83,9 @@ func (_q *IncidentEventSystemComponentQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventsystemcomponent.TenantTable, incidenteventsystemcomponent.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -104,6 +108,9 @@ func (_q *IncidentEventSystemComponentQuery) QueryEvent() *IncidentEventSystemCo
 			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, incidenteventsystemcomponent.EventTable, incidenteventsystemcomponent.EventColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentEventSystemComponent
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -126,6 +133,9 @@ func (_q *IncidentEventSystemComponentQuery) QuerySystemComponent() *SystemCompo
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventsystemcomponent.SystemComponentTable, incidenteventsystemcomponent.SystemComponentColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -466,6 +476,8 @@ func (_q *IncidentEventSystemComponentQuery) sqlAll(ctx context.Context, hooks .
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.IncidentEventSystemComponent
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -589,6 +601,8 @@ func (_q *IncidentEventSystemComponentQuery) loadSystemComponent(ctx context.Con
 
 func (_q *IncidentEventSystemComponentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.IncidentEventSystemComponent
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -663,6 +677,9 @@ func (_q *IncidentEventSystemComponentQuery) sqlQuery(ctx context.Context) *sql.
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.IncidentEventSystemComponent)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

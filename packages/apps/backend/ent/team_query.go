@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/documentaccess"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
@@ -90,6 +91,9 @@ func (_q *TeamQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, team.TenantTable, team.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Team
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -112,6 +116,9 @@ func (_q *TeamQuery) QueryUsers() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, team.UsersTable, team.UsersPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.TeamMembership
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -134,6 +141,9 @@ func (_q *TeamQuery) QueryOncallRosters() *OncallRosterQuery {
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, team.OncallRostersTable, team.OncallRostersPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallRoster
+		step.Edge.Schema = schemaConfig.TeamOncallRosters
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -156,6 +166,9 @@ func (_q *TeamQuery) QueryScheduledMeetings() *MeetingScheduleQuery {
 			sqlgraph.To(meetingschedule.Table, meetingschedule.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, team.ScheduledMeetingsTable, team.ScheduledMeetingsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.MeetingSchedule
+		step.Edge.Schema = schemaConfig.MeetingScheduleOwningTeam
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -178,6 +191,9 @@ func (_q *TeamQuery) QueryDocumentAccesses() *DocumentAccessQuery {
 			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, team.DocumentAccessesTable, team.DocumentAccessesColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.DocumentAccess
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -200,6 +216,9 @@ func (_q *TeamQuery) QueryTeamMemberships() *TeamMembershipQuery {
 			sqlgraph.To(teammembership.Table, teammembership.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, team.TeamMembershipsTable, team.TeamMembershipsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.TeamMembership
+		step.Edge.Schema = schemaConfig.TeamMembership
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -579,6 +598,8 @@ func (_q *TeamQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Team, e
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.Team
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -677,6 +698,7 @@ func (_q *TeamQuery) loadUsers(ctx context.Context, query *UserQuery, nodes []*T
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(team.UsersTable)
+		joinT.Schema(_q.schemaConfig.TeamMembership)
 		s.Join(joinT).On(s.C(user.FieldID), joinT.C(team.UsersPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(team.UsersPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -738,6 +760,7 @@ func (_q *TeamQuery) loadOncallRosters(ctx context.Context, query *OncallRosterQ
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(team.OncallRostersTable)
+		joinT.Schema(_q.schemaConfig.TeamOncallRosters)
 		s.Join(joinT).On(s.C(oncallroster.FieldID), joinT.C(team.OncallRostersPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(team.OncallRostersPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -799,6 +822,7 @@ func (_q *TeamQuery) loadScheduledMeetings(ctx context.Context, query *MeetingSc
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(team.ScheduledMeetingsTable)
+		joinT.Schema(_q.schemaConfig.MeetingScheduleOwningTeam)
 		s.Join(joinT).On(s.C(meetingschedule.FieldID), joinT.C(team.ScheduledMeetingsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(team.ScheduledMeetingsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -910,6 +934,8 @@ func (_q *TeamQuery) loadTeamMemberships(ctx context.Context, query *TeamMembers
 
 func (_q *TeamQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.Team
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -978,6 +1004,9 @@ func (_q *TeamQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.Team)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

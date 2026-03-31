@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -281,6 +282,9 @@ func HasTenant() predicate.Task {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -289,6 +293,9 @@ func HasTenant() predicate.Task {
 func HasTenantWith(preds ...predicate.Tenant) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -304,6 +311,9 @@ func HasTickets() predicate.Task {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, TicketsTable, TicketsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Ticket
+		step.Edge.Schema = schemaConfig.TaskTickets
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -312,6 +322,9 @@ func HasTickets() predicate.Task {
 func HasTicketsWith(preds ...predicate.Ticket) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := newTicketsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Ticket
+		step.Edge.Schema = schemaConfig.TaskTickets
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -327,6 +340,9 @@ func HasIncident() predicate.Task {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, IncidentTable, IncidentColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -335,6 +351,9 @@ func HasIncident() predicate.Task {
 func HasIncidentWith(preds ...predicate.Incident) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := newIncidentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -350,6 +369,9 @@ func HasAssignee() predicate.Task {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, AssigneeTable, AssigneeColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -358,6 +380,9 @@ func HasAssignee() predicate.Task {
 func HasAssigneeWith(preds ...predicate.User) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := newAssigneeStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -373,6 +398,9 @@ func HasCreator() predicate.Task {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, CreatorTable, CreatorColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -381,6 +409,9 @@ func HasCreator() predicate.Task {
 func HasCreatorWith(preds ...predicate.User) predicate.Task {
 	return predicate.Task(func(s *sql.Selector) {
 		step := newCreatorStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.Task
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

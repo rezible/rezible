@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -236,6 +237,9 @@ func HasTenant() predicate.Ticket {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Ticket
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -244,6 +248,9 @@ func HasTenant() predicate.Ticket {
 func HasTenantWith(preds ...predicate.Tenant) predicate.Ticket {
 	return predicate.Ticket(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Ticket
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -259,6 +266,9 @@ func HasTasks() predicate.Ticket {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, TasksTable, TasksPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Task
+		step.Edge.Schema = schemaConfig.TaskTickets
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -267,6 +277,9 @@ func HasTasks() predicate.Ticket {
 func HasTasksWith(preds ...predicate.Task) predicate.Ticket {
 	return predicate.Ticket(func(s *sql.Selector) {
 		step := newTasksStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Task
+		step.Edge.Schema = schemaConfig.TaskTickets
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

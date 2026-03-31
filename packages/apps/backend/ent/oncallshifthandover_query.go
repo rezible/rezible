@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/eventannotation"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/predicate"
@@ -84,6 +85,9 @@ func (_q *OncallShiftHandoverQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshifthandover.TenantTable, oncallshifthandover.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallShiftHandover
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -106,6 +110,9 @@ func (_q *OncallShiftHandoverQuery) QueryShift() *OncallShiftQuery {
 			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, oncallshifthandover.ShiftTable, oncallshifthandover.ShiftColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShiftHandover
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -128,6 +135,9 @@ func (_q *OncallShiftHandoverQuery) QueryPinnedAnnotations() *EventAnnotationQue
 			sqlgraph.To(eventannotation.Table, eventannotation.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, oncallshifthandover.PinnedAnnotationsTable, oncallshifthandover.PinnedAnnotationsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.EventAnnotation
+		step.Edge.Schema = schemaConfig.OncallShiftHandoverPinnedAnnotations
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -468,6 +478,8 @@ func (_q *OncallShiftHandoverQuery) sqlAll(ctx context.Context, hooks ...queryHo
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.OncallShiftHandover
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -575,6 +587,7 @@ func (_q *OncallShiftHandoverQuery) loadPinnedAnnotations(ctx context.Context, q
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(oncallshifthandover.PinnedAnnotationsTable)
+		joinT.Schema(_q.schemaConfig.OncallShiftHandoverPinnedAnnotations)
 		s.Join(joinT).On(s.C(eventannotation.FieldID), joinT.C(oncallshifthandover.PinnedAnnotationsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(oncallshifthandover.PinnedAnnotationsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -626,6 +639,8 @@ func (_q *OncallShiftHandoverQuery) loadPinnedAnnotations(ctx context.Context, q
 
 func (_q *OncallShiftHandoverQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.OncallShiftHandover
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -697,6 +712,9 @@ func (_q *OncallShiftHandoverQuery) sqlQuery(ctx context.Context) *sql.Selector 
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.OncallShiftHandover)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

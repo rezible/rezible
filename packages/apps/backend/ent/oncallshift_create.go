@@ -286,6 +286,7 @@ func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 		_node = &OncallShift{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallshift.Table, sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.OncallShift
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -318,6 +319,7 @@ func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -335,6 +337,7 @@ func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -352,6 +355,7 @@ func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -369,6 +373,7 @@ func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -386,6 +391,7 @@ func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(oncallshifthandover.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShiftHandover
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -402,6 +408,7 @@ func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(oncallshiftmetrics.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShiftMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

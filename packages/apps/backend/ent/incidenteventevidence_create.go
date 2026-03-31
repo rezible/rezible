@@ -231,6 +231,7 @@ func (_c *IncidentEventEvidenceCreate) createSpec() (*IncidentEventEvidence, *sq
 		_node = &IncidentEventEvidence{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidenteventevidence.Table, sqlgraph.NewFieldSpec(incidenteventevidence.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.IncidentEventEvidence
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -267,6 +268,7 @@ func (_c *IncidentEventEvidenceCreate) createSpec() (*IncidentEventEvidence, *sq
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventEvidence
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -284,6 +286,7 @@ func (_c *IncidentEventEvidenceCreate) createSpec() (*IncidentEventEvidence, *sq
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventEvidence
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

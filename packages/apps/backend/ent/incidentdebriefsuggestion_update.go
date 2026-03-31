@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -136,6 +137,7 @@ func (_u *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (_node i
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebrief.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefSuggestion
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.DebriefIDs(); len(nodes) > 0 {
@@ -149,11 +151,14 @@ func (_u *IncidentDebriefSuggestionUpdate) sqlSave(ctx context.Context) (_node i
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebrief.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefSuggestion
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefSuggestion
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -312,6 +317,7 @@ func (_u *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_nod
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebrief.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefSuggestion
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.DebriefIDs(); len(nodes) > 0 {
@@ -325,11 +331,14 @@ func (_u *IncidentDebriefSuggestionUpdateOne) sqlSave(ctx context.Context) (_nod
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebrief.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefSuggestion
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefSuggestion
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentDebriefSuggestion{config: _u.config}
 	_spec.Assign = _node.assignValues

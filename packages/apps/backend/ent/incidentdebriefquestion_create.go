@@ -240,6 +240,7 @@ func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion,
 		_node = &IncidentDebriefQuestion{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentdebriefquestion.Table, sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.IncidentDebriefQuestion
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -260,6 +261,7 @@ func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion,
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefQuestion
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -277,6 +279,7 @@ func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion,
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -293,6 +296,7 @@ func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion,
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefQuestionIncidentFields
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -309,6 +313,7 @@ func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion,
 				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -325,6 +330,7 @@ func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion,
 				IDSpec: sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefQuestionIncidentSeverities
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -341,6 +347,7 @@ func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion,
 				IDSpec: sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefQuestionIncidentTags
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -357,6 +364,7 @@ func (_c *IncidentDebriefQuestionCreate) createSpec() (*IncidentDebriefQuestion,
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefQuestionIncidentTypes
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

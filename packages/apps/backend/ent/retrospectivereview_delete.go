@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 )
@@ -41,6 +42,8 @@ func (_d *RetrospectiveReviewDelete) ExecX(ctx context.Context) int {
 
 func (_d *RetrospectiveReviewDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(retrospectivereview.Table, sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.RetrospectiveReview
+	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

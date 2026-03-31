@@ -213,6 +213,7 @@ func (_c *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlgra
 		_node = &SystemComponentKind{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemcomponentkind.Table, sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.SystemComponentKind
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -245,6 +246,7 @@ func (_c *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponentKind
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -262,6 +264,7 @@ func (_c *SystemComponentKindCreate) createSpec() (*SystemComponentKind, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

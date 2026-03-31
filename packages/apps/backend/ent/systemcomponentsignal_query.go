@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
@@ -86,6 +87,9 @@ func (_q *SystemComponentSignalQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.TenantTable, systemcomponentsignal.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentSignal
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -108,6 +112,9 @@ func (_q *SystemComponentSignalQuery) QueryComponent() *SystemComponentQuery {
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.ComponentTable, systemcomponentsignal.ComponentColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentSignal
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -130,6 +137,9 @@ func (_q *SystemComponentSignalQuery) QueryRelationships() *SystemComponentRelat
 			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentsignal.RelationshipsTable, systemcomponentsignal.RelationshipsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -152,6 +162,9 @@ func (_q *SystemComponentSignalQuery) QueryFeedbackSignals() *SystemRelationship
 			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentsignal.FeedbackSignalsTable, systemcomponentsignal.FeedbackSignalsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemRelationshipFeedbackSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -505,6 +518,8 @@ func (_q *SystemComponentSignalQuery) sqlAll(ctx context.Context, hooks ...query
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.SystemComponentSignal
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -621,6 +636,7 @@ func (_q *SystemComponentSignalQuery) loadRelationships(ctx context.Context, que
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemcomponentsignal.RelationshipsTable)
+		joinT.Schema(_q.schemaConfig.SystemRelationshipFeedbackSignal)
 		s.Join(joinT).On(s.C(systemcomponentrelationship.FieldID), joinT.C(systemcomponentsignal.RelationshipsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(systemcomponentsignal.RelationshipsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -702,6 +718,8 @@ func (_q *SystemComponentSignalQuery) loadFeedbackSignals(ctx context.Context, q
 
 func (_q *SystemComponentSignalQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.SystemComponentSignal
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -773,6 +791,9 @@ func (_q *SystemComponentSignalQuery) sqlQuery(ctx context.Context) *sql.Selecto
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.SystemComponentSignal)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

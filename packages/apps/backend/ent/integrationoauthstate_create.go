@@ -211,6 +211,7 @@ func (_c *IntegrationOAuthStateCreate) createSpec() (*IntegrationOAuthState, *sq
 		_node = &IntegrationOAuthState{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(integrationoauthstate.Table, sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.IntegrationOAuthState
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -239,6 +240,7 @@ func (_c *IntegrationOAuthStateCreate) createSpec() (*IntegrationOAuthState, *sq
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IntegrationOAuthState
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -256,6 +258,7 @@ func (_c *IntegrationOAuthStateCreate) createSpec() (*IntegrationOAuthState, *sq
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IntegrationOAuthState
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

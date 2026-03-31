@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rezible/rezible/ent/document"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -41,6 +42,8 @@ func (_d *DocumentDelete) ExecX(ctx context.Context) int {
 
 func (_d *DocumentDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(document.Table, sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.Document
+	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

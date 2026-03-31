@@ -254,6 +254,7 @@ func (_c *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage, *
 		_node = &IncidentDebriefMessage{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentdebriefmessage.Table, sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.IncidentDebriefMessage
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -286,6 +287,7 @@ func (_c *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage, *
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -303,6 +305,7 @@ func (_c *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage, *
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebrief.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -320,6 +323,7 @@ func (_c *IncidentDebriefMessageCreate) createSpec() (*IncidentDebriefMessage, *
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

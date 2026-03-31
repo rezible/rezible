@@ -247,6 +247,7 @@ func (_c *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlgra
 		_node = &OncallShiftHandover{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallshifthandover.Table, sqlgraph.NewFieldSpec(oncallshifthandover.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.OncallShiftHandover
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -283,6 +284,7 @@ func (_c *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShiftHandover
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -300,6 +302,7 @@ func (_c *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShiftHandover
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -317,6 +320,7 @@ func (_c *OncallShiftHandoverCreate) createSpec() (*OncallShiftHandover, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShiftHandoverPinnedAnnotations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

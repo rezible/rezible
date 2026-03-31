@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rezible/rezible/ent/eventannotation"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -41,6 +42,8 @@ func (_d *EventAnnotationDelete) ExecX(ctx context.Context) int {
 
 func (_d *EventAnnotationDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(eventannotation.Table, sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.EventAnnotation
+	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

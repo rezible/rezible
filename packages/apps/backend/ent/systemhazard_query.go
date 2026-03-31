@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
@@ -86,6 +87,9 @@ func (_q *SystemHazardQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemhazard.TenantTable, systemhazard.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemHazard
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -108,6 +112,9 @@ func (_q *SystemHazardQuery) QueryComponents() *SystemComponentQuery {
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.ComponentsTable, systemhazard.ComponentsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemHazardComponents
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -130,6 +137,9 @@ func (_q *SystemHazardQuery) QueryConstraints() *SystemComponentConstraintQuery 
 			sqlgraph.To(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.ConstraintsTable, systemhazard.ConstraintsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponentConstraint
+		step.Edge.Schema = schemaConfig.SystemHazardConstraints
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -152,6 +162,9 @@ func (_q *SystemHazardQuery) QueryRelationships() *SystemComponentRelationshipQu
 			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.RelationshipsTable, systemhazard.RelationshipsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemHazardRelationships
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -505,6 +518,8 @@ func (_q *SystemHazardQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.SystemHazard
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -593,6 +608,7 @@ func (_q *SystemHazardQuery) loadComponents(ctx context.Context, query *SystemCo
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemhazard.ComponentsTable)
+		joinT.Schema(_q.schemaConfig.SystemHazardComponents)
 		s.Join(joinT).On(s.C(systemcomponent.FieldID), joinT.C(systemhazard.ComponentsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(systemhazard.ComponentsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -654,6 +670,7 @@ func (_q *SystemHazardQuery) loadConstraints(ctx context.Context, query *SystemC
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemhazard.ConstraintsTable)
+		joinT.Schema(_q.schemaConfig.SystemHazardConstraints)
 		s.Join(joinT).On(s.C(systemcomponentconstraint.FieldID), joinT.C(systemhazard.ConstraintsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(systemhazard.ConstraintsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -715,6 +732,7 @@ func (_q *SystemHazardQuery) loadRelationships(ctx context.Context, query *Syste
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemhazard.RelationshipsTable)
+		joinT.Schema(_q.schemaConfig.SystemHazardRelationships)
 		s.Join(joinT).On(s.C(systemcomponentrelationship.FieldID), joinT.C(systemhazard.RelationshipsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(systemhazard.RelationshipsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -766,6 +784,8 @@ func (_q *SystemHazardQuery) loadRelationships(ctx context.Context, query *Syste
 
 func (_q *SystemHazardQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.SystemHazard
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -834,6 +854,9 @@ func (_q *SystemHazardQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.SystemHazard)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

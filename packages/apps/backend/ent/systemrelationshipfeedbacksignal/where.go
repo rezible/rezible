@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -333,6 +334,9 @@ func HasTenant() predicate.SystemRelationshipFeedbackSignal {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -341,6 +345,9 @@ func HasTenant() predicate.SystemRelationshipFeedbackSignal {
 func HasTenantWith(preds ...predicate.Tenant) predicate.SystemRelationshipFeedbackSignal {
 	return predicate.SystemRelationshipFeedbackSignal(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -356,6 +363,9 @@ func HasRelationship() predicate.SystemRelationshipFeedbackSignal {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, RelationshipTable, RelationshipColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -364,6 +374,9 @@ func HasRelationship() predicate.SystemRelationshipFeedbackSignal {
 func HasRelationshipWith(preds ...predicate.SystemComponentRelationship) predicate.SystemRelationshipFeedbackSignal {
 	return predicate.SystemRelationshipFeedbackSignal(func(s *sql.Selector) {
 		step := newRelationshipStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -379,6 +392,9 @@ func HasSignal() predicate.SystemRelationshipFeedbackSignal {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, SignalTable, SignalColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -387,6 +403,9 @@ func HasSignal() predicate.SystemRelationshipFeedbackSignal {
 func HasSignalWith(preds ...predicate.SystemComponentSignal) predicate.SystemRelationshipFeedbackSignal {
 	return predicate.SystemRelationshipFeedbackSignal(func(s *sql.Selector) {
 		step := newSignalStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

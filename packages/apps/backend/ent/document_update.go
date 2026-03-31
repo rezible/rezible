@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 )
@@ -187,6 +188,7 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.DocumentAccess
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAccessesIDs(); len(nodes) > 0 && !_u.mutation.AccessesCleared() {
@@ -200,6 +202,7 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.DocumentAccess
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -216,6 +219,7 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.DocumentAccess
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -232,6 +236,7 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
@@ -245,11 +250,14 @@ func (_u *DocumentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Document
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -458,6 +466,7 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.DocumentAccess
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAccessesIDs(); len(nodes) > 0 && !_u.mutation.AccessesCleared() {
@@ -471,6 +480,7 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.DocumentAccess
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -487,6 +497,7 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 				IDSpec: sqlgraph.NewFieldSpec(documentaccess.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.DocumentAccess
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -503,6 +514,7 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RetrospectiveIDs(); len(nodes) > 0 {
@@ -516,11 +528,14 @@ func (_u *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err 
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Document
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Document{config: _u.config}
 	_spec.Assign = _node.assignValues

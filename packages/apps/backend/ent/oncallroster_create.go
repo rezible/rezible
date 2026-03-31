@@ -340,6 +340,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 		_node = &OncallRoster{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallroster.Table, sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.OncallRoster
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -384,6 +385,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -401,6 +403,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallSchedule
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -417,6 +420,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -434,6 +438,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -450,6 +455,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.TeamOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -466,6 +472,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -482,6 +489,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.UserWatchedOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -498,6 +506,7 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallRosterMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

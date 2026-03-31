@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/systemcomponentconstraint"
@@ -84,6 +85,9 @@ func (_q *SystemComponentConstraintQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentconstraint.TenantTable, systemcomponentconstraint.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentConstraint
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -106,6 +110,9 @@ func (_q *SystemComponentConstraintQuery) QueryComponent() *SystemComponentQuery
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentconstraint.ComponentTable, systemcomponentconstraint.ComponentColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentConstraint
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -128,6 +135,9 @@ func (_q *SystemComponentConstraintQuery) QueryHazards() *SystemHazardQuery {
 			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentconstraint.HazardsTable, systemcomponentconstraint.HazardsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemHazard
+		step.Edge.Schema = schemaConfig.SystemHazardConstraints
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -468,6 +478,8 @@ func (_q *SystemComponentConstraintQuery) sqlAll(ctx context.Context, hooks ...q
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.SystemComponentConstraint
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -573,6 +585,7 @@ func (_q *SystemComponentConstraintQuery) loadHazards(ctx context.Context, query
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemcomponentconstraint.HazardsTable)
+		joinT.Schema(_q.schemaConfig.SystemHazardConstraints)
 		s.Join(joinT).On(s.C(systemhazard.FieldID), joinT.C(systemcomponentconstraint.HazardsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(systemcomponentconstraint.HazardsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -624,6 +637,8 @@ func (_q *SystemComponentConstraintQuery) loadHazards(ctx context.Context, query
 
 func (_q *SystemComponentConstraintQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.SystemComponentConstraint
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -695,6 +710,9 @@ func (_q *SystemComponentConstraintQuery) sqlQuery(ctx context.Context) *sql.Sel
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.SystemComponentConstraint)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

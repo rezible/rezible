@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -281,6 +282,9 @@ func HasTenant() predicate.Playbook {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Playbook
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -289,6 +293,9 @@ func HasTenant() predicate.Playbook {
 func HasTenantWith(preds ...predicate.Tenant) predicate.Playbook {
 	return predicate.Playbook(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Playbook
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -304,6 +311,9 @@ func HasAlerts() predicate.Playbook {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, AlertsTable, AlertsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.PlaybookAlerts
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -312,6 +322,9 @@ func HasAlerts() predicate.Playbook {
 func HasAlertsWith(preds ...predicate.Alert) predicate.Playbook {
 	return predicate.Playbook(func(s *sql.Selector) {
 		step := newAlertsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.PlaybookAlerts
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

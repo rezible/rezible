@@ -233,6 +233,7 @@ func (_c *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *sq
 		_node = &SystemComponentSignal{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemcomponentsignal.Table, sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.SystemComponentSignal
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -261,6 +262,7 @@ func (_c *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *sq
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponentSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -278,6 +280,7 @@ func (_c *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *sq
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemComponentSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -295,6 +298,7 @@ func (_c *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *sq
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -318,6 +322,7 @@ func (_c *SystemComponentSignalCreate) createSpec() (*SystemComponentSignal, *sq
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

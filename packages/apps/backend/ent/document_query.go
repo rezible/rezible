@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/tenant"
@@ -84,6 +85,9 @@ func (_q *DocumentQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, document.TenantTable, document.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Document
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -106,6 +110,9 @@ func (_q *DocumentQuery) QueryAccesses() *DocumentAccessQuery {
 			sqlgraph.To(documentaccess.Table, documentaccess.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, document.AccessesTable, document.AccessesColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.DocumentAccess
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -128,6 +135,9 @@ func (_q *DocumentQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, document.RetrospectiveTable, document.RetrospectiveColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Retrospective
+		step.Edge.Schema = schemaConfig.Retrospective
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -468,6 +478,8 @@ func (_q *DocumentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Doc
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.Document
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -591,6 +603,8 @@ func (_q *DocumentQuery) loadRetrospective(ctx context.Context, query *Retrospec
 
 func (_q *DocumentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.Document
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -659,6 +673,9 @@ func (_q *DocumentQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.Document)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

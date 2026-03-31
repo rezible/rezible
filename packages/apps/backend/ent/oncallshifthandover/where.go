@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -318,6 +319,9 @@ func HasTenant() predicate.OncallShiftHandover {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallShiftHandover
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -326,6 +330,9 @@ func HasTenant() predicate.OncallShiftHandover {
 func HasTenantWith(preds ...predicate.Tenant) predicate.OncallShiftHandover {
 	return predicate.OncallShiftHandover(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallShiftHandover
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -341,6 +348,9 @@ func HasShift() predicate.OncallShiftHandover {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, ShiftTable, ShiftColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShiftHandover
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -349,6 +359,9 @@ func HasShift() predicate.OncallShiftHandover {
 func HasShiftWith(preds ...predicate.OncallShift) predicate.OncallShiftHandover {
 	return predicate.OncallShiftHandover(func(s *sql.Selector) {
 		step := newShiftStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShiftHandover
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -364,6 +377,9 @@ func HasPinnedAnnotations() predicate.OncallShiftHandover {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, PinnedAnnotationsTable, PinnedAnnotationsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.EventAnnotation
+		step.Edge.Schema = schemaConfig.OncallShiftHandoverPinnedAnnotations
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -372,6 +388,9 @@ func HasPinnedAnnotations() predicate.OncallShiftHandover {
 func HasPinnedAnnotationsWith(preds ...predicate.EventAnnotation) predicate.OncallShiftHandover {
 	return predicate.OncallShiftHandover(func(s *sql.Selector) {
 		step := newPinnedAnnotationsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.EventAnnotation
+		step.Edge.Schema = schemaConfig.OncallShiftHandoverPinnedAnnotations
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -252,6 +252,7 @@ func (_c *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponent,
 		_node = &SystemAnalysisComponent{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemanalysiscomponent.Table, sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.SystemAnalysisComponent
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -284,6 +285,7 @@ func (_c *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponent,
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -301,6 +303,7 @@ func (_c *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponent,
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -318,6 +321,7 @@ func (_c *SystemAnalysisComponentCreate) createSpec() (*SystemAnalysisComponent,
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

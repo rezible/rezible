@@ -399,6 +399,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 		_node = &IncidentEvent{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentevent.Table, sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.IncidentEvent
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -447,6 +448,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -464,6 +466,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -481,6 +484,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -498,6 +502,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(incidenteventcontext.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventContext
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -514,6 +519,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(incidenteventcontributingfactor.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventContributingFactor
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -530,6 +536,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(incidenteventevidence.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventEvidence
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -546,6 +553,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventSystemComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -569,6 +577,7 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEventSystemComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

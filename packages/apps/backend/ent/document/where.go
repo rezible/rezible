@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -146,6 +147,9 @@ func HasTenant() predicate.Document {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Document
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -154,6 +158,9 @@ func HasTenant() predicate.Document {
 func HasTenantWith(preds ...predicate.Tenant) predicate.Document {
 	return predicate.Document(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Document
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -169,6 +176,9 @@ func HasAccesses() predicate.Document {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, AccessesTable, AccessesColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.DocumentAccess
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -177,6 +187,9 @@ func HasAccesses() predicate.Document {
 func HasAccessesWith(preds ...predicate.DocumentAccess) predicate.Document {
 	return predicate.Document(func(s *sql.Selector) {
 		step := newAccessesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.DocumentAccess
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -192,6 +205,9 @@ func HasRetrospective() predicate.Document {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Retrospective
+		step.Edge.Schema = schemaConfig.Retrospective
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -200,6 +216,9 @@ func HasRetrospective() predicate.Document {
 func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.Document {
 	return predicate.Document(func(s *sql.Selector) {
 		step := newRetrospectiveStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Retrospective
+		step.Edge.Schema = schemaConfig.Retrospective
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

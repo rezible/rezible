@@ -197,6 +197,7 @@ func (_c *TeamMembershipCreate) createSpec() (*TeamMembership, *sqlgraph.CreateS
 		_node = &TeamMembership{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(teammembership.Table, sqlgraph.NewFieldSpec(teammembership.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.TeamMembership
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -217,6 +218,7 @@ func (_c *TeamMembershipCreate) createSpec() (*TeamMembership, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.TeamMembership
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -234,6 +236,7 @@ func (_c *TeamMembershipCreate) createSpec() (*TeamMembership, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.TeamMembership
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -251,6 +254,7 @@ func (_c *TeamMembershipCreate) createSpec() (*TeamMembership, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.TeamMembership
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

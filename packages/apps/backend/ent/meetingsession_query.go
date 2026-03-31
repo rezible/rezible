@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
@@ -87,6 +88,9 @@ func (_q *MeetingSessionQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, meetingsession.TenantTable, meetingsession.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.MeetingSession
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -109,6 +113,9 @@ func (_q *MeetingSessionQuery) QueryIncidents() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, meetingsession.IncidentsTable, meetingsession.IncidentsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentReviewSessions
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -131,6 +138,9 @@ func (_q *MeetingSessionQuery) QueryVideoConference() *VideoConferenceQuery {
 			sqlgraph.To(videoconference.Table, videoconference.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, meetingsession.VideoConferenceTable, meetingsession.VideoConferenceColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.VideoConference
+		step.Edge.Schema = schemaConfig.VideoConference
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -153,6 +163,9 @@ func (_q *MeetingSessionQuery) QuerySchedule() *MeetingScheduleQuery {
 			sqlgraph.To(meetingschedule.Table, meetingschedule.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, meetingsession.ScheduleTable, meetingsession.ScheduleColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.MeetingSchedule
+		step.Edge.Schema = schemaConfig.MeetingSession
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -513,6 +526,8 @@ func (_q *MeetingSessionQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.MeetingSession
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -595,6 +610,7 @@ func (_q *MeetingSessionQuery) loadIncidents(ctx context.Context, query *Inciden
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(meetingsession.IncidentsTable)
+		joinT.Schema(_q.schemaConfig.IncidentReviewSessions)
 		s.Join(joinT).On(s.C(incident.FieldID), joinT.C(meetingsession.IncidentsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(meetingsession.IncidentsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -708,6 +724,8 @@ func (_q *MeetingSessionQuery) loadSchedule(ctx context.Context, query *MeetingS
 
 func (_q *MeetingSessionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.MeetingSession
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -776,6 +794,9 @@ func (_q *MeetingSessionQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.MeetingSession)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

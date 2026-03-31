@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -41,6 +42,8 @@ func (_d *AlertInstanceDelete) ExecX(ctx context.Context) int {
 
 func (_d *AlertInstanceDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(alertinstance.Table, sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.AlertInstance
+	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

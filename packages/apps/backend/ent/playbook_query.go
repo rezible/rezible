@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -82,6 +83,9 @@ func (_q *PlaybookQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, playbook.TenantTable, playbook.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Playbook
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -104,6 +108,9 @@ func (_q *PlaybookQuery) QueryAlerts() *AlertQuery {
 			sqlgraph.To(alert.Table, alert.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, playbook.AlertsTable, playbook.AlertsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.PlaybookAlerts
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -431,6 +438,8 @@ func (_q *PlaybookQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pla
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.Playbook
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -501,6 +510,7 @@ func (_q *PlaybookQuery) loadAlerts(ctx context.Context, query *AlertQuery, node
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(playbook.AlertsTable)
+		joinT.Schema(_q.schemaConfig.PlaybookAlerts)
 		s.Join(joinT).On(s.C(alert.FieldID), joinT.C(playbook.AlertsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(playbook.AlertsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -552,6 +562,8 @@ func (_q *PlaybookQuery) loadAlerts(ctx context.Context, query *AlertQuery, node
 
 func (_q *PlaybookQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.Playbook
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -620,6 +632,9 @@ func (_q *PlaybookQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.Playbook)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

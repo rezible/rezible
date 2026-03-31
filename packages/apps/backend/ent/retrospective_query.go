@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -88,6 +89,9 @@ func (_q *RetrospectiveQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospective.TenantTable, retrospective.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Retrospective
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -110,6 +114,9 @@ func (_q *RetrospectiveQuery) QueryIncident() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.IncidentTable, retrospective.IncidentColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Retrospective
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -132,6 +139,9 @@ func (_q *RetrospectiveQuery) QueryDocument() *DocumentQuery {
 			sqlgraph.To(document.Table, document.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.DocumentTable, retrospective.DocumentColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Document
+		step.Edge.Schema = schemaConfig.Retrospective
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -154,6 +164,9 @@ func (_q *RetrospectiveQuery) QueryComments() *RetrospectiveCommentQuery {
 			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, retrospective.CommentsTable, retrospective.CommentsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.RetrospectiveComment
+		step.Edge.Schema = schemaConfig.RetrospectiveComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -176,6 +189,9 @@ func (_q *RetrospectiveQuery) QuerySystemAnalysis() *SystemAnalysisQuery {
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, retrospective.SystemAnalysisTable, retrospective.SystemAnalysisColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.Retrospective
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -542,6 +558,8 @@ func (_q *RetrospectiveQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.Retrospective
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -737,6 +755,8 @@ func (_q *RetrospectiveQuery) loadSystemAnalysis(ctx context.Context, query *Sys
 
 func (_q *RetrospectiveQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.Retrospective
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -814,6 +834,9 @@ func (_q *RetrospectiveQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.Retrospective)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

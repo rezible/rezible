@@ -262,6 +262,7 @@ func (_c *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlg
 		_node = &RetrospectiveComment{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(retrospectivecomment.Table, sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.RetrospectiveComment
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -282,6 +283,7 @@ func (_c *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlg
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -299,6 +301,7 @@ func (_c *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlg
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -316,6 +319,7 @@ func (_c *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlg
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -333,6 +337,7 @@ func (_c *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlg
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivereview.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -350,6 +355,7 @@ func (_c *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlg
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -367,6 +373,7 @@ func (_c *RetrospectiveCommentCreate) createSpec() (*RetrospectiveComment, *sqlg
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -238,6 +239,9 @@ func HasTenant() predicate.OncallHandoverTemplate {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallHandoverTemplate
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -246,6 +250,9 @@ func HasTenant() predicate.OncallHandoverTemplate {
 func HasTenantWith(preds ...predicate.Tenant) predicate.OncallHandoverTemplate {
 	return predicate.OncallHandoverTemplate(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallHandoverTemplate
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -261,6 +268,9 @@ func HasRoster() predicate.OncallHandoverTemplate {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, RosterTable, RosterColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallRoster
+		step.Edge.Schema = schemaConfig.OncallRoster
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -269,6 +279,9 @@ func HasRoster() predicate.OncallHandoverTemplate {
 func HasRosterWith(preds ...predicate.OncallRoster) predicate.OncallHandoverTemplate {
 	return predicate.OncallHandoverTemplate(func(s *sql.Selector) {
 		step := newRosterStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallRoster
+		step.Edge.Schema = schemaConfig.OncallRoster
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

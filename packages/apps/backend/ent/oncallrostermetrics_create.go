@@ -153,6 +153,7 @@ func (_c *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlgra
 		_node = &OncallRosterMetrics{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallrostermetrics.Table, sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.OncallRosterMetrics
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -169,6 +170,7 @@ func (_c *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallRosterMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -186,6 +188,7 @@ func (_c *OncallRosterMetricsCreate) createSpec() (*OncallRosterMetrics, *sqlgra
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallRosterMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -19,6 +19,7 @@ func main() {
 			gen.FeatureUpsert,
 			gen.FeatureModifier,
 			gen.FeaturePrivacy,
+			gen.FeatureSchemaConfig,
 		},
 		Templates: []*gen.Template{
 			gen.MustParse(gen.NewTemplate("debug").ParseFiles("./debug.go.tmpl")),

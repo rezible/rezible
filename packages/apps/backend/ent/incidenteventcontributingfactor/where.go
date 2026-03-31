@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -283,6 +284,9 @@ func HasTenant() predicate.IncidentEventContributingFactor {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentEventContributingFactor
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -291,6 +295,9 @@ func HasTenant() predicate.IncidentEventContributingFactor {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentEventContributingFactor {
 	return predicate.IncidentEventContributingFactor(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentEventContributingFactor
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -306,6 +313,9 @@ func HasEvent() predicate.IncidentEventContributingFactor {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, EventTable, EventColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentEvent
+		step.Edge.Schema = schemaConfig.IncidentEventContributingFactor
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -314,6 +324,9 @@ func HasEvent() predicate.IncidentEventContributingFactor {
 func HasEventWith(preds ...predicate.IncidentEvent) predicate.IncidentEventContributingFactor {
 	return predicate.IncidentEventContributingFactor(func(s *sql.Selector) {
 		step := newEventStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentEvent
+		step.Edge.Schema = schemaConfig.IncidentEventContributingFactor
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

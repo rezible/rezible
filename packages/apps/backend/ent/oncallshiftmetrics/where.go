@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -743,6 +744,9 @@ func HasTenant() predicate.OncallShiftMetrics {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallShiftMetrics
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -751,6 +755,9 @@ func HasTenant() predicate.OncallShiftMetrics {
 func HasTenantWith(preds ...predicate.Tenant) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallShiftMetrics
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -766,6 +773,9 @@ func HasShift() predicate.OncallShiftMetrics {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, true, ShiftTable, ShiftColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShiftMetrics
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -774,6 +784,9 @@ func HasShift() predicate.OncallShiftMetrics {
 func HasShiftWith(preds ...predicate.OncallShift) predicate.OncallShiftMetrics {
 	return predicate.OncallShiftMetrics(func(s *sql.Selector) {
 		step := newShiftStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShiftMetrics
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

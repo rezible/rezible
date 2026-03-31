@@ -230,6 +230,7 @@ func (_c *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate, *
 		_node = &OncallHandoverTemplate{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallhandovertemplate.Table, sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.OncallHandoverTemplate
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -262,6 +263,7 @@ func (_c *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate, *
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallHandoverTemplate
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -279,6 +281,7 @@ func (_c *OncallHandoverTemplateCreate) createSpec() (*OncallHandoverTemplate, *
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/incident"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -269,6 +270,7 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
@@ -282,6 +284,7 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -298,6 +301,7 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.DocumentIDs(); len(nodes) > 0 {
@@ -311,6 +315,7 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -327,6 +332,7 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.RetrospectiveComment
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !_u.mutation.CommentsCleared() {
@@ -340,6 +346,7 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -356,6 +363,7 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -372,6 +380,7 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
@@ -385,11 +394,14 @@ func (_u *RetrospectiveUpdate) sqlSave(ctx context.Context) (_node int, err erro
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Retrospective
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -678,6 +690,7 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.IncidentIDs(); len(nodes) > 0 {
@@ -691,6 +704,7 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -707,6 +721,7 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.DocumentIDs(); len(nodes) > 0 {
@@ -720,6 +735,7 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(document.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -736,6 +752,7 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.RetrospectiveComment
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedCommentsIDs(); len(nodes) > 0 && !_u.mutation.CommentsCleared() {
@@ -749,6 +766,7 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -765,6 +783,7 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(retrospectivecomment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.RetrospectiveComment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -781,6 +800,7 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.SystemAnalysisIDs(); len(nodes) > 0 {
@@ -794,11 +814,14 @@ func (_u *RetrospectiveUpdateOne) sqlSave(ctx context.Context) (_node *Retrospec
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Retrospective
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Retrospective{config: _u.config}
 	_spec.Assign = _node.assignValues

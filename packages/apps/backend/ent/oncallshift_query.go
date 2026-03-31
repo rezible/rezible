@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
@@ -89,6 +90,9 @@ func (_q *OncallShiftQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshift.TenantTable, oncallshift.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallShift
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -111,6 +115,9 @@ func (_q *OncallShiftQuery) QueryUser() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshift.UserTable, oncallshift.UserColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.OncallShift
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -133,6 +140,9 @@ func (_q *OncallShiftQuery) QueryRoster() *OncallRosterQuery {
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallshift.RosterTable, oncallshift.RosterColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallRoster
+		step.Edge.Schema = schemaConfig.OncallShift
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -155,6 +165,9 @@ func (_q *OncallShiftQuery) QueryPrimaryShift() *OncallShiftQuery {
 			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallshift.PrimaryShiftTable, oncallshift.PrimaryShiftColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShift
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -177,6 +190,9 @@ func (_q *OncallShiftQuery) QueryHandover() *OncallShiftHandoverQuery {
 			sqlgraph.To(oncallshifthandover.Table, oncallshifthandover.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallshift.HandoverTable, oncallshift.HandoverColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallShiftHandover
+		step.Edge.Schema = schemaConfig.OncallShiftHandover
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -199,6 +215,9 @@ func (_q *OncallShiftQuery) QueryMetrics() *OncallShiftMetricsQuery {
 			sqlgraph.To(oncallshiftmetrics.Table, oncallshiftmetrics.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, oncallshift.MetricsTable, oncallshift.MetricsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallShiftMetrics
+		step.Edge.Schema = schemaConfig.OncallShiftMetrics
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -578,6 +597,8 @@ func (_q *OncallShiftQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.OncallShift
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -802,6 +823,8 @@ func (_q *OncallShiftQuery) loadMetrics(ctx context.Context, query *OncallShiftM
 
 func (_q *OncallShiftQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.OncallShift
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -879,6 +902,9 @@ func (_q *OncallShiftQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.OncallShift)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -176,6 +177,9 @@ func HasTenant() predicate.AlertFeedback {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -184,6 +188,9 @@ func HasTenant() predicate.AlertFeedback {
 func HasTenantWith(preds ...predicate.Tenant) predicate.AlertFeedback {
 	return predicate.AlertFeedback(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -199,6 +206,9 @@ func HasAlertInstance() predicate.AlertFeedback {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, AlertInstanceTable, AlertInstanceColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -207,6 +217,9 @@ func HasAlertInstance() predicate.AlertFeedback {
 func HasAlertInstanceWith(preds ...predicate.AlertInstance) predicate.AlertFeedback {
 	return predicate.AlertFeedback(func(s *sql.Selector) {
 		step := newAlertInstanceStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

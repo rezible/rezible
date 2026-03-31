@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -94,6 +95,9 @@ func (_q *OncallRosterQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, oncallroster.TenantTable, oncallroster.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallRoster
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -116,6 +120,9 @@ func (_q *OncallRosterQuery) QuerySchedules() *OncallScheduleQuery {
 			sqlgraph.To(oncallschedule.Table, oncallschedule.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, oncallroster.SchedulesTable, oncallroster.SchedulesColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallSchedule
+		step.Edge.Schema = schemaConfig.OncallSchedule
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -138,6 +145,9 @@ func (_q *OncallRosterQuery) QueryHandoverTemplate() *OncallHandoverTemplateQuer
 			sqlgraph.To(oncallhandovertemplate.Table, oncallhandovertemplate.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, oncallroster.HandoverTemplateTable, oncallroster.HandoverTemplateColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallHandoverTemplate
+		step.Edge.Schema = schemaConfig.OncallRoster
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -160,6 +170,9 @@ func (_q *OncallRosterQuery) QueryAlerts() *AlertQuery {
 			sqlgraph.To(alert.Table, alert.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, oncallroster.AlertsTable, oncallroster.AlertsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.Alert
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -182,6 +195,9 @@ func (_q *OncallRosterQuery) QueryTeams() *TeamQuery {
 			sqlgraph.To(team.Table, team.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, oncallroster.TeamsTable, oncallroster.TeamsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Team
+		step.Edge.Schema = schemaConfig.TeamOncallRosters
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -204,6 +220,9 @@ func (_q *OncallRosterQuery) QueryShifts() *OncallShiftQuery {
 			sqlgraph.To(oncallshift.Table, oncallshift.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.ShiftsTable, oncallroster.ShiftsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShift
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -226,6 +245,9 @@ func (_q *OncallRosterQuery) QueryUserWatchers() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, oncallroster.UserWatchersTable, oncallroster.UserWatchersPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.UserWatchedOncallRosters
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -248,6 +270,9 @@ func (_q *OncallRosterQuery) QueryMetrics() *OncallRosterMetricsQuery {
 			sqlgraph.To(oncallrostermetrics.Table, oncallrostermetrics.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, oncallroster.MetricsTable, oncallroster.MetricsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallRosterMetrics
+		step.Edge.Schema = schemaConfig.OncallRosterMetrics
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -653,6 +678,8 @@ func (_q *OncallRosterQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.OncallRoster
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -853,6 +880,7 @@ func (_q *OncallRosterQuery) loadTeams(ctx context.Context, query *TeamQuery, no
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(oncallroster.TeamsTable)
+		joinT.Schema(_q.schemaConfig.TeamOncallRosters)
 		s.Join(joinT).On(s.C(team.FieldID), joinT.C(oncallroster.TeamsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(oncallroster.TeamsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -944,6 +972,7 @@ func (_q *OncallRosterQuery) loadUserWatchers(ctx context.Context, query *UserQu
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(oncallroster.UserWatchersTable)
+		joinT.Schema(_q.schemaConfig.UserWatchedOncallRosters)
 		s.Join(joinT).On(s.C(user.FieldID), joinT.C(oncallroster.UserWatchersPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(oncallroster.UserWatchersPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1025,6 +1054,8 @@ func (_q *OncallRosterQuery) loadMetrics(ctx context.Context, query *OncallRoste
 
 func (_q *OncallRosterQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.OncallRoster
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -1096,6 +1127,9 @@ func (_q *OncallRosterQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.OncallRoster)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

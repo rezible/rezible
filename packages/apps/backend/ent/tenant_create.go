@@ -81,6 +81,7 @@ func (_c *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 		_node = &Tenant{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(tenant.Table, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt))
 	)
+	_spec.Schema = _c.schemaConfig.Tenant
 	_spec.OnConflict = _c.conflict
 	return _node, _spec
 }

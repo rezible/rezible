@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -203,6 +204,9 @@ func HasTenant() predicate.IncidentEventSystemComponent {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -211,6 +215,9 @@ func HasTenant() predicate.IncidentEventSystemComponent {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentEventSystemComponent {
 	return predicate.IncidentEventSystemComponent(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -226,6 +233,9 @@ func HasEvent() predicate.IncidentEventSystemComponent {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, EventTable, EventColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentEventSystemComponent
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -234,6 +244,9 @@ func HasEvent() predicate.IncidentEventSystemComponent {
 func HasEventWith(preds ...predicate.IncidentEventSystemComponent) predicate.IncidentEventSystemComponent {
 	return predicate.IncidentEventSystemComponent(func(s *sql.Selector) {
 		step := newEventStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentEventSystemComponent
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -249,6 +262,9 @@ func HasSystemComponent() predicate.IncidentEventSystemComponent {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, SystemComponentTable, SystemComponentColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -257,6 +273,9 @@ func HasSystemComponent() predicate.IncidentEventSystemComponent {
 func HasSystemComponentWith(preds ...predicate.SystemComponent) predicate.IncidentEventSystemComponent {
 	return predicate.IncidentEventSystemComponent(func(s *sql.Selector) {
 		step := newSystemComponentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

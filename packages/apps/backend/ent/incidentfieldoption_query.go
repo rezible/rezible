@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -84,6 +85,9 @@ func (_q *IncidentFieldOptionQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidentfieldoption.TenantTable, incidentfieldoption.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentFieldOption
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -106,6 +110,9 @@ func (_q *IncidentFieldOptionQuery) QueryIncidentField() *IncidentFieldQuery {
 			sqlgraph.To(incidentfield.Table, incidentfield.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, incidentfieldoption.IncidentFieldTable, incidentfieldoption.IncidentFieldColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentField
+		step.Edge.Schema = schemaConfig.IncidentFieldOption
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -128,6 +135,9 @@ func (_q *IncidentFieldOptionQuery) QueryIncidents() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, incidentfieldoption.IncidentsTable, incidentfieldoption.IncidentsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentFieldSelections
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -468,6 +478,8 @@ func (_q *IncidentFieldOptionQuery) sqlAll(ctx context.Context, hooks ...queryHo
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.IncidentFieldOption
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -573,6 +585,7 @@ func (_q *IncidentFieldOptionQuery) loadIncidents(ctx context.Context, query *In
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(incidentfieldoption.IncidentsTable)
+		joinT.Schema(_q.schemaConfig.IncidentFieldSelections)
 		s.Join(joinT).On(s.C(incident.FieldID), joinT.C(incidentfieldoption.IncidentsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(incidentfieldoption.IncidentsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -624,6 +637,8 @@ func (_q *IncidentFieldOptionQuery) loadIncidents(ctx context.Context, query *In
 
 func (_q *IncidentFieldOptionQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.IncidentFieldOption
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -695,6 +710,9 @@ func (_q *IncidentFieldOptionQuery) sqlQuery(ctx context.Context) *sql.Selector 
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.IncidentFieldOption)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

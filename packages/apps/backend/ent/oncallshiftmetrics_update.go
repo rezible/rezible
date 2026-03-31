@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/predicate"
@@ -496,6 +497,7 @@ func (_u *OncallShiftMetricsUpdate) sqlSave(ctx context.Context) (_node int, err
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftMetrics
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ShiftIDs(); len(nodes) > 0 {
@@ -509,11 +511,14 @@ func (_u *OncallShiftMetricsUpdate) sqlSave(ctx context.Context) (_node int, err
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.OncallShiftMetrics
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -1031,6 +1036,7 @@ func (_u *OncallShiftMetricsUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftMetrics
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ShiftIDs(); len(nodes) > 0 {
@@ -1044,11 +1050,14 @@ func (_u *OncallShiftMetricsUpdateOne) sqlSave(ctx context.Context) (_node *Onca
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.OncallShiftMetrics
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallShiftMetrics{config: _u.config}
 	_spec.Assign = _node.assignValues

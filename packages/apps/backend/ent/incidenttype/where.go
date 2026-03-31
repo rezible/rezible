@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -213,6 +214,9 @@ func HasTenant() predicate.IncidentType {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentType
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -221,6 +225,9 @@ func HasTenant() predicate.IncidentType {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentType {
 	return predicate.IncidentType(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentType
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -236,6 +243,9 @@ func HasIncidents() predicate.IncidentType {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, IncidentsTable, IncidentsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Incident
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -244,6 +254,9 @@ func HasIncidents() predicate.IncidentType {
 func HasIncidentsWith(preds ...predicate.Incident) predicate.IncidentType {
 	return predicate.IncidentType(func(s *sql.Selector) {
 		step := newIncidentsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.Incident
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -259,6 +272,9 @@ func HasDebriefQuestions() predicate.IncidentType {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, DebriefQuestionsTable, DebriefQuestionsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebriefQuestion
+		step.Edge.Schema = schemaConfig.IncidentDebriefQuestionIncidentTypes
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -267,6 +283,9 @@ func HasDebriefQuestions() predicate.IncidentType {
 func HasDebriefQuestionsWith(preds ...predicate.IncidentDebriefQuestion) predicate.IncidentType {
 	return predicate.IncidentType(func(s *sql.Selector) {
 		step := newDebriefQuestionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebriefQuestion
+		step.Edge.Schema = schemaConfig.IncidentDebriefQuestionIncidentTypes
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

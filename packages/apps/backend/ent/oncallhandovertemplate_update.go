@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/predicate"
@@ -196,6 +197,7 @@ func (_u *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (_node int,
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedRosterIDs(); len(nodes) > 0 && !_u.mutation.RosterCleared() {
@@ -209,6 +211,7 @@ func (_u *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (_node int,
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -225,11 +228,14 @@ func (_u *OncallHandoverTemplateUpdate) sqlSave(ctx context.Context) (_node int,
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.OncallHandoverTemplate
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -447,6 +453,7 @@ func (_u *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_node *
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedRosterIDs(); len(nodes) > 0 && !_u.mutation.RosterCleared() {
@@ -460,6 +467,7 @@ func (_u *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_node *
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -476,11 +484,14 @@ func (_u *OncallHandoverTemplateUpdateOne) sqlSave(ctx context.Context) (_node *
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.OncallHandoverTemplate
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallHandoverTemplate{config: _u.config}
 	_spec.Assign = _node.assignValues

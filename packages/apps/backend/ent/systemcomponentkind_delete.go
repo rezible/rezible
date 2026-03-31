@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponentkind"
 )
@@ -41,6 +42,8 @@ func (_d *SystemComponentKindDelete) ExecX(ctx context.Context) int {
 
 func (_d *SystemComponentKindDelete) sqlExec(ctx context.Context) (int, error) {
 	_spec := sqlgraph.NewDeleteSpec(systemcomponentkind.Table, sqlgraph.NewFieldSpec(systemcomponentkind.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.SystemComponentKind
+	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {

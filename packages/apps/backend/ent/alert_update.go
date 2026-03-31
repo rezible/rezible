@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -299,6 +300,7 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.PlaybookAlerts
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !_u.mutation.PlaybooksCleared() {
@@ -312,6 +314,7 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.PlaybookAlerts
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -328,6 +331,7 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.PlaybookAlerts
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -344,6 +348,7 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
@@ -357,6 +362,7 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -373,6 +379,7 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
@@ -386,6 +393,7 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -402,11 +410,14 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Alert
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -726,6 +737,7 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.PlaybookAlerts
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedPlaybooksIDs(); len(nodes) > 0 && !_u.mutation.PlaybooksCleared() {
@@ -739,6 +751,7 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.PlaybookAlerts
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -755,6 +768,7 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 				IDSpec: sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.PlaybookAlerts
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -771,6 +785,7 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
@@ -784,6 +799,7 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -800,6 +816,7 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
@@ -813,6 +830,7 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -829,11 +847,14 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Alert
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Alert{config: _u.config}
 	_spec.Assign = _node.assignValues

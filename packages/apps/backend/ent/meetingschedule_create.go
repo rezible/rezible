@@ -325,6 +325,7 @@ func (_c *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Creat
 		_node = &MeetingSchedule{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(meetingschedule.Table, sqlgraph.NewFieldSpec(meetingschedule.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.MeetingSchedule
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -389,6 +390,7 @@ func (_c *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.MeetingSchedule
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -406,6 +408,7 @@ func (_c *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.MeetingScheduleOwningTeam
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -422,6 +425,7 @@ func (_c *MeetingScheduleCreate) createSpec() (*MeetingSchedule, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.MeetingSession
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -221,6 +221,7 @@ func (_c *OncallScheduleCreate) createSpec() (*OncallSchedule, *sqlgraph.CreateS
 		_node = &OncallSchedule{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(oncallschedule.Table, sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.OncallSchedule
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -253,6 +254,7 @@ func (_c *OncallScheduleCreate) createSpec() (*OncallSchedule, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallSchedule
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -270,6 +272,7 @@ func (_c *OncallScheduleCreate) createSpec() (*OncallSchedule, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(oncallscheduleparticipant.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallScheduleParticipant
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -286,6 +289,7 @@ func (_c *OncallScheduleCreate) createSpec() (*OncallSchedule, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.OncallSchedule
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

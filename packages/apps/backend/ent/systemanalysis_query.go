@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
@@ -88,6 +89,9 @@ func (_q *SystemAnalysisQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.TenantTable, systemanalysis.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -110,6 +114,9 @@ func (_q *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, systemanalysis.RetrospectiveTable, systemanalysis.RetrospectiveColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Retrospective
+		step.Edge.Schema = schemaConfig.Retrospective
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -132,6 +139,9 @@ func (_q *SystemAnalysisQuery) QueryComponents() *SystemComponentQuery {
 			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, systemanalysis.ComponentsTable, systemanalysis.ComponentsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -154,6 +164,9 @@ func (_q *SystemAnalysisQuery) QueryRelationships() *SystemAnalysisRelationshipQ
 			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.RelationshipsTable, systemanalysis.RelationshipsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -176,6 +189,9 @@ func (_q *SystemAnalysisQuery) QueryAnalysisComponents() *SystemAnalysisComponen
 			sqlgraph.To(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisComponentsTable, systemanalysis.AnalysisComponentsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisComponent
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -542,6 +558,8 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.SystemAnalysis
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -663,6 +681,7 @@ func (_q *SystemAnalysisQuery) loadComponents(ctx context.Context, query *System
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(systemanalysis.ComponentsTable)
+		joinT.Schema(_q.schemaConfig.SystemAnalysisComponent)
 		s.Join(joinT).On(s.C(systemcomponent.FieldID), joinT.C(systemanalysis.ComponentsPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(systemanalysis.ComponentsPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -774,6 +793,8 @@ func (_q *SystemAnalysisQuery) loadAnalysisComponents(ctx context.Context, query
 
 func (_q *SystemAnalysisQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.SystemAnalysis
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -842,6 +863,9 @@ func (_q *SystemAnalysisQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.SystemAnalysis)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

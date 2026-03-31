@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providersynchistory"
 )
@@ -165,6 +166,8 @@ func (_u *ProviderSyncHistoryUpdate) sqlSave(ctx context.Context) (_node int, er
 	if value, ok := _u.mutation.AddedNumMutations(); ok {
 		_spec.AddField(providersynchistory.FieldNumMutations, field.TypeInt, value)
 	}
+	_spec.Node.Schema = _u.schemaConfig.ProviderSyncHistory
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -353,6 +356,8 @@ func (_u *ProviderSyncHistoryUpdateOne) sqlSave(ctx context.Context) (_node *Pro
 	if value, ok := _u.mutation.AddedNumMutations(); ok {
 		_spec.AddField(providersynchistory.FieldNumMutations, field.TypeInt, value)
 	}
+	_spec.Node.Schema = _u.schemaConfig.ProviderSyncHistory
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &ProviderSyncHistory{config: _u.config}
 	_spec.Assign = _node.assignValues

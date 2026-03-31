@@ -345,6 +345,7 @@ func (_c *VideoConferenceCreate) createSpec() (*VideoConference, *sqlgraph.Creat
 		_node = &VideoConference{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(videoconference.Table, sqlgraph.NewFieldSpec(videoconference.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.VideoConference
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -405,6 +406,7 @@ func (_c *VideoConferenceCreate) createSpec() (*VideoConference, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.VideoConference
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -422,6 +424,7 @@ func (_c *VideoConferenceCreate) createSpec() (*VideoConference, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.VideoConference
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -439,6 +442,7 @@ func (_c *VideoConferenceCreate) createSpec() (*VideoConference, *sqlgraph.Creat
 				IDSpec: sqlgraph.NewFieldSpec(meetingsession.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.VideoConference
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

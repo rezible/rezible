@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -303,6 +304,9 @@ func HasTenant() predicate.SystemComponentControl {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentControl
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -311,6 +315,9 @@ func HasTenant() predicate.SystemComponentControl {
 func HasTenantWith(preds ...predicate.Tenant) predicate.SystemComponentControl {
 	return predicate.SystemComponentControl(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentControl
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -326,6 +333,9 @@ func HasComponent() predicate.SystemComponentControl {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, ComponentTable, ComponentColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentControl
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -334,6 +344,9 @@ func HasComponent() predicate.SystemComponentControl {
 func HasComponentWith(preds ...predicate.SystemComponent) predicate.SystemComponentControl {
 	return predicate.SystemComponentControl(func(s *sql.Selector) {
 		step := newComponentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentControl
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -349,6 +362,9 @@ func HasRelationships() predicate.SystemComponentControl {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, RelationshipsTable, RelationshipsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -357,6 +373,9 @@ func HasRelationships() predicate.SystemComponentControl {
 func HasRelationshipsWith(preds ...predicate.SystemComponentRelationship) predicate.SystemComponentControl {
 	return predicate.SystemComponentControl(func(s *sql.Selector) {
 		step := newRelationshipsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -372,6 +391,9 @@ func HasControlActions() predicate.SystemComponentControl {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, ControlActionsTable, ControlActionsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemRelationshipControlAction
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -380,6 +402,9 @@ func HasControlActions() predicate.SystemComponentControl {
 func HasControlActionsWith(preds ...predicate.SystemRelationshipControlAction) predicate.SystemComponentControl {
 	return predicate.SystemComponentControl(func(s *sql.Selector) {
 		step := newControlActionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemRelationshipControlAction
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

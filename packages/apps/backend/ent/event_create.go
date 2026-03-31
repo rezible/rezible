@@ -248,6 +248,7 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 		_node = &Event{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(event.Table, sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.Event
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -288,6 +289,7 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.Event
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -305,6 +307,7 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -321,6 +324,7 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -337,6 +341,7 @@ func (_c *EventCreate) createSpec() (*Event, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.EventAnnotation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

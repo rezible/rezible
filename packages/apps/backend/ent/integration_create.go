@@ -212,6 +212,7 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_node = &Integration{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(integration.Table, sqlgraph.NewFieldSpec(integration.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.Integration
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -248,6 +249,7 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.Integration
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysisrelationship"
 	"github.com/rezible/rezible/ent/systemcomponent"
@@ -447,6 +448,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemComponentRelationship
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.SourceIDs(); len(nodes) > 0 {
@@ -460,6 +462,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemComponentRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -476,6 +479,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemComponentRelationship
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.TargetIDs(); len(nodes) > 0 {
@@ -489,6 +493,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemComponentRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -505,6 +510,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedSystemAnalysesIDs(); len(nodes) > 0 && !_u.mutation.SystemAnalysesCleared() {
@@ -518,6 +524,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -534,6 +541,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -550,6 +558,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemHazardRelationships
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !_u.mutation.HazardsCleared() {
@@ -563,6 +572,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemHazardRelationships
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -579,6 +589,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemHazardRelationships
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -595,6 +606,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
@@ -615,6 +627,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -638,6 +651,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -661,6 +675,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
@@ -681,6 +696,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -704,6 +720,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -727,6 +744,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !_u.mutation.ControlActionsCleared() {
@@ -740,6 +758,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -756,6 +775,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -772,6 +792,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedFeedbackSignalsIDs(); len(nodes) > 0 && !_u.mutation.FeedbackSignalsCleared() {
@@ -785,6 +806,7 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -801,11 +823,14 @@ func (_u *SystemComponentRelationshipUpdate) sqlSave(ctx context.Context) (_node
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.SystemComponentRelationship
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -1268,6 +1293,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemComponentRelationship
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.SourceIDs(); len(nodes) > 0 {
@@ -1281,6 +1307,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemComponentRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1297,6 +1324,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemComponentRelationship
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.TargetIDs(); len(nodes) > 0 {
@@ -1310,6 +1338,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemComponentRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1326,6 +1355,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedSystemAnalysesIDs(); len(nodes) > 0 && !_u.mutation.SystemAnalysesCleared() {
@@ -1339,6 +1369,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1355,6 +1386,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1371,6 +1403,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemHazardRelationships
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedHazardsIDs(); len(nodes) > 0 && !_u.mutation.HazardsCleared() {
@@ -1384,6 +1417,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemHazardRelationships
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1400,6 +1434,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemHazardRelationships
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1416,6 +1451,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		createE := &SystemRelationshipControlActionCreate{config: _u.config, mutation: newSystemRelationshipControlActionMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
@@ -1436,6 +1472,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1459,6 +1496,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1482,6 +1520,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		createE := &SystemRelationshipFeedbackSignalCreate{config: _u.config, mutation: newSystemRelationshipFeedbackSignalMutation(_u.config, OpCreate)}
 		_ = createE.defaults()
 		_, specE := createE.createSpec()
@@ -1502,6 +1541,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1525,6 +1565,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentsignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1548,6 +1589,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedControlActionsIDs(); len(nodes) > 0 && !_u.mutation.ControlActionsCleared() {
@@ -1561,6 +1603,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1577,6 +1620,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipcontrolaction.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1593,6 +1637,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedFeedbackSignalsIDs(); len(nodes) > 0 && !_u.mutation.FeedbackSignalsCleared() {
@@ -1606,6 +1651,7 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1622,11 +1668,14 @@ func (_u *SystemComponentRelationshipUpdateOne) sqlSave(ctx context.Context) (_n
 				IDSpec: sqlgraph.NewFieldSpec(systemrelationshipfeedbacksignal.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipFeedbackSignal
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.SystemComponentRelationship
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemComponentRelationship{config: _u.config}
 	_spec.Assign = _node.assignValues

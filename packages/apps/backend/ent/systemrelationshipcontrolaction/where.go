@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -333,6 +334,9 @@ func HasTenant() predicate.SystemRelationshipControlAction {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -341,6 +345,9 @@ func HasTenant() predicate.SystemRelationshipControlAction {
 func HasTenantWith(preds ...predicate.Tenant) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -356,6 +363,9 @@ func HasRelationship() predicate.SystemRelationshipControlAction {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, RelationshipTable, RelationshipColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -364,6 +374,9 @@ func HasRelationship() predicate.SystemRelationshipControlAction {
 func HasRelationshipWith(preds ...predicate.SystemComponentRelationship) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
 		step := newRelationshipStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -379,6 +392,9 @@ func HasControl() predicate.SystemRelationshipControlAction {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, ControlTable, ControlColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentControl
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -387,6 +403,9 @@ func HasControl() predicate.SystemRelationshipControlAction {
 func HasControlWith(preds ...predicate.SystemComponentControl) predicate.SystemRelationshipControlAction {
 	return predicate.SystemRelationshipControlAction(func(s *sql.Selector) {
 		step := newControlStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentControl
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

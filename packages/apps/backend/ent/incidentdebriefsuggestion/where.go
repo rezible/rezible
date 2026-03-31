@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -156,6 +157,9 @@ func HasTenant() predicate.IncidentDebriefSuggestion {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentDebriefSuggestion
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -164,6 +168,9 @@ func HasTenant() predicate.IncidentDebriefSuggestion {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentDebriefSuggestion {
 	return predicate.IncidentDebriefSuggestion(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentDebriefSuggestion
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -179,6 +186,9 @@ func HasDebrief() predicate.IncidentDebriefSuggestion {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, DebriefTable, DebriefColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebrief
+		step.Edge.Schema = schemaConfig.IncidentDebriefSuggestion
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -187,6 +197,9 @@ func HasDebrief() predicate.IncidentDebriefSuggestion {
 func HasDebriefWith(preds ...predicate.IncidentDebrief) predicate.IncidentDebriefSuggestion {
 	return predicate.IncidentDebriefSuggestion(func(s *sql.Selector) {
 		step := newDebriefStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebrief
+		step.Edge.Schema = schemaConfig.IncidentDebriefSuggestion
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

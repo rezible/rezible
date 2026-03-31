@@ -24,6 +24,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -110,6 +111,9 @@ func (_q *IncidentQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incident.TenantTable, incident.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Incident
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -132,6 +136,9 @@ func (_q *IncidentQuery) QuerySeverity() *IncidentSeverityQuery {
 			sqlgraph.To(incidentseverity.Table, incidentseverity.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incident.SeverityTable, incident.SeverityColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentSeverity
+		step.Edge.Schema = schemaConfig.Incident
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -154,6 +161,9 @@ func (_q *IncidentQuery) QueryType() *IncidentTypeQuery {
 			sqlgraph.To(incidenttype.Table, incidenttype.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incident.TypeTable, incident.TypeColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentType
+		step.Edge.Schema = schemaConfig.Incident
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -176,6 +186,9 @@ func (_q *IncidentQuery) QueryMilestones() *IncidentMilestoneQuery {
 			sqlgraph.To(incidentmilestone.Table, incidentmilestone.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, incident.MilestonesTable, incident.MilestonesColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentMilestone
+		step.Edge.Schema = schemaConfig.IncidentMilestone
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -198,6 +211,9 @@ func (_q *IncidentQuery) QueryEvents() *IncidentEventQuery {
 			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, incident.EventsTable, incident.EventsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentEvent
+		step.Edge.Schema = schemaConfig.IncidentEvent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -220,6 +236,9 @@ func (_q *IncidentQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.O2O, false, incident.RetrospectiveTable, incident.RetrospectiveColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Retrospective
+		step.Edge.Schema = schemaConfig.Retrospective
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -242,6 +261,9 @@ func (_q *IncidentQuery) QueryUsers() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, incident.UsersTable, incident.UsersPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -264,6 +286,9 @@ func (_q *IncidentQuery) QueryRoleAssignments() *IncidentRoleAssignmentQuery {
 			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incident.RoleAssignmentsTable, incident.RoleAssignmentsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentRoleAssignment
+		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -286,6 +311,9 @@ func (_q *IncidentQuery) QueryLinkedIncidents() *IncidentQuery {
 			sqlgraph.To(incident.Table, incident.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.LinkedIncidentsTable, incident.LinkedIncidentsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentLink
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -308,6 +336,9 @@ func (_q *IncidentQuery) QueryFieldSelections() *IncidentFieldOptionQuery {
 			sqlgraph.To(incidentfieldoption.Table, incidentfieldoption.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.FieldSelectionsTable, incident.FieldSelectionsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentFieldOption
+		step.Edge.Schema = schemaConfig.IncidentFieldSelections
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -330,6 +361,9 @@ func (_q *IncidentQuery) QueryTasks() *TaskQuery {
 			sqlgraph.To(task.Table, task.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, incident.TasksTable, incident.TasksColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Task
+		step.Edge.Schema = schemaConfig.Task
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -352,6 +386,9 @@ func (_q *IncidentQuery) QueryTagAssignments() *IncidentTagQuery {
 			sqlgraph.To(incidenttag.Table, incidenttag.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.TagAssignmentsTable, incident.TagAssignmentsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTag
+		step.Edge.Schema = schemaConfig.IncidentTagAssignments
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -374,6 +411,9 @@ func (_q *IncidentQuery) QueryDebriefs() *IncidentDebriefQuery {
 			sqlgraph.To(incidentdebrief.Table, incidentdebrief.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, incident.DebriefsTable, incident.DebriefsColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentDebrief
+		step.Edge.Schema = schemaConfig.IncidentDebrief
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -396,6 +436,9 @@ func (_q *IncidentQuery) QueryReviewSessions() *MeetingSessionQuery {
 			sqlgraph.To(meetingsession.Table, meetingsession.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, incident.ReviewSessionsTable, incident.ReviewSessionsPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.MeetingSession
+		step.Edge.Schema = schemaConfig.IncidentReviewSessions
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -418,6 +461,9 @@ func (_q *IncidentQuery) QueryVideoConferences() *VideoConferenceQuery {
 			sqlgraph.To(videoconference.Table, videoconference.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, incident.VideoConferencesTable, incident.VideoConferencesColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.VideoConference
+		step.Edge.Schema = schemaConfig.VideoConference
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -440,6 +486,9 @@ func (_q *IncidentQuery) QueryUserRoles() *IncidentRoleAssignmentQuery {
 			sqlgraph.To(incidentroleassignment.Table, incidentroleassignment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incident.UserRolesTable, incident.UserRolesColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentRoleAssignment
+		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -462,6 +511,9 @@ func (_q *IncidentQuery) QueryIncidentLinks() *IncidentLinkQuery {
 			sqlgraph.To(incidentlink.Table, incidentlink.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, incident.IncidentLinksTable, incident.IncidentLinksColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentLink
+		step.Edge.Schema = schemaConfig.IncidentLink
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -984,6 +1036,8 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.Incident
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -1305,6 +1359,7 @@ func (_q *IncidentQuery) loadUsers(ctx context.Context, query *UserQuery, nodes 
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(incident.UsersTable)
+		joinT.Schema(_q.schemaConfig.IncidentRoleAssignment)
 		s.Join(joinT).On(s.C(user.FieldID), joinT.C(incident.UsersPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(incident.UsersPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1396,6 +1451,7 @@ func (_q *IncidentQuery) loadLinkedIncidents(ctx context.Context, query *Inciden
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(incident.LinkedIncidentsTable)
+		joinT.Schema(_q.schemaConfig.IncidentLink)
 		s.Join(joinT).On(s.C(incident.FieldID), joinT.C(incident.LinkedIncidentsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(incident.LinkedIncidentsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1457,6 +1513,7 @@ func (_q *IncidentQuery) loadFieldSelections(ctx context.Context, query *Inciden
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(incident.FieldSelectionsTable)
+		joinT.Schema(_q.schemaConfig.IncidentFieldSelections)
 		s.Join(joinT).On(s.C(incidentfieldoption.FieldID), joinT.C(incident.FieldSelectionsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(incident.FieldSelectionsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1548,6 +1605,7 @@ func (_q *IncidentQuery) loadTagAssignments(ctx context.Context, query *Incident
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(incident.TagAssignmentsTable)
+		joinT.Schema(_q.schemaConfig.IncidentTagAssignments)
 		s.Join(joinT).On(s.C(incidenttag.FieldID), joinT.C(incident.TagAssignmentsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(incident.TagAssignmentsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1639,6 +1697,7 @@ func (_q *IncidentQuery) loadReviewSessions(ctx context.Context, query *MeetingS
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(incident.ReviewSessionsTable)
+		joinT.Schema(_q.schemaConfig.IncidentReviewSessions)
 		s.Join(joinT).On(s.C(meetingsession.FieldID), joinT.C(incident.ReviewSessionsPrimaryKey[1]))
 		s.Where(sql.InValues(joinT.C(incident.ReviewSessionsPrimaryKey[0]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -1783,6 +1842,8 @@ func (_q *IncidentQuery) loadIncidentLinks(ctx context.Context, query *IncidentL
 
 func (_q *IncidentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.Incident
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -1857,6 +1918,9 @@ func (_q *IncidentQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.Incident)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

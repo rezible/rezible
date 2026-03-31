@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/eventannotation"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/predicate"
@@ -251,6 +252,7 @@ func (_u *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandover
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ShiftIDs(); len(nodes) > 0 {
@@ -264,6 +266,7 @@ func (_u *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandover
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -280,6 +283,7 @@ func (_u *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandoverPinnedAnnotations
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedPinnedAnnotationsIDs(); len(nodes) > 0 && !_u.mutation.PinnedAnnotationsCleared() {
@@ -293,6 +297,7 @@ func (_u *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandoverPinnedAnnotations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -309,11 +314,14 @@ func (_u *OncallShiftHandoverUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandoverPinnedAnnotations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.OncallShiftHandover
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -585,6 +593,7 @@ func (_u *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *Onc
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandover
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ShiftIDs(); len(nodes) > 0 {
@@ -598,6 +607,7 @@ func (_u *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *Onc
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandover
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -614,6 +624,7 @@ func (_u *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *Onc
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandoverPinnedAnnotations
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedPinnedAnnotationsIDs(); len(nodes) > 0 && !_u.mutation.PinnedAnnotationsCleared() {
@@ -627,6 +638,7 @@ func (_u *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *Onc
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandoverPinnedAnnotations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -643,11 +655,14 @@ func (_u *OncallShiftHandoverUpdateOne) sqlSave(ctx context.Context) (_node *Onc
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShiftHandoverPinnedAnnotations
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.OncallShiftHandover
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallShiftHandover{config: _u.config}
 	_spec.Assign = _node.assignValues

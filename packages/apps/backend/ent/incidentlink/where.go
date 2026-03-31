@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -236,6 +237,9 @@ func HasTenant() predicate.IncidentLink {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentLink
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -244,6 +248,9 @@ func HasTenant() predicate.IncidentLink {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentLink {
 	return predicate.IncidentLink(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentLink
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -259,6 +266,9 @@ func HasIncident() predicate.IncidentLink {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, IncidentTable, IncidentColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentLink
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -267,6 +277,9 @@ func HasIncident() predicate.IncidentLink {
 func HasIncidentWith(preds ...predicate.Incident) predicate.IncidentLink {
 	return predicate.IncidentLink(func(s *sql.Selector) {
 		step := newIncidentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentLink
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -282,6 +295,9 @@ func HasLinkedIncident() predicate.IncidentLink {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, LinkedIncidentTable, LinkedIncidentColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentLink
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -290,6 +306,9 @@ func HasLinkedIncident() predicate.IncidentLink {
 func HasLinkedIncidentWith(preds ...predicate.Incident) predicate.IncidentLink {
 	return predicate.IncidentLink(func(s *sql.Selector) {
 		step := newLinkedIncidentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentLink
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

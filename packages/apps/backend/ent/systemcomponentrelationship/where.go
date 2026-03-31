@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -343,6 +344,9 @@ func HasTenant() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentRelationship
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -351,6 +355,9 @@ func HasTenant() predicate.SystemComponentRelationship {
 func HasTenantWith(preds ...predicate.Tenant) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentRelationship
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -366,6 +373,9 @@ func HasSource() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, SourceTable, SourceColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentRelationship
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -374,6 +384,9 @@ func HasSource() predicate.SystemComponentRelationship {
 func HasSourceWith(preds ...predicate.SystemComponent) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newSourceStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentRelationship
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -389,6 +402,9 @@ func HasTarget() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TargetTable, TargetColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentRelationship
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -397,6 +413,9 @@ func HasTarget() predicate.SystemComponentRelationship {
 func HasTargetWith(preds ...predicate.SystemComponent) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newTargetStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentRelationship
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -412,6 +431,9 @@ func HasSystemAnalyses() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, SystemAnalysesTable, SystemAnalysesColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -420,6 +442,9 @@ func HasSystemAnalyses() predicate.SystemComponentRelationship {
 func HasSystemAnalysesWith(preds ...predicate.SystemAnalysisRelationship) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newSystemAnalysesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysisRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -435,6 +460,9 @@ func HasHazards() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, HazardsTable, HazardsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemHazard
+		step.Edge.Schema = schemaConfig.SystemHazardRelationships
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -443,6 +471,9 @@ func HasHazards() predicate.SystemComponentRelationship {
 func HasHazardsWith(preds ...predicate.SystemHazard) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newHazardsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemHazard
+		step.Edge.Schema = schemaConfig.SystemHazardRelationships
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -458,6 +489,9 @@ func HasControls() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, ControlsTable, ControlsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentControl
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -466,6 +500,9 @@ func HasControls() predicate.SystemComponentRelationship {
 func HasControlsWith(preds ...predicate.SystemComponentControl) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newControlsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentControl
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -481,6 +518,9 @@ func HasSignals() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, SignalsTable, SignalsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -489,6 +529,9 @@ func HasSignals() predicate.SystemComponentRelationship {
 func HasSignalsWith(preds ...predicate.SystemComponentSignal) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newSignalsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -504,6 +547,9 @@ func HasControlActions() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, ControlActionsTable, ControlActionsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemRelationshipControlAction
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -512,6 +558,9 @@ func HasControlActions() predicate.SystemComponentRelationship {
 func HasControlActionsWith(preds ...predicate.SystemRelationshipControlAction) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newControlActionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemRelationshipControlAction
+		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -527,6 +576,9 @@ func HasFeedbackSignals() predicate.SystemComponentRelationship {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, FeedbackSignalsTable, FeedbackSignalsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemRelationshipFeedbackSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -535,6 +587,9 @@ func HasFeedbackSignals() predicate.SystemComponentRelationship {
 func HasFeedbackSignalsWith(preds ...predicate.SystemRelationshipFeedbackSignal) predicate.SystemComponentRelationship {
 	return predicate.SystemComponentRelationship(func(s *sql.Selector) {
 		step := newFeedbackSignalsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemRelationshipFeedbackSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

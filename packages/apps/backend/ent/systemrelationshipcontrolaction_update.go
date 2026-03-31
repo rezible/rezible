@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemcomponentcontrol"
 	"github.com/rezible/rezible/ent/systemcomponentrelationship"
@@ -222,6 +223,7 @@ func (_u *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (_
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
@@ -235,6 +237,7 @@ func (_u *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (_
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -251,6 +254,7 @@ func (_u *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (_
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ControlIDs(); len(nodes) > 0 {
@@ -264,11 +268,14 @@ func (_u *SystemRelationshipControlActionUpdate) sqlSave(ctx context.Context) (_
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.SystemRelationshipControlAction
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -511,6 +518,7 @@ func (_u *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context)
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RelationshipIDs(); len(nodes) > 0 {
@@ -524,6 +532,7 @@ func (_u *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context)
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -540,6 +549,7 @@ func (_u *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context)
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.ControlIDs(); len(nodes) > 0 {
@@ -553,11 +563,14 @@ func (_u *SystemRelationshipControlActionUpdateOne) sqlSave(ctx context.Context)
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentcontrol.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.SystemRelationshipControlAction
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.SystemRelationshipControlAction
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &SystemRelationshipControlAction{config: _u.config}
 	_spec.Assign = _node.assignValues

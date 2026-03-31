@@ -163,6 +163,7 @@ func (_c *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec)
 		_node = &IncidentLink{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentlink.Table, sqlgraph.NewFieldSpec(incidentlink.FieldID, field.TypeInt))
 	)
+	_spec.Schema = _c.schemaConfig.IncidentLink
 	_spec.OnConflict = _c.conflict
 	if value, ok := _c.mutation.Description(); ok {
 		_spec.SetField(incidentlink.FieldDescription, field.TypeString, value)
@@ -183,6 +184,7 @@ func (_c *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentLink
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -200,6 +202,7 @@ func (_c *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentLink
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -217,6 +220,7 @@ func (_c *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentLink
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

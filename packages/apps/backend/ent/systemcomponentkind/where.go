@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -358,6 +359,9 @@ func HasTenant() predicate.SystemComponentKind {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentKind
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -366,6 +370,9 @@ func HasTenant() predicate.SystemComponentKind {
 func HasTenantWith(preds ...predicate.Tenant) predicate.SystemComponentKind {
 	return predicate.SystemComponentKind(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentKind
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -381,6 +388,9 @@ func HasComponents() predicate.SystemComponentKind {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, ComponentsTable, ComponentsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -389,6 +399,9 @@ func HasComponents() predicate.SystemComponentKind {
 func HasComponentsWith(preds ...predicate.SystemComponent) predicate.SystemComponentKind {
 	return predicate.SystemComponentKind(func(s *sql.Selector) {
 		step := newComponentsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

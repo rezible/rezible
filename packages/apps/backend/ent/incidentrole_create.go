@@ -226,6 +226,7 @@ func (_c *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec)
 		_node = &IncidentRole{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentrole.Table, sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.IncidentRole
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -258,6 +259,7 @@ func (_c *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentRole
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -275,6 +277,7 @@ func (_c *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(incidentroleassignment.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentRoleAssignment
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -291,6 +294,7 @@ func (_c *IncidentRoleCreate) createSpec() (*IncidentRole, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

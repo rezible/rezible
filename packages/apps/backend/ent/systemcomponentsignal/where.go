@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -303,6 +304,9 @@ func HasTenant() predicate.SystemComponentSignal {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -311,6 +315,9 @@ func HasTenant() predicate.SystemComponentSignal {
 func HasTenantWith(preds ...predicate.Tenant) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemComponentSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -326,6 +333,9 @@ func HasComponent() predicate.SystemComponentSignal {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, ComponentTable, ComponentColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -334,6 +344,9 @@ func HasComponent() predicate.SystemComponentSignal {
 func HasComponentWith(preds ...predicate.SystemComponent) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(func(s *sql.Selector) {
 		step := newComponentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemComponentSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -349,6 +362,9 @@ func HasRelationships() predicate.SystemComponentSignal {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, RelationshipsTable, RelationshipsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -357,6 +373,9 @@ func HasRelationships() predicate.SystemComponentSignal {
 func HasRelationshipsWith(preds ...predicate.SystemComponentRelationship) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(func(s *sql.Selector) {
 		step := newRelationshipsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponentRelationship
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -372,6 +391,9 @@ func HasFeedbackSignals() predicate.SystemComponentSignal {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, FeedbackSignalsTable, FeedbackSignalsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemRelationshipFeedbackSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -380,6 +402,9 @@ func HasFeedbackSignals() predicate.SystemComponentSignal {
 func HasFeedbackSignalsWith(preds ...predicate.SystemRelationshipFeedbackSignal) predicate.SystemComponentSignal {
 	return predicate.SystemComponentSignal(func(s *sql.Selector) {
 		step := newFeedbackSignalsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemRelationshipFeedbackSignal
+		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

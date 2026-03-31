@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -88,6 +89,9 @@ func (_q *RetrospectiveCommentQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.TenantTable, retrospectivecomment.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.RetrospectiveComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -110,6 +114,9 @@ func (_q *RetrospectiveCommentQuery) QueryRetrospective() *RetrospectiveQuery {
 			sqlgraph.To(retrospective.Table, retrospective.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.RetrospectiveTable, retrospectivecomment.RetrospectiveColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Retrospective
+		step.Edge.Schema = schemaConfig.RetrospectiveComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -132,6 +139,9 @@ func (_q *RetrospectiveCommentQuery) QueryUser() *UserQuery {
 			sqlgraph.To(user.Table, user.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.UserTable, retrospectivecomment.UserColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.RetrospectiveComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -154,6 +164,9 @@ func (_q *RetrospectiveCommentQuery) QueryReview() *RetrospectiveReviewQuery {
 			sqlgraph.To(retrospectivereview.Table, retrospectivereview.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, retrospectivecomment.ReviewTable, retrospectivecomment.ReviewColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.RetrospectiveReview
+		step.Edge.Schema = schemaConfig.RetrospectiveComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -176,6 +189,9 @@ func (_q *RetrospectiveCommentQuery) QueryParent() *RetrospectiveCommentQuery {
 			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, retrospectivecomment.ParentTable, retrospectivecomment.ParentColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.RetrospectiveComment
+		step.Edge.Schema = schemaConfig.RetrospectiveComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -198,6 +214,9 @@ func (_q *RetrospectiveCommentQuery) QueryReplies() *RetrospectiveCommentQuery {
 			sqlgraph.To(retrospectivecomment.Table, retrospectivecomment.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, retrospectivecomment.RepliesTable, retrospectivecomment.RepliesColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.RetrospectiveComment
+		step.Edge.Schema = schemaConfig.RetrospectiveComment
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -577,6 +596,8 @@ func (_q *RetrospectiveCommentQuery) sqlAll(ctx context.Context, hooks ...queryH
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.RetrospectiveComment
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -807,6 +828,8 @@ func (_q *RetrospectiveCommentQuery) loadReplies(ctx context.Context, query *Ret
 
 func (_q *RetrospectiveCommentQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.RetrospectiveComment
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -887,6 +910,9 @@ func (_q *RetrospectiveCommentQuery) sqlQuery(ctx context.Context) *sql.Selector
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.RetrospectiveComment)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

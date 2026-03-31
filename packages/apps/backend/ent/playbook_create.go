@@ -183,6 +183,7 @@ func (_c *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 		_node = &Playbook{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(playbook.Table, sqlgraph.NewFieldSpec(playbook.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.Playbook
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -211,6 +212,7 @@ func (_c *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.Playbook
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -228,6 +230,7 @@ func (_c *PlaybookCreate) createSpec() (*Playbook, *sqlgraph.CreateSpec) {
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.PlaybookAlerts
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

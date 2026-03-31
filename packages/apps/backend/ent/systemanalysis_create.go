@@ -247,6 +247,7 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 		_node = &SystemAnalysis{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemanalysis.Table, sqlgraph.NewFieldSpec(systemanalysis.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.SystemAnalysis
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -271,6 +272,7 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysis
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -288,6 +290,7 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(retrospective.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.Retrospective
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -304,6 +307,7 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -327,6 +331,7 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -343,6 +348,7 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

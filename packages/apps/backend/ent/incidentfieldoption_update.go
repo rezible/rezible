@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -230,6 +231,7 @@ func (_u *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldOption
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.IncidentFieldIDs(); len(nodes) > 0 {
@@ -243,6 +245,7 @@ func (_u *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldOption
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -259,6 +262,7 @@ func (_u *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldSelections
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
@@ -272,6 +276,7 @@ func (_u *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldSelections
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -288,11 +293,14 @@ func (_u *IncidentFieldOptionUpdate) sqlSave(ctx context.Context) (_node int, er
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldSelections
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.IncidentFieldOption
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -543,6 +551,7 @@ func (_u *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldOption
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.IncidentFieldIDs(); len(nodes) > 0 {
@@ -556,6 +565,7 @@ func (_u *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldOption
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -572,6 +582,7 @@ func (_u *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldSelections
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentsIDs(); len(nodes) > 0 && !_u.mutation.IncidentsCleared() {
@@ -585,6 +596,7 @@ func (_u *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldSelections
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -601,11 +613,14 @@ func (_u *IncidentFieldOptionUpdateOne) sqlSave(ctx context.Context) (_node *Inc
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentFieldSelections
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.IncidentFieldOption
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentFieldOption{config: _u.config}
 	_spec.Assign = _node.assignValues

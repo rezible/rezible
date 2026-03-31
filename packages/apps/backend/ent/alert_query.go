@@ -16,6 +16,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -86,6 +87,9 @@ func (_q *AlertQuery) QueryTenant() *TenantQuery {
 			sqlgraph.To(tenant.Table, tenant.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alert.TenantTable, alert.TenantColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Alert
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -108,6 +112,9 @@ func (_q *AlertQuery) QueryPlaybooks() *PlaybookQuery {
 			sqlgraph.To(playbook.Table, playbook.FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, alert.PlaybooksTable, alert.PlaybooksPrimaryKey...),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Playbook
+		step.Edge.Schema = schemaConfig.PlaybookAlerts
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -130,6 +137,9 @@ func (_q *AlertQuery) QueryRoster() *OncallRosterQuery {
 			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, alert.RosterTable, alert.RosterColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OncallRoster
+		step.Edge.Schema = schemaConfig.Alert
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -152,6 +162,9 @@ func (_q *AlertQuery) QueryInstances() *AlertInstanceQuery {
 			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, alert.InstancesTable, alert.InstancesColumn),
 		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertInstance
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -505,6 +518,8 @@ func (_q *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
+	_spec.Node.Schema = _q.schemaConfig.Alert
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -588,6 +603,7 @@ func (_q *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, n
 	}
 	query.Where(func(s *sql.Selector) {
 		joinT := sql.Table(alert.PlaybooksTable)
+		joinT.Schema(_q.schemaConfig.PlaybookAlerts)
 		s.Join(joinT).On(s.C(playbook.FieldID), joinT.C(alert.PlaybooksPrimaryKey[0]))
 		s.Where(sql.InValues(joinT.C(alert.PlaybooksPrimaryKey[1]), edgeIDs...))
 		columns := s.SelectedColumns()
@@ -699,6 +715,8 @@ func (_q *AlertQuery) loadInstances(ctx context.Context, query *AlertInstanceQue
 
 func (_q *AlertQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
+	_spec.Node.Schema = _q.schemaConfig.Alert
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
 	}
@@ -770,6 +788,9 @@ func (_q *AlertQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
+	t1.Schema(_q.schemaConfig.Alert)
+	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
+	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
 		m(selector)
 	}

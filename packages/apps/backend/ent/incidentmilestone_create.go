@@ -229,6 +229,7 @@ func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.C
 		_node = &IncidentMilestone{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentmilestone.Table, sqlgraph.NewFieldSpec(incidentmilestone.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.IncidentMilestone
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -265,6 +266,7 @@ func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.C
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentMilestone
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -282,6 +284,7 @@ func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.C
 				IDSpec: sqlgraph.NewFieldSpec(incident.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentMilestone
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -299,6 +302,7 @@ func (_c *IncidentMilestoneCreate) createSpec() (*IncidentMilestone, *sqlgraph.C
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentMilestone
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

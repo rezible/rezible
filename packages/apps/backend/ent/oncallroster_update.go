@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -517,6 +518,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallSchedule
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedSchedulesIDs(); len(nodes) > 0 && !_u.mutation.SchedulesCleared() {
@@ -530,6 +532,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallSchedule
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -546,6 +549,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallSchedule
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -562,6 +566,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.HandoverTemplateIDs(); len(nodes) > 0 {
@@ -575,6 +580,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -591,6 +597,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !_u.mutation.AlertsCleared() {
@@ -604,6 +611,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -620,6 +628,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -636,6 +645,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.TeamOncallRosters
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !_u.mutation.TeamsCleared() {
@@ -649,6 +659,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.TeamOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -665,6 +676,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.TeamOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -681,6 +693,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShift
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedShiftsIDs(); len(nodes) > 0 && !_u.mutation.ShiftsCleared() {
@@ -694,6 +707,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -710,6 +724,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -726,6 +741,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.UserWatchedOncallRosters
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedUserWatchersIDs(); len(nodes) > 0 && !_u.mutation.UserWatchersCleared() {
@@ -739,6 +755,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.UserWatchedOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -755,6 +772,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.UserWatchedOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -771,6 +789,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRosterMetrics
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !_u.mutation.MetricsCleared() {
@@ -784,6 +803,7 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRosterMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -800,11 +820,14 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRosterMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.OncallRoster
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -1337,6 +1360,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallSchedule
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedSchedulesIDs(); len(nodes) > 0 && !_u.mutation.SchedulesCleared() {
@@ -1350,6 +1374,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallSchedule
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1366,6 +1391,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallschedule.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallSchedule
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1382,6 +1408,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.HandoverTemplateIDs(); len(nodes) > 0 {
@@ -1395,6 +1422,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallhandovertemplate.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRoster
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1411,6 +1439,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !_u.mutation.AlertsCleared() {
@@ -1424,6 +1453,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1440,6 +1470,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1456,6 +1487,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.TeamOncallRosters
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedTeamsIDs(); len(nodes) > 0 && !_u.mutation.TeamsCleared() {
@@ -1469,6 +1501,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.TeamOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1485,6 +1518,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(team.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.TeamOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1501,6 +1535,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShift
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedShiftsIDs(); len(nodes) > 0 && !_u.mutation.ShiftsCleared() {
@@ -1514,6 +1549,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1530,6 +1566,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallshift.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallShift
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1546,6 +1583,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.UserWatchedOncallRosters
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedUserWatchersIDs(); len(nodes) > 0 && !_u.mutation.UserWatchersCleared() {
@@ -1559,6 +1597,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.UserWatchedOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1575,6 +1614,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.UserWatchedOncallRosters
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1591,6 +1631,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRosterMetrics
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedMetricsIDs(); len(nodes) > 0 && !_u.mutation.MetricsCleared() {
@@ -1604,6 +1645,7 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRosterMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1620,11 +1662,14 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 				IDSpec: sqlgraph.NewFieldSpec(oncallrostermetrics.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.OncallRosterMetrics
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.OncallRoster
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &OncallRoster{config: _u.config}
 	_spec.Assign = _node.assignValues

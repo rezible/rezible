@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -298,6 +299,9 @@ func HasTenant() predicate.IntegrationOAuthState {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IntegrationOAuthState
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -306,6 +310,9 @@ func HasTenant() predicate.IntegrationOAuthState {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IntegrationOAuthState {
 	return predicate.IntegrationOAuthState(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IntegrationOAuthState
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -321,6 +328,9 @@ func HasUser() predicate.IntegrationOAuthState {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.IntegrationOAuthState
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -329,6 +339,9 @@ func HasUser() predicate.IntegrationOAuthState {
 func HasUserWith(preds ...predicate.User) predicate.IntegrationOAuthState {
 	return predicate.IntegrationOAuthState(func(s *sql.Selector) {
 		step := newUserStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.IntegrationOAuthState
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -172,6 +173,8 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if _u.mutation.UserPreferencesCleared() {
 		_spec.ClearField(integration.FieldUserPreferences, field.TypeJSON)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Integration
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -367,6 +370,8 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	if _u.mutation.UserPreferencesCleared() {
 		_spec.ClearField(integration.FieldUserPreferences, field.TypeJSON)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Integration
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Integration{config: _u.config}
 	_spec.Assign = _node.assignValues

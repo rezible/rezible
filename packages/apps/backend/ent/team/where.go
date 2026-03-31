@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -466,6 +467,9 @@ func HasTenant() predicate.Team {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Team
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -474,6 +478,9 @@ func HasTenant() predicate.Team {
 func HasTenantWith(preds ...predicate.Tenant) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Team
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -489,6 +496,9 @@ func HasUsers() predicate.Team {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, UsersTable, UsersPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.TeamMembership
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -497,6 +507,9 @@ func HasUsers() predicate.Team {
 func HasUsersWith(preds ...predicate.User) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newUsersStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.TeamMembership
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -512,6 +525,9 @@ func HasOncallRosters() predicate.Team {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, OncallRostersTable, OncallRostersPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallRoster
+		step.Edge.Schema = schemaConfig.TeamOncallRosters
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -520,6 +536,9 @@ func HasOncallRosters() predicate.Team {
 func HasOncallRostersWith(preds ...predicate.OncallRoster) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newOncallRostersStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallRoster
+		step.Edge.Schema = schemaConfig.TeamOncallRosters
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -535,6 +554,9 @@ func HasScheduledMeetings() predicate.Team {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, ScheduledMeetingsTable, ScheduledMeetingsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.MeetingSchedule
+		step.Edge.Schema = schemaConfig.MeetingScheduleOwningTeam
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -543,6 +565,9 @@ func HasScheduledMeetings() predicate.Team {
 func HasScheduledMeetingsWith(preds ...predicate.MeetingSchedule) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newScheduledMeetingsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.MeetingSchedule
+		step.Edge.Schema = schemaConfig.MeetingScheduleOwningTeam
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -558,6 +583,9 @@ func HasDocumentAccesses() predicate.Team {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, DocumentAccessesTable, DocumentAccessesColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.DocumentAccess
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -566,6 +594,9 @@ func HasDocumentAccesses() predicate.Team {
 func HasDocumentAccessesWith(preds ...predicate.DocumentAccess) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newDocumentAccessesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.DocumentAccess
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -581,6 +612,9 @@ func HasTeamMemberships() predicate.Team {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, TeamMembershipsTable, TeamMembershipsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.TeamMembership
+		step.Edge.Schema = schemaConfig.TeamMembership
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -589,6 +623,9 @@ func HasTeamMemberships() predicate.Team {
 func HasTeamMembershipsWith(preds ...predicate.TeamMembership) predicate.Team {
 	return predicate.Team(func(s *sql.Selector) {
 		step := newTeamMembershipsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.TeamMembership
+		step.Edge.Schema = schemaConfig.TeamMembership
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

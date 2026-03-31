@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -313,6 +314,9 @@ func HasTenant() predicate.IncidentDebriefMessage {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentDebriefMessage
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -321,6 +325,9 @@ func HasTenant() predicate.IncidentDebriefMessage {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentDebriefMessage {
 	return predicate.IncidentDebriefMessage(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentDebriefMessage
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -336,6 +343,9 @@ func HasDebrief() predicate.IncidentDebriefMessage {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, DebriefTable, DebriefColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebrief
+		step.Edge.Schema = schemaConfig.IncidentDebriefMessage
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -344,6 +354,9 @@ func HasDebrief() predicate.IncidentDebriefMessage {
 func HasDebriefWith(preds ...predicate.IncidentDebrief) predicate.IncidentDebriefMessage {
 	return predicate.IncidentDebriefMessage(func(s *sql.Selector) {
 		step := newDebriefStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebrief
+		step.Edge.Schema = schemaConfig.IncidentDebriefMessage
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -359,6 +372,9 @@ func HasFromQuestion() predicate.IncidentDebriefMessage {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, FromQuestionTable, FromQuestionColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebriefQuestion
+		step.Edge.Schema = schemaConfig.IncidentDebriefMessage
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -367,6 +383,9 @@ func HasFromQuestion() predicate.IncidentDebriefMessage {
 func HasFromQuestionWith(preds ...predicate.IncidentDebriefQuestion) predicate.IncidentDebriefMessage {
 	return predicate.IncidentDebriefMessage(func(s *sql.Selector) {
 		step := newFromQuestionStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebriefQuestion
+		step.Edge.Schema = schemaConfig.IncidentDebriefMessage
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

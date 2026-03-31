@@ -269,6 +269,7 @@ func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec)
 		_node = &SystemHazard{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(systemhazard.Table, sqlgraph.NewFieldSpec(systemhazard.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.SystemHazard
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -305,6 +306,7 @@ func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemHazard
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -322,6 +324,7 @@ func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemHazardComponents
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -338,6 +341,7 @@ func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentconstraint.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemHazardConstraints
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -354,6 +358,7 @@ func (_c *SystemHazardCreate) createSpec() (*SystemHazard, *sqlgraph.CreateSpec)
 				IDSpec: sqlgraph.NewFieldSpec(systemcomponentrelationship.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.SystemHazardRelationships
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

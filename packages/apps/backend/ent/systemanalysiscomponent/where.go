@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -353,6 +354,9 @@ func HasTenant() predicate.SystemAnalysisComponent {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -361,6 +365,9 @@ func HasTenant() predicate.SystemAnalysisComponent {
 func HasTenantWith(preds ...predicate.Tenant) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -376,6 +383,9 @@ func HasAnalysis() predicate.SystemAnalysisComponent {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, AnalysisTable, AnalysisColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -384,6 +394,9 @@ func HasAnalysis() predicate.SystemAnalysisComponent {
 func HasAnalysisWith(preds ...predicate.SystemAnalysis) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(func(s *sql.Selector) {
 		step := newAnalysisStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemAnalysis
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -399,6 +412,9 @@ func HasComponent() predicate.SystemAnalysisComponent {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, ComponentTable, ComponentColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -407,6 +423,9 @@ func HasComponent() predicate.SystemAnalysisComponent {
 func HasComponentWith(preds ...predicate.SystemComponent) predicate.SystemAnalysisComponent {
 	return predicate.SystemAnalysisComponent(func(s *sql.Selector) {
 		step := newComponentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

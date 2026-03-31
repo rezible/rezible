@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -638,6 +639,9 @@ func HasTenant() predicate.OncallRoster {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallRoster
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -646,6 +650,9 @@ func HasTenant() predicate.OncallRoster {
 func HasTenantWith(preds ...predicate.Tenant) predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.OncallRoster
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -661,6 +668,9 @@ func HasSchedules() predicate.OncallRoster {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, SchedulesTable, SchedulesColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallSchedule
+		step.Edge.Schema = schemaConfig.OncallSchedule
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -669,6 +679,9 @@ func HasSchedules() predicate.OncallRoster {
 func HasSchedulesWith(preds ...predicate.OncallSchedule) predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
 		step := newSchedulesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallSchedule
+		step.Edge.Schema = schemaConfig.OncallSchedule
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -684,6 +697,9 @@ func HasHandoverTemplate() predicate.OncallRoster {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, HandoverTemplateTable, HandoverTemplateColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallHandoverTemplate
+		step.Edge.Schema = schemaConfig.OncallRoster
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -692,6 +708,9 @@ func HasHandoverTemplate() predicate.OncallRoster {
 func HasHandoverTemplateWith(preds ...predicate.OncallHandoverTemplate) predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
 		step := newHandoverTemplateStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallHandoverTemplate
+		step.Edge.Schema = schemaConfig.OncallRoster
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -707,6 +726,9 @@ func HasAlerts() predicate.OncallRoster {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, false, AlertsTable, AlertsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.Alert
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -715,6 +737,9 @@ func HasAlerts() predicate.OncallRoster {
 func HasAlertsWith(preds ...predicate.Alert) predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
 		step := newAlertsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.Alert
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -730,6 +755,9 @@ func HasTeams() predicate.OncallRoster {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, TeamsTable, TeamsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Team
+		step.Edge.Schema = schemaConfig.TeamOncallRosters
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -738,6 +766,9 @@ func HasTeams() predicate.OncallRoster {
 func HasTeamsWith(preds ...predicate.Team) predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
 		step := newTeamsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Team
+		step.Edge.Schema = schemaConfig.TeamOncallRosters
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -753,6 +784,9 @@ func HasShifts() predicate.OncallRoster {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, ShiftsTable, ShiftsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShift
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -761,6 +795,9 @@ func HasShifts() predicate.OncallRoster {
 func HasShiftsWith(preds ...predicate.OncallShift) predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
 		step := newShiftsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallShift
+		step.Edge.Schema = schemaConfig.OncallShift
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -776,6 +813,9 @@ func HasUserWatchers() predicate.OncallRoster {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, UserWatchersTable, UserWatchersPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.UserWatchedOncallRosters
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -784,6 +824,9 @@ func HasUserWatchers() predicate.OncallRoster {
 func HasUserWatchersWith(preds ...predicate.User) predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
 		step := newUserWatchersStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.UserWatchedOncallRosters
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -799,6 +842,9 @@ func HasMetrics() predicate.OncallRoster {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, MetricsTable, MetricsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallRosterMetrics
+		step.Edge.Schema = schemaConfig.OncallRosterMetrics
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -807,6 +853,9 @@ func HasMetrics() predicate.OncallRoster {
 func HasMetricsWith(preds ...predicate.OncallRosterMetrics) predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {
 		step := newMetricsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OncallRosterMetrics
+		step.Edge.Schema = schemaConfig.OncallRosterMetrics
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

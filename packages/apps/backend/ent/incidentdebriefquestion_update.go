@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -337,6 +338,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefMessage
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
@@ -350,6 +352,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -366,6 +369,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -382,6 +386,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentFields
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentFieldsIDs(); len(nodes) > 0 && !_u.mutation.IncidentFieldsCleared() {
@@ -395,6 +400,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentFields
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -411,6 +417,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentFields
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -427,6 +434,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentRolesIDs(); len(nodes) > 0 && !_u.mutation.IncidentRolesCleared() {
@@ -440,6 +448,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -456,6 +465,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -472,6 +482,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentSeverities
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentSeveritiesIDs(); len(nodes) > 0 && !_u.mutation.IncidentSeveritiesCleared() {
@@ -485,6 +496,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentSeverities
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -501,6 +513,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentSeverities
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -517,6 +530,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTags
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentTagsIDs(); len(nodes) > 0 && !_u.mutation.IncidentTagsCleared() {
@@ -530,6 +544,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTags
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -546,6 +561,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTags
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -562,6 +578,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTypes
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentTypesIDs(); len(nodes) > 0 && !_u.mutation.IncidentTypesCleared() {
@@ -575,6 +592,7 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTypes
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -591,11 +609,14 @@ func (_u *IncidentDebriefQuestionUpdate) sqlSave(ctx context.Context) (_node int
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTypes
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefQuestion
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -950,6 +971,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefMessage
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedMessagesIDs(); len(nodes) > 0 && !_u.mutation.MessagesCleared() {
@@ -963,6 +985,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -979,6 +1002,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefmessage.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefMessage
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -995,6 +1019,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentFields
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentFieldsIDs(); len(nodes) > 0 && !_u.mutation.IncidentFieldsCleared() {
@@ -1008,6 +1033,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentFields
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1024,6 +1050,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentFields
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1040,6 +1067,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentRolesIDs(); len(nodes) > 0 && !_u.mutation.IncidentRolesCleared() {
@@ -1053,6 +1081,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1069,6 +1098,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentrole.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentRoles
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1085,6 +1115,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentSeverities
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentSeveritiesIDs(); len(nodes) > 0 && !_u.mutation.IncidentSeveritiesCleared() {
@@ -1098,6 +1129,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentSeverities
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1114,6 +1146,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidentseverity.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentSeverities
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1130,6 +1163,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTags
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentTagsIDs(); len(nodes) > 0 && !_u.mutation.IncidentTagsCleared() {
@@ -1143,6 +1177,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTags
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1159,6 +1194,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidenttag.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTags
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1175,6 +1211,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTypes
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentTypesIDs(); len(nodes) > 0 && !_u.mutation.IncidentTypesCleared() {
@@ -1188,6 +1225,7 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTypes
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1204,11 +1242,14 @@ func (_u *IncidentDebriefQuestionUpdateOne) sqlSave(ctx context.Context) (_node 
 				IDSpec: sqlgraph.NewFieldSpec(incidenttype.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentDebriefQuestionIncidentTypes
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.IncidentDebriefQuestion
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &IncidentDebriefQuestion{config: _u.config}
 	_spec.Assign = _node.assignValues

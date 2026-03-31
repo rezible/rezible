@@ -191,6 +191,7 @@ func (_c *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSpe
 		_node = &IncidentField{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(incidentfield.Table, sqlgraph.NewFieldSpec(incidentfield.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.IncidentField
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -215,6 +216,7 @@ func (_c *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentField
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -232,6 +234,7 @@ func (_c *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(incidentfieldoption.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentFieldOption
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -248,6 +251,7 @@ func (_c *IncidentFieldCreate) createSpec() (*IncidentField, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(incidentdebriefquestion.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.IncidentDebriefQuestionIncidentFields
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

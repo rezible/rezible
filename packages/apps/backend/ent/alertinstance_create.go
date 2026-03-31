@@ -220,6 +220,7 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 		_node = &AlertInstance{config: _c.config}
 		_spec = sqlgraph.NewCreateSpec(alertinstance.Table, sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID))
 	)
+	_spec.Schema = _c.schemaConfig.AlertInstance
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
@@ -244,6 +245,7 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
+		edge.Schema = _c.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -261,6 +263,7 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -278,6 +281,7 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -295,6 +299,7 @@ func (_c *AlertInstanceCreate) createSpec() (*AlertInstance, *sqlgraph.CreateSpe
 				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _c.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incidentevent"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -326,6 +327,7 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAlertInstanceIDs(); len(nodes) > 0 && !_u.mutation.AlertInstanceCleared() {
@@ -339,6 +341,7 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -355,6 +358,7 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -371,6 +375,7 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentEvent
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentEventIDs(); len(nodes) > 0 && !_u.mutation.IncidentEventCleared() {
@@ -384,6 +389,7 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -400,6 +406,7 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -416,6 +423,7 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.EventAnnotation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !_u.mutation.AnnotationsCleared() {
@@ -429,6 +437,7 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.EventAnnotation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -445,11 +454,14 @@ func (_u *EventUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.EventAnnotation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Event
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -795,6 +807,7 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAlertInstanceIDs(); len(nodes) > 0 && !_u.mutation.AlertInstanceCleared() {
@@ -808,6 +821,7 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -824,6 +838,7 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -840,6 +855,7 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentEvent
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIncidentEventIDs(); len(nodes) > 0 && !_u.mutation.IncidentEventCleared() {
@@ -853,6 +869,7 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -869,6 +886,7 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.IncidentEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -885,6 +903,7 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.EventAnnotation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedAnnotationsIDs(); len(nodes) > 0 && !_u.mutation.AnnotationsCleared() {
@@ -898,6 +917,7 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.EventAnnotation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -914,11 +934,14 @@ func (_u *EventUpdateOne) sqlSave(ctx context.Context) (_node *Event, err error)
 				IDSpec: sqlgraph.NewFieldSpec(eventannotation.FieldID, field.TypeUUID),
 			},
 		}
+		edge.Schema = _u.schemaConfig.EventAnnotation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	_spec.Node.Schema = _u.schemaConfig.Event
+	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
 	_node = &Event{config: _u.config}
 	_spec.Assign = _node.assignValues

@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -643,6 +644,9 @@ func HasTenant() predicate.MeetingSchedule {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.MeetingSchedule
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -651,6 +655,9 @@ func HasTenant() predicate.MeetingSchedule {
 func HasTenantWith(preds ...predicate.Tenant) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.MeetingSchedule
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -666,6 +673,9 @@ func HasOwningTeam() predicate.MeetingSchedule {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, false, OwningTeamTable, OwningTeamPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Team
+		step.Edge.Schema = schemaConfig.MeetingScheduleOwningTeam
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -674,6 +684,9 @@ func HasOwningTeam() predicate.MeetingSchedule {
 func HasOwningTeamWith(preds ...predicate.Team) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(func(s *sql.Selector) {
 		step := newOwningTeamStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Team
+		step.Edge.Schema = schemaConfig.MeetingScheduleOwningTeam
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -689,6 +702,9 @@ func HasSessions() predicate.MeetingSchedule {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, SessionsTable, SessionsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.MeetingSession
+		step.Edge.Schema = schemaConfig.MeetingSession
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -697,6 +713,9 @@ func HasSessions() predicate.MeetingSchedule {
 func HasSessionsWith(preds ...predicate.MeetingSession) predicate.MeetingSchedule {
 	return predicate.MeetingSchedule(func(s *sql.Selector) {
 		step := newSessionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.MeetingSession
+		step.Edge.Schema = schemaConfig.MeetingSession
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

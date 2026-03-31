@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -258,6 +259,9 @@ func HasTenant() predicate.IncidentFieldOption {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentFieldOption
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -266,6 +270,9 @@ func HasTenant() predicate.IncidentFieldOption {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentFieldOption {
 	return predicate.IncidentFieldOption(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentFieldOption
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -281,6 +288,9 @@ func HasIncidentField() predicate.IncidentFieldOption {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, true, IncidentFieldTable, IncidentFieldColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentField
+		step.Edge.Schema = schemaConfig.IncidentFieldOption
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -289,6 +299,9 @@ func HasIncidentField() predicate.IncidentFieldOption {
 func HasIncidentFieldWith(preds ...predicate.IncidentField) predicate.IncidentFieldOption {
 	return predicate.IncidentFieldOption(func(s *sql.Selector) {
 		step := newIncidentFieldStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentField
+		step.Edge.Schema = schemaConfig.IncidentFieldOption
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -304,6 +317,9 @@ func HasIncidents() predicate.IncidentFieldOption {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, IncidentsTable, IncidentsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentFieldSelections
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -312,6 +328,9 @@ func HasIncidents() predicate.IncidentFieldOption {
 func HasIncidentsWith(preds ...predicate.Incident) predicate.IncidentFieldOption {
 	return predicate.IncidentFieldOption(func(s *sql.Selector) {
 		step := newIncidentsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentFieldSelections
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

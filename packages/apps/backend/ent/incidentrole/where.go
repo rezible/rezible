@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -308,6 +309,9 @@ func HasTenant() predicate.IncidentRole {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentRole
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -316,6 +320,9 @@ func HasTenant() predicate.IncidentRole {
 func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentRole {
 	return predicate.IncidentRole(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentRole
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -331,6 +338,9 @@ func HasAssignments() predicate.IncidentRole {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, AssignmentsTable, AssignmentsColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentRoleAssignment
+		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -339,6 +349,9 @@ func HasAssignments() predicate.IncidentRole {
 func HasAssignmentsWith(preds ...predicate.IncidentRoleAssignment) predicate.IncidentRole {
 	return predicate.IncidentRole(func(s *sql.Selector) {
 		step := newAssignmentsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentRoleAssignment
+		step.Edge.Schema = schemaConfig.IncidentRoleAssignment
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -354,6 +367,9 @@ func HasDebriefQuestions() predicate.IncidentRole {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2M, true, DebriefQuestionsTable, DebriefQuestionsPrimaryKey...),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebriefQuestion
+		step.Edge.Schema = schemaConfig.IncidentDebriefQuestionIncidentRoles
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -362,6 +378,9 @@ func HasDebriefQuestions() predicate.IncidentRole {
 func HasDebriefQuestionsWith(preds ...predicate.IncidentDebriefQuestion) predicate.IncidentRole {
 	return predicate.IncidentRole(func(s *sql.Selector) {
 		step := newDebriefQuestionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentDebriefQuestion
+		step.Edge.Schema = schemaConfig.IncidentDebriefQuestionIncidentRoles
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

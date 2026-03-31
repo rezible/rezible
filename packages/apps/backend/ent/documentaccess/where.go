@@ -8,6 +8,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -318,6 +319,9 @@ func HasTenant() predicate.DocumentAccess {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -326,6 +330,9 @@ func HasTenant() predicate.DocumentAccess {
 func HasTenantWith(preds ...predicate.Tenant) predicate.DocumentAccess {
 	return predicate.DocumentAccess(func(s *sql.Selector) {
 		step := newTenantStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -341,6 +348,9 @@ func HasDocument() predicate.DocumentAccess {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, DocumentTable, DocumentColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Document
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -349,6 +359,9 @@ func HasDocument() predicate.DocumentAccess {
 func HasDocumentWith(preds ...predicate.Document) predicate.DocumentAccess {
 	return predicate.DocumentAccess(func(s *sql.Selector) {
 		step := newDocumentStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Document
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -364,6 +377,9 @@ func HasUser() predicate.DocumentAccess {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, UserTable, UserColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -372,6 +388,9 @@ func HasUser() predicate.DocumentAccess {
 func HasUserWith(preds ...predicate.User) predicate.DocumentAccess {
 	return predicate.DocumentAccess(func(s *sql.Selector) {
 		step := newUserStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -387,6 +406,9 @@ func HasTeam() predicate.DocumentAccess {
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, TeamTable, TeamColumn),
 		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Team
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
@@ -395,6 +417,9 @@ func HasTeam() predicate.DocumentAccess {
 func HasTeamWith(preds ...predicate.Team) predicate.DocumentAccess {
 	return predicate.DocumentAccess(func(s *sql.Selector) {
 		step := newTeamStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.Team
+		step.Edge.Schema = schemaConfig.DocumentAccess
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
