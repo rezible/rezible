@@ -7,12 +7,13 @@ web:
 storage:
   type: postgres
   config:
-    user: dex
-    password: foobar2
-    host: postgres
-    port: 5432
-    database: dex
-    ssl: {mode: disable}
+    user: "{{ .Env.POSTGRES_USER }}"
+    password: "{{ .Env.POSTGRES_PASSWORD }}"
+    host: "{{ .Env.POSTGRES_HOST }}"
+    port: {{ .Env.POSTGRES_PORT }}
+    database: "{{ .Env.POSTGRES_DATABASE }}"
+    ssl:
+      mode: disable
 
 oauth2:
   responseTypes: ["code"]

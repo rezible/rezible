@@ -88,6 +88,58 @@ var rezcli = &cli.Command{
 				return postgres.GenerateEntMigrations(ctx, cmd.StringArg("name"))
 			},
 		},
+		//{
+		//	Name:  "generate-river-migration",
+		//	Usage: "Create a new River database migration",
+		//	Arguments: []cli.Argument{
+		//		&cli.StringArg{
+		//			Name:      "name",
+		//			UsageText: "name of the migration",
+		//			Config:    cli.StringConfig{TrimSpace: true},
+		//		},
+		//	},
+		//	Action: func(ctx context.Context, cmd *cli.Command) error {
+		//		return postgres.GenerateRiverMigration(cmd.StringArg("name"))
+		//	},
+		//},
+		{
+			Name:  "migrate",
+			Usage: "Manage database migrations",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:  "database-url",
+					Usage: "override the migration database connection URL",
+				},
+			},
+			Commands: []*cli.Command{
+				{
+					Name:  "up",
+					Usage: "Apply all pending database migrations",
+					Action: func(ctx context.Context, cmd *cli.Command) error {
+						return postgres.RunMigrations(ctx, "up", cmd.String("database-url"))
+					},
+				},
+				{
+					Name:  "down",
+					Usage: "Rollback last database migration",
+					Action: func(ctx context.Context, cmd *cli.Command) error {
+						return postgres.RunMigrations(ctx, "down", cmd.String("database-url"))
+					},
+				},
+				{
+					Name:  "status",
+					Usage: "Print migration status",
+					Action: func(ctx context.Context, cmd *cli.Command) error {
+						status, statusErr := postgres.GetMigrationStatus(ctx, cmd.String("database-url"))
+						if statusErr != nil {
+							return statusErr
+						}
+						fmt.Printf("%s\n", status)
+						return nil
+					},
+				},
+			},
+		},
 	},
 }
 

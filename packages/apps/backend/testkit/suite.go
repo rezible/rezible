@@ -85,21 +85,23 @@ func (s *Suite) GetAnonymousContext() context.Context {
 
 func (s *Suite) setupTestDatabase() {
 	pgCfg, pgCfgErr := postgres.LoadConfig()
-	s.Require().NoError(pgCfgErr, "failed to load database config")
+	s.Require().NoError(pgCfgErr, "loading postgres config")
+	s.Require().NotNil(pgCfg.Migrations, "migrations config nil")
 
-	fmt.Printf("pg config: %+v\n", pgCfg)
-	
 	pgxConf := pgtestdb.Config{
 		DriverName: "pgx",
-		User:       pgCfg.User,
 		Host:       pgCfg.Host,
-		Password:   pgCfg.Password,
-		Port:       pgCfg.Port,
+		Port:       fmt.Sprintf("%d", pgCfg.Port),
 		Options:    "sslmode=" + pgCfg.SSLMode,
+		User:       pgCfg.Migrations.User,
+		Password:   pgCfg.Migrations.Password,
+		TestRole: &pgtestdb.Role{
+			Username: pgCfg.User,
+			Password: pgCfg.Password,
+		},
 	}
-	mg := golangmigrator.New(".", golangmigrator.WithFS(migrations.FS))
-	testDb := pgtestdb.New(s.T(), pgxConf, mg)
-	s.dbClient = postgres.MakeClient(entsql.OpenDB("postgres", testDb))
+	testDb := pgtestdb.New(s.T(), pgxConf, golangmigrator.New(migrations.Path, golangmigrator.WithFS(migrations.FS)))
+	s.dbClient = postgres.MakeEntClient(entsql.OpenDB("postgres", testDb))
 }
 
 func (s *Suite) closeTestDatabase() {

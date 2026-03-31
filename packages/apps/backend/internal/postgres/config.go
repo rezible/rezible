@@ -1,62 +1,88 @@
 package postgres
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	rez "github.com/rezible/rezible"
 )
 
+func LoadConfig() (Config, error) {
+	cfg := Config{
+		Host:     "localhost",
+		Port:     5432,
+		Database: "rezible",
+		SSLMode:  "require",
+		Pool:     nil,
+	}
+	return cfg, rez.Config.Unmarshal("postgres", &cfg)
+}
+
 type Config struct {
-	User       string      `koanf:"user"`
-	Password   string      `koanf:"password"`
-	Host       string      `koanf:"host"`
-	Port       string      `koanf:"port"`
-	Database   string      `koanf:"database"`
-	SSLMode    string      `koanf:"sslmode"`
-	PoolConfig *PoolConfig `koanf:"pool"`
+	User       string            `koanf:"user"`
+	Password   string            `koanf:"password"`
+	Host       string            `koanf:"host"`
+	Port       uint16            `koanf:"port"`
+	Database   string            `koanf:"database"`
+	SSLMode    string            `koanf:"sslmode"`
+	Pool       *PoolConfig       `koanf:"pool"`
+	Migrations *MigrationsConfig `koanf:"migrations"`
 }
 
 type PoolConfig struct {
-	MaxConns *int `koanf:"pool_max_conns"`
+	MaxConns int32 `koanf:"pool_max_conns"`
 }
 
-func (pc *PoolConfig) GetDsn() string {
-	var dsn []string
-	if pc.MaxConns != nil {
-		dsn = append(dsn, fmt.Sprintf("pool_max_conns='%d'", *pc.MaxConns))
-	}
-
-	return strings.Join(dsn, " ")
+type MigrationsConfig struct {
+	User     string `koanf:"user"`
+	Password string `koanf:"password"`
 }
 
-func (cfg *Config) GetDsn() string {
+func (cfg *Config) getDsn() string {
 	var dsn []string
 	dsn = append(dsn, fmt.Sprintf("user='%s'", cfg.User))
 	if cfg.Password != "" {
 		dsn = append(dsn, fmt.Sprintf("password='%s'", cfg.Password))
 	}
 	dsn = append(dsn, fmt.Sprintf("host='%s'", cfg.Host))
-	dsn = append(dsn, fmt.Sprintf("port='%s'", cfg.Port))
+	dsn = append(dsn, fmt.Sprintf("port=%d", cfg.Port))
 	if cfg.Database != "" {
 		dsn = append(dsn, fmt.Sprintf("dbname='%s'", cfg.Database))
 	}
 	dsn = append(dsn, fmt.Sprintf("sslmode='%s'", cfg.SSLMode))
-	if cfg.PoolConfig != nil {
-		dsn = append(dsn, cfg.PoolConfig.GetDsn())
+	if cfg.Pool != nil {
+		var poolDsn []string
+		if cfg.Pool.MaxConns != 0 {
+			dsn = append(dsn, fmt.Sprintf("pool_max_conns='%d'", cfg.Pool.MaxConns))
+		}
+		if len(poolDsn) > 0 {
+			dsn = append(dsn, strings.Join(poolDsn, " "))
+		}
 	}
 	return strings.Join(dsn, " ")
 }
 
-func LoadConfig() (Config, error) {
-	cfg := Config{
-		User:       "postgres",
-		Password:   "",
-		Host:       "localhost",
-		Port:       "5432",
-		Database:   "",
-		SSLMode:    "require",
-		PoolConfig: nil,
+func openPgxPool(ctx context.Context, connString string) (*pgxpool.Pool, error) {
+	parsedCfg, parseErr := pgxpool.ParseConfig(connString)
+	if parseErr != nil {
+		return nil, fmt.Errorf("parse: %w", parseErr)
 	}
-	return cfg, rez.Config.Unmarshal("postgres", &cfg)
+	parsedCfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s, public", SchemaName))
+		return err
+	}
+	pool, poolErr := pgxpool.NewWithConfig(ctx, parsedCfg)
+	if poolErr != nil {
+		return nil, fmt.Errorf("create: %w", poolErr)
+	}
+
+	if pingErr := pool.Ping(ctx); pingErr != nil {
+		pool.Close()
+		return nil, fmt.Errorf("ping: %w", pingErr)
+	}
+
+	return pool, nil
 }

@@ -12,6 +12,7 @@ require (
 	github.com/deckarep/golang-set/v2 v2.8.0
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-faker/faker/v4 v4.7.0
+	github.com/golang-migrate/migrate/v4 v4.16.0
 	github.com/google/uuid v1.6.0
 	github.com/gosimple/slug v1.15.0
 	github.com/jackc/pgx/v5 v5.8.0
@@ -22,7 +23,9 @@ require (
 	github.com/peterldowns/pgtestdb v0.1.1
 	github.com/peterldowns/pgtestdb/migrators/golangmigrator v0.1.1
 	github.com/riverqueue/river v0.31.0
+	github.com/riverqueue/river/riverdriver v0.31.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.31.0
+	github.com/riverqueue/river/rivershared v0.31.0
 	github.com/riverqueue/river/rivertype v0.31.0
 	github.com/rotisserie/eris v0.5.4
 	github.com/rs/zerolog v1.34.0
@@ -61,7 +64,6 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.2 // indirect
-	github.com/golang-migrate/migrate/v4 v4.16.0 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/google/s2a-go v0.1.9 // indirect
@@ -91,9 +93,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/riverqueue/river/cmd/river v0.31.0 // indirect
-	github.com/riverqueue/river/riverdriver v0.31.0 // indirect
 	github.com/riverqueue/river/riverdriver/riversqlite v0.31.0 // indirect
-	github.com/riverqueue/river/rivershared v0.31.0 // indirect
 	github.com/samber/lo v1.49.1 // indirect
 	github.com/samber/slog-common v0.18.1 // indirect
 	github.com/sony/gobreaker v1.0.0 // indirect

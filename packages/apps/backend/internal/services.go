@@ -141,11 +141,12 @@ func (s *Server) makeJobService() (rez.JobsService, error) {
 }
 
 func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
-	pgClient, pgErr := postgres.NewDatabasePoolClient(ctx)
+	pgClient, pgErr := postgres.NewDatabaseClient(ctx)
 	if pgErr != nil {
-		return nil, fmt.Errorf("postgres.NewDatabasePoolClient: %w", pgErr)
+		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", pgErr)
 	}
 	s.dbClient = pgClient
+
 	dbc := s.dbClient.Client()
 
 	jobSvc, jobSvcErr := s.makeJobService()

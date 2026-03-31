@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/rezible/rezible/ent/runtime"
 
@@ -18,53 +19,51 @@ import (
 	"github.com/rezible/rezible/ent/entpgx"
 )
 
-type DatabaseClient struct {
-	pool   *pgxpool.Pool
-	driver dialect.Driver
-	client *ent.Client
-}
-
-func NewDatabasePoolClient(ctx context.Context) (*DatabaseClient, error) {
-	pool, poolErr := openPgxPool(ctx)
-	if poolErr != nil {
-		return nil, poolErr
-	}
-
-	driver := entpgx.NewPgxPoolDriver(pool)
-
-	return &DatabaseClient{pool: pool, driver: driver, client: MakeClient(driver)}, nil
-}
-
-func MakeClient(driver dialect.Driver) *ent.Client {
+func MakeEntClient(driver dialect.Driver) *ent.Client {
 	client := ent.NewClient(ent.Driver(driver))
 	client.Use(ensureTenantIdSetHook)
 	client.Intercept(setTenantContextInterceptor())
 	return client
 }
 
-func openPgxPool(ctx context.Context) (*pgxpool.Pool, error) {
-	connCfg, cfgErr := LoadConfig()
+type DatabaseClient struct {
+	pool   *pgxpool.Pool
+	driver dialect.Driver
+	client *ent.Client
+}
+
+func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
+	cfg, cfgErr := LoadConfig()
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config: %w", cfgErr)
 	}
-	parsedCfg, parseErr := pgxpool.ParseConfig(connCfg.GetDsn())
-	if parseErr != nil {
-		return nil, fmt.Errorf("parse: %w", parseErr)
-	}
-	pool, poolErr := pgxpool.NewWithConfig(ctx, parsedCfg)
+
+	pool, poolErr := openPgxPool(ctx, cfg.getDsn())
 	if poolErr != nil {
-		return nil, fmt.Errorf("create: %w", poolErr)
+		return nil, poolErr
 	}
 
-	if pingErr := pool.Ping(ctx); pingErr != nil {
-		pool.Close()
-		return nil, fmt.Errorf("ping: %w", pingErr)
+	driver := entpgx.NewPgxPoolDriver(pool)
+	dbc := &DatabaseClient{pool: pool, driver: driver}
+
+	if migrationsErr := dbc.requireUpToDateMigrations(ctx); migrationsErr != nil {
+		dbc.Close()
+		return nil, fmt.Errorf("migrations: %w", migrationsErr)
 	}
 
-	return pool, nil
+	return dbc, nil
+}
+
+func (dbc *DatabaseClient) requireUpToDateMigrations(ctx context.Context) error {
+	db := stdlib.OpenDBFromPool(dbc.pool)
+	defer closeSqlDb(db)
+	return requireUpToDateMigrations(ctx, db)
 }
 
 func (dbc *DatabaseClient) Client() *ent.Client {
+	if dbc.client == nil {
+		dbc.client = MakeEntClient(dbc.driver)
+	}
 	return dbc.client
 }
 

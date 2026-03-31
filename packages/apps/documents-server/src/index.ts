@@ -18,7 +18,7 @@ const loadConfig = (): Config => {
 	if (port < 1024) port = 7003;
 
 	const apiUrl = process.env.API_URL ?? "";
-	const dbUrl = process.env.DB_URL ?? "";
+	const dbUrl = process.env.DOCUMENTS_DB_URL ?? process.env.DB_URL ?? "";
 
 	return { name, host, port, apiUrl, dbUrl };
 }

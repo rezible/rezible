@@ -22,6 +22,8 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
+const SchemaName = "river"
+
 type (
 	pgxClient  = river.Client[pgx.Tx]
 	JobService struct {
@@ -40,6 +42,7 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	}
 
 	cfg := &river.Config{
+		Schema: SchemaName,
 		Middleware: []rivertype.Middleware{
 			&accessContextMiddleware{},
 		},
