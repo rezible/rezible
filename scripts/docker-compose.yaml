@@ -42,7 +42,7 @@ services:
       - ISSUER_URL=${AUTH__OIDC__ISSUER_URL}
       - POSTGRES_USER=dex
       - POSTGRES_PASSWORD=dex
-      - POSTGRES_HOST=localhost
+      - POSTGRES_HOST=postgres
       - POSTGRES_PORT=5432
       - POSTGRES_DATABASE=dex
       - OIDC_CLIENT_ID=${AUTH__OIDC__CLIENT_ID}

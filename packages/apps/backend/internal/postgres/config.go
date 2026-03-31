@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	rez "github.com/rezible/rezible"
 )
@@ -70,10 +69,10 @@ func openPgxPool(ctx context.Context, connString string) (*pgxpool.Pool, error) 
 	if parseErr != nil {
 		return nil, fmt.Errorf("parse: %w", parseErr)
 	}
-	parsedCfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s, public", SchemaName))
-		return err
-	}
+	//parsedCfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+	//	_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s", SchemaName))
+	//	return err
+	//}
 	pool, poolErr := pgxpool.NewWithConfig(ctx, parsedCfg)
 	if poolErr != nil {
 		return nil, fmt.Errorf("create: %w", poolErr)

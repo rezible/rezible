@@ -152,10 +152,8 @@ migrations_dir := backend_dir + "/migrations"
 
 @create-initial-migrations: recreate-db
     rm -f {{migrations_dir}}/*.{sql,sum}
-    just run-backend generate-migration ent_init
-    sleep 1
-    just run-backend generate-river-migration river_init
+    just run-backend generate-migration init
 
 migrator_pg_user_auth := f'{{env("POSTGRES__MIGRATIONS__USER")}}:{{env("POSTGRES__MIGRATIONS__PASSWORD")}}'
 @run-migrations:
-    just run-backend migrate up --database-url=""
+    just run-backend migrate up

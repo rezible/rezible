@@ -84,8 +84,14 @@ var rezcli = &cli.Command{
 					Config:    cli.StringConfig{TrimSpace: true},
 				},
 			},
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:  "database-url",
+					Usage: "override the migration database connection URL",
+				},
+			},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				return postgres.GenerateEntMigrations(ctx, cmd.StringArg("name"))
+				return postgres.GenerateEntMigrations(ctx, cmd.StringArg("name"), cmd.String("database-url"))
 			},
 		},
 		//{

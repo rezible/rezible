@@ -57,7 +57,17 @@ func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
 func (dbc *DatabaseClient) requireUpToDateMigrations(ctx context.Context) error {
 	db := stdlib.OpenDBFromPool(dbc.pool)
 	defer closeSqlDb(db)
-	return requireUpToDateMigrations(ctx, db)
+	status, statusErr := getMigrationStatusFromDB(ctx, db)
+	if statusErr != nil {
+		return fmt.Errorf("read migration status: %w", statusErr)
+	}
+	if status.Dirty {
+		return fmt.Errorf("database migrations are dirty: %s", status)
+	}
+	if status.Pending {
+		return fmt.Errorf("database migrations are pending: %s", status)
+	}
+	return nil
 }
 
 func (dbc *DatabaseClient) Client() *ent.Client {
