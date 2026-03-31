@@ -5,17 +5,7 @@
     "": {
       "name": "rezible",
     },
-    "packages/api-client-ts": {
-      "name": "@rezible/api-client-ts",
-      "devDependencies": {
-        "@hey-api/openapi-ts": "0.94.4",
-        "@types/bun": "latest",
-      },
-      "peerDependencies": {
-        "typescript": "^5",
-      },
-    },
-    "packages/documents-server": {
+    "packages/apps/documents-server": {
       "name": "@rezible/documents-server",
       "version": "0.0.1",
       "dependencies": {
@@ -38,7 +28,7 @@
         "yjs": "^13",
       },
     },
-    "packages/frontend": {
+    "packages/apps/frontend": {
       "name": "@rezible/frontend",
       "version": "0.0.1",
       "dependencies": {
@@ -102,7 +92,17 @@
         "yjs": "^13",
       },
     },
-    "packages/tiptap-extensions": {
+    "packages/libs/api-client-ts": {
+      "name": "@rezible/api-client-ts",
+      "devDependencies": {
+        "@hey-api/openapi-ts": "0.94.4",
+        "@types/bun": "latest",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/libs/tiptap-extensions": {
       "name": "@rezible/tiptap-extensions",
       "dependencies": {
         "@tiptap/core": "3.13.0",
@@ -262,13 +262,13 @@
 
     "@remirror/core-constants": ["@remirror/core-constants@3.0.0", "", {}, "sha512-42aWfPrimMfDKDi4YegyS7x+/0tlzaqwPQCULLanv3DMIlu96KTJR0fM5isWX2UViOqlGnX6YFgqWepcX+XMNg=="],
 
-    "@rezible/api-client-ts": ["@rezible/api-client-ts@workspace:packages/api-client-ts"],
+    "@rezible/api-client-ts": ["@rezible/api-client-ts@workspace:packages/libs/api-client-ts"],
 
-    "@rezible/documents-server": ["@rezible/documents-server@workspace:packages/documents-server"],
+    "@rezible/documents-server": ["@rezible/documents-server@workspace:packages/apps/documents-server"],
 
-    "@rezible/frontend": ["@rezible/frontend@workspace:packages/frontend"],
+    "@rezible/frontend": ["@rezible/frontend@workspace:packages/apps/frontend"],
 
-    "@rezible/tiptap-extensions": ["@rezible/tiptap-extensions@workspace:packages/tiptap-extensions"],
+    "@rezible/tiptap-extensions": ["@rezible/tiptap-extensions@workspace:packages/libs/tiptap-extensions"],
 
     "@rollup/plugin-commonjs": ["@rollup/plugin-commonjs@29.0.2", "", { "dependencies": { "@rollup/pluginutils": "^5.0.1", "commondir": "^1.0.1", "estree-walker": "^2.0.2", "fdir": "^6.2.0", "is-reference": "1.2.1", "magic-string": "^0.30.3", "picomatch": "^4.0.2" }, "peerDependencies": { "rollup": "^2.68.0||^3.0.0||^4.0.0" }, "optionalPeers": ["rollup"] }, "sha512-S/ggWH1LU7jTyi9DxZOKyxpVd4hF/OZ0JrEbeLjXk/DFXwRny0tjD2c992zOUYQobLrVkRVMDdmHP16HKP7GRg=="],
 

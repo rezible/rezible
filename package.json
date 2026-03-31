@@ -1,5 +1,5 @@
 {
   "name": "rezible",
   "private": true,
-  "workspaces": ["packages/*"]
+  "workspaces": ["packages/apps/*", "packages/libs/*"]
 }

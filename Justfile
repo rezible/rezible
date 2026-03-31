@@ -12,7 +12,9 @@ DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
 
 # [group('Setup')]
 
-backend_dir := "packages/backend"
+backend_dir := "./packages/apps/backend"
+documents_server_dir := "./packages/apps/documents-server"
+scripts_dir := "./scripts"
 
 @setup:
     just install-dependencies
@@ -29,24 +31,28 @@ backend_dir := "packages/backend"
 
 @reload-localias:
     localias stop && localias start
-    mkdir -p ./scripts/certs && cat "$(localias debug cert)" > ./scripts/certs/localias-ca.crt
+    mkdir -p "{{scripts_dir}}/certs" && cat "$(localias debug cert)" > "{{scripts_dir}}/certs/localias-ca.crt"
 
 @run-docker-compose *CMD:
     docker compose \
       --env-file .env \
       --env-file .env.dev \
-      -f ./scripts/docker-compose.yaml \
+      -f "{{scripts_dir}}/docker-compose.yaml" \
       {{CMD}}
 
 @run-backend *ARGS:
-    go -C {{backend_dir}} run ./cmd/rezible {{ARGS}}
+    go -C {{backend_dir}} \
+        run ./cmd/rezible \
+        {{ARGS}}
 
 @build-backend-docker:
-    docker build -t rezible-backend -f packages/backend/Dockerfile .
+    docker build \
+      -t rezible-backend \
+      {{backend_dir}}
 
 @run-backend-docker:
     docker run \
-      -v "./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
+      -v "{{scripts_dir}}/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
       -e "SSL_CERT_DIR=/usr/local/share/ca-certificates" \
       --network host \
       --env-file ./.env \
@@ -57,10 +63,14 @@ local_dev_api_url := "http://localhost:7002/api/v1"
 @run-documents-server *ARGS:
     API_URL="{{local_dev_api_url}}" \
     DB_URL="{{DB_URL}}" \
-        bun run --filter="@rezible/documents-server" {{ARGS}}
+        bun run --filter="@rezible/documents-server" \
+        {{ARGS}}
 
 @build-documents-server-docker:
-    docker build -t rezible-documents-server -f packages/documents-server/Dockerfile .
+    docker build \
+      -t rezible-documents-server \
+      -f "{{documents_server_dir}}/Dockerfile" \
+      .
 
 @run-documents-server-docker:
     docker run --network host \
@@ -75,7 +85,8 @@ local_dev_api_url := "http://localhost:7002/api/v1"
     PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
     PUBLIC_AUTH_CLIENT_SCOPES="${AUTH__OIDC__CLIENT_SCOPES}" \
     PUBLIC_AUTH_CLIENT_REDIRECT_URI="${AUTH__OIDC__CLIENT_REDIRECT_URI}" \
-        bun run --filter="@rezible/frontend" {{ARGS}}
+        bun run --filter="@rezible/frontend" \
+        {{ARGS}}
 
 # [group('Testing')]
 
@@ -114,17 +125,20 @@ local_dev_api_url := "http://localhost:7002/api/v1"
     just run-docker-compose down
 
 @dev: run-dev-services && stop-dev-services
-    process-compose --ordered-shutdown -f ./process-compose.yaml
+    process-compose --ordered-shutdown -f "{{scripts_dir}}/process-compose.yaml"
 
 @dev-backend:
-    cd packages/backend && reflex -s -d none -r '\.go$' -- just run-backend serve
+    cd "{{backend_dir}}" && \
+      reflex -s -d none -r '\.go$' -- \
+        just run-backend serve
 
 # [group('Database')]
 
-migrations_dir := "packages/backend/migrations"
+migrations_dir := backend_dir + "/migrations"
 
 @recreate-db:
-    just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
+    just run-docker-compose down postgres -v && \
+      just run-docker-compose up postgres --wait
 
 @setup-db:
     just recreate-db
@@ -132,21 +146,16 @@ migrations_dir := "packages/backend/migrations"
     just run-migrations "{{DB_URL}}"
 
 @run-psql *ARGS:
-    just run-docker-compose exec -it postgres psql {{ARGS}}
+    just run-docker-compose \
+        exec -it postgres psql {{ARGS}}
 
 @create-initial-migrations:
-    rm -f ./{{migrations_dir}}/*.{sql,sum}
+    rm -f {{migrations_dir}}/*.{sql,sum}
     just run-backend generate-migration ent_init
     sleep 1
     migrate create -ext sql -dir "{{migrations_dir}}" river_init
-    cd packages/backend && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"
-    cd packages/backend && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
-
-#DB_URL_BASE := "postgresql://rezible:foobar1@localhost:7010/"
-#DEV_DB_DATABASE := "rezible"
-#DB_CONN_QUERYOPTS := "?sslmode=disable"
-#DB_URL := DB_URL_BASE + DEV_DB_DATABASE + DB_CONN_QUERYOPTS
-#TEST_DB_URL := DB_URL_BASE + DB_CONN_QUERYOPTS
+    cd "{{backend_dir}}" && go tool river migrate-get --all --exclude-version 1 --up > "migrations/$(ls migrations | grep 'river_init.up')"
+    cd "{{backend_dir}}" && go tool river migrate-get --all --exclude-version 1 --down > "migrations/$(ls migrations | grep 'river_init.down')"
 
 @run-migrations MIGRATION_DB_URL direction="up":
     migrate \

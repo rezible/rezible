@@ -2,10 +2,10 @@ FROM golang:1.26-alpine AS builder
 
 WORKDIR /src/backend
 
-COPY packages/backend/go.mod packages/backend/go.sum ./
+COPY go.mod go.sum ./
 RUN go mod download
 
-COPY packages/backend/ ./
+COPY . .
 
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
@@ -20,7 +20,7 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /out/rezible /usr/local/bin/rezible
-COPY packages/backend/migrations /app/migrations
+COPY migrations /app/migrations
 
 EXPOSE 7002
 
