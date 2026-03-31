@@ -12,7 +12,7 @@ type Tenant struct {
 
 func (Tenant) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 	}
 }
 

@@ -13,7 +13,7 @@ type Document struct {
 
 func (Document) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -39,7 +39,7 @@ type DocumentAccess struct {
 
 func (DocumentAccess) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
 	}

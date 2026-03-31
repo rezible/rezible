@@ -15,7 +15,7 @@ type SystemHazard struct {
 
 func (SystemHazard) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}

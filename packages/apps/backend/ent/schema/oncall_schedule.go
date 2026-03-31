@@ -14,7 +14,7 @@ type OncallSchedule struct {
 
 func (OncallSchedule) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
 		IntegrationDataMixin{},
@@ -47,7 +47,7 @@ type OncallScheduleParticipant struct {
 
 func (OncallScheduleParticipant) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }

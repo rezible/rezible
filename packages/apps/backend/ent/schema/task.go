@@ -22,7 +22,7 @@ type Task struct {
 
 func (Task) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }

@@ -17,7 +17,7 @@ type VideoConference struct {
 
 func (VideoConference) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
 	}

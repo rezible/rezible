@@ -15,7 +15,7 @@ type SystemAnalysis struct {
 
 func (SystemAnalysis) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -50,7 +50,7 @@ type SystemAnalysisComponent struct {
 
 func (SystemAnalysisComponent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -82,7 +82,7 @@ type SystemAnalysisRelationship struct {
 
 func (SystemAnalysisRelationship) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }

@@ -15,7 +15,7 @@ type EventAnnotation struct {
 
 func (EventAnnotation) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }

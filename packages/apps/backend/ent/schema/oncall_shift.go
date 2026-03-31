@@ -15,7 +15,7 @@ type OncallShift struct {
 
 func (OncallShift) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}
@@ -62,7 +62,7 @@ type OncallShiftHandover struct {
 
 func (OncallShiftHandover) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -96,7 +96,7 @@ type OncallShiftMetrics struct {
 
 func (OncallShiftMetrics) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }

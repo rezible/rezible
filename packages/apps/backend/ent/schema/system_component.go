@@ -15,7 +15,7 @@ type SystemComponent struct {
 
 func (SystemComponent) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}
@@ -78,7 +78,7 @@ type SystemComponentKind struct {
 
 func (SystemComponentKind) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}
@@ -105,7 +105,7 @@ type SystemComponentConstraint struct {
 
 func (SystemComponentConstraint) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -135,7 +135,7 @@ type SystemComponentSignal struct {
 
 func (SystemComponentSignal) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -166,7 +166,7 @@ type SystemComponentControl struct {
 
 func (SystemComponentControl) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }

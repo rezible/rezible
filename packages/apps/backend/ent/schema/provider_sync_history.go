@@ -14,7 +14,7 @@ type ProviderSyncHistory struct {
 
 func (ProviderSyncHistory) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }

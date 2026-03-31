@@ -15,7 +15,7 @@ type IncidentDebrief struct {
 
 func (IncidentDebrief) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -47,7 +47,7 @@ type IncidentDebriefMessage struct {
 
 func (IncidentDebriefMessage) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -79,7 +79,7 @@ type IncidentDebriefQuestion struct {
 
 func (IncidentDebriefQuestion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -111,7 +111,7 @@ type IncidentDebriefSuggestion struct {
 
 func (IncidentDebriefSuggestion) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }

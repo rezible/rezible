@@ -13,7 +13,7 @@ type Alert struct {
 
 func (Alert) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}
@@ -45,7 +45,7 @@ type AlertInstance struct {
 
 func (AlertInstance) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 		IntegrationDataMixin{},
 	}
@@ -81,7 +81,7 @@ type AlertFeedback struct {
 
 func (AlertFeedback) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 		TenantMixin{},
 	}
 }
@@ -186,7 +186,7 @@ func (AlertMetricsSummary) Fields() []ent.Field {
 
 func (AlertMetricsSummary) Mixin() []ent.Mixin {
 	return []ent.Mixin{
-		BaseMixin{},
+		AccessScopeMixin{},
 	}
 }
 
