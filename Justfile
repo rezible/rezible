@@ -5,13 +5,6 @@ set dotenv-load
 _default:
   @just --list
 
-pg_user_auth := env("POSTGRES__USER") + ":" + env("POSTGRES__PASSWORD")
-pg_addr := env("POSTGRES__HOST") + ":" + env("POSTGRES__PORT")
-pg_conn := env("POSTGRES__DATABASE") + "?sslmode=" + env("POSTGRES__SSLMODE")
-DB_URL := "postgresql://" + pg_user_auth + "@" + pg_addr + "/" + pg_conn
-
-DOCUMENTS_DB_URL := env("DOCUMENTS_DB_URL")
-
 # [group('Setup')]
 
 backend_dir := "./packages/apps/backend"
@@ -22,6 +15,9 @@ scripts_dir := "./scripts"
     just install-dependencies
     just codegen
     just setup-db
+
+@echo-env VAR:
+    echo "value: '${{VAR}}'"
 
 @install-dependencies:
     go -C {{backend_dir}} mod tidy
@@ -35,6 +31,15 @@ scripts_dir := "./scripts"
     localias stop && localias start
     mkdir -p "{{scripts_dir}}/certs" && cat "$(localias debug cert)" > "{{scripts_dir}}/certs/localias-ca.crt"
 
+@run-docker IMAGE *ARGS:
+    docker run \
+      -v "{{scripts_dir}}/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
+      -e "SSL_CERT_DIR=/usr/local/share/ca-certificates" \
+      --network host \
+      --env-file ./.env \
+      --env-file ./.env.dev \
+      {{IMAGE}} {{ARGS}}
+
 @run-docker-compose *CMD:
     docker compose \
       --env-file .env \
@@ -47,58 +52,39 @@ scripts_dir := "./scripts"
         run ./cmd/rezible \
         {{ARGS}}
 
+backend_local_docker_image := "localhost/rezible-backend:latest"
+
 @build-backend-docker:
-    docker build \
-      -t localhost/rezible-backend:latest \
-      {{backend_dir}}
+    docker build -t {{backend_local_docker_image}} {{backend_dir}}
 
 @run-backend-docker *ARGS:
-    docker run \
-      -v "{{scripts_dir}}/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
-      -e "SSL_CERT_DIR=/usr/local/share/ca-certificates" \
-      --network host \
-      --env-file ./.env \
-      --env-file ./.env.dev \
-      localhost/rezible-backend:latest \
-      {{ARGS}}
+    just run-docker {{backend_local_docker_image}} {{ARGS}}
 
 local_dev_api_url := "http://localhost:7002/api/v1"
 @run-documents-server *ARGS:
     API_URL="{{local_dev_api_url}}" \
-    DOCUMENTS_DB_URL="{{DOCUMENTS_DB_URL}}" \
         bun run --filter="@rezible/documents-server" \
         {{ARGS}}
 
+docs_local_docker_image := "localhost/rezible-backend:latest"
+
 @build-documents-server-docker:
     docker build \
-      -t rezible-documents-server \
+      -t {{docs_local_docker_image}} \
       -f "{{documents_server_dir}}/Dockerfile" \
       .
 
 @run-documents-server-docker *ARGS:
-    docker run --network host \
-      -e API_URL="{{local_dev_api_url}}" \
-      -e DOCUMENTS_DB_URL="{{DOCUMENTS_DB_URL}}" \
-      localhost/rezible-documents-server \
-      {{ARGS}}
+    docker run {{docs_local_docker_image}} {{ARGS}}
 
 @run-frontend *ARGS:
-    PUBLIC_APP_URL="${APP_URL}" \
-    PUBLIC_API_URL_BASE="/api/v1" \
-    PUBLIC_AUTH_ISSUER_URL="${AUTH__OIDC__ISSUER_URL}" \
-    PUBLIC_AUTH_CLIENT_ID="${AUTH__OIDC__CLIENT_ID}" \
-    PUBLIC_AUTH_CLIENT_SCOPES="${AUTH__OIDC__CLIENT_SCOPES}" \
-    PUBLIC_AUTH_CLIENT_REDIRECT_URI="${AUTH__OIDC__CLIENT_REDIRECT_URI}" \
-        bun run --filter="@rezible/frontend" \
-        {{ARGS}}
+    bun run --filter="@rezible/frontend" {{ARGS}}
 
 # [group('Testing')]
 
 @test-backend: run-dev-services
-    POSTGRES__MIGRATIONS__USER="${POSTGRES_ADMIN_USER}" \
-    POSTGRES__MIGRATIONS__PASSWORD="${POSTGRES_ADMIN_PASSWORD}" \
-        go -C {{backend_dir}} test \
-            $(go -C {{backend_dir}} list ./... | grep -v /ent/)
+    go -C {{backend_dir}} test \
+        $(go -C {{backend_dir}} list ./... | grep -v /ent/)
 
 @run-backend-datasync:
     just run-backend sync-integrations
@@ -150,12 +136,7 @@ setup-db: recreate-db bootstrap-db run-migrations
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
 
 @bootstrap-db:
-    BOOTSTRAP__DEX_PASSWORD="${POSTGRES_DEX_PASSWORD}" \
-    BOOTSTRAP__REZ_MIGRATOR_PASSWORD="${POSTGRES__MIGRATIONS__PASSWORD}" \
-    BOOTSTRAP__REZ_APP_PASSWORD="${POSTGRES__PASSWORD}" \
-    BOOTSTRAP__REZ_DOCUMENTS_PASSWORD="${POSTGRES_DOCUMENTS_SERVER_PASSWORD}" \
-    just run-backend bootstrap-db \
-      --database-url="postgresql://${POSTGRES_ADMIN_USER}:${POSTGRES_ADMIN_PASSWORD}@${POSTGRES__HOST}:${POSTGRES__PORT}/?sslmode=disable"
+    just run-backend bootstrap-db --database-url="$POSTGRES_ADMIN_URL"
 
 @run-migrations:
     just run-backend migrate up

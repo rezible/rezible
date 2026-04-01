@@ -9,11 +9,11 @@ export default defineConfig({
 		port: 7001,
 		strictPort: true,
 		allowedHosts: ["app.dev.rezible.com"],
-		proxy: {
-            "/api": {
-                target: 'http://localhost:7002',
-                rewrite: (path) => path.replace(/^\/api/, ""),
-            }
-        },
+// 		proxy: {
+//             "/api": {
+//                 target: 'http://localhost:7002',
+//                 rewrite: (path) => path.replace(/^\/api/, ""),
+//             }
+//         },
 	},
 });

@@ -4,48 +4,55 @@ volumes:
   postgres-data:
 
 services:
+  app-proxy:
+    image: caddy:2
+    restart: unless-stopped
+    ports: ["7000:80", "5483:2019"]
+    volumes: ["./configs/caddy/Caddyfile:/etc/caddy/Caddyfile:ro"]
+    extra_hosts: ["host.docker.internal:host-gateway"]
+
   postgres:
     image: postgres:17
     restart: unless-stopped
-    ports: ["7010:5432"]
+    ports: ["${POSTGRES_PORT}:5432"]
     environment:
       - POSTGRES_USER=${POSTGRES_ADMIN_USER}
       - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_ADMIN_DB}
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-U", "postgres"]
-      interval: 5s
-      timeout: 2s
-      retries: 5
+      interval: 1s
+      timeout: 1s
+      retries: 3
+      start_period: 2s
     volumes:
       - postgres-data:/var/lib/postgresql/data
 
   dex:
     image: dexidp/dex:v2.41.1
     restart: unless-stopped
-    ports: ["7011:7011"]
+    ports: ["${DEX_PORT}:${DEX_PORT}"]
     volumes:
       - "./configs/dex/config.yaml:/etc/dex/config.yaml:ro"
       - "./certs/localias-ca.crt:/etc/ssl/localias.crt:ro"
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     environment:
+      - ISSUER_URL=${DEX_URL}
+      - PORT=${DEX_PORT}
       - APP_URL=${APP_URL}
-      - ISSUER_URL=${AUTH__OIDC__ISSUER_URL}
+      - API_URL=${API_URL}
       - POSTGRES_PASSWORD=${POSTGRES_DEX_PASSWORD}
-      - POSTGRES_PORT=5432
-      - OIDC_CLIENT_ID=${AUTH__OIDC__CLIENT_ID}
-      - OIDC_CLIENT_REDIRECT_URI=${AUTH__OIDC__CLIENT_REDIRECT_URI}
+      - APP_CLIENT_ID=${AUTH__OIDC__CLIENT_ID}
+      - APP_CLIENT_CALLBACK_PATH=${APP_AUTH_CLIENT_CALLBACK_PATH}
       - GOOGLE_OIDC_CLIENT_ID=${GOOGLE_OIDC_CLIENT_ID}
       - GOOGLE_OIDC_CLIENT_SECRET=${GOOGLE_OIDC_CLIENT_SECRET}
-      - GOOGLE_OIDC_CLIENT_REDIRECT_URI=${AUTH__OIDC__ISSUER_URL}/callback
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "-t 1", "--spider", "http://localhost:7011/.well-known/openid-configuration"]
-      interval: 3s
-      timeout: 1s
-      retries: 1
+      test: ["CMD", "wget", "-q", "-t 1", "--spider", "http://localhost:${DEX_PORT}${APP_AUTH_PATH}/healthz"]
+      interval: 2s
+      timeout: 2s
+      retries: 3
       start_period: 1s
 
   telemetry:

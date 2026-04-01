@@ -1,15 +1,16 @@
-import {
-    PUBLIC_APP_URL,
-    PUBLIC_API_URL_BASE,
-    PUBLIC_AUTH_ISSUER_URL,
-    PUBLIC_AUTH_CLIENT_ID,
-    PUBLIC_AUTH_CLIENT_SCOPES,
-    PUBLIC_AUTH_CLIENT_REDIRECT_URI,
-} from '$env/static/public';
+import * as rawEnv from '$env/dynamic/public';
+import { z } from 'zod';
 
-export const APP_URL = PUBLIC_APP_URL;
-export const API_URL_BASE = PUBLIC_API_URL_BASE || "/api/v1";
-export const AUTH_ISSUER_URL = PUBLIC_AUTH_ISSUER_URL;
-export const AUTH_CLIENT_ID = PUBLIC_AUTH_CLIENT_ID;
-export const AUTH_CLIENT_SCOPES = PUBLIC_AUTH_CLIENT_SCOPES;
-export const AUTH_CLIENT_REDIRECT_URI = PUBLIC_AUTH_CLIENT_REDIRECT_URI;
+const env = z.object({
+    PUBLIC_API_PATH_BASE: z.string().default("/api/v1"),
+    PUBLIC_AUTH_OIDC_ISSUER_PATH: z.string().default("/auth/oidc"),
+    PUBLIC_AUTH_OIDC_CLIENT_ID: z.string().default("rezible-app"),
+    PUBLIC_AUTH_OIDC_CLIENT_SCOPES: z.string().default("openid profile email"),
+    PUBLIC_AUTH_OIDC_CLIENT_REDIRECT_PATH: z.string().default("/auth/callback"),
+}).parse(rawEnv);
+
+export const API_PATH_BASE = env.PUBLIC_API_PATH_BASE;
+export const AUTH_OIDC_ISSUER_PATH = env.PUBLIC_AUTH_OIDC_ISSUER_PATH;
+export const AUTH_OIDC_CLIENT_ID = env.PUBLIC_AUTH_OIDC_CLIENT_ID;
+export const AUTH_OIDC_CLIENT_SCOPES = env.PUBLIC_AUTH_OIDC_CLIENT_SCOPES;
+export const AUTH_OIDC_CLIENT_REDIRECT_PATH = env.PUBLIC_AUTH_OIDC_CLIENT_REDIRECT_PATH;

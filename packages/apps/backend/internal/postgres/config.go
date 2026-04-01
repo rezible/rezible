@@ -3,6 +3,7 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
@@ -19,6 +20,7 @@ func LoadConfig() (Config, error) {
 		SSLMode:  "require",
 		Pool:     nil,
 	}
+	fmt.Printf("port: os:'%s' cfg:'%s'\n", os.Getenv("POSTGRES__PORT"), rez.Config.GetString("postgres.port", "_"))
 	return cfg, rez.Config.Unmarshal("postgres", &cfg)
 }
 

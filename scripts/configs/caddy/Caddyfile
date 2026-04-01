@@ -8,15 +8,20 @@
 	auto_https off
 }
 
-app.dev.rezible.com:80 {
+:80 {
+    handle_path /api/* {
+        reverse_proxy http://host.docker.internal:7002 {
+            header_up Host {host}
+        }
+    }
+    handle /auth/oidc/* {
+        reverse_proxy http://dex:7011 {
+            header_up Host {host}
+        }
+    }
 	handle /* {
 		reverse_proxy http://host.docker.internal:7001 {
 			header_up Host {host}
 		}
 	}
-    handle /api/* {
-        reverse_proxy http://host.docker.internal:7002 {
-            header_up Host {host}
-        }
-    }
 }

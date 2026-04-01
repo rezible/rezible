@@ -1,8 +1,8 @@
-import { API_URL_BASE } from "$lib/config";
+import { API_PATH_BASE } from "$lib/config";
 import { client, type ErrorModel } from "@rezible/api-client-ts";
 
 client.setConfig({
-	baseUrl: API_URL_BASE,
+	baseUrl: API_PATH_BASE,
 	credentials: "include",
 });
 client.interceptors.error.use(async (rawErr, resp, req, opts) => {

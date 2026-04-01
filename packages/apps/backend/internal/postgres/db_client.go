@@ -35,7 +35,7 @@ type DatabaseClient struct {
 func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
 	cfg, cfgErr := LoadConfig()
 	if cfgErr != nil {
-		return nil, fmt.Errorf("config: %w", cfgErr)
+		return nil, fmt.Errorf("load config: %w", cfgErr)
 	}
 
 	pool, poolErr := openPgxPool(ctx, cfg.getDsn())

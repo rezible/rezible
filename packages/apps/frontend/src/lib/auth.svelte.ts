@@ -12,17 +12,17 @@ import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { onMount } from "svelte";
 
-export type SessionErrorCategory = "unknown" | "invalid" | "session_expired" | "no_session" | "invalid_user";
+export type AuthSessionErrorCategory = "unknown" | "invalid" | "session_expired" | "no_session" | "invalid_user";
 
-export type SessionError = {
-	category: SessionErrorCategory;
+export type AuthSessionError = {
+	category: AuthSessionErrorCategory;
 	code?: string;
 };
 
-const parseSessionError = (err: ErrorModel): SessionError => {
+const parseSessionError = (err: ErrorModel): AuthSessionError => {
 	const status = err.status ?? 503;
 	const detail = err.detail;
-	let category: SessionErrorCategory = "unknown";
+	let category: AuthSessionErrorCategory = "unknown";
 	if (status === 401) {
 		if (detail === "session_expired") {
 			category = "session_expired";
@@ -39,7 +39,7 @@ const parseSessionError = (err: ErrorModel): SessionError => {
 		// TODO
 		console.error("failed to get auth session", status, err);
 	}
-	return {category: category, code: detail} as SessionError;
+	return {category: category, code: detail} as AuthSessionError;
 }
 
 type AuthSession = {
@@ -56,16 +56,9 @@ const parseUserAuthSessionResponse = ({data}: GetCurrentAuthSessionResponse): Au
 	};
 };
 
-const SessionExpiryCheckIntervalMs = 10_000;
-
 export class AuthSessionState {
 	constructor() {
-		onMount(() => {
-			const i = setInterval(() => {
-				this.checkSessionExpiry();
-			}, SessionExpiryCheckIntervalMs);
-			return () => {clearInterval(i)}
-		})
+		onMount(() => (this.runSessionExpiryCheck()))
 	}
 	
 	private query = createQuery(() => getCurrentAuthSessionOptions());
@@ -76,7 +69,7 @@ export class AuthSessionState {
 	user = $derived(this.session?.user);
 	org = $derived(this.session?.organization);
 	
-	error = $derived.by<SessionError | undefined>(() => {
+	error = $derived.by<AuthSessionError | undefined>(() => {
 		if (this.session && this.session.expiresAt < new Date(Date.now())) {
 			return {category: "session_expired"};
 		}
@@ -100,14 +93,19 @@ export class AuthSessionState {
 		this.logoutMut.mutate({});
 	}
 
-	private checkSessionExpiry() {
-		if (!this.session) return;
-		const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
-		if (timeLeft <= 0) {
-			this.error = {category: "session_expired"};
-		} else if (timeLeft <= SessionExpiryCheckIntervalMs * 100) {
-			this.refreshSession(timeLeft);
+	private runSessionExpiryCheck() {
+		const CheckIntervalMs = 10_000;
+		const checkExpiry = () => {
+			if (!this.session) return;
+			const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
+			if (timeLeft <= 0) {
+				this.error = {category: "session_expired"};
+			} else if (timeLeft <= CheckIntervalMs * 100) {
+				this.refreshSession(timeLeft);
+			}
 		}
+		const i = setInterval(checkExpiry, CheckIntervalMs);
+		return () => clearInterval(i);
 	}
 
 	private refreshSessionMut = createMutation(() => ({

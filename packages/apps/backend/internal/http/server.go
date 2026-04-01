@@ -37,8 +37,8 @@ type DocumentsProxyConfig struct {
 
 func loadConfig() (Config, error) {
 	cfg := Config{
-		Host:         "0.0.0.0",
-		Port:         "7002",
+		Host:         rez.Config.GetString("HOST", "0.0.0.0"),
+		Port:         rez.Config.GetString("PORT", "7002"),
 		WebhooksPath: "/webhooks",
 		DocumentsProxy: DocumentsProxyConfig{
 			Enabled:       false,
