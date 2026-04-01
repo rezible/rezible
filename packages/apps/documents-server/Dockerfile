@@ -23,8 +23,8 @@ RUN bun run --filter=@rezible/documents-server build
 FROM base AS release
 
 COPY --from=install /temp/prod/node_modules node_modules
-COPY --from=prerelease /usr/src/app/packages/documents-server/dist/index.js .
-COPY --from=prerelease /usr/src/app/packages/documents-server/package.json .
+COPY --from=prerelease /usr/src/app/packages/apps/documents-server/dist/index.js .
+COPY --from=prerelease /usr/src/app/packages/apps/documents-server/package.json .
 
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0

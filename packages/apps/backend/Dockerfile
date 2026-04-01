@@ -2,10 +2,10 @@ FROM golang:1.26-alpine AS builder
 
 WORKDIR /src/backend
 
-COPY go.mod go.sum ./
+COPY packages/apps/backend/go.mod packages/apps/backend/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY packages/apps/backend .
 
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64

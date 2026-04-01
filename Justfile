@@ -55,7 +55,7 @@ scripts_dir := "./scripts"
 backend_local_docker_image := "localhost/rezible-backend:latest"
 
 @build-backend-docker:
-    docker build -t {{backend_local_docker_image}} {{backend_dir}}
+    docker build -t {{backend_local_docker_image}} -f {{backend_dir}}/Dockerfile .
 
 @run-backend-docker *ARGS:
     just run-docker {{backend_local_docker_image}} {{ARGS}}
