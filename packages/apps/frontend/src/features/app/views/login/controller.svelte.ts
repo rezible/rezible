@@ -42,7 +42,7 @@ const makeOidcClient = (): OidcClient => {
     });
 }
 
-export class AuthViewController {
+export class LoginViewController {
     private callbackParams = useSearchParams(z.object({
         code: z.string().default(""),
         state: z.string().default(""),
@@ -129,6 +129,6 @@ export class AuthViewController {
     }
 }
 
-const ctx = new Context<AuthViewController>("AuthViewController");
-export const initAuthViewController = () => ctx.set(new AuthViewController());
-export const useAuthViewController = () => ctx.get();
+const ctx = new Context<LoginViewController>("LoginViewController");
+export const initLoginViewController = () => ctx.set(new LoginViewController());
+export const useLoginViewController = () => ctx.get();

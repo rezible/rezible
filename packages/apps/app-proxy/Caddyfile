@@ -1,0 +1,26 @@
+{
+	auto_https off
+}
+
+:80 {
+	@api path /api /api/*
+	handle @api {
+		uri strip_prefix /api
+		reverse_proxy {$APP_PROXY_API_UPSTREAM} {
+			header_up Host {host}
+		}
+	}
+
+	@auth path /auth /auth/*
+	handle @auth {
+		reverse_proxy {$APP_PROXY_AUTH_UPSTREAM} {
+			header_up Host {host}
+		}
+	}
+
+	handle {
+		reverse_proxy {$APP_PROXY_FRONTEND_UPSTREAM} {
+			header_up Host {host}
+		}
+	}
+}

@@ -3,10 +3,6 @@
 .idea
 .vscode
 node_modules
-frontend/node_modules
-documents-server/node_modules
-frontend/.svelte-kit
-frontend/build
-frontend/dist
-documents-server/dist
-backend/internal/http/frontend-dist
+**/node_modules
+**/dist
+packages/apps/frontend/.svelte-kit

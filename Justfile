@@ -28,7 +28,7 @@ scripts_dir := "./scripts"
     bun run format
 
 @reload-localias:
-    localias stop && localias start
+    localias -c "{{scripts_dir}}/localias.yaml" stop && localias -c "{{scripts_dir}}/localias.yaml" start
     mkdir -p "{{scripts_dir}}/certs" && cat "$(localias debug cert)" > "{{scripts_dir}}/certs/localias-ca.crt"
 
 @run-docker IMAGE *ARGS:
@@ -44,7 +44,7 @@ scripts_dir := "./scripts"
     docker compose \
       --env-file .env \
       --env-file .env.dev \
-      -f "{{scripts_dir}}/docker-compose.yaml" \
+      -f "./docker-compose.yaml" \
       {{CMD}}
 
 @run-backend *ARGS:
@@ -60,9 +60,8 @@ backend_local_docker_image := "localhost/rezible-backend:latest"
 @run-backend-docker *ARGS:
     just run-docker {{backend_local_docker_image}} {{ARGS}}
 
-local_dev_api_url := "http://localhost:7002/api/v1"
 @run-documents-server *ARGS:
-    API_URL="{{local_dev_api_url}}" \
+    API_URL="http://localhost:${REZ_BACKEND_PORT}/v1" \
         bun run --filter="@rezible/documents-server" \
         {{ARGS}}
 
@@ -118,7 +117,7 @@ docs_local_docker_image := "localhost/rezible-backend:latest"
     just run-docker-compose down
 
 @dev: run-dev-services && stop-dev-services
-    process-compose --ordered-shutdown -f "{{scripts_dir}}/process-compose.yaml"
+    process-compose --ordered-shutdown
 
 @dev-backend:
     cd "{{backend_dir}}" && \
