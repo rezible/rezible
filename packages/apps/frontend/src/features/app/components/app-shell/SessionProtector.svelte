@@ -11,17 +11,17 @@
 
 	const routeId = $derived(page.route.id);
 
-	const AuthRouteId = "/auth";
-	const isAuthRoute = $derived(!!routeId?.startsWith(AuthRouteId));
+	const LoginRouteId = "/login";
+	const isLoginRoute = $derived(!!routeId?.startsWith(LoginRouteId));
 
 	const SetupRouteId = "/setup";
 	const isSetupRoute = $derived(!!routeId?.startsWith(SetupRouteId));
 
 	const redirectTo = $derived.by(() => {
 		if (!session.loaded) return;
-        if (session.isAuthenticated && isAuthRoute) return "/";
+        if (session.isAuthenticated && isLoginRoute) return "/";
         if (session.isSetup && isSetupRoute) return "/";
-		if (!session.isAuthenticated && !isAuthRoute) return AuthRouteId;
+		if (!session.isAuthenticated && !isLoginRoute) return LoginRouteId;
         if (session.isAuthenticated && !session.isSetup && !isSetupRoute) return SetupRouteId;
 	});
 	const navigatingTo = $derived(navigating.to?.route.id);

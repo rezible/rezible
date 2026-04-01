@@ -1,0 +1,25 @@
+{
+	auto_https off
+}
+
+{env.APP_HOST}:80 {
+    handle_path /api* {
+        reverse_proxy {env.BACKEND_UPSTREAM}
+    }
+
+    handle /auth {
+        redir https://{env.APP_HOST}/login
+    }
+
+    handle /auth/* {
+        reverse_proxy {env.AUTH_UPSTREAM}
+    }
+
+    handle {
+        reverse_proxy {env.FRONTEND_UPSTREAM}
+    }
+}
+
+{env.API_HOST}:80 {
+    reverse_proxy {env.BACKEND_UPSTREAM}
+}

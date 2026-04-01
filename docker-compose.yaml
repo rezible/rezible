@@ -4,15 +4,17 @@ volumes:
   postgres-data:
 
 services:
-  app-proxy:
+  gateway:
     build:
-      context: packages/apps/app-proxy
+      context: packages/apps/gateway
     restart: unless-stopped
     ports: ["7000:80", "5483:2019"]
     environment:
-      - APP_PROXY_FRONTEND_UPSTREAM=http://host.docker.internal:${REZ_FRONTEND_PORT}
-      - APP_PROXY_BACKEND_UPSTREAM=http://host.docker.internal:${REZ_BACKEND_PORT}
-      - APP_PROXY_AUTH_UPSTREAM=http://host.docker.internal:${DEX_PORT}
+      - APP_HOST=${APP_HOST}
+      - API_HOST=${API_HOST}
+      - FRONTEND_UPSTREAM=host.docker.internal:${REZ_FRONTEND_PORT}
+      - BACKEND_UPSTREAM=host.docker.internal:${REZ_BACKEND_PORT}
+      - AUTH_UPSTREAM=host.docker.internal:${DEX_PORT}
     extra_hosts: ["host.docker.internal:host-gateway"]
 
   postgres:

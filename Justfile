@@ -111,7 +111,7 @@ docs_local_docker_image := "localhost/rezible-backend:latest"
 # [group('Development Servers')]
 
 @run-dev-services:
-    just run-docker-compose up -d --wait
+    just run-docker-compose up -d --wait --build
 
 @stop-dev-services:
     just run-docker-compose down
