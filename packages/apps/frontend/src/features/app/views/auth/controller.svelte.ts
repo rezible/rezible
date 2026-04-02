@@ -28,7 +28,7 @@ const transformFlowCompletionError = (err: ErrorModel): ErrorModel => {
 const makeOidcClient = (): OidcClient => {
     const appUrl = `https://${window.location.host}`;
     return new OidcClient({
-        authority: `${appUrl}${AUTH_OIDC_ISSUER_PATH}`,
+        authority: AUTH_OIDC_ISSUER_PATH,
         client_id: AUTH_OIDC_CLIENT_ID,
         scope: AUTH_OIDC_CLIENT_SCOPES,
         redirect_uri: `${appUrl}${APP_AUTH_ROUTE_BASE}/callback`,

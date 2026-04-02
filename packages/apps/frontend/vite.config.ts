@@ -23,6 +23,7 @@ export default defineConfig(({mode}) => {
                 },
                 "/dex": {
                     target: `http://${env.PROXY_DEX_UPSTREAM_HOST}`,
+                    rewrite: (path) => path.replace(/^\/dex/, ""),
                 }
             },
         },

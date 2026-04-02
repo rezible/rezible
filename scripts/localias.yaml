@@ -1,2 +1,3 @@
 app.dev.rezible.com: 7000
 api.dev.rezible.com: 7001
+auth.dev.rezible.com: 7011

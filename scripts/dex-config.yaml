@@ -9,8 +9,8 @@ storage:
   config:
     user: "{{ .Env.POSTGRES_DEX_USER }}"
     password: "{{ .Env.POSTGRES_DEX_PASSWORD }}"
-    host: "{{ .Env.POSTGRES_HOST }}"
-    port: {{ .Env.POSTGRES_PORT }}
+    host: postgres # "{{ .Env.POSTGRES_HOST }}"
+    # port: {{ .Env.POSTGRES_PORT }}
     database: "{{ .Env.POSTGRES_DEX_DATABASE }}"
     ssl:
       mode: "{{ .Env.POSTGRES_SSLMODE }}"

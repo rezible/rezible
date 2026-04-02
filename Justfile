@@ -65,10 +65,8 @@ scripts_dir := "./scripts"
 @stop-all-docker-compose:
     just run-docker-compose "--profile rezible" down
 
-[env("POSTGRES_HOST", "postgres")]
-[env("POSTGRES_PORT", "5432")]
 @run-docker-compose *ARGS:
-    docker compose {{ARGS}}
+    docker compose --env-file=".env.dev" {{ARGS}}
 
 # [group('Testing')]
 
@@ -126,7 +124,7 @@ setup-db: recreate-db bootstrap-db run-migrations
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
 
 @bootstrap-db:
-    just run-backend bootstrap-db --database-url="$POSTGRES_ADMIN_URL"
+    just run-backend bootstrap-db --database-url="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/postgres?sslmode=${POSTGRES_SSLMODE}"
 
 @run-migrations:
     just run-backend migrate up
