@@ -1,17 +1,22 @@
 <script lang="ts">
 	import { mdiKey } from "@mdi/js";
-	import { initLoginViewController } from "./controller.svelte";
+	import { initAuthViewController } from "./controller.svelte";
 
 	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
+	import LoadingIndicator from "$src/components/loading-indicator/LoadingIndicator.svelte";
 
-	const controller = initLoginViewController();
+	const controller = initAuthViewController();
 </script>
 
 <div class="grid h-full w-full place-items-center">
-	<div class="flex flex-col gap-2 border rounded-lg border-surface-content/10 bg-surface-200 p-3">
+	<div class="" class:hidden={!controller.loading}>
+		<LoadingIndicator />
+	</div>
+	
+	<div class="flex flex-col gap-2 border rounded-lg border-surface-content/10 bg-surface-200 p-3" class:hidden={controller.loading}>
 		<Header title="Authentication Required" classes={{ root: "gap-2", title: "text-2xl" }}>
 			{#snippet avatar()}
 				<img src="/images/logo.svg" alt="logo" class="size-12 fill-neutral" />

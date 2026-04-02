@@ -6,41 +6,20 @@ import {
 	type Organization,
 	refreshAuthSessionMutation,
 	clearAuthSessionMutation,
+	type GetCurrentAuthSessionResponseBody,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { createMutation, createQuery } from "@tanstack/svelte-query";
+import { createMutation, createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { onMount } from "svelte";
 
-export type AuthSessionErrorCategory = "unknown" | "invalid" | "session_expired" | "no_session" | "invalid_user";
-
-export type AuthSessionError = {
-	category: AuthSessionErrorCategory;
-	code?: string;
+export enum AuthSessionErrorCategory {
+	NoSession = "auth_session_missing",
+	SessionExpired = "auth_session_expired",
+	SessionInvalid = "auth_session_invalid",
+	ServerError = "server_error",
+	Unknown = "unknown",
 };
-
-const parseSessionError = (err: ErrorModel): AuthSessionError => {
-	const status = err.status ?? 503;
-	const detail = err.detail;
-	let category: AuthSessionErrorCategory = "unknown";
-	if (status === 401) {
-		if (detail === "session_expired") {
-			category = "session_expired";
-		} else if (detail === "no_session") {
-			category = "no_session";
-		} else if (detail === "invalid_user") {
-			category = "invalid_user";
-		}
-	} else if (status === 403) {
-		category = "invalid";
-	} else if (status === 404) {
-		category = "invalid_user";
-	} else if (status >= 500) {
-		// TODO
-		console.error("failed to get auth session", status, err);
-	}
-	return {category: category, code: detail} as AuthSessionError;
-}
 
 type AuthSession = {
 	expiresAt: Date;
@@ -48,7 +27,21 @@ type AuthSession = {
 	organization: Organization;
 };
 
-const parseUserAuthSessionResponse = ({data}: GetCurrentAuthSessionResponse): AuthSession => {
+const parseAuthSessionQueryResponseError = (err: ErrorModel): AuthSessionErrorCategory => {
+	const status = err.status ?? 503;
+	let category: AuthSessionErrorCategory = AuthSessionErrorCategory.Unknown;
+	if (status === 401) {
+		const mappedCategory = err.detail as AuthSessionErrorCategory;
+		if (Object.values(AuthSessionErrorCategory).includes(mappedCategory)) {
+			category = mappedCategory;
+		}
+	} else if (status >= 500) {
+		category = AuthSessionErrorCategory.ServerError;
+	}
+	return category;
+};
+
+const parseAuthSessionQueryResponseData = ({data}: GetCurrentAuthSessionResponseBody): AuthSession => {
 	return {
 		user: data.user,
 		organization: data.organization,
@@ -56,27 +49,34 @@ const parseUserAuthSessionResponse = ({data}: GetCurrentAuthSessionResponse): Au
 	};
 };
 
+type AuthSessionQueryResult = CreateQueryResult<GetCurrentAuthSessionResponseBody, ErrorModel>;
+type ParsedAuthSessionQueryResult = {
+	session?: AuthSession,
+	error?: AuthSessionErrorCategory,
+};
+const parseUserAuthSessionQueryResponse = ({data: body, error}: AuthSessionQueryResult): ParsedAuthSessionQueryResult => {
+	if (!!error) {
+		return {error: parseAuthSessionQueryResponseError(error)};
+	} else if (!!body) {
+		return {session: parseAuthSessionQueryResponseData(body)};
+	}
+	return {};
+};
+
 export class AuthSessionState {
 	constructor() {
-		onMount(() => (this.runSessionExpiryCheck()))
+		onMount(() => (this.startSessionExpiryCheck()))
 	}
 	
 	private query = createQuery(() => getCurrentAuthSessionOptions());
-	private queryData = $derived(this.query.data);
+	private parsedResponse = $derived(parseUserAuthSessionQueryResponse(this.query));
 
-	session = $derived(!!this.queryData ? parseUserAuthSessionResponse(this.queryData) : null);
 	loaded = $derived(this.query.isFetched);
+	session = $derived(this.parsedResponse.session);
+	error = $derived(this.parsedResponse.error);
+
 	user = $derived(this.session?.user);
 	org = $derived(this.session?.organization);
-	
-	error = $derived.by<AuthSessionError | undefined>(() => {
-		if (this.session && this.session.expiresAt < new Date(Date.now())) {
-			return {category: "session_expired"};
-		}
-		if (this.query.error) {
-			return parseSessionError(this.query.error as ErrorModel);
-		}
-	});
 
 	isAuthenticated = $derived(!!this.session && !this.error);
 	isSetup = $derived(this.isAuthenticated && !this.org?.attributes.setupRequired);
@@ -87,40 +87,39 @@ export class AuthSessionState {
 
 	private logoutMut = createMutation(() => ({
 		...clearAuthSessionMutation(),
-		onSuccess: () => {this.refetch()}
+		onSuccess: () => {
+			this.refetch();
+		}
 	}));
 	async logout() {
 		this.logoutMut.mutate({});
-	}
-
-	private runSessionExpiryCheck() {
-		const CheckIntervalMs = 10_000;
-		const checkExpiry = () => {
-			if (!this.session) return;
-			const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
-			if (timeLeft <= 0) {
-				this.error = {category: "session_expired"};
-			} else if (timeLeft <= CheckIntervalMs * 100) {
-				this.refreshSession(timeLeft);
-			}
-		}
-		const i = setInterval(checkExpiry, CheckIntervalMs);
-		return () => clearInterval(i);
 	}
 
 	private refreshSessionMut = createMutation(() => ({
 		...refreshAuthSessionMutation(),
 		onSuccess: () => {
 			console.log("auth session refreshed");
+			this.refetch();
 		}
 	}));
-	private async refreshSession(timeLeft: number) {
-		console.log("auth session expiring soon", timeLeft);
-		await this.refreshSessionMut.mutateAsync({});
-		this.refetch();
-	}
+	private startSessionExpiryCheck() {
+		const CheckIntervalMs = 10_000;
+		const checkExpiry = () => {
+			if (!this.session || this.refreshSessionMut.isPending) return;
+			const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
+			if (timeLeft <= 0) {
+				// TODO: handle this better
+				this.refetch();
+			} else if (timeLeft <= CheckIntervalMs * 100) {
+				console.log("auth session expiring soon", timeLeft);
+				this.refreshSessionMut.mutate({});
+			}
+		}
+		const i = setInterval(checkExpiry, CheckIntervalMs);
+		return () => clearInterval(i);
+	};
 };
 
-const sessionCtx = new Context<AuthSessionState>("authSession");
-export const initAuthSessionState = () => sessionCtx.set(new AuthSessionState());
-export const useAuthSessionState = () => sessionCtx.get();
+const ctx = new Context<AuthSessionState>("AuthSessionState");
+export const initAuthSessionState = () => ctx.set(new AuthSessionState());
+export const useAuthSessionState = () => ctx.get();

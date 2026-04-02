@@ -41,7 +41,7 @@ func (h *authSessionsHandler) RefreshAuthSession(ctx context.Context, req *oapi.
 
 	refreshToken := req.Cookie.Value
 	if refreshToken == "" {
-		return nil, oapi.Error("no refresh cookie", oapi.ErrNoSession)
+		return nil, oapi.Error("no refresh cookie", oapi.ErrAuthSessionInvalid)
 	}
 	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, refreshToken)
 	if cookiesErr != nil {

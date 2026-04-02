@@ -17,14 +17,11 @@ import (
 )
 
 var (
-	ErrNoSession        = huma.Error401Unauthorized("no_session")
-	ErrSessionExpired   = huma.Error401Unauthorized("session_expired")
-	ErrMissingScopes    = huma.Error401Unauthorized("missing_scopes")
-	ErrInvalidUser      = huma.Error401Unauthorized("invalid_user")
-	ErrInvalidTenant    = huma.Error401Unauthorized("invalid_tenant")
-	ErrUnknown          = huma.Error401Unauthorized("unknown")
-	ErrForbidden        = huma.Error403Forbidden("forbidden")
-	ErrDomainNotAllowed = huma.Error403Forbidden("domain_not_allowed")
+	ErrAuthSessionMissing = huma.Error401Unauthorized("auth_session_missing")
+	ErrAuthSessionExpired = huma.Error401Unauthorized("auth_session_expired")
+	ErrAuthSessionInvalid = huma.Error401Unauthorized("auth_session_invalid")
+	ErrForbidden          = huma.Error403Forbidden("forbidden")
+	ErrDomainNotAllowed   = huma.Error403Forbidden("domain_not_allowed")
 )
 
 type SecurityScheme = huma.SecurityScheme
@@ -189,18 +186,18 @@ func GetRequestAuthBearerToken(r *http.Request) string {
 
 func convertAuthStatusError(api huma.API, c huma.Context, err error) huma.StatusError {
 	if errors.Is(err, rez.ErrAuthSessionMissing) {
-		return ErrNoSession
+		return ErrAuthSessionMissing
 	} else if errors.Is(err, rez.ErrAuthSessionExpired) {
-		return ErrSessionExpired
+		return ErrAuthSessionExpired
 	} else if errors.Is(err, rez.ErrAuthSessionInvalid) {
-		return ErrInvalidUser
+		return ErrAuthSessionInvalid
 	} else if errors.Is(err, rez.ErrInvalidUser) {
-		return ErrInvalidUser
+		return ErrAuthSessionInvalid
 	} else if errors.Is(err, rez.ErrInvalidTenant) {
-		return ErrInvalidTenant
+		return ErrAuthSessionInvalid
 	} else if errors.Is(err, rez.ErrDomainNotAllowed) {
 		return ErrDomainNotAllowed
 	}
 	log.Warn().Err(err).Msg("unknown auth status error")
-	return ErrUnknown
+	return ErrAuthSessionInvalid
 }

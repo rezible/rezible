@@ -1,5 +1,5 @@
-template: testify
 filename: mocks.go
+template: testify
 template-data:
   unroll-variadic: true
 # all: true

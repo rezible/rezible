@@ -29,10 +29,10 @@ type Config struct {
 }
 
 type DocumentsProxyConfig struct {
-	Enabled       bool   `koanf:"enabled"`
-	ProxyPath     string `koanf:"proxy_path"`
-	ServerAddress string `koanf:"server_address"`
-	serverUrl     *url.URL
+	Enabled   bool   `koanf:"enabled"`
+	ProxyPath string `koanf:"proxy_path"`
+	ProxyHost string `koanf:"proxy_host"`
+	serverUrl *url.URL
 }
 
 func loadConfig() (Config, error) {
@@ -41,18 +41,18 @@ func loadConfig() (Config, error) {
 		Port:         rez.Config.GetString("PORT", "7002"),
 		WebhooksPath: "/webhooks",
 		DocumentsProxy: DocumentsProxyConfig{
-			Enabled:       false,
-			ProxyPath:     "/documents",
-			ServerAddress: "ws://localhost:7003",
+			Enabled:   false,
+			ProxyPath: "/documents",
+			ProxyHost: "localhost:7003",
 		},
 	}
 	if cfgErr := rez.Config.Unmarshal("server.http", &cfg); cfgErr != nil {
 		return cfg, fmt.Errorf("failed to unmarshal config: %w", cfgErr)
 	}
 	if cfg.DocumentsProxy.Enabled {
-		proxyUrl, parseErr := url.Parse(cfg.DocumentsProxy.ServerAddress)
+		proxyUrl, parseErr := url.Parse("ws://" + cfg.DocumentsProxy.ProxyHost)
 		if parseErr != nil {
-			return cfg, fmt.Errorf("failed to parse documents_proxy.proxy_path: %w", parseErr)
+			return cfg, fmt.Errorf("failed to parse documents_proxy.proxy_host: %w", parseErr)
 		}
 		cfg.DocumentsProxy.serverUrl = proxyUrl
 	}

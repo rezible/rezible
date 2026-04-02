@@ -10,21 +10,20 @@ import (
 )
 
 type AuthSessionsHandler interface {
+	GetCurrentAuthSession(context.Context, *GetCurrentAuthSessionRequest) (*GetCurrentAuthSessionResponse, error)
 	CompleteAuthSessionFlow(context.Context, *CompleteAuthSessionFlowRequest) (*CompleteAuthSessionFlowResponse, error)
 	RefreshAuthSession(context.Context, *RefreshAuthSessionRequest) (*RefreshAuthSessionResponse, error)
 	ClearAuthSession(context.Context, *ClearAuthSessionRequest) (*ClearAuthSessionResponse, error)
-
-	GetCurrentAuthSession(context.Context, *GetCurrentAuthSessionRequest) (*GetCurrentAuthSessionResponse, error)
 
 	ListNotifications(context.Context, *ListNotificationsRequest) (*ListNotificationsResponse, error)
 	DeleteNotification(context.Context, *DeleteNotificationRequest) (*DeleteNotificationResponse, error)
 }
 
 func (o operations) RegisterAuthSessions(api huma.API) {
+	huma.Register(api, GetCurrentAuthSession, o.GetCurrentAuthSession)
 	huma.Register(api, CompleteAuthSessionFlow, o.CompleteAuthSessionFlow)
 	huma.Register(api, RefreshAuthSession, o.RefreshAuthSession)
 	huma.Register(api, ClearAuthSession, o.ClearAuthSession)
-	huma.Register(api, GetCurrentAuthSession, o.GetCurrentAuthSession)
 
 	huma.Register(api, ListNotifications, o.ListNotifications)
 	huma.Register(api, DeleteNotification, o.DeleteNotification)
@@ -50,6 +49,18 @@ type (
 // Operations
 
 var authSessionsTags = []string{"Auth Sessions"}
+
+var GetCurrentAuthSession = huma.Operation{
+	OperationID: "get-current-auth-session",
+	Method:      http.MethodGet,
+	Path:        "/auth_session",
+	Summary:     "Get the current Auth Session",
+	Tags:        authSessionsTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetCurrentAuthSessionRequest EmptyRequest
+type GetCurrentAuthSessionResponse ItemResponse[AuthSession]
 
 var CompleteAuthSessionFlow = huma.Operation{
 	OperationID: "complete-auth-session-flow",
@@ -88,23 +99,11 @@ var ClearAuthSession = huma.Operation{
 	Summary:     "Clear an active Auth Session",
 	Tags:        authSessionsTags,
 	Errors:      ErrorCodes(),
-	Security:    SecurityMethodCookieOnly,
+	Security:    ExplicitNoSecurity,
 }
 
 type ClearAuthSessionRequest EmptyRequest
 type ClearAuthSessionResponse SetCookieResponse
-
-var GetCurrentAuthSession = huma.Operation{
-	OperationID: "get-current-auth-session",
-	Method:      http.MethodGet,
-	Path:        "/auth_session",
-	Summary:     "Get the current Auth Session",
-	Tags:        authSessionsTags,
-	Errors:      ErrorCodes(),
-}
-
-type GetCurrentAuthSessionRequest EmptyRequest
-type GetCurrentAuthSessionResponse ItemResponse[AuthSession]
 
 var ListNotifications = huma.Operation{
 	OperationID: "list-user-notifications",

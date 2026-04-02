@@ -16,8 +16,8 @@ scripts_dir := "./scripts"
     just codegen
     just setup-db
 
-@echo-env VAR:
-    echo "value: '${{VAR}}'"
+@echo-env:
+    echo "http://${PROXY_DEX_UPSTREAM_HOST}${DEX_PATH}/healthz"
 
 @install-dependencies:
     go -C {{backend_dir}} mod tidy

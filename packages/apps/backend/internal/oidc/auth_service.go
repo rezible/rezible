@@ -146,7 +146,8 @@ func (s *AuthService) createAuthSessionContext(ctx context.Context, idTokenStr s
 	}
 	token, tokenErr := prov.verifyIdToken(ctx, idTokenStr)
 	if tokenErr != nil {
-		return nil, fmt.Errorf("get verified id token: %w", tokenErr)
+		log.Debug().Err(tokenErr).Msg("failed to verify id token")
+		return nil, rez.ErrAuthSessionInvalid
 	}
 
 	if !s.cfg.AllowAccess.DomainAllowed(token.getDomain()) {
