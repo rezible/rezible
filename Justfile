@@ -68,10 +68,7 @@ scripts_dir := "./scripts"
 [env("POSTGRES_HOST", "postgres")]
 [env("POSTGRES_PORT", "5432")]
 @run-docker-compose *ARGS:
-    docker compose \
-      --env-file .env \
-      --env-file .env.dev \
-      {{ARGS}}
+    docker compose {{ARGS}}
 
 # [group('Testing')]
 
