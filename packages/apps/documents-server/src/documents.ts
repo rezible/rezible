@@ -47,7 +47,7 @@ export class DocumentsServerExtension implements Extension {
 		if (!dbConnUrl) throw new Error("missing db url");
 
 		client.setConfig({
-			baseUrl: apiUrl,
+			baseUrl: `${apiUrl}/v1`,
 			headers: {
 				["X-Rez-DocumentsServer"]: true,
 			}

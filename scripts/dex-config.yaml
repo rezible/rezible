@@ -1,4 +1,4 @@
-issuer: "{{ .Env.ISSUER_URL }}"
+issuer: "{{ .Env.DEX_URL }}"
 
 web:
   http: "0.0.0.0:{{ .Env.PORT }}"
@@ -7,12 +7,13 @@ web:
 storage:
   type: postgres
   config:
-    user: dex
-    password: "{{ .Env.POSTGRES_PASSWORD }}"
-    host: postgres
-    database: dex
+    user: "{{ .Env.POSTGRES_DEX_USER }}"
+    password: "{{ .Env.POSTGRES_DEX_PASSWORD }}"
+    host: "{{ .Env.POSTGRES_HOST }}"
+    port: {{ .Env.POSTGRES_PORT }}
+    database: "{{ .Env.POSTGRES_DEX_DATABASE }}"
     ssl:
-      mode: disable
+      mode: "{{ .Env.POSTGRES_SSLMODE }}"
 
 oauth2:
   responseTypes: ["code"]
@@ -24,10 +25,10 @@ oauth2:
     - "urn:ietf:params:oauth:grant-type:token-exchange"
 
 staticClients:
-  - id: "{{ .Env.APP_CLIENT_ID }}"
+  - id: "{{ .Env.APP_OIDC_CLIENT_ID }}"
     name: "Rezible"
     public: true
-    redirectURIs: ["{{ .Env.APP_CLIENT_REDIRECT_URI }}"]
+    redirectURIs: ["{{ .Env.APP_OIDC_CLIENT_REDIRECT_URI }}"]
 
 connectors:
   - type: google
@@ -36,7 +37,7 @@ connectors:
     config:
       clientID: $GOOGLE_OIDC_CLIENT_ID
       clientSecret: $GOOGLE_OIDC_CLIENT_SECRET
-      redirectURI: $GOOGLE_OIDC_CLIENT_REDIRECT_URI
+      redirectURI: "{{ .Env.DEX_URL }}/callback"
       promptType: ""
 
 enablePasswordDB: true

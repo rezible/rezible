@@ -9,15 +9,13 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/river"
+	"github.com/rs/zerolog/log"
 )
 
 func LoadConfig() (Config, error) {
 	cfg := Config{
-		Host:     "localhost",
-		Port:     5432,
 		Database: "rezible",
 		SSLMode:  "require",
-		Pool:     nil,
 	}
 	return cfg, rez.Config.Unmarshal("postgres", &cfg)
 }
@@ -80,8 +78,7 @@ func openPgxPool(ctx context.Context, connString string) (*pgxpool.Pool, error) 
 		return nil, fmt.Errorf("create: %w", poolErr)
 	}
 	if pingErr := pool.Ping(ctx); pingErr != nil {
-		pool.Close()
-		return nil, fmt.Errorf("ping: %w", pingErr)
+		log.Error().Err(pingErr).Msg("failed to ping postgres")
 	}
 
 	return pool, nil

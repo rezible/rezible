@@ -16,9 +16,6 @@ scripts_dir := "./scripts"
     just codegen
     just setup-db
 
-@echo-env:
-    echo "http://${PROXY_DEX_UPSTREAM_HOST}${DEX_PATH}/healthz"
-
 @install-dependencies:
     go -C {{backend_dir}} mod tidy
     bun install
@@ -40,44 +37,41 @@ scripts_dir := "./scripts"
       --env-file ./.env.dev \
       {{IMAGE}} {{ARGS}}
 
-@run-docker-compose *CMD:
-    docker compose \
-      --env-file .env \
-      --env-file .env.dev \
-      -f "./docker-compose.yaml" \
-      {{CMD}}
-
 @run-backend *ARGS:
     go -C {{backend_dir}} \
         run ./cmd/rezible \
         {{ARGS}}
 
-backend_local_docker_image := "localhost/rezible-backend:latest"
-
-@build-backend-docker:
-    docker build -t {{backend_local_docker_image}} -f {{backend_dir}}/Dockerfile .
-
-@run-backend-docker *ARGS:
-    just run-docker {{backend_local_docker_image}} {{ARGS}}
-
-@run-documents-server *ARGS:
-    API_URL="http://localhost:${REZ_BACKEND_PORT}/v1" \
-        bun run --filter="@rezible/documents-server" \
-        {{ARGS}}
-
-docs_local_docker_image := "localhost/rezible-backend:latest"
-
-@build-documents-server-docker:
-    docker build \
-      -t {{docs_local_docker_image}} \
-      -f "{{documents_server_dir}}/Dockerfile" \
-      .
-
-@run-documents-server-docker *ARGS:
-    docker run {{docs_local_docker_image}} {{ARGS}}
-
 @run-frontend *ARGS:
     bun run --filter="@rezible/frontend" {{ARGS}}
+
+@run-documents-server *ARGS:
+    bun run --filter="@rezible/documents-server" {{ARGS}}
+
+@build-all-docker:
+    just build-app-docker backend
+    just build-app-docker documents-server
+    just build-app-docker frontend
+
+@build-app-docker COMPONENT:
+    docker build -t "localhost/rez-{{COMPONENT}}:latest" -f "./packages/apps/{{COMPONENT}}/Dockerfile" .
+
+@run-app-docker COMPONENT *ARGS:
+    just run-docker "localhost/rez-{{COMPONENT}}:latest" {{ARGS}}
+
+@run-all-docker-compose:
+    just run-docker-compose "--profile rezible" up
+
+@stop-all-docker-compose:
+    just run-docker-compose "--profile rezible" down
+
+[env("POSTGRES_HOST", "postgres")]
+[env("POSTGRES_PORT", "5432")]
+@run-docker-compose *ARGS:
+    docker compose \
+      --env-file .env \
+      --env-file .env.dev \
+      {{ARGS}}
 
 # [group('Testing')]
 
@@ -126,10 +120,10 @@ docs_local_docker_image := "localhost/rezible-backend:latest"
 
 # [group('Database')]
 
-setup-db: recreate-db bootstrap-db run-migrations
-
 @run-psql *ARGS:
-    just run-docker-compose exec -it postgres psql {{ARGS}}
+    just run-docker-compose exec -it postgres psql -U postgres {{ARGS}}
+
+setup-db: recreate-db bootstrap-db run-migrations
 
 @recreate-db:
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
@@ -140,13 +134,9 @@ setup-db: recreate-db bootstrap-db run-migrations
 @run-migrations:
     just run-backend migrate up
 
-documents_role_grant_migration_file := backend_dir / "migrations/0002_documents_role_grant"
-documents_role_grant_up_sql := 'GRANT SELECT, INSERT, UPDATE ON TABLE "documents" TO rez_documents;'
-documents_role_grant_down_sql := 'REVOKE SELECT, INSERT, UPDATE ON TABLE "documents" FROM rez_documents;'
-
+[working-directory("packages/apps/backend/migrations")]
 @create-initial-migrations: recreate-db
-    rm -f {{backend_dir}}/migrations/*.{sql,sum}
+    rm -f ./0001_init*.sql
+    rm -f ./atlas.sum
     just run-backend generate-migration init
-    echo "{{documents_role_grant_up_sql}}" > "{{documents_role_grant_migration_file}}.up.sql"
-    echo "{{documents_role_grant_down_sql}}" > "{{documents_role_grant_migration_file}}.down.sql"
     just run-backend generate-migration --update-checksum

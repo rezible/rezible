@@ -15,7 +15,7 @@ import (
 
 type BootstrapConfig struct {
 	DexPassword          string `koanf:"dex_password"`
-	RezMigratorPassword  string `koanf:"rez_migrator_password"`
+	RezAdminPassword     string `koanf:"rez_admin_password"`
 	RezAppPassword       string `koanf:"rez_app_password"`
 	RezDocumentsPassword string `koanf:"rez_documents_password"`
 }

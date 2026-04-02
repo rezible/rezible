@@ -8,46 +8,35 @@ services:
     image: postgres:17
     restart: unless-stopped
     ports: ["${POSTGRES_PORT}:5432"]
-    environment:
-      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
+    env_file: [".env.dev", ".env"]
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-U", "postgres"]
       interval: 1s
       timeout: 1s
       retries: 3
       start_period: 2s
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
 
   dex:
     image: dexidp/dex:v2.41.1
-    restart: unless-stopped
+    restart: on-failure:2
     ports: ["${DEX_PORT}:${DEX_PORT}"]
     volumes:
       - "./scripts/dex-config.yaml:/etc/dex/config.yaml:ro"
-      - "./certs/localias-ca.crt:/etc/ssl/localias.crt:ro"
+      - "./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"
     command: ["dex", "serve", "/etc/dex/config.yaml"]
+    env_file: [".env.dev", ".env"]
     environment:
-      - ISSUER_URL=${DEX_URL}
       - PORT=${DEX_PORT}
-      - APP_URL=${APP_URL}
-      - API_URL=${API_URL}
-      - POSTGRES_PASSWORD=${POSTGRES_DEX_PASSWORD}
-      - APP_CLIENT_ID=${AUTH__OIDC__CLIENT_ID}
-      - APP_CLIENT_REDIRECT_URI=${APP_OIDC_CLIENT_REDIRECT_URI}
-      - GOOGLE_OIDC_CLIENT_ID=${GOOGLE_OIDC_CLIENT_ID}
-      - GOOGLE_OIDC_CLIENT_SECRET=${GOOGLE_OIDC_CLIENT_SECRET}
-      - GOOGLE_OIDC_CLIENT_REDIRECT_URI=${DEX_URL}/callback
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "-t 1", "--spider", "http://${PROXY_DEX_UPSTREAM_HOST}${DEX_PATH}/healthz"]
-      interval: 2s
-      timeout: 2s
+      test: ["CMD", "wget", "-q", "-t 1", "--spider", "http://localhost:${DEX_PORT}${DEX_PATH}/healthz"]
+      interval: 3s
+      timeout: 3s
       retries: 3
-      start_period: 1s
+      start_period: 2s
 
   telemetry:
     scale: 0
@@ -68,3 +57,58 @@ services:
       retries: 10
       start_period: 1m
       start_interval: 10s
+
+  # Rezible apps — only run when "rezible" profile is enabled
+  rez-frontend:
+    profiles: ["rezible"]
+    build:
+      context: .
+      dockerfile: packages/apps/frontend/Dockerfile
+    ports: ["${REZ_APP_PORT}:80"]
+    volumes: ["./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"]
+    environment:
+      - PROXY_BACKEND_UPSTREAM_HOST=rez-backend:${REZ_BACKEND_PORT}
+      - PROXY_DOCUMENTS_SERVER_UPSTREAM_HOST=rez-documents-server:${REZ_DOCUMENTS_SERVER_PORT}
+      - PROXY_DEX_UPSTREAM_HOST=dex:${DEX_PORT}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
+      interval: 3s
+      timeout: 1s
+      retries: 3
+      start_period: 2s
+
+  rez-backend:
+    profiles: ["rezible"]
+    restart: on-failure:2
+    build:
+      context: .
+      dockerfile: packages/apps/backend/Dockerfile
+    ports: ["${REZ_BACKEND_PORT}:${REZ_BACKEND_PORT}"]
+    entrypoint: /bin/sh -c "update-ca-certificates && rezible migrate up && rezible serve"
+    volumes: ["./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias.crt:ro"]
+    env_file: [".env.dev", ".env"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      dex:
+        condition: service_healthy
+      rez-frontend:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:${REZ_BACKEND_PORT}/health" ]
+      interval: 3s
+      timeout: 1s
+      retries: 3
+      start_period: 3s
+    extra_hosts:
+      - "app.dev.rezible.com:host-gateway"
+
+  rez-documents-server:
+    profiles: ["rezible"]
+    depends_on: [postgres, rez-frontend]
+    build:
+      context: .
+      dockerfile: packages/apps/documents-server/Dockerfile
+    ports: ["${REZ_DOCUMENTS_SERVER_PORT}:${REZ_DOCUMENTS_SERVER_PORT}"]
+    volumes: ["./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"]
+    env_file: [".env.dev", ".env"]
