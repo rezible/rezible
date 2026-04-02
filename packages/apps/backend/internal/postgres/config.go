@@ -14,6 +14,7 @@ import (
 
 func LoadConfig() (Config, error) {
 	cfg := Config{
+		Port:     5432,
 		Database: "rezible",
 		SSLMode:  "require",
 	}
