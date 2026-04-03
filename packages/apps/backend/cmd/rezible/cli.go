@@ -75,75 +75,57 @@ var rezcli = &cli.Command{
 			},
 		},
 		{
-			Name:      "bootstrap-db",
-			Usage:     "Bootstrap postgres database",
-			Arguments: []cli.Argument{},
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:  "database-url",
-					Usage: "override the migration database connection URL",
-				},
-			},
-			Action: func(ctx context.Context, cmd *cli.Command) error {
-				return postgres.RunBootstrap(ctx, cmd.String("database-url"))
-			},
-		},
-		{
-			Name:  "generate-migration",
-			Usage: "Create a new database migration",
-			Arguments: []cli.Argument{
-				&cli.StringArg{
-					Name:      "name",
-					UsageText: "name of the migration",
-					Config:    cli.StringConfig{TrimSpace: true},
-				},
-			},
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:  "database-url",
-					Usage: "override the migration database connection URL",
-				},
-				&cli.BoolFlag{
-					Name:  "update-checksum",
-					Usage: "just update the checksum file",
-				},
-			},
-			Action: func(ctx context.Context, cmd *cli.Command) error {
-				if cmd.Bool("update-checksum") {
-					return postgres.UpdateMigrationsChecksum()
-				}
-				return postgres.GenerateEntMigrations(ctx, cmd.StringArg("name"), cmd.String("database-url"))
-			},
-		},
-		{
-			Name:  "migrate",
-			Usage: "Manage database migrations",
-			Flags: []cli.Flag{
-				&cli.StringFlag{
-					Name:  "database-url",
-					Usage: "override the migration database connection URL",
-				},
-			},
+			Name:  "db",
+			Usage: "backend server control",
 			Commands: []*cli.Command{
 				{
-					Name:  "up",
+					Name:      "bootstrap",
+					Usage:     "Bootstrap database",
+					Arguments: []cli.Argument{},
+					Action: func(ctx context.Context, cmd *cli.Command) error {
+						return postgres.BootstrapDatabase(ctx)
+					},
+				},
+				{
+					Name:  "create-migration",
+					Usage: "Create a new database migration",
+					Arguments: []cli.Argument{
+						&cli.StringArg{
+							Name:      "name",
+							UsageText: "name of the migration",
+							Config:    cli.StringConfig{TrimSpace: true},
+						},
+					},
+					Action: func(ctx context.Context, cmd *cli.Command) error {
+						return postgres.GenerateEntMigration(ctx, cmd.StringArg("name"))
+					},
+				},
+				{
+					Name:  "update-checksum",
+					Usage: "Update the database migrations checksum file",
+					Action: func(ctx context.Context, cmd *cli.Command) error {
+						return postgres.UpdateMigrationsChecksum()
+					},
+				},
+				{
+					Name:  "migrate-up",
 					Usage: "Apply all pending database migrations",
 					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return postgres.RunMigrations(ctx, "up", cmd.String("database-url"))
+						return postgres.RunMigration(ctx, "up")
 					},
 				},
 				{
-					Name:  "down",
+					Name:  "migrate-down",
 					Usage: "Rollback last database migration",
 					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return postgres.RunMigrations(ctx, "down", cmd.String("database-url"))
+						return postgres.RunMigration(ctx, "down")
 					},
 				},
 				{
-					Name:  "status",
+					Name:  "migration-status",
 					Usage: "Print migration status",
 					Action: func(ctx context.Context, cmd *cli.Command) error {
-						status, statusErr := postgres.GetMigrationStatus(ctx, cmd.String("database-url"))
+						status, statusErr := postgres.GetMigrationStatus(ctx)
 						if statusErr != nil {
 							return statusErr
 						}

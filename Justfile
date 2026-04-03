@@ -116,22 +116,29 @@ scripts_dir := "./scripts"
 # [group('Database')]
 
 @run-psql *ARGS:
-    just run-docker-compose exec -it postgres psql -U postgres {{ARGS}}
+    just run-docker-compose exec -it postgres psql -U $POSTGRES_USER {{ARGS}}
 
 setup-db: recreate-db bootstrap-db run-migrations
 
 @recreate-db:
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
 
+init_db_script := f"REVOKE ALL ON DATABASE {{env('POSTGRES_DB')}} FROM PUBLIC;
+CREATE USER {{env('POSTGRES_DEX_USER')}} WITH LOGIN PASSWORD '{{env('POSTGRES_DEX_PASSWORD')}}';
+CREATE DATABASE {{env('POSTGRES_DEX_DATABASE')}} OWNER {{env('POSTGRES_DEX_USER')}};
+REVOKE ALL ON DATABASE {{env('POSTGRES_DEX_DATABASE')}} FROM PUBLIC;
+GRANT CONNECT ON DATABASE {{env('POSTGRES_DEX_DATABASE')}} TO {{env('POSTGRES_DEX_USER')}};"
+
 @bootstrap-db:
-    just run-backend bootstrap-db --database-url="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/postgres?sslmode=${POSTGRES_SSLMODE}"
+    printf "%s" "{{init_db_script}}" | just run-docker-compose exec -T postgres psql -U $POSTGRES_USER
+    just run-backend db bootstrap
 
 @run-migrations:
-    just run-backend migrate up
+    just run-backend db migrate-up
 
 [working-directory("packages/apps/backend/migrations")]
 @create-initial-migrations: recreate-db
     rm -f ./0001_init*.sql
     rm -f ./atlas.sum
-    just run-backend generate-migration init
-    just run-backend generate-migration --update-checksum
+    just run-backend db create-migration init
+    just run-backend db create-migration --update-checksum

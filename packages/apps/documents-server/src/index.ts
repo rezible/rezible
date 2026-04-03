@@ -1,27 +1,7 @@
 import { Server } from "@hocuspocus/server";
 import { Logger } from "@hocuspocus/extension-logger";
-import { DocumentsServerExtension } from "./documents";
-
-type Config = {
-	name: string;
-	host: string;
-	port: number;
-	apiUrl: string;
-	dbUrl: string;
-}
-
-const loadConfig = (): Config => {
-	const name = process.env.NAME ?? "documents-server";
-
-	const host = process.env.HOST ?? "0.0.0.0";
-	let port = Number.parseInt(process.env.PORT ?? "7002", 10);
-	if (port < 1024) port = 7003;
-
-	const apiUrl = process.env.API_URL ?? "";
-	const dbUrl = process.env.POSTGRES_DOCUMENTS_URL ?? process.env.DB_URL ?? "";
-
-	return { name, host, port, apiUrl, dbUrl };
-}
+import { loadConfig } from "./config";
+import { DocumentsServerExtension } from "./server";
 
 const createServer = () => {
     const cfg = loadConfig();

@@ -17,7 +17,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	_ "github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/jackc/pgx/v5/stdlib"
 
 	migratelib "github.com/golang-migrate/migrate/v4"
@@ -33,12 +32,13 @@ const (
 	migrationsTable = "migrations"
 )
 
-func RunMigrations(ctx context.Context, direction string, dbUrlOverride string) error {
-	if direction == "down" {
-		panic("only migrating up is supported")
-	}
+var postgresMigrateConfig = &postgresmigrate.Config{
+	SchemaName:      SchemaName,
+	MigrationsTable: migrationsTable,
+}
 
-	return withMigrationPool(ctx, dbUrlOverride, func(pool *pgxpool.Pool) error {
+func RunMigration(ctx context.Context, direction string) error {
+	return withAdminDb(ctx, func(pool *pgxpool.Pool) error {
 		if mErr := runMigration(ctx, pool, direction); mErr != nil {
 			return fmt.Errorf("migration: %w", mErr)
 		}
@@ -65,7 +65,7 @@ func UpdateMigrationsChecksum() error {
 	return nil
 }
 
-func GenerateEntMigrations(ctx context.Context, name string, dbUrlOverride string) error {
+func GenerateEntMigration(ctx context.Context, name string) error {
 	dir, dirErr := sqltool.NewGolangMigrateDir(migrations.OutputDir)
 	if dirErr != nil {
 		return fmt.Errorf("failed creating atlas migration directory: %w", dirErr)
@@ -81,12 +81,14 @@ func GenerateEntMigrations(ctx context.Context, name string, dbUrlOverride strin
 		schema.WithMigrationMode(schema.ModeInspect),
 		schema.WithFormatter(formatter),
 	}
-	return withMigratorDb(ctx, dbUrlOverride, func(db *sql.DB) error {
-		m, mErr := schema.NewMigrate(entsql.OpenDB(dialect.Postgres, db), opts...)
-		if mErr != nil {
-			return fmt.Errorf("failed creating migrate: %w", mErr)
-		}
-		return m.NamedDiff(ctx, name, entmigrate.Tables...)
+	return withAdminDb(ctx, func(pool *pgxpool.Pool) error {
+		return withDbFromPool(pool, func(db *sql.DB) error {
+			m, mErr := schema.NewMigrate(entsql.OpenDB(dialect.Postgres, db), opts...)
+			if mErr != nil {
+				return fmt.Errorf("failed creating migrate: %w", mErr)
+			}
+			return m.NamedDiff(ctx, name, entmigrate.Tables...)
+		})
 	})
 }
 
@@ -108,26 +110,12 @@ func makeMigrationFormatter() (migrate.Formatter, error) {
 	return migrate.NewTemplateFormatter(upNameTemplate, upContentTemplate, downNameTemplate, downContentTemplate)
 }
 
-func withMigratorDb(ctx context.Context, dbUrlOverride string, fn func(db *sql.DB) error) error {
-	return withMigrationPool(ctx, dbUrlOverride, func(pool *pgxpool.Pool) error {
-		db := stdlib.OpenDBFromPool(pool)
-		defer closeSqlDb(db)
-		return fn(db)
-	})
-}
-
-func withMigrationPool(ctx context.Context, connStringOverride string, fn func(*pgxpool.Pool) error) error {
-	connString := connStringOverride
-	if connString == "" {
-		cfg, cfgErr := LoadConfig()
-		if cfgErr != nil || cfg.Migrations == nil {
-			return fmt.Errorf("postgres migrations config error: %w", cfgErr)
-		}
-		cfg.User = cfg.Migrations.User
-		cfg.Password = cfg.Migrations.Password
-		connString = cfg.getDsn()
+func withAdminDb(ctx context.Context, fn func(*pgxpool.Pool) error) error {
+	cfg, cfgErr := LoadConfig()
+	if cfgErr != nil || cfg.AdminRole.Name == "" {
+		return fmt.Errorf("postgres migrations config error: %w", cfgErr)
 	}
-	pool, poolErr := openPgxPool(ctx, connString)
+	pool, poolErr := openPgxPool(ctx, cfg.getDsn(cfg.AdminRole))
 	if poolErr != nil {
 		return fmt.Errorf("open pgxpool: %w", poolErr)
 	}
@@ -136,51 +124,54 @@ func withMigrationPool(ctx context.Context, connStringOverride string, fn func(*
 }
 
 func runMigration(ctx context.Context, pool *pgxpool.Pool, direction string) error {
-	db := stdlib.OpenDBFromPool(pool)
-	defer closeSqlDb(db)
-
-	conn, connErr := db.Conn(ctx)
-	if connErr != nil {
-		return fmt.Errorf("connect to postgres: %w", connErr)
-	}
-	defer conn.Close()
-
 	sourceDriver, sourceErr := iofs.New(migrations.FS, migrations.Path)
 	if sourceErr != nil {
 		return fmt.Errorf("load embedded migration source: %w", sourceErr)
 	}
 
-	pgmCfg := &postgresmigrate.Config{
-		SchemaName:      SchemaName,
-		MigrationsTable: migrationsTable,
-	}
-	dbDriver, driverErr := postgresmigrate.WithConnection(ctx, conn, pgmCfg)
-	if driverErr != nil {
-		return fmt.Errorf("create postgres migration driver: %w", driverErr)
+	withMigrator := func(conn *sql.Conn, fn func(*migratelib.Migrate) error) error {
+		driver, driverErr := postgresmigrate.WithConnection(ctx, conn, postgresMigrateConfig)
+		if driverErr != nil {
+			return fmt.Errorf("create postgres migration driver: %w", driverErr)
+		}
+
+		migrator, migratorErr := migratelib.NewWithInstance("iofs", sourceDriver, "postgres", driver)
+		if migratorErr != nil {
+			return fmt.Errorf("create migrator: %w", migratorErr)
+		}
+		defer func(m *migratelib.Migrate) {
+			if m == nil {
+				return
+			}
+			closeSrcErr, closeDbErr := m.Close()
+			if closeSrcErr != nil || closeDbErr != nil {
+				log.Error().
+					AnErr("closeSrcErr", closeSrcErr).
+					AnErr("closeDbErr", closeDbErr).
+					Msg("failed to close migrator")
+			}
+		}(migrator)
+
+		return fn(migrator)
 	}
 
-	m, migratorErr := migratelib.NewWithInstance("iofs", sourceDriver, "postgres", dbDriver)
-	if migratorErr != nil {
-		return fmt.Errorf("create migrator: %w", migratorErr)
-	}
-	defer func(m *migratelib.Migrate) {
-		closeSrcErr, closeDbErr := m.Close()
-		if closeSrcErr != nil || closeDbErr != nil {
-			log.Error().
-				AnErr("closeSrcErr", closeSrcErr).
-				AnErr("closeDbErr", closeDbErr).
-				Msg("failed to close migrator")
+	return withDbFromPool(pool, func(db *sql.DB) error {
+		conn, connErr := db.Conn(ctx)
+		if connErr != nil {
+			return fmt.Errorf("connect to postgres: %w", connErr)
 		}
-	}(m)
-
-	if direction == "up" {
-		if upErr := m.Up(); upErr != nil && !errors.Is(upErr, migratelib.ErrNoChange) {
-			return fmt.Errorf("apply migrations: %w", upErr)
+		defer closeResource(conn, "db.Conn from pool")
+		migrateErr := withMigrator(conn, func(m *migratelib.Migrate) error {
+			if direction == "up" {
+				return m.Up()
+			}
+			return fmt.Errorf("direction %q is not supported", direction)
+		})
+		if migrateErr != nil && !errors.Is(migrateErr, migratelib.ErrNoChange) {
+			return fmt.Errorf("apply migrations: %w", migrateErr)
 		}
-	} else {
-		return fmt.Errorf("direction %q is not supported", direction)
-	}
-	return nil
+		return nil
+	})
 }
 
 type MigrationStatus struct {
@@ -198,15 +189,17 @@ func (ms MigrationStatus) String() string {
 		ms.CurrentVersion, ms.LatestVersion, ms.Dirty, ms.Pending())
 }
 
-func GetMigrationStatus(ctx context.Context, dbUrlOverride string) (MigrationStatus, error) {
+func GetMigrationStatus(ctx context.Context) (MigrationStatus, error) {
 	var status MigrationStatus
-	dbErr := withMigratorDb(ctx, dbUrlOverride, func(db *sql.DB) error {
-		ms, msErr := getMigrationStatusFromDB(ctx, db)
-		if msErr != nil {
-			return fmt.Errorf("get status from db: %w", msErr)
-		}
-		status = ms
-		return nil
+	dbErr := withAdminDb(ctx, func(pool *pgxpool.Pool) error {
+		return withDbFromPool(pool, func(db *sql.DB) error {
+			ms, msErr := getMigrationStatusFromDB(ctx, db)
+			if msErr != nil {
+				return fmt.Errorf("get status from db: %w", msErr)
+			}
+			status = ms
+			return nil
+		})
 	})
 	return status, dbErr
 }
@@ -219,16 +212,10 @@ func getMigrationStatusFromDB(ctx context.Context, db *sql.DB) (MigrationStatus,
 	}
 	s.LatestVersion = latest
 
-	row := db.QueryRowContext(ctx, `SELECT version, dirty FROM rezible.migrations LIMIT 1`)
+	row := db.QueryRowContext(ctx, `SELECT version, dirty FROM migrations LIMIT 1`)
 	if scanErr := row.Scan(&s.CurrentVersion, &s.Dirty); scanErr != nil && !errors.Is(scanErr, sql.ErrNoRows) {
 		return s, scanErr
 	}
 
 	return s, nil
-}
-
-func closeSqlDb(db *sql.DB) {
-	if err := db.Close(); err != nil {
-		log.Error().Err(err).Msg("failed to close database connection")
-	}
 }

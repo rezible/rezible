@@ -2,9 +2,9 @@ package postgres
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 
-	"github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/rezible/rezible/ent/runtime"
 
@@ -19,13 +19,6 @@ import (
 	"github.com/rezible/rezible/ent/entpgx"
 )
 
-func MakeEntClient(driver dialect.Driver) *ent.Client {
-	client := ent.NewClient(ent.Driver(driver))
-	client.Use(ensureTenantIdSetHook)
-	client.Intercept(setTenantContextInterceptor())
-	return client
-}
-
 type DatabaseClient struct {
 	pool   *pgxpool.Pool
 	driver dialect.Driver
@@ -38,7 +31,7 @@ func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
 		return nil, fmt.Errorf("load config: %w", cfgErr)
 	}
 
-	pool, poolErr := openPgxPool(ctx, cfg.getDsn())
+	pool, poolErr := openPgxPool(ctx, cfg.getDsn(cfg.AppRole))
 	if poolErr != nil {
 		return nil, poolErr
 	}
@@ -55,19 +48,19 @@ func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
 }
 
 func (dbc *DatabaseClient) requireUpToDateMigrations(ctx context.Context) error {
-	db := stdlib.OpenDBFromPool(dbc.pool)
-	defer closeSqlDb(db)
-	status, statusErr := getMigrationStatusFromDB(ctx, db)
-	if statusErr != nil {
-		return fmt.Errorf("read migration status: %w", statusErr)
-	}
-	if status.Dirty {
-		return fmt.Errorf("database migrations are dirty: %s", status)
-	}
-	if status.Pending() {
-		return fmt.Errorf("database migrations are pending: %s", status)
-	}
-	return nil
+	return withDbFromPool(dbc.pool, func(db *sql.DB) error {
+		status, statusErr := getMigrationStatusFromDB(ctx, db)
+		if statusErr != nil {
+			return fmt.Errorf("read migration status: %w", statusErr)
+		}
+		if status.Dirty {
+			return fmt.Errorf("database migrations are dirty: %s", status)
+		}
+		if status.Pending() {
+			return fmt.Errorf("database migrations are pending: %s", status)
+		}
+		return nil
+	})
 }
 
 func (dbc *DatabaseClient) Client() *ent.Client {

@@ -14,6 +14,7 @@ import (
 
 func LoadConfig() (Config, error) {
 	cfg := Config{
+		Host:     "localhost",
 		Port:     5432,
 		Database: "rezible",
 		SSLMode:  "require",
@@ -22,30 +23,30 @@ func LoadConfig() (Config, error) {
 }
 
 type Config struct {
-	User       string            `koanf:"user"`
-	Password   string            `koanf:"password"`
-	Host       string            `koanf:"host"`
-	Port       uint16            `koanf:"port"`
-	Database   string            `koanf:"database"`
-	SSLMode    string            `koanf:"sslmode"`
-	Pool       *PoolConfig       `koanf:"pool"`
-	Migrations *MigrationsConfig `koanf:"migrations"`
+	Host          string      `koanf:"host"`
+	Port          uint16      `koanf:"port"`
+	Database      string      `koanf:"database"`
+	AppRole       RoleConfig  `koanf:"role_app"`
+	DocumentsRole RoleConfig  `koanf:"role_documents"`
+	AdminRole     RoleConfig  `koanf:"role_admin"`
+	SSLMode       string      `koanf:"sslmode"`
+	Pool          *PoolConfig `koanf:"pool"`
 }
 
 type PoolConfig struct {
 	MaxConns int32 `koanf:"pool_max_conns"`
 }
 
-type MigrationsConfig struct {
-	User     string `koanf:"user"`
+type RoleConfig struct {
+	Name     string `koanf:"name"`
 	Password string `koanf:"password"`
 }
 
-func (cfg *Config) getDsn() string {
+func (cfg *Config) getDsn(role RoleConfig) string {
 	var dsn []string
-	dsn = append(dsn, fmt.Sprintf("user='%s'", cfg.User))
-	if cfg.Password != "" {
-		dsn = append(dsn, fmt.Sprintf("password='%s'", cfg.Password))
+	dsn = append(dsn, fmt.Sprintf("user='%s'", role.Name))
+	if role.Password != "" {
+		dsn = append(dsn, fmt.Sprintf("password='%s'", role.Password))
 	}
 	dsn = append(dsn, fmt.Sprintf("host='%s'", cfg.Host))
 	dsn = append(dsn, fmt.Sprintf("port=%d", cfg.Port))
