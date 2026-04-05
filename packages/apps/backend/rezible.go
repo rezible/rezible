@@ -99,15 +99,20 @@ type (
 		ConfigValues map[string]any
 	}
 
+	CompleteIntegrationOAuth2Params struct {
+		Code           string
+		State          *string
+		ClientVerifier *string
+	}
+
 	IntegrationsService interface {
 		Configure(ctx context.Context, name string, cfg map[string]any) (ConfiguredIntegration, error)
 		ListConfigured(ctx context.Context, params ListIntegrationsParams) ([]ConfiguredIntegration, error)
 		GetConfigured(ctx context.Context, name string) (ConfiguredIntegration, error)
 		UpdateConfiguredPreferences(ctx context.Context, name string, prefs map[string]any) (ConfiguredIntegration, error)
 		DeleteConfigured(ctx context.Context, name string) error
-
 		StartOAuth2Flow(ctx context.Context, name string, redirect *url.URL) (string, error)
-		CompleteOAuth2Flow(ctx context.Context, name, state, code string) (ConfiguredIntegration, error)
+		CompleteOAuth2Flow(ctx context.Context, name string, params CompleteIntegrationOAuth2Params) (ConfiguredIntegration, error)
 
 		GetChatService(ctx context.Context) (ChatService, error)
 		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)

@@ -180,8 +180,9 @@ var CompleteIntegrationOAuthFlow = huma.Operation{
 }
 
 type CompleteIntegrationOAuthFlowRequestAttributes struct {
-	State string `json:"state"`
-	Code  string `json:"code"`
+	Code           string  `json:"code"`
+	State          *string `json:"state,omitempty"`
+	ClientVerifier *string `json:"client_verifier,omitempty"`
 }
 type CompleteIntegrationOAuthFlowRequest NameRequestWithAttributes[CompleteIntegrationOAuthFlowRequestAttributes]
 type CompleteIntegrationOAuthFlowResponse ItemResponse[ConfiguredIntegration]

@@ -2,6 +2,7 @@ package apiv1
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 
 	rez "github.com/rezible/rezible"
@@ -121,7 +122,15 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 
 	attr := req.Body.Attributes
 
-	ci, completeErr := h.integrations.CompleteOAuth2Flow(ctx, req.Name, attr.State, attr.Code)
+	if attr.State == nil && attr.ClientVerifier == nil {
+		return nil, oapi.Error("invalid params", fmt.Errorf("missing state or client_verifier"))
+	}
+	params := rez.CompleteIntegrationOAuth2Params{
+		Code:           attr.Code,
+		State:          attr.State,
+		ClientVerifier: attr.ClientVerifier,
+	}
+	ci, completeErr := h.integrations.CompleteOAuth2Flow(ctx, req.Name, params)
 	if completeErr != nil {
 		return nil, oapi.Error("failed to complete integration", completeErr)
 	}

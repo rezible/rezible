@@ -116,17 +116,17 @@ func GetWebhookHandlers() map[string]http.Handler {
 	return whs
 }
 
-type IntegrationWithOAuth2SetupFlow interface {
+type IntegrationWithOAuth2Flow interface {
 	OAuth2Config() *oauth2.Config
 	ExtractIntegrationConfigFromToken(*oauth2.Token) (map[string]any, error)
 }
 
-func GetOAuthIntegration(name string) (IntegrationWithOAuth2SetupFlow, error) {
+func GetOAuthIntegration(name string) (IntegrationWithOAuth2Flow, error) {
 	ip, ipErr := GetPackage(name)
 	if ipErr != nil {
 		return nil, fmt.Errorf("invalid integration %s: %w", name, ipErr)
 	}
-	oauth2Intg, ok := ip.(IntegrationWithOAuth2SetupFlow)
+	oauth2Intg, ok := ip.(IntegrationWithOAuth2Flow)
 	if !ok {
 		return nil, fmt.Errorf("oauth2 flow not supported for integration %s", name)
 	}

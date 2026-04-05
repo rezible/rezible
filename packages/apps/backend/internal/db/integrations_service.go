@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/access"
 	"github.com/rs/zerolog/log"
+	"golang.org/x/oauth2"
 	"golang.org/x/sync/singleflight"
 
 	rez "github.com/rezible/rezible"
@@ -293,15 +294,23 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, name string, 
 	return cfg.AuthCodeURL(state), nil
 }
 
-func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name, state, code string) (rez.ConfiguredIntegration, error) {
+func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, name string, params rez.CompleteIntegrationOAuth2Params) (rez.ConfiguredIntegration, error) {
 	oi, oiErr := integrations.GetOAuthIntegration(name)
 	if oiErr != nil {
 		return nil, fmt.Errorf("invalid oauth2 integration: %w", oiErr)
 	}
-	if stateErr := s.verifyOAuthState(ctx, name, state); stateErr != nil {
-		return nil, fmt.Errorf("invalid state: %w", stateErr)
+	oauthCfg := oi.OAuth2Config()
+	var opts []oauth2.AuthCodeOption
+	if params.State != nil {
+		if stateErr := s.verifyOAuthState(ctx, name, *params.State); stateErr != nil {
+			return nil, fmt.Errorf("invalid state: %w", stateErr)
+		}
+	} else if params.ClientVerifier != nil {
+		opts = append(opts, oauth2.VerifierOption(*params.ClientVerifier))
+	} else {
+		return nil, fmt.Errorf("invalid oauth2 integration: missing state or client_verifier")
 	}
-	token, tokenErr := oi.OAuth2Config().Exchange(ctx, code)
+	token, tokenErr := oauthCfg.Exchange(ctx, params.Code, opts...)
 	if tokenErr != nil {
 		return nil, fmt.Errorf("exchange token: %w", tokenErr)
 	}
