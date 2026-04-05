@@ -1,6 +1,6 @@
 import { redirect } from "@sveltejs/kit";
 import type { PageLoad } from "./$types";
-import { APP_AUTH_ROUTE_BASE } from "$lib/config.js";
+import { APP_AUTH_ROUTE_BASE } from "$lib/config";
 
 export const load = (async ({ url }) => {
     const queryParams = new URLSearchParams({});

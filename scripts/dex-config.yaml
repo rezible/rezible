@@ -1,4 +1,4 @@
-issuer: "{{ .Env.DEX_URL }}"
+issuer: "{{ .Env.ISSUER_URL }}"
 
 web:
   http: "0.0.0.0:{{ .Env.PORT }}"
@@ -37,7 +37,7 @@ connectors:
     config:
       clientID: $GOOGLE_OIDC_CLIENT_ID
       clientSecret: $GOOGLE_OIDC_CLIENT_SECRET
-      redirectURI: "{{ .Env.DEX_URL }}/callback"
+      redirectURI: "{{ .Env.ISSUER_URL }}/callback"
       promptType: ""
 
 enablePasswordDB: true
