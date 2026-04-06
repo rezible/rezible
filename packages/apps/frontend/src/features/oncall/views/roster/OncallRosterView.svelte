@@ -37,4 +37,8 @@
 	];
 </script>
 
-<TabbedViewContainer {tabs} path="/rosters/{view.rosterSlug}" infoBar={RosterDetailsBar} />
+{#snippet infoBar()}
+	<RosterDetailsBar {view} />
+{/snippet}
+
+<TabbedViewContainer {tabs} path="/rosters/{view.rosterSlug}" {infoBar} />

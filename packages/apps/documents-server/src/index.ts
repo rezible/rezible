@@ -5,7 +5,7 @@ import { DocumentsServerExtension } from "./server";
 
 const createServer = () => {
     const cfg = loadConfig();
-	const server = new Server({
+	return new Server({
 		name: cfg.name,
 		address: cfg.host,
 		port: cfg.port,
@@ -15,10 +15,9 @@ const createServer = () => {
 		quiet: false,
 		extensions: [
 			new Logger(),
-            new DocumentsServerExtension(cfg.apiUrl, cfg.dbUrl),
+            new DocumentsServerExtension(cfg),
 		],
 	});
-	return server;
 }
 
 const runServer = async () => {

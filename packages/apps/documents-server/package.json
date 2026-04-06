@@ -15,18 +15,14 @@
     "@types/pg": "^8.15.4"
   },
   "dependencies": {
-    "@hocuspocus/common": "^3.4.4",
-    "@hocuspocus/extension-database": "^3.4.4",
-    "@hocuspocus/extension-logger": "^3.4.4",
-    "@hocuspocus/server": "^3.4.4",
-    "@hocuspocus/transformer": "^3.4.4",
+    "@hocuspocus/common": "catalog:documents",
+    "@hocuspocus/extension-database": "catalog:documents",
+    "@hocuspocus/extension-logger": "catalog:documents",
+    "@hocuspocus/server": "catalog:documents",
+    "@hocuspocus/transformer": "catalog:documents",
     "@rezible/tiptap-extensions": "workspace:*",
     "@rezible/api-client-ts": "workspace:*",
     "pg": "^8.16.0",
     "uuid": "^11.1.0"
-  },
-  "peerDependencies": {
-    "@tiptap/core": "^3.13.0",
-    "yjs": "^13"
   }
 }

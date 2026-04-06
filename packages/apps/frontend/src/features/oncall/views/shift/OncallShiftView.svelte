@@ -34,4 +34,8 @@
 	];
 </script>
 
-<TabbedViewContainer {tabs} path="/shifts/{view.shiftId}" infoBar={ShiftDetailsBar} />
+{#snippet infoBar()}
+	<ShiftDetailsBar {view} />
+{/snippet}
+
+<TabbedViewContainer {tabs} path="/shifts/{view.shiftId}" {infoBar} />

@@ -97,7 +97,7 @@ export type AuthSession = {
 };
 
 export type AvailableIntegration = {
-    dataKinds: Array<string> | null;
+    dataKinds: Array<string>;
     name: string;
     oauthRequired: boolean;
 };
@@ -116,8 +116,9 @@ export type CompleteAuthSessionFlowRequestBody = {
 };
 
 export type CompleteIntegrationOAuthFlowRequestAttributes = {
+    client_verifier?: string;
     code: string;
-    state: string;
+    state?: string;
 };
 
 export type CompleteIntegrationOAuthFlowRequestBody = {
@@ -1529,7 +1530,8 @@ export type ListIncidentDebriefMessagesResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentDebriefMessage> | null;
+    data: Array<IncidentDebriefMessage>;
+    pagination: ResponsePagination;
 };
 
 export type ListIncidentDebriefQuestionsResponseBody = {
@@ -1546,7 +1548,8 @@ export type ListIncidentDebriefSuggestionsResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<IncidentDebriefSuggestion> | null;
+    data: Array<IncidentDebriefSuggestion>;
+    pagination: ResponsePagination;
 };
 
 export type ListIncidentEventContributingFactorsResponseBody = {

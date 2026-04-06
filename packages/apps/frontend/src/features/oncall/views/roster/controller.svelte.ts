@@ -3,7 +3,7 @@ import type { Getter } from "$lib/utils.svelte";
 import { createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
-class OncallRosterViewController {
+export class OncallRosterViewController {
 	rosterSlug = $state<string>(null!);
 	constructor(slugFn: () => string) {
 		this.rosterSlug = slugFn();

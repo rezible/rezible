@@ -6,7 +6,7 @@ import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/on
 import { Context, watch } from "runed";
 import type { Getter } from "$lib/utils.svelte";
 
-class OncallShiftViewController {
+export class OncallShiftViewController {
 	private queryClient = useQueryClient();
 	shiftId = $state<string>(null!);
 

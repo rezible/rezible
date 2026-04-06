@@ -98,15 +98,7 @@ export const completeAuthSessionFlow = <ThrowOnError extends boolean = false>(op
 /**
  * Clear an active Auth Session
  */
-export const clearAuthSession = <ThrowOnError extends boolean = false>(options?: Options<ClearAuthSessionData, ThrowOnError>) => (options?.client ?? client).post<ClearAuthSessionResponses, ClearAuthSessionErrors, ThrowOnError>({
-    security: [{
-            in: 'cookie',
-            name: 'rez_access_token',
-            type: 'apiKey'
-        }],
-    url: '/auth_session/clear',
-    ...options
-});
+export const clearAuthSession = <ThrowOnError extends boolean = false>(options?: Options<ClearAuthSessionData, ThrowOnError>) => (options?.client ?? client).post<ClearAuthSessionResponses, ClearAuthSessionErrors, ThrowOnError>({ url: '/auth_session/clear', ...options });
 
 /**
  * List Notifications for the Current User

@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { isFuture } from "date-fns";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import { useOncallShiftViewController } from "$features/oncall/views/shift";
+	import { OncallShiftViewController } from "./controller.svelte";
 
-	const view = useOncallShiftViewController();
+	const { view }: { view: OncallShiftViewController } = $props();
+
 	const attr = $derived(view.shift?.attributes);
 	const roster = $derived(attr?.roster);
 	const user = $derived(attr?.user);

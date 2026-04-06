@@ -13,6 +13,7 @@ import pg from "pg";
 import { emptyDocument } from "./transformer";
 
 import { client, getCurrentAuthSession, getDocumentAccess, type User, type Options } from "@rezible/api-client-ts";
+import type {Config} from "./config.ts";
 
 const tenantIdHeader = "x-rez-tenant-id";
 const authCookieName = "rez_access_token";
@@ -42,10 +43,7 @@ export class DocumentsServerExtension implements Extension {
 	database: Database;
 	dbPool: pg.Pool;
 
-	constructor(apiUrl: string, dbConnUrl: string) {
-		if (!apiUrl) throw new Error("missing api url");
-		if (!dbConnUrl) throw new Error("missing db url");
-
+	constructor({ apiUrl, dbUrl }: Config) {
 		client.setConfig({
 			baseUrl: `${apiUrl}/v1`,
 			headers: {
@@ -53,7 +51,7 @@ export class DocumentsServerExtension implements Extension {
 			}
 		});
 
-		this.dbPool = new pg.Pool({connectionString: dbConnUrl});
+		this.dbPool = new pg.Pool({connectionString: dbUrl});
 		this.database = new Database({
 			fetch: data => this.fetchDocument(data), 
 			store: data => this.storeDocument(data),

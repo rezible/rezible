@@ -1,5 +1,31 @@
 {
   "name": "rezible",
   "private": true,
-  "workspaces": ["packages/apps/*", "packages/libs/*"]
+  "workspaces": ["packages/apps/*", "packages/libs/*"],
+  "catalogs": {
+    "documents": {
+      "yjs": "13.6.27",
+      "@tiptap/core": "3.13.0",
+      "@tiptap/pm": "3.13.0",
+      "@tiptap/extension-bold": "^3.13.0",
+      "@tiptap/extension-document": "^3.13.0",
+      "@tiptap/extension-image": "^3.13.0",
+      "@tiptap/extension-italic": "^3.13.0",
+      "@tiptap/extension-mention": "^3.13.0",
+      "@tiptap/extension-paragraph": "^3.13.0",
+      "@tiptap/extension-bubble-menu": "^3.13.0",
+      "@tiptap/extension-collaboration": "^3.13.0",
+      "@tiptap/extension-collaboration-caret": "^3.13.0",
+      "@tiptap/extension-text": "^3.13.0",
+      "@tiptap/extensions": "3.13.0",
+      "@tiptap/starter-kit": "3.13.0",
+      "@tiptap/suggestion": "3.13.0",
+      "@hocuspocus/common": "^3.4.4",
+      "@hocuspocus/extension-database": "^3.4.4",
+      "@hocuspocus/extension-logger": "^3.4.4",
+      "@hocuspocus/server": "^3.4.4",
+		  "@hocuspocus/provider": "^3.4.4",
+      "@hocuspocus/transformer": "^3.4.4"
+    }
+  }
 }

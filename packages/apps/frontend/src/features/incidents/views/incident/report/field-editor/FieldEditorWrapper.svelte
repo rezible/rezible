@@ -33,9 +33,9 @@
 	// TODO: load this
 	const userAccentColor = "#a33333";
 
-	const configureEditorExtensions = (field: string, provider: HocuspocusProvider) => {
+	const configureEditorExtensions = (field: string, provider: HocuspocusProvider): Extensions => {
 		const user = { name: session.user?.attributes.name, color: userAccentColor };
-		const extensions: Extensions = [
+		return [
 			...configureBaseExtensions(false),
 			configureUserMentionExtension(RezUserSuggestion),
 			configureAnnotationExtension(activeAnnotation.set),
@@ -43,8 +43,6 @@
 			Collaboration.configure({ document: provider.document, field }),
 			CollaborationCaret.configure({ provider, user }),
 		];
-
-		return extensions;
 	};
 
 

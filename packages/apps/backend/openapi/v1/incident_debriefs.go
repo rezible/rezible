@@ -183,7 +183,7 @@ var ListIncidentDebriefMessages = huma.Operation{
 }
 
 type ListIncidentDebriefMessagesRequest ListIdRequest
-type ListIncidentDebriefMessagesResponse ItemResponse[[]IncidentDebriefMessage]
+type ListIncidentDebriefMessagesResponse ListResponse[IncidentDebriefMessage]
 
 var AddIncidentDebriefUserMessage = huma.Operation{
 	OperationID: "add-incident-debrief-user-message",
@@ -210,7 +210,7 @@ var ListIncidentDebriefSuggestions = huma.Operation{
 }
 
 type ListIncidentDebriefSuggestionsRequest ListIdRequest
-type ListIncidentDebriefSuggestionsResponse ItemResponse[[]IncidentDebriefSuggestion]
+type ListIncidentDebriefSuggestionsResponse ListResponse[IncidentDebriefSuggestion]
 
 var ListIncidentDebriefQuestions = huma.Operation{
 	OperationID: "list-debrief-questions",

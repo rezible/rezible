@@ -86,22 +86,23 @@
 			"Bold",
 			activeStatus.bold,
 			mdiFormatBold,
-			runCmd((cmd) => cmd.toggleBold())
+			runCmd((cmd) => cmd.toggleMark("bold"))
 		)}
 		{@render markButton(
 			"Italic",
 			activeStatus.italic,
 			mdiFormatItalic,
-			runCmd((cmd) => cmd.toggleItalic())
+			runCmd((cmd) => cmd.toggleMark("italic"))
 		)}
 		{@render markButton(
 			"Code",
 			activeStatus.code,
 			mdiCodeTags,
-			runCmd((cmd) => cmd.toggleCode())
+			runCmd((cmd) => cmd.toggleMark("code"))
 		)}
 	</div>
 
+	<!--
 	<div class="px-2">
 		{@render markButton(
 			"Code Block",
@@ -137,6 +138,7 @@
 			runCmd((cmd) => cmd.toggleTaskList())
 		)}
 	</div>
+	-->
 
 	<!--Button
 		icon={mdiBug}

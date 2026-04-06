@@ -16,10 +16,10 @@
 
 	let progressBarContainerEl = $state<HTMLElement>();
 
-	let scrollTop = $state(containerEl.scrollTop);
-	let scrollHeight = $state(containerEl.scrollHeight);
-	let clientHeight = $state(containerEl.clientHeight);
-	let progessBarContainerHeight = $state(containerEl.clientHeight);
+	let scrollTop = $state(0);
+	let scrollHeight = $state(0);
+	let clientHeight = $state(0);
+	let progessBarContainerHeight = $state(0);
 
 	// TODO: https://runed.dev/docs/utilities/element-size
 

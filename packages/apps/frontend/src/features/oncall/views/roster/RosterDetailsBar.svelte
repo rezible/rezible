@@ -1,9 +1,9 @@
 <script lang="ts">
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import ShiftProgressCircle from "$features/oncall/components/shift-card/ShiftProgressCircle.svelte";
-	import { useOncallRosterViewController } from "./controller.svelte";
+	import { type OncallRosterViewController } from "./controller.svelte";
 	
-	const view = useOncallRosterViewController();
+	const { view }: { view: OncallRosterViewController } = $props();
 
 	// TODO: include this
 	const teamId = $derived(view.rosterId ?? "");

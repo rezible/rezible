@@ -37,7 +37,7 @@ func (o operations) RegisterIntegrations(api huma.API) {
 type (
 	AvailableIntegration struct {
 		Name          string   `json:"name"`
-		DataKinds     []string `json:"dataKinds"`
+		DataKinds     []string `json:"dataKinds" nullable:"false"`
 		OAuthRequired bool     `json:"oauthRequired"`
 	}
 

@@ -1,11 +1,9 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { listRetrospectiveCommentsOptions, type RetrospectiveComment } from "$lib/api";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import Header from "$components/header/Header.svelte";
 
 	import { draft } from "$features/incidents/views/incident/discussions.svelte";
-	import DiscussionThread from "./DiscussionThread.svelte";
 	import NewDiscussionDrafter from "./NewDiscussionDrafter.svelte";
 
 	type Props = {
@@ -20,7 +18,7 @@
 
 	const onDiscussionCreated = (d: RetrospectiveComment) => {
 		if (draft.editor) {
-			draft.editor.commands.convertDraftToAnnotation(d.id);
+			// draft.editor.commands.convertDraftToAnnotation(d.id);
 			draft.clear(true);
 		}
 		const { queryKey } = queryOptions;

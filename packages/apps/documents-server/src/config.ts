@@ -10,8 +10,8 @@ const loadDbUrl = () => {
 	let dbUrl = process.env.DB_URL ?? "";
 	if (!!dbUrl) return dbUrl;
 
-	const pgRole = process.env.POSTGRES__DOCUMENTS_ROLE__NAME ?? "documents";
-	const pgPassword = process.env.POSTGRES__DOCUMENTS_ROLE__PASSWORD ?? "";
+	const pgRole = process.env.POSTGRES__ROLE_DOCUMENTS__NAME ?? "documents";
+	const pgPassword = process.env.POSTGRES__ROLE_DOCUMENTS__PASSWORD ?? "";
 	if (!pgPassword) {
 		throw new Error("postgres password empty");
 	}

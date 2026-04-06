@@ -18,7 +18,7 @@
 		periodOptions = defaultPeriods,
 	}: Props = $props();
 
-	let selectedOption = $state(periodOptions.find(o => o.value === selected) ?? periodOptions[0]);
+	let selectedOption = $derived(periodOptions.find(o => o.value === selected) ?? periodOptions[0]);
 	const selectPeriod = (idx: number) => {
 		selectedOption = periodOptions[idx];
 		selected = selectedOption.value;

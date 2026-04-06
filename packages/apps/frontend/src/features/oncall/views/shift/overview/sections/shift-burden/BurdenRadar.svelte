@@ -9,14 +9,14 @@
 	};
 	const { burdenStats, comparisonSetName = "Roster Average" }: Props = $props();
 
-	const indicators = burdenStats.map(v => ({
+	const indicators = $derived(burdenStats.map(v => ({
 		name: v.title.replaceAll(" ", "\n"),
 		min: 0,
 		max: 10,
-	}));
+	})));
 
-	const comparisonStats = burdenStats.map(v => (v.comparison?.value || 0));
-	const shiftStats = burdenStats.map(v => (v.value || 0));
+	const comparisonStats = $derived(burdenStats.map(v => (v.comparison?.value || 0)));
+	const shiftStats = $derived(burdenStats.map(v => (v.value || 0)));
 
 	const radarAreaSplitColors = [
 		"rgb(30, 250, 30)",
