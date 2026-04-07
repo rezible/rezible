@@ -5,8 +5,8 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
-    "yjs": "catalog:documents",
     "@tiptap/core": "catalog:documents",
+    "@tiptap/pm": "catalog:documents",
     "@tiptap/extension-bold": "catalog:documents",
     "@tiptap/extension-document": "catalog:documents",
     "@tiptap/extension-image": "catalog:documents",
@@ -15,7 +15,6 @@
     "@tiptap/extension-paragraph": "catalog:documents",
     "@tiptap/extension-text": "catalog:documents",
     "@tiptap/extensions": "catalog:documents",
-    "@tiptap/pm": "catalog:documents",
     "@tiptap/starter-kit": "catalog:documents",
     "@tiptap/suggestion": "catalog:documents"
   },

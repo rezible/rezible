@@ -24,9 +24,8 @@
 		service: "pixel",
 		incident: "bauhaus",
 	};
-	const variant = variants[kind];
 </script>
 
 {#key id}
-	<Avatar name={id} {variant} {square} {size} {colors} />
+	<Avatar name={id} variant={variants[kind]} {square} {size} {colors} />
 {/key}

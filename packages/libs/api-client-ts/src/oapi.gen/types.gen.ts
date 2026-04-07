@@ -189,7 +189,7 @@ export type Cookie = {
     RawExpires: string;
     SameSite: number;
     Secure: boolean;
-    Unparsed: Array<string> | null;
+    Unparsed: Array<string>;
     Value: string;
 };
 
@@ -197,7 +197,7 @@ export type CreateEventAnnotationRequestAttributes = {
     eventId: string;
     minutesOccupied: number;
     notes: string;
-    tags: Array<string> | null;
+    tags: Array<string>;
 };
 
 export type CreateEventAnnotationRequestBody = {
@@ -267,7 +267,7 @@ export type CreateIncidentEventResponseBody = {
 export type CreateIncidentFieldAttributes = {
     incidentType?: string;
     name: string;
-    options: Array<CreateIncidentFieldOptionAttributes> | null;
+    options: Array<CreateIncidentFieldOptionAttributes>;
     required: boolean;
 };
 
@@ -468,7 +468,7 @@ export type CreateMeetingSessionResponseBody = {
 };
 
 export type CreateOncallShiftHandoverTemplateRequestAttributes = {
-    sections: Array<OncallShiftHandoverSection> | null;
+    sections: Array<OncallShiftHandoverSection>;
 };
 
 export type CreateOncallShiftHandoverTemplateRequestBody = {
@@ -567,15 +567,15 @@ export type CreateSystemAnalysisRelationshipResponseBody = {
 };
 
 export type CreateSystemComponentAttributes = {
-    constraints: Array<SystemComponentConstraintAttributes> | null;
-    controls: Array<SystemComponentControlAttributes> | null;
+    constraints: Array<SystemComponentConstraintAttributes>;
+    controls: Array<SystemComponentControlAttributes>;
     description: string;
     kindId: string;
     name: string;
     properties: {
         [key: string]: unknown;
     };
-    signals: Array<SystemComponentSignalAttributes> | null;
+    signals: Array<SystemComponentSignalAttributes>;
 };
 
 export type CreateSystemComponentConstraintAttributes = {
@@ -795,7 +795,7 @@ export type ErrorModel = {
     /**
      * Optional list of individual error details
      */
-    errors?: Array<ErrorDetail> | null;
+    errors?: Array<ErrorDetail>;
     /**
      * A URI reference that identifies the specific occurrence of the problem.
      */
@@ -829,7 +829,7 @@ export type EventAnnotationAttributes = {
     event: ExpandableEventAttributes;
     minutesOccupied: number;
     notes: string;
-    tags: Array<string> | null;
+    tags: Array<string>;
 };
 
 export type EventAttributes = {
@@ -1215,18 +1215,18 @@ export type IncidentAttributes = {
     chatChannel: IncidentChatChannel;
     closedAt: string;
     currentStatus: 'started' | 'mitigated' | 'resolved' | 'closed';
-    linkedIncidents: Array<IncidentLink> | null;
+    linkedIncidents: Array<IncidentLink>;
     openedAt: string;
     primaryVideoConference?: VideoConference;
     private: boolean;
     retrospectiveId?: string;
-    roles: Array<IncidentRoleAssignment> | null;
+    roles: Array<IncidentRoleAssignment>;
     severity: IncidentSeverity;
     slug: string;
     summary: string;
-    tags: Array<IncidentTag> | null;
-    tasks: Array<Task> | null;
-    teams: Array<IncidentTeamAssignment> | null;
+    tags: Array<IncidentTag>;
+    tasks: Array<Task>;
+    teams: Array<IncidentTeamAssignment>;
     ticket?: ExternalTicket;
     title: string;
     type: IncidentType;
@@ -1287,15 +1287,15 @@ export type IncidentEvent = {
 };
 
 export type IncidentEventAttributes = {
-    contributingFactors: Array<IncidentEventContributingFactor> | null;
+    contributingFactors: Array<IncidentEventContributingFactor>;
     decisionContext?: IncidentEventDecisionContext;
     description?: string;
-    evidence: Array<IncidentEventEvidence> | null;
+    evidence: Array<IncidentEventEvidence>;
     incidentId: string;
     isKey: boolean;
     kind: 'observation' | 'action' | 'decision' | 'context';
     sequence: number;
-    systemContext: Array<IncidentEventSystemComponent> | null;
+    systemContext: Array<IncidentEventSystemComponent>;
     timestamp: string;
     title: string;
 };
@@ -1308,7 +1308,7 @@ export type IncidentEventContributingFactor = {
 export type IncidentEventContributingFactorAttributes = {
     description: string;
     factorTypeId: string;
-    links: Array<string> | null;
+    links: Array<string>;
 };
 
 export type IncidentEventContributingFactorCategory = {
@@ -1318,7 +1318,7 @@ export type IncidentEventContributingFactorCategory = {
 
 export type IncidentEventContributingFactorCategoryAttributes = {
     description: string;
-    factorTypes: Array<IncidentEventContributingFactorType> | null;
+    factorTypes: Array<IncidentEventContributingFactorType>;
     name: string;
 };
 
@@ -1329,14 +1329,14 @@ export type IncidentEventContributingFactorType = {
 
 export type IncidentEventContributingFactorTypeAttributes = {
     description: string;
-    examples: Array<string> | null;
+    examples: Array<string>;
     name: string;
 };
 
 export type IncidentEventDecisionContext = {
-    constraints: Array<string> | null;
+    constraints: Array<string>;
     decisionRationale: string;
-    optionsConsidered: Array<string> | null;
+    optionsConsidered: Array<string>;
 };
 
 export type IncidentEventEvidence = {
@@ -1373,7 +1373,7 @@ export type IncidentFieldAttributes = {
     description: string;
     incidentType: IncidentType;
     name: string;
-    options: Array<IncidentFieldOption> | null;
+    options: Array<IncidentFieldOption>;
     required: boolean;
 };
 
@@ -1806,8 +1806,8 @@ export type ListWatchedOncallRostersResponseBody = {
 
 export type MeetingAttendees = {
     private: boolean;
-    teams: Array<string> | null;
-    users: Array<string> | null;
+    teams: Array<string>;
+    users: Array<string>;
 };
 
 export type MeetingSchedule = {
@@ -1857,14 +1857,14 @@ export type OncallRoster = {
 export type OncallRosterAttributes = {
     handoverTemplateId: string;
     name: string;
-    schedules: Array<OncallSchedule> | null;
+    schedules: Array<OncallSchedule>;
     slug: string;
 };
 
 export type OncallRosterMetrics = {
     backlogBurnRate: number;
     handoverCompletion: number;
-    shiftMetrics: Array<OncallShiftMetrics> | null;
+    shiftMetrics: Array<OncallShiftMetrics>;
 };
 
 export type OncallSchedule = {
@@ -1874,7 +1874,7 @@ export type OncallSchedule = {
 
 export type OncallScheduleAttributes = {
     description: string;
-    participants: Array<OncallScheduleParticipant> | null;
+    participants: Array<OncallScheduleParticipant>;
     roster: OncallRoster;
     timezone: string;
 };
@@ -1908,8 +1908,8 @@ export type OncallShiftHandover = {
 };
 
 export type OncallShiftHandoverAttributes = {
-    content: Array<OncallShiftHandoverSection> | null;
-    pinnedAnnotations: Array<EventAnnotation> | null;
+    content: Array<OncallShiftHandoverSection>;
+    pinnedAnnotations: Array<EventAnnotation>;
     sentAt: string;
     shiftId: string;
 };
@@ -1926,7 +1926,7 @@ export type OncallShiftHandoverTemplate = {
 };
 
 export type OncallShiftHandoverTemplateAttributes = {
-    sections: Array<OncallShiftHandoverSection> | null;
+    sections: Array<OncallShiftHandoverSection>;
 };
 
 export type OncallShiftMetrics = {
@@ -2006,7 +2006,7 @@ export type Retrospective = {
 
 export type RetrospectiveAttributes = {
     documentId: string;
-    reportSections: Array<RetrospectiveReportSection> | null;
+    reportSections: Array<RetrospectiveReportSection>;
     state: 'draft' | 'in_review' | 'meeting_scheduled' | 'completed';
     systemAnalysisId?: string;
     type: 'simple' | 'full';
@@ -2019,7 +2019,7 @@ export type RetrospectiveComment = {
 
 export type RetrospectiveCommentAttributes = {
     content: string;
-    replies: Array<RetrospectiveComment> | null;
+    replies: Array<RetrospectiveComment>;
     user: User;
 };
 
@@ -2087,8 +2087,8 @@ export type SystemAnalysis = {
 };
 
 export type SystemAnalysisAttributes = {
-    components: Array<SystemAnalysisComponent> | null;
-    relationships: Array<SystemAnalysisRelationship> | null;
+    components: Array<SystemAnalysisComponent>;
+    relationships: Array<SystemAnalysisRelationship>;
 };
 
 export type SystemAnalysisComponent = {
@@ -2124,15 +2124,15 @@ export type SystemComponent = {
 };
 
 export type SystemComponentAttributes = {
-    constraints: Array<SystemComponentConstraint> | null;
-    controls: Array<SystemComponentControl> | null;
+    constraints: Array<SystemComponentConstraint>;
+    controls: Array<SystemComponentControl>;
     description: string;
     kindId: string;
     name: string;
     properties: {
         [key: string]: unknown;
     };
-    signals: Array<SystemComponentSignal> | null;
+    signals: Array<SystemComponentSignal>;
 };
 
 export type SystemComponentConstraint = {
@@ -2550,7 +2550,7 @@ export type UpdateOncallShiftHandoverResponseBody = {
 };
 
 export type UpdateOncallShiftHandoverTemplateRequestAttributes = {
-    sections: Array<OncallShiftHandoverSection> | null;
+    sections: Array<OncallShiftHandoverSection>;
 };
 
 export type UpdateOncallShiftHandoverTemplateRequestBody = {
@@ -2901,11 +2901,11 @@ export type UserNotificationAttributes = {
 };
 
 export type UserOncallInformation = {
-    activeShifts: Array<OncallShift> | null;
-    pastShifts: Array<OncallShift> | null;
-    rosters: Array<OncallRoster> | null;
-    upcomingShifts: Array<OncallShift> | null;
-    watchingRosters: Array<OncallRoster> | null;
+    activeShifts: Array<OncallShift>;
+    pastShifts: Array<OncallShift>;
+    rosters: Array<OncallRoster>;
+    upcomingShifts: Array<OncallShift>;
+    watchingRosters: Array<OncallRoster>;
 };
 
 export type VideoConference = {

@@ -76,7 +76,7 @@
 	type DescriptionEditor = ReturnType<typeof createMentionEditor> | null;
 	type MilestoneKind = IncidentMilestoneAttributes["kind"];
 
-	let kind = $state<MilestoneKind>(milestone?.attributes.kind ?? "impact");
+	let kind = $derived<MilestoneKind>(milestone?.attributes.kind ?? "impact");
 	watch(() => validOptions, v => {
 		const defaultOption = v.at(0);
 		if (defaultOption) kind = defaultOption.value;
@@ -92,7 +92,7 @@
 	const nextMs = $derived(getNextOrderedMilestone(kind, otherMilestones, timezone));
 	const timeMax = $derived(nextMs ? parseAbsolute(nextMs.attributes.timestamp, timezone) : undefined);
 
-	const msTimestamp = milestone?.attributes.timestamp;
+	const msTimestamp = $derived(milestone?.attributes.timestamp);
 	const defaultTimestamp = $derived(msTimestamp ? parseAbsolute(msTimestamp, timezone) : incidentStart);
 	let timestamp = $state<ZonedDateTime>();
 	const timestampValue = $derived((timestamp || defaultTimestamp).toAbsoluteString());

@@ -12,3 +12,7 @@ type (
 	Adapter    = huma.Adapter
 	Middleware = func(Context, func(Context))
 )
+
+func init() {
+	huma.DefaultArrayNullable = false
+}

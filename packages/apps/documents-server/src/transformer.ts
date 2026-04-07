@@ -1,4 +1,5 @@
 import { getSchema } from "@tiptap/core";
+import type { Extensions } from "@tiptap/core";
 import { TiptapTransformer } from "@hocuspocus/transformer";
 
 import * as Y from "yjs";
@@ -11,7 +12,7 @@ import {
   getHandoverExtensions,
 } from "@rezible/tiptap-extensions";
 
-export const extensions = [
+export const extensions: Extensions = [
 	...configureBaseExtensions(false),
 	configureAnnotationExtension(),
 	configureUserMentionExtension(),

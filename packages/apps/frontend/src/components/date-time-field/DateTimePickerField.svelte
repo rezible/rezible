@@ -17,7 +17,7 @@
 
 	let open = $state(false);
 
-	let value = $state(convertTime(current));
+	let value = $derived(convertTime(current));
 	const currentVal = $derived(convertTime(current));
 
 	const onConfirm = () => {

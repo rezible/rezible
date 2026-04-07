@@ -51,9 +51,21 @@
 		"@rezible/tiptap-extensions": "workspace:*",
 		"@tailwindcss/vite": "^4.1.18",
 		"@tanstack/svelte-query": "^6.0.18",
+		"@tiptap/core": "catalog:documents",
+		"@tiptap/extensions": "catalog:documents",
+		"@tiptap/extension-bold": "catalog:documents",
 		"@tiptap/extension-bubble-menu": "catalog:documents",
 		"@tiptap/extension-collaboration": "catalog:documents",
 		"@tiptap/extension-collaboration-caret": "catalog:documents",
+		"@tiptap/extension-document": "catalog:documents",
+		"@tiptap/extension-image": "catalog:documents",
+		"@tiptap/extension-italic": "catalog:documents",
+		"@tiptap/extension-mention": "catalog:documents",
+		"@tiptap/extension-paragraph": "catalog:documents",
+		"@tiptap/extension-text": "catalog:documents",
+		"@tiptap/pm": "catalog:documents",
+		"@tiptap/starter-kit": "catalog:documents",
+		"@tiptap/suggestion": "catalog:documents",
 		"@xyflow/svelte": "^1.3.1",
 		"date-fns": "^4.1.0",
 		"echarts": "^6.0.0",
@@ -65,11 +77,7 @@
 		"uuid": "^13.0.0",
 		"vis-data": "^8.0.3",
 		"vis-timeline": "^8.3.1",
+		"yjs": "catalog:documents",
 		"zod": "^4.1.11"
-	},
-	"peerDependencies": {
-		"@tiptap/core": "catalog:documents",
-		"@tiptap/pm": "catalog:documents",
-		"yjs": "catalog:documents"
 	}
 }

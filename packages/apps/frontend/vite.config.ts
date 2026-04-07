@@ -8,7 +8,6 @@ export default defineConfig(({mode}) => {
     const env = loadEnv(mode, process.cwd(), envPrefix);
     const host = "0.0.0.0";
     const port = Number(env.REZ_APP_PORT);
-    console.log(`listening on ${host}:${port}`);
     return {
         plugins: [sveltekit(), tailwindcss()],
         server: {

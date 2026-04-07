@@ -20,9 +20,22 @@
     "@hocuspocus/extension-logger": "catalog:documents",
     "@hocuspocus/server": "catalog:documents",
     "@hocuspocus/transformer": "catalog:documents",
+    "@tiptap/core": "catalog:documents",
+    "@tiptap/extensions": "catalog:documents",
+    "@tiptap/extension-bold": "catalog:documents",
+    "@tiptap/extension-document": "catalog:documents",
+    "@tiptap/extension-image": "catalog:documents",
+    "@tiptap/extension-italic": "catalog:documents",
+    "@tiptap/extension-mention": "catalog:documents",
+    "@tiptap/extension-paragraph": "catalog:documents",
+    "@tiptap/extension-text": "catalog:documents",
+    "@tiptap/pm": "catalog:documents",
+    "@tiptap/starter-kit": "catalog:documents",
+    "@tiptap/suggestion": "catalog:documents",
     "@rezible/tiptap-extensions": "workspace:*",
     "@rezible/api-client-ts": "workspace:*",
     "pg": "^8.16.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "yjs": "catalog:documents"
   }
 }

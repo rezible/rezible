@@ -30,8 +30,8 @@ services:
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     env_file: [".env.dev", ".env"]
     environment:
-      - PORT=${DEX_PORT}
       - ISSUER_URL=${DEX_URL}
+      - PORT=${DEX_PORT}
     depends_on:
       postgres:
         condition: service_healthy

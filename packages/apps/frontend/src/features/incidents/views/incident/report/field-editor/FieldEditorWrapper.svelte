@@ -33,7 +33,7 @@
 	// TODO: load this
 	const userAccentColor = "#a33333";
 
-	const configureEditorExtensions = (field: string, provider: HocuspocusProvider): Extensions => {
+	const configureEditorExtensions = (field: string, provider: HocuspocusProvider) => {
 		const user = { name: session.user?.attributes.name, color: userAccentColor };
 		return [
 			...configureBaseExtensions(false),
