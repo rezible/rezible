@@ -26,6 +26,7 @@ export class InitialSetupViewController {
     }
 
     integrationsLoading = $derived(this.integrations?.isLoading || this.integrations.isConfiguring);
+    loading = $derived(this.integrationsLoading);
 
     private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
     async doFinishOrganizationSetup() {

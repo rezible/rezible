@@ -63,7 +63,7 @@ class IntegrationOAuthController {
 	}
 }
 
-export class IntegrationsViewController {
+export class IntegrationsController {
 	session = useAuthSessionState();
 	oauth: IntegrationOAuthController;
 
@@ -113,6 +113,6 @@ export class IntegrationsViewController {
 	queryErrorMessage = $derived(this.queryErr?.detail || this.queryErr?.title || "");
 }
 
-const ctx = new Context<IntegrationsViewController>("IntegrationsViewController");
-export const initIntegrationsViewController = () => ctx.set(new IntegrationsViewController());
-export const useIntegrationsViewController = () => ctx.get();
+const ctx = new Context<IntegrationsController>("IntegrationsController");
+export const initIntegrationsController = () => ctx.set(new IntegrationsController());
+export const useIntegrationsController = () => ctx.get();

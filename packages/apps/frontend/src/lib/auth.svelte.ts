@@ -68,15 +68,15 @@ const parseUserAuthSessionQueryResponse = ({data: body, error}: AuthSessionQuery
 };
 
 const LoginRouteId = APP_LOGIN_ROUTE_BASE;
-const SetupRouteId = "/setup";
+const SettingsRouteId = "/settings";
 const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean): RouteId | null => {
 	const isLoginRoute = routeId?.startsWith(LoginRouteId);
 	if (!isAuthenticated) return isLoginRoute ? null : LoginRouteId;
 
-	const isSetupRoute = routeId?.startsWith(SetupRouteId);
-	if (!isSetup) return isSetupRoute ? null : SetupRouteId;
+	const isSettingsRoute = routeId?.startsWith(SettingsRouteId);
+	if (!isSetup) return isSettingsRoute ? null : SettingsRouteId;
 
-	return (isLoginRoute || isSetupRoute) ? "/" : null;
+	return (isLoginRoute || isSettingsRoute) ? "/" : null;
 }
 
 export class AuthSessionState {

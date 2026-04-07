@@ -4,7 +4,6 @@
 	import OrganizationTeamsTab from "./tabs/OrganizationTeamsTab.svelte";
 	import OrganizationUsersTab from "./tabs/OrganizationUsersTab.svelte";
 	import { initOrganizationSettingsViewController } from "./organizationSettingsViewController.svelte";
-	import type { OrganizationSettingsViewParam } from "$src/params/organizationSettingsView";
 
 	const view = initOrganizationSettingsViewController();
 
@@ -13,10 +12,10 @@
 		{ label: "Organization", href: "/settings/organization" },
 	]);
 
-	const tabs: Tab<OrganizationSettingsViewParam>[] = [
-		{ label: "Teams", view: undefined, component: OrganizationTeamsTab },
-		{ label: "Users", view: "users", component: OrganizationUsersTab },
-	];
+	// const tabs: Tab<OrganizationSettingsViewParam>[] = [
+	// 	{ label: "Teams", view: undefined, component: OrganizationTeamsTab },
+	// 	{ label: "Users", view: "users", component: OrganizationUsersTab },
+	// ];
 </script>
 
 <div class="mb-2 rounded border p-3">
@@ -34,4 +33,4 @@
 	</div>
 </div>
 
-<TabbedViewContainer {tabs} path="/settings/organization" />
+<!-- <TabbedViewContainer {tabs} path="/settings/organization" /> -->

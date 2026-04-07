@@ -81,6 +81,8 @@ export class InitialIntegrationsSetupController {
         this.listConfiguredQuery.refetch();
     });
 
+    oauthLoading = $derived(this.oauth.loadingFlowUrl || this.oauth.completingFlow);
+
     private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
     available = $derived(this.listAvailableQuery.data?.data || []);
     availableMap = $derived(new SvelteMap(this.available.map(intg => ([intg.name, intg]))));
