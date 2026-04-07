@@ -1,15 +1,36 @@
+import { afterNavigate, beforeNavigate, goto, pushState } from "$app/navigation";
 import { page } from "$app/state";
+import { appShell } from "$src/features/app";
 import { useAuthSessionState } from "$src/lib/auth.svelte";
 import { convertSettingsViewParam } from "$src/params/settingsView";
-import { Context } from "runed";
+import { Context, watch } from "runed";
 
 export class SettingsViewController {
-    viewParam = $derived(convertSettingsViewParam(page.params.view));
     session = useAuthSessionState();
     showInitialSetup = $derived(!this.session.isSetup);
 
-    constructor() {
+    viewParam = $derived(convertSettingsViewParam(page.params.view));
 
+    constructor() {
+        this.preventInitialSetupNavigation();
+        appShell.setPageBreadcrumbs(() => ([
+            { label: "Settings", href: "/settings" },
+            { label: this.viewParam }
+        ]));
+    }
+
+    private preventInitialSetupNavigation() {
+        afterNavigate(nav => {
+            if (!this.showInitialSetup) return;
+            const routeId = nav.to?.route.id;
+            if (!!routeId && routeId !== "/settings" && !routeId.startsWith("/settings/integration-callback")) {
+                goto("/settings");
+            }
+        });
+        beforeNavigate(nav => {
+            if (nav.willUnload || !nav.to) return;
+            if (this.showInitialSetup) nav.cancel();
+        })
     }
 }
 

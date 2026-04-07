@@ -1,77 +1,15 @@
 import { configureIntegrationMutation, type ConfigureIntegrationRequestBody, type ErrorModel, listConfiguredIntegrationsOptions, listAvailableIntegrationsOptions, completeIntegrationOauthFlowMutation, startIntegrationOauthFlowMutation } from "$lib/api";
 import { useAuthSessionState } from "$lib/auth.svelte";
+import { IntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
-import { watch } from "runed";
-import { useSearchParams } from "runed/kit";
 import { SvelteMap } from "svelte/reactivity";
-import { z } from "zod";
-
-const oauthCallbackParamsSchema = z.object({
-	name: z.string().default(""),
-	code: z.string().default(""),
-	state: z.string().default(""),
-});
-
-class IntegrationOAuthController {
-	private callbackParams = useSearchParams(oauthCallbackParamsSchema);
-	private callbackName = $derived(this.callbackParams.name);
-	private onCompleted: () => void;
-
-	constructor(onCompleted: () => void) {
-		this.onCompleted = onCompleted;
-		watch(() => this.callbackName, (name) => {
-			void this.onCallbackSet(name);
-		});
-	}
-
-	private startFlowMut = createMutation(() => startIntegrationOauthFlowMutation({}));
-	loadingFlowUrl = $derived(this.startFlowMut.isPending);
-	startFlowErr = $derived(this.startFlowMut.error?.detail || this.startFlowMut.error?.title || "");
-
-	async startFlow(name: string) {
-		try {
-			const callbackPath = `/settings/integrations/callback/${name}`
-			const resp = await this.startFlowMut.mutateAsync({ path: { name }, body: { attributes: { callbackPath } } });
-			window.location.assign(new URL(resp.data.flow_url));
-		} catch {
-			// surfaced via startFlowErr
-		}
-	}
-
-	private completeFlowMut = createMutation(() => completeIntegrationOauthFlowMutation({}));
-	completingFlow = $derived(this.completeFlowMut.isPending);
-	completeFlowErr = $derived(this.completeFlowMut.error?.detail || this.completeFlowMut.error?.title || "");
-
-	private async onCallbackSet(name?: string) {
-		if (!name || this.completingFlow) return;
-
-		const { state, code } = this.callbackParams;
-		this.callbackParams.reset();
-
-		if (!state || !code) return;
-
-		try {
-			await this.completeFlowMut.mutateAsync({
-				path: { name },
-				body: { attributes: { state, code } },
-			});
-			this.onCompleted();
-		} catch {
-			// surfaced via completeFlowErr
-		}
-	}
-}
 
 export class IntegrationsController {
 	session = useAuthSessionState();
-	oauth: IntegrationOAuthController;
-
-	constructor() {
-		this.oauth = new IntegrationOAuthController(() => {
-			void this.listConfiguredQuery.refetch();
-		});
-	}
+	oauth = new IntegrationOAuthController(() => { 
+		this.listConfiguredQuery.refetch();
+	});
 
 	private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
 	available = $derived(this.listAvailableQuery.data?.data || []);
@@ -109,8 +47,7 @@ export class IntegrationsController {
 	}
 
 	loading = $derived(this.listAvailableQuery.isPending || this.listConfiguredQuery.isPending);
-	queryErr = $derived((this.listAvailableQuery.error ?? this.listConfiguredQuery.error) as ErrorModel | null);
-	queryErrorMessage = $derived(this.queryErr?.detail || this.queryErr?.title || "");
+	error = $derived((this.listAvailableQuery.error ?? this.listConfiguredQuery.error) as ErrorModel | null);
 }
 
 const ctx = new Context<IntegrationsController>("IntegrationsController");

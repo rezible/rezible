@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
-	import { useOrganizationSettingsViewController } from "../organizationSettingsViewController.svelte";
+	import { useOrganizationSettingsViewController } from "../organizationSettingsController.svelte";
 
 	const view = useOrganizationSettingsViewController();
 

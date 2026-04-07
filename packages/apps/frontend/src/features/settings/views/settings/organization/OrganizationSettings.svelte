@@ -3,7 +3,7 @@
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import OrganizationTeamsTab from "./tabs/OrganizationTeamsTab.svelte";
 	import OrganizationUsersTab from "./tabs/OrganizationUsersTab.svelte";
-	import { initOrganizationSettingsViewController } from "./organizationSettingsViewController.svelte";
+	import { initOrganizationSettingsViewController } from "./organizationSettingsController.svelte";
 
 	const view = initOrganizationSettingsViewController();
 

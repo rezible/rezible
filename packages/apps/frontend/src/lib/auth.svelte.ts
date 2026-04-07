@@ -76,7 +76,7 @@ const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSe
 	const isSettingsRoute = routeId?.startsWith(SettingsRouteId);
 	if (!isSetup) return isSettingsRoute ? null : SettingsRouteId;
 
-	return (isLoginRoute || isSettingsRoute) ? "/" : null;
+	return isLoginRoute ? "/" : null;
 }
 
 export class AuthSessionState {
