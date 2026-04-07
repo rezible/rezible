@@ -1,5 +1,5 @@
+import { navigating, page } from "$app/state";
 import {
-	type GetCurrentAuthSessionResponse,
 	type User,
 	getCurrentAuthSessionOptions,
 	type ErrorModel,
@@ -10,8 +10,12 @@ import {
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { createMutation, createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
-import { Context } from "runed";
+import { Context, watch } from "runed";
 import { onMount } from "svelte";
+import { APP_LOGIN_ROUTE_BASE } from "./config";
+import { beforeNavigate, goto } from "$app/navigation";
+import type { BeforeNavigate } from "@sveltejs/kit";
+import type { RouteId } from "$app/types";
 
 export enum AuthSessionErrorCategory {
 	NoSession = "auth_session_missing",
@@ -63,23 +67,53 @@ const parseUserAuthSessionQueryResponse = ({data: body, error}: AuthSessionQuery
 	return {};
 };
 
+const LoginRouteId = APP_LOGIN_ROUTE_BASE;
+const SetupRouteId = "/setup";
+const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean): RouteId | null => {
+	const isLoginRoute = routeId?.startsWith(LoginRouteId);
+	if (!isAuthenticated) return isLoginRoute ? null : LoginRouteId;
+
+	const isSetupRoute = routeId?.startsWith(SetupRouteId);
+	if (!isSetup) return isSetupRoute ? null : SetupRouteId;
+
+	return (isLoginRoute || isSetupRoute) ? "/" : null;
+}
+
 export class AuthSessionState {
-	constructor() {
-		onMount(() => (this.startSessionExpiryCheck()))
-	}
-	
 	private query = createQuery(() => getCurrentAuthSessionOptions());
 	private parsedResponse = $derived(parseUserAuthSessionQueryResponse(this.query));
 
-	loaded = $derived(this.query.isFetched);
-	session = $derived(this.parsedResponse.session);
+	private loaded = $derived(this.query.isFetched);
 	error = $derived(this.parsedResponse.error);
-
+	private session = $derived(this.parsedResponse.session);
 	user = $derived(this.session?.user);
 	org = $derived(this.session?.organization);
 
 	isAuthenticated = $derived(!!this.session && !this.error);
 	isSetup = $derived(this.isAuthenticated && !this.org?.attributes.setupRequired);
+
+	constructor() {
+		this.startSessionExpiryCheck();
+		this.guardNavigation();
+	};
+
+	private redirectTo = $derived(this.loaded ? getAuthRedirect(page.route.id, this.isAuthenticated, this.isSetup) : undefined);
+	ready = $derived(this.loaded && !this.redirectTo);
+
+	private guardNavigation() {
+		watch(() => this.redirectTo, route => {
+			if (!!route && route !== navigating.to?.route.id) {
+				goto(route);
+			}
+		});
+		beforeNavigate(async nav => {
+			if (nav.willUnload || !nav.to) return;
+			const wouldRedirectTo = getAuthRedirect(nav.to.route.id, this.isAuthenticated, this.isSetup);
+			if (!!wouldRedirectTo && nav.to.route.id !== wouldRedirectTo) {
+				nav.cancel();
+			}
+		});
+	}
 
 	refetch() {
 		this.query.refetch();
@@ -115,8 +149,10 @@ export class AuthSessionState {
 				this.refreshSessionMut.mutate({});
 			}
 		}
-		const i = setInterval(checkExpiry, CheckIntervalMs);
-		return () => clearInterval(i);
+		onMount(() => {
+			const i = setInterval(checkExpiry, CheckIntervalMs);
+			return () => clearInterval(i);
+		});
 	};
 };
 

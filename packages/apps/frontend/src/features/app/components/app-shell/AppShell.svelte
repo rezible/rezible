@@ -7,8 +7,8 @@
 	import Sidebar from "./sidebar/Sidebar.svelte";
 	import Toaster from "../toaster/Toaster.svelte";
 	import PageContainer from "./PageContainer.svelte";
-	import SessionProtector from "./SessionProtector.svelte";
 	import Header from "./header/Header.svelte";
+	import LoadingIndicator from "$src/components/loading-indicator/LoadingIndicator.svelte";
 
 	const { children } = $props();
 	
@@ -28,8 +28,12 @@
 
 <Toaster />
 
-<SessionProtector>
-	<div class="antialiased flex flex-col overflow-hidden w-dvw h-dvh min-h-dvh bg-surface-300 text-surface-content">
+<div class="antialiased flex flex-col overflow-hidden w-dvw h-dvh min-h-dvh bg-surface-300 text-surface-content">
+	{#if !session.ready}
+		<div class="w-full h-full grid place-items-center">
+			<LoadingIndicator />
+		</div>
+	{:else}
 		<Header />
 
 		<div class="flex flex-1 min-h-0 overflow-hidden">
@@ -41,5 +45,5 @@
 				{@render children()}
 			</PageContainer>
 		</div>
-	</div>
-</SessionProtector>
+	{/if}
+</div>

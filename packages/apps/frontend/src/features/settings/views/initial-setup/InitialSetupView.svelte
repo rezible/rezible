@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { appShell } from "$features/app";
-	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import RequiredIntegrationsSetup from "./RequiredIntegrationsSetup.svelte";
@@ -14,8 +13,6 @@
 	]);
 
 	const view = initInitialSetupViewController();
-
-	let step = $state("integrations");
 </script>
 
 <div class="grid h-full w-full place-items-center">
@@ -26,10 +23,8 @@
 			{/snippet}
 		</Header>
 
-		{#if step === "integrations"}
-			{#if view.integrations.isLoading}
-				<LoadingIndicator />
-			{:else if view.integrations.isConfiguring}
+		{#if view.step === "required_integrations"}
+			{#if view.integrationsLoading}
 				<LoadingIndicator />
 			{:else}
 				<RequiredIntegrationsSetup />

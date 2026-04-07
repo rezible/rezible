@@ -24,9 +24,9 @@ class IntegrationOAuthSetupController {
 
     private onCompleted: () => void;
 
-    constructor(onCompleted: () => void) {
+    constructor(onCompletedFn: () => void) {
         watch(() => this.callbackName, name => { this.onCallbackSet(name) });
-        this.onCompleted = onCompleted;
+        this.onCompleted = onCompletedFn;
     }
 
     private startFlowMut = createMutation(() => startIntegrationOauthFlowMutation({}));
@@ -77,12 +77,9 @@ const getEnabledDataKinds = (s: {[name: string]: boolean}) => {
 }
 
 export class InitialIntegrationsSetupController {
-    oauth: IntegrationOAuthSetupController;
-    constructor() {
-        this.oauth = new IntegrationOAuthSetupController(() => { 
-            this.listConfiguredQuery.refetch();
-        });
-    }
+    oauth = new IntegrationOAuthSetupController(() => { 
+        this.listConfiguredQuery.refetch();
+    });
 
     private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
     available = $derived(this.listAvailableQuery.data?.data || []);

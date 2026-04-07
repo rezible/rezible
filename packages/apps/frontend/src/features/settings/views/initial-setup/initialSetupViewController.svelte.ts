@@ -4,10 +4,14 @@ import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { InitialIntegrationsSetupController } from "./initialIntegrationsSetupController.svelte";
 
+type SetupStep = "org_name" | "required_integrations";
+
 export class InitialSetupViewController {
     session = useAuthSessionState();
 
-    integrations: InitialIntegrationsSetupController;
+    step = $state<SetupStep>("required_integrations");
+
+    integrations = new InitialIntegrationsSetupController();
 
     canFinish = $derived.by(() => {
         if (!this.integrations) return false;
@@ -16,11 +20,12 @@ export class InitialSetupViewController {
     });
 
     constructor() {
-        this.integrations = new InitialIntegrationsSetupController();
         watch(() => this.canFinish, ok => {
             if (ok) this.doFinishOrganizationSetup();
         })
     }
+
+    integrationsLoading = $derived(this.integrations?.isLoading || this.integrations.isConfiguring);
 
     private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
     async doFinishOrganizationSetup() {

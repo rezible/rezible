@@ -20,9 +20,9 @@ export default defineConfig(({mode}) => {
                     target: `http://${env.PROXY_BACKEND_UPSTREAM_HOST}`,
                     rewrite: (path) => path.replace(/^\/api/, ""),
                 },
-                "/dex": {
-                    target: `http://${env.PROXY_DEX_UPSTREAM_HOST}`,
-                    // rewrite: (path) => path.replace(/^\/dex/, ""),
+                "/auth": {
+                    target: `http://${env.PROXY_AUTH_UPSTREAM_HOST}`,
+                    rewrite: (path) => path.replace(/^\/auth/, ""),
                 }
             },
         },

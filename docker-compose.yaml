@@ -30,13 +30,13 @@ services:
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     env_file: [".env.dev", ".env"]
     environment:
-      - ISSUER_URL=${DEX_URL}
+      - ISSUER_URL=${AUTH_URL}
       - PORT=${DEX_PORT}
     depends_on:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-q", "-t 1", "--spider", "http://localhost:${DEX_PORT}/dex/healthz"]
+      test: ["CMD", "wget", "-q", "-t 1", "--spider", "http://${PROXY_AUTH_UPSTREAM_HOST}/healthz"]
       interval: 3s
       timeout: 3s
       retries: 3

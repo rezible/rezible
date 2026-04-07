@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiKey } from "@mdi/js";
-	import { initAuthViewController } from "./controller.svelte";
+	import { initLoginViewController } from "./controller.svelte";
 
 	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
@@ -8,7 +8,7 @@
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
 	import LoadingIndicator from "$src/components/loading-indicator/LoadingIndicator.svelte";
 
-	const controller = initAuthViewController();
+	const controller = initLoginViewController();
 </script>
 
 <div class="grid h-full w-full place-items-center">
