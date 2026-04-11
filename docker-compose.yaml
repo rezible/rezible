@@ -21,6 +21,7 @@ services:
     volumes: ["postgres-data:/var/lib/postgresql/data"]
 
   dex:
+    scale: 0
     image: dexidp/dex:v2.41.1
     restart: on-failure:2
     ports: ["${DEX_PORT}:${DEX_PORT}"]

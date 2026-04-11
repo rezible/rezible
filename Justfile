@@ -25,7 +25,10 @@ scripts_dir := "./scripts"
     bun run format
 
 @reload-localias:
-    localias -c "{{scripts_dir}}/localias.yaml" stop && localias -c "{{scripts_dir}}/localias.yaml" start
+    localias set ${APP_HOST} 7000
+    localias set ${API_HOST} 7001
+    localias set ${AUTH_HOST} 7011
+
     mkdir -p "{{scripts_dir}}/certs" && cat "$(localias debug cert)" > "{{scripts_dir}}/certs/localias-ca.crt"
 
 @run-docker IMAGE *ARGS:

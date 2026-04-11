@@ -7,6 +7,7 @@
 	import Icon from "$components/icon/Icon.svelte";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
 	import LoadingIndicator from "$src/components/loading-indicator/LoadingIndicator.svelte";
+	import { AUTH_ISSUER } from "$src/lib/config";
 
 	const controller = initLoginViewController();
 </script>
@@ -46,6 +47,8 @@
 					<Icon data={mdiKey} />
 				</span>
 			</Button>
+
+			<Button href={AUTH_ISSUER} color="primary">go to issuer</Button>
 		{/if}
 	</div>
 </div>

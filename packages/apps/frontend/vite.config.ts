@@ -22,7 +22,9 @@ export default defineConfig(({mode}) => {
                 },
                 "/auth": {
                     target: `http://${env.PROXY_AUTH_UPSTREAM_HOST}`,
-                    rewrite: (path) => path.replace(/^\/auth/, ""),
+                    changeOrigin: false,
+                    secure: false,
+                    // rewrite: (path) => path.replace(/^\/auth/, ""),
                 }
             },
         },

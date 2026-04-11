@@ -1,14 +1,11 @@
 import { Context, watch } from "runed";
-import { z } from "zod";
-import { useSearchParams } from "runed/kit";
 import { createMutation } from "@tanstack/svelte-query";
 import { page } from "$app/state";
 import { useAuthSessionState, AuthSessionErrorCategory } from "$lib/auth.svelte";
 import { OidcClient, WebStorageStateStore } from "oidc-client-ts";
-import { AUTH_PATH_BASE, AUTH_OIDC_CLIENT_ID, AUTH_OIDC_CLIENT_SCOPES, APP_LOGIN_ROUTE_BASE } from "$lib/config";
+import { AUTH_ISSUER, AUTH_OIDC_CLIENT_ID, AUTH_OIDC_CLIENT_SCOPES, APP_LOGIN_ROUTE } from "$lib/config";
 import { completeAuthSessionFlowMutation, type ErrorModel } from "$lib/api";
-import { afterNavigate, replaceState } from "$app/navigation";
-import { onMount } from "svelte";
+import { replaceState } from "$app/navigation";
 
 const authSessionErrorDisplayText: Record<AuthSessionErrorCategory, string> = {
     [AuthSessionErrorCategory.NoSession]: "",
@@ -36,12 +33,13 @@ const translateAuthSessionError = (cat?: AuthSessionErrorCategory) => {
 }
 
 const makeOidcClient = (): OidcClient => {
-    const appUrl = `https://${window.location.host}`;
+    const host = `https://${window.location.host}`;
+    const authority = AUTH_ISSUER.startsWith("/") ? `${host}${AUTH_ISSUER}` : AUTH_ISSUER;
     return new OidcClient({
-        authority: appUrl + AUTH_PATH_BASE,
+        authority,
         client_id: AUTH_OIDC_CLIENT_ID,
         scope: AUTH_OIDC_CLIENT_SCOPES,
-        redirect_uri: appUrl + APP_LOGIN_ROUTE_BASE +"/callback",
+        redirect_uri: `${host}/${APP_LOGIN_ROUTE}/callback`,
         response_type: "code",
         stateStore: new WebStorageStateStore({ 
             prefix: "rez_auth.",

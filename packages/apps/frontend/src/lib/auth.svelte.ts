@@ -12,7 +12,7 @@ import { parseAbsoluteToLocal } from "@internationalized/date";
 import { createMutation, createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { onMount } from "svelte";
-import { APP_LOGIN_ROUTE_BASE } from "./config";
+import { APP_LOGIN_ROUTE } from "./config";
 import { beforeNavigate, goto } from "$app/navigation";
 import type { BeforeNavigate } from "@sveltejs/kit";
 import type { RouteId } from "$app/types";
@@ -67,7 +67,7 @@ const parseUserAuthSessionQueryResponse = ({data: body, error}: AuthSessionQuery
 	return {};
 };
 
-const LoginRouteId = APP_LOGIN_ROUTE_BASE;
+const LoginRouteId = APP_LOGIN_ROUTE;
 const SettingsRouteId = "/settings";
 const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean): RouteId | null => {
 	const isLoginRoute = routeId?.startsWith(LoginRouteId);
