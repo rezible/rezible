@@ -120,7 +120,6 @@ func (s *AuthService) handleCallback(w http.ResponseWriter, r *http.Request) (st
 		log.Debug().Err(sessErr).Msg("get token auth session")
 		return "", fmt.Errorf("create_session")
 	}
-	log.Debug().Interface("sess", sess).Msg("encode")
 
 	if cookieErr := s.cookies.write(w, oapiv1.AppCookieName, sess, time.Until(sess.ExpiresAt)); cookieErr != nil {
 		return "", fmt.Errorf("set_cookie")
@@ -166,8 +165,6 @@ func (s *AuthService) getTokenAuthSession(r *http.Request, as AuthVerifyState) (
 		Scopes:    []string{},
 		ExpiresAt: token.Expiry,
 	}
-	log.Debug().Interface("sess", sess).Msg("got sess")
-
 	return &sess, nil
 }
 

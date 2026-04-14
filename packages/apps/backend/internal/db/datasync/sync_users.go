@@ -84,6 +84,7 @@ func (b *usersBatcher) syncUser(db, prov *ent.User) (*ent.UserMutation, error) {
 		}
 	}
 
+	m.SetEmail(prov.Email)
 	if prov.ChatID != "" {
 		m.SetChatID(prov.ChatID)
 	}

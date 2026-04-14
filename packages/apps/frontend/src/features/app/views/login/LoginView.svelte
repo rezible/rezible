@@ -1,11 +1,13 @@
 <script lang="ts">
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
 	import { useAuthSessionState, AuthSessionErrorCategory } from "$lib/auth.svelte";
 	import Icon from "$components/icon/Icon.svelte";
 	import { mdiKey } from "@mdi/js";
+	import { useQueryClient } from "@tanstack/svelte-query";
+	import { useSearchParams } from "runed/kit";
+	import z from "zod";
 
 	const session = useAuthSessionState();
 
@@ -25,7 +27,10 @@
 	});
 	const showLogout = $derived(session.error === AuthSessionErrorCategory.SessionInvalid);
 
-	
+	const params = useSearchParams(z.object({
+		error: z.string().default(""),
+	}));
+	const loginError = $derived(params.error);
 </script>
 
 <div class="grid h-full w-full place-items-center">
@@ -43,17 +48,16 @@
 			/>
 		{/if}
 
+		{#if !!loginError}
+			<InlineAlert 
+				error={{title: "Login Error", detail: loginError}}
+				onDismiss={() => {params.reset()}}
+			/>
+		{/if}
+
         {#if showLogout}
 			<Button onclick={() => {session.logout()}} color="primary">Logout</Button>
 		{/if}
-
-		<!-- {#if cfgQuery.isPending}
-			<LoadingIndicator />
-		{:else if cfgQuery.isError}
-			<InlineAlert error={cfgQuery.error} />
-		{:else}
-			<AuthFlow config={cfgQuery.data.data} />
-		{/if} -->
 
 		<Button href="/api/auth/login" color="primary">
 			<span class="flex items-center gap-2">

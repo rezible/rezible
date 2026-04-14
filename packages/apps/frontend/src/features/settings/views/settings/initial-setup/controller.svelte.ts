@@ -8,7 +8,7 @@ import {
     configureIntegrationMutation,
     type ConfigureIntegrationRequestBody,
 } from "$lib/api";
-import { IntegrationOAuthController } from "$src/features/settings/lib/integrationOAuthController.svelte";
+import { useIntegrationOAuthController } from "$src/features/settings/lib/integrationOAuthController.svelte";
 
 type SetupStep = "org_name" | "required_integrations";
 const RequiredDataKinds = new Set(["chat", "users"]);
@@ -19,9 +19,7 @@ const getEnabledDataKinds = (intg: ConfiguredIntegration) =>
         map(([name, _]) => (name));
 
 export class RequiredIntegrationsSetupController {
-    oauth = new IntegrationOAuthController(() => { 
-        this.listConfiguredQuery.refetch();
-    });
+    oauth = useIntegrationOAuthController();
 
     private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
     available = $derived(this.listAvailableQuery.data?.data || []);

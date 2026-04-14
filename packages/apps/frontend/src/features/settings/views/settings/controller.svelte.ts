@@ -1,13 +1,15 @@
 import { afterNavigate, beforeNavigate, goto, pushState } from "$app/navigation";
 import { page } from "$app/state";
-import { appShell } from "$src/features/app";
-import { useAuthSessionState } from "$src/lib/auth.svelte";
+import { appShell } from "$features/app";
+import { useAuthSessionState } from "$lib/auth.svelte";
 import { convertSettingsViewParam } from "$src/params/settingsView";
 import { Context, watch } from "runed";
+import { initIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 
 export class SettingsViewController {
     session = useAuthSessionState();
     showInitialSetup = $derived(!this.session.isSetup);
+    oauth = initIntegrationOAuthController();
 
     viewParam = $derived(convertSettingsViewParam(page.params.view));
 

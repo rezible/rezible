@@ -1,12 +1,15 @@
-import { watch } from "runed";
+import { Context, watch } from "runed";
 import { useSearchParams } from "runed/kit";
 import { z } from "zod";
-import { createMutation } from "@tanstack/svelte-query";
+import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import {
     startIntegrationOauthFlowMutation, 
     completeIntegrationOauthFlowMutation,
     type ErrorModel,
+    listConfiguredIntegrationsOptions,
 } from "$lib/api";
+import { goto } from "$app/navigation";
+import { page } from "$app/state";
 
 export const oauthCallbackParamsSchema = z.object({
     name: z.string().default(""),
@@ -19,18 +22,22 @@ export class IntegrationOAuthController {
     private callbackName = $derived(this.callbackParams.name);
 
     private inFlow = $state(false);
-    private onCompleted: () => void;
 
-    constructor(onCompletedFn: () => void) {
+    constructor() {
         this.inFlow = false;
         watch(() => this.callbackName, name => {
             if (name) this.onCallback(name);
         });
-        this.onCompleted = onCompletedFn;
     }
 
+    private queryClient = useQueryClient();
     private startFlowMut = createMutation(() => startIntegrationOauthFlowMutation({}));
-    private completeFlowMut = createMutation(() => completeIntegrationOauthFlowMutation({}));
+    private completeFlowMut = createMutation(() => ({
+        ...completeIntegrationOauthFlowMutation({}),
+        onSuccess: () => {
+            this.queryClient.invalidateQueries(listConfiguredIntegrationsOptions());
+        }
+    }));
 
     loading = $derived(this.inFlow || this.startFlowMut.isPending || this.completeFlowMut.isPending);
     error = $state<ErrorModel>();
@@ -60,21 +67,22 @@ export class IntegrationOAuthController {
     }
 
     private async onCallback(name: string) {
-        console.log("callback", name);
         if (this.completeFlowMut.isPending) return;
+        console.log("callback", name);
 
         const { state, code } = this.callbackParams;
-        this.callbackParams.reset();
-        console.log("params", {state, code});
-
         if (!state || !code) return;
 
         try {
             const resp = await this.completeFlowMut.mutateAsync({ path: { name }, body: { attributes: { state, code } } });
-            this.onCompleted();
-            console.log("completed", resp);
+            this.callbackParams.reset();
+            await goto(page.url.pathname);
         } catch (e) {
             this.setFlowError(e);
         }
     }
 };
+
+const ctx = new Context<IntegrationOAuthController>("IntegrationOAuthController");
+export const initIntegrationOAuthController = () => ctx.set(new IntegrationOAuthController());
+export const useIntegrationOAuthController = () => ctx.get();

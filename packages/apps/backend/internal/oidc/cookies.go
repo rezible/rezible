@@ -1,6 +1,7 @@
 package oidc
 
 import (
+	"bytes"
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
@@ -12,8 +13,6 @@ import (
 	"io"
 	"net/http"
 	"time"
-
-	"github.com/rs/zerolog/log"
 )
 
 type cookieWriter struct {
@@ -84,28 +83,20 @@ func (c *cookieWriter) clear(w http.ResponseWriter, name string) {
 }
 
 func (c *cookieWriter) encode(v any) (string, error) {
-	plaintext, err := json.Marshal(v)
-	if err != nil {
-		return "", err
+	plaintext, jsonErr := json.Marshal(v)
+	if jsonErr != nil {
+		return "", fmt.Errorf("json encode: %w", jsonErr)
 	}
 
 	nonce := make([]byte, c.aead.NonceSize())
 	if _, readErr := io.ReadFull(rand.Reader, nonce); readErr != nil {
 		return "", readErr
 	}
-
 	ciphertext := c.aead.Seal(nil, nonce, plaintext, nil)
 
-	raw := append(nonce, ciphertext...)
-	encoded := base64.RawURLEncoding.EncodeToString(raw)
-
-	log.Debug().
-		Interface("value", v).
-		Str("plainText", string(plaintext)).
-		Str("encoded", encoded).
-		Msg("encoding cookie")
-
-	return encoded, nil
+	b := bytes.NewBuffer(nonce)
+	b.Write(ciphertext)
+	return base64.RawURLEncoding.EncodeToString(b.Bytes()), nil
 }
 
 func (c *cookieWriter) decode(encoded string, dst any) error {
@@ -116,21 +107,15 @@ func (c *cookieWriter) decode(encoded string, dst any) error {
 
 	nonceSize := c.aead.NonceSize()
 	if len(raw) < nonceSize {
-		return errors.New("invalid cookie payload")
+		return fmt.Errorf("invalid cookie payload")
 	}
 
 	nonce := raw[:nonceSize]
 	ciphertext := raw[nonceSize:]
-
 	plaintext, decryptErr := c.aead.Open(nil, nonce, ciphertext, nil)
 	if decryptErr != nil {
 		return fmt.Errorf("decrypt: %w", decryptErr)
 	}
-	log.Debug().
-		Str("encoded", encoded).
-		Str("raw", string(raw)).
-		Str("plaintext", string(plaintext)).
-		Msg("decoding cookie")
 
 	return json.Unmarshal(plaintext, dst)
 }
