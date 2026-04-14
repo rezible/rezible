@@ -87,7 +87,7 @@ func (s *Suite) GetAnonymousContext() context.Context {
 func (s *Suite) setupTestDatabase() {
 	pgCfg, pgCfgErr := postgres.LoadConfig()
 	s.Require().NoError(pgCfgErr, "loading postgres config")
-	s.Require().NotNil(pgCfg.Migrations, "migrations config nil")
+	s.Require().NotEmpty(pgCfg.AdminRole.Name, "migrations config nil")
 
 	opts := fmt.Sprintf("sslmode=%s&search_path=%s", pgCfg.SSLMode, postgres.SchemaName)
 	pgxConf := pgtestdb.Config{
@@ -95,11 +95,11 @@ func (s *Suite) setupTestDatabase() {
 		Host:       pgCfg.Host,
 		Port:       fmt.Sprintf("%d", pgCfg.Port),
 		Options:    opts,
-		User:       pgCfg.Migrations.User,
-		Password:   pgCfg.Migrations.Password,
+		User:       pgCfg.AdminRole.Name,
+		Password:   pgCfg.AdminRole.Password,
 		TestRole: &pgtestdb.Role{
-			Username: pgCfg.User,
-			Password: pgCfg.Password,
+			Username: pgCfg.AppRole.Name,
+			Password: pgCfg.AppRole.Password,
 		},
 	}
 	testDb := pgtestdb.New(s.T(), pgxConf, newTestDbMigrator(pgCfg))

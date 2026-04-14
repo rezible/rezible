@@ -6,6 +6,7 @@ import (
 	"iter"
 
 	"github.com/google/uuid"
+	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -54,6 +55,7 @@ func (b *usersBatcher) createBatchMutations(ctx context.Context, batch []*ent.Us
 	for _, provUser := range batch {
 		dbUser, exists := dbEmailMap[provUser.Email]
 		if !exists {
+			log.Debug().Interface("user", provUser).Msg("user not found in database, creating")
 		}
 		userMut, syncErr := b.syncUser(dbUser, provUser)
 		if syncErr != nil {
@@ -76,16 +78,18 @@ func (b *usersBatcher) syncUser(db, prov *ent.User) (*ent.UserMutation, error) {
 		m = b.db.User.UpdateOneID(userId).Mutation()
 
 		// TODO: get provider mapping support for fields
-		needsSync := db.Name != prov.Name || db.Email != prov.Email || db.Timezone != prov.Timezone || db.ChatID != prov.ChatID
+		needsSync := db.Timezone != prov.Timezone || db.ChatID != prov.ChatID
 		if !needsSync {
 			return nil, nil
 		}
 	}
 
-	m.SetName(prov.Name)
-	m.SetEmail(prov.Email)
-	m.SetChatID(prov.ChatID)
-	m.SetTimezone(prov.Timezone)
+	if prov.ChatID != "" {
+		m.SetChatID(prov.ChatID)
+	}
+	if prov.Timezone != "" {
+		m.SetTimezone(prov.Timezone)
+	}
 
 	return m, nil
 }

@@ -1496,8 +1496,8 @@ var (
 	// OrganizationsColumns holds the columns for the "organizations" table.
 	OrganizationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "auth_provider_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
-		{Name: "domain", Type: field.TypeString},
 		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
@@ -1519,6 +1519,57 @@ var (
 				Name:    "organization_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{OrganizationsColumns[4]},
+			},
+			{
+				Name:    "organization_auth_provider_id",
+				Unique:  true,
+				Columns: []*schema.Column{OrganizationsColumns[1]},
+			},
+		},
+	}
+	// OrganizationRolesColumns holds the columns for the "organization_roles" table.
+	OrganizationRolesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "org_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID, Unique: true},
+	}
+	// OrganizationRolesTable holds the schema information for the "organization_roles" table.
+	OrganizationRolesTable = &schema.Table{
+		Name:       "organization_roles",
+		Columns:    OrganizationRolesColumns,
+		PrimaryKey: []*schema.Column{OrganizationRolesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "organization_roles_tenants_tenant",
+				Columns:    []*schema.Column{OrganizationRolesColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "organization_roles_organizations_organization",
+				Columns:    []*schema.Column{OrganizationRolesColumns[3]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "organization_roles_users_organization_role",
+				Columns:    []*schema.Column{OrganizationRolesColumns[4]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "organizationrole_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OrganizationRolesColumns[2]},
+			},
+			{
+				Name:    "organizationrole_org_id_user_id",
+				Unique:  true,
+				Columns: []*schema.Column{OrganizationRolesColumns[3], OrganizationRolesColumns[4]},
 			},
 		},
 	}
@@ -2378,13 +2429,11 @@ var (
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "auth_provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "email", Type: field.TypeString},
-		{Name: "name", Type: field.TypeString, Nullable: true, Default: ""},
-		{Name: "is_org_admin", Type: field.TypeBool, Default: false},
+		{Name: "name", Type: field.TypeString, Default: ""},
 		{Name: "chat_id", Type: field.TypeString, Nullable: true},
 		{Name: "timezone", Type: field.TypeString, Nullable: true},
-		{Name: "confirmed", Type: field.TypeBool, Default: false},
+		{Name: "auth_provider_id", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// UsersTable holds the schema information for the "users" table.
@@ -2395,7 +2444,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "users_tenants_tenant",
-				Columns:    []*schema.Column{UsersColumns[8]},
+				Columns:    []*schema.Column{UsersColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -2404,7 +2453,12 @@ var (
 			{
 				Name:    "user_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{UsersColumns[8]},
+				Columns: []*schema.Column{UsersColumns[6]},
+			},
+			{
+				Name:    "user_auth_provider_id",
+				Unique:  true,
+				Columns: []*schema.Column{UsersColumns[5]},
 			},
 		},
 	}
@@ -2935,6 +2989,7 @@ var (
 		OncallShiftHandoversTable,
 		OncallShiftMetricsTable,
 		OrganizationsTable,
+		OrganizationRolesTable,
 		PlaybooksTable,
 		ProviderSyncHistoriesTable,
 		RetrospectivesTable,
@@ -3064,6 +3119,9 @@ func init() {
 	OncallShiftMetricsTable.ForeignKeys[0].RefTable = OncallShiftsTable
 	OncallShiftMetricsTable.ForeignKeys[1].RefTable = TenantsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = TenantsTable
+	OrganizationRolesTable.ForeignKeys[0].RefTable = TenantsTable
+	OrganizationRolesTable.ForeignKeys[1].RefTable = OrganizationsTable
+	OrganizationRolesTable.ForeignKeys[2].RefTable = UsersTable
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = DocumentsTable

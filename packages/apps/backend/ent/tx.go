@@ -92,6 +92,8 @@ type Tx struct {
 	OncallShiftMetrics *OncallShiftMetricsClient
 	// Organization is the client for interacting with the Organization builders.
 	Organization *OrganizationClient
+	// OrganizationRole is the client for interacting with the OrganizationRole builders.
+	OrganizationRole *OrganizationRoleClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
 	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
@@ -311,6 +313,7 @@ func (tx *Tx) init() {
 	tx.OncallShiftHandover = NewOncallShiftHandoverClient(tx.config)
 	tx.OncallShiftMetrics = NewOncallShiftMetricsClient(tx.config)
 	tx.Organization = NewOrganizationClient(tx.config)
+	tx.OrganizationRole = NewOrganizationRoleClient(tx.config)
 	tx.Playbook = NewPlaybookClient(tx.config)
 	tx.ProviderSyncHistory = NewProviderSyncHistoryClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)

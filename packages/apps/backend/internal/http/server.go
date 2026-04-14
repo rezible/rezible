@@ -24,25 +24,21 @@ import (
 type Config struct {
 	Host           string               `koanf:"host"`
 	Port           string               `koanf:"port"`
-	WebhooksPath   string               `koanf:"webhooks_path"`
 	DocumentsProxy DocumentsProxyConfig `koanf:"documents_proxy"`
 }
 
 type DocumentsProxyConfig struct {
 	Enabled   bool   `koanf:"enabled"`
-	ProxyPath string `koanf:"proxy_path"`
 	ProxyHost string `koanf:"proxy_host"`
 	serverUrl *url.URL
 }
 
 func loadConfig() (Config, error) {
 	cfg := Config{
-		Host:         rez.Config.GetString("HOST", "0.0.0.0"),
-		Port:         rez.Config.GetString("PORT", "7002"),
-		WebhooksPath: "/webhooks",
+		Host: rez.Config.GetString("HOST", "0.0.0.0"),
+		Port: rez.Config.GetString("PORT", "7002"),
 		DocumentsProxy: DocumentsProxyConfig{
 			Enabled:   false,
-			ProxyPath: "/documents",
 			ProxyHost: "localhost:7003",
 		},
 	}
@@ -107,9 +103,10 @@ func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.H
 	r := chi.NewRouter()
 	r.Get(healthCheckPath, s.makeHealthCheckHandler())
 	r.Mount(oapiv1.VersionPrefix, oapiv1.MakeApi(v1h, auth).Adapter())
-	r.Mount(ensureSlashPrefix(s.cfg.WebhooksPath), s.makeWebhooksHandler())
+	r.Mount("/auth", auth.Handler())
+	r.Mount("/webhooks", s.makeWebhooksHandler())
 	if s.cfg.DocumentsProxy.Enabled {
-		r.Handle(s.cfg.DocumentsProxy.ProxyPath, s.makeDocumentsProxyHandler(auth))
+		r.Handle("/documents", s.makeDocumentsProxyHandler(auth))
 	}
 	return r
 }

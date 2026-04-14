@@ -39,6 +39,7 @@ type ConfigLoader interface {
 	SingleTenantMode() bool
 
 	AppUrl() string
+	ApiUrl() string
 	BasePath() string
 }
 
@@ -150,10 +151,8 @@ type (
 
 type (
 	OrganizationService interface {
-		FindOrCreateFromDomain(context.Context, string) (*ent.Organization, error)
-
-		GetById(context.Context, uuid.UUID) (*ent.Organization, error)
-		GetCurrent(context.Context) (*ent.Organization, error)
+		SyncFromAuthProvider(context.Context, ent.Organization) (*ent.Organization, error)
+		Get(context.Context, predicate.Organization) (*ent.Organization, error)
 		CompleteSetup(context.Context, *ent.Organization) error
 	}
 )
@@ -165,7 +164,7 @@ type (
 	}
 
 	UserService interface {
-		FindOrCreateAuthProviderUser(context.Context, ent.User) (*ent.User, error)
+		SyncFromAuthProvider(context.Context, ent.Organization, ent.User) (*ent.User, error)
 
 		Get(context.Context, predicate.User) (*ent.User, error)
 		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)
@@ -186,9 +185,11 @@ type (
 	}
 
 	AuthService interface {
-		CompleteClientAuthSessionFlow(ctx context.Context, code string, verifier string) ([]http.Cookie, error)
-		RefreshClientAuthSession(ctx context.Context, refreshToken string) ([]http.Cookie, error)
-		ClearClientAuthSession() ([]http.Cookie, error)
+		Handler() http.Handler
+
+		//CompleteClientAuthSessionFlow(ctx context.Context, code string, verifier string) ([]http.Cookie, error)
+		//RefreshClientAuthSession(ctx context.Context, refreshToken string) ([]http.Cookie, error)
+		//ClearClientAuthSession() ([]http.Cookie, error)
 
 		CreateAuthSessionContext(ctx context.Context, token string) (context.Context, error)
 		GetAuthSession(context.Context) AuthSession

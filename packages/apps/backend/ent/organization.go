@@ -21,10 +21,10 @@ type Organization struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AuthProviderID holds the value of the "auth_provider_id" field.
+	AuthProviderID string `json:"auth_provider_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// Domain holds the value of the "domain" field.
-	Domain string `json:"domain,omitempty"`
 	// InitialSetupAt holds the value of the "initial_setup_at" field.
 	InitialSetupAt time.Time `json:"initial_setup_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -37,9 +37,11 @@ type Organization struct {
 type OrganizationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// Roles holds the value of the roles edge.
+	Roles []*OrganizationRole `json:"roles,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -53,6 +55,15 @@ func (e OrganizationEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// RolesOrErr returns the Roles value or an error if the edge
+// was not loaded in eager-loading.
+func (e OrganizationEdges) RolesOrErr() ([]*OrganizationRole, error) {
+	if e.loadedTypes[1] {
+		return e.Roles, nil
+	}
+	return nil, &NotLoadedError{edge: "roles"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Organization) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -60,7 +71,7 @@ func (*Organization) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case organization.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case organization.FieldName, organization.FieldDomain:
+		case organization.FieldAuthProviderID, organization.FieldName:
 			values[i] = new(sql.NullString)
 		case organization.FieldInitialSetupAt:
 			values[i] = new(sql.NullTime)
@@ -93,17 +104,17 @@ func (_m *Organization) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case organization.FieldAuthProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field auth_provider_id", values[i])
+			} else if value.Valid {
+				_m.AuthProviderID = value.String
+			}
 		case organization.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
-			}
-		case organization.FieldDomain:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field domain", values[i])
-			} else if value.Valid {
-				_m.Domain = value.String
 			}
 		case organization.FieldInitialSetupAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -127,6 +138,11 @@ func (_m *Organization) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the Organization entity.
 func (_m *Organization) QueryTenant() *TenantQuery {
 	return NewOrganizationClient(_m.config).QueryTenant(_m)
+}
+
+// QueryRoles queries the "roles" edge of the Organization entity.
+func (_m *Organization) QueryRoles() *OrganizationRoleQuery {
+	return NewOrganizationClient(_m.config).QueryRoles(_m)
 }
 
 // Update returns a builder for updating this Organization.
@@ -155,11 +171,11 @@ func (_m *Organization) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("auth_provider_id=")
+	builder.WriteString(_m.AuthProviderID)
+	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
-	builder.WriteString(", ")
-	builder.WriteString("domain=")
-	builder.WriteString(_m.Domain)
 	builder.WriteString(", ")
 	builder.WriteString("initial_setup_at=")
 	builder.WriteString(_m.InitialSetupAt.Format(time.ANSIC))

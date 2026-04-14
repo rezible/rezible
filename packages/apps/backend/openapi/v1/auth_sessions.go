@@ -10,6 +10,7 @@ import (
 )
 
 type AuthSessionsHandler interface {
+	GetAuthSessionConfig(context.Context, *GetAuthSessionConfigRequest) (*GetAuthSessionConfigResponse, error)
 	GetCurrentAuthSession(context.Context, *GetCurrentAuthSessionRequest) (*GetCurrentAuthSessionResponse, error)
 	CompleteAuthSessionFlow(context.Context, *CompleteAuthSessionFlowRequest) (*CompleteAuthSessionFlowResponse, error)
 	RefreshAuthSession(context.Context, *RefreshAuthSessionRequest) (*RefreshAuthSessionResponse, error)
@@ -20,6 +21,8 @@ type AuthSessionsHandler interface {
 }
 
 func (o operations) RegisterAuthSessions(api huma.API) {
+	huma.Register(api, GetAuthSessionConfig, o.GetAuthSessionConfig)
+
 	huma.Register(api, GetCurrentAuthSession, o.GetCurrentAuthSession)
 	huma.Register(api, CompleteAuthSessionFlow, o.CompleteAuthSessionFlow)
 	huma.Register(api, RefreshAuthSession, o.RefreshAuthSession)
@@ -30,6 +33,12 @@ func (o operations) RegisterAuthSessions(api huma.API) {
 }
 
 type (
+	AuthSessionConfig struct {
+		Issuer          string   `json:"issuer"`
+		AppClientId     string   `json:"app_client_id"`
+		AppClientScopes []string `json:"app_client_scopes"`
+	}
+
 	AuthSession struct {
 		ExpiresAt    time.Time    `json:"expiresAt"`
 		Organization Organization `json:"organization"`
@@ -50,10 +59,23 @@ type (
 
 var authSessionsTags = []string{"Auth Sessions"}
 
+var GetAuthSessionConfig = huma.Operation{
+	OperationID: "get-auth-session-config",
+	Method:      http.MethodGet,
+	Path:        "/auth_session/config",
+	Summary:     "Get auth session info and config",
+	Tags:        authSessionsTags,
+	Errors:      ErrorCodes(),
+	Security:    ExplicitNoSecurity,
+}
+
+type GetAuthSessionConfigRequest EmptyRequest
+type GetAuthSessionConfigResponse ItemResponse[AuthSessionConfig]
+
 var GetCurrentAuthSession = huma.Operation{
 	OperationID: "get-current-auth-session",
 	Method:      http.MethodGet,
-	Path:        "/auth_session",
+	Path:        "/auth_session/current",
 	Summary:     "Get the current Auth Session",
 	Tags:        authSessionsTags,
 	Errors:      ErrorCodes(),
@@ -65,7 +87,7 @@ type GetCurrentAuthSessionResponse ItemResponse[AuthSession]
 var CompleteAuthSessionFlow = huma.Operation{
 	OperationID: "complete-auth-session-flow",
 	Method:      http.MethodPost,
-	Path:        "/auth_session",
+	Path:        "/auth_session/create",
 	Summary:     "Complete an Auth Session flow",
 	Tags:        authSessionsTags,
 	Errors:      ErrorCodes(),

@@ -24,7 +24,7 @@ services:
     scale: 0
     image: dexidp/dex:v2.41.1
     restart: on-failure:2
-    ports: ["${DEX_PORT}:${DEX_PORT}"]
+    ports: ["${AUTH_PORT}:${AUTH_PORT}"]
     volumes:
       - "./scripts/dex-config.yaml:/etc/dex/config.yaml:ro"
       - "./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"
@@ -32,7 +32,7 @@ services:
     env_file: [".env.dev", ".env"]
     environment:
       - ISSUER_URL=${AUTH_URL}
-      - PORT=${DEX_PORT}
+      - PORT=${AUTH_PORT}
     depends_on:
       postgres:
         condition: service_healthy
@@ -74,7 +74,7 @@ services:
     environment:
       - PROXY_BACKEND_UPSTREAM_HOST=rez-backend:${REZ_BACKEND_PORT}
       - PROXY_DOCUMENTS_SERVER_UPSTREAM_HOST=rez-documents-server:${REZ_DOCUMENTS_SERVER_PORT}
-      - PROXY_DEX_UPSTREAM_HOST=dex:${DEX_PORT}
+      - PROXY_AUTH_UPSTREAM_HOST=dex:${AUTH_PORT}
     healthcheck:
       test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
       interval: 3s

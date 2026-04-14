@@ -12,10 +12,9 @@ import { parseAbsoluteToLocal } from "@internationalized/date";
 import { createMutation, createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { onMount } from "svelte";
-import { APP_LOGIN_ROUTE } from "./config";
 import { beforeNavigate, goto } from "$app/navigation";
-import type { BeforeNavigate } from "@sveltejs/kit";
 import type { RouteId } from "$app/types";
+import { resolve } from "$app/paths";
 
 export enum AuthSessionErrorCategory {
 	NoSession = "auth_session_missing",
@@ -67,11 +66,13 @@ const parseUserAuthSessionQueryResponse = ({data: body, error}: AuthSessionQuery
 	return {};
 };
 
-const LoginRouteId = APP_LOGIN_ROUTE;
-const SettingsRouteId = "/settings";
-const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean): RouteId | null => {
-	const isLoginRoute = routeId?.startsWith(LoginRouteId);
-	if (!isAuthenticated) return isLoginRoute ? null : LoginRouteId;
+const LoginRoute = resolve("/login");
+const SettingsRouteId = resolve("/settings");
+const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean) => {
+	if (!routeId) return null;
+
+	const isLoginRoute = routeId?.startsWith(LoginRoute);
+	if (!isAuthenticated) return isLoginRoute ? null : LoginRoute;
 
 	const isSettingsRoute = routeId?.startsWith(SettingsRouteId);
 	if (!isSetup) return isSettingsRoute ? null : SettingsRouteId;

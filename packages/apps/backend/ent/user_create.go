@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/task"
@@ -45,20 +46,6 @@ func (_c *UserCreate) SetTenantID(v int) *UserCreate {
 	return _c
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (_c *UserCreate) SetAuthProviderID(v string) *UserCreate {
-	_c.mutation.SetAuthProviderID(v)
-	return _c
-}
-
-// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
-func (_c *UserCreate) SetNillableAuthProviderID(v *string) *UserCreate {
-	if v != nil {
-		_c.SetAuthProviderID(*v)
-	}
-	return _c
-}
-
 // SetEmail sets the "email" field.
 func (_c *UserCreate) SetEmail(v string) *UserCreate {
 	_c.mutation.SetEmail(v)
@@ -75,20 +62,6 @@ func (_c *UserCreate) SetName(v string) *UserCreate {
 func (_c *UserCreate) SetNillableName(v *string) *UserCreate {
 	if v != nil {
 		_c.SetName(*v)
-	}
-	return _c
-}
-
-// SetIsOrgAdmin sets the "is_org_admin" field.
-func (_c *UserCreate) SetIsOrgAdmin(v bool) *UserCreate {
-	_c.mutation.SetIsOrgAdmin(v)
-	return _c
-}
-
-// SetNillableIsOrgAdmin sets the "is_org_admin" field if the given value is not nil.
-func (_c *UserCreate) SetNillableIsOrgAdmin(v *bool) *UserCreate {
-	if v != nil {
-		_c.SetIsOrgAdmin(*v)
 	}
 	return _c
 }
@@ -121,16 +94,16 @@ func (_c *UserCreate) SetNillableTimezone(v *string) *UserCreate {
 	return _c
 }
 
-// SetConfirmed sets the "confirmed" field.
-func (_c *UserCreate) SetConfirmed(v bool) *UserCreate {
-	_c.mutation.SetConfirmed(v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_c *UserCreate) SetAuthProviderID(v string) *UserCreate {
+	_c.mutation.SetAuthProviderID(v)
 	return _c
 }
 
-// SetNillableConfirmed sets the "confirmed" field if the given value is not nil.
-func (_c *UserCreate) SetNillableConfirmed(v *bool) *UserCreate {
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableAuthProviderID(v *string) *UserCreate {
 	if v != nil {
-		_c.SetConfirmed(*v)
+		_c.SetAuthProviderID(*v)
 	}
 	return _c
 }
@@ -152,6 +125,25 @@ func (_c *UserCreate) SetNillableID(v *uuid.UUID) *UserCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *UserCreate) SetTenant(v *Tenant) *UserCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
+func (_c *UserCreate) SetOrganizationRoleID(id uuid.UUID) *UserCreate {
+	_c.mutation.SetOrganizationRoleID(id)
+	return _c
+}
+
+// SetNillableOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID if the given value is not nil.
+func (_c *UserCreate) SetNillableOrganizationRoleID(id *uuid.UUID) *UserCreate {
+	if id != nil {
+		_c = _c.SetOrganizationRoleID(*id)
+	}
+	return _c
+}
+
+// SetOrganizationRole sets the "organization_role" edge to the OrganizationRole entity.
+func (_c *UserCreate) SetOrganizationRole(v *OrganizationRole) *UserCreate {
+	return _c.SetOrganizationRoleID(v.ID)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -450,14 +442,6 @@ func (_c *UserCreate) defaults() error {
 		v := user.DefaultName
 		_c.mutation.SetName(v)
 	}
-	if _, ok := _c.mutation.IsOrgAdmin(); !ok {
-		v := user.DefaultIsOrgAdmin
-		_c.mutation.SetIsOrgAdmin(v)
-	}
-	if _, ok := _c.mutation.Confirmed(); !ok {
-		v := user.DefaultConfirmed
-		_c.mutation.SetConfirmed(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if user.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized user.DefaultID (forgotten import ent/runtime?)")
@@ -476,11 +460,8 @@ func (_c *UserCreate) check() error {
 	if _, ok := _c.mutation.Email(); !ok {
 		return &ValidationError{Name: "email", err: errors.New(`ent: missing required field "User.email"`)}
 	}
-	if _, ok := _c.mutation.IsOrgAdmin(); !ok {
-		return &ValidationError{Name: "is_org_admin", err: errors.New(`ent: missing required field "User.is_org_admin"`)}
-	}
-	if _, ok := _c.mutation.Confirmed(); !ok {
-		return &ValidationError{Name: "confirmed", err: errors.New(`ent: missing required field "User.confirmed"`)}
+	if _, ok := _c.mutation.Name(); !ok {
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "User.name"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "User.tenant"`)}
@@ -522,10 +503,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.AuthProviderID(); ok {
-		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
-		_node.AuthProviderID = value
-	}
 	if value, ok := _c.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 		_node.Email = value
@@ -533,10 +510,6 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
 		_node.Name = value
-	}
-	if value, ok := _c.mutation.IsOrgAdmin(); ok {
-		_spec.SetField(user.FieldIsOrgAdmin, field.TypeBool, value)
-		_node.IsOrgAdmin = value
 	}
 	if value, ok := _c.mutation.ChatID(); ok {
 		_spec.SetField(user.FieldChatID, field.TypeString, value)
@@ -546,9 +519,9 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_spec.SetField(user.FieldTimezone, field.TypeString, value)
 		_node.Timezone = value
 	}
-	if value, ok := _c.mutation.Confirmed(); ok {
-		_spec.SetField(user.FieldConfirmed, field.TypeBool, value)
-		_node.Confirmed = value
+	if value, ok := _c.mutation.AuthProviderID(); ok {
+		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+		_node.AuthProviderID = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -566,6 +539,23 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.OrganizationRoleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OrganizationRoleTable,
+			Columns: []string{user.OrganizationRoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.TeamsIDs(); len(nodes) > 0 {
@@ -923,24 +913,6 @@ type (
 	}
 )
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (u *UserUpsert) SetAuthProviderID(v string) *UserUpsert {
-	u.Set(user.FieldAuthProviderID, v)
-	return u
-}
-
-// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
-func (u *UserUpsert) UpdateAuthProviderID() *UserUpsert {
-	u.SetExcluded(user.FieldAuthProviderID)
-	return u
-}
-
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (u *UserUpsert) ClearAuthProviderID() *UserUpsert {
-	u.SetNull(user.FieldAuthProviderID)
-	return u
-}
-
 // SetEmail sets the "email" field.
 func (u *UserUpsert) SetEmail(v string) *UserUpsert {
 	u.Set(user.FieldEmail, v)
@@ -962,24 +934,6 @@ func (u *UserUpsert) SetName(v string) *UserUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *UserUpsert) UpdateName() *UserUpsert {
 	u.SetExcluded(user.FieldName)
-	return u
-}
-
-// ClearName clears the value of the "name" field.
-func (u *UserUpsert) ClearName() *UserUpsert {
-	u.SetNull(user.FieldName)
-	return u
-}
-
-// SetIsOrgAdmin sets the "is_org_admin" field.
-func (u *UserUpsert) SetIsOrgAdmin(v bool) *UserUpsert {
-	u.Set(user.FieldIsOrgAdmin, v)
-	return u
-}
-
-// UpdateIsOrgAdmin sets the "is_org_admin" field to the value that was provided on create.
-func (u *UserUpsert) UpdateIsOrgAdmin() *UserUpsert {
-	u.SetExcluded(user.FieldIsOrgAdmin)
 	return u
 }
 
@@ -1019,15 +973,21 @@ func (u *UserUpsert) ClearTimezone() *UserUpsert {
 	return u
 }
 
-// SetConfirmed sets the "confirmed" field.
-func (u *UserUpsert) SetConfirmed(v bool) *UserUpsert {
-	u.Set(user.FieldConfirmed, v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *UserUpsert) SetAuthProviderID(v string) *UserUpsert {
+	u.Set(user.FieldAuthProviderID, v)
 	return u
 }
 
-// UpdateConfirmed sets the "confirmed" field to the value that was provided on create.
-func (u *UserUpsert) UpdateConfirmed() *UserUpsert {
-	u.SetExcluded(user.FieldConfirmed)
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateAuthProviderID() *UserUpsert {
+	u.SetExcluded(user.FieldAuthProviderID)
+	return u
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (u *UserUpsert) ClearAuthProviderID() *UserUpsert {
+	u.SetNull(user.FieldAuthProviderID)
 	return u
 }
 
@@ -1082,27 +1042,6 @@ func (u *UserUpsertOne) Update(set func(*UserUpsert)) *UserUpsertOne {
 	return u
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (u *UserUpsertOne) SetAuthProviderID(v string) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetAuthProviderID(v)
-	})
-}
-
-// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateAuthProviderID() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateAuthProviderID()
-	})
-}
-
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (u *UserUpsertOne) ClearAuthProviderID() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.ClearAuthProviderID()
-	})
-}
-
 // SetEmail sets the "email" field.
 func (u *UserUpsertOne) SetEmail(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
@@ -1128,27 +1067,6 @@ func (u *UserUpsertOne) SetName(v string) *UserUpsertOne {
 func (u *UserUpsertOne) UpdateName() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateName()
-	})
-}
-
-// ClearName clears the value of the "name" field.
-func (u *UserUpsertOne) ClearName() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.ClearName()
-	})
-}
-
-// SetIsOrgAdmin sets the "is_org_admin" field.
-func (u *UserUpsertOne) SetIsOrgAdmin(v bool) *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.SetIsOrgAdmin(v)
-	})
-}
-
-// UpdateIsOrgAdmin sets the "is_org_admin" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateIsOrgAdmin() *UserUpsertOne {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateIsOrgAdmin()
 	})
 }
 
@@ -1194,17 +1112,24 @@ func (u *UserUpsertOne) ClearTimezone() *UserUpsertOne {
 	})
 }
 
-// SetConfirmed sets the "confirmed" field.
-func (u *UserUpsertOne) SetConfirmed(v bool) *UserUpsertOne {
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *UserUpsertOne) SetAuthProviderID(v string) *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.SetConfirmed(v)
+		s.SetAuthProviderID(v)
 	})
 }
 
-// UpdateConfirmed sets the "confirmed" field to the value that was provided on create.
-func (u *UserUpsertOne) UpdateConfirmed() *UserUpsertOne {
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateAuthProviderID() *UserUpsertOne {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateConfirmed()
+		s.UpdateAuthProviderID()
+	})
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (u *UserUpsertOne) ClearAuthProviderID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAuthProviderID()
 	})
 }
 
@@ -1426,27 +1351,6 @@ func (u *UserUpsertBulk) Update(set func(*UserUpsert)) *UserUpsertBulk {
 	return u
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (u *UserUpsertBulk) SetAuthProviderID(v string) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetAuthProviderID(v)
-	})
-}
-
-// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateAuthProviderID() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateAuthProviderID()
-	})
-}
-
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (u *UserUpsertBulk) ClearAuthProviderID() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.ClearAuthProviderID()
-	})
-}
-
 // SetEmail sets the "email" field.
 func (u *UserUpsertBulk) SetEmail(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
@@ -1472,27 +1376,6 @@ func (u *UserUpsertBulk) SetName(v string) *UserUpsertBulk {
 func (u *UserUpsertBulk) UpdateName() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
 		s.UpdateName()
-	})
-}
-
-// ClearName clears the value of the "name" field.
-func (u *UserUpsertBulk) ClearName() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.ClearName()
-	})
-}
-
-// SetIsOrgAdmin sets the "is_org_admin" field.
-func (u *UserUpsertBulk) SetIsOrgAdmin(v bool) *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.SetIsOrgAdmin(v)
-	})
-}
-
-// UpdateIsOrgAdmin sets the "is_org_admin" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateIsOrgAdmin() *UserUpsertBulk {
-	return u.Update(func(s *UserUpsert) {
-		s.UpdateIsOrgAdmin()
 	})
 }
 
@@ -1538,17 +1421,24 @@ func (u *UserUpsertBulk) ClearTimezone() *UserUpsertBulk {
 	})
 }
 
-// SetConfirmed sets the "confirmed" field.
-func (u *UserUpsertBulk) SetConfirmed(v bool) *UserUpsertBulk {
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *UserUpsertBulk) SetAuthProviderID(v string) *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.SetConfirmed(v)
+		s.SetAuthProviderID(v)
 	})
 }
 
-// UpdateConfirmed sets the "confirmed" field to the value that was provided on create.
-func (u *UserUpsertBulk) UpdateConfirmed() *UserUpsertBulk {
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateAuthProviderID() *UserUpsertBulk {
 	return u.Update(func(s *UserUpsert) {
-		s.UpdateConfirmed()
+		s.UpdateAuthProviderID()
+	})
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (u *UserUpsertBulk) ClearAuthProviderID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearAuthProviderID()
 	})
 }
 

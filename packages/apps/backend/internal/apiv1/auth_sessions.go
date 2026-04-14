@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/user"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
@@ -18,6 +19,19 @@ type authSessionsHandler struct {
 
 func newAuthSessionsHandler(auth rez.AuthService, orgs rez.OrganizationService, users rez.UserService) *authSessionsHandler {
 	return &authSessionsHandler{auth: auth, orgs: orgs, users: users}
+}
+
+func (h *authSessionsHandler) GetAuthSessionConfig(ctx context.Context, req *oapi.GetAuthSessionConfigRequest) (*oapi.GetAuthSessionConfigResponse, error) {
+	var resp oapi.GetAuthSessionConfigResponse
+
+	cfg := h.auth.GetAuthSessionConfig()
+	resp.Body.Data = oapi.AuthSessionConfig{
+		Issuer:          cfg.Issuer,
+		AppClientId:     cfg.AppClientId,
+		AppClientScopes: cfg.AppClientScopes,
+	}
+
+	return &resp, nil
 }
 
 func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *oapi.CompleteAuthSessionFlowRequest) (*oapi.CompleteAuthSessionFlowResponse, error) {
@@ -74,7 +88,7 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 		return nil, oapi.Error("failed to get user", userErr)
 	}
 
-	org, orgErr := h.orgs.GetCurrent(ctx)
+	org, orgErr := h.orgs.Get(ctx, organization.TenantID(u.TenantID))
 	if orgErr != nil {
 		return nil, oapi.Error("failed to get organization", orgErr)
 	}

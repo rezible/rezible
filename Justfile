@@ -25,9 +25,9 @@ scripts_dir := "./scripts"
     bun run format
 
 @reload-localias:
-    localias set ${APP_HOST} 7000
-    localias set ${API_HOST} 7001
-    localias set ${AUTH_HOST} 7011
+    localias set ${APP_HOST} ${REZ_APP_PORT}
+    localias set ${API_HOST} ${REZ_BACKEND_PORT}
+    localias set ${AUTH_HOST} ${AUTH_PORT}
 
     mkdir -p "{{scripts_dir}}/certs" && cat "$(localias debug cert)" > "{{scripts_dir}}/certs/localias-ca.crt"
 
@@ -126,22 +126,19 @@ setup-db: recreate-db bootstrap-db run-migrations
 @recreate-db:
     just run-docker-compose down postgres -v && just run-docker-compose up postgres --wait
 
-init_db_script := f"REVOKE ALL ON DATABASE {{env('POSTGRES_DB')}} FROM PUBLIC;
-CREATE USER {{env('POSTGRES_DEX_USER')}} WITH LOGIN PASSWORD '{{env('POSTGRES_DEX_PASSWORD')}}';
-CREATE DATABASE {{env('POSTGRES_DEX_DATABASE')}} OWNER {{env('POSTGRES_DEX_USER')}};
-REVOKE ALL ON DATABASE {{env('POSTGRES_DEX_DATABASE')}} FROM PUBLIC;
-GRANT CONNECT ON DATABASE {{env('POSTGRES_DEX_DATABASE')}} TO {{env('POSTGRES_DEX_USER')}};"
-
 @bootstrap-db:
-    printf "%s" "{{init_db_script}}" | just run-docker-compose exec -T postgres psql -U $POSTGRES_USER
     just run-backend db bootstrap
 
 @run-migrations:
     just run-backend db migrate-up
 
+docs_role_sql_up := "GRANT SELECT, INSERT, UPDATE ON TABLE documents TO rez_documents;"
+docs_role_sql_down := "REVOKE SELECT, INSERT, UPDATE ON TABLE documents FROM rez_documents;"
+
 [working-directory("packages/apps/backend/migrations")]
-@create-initial-migrations: recreate-db
+@create-initial-migrations: recreate-db bootstrap-db
     rm -f ./0001_init*.sql
     rm -f ./atlas.sum
+    just run-backend db update-checksum
     just run-backend db create-migration init
-    just run-backend db create-migration --update-checksum
+    just run-backend db update-checksum

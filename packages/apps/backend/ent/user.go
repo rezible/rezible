@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -20,20 +21,16 @@ type User struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// AuthProviderID holds the value of the "auth_provider_id" field.
-	AuthProviderID string `json:"auth_provider_id,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// IsOrgAdmin holds the value of the "is_org_admin" field.
-	IsOrgAdmin bool `json:"is_org_admin,omitempty"`
 	// ChatID holds the value of the "chat_id" field.
 	ChatID string `json:"chat_id,omitempty"`
 	// Timezone holds the value of the "timezone" field.
 	Timezone string `json:"timezone,omitempty"`
-	// Confirmed holds the value of the "confirmed" field.
-	Confirmed bool `json:"confirmed,omitempty"`
+	// AuthProviderID holds the value of the "auth_provider_id" field.
+	AuthProviderID string `json:"auth_provider_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the UserQuery when eager-loading is set.
 	Edges        UserEdges `json:"edges"`
@@ -44,6 +41,8 @@ type User struct {
 type UserEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// OrganizationRole holds the value of the organization_role edge.
+	OrganizationRole *OrganizationRole `json:"organization_role,omitempty"`
 	// Teams holds the value of the teams edge.
 	Teams []*Team `json:"teams,omitempty"`
 	// WatchedOncallRosters holds the value of the watched_oncall_rosters edge.
@@ -80,7 +79,7 @@ type UserEdges struct {
 	RoleAssignments []*IncidentRoleAssignment `json:"role_assignments,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [18]bool
+	loadedTypes [19]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -94,10 +93,21 @@ func (e UserEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// OrganizationRoleOrErr returns the OrganizationRole value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e UserEdges) OrganizationRoleOrErr() (*OrganizationRole, error) {
+	if e.OrganizationRole != nil {
+		return e.OrganizationRole, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: organizationrole.Label}
+	}
+	return nil, &NotLoadedError{edge: "organization_role"}
+}
+
 // TeamsOrErr returns the Teams value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) TeamsOrErr() ([]*Team, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Teams, nil
 	}
 	return nil, &NotLoadedError{edge: "teams"}
@@ -106,7 +116,7 @@ func (e UserEdges) TeamsOrErr() ([]*Team, error) {
 // WatchedOncallRostersOrErr returns the WatchedOncallRosters value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) WatchedOncallRostersOrErr() ([]*OncallRoster, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.WatchedOncallRosters, nil
 	}
 	return nil, &NotLoadedError{edge: "watched_oncall_rosters"}
@@ -115,7 +125,7 @@ func (e UserEdges) WatchedOncallRostersOrErr() ([]*OncallRoster, error) {
 // OncallSchedulesOrErr returns the OncallSchedules value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) OncallSchedulesOrErr() ([]*OncallScheduleParticipant, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.OncallSchedules, nil
 	}
 	return nil, &NotLoadedError{edge: "oncall_schedules"}
@@ -124,7 +134,7 @@ func (e UserEdges) OncallSchedulesOrErr() ([]*OncallScheduleParticipant, error) 
 // OncallShiftsOrErr returns the OncallShifts value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) OncallShiftsOrErr() ([]*OncallShift, error) {
-	if e.loadedTypes[4] {
+	if e.loadedTypes[5] {
 		return e.OncallShifts, nil
 	}
 	return nil, &NotLoadedError{edge: "oncall_shifts"}
@@ -133,7 +143,7 @@ func (e UserEdges) OncallShiftsOrErr() ([]*OncallShift, error) {
 // EventAnnotationsOrErr returns the EventAnnotations value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) EventAnnotationsOrErr() ([]*EventAnnotation, error) {
-	if e.loadedTypes[5] {
+	if e.loadedTypes[6] {
 		return e.EventAnnotations, nil
 	}
 	return nil, &NotLoadedError{edge: "event_annotations"}
@@ -142,7 +152,7 @@ func (e UserEdges) EventAnnotationsOrErr() ([]*EventAnnotation, error) {
 // IntegrationOauthStatesOrErr returns the IntegrationOauthStates value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IntegrationOauthStatesOrErr() ([]*IntegrationOAuthState, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.IntegrationOauthStates, nil
 	}
 	return nil, &NotLoadedError{edge: "integration_oauth_states"}
@@ -151,7 +161,7 @@ func (e UserEdges) IntegrationOauthStatesOrErr() ([]*IntegrationOAuthState, erro
 // IncidentsOrErr returns the Incidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.Incidents, nil
 	}
 	return nil, &NotLoadedError{edge: "incidents"}
@@ -160,7 +170,7 @@ func (e UserEdges) IncidentsOrErr() ([]*Incident, error) {
 // IncidentMilestonesOrErr returns the IncidentMilestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentMilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[9] {
 		return e.IncidentMilestones, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_milestones"}
@@ -169,7 +179,7 @@ func (e UserEdges) IncidentMilestonesOrErr() ([]*IncidentMilestone, error) {
 // IncidentDebriefsOrErr returns the IncidentDebriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.IncidentDebriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_debriefs"}
@@ -178,7 +188,7 @@ func (e UserEdges) IncidentDebriefsOrErr() ([]*IncidentDebrief, error) {
 // AssignedTasksOrErr returns the AssignedTasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) AssignedTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.AssignedTasks, nil
 	}
 	return nil, &NotLoadedError{edge: "assigned_tasks"}
@@ -187,7 +197,7 @@ func (e UserEdges) AssignedTasksOrErr() ([]*Task, error) {
 // CreatedTasksOrErr returns the CreatedTasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) CreatedTasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[12] {
 		return e.CreatedTasks, nil
 	}
 	return nil, &NotLoadedError{edge: "created_tasks"}
@@ -196,7 +206,7 @@ func (e UserEdges) CreatedTasksOrErr() ([]*Task, error) {
 // RetrospectiveReviewRequestsOrErr returns the RetrospectiveReviewRequests value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RetrospectiveReviewRequestsOrErr() ([]*RetrospectiveReview, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[13] {
 		return e.RetrospectiveReviewRequests, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_review_requests"}
@@ -205,7 +215,7 @@ func (e UserEdges) RetrospectiveReviewRequestsOrErr() ([]*RetrospectiveReview, e
 // RetrospectiveReviewResponsesOrErr returns the RetrospectiveReviewResponses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RetrospectiveReviewResponsesOrErr() ([]*RetrospectiveReview, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[14] {
 		return e.RetrospectiveReviewResponses, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_review_responses"}
@@ -214,7 +224,7 @@ func (e UserEdges) RetrospectiveReviewResponsesOrErr() ([]*RetrospectiveReview, 
 // RetrospectiveCommentsOrErr returns the RetrospectiveComments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RetrospectiveCommentsOrErr() ([]*RetrospectiveComment, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.RetrospectiveComments, nil
 	}
 	return nil, &NotLoadedError{edge: "retrospective_comments"}
@@ -223,7 +233,7 @@ func (e UserEdges) RetrospectiveCommentsOrErr() ([]*RetrospectiveComment, error)
 // DocumentAccessesOrErr returns the DocumentAccesses value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[16] {
 		return e.DocumentAccesses, nil
 	}
 	return nil, &NotLoadedError{edge: "document_accesses"}
@@ -232,7 +242,7 @@ func (e UserEdges) DocumentAccessesOrErr() ([]*DocumentAccess, error) {
 // TeamMembershipsOrErr returns the TeamMemberships value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[17] {
 		return e.TeamMemberships, nil
 	}
 	return nil, &NotLoadedError{edge: "team_memberships"}
@@ -241,7 +251,7 @@ func (e UserEdges) TeamMembershipsOrErr() ([]*TeamMembership, error) {
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e UserEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[17] {
+	if e.loadedTypes[18] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -252,11 +262,9 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldIsOrgAdmin, user.FieldConfirmed:
-			values[i] = new(sql.NullBool)
 		case user.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case user.FieldAuthProviderID, user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone:
+		case user.FieldEmail, user.FieldName, user.FieldChatID, user.FieldTimezone, user.FieldAuthProviderID:
 			values[i] = new(sql.NullString)
 		case user.FieldID:
 			values[i] = new(uuid.UUID)
@@ -287,12 +295,6 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case user.FieldAuthProviderID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field auth_provider_id", values[i])
-			} else if value.Valid {
-				_m.AuthProviderID = value.String
-			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field email", values[i])
@@ -304,12 +306,6 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
-			}
-		case user.FieldIsOrgAdmin:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_org_admin", values[i])
-			} else if value.Valid {
-				_m.IsOrgAdmin = value.Bool
 			}
 		case user.FieldChatID:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -323,11 +319,11 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Timezone = value.String
 			}
-		case user.FieldConfirmed:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field confirmed", values[i])
+		case user.FieldAuthProviderID:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field auth_provider_id", values[i])
 			} else if value.Valid {
-				_m.Confirmed = value.Bool
+				_m.AuthProviderID = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -345,6 +341,11 @@ func (_m *User) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the User entity.
 func (_m *User) QueryTenant() *TenantQuery {
 	return NewUserClient(_m.config).QueryTenant(_m)
+}
+
+// QueryOrganizationRole queries the "organization_role" edge of the User entity.
+func (_m *User) QueryOrganizationRole() *OrganizationRoleQuery {
+	return NewUserClient(_m.config).QueryOrganizationRole(_m)
 }
 
 // QueryTeams queries the "teams" edge of the User entity.
@@ -458,17 +459,11 @@ func (_m *User) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("auth_provider_id=")
-	builder.WriteString(_m.AuthProviderID)
-	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(_m.Email)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
-	builder.WriteString(", ")
-	builder.WriteString("is_org_admin=")
-	builder.WriteString(fmt.Sprintf("%v", _m.IsOrgAdmin))
 	builder.WriteString(", ")
 	builder.WriteString("chat_id=")
 	builder.WriteString(_m.ChatID)
@@ -476,8 +471,8 @@ func (_m *User) String() string {
 	builder.WriteString("timezone=")
 	builder.WriteString(_m.Timezone)
 	builder.WriteString(", ")
-	builder.WriteString("confirmed=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Confirmed))
+	builder.WriteString("auth_provider_id=")
+	builder.WriteString(_m.AuthProviderID)
 	builder.WriteByte(')')
 	return builder.String()
 }

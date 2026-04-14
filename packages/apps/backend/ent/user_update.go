@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -42,26 +43,6 @@ type UserUpdate struct {
 // Where appends a list predicates to the UserUpdate builder.
 func (_u *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	_u.mutation.Where(ps...)
-	return _u
-}
-
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (_u *UserUpdate) SetAuthProviderID(v string) *UserUpdate {
-	_u.mutation.SetAuthProviderID(v)
-	return _u
-}
-
-// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableAuthProviderID(v *string) *UserUpdate {
-	if v != nil {
-		_u.SetAuthProviderID(*v)
-	}
-	return _u
-}
-
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (_u *UserUpdate) ClearAuthProviderID() *UserUpdate {
-	_u.mutation.ClearAuthProviderID()
 	return _u
 }
 
@@ -89,26 +70,6 @@ func (_u *UserUpdate) SetName(v string) *UserUpdate {
 func (_u *UserUpdate) SetNillableName(v *string) *UserUpdate {
 	if v != nil {
 		_u.SetName(*v)
-	}
-	return _u
-}
-
-// ClearName clears the value of the "name" field.
-func (_u *UserUpdate) ClearName() *UserUpdate {
-	_u.mutation.ClearName()
-	return _u
-}
-
-// SetIsOrgAdmin sets the "is_org_admin" field.
-func (_u *UserUpdate) SetIsOrgAdmin(v bool) *UserUpdate {
-	_u.mutation.SetIsOrgAdmin(v)
-	return _u
-}
-
-// SetNillableIsOrgAdmin sets the "is_org_admin" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableIsOrgAdmin(v *bool) *UserUpdate {
-	if v != nil {
-		_u.SetIsOrgAdmin(*v)
 	}
 	return _u
 }
@@ -153,18 +114,43 @@ func (_u *UserUpdate) ClearTimezone() *UserUpdate {
 	return _u
 }
 
-// SetConfirmed sets the "confirmed" field.
-func (_u *UserUpdate) SetConfirmed(v bool) *UserUpdate {
-	_u.mutation.SetConfirmed(v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_u *UserUpdate) SetAuthProviderID(v string) *UserUpdate {
+	_u.mutation.SetAuthProviderID(v)
 	return _u
 }
 
-// SetNillableConfirmed sets the "confirmed" field if the given value is not nil.
-func (_u *UserUpdate) SetNillableConfirmed(v *bool) *UserUpdate {
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableAuthProviderID(v *string) *UserUpdate {
 	if v != nil {
-		_u.SetConfirmed(*v)
+		_u.SetAuthProviderID(*v)
 	}
 	return _u
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (_u *UserUpdate) ClearAuthProviderID() *UserUpdate {
+	_u.mutation.ClearAuthProviderID()
+	return _u
+}
+
+// SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
+func (_u *UserUpdate) SetOrganizationRoleID(id uuid.UUID) *UserUpdate {
+	_u.mutation.SetOrganizationRoleID(id)
+	return _u
+}
+
+// SetNillableOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID if the given value is not nil.
+func (_u *UserUpdate) SetNillableOrganizationRoleID(id *uuid.UUID) *UserUpdate {
+	if id != nil {
+		_u = _u.SetOrganizationRoleID(*id)
+	}
+	return _u
+}
+
+// SetOrganizationRole sets the "organization_role" edge to the OrganizationRole entity.
+func (_u *UserUpdate) SetOrganizationRole(v *OrganizationRole) *UserUpdate {
+	return _u.SetOrganizationRoleID(v.ID)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -425,6 +411,12 @@ func (_u *UserUpdate) AddRoleAssignments(v ...*IncidentRoleAssignment) *UserUpda
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearOrganizationRole clears the "organization_role" edge to the OrganizationRole entity.
+func (_u *UserUpdate) ClearOrganizationRole() *UserUpdate {
+	_u.mutation.ClearOrganizationRole()
+	return _u
 }
 
 // ClearTeams clears all "teams" edges to the Team entity.
@@ -837,23 +829,11 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.AuthProviderID(); ok {
-		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
-	}
-	if _u.mutation.AuthProviderIDCleared() {
-		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
-	}
-	if _u.mutation.NameCleared() {
-		_spec.ClearField(user.FieldName, field.TypeString)
-	}
-	if value, ok := _u.mutation.IsOrgAdmin(); ok {
-		_spec.SetField(user.FieldIsOrgAdmin, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ChatID(); ok {
 		_spec.SetField(user.FieldChatID, field.TypeString, value)
@@ -867,8 +847,42 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(user.FieldTimezone, field.TypeString)
 	}
-	if value, ok := _u.mutation.Confirmed(); ok {
-		_spec.SetField(user.FieldConfirmed, field.TypeBool, value)
+	if value, ok := _u.mutation.AuthProviderID(); ok {
+		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+	}
+	if _u.mutation.AuthProviderIDCleared() {
+		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
+	}
+	if _u.mutation.OrganizationRoleCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OrganizationRoleTable,
+			Columns: []string{user.OrganizationRoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OrganizationRoleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OrganizationRoleTable,
+			Columns: []string{user.OrganizationRoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1752,26 +1766,6 @@ type UserUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetAuthProviderID sets the "auth_provider_id" field.
-func (_u *UserUpdateOne) SetAuthProviderID(v string) *UserUpdateOne {
-	_u.mutation.SetAuthProviderID(v)
-	return _u
-}
-
-// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableAuthProviderID(v *string) *UserUpdateOne {
-	if v != nil {
-		_u.SetAuthProviderID(*v)
-	}
-	return _u
-}
-
-// ClearAuthProviderID clears the value of the "auth_provider_id" field.
-func (_u *UserUpdateOne) ClearAuthProviderID() *UserUpdateOne {
-	_u.mutation.ClearAuthProviderID()
-	return _u
-}
-
 // SetEmail sets the "email" field.
 func (_u *UserUpdateOne) SetEmail(v string) *UserUpdateOne {
 	_u.mutation.SetEmail(v)
@@ -1796,26 +1790,6 @@ func (_u *UserUpdateOne) SetName(v string) *UserUpdateOne {
 func (_u *UserUpdateOne) SetNillableName(v *string) *UserUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
-	}
-	return _u
-}
-
-// ClearName clears the value of the "name" field.
-func (_u *UserUpdateOne) ClearName() *UserUpdateOne {
-	_u.mutation.ClearName()
-	return _u
-}
-
-// SetIsOrgAdmin sets the "is_org_admin" field.
-func (_u *UserUpdateOne) SetIsOrgAdmin(v bool) *UserUpdateOne {
-	_u.mutation.SetIsOrgAdmin(v)
-	return _u
-}
-
-// SetNillableIsOrgAdmin sets the "is_org_admin" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableIsOrgAdmin(v *bool) *UserUpdateOne {
-	if v != nil {
-		_u.SetIsOrgAdmin(*v)
 	}
 	return _u
 }
@@ -1860,18 +1834,43 @@ func (_u *UserUpdateOne) ClearTimezone() *UserUpdateOne {
 	return _u
 }
 
-// SetConfirmed sets the "confirmed" field.
-func (_u *UserUpdateOne) SetConfirmed(v bool) *UserUpdateOne {
-	_u.mutation.SetConfirmed(v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_u *UserUpdateOne) SetAuthProviderID(v string) *UserUpdateOne {
+	_u.mutation.SetAuthProviderID(v)
 	return _u
 }
 
-// SetNillableConfirmed sets the "confirmed" field if the given value is not nil.
-func (_u *UserUpdateOne) SetNillableConfirmed(v *bool) *UserUpdateOne {
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableAuthProviderID(v *string) *UserUpdateOne {
 	if v != nil {
-		_u.SetConfirmed(*v)
+		_u.SetAuthProviderID(*v)
 	}
 	return _u
+}
+
+// ClearAuthProviderID clears the value of the "auth_provider_id" field.
+func (_u *UserUpdateOne) ClearAuthProviderID() *UserUpdateOne {
+	_u.mutation.ClearAuthProviderID()
+	return _u
+}
+
+// SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
+func (_u *UserUpdateOne) SetOrganizationRoleID(id uuid.UUID) *UserUpdateOne {
+	_u.mutation.SetOrganizationRoleID(id)
+	return _u
+}
+
+// SetNillableOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableOrganizationRoleID(id *uuid.UUID) *UserUpdateOne {
+	if id != nil {
+		_u = _u.SetOrganizationRoleID(*id)
+	}
+	return _u
+}
+
+// SetOrganizationRole sets the "organization_role" edge to the OrganizationRole entity.
+func (_u *UserUpdateOne) SetOrganizationRole(v *OrganizationRole) *UserUpdateOne {
+	return _u.SetOrganizationRoleID(v.ID)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -2132,6 +2131,12 @@ func (_u *UserUpdateOne) AddRoleAssignments(v ...*IncidentRoleAssignment) *UserU
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearOrganizationRole clears the "organization_role" edge to the OrganizationRole entity.
+func (_u *UserUpdateOne) ClearOrganizationRole() *UserUpdateOne {
+	_u.mutation.ClearOrganizationRole()
+	return _u
 }
 
 // ClearTeams clears all "teams" edges to the Team entity.
@@ -2574,23 +2579,11 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.AuthProviderID(); ok {
-		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
-	}
-	if _u.mutation.AuthProviderIDCleared() {
-		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Email(); ok {
 		_spec.SetField(user.FieldEmail, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(user.FieldName, field.TypeString, value)
-	}
-	if _u.mutation.NameCleared() {
-		_spec.ClearField(user.FieldName, field.TypeString)
-	}
-	if value, ok := _u.mutation.IsOrgAdmin(); ok {
-		_spec.SetField(user.FieldIsOrgAdmin, field.TypeBool, value)
 	}
 	if value, ok := _u.mutation.ChatID(); ok {
 		_spec.SetField(user.FieldChatID, field.TypeString, value)
@@ -2604,8 +2597,42 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	if _u.mutation.TimezoneCleared() {
 		_spec.ClearField(user.FieldTimezone, field.TypeString)
 	}
-	if value, ok := _u.mutation.Confirmed(); ok {
-		_spec.SetField(user.FieldConfirmed, field.TypeBool, value)
+	if value, ok := _u.mutation.AuthProviderID(); ok {
+		_spec.SetField(user.FieldAuthProviderID, field.TypeString, value)
+	}
+	if _u.mutation.AuthProviderIDCleared() {
+		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
+	}
+	if _u.mutation.OrganizationRoleCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OrganizationRoleTable,
+			Columns: []string{user.OrganizationRoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OrganizationRoleIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   user.OrganizationRoleTable,
+			Columns: []string{user.OrganizationRoleColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.TeamsCleared() {
 		edge := &sqlgraph.EdgeSpec{

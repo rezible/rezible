@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent/organization"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -18,7 +19,7 @@ func newOrganizationsHandler(orgs rez.OrganizationService) *organizationsHandler
 func (h *organizationsHandler) GetOrganization(ctx context.Context, request *oapi.GetOrganizationRequest) (*oapi.GetOrganizationResponse, error) {
 	var resp oapi.GetOrganizationResponse
 
-	org, orgErr := h.orgs.GetById(ctx, request.Id)
+	org, orgErr := h.orgs.Get(ctx, organization.ID(request.Id))
 	if orgErr != nil {
 		return nil, oapi.Error("failed to fetch organization", orgErr)
 	}
@@ -30,7 +31,7 @@ func (h *organizationsHandler) GetOrganization(ctx context.Context, request *oap
 func (h *organizationsHandler) FinishOrganizationSetup(ctx context.Context, request *oapi.FinishOrganizationSetupRequest) (*oapi.FinishOrganizationSetupResponse, error) {
 	var resp oapi.FinishOrganizationSetupResponse
 
-	org, orgErr := h.orgs.GetById(ctx, request.Id)
+	org, orgErr := h.orgs.Get(ctx, organization.ID(request.Id))
 	if orgErr != nil {
 		return nil, oapi.Error("failed to fetch organization", orgErr)
 	}

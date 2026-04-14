@@ -3,58 +3,71 @@ package oidc
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 )
 
 type tokenProvider struct {
-	oauthConfig oauth2.Config
-	verifier    *oidc.IDTokenVerifier
+	idVerifier   *oidc.IDTokenVerifier
+	audienceOpt  oauth2.AuthCodeOption
+	appClientCfg oauth2.Config
 }
 
-func (cfg *configOidc) makeTokenProvider(ctx context.Context) (*tokenProvider, error) {
-	oidcProv, oidcProvErr := oidc.NewProvider(ctx, cfg.IssuerUrl)
+func makeTokenProvider(ctx context.Context, cfg oidcConfig) (*tokenProvider, error) {
+	apiAudience := rez.Config.ApiUrl()
+	if apiAudience == "" {
+		return nil, fmt.Errorf("no api url configured, can't verify token audience")
+	}
+	oidcProv, oidcProvErr := oidc.NewProvider(ctx, cfg.Issuer)
 	if oidcProvErr != nil {
 		return nil, fmt.Errorf("create oidc provider: %w", oidcProvErr)
 	}
-
+	appClientId := cfg.AppClient.Id
 	return &tokenProvider{
-		verifier: oidcProv.VerifierContext(ctx, &oidc.Config{ClientID: cfg.ClientId}),
-		oauthConfig: oauth2.Config{
-			ClientID:    cfg.ClientId,
-			RedirectURL: cfg.ClientRedirectUri,
-			Scopes:      cfg.ClientScopes,
+		appClientCfg: oauth2.Config{
+			ClientID:    appClientId,
+			Scopes:      cfg.AppClient.Scopes,
+			RedirectURL: cfg.AppClient.RedirectUri,
 			Endpoint:    oidcProv.Endpoint(),
 		},
+		audienceOpt: oauth2.SetAuthURLParam("resource", apiAudience),
+		// audience for id token is the client application, not resource
+		idVerifier: oidcProv.VerifierContext(ctx, &oidc.Config{ClientID: appClientId}),
 	}, nil
 }
 
-func (p *tokenProvider) exchangeToken(ctx context.Context, code string, verifier string) (*oauth2.Token, error) {
-	return p.oauthConfig.Exchange(ctx, code, oauth2.VerifierOption(verifier))
+func (p *tokenProvider) exchangeAppClientAuthCode(ctx context.Context, code string, verifier string) (*oauth2.Token, error) {
+	return p.appClientCfg.Exchange(ctx, code, oauth2.VerifierOption(verifier), p.audienceOpt)
 }
 
 func (p *tokenProvider) refreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
-	expiredTokenSource := p.oauthConfig.TokenSource(ctx, &oauth2.Token{
+	expiredTokenSource := p.appClientCfg.TokenSource(ctx, &oauth2.Token{
 		RefreshToken: refreshToken,
 		Expiry:       time.Now().Add(-time.Second), // set expired to force a refresh request
 	})
 	return expiredTokenSource.Token()
 }
 
-func (p *tokenProvider) verifyIdToken(ctx context.Context, idTokenStr string) (*verifiedIdToken, error) {
-	idToken, verifyErr := p.verifier.Verify(ctx, idTokenStr)
+func (p *tokenProvider) verifyIdToken(ctx context.Context, idTokenStr string) (*verifiedSessionToken, error) {
+	if idTokenStr == "" {
+		return nil, rez.ErrAuthSessionMissing
+	}
+	idToken, verifyErr := p.idVerifier.Verify(ctx, idTokenStr)
 	if verifyErr != nil {
-		return nil, fmt.Errorf("verify: %w", verifyErr)
+		log.Debug().Err(verifyErr).Msg("id token verification failed")
+		return nil, rez.ErrAuthSessionInvalid
 	}
 	var claims IdTokenClaims
 	if claimsErr := idToken.Claims(&claims); claimsErr != nil {
-		return nil, fmt.Errorf("get claims: %w", claimsErr)
+		log.Debug().Err(verifyErr).Msg("id token claims failed")
+		return nil, rez.ErrAuthSessionInvalid
 	}
-	return &verifiedIdToken{idToken, claims}, nil
+	return &verifiedSessionToken{idToken, claims}, nil
 }
 
 type IdTokenClaims struct {
@@ -64,22 +77,22 @@ type IdTokenClaims struct {
 	Scopes []string `json:"scopes"`
 }
 
-type verifiedIdToken struct {
-	idToken *oidc.IDToken
-	claims  IdTokenClaims
+type verifiedSessionToken struct {
+	id     *oidc.IDToken
+	claims IdTokenClaims
 }
 
-func (t *verifiedIdToken) getDomain() string {
-	if parts := strings.Split(t.claims.Email, "@"); len(parts) == 2 {
-		return parts[1]
-	}
-	return ""
-}
-
-func (t *verifiedIdToken) getUser() ent.User {
+func (t *verifiedSessionToken) getUser() ent.User {
 	return ent.User{
-		AuthProviderID: t.idToken.Subject,
+		AuthProviderID: t.id.Subject,
 		Email:          t.claims.Email,
 		Name:           t.claims.Name,
+		Edges:          ent.UserEdges{},
+	}
+}
+
+func (t *verifiedSessionToken) getOrganization() ent.Organization {
+	return ent.Organization{
+		Name: "test org",
 	}
 }

@@ -62,14 +62,14 @@ func TenantID(v int) predicate.Organization {
 	return predicate.Organization(sql.FieldEQ(FieldTenantID, v))
 }
 
+// AuthProviderID applies equality check predicate on the "auth_provider_id" field. It's identical to AuthProviderIDEQ.
+func AuthProviderID(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldEQ(FieldAuthProviderID, v))
+}
+
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Organization {
 	return predicate.Organization(sql.FieldEQ(FieldName, v))
-}
-
-// Domain applies equality check predicate on the "domain" field. It's identical to DomainEQ.
-func Domain(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldEQ(FieldDomain, v))
 }
 
 // InitialSetupAt applies equality check predicate on the "initial_setup_at" field. It's identical to InitialSetupAtEQ.
@@ -95,6 +95,71 @@ func TenantIDIn(vs ...int) predicate.Organization {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Organization {
 	return predicate.Organization(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// AuthProviderIDEQ applies the EQ predicate on the "auth_provider_id" field.
+func AuthProviderIDEQ(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldEQ(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDNEQ applies the NEQ predicate on the "auth_provider_id" field.
+func AuthProviderIDNEQ(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldNEQ(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDIn applies the In predicate on the "auth_provider_id" field.
+func AuthProviderIDIn(vs ...string) predicate.Organization {
+	return predicate.Organization(sql.FieldIn(FieldAuthProviderID, vs...))
+}
+
+// AuthProviderIDNotIn applies the NotIn predicate on the "auth_provider_id" field.
+func AuthProviderIDNotIn(vs ...string) predicate.Organization {
+	return predicate.Organization(sql.FieldNotIn(FieldAuthProviderID, vs...))
+}
+
+// AuthProviderIDGT applies the GT predicate on the "auth_provider_id" field.
+func AuthProviderIDGT(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldGT(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDGTE applies the GTE predicate on the "auth_provider_id" field.
+func AuthProviderIDGTE(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldGTE(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDLT applies the LT predicate on the "auth_provider_id" field.
+func AuthProviderIDLT(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldLT(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDLTE applies the LTE predicate on the "auth_provider_id" field.
+func AuthProviderIDLTE(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldLTE(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDContains applies the Contains predicate on the "auth_provider_id" field.
+func AuthProviderIDContains(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldContains(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDHasPrefix applies the HasPrefix predicate on the "auth_provider_id" field.
+func AuthProviderIDHasPrefix(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldHasPrefix(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDHasSuffix applies the HasSuffix predicate on the "auth_provider_id" field.
+func AuthProviderIDHasSuffix(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldHasSuffix(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDEqualFold applies the EqualFold predicate on the "auth_provider_id" field.
+func AuthProviderIDEqualFold(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldEqualFold(FieldAuthProviderID, v))
+}
+
+// AuthProviderIDContainsFold applies the ContainsFold predicate on the "auth_provider_id" field.
+func AuthProviderIDContainsFold(v string) predicate.Organization {
+	return predicate.Organization(sql.FieldContainsFold(FieldAuthProviderID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -160,71 +225,6 @@ func NameEqualFold(v string) predicate.Organization {
 // NameContainsFold applies the ContainsFold predicate on the "name" field.
 func NameContainsFold(v string) predicate.Organization {
 	return predicate.Organization(sql.FieldContainsFold(FieldName, v))
-}
-
-// DomainEQ applies the EQ predicate on the "domain" field.
-func DomainEQ(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldEQ(FieldDomain, v))
-}
-
-// DomainNEQ applies the NEQ predicate on the "domain" field.
-func DomainNEQ(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldNEQ(FieldDomain, v))
-}
-
-// DomainIn applies the In predicate on the "domain" field.
-func DomainIn(vs ...string) predicate.Organization {
-	return predicate.Organization(sql.FieldIn(FieldDomain, vs...))
-}
-
-// DomainNotIn applies the NotIn predicate on the "domain" field.
-func DomainNotIn(vs ...string) predicate.Organization {
-	return predicate.Organization(sql.FieldNotIn(FieldDomain, vs...))
-}
-
-// DomainGT applies the GT predicate on the "domain" field.
-func DomainGT(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldGT(FieldDomain, v))
-}
-
-// DomainGTE applies the GTE predicate on the "domain" field.
-func DomainGTE(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldGTE(FieldDomain, v))
-}
-
-// DomainLT applies the LT predicate on the "domain" field.
-func DomainLT(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldLT(FieldDomain, v))
-}
-
-// DomainLTE applies the LTE predicate on the "domain" field.
-func DomainLTE(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldLTE(FieldDomain, v))
-}
-
-// DomainContains applies the Contains predicate on the "domain" field.
-func DomainContains(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldContains(FieldDomain, v))
-}
-
-// DomainHasPrefix applies the HasPrefix predicate on the "domain" field.
-func DomainHasPrefix(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldHasPrefix(FieldDomain, v))
-}
-
-// DomainHasSuffix applies the HasSuffix predicate on the "domain" field.
-func DomainHasSuffix(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldHasSuffix(FieldDomain, v))
-}
-
-// DomainEqualFold applies the EqualFold predicate on the "domain" field.
-func DomainEqualFold(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldEqualFold(FieldDomain, v))
-}
-
-// DomainContainsFold applies the ContainsFold predicate on the "domain" field.
-func DomainContainsFold(v string) predicate.Organization {
-	return predicate.Organization(sql.FieldContainsFold(FieldDomain, v))
 }
 
 // InitialSetupAtEQ applies the EQ predicate on the "initial_setup_at" field.
@@ -298,6 +298,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Organization {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.Organization
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasRoles applies the HasEdge predicate on the "roles" edge.
+func HasRoles() predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, RolesTable, RolesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OrganizationRole
+		step.Edge.Schema = schemaConfig.OrganizationRole
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasRolesWith applies the HasEdge predicate on the "roles" edge with a given conditions (other predicates).
+func HasRolesWith(preds ...predicate.OrganizationRole) predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := newRolesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OrganizationRole
+		step.Edge.Schema = schemaConfig.OrganizationRole
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

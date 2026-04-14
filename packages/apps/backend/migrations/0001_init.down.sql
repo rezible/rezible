@@ -78,6 +78,8 @@ ALTER TABLE "retrospectives" DROP CONSTRAINT "retrospectives_system_analyses_ret
 ALTER TABLE "provider_sync_histories" DROP CONSTRAINT "provider_sync_histories_tenants_tenant";
 -- reverse: modify "playbooks" table
 ALTER TABLE "playbooks" DROP CONSTRAINT "playbooks_tenants_tenant";
+-- reverse: modify "organization_roles" table
+ALTER TABLE "organization_roles" DROP CONSTRAINT "organization_roles_users_organization_role", DROP CONSTRAINT "organization_roles_organizations_organization", DROP CONSTRAINT "organization_roles_tenants_tenant";
 -- reverse: modify "organizations" table
 ALTER TABLE "organizations" DROP CONSTRAINT "organizations_tenants_tenant";
 -- reverse: modify "oncall_shift_metrics" table
@@ -200,6 +202,8 @@ DROP INDEX "videoconference_tenant_id";
 DROP INDEX "video_conferences_meeting_session_id_key";
 -- reverse: create "video_conferences" table
 DROP TABLE "video_conferences";
+-- reverse: create index "user_auth_provider_id" to table: "users"
+DROP INDEX "user_auth_provider_id";
 -- reverse: create index "user_tenant_id" to table: "users"
 DROP INDEX "user_tenant_id";
 -- reverse: create "users" table
@@ -308,6 +312,16 @@ DROP TABLE "provider_sync_histories";
 DROP INDEX "playbook_tenant_id";
 -- reverse: create "playbooks" table
 DROP TABLE "playbooks";
+-- reverse: create index "organizationrole_org_id_user_id" to table: "organization_roles"
+DROP INDEX "organizationrole_org_id_user_id";
+-- reverse: create index "organizationrole_tenant_id" to table: "organization_roles"
+DROP INDEX "organizationrole_tenant_id";
+-- reverse: create index "organization_roles_user_id_key" to table: "organization_roles"
+DROP INDEX "organization_roles_user_id_key";
+-- reverse: create "organization_roles" table
+DROP TABLE "organization_roles";
+-- reverse: create index "organization_auth_provider_id" to table: "organizations"
+DROP INDEX "organization_auth_provider_id";
 -- reverse: create index "organization_tenant_id" to table: "organizations"
 DROP INDEX "organization_tenant_id";
 -- reverse: create "organizations" table

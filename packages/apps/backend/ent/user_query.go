@@ -25,6 +25,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -43,6 +44,7 @@ type UserQuery struct {
 	inters                           []Interceptor
 	predicates                       []predicate.User
 	withTenant                       *TenantQuery
+	withOrganizationRole             *OrganizationRoleQuery
 	withTeams                        *TeamQuery
 	withWatchedOncallRosters         *OncallRosterQuery
 	withOncallSchedules              *OncallScheduleParticipantQuery
@@ -116,6 +118,31 @@ func (_q *UserQuery) QueryTenant() *TenantQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.User
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryOrganizationRole chains the current query on the "organization_role" edge.
+func (_q *UserQuery) QueryOrganizationRole() *OrganizationRoleQuery {
+	query := (&OrganizationRoleClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(organizationrole.Table, organizationrole.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, user.OrganizationRoleTable, user.OrganizationRoleColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.OrganizationRole
+		step.Edge.Schema = schemaConfig.OrganizationRole
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -740,6 +767,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		inters:                           append([]Interceptor{}, _q.inters...),
 		predicates:                       append([]predicate.User{}, _q.predicates...),
 		withTenant:                       _q.withTenant.Clone(),
+		withOrganizationRole:             _q.withOrganizationRole.Clone(),
 		withTeams:                        _q.withTeams.Clone(),
 		withWatchedOncallRosters:         _q.withWatchedOncallRosters.Clone(),
 		withOncallSchedules:              _q.withOncallSchedules.Clone(),
@@ -772,6 +800,17 @@ func (_q *UserQuery) WithTenant(opts ...func(*TenantQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithOrganizationRole tells the query-builder to eager-load the nodes that are connected to
+// the "organization_role" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithOrganizationRole(opts ...func(*OrganizationRoleQuery)) *UserQuery {
+	query := (&OrganizationRoleClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOrganizationRole = query
 	return _q
 }
 
@@ -1046,8 +1085,9 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [18]bool{
+		loadedTypes = [19]bool{
 			_q.withTenant != nil,
+			_q.withOrganizationRole != nil,
 			_q.withTeams != nil,
 			_q.withWatchedOncallRosters != nil,
 			_q.withOncallSchedules != nil,
@@ -1093,6 +1133,12 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *User, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withOrganizationRole; query != nil {
+		if err := _q.loadOrganizationRole(ctx, query, nodes, nil,
+			func(n *User, e *OrganizationRole) { n.Edges.OrganizationRole = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1256,6 +1302,33 @@ func (_q *UserQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes [
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
+	}
+	return nil
+}
+func (_q *UserQuery) loadOrganizationRole(ctx context.Context, query *OrganizationRoleQuery, nodes []*User, init func(*User), assign func(*User, *OrganizationRole)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*User)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(organizationrole.FieldUserID)
+	}
+	query.Where(predicate.OrganizationRole(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(user.OrganizationRoleColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.UserID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "user_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

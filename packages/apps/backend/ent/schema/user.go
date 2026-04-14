@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -23,19 +24,19 @@ func (User) Mixin() []ent.Mixin {
 func (User) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("auth_provider_id").Optional(),
 		field.String("email"),
-		field.String("name").Optional().Default(""),
-		field.Bool("is_org_admin").Default(false),
+		field.String("name").Default(""),
 		field.String("chat_id").Optional(),
 		field.String("timezone").Optional(),
-		field.Bool("confirmed").Default(false),
+		field.String("auth_provider_id").Optional(),
 	}
 }
 
 // Edges of the User.
 func (User) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("organization_role", OrganizationRole.Type).Unique(),
+
 		edge.To("teams", Team.Type).
 			Through("team_memberships", TeamMembership.Type),
 
@@ -64,6 +65,9 @@ func (User) Edges() []ent.Edge {
 		edge.From("document_accesses", DocumentAccess.Type).Ref("user"),
 	}
 }
+
 func (User) Indexes() []ent.Index {
-	return []ent.Index{}
+	return []ent.Index{
+		index.Fields("auth_provider_id").Unique(),
+	}
 }

@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -31,15 +32,15 @@ func (_c *OrganizationCreate) SetTenantID(v int) *OrganizationCreate {
 	return _c
 }
 
-// SetName sets the "name" field.
-func (_c *OrganizationCreate) SetName(v string) *OrganizationCreate {
-	_c.mutation.SetName(v)
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_c *OrganizationCreate) SetAuthProviderID(v string) *OrganizationCreate {
+	_c.mutation.SetAuthProviderID(v)
 	return _c
 }
 
-// SetDomain sets the "domain" field.
-func (_c *OrganizationCreate) SetDomain(v string) *OrganizationCreate {
-	_c.mutation.SetDomain(v)
+// SetName sets the "name" field.
+func (_c *OrganizationCreate) SetName(v string) *OrganizationCreate {
+	_c.mutation.SetName(v)
 	return _c
 }
 
@@ -74,6 +75,21 @@ func (_c *OrganizationCreate) SetNillableID(v *uuid.UUID) *OrganizationCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *OrganizationCreate) SetTenant(v *Tenant) *OrganizationCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
+func (_c *OrganizationCreate) AddRoleIDs(ids ...uuid.UUID) *OrganizationCreate {
+	_c.mutation.AddRoleIDs(ids...)
+	return _c
+}
+
+// AddRoles adds the "roles" edges to the OrganizationRole entity.
+func (_c *OrganizationCreate) AddRoles(v ...*OrganizationRole) *OrganizationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddRoleIDs(ids...)
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
@@ -128,11 +144,11 @@ func (_c *OrganizationCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Organization.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.AuthProviderID(); !ok {
+		return &ValidationError{Name: "auth_provider_id", err: errors.New(`ent: missing required field "Organization.auth_provider_id"`)}
+	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Organization.name"`)}
-	}
-	if _, ok := _c.mutation.Domain(); !ok {
-		return &ValidationError{Name: "domain", err: errors.New(`ent: missing required field "Organization.domain"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Organization.tenant"`)}
@@ -174,13 +190,13 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.AuthProviderID(); ok {
+		_spec.SetField(organization.FieldAuthProviderID, field.TypeString, value)
+		_node.AuthProviderID = value
+	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 		_node.Name = value
-	}
-	if value, ok := _c.mutation.Domain(); ok {
-		_spec.SetField(organization.FieldDomain, field.TypeString, value)
-		_node.Domain = value
 	}
 	if value, ok := _c.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
@@ -202,6 +218,23 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.RolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.RolesTable,
+			Columns: []string{organization.RolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -256,6 +289,18 @@ type (
 	}
 )
 
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *OrganizationUpsert) SetAuthProviderID(v string) *OrganizationUpsert {
+	u.Set(organization.FieldAuthProviderID, v)
+	return u
+}
+
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdateAuthProviderID() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldAuthProviderID)
+	return u
+}
+
 // SetName sets the "name" field.
 func (u *OrganizationUpsert) SetName(v string) *OrganizationUpsert {
 	u.Set(organization.FieldName, v)
@@ -265,18 +310,6 @@ func (u *OrganizationUpsert) SetName(v string) *OrganizationUpsert {
 // UpdateName sets the "name" field to the value that was provided on create.
 func (u *OrganizationUpsert) UpdateName() *OrganizationUpsert {
 	u.SetExcluded(organization.FieldName)
-	return u
-}
-
-// SetDomain sets the "domain" field.
-func (u *OrganizationUpsert) SetDomain(v string) *OrganizationUpsert {
-	u.Set(organization.FieldDomain, v)
-	return u
-}
-
-// UpdateDomain sets the "domain" field to the value that was provided on create.
-func (u *OrganizationUpsert) UpdateDomain() *OrganizationUpsert {
-	u.SetExcluded(organization.FieldDomain)
 	return u
 }
 
@@ -349,6 +382,20 @@ func (u *OrganizationUpsertOne) Update(set func(*OrganizationUpsert)) *Organizat
 	return u
 }
 
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *OrganizationUpsertOne) SetAuthProviderID(v string) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetAuthProviderID(v)
+	})
+}
+
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdateAuthProviderID() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateAuthProviderID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *OrganizationUpsertOne) SetName(v string) *OrganizationUpsertOne {
 	return u.Update(func(s *OrganizationUpsert) {
@@ -360,20 +407,6 @@ func (u *OrganizationUpsertOne) SetName(v string) *OrganizationUpsertOne {
 func (u *OrganizationUpsertOne) UpdateName() *OrganizationUpsertOne {
 	return u.Update(func(s *OrganizationUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetDomain sets the "domain" field.
-func (u *OrganizationUpsertOne) SetDomain(v string) *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.SetDomain(v)
-	})
-}
-
-// UpdateDomain sets the "domain" field to the value that was provided on create.
-func (u *OrganizationUpsertOne) UpdateDomain() *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdateDomain()
 	})
 }
 
@@ -616,6 +649,20 @@ func (u *OrganizationUpsertBulk) Update(set func(*OrganizationUpsert)) *Organiza
 	return u
 }
 
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (u *OrganizationUpsertBulk) SetAuthProviderID(v string) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetAuthProviderID(v)
+	})
+}
+
+// UpdateAuthProviderID sets the "auth_provider_id" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdateAuthProviderID() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdateAuthProviderID()
+	})
+}
+
 // SetName sets the "name" field.
 func (u *OrganizationUpsertBulk) SetName(v string) *OrganizationUpsertBulk {
 	return u.Update(func(s *OrganizationUpsert) {
@@ -627,20 +674,6 @@ func (u *OrganizationUpsertBulk) SetName(v string) *OrganizationUpsertBulk {
 func (u *OrganizationUpsertBulk) UpdateName() *OrganizationUpsertBulk {
 	return u.Update(func(s *OrganizationUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetDomain sets the "domain" field.
-func (u *OrganizationUpsertBulk) SetDomain(v string) *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.SetDomain(v)
-	})
-}
-
-// UpdateDomain sets the "domain" field to the value that was provided on create.
-func (u *OrganizationUpsertBulk) UpdateDomain() *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdateDomain()
 	})
 }
 

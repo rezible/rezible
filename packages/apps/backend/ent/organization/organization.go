@@ -16,14 +16,16 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldAuthProviderID holds the string denoting the auth_provider_id field in the database.
+	FieldAuthProviderID = "auth_provider_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldDomain holds the string denoting the domain field in the database.
-	FieldDomain = "domain"
 	// FieldInitialSetupAt holds the string denoting the initial_setup_at field in the database.
 	FieldInitialSetupAt = "initial_setup_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeRoles holds the string denoting the roles edge name in mutations.
+	EdgeRoles = "roles"
 	// Table holds the table name of the organization in the database.
 	Table = "organizations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -33,14 +35,21 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// RolesTable is the table that holds the roles relation/edge.
+	RolesTable = "organization_roles"
+	// RolesInverseTable is the table name for the OrganizationRole entity.
+	// It exists in this package in order to avoid circular dependency with the "organizationrole" package.
+	RolesInverseTable = "organization_roles"
+	// RolesColumn is the table column denoting the roles relation/edge.
+	RolesColumn = "org_id"
 )
 
 // Columns holds all SQL columns for organization fields.
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldAuthProviderID,
 	FieldName,
-	FieldDomain,
 	FieldInitialSetupAt,
 }
 
@@ -79,14 +88,14 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByAuthProviderID orders the results by the auth_provider_id field.
+func ByAuthProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthProviderID, opts...).ToFunc()
+}
+
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
-}
-
-// ByDomain orders the results by the domain field.
-func ByDomain(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDomain, opts...).ToFunc()
 }
 
 // ByInitialSetupAt orders the results by the initial_setup_at field.
@@ -100,10 +109,31 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByRolesCount orders the results by roles count.
+func ByRolesCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newRolesStep(), opts...)
+	}
+}
+
+// ByRoles orders the results by roles terms.
+func ByRoles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newRolesStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newRolesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(RolesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, RolesTable, RolesColumn),
 	)
 }

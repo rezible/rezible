@@ -6,6 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
@@ -26,23 +27,31 @@ func NewUserService(db *ent.Client, orgs rez.OrganizationService) (*UserService,
 	return s, nil
 }
 
-func (s *UserService) FindOrCreateAuthProviderUser(ctx context.Context, pu ent.User) (*ent.User, error) {
-	usr, usrErr := s.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
-	if usrErr != nil && !ent.IsNotFound(usrErr) {
-		return nil, fmt.Errorf("failed to query user: %w", usrErr)
+func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organization, pu ent.User) (*ent.User, error) {
+	org, orgErr := s.orgs.SyncFromAuthProvider(ctx, po)
+	if orgErr != nil {
+		return nil, fmt.Errorf("sync organization: %w", orgErr)
 	}
-	if usr != nil {
-		return usr, nil
+	ctx = access.TenantContext(ctx, org.TenantID)
+
+	existing, getErr := s.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
+	if getErr != nil && !ent.IsNotFound(getErr) {
+		return nil, fmt.Errorf("query existing: %w", getErr)
 	}
 
-	// tenant exists, user does not exist
-	return s.Set(ctx, uuid.Nil, func(m *ent.UserMutation) {
+	var userId uuid.UUID
+	if existing != nil {
+		// TODO: check if should sync every time
+		// if !AlwaysSyncAuthDetails { return existing, nil }
+		userId = existing.ID
+	}
+	syncAuthDetailsFn := func(m *ent.UserMutation) {
 		m.SetAuthProviderID(pu.AuthProviderID)
 		m.SetEmail(pu.Email)
-		m.SetConfirmed(pu.Confirmed)
 		m.SetName(pu.Name)
 		m.SetTimezone(pu.Timezone)
-	})
+	}
+	return s.Set(ctx, userId, syncAuthDetailsFn)
 }
 
 func (s *UserService) Get(ctx context.Context, p predicate.User) (*ent.User, error) {
@@ -64,7 +73,7 @@ func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.Use
 		var saveErr error
 		savedUser, saveErr = mutator.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("mutate user: %w", saveErr)
+			return fmt.Errorf("save: %w", saveErr)
 		}
 		return nil
 	}

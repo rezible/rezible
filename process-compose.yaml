@@ -12,7 +12,7 @@ processes:
       http_get:
         scheme: http
         host: localhost
-        port: 7002
+        port: 7001
         path: "/health"
       initial_delay_seconds: 3
     depends_on:

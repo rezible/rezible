@@ -76,7 +76,6 @@ func (p *dataProvider) PullUsers(ctx context.Context) iter.Seq2[*ent.User, error
 					continue
 				}
 				yield(&ent.User{
-					Name:     u.Profile.RealNameNormalized,
 					Email:    u.Profile.Email,
 					ChatID:   u.ID,
 					Timezone: u.TZ,

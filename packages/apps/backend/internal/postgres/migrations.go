@@ -45,7 +45,6 @@ func RunMigration(ctx context.Context, direction string) error {
 		if riverErr := river.RunMigration(ctx, pool, direction); riverErr != nil {
 			return fmt.Errorf("river migration: %w", riverErr)
 		}
-
 		return nil
 	})
 }
@@ -53,7 +52,7 @@ func RunMigration(ctx context.Context, direction string) error {
 func UpdateMigrationsChecksum() error {
 	dir, dirErr := sqltool.NewGolangMigrateDir(migrations.OutputDir)
 	if dirErr != nil {
-		return fmt.Errorf("creating atlas migration directory: %w", dirErr)
+		return fmt.Errorf("getting output dir: %w", dirErr)
 	}
 	sum, sumErr := dir.Checksum()
 	if sumErr != nil {
@@ -68,11 +67,11 @@ func UpdateMigrationsChecksum() error {
 func GenerateEntMigration(ctx context.Context, name string) error {
 	dir, dirErr := sqltool.NewGolangMigrateDir(migrations.OutputDir)
 	if dirErr != nil {
-		return fmt.Errorf("failed creating atlas migration directory: %w", dirErr)
+		return fmt.Errorf("getting output dir: %w", dirErr)
 	}
 	formatter, fmtErr := makeMigrationFormatter()
 	if fmtErr != nil {
-		return fmt.Errorf("failed creating atlas migration formatter: %w", fmtErr)
+		return fmt.Errorf("creating formatter: %w", fmtErr)
 	}
 	opts := []schema.MigrateOption{
 		schema.WithDir(dir),
@@ -87,7 +86,10 @@ func GenerateEntMigration(ctx context.Context, name string) error {
 			if mErr != nil {
 				return fmt.Errorf("failed creating migrate: %w", mErr)
 			}
-			return m.NamedDiff(ctx, name, entmigrate.Tables...)
+			if diffErr := m.NamedDiff(ctx, name, entmigrate.Tables...); diffErr != nil {
+				return fmt.Errorf("diff: %w", diffErr)
+			}
+			return nil
 		})
 	})
 }

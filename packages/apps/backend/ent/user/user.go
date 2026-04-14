@@ -16,22 +16,20 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldAuthProviderID holds the string denoting the auth_provider_id field in the database.
-	FieldAuthProviderID = "auth_provider_id"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldIsOrgAdmin holds the string denoting the is_org_admin field in the database.
-	FieldIsOrgAdmin = "is_org_admin"
 	// FieldChatID holds the string denoting the chat_id field in the database.
 	FieldChatID = "chat_id"
 	// FieldTimezone holds the string denoting the timezone field in the database.
 	FieldTimezone = "timezone"
-	// FieldConfirmed holds the string denoting the confirmed field in the database.
-	FieldConfirmed = "confirmed"
+	// FieldAuthProviderID holds the string denoting the auth_provider_id field in the database.
+	FieldAuthProviderID = "auth_provider_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeOrganizationRole holds the string denoting the organization_role edge name in mutations.
+	EdgeOrganizationRole = "organization_role"
 	// EdgeTeams holds the string denoting the teams edge name in mutations.
 	EdgeTeams = "teams"
 	// EdgeWatchedOncallRosters holds the string denoting the watched_oncall_rosters edge name in mutations.
@@ -75,6 +73,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// OrganizationRoleTable is the table that holds the organization_role relation/edge.
+	OrganizationRoleTable = "organization_roles"
+	// OrganizationRoleInverseTable is the table name for the OrganizationRole entity.
+	// It exists in this package in order to avoid circular dependency with the "organizationrole" package.
+	OrganizationRoleInverseTable = "organization_roles"
+	// OrganizationRoleColumn is the table column denoting the organization_role relation/edge.
+	OrganizationRoleColumn = "user_id"
 	// TeamsTable is the table that holds the teams relation/edge. The primary key declared below.
 	TeamsTable = "team_memberships"
 	// TeamsInverseTable is the table name for the Team entity.
@@ -194,13 +199,11 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldAuthProviderID,
 	FieldEmail,
 	FieldName,
-	FieldIsOrgAdmin,
 	FieldChatID,
 	FieldTimezone,
-	FieldConfirmed,
+	FieldAuthProviderID,
 }
 
 var (
@@ -235,10 +238,6 @@ var (
 	Policy ent.Policy
 	// DefaultName holds the default value on creation for the "name" field.
 	DefaultName string
-	// DefaultIsOrgAdmin holds the default value on creation for the "is_org_admin" field.
-	DefaultIsOrgAdmin bool
-	// DefaultConfirmed holds the default value on creation for the "confirmed" field.
-	DefaultConfirmed bool
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -256,11 +255,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByAuthProviderID orders the results by the auth_provider_id field.
-func ByAuthProviderID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAuthProviderID, opts...).ToFunc()
-}
-
 // ByEmail orders the results by the email field.
 func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEmail, opts...).ToFunc()
@@ -269,11 +263,6 @@ func ByEmail(opts ...sql.OrderTermOption) OrderOption {
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
-}
-
-// ByIsOrgAdmin orders the results by the is_org_admin field.
-func ByIsOrgAdmin(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsOrgAdmin, opts...).ToFunc()
 }
 
 // ByChatID orders the results by the chat_id field.
@@ -286,15 +275,22 @@ func ByTimezone(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTimezone, opts...).ToFunc()
 }
 
-// ByConfirmed orders the results by the confirmed field.
-func ByConfirmed(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldConfirmed, opts...).ToFunc()
+// ByAuthProviderID orders the results by the auth_provider_id field.
+func ByAuthProviderID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAuthProviderID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByOrganizationRoleField orders the results by organization_role field.
+func ByOrganizationRoleField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOrganizationRoleStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -540,6 +536,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newOrganizationRoleStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OrganizationRoleInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, OrganizationRoleTable, OrganizationRoleColumn),
 	)
 }
 func newTeamsStep() *sqlgraph.Step {

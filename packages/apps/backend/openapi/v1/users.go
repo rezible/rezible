@@ -26,17 +26,15 @@ type (
 	}
 
 	UserAttributes struct {
-		Name       string `json:"name"`
-		Email      string `json:"email"`
-		IsOrgAdmin bool   `json:"isOrgAdmin" default:"false" required:"false"`
+		Name  string `json:"name"`
+		Email string `json:"email"`
 	}
 )
 
 func UserFromEnt(user *ent.User) User {
 	attr := UserAttributes{
-		Name:       user.Name,
-		Email:      user.Email,
-		IsOrgAdmin: user.IsOrgAdmin,
+		Name:  user.Name,
+		Email: user.Email,
 	}
 
 	return User{

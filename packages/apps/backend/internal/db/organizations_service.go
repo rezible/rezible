@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/jobs"
 	"github.com/rs/zerolog/log"
 )
@@ -23,60 +23,57 @@ func NewOrganizationsService(db *ent.Client, jobs rez.JobsService) (*Organizatio
 	return &OrganizationsService{db: db, jobs: jobs}, nil
 }
 
-func (s *OrganizationsService) GetById(ctx context.Context, id uuid.UUID) (*ent.Organization, error) {
-	return s.db.Organization.Get(ctx, id)
+func (s *OrganizationsService) Get(ctx context.Context, p predicate.Organization) (*ent.Organization, error) {
+	return s.db.Organization.Query().Where(p).First(ctx)
 }
 
-func (s *OrganizationsService) GetCurrent(ctx context.Context) (*ent.Organization, error) {
-	// scoped by tenant id in context
-	return s.db.Organization.Query().First(ctx)
-}
+func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.Organization) (*ent.Organization, error) {
+	if po.AuthProviderID == "" {
+		return nil, fmt.Errorf("no auth provider id set")
+	}
+	ctx = access.SystemContext(ctx)
+	existing, getErr := s.Get(ctx, organization.AuthProviderID(po.AuthProviderID))
+	if getErr != nil && !ent.IsNotFound(getErr) {
+		return nil, fmt.Errorf("fetch existing: %w", getErr)
+	}
+	if existing != nil {
+		// TODO: check if should sync every time
+		// if !AlwaysSyncAuthDetails { return existing, nil }
+		ctx = access.TenantContext(ctx, existing.TenantID)
+	}
 
-func (s *OrganizationsService) createForDomain(ctx context.Context, domain string) (*ent.Organization, error) {
-	var createdOrg *ent.Organization
-	createFn := func(tx *ent.Tx) error {
-		tenantCreate := tx.Tenant.Create()
-		createdTenant, tenantErr := tenantCreate.Save(access.SystemContext(ctx))
-		if tenantErr != nil {
-			return fmt.Errorf("save tenant: %w", tenantErr)
+	var updated *ent.Organization
+	updateTx := func(tx *ent.Tx) error {
+		var mutator ent.EntityMutator[*ent.Organization, *ent.OrganizationMutation]
+		if existing == nil {
+			tnt, tntErr := tx.Tenant.Create().Save(ctx)
+			if tntErr != nil {
+				return fmt.Errorf("create tenant: %w", tntErr)
+			}
+			mutator = tx.Organization.Create().
+				SetTenantID(tnt.ID).
+				SetAuthProviderID(po.AuthProviderID)
+			ctx = access.TenantContext(ctx, tnt.ID)
+		} else {
+			mutator = tx.Organization.UpdateOne(existing)
 		}
-		ctx = access.TenantContext(ctx, createdTenant.ID)
 
-		orgCreate := tx.Organization.Create().
-			SetTenant(createdTenant).
-			SetDomain(domain).
-			SetName(domain)
+		m := mutator.Mutation()
+		m.SetName(po.Name)
 
-		var createErr error
-		createdOrg, createErr = orgCreate.Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("save organization: %w", createErr)
+		var saveErr error
+		updated, saveErr = mutator.Save(ctx)
+		if saveErr != nil {
+			return fmt.Errorf("save org: %w", saveErr)
 		}
 
 		return nil
 	}
-	return createdOrg, ent.WithTx(ctx, s.db, createFn)
-}
-
-func (s *OrganizationsService) FindOrCreateFromDomain(ctx context.Context, domain string) (*ent.Organization, error) {
-	if domain == "" {
-		return nil, fmt.Errorf("domain empty")
+	if txErr := ent.WithTx(ctx, s.db, updateTx); txErr != nil {
+		return nil, fmt.Errorf("update: %w", txErr)
 	}
 
-	orgQuery := s.db.Organization.Query().Where(organization.Domain(domain))
-
-	org, orgErr := orgQuery.Only(access.SystemContext(ctx))
-	if org != nil {
-		return org, nil
-	} else if orgErr != nil && !ent.IsNotFound(orgErr) {
-		return nil, fmt.Errorf("query organization: %w", orgErr)
-	}
-
-	createdOrg, createErr := s.createForDomain(ctx, domain)
-	if createErr != nil {
-		return nil, fmt.Errorf("create organization: %w", createErr)
-	}
-	return createdOrg, nil
+	return updated, nil
 }
 
 func (s *OrganizationsService) CompleteSetup(ctx context.Context, org *ent.Organization) error {

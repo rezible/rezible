@@ -47,6 +47,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -920,6 +921,22 @@ func init() {
 	organizationDescID := organizationFields[0].Descriptor()
 	// organization.DefaultID holds the default value on creation for the id field.
 	organization.DefaultID = organizationDescID.Default.(func() uuid.UUID)
+	organizationroleMixin := schema.OrganizationRole{}.Mixin()
+	organizationrole.Policy = privacy.NewPolicies(organizationroleMixin[0], organizationroleMixin[1], schema.OrganizationRole{})
+	organizationrole.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := organizationrole.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	organizationroleFields := schema.OrganizationRole{}.Fields()
+	_ = organizationroleFields
+	// organizationroleDescID is the schema descriptor for id field.
+	organizationroleDescID := organizationroleFields[0].Descriptor()
+	// organizationrole.DefaultID holds the default value on creation for the id field.
+	organizationrole.DefaultID = organizationroleDescID.Default.(func() uuid.UUID)
 	playbookMixin := schema.Playbook{}.Mixin()
 	playbook.Policy = privacy.NewPolicies(playbookMixin[0], playbookMixin[1], schema.Playbook{})
 	playbook.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1377,17 +1394,9 @@ func init() {
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.
-	userDescName := userFields[3].Descriptor()
+	userDescName := userFields[2].Descriptor()
 	// user.DefaultName holds the default value on creation for the name field.
 	user.DefaultName = userDescName.Default.(string)
-	// userDescIsOrgAdmin is the schema descriptor for is_org_admin field.
-	userDescIsOrgAdmin := userFields[4].Descriptor()
-	// user.DefaultIsOrgAdmin holds the default value on creation for the is_org_admin field.
-	user.DefaultIsOrgAdmin = userDescIsOrgAdmin.Default.(bool)
-	// userDescConfirmed is the schema descriptor for confirmed field.
-	userDescConfirmed := userFields[7].Descriptor()
-	// user.DefaultConfirmed holds the default value on creation for the confirmed field.
-	user.DefaultConfirmed = userDescConfirmed.Default.(bool)
 	// userDescID is the schema descriptor for id field.
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.

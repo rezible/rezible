@@ -176,7 +176,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		return nil, fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
 	}
 
-	auth, authErr := oidc.NewAuthService(ctx, orgs, users, teams)
+	auth, authErr := oidc.NewAuthService(ctx, orgs, users)
 	if authErr != nil {
 		return nil, fmt.Errorf("dex.NewAuthService: %w", authErr)
 	}

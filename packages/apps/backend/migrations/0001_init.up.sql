@@ -175,9 +175,19 @@ CREATE UNIQUE INDEX "oncall_shift_metrics_shift_id_key" ON "oncall_shift_metrics
 -- create index "oncallshiftmetrics_tenant_id" to table: "oncall_shift_metrics"
 CREATE INDEX "oncallshiftmetrics_tenant_id" ON "oncall_shift_metrics" ("tenant_id");
 -- create "organizations" table
-CREATE TABLE "organizations" ("id" uuid NOT NULL, "name" character varying NOT NULL, "domain" character varying NOT NULL, "initial_setup_at" timestamptz NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "organizations" ("id" uuid NOT NULL, "auth_provider_id" character varying NOT NULL, "name" character varying NOT NULL, "initial_setup_at" timestamptz NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "organization_tenant_id" to table: "organizations"
 CREATE INDEX "organization_tenant_id" ON "organizations" ("tenant_id");
+-- create index "organization_auth_provider_id" to table: "organizations"
+CREATE UNIQUE INDEX "organization_auth_provider_id" ON "organizations" ("auth_provider_id");
+-- create "organization_roles" table
+CREATE TABLE "organization_roles" ("id" uuid NOT NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "org_id" uuid NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "organization_roles_user_id_key" to table: "organization_roles"
+CREATE UNIQUE INDEX "organization_roles_user_id_key" ON "organization_roles" ("user_id");
+-- create index "organizationrole_tenant_id" to table: "organization_roles"
+CREATE INDEX "organizationrole_tenant_id" ON "organization_roles" ("tenant_id");
+-- create index "organizationrole_org_id_user_id" to table: "organization_roles"
+CREATE UNIQUE INDEX "organizationrole_org_id_user_id" ON "organization_roles" ("org_id", "user_id");
 -- create "playbooks" table
 CREATE TABLE "playbooks" ("id" uuid NOT NULL, "external_id" character varying NULL, "title" character varying NOT NULL, "content" bytea NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "playbook_tenant_id" to table: "playbooks"
@@ -283,9 +293,11 @@ CREATE TABLE "tickets" ("id" uuid NOT NULL, "external_id" character varying NULL
 -- create index "ticket_tenant_id" to table: "tickets"
 CREATE INDEX "ticket_tenant_id" ON "tickets" ("tenant_id");
 -- create "users" table
-CREATE TABLE "users" ("id" uuid NOT NULL, "auth_provider_id" character varying NULL, "email" character varying NOT NULL, "name" character varying NULL DEFAULT '', "is_org_admin" boolean NOT NULL DEFAULT false, "chat_id" character varying NULL, "timezone" character varying NULL, "confirmed" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "users" ("id" uuid NOT NULL, "email" character varying NOT NULL, "name" character varying NOT NULL DEFAULT '', "chat_id" character varying NULL, "timezone" character varying NULL, "auth_provider_id" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "user_tenant_id" to table: "users"
 CREATE INDEX "user_tenant_id" ON "users" ("tenant_id");
+-- create index "user_auth_provider_id" to table: "users"
+CREATE UNIQUE INDEX "user_auth_provider_id" ON "users" ("auth_provider_id");
 -- create "video_conferences" table
 CREATE TABLE "video_conferences" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "external_id" character varying NULL, "join_url" character varying NOT NULL, "host_url" character varying NULL, "dial_in" character varying NULL, "passcode" character varying NULL, "status" character varying NOT NULL DEFAULT 'creating', "metadata" jsonb NULL, "created_by_integration" character varying NULL, "incident_id" uuid NULL, "meeting_session_id" uuid NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "video_conferences_meeting_session_id_key" to table: "video_conferences"
@@ -408,6 +420,8 @@ ALTER TABLE "oncall_shift_handovers" ADD CONSTRAINT "oncall_shift_handovers_onca
 ALTER TABLE "oncall_shift_metrics" ADD CONSTRAINT "oncall_shift_metrics_oncall_shifts_metrics" FOREIGN KEY ("shift_id") REFERENCES "oncall_shifts" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "oncall_shift_metrics_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "organizations" table
 ALTER TABLE "organizations" ADD CONSTRAINT "organizations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "organization_roles" table
+ALTER TABLE "organization_roles" ADD CONSTRAINT "organization_roles_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_organizations_organization" FOREIGN KEY ("org_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_users_organization_role" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "playbooks" table
 ALTER TABLE "playbooks" ADD CONSTRAINT "playbooks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "provider_sync_histories" table

@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -30,6 +32,20 @@ func (_u *OrganizationUpdate) Where(ps ...predicate.Organization) *OrganizationU
 	return _u
 }
 
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_u *OrganizationUpdate) SetAuthProviderID(v string) *OrganizationUpdate {
+	_u.mutation.SetAuthProviderID(v)
+	return _u
+}
+
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (_u *OrganizationUpdate) SetNillableAuthProviderID(v *string) *OrganizationUpdate {
+	if v != nil {
+		_u.SetAuthProviderID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *OrganizationUpdate) SetName(v string) *OrganizationUpdate {
 	_u.mutation.SetName(v)
@@ -40,20 +56,6 @@ func (_u *OrganizationUpdate) SetName(v string) *OrganizationUpdate {
 func (_u *OrganizationUpdate) SetNillableName(v *string) *OrganizationUpdate {
 	if v != nil {
 		_u.SetName(*v)
-	}
-	return _u
-}
-
-// SetDomain sets the "domain" field.
-func (_u *OrganizationUpdate) SetDomain(v string) *OrganizationUpdate {
-	_u.mutation.SetDomain(v)
-	return _u
-}
-
-// SetNillableDomain sets the "domain" field if the given value is not nil.
-func (_u *OrganizationUpdate) SetNillableDomain(v *string) *OrganizationUpdate {
-	if v != nil {
-		_u.SetDomain(*v)
 	}
 	return _u
 }
@@ -78,9 +80,45 @@ func (_u *OrganizationUpdate) ClearInitialSetupAt() *OrganizationUpdate {
 	return _u
 }
 
+// AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
+func (_u *OrganizationUpdate) AddRoleIDs(ids ...uuid.UUID) *OrganizationUpdate {
+	_u.mutation.AddRoleIDs(ids...)
+	return _u
+}
+
+// AddRoles adds the "roles" edges to the OrganizationRole entity.
+func (_u *OrganizationUpdate) AddRoles(v ...*OrganizationRole) *OrganizationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRoleIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (_u *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return _u.mutation
+}
+
+// ClearRoles clears all "roles" edges to the OrganizationRole entity.
+func (_u *OrganizationUpdate) ClearRoles() *OrganizationUpdate {
+	_u.mutation.ClearRoles()
+	return _u
+}
+
+// RemoveRoleIDs removes the "roles" edge to OrganizationRole entities by IDs.
+func (_u *OrganizationUpdate) RemoveRoleIDs(ids ...uuid.UUID) *OrganizationUpdate {
+	_u.mutation.RemoveRoleIDs(ids...)
+	return _u
+}
+
+// RemoveRoles removes "roles" edges to OrganizationRole entities.
+func (_u *OrganizationUpdate) RemoveRoles(v ...*OrganizationRole) *OrganizationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRoleIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -136,17 +174,65 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 			}
 		}
 	}
+	if value, ok := _u.mutation.AuthProviderID(); ok {
+		_spec.SetField(organization.FieldAuthProviderID, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Domain(); ok {
-		_spec.SetField(organization.FieldDomain, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
 	}
 	if _u.mutation.InitialSetupAtCleared() {
 		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
+	}
+	if _u.mutation.RolesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.RolesTable,
+			Columns: []string{organization.RolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRolesIDs(); len(nodes) > 0 && !_u.mutation.RolesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.RolesTable,
+			Columns: []string{organization.RolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.RolesTable,
+			Columns: []string{organization.RolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.Organization
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -172,6 +258,20 @@ type OrganizationUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetAuthProviderID sets the "auth_provider_id" field.
+func (_u *OrganizationUpdateOne) SetAuthProviderID(v string) *OrganizationUpdateOne {
+	_u.mutation.SetAuthProviderID(v)
+	return _u
+}
+
+// SetNillableAuthProviderID sets the "auth_provider_id" field if the given value is not nil.
+func (_u *OrganizationUpdateOne) SetNillableAuthProviderID(v *string) *OrganizationUpdateOne {
+	if v != nil {
+		_u.SetAuthProviderID(*v)
+	}
+	return _u
+}
+
 // SetName sets the "name" field.
 func (_u *OrganizationUpdateOne) SetName(v string) *OrganizationUpdateOne {
 	_u.mutation.SetName(v)
@@ -182,20 +282,6 @@ func (_u *OrganizationUpdateOne) SetName(v string) *OrganizationUpdateOne {
 func (_u *OrganizationUpdateOne) SetNillableName(v *string) *OrganizationUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
-	}
-	return _u
-}
-
-// SetDomain sets the "domain" field.
-func (_u *OrganizationUpdateOne) SetDomain(v string) *OrganizationUpdateOne {
-	_u.mutation.SetDomain(v)
-	return _u
-}
-
-// SetNillableDomain sets the "domain" field if the given value is not nil.
-func (_u *OrganizationUpdateOne) SetNillableDomain(v *string) *OrganizationUpdateOne {
-	if v != nil {
-		_u.SetDomain(*v)
 	}
 	return _u
 }
@@ -220,9 +306,45 @@ func (_u *OrganizationUpdateOne) ClearInitialSetupAt() *OrganizationUpdateOne {
 	return _u
 }
 
+// AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
+func (_u *OrganizationUpdateOne) AddRoleIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
+	_u.mutation.AddRoleIDs(ids...)
+	return _u
+}
+
+// AddRoles adds the "roles" edges to the OrganizationRole entity.
+func (_u *OrganizationUpdateOne) AddRoles(v ...*OrganizationRole) *OrganizationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddRoleIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (_u *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return _u.mutation
+}
+
+// ClearRoles clears all "roles" edges to the OrganizationRole entity.
+func (_u *OrganizationUpdateOne) ClearRoles() *OrganizationUpdateOne {
+	_u.mutation.ClearRoles()
+	return _u
+}
+
+// RemoveRoleIDs removes the "roles" edge to OrganizationRole entities by IDs.
+func (_u *OrganizationUpdateOne) RemoveRoleIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
+	_u.mutation.RemoveRoleIDs(ids...)
+	return _u
+}
+
+// RemoveRoles removes "roles" edges to OrganizationRole entities.
+func (_u *OrganizationUpdateOne) RemoveRoles(v ...*OrganizationRole) *OrganizationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveRoleIDs(ids...)
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
@@ -308,17 +430,65 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 			}
 		}
 	}
+	if value, ok := _u.mutation.AuthProviderID(); ok {
+		_spec.SetField(organization.FieldAuthProviderID, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Domain(); ok {
-		_spec.SetField(organization.FieldDomain, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
 	}
 	if _u.mutation.InitialSetupAtCleared() {
 		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
+	}
+	if _u.mutation.RolesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.RolesTable,
+			Columns: []string{organization.RolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedRolesIDs(); len(nodes) > 0 && !_u.mutation.RolesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.RolesTable,
+			Columns: []string{organization.RolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RolesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.RolesTable,
+			Columns: []string{organization.RolesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationrole.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.Organization
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

@@ -5,15 +5,9 @@ web:
   allowedOrigins: ["{{ .Env.APP_URL }}", "{{ .Env.API_URL }}"]
 
 storage:
-  type: postgres
+  type: sqlite3
   config:
-    user: "{{ .Env.POSTGRES_DEX_USER }}"
-    password: "{{ .Env.POSTGRES_DEX_PASSWORD }}"
-    host: postgres # "{{ .Env.POSTGRES_HOST }}"
-    # port: {{ .Env.POSTGRES_PORT }}
-    database: "{{ .Env.POSTGRES_DEX_DATABASE }}"
-    ssl:
-      mode: "{{ .Env.POSTGRES_SSLMODE }}"
+    /var/dex/dex.db
 
 oauth2:
   responseTypes: ["code"]

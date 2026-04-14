@@ -1,54 +1,60 @@
 <script lang="ts">
-	import { mdiKey } from "@mdi/js";
-	import { initLoginViewController } from "./controller.svelte";
+	import { createQuery } from "@tanstack/svelte-query";
+	import { getAuthSessionConfigOptions } from "$lib/api";
 
+	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
-	import Icon from "$components/icon/Icon.svelte";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
-	import LoadingIndicator from "$src/components/loading-indicator/LoadingIndicator.svelte";
-	import { AUTH_ISSUER } from "$src/lib/config";
+	import { useAuthSessionState, AuthSessionErrorCategory } from "$lib/auth.svelte";
+	import AuthFlow from "./AuthFlow.svelte";
 
-	const controller = initLoginViewController();
+	const session = useAuthSessionState();
+
+	const authSessionErrorDisplayText: Record<AuthSessionErrorCategory, string> = {
+		[AuthSessionErrorCategory.NoSession]: "",
+		[AuthSessionErrorCategory.SessionExpired]: "Your session has expired",
+		[AuthSessionErrorCategory.SessionInvalid]: "Your session is invalid",
+		[AuthSessionErrorCategory.ServerError]: "Something went wrong while authenticating you",
+		[AuthSessionErrorCategory.Unknown]: "Something went wrong while authenticating you",
+	};
+	let authSessionError = $derived.by(() => {
+		if (!session.error || session.error === AuthSessionErrorCategory.NoSession) return;
+		return {
+			title: "Auth Session Invalid",
+			detail: authSessionErrorDisplayText[session.error] || "Unknown",
+		};
+	});
+	const showLogout = $derived(session.error === AuthSessionErrorCategory.SessionInvalid);
+
+    const cfgQuery = createQuery(() => getAuthSessionConfigOptions());
 </script>
 
 <div class="grid h-full w-full place-items-center">
-	<div class="" class:hidden={!controller.loading}>
-		<LoadingIndicator />
-	</div>
-	
-	<div class="flex flex-col gap-2 border rounded-lg border-surface-content/10 bg-surface-200 p-3" class:hidden={controller.loading}>
+	<div class="flex flex-col gap-2 border rounded-lg border-surface-content/10 bg-surface-200 p-3">
 		<Header title="Authentication Required" classes={{ root: "gap-2", title: "text-2xl" }}>
 			{#snippet avatar()}
 				<img src="/images/logo.svg" alt="logo" class="size-12 fill-neutral" />
 			{/snippet}
 		</Header>
 
-		{#if !!controller.authSessionError}
+		{#if !!authSessionError}
 			<InlineAlert 
-				error={controller.authSessionError}
-				onDismiss={() => {controller.authSessionError = undefined}}
+				error={authSessionError}
+				onDismiss={() => {authSessionError = undefined}}
 			/>
 		{/if}
 
-		{#if !!controller.authFlowErr}
-			<InlineAlert 
-				error={controller.authFlowErr}
-				onDismiss={() => {controller.authFlowErr = undefined}}
-			/>
+        {#if showLogout}
+			<Button onclick={() => {session.logout()}} color="primary">Logout</Button>
 		{/if}
-        
-        {#if controller.showLogoutButton}
-			<Button onclick={() => {controller.doSignOut()}} color="primary">Logout</Button>
+
+		{#if cfgQuery.isPending}
+			<LoadingIndicator />
+		{:else if cfgQuery.isError}
+			<InlineAlert error={cfgQuery.error} />
 		{:else}
-			<Button onclick={() => {controller.doSignIn()}} color="primary">
-				<span class="flex items-center gap-2">
-					Sign In
-					<Icon data={mdiKey} />
-				</span>
-			</Button>
-
-			<Button href={AUTH_ISSUER} color="primary">go to issuer</Button>
+			<AuthFlow config={cfgQuery.data.data} />
 		{/if}
 	</div>
 </div>

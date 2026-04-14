@@ -1,1 +1,0 @@
-REVOKE SELECT, INSERT, UPDATE ON TABLE documents FROM rez_documents;

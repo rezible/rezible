@@ -1,7 +1,6 @@
 import { redirect } from "@sveltejs/kit";
-import type { PageLoad } from "./$types";
-import { APP_LOGIN_ROUTE } from "$lib/config";
+import { resolve } from "$app/paths";
 
-export const load = (async ({ url }) => {
-    throw redirect(301, `${APP_LOGIN_ROUTE}?${url.searchParams.toString()}`);
-}) satisfies PageLoad;
+export const load = ({ url }) => {
+    throw redirect(301, `${resolve("/login")}?${url.searchParams.toString()}`);
+};
