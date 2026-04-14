@@ -4,8 +4,6 @@ import {
 	getCurrentAuthSessionOptions,
 	type ErrorModel,
 	type Organization,
-	refreshAuthSessionMutation,
-	clearAuthSessionMutation,
 	type GetCurrentAuthSessionResponseBody,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
@@ -120,34 +118,29 @@ export class AuthSessionState {
 		this.query.refetch();
 	}
 
-	private logoutMut = createMutation(() => ({
-		...clearAuthSessionMutation(),
-		onSuccess: () => {
-			this.refetch();
-		}
-	}));
 	async logout() {
-		this.logoutMut.mutate({});
+		await goto("/api/auth/logout");
 	}
 
-	private refreshSessionMut = createMutation(() => ({
-		...refreshAuthSessionMutation(),
-		onSuccess: () => {
-			console.log("auth session refreshed");
-			this.refetch();
-		}
-	}));
+	// private refreshSessionMut = createMutation(() => ({
+	// 	...refreshAuthSessionMutation(),
+	// 	onSuccess: () => {
+	// 		console.log("auth session refreshed");
+	// 		this.refetch();
+	// 	}
+	// }));
 	private startSessionExpiryCheck() {
 		const CheckIntervalMs = 10_000;
 		const checkExpiry = () => {
-			if (!this.session || this.refreshSessionMut.isPending) return;
+			// if (!this.session || this.refreshSessionMut.isPending) return;
+			if (!this.session) return;
 			const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
 			if (timeLeft <= 0) {
 				// TODO: handle this better
 				this.refetch();
 			} else if (timeLeft <= CheckIntervalMs * 100) {
 				console.log("auth session expiring soon", timeLeft);
-				this.refreshSessionMut.mutate({});
+				// this.refreshSessionMut.mutate({});
 			}
 		}
 		onMount(() => {

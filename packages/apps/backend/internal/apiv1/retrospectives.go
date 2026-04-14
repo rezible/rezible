@@ -107,7 +107,7 @@ func (h *retrospectivesHandler) CreateRetrospectiveComment(ctx context.Context, 
 
 	comment, createErr := h.retros.SetComment(ctx, &ent.RetrospectiveComment{
 		RetrospectiveID: request.Id,
-		UserID:          h.auth.GetAuthSession(ctx).UserId(),
+		UserID:          h.auth.GetAuthSession(ctx).UserId,
 		Content:         request.Body.Attributes.Content,
 	})
 	if createErr != nil {

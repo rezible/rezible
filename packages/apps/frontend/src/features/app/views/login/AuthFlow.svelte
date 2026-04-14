@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { AuthSessionConfig } from "$lib/api";
 	import { AuthFlowController } from "./authFlowController.svelte";
 
 	import { mdiKey } from "@mdi/js";

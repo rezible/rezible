@@ -1,13 +1,11 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
-	import { getAuthSessionConfigOptions } from "$lib/api";
-
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import { Button } from "$components/ui/button";
 	import Header from "$components/header/Header.svelte";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
 	import { useAuthSessionState, AuthSessionErrorCategory } from "$lib/auth.svelte";
-	import AuthFlow from "./AuthFlow.svelte";
+	import Icon from "$components/icon/Icon.svelte";
+	import { mdiKey } from "@mdi/js";
 
 	const session = useAuthSessionState();
 
@@ -27,7 +25,7 @@
 	});
 	const showLogout = $derived(session.error === AuthSessionErrorCategory.SessionInvalid);
 
-    const cfgQuery = createQuery(() => getAuthSessionConfigOptions());
+	
 </script>
 
 <div class="grid h-full w-full place-items-center">
@@ -49,12 +47,19 @@
 			<Button onclick={() => {session.logout()}} color="primary">Logout</Button>
 		{/if}
 
-		{#if cfgQuery.isPending}
+		<!-- {#if cfgQuery.isPending}
 			<LoadingIndicator />
 		{:else if cfgQuery.isError}
 			<InlineAlert error={cfgQuery.error} />
 		{:else}
 			<AuthFlow config={cfgQuery.data.data} />
-		{/if}
+		{/if} -->
+
+		<Button href="/api/auth/login" color="primary">
+			<span class="flex items-center gap-2">
+				Sign In
+				<Icon data={mdiKey} />
+			</span>
+		</Button>
 	</div>
 </div>

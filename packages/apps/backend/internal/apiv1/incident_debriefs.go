@@ -26,7 +26,7 @@ func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, au
 func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, request *oapi.GetIncidentUserDebriefRequest) (*oapi.GetIncidentUserDebriefResponse, error) {
 	var resp oapi.GetIncidentUserDebriefResponse
 
-	userId := h.auth.GetAuthSession(ctx).UserId()
+	userId := h.auth.GetAuthSession(ctx).UserId
 
 	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, userId)
 	if debriefErr != nil {

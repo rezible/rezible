@@ -55,7 +55,7 @@ func (h *eventAnnotationsHandler) ListEventAnnotations(ctx context.Context, req 
 func (h *eventAnnotationsHandler) CreateEventAnnotation(ctx context.Context, request *oapi.CreateEventAnnotationRequest) (*oapi.CreateEventAnnotationResponse, error) {
 	var resp oapi.CreateEventAnnotationResponse
 
-	userId := h.auth.GetAuthSession(ctx).UserId()
+	userId := h.auth.GetAuthSession(ctx).UserId
 
 	attr := request.Body.Attributes
 

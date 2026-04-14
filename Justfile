@@ -95,7 +95,7 @@ scripts_dir := "./scripts"
 
 @codegen-api:
     just run-backend spec > /tmp/rezible-spec.yaml
-    bun run --filter="@rezible/api-client-ts" build
+    bun run --filter="@rezible/api-client-ts" --elide-lines 0 build
 
 @codegen-migration NAME:
     just run-backend generate-migration {{NAME}}

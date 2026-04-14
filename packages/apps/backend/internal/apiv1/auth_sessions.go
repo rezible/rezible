@@ -2,7 +2,6 @@ package apiv1
 
 import (
 	"context"
-	"errors"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -21,69 +20,12 @@ func newAuthSessionsHandler(auth rez.AuthService, orgs rez.OrganizationService, 
 	return &authSessionsHandler{auth: auth, orgs: orgs, users: users}
 }
 
-func (h *authSessionsHandler) GetAuthSessionConfig(ctx context.Context, req *oapi.GetAuthSessionConfigRequest) (*oapi.GetAuthSessionConfigResponse, error) {
-	var resp oapi.GetAuthSessionConfigResponse
-
-	cfg := h.auth.GetAuthSessionConfig()
-	resp.Body.Data = oapi.AuthSessionConfig{
-		Issuer:          cfg.Issuer,
-		AppClientId:     cfg.AppClientId,
-		AppClientScopes: cfg.AppClientScopes,
-	}
-
-	return &resp, nil
-}
-
-func (h *authSessionsHandler) CompleteAuthSessionFlow(ctx context.Context, req *oapi.CompleteAuthSessionFlowRequest) (*oapi.CompleteAuthSessionFlowResponse, error) {
-	var resp oapi.CompleteAuthSessionFlowResponse
-
-	attr := req.Body.Attributes
-	cookies, flowErr := h.auth.CompleteClientAuthSessionFlow(ctx, attr.Code, attr.Verifier)
-	if flowErr != nil {
-		if errors.Is(flowErr, rez.ErrDomainNotAllowed) {
-			return nil, oapi.ErrDomainNotAllowed
-		}
-		return nil, oapi.Error("failed to complete auth session flow", flowErr)
-	}
-	resp.SetCookie = cookies
-
-	return &resp, nil
-}
-
-func (h *authSessionsHandler) RefreshAuthSession(ctx context.Context, req *oapi.RefreshAuthSessionRequest) (*oapi.RefreshAuthSessionResponse, error) {
-	var resp oapi.RefreshAuthSessionResponse
-
-	refreshToken := req.Cookie.Value
-	if refreshToken == "" {
-		return nil, oapi.Error("no refresh cookie", oapi.ErrAuthSessionInvalid)
-	}
-	cookies, cookiesErr := h.auth.RefreshClientAuthSession(ctx, refreshToken)
-	if cookiesErr != nil {
-		return nil, oapi.Error("failed to refresh session cookies", cookiesErr)
-	}
-	resp.SetCookie = cookies
-
-	return &resp, nil
-}
-
-func (h *authSessionsHandler) ClearAuthSession(ctx context.Context, req *oapi.ClearAuthSessionRequest) (*oapi.ClearAuthSessionResponse, error) {
-	var resp oapi.ClearAuthSessionResponse
-
-	cookies, cookiesErr := h.auth.ClearClientAuthSession()
-	if cookiesErr != nil {
-		return nil, oapi.Error("failed to clear auth session", cookiesErr)
-	}
-	resp.SetCookie = cookies
-
-	return &resp, nil
-}
-
 func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *oapi.GetCurrentAuthSessionRequest) (*oapi.GetCurrentAuthSessionResponse, error) {
 	var resp oapi.GetCurrentAuthSessionResponse
 
 	sess := h.auth.GetAuthSession(ctx)
 
-	u, userErr := h.users.Get(ctx, user.ID(sess.UserId()))
+	u, userErr := h.users.Get(ctx, user.ID(sess.UserId))
 	if userErr != nil {
 		return nil, oapi.Error("failed to get user", userErr)
 	}
@@ -94,7 +36,7 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 	}
 
 	resp.Body.Data = oapi.AuthSession{
-		ExpiresAt:    sess.ExpiresAt(),
+		ExpiresAt:    sess.ExpiresAt,
 		User:         oapi.UserFromEnt(u),
 		Organization: oapi.OrganizationFromEnt(org),
 	}

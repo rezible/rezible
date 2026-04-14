@@ -47,14 +47,14 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 	if !doc.AccessRestricted {
 		defaultAccess := &ent.DocumentAccess{
 			DocumentID: docId,
-			UserID:     sess.UserId(),
+			UserID:     sess.UserId,
 			CanView:    true,
 			CanEdit:    true,
 			CanManage:  true,
 		}
 		return defaultAccess, nil
 	}
-	for _, scope := range sess.Scopes() {
+	for _, scope := range sess.Scopes {
 		parts := strings.Split(scope, ":")
 		if parts[0] != "document" || parts[1] != docId.String() {
 			continue
@@ -69,7 +69,7 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 		}
 		return acc, nil
 	}
-	bestAccess, accessesErr := s.getBestDocumentAccess(ctx, docId, sess.UserId())
+	bestAccess, accessesErr := s.getBestDocumentAccess(ctx, docId, sess.UserId)
 	if accessesErr != nil {
 		return nil, fmt.Errorf("failed to get document accesses: %w", accessesErr)
 	}

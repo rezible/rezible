@@ -178,21 +178,17 @@ type (
 )
 
 type (
-	AuthSession interface {
-		UserId() uuid.UUID
-		Scopes() []string
-		ExpiresAt() time.Time
+	AuthSession struct {
+		UserId    uuid.UUID `json:"uid"`
+		Scopes    []string  `json:"sc"`
+		ExpiresAt time.Time `json:"exp"`
 	}
 
 	AuthService interface {
 		Handler() http.Handler
-
-		//CompleteClientAuthSessionFlow(ctx context.Context, code string, verifier string) ([]http.Cookie, error)
-		//RefreshClientAuthSession(ctx context.Context, refreshToken string) ([]http.Cookie, error)
-		//ClearClientAuthSession() ([]http.Cookie, error)
-
-		CreateAuthSessionContext(ctx context.Context, token string) (context.Context, error)
 		GetAuthSession(context.Context) AuthSession
+		SetAuthSessionContextFromAppCookie(context.Context, string) (context.Context, error)
+		SetAuthSessionContextFromApiToken(context.Context, string) (context.Context, error)
 	}
 )
 

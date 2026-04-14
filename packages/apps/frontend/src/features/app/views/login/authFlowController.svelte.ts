@@ -1,8 +1,9 @@
 import { createMutation } from "@tanstack/svelte-query";
 import { page } from "$app/state";
-import { useAuthSessionState, AuthSessionErrorCategory } from "$lib/auth.svelte";
+import { useAuthSessionState } from "$lib/auth.svelte";
 import { OidcClient, WebStorageStateStore } from "oidc-client-ts";
-import { completeAuthSessionFlowMutation, type AuthSessionConfig, type CompleteAuthSessionFlowRequestAttributes, type ErrorModel } from "$lib/api";
+// import { completeAuthSessionFlowMutation, type AuthSessionConfig, type CompleteAuthSessionFlowRequestAttributes, type ErrorModel } from "$lib/api";
+import type { ErrorModel } from "$lib/api";
 import { resolve } from "$app/paths";
 import { watch } from "runed";
 import z from "zod";
@@ -21,7 +22,6 @@ const oidcStateStore = new WebStorageStateStore({
     prefix: "rez_auth.",
     store: window.sessionStorage, 
 });
-
 
 export const callbackParamsSchema = z.object({
 	code: z.string().default(""),

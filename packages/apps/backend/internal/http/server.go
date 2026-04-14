@@ -115,7 +115,12 @@ func (s *Server) makeDocumentsProxyHandler(auth rez.AuthService) http.Handler {
 	headerKey := "X-Rez-Tenant-ID"
 	setAuthContext := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authCtx, authErr := auth.CreateAuthSessionContext(r.Context(), oapiv1.GetRequestAuthCookieToken(r))
+			cookieVal := oapiv1.GetRequestAppCookieValue(r)
+			if cookieVal == "" {
+				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+				return
+			}
+			authCtx, authErr := auth.SetAuthSessionContextFromAppCookie(r.Context(), cookieVal)
 			if authErr != nil {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return

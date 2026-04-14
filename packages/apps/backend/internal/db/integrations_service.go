@@ -247,7 +247,7 @@ func (s *IntegrationsService) set(ctx context.Context, name string, setFn func(*
 }
 
 func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (string, error) {
-	userId := s.auth.GetAuthSession(ctx).UserId()
+	userId := s.auth.GetAuthSession(ctx).UserId
 	state := uuid.New().String()
 	create := s.db.IntegrationOAuthState.Create().
 		SetUserID(userId).
@@ -257,7 +257,7 @@ func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (
 }
 
 func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string, state string) error {
-	userId := s.auth.GetAuthSession(ctx).UserId()
+	userId := s.auth.GetAuthSession(ctx).UserId
 	userIntegrationStates := ioas.And(ioas.UserIDEQ(userId), ioas.IntegrationNameEQ(name))
 	query := s.db.IntegrationOAuthState.Query().
 		Where(userIntegrationStates, ioas.ExpiresAtGT(time.Now()), ioas.StateEQ(state))
