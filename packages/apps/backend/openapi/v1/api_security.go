@@ -93,33 +93,54 @@ func extractRequestAuthContext(auth rez.AuthService, c huma.Context) (context.Co
 	}
 
 	r, _ := humago.Unwrap(c)
+	methods := extractRequestAuthMethods(r, opSecurity)
 
-	log.Debug().
-		Str("host", r.Host).
-		Str("origin", r.Header.Get("Origin")).
-		Msg("get token")
+	if methods.appCookie != nil {
+		authCtx, ctxErr := auth.SetAuthSessionContext(ctx, methods.appCookie.value, "")
+		return authCtx, methods.appCookie.scopes, ctxErr
+	} else if methods.apiToken != nil {
+		authCtx, ctxErr := auth.SetAuthSessionContext(ctx, "", methods.apiToken.value)
+		return authCtx, methods.apiToken.scopes, ctxErr
+	}
+	return nil, nil, rez.ErrAuthSessionMissing
+}
 
+type requestAuthMethods struct {
+	appCookie *requestAuthMethod
+	apiToken  *requestAuthMethod
+}
+type requestAuthMethod struct {
+	value  string
+	scopes []string
+}
+
+func extractRequestAuthMethods(r *http.Request, opSec SecurityMethods) requestAuthMethods {
+	reqAuth := requestAuthMethods{}
 	appCookie := GetRequestAppCookieValue(r)
-	canUseAppCookie := appCookie != ""
-
 	apiToken := getRequestApiToken(r)
-	canUseApiToken := apiToken != ""
 
-	for _, methodScopes := range opSecurity {
-		appCookieScopes, methodAllowsAppCookie := methodScopes[SecurityMethodAppCookie]
-		if canUseAppCookie && methodAllowsAppCookie {
-			authCtx, authErr := auth.SetAuthSessionContextFromAppCookie(ctx, appCookie)
-			return authCtx, appCookieScopes, authErr
-		}
+	isAppRequest := strings.HasPrefix(r.Host, "app")
 
-		apiTokenScopes, methodAllowsApiToken := methodScopes[SecurityMethodApiToken]
-		if canUseApiToken && methodAllowsApiToken {
-			authCtx, authErr := auth.SetAuthSessionContextFromApiToken(ctx, apiToken)
-			return authCtx, apiTokenScopes, authErr
+	for _, methodScopes := range opSec {
+		if isAppRequest {
+			cookieScopes, methodAllowsAppCookie := methodScopes[SecurityMethodAppCookie]
+			if methodAllowsAppCookie && appCookie != "" && reqAuth.appCookie == nil {
+				reqAuth.appCookie = &requestAuthMethod{
+					value:  appCookie,
+					scopes: cookieScopes,
+				}
+			}
+		} else {
+			tokenScopes, methodAllowsApiToken := methodScopes[SecurityMethodApiToken]
+			if methodAllowsApiToken && apiToken != "" && reqAuth.apiToken == nil {
+				reqAuth.appCookie = &requestAuthMethod{
+					value:  apiToken,
+					scopes: tokenScopes,
+				}
+			}
 		}
 	}
-
-	return nil, nil, rez.ErrAuthSessionMissing
+	return reqAuth
 }
 
 func GetRequestAppCookieValue(r *http.Request) string {

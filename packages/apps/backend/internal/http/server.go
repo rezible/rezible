@@ -120,7 +120,7 @@ func (s *Server) makeDocumentsProxyHandler(auth rez.AuthService) http.Handler {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			authCtx, authErr := auth.SetAuthSessionContextFromAppCookie(r.Context(), cookieVal)
+			authCtx, authErr := auth.SetAuthSessionContext(r.Context(), cookieVal, "")
 			if authErr != nil {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return

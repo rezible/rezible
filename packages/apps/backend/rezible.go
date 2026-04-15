@@ -187,8 +187,7 @@ type (
 	AuthService interface {
 		Handler() http.Handler
 		GetAuthSession(context.Context) AuthSession
-		SetAuthSessionContextFromAppCookie(context.Context, string) (context.Context, error)
-		SetAuthSessionContextFromApiToken(context.Context, string) (context.Context, error)
+		SetAuthSessionContext(ctx context.Context, appCookie, apiToken string) (context.Context, error)
 	}
 )
 

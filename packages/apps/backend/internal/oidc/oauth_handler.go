@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -15,84 +16,135 @@ import (
 )
 
 type oauthHandler struct {
-	idVerifier  *oidc.IDTokenVerifier
-	audienceOpt oauth2.AuthCodeOption
-	oauthCfg    oauth2.Config
+	cfg                 oidcConfig
+	resourceOption      oauth2.AuthCodeOption
+	provider            *oidc.Provider
+	oauthCfg            *oauth2.Config
+	accessTokenVerifier *oidc.IDTokenVerifier
+	idTokenVerifier     *oidc.IDTokenVerifier
 }
 
 func makeOAuthHandler(ctx context.Context, cfg oidcConfig) (*oauthHandler, error) {
-	apiAudience := rez.Config.ApiUrl()
-	if apiAudience == "" {
+	if rez.Config.ApiUrl() == "" {
 		return nil, fmt.Errorf("no api url configured, can't verify token audience")
 	}
-	oidcProv, oidcProvErr := oidc.NewProvider(ctx, cfg.Issuer)
-	if oidcProvErr != nil {
-		return nil, fmt.Errorf("create oidc provider: %w", oidcProvErr)
-	}
-	redirectUri, redirectErr := url.JoinPath(rez.Config.AppUrl(), "/api/auth/callback")
-	if redirectErr != nil {
-		return nil, fmt.Errorf("redirect url: %w", redirectErr)
-	}
 	return &oauthHandler{
-		oauthCfg: oauth2.Config{
-			ClientID:     cfg.ClientID,
-			ClientSecret: cfg.ClientSecret,
-			Scopes:       []string{oidc.ScopeOpenID, oidc.ScopeOfflineAccess, "profile", "email"},
-			RedirectURL:  redirectUri,
-			Endpoint:     oidcProv.Endpoint(),
-		},
-		audienceOpt: oauth2.SetAuthURLParam("resource", apiAudience),
-		// audience for id token is the client application, not resource
-		idVerifier: oidcProv.VerifierContext(ctx, &oidc.Config{ClientID: cfg.ClientID}),
+		cfg:            cfg,
+		resourceOption: oauth2.SetAuthURLParam("resource", rez.Config.ApiUrl()),
 	}, nil
 }
 
-type AuthVerifyState struct {
+func (h *oauthHandler) ensureProvider(ctx context.Context) error {
+	if h.provider == nil {
+		redirectUri, redirectErr := url.JoinPath(rez.Config.AppUrl(), "/api/auth/callback")
+		if redirectErr != nil {
+			return fmt.Errorf("redirect url: %w", redirectErr)
+		}
+		prov, provErr := oidc.NewProvider(ctx, h.cfg.Issuer)
+		if provErr != nil {
+			return fmt.Errorf("create oidc provider: %w", provErr)
+		}
+		h.provider = prov
+		h.accessTokenVerifier = prov.VerifierContext(ctx, &oidc.Config{ClientID: rez.Config.ApiUrl()})
+		h.idTokenVerifier = prov.VerifierContext(ctx, &oidc.Config{ClientID: h.cfg.ClientID})
+		h.oauthCfg = &oauth2.Config{
+			ClientID:     h.cfg.ClientID,
+			ClientSecret: h.cfg.ClientSecret,
+			Scopes:       []string{oidc.ScopeOpenID, oidc.ScopeOfflineAccess, "profile", "email", "organization"},
+			RedirectURL:  redirectUri,
+			Endpoint:     prov.Endpoint(),
+		}
+	}
+	return nil
+}
+
+type AuthFlowState struct {
 	State        string `json:"state"`
 	Nonce        string `json:"nonce"`
 	CodeVerifier string `json:"code_verifier"`
-	RedirectURL  string `json:"redirect_url"`
+	ReturnTo     string `json:"return_to"`
 }
 
-func (p *oauthHandler) createAuthRedirect() (string, *AuthVerifyState, error) {
+func (h *oauthHandler) createAuthRedirect(r *http.Request) (string, *AuthFlowState, error) {
+	if cfgErr := h.ensureProvider(r.Context()); cfgErr != nil {
+		return "", nil, cfgErr
+	}
 	state, nonce, randErr := createRandomValues()
 	if randErr != nil {
 		return "", nil, randErr
 	}
+	returnTo := r.URL.Query().Get("return_to")
+	if returnTo == "" {
+		returnTo = "/"
+	}
+	if !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
+		return "", nil, fmt.Errorf("invalid return_to")
+	}
 	codeVerifier := oauth2.GenerateVerifier()
-	vs := &AuthVerifyState{
+	// TODO: encode this as the oauth state itself? (instead of a cookie)
+	vs := &AuthFlowState{
 		State:        state,
 		Nonce:        nonce,
 		CodeVerifier: codeVerifier,
-		RedirectURL:  "/",
+		ReturnTo:     returnTo,
 	}
-	authURL := p.oauthCfg.AuthCodeURL(
+	authURL := h.oauthCfg.AuthCodeURL(
 		state,
-		oauth2.S256ChallengeOption(codeVerifier),
 		oidc.Nonce(nonce),
-		p.audienceOpt,
+		oauth2.S256ChallengeOption(codeVerifier),
+		h.resourceOption,
 	)
 	return authURL, vs, nil
 }
 
-func (p *oauthHandler) doCallbackTokenExchange(r *http.Request, state string, verifier string) (*oauth2.Token, error) {
+func (h *oauthHandler) doCallbackExchange(r *http.Request, s AuthFlowState) (*userAuthInfo, error) {
 	q := r.URL.Query()
 	code := q.Get("code")
 	if code == "" {
 		return nil, fmt.Errorf("missing code")
 	}
-	if q.Get("state") != state {
+	if q.Get("state") != s.State {
 		return nil, fmt.Errorf("invalid state")
 	}
-
-	token, exchangeErr := p.oauthCfg.Exchange(r.Context(), code, oauth2.VerifierOption(verifier))
+	ctx := r.Context()
+	if cfgErr := h.ensureProvider(ctx); cfgErr != nil {
+		return nil, cfgErr
+	}
+	token, exchangeErr := h.oauthCfg.Exchange(ctx, code,
+		oauth2.VerifierOption(s.CodeVerifier), h.resourceOption)
 	if exchangeErr != nil {
 		return nil, fmt.Errorf("token exchange failed: %w", exchangeErr)
 	}
-	return token, nil
+	if !token.Valid() {
+		return nil, fmt.Errorf("invalid token")
+	}
+	return h.extractTokenInfo(ctx, token, s.Nonce)
 }
 
-type IdTokenClaims struct {
+func (h *oauthHandler) refreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
+	if cfgErr := h.ensureProvider(ctx); cfgErr != nil {
+		return nil, cfgErr
+	}
+	expiredTokenSource := h.oauthCfg.TokenSource(ctx, &oauth2.Token{
+		RefreshToken: refreshToken,
+		Expiry:       time.Now().Add(-time.Second), // set expired to force a refresh request
+	})
+	return expiredTokenSource.Token()
+}
+
+type userAuthInfo struct {
+	expiresAt time.Time
+	user      ent.User
+	org       ent.Organization
+}
+
+type accessTokenClaims struct {
+	Scopes           []string `json:"scopes"`
+	OrganizationId   string   `json:"rez-org-id"`
+	OrganizationName string   `json:"rez-org-name"`
+}
+
+type idTokenClaims struct {
 	Sub     string `json:"sub"`
 	Email   string `json:"email"`
 	Name    string `json:"name"`
@@ -100,47 +152,47 @@ type IdTokenClaims struct {
 	OrgName string `json:"org_name"`
 }
 
-func (p *oauthHandler) verifyIdToken(ctx context.Context, idTokenStr string, nonce string) (*verifiedSessionToken, error) {
-	idToken, err := p.idVerifier.Verify(ctx, idTokenStr)
-	if err != nil {
-		return nil, fmt.Errorf("invalid id_token: %w", err)
+func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, nonce string) (*userAuthInfo, error) {
+	at, atErr := h.accessTokenVerifier.Verify(ctx, t.AccessToken)
+	if atErr != nil {
+		return nil, fmt.Errorf("access token verification failed: %w", atErr)
+	}
+	var atClaims accessTokenClaims
+	if atClaimsErr := at.Claims(&atClaims); atClaimsErr != nil {
+		return nil, fmt.Errorf("failed to parse access token claims: %w", atClaimsErr)
+	}
+	fmt.Printf("at claims: %+v\n", atClaims)
+
+	idTokenStr, idOk := t.Extra("id_token").(string)
+	if !idOk {
+		return nil, fmt.Errorf("no id_token")
+	}
+	id, idTokenErr := h.idTokenVerifier.Verify(ctx, idTokenStr)
+	if idTokenErr != nil {
+		return nil, fmt.Errorf("verify id token: %w", idTokenErr)
+	}
+	fmt.Printf("access token hash: %s\n", id.AccessTokenHash)
+	if id.Nonce != nonce {
+		return nil, fmt.Errorf("invalid id token nonce")
 	}
 
-	if idToken.Nonce != nonce {
-		return nil, fmt.Errorf("invalid nonce")
-	}
-
-	var claims IdTokenClaims
-	if claimsErr := idToken.Claims(&claims); claimsErr != nil {
+	var idClaims idTokenClaims
+	if claimsErr := id.Claims(&idClaims); claimsErr != nil {
 		return nil, rez.ErrAuthSessionInvalid
 	}
-	return &verifiedSessionToken{id: idToken, claims: claims}, nil
-}
 
-func (p *oauthHandler) refreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
-	expiredTokenSource := p.oauthCfg.TokenSource(ctx, &oauth2.Token{
-		RefreshToken: refreshToken,
-		Expiry:       time.Now().Add(-time.Second), // set expired to force a refresh request
-	})
-	return expiredTokenSource.Token()
-}
-
-type verifiedSessionToken struct {
-	id     *oidc.IDToken
-	claims IdTokenClaims
-}
-
-func (t *verifiedSessionToken) getUser() ent.User {
-	return ent.User{
-		AuthProviderID: t.claims.Sub,
-		Email:          t.claims.Email,
-		Name:           t.claims.Name,
+	info := &userAuthInfo{
+		expiresAt: at.Expiry,
+		user: ent.User{
+			AuthProviderID: idClaims.Sub,
+			Email:          idClaims.Email,
+			Name:           idClaims.Name,
+		},
+		org: ent.Organization{
+			AuthProviderID: atClaims.OrganizationId,
+			Name:           atClaims.OrganizationName,
+		},
 	}
-}
 
-func (t *verifiedSessionToken) getOrganization() ent.Organization {
-	return ent.Organization{
-		AuthProviderID: t.claims.OrgId,
-		Name:           t.claims.OrgName,
-	}
+	return info, nil
 }

@@ -43,12 +43,17 @@ func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez
 		Oidc: oidcConfig{},
 	}
 	if cfgErr := rez.Config.Unmarshal("auth", &cfg); cfgErr != nil {
-		return nil, cfgErr
+		return nil, fmt.Errorf("config: %w", cfgErr)
 	}
 
 	cookies, cookieErr := newCookieWriter(cfg.SessionSecret)
 	if cookieErr != nil {
-		return nil, fmt.Errorf("cookie codec error: %w", cookieErr)
+		return nil, fmt.Errorf("cookie writer: %w", cookieErr)
+	}
+
+	oauth, oauthErr := makeOAuthHandler(ctx, cfg.Oidc)
+	if oauthErr != nil {
+		return nil, fmt.Errorf("oauth handler: %w", oauthErr)
 	}
 
 	s := &AuthService{
@@ -56,20 +61,10 @@ func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez
 		users:   users,
 		cfg:     cfg,
 		cookies: cookies,
+		oauth:   oauth,
 	}
 
 	return s, nil
-}
-
-func (s *AuthService) getOAuthHandler(ctx context.Context) (*oauthHandler, error) {
-	if s.oauth == nil {
-		o, oauthErr := makeOAuthHandler(ctx, s.cfg.Oidc)
-		if oauthErr != nil {
-			return nil, fmt.Errorf("make oauth handler: %w", oauthErr)
-		}
-		s.oauth = o
-	}
-	return s.oauth, nil
 }
 
 func (s *AuthService) Handler() http.Handler {
@@ -94,11 +89,7 @@ func handleAndRedirect(handler func(http.ResponseWriter, *http.Request) (string,
 }
 
 func (s *AuthService) handleLogin(w http.ResponseWriter, r *http.Request) (string, error) {
-	oauth, oauthErr := s.getOAuthHandler(r.Context())
-	if oauthErr != nil {
-		return "", fmt.Errorf("oauth_handler")
-	}
-	authUrl, vs, authErr := oauth.createAuthRedirect()
+	authUrl, vs, authErr := s.oauth.createAuthRedirect(r)
 	if authErr != nil {
 		return "", fmt.Errorf("create_redirect")
 	}
@@ -109,23 +100,35 @@ func (s *AuthService) handleLogin(w http.ResponseWriter, r *http.Request) (strin
 }
 
 func (s *AuthService) handleCallback(w http.ResponseWriter, r *http.Request) (string, error) {
-	var as AuthVerifyState
+	var as AuthFlowState
 	if cookieErr := s.cookies.read(r, authVerificationCookieName, &as); cookieErr != nil {
 		return "", fmt.Errorf("read_auth_state")
 	}
 	s.cookies.clear(w, authVerificationCookieName)
 
-	sess, sessErr := s.getTokenAuthSession(r, as)
-	if sessErr != nil {
-		log.Debug().Err(sessErr).Msg("get token auth session")
-		return "", fmt.Errorf("create_session")
+	info, callbackErr := s.oauth.doCallbackExchange(r, as)
+	if callbackErr != nil {
+		log.Debug().Err(callbackErr).Msg("callback exchange")
+		return "", fmt.Errorf("exchange")
+	}
+
+	usr, usrErr := s.users.SyncFromAuthProvider(r.Context(), info.org, info.user)
+	if usrErr != nil {
+		log.Debug().Err(usrErr).Msg("user auth sync")
+		return "", fmt.Errorf("sync")
+	}
+
+	sess := rez.AuthSession{
+		UserId:    usr.ID,
+		ExpiresAt: info.expiresAt,
+		Scopes:    []string{},
 	}
 
 	if cookieErr := s.cookies.write(w, oapiv1.AppCookieName, sess, time.Until(sess.ExpiresAt)); cookieErr != nil {
 		return "", fmt.Errorf("set_cookie")
 	}
 
-	return as.RedirectURL, nil
+	return as.ReturnTo, nil
 }
 
 func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) (string, error) {
@@ -133,47 +136,16 @@ func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) (stri
 	return "/login", nil
 }
 
-func (s *AuthService) getTokenAuthSession(r *http.Request, as AuthVerifyState) (*rez.AuthSession, error) {
-	ctx := r.Context()
-	oauth, oauthErr := s.getOAuthHandler(ctx)
-	if oauthErr != nil {
-		return nil, oauthErr
+func (s *AuthService) SetAuthSessionContext(ctx context.Context, appCookie, apiToken string) (context.Context, error) {
+	if appCookie != "" {
+		return s.setContextFromAppCookie(ctx, appCookie)
+	} else if apiToken != "" {
+		return s.setContextFromApiToken(ctx, apiToken)
 	}
-
-	token, tokenErr := oauth.doCallbackTokenExchange(r, as.State, as.CodeVerifier)
-	if tokenErr != nil {
-		return nil, fmt.Errorf("exchange token: %w", tokenErr)
-	}
-
-	idTokenStr, idOk := token.Extra("id_token").(string)
-	if !idOk {
-		return nil, fmt.Errorf("no id_token")
-	}
-
-	id, idErr := oauth.verifyIdToken(ctx, idTokenStr, as.Nonce)
-	if idErr != nil {
-		return nil, fmt.Errorf("verify id token: %w", idErr)
-	}
-
-	usr, usrErr := s.users.SyncFromAuthProvider(ctx, id.getOrganization(), id.getUser())
-	if usrErr != nil {
-		return nil, fmt.Errorf("sync user: %w", usrErr)
-	}
-
-	sess := rez.AuthSession{
-		UserId:    usr.ID,
-		Scopes:    []string{},
-		ExpiresAt: token.Expiry,
-	}
-	return &sess, nil
+	return nil, rez.ErrAuthSessionMissing
 }
 
-type authUserSessionContextKey struct{}
-
-func (s *AuthService) SetAuthSessionContextFromAppCookie(ctx context.Context, cookieStr string) (context.Context, error) {
-	if cookieStr == "" {
-		return nil, rez.ErrAuthSessionMissing
-	}
+func (s *AuthService) setContextFromAppCookie(ctx context.Context, cookieStr string) (context.Context, error) {
 	var sess rez.AuthSession
 	if decodeErr := s.cookies.decode(cookieStr, &sess); decodeErr != nil {
 		log.Debug().Err(decodeErr).Msg("decoding auth session token")
@@ -187,9 +159,11 @@ func (s *AuthService) SetAuthSessionContextFromAppCookie(ctx context.Context, co
 	return s.makeAuthSessionContext(ctx, usr, sess), nil
 }
 
-func (s *AuthService) SetAuthSessionContextFromApiToken(ctx context.Context, tokenStr string) (context.Context, error) {
+func (s *AuthService) setContextFromApiToken(ctx context.Context, tokenStr string) (context.Context, error) {
 	return nil, fmt.Errorf("not implemented")
 }
+
+type authUserSessionContextKey struct{}
 
 func (s *AuthService) makeAuthSessionContext(ctx context.Context, u *ent.User, sess rez.AuthSession) context.Context {
 	return context.WithValue(access.WithUser(ctx, u), authUserSessionContextKey{}, sess)

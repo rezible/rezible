@@ -66,7 +66,6 @@ func (c *cookieWriter) read(r *http.Request, name string, dst any) error {
 	if cookieErr != nil {
 		return cookieErr
 	}
-
 	return c.decode(cookie.Value, dst)
 }
 
