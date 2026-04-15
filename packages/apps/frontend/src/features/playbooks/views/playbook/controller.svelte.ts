@@ -1,8 +1,7 @@
 import { getPlaybookOptions, updatePlaybookMutation, type UpdatePlaybookAttributes } from "$lib/api";
 import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
-import { Context, watch } from "runed";
-import type { Getter } from "$src/lib/utils.svelte";
+import { Context, watch, type Getter } from "runed";
 
 export class PlaybookViewController {
 	playbookId = $state<string>(null!);

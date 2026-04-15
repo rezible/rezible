@@ -2,7 +2,6 @@
 	import { createMutation } from "@tanstack/svelte-query";
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import { sendOncallShiftHandoverMutation } from "$lib/api";
-	import { useToastState } from "$lib/toasts.svelte";
 	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
@@ -19,13 +18,10 @@
 
 	const nextUser = $derived(view.nextShift?.attributes.user);
 
-	const toasts = useToastState();
-
 	const sendMutation = createMutation(() => ({
 		...sendOncallShiftHandoverMutation(),
 		onSuccess: () => {
 			// handoverState.setSent();
-			toasts.add("Handover Sent", "Sent oncall shift handover", mdiPhoneForward);
 			// showReviewDialog;
 			onSent();
 		},

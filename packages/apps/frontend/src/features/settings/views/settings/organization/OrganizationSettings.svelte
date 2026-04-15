@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import OrganizationTeamsTab from "./tabs/OrganizationTeamsTab.svelte";
 	import OrganizationUsersTab from "./tabs/OrganizationUsersTab.svelte";
@@ -7,7 +7,7 @@
 
 	const view = initOrganizationSettingsViewController();
 
-	appShell.setPageBreadcrumbs(() => [
+	setPageBreadcrumbs(() => [
 		{ label: "Settings", href: "/settings" },
 		{ label: "Organization", href: "/settings/organization" },
 	]);

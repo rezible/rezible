@@ -2,13 +2,13 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { listPlaybooksOptions, type ListPlaybooksData, type Playbook } from "$lib/api";
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 
-	appShell.setPageBreadcrumbs(() => [{ label: "Playbooks" }]);
+	setPageBreadcrumbs(() => [{ label: "Playbooks" }]);
 
 	const paginator = new QueryPaginatorState();
 	let searchValue = $state<string>();

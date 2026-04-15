@@ -1,9 +1,9 @@
-import { afterNavigate, beforeNavigate, goto, pushState } from "$app/navigation";
+import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
 import { page } from "$app/state";
-import { appShell } from "$features/app";
+import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 import { useAuthSessionState } from "$lib/auth.svelte";
 import { convertSettingsViewParam } from "$src/params/settingsView";
-import { Context, watch } from "runed";
+import { Context } from "runed";
 import { initIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 
 export class SettingsViewController {
@@ -15,7 +15,7 @@ export class SettingsViewController {
 
     constructor() {
         this.preventInitialSetupNavigation();
-        appShell.setPageBreadcrumbs(() => ([
+        setPageBreadcrumbs(() => ([
             { label: "Settings", href: "/settings" },
             { label: this.viewParam }
         ]));

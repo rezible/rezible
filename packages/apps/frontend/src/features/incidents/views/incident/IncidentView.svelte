@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell, type PageBreadcrumb } from "$features/app";
+	import { useAppShell, type PageBreadcrumb } from "$lib/appShell.svelte";
 
 	import type { IncidentViewRouteParam } from "$params/incidentView";
 	import { initIncidentViewController, type IncidentViewParams } from "./controller.svelte";
@@ -12,7 +12,6 @@
 	import IncidentAnalysis from "./analysis/IncidentAnalysis.svelte";
 	import IncidentReport from "./report/IncidentReport.svelte";
 
-
 	const { slug, routeParam }: { slug: string, routeParam: IncidentViewRouteParam } = $props();
 
 	const params = $derived<IncidentViewParams>({ slug, routeParam });
@@ -20,22 +19,15 @@
 	const collab = initIncidentCollaborationController(view);
 
 	const path = $derived(`/incidents/${slug}`);
-	const incidentBreadcrumb = $derived<PageBreadcrumb>({
-		label: view.incident?.attributes.title,
-		href: path,
-	});
+	const incidentTitle = $derived(view.incident?.attributes.title);
 
-	const retroBreadcrumb = $derived<PageBreadcrumb>({
-		label: routeParam === "analysis" ? "System Analysis" : "Report",
-		href: `${path}/analysis`,
-	});
-
-	const isIncidentView = $derived(routeParam === undefined);
-	appShell.setPageBreadcrumbs(() => [
+	const breadcrumbs = $derived<PageBreadcrumb[]>([
 		{ label: "Incidents", href: "/incidents" }, 
-		incidentBreadcrumb,
-		...(isIncidentView ? [] : [retroBreadcrumb])
+		{ label: incidentTitle, href: path },
 	]);
+
+	const appShell = useAppShell();
+	appShell.setPageBreadcrumbs(() => breadcrumbs);
 	appShell.setPageActions(PageActions, true);
 
 	const tabs: Tab<IncidentViewRouteParam>[] = [

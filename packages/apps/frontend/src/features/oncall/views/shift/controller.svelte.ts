@@ -3,8 +3,7 @@ import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { AnnotationDialogState, setAnnotationDialogState } from "$components/events/annotation-dialog/dialogState.svelte";
 import { getAdjacentOncallShiftsOptions, getOncallShiftOptions, listEventAnnotationsOptions, listEventsOptions, type EventAnnotation } from "$lib/api";
 import { shiftEventMatchesFilter, type ShiftEventFilterKind } from "$features/oncall/lib/utils";
-import { Context, watch } from "runed";
-import type { Getter } from "$lib/utils.svelte";
+import { Context, watch, type Getter } from "runed";
 
 export class OncallShiftViewController {
 	private queryClient = useQueryClient();

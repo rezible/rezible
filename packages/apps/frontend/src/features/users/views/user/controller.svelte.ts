@@ -1,8 +1,7 @@
 import { getUserOptions, listIncidentsOptions, listOncallRostersOptions, listOncallShiftsOptions, listTeamsOptions } from "$lib/api";
-import type { Getter } from "$lib/utils.svelte";
 import { getLocalTimeZone } from "@internationalized/date";
 import { createQuery } from "@tanstack/svelte-query";
-import { Context, watch } from "runed";
+import { Context, watch, type Getter } from "runed";
 
 export class UserViewController {
 	userId = $state<string>(null!);

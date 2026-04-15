@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import type { IdProps } from "$lib/utils.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import OncallStats from "./OncallStats.svelte";
@@ -10,7 +10,7 @@
 
 	const view = initUserViewController(() => id);
 
-	appShell.setPageBreadcrumbs(() => [
+	setPageBreadcrumbs(() => [
 		{ label: "Users", href: "/users" },
 		{ label: view.userName, href: `/users/${view.userId}`, avatar: {kind: "user", id: view.userId}},
 	]);

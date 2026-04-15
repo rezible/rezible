@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 
 	import ShiftsHeader from "./shifts-header/ShiftsHeader.svelte";
 	import EventsTable from "./events-table/EventsTable.svelte";
 	import UserBacklogBox from "./user-backlog/UserBacklogBox.svelte";
 	import UserRelevantBox from "./user-relevant/UserRelevantBox.svelte";
 
-	appShell.setPageBreadcrumbs(() => [{ label: "Home" }]);
+	setPageBreadcrumbs(() => [{ label: "Home" }]);
 </script>
 
 <div class="flex flex-col gap-2">

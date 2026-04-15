@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 
-	appShell.setPageBreadcrumbs(() => [
+	setPageBreadcrumbs(() => [
 		{ label: "Users" },
 	]);
 </script>

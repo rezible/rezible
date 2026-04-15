@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listIncidentsOptions, type ListIncidentsData, type Incident } from "$lib/api";
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
@@ -9,7 +9,7 @@
 	import IncidentCard from "$components/incident-card/IncidentCard.svelte";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
-	appShell.setPageBreadcrumbs(() => [{ label: "Incidents" }]);
+	setPageBreadcrumbs(() => [{ label: "Incidents" }]);
 
 	const paginator = new QueryPaginatorState();
 	let searchValue = $state<string>();

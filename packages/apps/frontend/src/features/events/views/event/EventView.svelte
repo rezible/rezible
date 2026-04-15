@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import type { IdProps } from "$lib/utils.svelte";
 	import { initEventViewController } from "./controller.svelte";
 
@@ -7,7 +7,7 @@
 
 	const view = initEventViewController(() => id);
 
-	appShell.setPageBreadcrumbs(() => [
+	setPageBreadcrumbs(() => [
 		{ label: "Events" },
 		{ label: view.eventTitle, href: `/events/${view.eventId}` },
 	]);

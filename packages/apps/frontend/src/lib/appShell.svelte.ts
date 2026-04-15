@@ -1,4 +1,4 @@
-import { watch } from "runed";
+import { Context, watch, type Getter } from "runed";
 import type Avatar from "$components/avatar/Avatar.svelte";
 import type { Component, ComponentProps } from "svelte";
 import { page } from "$app/state";
@@ -17,13 +17,15 @@ export type PageActions<PComponent extends Component<any>> = {
 	routeBase: string;
 }
 
-export class AppShellState {
+export class AppShellController {
 	pageTitle = $state("Rezible")
 	breadcrumbs = $state<PageBreadcrumb[]>([]);
 	pageActions = $state<PageActions<any>>();
 
-	setup() {
-		onNavigate(nav => this.checkPageActions(nav.to?.route.id ?? ""));
+	constructor() {
+		onNavigate(nav => {
+			this.checkPageActions(nav.to?.route.id ?? "")
+		});
 	}
 
 	private checkPageActions(newRouteId: string) {
@@ -36,9 +38,15 @@ export class AppShellState {
 		this.pageActions = {component, allowChildren, propsFn, routeBase: $state.snapshot(page.route.id) ?? ""};
 	}
 
-	setPageBreadcrumbs(crumbsFn: () => PageBreadcrumb[]) {
+	setPageBreadcrumbs(crumbsFn: Getter<PageBreadcrumb[]>) {
 		watch(crumbsFn, crumbs => {this.breadcrumbs = crumbs});
 	}
 }
 
-export const appShell = new AppShellState();
+const ctx = new Context<AppShellController>("AppShellController");
+export const initAppShell = () => ctx.set(new AppShellController());
+export const useAppShell = () => ctx.get();
+
+export const setPageBreadcrumbs = (crumbsFn: Getter<PageBreadcrumb[]>) => {
+	useAppShell().setPageBreadcrumbs(crumbsFn);
+}

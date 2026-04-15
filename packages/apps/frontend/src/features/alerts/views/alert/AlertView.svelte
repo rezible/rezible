@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import type { IdProps } from "$lib/utils.svelte";
 	import type { AlertViewParam } from "$src/params/alertView";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
@@ -13,7 +13,7 @@
 
 	const view = initAlertViewController(() => id);
 
-	appShell.setPageBreadcrumbs(() => [
+	setPageBreadcrumbs(() => [
 		{ label: "Alerts", href: "/alerts" },
 		{ label: view.alertTitle, href: `/alerts/${view.alertId}` },
 	]);

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell, type PageBreadcrumb } from "$features/app";
+	import { setPageBreadcrumbs, type PageBreadcrumb } from "$lib/appShell.svelte";
 	import type { IdProps } from "$lib/utils.svelte";
 	import type { TeamViewParam } from "$src/params/teamView";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
@@ -13,7 +13,7 @@
 	const view = initTeamViewController(() => id);
 
 	const avatar = $derived<PageBreadcrumb["avatar"]>(view.team ? { kind: "team", id: view.team.id } : undefined);
-	appShell.setPageBreadcrumbs(() => [
+	setPageBreadcrumbs(() => [
 		{ label: "Teams", href: "/teams" },
 		{ label: view.teamName, href: `/teams/${view.teamSlug}`, avatar },
 	]);

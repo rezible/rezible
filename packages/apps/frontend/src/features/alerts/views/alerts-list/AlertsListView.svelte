@@ -2,13 +2,13 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { listAlertsOptions, type Alert, type ListAlertsData } from "$lib/api";
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 
-	appShell.setPageBreadcrumbs(() => [{ label: "Alerts" }]);
+	setPageBreadcrumbs(() => [{ label: "Alerts" }]);
 
 	const paginator = new QueryPaginatorState();
 	let searchValue = $state<string>();

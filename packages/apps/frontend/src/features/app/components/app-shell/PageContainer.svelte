@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
-	import { appShell } from "$features/app";
+	import { useAppShell } from "$lib/appShell.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import { useAuthSessionState } from "$lib/auth.svelte";
 
@@ -10,9 +10,10 @@
 	const { children }: Props = $props();
 
 	const session = useAuthSessionState();
+	const shell = useAppShell();
 
-	const pageBreadcrumbs = $derived(appShell.breadcrumbs);
-	const pageActions = $derived(appShell.pageActions);
+	const pageBreadcrumbs = $derived(shell.breadcrumbs);
+	const pageActions = $derived(shell.pageActions);
 	const propsFn = $derived(pageActions?.propsFn ?? (() => ({})));
 	const pageActionsProps = $derived.by(() => (propsFn()));
 </script>

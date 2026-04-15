@@ -7,7 +7,7 @@ import {
 	type GetCurrentAuthSessionResponseBody,
 } from "$lib/api";
 import { parseAbsoluteToLocal } from "@internationalized/date";
-import { createMutation, createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
+import { createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { onMount } from "svelte";
 import { beforeNavigate, goto } from "$app/navigation";

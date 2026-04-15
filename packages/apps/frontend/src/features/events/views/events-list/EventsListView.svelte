@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import ListFilters from "./ListFilters.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
@@ -32,7 +32,7 @@
 
 	const events = $derived(query.data?.data ?? []);
 
-	appShell.setPageBreadcrumbs(() => [{ label: "Events" }]);
+	setPageBreadcrumbs(() => [{ label: "Events" }]);
 
 	setAnnotationDialogState(new AnnotationDialogState({}));
 </script>

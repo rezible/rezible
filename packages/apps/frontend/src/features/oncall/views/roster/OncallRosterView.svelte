@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { appShell, type PageBreadcrumb } from "$features/app";
+	import { useAppShell } from "$lib/appShell.svelte";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 
 	import { initOncallRosterViewController } from "./controller.svelte";
@@ -15,17 +15,16 @@
 	const { slug }: { slug: string } = $props();
 
 	const view = initOncallRosterViewController(() => slug);
+	const rosterId = $derived(view.rosterId);
 
-	const avatar = $derived<PageBreadcrumb["avatar"]>(view.rosterId ? {kind: "roster", id: view.rosterId} : undefined);
-	const rosterBreadcrumb = $derived<PageBreadcrumb>({
-		label: view.rosterName,
-		href: `/rosters/${slug}`,
-		avatar,
-	});
-
+	const appShell = useAppShell();
 	appShell.setPageBreadcrumbs(() => [
 		{ label: "Oncall Rosters", href: "/rosters" },
-		rosterBreadcrumb,
+		{
+			label: view.rosterName,
+			href: `/rosters/${slug}`,
+			avatar: rosterId ? {kind: "roster", id: rosterId} : undefined,
+		},
 	]);
 	appShell.setPageActions(PageActions, true);
 

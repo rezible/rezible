@@ -1,9 +1,8 @@
 import { getIncidentOptions, getRetrospectiveOptions } from "$lib/api";
-import type { Getter } from "$lib/utils.svelte";
 import type { IncidentViewRouteParam } from "$params/incidentView";
 import { getLocalTimeZone } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
-import { Context, watch } from "runed";
+import { Context, watch, type Getter } from "runed";
 
 export type IncidentViewParams = {
 	slug: string;

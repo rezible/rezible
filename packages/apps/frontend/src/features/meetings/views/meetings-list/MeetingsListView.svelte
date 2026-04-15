@@ -2,21 +2,23 @@
 	import { type MeetingSession } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
-	import { appShell } from "$features/app";
+	import { useAppShell } from "$lib/appShell.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import MeetingsPageActions from "./MeetingsListPageActions.svelte";
 	import { initMeetingsListViewController } from "./controller.svelte";
 
+	const view = initMeetingsListViewController();
+	const query = $derived(view.query);
+
+	const appShell = useAppShell();
 	appShell.setPageBreadcrumbs(() => [{ label: "Meetings" }]);
 	appShell.setPageActions(MeetingsPageActions, true);
-
-	const viewState = initMeetingsListViewController();
 </script>
 
 {#snippet filters()}
-	<SearchInput bind:value={viewState.searchValue} />
+	<SearchInput bind:value={view.searchValue} />
 
 	<div class="pb-2 border">
 		<span>month</span>
@@ -26,7 +28,7 @@
 
 <FilterPage {filters}>
 	<PaginatedListBox>
-		<LoadingQueryWrapper query={viewState.query}>
+		<LoadingQueryWrapper {query}>
 			{#snippet view(sessions: MeetingSession[])}
 				{#each sessions as session}
 					<MeetingSessionCard {session} />

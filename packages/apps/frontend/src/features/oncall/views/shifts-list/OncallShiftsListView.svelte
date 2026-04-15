@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { subDays } from "date-fns";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
@@ -10,7 +10,7 @@
 	import { watch } from "runed";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 
-	appShell.setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
+	setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
 
 	const statusOptions = [
 		{ label: 'Active', value: "active" },

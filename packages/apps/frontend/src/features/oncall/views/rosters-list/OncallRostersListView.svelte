@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { appShell } from "$features/app";
+	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import { listOncallRostersOptions, type ListOncallRostersData, type OncallRoster } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
@@ -9,7 +9,7 @@
 	import RosterCard from "$features/oncall/components/roster-card/RosterCard.svelte";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 
-	appShell.setPageBreadcrumbs(() => [
+	setPageBreadcrumbs(() => [
 		{ label: "Oncall Rosters", href: "/rosters" },
 	]);
 
