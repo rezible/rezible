@@ -920,6 +920,14 @@ export type GetIncidentFieldResponseBody = {
     data: IncidentField;
 };
 
+export type GetIncidentMetadataResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentMetadata;
+};
+
 export type GetIncidentResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1363,6 +1371,14 @@ export type IncidentLink = {
     incidentSummary: string;
     incidentTitle: string;
     linkType: 'duplicate_of' | 'parent' | 'sibling' | 'child';
+};
+
+export type IncidentMetadata = {
+    fields: Array<IncidentField>;
+    roles: Array<IncidentRole>;
+    severities: Array<IncidentSeverity>;
+    tags: Array<IncidentTag>;
+    types: Array<IncidentType>;
 };
 
 export type IncidentMilestone = {
@@ -4157,6 +4173,51 @@ export type UpdateIncidentEventResponses = {
 
 export type UpdateIncidentEventResponse = UpdateIncidentEventResponses[keyof UpdateIncidentEventResponses];
 
+export type GetIncidentMetadataData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/incident_metadata';
+};
+
+export type GetIncidentMetadataErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentMetadataError = GetIncidentMetadataErrors[keyof GetIncidentMetadataErrors];
+
+export type GetIncidentMetadataResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentMetadataResponseBody;
+};
+
+export type GetIncidentMetadataResponse = GetIncidentMetadataResponses[keyof GetIncidentMetadataResponses];
+
 export type ListIncidentFieldsData = {
     body?: never;
     path?: never;
@@ -4166,7 +4227,7 @@ export type ListIncidentFieldsData = {
         search?: string;
         archived?: boolean;
     };
-    url: '/incident_fields';
+    url: '/incident_metadata/fields';
 };
 
 export type ListIncidentFieldsErrors = {
@@ -4211,7 +4272,7 @@ export type CreateIncidentFieldData = {
     body: CreateIncidentFieldRequestBody;
     path?: never;
     query?: never;
-    url: '/incident_fields';
+    url: '/incident_metadata/fields';
 };
 
 export type CreateIncidentFieldErrors = {
@@ -4258,7 +4319,7 @@ export type ArchiveIncidentFieldData = {
         id: string;
     };
     query?: never;
-    url: '/incident_fields/{id}';
+    url: '/incident_metadata/fields/{id}';
 };
 
 export type ArchiveIncidentFieldErrors = {
@@ -4305,7 +4366,7 @@ export type GetIncidentFieldData = {
         id: string;
     };
     query?: never;
-    url: '/incident_fields/{id}';
+    url: '/incident_metadata/fields/{id}';
 };
 
 export type GetIncidentFieldErrors = {
@@ -4352,7 +4413,7 @@ export type UpdateIncidentFieldData = {
         id: string;
     };
     query?: never;
-    url: '/incident_fields/{id}';
+    url: '/incident_metadata/fields/{id}';
 };
 
 export type UpdateIncidentFieldErrors = {
@@ -4392,6 +4453,950 @@ export type UpdateIncidentFieldResponses = {
 };
 
 export type UpdateIncidentFieldResponse = UpdateIncidentFieldResponses[keyof UpdateIncidentFieldResponses];
+
+export type ListIncidentRolesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/incident_metadata/roles';
+};
+
+export type ListIncidentRolesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIncidentRolesError = ListIncidentRolesErrors[keyof ListIncidentRolesErrors];
+
+export type ListIncidentRolesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentRolesResponseBody;
+};
+
+export type ListIncidentRolesResponse = ListIncidentRolesResponses[keyof ListIncidentRolesResponses];
+
+export type CreateIncidentRoleData = {
+    body: CreateIncidentRoleRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_metadata/roles';
+};
+
+export type CreateIncidentRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateIncidentRoleError = CreateIncidentRoleErrors[keyof CreateIncidentRoleErrors];
+
+export type CreateIncidentRoleResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentRoleResponseBody;
+};
+
+export type CreateIncidentRoleResponse = CreateIncidentRoleResponses[keyof CreateIncidentRoleResponses];
+
+export type ArchiveIncidentRoleData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/roles/{id}';
+};
+
+export type ArchiveIncidentRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveIncidentRoleError = ArchiveIncidentRoleErrors[keyof ArchiveIncidentRoleErrors];
+
+export type ArchiveIncidentRoleResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentRoleResponse = ArchiveIncidentRoleResponses[keyof ArchiveIncidentRoleResponses];
+
+export type GetIncidentRoleData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/roles/{id}';
+};
+
+export type GetIncidentRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentRoleError = GetIncidentRoleErrors[keyof GetIncidentRoleErrors];
+
+export type GetIncidentRoleResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentRoleResponseBody;
+};
+
+export type GetIncidentRoleResponse = GetIncidentRoleResponses[keyof GetIncidentRoleResponses];
+
+export type UpdateIncidentRoleData = {
+    body: UpdateIncidentRoleRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/roles/{id}';
+};
+
+export type UpdateIncidentRoleErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateIncidentRoleError = UpdateIncidentRoleErrors[keyof UpdateIncidentRoleErrors];
+
+export type UpdateIncidentRoleResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentRoleResponseBody;
+};
+
+export type UpdateIncidentRoleResponse = UpdateIncidentRoleResponses[keyof UpdateIncidentRoleResponses];
+
+export type ListIncidentSeveritiesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/incident_metadata/severities';
+};
+
+export type ListIncidentSeveritiesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIncidentSeveritiesError = ListIncidentSeveritiesErrors[keyof ListIncidentSeveritiesErrors];
+
+export type ListIncidentSeveritiesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentSeveritiesResponseBody;
+};
+
+export type ListIncidentSeveritiesResponse = ListIncidentSeveritiesResponses[keyof ListIncidentSeveritiesResponses];
+
+export type CreateIncidentSeverityData = {
+    body: CreateIncidentSeverityRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_metadata/severities';
+};
+
+export type CreateIncidentSeverityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateIncidentSeverityError = CreateIncidentSeverityErrors[keyof CreateIncidentSeverityErrors];
+
+export type CreateIncidentSeverityResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentSeverityResponseBody;
+};
+
+export type CreateIncidentSeverityResponse = CreateIncidentSeverityResponses[keyof CreateIncidentSeverityResponses];
+
+export type ArchiveIncidentSeverityData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/severities/{id}';
+};
+
+export type ArchiveIncidentSeverityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveIncidentSeverityError = ArchiveIncidentSeverityErrors[keyof ArchiveIncidentSeverityErrors];
+
+export type ArchiveIncidentSeverityResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentSeverityResponse = ArchiveIncidentSeverityResponses[keyof ArchiveIncidentSeverityResponses];
+
+export type GetIncidentSeverityData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/severities/{id}';
+};
+
+export type GetIncidentSeverityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentSeverityError = GetIncidentSeverityErrors[keyof GetIncidentSeverityErrors];
+
+export type GetIncidentSeverityResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentSeverityResponseBody;
+};
+
+export type GetIncidentSeverityResponse = GetIncidentSeverityResponses[keyof GetIncidentSeverityResponses];
+
+export type UpdateIncidentSeverityData = {
+    body: UpdateIncidentSeverityRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/severities/{id}';
+};
+
+export type UpdateIncidentSeverityErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateIncidentSeverityError = UpdateIncidentSeverityErrors[keyof UpdateIncidentSeverityErrors];
+
+export type UpdateIncidentSeverityResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentSeverityResponseBody;
+};
+
+export type UpdateIncidentSeverityResponse = UpdateIncidentSeverityResponses[keyof UpdateIncidentSeverityResponses];
+
+export type ListIncidentTagsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/incident_metadata/tags';
+};
+
+export type ListIncidentTagsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIncidentTagsError = ListIncidentTagsErrors[keyof ListIncidentTagsErrors];
+
+export type ListIncidentTagsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentTagsResponseBody;
+};
+
+export type ListIncidentTagsResponse = ListIncidentTagsResponses[keyof ListIncidentTagsResponses];
+
+export type CreateIncidentTagData = {
+    body: CreateIncidentTagRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_metadata/tags';
+};
+
+export type CreateIncidentTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateIncidentTagError = CreateIncidentTagErrors[keyof CreateIncidentTagErrors];
+
+export type CreateIncidentTagResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentTagResponseBody;
+};
+
+export type CreateIncidentTagResponse = CreateIncidentTagResponses[keyof CreateIncidentTagResponses];
+
+export type ArchiveIncidentTagData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/tags/{id}';
+};
+
+export type ArchiveIncidentTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveIncidentTagError = ArchiveIncidentTagErrors[keyof ArchiveIncidentTagErrors];
+
+export type ArchiveIncidentTagResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentTagResponse = ArchiveIncidentTagResponses[keyof ArchiveIncidentTagResponses];
+
+export type GetIncidentTagData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/tags/{id}';
+};
+
+export type GetIncidentTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentTagError = GetIncidentTagErrors[keyof GetIncidentTagErrors];
+
+export type GetIncidentTagResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentTagResponseBody;
+};
+
+export type GetIncidentTagResponse = GetIncidentTagResponses[keyof GetIncidentTagResponses];
+
+export type UpdateIncidentTagData = {
+    body: UpdateIncidentTagRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/tags/{id}';
+};
+
+export type UpdateIncidentTagErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateIncidentTagError = UpdateIncidentTagErrors[keyof UpdateIncidentTagErrors];
+
+export type UpdateIncidentTagResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentTagResponseBody;
+};
+
+export type UpdateIncidentTagResponse = UpdateIncidentTagResponses[keyof UpdateIncidentTagResponses];
+
+export type ListIncidentTypesData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/incident_metadata/types';
+};
+
+export type ListIncidentTypesErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIncidentTypesError = ListIncidentTypesErrors[keyof ListIncidentTypesErrors];
+
+export type ListIncidentTypesResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentTypesResponseBody;
+};
+
+export type ListIncidentTypesResponse = ListIncidentTypesResponses[keyof ListIncidentTypesResponses];
+
+export type CreateIncidentTypeData = {
+    body: CreateIncidentTypeRequestBody;
+    path?: never;
+    query?: never;
+    url: '/incident_metadata/types';
+};
+
+export type CreateIncidentTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateIncidentTypeError = CreateIncidentTypeErrors[keyof CreateIncidentTypeErrors];
+
+export type CreateIncidentTypeResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentTypeResponseBody;
+};
+
+export type CreateIncidentTypeResponse = CreateIncidentTypeResponses[keyof CreateIncidentTypeResponses];
+
+export type ArchiveIncidentTypeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/types/{id}';
+};
+
+export type ArchiveIncidentTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ArchiveIncidentTypeError = ArchiveIncidentTypeErrors[keyof ArchiveIncidentTypeErrors];
+
+export type ArchiveIncidentTypeResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type ArchiveIncidentTypeResponse = ArchiveIncidentTypeResponses[keyof ArchiveIncidentTypeResponses];
+
+export type GetIncidentTypeData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/types/{id}';
+};
+
+export type GetIncidentTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentTypeError = GetIncidentTypeErrors[keyof GetIncidentTypeErrors];
+
+export type GetIncidentTypeResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentTypeResponseBody;
+};
+
+export type GetIncidentTypeResponse = GetIncidentTypeResponses[keyof GetIncidentTypeResponses];
+
+export type UpdateIncidentTypeData = {
+    body: UpdateIncidentTypeRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_metadata/types/{id}';
+};
+
+export type UpdateIncidentTypeErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateIncidentTypeError = UpdateIncidentTypeErrors[keyof UpdateIncidentTypeErrors];
+
+export type UpdateIncidentTypeResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentTypeResponseBody;
+};
+
+export type UpdateIncidentTypeResponse = UpdateIncidentTypeResponses[keyof UpdateIncidentTypeResponses];
 
 export type DeleteIncidentMilestoneData = {
     body?: never;
@@ -4486,950 +5491,6 @@ export type UpdateIncidentMilestoneResponses = {
 };
 
 export type UpdateIncidentMilestoneResponse = UpdateIncidentMilestoneResponses[keyof UpdateIncidentMilestoneResponses];
-
-export type ListIncidentRolesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/incident_roles';
-};
-
-export type ListIncidentRolesErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentRolesError = ListIncidentRolesErrors[keyof ListIncidentRolesErrors];
-
-export type ListIncidentRolesResponses = {
-    /**
-     * OK
-     */
-    200: ListIncidentRolesResponseBody;
-};
-
-export type ListIncidentRolesResponse = ListIncidentRolesResponses[keyof ListIncidentRolesResponses];
-
-export type CreateIncidentRoleData = {
-    body: CreateIncidentRoleRequestBody;
-    path?: never;
-    query?: never;
-    url: '/incident_roles';
-};
-
-export type CreateIncidentRoleErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateIncidentRoleError = CreateIncidentRoleErrors[keyof CreateIncidentRoleErrors];
-
-export type CreateIncidentRoleResponses = {
-    /**
-     * OK
-     */
-    200: CreateIncidentRoleResponseBody;
-};
-
-export type CreateIncidentRoleResponse = CreateIncidentRoleResponses[keyof CreateIncidentRoleResponses];
-
-export type ArchiveIncidentRoleData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_roles/{id}';
-};
-
-export type ArchiveIncidentRoleErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveIncidentRoleError = ArchiveIncidentRoleErrors[keyof ArchiveIncidentRoleErrors];
-
-export type ArchiveIncidentRoleResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveIncidentRoleResponse = ArchiveIncidentRoleResponses[keyof ArchiveIncidentRoleResponses];
-
-export type GetIncidentRoleData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_roles/{id}';
-};
-
-export type GetIncidentRoleErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetIncidentRoleError = GetIncidentRoleErrors[keyof GetIncidentRoleErrors];
-
-export type GetIncidentRoleResponses = {
-    /**
-     * OK
-     */
-    200: GetIncidentRoleResponseBody;
-};
-
-export type GetIncidentRoleResponse = GetIncidentRoleResponses[keyof GetIncidentRoleResponses];
-
-export type UpdateIncidentRoleData = {
-    body: UpdateIncidentRoleRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_roles/{id}';
-};
-
-export type UpdateIncidentRoleErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateIncidentRoleError = UpdateIncidentRoleErrors[keyof UpdateIncidentRoleErrors];
-
-export type UpdateIncidentRoleResponses = {
-    /**
-     * OK
-     */
-    200: UpdateIncidentRoleResponseBody;
-};
-
-export type UpdateIncidentRoleResponse = UpdateIncidentRoleResponses[keyof UpdateIncidentRoleResponses];
-
-export type ListIncidentSeveritiesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/incident_severities';
-};
-
-export type ListIncidentSeveritiesErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentSeveritiesError = ListIncidentSeveritiesErrors[keyof ListIncidentSeveritiesErrors];
-
-export type ListIncidentSeveritiesResponses = {
-    /**
-     * OK
-     */
-    200: ListIncidentSeveritiesResponseBody;
-};
-
-export type ListIncidentSeveritiesResponse = ListIncidentSeveritiesResponses[keyof ListIncidentSeveritiesResponses];
-
-export type CreateIncidentSeverityData = {
-    body: CreateIncidentSeverityRequestBody;
-    path?: never;
-    query?: never;
-    url: '/incident_severities';
-};
-
-export type CreateIncidentSeverityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateIncidentSeverityError = CreateIncidentSeverityErrors[keyof CreateIncidentSeverityErrors];
-
-export type CreateIncidentSeverityResponses = {
-    /**
-     * OK
-     */
-    200: CreateIncidentSeverityResponseBody;
-};
-
-export type CreateIncidentSeverityResponse = CreateIncidentSeverityResponses[keyof CreateIncidentSeverityResponses];
-
-export type ArchiveIncidentSeverityData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_severities/{id}';
-};
-
-export type ArchiveIncidentSeverityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveIncidentSeverityError = ArchiveIncidentSeverityErrors[keyof ArchiveIncidentSeverityErrors];
-
-export type ArchiveIncidentSeverityResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveIncidentSeverityResponse = ArchiveIncidentSeverityResponses[keyof ArchiveIncidentSeverityResponses];
-
-export type GetIncidentSeverityData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_severities/{id}';
-};
-
-export type GetIncidentSeverityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetIncidentSeverityError = GetIncidentSeverityErrors[keyof GetIncidentSeverityErrors];
-
-export type GetIncidentSeverityResponses = {
-    /**
-     * OK
-     */
-    200: GetIncidentSeverityResponseBody;
-};
-
-export type GetIncidentSeverityResponse = GetIncidentSeverityResponses[keyof GetIncidentSeverityResponses];
-
-export type UpdateIncidentSeverityData = {
-    body: UpdateIncidentSeverityRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_severities/{id}';
-};
-
-export type UpdateIncidentSeverityErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateIncidentSeverityError = UpdateIncidentSeverityErrors[keyof UpdateIncidentSeverityErrors];
-
-export type UpdateIncidentSeverityResponses = {
-    /**
-     * OK
-     */
-    200: UpdateIncidentSeverityResponseBody;
-};
-
-export type UpdateIncidentSeverityResponse = UpdateIncidentSeverityResponses[keyof UpdateIncidentSeverityResponses];
-
-export type ListIncidentTagsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/incident_tags';
-};
-
-export type ListIncidentTagsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentTagsError = ListIncidentTagsErrors[keyof ListIncidentTagsErrors];
-
-export type ListIncidentTagsResponses = {
-    /**
-     * OK
-     */
-    200: ListIncidentTagsResponseBody;
-};
-
-export type ListIncidentTagsResponse = ListIncidentTagsResponses[keyof ListIncidentTagsResponses];
-
-export type CreateIncidentTagData = {
-    body: CreateIncidentTagRequestBody;
-    path?: never;
-    query?: never;
-    url: '/incident_tags';
-};
-
-export type CreateIncidentTagErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateIncidentTagError = CreateIncidentTagErrors[keyof CreateIncidentTagErrors];
-
-export type CreateIncidentTagResponses = {
-    /**
-     * OK
-     */
-    200: CreateIncidentTagResponseBody;
-};
-
-export type CreateIncidentTagResponse = CreateIncidentTagResponses[keyof CreateIncidentTagResponses];
-
-export type ArchiveIncidentTagData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_tags/{id}';
-};
-
-export type ArchiveIncidentTagErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveIncidentTagError = ArchiveIncidentTagErrors[keyof ArchiveIncidentTagErrors];
-
-export type ArchiveIncidentTagResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveIncidentTagResponse = ArchiveIncidentTagResponses[keyof ArchiveIncidentTagResponses];
-
-export type GetIncidentTagData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_tags/{id}';
-};
-
-export type GetIncidentTagErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetIncidentTagError = GetIncidentTagErrors[keyof GetIncidentTagErrors];
-
-export type GetIncidentTagResponses = {
-    /**
-     * OK
-     */
-    200: GetIncidentTagResponseBody;
-};
-
-export type GetIncidentTagResponse = GetIncidentTagResponses[keyof GetIncidentTagResponses];
-
-export type UpdateIncidentTagData = {
-    body: UpdateIncidentTagRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_tags/{id}';
-};
-
-export type UpdateIncidentTagErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateIncidentTagError = UpdateIncidentTagErrors[keyof UpdateIncidentTagErrors];
-
-export type UpdateIncidentTagResponses = {
-    /**
-     * OK
-     */
-    200: UpdateIncidentTagResponseBody;
-};
-
-export type UpdateIncidentTagResponse = UpdateIncidentTagResponses[keyof UpdateIncidentTagResponses];
-
-export type ListIncidentTypesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/incident_types';
-};
-
-export type ListIncidentTypesErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentTypesError = ListIncidentTypesErrors[keyof ListIncidentTypesErrors];
-
-export type ListIncidentTypesResponses = {
-    /**
-     * OK
-     */
-    200: ListIncidentTypesResponseBody;
-};
-
-export type ListIncidentTypesResponse = ListIncidentTypesResponses[keyof ListIncidentTypesResponses];
-
-export type CreateIncidentTypeData = {
-    body: CreateIncidentTypeRequestBody;
-    path?: never;
-    query?: never;
-    url: '/incident_types';
-};
-
-export type CreateIncidentTypeErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateIncidentTypeError = CreateIncidentTypeErrors[keyof CreateIncidentTypeErrors];
-
-export type CreateIncidentTypeResponses = {
-    /**
-     * OK
-     */
-    200: CreateIncidentTypeResponseBody;
-};
-
-export type CreateIncidentTypeResponse = CreateIncidentTypeResponses[keyof CreateIncidentTypeResponses];
-
-export type ArchiveIncidentTypeData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_types/{id}';
-};
-
-export type ArchiveIncidentTypeErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveIncidentTypeError = ArchiveIncidentTypeErrors[keyof ArchiveIncidentTypeErrors];
-
-export type ArchiveIncidentTypeResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveIncidentTypeResponse = ArchiveIncidentTypeResponses[keyof ArchiveIncidentTypeResponses];
-
-export type GetIncidentTypeData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_types/{id}';
-};
-
-export type GetIncidentTypeErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetIncidentTypeError = GetIncidentTypeErrors[keyof GetIncidentTypeErrors];
-
-export type GetIncidentTypeResponses = {
-    /**
-     * OK
-     */
-    200: GetIncidentTypeResponseBody;
-};
-
-export type GetIncidentTypeResponse = GetIncidentTypeResponses[keyof GetIncidentTypeResponses];
-
-export type UpdateIncidentTypeData = {
-    body: UpdateIncidentTypeRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_types/{id}';
-};
-
-export type UpdateIncidentTypeErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateIncidentTypeError = UpdateIncidentTypeErrors[keyof UpdateIncidentTypeErrors];
-
-export type UpdateIncidentTypeResponses = {
-    /**
-     * OK
-     */
-    200: UpdateIncidentTypeResponseBody;
-};
-
-export type UpdateIncidentTypeResponse = UpdateIncidentTypeResponses[keyof UpdateIncidentTypeResponses];
 
 export type ListIncidentsData = {
     body?: never;

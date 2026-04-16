@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisComponentData, AddSystemAnalysisComponentErrors, AddSystemAnalysisComponentResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintErrors, ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentControlData, ArchiveSystemComponentControlErrors, ArchiveSystemComponentControlResponses, ArchiveSystemComponentData, ArchiveSystemComponentErrors, ArchiveSystemComponentKindData, ArchiveSystemComponentKindErrors, ArchiveSystemComponentKindResponses, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipErrors, ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentResponses, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalErrors, ArchiveSystemComponentSignalResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamMembershipData, ArchiveTeamMembershipErrors, ArchiveTeamMembershipResponses, ArchiveTeamResponses, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowErrors, CompleteIntegrationOauthFlowResponses, ConfigureIntegrationData, ConfigureIntegrationErrors, ConfigureIntegrationResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentEventData, CreateIncidentEventErrors, CreateIncidentEventResponses, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipErrors, CreateSystemAnalysisRelationshipResponses, CreateSystemComponentConstraintData, CreateSystemComponentConstraintErrors, CreateSystemComponentConstraintResponses, CreateSystemComponentControlData, CreateSystemComponentControlErrors, CreateSystemComponentControlResponses, CreateSystemComponentData, CreateSystemComponentErrors, CreateSystemComponentKindData, CreateSystemComponentKindErrors, CreateSystemComponentKindResponses, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipErrors, CreateSystemComponentRelationshipResponses, CreateSystemComponentResponses, CreateSystemComponentSignalData, CreateSystemComponentSignalErrors, CreateSystemComponentSignalResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamMembershipData, CreateTeamMembershipErrors, CreateTeamMembershipResponses, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentEventData, DeleteIncidentEventErrors, DeleteIncidentEventResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIntegrationData, DeleteIntegrationErrors, DeleteIntegrationResponses, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentErrors, DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipErrors, DeleteSystemAnalysisRelationshipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, FinishOrganizationSetupData, FinishOrganizationSetupErrors, FinishOrganizationSetupResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetConfiguredIntegrationData, GetConfiguredIntegrationErrors, GetConfiguredIntegrationResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetDocumentAccessData, GetDocumentAccessErrors, GetDocumentAccessResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveResponses, GetSystemAnalysisComponentData, GetSystemAnalysisComponentErrors, GetSystemAnalysisComponentResponses, GetSystemAnalysisData, GetSystemAnalysisErrors, GetSystemAnalysisRelationshipData, GetSystemAnalysisRelationshipErrors, GetSystemAnalysisRelationshipResponses, GetSystemAnalysisResponses, GetSystemComponentConstraintData, GetSystemComponentConstraintErrors, GetSystemComponentConstraintResponses, GetSystemComponentControlData, GetSystemComponentControlErrors, GetSystemComponentControlResponses, GetSystemComponentData, GetSystemComponentErrors, GetSystemComponentKindData, GetSystemComponentKindErrors, GetSystemComponentKindResponses, GetSystemComponentRelationshipData, GetSystemComponentRelationshipErrors, GetSystemComponentRelationshipResponses, GetSystemComponentResponses, GetSystemComponentSignalData, GetSystemComponentSignalErrors, GetSystemComponentSignalResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListAvailableIntegrationsData, ListAvailableIntegrationsErrors, ListAvailableIntegrationsResponses, ListConfiguredIntegrationsData, ListConfiguredIntegrationsErrors, ListConfiguredIntegrationsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesErrors, ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventsData, ListIncidentEventsErrors, ListIncidentEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsErrors, ListSystemAnalysisComponentsResponses, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsErrors, ListSystemAnalysisRelationshipsResponses, ListSystemComponentKindsData, ListSystemComponentKindsErrors, ListSystemComponentKindsResponses, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsErrors, ListSystemComponentRelationshipsResponses, ListSystemComponentsData, ListSystemComponentsErrors, ListSystemComponentsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamMembershipsData, ListTeamMembershipsErrors, ListTeamMembershipsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, StartIntegrationOauthFlowData, StartIntegrationOauthFlowErrors, StartIntegrationOauthFlowResponses, UpdateConfiguredIntegrationPreferencesData, UpdateConfiguredIntegrationPreferencesErrors, UpdateConfiguredIntegrationPreferencesResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentEventData, UpdateIncidentEventErrors, UpdateIncidentEventResponses, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveData, UpdateRetrospectiveErrors, UpdateRetrospectiveResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentErrors, UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipErrors, UpdateSystemAnalysisRelationshipResponses, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintErrors, UpdateSystemComponentConstraintResponses, UpdateSystemComponentControlData, UpdateSystemComponentControlErrors, UpdateSystemComponentControlResponses, UpdateSystemComponentData, UpdateSystemComponentErrors, UpdateSystemComponentKindData, UpdateSystemComponentKindErrors, UpdateSystemComponentKindResponses, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipErrors, UpdateSystemComponentRelationshipResponses, UpdateSystemComponentResponses, UpdateSystemComponentSignalData, UpdateSystemComponentSignalErrors, UpdateSystemComponentSignalResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamMembershipData, UpdateTeamMembershipErrors, UpdateTeamMembershipResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
+import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisComponentData, AddSystemAnalysisComponentErrors, AddSystemAnalysisComponentResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintErrors, ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentControlData, ArchiveSystemComponentControlErrors, ArchiveSystemComponentControlResponses, ArchiveSystemComponentData, ArchiveSystemComponentErrors, ArchiveSystemComponentKindData, ArchiveSystemComponentKindErrors, ArchiveSystemComponentKindResponses, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipErrors, ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentResponses, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalErrors, ArchiveSystemComponentSignalResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamMembershipData, ArchiveTeamMembershipErrors, ArchiveTeamMembershipResponses, ArchiveTeamResponses, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowErrors, CompleteIntegrationOauthFlowResponses, ConfigureIntegrationData, ConfigureIntegrationErrors, ConfigureIntegrationResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentEventData, CreateIncidentEventErrors, CreateIncidentEventResponses, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipErrors, CreateSystemAnalysisRelationshipResponses, CreateSystemComponentConstraintData, CreateSystemComponentConstraintErrors, CreateSystemComponentConstraintResponses, CreateSystemComponentControlData, CreateSystemComponentControlErrors, CreateSystemComponentControlResponses, CreateSystemComponentData, CreateSystemComponentErrors, CreateSystemComponentKindData, CreateSystemComponentKindErrors, CreateSystemComponentKindResponses, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipErrors, CreateSystemComponentRelationshipResponses, CreateSystemComponentResponses, CreateSystemComponentSignalData, CreateSystemComponentSignalErrors, CreateSystemComponentSignalResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamMembershipData, CreateTeamMembershipErrors, CreateTeamMembershipResponses, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentEventData, DeleteIncidentEventErrors, DeleteIncidentEventResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIntegrationData, DeleteIntegrationErrors, DeleteIntegrationResponses, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentErrors, DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipErrors, DeleteSystemAnalysisRelationshipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, FinishOrganizationSetupData, FinishOrganizationSetupErrors, FinishOrganizationSetupResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetConfiguredIntegrationData, GetConfiguredIntegrationErrors, GetConfiguredIntegrationResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetDocumentAccessData, GetDocumentAccessErrors, GetDocumentAccessResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentMetadataData, GetIncidentMetadataErrors, GetIncidentMetadataResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveResponses, GetSystemAnalysisComponentData, GetSystemAnalysisComponentErrors, GetSystemAnalysisComponentResponses, GetSystemAnalysisData, GetSystemAnalysisErrors, GetSystemAnalysisRelationshipData, GetSystemAnalysisRelationshipErrors, GetSystemAnalysisRelationshipResponses, GetSystemAnalysisResponses, GetSystemComponentConstraintData, GetSystemComponentConstraintErrors, GetSystemComponentConstraintResponses, GetSystemComponentControlData, GetSystemComponentControlErrors, GetSystemComponentControlResponses, GetSystemComponentData, GetSystemComponentErrors, GetSystemComponentKindData, GetSystemComponentKindErrors, GetSystemComponentKindResponses, GetSystemComponentRelationshipData, GetSystemComponentRelationshipErrors, GetSystemComponentRelationshipResponses, GetSystemComponentResponses, GetSystemComponentSignalData, GetSystemComponentSignalErrors, GetSystemComponentSignalResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListAvailableIntegrationsData, ListAvailableIntegrationsErrors, ListAvailableIntegrationsResponses, ListConfiguredIntegrationsData, ListConfiguredIntegrationsErrors, ListConfiguredIntegrationsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesErrors, ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventsData, ListIncidentEventsErrors, ListIncidentEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsErrors, ListSystemAnalysisComponentsResponses, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsErrors, ListSystemAnalysisRelationshipsResponses, ListSystemComponentKindsData, ListSystemComponentKindsErrors, ListSystemComponentKindsResponses, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsErrors, ListSystemComponentRelationshipsResponses, ListSystemComponentsData, ListSystemComponentsErrors, ListSystemComponentsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamMembershipsData, ListTeamMembershipsErrors, ListTeamMembershipsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, StartIntegrationOauthFlowData, StartIntegrationOauthFlowErrors, StartIntegrationOauthFlowResponses, UpdateConfiguredIntegrationPreferencesData, UpdateConfiguredIntegrationPreferencesErrors, UpdateConfiguredIntegrationPreferencesResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentEventData, UpdateIncidentEventErrors, UpdateIncidentEventResponses, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveData, UpdateRetrospectiveErrors, UpdateRetrospectiveResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentErrors, UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipErrors, UpdateSystemAnalysisRelationshipResponses, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintErrors, UpdateSystemComponentConstraintResponses, UpdateSystemComponentControlData, UpdateSystemComponentControlErrors, UpdateSystemComponentControlResponses, UpdateSystemComponentData, UpdateSystemComponentErrors, UpdateSystemComponentKindData, UpdateSystemComponentKindErrors, UpdateSystemComponentKindResponses, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipErrors, UpdateSystemComponentRelationshipResponses, UpdateSystemComponentResponses, UpdateSystemComponentSignalData, UpdateSystemComponentSignalErrors, UpdateSystemComponentSignalResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamMembershipData, UpdateTeamMembershipErrors, UpdateTeamMembershipResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -281,11 +281,20 @@ export const updateIncidentEvent = <ThrowOnError extends boolean = false>(option
 });
 
 /**
+ * Get available incident metadata options
+ */
+export const getIncidentMetadata = <ThrowOnError extends boolean = false>(options?: Options<GetIncidentMetadataData, ThrowOnError>) => (options?.client ?? client).get<GetIncidentMetadataResponses, GetIncidentMetadataErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata',
+    ...options
+});
+
+/**
  * List Incident Fields
  */
 export const listIncidentFields = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentFieldsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentFieldsResponses, ListIncidentFieldsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_fields',
+    url: '/incident_metadata/fields',
     ...options
 });
 
@@ -294,7 +303,7 @@ export const listIncidentFields = <ThrowOnError extends boolean = false>(options
  */
 export const createIncidentField = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentFieldData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentFieldResponses, CreateIncidentFieldErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_fields',
+    url: '/incident_metadata/fields',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -307,7 +316,7 @@ export const createIncidentField = <ThrowOnError extends boolean = false>(option
  */
 export const archiveIncidentField = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentFieldData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentFieldResponses, ArchiveIncidentFieldErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_fields/{id}',
+    url: '/incident_metadata/fields/{id}',
     ...options
 });
 
@@ -316,7 +325,7 @@ export const archiveIncidentField = <ThrowOnError extends boolean = false>(optio
  */
 export const getIncidentField = <ThrowOnError extends boolean = false>(options: Options<GetIncidentFieldData, ThrowOnError>) => (options.client ?? client).get<GetIncidentFieldResponses, GetIncidentFieldErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_fields/{id}',
+    url: '/incident_metadata/fields/{id}',
     ...options
 });
 
@@ -325,7 +334,219 @@ export const getIncidentField = <ThrowOnError extends boolean = false>(options: 
  */
 export const updateIncidentField = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentFieldData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentFieldResponses, UpdateIncidentFieldErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_fields/{id}',
+    url: '/incident_metadata/fields/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Incident Roles
+ */
+export const listIncidentRoles = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentRolesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentRolesResponses, ListIncidentRolesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/roles',
+    ...options
+});
+
+/**
+ * Create an Incident Role
+ */
+export const createIncidentRole = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentRoleData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentRoleResponses, CreateIncidentRoleErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/roles',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Archive an Incident Role
+ */
+export const archiveIncidentRole = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentRoleData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentRoleResponses, ArchiveIncidentRoleErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/roles/{id}',
+    ...options
+});
+
+/**
+ * Get an Incident Role
+ */
+export const getIncidentRole = <ThrowOnError extends boolean = false>(options: Options<GetIncidentRoleData, ThrowOnError>) => (options.client ?? client).get<GetIncidentRoleResponses, GetIncidentRoleErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/roles/{id}',
+    ...options
+});
+
+/**
+ * Update an Incident Role
+ */
+export const updateIncidentRole = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentRoleData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentRoleResponses, UpdateIncidentRoleErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/roles/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Severities
+ */
+export const listIncidentSeverities = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentSeveritiesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentSeveritiesResponses, ListIncidentSeveritiesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/severities',
+    ...options
+});
+
+/**
+ * Create a Severity
+ */
+export const createIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentSeverityData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentSeverityResponses, CreateIncidentSeverityErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/severities',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Archive a Severity
+ */
+export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentSeverityData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentSeverityResponses, ArchiveIncidentSeverityErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/severities/{id}',
+    ...options
+});
+
+/**
+ * Get a Severity
+ */
+export const getIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<GetIncidentSeverityData, ThrowOnError>) => (options.client ?? client).get<GetIncidentSeverityResponses, GetIncidentSeverityErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/severities/{id}',
+    ...options
+});
+
+/**
+ * Update a Severity
+ */
+export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentSeverityData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentSeverityResponses, UpdateIncidentSeverityErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/severities/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Incident Tags
+ */
+export const listIncidentTags = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTagsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentTagsResponses, ListIncidentTagsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/tags',
+    ...options
+});
+
+/**
+ * Create an Incident Tag
+ */
+export const createIncidentTag = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTagData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentTagResponses, CreateIncidentTagErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/tags',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Archive an Incident Tag
+ */
+export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTagData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentTagResponses, ArchiveIncidentTagErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/tags/{id}',
+    ...options
+});
+
+/**
+ * Get an Incident Tag
+ */
+export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTagData, ThrowOnError>) => (options.client ?? client).get<GetIncidentTagResponses, GetIncidentTagErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/tags/{id}',
+    ...options
+});
+
+/**
+ * Update an Incident Tag
+ */
+export const updateIncidentTag = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTagData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentTagResponses, UpdateIncidentTagErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/tags/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List Types
+ */
+export const listIncidentTypes = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTypesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentTypesResponses, ListIncidentTypesErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/types',
+    ...options
+});
+
+/**
+ * Create an Incident Type
+ */
+export const createIncidentType = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTypeData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentTypeResponses, CreateIncidentTypeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/types',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Archive an Incident Type
+ */
+export const archiveIncidentType = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTypeData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentTypeResponses, ArchiveIncidentTypeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/types/{id}',
+    ...options
+});
+
+/**
+ * Get a Severity
+ */
+export const getIncidentType = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTypeData, ThrowOnError>) => (options.client ?? client).get<GetIncidentTypeResponses, GetIncidentTypeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/types/{id}',
+    ...options
+});
+
+/**
+ * Update an Incident Type
+ */
+export const updateIncidentType = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTypeData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentTypeResponses, UpdateIncidentTypeErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/incident_metadata/types/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -348,218 +569,6 @@ export const deleteIncidentMilestone = <ThrowOnError extends boolean = false>(op
 export const updateIncidentMilestone = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentMilestoneData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentMilestoneResponses, UpdateIncidentMilestoneErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
     url: '/incident_milestones/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List Incident Roles
- */
-export const listIncidentRoles = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentRolesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentRolesResponses, ListIncidentRolesErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_roles',
-    ...options
-});
-
-/**
- * Create an Incident Role
- */
-export const createIncidentRole = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentRoleData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentRoleResponses, CreateIncidentRoleErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_roles',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Archive an Incident Role
- */
-export const archiveIncidentRole = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentRoleData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentRoleResponses, ArchiveIncidentRoleErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_roles/{id}',
-    ...options
-});
-
-/**
- * Get an Incident Role
- */
-export const getIncidentRole = <ThrowOnError extends boolean = false>(options: Options<GetIncidentRoleData, ThrowOnError>) => (options.client ?? client).get<GetIncidentRoleResponses, GetIncidentRoleErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_roles/{id}',
-    ...options
-});
-
-/**
- * Update an Incident Role
- */
-export const updateIncidentRole = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentRoleData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentRoleResponses, UpdateIncidentRoleErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_roles/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List Severities
- */
-export const listIncidentSeverities = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentSeveritiesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentSeveritiesResponses, ListIncidentSeveritiesErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_severities',
-    ...options
-});
-
-/**
- * Create a Severity
- */
-export const createIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentSeverityData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentSeverityResponses, CreateIncidentSeverityErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_severities',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Archive a Severity
- */
-export const archiveIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentSeverityData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentSeverityResponses, ArchiveIncidentSeverityErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_severities/{id}',
-    ...options
-});
-
-/**
- * Get a Severity
- */
-export const getIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<GetIncidentSeverityData, ThrowOnError>) => (options.client ?? client).get<GetIncidentSeverityResponses, GetIncidentSeverityErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_severities/{id}',
-    ...options
-});
-
-/**
- * Update a Severity
- */
-export const updateIncidentSeverity = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentSeverityData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentSeverityResponses, UpdateIncidentSeverityErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_severities/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List Incident Tags
- */
-export const listIncidentTags = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTagsData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentTagsResponses, ListIncidentTagsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_tags',
-    ...options
-});
-
-/**
- * Create an Incident Tag
- */
-export const createIncidentTag = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTagData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentTagResponses, CreateIncidentTagErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_tags',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Archive an Incident Tag
- */
-export const archiveIncidentTag = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTagData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentTagResponses, ArchiveIncidentTagErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_tags/{id}',
-    ...options
-});
-
-/**
- * Get an Incident Tag
- */
-export const getIncidentTag = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTagData, ThrowOnError>) => (options.client ?? client).get<GetIncidentTagResponses, GetIncidentTagErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_tags/{id}',
-    ...options
-});
-
-/**
- * Update an Incident Tag
- */
-export const updateIncidentTag = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTagData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentTagResponses, UpdateIncidentTagErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_tags/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List Types
- */
-export const listIncidentTypes = <ThrowOnError extends boolean = false>(options?: Options<ListIncidentTypesData, ThrowOnError>) => (options?.client ?? client).get<ListIncidentTypesResponses, ListIncidentTypesErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_types',
-    ...options
-});
-
-/**
- * Create an Incident Type
- */
-export const createIncidentType = <ThrowOnError extends boolean = false>(options: Options<CreateIncidentTypeData, ThrowOnError>) => (options.client ?? client).post<CreateIncidentTypeResponses, CreateIncidentTypeErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_types',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Archive an Incident Type
- */
-export const archiveIncidentType = <ThrowOnError extends boolean = false>(options: Options<ArchiveIncidentTypeData, ThrowOnError>) => (options.client ?? client).delete<ArchiveIncidentTypeResponses, ArchiveIncidentTypeErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_types/{id}',
-    ...options
-});
-
-/**
- * Get a Severity
- */
-export const getIncidentType = <ThrowOnError extends boolean = false>(options: Options<GetIncidentTypeData, ThrowOnError>) => (options.client ?? client).get<GetIncidentTypeResponses, GetIncidentTypeErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_types/{id}',
-    ...options
-});
-
-/**
- * Update an Incident Type
- */
-export const updateIncidentType = <ThrowOnError extends boolean = false>(options: Options<UpdateIncidentTypeData, ThrowOnError>) => (options.client ?? client).patch<UpdateIncidentTypeResponses, UpdateIncidentTypeErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/incident_types/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
