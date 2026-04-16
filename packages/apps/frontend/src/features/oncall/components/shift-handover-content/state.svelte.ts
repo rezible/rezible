@@ -1,7 +1,6 @@
-import { debounce } from "$lib/utils.svelte";
 import type { OncallShiftHandover, OncallShiftHandoverSection } from "$lib/api";
 import { SvelteMap } from "svelte/reactivity";
-import { watch } from "runed";
+import { useDebounce, watch } from "runed";
 
 import type { Content, Editor } from "@tiptap/core";
 import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
@@ -62,13 +61,14 @@ export class ShiftHandoverEditorState {
 		});
 	};
 
+	private updateEditorStatusFn = useDebounce((status: SvelteMap<string, boolean>, e: Editor) => {
+		status.set("bold", e.isActive("bold"));
+		status.set("bulletList", e.isActive("bulletList"));
+		status.set("heading", e.isActive("heading"));
+	}, 100);
+
 	createEditor(idx: number, content?: Content) {
 		const activeStatus = new SvelteMap<string, boolean>();
-		const updateStatusFn = debounce((e: Editor) => {
-			activeStatus.set("bold", e.isActive("bold"));
-			activeStatus.set("bulletList", e.isActive("bulletList"));
-			activeStatus.set("heading", e.isActive("heading"));
-		}, 100);
 
 		const editor = createHandoverEditor({
 			content,
@@ -80,7 +80,7 @@ export class ShiftHandoverEditorState {
 				},
 			},
 			onTransaction: ({ editor }) => {
-				updateStatusFn(editor);
+				this.updateEditorStatusFn(activeStatus, editor);
 			},
 			onUpdate: ({ editor }) => {
 				this.isEmpty = editor.isEmpty;

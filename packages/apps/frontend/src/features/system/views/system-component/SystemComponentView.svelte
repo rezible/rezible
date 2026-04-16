@@ -1,13 +1,12 @@
 <script lang="ts">
 	import type { SystemComponentViewParam } from "$src/params/systemComponentView";
-	import type { IdProps } from "$lib/utils.svelte";
 	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import SystemComponentOverview from "./overview/SystemComponentOverview.svelte";
 	import SystemComponentIncidents from "./incidents/SystemComponentIncidents.svelte";
 	import { initSystemComponentViewController } from "./controller.svelte";
 
-	const { id }: IdProps = $props();
+	const { id }: IdProp = $props();
 	const view = initSystemComponentViewController(() => id);
 
 	setPageBreadcrumbs(() => [

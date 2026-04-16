@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { ComponentProps } from "svelte";
 	import { useAppShell } from "$lib/appShell.svelte";
 
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
@@ -10,9 +9,8 @@
 	import ShiftHandover from "./handover/ShiftHandover.svelte";
 	import PageActions from "./PageActions.svelte";
 	import type { OncallShiftViewRouteParam } from "$src/params/oncallShiftView";
-	import type { IdProps } from "$src/lib/utils.svelte";
 
-	const { id }: IdProps = $props();
+	const { id }: IdProp = $props();
 
 	const view = initOncallShiftViewController(() => id);
 

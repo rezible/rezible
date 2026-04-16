@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { useAppShell } from "$lib/appShell.svelte";
-	import type { IdProps } from "$lib/utils.svelte";
 	import { initPlaybookViewController } from "./controller.svelte";
 	import PlaybookEditor from "./PlaybookEditor.svelte";
 	import PlaybookPageActions from "./PlaybookPageActions.svelte";
 
-	const { id }: IdProps = $props();
+	const { id }: IdProp = $props();
 
 	const view = initPlaybookViewController(() => id);
 

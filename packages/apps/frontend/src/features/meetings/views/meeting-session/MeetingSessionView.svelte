@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import { type MeetingSession } from "$lib/api";
-	import type { IdProps } from "$lib/utils.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import SessionContent from "./SessionContent.svelte";
 	import { initMeetingSessionViewController } from "./controller.svelte";
 
-	const { id }: IdProps = $props();
+	const { id }: IdProp = $props();
 	const view = initMeetingSessionViewController(() => id);
 	const query = $derived(view.query);
 

@@ -1,9 +1,10 @@
 <script lang="ts">
   	import { ModeWatcher } from "mode-watcher";
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
-	import Header from "./header/Header.svelte";
-	import Sidebar from "./sidebar/Sidebar.svelte";
-	import PageContainer from "./PageContainer.svelte";
+
+	import * as Sidebar from "$components/ui/sidebar";
+	import AppSidebar from "./app-sidebar/AppSidebar.svelte";
+	import PageHeader from "./PageHeader.svelte";
 
 	import { initAppShell } from "$lib/appShell.svelte";
 	import { initAuthSessionState } from "$lib/auth.svelte";
@@ -22,22 +23,25 @@
 
 <ModeWatcher />
 
-<div class="antialiased flex flex-col overflow-hidden w-dvw h-dvh min-h-dvh bg-surface-300 text-surface-content">
-	{#if !auth.ready}
-		<div class="w-full h-full grid place-items-center">
-			<LoadingIndicator />
-		</div>
-	{:else}
-		<Header />
-
-		<div class="flex flex-1 min-h-0 overflow-hidden">
+<Sidebar.Provider>
+	{#if auth.isSetup}
+		<AppSidebar variant="sidebar" />
+	{/if}
+	<main class="antialiased flex flex-col flex-1 min-w-0 min-h-0 px-2 py-1 h-dvh overflow-hidden">
+		{#if !auth.ready}
+			<div class="flex-1 grid place-items-center">
+				<LoadingIndicator />
+			</div>
+		{:else}
 			{#if auth.isSetup}
-				<Sidebar />
+				<div class="flex w-full justify-between items-center h-11 rounded-md bg-surface-200">
+					<PageHeader />
+				</div>
 			{/if}
 
-			<PageContainer>
+			<div id="scroll-body" class="flex-1 min-h-0 overflow-y-auto">
 				{@render children()}
-			</PageContainer>
-		</div>
-	{/if}
-</div>
+			</div>
+		{/if}
+	</main>
+</Sidebar.Provider>

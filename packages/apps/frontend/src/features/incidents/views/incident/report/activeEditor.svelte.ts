@@ -1,7 +1,6 @@
 import { isActive, type ChainedCommands, type Editor } from "@tiptap/core";
 import type { EditorState, Transaction } from "@tiptap/pm/state";
-
-import { debounce } from "$lib/utils.svelte";
+import { useDebounce } from "runed";
 
 export type ActiveStatus = {
 	focused?: boolean;
@@ -104,16 +103,16 @@ const updateActiveStatus = (state: EditorState, focused: boolean) => {
 	activeStatus.set(newActiveMarks);
 };
 
-const onEditorTransaction = debounce(
-	({ editor, transaction }: { editor: Editor; transaction: Transaction }) => {
-		updateActiveStatus(editor.state, editor.isFocused);
-	}
-);
-
 type RunCommandFn = (cmd: ChainedCommands) => void;
 const createActiveEditorState = () => {
 	let editor = $state<Editor>();
 	let field = $state<string>();
+
+	const onEditorTransaction = useDebounce(
+		({ editor, transaction }: { editor: Editor; transaction: Transaction }) => {
+			updateActiveStatus(editor.state, editor.isFocused);
+		}
+	);
 
 	const clear = () => {
 		if (editor) editor.off("transaction", onEditorTransaction);

@@ -9,7 +9,7 @@ export default defineConfig(({mode}) => {
     const host = "0.0.0.0";
     const port = Number(env.REZ_APP_PORT);
     return {
-        plugins: [sveltekit(), tailwindcss()],
+        plugins: [tailwindcss(), sveltekit()],
         server: {
             host,
             port,

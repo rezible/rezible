@@ -1,14 +1,13 @@
 <script lang="ts">
 	import { setPageBreadcrumbs, type PageBreadcrumb } from "$lib/appShell.svelte";
-	import type { IdProps } from "$lib/utils.svelte";
-	import type { TeamViewParam } from "$src/params/teamView";
+	import type { TeamViewParam } from "$params/teamView";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import TeamOverview from "./overview/TeamOverview.svelte";
 	import TeamBacklogView from "./backlog/TeamBacklogView.svelte";
 	import TeamMeetings from "./meetings/TeamMeetings.svelte";
 	import { initTeamViewController } from "./controller.svelte";
 
-	const { id }: IdProps = $props();
+	const { id }: IdProp = $props();
 
 	const view = initTeamViewController(() => id);
 

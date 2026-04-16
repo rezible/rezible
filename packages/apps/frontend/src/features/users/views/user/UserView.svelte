@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
-	import type { IdProps } from "$lib/utils.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
-	import OncallStats from "./OncallStats.svelte";
 	import Header from "$components/header/Header.svelte";
+	import OncallStats from "./OncallStats.svelte";
 	import { initUserViewController } from "./controller.svelte";
 
-	const { id }: IdProps = $props();
+	const { id }: IdProp = $props();
 
 	const view = initUserViewController(() => id);
 

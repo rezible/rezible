@@ -1,9 +1,8 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
-	import type { IdProps } from "$lib/utils.svelte";
 	import { initEventViewController } from "./controller.svelte";
 
-	const { id }: IdProps = $props();
+	const { id }: IdProp = $props();
 
 	const view = initEventViewController(() => id);
 

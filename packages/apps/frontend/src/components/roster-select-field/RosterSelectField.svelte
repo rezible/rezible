@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { debounce } from "$lib/utils.svelte";
 	import { type ListOncallRostersData, listOncallRostersOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { useUserOncallInformation } from "$lib/userOncall.svelte";
@@ -22,7 +21,6 @@
 	const userRosters = $derived(userInfo.rosters);
 
 	let searchValue = $state<string>();
-	const setSearchValue = debounce((s?: string) => (searchValue = s), 500);
 
 	let menuOpen = $state(false);
 	const queryEnabled = $derived(menuOpen);

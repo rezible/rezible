@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
-	import { mdiMagnify } from "@mdi/js";
-	import Icon from "$components/icon/Icon.svelte";
 	import { addWatchedOncallRosterMutation, listOncallRostersOptions } from "$lib/api";
-	import { debounce } from "$lib/utils.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
 	import FormDialog from "$components/form-dialog/FormDialog.svelte";
 
 	type Props = {
@@ -17,7 +13,6 @@
 	const currentMap = $derived(new Set<string>(current));
 
 	let search = $state<string>();
-	const updateSearch = debounce((v: string) => (search = (!!v ? v : undefined)), 500);
 	const rostersQuery = createQuery(() => ({
 		...listOncallRostersOptions({query: {search}}),
 		enabled: open,

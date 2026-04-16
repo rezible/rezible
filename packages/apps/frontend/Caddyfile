@@ -7,10 +7,6 @@
         reverse_proxy {env.PROXY_BACKEND_UPSTREAM_HOST}
     }
 
-    handle /dex/* {
-        reverse_proxy {env.PROXY_DEX_UPSTREAM_HOST}
-    }
-
     handle {
         root * /srv
         try_files {path} /index.html

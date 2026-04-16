@@ -45,11 +45,6 @@
 			<ActiveShiftCard {shift}  />
 		{/each}
 	</div>
-	<div class="grid place-items-center">
-		<Button onclick={() => (rosterDialogOpen = true)}> <!-- classes={{root: "h-20 opacity-70 hover:opacity-100"}} -->
-			<span>Watch Roster</span>
-		</Button>
-	</div>
 </div>
 
 <WatchRosterDialog bind:open={rosterDialogOpen} current={rosterIds} onUpdated={onWatchedRostersUpdated} />
