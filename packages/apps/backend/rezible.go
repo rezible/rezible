@@ -356,10 +356,11 @@ type (
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)
 
+		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)
+		
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
 		ListIncidentTypes(context.Context) ([]*ent.IncidentType, error)
-		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)
 
 		GetIncidentSeverity(context.Context, uuid.UUID) (*ent.IncidentSeverity, error)
 	}

@@ -27,19 +27,19 @@
 	{#if auth.isSetup}
 		<AppSidebar variant="sidebar" />
 	{/if}
-	<main class="antialiased flex flex-col flex-1 min-w-0 min-h-0 px-2 py-1 h-dvh overflow-hidden">
+	<main class="antialiased flex flex-col flex-1 min-w-0 min-h-0 h-dvh overflow-hidden">
 		{#if !auth.ready}
 			<div class="flex-1 grid place-items-center">
 				<LoadingIndicator />
 			</div>
 		{:else}
 			{#if auth.isSetup}
-				<div class="flex w-full justify-between items-center h-11 rounded-md bg-surface-200">
+				<div class="flex w-full justify-between items-center h-11 rounded-md bg-surface-200 border-b">
 					<PageHeader />
 				</div>
 			{/if}
 
-			<div id="scroll-body" class="flex-1 min-h-0 overflow-y-auto">
+			<div id="scroll-body" class="flex-1 min-h-0 overflow-y-auto p-2">
 				{@render children()}
 			</div>
 		{/if}

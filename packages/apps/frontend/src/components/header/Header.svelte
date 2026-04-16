@@ -23,7 +23,7 @@
 
 	<div class={cn("flex-1", classes.container)}>
 		{#if typeof title === "string"}
-			<div class={cn("text-lg", classes.title)}>{title}</div>
+			<div class={cn("text-lg leading-none", classes.title)}>{title}</div>
 		{:else}
 			{@render title?.()}
 		{/if}

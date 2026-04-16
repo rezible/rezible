@@ -1,39 +1,62 @@
 <script lang="ts">
-	import { createQuery } from "@tanstack/svelte-query";
-	import { listIncidentsOptions, type ListIncidentsData, type Incident } from "$lib/api";
+	import type { Incident } from "$lib/api";
 	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
-	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import IncidentCard from "$components/incident-card/IncidentCard.svelte";
-	import { QueryPaginatorState } from "$lib/paginator.svelte";
+	import { Button } from "$components/ui/button";
+	import { initIncidentsListViewController } from "./controller.svelte";
+	import IncidentsListViewFilters from "./IncidentsListViewFilters.svelte";
+	import Header from "$src/components/header/Header.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "Incidents" }]);
 
-	const paginator = new QueryPaginatorState();
-	let searchValue = $state<string>();
-	const params = $derived<ListIncidentsData["query"]>({
-		search: searchValue,
-		...paginator.queryParams,
-	});
-	const query = createQuery(() => listIncidentsOptions({ query: params }));
-	paginator.watchQuery(query);
+	const controller = initIncidentsListViewController();
 </script>
 
-{#snippet filters()}
-	<SearchInput bind:value={searchValue} />
-{/snippet}
 
-<FilterPage {filters}>
+<FilterPage>
+	{#snippet header()}
+		<Header title="Filters">
+			{#snippet subheading()}
+				<span class="text-xs text-muted-foreground uppercase">{controller.activeFilterCount} active</span>
+			{/snippet}
+
+			{#snippet actions()}
+				<Button
+					variant="ghost"
+					size="sm"
+					onclick={controller.resetFilters}
+					disabled={controller.activeFilterCount === 0}
+				>
+					Clear Filters
+				</Button>
+			{/snippet}
+		</Header>
+	{/snippet}
+
+	{#snippet filters()}
+		<IncidentsListViewFilters />
+	{/snippet}
+
 	<PaginatedListBox>
-		<LoadingQueryWrapper {query}>
-			{#snippet view(incidents: Incident[])}
-				{#each incidents as incident (incident.id)}
+		<LoadingQueryWrapper query={controller.incidentsQuery}>
+			{#snippet view(_: Incident[])}
+				{#each controller.filteredIncidents as incident (incident.id)}
 					<IncidentCard {incident} />
 				{:else}
-					<div class="grid place-items-center flex-1">
-						<span class="text-surface-content/80">No Incidents Found</span>
+					<div class="grid place-items-center min-h-48 rounded-lg border border-dashed">
+						<div class="flex flex-col items-center gap-2 text-center">
+							<span class="text-sm font-medium text-surface-content/80">
+								No incidents found
+							</span>
+							{#if controller.activeFilterCount > 0}
+								<Button variant="outline" size="sm" onclick={controller.resetFilters}>
+									Clear filters
+								</Button>
+							{/if}
+						</div>
 					</div>
 				{/each}
 			{/snippet}

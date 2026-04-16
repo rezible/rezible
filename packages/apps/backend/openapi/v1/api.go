@@ -26,13 +26,9 @@ type Handler interface {
 	SystemAnalysisHandler
 
 	IncidentsHandler
+	IncidentMetadataHandler
 	IncidentMilestonesHandler
 	IncidentEventsHandler
-	IncidentFieldsHandler
-	IncidentRolesHandler
-	IncidentTagsHandler
-	IncidentTypesHandler
-	IncidentSeveritiesHandler
 	IncidentDebriefsHandler
 
 	DocumentsHandler
