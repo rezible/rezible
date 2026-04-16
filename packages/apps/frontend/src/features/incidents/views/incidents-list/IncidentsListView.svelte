@@ -4,17 +4,16 @@
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
-	import IncidentCard from "$components/incident-card/IncidentCard.svelte";
 	import { Button } from "$components/ui/button";
+	import Header from "$components/header/Header.svelte";
 	import { initIncidentsListViewController } from "./controller.svelte";
+	import IncidentCard from "./IncidentCard.svelte";
 	import IncidentsListViewFilters from "./IncidentsListViewFilters.svelte";
-	import Header from "$src/components/header/Header.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "Incidents" }]);
 
 	const controller = initIncidentsListViewController();
 </script>
-
 
 <FilterPage>
 	{#snippet header()}
@@ -43,7 +42,7 @@
 	<PaginatedListBox>
 		<LoadingQueryWrapper query={controller.incidentsQuery}>
 			{#snippet view(_: Incident[])}
-				{#each controller.filteredIncidents as incident (incident.id)}
+				{#each controller.incidents as incident (incident.id)}
 					<IncidentCard {incident} />
 				{:else}
 					<div class="grid place-items-center min-h-48 rounded-lg border border-dashed">
