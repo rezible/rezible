@@ -2,9 +2,17 @@ import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
 import { page } from "$app/state";
 import { setPageBreadcrumbs } from "$lib/appShell.svelte";
 import { useAuthSessionState } from "$lib/auth.svelte";
-import { convertSettingsViewParam } from "$src/params/settingsView";
+import { convertSettingsViewParam, type SettingsViewParam } from "$src/params/settingsView";
 import { Context } from "runed";
 import { initIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
+
+const viewParamLabel = (p: SettingsViewParam): string => {
+    switch (p) {
+        case "incidents": return "Incidents"
+        case "integrations": return "Integrations"
+        default: return "General"
+    }
+}
 
 export class SettingsViewController {
     session = useAuthSessionState();
@@ -17,7 +25,7 @@ export class SettingsViewController {
         this.preventInitialSetupNavigation();
         setPageBreadcrumbs(() => ([
             { label: "Settings", href: "/settings" },
-            { label: this.viewParam }
+            { label: viewParamLabel(this.viewParam), href: `/settings/${this.viewParam ?? ""}` }
         ]));
     }
 

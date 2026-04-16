@@ -10,11 +10,13 @@
 	console.log("error view", page.error);
 </script>
 
-<div class="w-96">
-	<Card>
-		{#snippet header()}
-			<Header title="Error {status}" subheading={message} />
-		{/snippet}
-		<Button href="/">Go Home</Button>
-	</Card>
+<div class="w-full h-full grid place-items-center">
+	<div class="w-96">
+		<Card>
+			{#snippet header()}
+				<Header title="Error {status}" subheading={message} />
+			{/snippet}
+			<Button href="/">Go Home</Button>
+		</Card>
+	</div>
 </div>

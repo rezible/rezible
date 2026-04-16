@@ -11,7 +11,6 @@
         collapsible = "icon",
         ...restProps
     }: ComponentProps<typeof Sidebar.Root> = $props();
-    const sidebar = Sidebar.useSidebar();
 </script>
 
 <Sidebar.Root bind:ref {collapsible} {...restProps}>

@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	export type Tab<View> = {
 		label: string;
-		view: View;
+		view?: View;
 		component: Component;
 	}
 

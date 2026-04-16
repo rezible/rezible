@@ -1,14 +1,11 @@
 <script lang="ts">
-	import { page } from "$app/state";
 	import * as Sidebar from "$components/ui/sidebar";
 	import {
 		mdiFire,
 		mdiHome,
-		mdiPhone,
-		mdiTimelineText,
 	} from "@mdi/js";
-	import { getActiveSidebarItem, type SidebarGroup } from "./sidebar";
-	import NavRouteMenuItem from "./NavRouteMenuItem.svelte";
+	import { type SidebarGroup } from "./sidebar";
+	import NavMenuItem from "./NavMenuItem.svelte";
 
 	const sidebarGroups: SidebarGroup[] = [
 		{
@@ -23,19 +20,17 @@
 			],
 		},
 	];
-	
-	const active = $derived(getActiveSidebarItem(sidebarGroups, page.route.id));
 	const sidebar = Sidebar.useSidebar();
 </script>
 
-{#each sidebarGroups as group, i}
+{#each sidebarGroups as group}
 	<Sidebar.Group>
 		{#if group.label && sidebar.open}
 			<Sidebar.GroupLabel>{group.label}</Sidebar.GroupLabel>
 		{/if}
 		<Sidebar.Menu>
-			{#each group.items as item, i (item.label)}
-				<NavRouteMenuItem {item} {active} />
+			{#each group.items as item (item.label)}
+				<NavMenuItem {item} />
 			{/each}
 		</Sidebar.Menu>
 	</Sidebar.Group>

@@ -14,40 +14,20 @@ export type SidebarGroup = {
     label?: string;
     items: SidebarItem[];
 };
-export type ActiveSidebarItem = {
-    itemRoute?: RouteId;
-    subItemRoute?: RouteId;
+export type SidebarItemActiveStatus = {
+    active: boolean;
+    subItemsActive: Map<number, true | undefined>;
 }
-export const getActiveSidebarItem = (groups: SidebarGroup[], pageRoute: RouteId | null): ActiveSidebarItem => {
-    if (!pageRoute) return {};
-    let deepestRoute: RouteId | undefined;
-    let deepestSubRoute: RouteId | undefined;
-    const isDeeperActive = (r: RouteId, curr?: RouteId) => {
-        if (!pageRoute.startsWith(r)) return false;
-        return !curr || curr.length < r.length;
+const isActive = (pageRoute: RouteId | null, itemRoute: RouteId) => {
+    if (!pageRoute) return false;
+    if (itemRoute === "/" || pageRoute === "/" || pageRoute === "/(index)") {
+        return itemRoute == pageRoute || (itemRoute === "/" && pageRoute === "/(index)");
     }
-    for (let gi = 0; gi < groups.length; gi++) {
-        for (let i = 0; i < groups[gi].items.length; i++) {
-            const { route, subItems } = groups[gi].items[i];
-            if (pageRoute !== "/" && isDeeperActive(route, deepestRoute)) {
-                deepestRoute = route;
-            }
-            if (!subItems) continue;
-            for (let si = 0; si < subItems.length; si++) {
-                const { route: subRoute } = subItems[si];
-                if (isDeeperActive(subRoute, deepestSubRoute)) {
-                    deepestRoute = route;
-                    deepestSubRoute = subRoute;
-                }
-            }
-        }
-    }
+    return pageRoute.startsWith(itemRoute);
+}
+export const getActiveStatus = (pageRoute: RouteId | null, item: SidebarItem) => {
     return {
-        itemRoute: deepestRoute,
-        subItemRoute: deepestSubRoute,
-    }
-}
-export const findActiveSidebarSubItem = (subItems: SidebarItem["subItems"], activeSubRoute?: RouteId) => {
-    if (!activeSubRoute || !subItems) return -1;
-    return subItems.findIndex(i => i.route === activeSubRoute);
+        active: isActive(pageRoute, item.route),
+        subItemsActive: new Map(item.subItems?.map((si, idx) => [idx, isActive(pageRoute, si.route) ? true : undefined])),
+    } as SidebarItemActiveStatus;
 }

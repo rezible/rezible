@@ -3,16 +3,17 @@
 	import * as Sidebar from "$components/ui/sidebar";
 	import Icon from "$src/components/icon/Icon.svelte";
 	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
-	import { findActiveSidebarSubItem, type ActiveSidebarItem, type SidebarItem } from "./sidebar";
+	import { getActiveStatus, type SidebarItem } from "./sidebar";
+	import { page } from "$app/state";
 
     type Props = {
         item: SidebarItem;
-        active: ActiveSidebarItem;
     };
-    const { item, active }: Props = $props();
-    const itemRouteActive = $derived(active.itemRoute === item.route);
-    const activeSubItemIdx = $derived(findActiveSidebarSubItem(item.subItems, active.subItemRoute));
-    const isActive = $derived((itemRouteActive && (activeSubItemIdx < 0)) ? true : undefined);
+    const { item }: Props = $props();
+
+    const status = $derived(getActiveStatus(page.route.id, item));
+    const anyActiveSubItems = $derived(status.subItemsActive.values().some(Boolean));
+    const isActive = $derived((status.active && !anyActiveSubItems) ? true : undefined);
 </script>
 
 {#if !item.subItems}
@@ -29,7 +30,7 @@
         </Sidebar.MenuButton>
     </Sidebar.MenuItem>
 {:else}
-    <Collapsible.Root open={itemRouteActive} class="group/collapsible">
+    <Collapsible.Root open={status.active} class="group/collapsible">
         {#snippet child({ props })}
             <Sidebar.MenuItem {...props}>
                 <Collapsible.Trigger>
@@ -49,9 +50,9 @@
                 </Collapsible.Trigger>
                 <Collapsible.Content>
                     <Sidebar.MenuSub>
-                        {#each item.subItems as subItem, si (subItem.label)}
+                        {#each item.subItems as subItem, idx (subItem.label)}
                             <Sidebar.MenuSubItem>
-                                <Sidebar.MenuSubButton isActive={(activeSubItemIdx === si) ? true : undefined}>
+                                <Sidebar.MenuSubButton isActive={status.subItemsActive.get(idx)}>
                                     {#snippet child({ props })}
                                         <a href={subItem.route} {...props}>
                                             <span>{subItem.label}</span>

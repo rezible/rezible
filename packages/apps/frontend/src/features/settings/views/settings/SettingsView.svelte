@@ -10,13 +10,15 @@
     const controller = initSettingsViewController();
 
 	const tabs: Tab<SettingsViewParam>[] = [
-		{ label: "General", view: undefined, component: General },
+		{ label: "General", component: General },
 		{ label: "Integrations", view: "integrations", component: Integrations },
 	];
 </script>
 
-{#if controller.showInitialSetup}
-    <InitialSetup />
-{:else}
-    <TabbedViewContainer path="/settings" {tabs} />
+{#if controller.session.ready}
+	{#if controller.showInitialSetup}
+		<InitialSetup />
+	{:else}
+		<TabbedViewContainer path="/settings" {tabs} />
+	{/if}
 {/if}
