@@ -14,13 +14,13 @@ import (
 )
 
 type oncallShiftsHandler struct {
-	auth      rez.AuthService
+	auth      rez.AuthSessionService
 	users     rez.UserService
 	incidents rez.IncidentService
 	shifts    rez.OncallShiftsService
 }
 
-func newOncallShiftsHandler(auth rez.AuthService, users rez.UserService, inc rez.IncidentService, shifts rez.OncallShiftsService) *oncallShiftsHandler {
+func newOncallShiftsHandler(auth rez.AuthSessionService, users rez.UserService, inc rez.IncidentService, shifts rez.OncallShiftsService) *oncallShiftsHandler {
 	return &oncallShiftsHandler{auth: auth, users: users, incidents: inc, shifts: shifts}
 }
 

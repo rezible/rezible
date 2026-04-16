@@ -19,11 +19,11 @@ type DocumentsService struct {
 	cfg DocumentsServiceConfig
 
 	db    *ent.Client
-	auth  rez.AuthService
+	auth  rez.AuthSessionService
 	teams rez.TeamService
 }
 
-func NewDocumentsService(db *ent.Client, auth rez.AuthService, teams rez.TeamService) (*DocumentsService, error) {
+func NewDocumentsService(db *ent.Client, auth rez.AuthSessionService, teams rez.TeamService) (*DocumentsService, error) {
 	svc := &DocumentsService{
 		db:    db,
 		auth:  auth,

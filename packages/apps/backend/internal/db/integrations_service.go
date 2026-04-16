@@ -28,11 +28,11 @@ import (
 type IntegrationsService struct {
 	db     *ent.Client
 	jobs   rez.JobsService
-	auth   rez.AuthService
+	auth   rez.AuthSessionService
 	syncer *datasync.Syncer
 }
 
-func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, auth rez.AuthService) (*IntegrationsService, error) {
+func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, auth rez.AuthSessionService) (*IntegrationsService, error) {
 	s := &IntegrationsService{
 		db:     db,
 		jobs:   jobSvc,

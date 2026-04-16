@@ -10,10 +10,10 @@ import (
 
 type documentsHandler struct {
 	documents rez.DocumentsService
-	auth      rez.AuthService
+	auth      rez.AuthSessionService
 }
 
-func newDocumentsHandler(documents rez.DocumentsService, auth rez.AuthService) *documentsHandler {
+func newDocumentsHandler(documents rez.DocumentsService, auth rez.AuthSessionService) *documentsHandler {
 	return &documentsHandler{documents, auth}
 }
 

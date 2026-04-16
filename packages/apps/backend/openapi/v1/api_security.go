@@ -61,7 +61,7 @@ func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
 	}
 }
 
-func MakeSecurityMiddleware(api openapi.API, auth rez.AuthService) openapi.Middleware {
+func MakeSecurityMiddleware(api openapi.API, auth rez.AuthSessionService) openapi.Middleware {
 	return func(c openapi.Context, next func(openapi.Context)) {
 		authCtx, scopes, authCtxErr := extractRequestAuthContext(auth, c)
 		if authCtxErr != nil {
@@ -80,7 +80,7 @@ func MakeSecurityMiddleware(api openapi.API, auth rez.AuthService) openapi.Middl
 	}
 }
 
-func extractRequestAuthContext(auth rez.AuthService, c huma.Context) (context.Context, []string, error) {
+func extractRequestAuthContext(auth rez.AuthSessionService, c huma.Context) (context.Context, []string, error) {
 	ctx := access.AnonymousContext(c.Context())
 
 	opSecurity := c.Operation().Security

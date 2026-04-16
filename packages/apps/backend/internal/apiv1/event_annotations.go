@@ -10,11 +10,11 @@ import (
 )
 
 type eventAnnotationsHandler struct {
-	auth  rez.AuthService
+	auth  rez.AuthSessionService
 	annos rez.EventAnnotationsService
 }
 
-func newEventAnnotationsHandler(auth rez.AuthService, annos rez.EventAnnotationsService) *eventAnnotationsHandler {
+func newEventAnnotationsHandler(auth rez.AuthSessionService, annos rez.EventAnnotationsService) *eventAnnotationsHandler {
 	return &eventAnnotationsHandler{auth: auth, annos: annos}
 }
 

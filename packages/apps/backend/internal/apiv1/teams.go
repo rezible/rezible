@@ -13,13 +13,13 @@ import (
 )
 
 type teamsHandler struct {
-	auth        rez.AuthService
+	auth        rez.AuthSessionService
 	users       *ent.UserClient
 	teams       *ent.TeamClient
 	memberships *ent.TeamMembershipClient
 }
 
-func newTeamsHandler(auth rez.AuthService, users *ent.UserClient, teams *ent.TeamClient, memberships *ent.TeamMembershipClient) *teamsHandler {
+func newTeamsHandler(auth rez.AuthSessionService, users *ent.UserClient, teams *ent.TeamClient, memberships *ent.TeamMembershipClient) *teamsHandler {
 	return &teamsHandler{auth: auth, users: users, teams: teams, memberships: memberships}
 }
 

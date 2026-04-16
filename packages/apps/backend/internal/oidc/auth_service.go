@@ -27,7 +27,7 @@ type oidcConfig struct {
 	ClientSecret string `koanf:"client_secret"`
 }
 
-type AuthService struct {
+type AuthSessionService struct {
 	orgs  rez.OrganizationService
 	users rez.UserService
 
@@ -36,9 +36,9 @@ type AuthService struct {
 	oauth   *oauthHandler
 }
 
-var _ rez.AuthService = (*AuthService)(nil)
+var _ rez.AuthSessionService = (*AuthSessionService)(nil)
 
-func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthService, error) {
+func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
 	cfg := Config{
 		Oidc: oidcConfig{},
 	}
@@ -56,7 +56,7 @@ func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez
 		return nil, fmt.Errorf("oauth handler: %w", oauthErr)
 	}
 
-	s := &AuthService{
+	s := &AuthSessionService{
 		orgs:    orgs,
 		users:   users,
 		cfg:     cfg,
@@ -67,7 +67,7 @@ func NewAuthService(ctx context.Context, orgs rez.OrganizationService, users rez
 	return s, nil
 }
 
-func (s *AuthService) Handler() http.Handler {
+func (s *AuthSessionService) AuthHandler() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/login", handleAndRedirect(s.handleLogin))
 	r.Get("/callback", handleAndRedirect(s.handleCallback))
@@ -88,7 +88,7 @@ func handleAndRedirect(handler func(http.ResponseWriter, *http.Request) (string,
 	}
 }
 
-func (s *AuthService) handleLogin(w http.ResponseWriter, r *http.Request) (string, error) {
+func (s *AuthSessionService) handleLogin(w http.ResponseWriter, r *http.Request) (string, error) {
 	authUrl, vs, authErr := s.oauth.createAuthRedirect(r)
 	if authErr != nil {
 		return "", fmt.Errorf("create_redirect")
@@ -99,7 +99,7 @@ func (s *AuthService) handleLogin(w http.ResponseWriter, r *http.Request) (strin
 	return authUrl, nil
 }
 
-func (s *AuthService) handleCallback(w http.ResponseWriter, r *http.Request) (string, error) {
+func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Request) (string, error) {
 	var as AuthFlowState
 	if cookieErr := s.cookies.read(r, authVerificationCookieName, &as); cookieErr != nil {
 		return "", fmt.Errorf("read_auth_state")
@@ -131,12 +131,12 @@ func (s *AuthService) handleCallback(w http.ResponseWriter, r *http.Request) (st
 	return as.ReturnTo, nil
 }
 
-func (s *AuthService) handleLogout(w http.ResponseWriter, r *http.Request) (string, error) {
+func (s *AuthSessionService) handleLogout(w http.ResponseWriter, r *http.Request) (string, error) {
 	s.cookies.clear(w, oapiv1.AppCookieName)
 	return "/login", nil
 }
 
-func (s *AuthService) SetAuthSessionContext(ctx context.Context, appCookie, apiToken string) (context.Context, error) {
+func (s *AuthSessionService) SetAuthSessionContext(ctx context.Context, appCookie, apiToken string) (context.Context, error) {
 	if appCookie != "" {
 		return s.setContextFromAppCookie(ctx, appCookie)
 	} else if apiToken != "" {
@@ -145,7 +145,7 @@ func (s *AuthService) SetAuthSessionContext(ctx context.Context, appCookie, apiT
 	return nil, rez.ErrAuthSessionMissing
 }
 
-func (s *AuthService) setContextFromAppCookie(ctx context.Context, cookieStr string) (context.Context, error) {
+func (s *AuthSessionService) setContextFromAppCookie(ctx context.Context, cookieStr string) (context.Context, error) {
 	var sess rez.AuthSession
 	if decodeErr := s.cookies.decode(cookieStr, &sess); decodeErr != nil {
 		log.Debug().Err(decodeErr).Msg("decoding auth session token")
@@ -159,17 +159,17 @@ func (s *AuthService) setContextFromAppCookie(ctx context.Context, cookieStr str
 	return s.makeAuthSessionContext(ctx, usr, sess), nil
 }
 
-func (s *AuthService) setContextFromApiToken(ctx context.Context, tokenStr string) (context.Context, error) {
+func (s *AuthSessionService) setContextFromApiToken(ctx context.Context, tokenStr string) (context.Context, error) {
 	return nil, fmt.Errorf("not implemented")
 }
 
 type authUserSessionContextKey struct{}
 
-func (s *AuthService) makeAuthSessionContext(ctx context.Context, u *ent.User, sess rez.AuthSession) context.Context {
+func (s *AuthSessionService) makeAuthSessionContext(ctx context.Context, u *ent.User, sess rez.AuthSession) context.Context {
 	return context.WithValue(access.WithUser(ctx, u), authUserSessionContextKey{}, sess)
 }
 
-func (s *AuthService) GetAuthSession(ctx context.Context) rez.AuthSession {
+func (s *AuthSessionService) GetAuthSession(ctx context.Context) rez.AuthSession {
 	if sess, ok := ctx.Value(authUserSessionContextKey{}).(rez.AuthSession); ok {
 		return sess
 	}

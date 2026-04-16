@@ -176,9 +176,9 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		return nil, fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
 	}
 
-	auth, authErr := oidc.NewAuthService(ctx, orgs, users)
+	auth, authErr := oidc.NewAuthSessionService(ctx, orgs, users)
 	if authErr != nil {
-		return nil, fmt.Errorf("dex.NewAuthService: %w", authErr)
+		return nil, fmt.Errorf("oidc.NewAuthSessionService: %w", authErr)
 	}
 
 	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, auth)

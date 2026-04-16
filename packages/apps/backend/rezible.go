@@ -56,7 +56,7 @@ type DatabaseClient interface {
 type Services struct {
 	Jobs             JobsService
 	Messages         MessageService
-	Auth             AuthService
+	Auth             AuthSessionService
 	Organizations    OrganizationService
 	Integrations     IntegrationsService
 	Users            UserService
@@ -184,8 +184,8 @@ type (
 		ExpiresAt time.Time `json:"exp"`
 	}
 
-	AuthService interface {
-		Handler() http.Handler
+	AuthSessionService interface {
+		AuthHandler() http.Handler
 		GetAuthSession(context.Context) AuthSession
 		SetAuthSessionContext(ctx context.Context, appCookie, apiToken string) (context.Context, error)
 	}

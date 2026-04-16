@@ -69,7 +69,7 @@ func ensureSlashPrefix(s string) string {
 	return s
 }
 
-func NewServer(auth rez.AuthService, v1h oapiv1.Handler) (*Server, error) {
+func NewServer(auth rez.AuthSessionService, v1h oapiv1.Handler) (*Server, error) {
 	cfg, cfgErr := loadConfig()
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
@@ -99,11 +99,11 @@ func (s *Server) loggerMiddleware(next http.Handler) http.Handler {
 	})
 }
 
-func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.Handler {
+func (s *Server) makeApiHandler(auth rez.AuthSessionService, v1h oapiv1.Handler) http.Handler {
 	r := chi.NewRouter()
 	r.Get(healthCheckPath, s.makeHealthCheckHandler())
 	r.Mount(oapiv1.VersionPrefix, oapiv1.MakeApi(v1h, auth).Adapter())
-	r.Mount("/auth", auth.Handler())
+	r.Mount("/auth", auth.AuthHandler())
 	r.Mount("/webhooks", s.makeWebhooksHandler())
 	if s.cfg.DocumentsProxy.Enabled {
 		r.Handle("/documents", s.makeDocumentsProxyHandler(auth))
@@ -111,7 +111,7 @@ func (s *Server) makeApiHandler(auth rez.AuthService, v1h oapiv1.Handler) http.H
 	return r
 }
 
-func (s *Server) makeDocumentsProxyHandler(auth rez.AuthService) http.Handler {
+func (s *Server) makeDocumentsProxyHandler(auth rez.AuthSessionService) http.Handler {
 	headerKey := "X-Rez-Tenant-ID"
 	setAuthContext := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

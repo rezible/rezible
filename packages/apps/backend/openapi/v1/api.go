@@ -51,7 +51,7 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-func MakeApi(h Handler, auth rez.AuthService) openapi.API {
+func MakeApi(h Handler, auth rez.AuthSessionService) openapi.API {
 	cfg := MakeConfig()
 
 	//tranformers := []huma.Transformer{

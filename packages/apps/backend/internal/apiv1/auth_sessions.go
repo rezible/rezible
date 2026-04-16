@@ -11,12 +11,12 @@ import (
 )
 
 type authSessionsHandler struct {
-	auth  rez.AuthService
+	auth  rez.AuthSessionService
 	orgs  rez.OrganizationService
 	users rez.UserService
 }
 
-func newAuthSessionsHandler(auth rez.AuthService, orgs rez.OrganizationService, users rez.UserService) *authSessionsHandler {
+func newAuthSessionsHandler(auth rez.AuthSessionService, orgs rez.OrganizationService, users rez.UserService) *authSessionsHandler {
 	return &authSessionsHandler{auth: auth, orgs: orgs, users: users}
 }
 

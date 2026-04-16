@@ -8,11 +8,11 @@ import (
 )
 
 type eventsHandler struct {
-	auth   rez.AuthService
+	auth   rez.AuthSessionService
 	events rez.EventsService
 }
 
-func newEventsHandler(auth rez.AuthService, events rez.EventsService) *eventsHandler {
+func newEventsHandler(auth rez.AuthSessionService, events rez.EventsService) *eventsHandler {
 	return &eventsHandler{auth: auth, events: events}
 }
 
