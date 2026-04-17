@@ -9,7 +9,7 @@ import {
 import { parseAbsoluteToLocal } from "@internationalized/date";
 import { createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
-import { onMount } from "svelte";
+import { onMount, tick } from "svelte";
 import { beforeNavigate, goto } from "$app/navigation";
 import type { RouteId } from "$app/types";
 import { resolve } from "$app/paths";
@@ -97,7 +97,6 @@ export class AuthSessionState {
 	};
 
 	private redirectTo = $derived(this.loaded ? getAuthRedirect(page.route.id, this.isAuthenticated, this.isSetup) : undefined);
-	ready = $derived(this.loaded && !this.redirectTo);
 
 	private guardNavigation() {
 		watch(() => this.redirectTo, route => {
@@ -118,9 +117,15 @@ export class AuthSessionState {
 		this.query.refetch();
 	}
 
+	signingOut = $state(false);
 	async logout() {
+		this.signingOut = true;
+		await tick()
 		await goto("/api/auth/logout");
+		this.signingOut = false;
 	}
+
+	ready = $derived(this.loaded && !this.signingOut && !this.redirectTo);
 
 	// private refreshSessionMut = createMutation(() => ({
 	// 	...refreshAuthSessionMutation(),

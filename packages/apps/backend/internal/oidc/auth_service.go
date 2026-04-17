@@ -86,7 +86,18 @@ func (s *AuthSessionService) AuthHandler() http.Handler {
 	return r
 }
 
-const authVerificationCookieName = "rez_auth_verify"
+const (
+	authStateCookieName = "rez_auth_state"
+)
+
+var (
+	errRedirect         = fmt.Errorf("create_redirect")
+	errWriteAuthSession = fmt.Errorf("write_auth_session")
+	errWriteAuthState   = fmt.Errorf("write_auth_state")
+	errReadAuthState    = fmt.Errorf("read_auth_state")
+	errCallbackExchange = fmt.Errorf("callback_exchange")
+	errIdentitySync     = fmt.Errorf("identity_sync")
+)
 
 func handleAndRedirect(handler func(http.ResponseWriter, *http.Request) (string, error)) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -101,31 +112,31 @@ func handleAndRedirect(handler func(http.ResponseWriter, *http.Request) (string,
 func (s *AuthSessionService) handleLogin(w http.ResponseWriter, r *http.Request) (string, error) {
 	authUrl, vs, authErr := s.oauth.createAuthRedirect(r)
 	if authErr != nil {
-		return "", fmt.Errorf("create_redirect")
+		return "", errRedirect
 	}
-	if cookieErr := s.cookies.write(w, authVerificationCookieName, vs, 10*time.Minute); cookieErr != nil {
-		return "", fmt.Errorf("write_cookie")
+	if cookieErr := s.cookies.write(w, authStateCookieName, vs, 10*time.Minute); cookieErr != nil {
+		return "", errWriteAuthState
 	}
 	return authUrl, nil
 }
 
 func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Request) (string, error) {
 	var as AuthFlowState
-	if cookieErr := s.cookies.read(r, authVerificationCookieName, &as); cookieErr != nil {
-		return "", fmt.Errorf("read_auth_state")
+	if cookieErr := s.cookies.read(r, authStateCookieName, &as); cookieErr != nil {
+		return "", errReadAuthState
 	}
-	s.cookies.clear(w, authVerificationCookieName)
+	s.cookies.clear(w, authStateCookieName)
 
 	info, callbackErr := s.oauth.doCallbackExchange(r, as)
 	if callbackErr != nil {
 		log.Debug().Err(callbackErr).Msg("callback exchange")
-		return "", fmt.Errorf("exchange")
+		return "", errCallbackExchange
 	}
 
 	usr, usrErr := s.users.SyncFromAuthProvider(r.Context(), info.org, info.user)
 	if usrErr != nil {
 		log.Debug().Err(usrErr).Msg("user auth sync")
-		return "", fmt.Errorf("sync")
+		return "", errIdentitySync
 	}
 
 	sess := rez.AuthSession{
@@ -135,7 +146,7 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 	}
 
 	if cookieErr := s.cookies.write(w, oapiv1.AppCookieName, sess, time.Until(sess.ExpiresAt)); cookieErr != nil {
-		return "", fmt.Errorf("set_cookie")
+		return "", errWriteAuthSession
 	}
 
 	return as.ReturnTo, nil

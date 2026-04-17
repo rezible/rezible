@@ -28,7 +28,7 @@
 
 <EventAnnotationDialog />
 
-<div class="w-full h-full overflow-y-auto border rounded-lg flex flex-col">
+<div class="w-full h-full overflow-y-auto border flex flex-col">
 	<Header title="Events" subheading="Recent oncall events" classes={{root: "p-2 w-full", title: "text-xl"}}>
 		{#snippet actions()}
 			<div class="justify-end flex gap-2 items-end">
@@ -47,7 +47,7 @@
 				<Button 
 					color={filtersVisible ? "accent" : "default"}
 					onclick={() => {filtersVisible = !filtersVisible}} 
-				/>
+				>Filters</Button>
 			</div>
 		{/snippet}
 	</Header>

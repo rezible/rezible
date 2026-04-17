@@ -1,25 +1,32 @@
 <script lang="ts">
+	import * as Alert from "$components/ui/alert";
 	import { Button } from "$components/ui/button";
-	import type { ErrorModel } from "$src/lib/api";
-	import { mdiAlert } from "@mdi/js";
-	import Icon from "../icon/Icon.svelte";
+	import RiCloseLine from "remixicon-svelte/icons/close-line"
+	import type { ErrorModel } from "$lib/api";
 
 	type Props = {
-		error: ErrorModel;
+		error: ErrorModel | undefined;
 		onDismiss?: () => void;
+		dismissable?: boolean;
 	};
-	const { error, onDismiss }: Props = $props();
+	let { error = $bindable(), onDismiss, dismissable = true }: Props = $props();
 </script>
 
-<div class="mb-2 rounded border border-danger/40 bg-danger/10 p-3" role="alert">
-	<div class="flex items-center justify-between gap-3">
-		<Icon data={mdiAlert} />
-		<div class="flex flex-col">
-			<span class="font-semibold text-danger">{error.title ?? "An Error Occurred"}</span>
-			<span class="text-sm text-danger/90">{error.detail ?? ""}</span>
-		</div>
-		{#if onDismiss}
-			<Button onclick={() => onDismiss()}>Dismiss</Button>
-		{/if}
-	</div>
-</div>
+{#if !!error}
+<Alert.Root variant="destructive">
+	<Alert.Title class="font-semibold text-sm">{error?.title ?? "An Error Occurred"}</Alert.Title>
+	<Alert.Description>{error?.detail ?? ""}</Alert.Description>
+
+	{#if onDismiss}
+		<Alert.Action>
+			<Button size="icon-sm" variant="ghost" onclick={onDismiss}><RiCloseLine /></Button>
+		</Alert.Action>
+	{/if}
+
+	{#if dismissable}
+		<Alert.Action>
+			<Button size="icon-sm" variant="ghost" onclick={() => {error = undefined}}><RiCloseLine /></Button>
+		</Alert.Action>
+	{/if}
+</Alert.Root>
+{/if}

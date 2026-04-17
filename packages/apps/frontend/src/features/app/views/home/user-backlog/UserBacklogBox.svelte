@@ -14,7 +14,7 @@
 	// const tasks = $derived(assignments.filter((a) => a.itemType === "tasks"));
 </script>
 
-<div class="flex flex-col h-fit border rounded-lg overflow-y-auto">
+<div class="flex flex-col h-fit border overflow-y-auto">
 	<Header title="Your Tasks" subheading="Backlog Items assigned to you" classes={{root: "p-2 w-full"}}>
 		{#snippet actions()}
 			<div class="justify-end flex gap-2 items-end">
