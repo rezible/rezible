@@ -34,7 +34,7 @@
 			</div>
 		{:else}
 			{#if auth.isSetup}
-				<div class="flex w-full justify-between items-center h-11 rounded-md bg-surface-200 border-b">
+				<div class="flex w-full justify-between items-center h-11 bg-surface-200 border-b px-1">
 					<PageHeader />
 				</div>
 			{/if}

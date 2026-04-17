@@ -2,7 +2,7 @@
 	import * as Collapsible from "$components/ui/collapsible";
 	import * as Sidebar from "$components/ui/sidebar";
 	import Icon from "$src/components/icon/Icon.svelte";
-	import ChevronRightIcon from "@lucide/svelte/icons/chevron-right";
+    import RiArrowRightSLine from 'remixicon-svelte/icons/arrow-right-s-line';
 	import { getActiveStatus, type SidebarItem } from "./sidebar";
 	import { page } from "$app/state";
 
@@ -42,7 +42,7 @@
                                         <Icon data={item.icon} />
                                     {/if}
                                     {item.label}
-                                    <ChevronRightIcon class="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                                    <RiArrowRightSLine class="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                                 </a>
                             {/snippet}
                         </Sidebar.MenuButton>

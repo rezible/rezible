@@ -5,10 +5,10 @@
 	import UserAvatar from "$components/avatar/Avatar.svelte";
 	import * as DropdownMenu from "$components/ui/dropdown-menu";
 
-	import BadgeCheckIcon from "@lucide/svelte/icons/badge-check";
-	import BellIcon from "@lucide/svelte/icons/bell";
-	import ChevronsUpDownIcon from "@lucide/svelte/icons/chevrons-up-down";
-	import LogOutIcon from "@lucide/svelte/icons/log-out";
+	import RiUserSettingsLine from "remixicon-svelte/icons/user-settings-line";
+	import RiNotification2 from "remixicon-svelte/icons/notification-2-line";
+	import RiLogoutBoxRLine from "remixicon-svelte/icons/logout-box-r-line";
+	import RiExpandUpDownLine from "remixicon-svelte/icons/expand-up-down-line";
 
 	const session = useAuthSessionState();
 	const user = $derived(session.user);
@@ -31,11 +31,11 @@
 
 	<DropdownMenu.Group>
 		<DropdownMenu.Item>
-			<BadgeCheckIcon />
+			<RiUserSettingsLine />
 			Preferences
 		</DropdownMenu.Item>
 		<DropdownMenu.Item>
-			<BellIcon />
+			<RiNotification2 />
 			Notifications
 		</DropdownMenu.Item>
 	</DropdownMenu.Group>
@@ -44,7 +44,7 @@
 
 	<a href="/api/auth/logout" class="cursor-pointer">
 		<DropdownMenu.Item>
-			<LogOutIcon />
+			<RiLogoutBoxRLine />
 			Log out
 		</DropdownMenu.Item>
 	</a>
@@ -64,7 +64,7 @@
 							<UserAvatar kind="user" id={session.user?.id || ""} size={24} />
 						</Avatar.Root>
 						<span class="truncate font-medium">{user?.attributes.name}</span>
-						<ChevronsUpDownIcon class="ms-auto size-4" />
+						<RiExpandUpDownLine class="ms-auto size-4" />
 					</Sidebar.MenuButton>
 				{/snippet}
 			</DropdownMenu.Trigger>

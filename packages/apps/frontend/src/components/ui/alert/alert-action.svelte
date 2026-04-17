@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { cn, type WithElementRef } from "$lib/utils.js";
 	import type { HTMLAttributes } from "svelte/elements";
+	import { cn, type WithElementRef } from "$lib/utils.js";
 
 	let {
 		ref = $bindable(null),
@@ -12,8 +12,8 @@
 
 <div
 	bind:this={ref}
-	data-slot="card-footer"
-	class={cn("rounded-none border-t p-4 group-data-[size=sm]/card:p-3 flex items-center", className)}
+	data-slot="alert-action"
+	class={cn("absolute top-[calc(--spacing(1.25))] right-[calc(--spacing(1.25))]", className)}
 	{...restProps}
 >
 	{@render children?.()}
