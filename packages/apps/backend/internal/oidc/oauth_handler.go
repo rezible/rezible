@@ -4,19 +4,26 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
+const (
+	orgScope = "organization"
+)
+
 type oauthHandler struct {
-	cfg                 oidcConfig
+	cfg oidcConfig
+
+	singleTenantOrg *ent.Organization
+
 	resourceOption      oauth2.AuthCodeOption
 	provider            *oidc.Provider
 	oauthCfg            *oauth2.Config
@@ -24,36 +31,55 @@ type oauthHandler struct {
 	idTokenVerifier     *oidc.IDTokenVerifier
 }
 
-func makeOAuthHandler(ctx context.Context, cfg oidcConfig) (*oauthHandler, error) {
-	if rez.Config.ApiUrl() == "" {
+func makeOAuthHandler(ctx context.Context, cfg Config) (*oauthHandler, error) {
+	apiAudience := rez.Config.ApiUrl()
+	if apiAudience == "" {
 		return nil, fmt.Errorf("no api url configured, can't verify token audience")
 	}
-	return &oauthHandler{
-		cfg:            cfg,
-		resourceOption: oauth2.SetAuthURLParam("resource", rez.Config.ApiUrl()),
-	}, nil
+
+	h := &oauthHandler{
+		cfg:            cfg.Oidc,
+		resourceOption: oauth2.SetAuthURLParam("resource", apiAudience),
+	}
+
+	if rez.Config.SingleTenantMode() {
+		h.singleTenantOrg = &ent.Organization{
+			AuthProviderID: "default",
+			Name:           cfg.SingleTenantOrgName,
+		}
+	}
+
+	return h, nil
+}
+
+func (h *oauthHandler) scopes() []string {
+	scopes := []string{oidc.ScopeOpenID, oidc.ScopeOfflineAccess, "profile", "email"}
+	if h.singleTenantOrg == nil {
+		scopes = append(scopes, orgScope)
+	}
+	return scopes
 }
 
 func (h *oauthHandler) ensureProvider(ctx context.Context) error {
 	if h.provider == nil {
-		redirectUri, redirectErr := url.JoinPath(rez.Config.AppUrl(), "/api/auth/callback")
-		if redirectErr != nil {
-			return fmt.Errorf("redirect url: %w", redirectErr)
-		}
-		prov, provErr := oidc.NewProvider(ctx, h.cfg.Issuer)
+		var provErr error
+		h.provider, provErr = oidc.NewProvider(ctx, h.cfg.Issuer)
 		if provErr != nil {
 			return fmt.Errorf("create oidc provider: %w", provErr)
 		}
-		h.provider = prov
-		h.accessTokenVerifier = prov.VerifierContext(ctx, &oidc.Config{ClientID: rez.Config.ApiUrl()})
-		h.idTokenVerifier = prov.VerifierContext(ctx, &oidc.Config{ClientID: h.cfg.ClientID})
+		accessTokenAudience := rez.Config.ApiUrl()
+		if h.singleTenantOrg != nil {
+			accessTokenAudience = h.cfg.ClientID
+		}
 		h.oauthCfg = &oauth2.Config{
 			ClientID:     h.cfg.ClientID,
 			ClientSecret: h.cfg.ClientSecret,
-			Scopes:       []string{oidc.ScopeOpenID, oidc.ScopeOfflineAccess, "profile", "email", "organization"},
-			RedirectURL:  redirectUri,
-			Endpoint:     prov.Endpoint(),
+			Scopes:       h.scopes(),
+			RedirectURL:  h.cfg.RedirectUrl,
+			Endpoint:     h.provider.Endpoint(),
 		}
+		h.accessTokenVerifier = h.provider.VerifierContext(ctx, &oidc.Config{ClientID: accessTokenAudience})
+		h.idTokenVerifier = h.provider.VerifierContext(ctx, &oidc.Config{ClientID: h.oauthCfg.ClientID})
 	}
 	return nil
 }
@@ -161,7 +187,6 @@ func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, no
 	if atClaimsErr := at.Claims(&atClaims); atClaimsErr != nil {
 		return nil, fmt.Errorf("failed to parse access token claims: %w", atClaimsErr)
 	}
-	fmt.Printf("at claims: %+v\n", atClaims)
 
 	idTokenStr, idOk := t.Extra("id_token").(string)
 	if !idOk {
@@ -171,9 +196,11 @@ func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, no
 	if idTokenErr != nil {
 		return nil, fmt.Errorf("verify id token: %w", idTokenErr)
 	}
-	fmt.Printf("access token hash: %s\n", id.AccessTokenHash)
 	if id.Nonce != nonce {
 		return nil, fmt.Errorf("invalid id token nonce")
+	}
+	if hashErr := id.VerifyAccessToken(t.AccessToken); hashErr != nil {
+		return nil, fmt.Errorf("verify access token: %w", hashErr)
 	}
 
 	var idClaims idTokenClaims
@@ -192,6 +219,11 @@ func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, no
 			AuthProviderID: atClaims.OrganizationId,
 			Name:           atClaims.OrganizationName,
 		},
+	}
+
+	if h.singleTenantOrg != nil {
+		log.Debug().Msg("using single tenant organization")
+		info.org = *h.singleTenantOrg
 	}
 
 	return info, nil

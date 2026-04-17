@@ -33,18 +33,14 @@ services:
     environment:
       - ISSUER_URL=${AUTH_URL}
       - PORT=${AUTH_PORT}
+      - APP_CLIENT_ID=${AUTH__OIDC__CLIENT_ID}
+      - APP_CLIENT_SECRET=${AUTH__OIDC__CLIENT_SECRET}
     depends_on:
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-q", "-t 1", "--spider", "http://${PROXY_AUTH_UPSTREAM_HOST}/healthz"]
-      interval: 3s
-      timeout: 3s
-      retries: 3
-      start_period: 2s
 
   telemetry:
-    scale: 0
+    profiles: ["telemetry"]
     image: grafana/otel-lgtm:latest
     container_name: otel-lgtm
     ports:

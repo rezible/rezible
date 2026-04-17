@@ -1,6 +1,8 @@
 set shell := ["bash", "-uc"]
+
+# using direnvx alias until this is merged
+# https://github.com/casey/just/issues/1748
 set dotenv-filename := ".env.dev"
-set dotenv-load
 
 _default:
   @just --list

@@ -17,14 +17,16 @@ import (
 )
 
 type Config struct {
-	SessionSecret []byte     `koanf:"session_secret"`
-	Oidc          oidcConfig `koanf:"oidc"`
+	SessionSecret       []byte     `koanf:"session_secret"`
+	Oidc                oidcConfig `koanf:"oidc"`
+	SingleTenantOrgName string     `koanf:"single_tenant_org_name"`
 }
 
 type oidcConfig struct {
 	Issuer       string `koanf:"issuer"`
 	ClientID     string `koanf:"client_id"`
 	ClientSecret string `koanf:"client_secret"`
+	RedirectUrl  string `koanf:"redirect_url"`
 }
 
 type AuthSessionService struct {
@@ -39,8 +41,16 @@ type AuthSessionService struct {
 var _ rez.AuthSessionService = (*AuthSessionService)(nil)
 
 func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
+	oauthRedirectUrl, redirectErr := url.JoinPath(rez.Config.AppUrl(), "/api/auth/callback")
+	if redirectErr != nil {
+		return nil, fmt.Errorf("redirect url: %w", redirectErr)
+	}
+
 	cfg := Config{
-		Oidc: oidcConfig{},
+		SingleTenantOrgName: "Default",
+		Oidc: oidcConfig{
+			RedirectUrl: oauthRedirectUrl,
+		},
 	}
 	if cfgErr := rez.Config.Unmarshal("auth", &cfg); cfgErr != nil {
 		return nil, fmt.Errorf("config: %w", cfgErr)
@@ -51,7 +61,7 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 		return nil, fmt.Errorf("cookie writer: %w", cookieErr)
 	}
 
-	oauth, oauthErr := makeOAuthHandler(ctx, cfg.Oidc)
+	oauth, oauthErr := makeOAuthHandler(ctx, cfg)
 	if oauthErr != nil {
 		return nil, fmt.Errorf("oauth handler: %w", oauthErr)
 	}

@@ -6,11 +6,13 @@
     "just":                        "latest",
     "go":                          "latest",
     "process-compose":             "latest",
-    "github:peterldowns/localias": ""
+    "github:peterldowns/localias": "",
+    "dotenvx":                     "latest"
   },
   "shell": {
     "init_hook": [
       "unset DEVELOPER_DIR",
+      "alias just='dotenvx run -f .env -f .env.dev -- just'",
       "just reload-localias"
     ]
   }

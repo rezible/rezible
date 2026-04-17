@@ -49,6 +49,54 @@
         }
       }
     },
+    "dotenvx@latest": {
+      "last_modified": "2026-04-05T07:14:34Z",
+      "resolved": "github:NixOS/nixpkgs/bd48fcede9287ff448ecc84c4e94a4fca4bd0d72#dotenvx",
+      "source": "devbox-search",
+      "version": "1.59.1",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/6ajmxzvyx4q2hh4icw918mpcrvwwa35y-dotenvx-1.59.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/6ajmxzvyx4q2hh4icw918mpcrvwwa35y-dotenvx-1.59.1"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/7kjnfx9f7mv4syf7h0sysalzg49504j0-dotenvx-1.59.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/7kjnfx9f7mv4syf7h0sysalzg49504j0-dotenvx-1.59.1"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/n9bwzprxsz00a1blmw40qm2kw9qyrjrp-dotenvx-1.59.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/n9bwzprxsz00a1blmw40qm2kw9qyrjrp-dotenvx-1.59.1"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/dch70a8fkwzqpk18l9asmcqdzclcvzwh-dotenvx-1.59.1",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/dch70a8fkwzqpk18l9asmcqdzclcvzwh-dotenvx-1.59.1"
+        }
+      }
+    },
     "github:NixOS/nixpkgs/nixpkgs-unstable": {
       "last_modified": "2026-04-01T17:36:14Z",
       "resolved": "github:NixOS/nixpkgs/6ebfbc38bdc6b22822a6f991f2d922306f33cfbc?lastModified=1775064974"
