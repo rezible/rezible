@@ -15,6 +15,6 @@
 	"registry": "https://shadcn-svelte.com/registry",
 	"style": "lyra",
 	"iconLibrary": "remixicon",
-	"menuColor": "default-translucent",
+	"menuColor": "default",
 	"menuAccent": "subtle"
 }
