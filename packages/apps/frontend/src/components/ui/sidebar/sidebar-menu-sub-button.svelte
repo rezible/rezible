@@ -9,7 +9,7 @@
 		child,
 		class: className,
 		size = "md",
-		isActive = false,
+		isActive,
 		...restProps
 	}: WithElementRef<HTMLAnchorAttributes> & {
 		child?: Snippet<[{ props: Record<string, unknown> }]>;

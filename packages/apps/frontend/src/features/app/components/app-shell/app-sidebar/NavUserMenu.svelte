@@ -17,8 +17,8 @@
 {#snippet userMenuContent()}
 	<DropdownMenu.Label class="p-0 font-normal">
 		<div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
-			<Avatar.Root class="size-8 rounded-lg">
-				<UserAvatar kind="user" id={session.user?.id || ""} size={32} />
+			<Avatar.Root class="size-7 rounded-lg">
+				<UserAvatar kind="user" id={session.user?.id || ""} size={28} />
 			</Avatar.Root>
 			<div class="grid flex-1 text-start text-sm leading-tight">
 				<span class="truncate font-medium">{user?.attributes.name}</span>
@@ -69,7 +69,7 @@
 				{/snippet}
 			</DropdownMenu.Trigger>
 			<DropdownMenu.Content
-				class="w-(--bits-dropdown-menu-anchor-width) min-w-48 rounded-lg"
+				class="w-(--bits-dropdown-menu-anchor-width) min-w-48"
 				side="top"
 				sideOffset={8}
 				align="start"

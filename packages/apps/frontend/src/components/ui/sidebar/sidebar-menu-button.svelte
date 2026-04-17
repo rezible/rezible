@@ -41,7 +41,7 @@
 		child,
 		variant = "default",
 		size = "default",
-		isActive = false,
+		isActive,
 		tooltipContent,
 		tooltipContentProps,
 		...restProps
