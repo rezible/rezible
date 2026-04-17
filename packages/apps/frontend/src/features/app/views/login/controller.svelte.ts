@@ -33,9 +33,6 @@ const transformLoginErrorCode = (code: string | null) => {
     return {title, detail} as ErrorModel;
 };
 
-const loginFlowPath = "/api/auth/login";
-const emailSchema = z.email();
-
 export class LoginViewController {
     private session = useAuthSessionState();
 
@@ -45,16 +42,23 @@ export class LoginViewController {
 	authSessionError = $derived(transformAuthSessionError(this.session.error));
 	showLogout = $derived(this.session.error === AuthSessionErrorCategory.SessionInvalid);
 
-	showSSO = $state(false);
 	loginError = $state<ErrorModel>();
     constructor() {
         const params = page.url.searchParams;
 
         this.loginError = transformLoginErrorCode(params.get("error"));
-        if (params.has("sso", "true")) this.showSSO = true;
 
-        goto(window.location.pathname, { replaceState: true, noScroll: true })
-            .then(() => {this.loaded = true});
+        if (!this.loginError && params.has("flow", "true")) {
+            this.doLogin();
+        } else {
+            goto(window.location.pathname, { replaceState: true, noScroll: true })
+                .then(() => {this.loaded = true});
+        }
+    }
+
+    async doLogin() {
+        this.inFlow = true;
+        await goto("/api/auth/login");
     }
 
     async doLogout() {
@@ -62,27 +66,6 @@ export class LoginViewController {
         await this.session.logout();
     }
 
-	async startGoogleFlow() {
-		this.inFlow = true;
-		await goto(`${loginFlowPath}?provider=google`);
-	};
-
-	toggleSSO() {
-        this.showSSO = !this.showSSO;
-    };
-
-	ssoEmail = $state("");
-	ssoEmailValid = $derived(emailSchema.safeParse(this.ssoEmail).success);
-	async startSSOFlow() {
-		if (!this.ssoEmailValid) return;
-		this.inFlow = true;
-		await goto(`${loginFlowPath}?provider=sso&email=${encodeURIComponent(this.ssoEmail)}`);
-	}
-
-	titleText = $derived(this.showSSO 
-        ? "Sign in with SSO" 
-        : "Authentication Required");
-	descriptionText = $derived(this.showSSO 
-		? "Enter your email to continue" 
-		: "Continue with your identity provider");
+	titleText = $derived("Authentication Required");
+	descriptionText = $derived("Continue with your identity provider");
 }

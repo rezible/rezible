@@ -95,32 +95,34 @@ func (h *oauthHandler) createAuthRedirect(r *http.Request) (string, *AuthFlowSta
 	if cfgErr := h.ensureProvider(r.Context()); cfgErr != nil {
 		return "", nil, cfgErr
 	}
+
 	state, nonce, randErr := createRandomValues()
 	if randErr != nil {
 		return "", nil, randErr
 	}
-	returnTo := r.URL.Query().Get("return_to")
+
+	q := r.URL.Query()
+	returnTo := q.Get("return_to")
 	if returnTo == "" {
 		returnTo = "/"
 	}
 	if !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
 		return "", nil, fmt.Errorf("invalid return_to")
 	}
-	codeVerifier := oauth2.GenerateVerifier()
 	// TODO: encode this as the oauth state itself? (instead of a cookie)
 	vs := &AuthFlowState{
 		State:        state,
 		Nonce:        nonce,
-		CodeVerifier: codeVerifier,
+		CodeVerifier: oauth2.GenerateVerifier(),
 		ReturnTo:     returnTo,
 	}
-	authURL := h.oauthCfg.AuthCodeURL(
-		state,
+
+	opts := []oauth2.AuthCodeOption{
 		oidc.Nonce(nonce),
-		oauth2.S256ChallengeOption(codeVerifier),
+		oauth2.S256ChallengeOption(vs.CodeVerifier),
 		h.resourceOption,
-	)
-	return authURL, vs, nil
+	}
+	return h.oauthCfg.AuthCodeURL(state, opts...), vs, nil
 }
 
 func (h *oauthHandler) doCallbackExchange(r *http.Request, s AuthFlowState) (*userAuthInfo, error) {
