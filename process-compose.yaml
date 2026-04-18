@@ -1,23 +1,29 @@
-version: "1.24"
-
-# upgrade after resolved:
-# https://github.com/F1bonacc1/process-compose/issues/258
+environment:
+  - .env
+  - .env.dev
 
 processes:
+  dev-services:
+    command: just run-dev-services
+    is_daemon: false
+    readiness_probe:
+      exec:
+        command: just get-dev-services-healthy
+      initial_delay_seconds: 3
+      period_seconds: 3
+      timeout_seconds: 2
+      success_threshold: 1
+      failure_threshold: 3
+    availability:
+      restart: "always"
+
   backend:
-    command: just dev-backend
+    command: just backend dev
     availability:
       restart: always
-    readiness_probe:
-      http_get:
-        scheme: http
-        host: localhost
-        port: 7001
-        path: "/health"
-      initial_delay_seconds: 3
     depends_on:
-      documents-server:
-        condition: process_started
+      dev-services:
+          condition: process_healthy
 
   frontend:
     command: just run-frontend dev
@@ -29,6 +35,7 @@ processes:
         condition: process_started
 
   documents-server:
+    disabled: true
     command: just run-documents-server dev
     availability:
       restart: on_failure

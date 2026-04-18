@@ -1,4 +1,4 @@
-name: "rezible-dev"
+name: "rezible"
 
 volumes:
   postgres-data:
@@ -7,21 +7,23 @@ services:
   postgres:
     image: postgres:17
     restart: unless-stopped
-    ports: ["${POSTGRES_PORT}:5432"]
+    ports: ["5432:5432"]
     environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=rezible
     healthcheck:
       test: ["CMD", "pg_isready", "-h", "localhost", "-U", "postgres"]
       interval: 1s
       timeout: 1s
       retries: 3
-      start_period: 2s
-    volumes: ["postgres-data:/var/lib/postgresql/data"]
+      start_period: 1s
+    volumes:
+      - "postgres-data:/var/lib/postgresql/data"
+      - "./scripts/postgres/:/docker-entrypoint-initdb.d/"
 
   dex:
-    scale: 0
+    scale: 1
     image: dexidp/dex:v2.41.1
     restart: on-failure:2
     ports: ["${AUTH_PORT}:${AUTH_PORT}"]
@@ -29,12 +31,11 @@ services:
       - "./scripts/dex-config.yaml:/etc/dex/config.yaml:ro"
       - "./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"
     command: ["dex", "serve", "/etc/dex/config.yaml"]
-    env_file: [".env.dev", ".env"]
     environment:
-      - ISSUER_URL=${AUTH_URL}
       - PORT=${AUTH_PORT}
-      - APP_CLIENT_ID=${AUTH__OIDC__CLIENT_ID}
-      - APP_CLIENT_SECRET=${AUTH__OIDC__CLIENT_SECRET}
+      - ISSUER=${AUTH_URL}
+      - APP_URL=${APP_URL}
+      - API_URL=${API_URL}
     depends_on:
       postgres:
         condition: service_healthy
@@ -44,72 +45,51 @@ services:
     image: grafana/otel-lgtm:latest
     container_name: otel-lgtm
     ports:
-      - "3000:3000"   # Grafana UI
-      - "4317:4317"   # OpenTelemetry gRPC collector
-      - "4318:4318"   # OpenTelemetry HTTP collector
-      - "4100:4100"   # Loki ingest
-      - "9090:9090"   # Prometheus UI
+      - "3000"   # Grafana UI
+      - "4317"   # OpenTelemetry gRPC collector
     environment:
       ENABLE_LOGS_ALL: "false"
-    healthcheck:
-      test: /opt/health-check.sh
-      interval: 1m
-      timeout: 10s
-      retries: 10
-      start_period: 1m
-      start_interval: 10s
 
-  # Rezible apps — only run when "rezible" profile is enabled
-  rez-frontend:
-    profiles: ["rezible"]
+  backend:
+    profiles: ["apps"]
+    restart: on-failure:1
     build:
-      context: .
-      dockerfile: packages/apps/frontend/Dockerfile
-    ports: ["${REZ_APP_PORT}:80"]
-    volumes: ["./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"]
+      context: packages/apps/backend
+      dockerfile: dev.Dockerfile
+    working_dir: "/app"
+    volumes:
+      - "./packages/apps/backend/:/app/"
+      - "./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias.crt:ro"
+    ports: ["7001"]
+    env_file: [".env", ".env.dev"]
     environment:
-      - PROXY_BACKEND_UPSTREAM_HOST=rez-backend:${REZ_BACKEND_PORT}
-      - PROXY_DOCUMENTS_SERVER_UPSTREAM_HOST=rez-documents-server:${REZ_DOCUMENTS_SERVER_PORT}
-      - PROXY_AUTH_UPSTREAM_HOST=dex:${AUTH_PORT}
-    healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:80"]
-      interval: 3s
-      timeout: 1s
-      retries: 3
-      start_period: 2s
-
-  rez-backend:
-    profiles: ["rezible"]
-    restart: on-failure:2
-    build:
-      context: .
-      dockerfile: packages/apps/backend/Dockerfile
-    ports: ["${REZ_BACKEND_PORT}:${REZ_BACKEND_PORT}"]
-    entrypoint: /bin/sh -c "update-ca-certificates && rezible migrate up && rezible serve"
-    volumes: ["./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias.crt:ro"]
-    env_file: [".env.dev", ".env"]
+      - "POSTGRES__HOST=postgres"
+      - "SERVER__HTTP__DOCUMENTS_PROXY__PROXY_HOST=http://documents-server:7002"
     depends_on:
       postgres:
         condition: service_healthy
-      dex:
-        condition: service_healthy
-      rez-frontend:
-        condition: service_healthy
-    healthcheck:
-      test: [ "CMD", "wget", "-q", "--spider", "http://localhost:${REZ_BACKEND_PORT}/health" ]
-      interval: 3s
-      timeout: 1s
-      retries: 3
-      start_period: 3s
-    extra_hosts:
-      - "app.dev.rezible.com:host-gateway"
 
-  rez-documents-server:
-    profiles: ["rezible"]
-    depends_on: [postgres, rez-frontend]
+  frontend:
+    profiles: ["apps"]
+    restart: on-failure:1
     build:
       context: .
-      dockerfile: packages/apps/documents-server/Dockerfile
-    ports: ["${REZ_DOCUMENTS_SERVER_PORT}:${REZ_DOCUMENTS_SERVER_PORT}"]
-    volumes: ["./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"]
-    env_file: [".env.dev", ".env"]
+      dockerfile: packages/apps/frontend/dev.Dockerfile
+    working_dir: "/app"
+    volumes:
+      - "./packages/:/app/packages/"
+      - "./package.json:/app/package.json"
+      - "./bun.lock:/app/bun.lock"
+      - "./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias.crt:ro"
+    environment:
+      - "PORT=7000"
+    ports: ["7000"]
+
+#  rez-documents-server:
+#    depends_on: [postgres]
+#    build:
+#      context: .
+#      dockerfile: packages/apps/documents-server/Dockerfile
+#    ports: ["7002"]
+#    volumes: ["./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"]
+#    env_file: [".env.dev", ".env"]

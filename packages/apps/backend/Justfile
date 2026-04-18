@@ -1,0 +1,46 @@
+set shell := ["bash", "-uc"]
+
+export AUTH__OIDC__ISSUER := env("AUTH_URL")
+export POSTGRES__HOST := "localhost"
+export SERVER__HTTP__DOCUMENTS_PROXY__PROXY_HOST := "http://localhost:7002"
+
+foo:
+    echo "auth $AUTH_URL"
+
+install:
+    go mod tidy
+
+format:
+    go fmt ./...
+
+@run *ARGS:
+    go run ./cmd/rezible {{ARGS}}
+
+@dev:
+    air -c .air.toml
+
+@test:
+    go test $(go list ./... | grep -v /ent/)
+
+@print-spec:
+    just run spec
+
+@codegen:
+    go generate ./...
+
+@codegen-ent:
+    go generate ./ent
+
+@codegen-mocks:
+    go generate ./testkit/mocks
+
+@create-migration NAME:
+    just run create-migration '{{NAME}}'
+
+[working-directory("./migrations")]
+@create-initial-migrations:
+    rm -f ./0001_init*.sql
+    rm -f ./atlas.sum
+    just run db update-checksum
+    just run db create-migration init
+    just run db update-checksum

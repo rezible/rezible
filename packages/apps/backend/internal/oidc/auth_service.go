@@ -112,9 +112,11 @@ func handleAndRedirect(handler func(http.ResponseWriter, *http.Request) (string,
 func (s *AuthSessionService) handleLogin(w http.ResponseWriter, r *http.Request) (string, error) {
 	authUrl, vs, authErr := s.oauth.createAuthRedirect(r)
 	if authErr != nil {
+		log.Debug().Err(authErr).Msgf("Failed to create auth redirect")
 		return "", errRedirect
 	}
 	if cookieErr := s.cookies.write(w, authStateCookieName, vs, 10*time.Minute); cookieErr != nil {
+		log.Debug().Err(cookieErr).Msgf("Failed to write auth state cookie")
 		return "", errWriteAuthState
 	}
 	return authUrl, nil

@@ -1,29 +1,20 @@
-issuer: "{{ .Env.ISSUER_URL }}"
-
+issuer: "{{ .Env.ISSUER }}"
 web:
   http: "0.0.0.0:{{ .Env.PORT }}"
   allowedOrigins: ["{{ .Env.APP_URL }}", "{{ .Env.API_URL }}"]
-
 storage:
   type: sqlite3
   config:
     file: /var/dex/dex.db
-
 oauth2:
   responseTypes: ["code"]
   skipApprovalScreen: true
   alwaysShowLoginScreen: false
-  grantTypes:
-    - "authorization_code"
-    - "refresh_token"
-    - "urn:ietf:params:oauth:grant-type:token-exchange"
-
 staticClients:
-  - id: "{{ .Env.APP_CLIENT_ID }}"
-    secretEnv: APP_CLIENT_SECRET
+  - id: test-client
+    secret: superdupersecret
     name: "Web App"
     redirectURIs: ["{{ .Env.APP_URL }}/api/auth/callback"]
-
 enablePasswordDB: true
 staticPasswords:
   # password: $()

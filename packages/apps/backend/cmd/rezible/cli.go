@@ -79,14 +79,6 @@ var rezcli = &cli.Command{
 			Usage: "backend server control",
 			Commands: []*cli.Command{
 				{
-					Name:      "bootstrap",
-					Usage:     "Bootstrap database",
-					Arguments: []cli.Argument{},
-					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return postgres.BootstrapDatabase(ctx)
-					},
-				},
-				{
 					Name:  "create-migration",
 					Usage: "Create a new database migration",
 					Arguments: []cli.Argument{

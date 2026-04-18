@@ -7,24 +7,18 @@ const envPrefix = "";
 export default defineConfig(({mode}) => {
     const env = loadEnv(mode, process.cwd(), envPrefix);
     const host = "0.0.0.0";
-    const port = Number(env.REZ_APP_PORT);
+    const port = Number(env.PORT ?? env.APP_PORT ?? "7000");
     return {
         plugins: [tailwindcss(), sveltekit()],
         server: {
             host,
             port,
             strictPort: true,
-            allowedHosts: [env.APP_HOST],
+            allowedHosts: [env.APP_DOMAIN],
             proxy: {
                 "/api": {
                     target: `http://${env.PROXY_BACKEND_UPSTREAM_HOST}`,
                     rewrite: (path) => path.replace(/^\/api/, ""),
-                },
-                "/auth": {
-                    target: `http://${env.PROXY_AUTH_UPSTREAM_HOST}`,
-                    changeOrigin: false,
-                    secure: false,
-                    // rewrite: (path) => path.replace(/^\/auth/, ""),
                 }
             },
         },

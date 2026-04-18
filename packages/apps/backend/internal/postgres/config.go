@@ -14,7 +14,7 @@ import (
 
 func LoadConfig() (Config, error) {
 	cfg := Config{
-		Host:     "localhost",
+		Host:     "postgres",
 		Port:     5432,
 		Database: "rezible",
 		SSLMode:  "require",
@@ -23,14 +23,13 @@ func LoadConfig() (Config, error) {
 }
 
 type Config struct {
-	Host          string      `koanf:"host"`
-	Port          uint16      `koanf:"port"`
-	Database      string      `koanf:"database"`
-	AppRole       RoleConfig  `koanf:"role_app"`
-	DocumentsRole RoleConfig  `koanf:"role_documents"`
-	AdminRole     RoleConfig  `koanf:"role_admin"`
-	SSLMode       string      `koanf:"sslmode"`
-	Pool          *PoolConfig `koanf:"pool"`
+	Host      string      `koanf:"host"`
+	Port      uint16      `koanf:"port"`
+	Database  string      `koanf:"database"`
+	AppRole   RoleConfig  `koanf:"role_app"`
+	AdminRole RoleConfig  `koanf:"role_admin"`
+	SSLMode   string      `koanf:"sslmode"`
+	Pool      *PoolConfig `koanf:"pool"`
 }
 
 type PoolConfig struct {

@@ -1,19 +1,21 @@
 {
   "$schema": "https://raw.githubusercontent.com/jetpack-io/devbox/0.17.0/.schema/devbox.schema.json",
   "packages": {
-    "reflex":                      "latest",
     "bun":                         "latest",
     "just":                        "latest",
     "go":                          "latest",
     "process-compose":             "latest",
     "github:peterldowns/localias": "",
+    "air":                         "latest",
     "dotenvx":                     "latest"
   },
+  "env": {
+    "DEV_DOMAIN": "dev.rezible.com"
+  },
+  "env_from": ".env",
   "shell": {
     "init_hook": [
-      "unset DEVELOPER_DIR",
-      "alias just='dotenvx run -f .env -f .env.dev -- just'",
-      "just reload-localias"
+      "unset DEVELOPER_DIR"
     ]
   }
 }

@@ -1,6 +1,54 @@
 {
   "lockfile_version": "1",
   "packages": {
+    "air@latest": {
+      "last_modified": "2026-04-06T08:39:25Z",
+      "resolved": "github:NixOS/nixpkgs/83e29f2b8791f6dec20804382fcd9a666d744c07#air",
+      "source": "devbox-search",
+      "version": "1.65.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/632bb7zdv53x436iys8ax4hh6rlb60s3-air-1.65.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/632bb7zdv53x436iys8ax4hh6rlb60s3-air-1.65.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/hc3yxyrmgl04jv5gik56pyiavfg04w60-air-1.65.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/hc3yxyrmgl04jv5gik56pyiavfg04w60-air-1.65.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/cxx8pyribc0bmy79px2r5ylr82qk0dxl-air-1.65.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/cxx8pyribc0bmy79px2r5ylr82qk0dxl-air-1.65.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/hhj7waynkpjz8bc88jscqi6w8kwklxbg-air-1.65.0",
+              "default": true
+            }
+          ],
+          "store_path": "/nix/store/hhj7waynkpjz8bc88jscqi6w8kwklxbg-air-1.65.0"
+        }
+      }
+    },
     "bun@latest": {
       "last_modified": "2026-03-27T11:17:38Z",
       "resolved": "github:NixOS/nixpkgs/832efc09b4caf6b4569fbf9dc01bec3082a00611#bun",
@@ -238,98 +286,50 @@
       }
     },
     "process-compose@latest": {
-      "last_modified": "2026-03-21T07:29:51Z",
-      "resolved": "github:NixOS/nixpkgs/09061f748ee21f68a089cd5d91ec1859cd93d0be#process-compose",
+      "last_modified": "2026-04-09T02:28:59Z",
+      "resolved": "github:NixOS/nixpkgs/0f7663154ff2fec150f9dbf5f81ec2785dc1e0db#process-compose",
       "source": "devbox-search",
-      "version": "1.94.0",
+      "version": "1.103.0",
       "systems": {
         "aarch64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/qjkdcd56jgcdgs6w50bza5pjf35b290a-process-compose-1.94.0",
+              "path": "/nix/store/nixhpjff0szv8d5fmddg0j05i1z6q043-process-compose-1.103.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/qjkdcd56jgcdgs6w50bza5pjf35b290a-process-compose-1.94.0"
+          "store_path": "/nix/store/nixhpjff0szv8d5fmddg0j05i1z6q043-process-compose-1.103.0"
         },
         "aarch64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/cqxp6iwl30q13v0mwpysshlpzivr1ykv-process-compose-1.94.0",
+              "path": "/nix/store/w1clc7v7szz5358hv4acbrqrzkfab3vn-process-compose-1.103.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/cqxp6iwl30q13v0mwpysshlpzivr1ykv-process-compose-1.94.0"
+          "store_path": "/nix/store/w1clc7v7szz5358hv4acbrqrzkfab3vn-process-compose-1.103.0"
         },
         "x86_64-darwin": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/n19zjjs0sjffswb1r99z8zypmb87d3dx-process-compose-1.94.0",
+              "path": "/nix/store/7vv4g9023nbirl7mybvqm8cpyqr4mkw6-process-compose-1.103.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/n19zjjs0sjffswb1r99z8zypmb87d3dx-process-compose-1.94.0"
+          "store_path": "/nix/store/7vv4g9023nbirl7mybvqm8cpyqr4mkw6-process-compose-1.103.0"
         },
         "x86_64-linux": {
           "outputs": [
             {
               "name": "out",
-              "path": "/nix/store/29j4kdl3vp2cp76yv11ca62paja5qjyd-process-compose-1.94.0",
+              "path": "/nix/store/sxjclxf77jkxyifxhkaar31507i12syv-process-compose-1.103.0",
               "default": true
             }
           ],
-          "store_path": "/nix/store/29j4kdl3vp2cp76yv11ca62paja5qjyd-process-compose-1.94.0"
-        }
-      }
-    },
-    "reflex@latest": {
-      "last_modified": "2026-03-21T07:29:51Z",
-      "resolved": "github:NixOS/nixpkgs/09061f748ee21f68a089cd5d91ec1859cd93d0be#reflex",
-      "source": "devbox-search",
-      "version": "0.3.2",
-      "systems": {
-        "aarch64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/2g7dbbb7jfvlxi9pi9ggpajw1nrhxm2d-reflex-0.3.2",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/2g7dbbb7jfvlxi9pi9ggpajw1nrhxm2d-reflex-0.3.2"
-        },
-        "aarch64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/38val6clf876mmlab820fnla4mpk5w2s-reflex-0.3.2",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/38val6clf876mmlab820fnla4mpk5w2s-reflex-0.3.2"
-        },
-        "x86_64-darwin": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/fmxa2jbxvsr0rpvk6rgw0ix3zj3pqs5s-reflex-0.3.2",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/fmxa2jbxvsr0rpvk6rgw0ix3zj3pqs5s-reflex-0.3.2"
-        },
-        "x86_64-linux": {
-          "outputs": [
-            {
-              "name": "out",
-              "path": "/nix/store/8vl5gpvhs7p2drlj97adj573x1zjm3n2-reflex-0.3.2",
-              "default": true
-            }
-          ],
-          "store_path": "/nix/store/8vl5gpvhs7p2drlj97adj573x1zjm3n2-reflex-0.3.2"
+          "store_path": "/nix/store/sxjclxf77jkxyifxhkaar31507i12syv-process-compose-1.103.0"
         }
       }
     }
