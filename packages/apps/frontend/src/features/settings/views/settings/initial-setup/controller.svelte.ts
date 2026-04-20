@@ -1,14 +1,8 @@
 import { finishOrganizationSetupMutation, type ConfiguredIntegration } from "$lib/api";
 import { useAuthSessionState } from "$lib/auth.svelte";
 import { Context, watch } from "runed";
-import { createQuery, createMutation } from "@tanstack/svelte-query";
-import {
-    listAvailableIntegrationsOptions,
-    listConfiguredIntegrationsOptions,
-    configureIntegrationMutation,
-    type ConfigureIntegrationRequestBody,
-} from "$lib/api";
-import { useIntegrationOAuthController } from "$src/features/settings/lib/integrationOAuthController.svelte";
+import { createMutation } from "@tanstack/svelte-query";
+import { initIntegrationsController } from "$src/features/settings/lib/integrationsController.svelte";
 
 type SetupStep = "org_name" | "required_integrations";
 const RequiredDataKinds = new Set(["chat", "users"]);
@@ -18,53 +12,25 @@ const getEnabledDataKinds = (intg: ConfiguredIntegration) =>
         filter(([_, enabled]) => (enabled)).
         map(([name, _]) => (name));
 
-export class RequiredIntegrationsSetupController {
-    oauth = useIntegrationOAuthController();
-
-    private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
-    available = $derived(this.listAvailableQuery.data?.data || []);
-    availableMap = $derived(new Map(this.available.map(intg => ([intg.name, intg]))));
-
-    private listConfiguredQuery = createQuery(() => listConfiguredIntegrationsOptions());
-    configured = $derived(this.listConfiguredQuery.data?.data || []);
-	configuredMap = $derived(new Map(this.configured.map(intg => ([intg.name, intg]))));
-	configuredDataKinds = $derived(new Set(this.configured.flatMap(getEnabledDataKinds)));
-
-    remainingRequiredDataKinds = $derived(RequiredDataKinds.difference(this.configuredDataKinds).values().toArray());
-    nextRequiredDataKind = $derived(this.remainingRequiredDataKinds.at(0));
-    availableDataKindIntegrations = $derived.by(() => {
-        const reqKind = this.nextRequiredDataKind;
-        if (!reqKind) return [];
-        return this.available.filter(intg => intg.dataKinds.includes(reqKind));
-    });
-
-    private configureMut = createMutation(() => ({
-        ...configureIntegrationMutation({}),
-        onSuccess: () => { this.listConfiguredQuery.refetch() }
-    }));
-    configureMutErr = $derived(this.configureMut.error);
-
-    async doConfigure(name: string, attributes: ConfigureIntegrationRequestBody["attributes"]) {
-        this.configureMut.mutateAsync({
-            path: { name },
-            body: { attributes }
-        })
-    }
-
-    isLoading = $derived(this.listAvailableQuery.isPending || this.listConfiguredQuery.isPending);
-    isConfiguring = $derived(this.configureMut.isPending);
-};
-
 export class InitialSetupViewController {
     session = useAuthSessionState();
 
     step = $state<SetupStep>("required_integrations");
 
-    integrations = new RequiredIntegrationsSetupController();
+    integrations = initIntegrationsController();
+
+	configuredDataKinds = $derived(new Set(this.integrations.configured.flatMap(getEnabledDataKinds)));
+    remainingRequiredDataKinds = $derived(RequiredDataKinds.difference(this.configuredDataKinds).values().toArray());
+    nextRequiredDataKind = $derived(this.remainingRequiredDataKinds.at(0));
+    availableDataKindIntegrations = $derived.by(() => {
+        const reqKind = this.nextRequiredDataKind;
+        if (!reqKind) return [];
+        return this.integrations.available.filter(intg => intg.dataKinds.includes(reqKind));
+    });
 
     canFinish = $derived.by(() => {
         if (!this.integrations) return false;
-        if (this.integrations.remainingRequiredDataKinds.length === 0) return true;
+        if (this.remainingRequiredDataKinds.length === 0) return true;
         return false;
     });
 
@@ -74,8 +40,7 @@ export class InitialSetupViewController {
         })
     }
 
-    integrationsLoading = $derived(this.integrations?.isLoading || this.integrations.isConfiguring);
-    loading = $derived(this.integrationsLoading);
+    loading = $derived(this.integrations.loading || this.integrations.isConfiguring);
 
     private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
     async doFinishOrganizationSetup() {

@@ -1,9 +1,18 @@
 <script lang="ts">
-	import type { ConfiguredIntegration, ConfigureIntegrationRequestBody, AvailableIntegration } from '$lib/api';
+	import type { 
+		ConfiguredIntegration,
+		ConfigureIntegrationRequestBody,
+		AvailableIntegration,
+	} from '$lib/api';
+
 	import * as Card from "$components/ui/card";
 	import { Badge } from "$components/ui/badge";
 	import { Button } from "$components/ui/button";
 	import * as Alert from "$components/ui/alert";
+
+	import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+	import { useIntegrationOAuthController } from '$features/settings/lib/integrationOAuthController.svelte';
+
 	import type { IntegrationConfigComponent } from './types';
 	import SlackConfig from './config-components/SlackConfig.svelte';
 	import PlaceholderConfig from './config-components/PlaceholderConfig.svelte';
@@ -12,16 +21,12 @@
 	type Props = {
 		integration: AvailableIntegration;
 		configured?: ConfiguredIntegration;
-		startOAuthFlow?: () => void;
-		configureIntegration?: (attrs: ConfigureIntegrationRequestBody["attributes"]) => Promise<unknown> | unknown;
 		isSaving?: boolean;
 		errorMessage?: string;
 	};
 	const {
 		integration,
 		configured,
-		startOAuthFlow,
-		configureIntegration,
 		isSaving = false,
 		errorMessage = "",
 	}: Props = $props();
@@ -43,6 +48,9 @@
 	const onPreferencesChange = (prefs: {[key: string]: unknown}) => {
 
 	};
+
+	const controller = useIntegrationsController();
+	const oauth = useIntegrationOAuthController();
 </script>
 
 {#snippet oauthFlowButtonContent(name: string)}
@@ -85,7 +93,7 @@
 
 		{#if !configured && integration.oauthRequired}
 			<div class="place-self-center">
-				<Button onclick={() => startOAuthFlow?.()} class="w-fit h-fit cursor-pointer p-0">
+				<Button onclick={() => {oauth.startFlow(integration.name)}} variant="ghost" class="w-fit h-fit cursor-pointer p-0">
 					{@render oauthFlowButtonContent(integration.name)}
 				</Button>
 			</div>

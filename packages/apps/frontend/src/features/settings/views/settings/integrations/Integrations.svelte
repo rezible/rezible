@@ -1,7 +1,7 @@
 <script lang="ts">
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 	import IntegrationConfigCard from "$features/settings/components/integration-config-card/IntegrationConfigCard.svelte";
-	import { initIntegrationsController } from "./controller.svelte";
+	import { initIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
 
 	const controller = initIntegrationsController();
@@ -29,8 +29,6 @@
 				{#key name}
 					<IntegrationConfigCard {integration}
 						configured={controller.configuredMap.get(name)}
-						startOAuthFlow={() => controller.oauth.startFlow(name)}
-						configureIntegration={(attrs) => controller.configure(name, attrs)}
 						isSaving={controller.isSaving(name)}
 						errorMessage={controller.errorFor(name)}
 					/>

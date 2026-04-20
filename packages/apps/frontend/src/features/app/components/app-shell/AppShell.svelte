@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { ModeWatcher } from "mode-watcher";
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
 
 	import * as Sidebar from "$components/ui/sidebar";
 	import AppSidebar from "./app-sidebar/AppSidebar.svelte";
