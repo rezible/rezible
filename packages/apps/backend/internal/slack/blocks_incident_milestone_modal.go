@@ -1,10 +1,12 @@
 package slack
 
 import (
+	"log/slog"
+
+	"github.com/slack-go/slack"
+
 	"github.com/rezible/rezible/ent"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
-	"github.com/rs/zerolog/log"
-	"github.com/slack-go/slack"
 )
 
 type incidentMilestoneModalViewBuilder struct {
@@ -38,7 +40,7 @@ func setIncidentMilestoneModalInputMutationFields(m *ent.IncidentMilestoneMutati
 	kindOpt := incidentMilestoneModalKindIds.GetStateSelectedValue(state)
 	kind := im.Kind(kindOpt)
 	if kindErr := im.KindValidator(kind); kindErr != nil {
-		log.Debug().Str("kindOpt", kindOpt).Msg("invalid kind")
+		slog.Debug("invalid kind", "kindOpt", kindOpt)
 	} else {
 		m.SetKind(kind)
 	}

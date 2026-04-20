@@ -3,10 +3,10 @@ package watermill
 import (
 	"fmt"
 
+	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/rezible/rezible/access"
-	"github.com/rs/zerolog/log"
 )
 
 const (
@@ -28,16 +28,21 @@ func (ms *MessageService) setupPoisonQueue(pub message.Publisher, sub message.Su
 	return poison, nil
 }
 
-func setMessageAccessScope(msg *message.Message) {
+func (ms *MessageService) handlePoisonQueueMessageAdded(msg *message.Message) error {
+	ms.logger.Info("message sent to poison queue", watermill.LogFields{"uuid": msg.UUID})
+	return nil
+}
+
+func (ms *MessageService) setMessageAccessScope(msg *message.Message) {
 	encodedScope, scopeErr := access.EncodeScope(msg.Context())
 	if scopeErr != nil {
-		log.Error().Err(scopeErr).Msg("failed to marshal access scope")
+		ms.logger.Error("failed to marshal access scope", scopeErr, nil)
 		return
 	}
 	msg.Metadata.Set(messageMetadataKeyAccessScope, string(encodedScope))
 }
 
-func restoreMessageAccessScope(fn message.HandlerFunc) message.HandlerFunc {
+func (ms *MessageService) restoreMessageAccessScope(fn message.HandlerFunc) message.HandlerFunc {
 	return func(msg *message.Message) ([]*message.Message, error) {
 		mdAc := msg.Metadata.Get(messageMetadataKeyAccessScope)
 		restoredCtx, restoreErr := access.RestoreScope(msg.Context(), []byte(mdAc))

@@ -8,16 +8,14 @@ import (
 	"fmt"
 	"io"
 	"iter"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
-	"github.com/rezible/rezible/ent/incidentmilestone"
-
-	"github.com/rs/zerolog/log"
-
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incidentmilestone"
 )
 
 type IncidentDataProvider struct {
@@ -147,7 +145,7 @@ func (p *IncidentDataProvider) PullIncidents(ctx context.Context) iter.Seq2[*ent
 func convertIncidentPreview(i incidentPreview) *ent.Incident {
 	createdAt, createdErr := time.Parse(time.RFC3339, i.CreatedTime)
 	if createdErr != nil {
-		log.Error().Err(createdErr).Msg("failed to parse incident created time")
+		slog.Error("failed to parse incident created time", "error", createdErr)
 	}
 
 	return &ent.Incident{
@@ -185,12 +183,12 @@ func (p *IncidentDataProvider) GetIncidentByID(ctx context.Context, id string) (
 func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident) (*ent.Incident, error) {
 	createdAt, createdErr := time.Parse(time.RFC3339, i.CreatedTime)
 	if createdErr != nil {
-		log.Error().Err(createdErr).Msg("failed to parse incident created time")
+		slog.Error("failed to parse incident created time", "error", createdErr)
 	}
 
 	milestones, msErr := p.getIncidentMilestones(ctx, i)
 	if msErr != nil {
-		log.Error().Err(msErr).Msg("failed to get incident milestones")
+		slog.Error("failed to get incident milestones", "error", msErr)
 	}
 
 	severity := &ent.IncidentSeverity{
@@ -199,12 +197,12 @@ func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident
 
 	roleAssignments, assnErr := p.convertIncidentRoleAssignments(ctx, i.IncidentMembership)
 	if assnErr != nil {
-		log.Error().Err(assnErr).Msg("failed to convert incident role assignments")
+		slog.Error("failed to convert incident role assignments", "error", assnErr)
 	}
 
 	tags, tagsErr := p.convertIncidentLabels(ctx, i.Labels)
 	if tagsErr != nil {
-		log.Error().Err(tagsErr).Msg("failed to convert incident labels")
+		slog.Error("failed to convert incident labels", "error", tagsErr)
 	}
 
 	var incType *ent.IncidentType
@@ -216,7 +214,7 @@ func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident
 
 	tasks, tasksErr := p.convertIncidentTasks(ctx, i.TaskList)
 	if tasksErr != nil {
-		log.Error().Err(tasksErr).Msg("failed to convert incident tasks")
+		slog.Error("failed to convert incident tasks", "error", tasksErr)
 	}
 
 	inc := &ent.Incident{
@@ -235,7 +233,7 @@ func (p *IncidentDataProvider) convertIncident(ctx context.Context, i *gIncident
 	}
 
 	if intgErr := p.setIncidentIntegrationData(ctx, inc); intgErr != nil {
-		log.Error().Err(intgErr).Msg("failed to set incident integration data")
+		slog.Error("failed to set incident integration data", "error", intgErr)
 	}
 
 	return inc, nil

@@ -6,12 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/rs/zerolog/log"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -42,9 +42,7 @@ func (l *WebhookListener) Handler() *chi.Mux {
 	r.HandleFunc("/options", l.onOptions)
 	r.HandleFunc("/events", l.onEventsApi)
 	r.NotFound(func(w http.ResponseWriter, r *http.Request) {
-		log.Debug().
-			Str("path", r.URL.Path).
-			Msg("slack webhook handler not found")
+		slog.Debug("slack webhook handler not found", "path", r.URL.Path)
 		w.WriteHeader(http.StatusOK)
 	})
 	return r
@@ -65,7 +63,7 @@ func (l *WebhookListener) requestVerifierMiddleware(next http.Handler) http.Hand
 		reader := http.MaxBytesReader(w, r.Body, maxWebhookPayloadBytes)
 		defer func(r io.ReadCloser) {
 			if closeErr := r.Close(); closeErr != nil {
-				log.Error().Err(closeErr).Msg("failed to close webhook body reader")
+				slog.Error("failed to close webhook body reader", "error", closeErr)
 			}
 		}(reader)
 
@@ -76,14 +74,14 @@ func (l *WebhookListener) requestVerifierMiddleware(next http.Handler) http.Hand
 				w.WriteHeader(http.StatusBadRequest)
 			} else {
 				w.WriteHeader(http.StatusInternalServerError)
-				log.Error().Err(bodyErr).Msg("failed to read webhook body")
+				slog.Error("failed to read webhook body", "error", bodyErr)
 			}
 			return
 		}
 
 		if _, writeErr := sv.Write(body); writeErr != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			log.Error().Err(writeErr).Msg("failed to write payload to verifier")
+			slog.Error("failed to write payload to verifier", "error", writeErr)
 			return
 		}
 
@@ -100,12 +98,12 @@ func (l *WebhookListener) requestVerifierMiddleware(next http.Handler) http.Hand
 func (l *WebhookListener) onCommands(w http.ResponseWriter, r *http.Request) {
 	cmd, parseErr := slack.SlashCommandParse(r)
 	if parseErr != nil {
-		log.Error().Err(parseErr).Msg("failed to parse slash command")
+		slog.Error("failed to parse slash command", "error", parseErr)
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if handlerErr := l.handler.OnSlashCommand(r.Context(), cmd); handlerErr != nil {
-		log.Error().Err(handlerErr).Msg("failed to handle command event")
+		slog.Error("failed to handle command event", "error", handlerErr)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -115,12 +113,12 @@ func (l *WebhookListener) onCommands(w http.ResponseWriter, r *http.Request) {
 func (l *WebhookListener) onInteraction(w http.ResponseWriter, r *http.Request) {
 	payload := r.PostFormValue("payload")
 	if payload == "" {
-		log.Warn().Msg("empty interaction payload")
+		slog.Warn("empty interaction payload")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if handlerErr := l.handler.OnInteractionCallback(r.Context(), []byte(payload)); handlerErr != nil {
-		log.Error().Err(handlerErr).Msg("failed to handle interaction event message")
+		slog.Error("failed to handle interaction event message", "error", handlerErr)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -131,7 +129,7 @@ func (l *WebhookListener) onOptions(w http.ResponseWriter, r *http.Request) {
 	// TODO, not currently used
 	body := []byte("")
 	if handlerErr := l.handler.OnOptions(r.Context(), body); handlerErr != nil {
-		log.Error().Err(handlerErr).Msg("failed to handle options event")
+		slog.Error("failed to handle options event", "error", handlerErr)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -141,7 +139,7 @@ func (l *WebhookListener) onOptions(w http.ResponseWriter, r *http.Request) {
 func (l *WebhookListener) onEventsApi(w http.ResponseWriter, r *http.Request) {
 	body, bodyErr := io.ReadAll(r.Body)
 	if bodyErr != nil {
-		log.Error().Err(bodyErr).Msg("failed to read webhook body")
+		slog.Error("failed to read webhook body", "error", bodyErr)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
@@ -149,14 +147,14 @@ func (l *WebhookListener) onEventsApi(w http.ResponseWriter, r *http.Request) {
 	// skip using a verification token as middleware verified via header
 	ev, evErr := slackevents.ParseEvent(body, slackevents.OptionNoVerifyToken())
 	if evErr != nil {
-		log.Error().Err(evErr).Msg("failed to parse event")
+		slog.Error("failed to parse event", "error", evErr)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
 	if ev.Type == slackevents.URLVerification {
 		if verifyErr := l.handleUrlVerificationEvent(w, body); verifyErr != nil {
-			log.Error().Err(verifyErr).Msg("failed to handle url verification event")
+			slog.Error("failed to handle url verification event", "error", verifyErr)
 		}
 		return
 	}
@@ -168,7 +166,7 @@ func (l *WebhookListener) onEventsApi(w http.ResponseWriter, r *http.Request) {
 		handleErr = l.handler.OnCallbackEvent(r.Context(), body)
 	}
 	if handleErr != nil {
-		log.Error().Err(handleErr).Msg("failed to handle eventsAPI event")
+		slog.Error("failed to handle eventsAPI event", "error", handleErr)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}

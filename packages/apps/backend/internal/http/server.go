@@ -4,20 +4,20 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
 
 	"github.com/koding/websocketproxy"
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/integrations"
-	"github.com/rs/zerolog/log"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/integrations"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -165,11 +165,11 @@ func (s *Server) Start(baseCtx context.Context) error {
 		},
 	}
 
-	log.Info().Msgf("HTTP server listening on %s", s.httpServer.Addr)
+	slog.Info("HTTP server listening", "addr", s.httpServer.Addr)
 	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("http server error: %w", err)
 	}
-	log.Info().Msgf("Stopped HTTP server")
+	slog.Info("Stopped HTTP server")
 	return nil
 }
 
@@ -220,6 +220,6 @@ var (
 func serveApiDocs(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
 	if _, wErr := w.Write(docsBodyScalar); wErr != nil {
-		log.Error().Err(wErr).Msg("failed to write embedded docs body")
+		slog.Error("failed to write embedded docs body", "error", wErr)
 	}
 }

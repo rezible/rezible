@@ -3,12 +3,12 @@ package slack
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
@@ -36,7 +36,7 @@ func (s *ChatService) handleSlashCommand(baseCtx context.Context, cmd *slack.Sla
 		return fmt.Errorf("handling command: %w", handlerErr)
 	}
 	if !handled {
-		log.Debug().Str("command", cmd.Command).Msg("unknown slack command, ignoring")
+		s.logger.Debug("unknown slack command, ignoring", "command", cmd.Command)
 	}
 	if response != nil {
 		_, msgErr := s.postEphemeralMessage(ctx, cmd.ChannelID, cmd.UserID, slack.MsgOptionBlocks(response.BlockSet...))
@@ -63,7 +63,7 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, cmd *slack.Slas
 	var channelIncidentId uuid.UUID
 	inc, incErr := s.incidents.Get(ctx, incident.ChatChannelID(cmd.ChannelID))
 	if incErr != nil && !ent.IsNotFound(incErr) {
-		log.Error().Err(incErr).Msg("unable to get incident by channel")
+		slog.Error("unable to get incident by channel", "error", incErr)
 		return commandErrorResponse(incErr.Error()), nil
 	} else if inc != nil {
 		channelIncidentId = inc.ID
@@ -72,7 +72,7 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, cmd *slack.Slas
 	subcmd := ""
 	if args := strings.Split(cmd.Text, " "); len(args) > 0 {
 		subcmd = args[0]
-		log.Debug().Str("text", cmd.Text).Str("subcmd", subcmd).Msg("incident command")
+		slog.Debug("incident command", "text", cmd.Text, "subcmd", subcmd)
 	}
 
 	if subcmd == "" || subcmd == "update" || subcmd == "new" {
@@ -89,7 +89,7 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, cmd *slack.Slas
 		}
 		view, viewErr := s.makeIncidentDetailsModalView(ctx, &meta)
 		if viewErr != nil {
-			log.Error().Err(viewErr).Msg("failed creating incident details view")
+			slog.Error("failed creating incident details view", "error", viewErr)
 			return commandErrorResponse("Failed to create incident details modal"), viewErr
 		}
 		if openModalErr := s.openModalView(ctx, cmd.TriggerID, *view); openModalErr != nil {
@@ -105,7 +105,7 @@ func (s *ChatService) handleIncidentCommand(ctx context.Context, cmd *slack.Slas
 		}
 		view, viewErr := s.makeIncidentMilestoneModalView(ctx, &meta)
 		if viewErr != nil {
-			log.Error().Err(viewErr).Msg("failed creating incident milestone view")
+			slog.Error("failed creating incident milestone view", "error", viewErr)
 			return commandErrorResponse("Failed to create incident milestone view"), viewErr
 		}
 		if openModalErr := s.openModalView(ctx, cmd.TriggerID, *view); openModalErr != nil {

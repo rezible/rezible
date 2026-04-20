@@ -3,22 +3,23 @@ package slack
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-	"github.com/rezible/rezible/ent/incident"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 )
 
 type incidentUpdateProcessor struct {
 	chat      *ChatService
+	logger    *slog.Logger
 	incidents rez.IncidentService
 	messages  rez.MessageService
 
@@ -32,6 +33,7 @@ func newIncidentUpdateProcessor(ctx context.Context, chat *ChatService, services
 	}
 	return &incidentUpdateProcessor{
 		chat:      chat,
+		logger:    slog.Default().With("package", "slack_incidents"),
 		incidents: services.Incidents,
 		messages:  services.Messages,
 		inc:       inc,
@@ -166,11 +168,11 @@ func (p *incidentUpdateProcessor) createIncidentChannel(ctx context.Context) err
 		if !nameAlreadyTaken {
 			return fmt.Errorf("creating channel: %w", createErr)
 		}
-		log.Warn().
-			Err(createErr).
-			Str("incident_id", p.inc.ID.String()).
-			Str("channel_name", channelName).
-			Msg("slack incident channel already exists, attempting relink")
+		p.logger.Warn("slack incident channel already exists, attempting relink",
+			"error", createErr,
+			"incident_id", p.inc.ID.String(),
+			"channel_name", channelName,
+		)
 
 		existingChannel, lookupErr := p.findConversationByName(ctx, p.chat.client, channelName)
 		if lookupErr != nil {
@@ -183,26 +185,29 @@ func (p *incidentUpdateProcessor) createIncidentChannel(ctx context.Context) err
 	}
 
 	if linkErr := p.linkIncidentChannel(ctx, channel.ID); linkErr != nil {
-		log.Error().Err(linkErr).
-			Str("incident_id", p.inc.ID.String()).
-			Str("channel_id", channel.ID).
-			Str("channel_name", channelName).
-			Msg("failed to persist slack incident channel link")
+		p.logger.Error("failed to persist slack incident channel link",
+			"error", linkErr,
+			"incident_id", p.inc.ID.String(),
+			"channel_id", channel.ID,
+			"channel_name", channelName,
+		)
 		return linkErr
 	}
 
 	if msgErr := p.sendUserCreatedChannelMessage(ctx); msgErr != nil {
-		log.Warn().Err(msgErr).
-			Str("incident_id", p.inc.ID.String()).
-			Str("channel_id", p.inc.ChatChannelID).
-			Msg("failed to send user incident creation message")
+		p.logger.Warn("failed to send user incident creation message",
+			"error", msgErr,
+			"incident_id", p.inc.ID.String(),
+			"channel_id", p.inc.ChatChannelID,
+		)
 	}
 
 	if annoErr := p.postIncidentAnnouncement(ctx); annoErr != nil {
-		log.Warn().Err(annoErr).
-			Str("incident_id", p.inc.ID.String()).
-			Str("channel_id", p.inc.ChatChannelID).
-			Msg("failed to post incident announcement")
+		p.logger.Warn("failed to post incident announcement",
+			"error", annoErr,
+			"incident_id", p.inc.ID.String(),
+			"channel_id", p.inc.ChatChannelID,
+		)
 	}
 
 	return nil
@@ -228,9 +233,7 @@ func (p *incidentUpdateProcessor) sendUserCreatedChannelMessage(ctx context.Cont
 	userId, userOk := ms.Metadata["user_id"]
 	channelId, channelOk := ms.Metadata["channel_id"]
 	if !userOk || !channelOk {
-		log.Warn().
-			Interface("metadata", ms.Metadata).
-			Msg("invalid slack incident declaration milestone metadata")
+		p.logger.Warn("invalid slack incident declaration milestone metadata", "metadata", ms.Metadata)
 		return nil
 	}
 	// send message to user that created incident
@@ -268,25 +271,25 @@ func (p *incidentUpdateProcessor) postIncidentAnnouncement(ctx context.Context) 
 
 func (p *incidentUpdateProcessor) updateIncidentChannel(ctx context.Context) error {
 	if detailsErr := p.updateIncidentChannelPinnedDetailsMessage(ctx); detailsErr != nil {
-		log.Warn().Err(detailsErr).Msg("failed to update incident details message")
+		p.logger.Warn("failed to update incident details message", "error", detailsErr)
 	}
 
 	if topicErr := p.updateIncidentChannelTopic(ctx); topicErr != nil {
-		log.Warn().Err(topicErr).Msg("failed to update incident channel topic")
+		p.logger.Warn("failed to update incident channel topic", "error", topicErr)
 	}
 
 	conferenceAdded, bookmarksErr := p.ensureIncidentChannelBookmarks(ctx)
 	if bookmarksErr != nil {
-		log.Warn().Err(bookmarksErr).Msg("failed to update incident channel bookmarks")
+		p.logger.Warn("failed to update incident channel bookmarks", "error", bookmarksErr)
 	}
 	if conferenceAdded {
 		if msgErr := p.postIncidentConferenceMessage(ctx); msgErr != nil {
-			log.Warn().Err(msgErr).Msg("failed to post incident conference message")
+			p.logger.Warn("failed to post incident conference message", "error", msgErr)
 		}
 	}
 
 	if usersErr := p.ensureIncidentChannelUsersAdded(ctx); usersErr != nil {
-		log.Warn().Err(usersErr).Msg("failed to add users to incident channel")
+		p.logger.Warn("failed to add users to incident channel", "error", usersErr)
 	}
 
 	return nil
@@ -443,10 +446,10 @@ func (p *incidentUpdateProcessor) ensureIncidentChannelUsersAdded(ctx context.Co
 			continue
 		}
 		if assignment.Edges.User.ChatID == "" {
-			log.Warn().
-				Str("incident_id", p.inc.ID.String()).
-				Str("user_id", assignment.Edges.User.ID.String()).
-				Msg("skipping incident channel invite for user without slack mapping")
+			p.logger.Warn("skipping incident channel invite for user without slack mapping",
+				"incident_id", p.inc.ID.String(),
+				"user_id", assignment.Edges.User.ID.String(),
+			)
 			continue
 		}
 		addIds.Add(assignment.Edges.User.ChatID)
@@ -454,13 +457,13 @@ func (p *incidentUpdateProcessor) ensureIncidentChannelUsersAdded(ctx context.Co
 
 	missingIds := addIds.Difference(excludeIds)
 	if missingIds.IsEmpty() {
-		log.Debug().Msg("no users to add to incident channel")
+		p.logger.Debug("no users to add to incident channel")
 		return nil
 	}
 
 	_, invErr := p.chat.client.InviteUsersToConversationContext(ctx, p.inc.ChatChannelID, missingIds.ToSlice()...)
 	if invErr != nil {
-		log.Error().Err(invErr).Msg("failed to add users to incident channel")
+		p.logger.Error("failed to add users to incident channel", "error", invErr)
 		return invErr
 	}
 

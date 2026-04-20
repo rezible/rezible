@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -201,7 +201,7 @@ func (s *DebriefService) sendDebriefRequests(ctx context.Context, incidentId uui
 func (s *DebriefService) prepareUserDebrief(ctx context.Context, user *ent.User, inc *ent.Incident) {
 	_, createErr := s.createDebrief(ctx, inc.ID, user.ID, true)
 	if createErr != nil {
-		log.Error().Err(createErr).Msg("Failed to create incident debrief")
+		slog.Error("Failed to create incident debrief", "error", createErr)
 	}
 
 	// TODO: convert this to content node
@@ -216,7 +216,7 @@ func (s *DebriefService) prepareUserDebrief(ctx context.Context, user *ent.User,
 		msgLinkUrl := fmt.Sprintf("%s/incidents/%s/retrospective", rez.Config.AppUrl(), inc.ID.String())
 		msgLinkText := "Open Incident Debrief"
 		if msgErr := s.msg.SendUserLinkMessage(ctx, user, msgText, msgLinkUrl, msgLinkText); msgErr != nil {
-			log.Error().Err(msgErr).Msg("Failed to send incident debrief message")
+			slog.Error("Failed to send incident debrief message", "error", msgErr)
 		}
 	*/
 }
@@ -258,7 +258,7 @@ func (s *DebriefService) generateDebriefResponse(ctx context.Context, debriefId 
 		WithMessages().
 		Only(ctx)
 	if debriefErr != nil {
-		log.Warn().Str("id", debriefId.String()).Msg("get debrief")
+		slog.Warn("get debrief", "id", debriefId.String())
 		return fmt.Errorf("failed to get debrief: %w", debriefErr)
 	}
 

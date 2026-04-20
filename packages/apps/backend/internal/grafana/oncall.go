@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"io"
 	"iter"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 )
 
 type OncallDataProvider struct {
@@ -52,7 +52,7 @@ func NewOncallDataProvider(intg *ent.Integration) (*OncallDataProvider, error) {
 	go func() {
 		ctx := context.Background()
 		if userErr := p.updateUserData(ctx); userErr != nil {
-			log.Error().Err(userErr).Msg("failed to update oncall user data")
+			slog.Error("failed to update oncall user data", "error", userErr)
 		}
 	}()
 
@@ -181,15 +181,15 @@ func (p *OncallDataProvider) PullShiftsForRoster(ctx context.Context, id string,
 				}
 				startsAt, startErr := time.Parse(time.RFC3339, res.ShiftStart)
 				if startErr != nil {
-					log.Error().Err(startErr).Str("time", res.ShiftStart).Msg("failed to parse shift start time")
+					slog.Error("failed to parse shift start time", "error", startErr, "time", res.ShiftStart)
 				}
 				endsAt, endErr := time.Parse(time.RFC3339, res.ShiftEnd)
 				if endErr != nil {
-					log.Error().Err(endErr).Str("time", res.ShiftEnd).Msg("failed to parse shift end time")
+					slog.Error("failed to parse shift end time", "error", endErr, "time", res.ShiftEnd)
 				}
 
 				if isIncompleteShift(startsAt, endsAt) {
-					log.Debug().Msg("skipping incomplete shift")
+					slog.Debug("skipping incomplete shift")
 					continue
 				}
 
@@ -234,11 +234,11 @@ func (p *OncallDataProvider) ListShiftsForRoster(ctx context.Context, id string,
 			}
 			startsAt, startErr := time.Parse(time.RFC3339, res.ShiftStart)
 			if startErr != nil {
-				log.Error().Err(startErr).Str("time", res.ShiftStart).Msg("failed to parse shift start time")
+				slog.Error("failed to parse shift start time", "error", startErr, "time", res.ShiftStart)
 			}
 			endsAt, endErr := time.Parse(time.RFC3339, res.ShiftEnd)
 			if endErr != nil {
-				log.Error().Err(endErr).Str("time", res.ShiftEnd).Msg("failed to parse shift end time")
+				slog.Error("failed to parse shift end time", "error", endErr, "time", res.ShiftEnd)
 			}
 			shifts = append(shifts, &ent.OncallShift{
 				StartAt: startsAt,
@@ -287,7 +287,7 @@ func (p *OncallDataProvider) convertSchedule(s oncallSchedule, shiftIdMap map[st
 	for _, shiftId := range s.Shifts {
 		shift, exists := shiftIdMap[shiftId]
 		if !exists {
-			log.Warn().Str("id", shiftId).Msg("no matching shift found during conversion")
+			slog.Warn("no matching shift found during conversion", "id", shiftId)
 			continue
 		}
 		rosterSchedules = append(rosterSchedules, p.convertShift(shift))
@@ -319,7 +319,7 @@ func (p *OncallDataProvider) convertShift(shift *oncallShift) *ent.OncallSchedul
 	addParticipant := func(index int, providerId string) {
 		user, ok := p.providerUserMap[providerId]
 		if !ok {
-			log.Warn().Str("providerId", providerId).Msg("unknown provider user")
+			slog.Warn("unknown provider user", "providerId", providerId)
 			return
 		}
 		sched.Edges.Participants = append(sched.Edges.Participants, &ent.OncallScheduleParticipant{

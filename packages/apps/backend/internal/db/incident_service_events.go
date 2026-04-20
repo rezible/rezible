@@ -21,7 +21,7 @@ func (s *IncidentService) onIncidentUpdate(ctx context.Context, ev *rez.EventOnI
 	//	return fmt.Errorf("incident milestone query: %w", msErr)
 	//}
 	//for _, m := range milestones {
-	//	log.Debug().Str("milestone", m.String()).Msg("Incident milestone")
+	//	slog.Debug("Incident milestone", "milestone", m.String())
 	//}
 	return nil
 }

@@ -1,13 +1,14 @@
 package v1
 
 import (
+	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"regexp"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 )
 
 var DefaultErrorCodes = []int{
@@ -80,15 +81,15 @@ func asStatusError(msg string, err error) huma.StatusError {
 func Error(msg string, err error) error {
 	statusErr := asStatusError(msg, err)
 
-	logEvent := log.Warn()
+	logLevel := slog.LevelWarn
 	if statusErr.GetStatus() >= 500 {
-		logEvent = log.Error()
+		logLevel = slog.LevelError
 	}
-	logEvent.
-		Str("message", msg).
-		Int("status", statusErr.GetStatus()).
-		AnErr("error", err).
-		Msg("API Error")
+	slog.Log(context.Background(), logLevel, "API Error",
+		"message", msg,
+		"status", statusErr.GetStatus(),
+		"error", err,
+	)
 
 	return statusErr
 }

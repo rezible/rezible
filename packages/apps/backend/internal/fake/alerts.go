@@ -3,14 +3,14 @@ package fakeprovider
 import (
 	"context"
 	"iter"
+	"log/slog"
 	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/event"
-	"github.com/rs/zerolog/log"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/event"
 )
 
 type AlertDataProvider struct {
@@ -157,10 +157,10 @@ func (p *AlertDataProvider) makeFakeAlertInstances(start, end time.Time) []*ent.
 			instances = append(instances, p.makeFakeDayAlertInstance(start.AddDate(0, 0, day)))
 		}
 	}
-	log.Debug().
-		Int("days", numDays).
-		Int("total", len(instances)).
-		Msg("created fake oncall events")
+	slog.Debug("created fake oncall events",
+		"days", numDays,
+		"total", len(instances),
+	)
 
 	return instances
 }

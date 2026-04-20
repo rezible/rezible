@@ -3,9 +3,9 @@ package datasync
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 )
 
 func createDefaultIncidentSeverities(db *ent.Client) []*ent.IncidentSeverityCreate {
@@ -27,7 +27,7 @@ func syncRequiredDefaultData(ctx context.Context, db *ent.Client) error {
 	}
 
 	if len(sevs) == 0 {
-		log.Debug().Msg("creating default incident severities")
+		slog.Debug("creating default incident severities")
 
 		builders := createDefaultIncidentSeverities(db)
 		if createErr := db.IncidentSeverity.CreateBulk(builders...).Exec(ctx); createErr != nil {
@@ -41,7 +41,7 @@ func syncRequiredDefaultData(ctx context.Context, db *ent.Client) error {
 	}
 
 	if len(types) == 0 {
-		log.Debug().Msg("creating default incident types")
+		slog.Debug("creating default incident types")
 
 		builders := createDefaultIncidentTypes(db)
 		if createErr := db.IncidentType.CreateBulk(builders...).Exec(ctx); createErr != nil {

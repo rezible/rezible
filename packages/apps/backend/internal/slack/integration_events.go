@@ -4,13 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 type eventHandler struct {
@@ -54,12 +55,12 @@ func (h *eventHandler) OnCallbackEvent(ctx context.Context, data []byte) error {
 }
 
 func (h *eventHandler) OnAppRateLimitedEvent(ctx context.Context) error {
-	log.Warn().Msg("slack app rate limited")
+	slog.Warn("slack app rate limited")
 	return nil
 }
 
 func (h *eventHandler) OnOptions(ctx context.Context, data []byte) error {
-	log.Warn().Msg("not handling slack options event")
+	slog.Warn("not handling slack options event")
 	return nil
 }
 
@@ -69,10 +70,10 @@ func (h *eventHandler) withChatService(ctx context.Context, ids installIds, fn f
 		return lookupErr
 	}
 	if ci == nil {
-		log.Warn().
-			Str("teamId", ids.TeamId).
-			Str("enterpriseId", ids.EnterpriseId).
-			Msg("received slack event with no configured integration found!")
+		slog.Warn("received slack event with no configured integration found!",
+			"teamId", ids.TeamId,
+			"enterpriseId", ids.EnterpriseId,
+		)
 		return nil
 	}
 	return fn(newChatService(ci))

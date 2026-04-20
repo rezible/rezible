@@ -3,13 +3,14 @@ package v1
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 )
 
 type OncallShiftsHandler interface {
@@ -157,9 +158,7 @@ func OncallShiftHandoverFromEnt(p *ent.OncallShiftHandover) OncallShiftHandover 
 	content, contentErr := convertRawHandoverContents(p.Contents)
 	if contentErr != nil {
 		// TODO: just return an error
-		log.Error().
-			Err(contentErr).
-			Msg("Error converting OncallShiftHandover.Contents")
+		slog.Error("Error converting OncallShiftHandover.Contents", "error", contentErr)
 	}
 	attr.Content = content
 

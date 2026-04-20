@@ -2,14 +2,15 @@ package apiv1
 
 import (
 	"context"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentevent"
 	oapi "github.com/rezible/rezible/openapi/v1"
-	"github.com/rs/zerolog/log"
 )
 
 type incidentEventsHandler struct {
@@ -76,7 +77,7 @@ func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request
 
 	created, createErr := create.Save(ctx)
 	if createErr != nil {
-		log.Error().Err(createErr).Msg("failed to create")
+		slog.Error("failed to create", "error", createErr)
 		return nil, oapi.Error("failed to create incident event", createErr)
 	}
 	resp.Body.Data = oapi.IncidentEventFromEnt(created)

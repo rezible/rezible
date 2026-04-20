@@ -3,17 +3,17 @@ package db
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-	im "github.com/rezible/rezible/ent/incidentmilestone"
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
+	im "github.com/rezible/rezible/ent/incidentmilestone"
 	imodel "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
@@ -104,7 +104,7 @@ func (s *IncidentService) getIncidentEdgeMutationUpdateEvent(incidentId uuid.UUI
 	if m.Type() == ent.TypeIncidentMilestone {
 		ms, ok := v.(*ent.IncidentMilestone)
 		if !ok {
-			log.Warn().Interface("v", v).Msg("failed to cast value to ent.IncidentMilestone")
+			slog.Warn("failed to cast value to ent.IncidentMilestone", "v", v)
 			return nil
 		}
 		return &rez.EventOnIncidentMilestoneUpdated{
@@ -113,10 +113,10 @@ func (s *IncidentService) getIncidentEdgeMutationUpdateEvent(incidentId uuid.UUI
 			Created:     m.Op().Is(ent.OpCreate),
 		}
 	}
-	log.Debug().
-		Str("op", op.String()).
-		Str("type", m.Type()).
-		Msg("maybe add update event")
+	slog.Debug("maybe add update event",
+		"op", op.String(),
+		"type", m.Type(),
+	)
 	return nil
 }
 
@@ -189,7 +189,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 
 	for _, ev := range updateEvents {
 		if pubEvErr := s.msgs.PublishEvent(ctx, ev); pubEvErr != nil {
-			log.Error().Err(pubEvErr).Msg("failed to publish incident update event message")
+			slog.Error("failed to publish incident update event message", "error", pubEvErr)
 		}
 	}
 
@@ -241,7 +241,7 @@ func (s *IncidentService) generateIncidentSlug(ctx context.Context, openedAt tim
 	noun := slugNouns[randgen.Intn(len(slugNouns))]
 	shortUUID := uuid.New().String()[:8]
 	uuidSlug := slug.Make(fmt.Sprintf("%s-%s-%s-%s", datePrefix, adj, noun, shortUUID))
-	log.Warn().Str("slug", uuidSlug).Msg("falling back to uuid incident slug")
+	slog.Warn("falling back to uuid incident slug", "slug", uuidSlug)
 	return uuidSlug, nil
 }
 
@@ -305,7 +305,7 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 		IncidentId:  updated.IncidentID,
 	}
 	if pubErr := s.msgs.PublishEvent(ctx, ev); pubErr != nil {
-		log.Error().Err(pubErr).Msg("failed to publish incident milestone updated message")
+		slog.Error("failed to publish incident milestone updated message", "error", pubErr)
 	}
 
 	return updated, nil

@@ -3,17 +3,17 @@ package slack
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
 const integrationName = "slack"
@@ -202,7 +202,7 @@ func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (map[st
 
 	enterprise, enterpriseErr := getTeamInfoFromTokenData(t.Extra("enterprise"))
 	if enterpriseErr != nil {
-		log.Warn().Err(enterpriseErr).Msgf("get enterprise info from token")
+		slog.Warn("slack get enterprise info from token", "error", enterpriseErr)
 	} else {
 		cfg.Set(configEnterprise, enterprise)
 	}

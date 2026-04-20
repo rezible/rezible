@@ -3,17 +3,18 @@ package slack
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
 type ChatService struct {
 	ci     *ConfiguredIntegration
 	client *slack.Client
+	logger *slog.Logger
 
 	integrations rez.IntegrationsService
 	users        rez.UserService
@@ -25,6 +26,7 @@ func newChatService(ci *ConfiguredIntegration) *ChatService {
 	return &ChatService{
 		ci:           ci,
 		client:       slack.New(ci.accessToken()),
+		logger:       slog.Default().With("package", "slack"),
 		users:        ci.svcs.Users,
 		integrations: ci.svcs.Integrations,
 		incidents:    ci.svcs.Incidents,
@@ -36,7 +38,7 @@ func (s *ChatService) createUserContext(ctx context.Context, userChatId string) 
 	ctx = access.TenantContext(ctx, s.ci.intg.TenantID)
 	usr, usrErr := s.users.Get(ctx, user.ChatID(userChatId))
 	if usrErr != nil {
-		log.Error().Err(usrErr).Str("chat_id", userChatId).Msg("failed to lookup chat user")
+		s.logger.Error("failed to lookup chat user", "error", usrErr, "chat_id", userChatId)
 		return nil, fmt.Errorf("lookup user: %w", usrErr)
 	}
 	return access.WithUser(ctx, usr), nil

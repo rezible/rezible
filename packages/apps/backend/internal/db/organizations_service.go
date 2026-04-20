@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -11,7 +12,6 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/jobs"
-	"github.com/rs/zerolog/log"
 )
 
 type OrganizationsService struct {
@@ -83,7 +83,7 @@ func (s *OrganizationsService) CompleteSetup(ctx context.Context, org *ent.Organ
 		CreateDefaults: true,
 	}
 	if jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
-		log.Error().Err(jobErr).Msg("failed to insert sync job")
+		slog.Error("failed to insert sync job", "error", jobErr)
 	}
 
 	return s.db.Organization.UpdateOne(org).SetInitialSetupAt(time.Now()).Exec(ctx)

@@ -3,13 +3,13 @@ package integrations
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"path"
 	"reflect"
 	"runtime"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
@@ -30,8 +30,6 @@ var (
 	}
 )
 
-type EventListeners map[string]rez.EventListener
-
 func Setup(ctx context.Context, svcs *rez.Services) error {
 	availablePackages = make([]rez.IntegrationPackage, 0, len(availablePackages))
 	packageNameMap = make(map[string]rez.IntegrationPackage)
@@ -43,19 +41,19 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 			return fmt.Errorf("%s: %w", funcName, pkgErr)
 		}
 		available, configErr := pkg.IsAvailable()
-		log.Debug().
-			Str("name", pkg.Name()).
-			AnErr("configErr", configErr).
-			Bool("available", available).
-			Msgf("integration package")
+		slog.Debug("integration package",
+			"name", pkg.Name(),
+			"configErr", configErr,
+			"available", available,
+		)
 		if !available {
 			continue
 		}
 		if configErr != nil {
-			log.Error().
-				Err(configErr).
-				Str("integration", pkg.Name()).
-				Msg("integration setup error")
+			slog.Error("integration setup error",
+				"error", configErr,
+				"integration", pkg.Name(),
+			)
 			continue
 		}
 		availablePackages = append(availablePackages, pkg)
@@ -88,8 +86,8 @@ type IntegrationWithEventListeners interface {
 	EventListeners() map[string]rez.EventListener
 }
 
-func GetEventListeners() EventListeners {
-	els := make(EventListeners)
+func GetEventListeners() map[string]rez.EventListener {
+	els := make(map[string]rez.EventListener)
 	for _, p := range availablePackages {
 		if elIntegration, ok := p.(IntegrationWithEventListeners); ok {
 			for name, l := range elIntegration.EventListeners() {

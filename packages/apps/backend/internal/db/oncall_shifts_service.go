@@ -4,15 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/access"
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	ohot "github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -318,10 +318,10 @@ func (s *OncallShiftsService) sendShiftHandoverReminder(ctx context.Context, shi
 		return fmt.Errorf("failed to get or create shift handover: %w", hoErr)
 	}
 
-	log.Debug().
-		Str("shiftId", shiftId.String()).
-		Bool("reminderSent", ho.ReminderSent).
-		Msg("send shift ending reminder")
+	slog.Debug("send shift ending reminder",
+		"shiftId", shiftId.String(),
+		"reminderSent", ho.ReminderSent,
+	)
 	if ho.ReminderSent {
 		return nil
 	}

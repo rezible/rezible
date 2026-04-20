@@ -2,11 +2,11 @@ package slack
 
 import (
 	"context"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 )
 
@@ -31,11 +31,11 @@ func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId
 }
 
 func logSlackViewErrorResponse(err error, resp *slack.ViewResponse) {
-	line := log.Error().Err(err)
+	args := []any{"error", err}
 	if resp != nil {
-		line.Strs("response_messages", resp.ResponseMetadata.Messages)
+		args = append(args, "response_messages", resp.ResponseMetadata.Messages)
 	}
-	line.Msg("slack view response error")
+	slog.Error("slack view response error", args...)
 }
 
 func convertSlackTs(ts string) time.Time {

@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"log/slog"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/rs/zerolog/log"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/providersynchistory"
@@ -81,11 +81,11 @@ func (ds *batchedDataSyncer[T]) Sync(ctx context.Context) error {
 	}
 
 	if delMuts := ds.batcher.getDeletionMutations(); len(delMuts) > 0 {
-		log.Debug().Int("numMutations", numMutations).Msg("deletion mutations")
+		slog.Debug("deletion mutations", "numMutations", numMutations)
 	}
 
 	if saveErr := ds.saveSyncHistory(ctx, start, numMutations); saveErr != nil {
-		log.Error().Err(saveErr).Str("dataType", ds.dataType).Msg("failed to save data sync history")
+		slog.Error("failed to save data sync history", "error", saveErr, "dataType", ds.dataType)
 	}
 
 	return nil

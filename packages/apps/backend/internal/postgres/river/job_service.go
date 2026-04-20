@@ -3,12 +3,7 @@ package river
 import (
 	"context"
 	"fmt"
-
 	"log/slog"
-
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	slogzerolog "github.com/samber/slog-zerolog/v2"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -24,21 +19,20 @@ import (
 
 const SchemaName = "river"
 
-type (
-	pgxClient  = river.Client[pgx.Tx]
-	JobService struct {
-		client *pgxClient
-	}
-)
+type pgxClient = river.Client[pgx.Tx]
+
+type JobService struct {
+	logger *slog.Logger
+	client *pgxClient
+}
 
 func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	queues := map[string]river.QueueConfig{
 		river.QueueDefault: {MaxWorkers: 20},
 	}
 
-	slogOpts := slogzerolog.Option{
-		Level:  slog.LevelInfo,
-		Logger: zerolog.DefaultContextLogger,
+	s := &JobService{
+		logger: slog.Default().With("package", "river"),
 	}
 
 	cfg := &river.Config{
@@ -48,7 +42,7 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 		},
 		Workers: jobs.Workers,
 		Queues:  queues,
-		Logger:  slog.New(slogOpts.NewZerologHandler()),
+		Logger:  s.logger,
 	}
 	client, clientErr := river.NewClient(riverpgxv5.New(pool), cfg)
 	if clientErr != nil {
@@ -79,10 +73,10 @@ func (s *JobService) Insert(ctx context.Context, args jobs.JobArgs, opts *jobs.I
 	if insertErr != nil {
 		return fmt.Errorf("could not insert job: %w", insertErr)
 	}
-	log.Debug().
-		Str("kind", args.Kind()).
-		Bool("skipped_unique", res.UniqueSkippedAsDuplicate).
-		Msg("inserted job")
+	s.logger.Debug("inserted job",
+		"kind", args.Kind(),
+		"skipped_unique", res.UniqueSkippedAsDuplicate,
+	)
 	return nil
 }
 

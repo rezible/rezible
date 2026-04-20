@@ -7,12 +7,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/slack-go/slack"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rs/zerolog/log"
-	"github.com/slack-go/slack"
 )
 
 const (
@@ -33,7 +33,7 @@ func (s *ChatService) handleInteractionCallback(baseCtx context.Context, ic *sla
 	case slack.InteractionTypeViewSubmission:
 		return s.handleViewSubmissionInteraction(ctx, ic)
 	default:
-		log.Warn().Msg("unknown interaction type")
+		s.logger.Warn("unknown interaction type")
 	}
 	return nil
 }
@@ -63,7 +63,7 @@ func (s *ChatService) handleBlockActionsInteraction(ctx context.Context, ic *sla
 	//case viewCallbackIdIncidentDetailsModal:
 	//	return s.handleIncidentDetailsModalInteraction(ctx, ic)
 	//}
-	log.Debug().Interface("ic", ic).Msg("interaction callback")
+	s.logger.Debug("interaction callback", "ic", ic)
 
 	return fmt.Errorf("unknown block actions: %s", ic.CallbackID)
 }

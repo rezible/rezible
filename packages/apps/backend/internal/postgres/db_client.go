@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	_ "github.com/rezible/rezible/ent/runtime"
@@ -11,7 +12,6 @@ import (
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
@@ -77,12 +77,12 @@ func (dbc *DatabaseClient) Pool() *pgxpool.Pool {
 func (dbc *DatabaseClient) Close() {
 	if dbc.client != nil {
 		if clientErr := dbc.client.Close(); clientErr != nil {
-			log.Error().Err(clientErr).Msg("failed to close client")
+			slog.Error("failed to close client", "error", clientErr)
 		}
 	}
 	if dbc.driver != nil {
 		if driverErr := dbc.driver.Close(); driverErr != nil {
-			log.Error().Err(driverErr).Msg("failed to close pool driver")
+			slog.Error("failed to close pool driver", "error", driverErr)
 		}
 	}
 	if dbc.pool != nil {

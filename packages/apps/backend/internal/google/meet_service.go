@@ -4,11 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
+
+	"google.golang.org/api/meet/v2"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/videoconference"
-	"github.com/rs/zerolog/log"
-	"google.golang.org/api/meet/v2"
 )
 
 var meetScopes = []string{
@@ -101,9 +102,9 @@ func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *en
 	if _, setErr := s.ci.svcs.Incidents.Set(ctx, inc.ID, setFn); setErr != nil {
 		return fmt.Errorf("set incident conference: %w", setErr)
 	}
-	log.Debug().
-		Str("incident_id", inc.ID.String()).
-		Str("join_url", url).
-		Msg("created incident conference")
+	slog.Debug("created incident conference",
+		"incident_id", inc.ID.String(),
+		"join_url", url,
+	)
 	return nil
 }

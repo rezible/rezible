@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/rezible/rezible/access"
-	"github.com/rs/zerolog/log"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
@@ -23,9 +22,7 @@ func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.E
 	case *slackevents.MessageEvent:
 		return s.onMessageEvent(ctx, data)
 	default:
-		log.Debug().
-			Str("innerEventType", ev.InnerEvent.Type).
-			Msg("unhandled slack callback event")
+		s.logger.Debug("unhandled slack callback event", "innerEventType", ev.InnerEvent.Type)
 		return nil
 	}
 }
@@ -37,29 +34,29 @@ func (s *ChatService) onMentionEvent(ctx context.Context, data *slackevents.AppM
 	}
 
 	// data.Channel, replyTs, data.User, data.Text
-	log.Debug().Str("replyTs", replyTs).Msg("mention event")
+	s.logger.Debug("mention event", "replyTs", replyTs)
 	return nil
 }
 
 func (s *ChatService) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
-	//log.Debug().Interface("message", data).Msg("message event")
+	//slog.Debug("message event", "message", data)
 	/*
 		threadTs := data.ThreadTimeStamp
 		// TODO check if thread is 'monitored'
 
-		log.Debug().
-			Str("type", data.ChannelType).
-			Str("text", data.Text).
-			Str("thread", threadTs).
-			Str("user", data.User).
-			Msg("message event")
+		slog.Debug("message event",
+			"type", data.ChannelType,
+			"text", data.Text,
+			"thread", threadTs,
+			"user", data.User,
+		)
 	*/
 
 	return nil
 }
 
 func (s *ChatService) onAssistantThreadStartedEvent(ctx context.Context, data *slackevents.AssistantThreadStartedEvent) error {
-	log.Debug().Msg("assistant thread started")
+	s.logger.Debug("assistant thread started")
 	return nil
 }
 

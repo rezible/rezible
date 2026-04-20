@@ -3,9 +3,11 @@ package apiv1
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentfield"
@@ -15,7 +17,6 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/schema"
 	oapi "github.com/rezible/rezible/openapi/v1"
-	"github.com/rs/zerolog/log"
 )
 
 type incidentMetadataHandler struct {
@@ -432,7 +433,7 @@ func (h *incidentMetadataHandler) ListIncidentFields(ctx context.Context, reques
 	if queryErr != nil {
 		return nil, oapi.Error("Failed to query incident fields", queryErr)
 	}
-	log.Debug().Interface("res", res).Msg("ListIncidentFields")
+	slog.Debug("ListIncidentFields", "res", res)
 
 	resp.Body.Data = make([]oapi.IncidentField, len(res))
 	for i, field := range res {

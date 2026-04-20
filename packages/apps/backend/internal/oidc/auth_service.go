@@ -3,17 +3,18 @@ package oidc
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
 
 	"github.com/go-chi/chi/v5"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
-	"github.com/rs/zerolog/log"
 )
 
 type Config struct {
@@ -112,11 +113,11 @@ func handleAndRedirect(handler func(http.ResponseWriter, *http.Request) (string,
 func (s *AuthSessionService) handleLogin(w http.ResponseWriter, r *http.Request) (string, error) {
 	authUrl, vs, authErr := s.oauth.createAuthRedirect(r)
 	if authErr != nil {
-		log.Debug().Err(authErr).Msgf("Failed to create auth redirect")
+		slog.Debug("Failed to create auth redirect", "error", authErr)
 		return "", errRedirect
 	}
 	if cookieErr := s.cookies.write(w, authStateCookieName, vs, 10*time.Minute); cookieErr != nil {
-		log.Debug().Err(cookieErr).Msgf("Failed to write auth state cookie")
+		slog.Debug("Failed to write auth state cookie", "error", cookieErr)
 		return "", errWriteAuthState
 	}
 	return authUrl, nil
@@ -131,13 +132,13 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 
 	info, callbackErr := s.oauth.doCallbackExchange(r, as)
 	if callbackErr != nil {
-		log.Debug().Err(callbackErr).Msg("callback exchange")
+		slog.Debug("callback exchange", "error", callbackErr)
 		return "", errCallbackExchange
 	}
 
 	usr, usrErr := s.users.SyncFromAuthProvider(r.Context(), info.org, info.user)
 	if usrErr != nil {
-		log.Debug().Err(usrErr).Msg("user auth sync")
+		slog.Debug("user auth sync", "error", usrErr)
 		return "", errIdentitySync
 	}
 
@@ -171,12 +172,12 @@ func (s *AuthSessionService) SetAuthSessionContext(ctx context.Context, appCooki
 func (s *AuthSessionService) setContextFromAppCookie(ctx context.Context, cookieStr string) (context.Context, error) {
 	var sess rez.AuthSession
 	if decodeErr := s.cookies.decode(cookieStr, &sess); decodeErr != nil {
-		log.Debug().Err(decodeErr).Msg("decoding auth session token")
+		slog.Debug("decoding auth session token", "error", decodeErr)
 		return nil, rez.ErrAuthSessionInvalid
 	}
 	usr, usrErr := s.users.Get(access.SystemContext(ctx), user.ID(sess.UserId))
 	if usrErr != nil {
-		log.Debug().Err(usrErr).Interface("sess", sess).Msg("get user")
+		slog.Debug("get user", "error", usrErr, "sess", sess)
 		return nil, rez.ErrAuthSessionInvalid
 	}
 	return s.makeAuthSessionContext(ctx, usr, sess), nil

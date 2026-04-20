@@ -4,19 +4,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/url"
 	"slices"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
+
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/access"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/singleflight"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	ioas "github.com/rezible/rezible/ent/integrationoauthstate"
@@ -240,7 +241,7 @@ func (s *IntegrationsService) set(ctx context.Context, name string, setFn func(*
 		IntegrationId: intg.ID,
 	}
 	if jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
-		log.Error().Err(jobErr).Msg("failed to insert sync job")
+		slog.Error("failed to insert sync job", "error", jobErr)
 	}
 
 	return intg, nil
@@ -267,10 +268,11 @@ func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string,
 	}
 	cleanup := s.db.IntegrationOAuthState.Delete().Where(userIntegrationStates, ioas.ExpiresAtLT(time.Now()))
 	if _, cleanupErr := cleanup.Exec(ctx); cleanupErr != nil {
-		log.Error().Err(cleanupErr).
-			Str("name", name).
-			Str("userId", userId.String()).
-			Msg("failed to cleanup old integration user oauth states")
+		slog.Error("failed to cleanup old integration user oauth states",
+			"error", cleanupErr,
+			"name", name,
+			"userId", userId.String(),
+		)
 	}
 	if !stateMatch {
 		return fmt.Errorf("no match found")

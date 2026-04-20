@@ -2,8 +2,7 @@ package apiv1
 
 import (
 	"context"
-
-	"github.com/rs/zerolog/log"
+	"log/slog"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -63,7 +62,7 @@ func (h *incidentDebriefsHandler) UpdateIncidentDebrief(ctx context.Context, req
 	var resp oapi.UpdateIncidentDebriefResponse
 
 	status := request.Body.Attributes.Status
-	log.Debug().Str("status", status).Msg("update")
+	slog.Debug("update", "status", status)
 
 	var debrief *ent.IncidentDebrief
 	var err error

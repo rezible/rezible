@@ -11,14 +11,12 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
-	slogzerolog "github.com/samber/slog-zerolog/v2"
 )
 
 type MessageService struct {
-	logger watermill.LoggerAdapter
-	router *message.Router
+	logger     watermill.LoggerAdapter
+	router     *message.Router
+	marshaller cqrs.CommandEventMarshaler
 
 	cmdBus  *cqrs.CommandBus
 	cmdProc *cqrs.CommandProcessor
@@ -28,14 +26,10 @@ type MessageService struct {
 }
 
 func NewMessageService() (*MessageService, error) {
-	var ms MessageService
-
-	slogOpts := slogzerolog.Option{
-		Level:  slog.LevelInfo,
-		Logger: zerolog.DefaultContextLogger,
+	ms := MessageService{
+		logger:     watermill.NewSlogLogger(slog.Default().With("package", "watermill")),
+		marshaller: cqrs.JSONMarshaler{GenerateName: cqrs.FullyQualifiedStructName},
 	}
-
-	ms.logger = watermill.NewSlogLogger(slog.New(slogOpts.NewZerologHandler()))
 
 	cfg := message.RouterConfig{
 		CloseTimeout: time.Second * 5,
@@ -57,7 +51,7 @@ func NewMessageService() (*MessageService, error) {
 		Logger:          ms.logger,
 	}
 
-	pubWithMetadata := message.MessageTransformPublisherDecorator(setMessageAccessScope)
+	pubWithMetadata := message.MessageTransformPublisherDecorator(ms.setMessageAccessScope)
 	mdPub, pubErr := pubWithMetadata(gcPubSub)
 	if pubErr != nil {
 		return nil, fmt.Errorf("failed to decorate publisher: %w", pubErr)
@@ -73,7 +67,7 @@ func NewMessageService() (*MessageService, error) {
 	ms.router.AddMiddleware(
 		middleware.CorrelationID,
 		throttle.Middleware,
-		restoreMessageAccessScope,
+		ms.restoreMessageAccessScope,
 		// send errors to different queue
 		poison,
 		// catch errors & retry up to 1 time, then bubble up
@@ -90,17 +84,12 @@ func NewMessageService() (*MessageService, error) {
 }
 
 func (ms *MessageService) Start(ctx context.Context) error {
-	log.Debug().Msg("starting message service")
+	ms.logger.Debug("starting message service", nil)
 	return ms.router.Run(ctx)
 }
 
-func (ms *MessageService) handlePoisonQueueMessageAdded(msg *message.Message) error {
-	log.Error().Msg("message sent to poison queue")
-	return nil
-}
-
 func (ms *MessageService) Stop(ctx context.Context) error {
-	log.Debug().Msg("stopping message service")
+	ms.logger.Debug("stopping message service", nil)
 	if !ms.router.IsRunning() {
 		return nil
 	}
@@ -108,70 +97,89 @@ func (ms *MessageService) Stop(ctx context.Context) error {
 }
 
 func (ms *MessageService) setup(pub message.Publisher, sub message.Subscriber) error {
-	cmdsPub := pub
-	cmdsSub := sub
+	if cmdsErr := ms.setupCommandProcessor(pub, sub); cmdsErr != nil {
+		return fmt.Errorf("command processor: %w", cmdsErr)
+	}
 
-	eventsPub := pub
-	eventsSub := sub
+	if cmdsErr := ms.setupEventProcessor(pub, sub); cmdsErr != nil {
+		return fmt.Errorf("event processor: %w", cmdsErr)
+	}
 
-	jsonMarshaller := cqrs.JSONMarshaler{GenerateName: cqrs.FullyQualifiedStructName}
+	return nil
+}
 
-	generateEventsTopic := func(eventName string) string {
+func (ms *MessageService) setupEventProcessor(pub message.Publisher, sub message.Subscriber) error {
+	generateTopic := func(eventName string) string {
 		return "events." + eventName
 	}
 
-	generateCommandsTopic := func(commandName string) string {
-		return "commands." + commandName
+	eventBusCfg := cqrs.EventBusConfig{
+		GeneratePublishTopic: func(params cqrs.GenerateEventPublishTopicParams) (string, error) {
+			return generateTopic(params.EventName), nil
+		},
+		OnPublish: func(params cqrs.OnEventSendParams) error {
+			slog.Debug("sending event", "name", params.EventName)
+			return nil
+		},
+		Marshaler: ms.marshaller,
+		Logger:    ms.logger,
+	}
+	eventBus, eventBusErr := cqrs.NewEventBusWithConfig(pub, eventBusCfg)
+	if eventBusErr != nil {
+		return fmt.Errorf("failed creating event bus: %w", eventBusErr)
+	}
+	ms.eventBus = eventBus
+
+	eventProcCfg := cqrs.EventProcessorConfig{
+		SubscriberConstructor: func(params cqrs.EventProcessorSubscriberConstructorParams) (message.Subscriber, error) {
+			return sub, nil
+		},
+		GenerateSubscribeTopic: func(params cqrs.EventProcessorGenerateSubscribeTopicParams) (string, error) {
+			return generateTopic(params.EventName), nil
+		},
+		Marshaler: ms.marshaller,
+		Logger:    ms.logger,
+	}
+
+	eventProc, eventProcErr := cqrs.NewEventProcessorWithConfig(ms.router, eventProcCfg)
+	if eventProcErr != nil {
+		return fmt.Errorf("failed creating event processor: %w", eventProcErr)
+	}
+	ms.eventProc = eventProc
+
+	return nil
+}
+
+func (ms *MessageService) setupCommandProcessor(pub message.Publisher, sub message.Subscriber) error {
+	generateTopic := func(eventName string) string {
+		return "commands." + eventName
 	}
 
 	cmdBusCfg := cqrs.CommandBusConfig{
 		GeneratePublishTopic: func(params cqrs.CommandBusGeneratePublishTopicParams) (string, error) {
-			return generateCommandsTopic(params.CommandName), nil
+			return generateTopic(params.CommandName), nil
 		},
 		OnSend: func(params cqrs.CommandBusOnSendParams) error {
-			log.Debug().Str("name", params.CommandName).Msg("sending command")
+			ms.logger.Debug("sending command", watermill.LogFields{"name": params.CommandName})
 			return nil
 		},
-		Marshaler: jsonMarshaller,
+		Marshaler: ms.marshaller,
 		Logger:    ms.logger,
 	}
 
 	cmdProcessorCfg := cqrs.CommandProcessorConfig{
 		SubscriberConstructor: func(params cqrs.CommandProcessorSubscriberConstructorParams) (message.Subscriber, error) {
 			// we can reuse subscriber, because all commands have separated topics
-			return cmdsSub, nil
+			return sub, nil
 		},
 		GenerateSubscribeTopic: func(params cqrs.CommandProcessorGenerateSubscribeTopicParams) (string, error) {
-			return generateCommandsTopic(params.CommandName), nil
+			return generateTopic(params.CommandName), nil
 		},
-		Marshaler: jsonMarshaller,
+		Marshaler: ms.marshaller,
 		Logger:    ms.logger,
 	}
 
-	eventBusCfg := cqrs.EventBusConfig{
-		GeneratePublishTopic: func(params cqrs.GenerateEventPublishTopicParams) (string, error) {
-			return generateEventsTopic(params.EventName), nil
-		},
-		OnPublish: func(params cqrs.OnEventSendParams) error {
-			log.Debug().Str("name", params.EventName).Msg("sending event")
-			return nil
-		},
-		Marshaler: jsonMarshaller,
-		Logger:    ms.logger,
-	}
-
-	eventProcCfg := cqrs.EventProcessorConfig{
-		SubscriberConstructor: func(params cqrs.EventProcessorSubscriberConstructorParams) (message.Subscriber, error) {
-			return eventsSub, nil
-		},
-		GenerateSubscribeTopic: func(params cqrs.EventProcessorGenerateSubscribeTopicParams) (string, error) {
-			return generateEventsTopic(params.EventName), nil
-		},
-		Marshaler: jsonMarshaller,
-		Logger:    ms.logger,
-	}
-
-	cmdBus, cmdBusErr := cqrs.NewCommandBusWithConfig(cmdsPub, cmdBusCfg)
+	cmdBus, cmdBusErr := cqrs.NewCommandBusWithConfig(pub, cmdBusCfg)
 	if cmdBusErr != nil {
 		return fmt.Errorf("failed creating command bus: %w", cmdBusErr)
 	}
@@ -182,18 +190,6 @@ func (ms *MessageService) setup(pub message.Publisher, sub message.Subscriber) e
 		return fmt.Errorf("failed creating command processor: %w", cmdProcErr)
 	}
 	ms.cmdProc = cmdProc
-
-	eventBus, eventBusErr := cqrs.NewEventBusWithConfig(eventsPub, eventBusCfg)
-	if eventBusErr != nil {
-		return fmt.Errorf("failed creating event bus: %w", eventBusErr)
-	}
-	ms.eventBus = eventBus
-
-	eventProc, eventProcErr := cqrs.NewEventProcessorWithConfig(ms.router, eventProcCfg)
-	if eventProcErr != nil {
-		return fmt.Errorf("failed creating event processor: %w", eventProcErr)
-	}
-	ms.eventProc = eventProc
 
 	return nil
 }

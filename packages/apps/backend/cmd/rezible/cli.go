@@ -3,19 +3,18 @@ package main
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/rezible/rezible/internal/postgres"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/urfave/cli/v3"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/internal"
 	"github.com/rezible/rezible/internal/koanf"
+	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/jobs"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
@@ -31,9 +30,6 @@ var rezcli = &cli.Command{
 		rez.Config, cfgErr = koanf.NewConfigLoader(ctx, cfgOpts)
 		if cfgErr != nil {
 			return nil, fmt.Errorf("failed to load configuration: %w", cfgErr)
-		}
-		if rez.Config.DebugMode() {
-			log.Logger = log.Level(zerolog.DebugLevel).Output(zerolog.ConsoleWriter{Out: os.Stderr})
 		}
 		return access.AnonymousContext(ctx), nil
 	},
@@ -134,6 +130,7 @@ func main() {
 	ctx, stopFn := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stopFn()
 	if runErr := rezcli.Run(ctx, os.Args); runErr != nil {
-		log.Fatal().Err(runErr).Msg("failed to run")
+		slog.Error("failed", "error", runErr)
+		os.Exit(1)
 	}
 }

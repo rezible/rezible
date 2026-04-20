@@ -9,7 +9,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	da "github.com/rezible/rezible/ent/documentaccess"
-	"github.com/rs/zerolog/log"
+	"log/slog"
 )
 
 type DocumentsServiceConfig struct {
@@ -101,10 +101,11 @@ func (s *DocumentsService) getBestDocumentAccess(ctx context.Context, docId uuid
 		listParams := rez.ListTeamsParams{TeamIds: accessTeamIds, UserIds: []uuid.UUID{userId}}
 		teams, teamsErr := s.teams.List(ctx, listParams)
 		if teamsErr != nil {
-			log.Error().Err(teamsErr).
-				Str("docId", docId.String()).
-				Str("userId", userId.String()).
-				Msg("Error listing document access teams")
+			slog.Error("Error listing document access teams",
+				"error", teamsErr,
+				"docId", docId.String(),
+				"userId", userId.String(),
+			)
 		} else {
 			for _, team := range teams {
 				if acc, ok := teamAccesses[team.ID]; ok {

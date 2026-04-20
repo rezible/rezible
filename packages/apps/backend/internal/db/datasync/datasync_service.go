@@ -3,10 +3,10 @@ package datasync
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"reflect"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
@@ -50,10 +50,10 @@ func (s *Syncer) SyncIntegrationsData(ctx context.Context, args jobs.SyncIntegra
 	}
 	for _, tenantId := range tenantIds {
 		if syncErr := s.syncTenantIntegrations(ctx, tenantId); syncErr != nil {
-			log.Error().
-				Err(syncErr).
-				Int("tenantId", tenantId).
-				Msg("failed to sync tenant integrations")
+			slog.Error("failed to sync tenant integrations",
+				"error", syncErr,
+				"tenantId", tenantId,
+			)
 		}
 	}
 
@@ -77,9 +77,9 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 
 	usersProvs, usersErr := integrations.GetUserDataProviders(ctx, intgs)
 	if usersErr != nil {
-		log.Error().Err(usersErr).Msg("failed to load user data providers")
+		slog.Error("failed to load user data providers", "error", usersErr)
 	}
-	log.Debug().Int("providers", len(usersProvs)).Msg("sync user data")
+	slog.Debug("sync user data", "providers", len(usersProvs))
 	for _, prov := range usersProvs {
 		if syncErr := syncUsers(ctx, s.db, prov); syncErr != nil {
 			return fmt.Errorf("user provider (%s): %w", reflect.TypeOf(prov).String(), syncErr)
@@ -88,7 +88,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 
 	teamsProviders, teamsErr := integrations.GetTeamDataProviders(ctx, intgs)
 	if teamsErr != nil {
-		log.Error().Err(teamsErr).Msg("failed to load teams data providers")
+		slog.Error("failed to load teams data providers", "error", teamsErr)
 	} else if len(teamsProviders) > 0 {
 		for _, teams := range teamsProviders {
 			if syncErr := syncTeams(ctx, s.db, teams); syncErr != nil {
@@ -99,7 +99,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 
 	oncallProviders, oncallErr := integrations.GetOncallDataProviders(ctx, intgs)
 	if oncallErr != nil {
-		log.Error().Err(oncallErr).Msg("failed to load oncall data providers")
+		slog.Error("failed to load oncall data providers", "error", oncallErr)
 	} else if len(oncallProviders) > 0 {
 		for _, oncall := range oncallProviders {
 			if syncErr := syncOncallRosters(ctx, s.db, oncall); syncErr != nil {
@@ -113,7 +113,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 
 	componentsProviders, componentsErr := integrations.GetSystemComponentsDataProviders(ctx, intgs)
 	if componentsErr != nil {
-		log.Error().Err(componentsErr).Msg("failed to load components data providers")
+		slog.Error("failed to load components data providers", "error", componentsErr)
 	} else if len(componentsProviders) > 0 {
 		for _, components := range componentsProviders {
 			if syncErr := syncSystemComponents(ctx, s.db, components); syncErr != nil {
@@ -124,7 +124,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 
 	alertsProviders, alertsErr := integrations.GetAlertDataProviders(ctx, intgs)
 	if alertsErr != nil {
-		log.Error().Err(alertsErr).Msg("failed to load alerts data providers")
+		slog.Error("failed to load alerts data providers", "error", alertsErr)
 	} else if len(alertsProviders) > 0 {
 		for _, alerts := range alertsProviders {
 			if syncErr := syncAlerts(ctx, s.db, alerts); syncErr != nil {
@@ -138,7 +138,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 
 	playbooksProviders, playbooksErr := integrations.GetPlaybookDataProviders(ctx, intgs)
 	if playbooksErr != nil {
-		log.Error().Err(playbooksErr).Msg("failed to load playbooks data providers")
+		slog.Error("failed to load playbooks data providers", "error", playbooksErr)
 	} else if len(playbooksProviders) > 0 {
 		for _, playbooks := range playbooksProviders {
 			if syncErr := syncPlaybooks(ctx, s.db, playbooks); syncErr != nil {
@@ -149,7 +149,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations) error {
 
 	incidentsProviders, incidentsErr := integrations.GetIncidentDataProviders(ctx, intgs)
 	if incidentsErr != nil {
-		log.Error().Err(incidentsErr).Msg("failed to load incidents data providers")
+		slog.Error("failed to load incidents data providers", "error", incidentsErr)
 	} else if len(incidentsProviders) > 0 {
 		for _, incidents := range incidentsProviders {
 			if syncErr := syncIncidentRoles(ctx, s.db, incidents); syncErr != nil {

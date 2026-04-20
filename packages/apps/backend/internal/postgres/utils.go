@@ -4,12 +4,13 @@ import (
 	"database/sql"
 	"errors"
 	"io"
+	"log/slog"
 
 	"entgo.io/ent/dialect"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
+
 	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 )
 
 func MakeEntClient(driver dialect.Driver) *ent.Client {
@@ -27,6 +28,6 @@ func withDbFromPool(pool *pgxpool.Pool, fn func(db *sql.DB) error) error {
 
 func closeResource(r io.Closer, name string) {
 	if closeErr := r.Close(); closeErr != nil && !errors.Is(closeErr, sql.ErrConnDone) {
-		log.Error().Err(closeErr).Msg("failed to close " + name)
+		slog.Error("failed to close "+name, "error", closeErr)
 	}
 }

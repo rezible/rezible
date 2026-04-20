@@ -3,12 +3,12 @@ package oidc
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
-	"github.com/rs/zerolog/log"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
@@ -224,7 +224,7 @@ func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, no
 	}
 
 	if h.singleTenantOrg != nil {
-		log.Debug().Msg("using single tenant organization")
+		slog.Debug("using single tenant organization")
 		info.org = *h.singleTenantOrg
 	}
 

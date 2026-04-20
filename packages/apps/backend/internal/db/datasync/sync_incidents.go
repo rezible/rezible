@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"log/slog"
 	"time"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -209,7 +209,7 @@ func (b *incidentBatcher) syncIncidentRoleAssignments(ctx context.Context, dbInc
 
 		role, roleExists := b.provIdRoleMap[provRole.ExternalID]
 		if !roleExists {
-			log.Warn().Str("id", provRole.ExternalID).Msg("failed to lookup incident role")
+			slog.Warn("failed to lookup incident role", "id", provRole.ExternalID)
 			return nil, fmt.Errorf("missing db role for id: %s", provRole.ExternalID)
 		}
 

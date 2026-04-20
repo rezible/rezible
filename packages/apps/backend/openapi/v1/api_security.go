@@ -3,15 +3,16 @@ package v1
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/openapi"
-	"github.com/rs/zerolog/log"
 )
 
 var (
@@ -67,13 +68,13 @@ func MakeSecurityMiddleware(api openapi.API, auth rez.AuthSessionService) openap
 		if authCtxErr != nil {
 			statusErr := convertAuthStatusError(api, c, authCtxErr)
 			if respErr := huma.WriteErr(api, c, statusErr.GetStatus(), statusErr.Error()); respErr != nil {
-				log.Error().Err(respErr).Msg("failed to write api error response")
+				slog.Error("failed to write api error response", "error", respErr)
 			}
 			return
 		}
 
 		if len(scopes) > 0 {
-			log.Debug().Strs("scopes", scopes).Msg("TODO: verify scopes")
+			slog.Debug("TODO: verify scopes", "scopes", scopes)
 		}
 
 		next(huma.WithContext(c, authCtx))
@@ -171,6 +172,6 @@ func convertAuthStatusError(api huma.API, c huma.Context, err error) huma.Status
 	} else if errors.Is(err, rez.ErrDomainNotAllowed) {
 		return ErrDomainNotAllowed
 	}
-	log.Warn().Err(err).Msg("unknown auth status error")
+	slog.Warn("unknown auth status error", "error", err)
 	return ErrAuthSessionInvalid
 }

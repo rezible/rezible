@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"log/slog"
 	"text/template"
 
 	"ariga.io/atlas/sql/migrate"
@@ -14,7 +15,6 @@ import (
 	"entgo.io/ent/dialect/sql/schema"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/rezible/rezible/internal/postgres/river"
-	"github.com/rs/zerolog/log"
 
 	_ "github.com/jackc/pgx/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -147,10 +147,10 @@ func runMigration(ctx context.Context, pool *pgxpool.Pool, direction string) err
 			}
 			closeSrcErr, closeDbErr := m.Close()
 			if closeSrcErr != nil || closeDbErr != nil {
-				log.Error().
-					AnErr("closeSrcErr", closeSrcErr).
-					AnErr("closeDbErr", closeDbErr).
-					Msg("failed to close migrator")
+				slog.Error("failed to close migrator",
+					"closeSrcErr", closeSrcErr,
+					"closeDbErr", closeDbErr,
+				)
 			}
 		}(migrator)
 

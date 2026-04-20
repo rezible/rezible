@@ -3,13 +3,13 @@ package apiv1
 import (
 	"context"
 	"encoding/json"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -70,7 +70,7 @@ func (h *oncallShiftsHandler) GetAdjacentOncallShifts(ctx context.Context, reque
 
 	prev, next, shiftErr := h.shifts.GetAdjacentShifts(ctx, request.Id)
 	if shiftErr != nil {
-		log.Debug().Err(shiftErr).Msg("GetAdjacentOncallShifts")
+		slog.Debug("GetAdjacentOncallShifts", "error", shiftErr)
 		return nil, oapi.Error("failed to query adjacent shifts", shiftErr)
 	}
 	var adj oapi.OncallShiftsAdjacent

@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"log/slog"
 
 	"github.com/google/uuid"
-	"github.com/rs/zerolog/log"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -55,7 +55,7 @@ func (b *usersBatcher) createBatchMutations(ctx context.Context, batch []*ent.Us
 	for _, provUser := range batch {
 		dbUser, exists := dbEmailMap[provUser.Email]
 		if !exists {
-			log.Debug().Interface("user", provUser).Msg("user not found in database, creating")
+			slog.Debug("user not found in database, creating", "user", provUser)
 		}
 		userMut, syncErr := b.syncUser(dbUser, provUser)
 		if syncErr != nil {

@@ -4,13 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 
-	rez "github.com/rezible/rezible"
-	"github.com/rs/zerolog/log"
+	"github.com/sourcegraph/conc/pool"
+
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
-	"github.com/sourcegraph/conc/pool"
+
+	rez "github.com/rezible/rezible"
 )
 
 type SocketModeListener struct {
@@ -49,22 +51,20 @@ func (l *SocketModeListener) Start(baseCtx context.Context) error {
 	p.Go(l.client.RunContext)
 	p.Go(l.runEventConsumerLoop)
 
-	log.Info().Msg("Listening for slack events in socket mode")
+	slog.Info("Listening for slack events in socket mode")
 
 	return nil
 }
 
 func (l *SocketModeListener) Stop(ctx context.Context) error {
-	log.Info().Msg("Stopping Slack socket mode listener")
+	slog.Info("Stopping Slack socket mode listener")
 	return l.stopFn()
 }
 
 func (l *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
-			log.Error().
-				Interface("panic", panicErr).
-				Msg("panic while handling socket mode event")
+			slog.Error("panic while handling socket mode event", "panic", panicErr)
 		}
 	}()
 	for {
@@ -81,7 +81,7 @@ func (l *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 
 func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
 	if evt.Request == nil || evt.Type == socketmode.EventTypeHello {
-		log.Debug().Str("type", string(evt.Type)).Msg("ignoring socketmode event")
+		slog.Debug("ignoring socketmode event", "type", string(evt.Type))
 		return
 	}
 
@@ -94,12 +94,13 @@ func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 		handleErr = l.onInteractionCallback(ctx, evt)
 	}
 	if handleErr != nil {
-		log.Error().Err(handleErr).
-			Str("event_type", string(evt.Type)).
-			Msg("socketmode handler error")
+		slog.Error("socketmode handler error",
+			"error", handleErr,
+			"event_type", string(evt.Type),
+		)
 	}
 	if ackErr := l.client.AckCtx(ctx, evt.Request.EnvelopeID, nil); ackErr != nil {
-		log.Error().Err(ackErr).Msgf("Error acking socket mode event")
+		slog.Error("Error acking socket mode event", "error", ackErr)
 	}
 }
 

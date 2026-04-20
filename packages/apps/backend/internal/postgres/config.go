@@ -3,13 +3,13 @@ package postgres
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/river"
-	"github.com/rs/zerolog/log"
 )
 
 func LoadConfig() (Config, error) {
@@ -79,7 +79,7 @@ func openPgxPool(ctx context.Context, connString string) (*pgxpool.Pool, error) 
 		return nil, fmt.Errorf("create: %w", poolErr)
 	}
 	if pingErr := pool.Ping(ctx); pingErr != nil {
-		log.Error().Err(pingErr).Msg("failed to ping postgres")
+		slog.Error("failed to ping postgres", "error", pingErr)
 	}
 
 	return pool, nil

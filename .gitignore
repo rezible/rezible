@@ -7,3 +7,4 @@ node_modules/
 scripts/certs/
 **/CLAUDE.md
 **/AGENTS.md
+**/.codex
