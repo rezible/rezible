@@ -1,34 +1,19 @@
-environment: [".env", ".env.dev"]
+environment: [".env", ".env.workspace"]
 
 processes:
-  postgres:
-    command: docker compose up postgres
-    is_daemon: false
-    readiness_probe:
-      exec:
-        command: '! docker compose ps postgres | grep -q unhealthy'
-      initial_delay_seconds: 3
-      period_seconds: 3
-      timeout_seconds: 2
-      success_threshold: 1
-      failure_threshold: 3
-    availability:
-      restart: always
-
   dex:
-    command: docker compose up dex
-    is_daemon: false
+    command: just devenv run-dex
     availability:
       restart: on_failure
       max_restarts: 1
 
   backend:
     command: just backend dev
+    environment:
+      - AUTH__OIDC__ISSUER=${AUTH_URL}
+      - SERVER__HTTP__PORT=${BACKEND_PORT}
     availability:
       restart: always
-    depends_on:
-      postgres:
-          condition: process_healthy
 
   frontend:
     command: bun run --filter=@rezible/frontend dev

@@ -1,10 +1,6 @@
 set shell := ["bash", "-uc"]
 set fallback
 
-export POSTGRES__HOST := "localhost"
-export SERVER__HTTP__DOCUMENTS_PROXY__PROXY_HOST := "http://localhost:" + env("BACKEND_PORT")
-export AUTH__OIDC__ISSUER := env("AUTH_URL")
-
 install:
     go mod tidy
 

@@ -1,7 +1,9 @@
 set shell := ["bash", "-uc"]
-set dotenv-filename := ".env.dev"
+
+set dotenv-filename := ".env.workspace"
 
 mod backend 'packages/apps/backend'
+mod devenv 'devenv'
 
 _default:
   @just --list
@@ -9,31 +11,11 @@ _default:
 @setup:
     just backend install
     bun install
-    devbox run setup-db
+    just devenv setup
 
-@_docker-compose *ARGS:
-    docker compose --ansi never {{ARGS}} > /dev/null 2>&1
-
-@setup-db: stop-services
-    just _docker-compose down postgres -v
-    just start-db
-    just backend apply-migrations
-
-@stop-services:
-    just _docker-compose down
-
-@start-db:
-    just _docker-compose up postgres --wait
-
-@dev: stop-services
+@dev:
+    just devenv ensure-postgres-ready
     process-compose --ordered-shutdown
-
-@setup-localias:
-    localias stop && localias start
-    localias set ${APP_DOMAIN} ${API_PORT}
-    localias set ${API_DOMAIN} ${BACKEND_PORT}
-    localias set ${AUTH_DOMAIN} ${AUTH_PORT}
-    # localias set ${POSTGRES_DOMAIN} $(just get-docker-postgres-port)
 
 @build-app-docker APP:
     docker build -t "localhost/rez-{{APP}}:latest" -f "./packages/apps/{{APP}}/Dockerfile" .

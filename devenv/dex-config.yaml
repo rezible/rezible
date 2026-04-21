@@ -1,6 +1,6 @@
 issuer: "{{ .Env.AUTH_URL }}"
 web:
-  http: "0.0.0.0:{{ .Env.PORT }}"
+  http: "0.0.0.0:7011"
   allowedOrigins: ["{{ .Env.APP_URL }}", "{{ .Env.API_URL }}"]
 storage:
   type: sqlite3

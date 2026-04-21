@@ -1,0 +1,26 @@
+set shell := ["bash", "-uc"]
+
+[arg("force", long="force", value="true")]
+@setup force="false":
+    FORCE_SETUP={{force}} bun run setup.ts
+
+@ensure-postgres-ready:
+    docker exec -it rezible-postgres pg_isready -h localhost
+
+@setup-localias:
+    localias set ${APP_DOMAIN} ${API_PORT}
+    localias set ${API_DOMAIN} ${BACKEND_PORT}
+    localias set ${AUTH_DOMAIN} ${AUTH_PORT}
+
+@run-dex:
+    docker run --rm \
+        --name dex-${WORKSPACE_ID} \
+        --restart on-failure:2 \
+        -p "${AUTH_PORT}:7011" \
+        -v "./dex-config.yaml:/etc/dex/config.yaml:ro" \
+        -v "./localias-ca.crt:/etc/ssl/localias.crt:ro" \
+        -e AUTH_URL="${AUTH_URL}" \
+        -e APP_URL="${APP_URL}" \
+        -e API_URL="${API_URL}" \
+        dexidp/dex:v2.41.1 \
+        dex serve /etc/dex/config.yaml

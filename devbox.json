@@ -10,10 +10,7 @@
   },
   "env_from": ".env",
   "env": {
-    "DEV_DOMAIN": "dev.rezible.com",
-    "APP_PORT": "7000",
-    "BACKEND_PORT": "7001",
-    "AUTH_PORT": "7011"
+    "DEV_DOMAIN": "dev.rezible.com"
   },
   "shell": {
     "init_hook": [
