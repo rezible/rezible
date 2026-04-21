@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { subDays } from "date-fns";
 	import { createQuery } from "@tanstack/svelte-query";
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";

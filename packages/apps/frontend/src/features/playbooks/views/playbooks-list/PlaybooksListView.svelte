@@ -2,7 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { listPlaybooksOptions, type ListPlaybooksData, type Playbook } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";

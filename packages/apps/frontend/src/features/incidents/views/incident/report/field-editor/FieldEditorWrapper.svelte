@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { type RetrospectiveReportSection } from "$lib/api";
-	import { useAuthSessionState } from "$lib/auth.svelte";
+	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
 	import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 	import type { Editor, Extensions } from "@tiptap/core";

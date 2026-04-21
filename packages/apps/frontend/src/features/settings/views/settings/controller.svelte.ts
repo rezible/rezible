@@ -1,7 +1,7 @@
 import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
 import { page } from "$app/state";
-import { setPageBreadcrumbs } from "$lib/appShell.svelte";
-import { useAuthSessionState } from "$lib/auth.svelte";
+import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { convertSettingsViewParam, type SettingsViewParam } from "$src/params/settingsView";
 import { Context } from "runed";
 import { initIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";

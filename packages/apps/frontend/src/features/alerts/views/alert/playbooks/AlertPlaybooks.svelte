@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { useAlertViewController } from "$features/alerts/views/alert";
-	import { listPlaybooksOptions, type ListPlaybooksData, type Playbook } from "$src/lib/api";
-	import { QueryPaginatorState } from "$src/lib/paginator.svelte";
+	import { listPlaybooksOptions, type ListPlaybooksData, type Playbook } from "$lib/api";
+	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
 	import RosterSelectField from "$src/components/roster-select-field/RosterSelectField.svelte";

@@ -5,8 +5,8 @@
 	import AppSidebar from "./app-sidebar/AppSidebar.svelte";
 	import PageHeader from "./PageHeader.svelte";
 
-	import { initAppShell } from "$lib/appShell.svelte";
-	import { initAuthSessionState } from "$lib/auth.svelte";
+	import { initAppShell } from "$lib/app-shell.svelte";
+	import { initAuthSessionState } from "$src/lib/auth-session.svelte";
 	import { initUserOncallInformationState } from "$lib/userOncall.svelte";
 	import { Spinner } from "$src/components/ui/spinner";
 

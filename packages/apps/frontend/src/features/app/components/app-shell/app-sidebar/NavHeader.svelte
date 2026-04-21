@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useAuthSessionState } from "$lib/auth.svelte";
+	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 	import { cn } from "$lib/utils";
     import * as Sidebar from "$components/ui/sidebar";
 

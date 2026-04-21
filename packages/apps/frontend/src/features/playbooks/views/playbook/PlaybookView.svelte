@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useAppShell } from "$lib/appShell.svelte";
+	import { useAppShell } from "$lib/app-shell.svelte";
 	import { initPlaybookViewController } from "./controller.svelte";
 	import PlaybookEditor from "./PlaybookEditor.svelte";
 	import PlaybookPageActions from "./PlaybookPageActions.svelte";

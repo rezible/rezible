@@ -1,6 +1,6 @@
 import z from "zod";
 import { goto } from "$app/navigation";
-import { useAuthSessionState, AuthSessionErrorCategory } from "$lib/auth.svelte";
+import { useAuthSessionState, AuthSessionErrorCategory } from "$src/lib/auth-session.svelte";
 import type { ErrorModel } from "$lib/api";
 import { page } from "$app/state";
 

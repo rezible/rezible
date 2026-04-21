@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiAbacus } from "@mdi/js";
 	import type { IncidentDebriefMessage } from "$lib/api";
-	import { useAuthSessionState } from "$lib/auth.svelte";
+	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import PulseLoader from "$components/loading-indicator/PulseLoader.svelte";
 	import { onMount } from "svelte";

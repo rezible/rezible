@@ -1,4 +1,4 @@
-import { useAuthSessionState } from "$src/lib/auth.svelte";
+import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { Context } from "runed";
 
 export class GeneralSettingsController {

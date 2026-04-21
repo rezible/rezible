@@ -7,7 +7,6 @@
 	import { listSystemComponentKindsOptions } from "$lib/api";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { componentAttributes } from "./dialogState.svelte";
-	import { getSystemComponentKindMenuOptions } from "$lib/systemComponents";
 	import { ComponentTraitsState } from "./componentTraitsState.svelte";
 
 	const componentTraits = new ComponentTraitsState();
@@ -17,7 +16,7 @@
 	const kindsQuery = createQuery(() => listSystemComponentKindsOptions({}));
 	const kinds = $derived(kindsQuery.data?.data ?? []);
 	// const kindsMap = $derived(new SvelteMap(kinds.map((k) => [k.id, k])));
-	const kindOptions = $derived(getSystemComponentKindMenuOptions(kinds));
+	const kindOptions = $derived(kinds.map(k => ({ label: k.attributes.label, value: k.id })));
 	const onKindSelected = ({detail}: CustomEvent<{value?: string | null}>) => {
 		attr.kindId = detail.value ?? "";
 	};

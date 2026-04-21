@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import { listOncallRostersOptions, type ListOncallRostersData, type OncallRoster } from "$lib/api";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";

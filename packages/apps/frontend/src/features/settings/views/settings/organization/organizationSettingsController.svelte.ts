@@ -11,7 +11,7 @@ import {
 	updateTeamMembershipMutation,
 	updateTeamsMutation,
 } from "$lib/api";
-import { useAuthSessionState } from "$lib/auth.svelte";
+import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { SvelteMap } from "svelte/reactivity";

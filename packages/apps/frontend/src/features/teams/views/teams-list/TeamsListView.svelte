@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listTeamsOptions, type Team } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import SearchInput from "$components/search-input/SearchInput.svelte";

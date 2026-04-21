@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 
 	import ShiftsHeader from "./shifts-header/ShiftsHeader.svelte";
 	import EventsTable from "./events-table/EventsTable.svelte";

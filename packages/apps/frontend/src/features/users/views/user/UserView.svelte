@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import Avatar from "$components/avatar/Avatar.svelte";
 	import Header from "$components/header/Header.svelte";
 	import OncallStats from "./OncallStats.svelte";

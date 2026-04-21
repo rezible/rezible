@@ -6,7 +6,6 @@ import {
 import { onMount } from "svelte";
 import { Context, watch } from "runed";
 import type { IncidentViewController } from "./controller.svelte";
-import { API_PATH_BASE } from "$lib/config";
 
 export class IncidentCollaborationController {
 	incidentView: IncidentViewController;
@@ -41,7 +40,7 @@ export class IncidentCollaborationController {
 		if (!id) return;
 
 		this.provider = new HocuspocusProvider({
-			url: API_PATH_BASE + "/documents",
+			url: "/api/documents",
 			token: "foobar",
 			name: id,
 			onAwarenessChange: ({states}) => {

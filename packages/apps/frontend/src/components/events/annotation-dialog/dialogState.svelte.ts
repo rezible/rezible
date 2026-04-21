@@ -1,4 +1,4 @@
-import { useAuthSessionState } from "$lib/auth.svelte";
+import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { createEventAnnotationMutation, updateEventAnnotationMutation, type Event, type EventAnnotation } from "$lib/api";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";

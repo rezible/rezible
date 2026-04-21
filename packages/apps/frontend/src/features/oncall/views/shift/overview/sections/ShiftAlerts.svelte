@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { OncallShiftMetrics } from "$lib/api";
-	import { hour12, hour12Label } from "$lib/format.svelte";
 
 	import { Button } from "$components/ui/button";
 
@@ -69,6 +68,16 @@
 		{ title: "Accuracy", subheading: `Alerts that correctly indicated an issue`, value: "" },
 		{ title: "Documentation", subheading: `Alerts that had sufficient accompanying information`, value: "" },
 	]);
+
+	const hour12 = (hour: number) => {
+		if (hour > 12) return hour - 12;
+		if (hour == 0) return 12;
+		return hour;
+	};
+
+	const hour12Label = (hour: number): string => {
+		return `${hour12(hour)}${hour >= 12 ? 'PM' : 'AM'}`;
+	};
 
 	const MinRadius = 30;
 	// TODO: maybe https://echarts.apache.org/examples/en/editor.html?c=bar-polar-stack-radial

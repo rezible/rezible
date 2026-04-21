@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { type MeetingSchedule as MeetingScheduleType } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import { initMeetingScheduleViewController } from "./controller.svelte";
 	import MeetingSchedule from "./MeetingSchedule.svelte";

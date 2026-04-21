@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useAppShell } from "$lib/appShell.svelte";
+	import { useAppShell } from "$lib/app-shell.svelte";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 
 	import { initOncallRosterViewController } from "./controller.svelte";

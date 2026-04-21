@@ -1,5 +1,5 @@
 import { configureIntegrationMutation, type ConfigureIntegrationRequestBody, type ErrorModel, listConfiguredIntegrationsOptions, listAvailableIntegrationsOptions, completeIntegrationOauthFlowMutation, startIntegrationOauthFlowMutation } from "$lib/api";
-import { useAuthSessionState } from "$lib/auth.svelte";
+import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";

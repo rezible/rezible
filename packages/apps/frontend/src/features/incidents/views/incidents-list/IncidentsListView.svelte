@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Incident } from "$lib/api";
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import OrganizationTeamsTab from "./tabs/OrganizationTeamsTab.svelte";
 	import OrganizationUsersTab from "./tabs/OrganizationUsersTab.svelte";

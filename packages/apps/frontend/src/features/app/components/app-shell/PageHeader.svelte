@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useAppShell } from "$lib/appShell.svelte";
+	import { useAppShell } from "$lib/app-shell.svelte";
 	import * as Sidebar from "$components/ui/sidebar";
 	import * as Breadcrumb from "$components/ui/breadcrumb";
 

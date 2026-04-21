@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useAuthSessionState } from "$lib/auth.svelte";
+	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 	import * as Sidebar from "$components/ui/sidebar";
 	import * as Avatar from "$components/ui/avatar";
 	import UserAvatar from "$components/avatar/Avatar.svelte";

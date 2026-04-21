@@ -1,6 +1,5 @@
 import type { CreateQueryResult } from "@tanstack/svelte-query";
 import { watch } from "runed";
-import { fromStore } from "svelte/store";
 import type { ErrorModel, ResponsePagination } from "./api";
 
 type PaginatedData = {

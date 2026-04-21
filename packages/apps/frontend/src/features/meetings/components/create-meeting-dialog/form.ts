@@ -4,8 +4,18 @@ import type {
 	CreateMeetingSessionRequestBody,
 } from "$lib/api";
 import { getLocalTimeZone, now, type ZonedDateTime } from "@internationalized/date";
-import { ZodZonedDateTime } from "$lib/date-utils";
-import { WeekdaysShort, type Weekday } from "$lib/scheduling";
+
+export const WeekdaysShort = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"] as const;
+export type Weekday = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
+export const Weekdays: { value: Weekday; label: string }[] = [
+	{ value: "sun", label: "Sunday" },
+	{ value: "mon", label: "Monday" },
+	{ value: "tue", label: "Tuesday" },
+	{ value: "wed", label: "Wednesday" },
+	{ value: "thu", label: "Thursday" },
+	{ value: "fri", label: "Friday" },
+	{ value: "sat", label: "Saturday" },
+];
 
 export type CreateMeetingFormData = {
 	name: string;
@@ -39,6 +49,21 @@ export const getEmptyForm = (): CreateMeetingFormData => {
 		numRepetitions: 2,
 	}
 };
+
+const refineZonedDateTimeString = (dateStr: string) => {
+	try {
+		const [datePart, timezonePart] = dateStr.split("[");
+		if (!datePart || !timezonePart?.endsWith("]")) return false;
+
+		const isoDateTimeRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/;
+		return isoDateTimeRegex.test(datePart) &&
+			/^[A-Za-z_/]+$/.test(timezonePart.slice(0, -1));
+	} catch {
+		return false;
+	}
+}
+
+const ZodZonedDateTime = z.string().refine(refineZonedDateTimeString, "Invalid ZonedDateTime format");
 
 const meetingFormSchema = z.object({
 	name: z.string().min(1),

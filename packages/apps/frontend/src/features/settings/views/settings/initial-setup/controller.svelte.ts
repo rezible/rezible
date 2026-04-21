@@ -1,5 +1,5 @@
 import { finishOrganizationSetupMutation, type ConfiguredIntegration } from "$lib/api";
-import { useAuthSessionState } from "$lib/auth.svelte";
+import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { Context, watch } from "runed";
 import { createMutation } from "@tanstack/svelte-query";
 import { initIntegrationsController } from "$src/features/settings/lib/integrationsController.svelte";

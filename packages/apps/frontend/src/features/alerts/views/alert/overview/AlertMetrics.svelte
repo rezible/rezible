@@ -1,14 +1,20 @@
 <script lang="ts">
 	import { mdiLineScan, mdiPhoneAlert, mdiMoonWaxingCrescent, mdiClipboardText, mdiCalendarRange } from "@mdi/js";
+	import { CalendarDate, getLocalTimeZone, now, type DateTimeDuration } from "@internationalized/date";
 	import MetricCard from "$src/components/viz/MetricCard.svelte";
 	import { useAlertViewController } from "$features/alerts/views/alert";
-	import { makeCalendarDateString, makeDateRangeWindow } from "$lib/date-utils";
 	import { getAlertMetricsOptions, type GetAlertMetricsData } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 
 	const view = useAlertViewController();
+
+	const makeCalendarDateString = (d: Date) => (new CalendarDate(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()).toString());
 	
-	const defaultDateRange = makeDateRangeWindow({ days: 7 });
+	const defaultDateRange = { 
+		from: now(getLocalTimeZone()).subtract({days: 7}).toDate(),
+		to: now(getLocalTimeZone()).toDate(),
+		periodType: "day",
+	};
 	let dateRange = $state({ from: defaultDateRange.from, to: defaultDateRange.to });
 
 	const dateFrom = $derived(!!dateRange?.from ? dateRange.from : defaultDateRange.from);

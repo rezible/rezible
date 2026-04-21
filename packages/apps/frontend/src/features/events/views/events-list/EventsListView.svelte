@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { setPageBreadcrumbs } from "$lib/appShell.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import ListFilters from "./ListFilters.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";

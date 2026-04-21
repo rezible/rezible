@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useAppShell, type PageBreadcrumb } from "$lib/appShell.svelte";
+	import { useAppShell, type PageBreadcrumb } from "$lib/app-shell.svelte";
 
 	import type { IncidentViewRouteParam } from "$params/incidentView";
 	import { initIncidentViewController, type IncidentViewParams } from "./controller.svelte";
