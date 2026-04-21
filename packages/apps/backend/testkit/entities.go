@@ -36,7 +36,7 @@ func (s *Suite) SeedTestEntities() {
 	}
 	org, orgErr := s.Client().Organization.Create().
 		SetName("Test Organization").
-		SetDomain("example.com").
+		SetAuthProviderID("test-org").
 		Save(ctx)
 	s.Require().NoError(orgErr, "failed to create organization")
 	s.SeedOrganization = org

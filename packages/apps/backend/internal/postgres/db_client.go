@@ -2,7 +2,6 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log/slog"
 
@@ -31,36 +30,21 @@ func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
 		return nil, fmt.Errorf("load config: %w", cfgErr)
 	}
 
-	pool, poolErr := openPgxPool(ctx, cfg.getDsn(cfg.AppRole))
-	if poolErr != nil {
-		return nil, poolErr
+	if migrationsErr := RequireCurrentMigrations(ctx, cfg); migrationsErr != nil {
+		return nil, fmt.Errorf("migration status: %w", migrationsErr)
 	}
 
-	driver := entpgx.NewPgxPoolDriver(pool)
-	dbc := &DatabaseClient{pool: pool, driver: driver}
+	pool, poolErr := openPgxPool(ctx, cfg.getDsn(cfg.AppRole))
+	if poolErr != nil {
+		return nil, fmt.Errorf("open pgxpool: %w", poolErr)
+	}
 
-	if migrationsErr := dbc.requireUpToDateMigrations(ctx); migrationsErr != nil {
-		dbc.Close()
-		return nil, fmt.Errorf("migrations: %w", migrationsErr)
+	dbc := &DatabaseClient{
+		pool:   pool,
+		driver: entpgx.NewPgxPoolDriver(pool),
 	}
 
 	return dbc, nil
-}
-
-func (dbc *DatabaseClient) requireUpToDateMigrations(ctx context.Context) error {
-	return withDbFromPool(dbc.pool, func(db *sql.DB) error {
-		status, statusErr := getMigrationStatusFromDB(ctx, db)
-		if statusErr != nil {
-			return fmt.Errorf("read migration status: %w", statusErr)
-		}
-		if status.Dirty {
-			return fmt.Errorf("database migrations are dirty: %s", status)
-		}
-		if status.Pending() {
-			return fmt.Errorf("database migrations are pending: %s", status)
-		}
-		return nil
-	})
 }
 
 func (dbc *DatabaseClient) Client() *ent.Client {

@@ -4,7 +4,7 @@ node_modules/
 .devbox/
 .idea/
 .vscode/
-scripts/certs/
+devenv/*.crt
 **/CLAUDE.md
 **/AGENTS.md
 **/.codex

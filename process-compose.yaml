@@ -1,42 +1,43 @@
-environment:
-  - .env
-  - .env.dev
+environment: [".env", ".env.dev"]
 
 processes:
-  dev-services:
-    command: just run-dev-services
+  postgres:
+    command: docker compose up postgres
     is_daemon: false
     readiness_probe:
       exec:
-        command: just get-dev-services-healthy
+        command: '! docker compose ps postgres | grep -q unhealthy'
       initial_delay_seconds: 3
       period_seconds: 3
       timeout_seconds: 2
       success_threshold: 1
       failure_threshold: 3
     availability:
-      restart: "always"
+      restart: always
+
+  dex:
+    command: docker compose up dex
+    is_daemon: false
+    availability:
+      restart: on_failure
+      max_restarts: 1
 
   backend:
     command: just backend dev
     availability:
       restart: always
     depends_on:
-      dev-services:
+      postgres:
           condition: process_healthy
 
   frontend:
-    command: just run-frontend dev
+    command: bun run --filter=@rezible/frontend dev
     availability:
-      restart: on_failure
-      max_restarts: 1
-    depends_on:
-      backend:
-        condition: process_started
+      restart: always
 
   documents-server:
     disabled: true
-    command: just run-documents-server dev
+    command: bun run --filter=@rezible/documents-server dev
     availability:
       restart: on_failure
       max_restarts: 1

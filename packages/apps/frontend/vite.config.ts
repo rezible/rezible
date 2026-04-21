@@ -17,7 +17,7 @@ export default defineConfig(({mode}) => {
             allowedHosts: [env.APP_DOMAIN],
             proxy: {
                 "/api": {
-                    target: `http://${env.PROXY_BACKEND_UPSTREAM_HOST}`,
+                    target: `http://localhost:${env.BACKEND_PORT}`,
                     rewrite: (path) => path.replace(/^\/api/, ""),
                 }
             },

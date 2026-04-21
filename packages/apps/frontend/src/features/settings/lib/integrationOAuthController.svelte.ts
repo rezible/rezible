@@ -1,5 +1,4 @@
 import { Context, watch } from "runed";
-import { useSearchParams } from "runed/kit";
 import { z } from "zod";
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import {
@@ -18,16 +17,11 @@ export const oauthCallbackParamsSchema = z.object({
 });
 
 export class IntegrationOAuthController {
-    private callbackParams = useSearchParams(oauthCallbackParamsSchema);
-    private callbackName = $derived(this.callbackParams.name);
-
     private inFlow = $state(false);
 
     constructor() {
         this.inFlow = false;
-        watch(() => this.callbackName, name => {
-            if (name) this.onCallback(name);
-        });
+        this.checkCallback();
     }
 
     private queryClient = useQueryClient();
@@ -66,20 +60,23 @@ export class IntegrationOAuthController {
         }
     }
 
-    private async onCallback(name: string) {
+    private async checkCallback() {
         if (this.completeFlowMut.isPending) return;
-        console.log("callback", name);
 
-        const { state, code } = this.callbackParams;
-        if (!state || !code) return;
+        const params = page.url.searchParams;
+        const name = params.get("name");
+        const code = params.get("code");
+        const state = params.get("state");
+        
+        if (!name || !state || !code) return;
 
         try {
             const resp = await this.completeFlowMut.mutateAsync({ path: { name }, body: { attributes: { state, code } } });
-            this.callbackParams.reset();
-            await goto(page.url.pathname);
+            console.log("clear?");
         } catch (e) {
             this.setFlowError(e);
         }
+        await goto(window.location.pathname, { replaceState: true, noScroll: true });
     }
 };
 

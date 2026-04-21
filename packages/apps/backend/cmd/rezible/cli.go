@@ -71,11 +71,11 @@ var rezcli = &cli.Command{
 			},
 		},
 		{
-			Name:  "db",
-			Usage: "backend server control",
+			Name:  "migrations",
+			Usage: "database migrations control",
 			Commands: []*cli.Command{
 				{
-					Name:  "create-migration",
+					Name:  "create",
 					Usage: "Create a new database migration",
 					Arguments: []cli.Argument{
 						&cli.StringArg{
@@ -85,7 +85,22 @@ var rezcli = &cli.Command{
 						},
 					},
 					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return postgres.GenerateEntMigration(ctx, cmd.StringArg("name"))
+						return postgres.CreateSchemaMigration(ctx, cmd.StringArg("name"))
+					},
+				},
+				{
+					Name:  "apply",
+					Usage: "Apply pending database migrations",
+					Arguments: []cli.Argument{
+						&cli.StringArg{
+							Name:      "direction",
+							Value:     "up",
+							UsageText: "direction to migrate",
+							Config:    cli.StringConfig{TrimSpace: true},
+						},
+					},
+					Action: func(ctx context.Context, cmd *cli.Command) error {
+						return postgres.RunMigrations(ctx, cmd.StringArg("direction"))
 					},
 				},
 				{
@@ -93,32 +108,6 @@ var rezcli = &cli.Command{
 					Usage: "Update the database migrations checksum file",
 					Action: func(ctx context.Context, cmd *cli.Command) error {
 						return postgres.UpdateMigrationsChecksum()
-					},
-				},
-				{
-					Name:  "migrate-up",
-					Usage: "Apply all pending database migrations",
-					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return postgres.RunMigration(ctx, "up")
-					},
-				},
-				{
-					Name:  "migrate-down",
-					Usage: "Rollback last database migration",
-					Action: func(ctx context.Context, cmd *cli.Command) error {
-						return postgres.RunMigration(ctx, "down")
-					},
-				},
-				{
-					Name:  "migration-status",
-					Usage: "Print migration status",
-					Action: func(ctx context.Context, cmd *cli.Command) error {
-						status, statusErr := postgres.GetMigrationStatus(ctx)
-						if statusErr != nil {
-							return statusErr
-						}
-						fmt.Printf("%s\n", status)
-						return nil
 					},
 				},
 			},

@@ -1,8 +1,0 @@
-set shell := ["bash", "-uc"]
-
-@set-localias:
-    localias set ${APP_DOMAIN} 7000
-    localias set ${API_DOMAIN} 7001
-    localias set ${AUTH_DOMAIN} 7011
-    localias set ${POSTGRES_DOMAIN} $(just get-docker-postgres-port)
-    mkdir -p "./certs" && cat "$(localias debug cert)" > "./certs/localias-ca.crt"

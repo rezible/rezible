@@ -1,11 +1,9 @@
 set shell := ["bash", "-uc"]
+set fallback
 
-export AUTH__OIDC__ISSUER := env("AUTH_URL")
 export POSTGRES__HOST := "localhost"
-export SERVER__HTTP__DOCUMENTS_PROXY__PROXY_HOST := "http://localhost:7002"
-
-foo:
-    echo "auth $AUTH_URL"
+export SERVER__HTTP__DOCUMENTS_PROXY__PROXY_HOST := "http://localhost:" + env("BACKEND_PORT")
+export AUTH__OIDC__ISSUER := env("AUTH_URL")
 
 install:
     go mod tidy
@@ -13,34 +11,38 @@ install:
 format:
     go fmt ./...
 
+@dev:
+    go tool air -c .air.toml
+
 @run *ARGS:
     go run ./cmd/rezible {{ARGS}}
 
-@dev:
-    air -c .air.toml
-
 @test:
+    just start-db
     go test $(go list ./... | grep -v /ent/)
 
-@print-spec:
-    just run spec
-
-@codegen:
+@gen:
     go generate ./...
 
-@codegen-ent:
+@gen-api:
+    go generate ./openapi
+
+@gen-schema:
     go generate ./ent
 
-@codegen-mocks:
+@gen-mocks:
     go generate ./testkit/mocks
 
-@create-migration NAME:
-    just run create-migration '{{NAME}}'
+@gen-migration NAME:
+    just run migrations create '{{NAME}}'
 
-[working-directory("./migrations")]
+@apply-migrations:
+    just run migrations apply
+
+[working-directory("./internal/postgres/migrations")]
 @create-initial-migrations:
-    rm -f ./0001_init*.sql
-    rm -f ./atlas.sum
-    just run db update-checksum
-    just run db create-migration init
-    just run db update-checksum
+    rm -f ./migrations/0001_init*.sql
+    rm -f ./migrations/atlas.sum
+    just run migrations update-checksum
+    just run migrations create init
+    just run migrations update-checksum

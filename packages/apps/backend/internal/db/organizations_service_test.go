@@ -1,10 +1,8 @@
 package db
 
 import (
-	"fmt"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -20,35 +18,6 @@ func TestOrganizationsServiceSuite(t *testing.T) {
 	suite.Run(t, &OrganizationsServiceSuite{
 		Suite: testkit.NewSuite(),
 	})
-}
-
-func generateRandomDomain() string {
-	return fmt.Sprintf("%s.example.com", uuid.New().String()[:4])
-}
-
-func (s *OrganizationsServiceSuite) TestFindOrCreateFromDomainCreatesTenantAndOrg() {
-	dbc := s.Client()
-
-	orgs, orgsErr := NewOrganizationsService(dbc, mocks.NewMockJobsService(s.T()))
-	s.Require().NoError(orgsErr)
-
-	ctx := s.SystemContext()
-	beforeCount, beforeCountErr := dbc.Tenant.Query().Count(ctx)
-	s.Require().NoError(beforeCountErr, "count tenants before")
-
-	domain := generateRandomDomain()
-
-	created, createErr := orgs.FindOrCreateFromDomain(ctx, domain)
-	s.Require().NoError(createErr)
-	s.Equal(domain, created.Domain)
-
-	found, findErr := orgs.FindOrCreateFromDomain(ctx, domain)
-	s.Require().NoError(findErr)
-	s.Equal(created.ID, found.ID)
-
-	afterCount, afterCountErr := dbc.Tenant.Query().Count(ctx)
-	s.Require().NoError(afterCountErr)
-	s.Equal(beforeCount+1, afterCount)
 }
 
 func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderDisallowsTenantCreationWhenConfigDisabled() {

@@ -6,16 +6,20 @@
     "go":                          "latest",
     "process-compose":             "latest",
     "github:peterldowns/localias": "",
-    "air":                         "latest",
     "dotenvx":                     "latest"
   },
-  "env": {
-    "DEV_DOMAIN": "dev.rezible.com"
-  },
   "env_from": ".env",
+  "env": {
+    "DEV_DOMAIN": "dev.rezible.com",
+    "APP_PORT": "7000",
+    "BACKEND_PORT": "7001",
+    "AUTH_PORT": "7011"
+  },
   "shell": {
     "init_hook": [
-      "unset DEVELOPER_DIR"
-    ]
+      "unset DEVELOPER_DIR",
+      "cp $(localias debug cert) ./devenv/localias-ca.crt"
+    ],
+    "scripts": {}
   }
 }

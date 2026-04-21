@@ -20,7 +20,7 @@ services:
       start_period: 1s
     volumes:
       - "postgres-data:/var/lib/postgresql/data"
-      - "./scripts/postgres/:/docker-entrypoint-initdb.d/"
+      - "./devenv/postgres/:/docker-entrypoint-initdb.d/"
 
   dex:
     scale: 1
@@ -28,17 +28,14 @@ services:
     restart: on-failure:2
     ports: ["${AUTH_PORT}:${AUTH_PORT}"]
     volumes:
-      - "./scripts/dex-config.yaml:/etc/dex/config.yaml:ro"
-      - "./scripts/certs/localias-ca.crt:/etc/ssl/localias.crt:ro"
+      - "./devenv/dex-config.yaml:/etc/dex/config.yaml:ro"
+      - "./devenv/localias-ca.crt:/etc/ssl/localias.crt:ro"
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     environment:
       - PORT=${AUTH_PORT}
-      - ISSUER=${AUTH_URL}
+      - AUTH_URL=${AUTH_URL}
       - APP_URL=${APP_URL}
       - API_URL=${API_URL}
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   telemetry:
     profiles: ["telemetry"]
@@ -59,7 +56,7 @@ services:
     working_dir: "/app"
     volumes:
       - "./packages/apps/backend/:/app/"
-      - "./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias.crt:ro"
+      - "./devenv/localias-ca.crt:/usr/local/share/ca-certificates/localias.crt:ro"
     ports: ["7001"]
     env_file: [".env", ".env.dev"]
     environment:
@@ -80,7 +77,7 @@ services:
       - "./packages/:/app/packages/"
       - "./package.json:/app/package.json"
       - "./bun.lock:/app/bun.lock"
-      - "./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias.crt:ro"
+      - "./devenv/localias-ca.crt:/usr/local/share/ca-certificates/localias.crt:ro"
     environment:
       - "PORT=7000"
     ports: ["7000"]

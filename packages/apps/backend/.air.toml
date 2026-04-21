@@ -4,7 +4,7 @@ env_files = [".env.dev"]
 cmd = "go build -o ./tmp/rezible ./cmd/rezible"
 # entrypoint = ["./tmp/rezible"]
 # args_bin = ["serve"]
-full_bin = "./tmp/rezible db migrate-up && ./tmp/rezible serve"
+full_bin = "echo \"iss $AUTH__OIDC__ISSUER\" && ./tmp/rezible migrations apply && ./tmp/rezible serve"
 
 [log]
 main_only = true

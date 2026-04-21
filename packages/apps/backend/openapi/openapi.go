@@ -4,6 +4,8 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 )
 
+//go:generate go run -mod=mod generate_specs.go
+
 type (
 	API        = huma.API
 	Context    = huma.Context

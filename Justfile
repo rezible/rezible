@@ -1,57 +1,47 @@
 set shell := ["bash", "-uc"]
-
 set dotenv-filename := ".env.dev"
-set dotenv-load := true
 
 mod backend 'packages/apps/backend'
-mod dev-services 'scripts'
 
 _default:
   @just --list
 
 @setup:
-    just install-dependencies
-    just setup-db
-
-@install-dependencies:
     just backend install
     bun install
+    devbox run setup-db
 
-@run-frontend *ARGS:
-    bun run --filter="@rezible/frontend" {{ARGS}}
+@_docker-compose *ARGS:
+    docker compose --ansi never {{ARGS}} > /dev/null 2>&1
 
-@run-documents-server *ARGS:
-    bun run --filter="@rezible/documents-server" {{ARGS}}
+@setup-db: stop-services
+    just _docker-compose down postgres -v
+    just start-db
+    just backend apply-migrations
 
-@run-dev-services *ARGS:
-    docker compose up {{ARGS}}
+@stop-services:
+    just _docker-compose down
 
-@get-dev-services-healthy:
-    docker compose ps | grep -q "unhealthy" && exit 1 || exit 0
+@start-db:
+    just _docker-compose up postgres --wait
+
+@dev: stop-services
+    process-compose --ordered-shutdown
+
+@setup-localias:
+    localias stop && localias start
+    localias set ${APP_DOMAIN} ${API_PORT}
+    localias set ${API_DOMAIN} ${BACKEND_PORT}
+    localias set ${AUTH_DOMAIN} ${AUTH_PORT}
+    # localias set ${POSTGRES_DOMAIN} $(just get-docker-postgres-port)
 
 @build-app-docker APP:
     docker build -t "localhost/rez-{{APP}}:latest" -f "./packages/apps/{{APP}}/Dockerfile" .
 
 @run-app-docker APP *ARGS:
     docker run \
-      -v "./scripts/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
+      -v "./devenv/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
       -e "SSL_CERT_DIR=/usr/local/share/ca-certificates" \
       --env-file ./.env \
       "localhost/rez-{{APP}}:latest" \
        {{ARGS}}
-
-@codegen-api:
-    just backend print-spec > /tmp/rezible-spec.yaml
-    bun run --filter="@rezible/api-client-ts" --elide-lines 0 build
-
-@dev:
-    process-compose --ordered-shutdown
-
-setup-db: recreate-db run-migrations
-
-@recreate-db:
-    docker compose down postgres -v
-    docker compose up postgres --wait
-
-@run-migrations:
-    just backend run db migrate-up

@@ -1,7 +1,7 @@
 import { defineConfig } from "@hey-api/openapi-ts";
 
 export default defineConfig({
-    input: {path: "/tmp/rezible-spec.yaml"},
+    input: {path: "../../apps/backend/openapi/v1/openapi.yaml"},
     output: {path: "./src/oapi.gen"},
     plugins: [
         {name: '@hey-api/client-fetch'},

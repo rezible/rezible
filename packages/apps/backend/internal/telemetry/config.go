@@ -5,29 +5,45 @@ import (
 	"log/slog"
 	"os"
 	"strings"
-	"time"
 
-	"github.com/lmittmann/tint"
 	rez "github.com/rezible/rezible"
 )
 
 type Config struct {
-	ServiceName   string `koanf:"service_name"`
-	LogLevel      string `koanf:"log_level"`
-	ConsoleFormat string `koanf:"console_format"`
+	ServiceName string        `koanf:"service_name"`
+	Logging     loggingConfig `koanf:"logging"`
+	Tracing     tracingConfig `koanf:"tracing"`
+}
 
-	slogLogLevel slog.Level
+type loggingConfig struct {
+	Level     string `koanf:"level"`
+	Json      bool   `koanf:"json"`
+	AddSource bool   `koanf:"add_source"`
+	Color     bool   `koanf:"color"`
+}
+
+type tracingConfig struct {
+	Enabled bool   `koanf:"enabled"`
+	Level   string `koanf:"level"`
 }
 
 func loadConfig() (Config, error) {
 	cfg := Config{
-		ServiceName:   os.Getenv("OTEL_SERVICE_NAME"),
-		ConsoleFormat: "json",
-		LogLevel:      "info",
+		ServiceName: os.Getenv("OTEL_SERVICE_NAME"),
+		Logging: loggingConfig{
+			Level: "info",
+			Json:  true,
+		},
+		Tracing: tracingConfig{
+			Enabled: false,
+		},
 	}
 	if rez.Config.DebugMode() {
-		cfg.LogLevel = "debug"
-		cfg.ConsoleFormat = "text"
+		cfg.Logging = loggingConfig{
+			Level: "debug",
+			Json:  false,
+			Color: true,
+		}
 	}
 	if cfg.ServiceName == "" {
 		cfg.ServiceName = defaultServiceName
@@ -37,36 +53,20 @@ func loadConfig() (Config, error) {
 			return cfg, fmt.Errorf("telemetry config: %w", cfgErr)
 		}
 	}
-	var levelErr error
-	cfg.slogLogLevel, levelErr = cfg.parseLogLevel(cfg.LogLevel)
-	if levelErr != nil {
-		return cfg, fmt.Errorf("telemetry config: %w", levelErr)
-	}
 	return cfg, nil
 }
 
-func (cfg Config) parseLogLevel(raw string) (slog.Level, error) {
-	switch strings.ToLower(strings.TrimSpace(raw)) {
+func (cfg Config) getLogLevel() slog.Level {
+	switch strings.ToLower(strings.TrimSpace(cfg.Logging.Level)) {
 	case "debug":
-		return slog.LevelDebug, nil
+		return slog.LevelDebug
 	case "", "info":
-		return slog.LevelInfo, nil
+		return slog.LevelInfo
 	case "warn", "warning":
-		return slog.LevelWarn, nil
+		return slog.LevelWarn
 	case "error":
-		return slog.LevelError, nil
-	default:
-		return slog.LevelInfo, fmt.Errorf("unknown telemetry.log_level %q", raw)
+		return slog.LevelError
 	}
-}
-
-func (cfg Config) makeSlogConsoleHandler() slog.Handler {
-	opts := &slog.HandlerOptions{Level: cfg.slogLogLevel}
-	if strings.ToLower(strings.TrimSpace(cfg.ConsoleFormat)) != "text" {
-		return slog.NewJSONHandler(os.Stderr, opts)
-	}
-	return tint.NewHandler(os.Stderr, &tint.Options{
-		Level:      cfg.slogLogLevel,
-		TimeFormat: time.Kitchen,
-	})
+	slog.Default().Error("unknown log level, defaulting to info", "level", cfg.Logging.Level)
+	return slog.LevelInfo
 }

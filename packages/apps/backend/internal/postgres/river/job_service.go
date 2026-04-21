@@ -32,7 +32,10 @@ func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	}
 
 	s := &JobService{
-		logger: slog.Default().With("package", "river"),
+		logger: slog.New(logger{
+			base:  slog.Default().With("package", "river").Handler(),
+			level: slog.LevelWarn,
+		}),
 	}
 
 	cfg := &river.Config{
