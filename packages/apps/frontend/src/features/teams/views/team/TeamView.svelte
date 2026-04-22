@@ -1,27 +1,26 @@
 <script lang="ts">
-	import { setPageBreadcrumbs, type PageBreadcrumb } from "$lib/app-shell.svelte";
-	import type { TeamViewParam } from "$params/teamView";
-	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import TeamOverview from "./overview/TeamOverview.svelte";
 	import TeamBacklogView from "./backlog/TeamBacklogView.svelte";
 	import TeamMeetings from "./meetings/TeamMeetings.svelte";
 	import { initTeamViewController } from "./controller.svelte";
 
-	const { id }: IdProp = $props();
+	const { slug }: { slug: string } = $props();
 
-	const view = initTeamViewController(() => id);
+	const view = initTeamViewController(() => slug);
 
-	const avatar = $derived<PageBreadcrumb["avatar"]>(view.team ? { kind: "team", id: view.team.id } : undefined);
 	setPageBreadcrumbs(() => [
 		{ label: "Teams", href: "/teams" },
-		{ label: view.teamName, href: `/teams/${view.teamSlug}`, avatar },
+		{ label: view.teamName, href: `/teams/${slug}` },
 	]);
-
-	const tabs: Tab<TeamViewParam>[] = [
-		{label: "Overview", view: undefined, component: TeamOverview},
-		{label: "Backlog", view: "backlog", component: TeamBacklogView},
-		{label: "Meetings", view: "meetings", component: TeamMeetings},
-	];
 </script>
 
-<TabbedViewContainer {tabs} path="/teams/{view.teamSlug}" />
+<TabbedViewContainer 
+	route="/teams/[slug]/[[view=teamView]]" 
+	tabs={[
+		{label: "Overview", component: TeamOverview, params: {slug}},
+		{label: "Backlog",  component: TeamBacklogView, params: {slug, view: "backlog"}},
+		{label: "Meetings",  component: TeamMeetings, params: {slug, view: "meetings"}},
+	]} 
+/>

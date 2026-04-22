@@ -40,8 +40,6 @@ export class InitialSetupViewController {
         })
     }
 
-    loading = $derived(this.integrations.loading || this.integrations.isConfiguring);
-
     private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
     async doFinishOrganizationSetup() {
         if (this.finishOrgSetupMut.isPending) return;
@@ -50,7 +48,8 @@ export class InitialSetupViewController {
         await this.finishOrgSetupMut.mutateAsync({ path: { id } });
         this.session.refetch();
     }
-    finishingOrgSetup = $derived(this.finishOrgSetupMut.isPending);
+
+    loading = $derived(this.finishOrgSetupMut.isPending || this.integrations.loading);
 }
 
 const ctx = new Context<InitialSetupViewController>("InitialSetupViewController");

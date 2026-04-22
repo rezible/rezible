@@ -61,7 +61,7 @@ export class OrganizationSettingsViewController {
 	memberships = $derived(this.membershipsQuery.data?.data ?? []);
 
 	orgName = $derived(this.session.org?.attributes.name ?? "");
-	isOrgAdmin = $derived(this.session.user?.attributes.isOrgAdmin ?? false);
+	isOrgAdmin = $derived(false);
 	selectedTeam = $derived(this.teams.find((team) => team.id === this.selectedTeamId));
 
 	availableUsersForSelectedTeam = $derived.by(() => {
@@ -124,18 +124,15 @@ export class OrganizationSettingsViewController {
 	}));
 
 	constructor() {
-		watch(
-			() => this.teams,
-			(teams) => {
-				if (teams.length === 0) {
-					this.selectedTeamId = undefined;
-					return;
-				}
-				if (!this.selectedTeamId || !teams.some((team) => team.id === this.selectedTeamId)) {
-					this.selectedTeamId = teams[0].id;
-				}
+		watch(() => this.teams, (teams) => {
+			if (teams.length === 0) {
+				this.selectedTeamId = undefined;
+				return;
 			}
-		);
+			if (!this.selectedTeamId || !teams.some((team) => team.id === this.selectedTeamId)) {
+				this.selectedTeamId = teams[0].id;
+			}
+		});
 	}
 
 	setTeamSearch(search?: string) {

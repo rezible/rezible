@@ -21,7 +21,7 @@
                 {/if}
                 <Breadcrumb.Item>
                     {#if i < (pageBreadcrumbs.length - 1)}
-                        <Breadcrumb.Link href={crumb.href}>{crumb.label}</Breadcrumb.Link>
+                        <Breadcrumb.Link href={crumb.path}>{crumb.label}</Breadcrumb.Link>
                     {:else}
                         <Breadcrumb.Page>{crumb.label}</Breadcrumb.Page>
                     {/if}

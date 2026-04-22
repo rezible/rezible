@@ -8,10 +8,10 @@
 
 	const view = initPlaybookViewController(() => id);
 
-	const appShell = useAppShell()
+	const appShell = useAppShell();
 	appShell.setPageBreadcrumbs(() => [
-		{ label: "Playbooks", href: "/playbooks" },
-		{ label: view.playbookTitle, href: `/playbooks/${view.playbookId}` },
+		{ label: "Playbooks", path: "/playbooks" },
+		{ label: view.playbookTitle, path: `/playbooks/${view.playbookId}` },
 	]);
 	appShell.setPageActions(PlaybookPageActions, false, () => ({view}));
 </script>

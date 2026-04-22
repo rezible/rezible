@@ -75,7 +75,7 @@
 						<tr class="border-b align-top">
 							<td class="px-2 py-2">{user.attributes.name}</td>
 							<td class="px-2 py-2">{user.attributes.email}</td>
-							<td class="px-2 py-2">{user.attributes.isOrgAdmin ? "Org Admin" : "User"}</td>
+							<td class="px-2 py-2">{"User"}</td>
 							<td class="px-2 py-2">
 								<div class="flex flex-col gap-1">
 									{#each memberships as membership (membership.id)}

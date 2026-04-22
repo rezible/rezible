@@ -17,6 +17,7 @@
 			label: "System",
 			items: [
 				{ label: "Incidents", icon: mdiFire, route: "/incidents" },
+				{ label: "Oncall", icon: mdiFire, route: "/oncall" },
 			],
 		},
 	];

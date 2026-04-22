@@ -1,7 +1,6 @@
 <script lang="ts">
-	import type { SystemComponentViewParam } from "$src/params/systemComponentView";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import SystemComponentOverview from "./overview/SystemComponentOverview.svelte";
 	import SystemComponentIncidents from "./incidents/SystemComponentIncidents.svelte";
 	import { initSystemComponentViewController } from "./controller.svelte";
@@ -10,14 +9,15 @@
 	const view = initSystemComponentViewController(() => id);
 
 	setPageBreadcrumbs(() => [
-		{ label: "Components", href: "/components" },
-		{ label: view.componentName, href: `/components/${view.componentId}` },
+		{ label: "System", path: "/system" },
+		{ label: view.componentName, path: `/system/${view.componentId}` },
 	]);
-
-	const tabs: Tab<SystemComponentViewParam>[] = [
-		{ label: "Overview", view: undefined, component: SystemComponentOverview },
-		{ label: "Incidents", view: "incidents", component: SystemComponentIncidents },
-	];
 </script>
 
-<TabbedViewContainer {tabs} path="/components/{view.componentId}" />
+<TabbedViewContainer 
+	route="/system/[id]/[[view=systemComponentView]]" 
+	tabs={[
+		{ label: "Overview", component: SystemComponentOverview, params: {id} },
+		{ label: "Incidents", component: SystemComponentIncidents, params: {id, view: "incidents"} },
+	]} 
+/>

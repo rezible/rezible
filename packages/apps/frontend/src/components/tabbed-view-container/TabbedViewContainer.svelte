@@ -1,60 +1,67 @@
 <script lang="ts" module>
-	export type Tab<View> = {
-		label: string;
-		view?: View;
-		component: Component;
-	}
+	import { resolve } from "$app/paths";
 
+	export type Tab<Route extends RouteId> = {
+		label: string;
+		params: (Parameters<typeof resolve<Route>>)[1];
+		component: Component;
+	};
 </script>
 
-<script lang="ts" generics="TabView">
+<script lang="ts" generics="Route extends RouteId">
 	import { page } from "$app/state";
-	import { cn } from "$lib/utils";
+	import type { Pathname } from "$app/types";
+	import type { ResolvedPathname } from "$app/types";
+	import type { RouteId } from "$app/types";
 	import type { Component, Snippet } from "svelte";
+	import { SvelteMap } from "svelte/reactivity";
 
 	type Props = { 
-		tabs: Tab<TabView>[];
-		path: string;
+		route: Route;
+		tabs: Tab<Route>[];
 		infoBar?: Snippet;
 		tabSidebar?: Snippet;
 	};
-	const props: Props = $props();
+	const { route, tabs, infoBar, tabSidebar }: Props = $props();
 
-	const activeViewPath = $derived(page.url.pathname.replaceAll(props.path, "").replace("/", ""));
-	const activeView = $derived(activeViewPath === "" ? undefined : activeViewPath);
-	const activeIdx = $derived(Math.max(props.tabs.findIndex(t => (activeView === t.view)), 0));
-	const activeTab = $derived(props.tabs[activeIdx]);
+	type ResolveParams = Parameters<typeof resolve<Route>>;
+	const tabPaths = $derived<ResolvedPathname[]>(tabs.map(t => resolve(...([route, t.params] as ResolveParams))));
+	
+	const activeTab = $derived.by(() => {
+		const currRoute = page.route.id;
+		const currPath = page.url.pathname;
+		if (!currRoute || currRoute !== route) return;
+		return tabs.find((t, i) => (currPath === tabPaths.at(i)));
+	});
+	
+	const ActiveComponent = $derived(activeTab?.component);
 </script>
 
 <div class="flex-1 flex flex-col h-full max-h-full min-h-0 overflow-auto">
 	<div class="w-full flex h-12 z-[1] justify-between">
 		<div class="flex gap-1 self-end">
-			{#each props.tabs as tab, i}
-				{@const active = i === activeIdx}
-				<a href="{props.path}/{tab.view}" 
-					class={cn(
-						"inline-flex self-end h-12 p-4 py-3 text-lg border border-surface-100 border-b-0 rounded-t-lg relative", 
-						active && "bg-surface-200 text-secondary",
-					)}>
+			{#each tabs as tab, i}
+				<a href="{tabPaths[i]}" data-active={(tab.label === activeTab?.label) ? true : undefined}
+					class="group inline-flex self-end h-12 p-4 py-3 text-lg border border-surface-100 border-b-0 rounded-t-lg relative text-muted-foreground data-active:bg-surface-200 data-active:text-foreground">
 					<span class="leading-none self-center">
 						{tab.label}
 					</span>
-					<div class="absolute bottom-0 left-0 -mb-px w-full border-b border-surface-200" class:hidden={!active}></div>
+					<div class="bottom-0 left-0 -mb-px w-full border-b border-surface-200 absolute hidden group-data-[active]:block"></div>
 				</a>
 			{/each}
 		</div>
 
-		{#if props.infoBar}
+		{#if !!infoBar}
 			<div class="flex gap-4 h-12 max-h-14 overflow-y-hidden justify-between pb-1">
-				{@render props.infoBar()}
+				{@render infoBar()}
 			</div>
 		{/if}
 	</div>
 
 	<div class="flex-1 flex border border-surface-100 rounded-b-lg rounded-tr-lg bg-surface-200 overflow-y-auto">
 		<div class="flex-1 min-h-0 max-h-full overflow-y-auto p-2">
-			<activeTab.component></activeTab.component>
+			<ActiveComponent />
 		</div>
-		{@render props.tabSidebar?.()}
+		{@render tabSidebar?.()}
 	</div>
 </div>

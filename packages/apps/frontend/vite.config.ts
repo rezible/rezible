@@ -14,7 +14,7 @@ export default defineConfig(({mode}) => {
             host,
             port,
             strictPort: true,
-            allowedHosts: [env.APP_DOMAIN],
+            allowedHosts: ["app.dev.rezible.com"],
             proxy: {
                 "/api": {
                     target: `http://localhost:${env.BACKEND_PORT}`,

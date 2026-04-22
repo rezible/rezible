@@ -1,13 +1,13 @@
 <script lang="ts">
-	import type { ConfigComponentProps } from '../types';
 	import * as Alert from "$components/ui/alert";
+	import { useIntegrationConfigController } from "../controller.svelte";
 
-	const { integration }: ConfigComponentProps = $props();
+	const ctrl = useIntegrationConfigController();
 </script>
 
 <Alert.Root>
 	<Alert.Title>No custom settings UI yet</Alert.Title>
 	<Alert.Description>
-		<span>Configuration controls for <span class="font-medium capitalize">{integration.name}</span> will be added later.</span>
+		<span>Configuration controls for <span class="font-medium capitalize">{ctrl.name}</span> will be added later.</span>
 	</Alert.Description>
 </Alert.Root>

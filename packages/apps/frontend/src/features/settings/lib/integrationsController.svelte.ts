@@ -1,13 +1,13 @@
-import { configureIntegrationMutation, type ConfigureIntegrationRequestBody, type ErrorModel, listConfiguredIntegrationsOptions, listAvailableIntegrationsOptions, completeIntegrationOauthFlowMutation, startIntegrationOauthFlowMutation } from "$lib/api";
+import { configureIntegrationMutation, type ConfigureIntegrationRequestBody, type ErrorModel, listConfiguredIntegrationsOptions, listAvailableIntegrationsOptions } from "$lib/api";
 import { useAuthSessionState } from "$src/lib/auth-session.svelte";
-import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { SvelteMap } from "svelte/reactivity";
 
 export class IntegrationsController {
 	session = useAuthSessionState();
-	oauth = useIntegrationOAuthController();
+
+	inOAuthFlow = $state(false);
 
 	private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
 	available = $derived(this.listAvailableQuery.data?.data || []);

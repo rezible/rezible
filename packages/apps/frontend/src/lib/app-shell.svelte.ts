@@ -2,11 +2,13 @@ import { Context, watch, type Getter } from "runed";
 import type Avatar from "$components/avatar/Avatar.svelte";
 import type { Component, ComponentProps } from "svelte";
 import { page } from "$app/state";
-import { onNavigate } from "$app/navigation";
+import { afterNavigate, onNavigate } from "$app/navigation";
+import type { Pathname } from "$app/types";
+import type { RouteId } from "$app/types";
 
 export type PageBreadcrumb = {
 	label?: string;
-	href?: string;
+	path?: Pathname;
 	avatar?: ComponentProps<typeof Avatar>;
 };
 
@@ -14,30 +16,31 @@ export type PageActions<PComponent extends Component<any>> = {
 	component: Component;
 	propsFn?: () => ComponentProps<PComponent>;
 	allowChildren: boolean;
-	routeBase: string;
+	pathBase: string;
 }
 
 export class AppShellController {
 	pageTitle = $state("Rezible")
-	breadcrumbs = $state<PageBreadcrumb[]>([]);
-	pageActions = $state<PageActions<any>>();
 
 	constructor() {
-		onNavigate(nav => {
-			this.checkPageActions(nav.to?.route.id ?? "")
+		afterNavigate(nav => {
+			const newRoute = nav.to?.route.id;
+			this.checkPageActions(newRoute);
 		});
 	}
 
-	private checkPageActions(newRouteId: string) {
+	pageActions = $state<PageActions<any>>();
+	private checkPageActions(newRouteId?: RouteId | null) {
 		if (!this.pageActions) return;
-		const isChild = newRouteId.startsWith(this.pageActions.routeBase);
+		const isChild = !!newRouteId && newRouteId.startsWith(this.pageActions.pathBase);
 		if (!isChild || !this.pageActions.allowChildren) {this.pageActions = undefined}
 	}
 
 	setPageActions<PComponent extends Component<any>>(component: PComponent, allowChildren: boolean, propsFn?: () => ComponentProps<PComponent>) {
-		this.pageActions = {component, allowChildren, propsFn, routeBase: $state.snapshot(page.route.id) ?? ""};
+		this.pageActions = {component, allowChildren, propsFn, pathBase: $state.snapshot(page.route.id) ?? ""};
 	}
 
+	breadcrumbs = $state<PageBreadcrumb[]>([]);
 	setPageBreadcrumbs(crumbsFn: Getter<PageBreadcrumb[]>) {
 		watch(crumbsFn, crumbs => {this.breadcrumbs = crumbs});
 	}

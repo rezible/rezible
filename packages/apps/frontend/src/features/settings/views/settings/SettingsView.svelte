@@ -1,6 +1,5 @@
 <script lang="ts">
-	import type { SettingsViewParam } from "$src/params/settingsView";
-	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import { initSettingsViewController } from "./controller.svelte";
 
 	import General from "./general/General.svelte";
@@ -8,17 +7,16 @@
 	import InitialSetup from "./initial-setup/InitialSetup.svelte";
 
     const controller = initSettingsViewController();
-
-	const tabs: Tab<SettingsViewParam>[] = [
-		{ label: "General", component: General },
-		{ label: "Integrations", view: "integrations", component: Integrations },
-	];
 </script>
 
-{#if controller.session.ready}
-	{#if controller.showInitialSetup}
-		<InitialSetup />
-	{:else}
-		<TabbedViewContainer path="/settings" {tabs} />
-	{/if}
+{#if controller.showInitialSetup}
+	<InitialSetup />
+{:else}
+	<TabbedViewContainer 
+		route="/settings/[[view=settingsView]]"
+		tabs={[
+			{ label: "General", component: General, params: { view: undefined } },
+			{ label: "Integrations", component: Integrations, params: { view: "integrations" } },
+		]}
+	/>
 {/if}

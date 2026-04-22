@@ -4,7 +4,6 @@ import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { convertSettingsViewParam, type SettingsViewParam } from "$src/params/settingsView";
 import { Context } from "runed";
-import { initIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 
 const viewParamLabel = (p: SettingsViewParam): string => {
     switch (p) {
@@ -17,8 +16,6 @@ const viewParamLabel = (p: SettingsViewParam): string => {
 export class SettingsViewController {
     session = useAuthSessionState();
     showInitialSetup = $derived(!this.session.isSetup);
-    oauth = initIntegrationOAuthController();
-
     viewParam = $derived(convertSettingsViewParam(page.params.view));
 
     constructor() {

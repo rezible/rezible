@@ -16,6 +16,9 @@ _default:
 @dev:
     process-compose -f process-compose.dev.yaml
 
+@run-frontend *ARGS:
+    bun run --filter=@rezible/frontend --elide-lines 0 {{ARGS}}
+
 @build-app-docker APP:
     docker build -t "localhost/rez-{{APP}}:latest" -f "./packages/apps/{{APP}}/Dockerfile" .
 

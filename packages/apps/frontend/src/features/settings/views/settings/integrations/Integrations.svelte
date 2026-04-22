@@ -15,23 +15,17 @@
 		</div>
 	{:else if controller.error}
 		<InlineAlert error={controller.error} />
-	{:else if controller.oauth.loading}
+	{:else if controller.inOAuthFlow}
 		<div class="flex items-center gap-2 text-sm text-muted-foreground">
 			<LoadingIndicator />
 			<span>Starting OAuth flow...</span>
 		</div>
-	{:else if controller.oauth.error}
-		<InlineAlert error={controller.oauth.error} />
 	{:else}
 		<div class="grid gap-3 md:grid-cols-2">
 			{#each controller.available as integration}
 				{@const name = integration.name}
 				{#key name}
-					<IntegrationConfigCard {integration}
-						configured={controller.configuredMap.get(name)}
-						isSaving={controller.isSaving(name)}
-						errorMessage={controller.errorFor(name)}
-					/>
+					<IntegrationConfigCard {integration} />
 				{/key}
 			{/each}
 		</div>

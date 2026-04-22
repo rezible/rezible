@@ -1,18 +1,16 @@
 <script lang="ts">
-	import type { ConfigComponentProps } from '../types';
 	import * as Alert from "$components/ui/alert";
 	import { Input } from "$components/ui/input";
 	import { Label } from "$components/ui/label";
 	import { Switch } from "$components/ui/switch";
+	import { useIntegrationConfigController } from "../controller.svelte";
 
-	const { configured, onConfigChange, onPreferencesChange }: ConfigComponentProps = $props();
-	const videoConferencingPrefKey = "video_conferencing";
+	const ctrl = useIntegrationConfigController();
 
 	let videoConferenceEnabled = $state(true);
-
 	const onVideoConferenceChange = (checked: boolean) => {
 		videoConferenceEnabled = checked;
-		onPreferencesChange({[videoConferencingPrefKey]: checked});
+		ctrl.setConfig("video_conferencing", checked);
 	};
 
 	let serviceAccountInput = $state<HTMLInputElement>(null!);
@@ -44,7 +42,7 @@
 				return;
 			}
 			svcAccFileName = file.name;
-			onConfigChange({"ServiceAccountCredentials": parsed});
+			ctrl.setConfig("service_account_credentials", parsed);
 		} catch {
 			svcAccParseError = "Could not parse JSON file. Check that this is a valid service account credentials file.";
 		}
@@ -52,7 +50,7 @@
 </script>
 
 <div class="flex flex-col gap-3">
-	{#if configured}
+	{#if ctrl.configured}
 		<div class="flex items-center justify-between rounded-md border p-3">
 			<div class="flex flex-col gap-1">
 				<Label for="google-video-conference-toggle">Enable incident video conferences</Label>

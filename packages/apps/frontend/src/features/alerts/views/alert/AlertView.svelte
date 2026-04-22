@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import type { AlertViewParam } from "$src/params/alertView";
-	import TabbedViewContainer, { type Tab } from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import { initAlertViewController } from "./controller.svelte";
 	import AlertOverview from "./overview/AlertOverview.svelte";
 	import AlertEvents from "./events/AlertEvents.svelte";
@@ -13,16 +12,17 @@
 	const view = initAlertViewController(() => id);
 
 	setPageBreadcrumbs(() => [
-		{ label: "Alerts", href: "/alerts" },
-		{ label: view.alertTitle, href: `/alerts/${view.alertId}` },
+		{ label: "Alerts", path: "/alerts" },
+		{ label: view.alertTitle, path: `/alerts/${view.alertId}` },
 	]);
-
-	const tabs: Tab<AlertViewParam>[] = [
-		{ label: "Overview", view: undefined, component: AlertOverview },
-		{ label: "Recent Activity", view: "events", component: AlertEvents },
-		{ label: "Incidents", view: "incidents", component: AlertIncidents },
-		{ label: "Linked Playbooks", view: "playbooks", component: AlertPlaybooks },
-	];
 </script>
 
-<TabbedViewContainer path="/alerts/{view.alertId}" {tabs} />
+<TabbedViewContainer 
+	route="/alerts/[id]/[[view=alertView]]"
+	tabs={[
+		{ label: "Overview", component: AlertOverview, params: {id} },
+		{ label: "Recent Activity",  component: AlertEvents, params: {id, view: "events"} },
+		{ label: "Incidents",  component: AlertIncidents, params: {id, view: "incidents"} },
+		{ label: "Linked Playbooks",  component: AlertPlaybooks, params: {id, view: "playbooks"} },
+	]}
+/>

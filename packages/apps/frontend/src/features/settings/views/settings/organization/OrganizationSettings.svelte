@@ -8,8 +8,8 @@
 	const view = initOrganizationSettingsViewController();
 
 	setPageBreadcrumbs(() => [
-		{ label: "Settings", href: "/settings" },
-		{ label: "Organization", href: "/settings/organization" },
+		{ label: "Settings", path: "/settings" },
+		{ label: "Organization", path: "/settings/organization" },
 	]);
 
 	// const tabs: Tab<OrganizationSettingsViewParam>[] = [

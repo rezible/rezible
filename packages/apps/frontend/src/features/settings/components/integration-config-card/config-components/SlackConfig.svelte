@@ -1,14 +1,15 @@
 <script lang="ts">
-	import type { ConfigComponentProps } from '../types';
 	import * as Alert from "$components/ui/alert";
 	import { Badge } from "$components/ui/badge";
+	import { useIntegrationConfigController } from "../controller.svelte";
 
-	const { configured }: ConfigComponentProps = $props();
-	const parsedConfig = $derived<Record<string, any>>(configured?.attributes.config || {});
+	const ctrl = useIntegrationConfigController();
+
+	const parsedConfig = $derived<Record<string, any>>(ctrl.configured?.attributes.config || {});
 	const team = $derived(parsedConfig?.team?.name);
 </script>
 
-{#if configured}
+{#if ctrl.configured}
 	<Alert.Root>
 		<Alert.Title>Slack connected</Alert.Title>
 		<Alert.Description class="flex items-center gap-2">
