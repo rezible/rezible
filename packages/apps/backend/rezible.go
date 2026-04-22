@@ -40,7 +40,6 @@ type ConfigLoader interface {
 
 	AppUrl() string
 	ApiUrl() string
-	BasePath() string
 }
 
 type EventListener interface {
@@ -357,7 +356,7 @@ type (
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)
 
 		GetIncidentMetadata(context.Context) (*IncidentMetadata, error)
-		
+
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
 		ListIncidentTypes(context.Context) ([]*ent.IncidentType, error)

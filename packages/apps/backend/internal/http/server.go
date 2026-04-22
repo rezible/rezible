@@ -24,6 +24,7 @@ import (
 type Config struct {
 	Host           string               `koanf:"host"`
 	Port           string               `koanf:"port"`
+	BasePath       string               `koanf:"base_path"`
 	DocumentsProxy DocumentsProxyConfig `koanf:"documents_proxy"`
 }
 
@@ -35,8 +36,9 @@ type DocumentsProxyConfig struct {
 
 func loadConfig() (Config, error) {
 	cfg := Config{
-		Host: rez.Config.GetString("HOST", "0.0.0.0"),
-		Port: rez.Config.GetString("PORT", "7002"),
+		Host:     rez.Config.GetString("HOST", "0.0.0.0"),
+		Port:     rez.Config.GetString("PORT", "7002"),
+		BasePath: "",
 		DocumentsProxy: DocumentsProxyConfig{
 			Enabled:   false,
 			ProxyHost: "localhost:7003",
@@ -80,7 +82,7 @@ func NewServer(auth rez.AuthSessionService, v1h oapiv1.Handler) (*Server, error)
 	s.router.Use(s.loggerMiddleware)
 	s.router.Use(middleware.Recoverer)
 
-	basePath := rez.Config.BasePath()
+	basePath := cfg.BasePath
 	s.router.Mount(ensureSlashPrefix(basePath), http.StripPrefix(basePath, s.makeApiHandler(auth, v1h)))
 
 	return &s, nil

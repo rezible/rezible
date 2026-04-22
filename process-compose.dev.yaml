@@ -1,0 +1,41 @@
+environment: [".env", ".env.workspace"]
+
+processes:
+  postgres:
+    command: just devenv run-docker-service postgres
+    is_daemon: true
+    readiness_probe:
+      exec:
+        command: docker compose exec -it postgres pg_isready
+      period_seconds: 3
+
+  dex:
+    command: just devenv run-docker-service dex
+    is_daemon: true
+    availability:
+      restart: on_failure
+      max_restarts: 1
+    readiness_probe:
+      exec:
+        command: wget -q --spider "http://localhost:$AUTH_PORT/.well-known/openid-configuration"
+      period_seconds: 3
+
+  backend:
+    command: just backend dev
+    availability:
+      restart: always
+    depends_on:
+      postgres:
+        condition: process_healthy
+
+  frontend:
+    command: bun run --filter=@rezible/frontend dev
+    availability:
+      restart: always
+
+  documents-server:
+    disabled: true
+    command: bun run --filter=@rezible/documents-server dev
+    availability:
+      restart: on_failure
+      max_restarts: 1

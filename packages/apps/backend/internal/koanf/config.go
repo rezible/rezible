@@ -9,23 +9,22 @@ import (
 	"github.com/knadh/koanf/v2"
 )
 
+type BaseConfig struct {
+	DebugMode        bool   `koanf:"debug_mode"`
+	SingleTenantMode bool   `koanf:"single_tenant_mode"`
+	AppUrl           string `koanf:"app_url"`
+	ApiUrl           string `koanf:"api_url"`
+}
+
 type Config struct {
 	k *koanf.Koanf
 
-	appCfg AppConfig
+	baseCfg BaseConfig
 }
 
 type ConfigLoaderOptions struct {
 	LoadEnvironment bool
 	Overrides       map[string]any
-}
-
-type AppConfig struct {
-	DebugMode        bool   `koanf:"debug_mode"`
-	AppUrl           string `koanf:"app_url"`
-	ApiUrl           string `koanf:"api_url"`
-	BasePath         string `koanf:"base_path"`
-	SingleTenantMode bool   `koanf:"single_tenant_mode"`
 }
 
 const delim = "."
@@ -49,8 +48,8 @@ func NewConfigLoader(ctx context.Context, opts ConfigLoaderOptions) (*Config, er
 		}
 	}
 
-	var appCfg AppConfig
-	if cfgErr := k.Unmarshal("", &appCfg); cfgErr != nil {
+	var baseCfg BaseConfig
+	if cfgErr := k.Unmarshal("", &baseCfg); cfgErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal app config: %w", cfgErr)
 	}
 
@@ -58,7 +57,7 @@ func NewConfigLoader(ctx context.Context, opts ConfigLoaderOptions) (*Config, er
 	//	v.Set(key, val)
 	//}
 
-	return &Config{k: k, appCfg: appCfg}, nil
+	return &Config{k: k, baseCfg: baseCfg}, nil
 }
 
 func (c *Config) Exists(key string) bool {
@@ -77,21 +76,17 @@ func (c *Config) GetString(key string, fallback string) string {
 }
 
 func (c *Config) DebugMode() bool {
-	return c.appCfg.DebugMode
+	return c.baseCfg.DebugMode
 }
 
 func (c *Config) ApiUrl() string {
-	return c.appCfg.ApiUrl
-}
-
-func (c *Config) BasePath() string {
-	return c.appCfg.BasePath
+	return c.baseCfg.ApiUrl
 }
 
 func (c *Config) AppUrl() string {
-	return c.appCfg.AppUrl
+	return c.baseCfg.AppUrl
 }
 
 func (c *Config) SingleTenantMode() bool {
-	return c.appCfg.SingleTenantMode
+	return c.baseCfg.SingleTenantMode
 }

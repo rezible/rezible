@@ -14,8 +14,7 @@ _default:
     just devenv setup
 
 @dev:
-    just devenv ensure-postgres-ready
-    process-compose --ordered-shutdown
+    process-compose -f process-compose.dev.yaml
 
 @build-app-docker APP:
     docker build -t "localhost/rez-{{APP}}:latest" -f "./packages/apps/{{APP}}/Dockerfile" .

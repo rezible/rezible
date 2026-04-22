@@ -57,7 +57,6 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 		return nil, fmt.Errorf("config: %w", cfgErr)
 	}
 
-	fmt.Printf("oidc config: %+v\n", cfg)
 	cookies, cookieErr := newCookieWriter(cfg.SessionSecret)
 	if cookieErr != nil {
 		return nil, fmt.Errorf("cookie writer: %w", cookieErr)

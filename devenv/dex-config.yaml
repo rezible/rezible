@@ -1,4 +1,4 @@
-issuer: "{{ .Env.AUTH_URL }}"
+issuer: "{{ .Env.ISSUER }}"
 web:
   http: "0.0.0.0:7011"
   allowedOrigins: ["{{ .Env.APP_URL }}", "{{ .Env.API_URL }}"]

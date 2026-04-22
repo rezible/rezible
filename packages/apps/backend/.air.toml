@@ -2,7 +2,7 @@ env_files = [".env.dev"]
 
 [build]
 cmd = "go build -o ./tmp/rezible ./cmd/rezible"
-# entrypoint = ["./tmp/rezible"]
+entrypoint = ["./tmp/rezible"]
 # args_bin = ["serve"]
 full_bin = "./tmp/rezible migrations apply && ./tmp/rezible serve"
 

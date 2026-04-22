@@ -1,6 +1,17 @@
 set shell := ["bash", "-uc"]
 set fallback
 
+export POSTGRES__HOST := "localhost"
+export POSTGRES__PORT := env("POSTGRES_PORT")
+export POSTGRES__DATABASE := env("POSTGRES_APP_DB", "rezible-main")
+export POSTGRES__SSLMODE := "disable"
+export POSTGRES__ROLE_ADMIN__NAME := env("POSTGRES_ADMIN_USER", "postgres")
+export POSTGRES__ROLE_ADMIN__PASSWORD := POSTGRES__ROLE_ADMIN__NAME
+export POSTGRES__ROLE_APP__NAME := env("POSTGRES_APP_USER")
+export POSTGRES__ROLE_APP__PASSWORD := POSTGRES__ROLE_APP__NAME
+export SERVER__HTTP__PORT := env("BACKEND_PORT")
+export AUTH__OIDC__ISSUER := env("AUTH_URL")
+
 install:
     go mod tidy
 
@@ -14,7 +25,7 @@ format:
     go run ./cmd/rezible {{ARGS}}
 
 @test:
-    just start-db
+    just devenv start-dev-services
     go test $(go list ./... | grep -v /ent/)
 
 @gen:

@@ -1,26 +1,83 @@
 set shell := ["bash", "-uc"]
 
+export dbPort := env("POSTGRES_PORT")
+export dbAdminUser := env("POSTGRES_ADMIN_USER")
+export dbAppUser := env("POSTGRES_APP_USER")
+
+workspace_env_file := join(parent_directory(justfile_directory()), ".env.workspace")
+postgresContainerId := `docker compose ps -q postgres`
+workspace_setup := path_exists(workspace_env_file)
+
+alreadySetupErr := "workspace already set up - run with --force to override"
+
+branchId := replace_regex(`git branch --show-current`, "[^a-z0-9]", "")
+dbName := "rez-"+branchId
+
 [arg("force", long="force", value="true")]
 @setup force="false":
-    FORCE_SETUP={{force}} bun run setup.ts
+    if [[ "{{workspace_setup}}" == "true" ]]; then \
+      if [[ "{{force}}" == "false" ]]; then echo "{{alreadySetupErr}}"; exit 1; fi; \
+      rm "{{workspace_env_file}}"; \
+      docker compose down -v; \
+    fi
+    just _write-workspace-env
+    docker compose up --wait
+    sleep 1
+    just _setup-workspace-db
+    just set-dev-domains
 
-@ensure-postgres-ready:
-    docker exec -it rezible-postgres pg_isready -h localhost
+_write-workspace-env:
+    #!/bin/env bun
+    await Bun.write("{{workspace_env_file}}", [
+      "WORKSPACE_ID={{branchId}}",
+      "POSTGRES_APP_DB={{dbName}}",
+    ].join("\n"))
 
-@setup-localias:
-    localias set ${APP_DOMAIN} ${API_PORT}
-    localias set ${API_DOMAIN} ${BACKEND_PORT}
-    localias set ${AUTH_DOMAIN} ${AUTH_PORT}
+_setup-workspace-db:
+    #!/bin/env bun
+    import { SQL } from "bun";
+    (async () => {
+        const adminConn = `postgres://{{dbAdminUser}}:{{dbAdminUser}}@localhost:{{dbPort}}`;
+        const adminPg = new SQL(adminConn);
+        try {
+            await adminPg.unsafe(`CREATE USER {{dbAppUser}} WITH PASSWORD '{{dbAppUser}}';`);
+        } catch (e) {}
+        try {
+            await adminPg.unsafe(`CREATE DATABASE "{{dbName}}"`);
+            console.log("created database {{dbName}}");
+        } catch (e) {return}
+        const statements = [
+            `GRANT CONNECT ON DATABASE "{{dbName}}" TO {{dbAppUser}}`,
+            `CREATE SCHEMA IF NOT EXISTS river`,
+            `CREATE SCHEMA IF NOT EXISTS rezible`,
+            `GRANT USAGE ON SCHEMA rezible TO {{dbAppUser}}`,
+            `GRANT USAGE ON SCHEMA river TO {{dbAppUser}}`,
+            `ALTER DEFAULT PRIVILEGES IN SCHEMA rezible GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {{dbAppUser}}`,
+            `ALTER DEFAULT PRIVILEGES IN SCHEMA rezible GRANT USAGE, SELECT ON SEQUENCES TO {{dbAppUser}}`,
+            `ALTER DEFAULT PRIVILEGES IN SCHEMA river GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO {{dbAppUser}}`,
+            `ALTER DEFAULT PRIVILEGES IN SCHEMA river GRANT USAGE, SELECT ON SEQUENCES TO {{dbAppUser}}`,
+            `ALTER ROLE {{dbAppUser}} SET search_path TO rezible, river`,
+        ];
+        const userPg = new SQL(`${adminConn}/{{dbName}}`);
+        for (const s of statements) {
+            try {
+                await userPg.unsafe(`${s};`);
+            } catch (e) {
+                console.error(`setting up user/db:\n "${s}"\n\t`, e.message);
+            }
+        }
+    })()
 
-@run-dex:
-    docker run --rm \
-        --name dex-${WORKSPACE_ID} \
-        --restart on-failure:2 \
-        -p "${AUTH_PORT}:7011" \
-        -v "./dex-config.yaml:/etc/dex/config.yaml:ro" \
-        -v "./localias-ca.crt:/etc/ssl/localias.crt:ro" \
-        -e AUTH_URL="${AUTH_URL}" \
-        -e APP_URL="${APP_URL}" \
-        -e API_URL="${API_URL}" \
-        dexidp/dex:v2.41.1 \
-        dex serve /etc/dex/config.yaml
+@run-docker-service SERVICE:
+    docker compose up {{SERVICE}} --wait && docker compose logs --follow {{SERVICE}}
+
+@start-dev-services:
+    docker compose up --wait
+
+_app_domain := trim_start_match(env("APP_URL"), "https://")
+_api_domain := trim_start_match(env("API_URL"), "https://")
+_auth_domain := trim_start_match(env("AUTH_URL"), "https://")
+@set-dev-domains:
+    localias set {{_app_domain}} ${APP_PORT}
+    localias set {{_api_domain}} ${BACKEND_PORT}
+    localias set {{_auth_domain}} ${AUTH_PORT}

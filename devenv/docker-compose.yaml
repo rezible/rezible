@@ -1,0 +1,46 @@
+name: "rezible"
+
+volumes:
+  postgres-data:
+
+services:
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    ports: ["${POSTGRES_PORT}:5432"]
+    environment:
+      - PGUSER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_USER=${POSTGRES_ADMIN_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_ADMIN_USER}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 1s
+      timeout: 1s
+      retries: 3
+      start_period: 1s
+    volumes:
+      - "postgres-data:/var/lib/postgresql/data"
+
+  dex:
+    scale: 1
+    image: dexidp/dex:v2.41.1
+    restart: on-failure:2
+    ports: ["${AUTH_PORT}:7011"]
+    volumes:
+      - "./dex-config.yaml:/etc/dex/config.yaml:ro"
+      - "./localias-ca.crt:/etc/ssl/localias.crt:ro"
+    command: ["dex", "serve", "/etc/dex/config.yaml"]
+    environment:
+      - ISSUER=https://accounts.${DEV_DOMAIN}
+      - APP_URL=https://app.${DEV_DOMAIN}
+      - API_URL=https://api.${DEV_DOMAIN}
+
+  telemetry:
+    profiles: ["telemetry"]
+    image: grafana/otel-lgtm:latest
+    container_name: otel-lgtm
+    ports:
+      - "3000"   # Grafana UI
+      - "4317"   # OpenTelemetry gRPC collector
+    environment:
+      ENABLE_LOGS_ALL: "false"

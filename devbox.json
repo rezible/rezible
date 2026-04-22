@@ -10,7 +10,16 @@
   },
   "env_from": ".env",
   "env": {
-    "DEV_DOMAIN": "dev.rezible.com"
+    "DEV_DOMAIN": "dev.rezible.com",
+    "APP_PORT": "7000",
+    "APP_URL": "https://app.dev.rezible.com",
+    "AUTH_PORT": "7011",
+    "AUTH_URL": "https://accounts.dev.rezible.com",
+    "BACKEND_PORT": "7001",
+    "API_URL": "https://api.dev.rezible.com",
+    "POSTGRES_PORT": "7010",
+    "POSTGRES_ADMIN_USER": "postgres",
+    "POSTGRES_APP_USER": "rez_app"
   },
   "shell": {
     "init_hook": [
