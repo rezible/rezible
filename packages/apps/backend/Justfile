@@ -1,5 +1,4 @@
 set shell := ["bash", "-uc"]
-set fallback
 
 export POSTGRES__HOST := "localhost"
 export POSTGRES__PORT := env("POSTGRES_PORT")
@@ -11,6 +10,9 @@ export POSTGRES__ROLE_APP__NAME := env("POSTGRES_APP_USER")
 export POSTGRES__ROLE_APP__PASSWORD := POSTGRES__ROLE_APP__NAME
 export SERVER__HTTP__PORT := env("BACKEND_PORT")
 export AUTH__OIDC__ISSUER := env("AUTH_URL")
+
+_default:
+  @just --list
 
 install:
     go mod tidy
@@ -25,10 +27,10 @@ format:
     go run ./cmd/rezible {{ARGS}}
 
 @test:
-    just devenv start-dev-services
+    # devbox run start-dev-services
     go test $(go list ./... | grep -v /ent/)
 
-@gen:
+@codegen:
     go generate ./...
 
 @gen-api:

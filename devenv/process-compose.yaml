@@ -2,7 +2,7 @@ environment: [".env", ".env.workspace"]
 
 processes:
   postgres:
-    command: just devenv run-docker-service postgres
+    command: just dev run-service postgres
     is_daemon: true
     readiness_probe:
       exec:
@@ -10,7 +10,7 @@ processes:
       period_seconds: 3
 
   dex:
-    command: just devenv run-docker-service dex
+    command: just dev run-service dex
     is_daemon: true
     availability:
       restart: on_failure
@@ -29,13 +29,13 @@ processes:
         condition: process_healthy
 
   frontend:
-    command: bun run --filter=@rezible/frontend dev
+    command: just frontend dev
     availability:
       restart: always
 
   documents-server:
     disabled: true
-    command: bun run --filter=@rezible/documents-server dev
+    command: just documents-server dev
     availability:
       restart: on_failure
       max_restarts: 1

@@ -1,0 +1,19 @@
+apps_dir := source_dir() / "apps"
+
+[working-directory("..")]
+@build-app-docker APP:
+    docker build -t "localhost/rez-{{APP}}:latest" -f "{{ apps_dir / APP / "Dockerfile"}}" .
+
+[working-directory("..")]
+@run-app-docker APP *ARGS:
+    docker run \
+      -v "./devenv/certs/localias-ca.crt:/usr/local/share/ca-certificates/localias-ca.crt:ro" \
+      -e "SSL_CERT_DIR=/usr/local/share/ca-certificates" \
+      --env-file .env \
+      "localhost/rez-{{APP}}:latest" \
+       {{ARGS}}
+
+[working-directory("..")]
+@generate-api-client:
+    just backend gen-api
+    bun run --filter=@rezible/api-client-ts --elide-lines 0 build

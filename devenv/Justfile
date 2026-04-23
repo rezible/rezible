@@ -4,6 +4,19 @@ export dbPort := env("POSTGRES_PORT")
 export dbAdminUser := env("POSTGRES_ADMIN_USER")
 export dbAppUser := env("POSTGRES_APP_USER")
 
+[doc("Setup the workspace & install dependencies")]
+[working-directory("..")]
+@setup:
+    just backend install
+    bun install
+    just devenv setup-workspace
+
+[default]
+[doc("Run all services & dependencies using process-compose")]
+[working-directory("..")]
+@start:
+    process-compose -f {{source_dir() / "process-compose.yaml"}}
+
 workspace_env_file := join(parent_directory(justfile_directory()), ".env.workspace")
 postgresContainerId := `docker compose ps -q postgres`
 workspace_setup := path_exists(workspace_env_file)
@@ -13,8 +26,9 @@ alreadySetupErr := "workspace already set up - run with --force to override"
 branchId := replace_regex(`git branch --show-current`, "[^a-z0-9]", "")
 dbName := "rez-"+branchId
 
+[doc("Setup development environment")]
 [arg("force", long="force", value="true")]
-@setup force="false":
+@setup-workspace force="false":
     if [[ "{{workspace_setup}}" == "true" ]]; then \
       if [[ "{{force}}" == "false" ]]; then echo "{{alreadySetupErr}}"; exit 1; fi; \
       rm "{{workspace_env_file}}"; \
@@ -68,10 +82,11 @@ _setup-workspace-db:
         }
     })()
 
-@run-docker-service SERVICE:
+[doc("Run a docker compose service & follow the logs")]
+@run-service SERVICE:
     docker compose up {{SERVICE}} --wait && docker compose logs --follow {{SERVICE}}
 
-@start-dev-services:
+@start-services:
     docker compose up --wait
 
 _app_domain := trim_start_match(env("APP_URL"), "https://")

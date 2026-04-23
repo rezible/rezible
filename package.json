@@ -2,9 +2,6 @@
   "name": "rezible",
   "private": true,
   "workspaces": ["packages/apps/*", "packages/libs/*"],
-  "scripts": {
-    "codegen-api-client": "bun run --filter=@rezible/api-client-ts --elide-lines 0 build"
-  },
   "catalogs": {
     "documents": {
       "yjs": "13.6.27",

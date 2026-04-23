@@ -6,6 +6,5 @@ node_modules/
 .idea/
 .vscode/
 devenv/*.crt
-**/CLAUDE.md
 **/AGENTS.md
 **/.codex

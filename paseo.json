@@ -1,0 +1,12 @@
+{
+  "worktree": {
+    "setup":    [
+      "cp \"$PASEO_SOURCE_CHECKOUT_PATH/.env\" .env",
+      "just dev setup"
+    ]
+  },
+  "scripts": {
+    "test-backend": { "command": "just backend::test" },
+    "codegen": { "command":  "just backend::codegen packages::generate-api-client" }
+  }
+}

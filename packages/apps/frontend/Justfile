@@ -1,0 +1,13 @@
+set shell := ["bash", "-uc"]
+
+_default:
+  @just --list
+
+build:
+  bun run build
+
+dev:
+  bun run dev
+
+@run *ARGS:
+    bun run {{ARGS}}

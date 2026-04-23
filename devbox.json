@@ -26,6 +26,8 @@
       "unset DEVELOPER_DIR",
       "cp $(localias debug cert) ./devenv/localias-ca.crt"
     ],
-    "scripts": {}
+    "scripts": {
+      "start-dev-services": "just dev start-services"
+    }
   }
 }
