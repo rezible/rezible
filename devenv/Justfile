@@ -92,7 +92,7 @@ _setup-workspace-db:
 _app_domain := trim_start_match(env("APP_URL"), "https://")
 _api_domain := trim_start_match(env("API_URL"), "https://")
 _auth_domain := trim_start_match(env("AUTH_URL"), "https://")
-@set-dev-domains:
+@set-domains:
     localias set {{_app_domain}} ${APP_PORT}
     localias set {{_api_domain}} ${BACKEND_PORT}
     localias set {{_auth_domain}} ${AUTH_PORT}

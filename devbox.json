@@ -14,7 +14,7 @@
     "APP_PORT": "7000",
     "APP_URL": "https://app.dev.rezible.com",
     "AUTH_PORT": "7011",
-    "AUTH_URL": "https://accounts.dev.rezible.com",
+    "AUTH_URL": "https://auth.dev.rezible.com",
     "BACKEND_PORT": "7001",
     "API_URL": "https://api.dev.rezible.com",
     "POSTGRES_PORT": "7010",
