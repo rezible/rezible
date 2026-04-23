@@ -9,12 +9,16 @@
 	import { initAuthSessionState } from "$src/lib/auth-session.svelte";
 	import { initUserOncallInformationState } from "$lib/userOncall.svelte";
 	import { Spinner } from "$src/components/ui/spinner";
+	import IncidentCreateDialog, {
+		initIncidentCreateDialogController,
+	} from "$features/incidents/components/create-incident-dialog";
 
 	const { children } = $props();
 
 	const shell = initAppShell();
 	const auth = initAuthSessionState();
 	initUserOncallInformationState();
+	initIncidentCreateDialogController();
 </script>
 
 <svelte:head>
@@ -39,6 +43,7 @@
 				{@render children()}
 			</div>
 		</main>
+		<IncidentCreateDialog />
 	</Sidebar.Provider>
 {:else}
 	<div class="w-full h-dvh grid place-items-center">

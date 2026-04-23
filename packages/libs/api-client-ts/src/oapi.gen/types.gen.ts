@@ -187,8 +187,12 @@ export type CreateEventAnnotationResponseBody = {
 };
 
 export type CreateIncidentAttributes = {
-    summary: string;
+    fieldSelectionIds?: Array<string>;
+    summary?: string;
+    severityId: string;
+    tagIds?: Array<string>;
     title: string;
+    typeId: string;
 };
 
 export type CreateIncidentDebriefQuestionAttributes = {
@@ -1193,6 +1197,7 @@ export type IncidentAttributes = {
     chatChannel: IncidentChatChannel;
     closedAt: string;
     currentStatus: 'started' | 'mitigated' | 'resolved' | 'closed';
+    fieldSelections: Array<IncidentFieldSelection>;
     linkedIncidents: Array<IncidentLink>;
     openedAt: string;
     primaryVideoConference?: VideoConference;
@@ -1366,6 +1371,12 @@ export type IncidentFieldOptionAttributes = {
     value: string;
 };
 
+export type IncidentFieldSelection = {
+    fieldId: string;
+    fieldName: string;
+    option: IncidentFieldOption;
+};
+
 export type IncidentLink = {
     incidentId: string;
     incidentSummary: string;
@@ -1419,6 +1430,7 @@ export type IncidentSeverity = {
 
 export type IncidentSeverityAttributes = {
     archived: boolean;
+    color: string;
     description: string;
     name: string;
     rank: number;
@@ -1432,6 +1444,7 @@ export type IncidentTag = {
 export type IncidentTagAttributes = {
     archived: boolean;
     description: string;
+    key: string;
     value: string;
 };
 

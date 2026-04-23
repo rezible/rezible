@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Incident } from "$lib/api";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
+	import { useAppShell } from "$lib/app-shell.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
 	import FilterPage from "$components/filter-page/FilterPage.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
@@ -9,10 +10,13 @@
 	import { initIncidentsListViewController } from "./controller.svelte";
 	import IncidentCard from "./IncidentCard.svelte";
 	import IncidentsListViewFilters from "./IncidentsListViewFilters.svelte";
+	import PageActions from "./PageActions.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "Incidents" }]);
 
 	const controller = initIncidentsListViewController();
+	const appShell = useAppShell();
+	appShell.setPageActions(PageActions, true);
 </script>
 
 <FilterPage>

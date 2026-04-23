@@ -94,6 +94,7 @@ type (
 	IncidentSeverityAttributes struct {
 		Name        string `json:"name"`
 		Rank        int    `json:"rank"`
+		Color       string `json:"color"`
 		Archived    bool   `json:"archived"`
 		Description string `json:"description"`
 	}
@@ -124,6 +125,7 @@ type (
 		Attributes IncidentTagAttributes `json:"attributes"`
 	}
 	IncidentTagAttributes struct {
+		Key         string `json:"key"`
 		Value       string `json:"value"`
 		Archived    bool   `json:"archived"`
 		Description string `json:"description"`
@@ -166,7 +168,7 @@ func IncidentMetadataFromRez(md *rez.IncidentMetadata) IncidentMetadata {
 		Roles:      convert(md.Roles, IncidentRoleFromEnt),
 		Types:      convert(md.Types, IncidentTypeFromEnt),
 		Fields:     convert(md.Fields, IncidentFieldFromEnt),
-		Tags:       make([]IncidentTag, 0),
+		Tags:       convert(md.Tags, IncidentTagFromEnt),
 	}
 }
 
@@ -176,6 +178,7 @@ func IncidentSeverityFromEnt(sev *ent.IncidentSeverity) IncidentSeverity {
 		Attributes: IncidentSeverityAttributes{
 			Name:        sev.Name,
 			Rank:        sev.Rank,
+			Color:       sev.Color,
 			Description: sev.Description,
 			Archived:    !sev.ArchiveTime.IsZero(),
 		},
@@ -206,8 +209,12 @@ func IncidentRoleFromEnt(role *ent.IncidentRole) IncidentRole {
 
 func IncidentTagFromEnt(tag *ent.IncidentTag) IncidentTag {
 	return IncidentTag{
-		Id:         tag.ID,
-		Attributes: IncidentTagAttributes{},
+		Id: tag.ID,
+		Attributes: IncidentTagAttributes{
+			Key:      tag.Key,
+			Value:    tag.Value,
+			Archived: !tag.ArchiveTime.IsZero(),
+		},
 	}
 }
 

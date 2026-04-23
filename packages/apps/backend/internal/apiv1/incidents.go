@@ -67,7 +67,17 @@ func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.Creat
 	attr := input.Body.Attributes
 	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
 		m.SetTitle(attr.Title)
-		m.SetSummary(attr.Summary)
+		m.SetSeverityID(attr.SeverityId)
+		m.SetTypeID(attr.TypeId)
+		if attr.Summary != nil {
+			m.SetSummary(*attr.Summary)
+		}
+		if len(attr.TagIds) > 0 {
+			m.AddTagAssignmentIDs(attr.TagIds...)
+		}
+		if len(attr.FieldSelectionIds) > 0 {
+			m.AddFieldSelectionIDs(attr.FieldSelectionIds...)
+		}
 
 		incidentId, exists := m.ID()
 		if !exists {

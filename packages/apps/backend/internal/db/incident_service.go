@@ -48,7 +48,10 @@ func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {
 	})
 	q.WithSeverity()
 	q.WithType()
-	q.WithFieldSelections()
+	q.WithFieldSelections(func(foq *ent.IncidentFieldOptionQuery) {
+		foq.WithIncidentField()
+	})
+	q.WithTagAssignments()
 	q.WithRoleAssignments(func(raq *ent.IncidentRoleAssignmentQuery) {
 		raq.WithRole().WithUser()
 	})
@@ -193,7 +196,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		}
 	}
 
-	return updated, nil
+	return s.Get(ctx, incident.ID(updated.ID))
 }
 
 func (s *IncidentService) Archive(ctx context.Context, id uuid.UUID) error {
@@ -316,7 +319,13 @@ func (s *IncidentService) ListIncidentTypes(ctx context.Context) ([]*ent.Inciden
 }
 
 func (s *IncidentService) ListIncidentFields(ctx context.Context) ([]*ent.IncidentField, error) {
-	return s.db.IncidentField.Query().All(ctx)
+	return s.db.IncidentField.Query().
+		WithOptions().
+		All(ctx)
+}
+
+func (s *IncidentService) ListIncidentTags(ctx context.Context) ([]*ent.IncidentTag, error) {
+	return s.db.IncidentTag.Query().All(ctx)
 }
 
 func (s *IncidentService) GetIncidentMetadata(ctx context.Context) (*rez.IncidentMetadata, error) {
@@ -343,6 +352,11 @@ func (s *IncidentService) GetIncidentMetadata(ctx context.Context) (*rez.Inciden
 	md.Fields, err = s.ListIncidentFields(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("fields: %w", err)
+	}
+
+	md.Tags, err = s.ListIncidentTags(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("tags: %w", err)
 	}
 
 	return &md, nil

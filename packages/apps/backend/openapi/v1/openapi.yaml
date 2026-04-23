@@ -390,13 +390,26 @@ components:
     CreateIncidentAttributes:
       additionalProperties: false
       properties:
+        fieldSelectionIds:
+          items:
+            type: string
+          type: array
         summary:
           type: string
+        severityId:
+          type: string
+        tagIds:
+          items:
+            type: string
+          type: array
         title:
+          type: string
+        typeId:
           type: string
       required:
         - title
-        - summary
+        - severityId
+        - typeId
       type: object
     CreateIncidentDebriefQuestionAttributes:
       additionalProperties: false
@@ -2372,6 +2385,10 @@ components:
             - resolved
             - closed
           type: string
+        fieldSelections:
+          items:
+            $ref: "#/components/schemas/IncidentFieldSelection"
+          type: array
         linkedIncidents:
           items:
             $ref: "#/components/schemas/IncidentLink"
@@ -2427,6 +2444,7 @@ components:
         - tasks
         - roles
         - teams
+        - fieldSelections
         - linkedIncidents
         - chatChannel
       type: object
@@ -2823,6 +2841,20 @@ components:
         - value
         - archived
       type: object
+    IncidentFieldSelection:
+      additionalProperties: false
+      properties:
+        fieldId:
+          type: string
+        fieldName:
+          type: string
+        option:
+          $ref: "#/components/schemas/IncidentFieldOption"
+      required:
+        - fieldId
+        - fieldName
+        - option
+      type: object
     IncidentLink:
       additionalProperties: false
       properties:
@@ -2973,6 +3005,8 @@ components:
       properties:
         archived:
           type: boolean
+        color:
+          type: string
         description:
           type: string
         name:
@@ -2984,6 +3018,7 @@ components:
         - name
         - rank
         - archived
+        - color
         - description
       type: object
     IncidentTag:
@@ -3004,9 +3039,12 @@ components:
           type: boolean
         description:
           type: string
+        key:
+          type: string
         value:
           type: string
       required:
+        - key
         - value
         - archived
         - description

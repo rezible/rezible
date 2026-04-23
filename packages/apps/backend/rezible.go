@@ -336,6 +336,7 @@ type (
 		Types      ent.IncidentTypes
 		Fields     ent.IncidentFields
 		Severities ent.IncidentSeverities
+		Tags       ent.IncidentTags
 	}
 
 	ListIncidentsParams struct {
@@ -360,6 +361,7 @@ type (
 		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
 		ListIncidentSeverities(context.Context) ([]*ent.IncidentSeverity, error)
 		ListIncidentTypes(context.Context) ([]*ent.IncidentType, error)
+		ListIncidentTags(context.Context) ([]*ent.IncidentTag, error)
 
 		GetIncidentSeverity(context.Context, uuid.UUID) (*ent.IncidentSeverity, error)
 	}

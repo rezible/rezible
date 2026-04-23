@@ -8,6 +8,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	im "github.com/rezible/rezible/ent/incidentmilestone"
 )
 
 type IncidentsHandler interface {
@@ -48,6 +49,7 @@ type (
 		Tasks                  []Task                   `json:"tasks"`
 		RoleAssignments        []IncidentRoleAssignment `json:"roles"`
 		TeamAssignments        []IncidentTeamAssignment `json:"teams"`
+		FieldSelections        []IncidentFieldSelection `json:"fieldSelections"`
 		LinkedIncidents        []IncidentLink           `json:"linkedIncidents"`
 		ChatChannel            IncidentChatChannel      `json:"chatChannel"`
 		PrimaryVideoConference *VideoConference         `json:"primaryVideoConference,omitempty"`
@@ -90,14 +92,23 @@ type (
 		PersonalMinutes int    `json:"personalMinutes"`
 		SleepMinutes    int    `json:"sleepMinutes"`
 	}
+
+	IncidentFieldSelection struct {
+		FieldId   uuid.UUID           `json:"fieldId"`
+		FieldName string              `json:"fieldName"`
+		Option    IncidentFieldOption `json:"option"`
+	}
 )
 
 func IncidentFromEnt(inc *ent.Incident) Incident {
 	attr := IncidentAttributes{
-		Slug:     inc.Slug,
-		Title:    inc.Title,
-		Summary:  inc.Summary,
-		OpenedAt: inc.OpenedAt,
+		Slug:            inc.Slug,
+		Title:           inc.Title,
+		Summary:         inc.Summary,
+		OpenedAt:        inc.OpenedAt,
+		Tags:            make([]IncidentTag, 0),
+		FieldSelections: make([]IncidentFieldSelection, 0),
+		LinkedIncidents: make([]IncidentLink, 0),
 	}
 
 	if inc.Edges.Retrospective != nil {
@@ -106,6 +117,21 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 
 	if sev, sevErr := inc.Edges.SeverityOrErr(); sevErr == nil {
 		attr.Severity = IncidentSeverityFromEnt(sev)
+	}
+	if t, typeErr := inc.Edges.TypeOrErr(); typeErr == nil {
+		attr.Type = IncidentTypeFromEnt(t)
+	}
+	if tags, tagsErr := inc.Edges.TagAssignmentsOrErr(); tagsErr == nil {
+		attr.Tags = make([]IncidentTag, len(tags))
+		for i, tag := range tags {
+			attr.Tags[i] = IncidentTagFromEnt(tag)
+		}
+	}
+	if selections, selectionsErr := inc.Edges.FieldSelectionsOrErr(); selectionsErr == nil {
+		attr.FieldSelections = make([]IncidentFieldSelection, len(selections))
+		for i, selection := range selections {
+			attr.FieldSelections[i] = IncidentFieldSelectionFromEnt(selection)
+		}
 	}
 
 	if assns, rolesErr := inc.Edges.RoleAssignmentsOrErr(); rolesErr == nil {
@@ -119,9 +145,35 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		attr.PrimaryVideoConference = &primaryConf
 	}
 
-	attr.LinkedIncidents = make([]IncidentLink, 0)
+	attr.CurrentStatus = currentStatusFromEnt(inc)
 
 	return Incident{Id: inc.ID, Attributes: attr}
+}
+
+func IncidentFieldSelectionFromEnt(opt *ent.IncidentFieldOption) IncidentFieldSelection {
+	field := opt.Edges.IncidentField
+	if field == nil {
+		field = &ent.IncidentField{}
+	}
+
+	return IncidentFieldSelection{
+		FieldId:   opt.IncidentFieldID,
+		FieldName: field.Name,
+		Option:    IncidentFieldOptionFromEnt(opt),
+	}
+}
+
+func currentStatusFromEnt(inc *ent.Incident) string {
+	status := "started"
+	for _, milestone := range inc.Edges.Milestones {
+		switch milestone.Kind {
+		case im.KindMitigation:
+			return "mitigated"
+		case im.KindResolution:
+			return "resolved"
+		}
+	}
+	return status
 }
 
 func IncidentRoleAssignmentFromEnt(assn *ent.IncidentRoleAssignment) IncidentRoleAssignment {
@@ -163,8 +215,12 @@ var CreateIncident = huma.Operation{
 }
 
 type CreateIncidentAttributes struct {
-	Title   string `json:"title"`
-	Summary string `json:"summary"`
+	Title             string      `json:"title"`
+	Summary           *string     `json:"summary,omitempty" required:"false"`
+	SeverityId        uuid.UUID   `json:"severityId"`
+	TypeId            uuid.UUID   `json:"typeId"`
+	TagIds            []uuid.UUID `json:"tagIds,omitempty"`
+	FieldSelectionIds []uuid.UUID `json:"fieldSelectionIds,omitempty"`
 }
 type CreateIncidentRequest RequestWithBodyAttributes[CreateIncidentAttributes]
 type CreateIncidentResponse ItemResponse[Incident]

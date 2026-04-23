@@ -39,6 +39,7 @@ func newIncidentMetadataHandler(db *ent.Client, incidents rez.IncidentService) *
 		roles:      db.IncidentRole,
 		severities: db.IncidentSeverity,
 		tags:       db.IncidentTag,
+		types:      db.IncidentType,
 	}
 }
 
