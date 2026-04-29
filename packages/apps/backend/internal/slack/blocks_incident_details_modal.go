@@ -29,9 +29,11 @@ func (b *incidentModalViewBuilder) build(im *rez.IncidentMetadata) slack.Blocks 
 	if b.incident != nil {
 		b.makeOpenMilestoneModalButton()
 	}
-	// only allow setting incident type on creation
-	if b.incident == nil && len(im.Types) > 0 {
+	if len(im.Types) > 0 {
 		b.makeTypeSelect(im.Types)
+	}
+	if len(im.Tags) > 0 {
+		b.makeTagsSelect(im.Tags)
 	}
 	if len(im.Fields) > 0 {
 		b.makeCustomFieldSelect(im.Fields)
@@ -43,6 +45,7 @@ var (
 	incidentModalTitleIds    = blockActionIds{Block: "title", Input: "title_input"}
 	incidentModalSeverityIds = blockActionIds{Block: "incident_severity", Input: "severity_select"}
 	incidentModalTypeIds     = blockActionIds{Block: "incident_type", Input: "type_select"}
+	incidentModalTagIds      = blockActionIds{Block: "incident_tags", Input: "tags_select"}
 )
 
 func setIncidentDetailsModalInputMutationFields(m *ent.IncidentMutation, state *slack.ViewState) {
@@ -56,11 +59,24 @@ func setIncidentDetailsModalInputMutationFields(m *ent.IncidentMutation, state *
 		m.SetTypeID(typeId)
 	}
 
-	m.ClearFieldSelections()
+	if getViewStateBlockAction(state, incidentModalTagIds) != nil {
+		m.ClearTagAssignments()
+		for _, selectedTagId := range incidentModalTagIds.GetStateSelectedValues(state) {
+			if tagId, tagErr := uuid.Parse(selectedTagId); tagErr == nil {
+				m.AddTagAssignmentIDs(tagId)
+			}
+		}
+	}
+
+	hasFieldInputs := false
 	for _, actions := range state.Values {
 		for actionID, blockAction := range actions {
 			if len(actionID) < len("incident_field_select_") || actionID[:len("incident_field_select_")] != "incident_field_select_" {
 				continue
+			}
+			if !hasFieldInputs {
+				m.ClearFieldSelections()
+				hasFieldInputs = true
 			}
 			if fieldOptionID, fieldOptionErr := uuid.Parse(blockAction.SelectedOption.Value); fieldOptionErr == nil {
 				m.AddFieldSelectionIDs(fieldOptionID)
@@ -125,6 +141,36 @@ func (b *incidentModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
 		slack.NewInputBlock(incidentModalTypeIds.Block, plainText("Incident Type"), nil, typeSelect))
 }
 
+func (b *incidentModalViewBuilder) makeTagsSelect(tags ent.IncidentTags) {
+	options := make([]*slack.OptionBlockObject, len(tags))
+	initialOptions := make([]*slack.OptionBlockObject, 0, len(tags))
+	selectedTagIds := map[uuid.UUID]struct{}{}
+	if b.incident != nil {
+		for _, tag := range b.incident.Edges.TagAssignments {
+			selectedTagIds[tag.ID] = struct{}{}
+		}
+	}
+	for i, tag := range tags {
+		label := tag.Value
+		if tag.Key != "" {
+			label = tag.Key + ": " + tag.Value
+		}
+		options[i] = slack.NewOptionBlockObject(tag.ID.String(), plainText(label), nil)
+		if _, ok := selectedTagIds[tag.ID]; ok {
+			initialOptions = append(initialOptions, options[i])
+		}
+	}
+
+	tagSelect := slack.NewOptionsMultiSelectBlockElement(slack.OptTypeStatic, plainText("Select tags"),
+		incidentModalTagIds.Input, options...)
+	if len(initialOptions) > 0 {
+		tagSelect.WithInitialOptions(initialOptions...)
+	}
+
+	b.blocks = append(b.blocks,
+		slack.NewInputBlock(incidentModalTagIds.Block, plainText("Tags"), nil, tagSelect).WithOptional(true))
+}
+
 func (b *incidentModalViewBuilder) makeCustomFieldSelect(fields ent.IncidentFields) {
 	b.blocks = append(b.blocks, slack.NewDividerBlock())
 	for _, field := range fields {
@@ -139,20 +185,18 @@ func (b *incidentModalViewBuilder) makeCustomFieldSelect(fields ent.IncidentFiel
 				if s.IncidentFieldID != field.ID {
 					continue
 				}
-				for _, selected := range fieldOptions {
-					if selected.Value == opt.Value {
-						initialOptIdx = i
-						break
-					}
+				if s.ID == opt.ID {
+					initialOptIdx = i
+					break
 				}
 			}
 		}
 		ids := incidentModalFieldOptionIds(field.ID.String())
-		fieldOptionSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil, ids.Input, fieldOptions...)
+		fieldOptionSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, plainText("Select an option"), ids.Input, fieldOptions...)
 		if len(fieldOptions) > 0 {
 			fieldOptionSelect.WithInitialOption(fieldOptions[initialOptIdx])
 		}
 		b.blocks = append(b.blocks,
-			slack.NewInputBlock(ids.Block, plainText(field.Name), nil, fieldOptionSelect))
+			slack.NewInputBlock(ids.Block, plainText(field.Name), nil, fieldOptionSelect).WithOptional(true))
 	}
 }

@@ -53,6 +53,20 @@ func (ids blockActionIds) GetStateSelectedValue(state *slack.ViewState) string {
 	return action.SelectedOption.Value
 }
 
+func (ids blockActionIds) GetStateSelectedValues(state *slack.ViewState) []string {
+	action := getViewStateBlockAction(state, ids)
+	if action == nil || len(action.SelectedOptions) == 0 {
+		return nil
+	}
+	values := make([]string, 0, len(action.SelectedOptions))
+	for _, option := range action.SelectedOptions {
+		if option.Value != "" {
+			values = append(values, option.Value)
+		}
+	}
+	return values
+}
+
 func convertContentToBlocks(prefix string, content *rez.ContentNode) []slack.Block {
 	c := &blockConverter{}
 	if prefix != "" {
