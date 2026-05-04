@@ -236,6 +236,38 @@ func (c *IntegrationOAuthStateClient) Debug() *IntegrationOAuthStateClient {
 	return &IntegrationOAuthStateClient{config: cfg}
 }
 
+func (c *KnowledgeEntityClient) Debug() *KnowledgeEntityClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeEntityClient{config: cfg}
+}
+
+func (c *KnowledgeEntityAliasClient) Debug() *KnowledgeEntityAliasClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeEntityAliasClient{config: cfg}
+}
+
+func (c *KnowledgeFactProvenanceClient) Debug() *KnowledgeFactProvenanceClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeFactProvenanceClient{config: cfg}
+}
+
+func (c *KnowledgeRelationshipClient) Debug() *KnowledgeRelationshipClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeRelationshipClient{config: cfg}
+}
+
 func (c *MeetingScheduleClient) Debug() *MeetingScheduleClient {
 	if c.debug {
 		return c

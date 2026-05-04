@@ -140,17 +140,6 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 		}
 	}
 
-	playbooksProviders, playbooksErr := integrations.GetPlaybookDataProviders(ctx, intgs)
-	if playbooksErr != nil {
-		slog.Error("failed to load playbooks data providers", "error", playbooksErr)
-	} else if len(playbooksProviders) > 0 {
-		for _, playbooks := range playbooksProviders {
-			if syncErr := syncPlaybooks(ctx, s.db, playbooks, opts); syncErr != nil {
-				return fmt.Errorf("playbooks: %w", syncErr)
-			}
-		}
-	}
-
 	incidentsProviders, incidentsErr := integrations.GetIncidentDataProviders(ctx, intgs)
 	if incidentsErr != nil {
 		slog.Error("failed to load incidents data providers", "error", incidentsErr)

@@ -104,6 +104,14 @@ ALTER TABLE "normalized_events" DROP CONSTRAINT "normalized_events_tenants_tenan
 ALTER TABLE "meeting_sessions" DROP CONSTRAINT "meeting_sessions_meeting_schedules_schedule", DROP CONSTRAINT "meeting_sessions_tenants_tenant";
 -- reverse: modify "meeting_schedules" table
 ALTER TABLE "meeting_schedules" DROP CONSTRAINT "meeting_schedules_tenants_tenant";
+-- reverse: modify "knowledge_relationships" table
+ALTER TABLE "knowledge_relationships" DROP CONSTRAINT "knowledge_relationships_knowledge_entities_target_entity", DROP CONSTRAINT "knowledge_relationships_knowledge_entities_source_entity", DROP CONSTRAINT "knowledge_relationships_tenants_tenant";
+-- reverse: modify "knowledge_fact_provenances" table
+ALTER TABLE "knowledge_fact_provenances" DROP CONSTRAINT "knowledge_fact_provenances_normalized_events_normalized_event", DROP CONSTRAINT "knowledge_fact_provenances_knowledge_relationships_relationship", DROP CONSTRAINT "knowledge_fact_provenances_knowledge_entity_alias_alias", DROP CONSTRAINT "knowledge_fact_provenances_tenants_tenant";
+-- reverse: modify "knowledge_entity_alias" table
+ALTER TABLE "knowledge_entity_alias" DROP CONSTRAINT "knowledge_entity_alias_normalized_events_normalized_event", DROP CONSTRAINT "knowledge_entity_alias_knowledge_entities_entity", DROP CONSTRAINT "knowledge_entity_alias_tenants_tenant";
+-- reverse: modify "knowledge_entities" table
+ALTER TABLE "knowledge_entities" DROP CONSTRAINT "knowledge_entities_tenants_tenant";
 -- reverse: modify "integration_oauth_states" table
 ALTER TABLE "integration_oauth_states" DROP CONSTRAINT "integration_oauth_states_users_user", DROP CONSTRAINT "integration_oauth_states_tenants_tenant";
 -- reverse: modify "integrations" table
@@ -384,6 +392,42 @@ DROP TABLE "meeting_sessions";
 DROP INDEX "meetingschedule_tenant_id";
 -- reverse: create "meeting_schedules" table
 DROP TABLE "meeting_schedules";
+-- reverse: create index "knowledgerelationship_tenant_id_kind" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_id_kind";
+-- reverse: create index "knowledgerelationship_tenant_i_2d0a26e6358523d6b866080ea96f807e" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_i_2d0a26e6358523d6b866080ea96f807e";
+-- reverse: create index "knowledgerelationship_tenant_id" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_id";
+-- reverse: create "knowledge_relationships" table
+DROP TABLE "knowledge_relationships";
+-- reverse: create index "knowledgefactprovenance_relationship_source_unique" to table: "knowledge_fact_provenances"
+DROP INDEX "knowledgefactprovenance_relationship_source_unique";
+-- reverse: create index "knowledgefactprovenance_alias_source_unique" to table: "knowledge_fact_provenances"
+DROP INDEX "knowledgefactprovenance_alias_source_unique";
+-- reverse: create index "knowledgefactprovenance_tenant_5eaab5ee15855c67f0930fe3485e30cc" to table: "knowledge_fact_provenances"
+DROP INDEX "knowledgefactprovenance_tenant_5eaab5ee15855c67f0930fe3485e30cc";
+-- reverse: create index "knowledgefactprovenance_tenant_id_relationship_id" to table: "knowledge_fact_provenances"
+DROP INDEX "knowledgefactprovenance_tenant_id_relationship_id";
+-- reverse: create index "knowledgefactprovenance_tenant_id_alias_id" to table: "knowledge_fact_provenances"
+DROP INDEX "knowledgefactprovenance_tenant_id_alias_id";
+-- reverse: create index "knowledgefactprovenance_tenant_id" to table: "knowledge_fact_provenances"
+DROP INDEX "knowledgefactprovenance_tenant_id";
+-- reverse: create "knowledge_fact_provenances" table
+DROP TABLE "knowledge_fact_provenances";
+-- reverse: create index "knowledgeentityalias_tenant_id_entity_id" to table: "knowledge_entity_alias"
+DROP INDEX "knowledgeentityalias_tenant_id_entity_id";
+-- reverse: create index "knowledgeentityalias_tenant_id_6a564074d6ae0ee855485e16d49cce29" to table: "knowledge_entity_alias"
+DROP INDEX "knowledgeentityalias_tenant_id_6a564074d6ae0ee855485e16d49cce29";
+-- reverse: create index "knowledgeentityalias_tenant_id" to table: "knowledge_entity_alias"
+DROP INDEX "knowledgeentityalias_tenant_id";
+-- reverse: create "knowledge_entity_alias" table
+DROP TABLE "knowledge_entity_alias";
+-- reverse: create index "knowledgeentity_tenant_id_kind" to table: "knowledge_entities"
+DROP INDEX "knowledgeentity_tenant_id_kind";
+-- reverse: create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
+DROP INDEX "knowledgeentity_tenant_id";
+-- reverse: create "knowledge_entities" table
+DROP TABLE "knowledge_entities";
 -- reverse: create index "integrationoauthstate_tenant_id" to table: "integration_oauth_states"
 DROP INDEX "integrationoauthstate_tenant_id";
 -- reverse: create "integration_oauth_states" table

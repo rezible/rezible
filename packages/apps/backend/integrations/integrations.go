@@ -132,8 +132,8 @@ func GetOAuthIntegration(name string) (IntegrationWithOAuth2Flow, error) {
 	return oauth2Intg, nil
 }
 
-func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Integration) (DP, error)) ([]DP, error) {
-	provs := make([]DP, 0, len(availablePackages))
+func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Integration) (DP, error)) (map[string]DP, error) {
+	provs := make(map[string]DP)
 	for _, intg := range intgs {
 		if p, valid := packageNameMap[intg.Name]; valid {
 			dpProv, hasSupport := p.(I)
@@ -142,14 +142,14 @@ func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Int
 				if provErr != nil {
 					return nil, fmt.Errorf("loading data provider: %w", provErr)
 				}
-				provs = append(provs, prov)
+				provs[intg.Name] = prov
 			}
 		}
 	}
 	return provs, nil
 }
 
-func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.UserDataProvider, error) {
+func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.UserDataProvider, error) {
 	type integrationWithUserDataProvider interface {
 		MakeUserDataProvider(context.Context, *ent.Integration) (rez.UserDataProvider, error)
 	}
@@ -158,7 +158,7 @@ func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.Us
 	})
 }
 
-func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TeamDataProvider, error) {
+func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.TeamDataProvider, error) {
 	type integrationWithTeamDataProvider interface {
 		MakeTeamDataProvider(context.Context, *ent.Integration) (rez.TeamDataProvider, error)
 	}
@@ -167,7 +167,7 @@ func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.Te
 	})
 }
 
-func GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.OncallDataProvider, error) {
+func GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.OncallDataProvider, error) {
 	type integrationWithOncallDataProvider interface {
 		MakeOncallDataProvider(context.Context, *ent.Integration) (rez.OncallDataProvider, error)
 	}
@@ -176,7 +176,7 @@ func GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.
 	})
 }
 
-func GetAlertDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.AlertDataProvider, error) {
+func GetAlertDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.AlertDataProvider, error) {
 	type integrationWithAlertDataProvider interface {
 		MakeAlertDataProvider(context.Context, *ent.Integration) (rez.AlertDataProvider, error)
 	}
@@ -185,7 +185,7 @@ func GetAlertDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.A
 	})
 }
 
-func GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.IncidentDataProvider, error) {
+func GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.IncidentDataProvider, error) {
 	type integrationWithIncidentDataProvider interface {
 		MakeIncidentDataProvider(context.Context, *ent.Integration) (rez.IncidentDataProvider, error)
 	}
@@ -194,29 +194,11 @@ func GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) ([]re
 	})
 }
 
-func GetSystemComponentsDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.SystemComponentsDataProvider, error) {
+func GetSystemComponentsDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.SystemComponentsDataProvider, error) {
 	type integrationWithSystemComponentsDataProvider interface {
 		MakeSystemComponentsDataProvider(context.Context, *ent.Integration) (rez.SystemComponentsDataProvider, error)
 	}
 	return getDataProviders(intgs, func(dpi integrationWithSystemComponentsDataProvider, i *ent.Integration) (rez.SystemComponentsDataProvider, error) {
 		return dpi.MakeSystemComponentsDataProvider(ctx, i)
-	})
-}
-
-func GetTicketDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.TicketDataProvider, error) {
-	type integrationWithTicketDataProvider interface {
-		MakeTicketDataProvider(context.Context, *ent.Integration) (rez.TicketDataProvider, error)
-	}
-	return getDataProviders(intgs, func(dpi integrationWithTicketDataProvider, i *ent.Integration) (rez.TicketDataProvider, error) {
-		return dpi.MakeTicketDataProvider(ctx, i)
-	})
-}
-
-func GetPlaybookDataProviders(ctx context.Context, intgs ent.Integrations) ([]rez.PlaybookDataProvider, error) {
-	type integrationWithPlaybookDataProvider interface {
-		MakePlaybookDataProvider(context.Context, *ent.Integration) (rez.PlaybookDataProvider, error)
-	}
-	return getDataProviders(intgs, func(dpi integrationWithPlaybookDataProvider, i *ent.Integration) (rez.PlaybookDataProvider, error) {
-		return dpi.MakePlaybookDataProvider(ctx, i)
 	})
 }

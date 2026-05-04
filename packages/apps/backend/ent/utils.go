@@ -49,9 +49,16 @@ type EntityMutator[T any, M ent.Mutation] interface {
 }
 
 func WithTx(ctx context.Context, client *Client, fn func(tx *Tx) error) error {
+	_, err := WithTxReturning(ctx, client, func(tx *Tx) (*any, error) {
+		return nil, fn(tx)
+	})
+	return err
+}
+
+func WithTxReturning[T any](ctx context.Context, client *Client, fn func(tx *Tx) (*T, error)) (*T, error) {
 	tx, txErr := client.Tx(ctx)
 	if txErr != nil {
-		return txErr
+		return nil, txErr
 	}
 	defer func() {
 		if v := recover(); v != nil {
@@ -61,16 +68,17 @@ func WithTx(ctx context.Context, client *Client, fn func(tx *Tx) error) error {
 			panic(v)
 		}
 	}()
-	if fnErr := fn(tx); fnErr != nil {
+	res, fnErr := fn(tx)
+	if fnErr != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			fnErr = fmt.Errorf("%w: rolling back transaction: %w", fnErr, rbErr)
 		}
-		return fnErr
+		return nil, fnErr
 	}
 	if commitErr := tx.Commit(); commitErr != nil {
-		return fmt.Errorf("committing transaction: %w", commitErr)
+		return nil, fmt.Errorf("committing transaction: %w", commitErr)
 	}
-	return nil
+	return res, nil
 }
 
 func ExtractPgxTx(txClient *Tx) (pgx.Tx, error) {

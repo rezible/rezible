@@ -70,6 +70,14 @@ type Tx struct {
 	Integration *IntegrationClient
 	// IntegrationOAuthState is the client for interacting with the IntegrationOAuthState builders.
 	IntegrationOAuthState *IntegrationOAuthStateClient
+	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
+	KnowledgeEntity *KnowledgeEntityClient
+	// KnowledgeEntityAlias is the client for interacting with the KnowledgeEntityAlias builders.
+	KnowledgeEntityAlias *KnowledgeEntityAliasClient
+	// KnowledgeFactProvenance is the client for interacting with the KnowledgeFactProvenance builders.
+	KnowledgeFactProvenance *KnowledgeFactProvenanceClient
+	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
+	KnowledgeRelationship *KnowledgeRelationshipClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
@@ -304,6 +312,10 @@ func (tx *Tx) init() {
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.Integration = NewIntegrationClient(tx.config)
 	tx.IntegrationOAuthState = NewIntegrationOAuthStateClient(tx.config)
+	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
+	tx.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(tx.config)
+	tx.KnowledgeFactProvenance = NewKnowledgeFactProvenanceClient(tx.config)
+	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.NormalizedEvent = NewNormalizedEventClient(tx.config)

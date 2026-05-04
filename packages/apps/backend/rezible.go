@@ -57,6 +57,7 @@ type Services struct {
 	Jobs             JobsService
 	ProviderEvents   ProviderEventService
 	Messages         MessageService
+	Knowledge        KnowledgeService
 	Auth             AuthSessionService
 	Organizations    OrganizationService
 	Integrations     IntegrationsService
@@ -118,6 +119,14 @@ type (
 
 		GetChatService(ctx context.Context) (ChatService, error)
 		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)
+	}
+)
+
+type (
+	KnowledgeService interface {
+		SetRelationship(context.Context, uuid.UUID, func(relationship *ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
+		SetEntityAlias(context.Context, uuid.UUID, func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error)
+		GetEntity(context.Context, predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error)
 	}
 )
 

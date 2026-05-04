@@ -93,6 +93,18 @@ type Integration func(*sql.Selector)
 // IntegrationOAuthState is the predicate function for integrationoauthstate builders.
 type IntegrationOAuthState func(*sql.Selector)
 
+// KnowledgeEntity is the predicate function for knowledgeentity builders.
+type KnowledgeEntity func(*sql.Selector)
+
+// KnowledgeEntityAlias is the predicate function for knowledgeentityalias builders.
+type KnowledgeEntityAlias func(*sql.Selector)
+
+// KnowledgeFactProvenance is the predicate function for knowledgefactprovenance builders.
+type KnowledgeFactProvenance func(*sql.Selector)
+
+// KnowledgeRelationship is the predicate function for knowledgerelationship builders.
+type KnowledgeRelationship func(*sql.Selector)
+
 // MeetingSchedule is the predicate function for meetingschedule builders.
 type MeetingSchedule func(*sql.Selector)
 

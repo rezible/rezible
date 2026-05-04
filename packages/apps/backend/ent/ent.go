@@ -41,6 +41,10 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgefactprovenance"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
@@ -167,6 +171,10 @@ func checkColumn(t, c string) error {
 			incidenttype.Table:                     incidenttype.ValidColumn,
 			integration.Table:                      integration.ValidColumn,
 			integrationoauthstate.Table:            integrationoauthstate.ValidColumn,
+			knowledgeentity.Table:                  knowledgeentity.ValidColumn,
+			knowledgeentityalias.Table:             knowledgeentityalias.ValidColumn,
+			knowledgefactprovenance.Table:          knowledgefactprovenance.ValidColumn,
+			knowledgerelationship.Table:            knowledgerelationship.ValidColumn,
 			meetingschedule.Table:                  meetingschedule.ValidColumn,
 			meetingsession.Table:                   meetingsession.ValidColumn,
 			normalizedevent.Table:                  normalizedevent.ValidColumn,

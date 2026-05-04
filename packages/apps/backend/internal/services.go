@@ -162,6 +162,9 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	s.listeners["river_job_service"] = jobSvc
 
 	dbc := s.db.Client()
+
+	knowledge := db.NewKnowledgeService(dbc)
+
 	provEvents := db.NewProviderEventService(dbc, jobSvc)
 
 	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
@@ -263,6 +266,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		Jobs:             jobSvc,
 		ProviderEvents:   provEvents,
 		Messages:         msgs,
+		Knowledge:        knowledge,
 		Auth:             auth,
 		Organizations:    orgs,
 		Integrations:     intgs,
