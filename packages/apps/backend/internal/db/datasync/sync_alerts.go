@@ -13,9 +13,9 @@ import (
 	"github.com/rezible/rezible/ent/alertinstance"
 )
 
-func syncAlerts(ctx context.Context, db *ent.Client, prov rez.AlertDataProvider) error {
+func syncAlerts(ctx context.Context, db *ent.Client, prov rez.AlertDataProvider, opts SyncOptions) error {
 	b := &alertsBatcher{db: db, provider: prov}
-	s := newBatchedDataSyncer[*ent.Alert](db, "alerts", b)
+	s := newBatchedDataSyncer[*ent.Alert](db, "alerts", b, opts)
 	return s.Sync(ctx)
 }
 
@@ -81,9 +81,9 @@ func (b *alertsBatcher) getDeletionMutations() []ent.Mutation {
 	return nil
 }
 
-func syncAlertInstances(ctx context.Context, db *ent.Client, alerts rez.AlertDataProvider) error {
+func syncAlertInstances(ctx context.Context, db *ent.Client, alerts rez.AlertDataProvider, opts SyncOptions) error {
 	b := &alertInstancesBatcher{db: db, alerts: alerts}
-	s := newBatchedDataSyncer[*ent.AlertInstance](db, "alert_instance", b)
+	s := newBatchedDataSyncer[*ent.AlertInstance](db, "alert_instance", b, opts)
 	s.setSyncInterval(time.Hour * 12)
 	return s.Sync(ctx)
 }

@@ -8,31 +8,34 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/schema"
+	"github.com/rezible/rezible/execution"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type incidentDebriefsHandler struct {
 	questions *ent.IncidentDebriefQuestionClient
-	auth      rez.AuthSessionService
 	users     rez.UserService
 	debriefs  rez.DebriefService
 }
 
-func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, auth rez.AuthSessionService, users rez.UserService, debriefs rez.DebriefService) *incidentDebriefsHandler {
-	return &incidentDebriefsHandler{questions, auth, users, debriefs}
+func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, users rez.UserService, debriefs rez.DebriefService) *incidentDebriefsHandler {
+	return &incidentDebriefsHandler{questions, users, debriefs}
 }
 
 func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, request *oapi.GetIncidentUserDebriefRequest) (*oapi.GetIncidentUserDebriefResponse, error) {
 	var resp oapi.GetIncidentUserDebriefResponse
 
-	userId := h.auth.GetAuthSession(ctx).UserId
+	sess := execution.AuthSession(ctx)
+	if sess == nil {
+		return nil, oapi.Error("failed to get auth session", rez.ErrAuthSessionMissing)
+	}
 
-	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, userId)
+	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, sess.UserId)
 	if debriefErr != nil {
 		if !ent.IsNotFound(debriefErr) {
 			return nil, oapi.Error("failed to get incident debrief", debriefErr)
 		}
-		created, createErr := h.debriefs.CreateDebrief(ctx, request.Id, userId)
+		created, createErr := h.debriefs.CreateDebrief(ctx, request.Id, sess.UserId)
 		if createErr != nil {
 			return nil, oapi.Error("failed to create debrief", createErr)
 		}

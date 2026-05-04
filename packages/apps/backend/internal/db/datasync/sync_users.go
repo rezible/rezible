@@ -13,9 +13,9 @@ import (
 	"github.com/rezible/rezible/ent/user"
 )
 
-func syncUsers(ctx context.Context, db *ent.Client, prov rez.UserDataProvider) error {
+func syncUsers(ctx context.Context, db *ent.Client, prov rez.UserDataProvider, opts SyncOptions) error {
 	b := &usersBatcher{db: db, provider: prov}
-	s := newBatchedDataSyncer[*ent.User](db, "users", b)
+	s := newBatchedDataSyncer[*ent.User](db, "users", b, opts)
 	return s.Sync(ctx)
 }
 

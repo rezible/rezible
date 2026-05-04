@@ -6,8 +6,8 @@ import (
 	"log/slog"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/execution"
 	"github.com/slack-go/slack"
 )
 
@@ -35,13 +35,13 @@ func newChatService(ci *ConfiguredIntegration) *ChatService {
 }
 
 func (s *ChatService) createUserContext(ctx context.Context, userChatId string) (context.Context, error) {
-	ctx = access.TenantContext(ctx, s.ci.intg.TenantID)
-	usr, usrErr := s.users.Get(ctx, user.ChatID(userChatId))
+	tenantCtx := execution.AnonymousTenantContext(ctx, s.ci.intg.TenantID)
+	usr, usrErr := s.users.Get(tenantCtx, user.ChatID(userChatId))
 	if usrErr != nil {
 		s.logger.Error("failed to lookup chat user", "error", usrErr, "chat_id", userChatId)
 		return nil, fmt.Errorf("lookup user: %w", usrErr)
 	}
-	return access.WithUser(ctx, usr), nil
+	return execution.UserContext(ctx, *usr, nil), nil
 }
 
 func (s *ChatService) postMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {

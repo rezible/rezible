@@ -12,8 +12,8 @@ import (
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivertype"
 
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/jobs"
 )
 
@@ -62,7 +62,8 @@ func (s *JobService) Start(ctx context.Context) error {
 	if pjErr != nil {
 		return fmt.Errorf("failed to add periodic jobs: %w", pjErr)
 	}
-	return s.client.Start(access.SystemContext(ctx))
+	jobsCtx := execution.NewContext(ctx, execution.KindSystem, execution.SourceJob)
+	return s.client.Start(jobsCtx)
 }
 
 func (s *JobService) Stop(ctx context.Context) error {

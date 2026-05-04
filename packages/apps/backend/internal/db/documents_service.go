@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"strings"
 
+	"log/slog"
+
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	da "github.com/rezible/rezible/ent/documentaccess"
-	"log/slog"
+	"github.com/rezible/rezible/execution"
 )
 
 type DocumentsServiceConfig struct {
@@ -19,14 +21,12 @@ type DocumentsService struct {
 	cfg DocumentsServiceConfig
 
 	db    *ent.Client
-	auth  rez.AuthSessionService
 	teams rez.TeamService
 }
 
-func NewDocumentsService(db *ent.Client, auth rez.AuthSessionService, teams rez.TeamService) (*DocumentsService, error) {
+func NewDocumentsService(db *ent.Client, teams rez.TeamService) (*DocumentsService, error) {
 	svc := &DocumentsService{
 		db:    db,
-		auth:  auth,
 		teams: teams,
 		cfg:   DocumentsServiceConfig{},
 	}
@@ -39,7 +39,14 @@ func NewDocumentsService(db *ent.Client, auth rez.AuthSessionService, teams rez.
 }
 
 func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUID) (*ent.DocumentAccess, error) {
-	sess := s.auth.GetAuthSession(ctx)
+	execAuth := execution.AuthSession(ctx)
+	if execAuth == nil {
+		return nil, rez.ErrAuthSessionMissing
+	}
+	userID, userOK := execution.UserID(ctx)
+	if !userOK {
+		return nil, rez.ErrAuthSessionMissing
+	}
 	doc, docErr := s.GetDocument(ctx, docId)
 	if docErr != nil {
 		return nil, fmt.Errorf("get document: %w", docErr)
@@ -47,14 +54,14 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 	if !doc.AccessRestricted {
 		defaultAccess := &ent.DocumentAccess{
 			DocumentID: docId,
-			UserID:     sess.UserId,
+			UserID:     userID,
 			CanView:    true,
 			CanEdit:    true,
 			CanManage:  true,
 		}
 		return defaultAccess, nil
 	}
-	for _, scope := range sess.Scopes {
+	for _, scope := range execAuth.Scopes {
 		parts := strings.Split(scope, ":")
 		if parts[0] != "document" || parts[1] != docId.String() {
 			continue
@@ -69,7 +76,7 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 		}
 		return acc, nil
 	}
-	bestAccess, accessesErr := s.getBestDocumentAccess(ctx, docId, sess.UserId)
+	bestAccess, accessesErr := s.getBestDocumentAccess(ctx, docId, userID)
 	if accessesErr != nil {
 		return nil, fmt.Errorf("failed to get document accesses: %w", accessesErr)
 	}

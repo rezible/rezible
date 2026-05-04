@@ -14,14 +14,13 @@ import (
 )
 
 type oncallShiftsHandler struct {
-	auth      rez.AuthSessionService
 	users     rez.UserService
 	incidents rez.IncidentService
 	shifts    rez.OncallShiftsService
 }
 
-func newOncallShiftsHandler(auth rez.AuthSessionService, users rez.UserService, inc rez.IncidentService, shifts rez.OncallShiftsService) *oncallShiftsHandler {
-	return &oncallShiftsHandler{auth: auth, users: users, incidents: inc, shifts: shifts}
+func newOncallShiftsHandler(users rez.UserService, inc rez.IncidentService, shifts rez.OncallShiftsService) *oncallShiftsHandler {
+	return &oncallShiftsHandler{users: users, incidents: inc, shifts: shifts}
 }
 
 func (h *oncallShiftsHandler) ListOncallShifts(ctx context.Context, request *oapi.ListOncallShiftsRequest) (*oapi.ListOncallShiftsResponse, error) {

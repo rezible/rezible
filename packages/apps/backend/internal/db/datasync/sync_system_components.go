@@ -12,9 +12,9 @@ import (
 	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
-func syncSystemComponents(ctx context.Context, db *ent.Client, prov rez.SystemComponentsDataProvider) error {
+func syncSystemComponents(ctx context.Context, db *ent.Client, prov rez.SystemComponentsDataProvider, opts SyncOptions) error {
 	b := &systemComponentsBatcher{db: db, provider: prov}
-	s := newBatchedDataSyncer[*ent.SystemComponent](db, "system_component", b)
+	s := newBatchedDataSyncer[*ent.SystemComponent](db, "system_component", b, opts)
 	return s.Sync(ctx)
 }
 

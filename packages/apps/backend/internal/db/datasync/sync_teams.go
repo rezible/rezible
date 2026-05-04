@@ -10,9 +10,9 @@ import (
 	"github.com/rezible/rezible/ent/team"
 )
 
-func syncTeams(ctx context.Context, db *ent.Client, prov rez.TeamDataProvider) error {
+func syncTeams(ctx context.Context, db *ent.Client, prov rez.TeamDataProvider, opts SyncOptions) error {
 	b := &teamsBatcher{db: db, provider: prov}
-	s := newBatchedDataSyncer[*ent.Team](db, "teams", b)
+	s := newBatchedDataSyncer[*ent.Team](db, "teams", b, opts)
 	return s.Sync(ctx)
 }
 

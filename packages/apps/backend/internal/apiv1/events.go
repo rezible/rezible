@@ -8,12 +8,11 @@ import (
 )
 
 type eventsHandler struct {
-	auth   rez.AuthSessionService
 	events rez.EventsService
 }
 
-func newEventsHandler(auth rez.AuthSessionService, events rez.EventsService) *eventsHandler {
-	return &eventsHandler{auth: auth, events: events}
+func newEventsHandler(events rez.EventsService) *eventsHandler {
+	return &eventsHandler{events: events}
 }
 
 func (h *eventsHandler) GetEvent(ctx context.Context, req *oapi.GetEventRequest) (*oapi.GetEventResponse, error) {

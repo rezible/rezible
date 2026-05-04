@@ -8,14 +8,14 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/urfave/cli/v3"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/internal"
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
-	"github.com/rezible/rezible/jobs"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -31,7 +31,7 @@ var rezcli = &cli.Command{
 		if cfgErr != nil {
 			return nil, fmt.Errorf("failed to load configuration: %w", cfgErr)
 		}
-		return access.AnonymousContext(ctx), nil
+		return execution.NewContext(ctx, execution.KindAnonymous, execution.SourceCLI), nil
 	},
 	Commands: []*cli.Command{
 		{
@@ -67,7 +67,7 @@ var rezcli = &cli.Command{
 				if srvErr != nil {
 					return srvErr
 				}
-				return srv.RunDataSync(ctx, jobs.SyncIntegrationsData{IgnoreHistory: cmd.Bool("hard")})
+				return srv.RunDataSync(ctx, datasync.SyncOptions{IgnoreHistory: cmd.Bool("hard")})
 			},
 		},
 		{

@@ -7,56 +7,20 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/koding/websocketproxy"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/httplog/v3"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
-type Config struct {
-	Host           string               `koanf:"host"`
-	Port           string               `koanf:"port"`
-	BasePath       string               `koanf:"base_path"`
-	DocumentsProxy DocumentsProxyConfig `koanf:"documents_proxy"`
-}
-
-type DocumentsProxyConfig struct {
-	Enabled   bool   `koanf:"enabled"`
-	ProxyHost string `koanf:"proxy_host"`
-	serverUrl *url.URL
-}
-
-func loadConfig() (Config, error) {
-	cfg := Config{
-		Host:     rez.Config.GetString("HOST", "0.0.0.0"),
-		Port:     rez.Config.GetString("PORT", "7002"),
-		BasePath: "",
-		DocumentsProxy: DocumentsProxyConfig{
-			Enabled:   false,
-			ProxyHost: "localhost:7003",
-		},
-	}
-	if cfgErr := rez.Config.Unmarshal("server.http", &cfg); cfgErr != nil {
-		return cfg, fmt.Errorf("failed to unmarshal config: %w", cfgErr)
-	}
-	if cfg.DocumentsProxy.Enabled {
-		proxyUrl, parseErr := url.Parse("ws://" + cfg.DocumentsProxy.ProxyHost)
-		if parseErr != nil {
-			return cfg, fmt.Errorf("failed to parse documents_proxy.proxy_host: %w", parseErr)
-		}
-		cfg.DocumentsProxy.serverUrl = proxyUrl
-	}
-
-	return cfg, nil
-}
+const healthCheckPath = "/health"
 
 type Server struct {
 	cfg        Config
@@ -79,8 +43,8 @@ func NewServer(auth rez.AuthSessionService, v1h oapiv1.Handler) (*Server, error)
 	s := Server{cfg: cfg}
 
 	s.router = chi.NewRouter()
-	s.router.Use(s.loggerMiddleware)
-	s.router.Use(middleware.Recoverer)
+	s.router.Use(s.makeExecutionContextMiddleware())
+	s.router.Use(s.makeLoggerMiddleware())
 
 	basePath := cfg.BasePath
 	s.router.Mount(ensureSlashPrefix(basePath), http.StripPrefix(basePath, s.makeApiHandler(auth, v1h)))
@@ -88,16 +52,23 @@ func NewServer(auth rez.AuthSessionService, v1h oapiv1.Handler) (*Server, error)
 	return &s, nil
 }
 
-const healthCheckPath = "/health"
+func (s *Server) makeExecutionContextMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			execCtx := execution.NewContext(r.Context(), execution.KindAnonymous, execution.SourceHTTP)
+			next.ServeHTTP(w, r.WithContext(execCtx))
+		})
+	}
+}
 
-func (s *Server) loggerMiddleware(next http.Handler) http.Handler {
-	chiLogger := middleware.Logger(next)
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != healthCheckPath {
-			chiLogger.ServeHTTP(w, r)
-		} else {
-			next.ServeHTTP(w, r)
-		}
+func (s *Server) makeLoggerMiddleware() func(http.Handler) http.Handler {
+	return httplog.RequestLogger(slog.Default(), &httplog.Options{
+		Level:         slog.LevelInfo,
+		Schema:        httplog.SchemaOTEL,
+		RecoverPanics: true,
+		Skip: func(r *http.Request, respStatus int) bool {
+			return r.URL.Path == healthCheckPath && respStatus == http.StatusOK
+		},
 	})
 }
 
@@ -115,19 +86,14 @@ func (s *Server) makeApiHandler(auth rez.AuthSessionService, v1h oapiv1.Handler)
 
 func (s *Server) makeDocumentsProxyHandler(auth rez.AuthSessionService) http.Handler {
 	headerKey := "X-Rez-Tenant-ID"
-	setAuthContext := func(next http.Handler) http.Handler {
+	setAuthHeaders := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			cookieVal := oapiv1.GetRequestAppCookieValue(r)
-			if cookieVal == "" {
-				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
-				return
-			}
-			authCtx, authErr := auth.SetAuthSessionContext(r.Context(), cookieVal, "")
+			authCtx, authErr := auth.Authenticate(r.Context(), oapiv1.GetRequestAppCookieValue(r))
 			if authErr != nil {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			tenantId, tenantOk := access.GetTenantId(authCtx)
+			tenantId, tenantOk := execution.TenantID(authCtx)
 			if !tenantOk {
 				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 				return
@@ -136,12 +102,11 @@ func (s *Server) makeDocumentsProxyHandler(auth rez.AuthSessionService) http.Han
 			next.ServeHTTP(w, r.WithContext(authCtx))
 		})
 	}
-	copyTenantIdHeaderFn := func(r *http.Request, h http.Header) {
+	proxy := websocketproxy.NewProxy(s.cfg.DocumentsProxy.serverUrl)
+	proxy.Director = func(r *http.Request, h http.Header) {
 		h.Set(headerKey, r.Header.Get(headerKey))
 	}
-	proxy := websocketproxy.NewProxy(s.cfg.DocumentsProxy.serverUrl)
-	proxy.Director = copyTenantIdHeaderFn
-	return chi.Chain(setAuthContext).Handler(proxy)
+	return chi.Chain(setAuthHeaders).Handler(proxy)
 }
 
 func (s *Server) makeHealthCheckHandler() http.HandlerFunc {

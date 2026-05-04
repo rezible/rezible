@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -9,9 +8,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
-
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/openapi"
 )
 
@@ -42,11 +39,14 @@ var (
 	SecurityMethodCookieOnly = SecurityMethods{
 		{SecurityMethodAppCookie: {}},
 	}
+	SecurityMethodApiTokenOnly = SecurityMethods{
+		{SecurityMethodApiToken: {}},
+	}
 	ExplicitNoSecurity = SecurityMethods{}
 )
 
 func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
-	cookieTokenSecurityScheme := &SecurityScheme{
+	appCookieSecurityScheme := &SecurityScheme{
 		Name: AppCookieName,
 		Type: "openIdConnect",
 		In:   "cookie",
@@ -57,91 +57,65 @@ func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
 		BearerFormat: "JWT",
 	}
 	return map[string]*SecurityScheme{
-		SecurityMethodAppCookie: cookieTokenSecurityScheme,
+		SecurityMethodAppCookie: appCookieSecurityScheme,
 		SecurityMethodApiToken:  apiTokenSecurityScheme,
 	}
 }
 
 func MakeSecurityMiddleware(api openapi.API, auth rez.AuthSessionService) openapi.Middleware {
 	return func(c openapi.Context, next func(openapi.Context)) {
-		authCtx, scopes, authCtxErr := extractRequestAuthContext(auth, c)
+		authCtx, authCtxErr := createRequestAuthContext(c, auth)
 		if authCtxErr != nil {
-			statusErr := convertAuthStatusError(api, c, authCtxErr)
-			if respErr := huma.WriteErr(api, c, statusErr.GetStatus(), statusErr.Error()); respErr != nil {
-				slog.Error("failed to write api error response", "error", respErr)
-			}
+			writeAuthStatusError(api, c, authCtxErr)
 			return
 		}
-
-		if len(scopes) > 0 {
-			slog.Debug("TODO: verify scopes", "scopes", scopes)
-		}
-
-		next(huma.WithContext(c, authCtx))
+		next(authCtx)
 	}
 }
 
-func extractRequestAuthContext(auth rez.AuthSessionService, c huma.Context) (context.Context, []string, error) {
-	ctx := access.AnonymousContext(c.Context())
-
+func createRequestAuthContext(c huma.Context, auth rez.AuthSessionService) (huma.Context, error) {
 	opSecurity := c.Operation().Security
 	isExplicitNoSecurity := opSecurity != nil && len(opSecurity) == 0
 	if isExplicitNoSecurity {
-		return ctx, nil, nil
+		return c, nil
 	}
-	if opSecurity == nil {
-		opSecurity = ApiSecurityMethods
+	token, scopes := extractRequestAuth(c, opSecurity)
+	if token == "" {
+		return nil, rez.ErrAuthSessionMissing
 	}
 
+	if len(scopes) > 0 {
+		slog.Debug("TODO: verify scopes", "scopes", scopes)
+	}
+
+	authCtx, ctxErr := auth.Authenticate(c.Context(), token)
+	return huma.WithContext(c, authCtx), ctxErr
+}
+
+func extractRequestAuth(c huma.Context, opSec SecurityMethods) (string, []string) {
 	r, _ := humago.Unwrap(c)
-	methods := extractRequestAuthMethods(r, opSecurity)
-
-	if methods.appCookie != nil {
-		authCtx, ctxErr := auth.SetAuthSessionContext(ctx, methods.appCookie.value, "")
-		return authCtx, methods.appCookie.scopes, ctxErr
-	} else if methods.apiToken != nil {
-		authCtx, ctxErr := auth.SetAuthSessionContext(ctx, "", methods.apiToken.value)
-		return authCtx, methods.apiToken.scopes, ctxErr
+	if opSec == nil {
+		opSec = ApiSecurityMethods
 	}
-	return nil, nil, rez.ErrAuthSessionMissing
-}
 
-type requestAuthMethods struct {
-	appCookie *requestAuthMethod
-	apiToken  *requestAuthMethod
-}
-type requestAuthMethod struct {
-	value  string
-	scopes []string
-}
-
-func extractRequestAuthMethods(r *http.Request, opSec SecurityMethods) requestAuthMethods {
-	reqAuth := requestAuthMethods{}
 	appCookie := GetRequestAppCookieValue(r)
-	apiToken := getRequestApiToken(r)
+	apiToken := GetRequestApiTokenValue(r)
 
-	isAppRequest := strings.HasPrefix(r.Host, "app")
-
+	isApiRequest := strings.HasPrefix(r.Host, "api")
 	for _, methodScopes := range opSec {
-		if isAppRequest {
-			cookieScopes, methodAllowsAppCookie := methodScopes[SecurityMethodAppCookie]
-			if methodAllowsAppCookie && appCookie != "" && reqAuth.appCookie == nil {
-				reqAuth.appCookie = &requestAuthMethod{
-					value:  appCookie,
-					scopes: cookieScopes,
-				}
+		if isApiRequest {
+			scopes, allowed := methodScopes[SecurityMethodApiToken]
+			if allowed && apiToken != "" {
+				return apiToken, scopes
 			}
 		} else {
-			tokenScopes, methodAllowsApiToken := methodScopes[SecurityMethodApiToken]
-			if methodAllowsApiToken && apiToken != "" && reqAuth.apiToken == nil {
-				reqAuth.appCookie = &requestAuthMethod{
-					value:  apiToken,
-					scopes: tokenScopes,
-				}
+			scopes, allowed := methodScopes[SecurityMethodAppCookie]
+			if allowed && appCookie != "" {
+				return appCookie, scopes
 			}
 		}
 	}
-	return reqAuth
+	return "", nil
 }
 
 func GetRequestAppCookieValue(r *http.Request) string {
@@ -151,14 +125,21 @@ func GetRequestAppCookieValue(r *http.Request) string {
 	return ""
 }
 
-func getRequestApiToken(r *http.Request) string {
+func GetRequestApiTokenValue(r *http.Request) string {
 	if split := strings.Split(r.Header.Get("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
 		return split[1]
 	}
 	return ""
 }
 
-func convertAuthStatusError(api huma.API, c huma.Context, err error) huma.StatusError {
+func writeAuthStatusError(api huma.API, c huma.Context, err error) {
+	authErr := convertAuthStatusError(err)
+	if writeErr := huma.WriteErr(api, c, authErr.GetStatus(), authErr.Error()); writeErr != nil {
+		slog.Error("failed to write api error response", "error", writeErr)
+	}
+}
+
+func convertAuthStatusError(err error) huma.StatusError {
 	if errors.Is(err, rez.ErrAuthSessionMissing) {
 		return ErrAuthSessionMissing
 	} else if errors.Is(err, rez.ErrAuthSessionExpired) {

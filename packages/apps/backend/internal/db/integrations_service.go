@@ -17,10 +17,10 @@ import (
 	"golang.org/x/sync/singleflight"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/integration"
 	ioas "github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/jobs"
@@ -29,15 +29,13 @@ import (
 type IntegrationsService struct {
 	db     *ent.Client
 	jobs   rez.JobsService
-	auth   rez.AuthSessionService
 	syncer *datasync.Syncer
 }
 
-func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService, auth rez.AuthSessionService) (*IntegrationsService, error) {
+func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*IntegrationsService, error) {
 	s := &IntegrationsService{
 		db:     db,
 		jobs:   jobSvc,
-		auth:   auth,
 		syncer: datasync.NewSyncerService(db),
 	}
 
@@ -59,7 +57,7 @@ func (s *IntegrationsService) registerJobs() {
 		&jobs.PeriodicJobOpts{RunOnStart: true},
 	)
 	jobs.RegisterPeriodicJob(syncAllTenantIntegrationsDataPeriodicJob)
-	jobs.RegisterWorkerFunc(s.syncer.SyncIntegrationsData)
+	//jobs.RegisterWorkerFunc(s.syncer.SyncIntegrationsData)
 }
 
 func (s *IntegrationsService) ListConfigured(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {
@@ -182,7 +180,7 @@ func (s *IntegrationsService) lookupByConfigValues(ctx context.Context, name str
 			Names:        []string{name},
 			ConfigValues: configValues,
 		}
-		intgs, intgsErr := s.listIntegrations(access.SystemContext(ctx), listParams)
+		intgs, intgsErr := s.listIntegrations(execution.SystemContext(ctx), listParams)
 		if intgsErr != nil {
 			return nil, fmt.Errorf("failed to list integrations: %w", intgsErr)
 		}
@@ -248,7 +246,10 @@ func (s *IntegrationsService) set(ctx context.Context, name string, setFn func(*
 }
 
 func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (string, error) {
-	userId := s.auth.GetAuthSession(ctx).UserId
+	userId, ok := execution.UserID(ctx)
+	if !ok {
+		return "", rez.ErrAuthSessionMissing
+	}
 	state := uuid.New().String()
 	create := s.db.IntegrationOAuthState.Create().
 		SetUserID(userId).
@@ -258,7 +259,10 @@ func (s *IntegrationsService) makeOAuthState(ctx context.Context, name string) (
 }
 
 func (s *IntegrationsService) verifyOAuthState(ctx context.Context, name string, state string) error {
-	userId := s.auth.GetAuthSession(ctx).UserId
+	userId, ok := execution.UserID(ctx)
+	if !ok {
+		return rez.ErrAuthSessionMissing
+	}
 	userIntegrationStates := ioas.And(ioas.UserIDEQ(userId), ioas.IntegrationNameEQ(name))
 	query := s.db.IntegrationOAuthState.Query().
 		Where(userIntegrationStates, ioas.ExpiresAtGT(time.Now()), ioas.StateEQ(state))

@@ -9,11 +9,9 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
-
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/execution"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -34,9 +32,10 @@ type AuthSessionService struct {
 	orgs  rez.OrganizationService
 	users rez.UserService
 
-	cfg     Config
-	cookies *cookieWriter
-	oauth   *oauthHandler
+	cfg        Config
+	cookiePath string
+	codec      *cookieCodec
+	oauth      *oauthHandler
 }
 
 var _ rez.AuthSessionService = (*AuthSessionService)(nil)
@@ -57,22 +56,23 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 		return nil, fmt.Errorf("config: %w", cfgErr)
 	}
 
-	cookies, cookieErr := newCookieWriter(cfg.SessionSecret)
-	if cookieErr != nil {
-		return nil, fmt.Errorf("cookie writer: %w", cookieErr)
+	codec, codecErr := newCookieCodec(cfg.SessionSecret)
+	if codecErr != nil {
+		return nil, fmt.Errorf("cookie codec: %w", codecErr)
 	}
 
-	oauth, oauthErr := makeOAuthHandler(ctx, cfg)
+	oauth, oauthErr := makeOAuthHandler(ctx, cfg, codec)
 	if oauthErr != nil {
 		return nil, fmt.Errorf("oauth handler: %w", oauthErr)
 	}
 
 	s := &AuthSessionService{
-		orgs:    orgs,
-		users:   users,
-		cfg:     cfg,
-		cookies: cookies,
-		oauth:   oauth,
+		orgs:       orgs,
+		users:      users,
+		cfg:        cfg,
+		cookiePath: "/api",
+		codec:      codec,
+		oauth:      oauth,
 	}
 
 	return s, nil
@@ -116,7 +116,7 @@ func (s *AuthSessionService) handleLogin(w http.ResponseWriter, r *http.Request)
 		slog.Debug("Failed to create auth redirect", "error", authErr)
 		return "", errRedirect
 	}
-	if cookieErr := s.cookies.write(w, authStateCookieName, vs, 10*time.Minute); cookieErr != nil {
+	if cookieErr := s.writeCookie(w, authStateCookieName, vs, 10*time.Minute); cookieErr != nil {
 		slog.Debug("Failed to write auth state cookie", "error", cookieErr)
 		return "", errWriteAuthState
 	}
@@ -125,10 +125,14 @@ func (s *AuthSessionService) handleLogin(w http.ResponseWriter, r *http.Request)
 
 func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Request) (string, error) {
 	var as AuthFlowState
-	if cookieErr := s.cookies.read(r, authStateCookieName, &as); cookieErr != nil {
+	stateCookie, readCookieErr := r.Cookie(authStateCookieName)
+	if stateCookie == nil || readCookieErr != nil {
 		return "", errReadAuthState
 	}
-	s.cookies.clear(w, authStateCookieName)
+	if decodeErr := s.codec.decode(stateCookie.Value, &as); decodeErr != nil {
+		return "", errReadAuthState
+	}
+	s.clearCookie(w, authStateCookieName)
 
 	info, callbackErr := s.oauth.doCallbackExchange(r, as)
 	if callbackErr != nil {
@@ -148,7 +152,7 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 		Scopes:    []string{},
 	}
 
-	if cookieErr := s.cookies.write(w, oapiv1.AppCookieName, sess, time.Until(sess.ExpiresAt)); cookieErr != nil {
+	if cookieErr := s.writeCookie(w, oapiv1.AppCookieName, sess, time.Until(sess.ExpiresAt)); cookieErr != nil {
 		return "", errWriteAuthSession
 	}
 
@@ -156,46 +160,59 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 }
 
 func (s *AuthSessionService) handleLogout(w http.ResponseWriter, r *http.Request) (string, error) {
-	s.cookies.clear(w, oapiv1.AppCookieName)
+	s.clearCookie(w, oapiv1.AppCookieName)
 	return "/login", nil
 }
 
-func (s *AuthSessionService) SetAuthSessionContext(ctx context.Context, appCookie, apiToken string) (context.Context, error) {
-	if appCookie != "" {
-		return s.setContextFromAppCookie(ctx, appCookie)
-	} else if apiToken != "" {
-		return s.setContextFromApiToken(ctx, apiToken)
+func (s *AuthSessionService) writeCookie(w http.ResponseWriter, name string, value any, maxAge time.Duration) error {
+	encoded, encErr := s.codec.encode(value)
+	if encErr != nil {
+		return fmt.Errorf("encode value: %w", encErr)
 	}
-	return nil, rez.ErrAuthSessionMissing
+	http.SetCookie(w, &http.Cookie{
+		Name:     name,
+		Value:    encoded,
+		Path:     s.cookiePath,
+		MaxAge:   int(maxAge.Seconds()),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	return nil
 }
 
-func (s *AuthSessionService) setContextFromAppCookie(ctx context.Context, cookieStr string) (context.Context, error) {
+func (s *AuthSessionService) clearCookie(w http.ResponseWriter, name string) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     name,
+		Value:    "",
+		Path:     s.cookiePath,
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+func (s *AuthSessionService) Authenticate(ctx context.Context, token string) (context.Context, error) {
+	if token == "" {
+		return nil, rez.ErrAuthSessionMissing
+	}
+
 	var sess rez.AuthSession
-	if decodeErr := s.cookies.decode(cookieStr, &sess); decodeErr != nil {
-		slog.Debug("decoding auth session token", "error", decodeErr)
+	if decodeErr := s.codec.decode(token, &sess); decodeErr != nil {
+		slog.Debug("decoding auth session cookie token", "error", decodeErr)
 		return nil, rez.ErrAuthSessionInvalid
 	}
-	usr, usrErr := s.users.Get(access.SystemContext(ctx), user.ID(sess.UserId))
-	if usrErr != nil {
-		slog.Debug("get user", "error", usrErr, "sess", sess)
+
+	if sess.ExpiresAt.Before(time.Now()) {
+		return nil, rez.ErrAuthSessionExpired
+	}
+
+	usr, lookupErr := s.users.Get(execution.SystemContext(ctx), user.ID(sess.UserId))
+	if lookupErr != nil {
+		slog.Debug("get user", "error", lookupErr, "sess", sess)
 		return nil, rez.ErrAuthSessionInvalid
 	}
-	return s.makeAuthSessionContext(ctx, usr, sess), nil
-}
 
-func (s *AuthSessionService) setContextFromApiToken(ctx context.Context, tokenStr string) (context.Context, error) {
-	return nil, fmt.Errorf("not implemented")
-}
-
-type authUserSessionContextKey struct{}
-
-func (s *AuthSessionService) makeAuthSessionContext(ctx context.Context, u *ent.User, sess rez.AuthSession) context.Context {
-	return context.WithValue(access.WithUser(ctx, u), authUserSessionContextKey{}, sess)
-}
-
-func (s *AuthSessionService) GetAuthSession(ctx context.Context) rez.AuthSession {
-	if sess, ok := ctx.Value(authUserSessionContextKey{}).(rez.AuthSession); ok {
-		return sess
-	}
-	return rez.AuthSession{}
+	return execution.UserContext(ctx, *usr, &sess), nil
 }

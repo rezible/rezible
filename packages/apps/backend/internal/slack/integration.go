@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/rezible/rezible/access"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/execution"
 )
 
 const integrationName = "slack"
@@ -237,7 +237,7 @@ func newConfiguredIntegration(svcs *rez.Services, intg *ent.Integration) *Config
 }
 
 func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Context {
-	return access.TenantContext(ctx, ci.intg.TenantID)
+	return execution.AnonymousTenantContext(ctx, ci.intg.TenantID)
 }
 
 func (ci *ConfiguredIntegration) config() objx.Map {
@@ -333,7 +333,7 @@ func lookupTenantIntegration(ctx context.Context, integrations rez.IntegrationsS
 		Names:        []string{integrationName},
 		ConfigValues: ids.configValues(),
 	}
-	intgs, listErr := integrations.ListConfigured(access.SystemContext(ctx), params)
+	intgs, listErr := integrations.ListConfigured(execution.SystemContext(ctx), params)
 	if listErr != nil {
 		if ent.IsNotFound(listErr) {
 			return nil, nil

@@ -5,12 +5,13 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/execution"
 )
 
 type UserService struct {
@@ -32,7 +33,7 @@ func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organizat
 	if orgErr != nil {
 		return nil, fmt.Errorf("sync organization: %w", orgErr)
 	}
-	ctx = access.TenantContext(ctx, org.TenantID)
+	ctx = execution.SystemTenantContext(ctx, org.TenantID)
 
 	existing, getErr := s.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
 	if getErr != nil && !ent.IsNotFound(getErr) {

@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/execution"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
 func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) error {
-	ctx = access.TenantContext(ctx, s.ci.intg.TenantID)
+	ctx = execution.AnonymousTenantContext(ctx, s.ci.intg.TenantID)
 
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:

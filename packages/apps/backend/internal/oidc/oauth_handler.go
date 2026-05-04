@@ -20,7 +20,8 @@ const (
 )
 
 type oauthHandler struct {
-	cfg oidcConfig
+	cfg   oidcConfig
+	codec *cookieCodec
 
 	singleTenantOrg *ent.Organization
 
@@ -31,7 +32,7 @@ type oauthHandler struct {
 	idTokenVerifier     *oidc.IDTokenVerifier
 }
 
-func makeOAuthHandler(ctx context.Context, cfg Config) (*oauthHandler, error) {
+func makeOAuthHandler(ctx context.Context, cfg Config, codec *cookieCodec) (*oauthHandler, error) {
 	apiAudience := rez.Config.ApiUrl()
 	if apiAudience == "" {
 		return nil, fmt.Errorf("no api url configured, can't verify token audience")
@@ -39,6 +40,7 @@ func makeOAuthHandler(ctx context.Context, cfg Config) (*oauthHandler, error) {
 
 	h := &oauthHandler{
 		cfg:            cfg.Oidc,
+		codec:          codec,
 		resourceOption: oauth2.SetAuthURLParam("resource", apiAudience),
 	}
 

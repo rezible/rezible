@@ -12,7 +12,6 @@ import (
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	ohot "github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -58,7 +57,7 @@ func (s *OncallShiftsService) registerJobs() {
 }
 
 func (s *OncallShiftsService) periodicScanShifts(ctx context.Context, _ jobs.ScanOncallShifts) error {
-	return s.scanShifts(access.SystemContext(ctx))
+	return s.scanShifts(ctx)
 }
 
 func (s *OncallShiftsService) ensureShiftHandoverSent(ctx context.Context, args jobs.EnsureShiftHandoverSent) error {

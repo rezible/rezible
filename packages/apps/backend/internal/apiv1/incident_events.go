@@ -7,19 +7,17 @@ import (
 
 	"github.com/google/uuid"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentevent"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type incidentEventsHandler struct {
-	db   *ent.Client
-	auth rez.AuthSessionService
+	db *ent.Client
 }
 
-func newIncidentEventsHandler(db *ent.Client, auth rez.AuthSessionService) *incidentEventsHandler {
-	return &incidentEventsHandler{db, auth}
+func newIncidentEventsHandler(db *ent.Client) *incidentEventsHandler {
+	return &incidentEventsHandler{db}
 }
 
 func (h *incidentEventsHandler) ListIncidentEvents(ctx context.Context, request *oapi.ListIncidentEventsRequest) (*oapi.ListIncidentEventsResponse, error) {

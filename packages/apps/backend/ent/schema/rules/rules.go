@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"entgo.io/ent/entql"
+	"github.com/rezible/rezible/execution"
 
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent/privacy"
 )
 
 func DenyIfNoAccessScope() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		if !access.IsScoped(ctx) {
+		if !execution.ContextExists(ctx) {
 			return privacy.Denyf("access context is missing")
 		}
 		return privacy.Skip
@@ -20,7 +20,7 @@ func DenyIfNoAccessScope() privacy.QueryMutationRule {
 
 func DenyIfAnonymous() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		if access.IsAnonymous(ctx) {
+		if execution.GetActor(ctx).Kind == execution.KindAnonymous {
 			return privacy.Deny
 		}
 		return privacy.Skip
@@ -29,7 +29,7 @@ func DenyIfAnonymous() privacy.QueryMutationRule {
 
 func AllowIfSystemRole() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		if !access.IsSystem(ctx) {
+		if execution.GetActor(ctx).Kind == execution.KindSystem {
 			return privacy.Allow
 		}
 		return privacy.Skip
@@ -46,7 +46,7 @@ func FilterTenantRule() privacy.QueryMutationRule {
 			return privacy.Denyf("unexpected filter type %T", f)
 		}
 
-		tenantId, tenantSet := access.GetTenantId(ctx)
+		tenantId, tenantSet := execution.TenantID(ctx)
 		if !tenantSet {
 			return privacy.Denyf("missing tenant in access context")
 		}

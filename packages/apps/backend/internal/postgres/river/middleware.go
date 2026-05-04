@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/execution"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 )
 
 type jobMetadata struct {
-	EncodedAccessScope []byte `json:"ac"`
+	EncodedExecutionContext []byte `json:"ec"`
 }
 
 type accessContextMiddleware struct {
@@ -19,13 +19,9 @@ type accessContextMiddleware struct {
 }
 
 func (m *accessContextMiddleware) InsertMany(ctx context.Context, params []*rivertype.JobInsertParams, doInner func(context.Context) ([]*rivertype.JobInsertResult, error)) ([]*rivertype.JobInsertResult, error) {
-	var encodedScope []byte
-	if access.IsScoped(ctx) {
-		var encodeErr error
-		encodedScope, encodeErr = access.EncodeScope(ctx)
-		if encodeErr != nil {
-			return nil, fmt.Errorf("failed to encode access scope: %w", encodeErr)
-		}
+	encodedExec, encodeErr := execution.FromContext(ctx).Encode()
+	if encodeErr != nil {
+		return nil, fmt.Errorf("failed to encode execution context: %w", encodeErr)
 	}
 	for _, p := range params {
 		var meta jobMetadata
@@ -34,7 +30,7 @@ func (m *accessContextMiddleware) InsertMany(ctx context.Context, params []*rive
 			return nil, fmt.Errorf("failed to unmarshal job metadata: %w", jsonErr)
 		}
 
-		meta.EncodedAccessScope = encodedScope
+		meta.EncodedExecutionContext = encodedExec
 
 		p.Metadata, jsonErr = json.Marshal(meta)
 		if jsonErr != nil {
@@ -50,12 +46,14 @@ func (m *accessContextMiddleware) Work(ctx context.Context, job *rivertype.JobRo
 	if jsonErr := json.Unmarshal(job.Metadata, &meta); jsonErr != nil {
 		return fmt.Errorf("failed to unmarshal job metadata: %w", jsonErr)
 	}
-	if len(meta.EncodedAccessScope) > 0 {
-		restoredCtx, restoreErr := access.RestoreScope(ctx, meta.EncodedAccessScope)
-		if restoreErr != nil {
-			return fmt.Errorf("invalid (anonymous) access context for job")
+	if len(meta.EncodedExecutionContext) > 0 {
+		exec, decodeErr := execution.Decode(meta.EncodedExecutionContext)
+		if decodeErr != nil {
+			return fmt.Errorf("invalid execution context for job: %w", decodeErr)
 		}
-		ctx = restoredCtx
+		exec.Provenance.ParentKind = "job"
+		exec.Provenance.ParentID = fmt.Sprintf("%d", job.ID)
+		ctx = execution.StoreInContext(ctx, exec)
 	}
 	return doInner(ctx)
 }

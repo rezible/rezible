@@ -7,23 +7,26 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/execution"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type authSessionsHandler struct {
-	auth  rez.AuthSessionService
 	orgs  rez.OrganizationService
 	users rez.UserService
 }
 
-func newAuthSessionsHandler(auth rez.AuthSessionService, orgs rez.OrganizationService, users rez.UserService) *authSessionsHandler {
-	return &authSessionsHandler{auth: auth, orgs: orgs, users: users}
+func newAuthSessionsHandler(orgs rez.OrganizationService, users rez.UserService) *authSessionsHandler {
+	return &authSessionsHandler{orgs: orgs, users: users}
 }
 
 func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *oapi.GetCurrentAuthSessionRequest) (*oapi.GetCurrentAuthSessionResponse, error) {
 	var resp oapi.GetCurrentAuthSessionResponse
 
-	sess := h.auth.GetAuthSession(ctx)
+	sess := execution.AuthSession(ctx)
+	if sess == nil {
+		return nil, oapi.Error("failed to get auth session", rez.ErrAuthSessionMissing)
+	}
 
 	u, userErr := h.users.Get(ctx, user.ID(sess.UserId))
 	if userErr != nil {

@@ -6,11 +6,11 @@ import (
 	"github.com/ThreeDotsLabs/watermill"
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
-	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/execution"
 )
 
 const (
-	messageMetadataKeyAccessScope = "ac"
+	messageMetadataKeyExecutionContext = "ec"
 )
 
 func (ms *MessageService) setupPoisonQueue(pub message.Publisher, sub message.Subscriber) (message.HandlerMiddleware, error) {
@@ -34,22 +34,28 @@ func (ms *MessageService) handlePoisonQueueMessageAdded(msg *message.Message) er
 }
 
 func (ms *MessageService) setMessageAccessScope(msg *message.Message) {
-	encodedScope, scopeErr := access.EncodeScope(msg.Context())
-	if scopeErr != nil {
-		ms.logger.Error("failed to marshal access scope", scopeErr, nil)
+	encodedExec, encodeErr := execution.FromContext(msg.Context()).Encode()
+	if encodeErr != nil {
+		ms.logger.Error("failed to marshal execution context", encodeErr, nil)
 		return
 	}
-	msg.Metadata.Set(messageMetadataKeyAccessScope, string(encodedScope))
+	msg.Metadata.Set(messageMetadataKeyExecutionContext, string(encodedExec))
 }
 
 func (ms *MessageService) restoreMessageAccessScope(fn message.HandlerFunc) message.HandlerFunc {
 	return func(msg *message.Message) ([]*message.Message, error) {
-		mdAc := msg.Metadata.Get(messageMetadataKeyAccessScope)
-		restoredCtx, restoreErr := access.RestoreScope(msg.Context(), []byte(mdAc))
-		if restoreErr != nil {
-			return nil, fmt.Errorf("restoring access scope: %w", restoreErr)
+		encodedExec := msg.Metadata.Get(messageMetadataKeyExecutionContext)
+		if encodedExec == "" {
+			return fn(msg)
 		}
-		msg.SetContext(restoredCtx)
+
+		exec, decodeErr := execution.Decode([]byte(encodedExec))
+		if decodeErr != nil {
+			return nil, fmt.Errorf("restoring execution context: %w", decodeErr)
+		}
+		exec.Provenance.ParentKind = "message"
+		exec.Provenance.ParentID = msg.UUID
+		msg.SetContext(execution.StoreInContext(msg.Context(), exec))
 		return fn(msg)
 	}
 }

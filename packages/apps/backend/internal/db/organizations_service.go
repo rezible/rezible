@@ -7,10 +7,10 @@ import (
 	"time"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/jobs"
 )
 
@@ -31,7 +31,7 @@ func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.
 	if po.AuthProviderID == "" {
 		return nil, fmt.Errorf("no auth provider id set")
 	}
-	ctx = access.SystemContext(ctx)
+	ctx = execution.SystemContext(ctx)
 	existing, getErr := s.Get(ctx, organization.AuthProviderID(po.AuthProviderID))
 	if getErr != nil && !ent.IsNotFound(getErr) {
 		return nil, fmt.Errorf("fetch existing: %w", getErr)
@@ -39,13 +39,15 @@ func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.
 	if existing != nil {
 		// TODO: check if should sync every time
 		// if !AlwaysSyncAuthDetails { return existing, nil }
-		ctx = access.TenantContext(ctx, existing.TenantID)
+		ctx = execution.SystemTenantContext(ctx, existing.TenantID)
 	}
 
 	var updated *ent.Organization
 	updateTx := func(tx *ent.Tx) error {
 		var mutator ent.EntityMutator[*ent.Organization, *ent.OrganizationMutation]
-		if existing == nil {
+		if existing != nil {
+			mutator = tx.Organization.UpdateOne(existing)
+		} else {
 			tnt, tntErr := tx.Tenant.Create().Save(ctx)
 			if tntErr != nil {
 				return fmt.Errorf("create tenant: %w", tntErr)
@@ -53,9 +55,7 @@ func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.
 			mutator = tx.Organization.Create().
 				SetTenantID(tnt.ID).
 				SetAuthProviderID(po.AuthProviderID)
-			ctx = access.TenantContext(ctx, tnt.ID)
-		} else {
-			mutator = tx.Organization.UpdateOne(existing)
+			ctx = execution.SystemTenantContext(ctx, tnt.ID)
 		}
 
 		m := mutator.Mutation()

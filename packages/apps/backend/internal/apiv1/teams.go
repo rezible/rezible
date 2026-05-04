@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema"
 	entteam "github.com/rezible/rezible/ent/team"
@@ -13,14 +13,13 @@ import (
 )
 
 type teamsHandler struct {
-	auth        rez.AuthSessionService
 	users       *ent.UserClient
 	teams       *ent.TeamClient
 	memberships *ent.TeamMembershipClient
 }
 
-func newTeamsHandler(auth rez.AuthSessionService, users *ent.UserClient, teams *ent.TeamClient, memberships *ent.TeamMembershipClient) *teamsHandler {
-	return &teamsHandler{auth: auth, users: users, teams: teams, memberships: memberships}
+func newTeamsHandler(users *ent.UserClient, teams *ent.TeamClient, memberships *ent.TeamMembershipClient) *teamsHandler {
+	return &teamsHandler{users: users, teams: teams, memberships: memberships}
 }
 
 func (h *teamsHandler) ListTeams(ctx context.Context, request *oapi.ListTeamsRequest) (*oapi.ListTeamsResponse, error) {

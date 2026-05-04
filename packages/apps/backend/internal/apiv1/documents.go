@@ -10,11 +10,10 @@ import (
 
 type documentsHandler struct {
 	documents rez.DocumentsService
-	auth      rez.AuthSessionService
 }
 
-func newDocumentsHandler(documents rez.DocumentsService, auth rez.AuthSessionService) *documentsHandler {
-	return &documentsHandler{documents, auth}
+func newDocumentsHandler(documents rez.DocumentsService) *documentsHandler {
+	return &documentsHandler{documents}
 }
 
 func (h *documentsHandler) GetDocumentAccess(ctx context.Context, request *oapi.GetDocumentAccessRequest) (*oapi.GetDocumentAccessResponse, error) {

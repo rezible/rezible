@@ -9,7 +9,7 @@ import (
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/adk"
 	"github.com/rezible/rezible/internal/apiv1"
@@ -22,7 +22,6 @@ import (
 	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/telemetry"
 	"github.com/rezible/rezible/internal/watermill"
-	"github.com/rezible/rezible/jobs"
 )
 
 type Server struct {
@@ -49,11 +48,13 @@ func NewServer(ctx context.Context) (*Server, error) {
 	return s, nil
 }
 
-func (s *Server) RunDataSync(ctx context.Context, args jobs.SyncIntegrationsData) error {
+func (s *Server) RunDataSync(ctx context.Context, opts datasync.SyncOptions) error {
 	if setupErr := s.setup(ctx); setupErr != nil {
 		return fmt.Errorf("setup: %s", setupErr)
 	}
-	return datasync.NewSyncerService(s.db.Client()).SyncIntegrationsData(access.SystemContext(ctx), args)
+	syncer := datasync.NewSyncerService(s.db.Client())
+	syncCtx := execution.NewContext(ctx, execution.KindSystem, execution.SourceInternal)
+	return syncer.SyncIntegrationsData(syncCtx, opts)
 }
 
 func (s *Server) RunServe(ctx context.Context) error {
@@ -102,7 +103,9 @@ func (s *Server) setup(ctx context.Context) error {
 func (s *Server) start(ctx context.Context) error {
 	errChan := make(chan error)
 	go func() {
-		p := pool.New().WithErrors().WithContext(ctx)
+		p := pool.New().
+			WithErrors().
+			WithContext(execution.AnonymousContext(ctx))
 		for _, l := range s.listeners {
 			p.Go(l.Start)
 		}
@@ -180,7 +183,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		return nil, fmt.Errorf("oidc.NewAuthSessionService: %w", authErr)
 	}
 
-	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc, auth)
+	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc)
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}
@@ -250,7 +253,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
 	}
 
-	docs, docsErr := db.NewDocumentsService(dbc, auth, teams)
+	docs, docsErr := db.NewDocumentsService(dbc, teams)
 	if docsErr != nil {
 		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
 	}

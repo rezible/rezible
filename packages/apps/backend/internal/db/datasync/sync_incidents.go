@@ -16,9 +16,9 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 )
 
-func syncIncidents(ctx context.Context, db *ent.Client, prov rez.IncidentDataProvider) error {
+func syncIncidents(ctx context.Context, db *ent.Client, prov rez.IncidentDataProvider, opts SyncOptions) error {
 	b := &incidentBatcher{db: db, provider: prov}
-	s := newBatchedDataSyncer[*ent.Incident](db, "incidents", b)
+	s := newBatchedDataSyncer[*ent.Incident](db, "incidents", b, opts)
 	return s.Sync(ctx)
 }
 

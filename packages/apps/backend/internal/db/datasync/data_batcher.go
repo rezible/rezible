@@ -25,14 +25,16 @@ type batchedDataSyncer[T any] struct {
 	dataType     string
 	batcher      dataBatcher[T]
 	syncInterval time.Duration
+	opts         SyncOptions
 }
 
-func newBatchedDataSyncer[T any](db *ent.Client, dataType string, batcher dataBatcher[T]) *batchedDataSyncer[T] {
+func newBatchedDataSyncer[T any](db *ent.Client, dataType string, batcher dataBatcher[T], opts SyncOptions) *batchedDataSyncer[T] {
 	return &batchedDataSyncer[T]{
 		db:           db,
 		dataType:     dataType,
 		batcher:      batcher,
 		syncInterval: time.Minute * 30,
+		opts:         opts,
 	}
 }
 
@@ -92,7 +94,7 @@ func (ds *batchedDataSyncer[T]) Sync(ctx context.Context) error {
 }
 
 func (ds *batchedDataSyncer[T]) getLastSyncTime(ctx context.Context) time.Time {
-	if isHardSync(ctx) {
+	if ds.opts.IgnoreHistory {
 		return time.Time{}
 	}
 	last, queryErr := ds.db.ProviderSyncHistory.Query().

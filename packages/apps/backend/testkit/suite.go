@@ -13,8 +13,8 @@ import (
 	"github.com/peterldowns/pgtestdb/migrators/golangmigrator"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/access"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
 )
@@ -72,15 +72,11 @@ func (s *Suite) SetConfigOverrides(overrides map[string]any) {
 func (s *Suite) Client() *ent.Client { return s.dbClient }
 
 func (s *Suite) SystemContext() context.Context {
-	return access.SystemContext(s.T().Context())
+	return execution.SystemContext(s.T().Context())
 }
 
 func (s *Suite) SeedTenantContext() context.Context {
-	return access.TenantContext(s.T().Context(), s.SeedTenant.ID)
-}
-
-func (s *Suite) GetAnonymousContext() context.Context {
-	return access.AnonymousContext(s.T().Context())
+	return execution.SystemTenantContext(s.T().Context(), s.SeedTenant.ID)
 }
 
 func (s *Suite) setupTestDatabase() {

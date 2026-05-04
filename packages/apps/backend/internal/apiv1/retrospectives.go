@@ -6,19 +6,19 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/retrospective"
+	"github.com/rezible/rezible/execution"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type retrospectivesHandler struct {
-	auth      rez.AuthSessionService
 	users     rez.UserService
 	incidents rez.IncidentService
 	retros    rez.RetrospectiveService
 	documents rez.DocumentsService
 }
 
-func newRetrospectivesHandler(auth rez.AuthSessionService, users rez.UserService, incidents rez.IncidentService, retros rez.RetrospectiveService, documents rez.DocumentsService) *retrospectivesHandler {
-	return &retrospectivesHandler{auth, users, incidents, retros, documents}
+func newRetrospectivesHandler(users rez.UserService, incidents rez.IncidentService, retros rez.RetrospectiveService, documents rez.DocumentsService) *retrospectivesHandler {
+	return &retrospectivesHandler{users, incidents, retros, documents}
 }
 
 func (h *retrospectivesHandler) ListRetrospectives(ctx context.Context, input *oapi.ListRetrospectivesRequest) (*oapi.ListRetrospectivesResponse, error) {
@@ -105,9 +105,14 @@ func (h *retrospectivesHandler) ListRetrospectiveComments(ctx context.Context, r
 func (h *retrospectivesHandler) CreateRetrospectiveComment(ctx context.Context, request *oapi.CreateRetrospectiveCommentRequest) (*oapi.CreateRetrospectiveCommentResponse, error) {
 	var resp oapi.CreateRetrospectiveCommentResponse
 
+	sess := execution.AuthSession(ctx)
+	if sess == nil {
+		return nil, oapi.Error("failed to get auth session", rez.ErrAuthSessionMissing)
+	}
+
 	comment, createErr := h.retros.SetComment(ctx, &ent.RetrospectiveComment{
 		RetrospectiveID: request.Id,
-		UserID:          h.auth.GetAuthSession(ctx).UserId,
+		UserID:          sess.UserId,
 		Content:         request.Body.Attributes.Content,
 	})
 	if createErr != nil {
