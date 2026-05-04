@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/stretchr/testify/suite"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -109,7 +110,7 @@ type testDbMigrator struct {
 func newTestDbMigrator(cfg postgres.Config) *testDbMigrator {
 	return &testDbMigrator{
 		cfg: cfg,
-		gm:  golangmigrator.New(postgres.MigrationsDir, golangmigrator.WithFS(postgres.MigrationsFS)),
+		gm:  golangmigrator.New(migrations.EmbedFSDir, golangmigrator.WithFS(migrations.FS)),
 	}
 }
 

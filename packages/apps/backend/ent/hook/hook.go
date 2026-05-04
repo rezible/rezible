@@ -369,6 +369,18 @@ func (f MeetingSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.MeetingSessionMutation", m)
 }
 
+// The NormalizedEventFunc type is an adapter to allow the use of ordinary
+// function as NormalizedEvent mutator.
+type NormalizedEventFunc func(context.Context, *ent.NormalizedEventMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NormalizedEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NormalizedEventMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NormalizedEventMutation", m)
+}
+
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary
 // function as OncallHandoverTemplate mutator.
 type OncallHandoverTemplateFunc func(context.Context, *ent.OncallHandoverTemplateMutation) (ent.Value, error)

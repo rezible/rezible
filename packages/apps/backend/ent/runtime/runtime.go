@@ -38,6 +38,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -743,6 +744,50 @@ func init() {
 	meetingsessionDescID := meetingsessionFields[0].Descriptor()
 	// meetingsession.DefaultID holds the default value on creation for the id field.
 	meetingsession.DefaultID = meetingsessionDescID.Default.(func() uuid.UUID)
+	normalizedeventMixin := schema.NormalizedEvent{}.Mixin()
+	normalizedevent.Policy = privacy.NewPolicies(normalizedeventMixin[0], normalizedeventMixin[1], schema.NormalizedEvent{})
+	normalizedevent.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := normalizedevent.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	normalizedeventFields := schema.NormalizedEvent{}.Fields()
+	_ = normalizedeventFields
+	// normalizedeventDescProvider is the schema descriptor for provider field.
+	normalizedeventDescProvider := normalizedeventFields[1].Descriptor()
+	// normalizedevent.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	normalizedevent.ProviderValidator = normalizedeventDescProvider.Validators[0].(func(string) error)
+	// normalizedeventDescSource is the schema descriptor for source field.
+	normalizedeventDescSource := normalizedeventFields[2].Descriptor()
+	// normalizedevent.SourceValidator is a validator for the "source" field. It is called by the builders before save.
+	normalizedevent.SourceValidator = normalizedeventDescSource.Validators[0].(func(string) error)
+	// normalizedeventDescSubjectKind is the schema descriptor for subject_kind field.
+	normalizedeventDescSubjectKind := normalizedeventFields[4].Descriptor()
+	// normalizedevent.SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
+	normalizedevent.SubjectKindValidator = normalizedeventDescSubjectKind.Validators[0].(func(string) error)
+	// normalizedeventDescSubjectExternalRef is the schema descriptor for subject_external_ref field.
+	normalizedeventDescSubjectExternalRef := normalizedeventFields[5].Descriptor()
+	// normalizedevent.SubjectExternalRefValidator is a validator for the "subject_external_ref" field. It is called by the builders before save.
+	normalizedevent.SubjectExternalRefValidator = normalizedeventDescSubjectExternalRef.Validators[0].(func(string) error)
+	// normalizedeventDescSourceEventKey is the schema descriptor for source_event_key field.
+	normalizedeventDescSourceEventKey := normalizedeventFields[6].Descriptor()
+	// normalizedevent.SourceEventKeyValidator is a validator for the "source_event_key" field. It is called by the builders before save.
+	normalizedevent.SourceEventKeyValidator = normalizedeventDescSourceEventKey.Validators[0].(func(string) error)
+	// normalizedeventDescProcessingVersion is the schema descriptor for processing_version field.
+	normalizedeventDescProcessingVersion := normalizedeventFields[10].Descriptor()
+	// normalizedevent.ProcessingVersionValidator is a validator for the "processing_version" field. It is called by the builders before save.
+	normalizedevent.ProcessingVersionValidator = normalizedeventDescProcessingVersion.Validators[0].(func(string) error)
+	// normalizedeventDescCreatedAt is the schema descriptor for created_at field.
+	normalizedeventDescCreatedAt := normalizedeventFields[12].Descriptor()
+	// normalizedevent.DefaultCreatedAt holds the default value on creation for the created_at field.
+	normalizedevent.DefaultCreatedAt = normalizedeventDescCreatedAt.Default.(func() time.Time)
+	// normalizedeventDescID is the schema descriptor for id field.
+	normalizedeventDescID := normalizedeventFields[0].Descriptor()
+	// normalizedevent.DefaultID holds the default value on creation for the id field.
+	normalizedevent.DefaultID = normalizedeventDescID.Default.(func() uuid.UUID)
 	oncallhandovertemplateMixin := schema.OncallHandoverTemplate{}.Mixin()
 	oncallhandovertemplate.Policy = privacy.NewPolicies(oncallhandovertemplateMixin[0], oncallhandovertemplateMixin[1], schema.OncallHandoverTemplate{})
 	oncallhandovertemplate.Hooks[0] = func(next ent.Mutator) ent.Mutator {

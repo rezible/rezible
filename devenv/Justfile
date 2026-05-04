@@ -17,7 +17,7 @@ export dbAppUser := env("POSTGRES_APP_USER")
 @start:
     process-compose -f {{source_dir() / "process-compose.yaml"}}
 
-workspace_env_file := join(parent_directory(justfile_directory()), ".env.workspace")
+workspace_env_file := join(parent_directory(source_directory()), ".env.workspace")
 postgresContainerId := `docker compose ps -q postgres`
 workspace_setup := path_exists(workspace_env_file)
 
@@ -38,7 +38,7 @@ dbName := "rez-"+branchId
     docker compose up --wait
     sleep 1
     just _setup-workspace-db
-    just set-dev-domains
+    just set-domains
 
 _write-workspace-env:
     #!/bin/env bun

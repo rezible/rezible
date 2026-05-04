@@ -1,23 +1,31 @@
 package postgres
 
 import (
-	"embed"
 	"fmt"
 	"io/fs"
+	"path"
+	"path/filepath"
+	"runtime"
 	"text/template"
 
 	"ariga.io/atlas/sql/migrate"
 	"ariga.io/atlas/sql/sqltool"
 	"github.com/golang-migrate/migrate/v4/source"
+	"github.com/rezible/rezible/internal/postgres/migrations"
 )
-
-//go:embed migrations
-var MigrationsFS embed.FS
 
 const MigrationsDir = "migrations"
 
+func getGolangMigrateDir() (*sqltool.GolangMigrateDir, error) {
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		return nil, fmt.Errorf("failed to get caller path")
+	}
+	return sqltool.NewGolangMigrateDir(path.Join(filepath.Dir(filename), "migrations"))
+}
+
 func UpdateMigrationsChecksum() error {
-	dir, dirErr := sqltool.NewGolangMigrateDir(MigrationsDir)
+	dir, dirErr := getGolangMigrateDir()
 	if dirErr != nil {
 		return fmt.Errorf("getting output dir: %w", dirErr)
 	}
@@ -32,7 +40,7 @@ func UpdateMigrationsChecksum() error {
 }
 
 func getLatestMigrationVersion() (uint, error) {
-	entries, readErr := fs.ReadDir(MigrationsFS, MigrationsDir)
+	entries, readErr := fs.ReadDir(migrations.FS, migrations.EmbedFSDir)
 	if readErr != nil {
 		return 0, fmt.Errorf("read embedded migrations: %w", readErr)
 	}

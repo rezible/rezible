@@ -55,13 +55,15 @@ func WithTx(ctx context.Context, client *Client, fn func(tx *Tx) error) error {
 	}
 	defer func() {
 		if v := recover(); v != nil {
-			tx.Rollback()
+			if rbErr := tx.Rollback(); rbErr != nil {
+				panic(fmt.Errorf("%v: rolling back transaction: %w", v, rbErr))
+			}
 			panic(v)
 		}
 	}()
 	if fnErr := fn(tx); fnErr != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
-			fnErr = fmt.Errorf("%w: rolling back transaction: %v", fnErr, rbErr)
+			fnErr = fmt.Errorf("%w: rolling back transaction: %w", fnErr, rbErr)
 		}
 		return fnErr
 	}

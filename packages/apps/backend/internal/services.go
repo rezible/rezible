@@ -161,9 +161,8 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	}
 	s.listeners["river_job_service"] = jobSvc
 
-	provEvents := river.NewProviderEventIngestor(jobSvc)
-
 	dbc := s.db.Client()
+	provEvents := db.NewProviderEventService(dbc, jobSvc)
 
 	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
 	if orgsErr != nil {

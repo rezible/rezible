@@ -4,9 +4,17 @@ import (
 	"context"
 	"fmt"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/rezible/rezible/execution"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
+)
+
+var respondCallbackInnerEvents = mapset.NewSet(
+	slackevents.AppHomeOpened,
+	slackevents.AppMention,
+	slackevents.AssistantThreadStarted,
+	slackevents.Message,
 )
 
 func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) error {
@@ -22,7 +30,7 @@ func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.E
 	case *slackevents.MessageEvent:
 		return s.onMessageEvent(ctx, data)
 	default:
-		s.logger.Debug("unhandled slack callback event", "innerEventType", ev.InnerEvent.Type)
+		s.logger.Warn("unhandled slack callback event", "innerEventType", ev.InnerEvent.Type)
 		return nil
 	}
 }

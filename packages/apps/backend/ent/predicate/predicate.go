@@ -99,6 +99,9 @@ type MeetingSchedule func(*sql.Selector)
 // MeetingSession is the predicate function for meetingsession builders.
 type MeetingSession func(*sql.Selector)
 
+// NormalizedEvent is the predicate function for normalizedevent builders.
+type NormalizedEvent func(*sql.Selector)
+
 // OncallHandoverTemplate is the predicate function for oncallhandovertemplate builders.
 type OncallHandoverTemplate func(*sql.Selector)
 

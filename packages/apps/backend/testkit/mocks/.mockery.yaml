@@ -11,6 +11,6 @@ packages:
     interfaces:
       MessageService: {}
       JobsService: {}
-      ProviderEventIngestorService: {}
+      ProviderEventService: {}
       OrganizationService: {}
       UserService: {}

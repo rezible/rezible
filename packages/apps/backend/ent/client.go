@@ -46,6 +46,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -151,6 +152,8 @@ type Client struct {
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
 	MeetingSession *MeetingSessionClient
+	// NormalizedEvent is the client for interacting with the NormalizedEvent builders.
+	NormalizedEvent *NormalizedEventClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -261,6 +264,7 @@ func (c *Client) init() {
 	c.IntegrationOAuthState = NewIntegrationOAuthStateClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
+	c.NormalizedEvent = NewNormalizedEventClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
 	c.OncallRoster = NewOncallRosterClient(c.config)
 	c.OncallRosterMetrics = NewOncallRosterMetricsClient(c.config)
@@ -421,6 +425,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IntegrationOAuthState:            NewIntegrationOAuthStateClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
+		NormalizedEvent:                  NewNormalizedEventClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
 		OncallRosterMetrics:              NewOncallRosterMetricsClient(cfg),
@@ -505,6 +510,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IntegrationOAuthState:            NewIntegrationOAuthStateClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
 		MeetingSession:                   NewMeetingSessionClient(cfg),
+		NormalizedEvent:                  NewNormalizedEventClient(cfg),
 		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                     NewOncallRosterClient(cfg),
 		OncallRosterMetrics:              NewOncallRosterMetricsClient(cfg),
@@ -577,9 +583,9 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
 		c.IntegrationOAuthState, c.MeetingSchedule, c.MeetingSession,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.NormalizedEvent, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationRole, c.Playbook, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
@@ -605,9 +611,9 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
 		c.IntegrationOAuthState, c.MeetingSchedule, c.MeetingSession,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.NormalizedEvent, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationRole, c.Playbook, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
@@ -683,6 +689,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MeetingSchedule.mutate(ctx, m)
 	case *MeetingSessionMutation:
 		return c.MeetingSession.mutate(ctx, m)
+	case *NormalizedEventMutation:
+		return c.NormalizedEvent.mutate(ctx, m)
 	case *OncallHandoverTemplateMutation:
 		return c.OncallHandoverTemplate.mutate(ctx, m)
 	case *OncallRosterMutation:
@@ -6976,6 +6984,159 @@ func (c *MeetingSessionClient) mutate(ctx context.Context, m *MeetingSessionMuta
 		return (&MeetingSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown MeetingSession mutation op: %q", m.Op())
+	}
+}
+
+// NormalizedEventClient is a client for the NormalizedEvent schema.
+type NormalizedEventClient struct {
+	config
+}
+
+// NewNormalizedEventClient returns a client for the NormalizedEvent from the given config.
+func NewNormalizedEventClient(c config) *NormalizedEventClient {
+	return &NormalizedEventClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `normalizedevent.Hooks(f(g(h())))`.
+func (c *NormalizedEventClient) Use(hooks ...Hook) {
+	c.hooks.NormalizedEvent = append(c.hooks.NormalizedEvent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `normalizedevent.Intercept(f(g(h())))`.
+func (c *NormalizedEventClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NormalizedEvent = append(c.inters.NormalizedEvent, interceptors...)
+}
+
+// Create returns a builder for creating a NormalizedEvent entity.
+func (c *NormalizedEventClient) Create() *NormalizedEventCreate {
+	mutation := newNormalizedEventMutation(c.config, OpCreate)
+	return &NormalizedEventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NormalizedEvent entities.
+func (c *NormalizedEventClient) CreateBulk(builders ...*NormalizedEventCreate) *NormalizedEventCreateBulk {
+	return &NormalizedEventCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NormalizedEventClient) MapCreateBulk(slice any, setFunc func(*NormalizedEventCreate, int)) *NormalizedEventCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NormalizedEventCreateBulk{err: fmt.Errorf("calling to NormalizedEventClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NormalizedEventCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NormalizedEventCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NormalizedEvent.
+func (c *NormalizedEventClient) Update() *NormalizedEventUpdate {
+	mutation := newNormalizedEventMutation(c.config, OpUpdate)
+	return &NormalizedEventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NormalizedEventClient) UpdateOne(_m *NormalizedEvent) *NormalizedEventUpdateOne {
+	mutation := newNormalizedEventMutation(c.config, OpUpdateOne, withNormalizedEvent(_m))
+	return &NormalizedEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NormalizedEventClient) UpdateOneID(id uuid.UUID) *NormalizedEventUpdateOne {
+	mutation := newNormalizedEventMutation(c.config, OpUpdateOne, withNormalizedEventID(id))
+	return &NormalizedEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NormalizedEvent.
+func (c *NormalizedEventClient) Delete() *NormalizedEventDelete {
+	mutation := newNormalizedEventMutation(c.config, OpDelete)
+	return &NormalizedEventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NormalizedEventClient) DeleteOne(_m *NormalizedEvent) *NormalizedEventDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NormalizedEventClient) DeleteOneID(id uuid.UUID) *NormalizedEventDeleteOne {
+	builder := c.Delete().Where(normalizedevent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NormalizedEventDeleteOne{builder}
+}
+
+// Query returns a query builder for NormalizedEvent.
+func (c *NormalizedEventClient) Query() *NormalizedEventQuery {
+	return &NormalizedEventQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNormalizedEvent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NormalizedEvent entity by its id.
+func (c *NormalizedEventClient) Get(ctx context.Context, id uuid.UUID) (*NormalizedEvent, error) {
+	return c.Query().Where(normalizedevent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NormalizedEventClient) GetX(ctx context.Context, id uuid.UUID) *NormalizedEvent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a NormalizedEvent.
+func (c *NormalizedEventClient) QueryTenant(_m *NormalizedEvent) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedevent.TenantTable, normalizedevent.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.NormalizedEvent
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NormalizedEventClient) Hooks() []Hook {
+	hooks := c.hooks.NormalizedEvent
+	return append(hooks[:len(hooks):len(hooks)], normalizedevent.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *NormalizedEventClient) Interceptors() []Interceptor {
+	return c.inters.NormalizedEvent
+}
+
+func (c *NormalizedEventClient) mutate(ctx context.Context, m *NormalizedEventMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NormalizedEventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NormalizedEventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NormalizedEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NormalizedEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NormalizedEvent mutation op: %q", m.Op())
 	}
 }
 
@@ -14321,14 +14482,14 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, MeetingSchedule,
-		MeetingSession, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
-		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationRole, Playbook,
-		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
-		SystemComponent, SystemComponentConstraint, SystemComponentControl,
-		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
-		SystemHazard, SystemRelationshipControlAction,
+		MeetingSession, NormalizedEvent, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationRole,
+		Playbook, ProviderSyncHistory, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,
+		SystemAnalysisRelationship, SystemComponent, SystemComponentConstraint,
+		SystemComponentControl, SystemComponentKind, SystemComponentRelationship,
+		SystemComponentSignal, SystemHazard, SystemRelationshipControlAction,
 		SystemRelationshipFeedbackSignal, Task, Team, TeamMembership, Tenant, Ticket,
 		User, VideoConference []ent.Hook
 	}
@@ -14340,14 +14501,14 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, MeetingSchedule,
-		MeetingSession, OncallHandoverTemplate, OncallRoster, OncallRosterMetrics,
-		OncallSchedule, OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationRole, Playbook,
-		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
-		SystemComponent, SystemComponentConstraint, SystemComponentControl,
-		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
-		SystemHazard, SystemRelationshipControlAction,
+		MeetingSession, NormalizedEvent, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationRole,
+		Playbook, ProviderSyncHistory, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisComponent,
+		SystemAnalysisRelationship, SystemComponent, SystemComponentConstraint,
+		SystemComponentControl, SystemComponentKind, SystemComponentRelationship,
+		SystemComponentSignal, SystemHazard, SystemRelationshipControlAction,
 		SystemRelationshipFeedbackSignal, Task, Team, TeamMembership, Tenant, Ticket,
 		User, VideoConference []ent.Interceptor
 	}
@@ -14396,6 +14557,7 @@ var (
 		MeetingSchedule:                           tableSchemas[0],
 		MeetingScheduleOwningTeam:                 tableSchemas[0],
 		MeetingSession:                            tableSchemas[0],
+		NormalizedEvent:                           tableSchemas[0],
 		OncallHandoverTemplate:                    tableSchemas[0],
 		OncallRoster:                              tableSchemas[0],
 		OncallRosterMetrics:                       tableSchemas[0],

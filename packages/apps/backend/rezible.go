@@ -55,7 +55,7 @@ type DatabaseClient interface {
 
 type Services struct {
 	Jobs             JobsService
-	ProviderEvents   ProviderEventIngestorService
+	ProviderEvents   ProviderEventService
 	Messages         MessageService
 	Auth             AuthSessionService
 	Organizations    OrganizationService
@@ -147,13 +147,14 @@ type (
 		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
 		InsertTx(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
 		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
+		InsertManyTx(ctx context.Context, tx *ent.Tx, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
 	}
 )
 
 type (
-	ProviderEventIngestorService interface {
-		RegisterEventProcessor(ProviderEventProcessor)
-		IngestEvent(context.Context, ProviderEvent) error
+	ProviderEventService interface {
+		RegisterEventProcessor(provider string, source string, processor ProviderEventProcessor)
+		Ingest(context.Context, ProviderEvent) error
 	}
 
 	ProviderEvent struct {
@@ -167,9 +168,7 @@ type (
 	}
 
 	ProviderEventProcessor interface {
-		Provider() string
-		Source() string
-		ProcessProviderEvent(context.Context, ProviderEvent) error
+		Process(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
 	}
 )
 

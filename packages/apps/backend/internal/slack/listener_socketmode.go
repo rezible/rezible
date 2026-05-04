@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/sourcegraph/conc/pool"
 
@@ -117,15 +116,11 @@ func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.E
 func (l *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) error {
 	if evt, ok := e.Data.(slackevents.EventsAPIEvent); ok {
 		if evt.Type == slackevents.CallbackEvent {
-			providerEvent := rez.ProviderEvent{
-				Provider:        integrationName,
-				Source:          slackEventsAPISource,
-				ReceivedAt:      time.Now().UTC(),
-				Payload:         e.Request.Payload,
-				ContentType:     "application/json",
-				RequestMetadata: map[string]string{},
+			cb, cbOk := evt.Data.(*slackevents.EventsAPICallbackEvent)
+			if !cbOk {
+				return fmt.Errorf("failed to cast callback event")
 			}
-			return l.handler.OnEventsAPIEvent(ctx, providerEvent)
+			return l.handler.OnCallbackEvent(ctx, cb, e.Request.Payload)
 		} else if evt.Type == slackevents.AppRateLimited {
 			return l.handler.OnAppRateLimitedEvent(ctx)
 		}

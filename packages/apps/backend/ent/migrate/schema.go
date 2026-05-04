@@ -1176,6 +1176,54 @@ var (
 			},
 		},
 	}
+	// NormalizedEventsColumns holds the columns for the "normalized_events" table.
+	NormalizedEventsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "source", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message"}},
+		{Name: "subject_kind", Type: field.TypeString},
+		{Name: "subject_external_ref", Type: field.TypeString},
+		{Name: "source_event_key", Type: field.TypeString},
+		{Name: "dedupe_key", Type: field.TypeString, Nullable: true},
+		{Name: "occurred_at", Type: field.TypeTime},
+		{Name: "received_at", Type: field.TypeTime},
+		{Name: "processing_version", Type: field.TypeString},
+		{Name: "attributes", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// NormalizedEventsTable holds the schema information for the "normalized_events" table.
+	NormalizedEventsTable = &schema.Table{
+		Name:       "normalized_events",
+		Columns:    NormalizedEventsColumns,
+		PrimaryKey: []*schema.Column{NormalizedEventsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "normalized_events_tenants_tenant",
+				Columns:    []*schema.Column{NormalizedEventsColumns[13]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "normalizedevent_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{NormalizedEventsColumns[13]},
+			},
+			{
+				Name:    "normalizedevent_tenant_id_provider_source_processing_version_source_event_key_kind_subject_external_ref",
+				Unique:  true,
+				Columns: []*schema.Column{NormalizedEventsColumns[13], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[10], NormalizedEventsColumns[6], NormalizedEventsColumns[3], NormalizedEventsColumns[5]},
+			},
+			{
+				Name:    "normalizedevent_tenant_id_kind_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{NormalizedEventsColumns[13], NormalizedEventsColumns[3], NormalizedEventsColumns[8]},
+			},
+		},
+	}
 	// OncallHandoverTemplatesColumns holds the columns for the "oncall_handover_templates" table.
 	OncallHandoverTemplatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -2980,6 +3028,7 @@ var (
 		IntegrationOauthStatesTable,
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
+		NormalizedEventsTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
 		OncallRosterMetricsTable,
@@ -3100,6 +3149,7 @@ func init() {
 	MeetingSchedulesTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable
+	NormalizedEventsTable.ForeignKeys[0].RefTable = TenantsTable
 	OncallHandoverTemplatesTable.ForeignKeys[0].RefTable = TenantsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallRostersTable.ForeignKeys[1].RefTable = TenantsTable

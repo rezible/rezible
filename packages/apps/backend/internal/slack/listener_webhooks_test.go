@@ -38,8 +38,8 @@ func signedSlackRequest(t *testing.T, method, target, body string) *http.Request
 func makeWebhookListener(t *testing.T) *WebhookListener {
 	t.Helper()
 
-	ingestor := mocks.NewMockProviderEventIngestorService(t)
-	ingestor.On("IngestEvent", mock.Anything, mock.Anything).Maybe().Return(nil)
+	ingestor := mocks.NewMockProviderEventService(t)
+	ingestor.On("Ingest", mock.Anything, mock.Anything).Maybe().Return(nil)
 
 	handler := &eventHandler{
 		services: &rez.Services{
@@ -57,11 +57,25 @@ func TestEventsAPIWebhookEnqueuesVerifiedCallbackEvent(t *testing.T) {
 		"type":"event_callback",
 		"team_id":"T123",
 		"api_app_id":"A123",
-		"event":{"type":"app_home_opened","user":"U123","channel":"D123","tab":"home","event_ts":"123.456"},
+		"event":{"type":"message","user":"U123","channel":"D123","text":"foo","event_ts":"123.456"},
 		"event_id":"Ev123",
 		"event_time":123
 	}`
-	listener := makeWebhookListener(t)
+	provEvs := mocks.NewMockProviderEventService(t)
+	provEvs.On("Ingest", mock.Anything, mock.MatchedBy(func(ev rez.ProviderEvent) bool {
+		return ev.Provider == integrationName && ev.Source == callbackEventsSource && ev.DedupeKey == "Ev123"
+	})).Return(nil).Once()
+	msgs := mocks.NewMockMessageService(t)
+	msgs.On("PublishEvent", mock.Anything, mock.Anything).Maybe().Return(nil)
+	listener := &WebhookListener{
+		handler: &eventHandler{
+			services: &rez.Services{
+				ProviderEvents: provEvs,
+				Messages:       msgs,
+			},
+		},
+		signingSecret: signingSecret,
+	}
 	req := signedSlackRequest(t, http.MethodPost, "/events", body)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()

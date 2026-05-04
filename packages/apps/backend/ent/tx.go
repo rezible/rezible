@@ -74,6 +74,8 @@ type Tx struct {
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
 	MeetingSession *MeetingSessionClient
+	// NormalizedEvent is the client for interacting with the NormalizedEvent builders.
+	NormalizedEvent *NormalizedEventClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -304,6 +306,7 @@ func (tx *Tx) init() {
 	tx.IntegrationOAuthState = NewIntegrationOAuthStateClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
+	tx.NormalizedEvent = NewNormalizedEventClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)
 	tx.OncallRosterMetrics = NewOncallRosterMetricsClient(tx.config)

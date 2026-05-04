@@ -394,9 +394,9 @@ components:
           items:
             type: string
           type: array
-        summary:
-          type: string
         severityId:
+          type: string
+        summary:
           type: string
         tagIds:
           items:
@@ -3017,8 +3017,8 @@ components:
       required:
         - name
         - rank
-        - archived
         - color
+        - archived
         - description
       type: object
     IncidentTag:

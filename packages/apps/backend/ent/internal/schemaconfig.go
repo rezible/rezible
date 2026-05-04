@@ -49,6 +49,7 @@ type SchemaConfig struct {
 	MeetingSchedule                           string // MeetingSchedule table.
 	MeetingScheduleOwningTeam                 string // MeetingSchedule-owning_team->Team table.
 	MeetingSession                            string // MeetingSession table.
+	NormalizedEvent                           string // NormalizedEvent table.
 	OncallHandoverTemplate                    string // OncallHandoverTemplate table.
 	OncallRoster                              string // OncallRoster table.
 	OncallRosterMetrics                       string // OncallRosterMetrics table.

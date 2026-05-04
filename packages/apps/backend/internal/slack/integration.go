@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	integrationName      = "slack"
-	slackEventsAPISource = "events_api"
+	integrationName = "slack"
 )
 
 var supportedDataKinds = []string{"chat", "users"}
@@ -261,6 +260,10 @@ func (ci *ConfiguredIntegration) accessToken() string {
 
 func (ci *ConfiguredIntegration) teamId() string {
 	return ci.config().Get(configTeam + ".id").String()
+}
+
+func (ci *ConfiguredIntegration) botUserID() string {
+	return ci.config().Get(configBotUserID).String()
 }
 
 const (

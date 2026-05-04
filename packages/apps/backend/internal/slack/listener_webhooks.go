@@ -15,8 +15,6 @@ import (
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
-
-	rez "github.com/rezible/rezible"
 )
 
 type WebhookListener struct {
@@ -147,14 +145,14 @@ func (l *WebhookListener) onEventsApi(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// skip using a verification token as middleware verified via header
-	ev, evErr := slackevents.ParseEvent(body, slackevents.OptionNoVerifyToken())
+	evt, evErr := slackevents.ParseEvent(body, slackevents.OptionNoVerifyToken())
 	if evErr != nil {
 		slog.Error("failed to parse event", "error", evErr)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	if ev.Type == slackevents.URLVerification {
+	if evt.Type == slackevents.URLVerification {
 		if verifyErr := l.handleUrlVerificationEvent(w, body); verifyErr != nil {
 			slog.Error("failed to handle url verification event", "error", verifyErr)
 		}
@@ -162,24 +160,25 @@ func (l *WebhookListener) onEventsApi(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var handleErr error
-	if ev.Type == slackevents.CallbackEvent || ev.Type == slackevents.AppRateLimited {
-		pe := rez.ProviderEvent{
-			Provider:        integrationName,
-			Source:          slackEventsAPISource,
-			ReceivedAt:      time.Now().UTC(),
-			Payload:         body,
-			ContentType:     r.Header.Get("Content-Type"),
-			RequestMetadata: map[string]string{},
+	if evt.Type == slackevents.CallbackEvent {
+		cb, cbOk := evt.Data.(*slackevents.EventsAPICallbackEvent)
+		if !cbOk {
+			slog.Error("failed to cast callback event")
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-		if timestamp := r.Header.Get("X-Slack-Request-Timestamp"); timestamp != "" {
-			pe.RequestMetadata["slack_request_timestamp"] = timestamp
-		}
-		if requestID := r.Header.Get("X-Slack-Request-Id"); requestID != "" {
-			pe.RequestMetadata["slack_request_id"] = requestID
-		}
-		handleErr = l.handler.OnEventsAPIEvent(r.Context(), pe)
+		//metadata := make(map[string]string)
+		//if timestamp := r.Header.Get("X-Slack-Request-Timestamp"); timestamp != "" {
+		//	metadata["slack_request_timestamp"] = timestamp
+		//}
+		//if requestID := r.Header.Get("X-Slack-Request-Id"); requestID != "" {
+		//	metadata["slack_request_id"] = requestID
+		//}
+		handleErr = l.handler.OnCallbackEvent(r.Context(), cb, body)
+	} else if evt.Type == slackevents.AppRateLimited {
+		handleErr = l.handler.OnAppRateLimitedEvent(r.Context())
 	} else {
-		handleErr = fmt.Errorf("unhandled event type: %s", ev.Type)
+		handleErr = fmt.Errorf("unhandled event type: %s", evt.Type)
 	}
 	if handleErr != nil {
 		slog.Error("failed to handle eventsAPI event", "error", handleErr)

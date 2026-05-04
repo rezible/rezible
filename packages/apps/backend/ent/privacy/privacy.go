@@ -843,6 +843,30 @@ func (f MeetingSessionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.MeetingSessionMutation", m)
 }
 
+// The NormalizedEventQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type NormalizedEventQueryRuleFunc func(context.Context, *ent.NormalizedEventQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f NormalizedEventQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.NormalizedEventQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.NormalizedEventQuery", q)
+}
+
+// The NormalizedEventMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type NormalizedEventMutationRuleFunc func(context.Context, *ent.NormalizedEventMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f NormalizedEventMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.NormalizedEventMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.NormalizedEventMutation", m)
+}
+
 // The OncallHandoverTemplateQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type OncallHandoverTemplateQueryRuleFunc func(context.Context, *ent.OncallHandoverTemplateQuery) error
@@ -1756,6 +1780,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.MeetingSessionQuery:
 		return q.Filter(), nil
+	case *ent.NormalizedEventQuery:
+		return q.Filter(), nil
 	case *ent.OncallHandoverTemplateQuery:
 		return q.Filter(), nil
 	case *ent.OncallRosterQuery:
@@ -1890,6 +1916,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.MeetingScheduleMutation:
 		return m.Filter(), nil
 	case *ent.MeetingSessionMutation:
+		return m.Filter(), nil
+	case *ent.NormalizedEventMutation:
 		return m.Filter(), nil
 	case *ent.OncallHandoverTemplateMutation:
 		return m.Filter(), nil

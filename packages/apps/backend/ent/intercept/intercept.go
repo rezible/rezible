@@ -39,6 +39,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -967,6 +968,33 @@ func (f TraverseMeetingSession) Traverse(ctx context.Context, q ent.Query) error
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.MeetingSessionQuery", q)
+}
+
+// The NormalizedEventFunc type is an adapter to allow the use of ordinary function as a Querier.
+type NormalizedEventFunc func(context.Context, *ent.NormalizedEventQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f NormalizedEventFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.NormalizedEventQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventQuery", q)
+}
+
+// The TraverseNormalizedEvent type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseNormalizedEvent func(context.Context, *ent.NormalizedEventQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseNormalizedEvent) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseNormalizedEvent) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.NormalizedEventQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventQuery", q)
 }
 
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1952,6 +1980,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.MeetingScheduleQuery, predicate.MeetingSchedule, meetingschedule.OrderOption]{typ: ent.TypeMeetingSchedule, tq: q}, nil
 	case *ent.MeetingSessionQuery:
 		return &query[*ent.MeetingSessionQuery, predicate.MeetingSession, meetingsession.OrderOption]{typ: ent.TypeMeetingSession, tq: q}, nil
+	case *ent.NormalizedEventQuery:
+		return &query[*ent.NormalizedEventQuery, predicate.NormalizedEvent, normalizedevent.OrderOption]{typ: ent.TypeNormalizedEvent, tq: q}, nil
 	case *ent.OncallHandoverTemplateQuery:
 		return &query[*ent.OncallHandoverTemplateQuery, predicate.OncallHandoverTemplate, oncallhandovertemplate.OrderOption]{typ: ent.TypeOncallHandoverTemplate, tq: q}, nil
 	case *ent.OncallRosterQuery:

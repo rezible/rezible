@@ -98,6 +98,8 @@ ALTER TABLE "oncall_roster_metrics" DROP CONSTRAINT "oncall_roster_metrics_oncal
 ALTER TABLE "oncall_rosters" DROP CONSTRAINT "oncall_rosters_tenants_tenant", DROP CONSTRAINT "oncall_rosters_oncall_handover_templates_roster";
 -- reverse: modify "oncall_handover_templates" table
 ALTER TABLE "oncall_handover_templates" DROP CONSTRAINT "oncall_handover_templates_tenants_tenant";
+-- reverse: modify "normalized_events" table
+ALTER TABLE "normalized_events" DROP CONSTRAINT "normalized_events_tenants_tenant";
 -- reverse: modify "meeting_sessions" table
 ALTER TABLE "meeting_sessions" DROP CONSTRAINT "meeting_sessions_meeting_schedules_schedule", DROP CONSTRAINT "meeting_sessions_tenants_tenant";
 -- reverse: modify "meeting_schedules" table
@@ -366,6 +368,14 @@ DROP TABLE "oncall_rosters";
 DROP INDEX "oncallhandovertemplate_tenant_id";
 -- reverse: create "oncall_handover_templates" table
 DROP TABLE "oncall_handover_templates";
+-- reverse: create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
+DROP INDEX "normalizedevent_tenant_id_kind_occurred_at";
+-- reverse: create index "normalizedevent_tenant_id_prov_638c8c856d6f3c634d0a153c69b60402" to table: "normalized_events"
+DROP INDEX "normalizedevent_tenant_id_prov_638c8c856d6f3c634d0a153c69b60402";
+-- reverse: create index "normalizedevent_tenant_id" to table: "normalized_events"
+DROP INDEX "normalizedevent_tenant_id";
+-- reverse: create "normalized_events" table
+DROP TABLE "normalized_events";
 -- reverse: create index "meetingsession_tenant_id" to table: "meeting_sessions"
 DROP INDEX "meetingsession_tenant_id";
 -- reverse: create "meeting_sessions" table

@@ -134,6 +134,14 @@ CREATE INDEX "meetingschedule_tenant_id" ON "meeting_schedules" ("tenant_id");
 CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying NOT NULL, "started_at" timestamptz NOT NULL, "ended_at" timestamptz NULL, "document_name" character varying NOT NULL, "tenant_id" bigint NOT NULL, "meeting_session_schedule" uuid NULL, PRIMARY KEY ("id"));
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
+-- create "normalized_events" table
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "source" character varying NOT NULL, "kind" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_external_ref" character varying NOT NULL, "source_event_key" character varying NOT NULL, "dedupe_key" character varying NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "processing_version" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+-- create index "normalizedevent_tenant_id" to table: "normalized_events"
+CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
+-- create index "normalizedevent_tenant_id_prov_638c8c856d6f3c634d0a153c69b60402" to table: "normalized_events"
+CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_638c8c856d6f3c634d0a153c69b60402" ON "normalized_events" ("tenant_id", "provider", "source", "processing_version", "source_event_key", "kind", "subject_external_ref");
+-- create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
+CREATE INDEX "normalizedevent_tenant_id_kind_occurred_at" ON "normalized_events" ("tenant_id", "kind", "occurred_at");
 -- create "oncall_handover_templates" table
 CREATE TABLE "oncall_handover_templates" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "contents" bytea NOT NULL, "is_default" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "oncallhandovertemplate_tenant_id" to table: "oncall_handover_templates"
@@ -402,6 +410,8 @@ ALTER TABLE "integration_oauth_states" ADD CONSTRAINT "integration_oauth_states_
 ALTER TABLE "meeting_schedules" ADD CONSTRAINT "meeting_schedules_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "meeting_sessions" table
 ALTER TABLE "meeting_sessions" ADD CONSTRAINT "meeting_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "meeting_sessions_meeting_schedules_schedule" FOREIGN KEY ("meeting_session_schedule") REFERENCES "meeting_schedules" ("id") ON DELETE SET NULL;
+-- modify "normalized_events" table
+ALTER TABLE "normalized_events" ADD CONSTRAINT "normalized_events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "oncall_handover_templates" table
 ALTER TABLE "oncall_handover_templates" ADD CONSTRAINT "oncall_handover_templates_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "oncall_rosters" table

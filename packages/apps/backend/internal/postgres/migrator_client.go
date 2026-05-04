@@ -7,11 +7,11 @@ import (
 	"fmt"
 	"log/slog"
 
-	"ariga.io/atlas/sql/sqltool"
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/schema"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/rezible/rezible/internal/postgres/river"
 
 	_ "github.com/jackc/pgx/v5"
@@ -103,7 +103,7 @@ func (m *MigratorClient) Run(ctx context.Context, direction string) error {
 }
 
 func (m *MigratorClient) CreateSchemaMigration(ctx context.Context, name string) error {
-	dir, dirErr := sqltool.NewGolangMigrateDir(MigrationsDir)
+	dir, dirErr := getGolangMigrateDir()
 	if dirErr != nil {
 		return fmt.Errorf("getting output dir: %w", dirErr)
 	}
@@ -155,7 +155,7 @@ func (m *MigratorClient) withMigrator(ctx context.Context, db *sql.DB, fn func(*
 	}
 	defer closeResource(conn, "migrations db.Conn")
 
-	sourceDriver, sourceDriverErr := iofs.New(MigrationsFS, MigrationsDir)
+	sourceDriver, sourceDriverErr := iofs.New(migrations.FS, migrations.EmbedFSDir)
 	if sourceDriverErr != nil {
 		return fmt.Errorf("load embedded migration source: %w", sourceDriverErr)
 	}
