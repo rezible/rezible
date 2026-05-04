@@ -77,14 +77,17 @@ func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.
 }
 
 func (s *OrganizationsService) CompleteSetup(ctx context.Context, org *ent.Organization) error {
+	update := s.db.Organization.UpdateOne(org).SetInitialSetupAt(time.Now())
+	if updateErr := update.Exec(ctx); updateErr != nil {
+		return fmt.Errorf("update: %w", updateErr)
+	}
 	args := jobs.SyncIntegrationsData{
 		OrganizationId: org.ID,
 		IgnoreHistory:  true,
 		CreateDefaults: true,
 	}
-	if jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
+	if _, jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 		slog.Error("failed to insert sync job", "error", jobErr)
 	}
-
-	return s.db.Organization.UpdateOne(org).SetInitialSetupAt(time.Now()).Exec(ctx)
+	return nil
 }

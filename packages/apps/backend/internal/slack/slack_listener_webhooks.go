@@ -15,6 +15,8 @@ import (
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
+
+	rez "github.com/rezible/rezible"
 )
 
 type WebhookListener struct {
@@ -159,11 +161,25 @@ func (l *WebhookListener) onEventsApi(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	handleErr := fmt.Errorf("unhandled event type: %s", ev.Type)
-	if ev.Type == slackevents.AppRateLimited {
-		handleErr = l.handler.OnAppRateLimitedEvent(r.Context())
-	} else if ev.Type == slackevents.CallbackEvent {
-		handleErr = l.handler.OnCallbackEvent(r.Context(), body)
+	var handleErr error
+	if ev.Type == slackevents.CallbackEvent || ev.Type == slackevents.AppRateLimited {
+		pe := rez.ProviderEvent{
+			Provider:        integrationName,
+			Source:          slackEventsAPISource,
+			ReceivedAt:      time.Now().UTC(),
+			Payload:         body,
+			ContentType:     r.Header.Get("Content-Type"),
+			RequestMetadata: map[string]string{},
+		}
+		if timestamp := r.Header.Get("X-Slack-Request-Timestamp"); timestamp != "" {
+			pe.RequestMetadata["slack_request_timestamp"] = timestamp
+		}
+		if requestID := r.Header.Get("X-Slack-Request-Id"); requestID != "" {
+			pe.RequestMetadata["slack_request_id"] = requestID
+		}
+		handleErr = l.handler.OnEventsAPIEvent(r.Context(), pe)
+	} else {
+		handleErr = fmt.Errorf("unhandled event type: %s", ev.Type)
 	}
 	if handleErr != nil {
 		slog.Error("failed to handle eventsAPI event", "error", handleErr)

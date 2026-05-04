@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -45,12 +46,12 @@ func (s *OncallShiftsService) registerJobs() {
 	jobs.RegisterWorkerFunc(s.ensureShiftHandoverReminderSent)
 	jobs.RegisterWorkerFunc(s.ensureShiftHandoverSent)
 
-	periodicScanShiftsJobs := jobs.NewPeriodicJob(
-		jobs.PeriodicInterval(time.Hour),
-		func() (jobs.JobArgs, *jobs.InsertOpts) {
+	periodicScanShiftsJobs := river.NewPeriodicJob(
+		river.PeriodicInterval(time.Hour),
+		func() (river.JobArgs, *river.InsertOpts) {
 			return &jobs.ScanOncallShifts{}, nil
 		},
-		&jobs.PeriodicJobOpts{RunOnStart: true},
+		&river.PeriodicJobOpts{RunOnStart: true},
 	)
 	jobs.RegisterPeriodicJob(periodicScanShiftsJobs)
 	jobs.RegisterWorkerFunc(s.periodicScanShifts)
@@ -166,16 +167,16 @@ func (s *OncallShiftsService) scanShifts(ctx context.Context) error {
 
 	reminderWindow := time.Minute * 10
 
-	var params []jobs.InsertManyParams
+	var params []river.InsertManyParams
 	for _, shift := range shifts {
 		ho := shift.Edges.Handover
 		reminderSent := ho != nil && ho.ReminderSent // !ho.ReminderSentAt.IsZero
 		if !reminderSent {
-			params = append(params, jobs.InsertManyParams{
+			params = append(params, river.InsertManyParams{
 				Args: jobs.EnsureShiftHandoverReminderSent{ShiftId: shift.ID},
-				InsertOpts: &jobs.InsertOpts{
+				InsertOpts: &river.InsertOpts{
 					ScheduledAt: shift.EndAt.Add(-reminderWindow),
-					UniqueOpts: jobs.UniqueOpts{
+					UniqueOpts: river.UniqueOpts{
 						ByArgs: true,
 					},
 				},
@@ -183,21 +184,21 @@ func (s *OncallShiftsService) scanShifts(ctx context.Context) error {
 		}
 		isSent := ho != nil && !ho.SentAt.IsZero()
 		if !isSent {
-			params = append(params, jobs.InsertManyParams{
+			params = append(params, river.InsertManyParams{
 				Args: jobs.EnsureShiftHandoverSent{ShiftId: shift.ID},
-				InsertOpts: &jobs.InsertOpts{
+				InsertOpts: &river.InsertOpts{
 					ScheduledAt: shift.EndAt,
-					UniqueOpts: jobs.UniqueOpts{
+					UniqueOpts: river.UniqueOpts{
 						ByArgs: true,
 					},
 				},
 			})
 		}
-		params = append(params, jobs.InsertManyParams{
+		params = append(params, river.InsertManyParams{
 			Args: jobs.GenerateShiftMetrics{ShiftId: shift.ID},
-			InsertOpts: &jobs.InsertOpts{
+			InsertOpts: &river.InsertOpts{
 				ScheduledAt: shift.EndAt,
-				UniqueOpts: jobs.UniqueOpts{
+				UniqueOpts: river.UniqueOpts{
 					ByArgs: true,
 				},
 			},
@@ -205,7 +206,7 @@ func (s *OncallShiftsService) scanShifts(ctx context.Context) error {
 	}
 
 	if len(params) > 0 {
-		if insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
+		if _, insertErr := s.jobs.InsertMany(ctx, params); insertErr != nil {
 			return fmt.Errorf("could not insert jobs: %w", insertErr)
 		}
 	}

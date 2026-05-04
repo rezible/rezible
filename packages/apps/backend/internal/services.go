@@ -149,17 +149,19 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	}
 	s.db = pgDb
 
+	msgs, msgsErr := watermill.NewMessageService()
+	if msgsErr != nil {
+		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
+	}
+	s.listeners["watermill_message_service"] = msgs
+
 	jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
 	if jobSvcErr != nil {
 		return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
 	}
 	s.listeners["river_job_service"] = jobSvc
 
-	msgs, msgsErr := watermill.NewMessageService()
-	if msgsErr != nil {
-		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
-	}
-	s.listeners["watermill_message_service"] = msgs
+	provEvents := river.NewProviderEventIngestor(jobSvc)
 
 	dbc := s.db.Client()
 
@@ -260,6 +262,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 
 	return &rez.Services{
 		Jobs:             jobSvc,
+		ProviderEvents:   provEvents,
 		Messages:         msgs,
 		Auth:             auth,
 		Organizations:    orgs,

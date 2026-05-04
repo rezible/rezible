@@ -45,19 +45,21 @@ func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*Integratio
 }
 
 func (s *IntegrationsService) registerJobs() {
-	syncAllTenantIntegrationsDataPeriodicJob := jobs.NewPeriodicJob(
-		jobs.PeriodicInterval(time.Hour),
-		func() (jobs.JobArgs, *jobs.InsertOpts) {
-			return &jobs.SyncIntegrationsData{}, &jobs.InsertOpts{
-				UniqueOpts: jobs.UniqueOpts{
-					ByState: jobs.NonCompletedJobStates,
-				},
-			}
-		},
-		&jobs.PeriodicJobOpts{RunOnStart: true},
-	)
-	jobs.RegisterPeriodicJob(syncAllTenantIntegrationsDataPeriodicJob)
-	//jobs.RegisterWorkerFunc(s.syncer.SyncIntegrationsData)
+	/*
+		syncAllTenantIntegrationsDataPeriodicJob := jobs.NewPeriodicJob(
+			jobs.PeriodicInterval(time.Hour),
+			func() (river.JobArgs, *river.InsertOpts) {
+				return &jobs.SyncIntegrationsData{}, &river.InsertOpts{
+					UniqueOpts: river.UniqueOpts{
+						ByState: jobs.NonCompletedJobStates,
+					},
+				}
+			},
+			&river.PeriodicJobOpts{RunOnStart: true},
+		)
+		jobs.RegisterPeriodicJob(syncAllTenantIntegrationsDataPeriodicJob)
+		jobs.RegisterWorkerFunc(s.syncer.SyncIntegrationsData)
+	*/
 }
 
 func (s *IntegrationsService) ListConfigured(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {
@@ -238,7 +240,7 @@ func (s *IntegrationsService) set(ctx context.Context, name string, setFn func(*
 	args := jobs.SyncIntegrationsData{
 		IntegrationId: intg.ID,
 	}
-	if jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
+	if _, jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 		slog.Error("failed to insert sync job", "error", jobErr)
 	}
 

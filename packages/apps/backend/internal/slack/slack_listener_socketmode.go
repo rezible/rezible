@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/sourcegraph/conc/pool"
 
@@ -85,13 +86,15 @@ func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 		return
 	}
 
-	handleErr := fmt.Errorf("unknown event type")
-	if evt.Type == socketmode.EventTypeEventsAPI {
-		handleErr = l.onEventsApi(ctx, evt)
+	var handleErr error
+	if evt.Type == socketmode.EventTypeInteractive {
+		handleErr = l.handler.OnInteractionCallback(ctx, evt.Request.Payload)
 	} else if evt.Type == socketmode.EventTypeSlashCommand {
 		handleErr = l.onSlashCommand(ctx, evt)
-	} else if evt.Type == socketmode.EventTypeInteractive {
-		handleErr = l.onInteractionCallback(ctx, evt)
+	} else if evt.Type == socketmode.EventTypeEventsAPI {
+		handleErr = l.onEventsApi(ctx, evt)
+	} else {
+		handleErr = fmt.Errorf("unknown event type")
 	}
 	if handleErr != nil {
 		slog.Error("socketmode handler error",
@@ -104,18 +107,6 @@ func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 	}
 }
 
-func (l *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) error {
-	if evt, ok := e.Data.(slackevents.EventsAPIEvent); ok {
-		if evt.Type == slackevents.CallbackEvent {
-			return l.handler.OnCallbackEvent(ctx, e.Request.Payload)
-		} else if evt.Type == slackevents.AppRateLimited {
-			return l.handler.OnAppRateLimitedEvent(ctx)
-		}
-		return fmt.Errorf("unknown slack callback event type: %s", evt.Type)
-	}
-	return fmt.Errorf("invalid events api event data")
-}
-
 func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) error {
 	if cmd, ok := e.Data.(slack.SlashCommand); ok {
 		return l.handler.OnSlashCommand(ctx, cmd)
@@ -123,6 +114,22 @@ func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.E
 	return fmt.Errorf("invalid SlashCommand data")
 }
 
-func (l *SocketModeListener) onInteractionCallback(ctx context.Context, e *socketmode.Event) error {
-	return l.handler.OnInteractionCallback(ctx, e.Request.Payload)
+func (l *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) error {
+	if evt, ok := e.Data.(slackevents.EventsAPIEvent); ok {
+		if evt.Type == slackevents.CallbackEvent {
+			providerEvent := rez.ProviderEvent{
+				Provider:        integrationName,
+				Source:          slackEventsAPISource,
+				ReceivedAt:      time.Now().UTC(),
+				Payload:         e.Request.Payload,
+				ContentType:     "application/json",
+				RequestMetadata: map[string]string{},
+			}
+			return l.handler.OnEventsAPIEvent(ctx, providerEvent)
+		} else if evt.Type == slackevents.AppRateLimited {
+			return l.handler.OnAppRateLimitedEvent(ctx)
+		}
+		return fmt.Errorf("unknown slack callback event type: %s", evt.Type)
+	}
+	return fmt.Errorf("invalid events api event data")
 }

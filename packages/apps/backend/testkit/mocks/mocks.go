@@ -12,7 +12,8 @@ import (
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/jobs"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 	mock "github.com/stretchr/testify/mock"
 )
 
@@ -311,20 +312,31 @@ func (_m *MockJobsService) EXPECT() *MockJobsService_Expecter {
 }
 
 // Insert provides a mock function for the type MockJobsService
-func (_mock *MockJobsService) Insert(context1 context.Context, v jobs.JobArgs, v1 *jobs.InsertOpts) error {
-	ret := _mock.Called(context1, v, v1)
+func (_mock *MockJobsService) Insert(context1 context.Context, jobArgs river.JobArgs, insertOpts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
+	ret := _mock.Called(context1, jobArgs, insertOpts)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Insert")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, jobs.JobArgs, *jobs.InsertOpts) error); ok {
-		r0 = returnFunc(context1, v, v1)
-	} else {
-		r0 = ret.Error(0)
+	var r0 *rivertype.JobInsertResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)); ok {
+		return returnFunc(context1, jobArgs, insertOpts)
 	}
-	return r0
+	if returnFunc, ok := ret.Get(0).(func(context.Context, river.JobArgs, *river.InsertOpts) *rivertype.JobInsertResult); ok {
+		r0 = returnFunc(context1, jobArgs, insertOpts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rivertype.JobInsertResult)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, river.JobArgs, *river.InsertOpts) error); ok {
+		r1 = returnFunc(context1, jobArgs, insertOpts)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockJobsService_Insert_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Insert'
@@ -334,25 +346,25 @@ type MockJobsService_Insert_Call struct {
 
 // Insert is a helper method to define mock.On call
 //   - context1 context.Context
-//   - v jobs.JobArgs
-//   - v1 *jobs.InsertOpts
-func (_e *MockJobsService_Expecter) Insert(context1 interface{}, v interface{}, v1 interface{}) *MockJobsService_Insert_Call {
-	return &MockJobsService_Insert_Call{Call: _e.mock.On("Insert", context1, v, v1)}
+//   - jobArgs river.JobArgs
+//   - insertOpts *river.InsertOpts
+func (_e *MockJobsService_Expecter) Insert(context1 interface{}, jobArgs interface{}, insertOpts interface{}) *MockJobsService_Insert_Call {
+	return &MockJobsService_Insert_Call{Call: _e.mock.On("Insert", context1, jobArgs, insertOpts)}
 }
 
-func (_c *MockJobsService_Insert_Call) Run(run func(context1 context.Context, v jobs.JobArgs, v1 *jobs.InsertOpts)) *MockJobsService_Insert_Call {
+func (_c *MockJobsService_Insert_Call) Run(run func(context1 context.Context, jobArgs river.JobArgs, insertOpts *river.InsertOpts)) *MockJobsService_Insert_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 jobs.JobArgs
+		var arg1 river.JobArgs
 		if args[1] != nil {
-			arg1 = args[1].(jobs.JobArgs)
+			arg1 = args[1].(river.JobArgs)
 		}
-		var arg2 *jobs.InsertOpts
+		var arg2 *river.InsertOpts
 		if args[2] != nil {
-			arg2 = args[2].(*jobs.InsertOpts)
+			arg2 = args[2].(*river.InsertOpts)
 		}
 		run(
 			arg0,
@@ -363,31 +375,42 @@ func (_c *MockJobsService_Insert_Call) Run(run func(context1 context.Context, v 
 	return _c
 }
 
-func (_c *MockJobsService_Insert_Call) Return(err error) *MockJobsService_Insert_Call {
-	_c.Call.Return(err)
+func (_c *MockJobsService_Insert_Call) Return(jobInsertResult *rivertype.JobInsertResult, err error) *MockJobsService_Insert_Call {
+	_c.Call.Return(jobInsertResult, err)
 	return _c
 }
 
-func (_c *MockJobsService_Insert_Call) RunAndReturn(run func(context1 context.Context, v jobs.JobArgs, v1 *jobs.InsertOpts) error) *MockJobsService_Insert_Call {
+func (_c *MockJobsService_Insert_Call) RunAndReturn(run func(context1 context.Context, jobArgs river.JobArgs, insertOpts *river.InsertOpts) (*rivertype.JobInsertResult, error)) *MockJobsService_Insert_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // InsertMany provides a mock function for the type MockJobsService
-func (_mock *MockJobsService) InsertMany(context1 context.Context, vs []jobs.InsertManyParams) error {
-	ret := _mock.Called(context1, vs)
+func (_mock *MockJobsService) InsertMany(context1 context.Context, insertManyParamss []river.InsertManyParams) ([]*rivertype.JobInsertResult, error) {
+	ret := _mock.Called(context1, insertManyParamss)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InsertMany")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, []jobs.InsertManyParams) error); ok {
-		r0 = returnFunc(context1, vs)
-	} else {
-		r0 = ret.Error(0)
+	var r0 []*rivertype.JobInsertResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)); ok {
+		return returnFunc(context1, insertManyParamss)
 	}
-	return r0
+	if returnFunc, ok := ret.Get(0).(func(context.Context, []river.InsertManyParams) []*rivertype.JobInsertResult); ok {
+		r0 = returnFunc(context1, insertManyParamss)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]*rivertype.JobInsertResult)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, []river.InsertManyParams) error); ok {
+		r1 = returnFunc(context1, insertManyParamss)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockJobsService_InsertMany_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InsertMany'
@@ -397,20 +420,20 @@ type MockJobsService_InsertMany_Call struct {
 
 // InsertMany is a helper method to define mock.On call
 //   - context1 context.Context
-//   - vs []jobs.InsertManyParams
-func (_e *MockJobsService_Expecter) InsertMany(context1 interface{}, vs interface{}) *MockJobsService_InsertMany_Call {
-	return &MockJobsService_InsertMany_Call{Call: _e.mock.On("InsertMany", context1, vs)}
+//   - insertManyParamss []river.InsertManyParams
+func (_e *MockJobsService_Expecter) InsertMany(context1 interface{}, insertManyParamss interface{}) *MockJobsService_InsertMany_Call {
+	return &MockJobsService_InsertMany_Call{Call: _e.mock.On("InsertMany", context1, insertManyParamss)}
 }
 
-func (_c *MockJobsService_InsertMany_Call) Run(run func(context1 context.Context, vs []jobs.InsertManyParams)) *MockJobsService_InsertMany_Call {
+func (_c *MockJobsService_InsertMany_Call) Run(run func(context1 context.Context, insertManyParamss []river.InsertManyParams)) *MockJobsService_InsertMany_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 []jobs.InsertManyParams
+		var arg1 []river.InsertManyParams
 		if args[1] != nil {
-			arg1 = args[1].([]jobs.InsertManyParams)
+			arg1 = args[1].([]river.InsertManyParams)
 		}
 		run(
 			arg0,
@@ -420,31 +443,42 @@ func (_c *MockJobsService_InsertMany_Call) Run(run func(context1 context.Context
 	return _c
 }
 
-func (_c *MockJobsService_InsertMany_Call) Return(err error) *MockJobsService_InsertMany_Call {
-	_c.Call.Return(err)
+func (_c *MockJobsService_InsertMany_Call) Return(jobInsertResults []*rivertype.JobInsertResult, err error) *MockJobsService_InsertMany_Call {
+	_c.Call.Return(jobInsertResults, err)
 	return _c
 }
 
-func (_c *MockJobsService_InsertMany_Call) RunAndReturn(run func(context1 context.Context, vs []jobs.InsertManyParams) error) *MockJobsService_InsertMany_Call {
+func (_c *MockJobsService_InsertMany_Call) RunAndReturn(run func(context1 context.Context, insertManyParamss []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)) *MockJobsService_InsertMany_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // InsertTx provides a mock function for the type MockJobsService
-func (_mock *MockJobsService) InsertTx(context1 context.Context, tx *ent.Tx, v jobs.JobArgs, v1 *jobs.InsertOpts) error {
-	ret := _mock.Called(context1, tx, v, v1)
+func (_mock *MockJobsService) InsertTx(context1 context.Context, tx *ent.Tx, jobArgs river.JobArgs, insertOpts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
+	ret := _mock.Called(context1, tx, jobArgs, insertOpts)
 
 	if len(ret) == 0 {
 		panic("no return value specified for InsertTx")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.Tx, jobs.JobArgs, *jobs.InsertOpts) error); ok {
-		r0 = returnFunc(context1, tx, v, v1)
-	} else {
-		r0 = ret.Error(0)
+	var r0 *rivertype.JobInsertResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)); ok {
+		return returnFunc(context1, tx, jobArgs, insertOpts)
 	}
-	return r0
+	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) *rivertype.JobInsertResult); ok {
+		r0 = returnFunc(context1, tx, jobArgs, insertOpts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rivertype.JobInsertResult)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) error); ok {
+		r1 = returnFunc(context1, tx, jobArgs, insertOpts)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockJobsService_InsertTx_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'InsertTx'
@@ -455,13 +489,13 @@ type MockJobsService_InsertTx_Call struct {
 // InsertTx is a helper method to define mock.On call
 //   - context1 context.Context
 //   - tx *ent.Tx
-//   - v jobs.JobArgs
-//   - v1 *jobs.InsertOpts
-func (_e *MockJobsService_Expecter) InsertTx(context1 interface{}, tx interface{}, v interface{}, v1 interface{}) *MockJobsService_InsertTx_Call {
-	return &MockJobsService_InsertTx_Call{Call: _e.mock.On("InsertTx", context1, tx, v, v1)}
+//   - jobArgs river.JobArgs
+//   - insertOpts *river.InsertOpts
+func (_e *MockJobsService_Expecter) InsertTx(context1 interface{}, tx interface{}, jobArgs interface{}, insertOpts interface{}) *MockJobsService_InsertTx_Call {
+	return &MockJobsService_InsertTx_Call{Call: _e.mock.On("InsertTx", context1, tx, jobArgs, insertOpts)}
 }
 
-func (_c *MockJobsService_InsertTx_Call) Run(run func(context1 context.Context, tx *ent.Tx, v jobs.JobArgs, v1 *jobs.InsertOpts)) *MockJobsService_InsertTx_Call {
+func (_c *MockJobsService_InsertTx_Call) Run(run func(context1 context.Context, tx *ent.Tx, jobArgs river.JobArgs, insertOpts *river.InsertOpts)) *MockJobsService_InsertTx_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -471,13 +505,13 @@ func (_c *MockJobsService_InsertTx_Call) Run(run func(context1 context.Context, 
 		if args[1] != nil {
 			arg1 = args[1].(*ent.Tx)
 		}
-		var arg2 jobs.JobArgs
+		var arg2 river.JobArgs
 		if args[2] != nil {
-			arg2 = args[2].(jobs.JobArgs)
+			arg2 = args[2].(river.JobArgs)
 		}
-		var arg3 *jobs.InsertOpts
+		var arg3 *river.InsertOpts
 		if args[3] != nil {
-			arg3 = args[3].(*jobs.InsertOpts)
+			arg3 = args[3].(*river.InsertOpts)
 		}
 		run(
 			arg0,
@@ -489,12 +523,12 @@ func (_c *MockJobsService_InsertTx_Call) Run(run func(context1 context.Context, 
 	return _c
 }
 
-func (_c *MockJobsService_InsertTx_Call) Return(err error) *MockJobsService_InsertTx_Call {
-	_c.Call.Return(err)
+func (_c *MockJobsService_InsertTx_Call) Return(jobInsertResult *rivertype.JobInsertResult, err error) *MockJobsService_InsertTx_Call {
+	_c.Call.Return(jobInsertResult, err)
 	return _c
 }
 
-func (_c *MockJobsService_InsertTx_Call) RunAndReturn(run func(context1 context.Context, tx *ent.Tx, v jobs.JobArgs, v1 *jobs.InsertOpts) error) *MockJobsService_InsertTx_Call {
+func (_c *MockJobsService_InsertTx_Call) RunAndReturn(run func(context1 context.Context, tx *ent.Tx, jobArgs river.JobArgs, insertOpts *river.InsertOpts) (*rivertype.JobInsertResult, error)) *MockJobsService_InsertTx_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -598,6 +632,130 @@ func (_c *MockJobsService_Stop_Call) Return(err error) *MockJobsService_Stop_Cal
 
 func (_c *MockJobsService_Stop_Call) RunAndReturn(run func(context1 context.Context) error) *MockJobsService_Stop_Call {
 	_c.Call.Return(run)
+	return _c
+}
+
+// NewMockProviderEventIngestorService creates a new instance of MockProviderEventIngestorService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
+// The first argument is typically a *testing.T value.
+func NewMockProviderEventIngestorService(t interface {
+	mock.TestingT
+	Cleanup(func())
+}) *MockProviderEventIngestorService {
+	mock := &MockProviderEventIngestorService{}
+	mock.Mock.Test(t)
+
+	t.Cleanup(func() { mock.AssertExpectations(t) })
+
+	return mock
+}
+
+// MockProviderEventIngestorService is an autogenerated mock type for the ProviderEventIngestorService type
+type MockProviderEventIngestorService struct {
+	mock.Mock
+}
+
+type MockProviderEventIngestorService_Expecter struct {
+	mock *mock.Mock
+}
+
+func (_m *MockProviderEventIngestorService) EXPECT() *MockProviderEventIngestorService_Expecter {
+	return &MockProviderEventIngestorService_Expecter{mock: &_m.Mock}
+}
+
+// IngestEvent provides a mock function for the type MockProviderEventIngestorService
+func (_mock *MockProviderEventIngestorService) IngestEvent(context1 context.Context, providerEvent rez.ProviderEvent) error {
+	ret := _mock.Called(context1, providerEvent)
+
+	if len(ret) == 0 {
+		panic("no return value specified for IngestEvent")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEvent) error); ok {
+		r0 = returnFunc(context1, providerEvent)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockProviderEventIngestorService_IngestEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'IngestEvent'
+type MockProviderEventIngestorService_IngestEvent_Call struct {
+	*mock.Call
+}
+
+// IngestEvent is a helper method to define mock.On call
+//   - context1 context.Context
+//   - providerEvent rez.ProviderEvent
+func (_e *MockProviderEventIngestorService_Expecter) IngestEvent(context1 interface{}, providerEvent interface{}) *MockProviderEventIngestorService_IngestEvent_Call {
+	return &MockProviderEventIngestorService_IngestEvent_Call{Call: _e.mock.On("IngestEvent", context1, providerEvent)}
+}
+
+func (_c *MockProviderEventIngestorService_IngestEvent_Call) Run(run func(context1 context.Context, providerEvent rez.ProviderEvent)) *MockProviderEventIngestorService_IngestEvent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ProviderEvent
+		if args[1] != nil {
+			arg1 = args[1].(rez.ProviderEvent)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderEventIngestorService_IngestEvent_Call) Return(err error) *MockProviderEventIngestorService_IngestEvent_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockProviderEventIngestorService_IngestEvent_Call) RunAndReturn(run func(context1 context.Context, providerEvent rez.ProviderEvent) error) *MockProviderEventIngestorService_IngestEvent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// RegisterEventProcessor provides a mock function for the type MockProviderEventIngestorService
+func (_mock *MockProviderEventIngestorService) RegisterEventProcessor(providerEventProcessor rez.ProviderEventProcessor) {
+	_mock.Called(providerEventProcessor)
+	return
+}
+
+// MockProviderEventIngestorService_RegisterEventProcessor_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterEventProcessor'
+type MockProviderEventIngestorService_RegisterEventProcessor_Call struct {
+	*mock.Call
+}
+
+// RegisterEventProcessor is a helper method to define mock.On call
+//   - providerEventProcessor rez.ProviderEventProcessor
+func (_e *MockProviderEventIngestorService_Expecter) RegisterEventProcessor(providerEventProcessor interface{}) *MockProviderEventIngestorService_RegisterEventProcessor_Call {
+	return &MockProviderEventIngestorService_RegisterEventProcessor_Call{Call: _e.mock.On("RegisterEventProcessor", providerEventProcessor)}
+}
+
+func (_c *MockProviderEventIngestorService_RegisterEventProcessor_Call) Run(run func(providerEventProcessor rez.ProviderEventProcessor)) *MockProviderEventIngestorService_RegisterEventProcessor_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 rez.ProviderEventProcessor
+		if args[0] != nil {
+			arg0 = args[0].(rez.ProviderEventProcessor)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderEventIngestorService_RegisterEventProcessor_Call) Return() *MockProviderEventIngestorService_RegisterEventProcessor_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockProviderEventIngestorService_RegisterEventProcessor_Call) RunAndReturn(run func(providerEventProcessor rez.ProviderEventProcessor)) *MockProviderEventIngestorService_RegisterEventProcessor_Call {
+	_c.Run(run)
 	return _c
 }
 

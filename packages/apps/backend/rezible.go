@@ -9,12 +9,13 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 	"github.com/rotisserie/eris"
 	"github.com/texm/prosemirror-go"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/jobs"
 )
 
 var (
@@ -54,6 +55,7 @@ type DatabaseClient interface {
 
 type Services struct {
 	Jobs             JobsService
+	ProviderEvents   ProviderEventIngestorService
 	Messages         MessageService
 	Auth             AuthSessionService
 	Organizations    OrganizationService
@@ -142,9 +144,32 @@ type (
 		Start(context.Context) error
 		Stop(context.Context) error
 
-		Insert(context.Context, jobs.JobArgs, *jobs.InsertOpts) error
-		InsertTx(context.Context, *ent.Tx, jobs.JobArgs, *jobs.InsertOpts) error
-		InsertMany(context.Context, []jobs.InsertManyParams) error
+		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
+		InsertTx(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
+		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
+	}
+)
+
+type (
+	ProviderEventIngestorService interface {
+		RegisterEventProcessor(ProviderEventProcessor)
+		IngestEvent(context.Context, ProviderEvent) error
+	}
+
+	ProviderEvent struct {
+		Provider        string
+		Source          string
+		ReceivedAt      time.Time
+		Payload         []byte
+		ContentType     string
+		RequestMetadata map[string]string
+		DedupeKey       string
+	}
+
+	ProviderEventProcessor interface {
+		Provider() string
+		Source() string
+		ProcessProviderEvent(context.Context, ProviderEvent) error
 	}
 )
 

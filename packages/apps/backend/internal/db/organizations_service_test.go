@@ -35,7 +35,7 @@ func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimes
 	s.SeedTestEntities()
 
 	jobs := mocks.NewMockJobsService(s.T())
-	jobs.On("Insert", mock.Anything, mock.Anything, mock.Anything).Return(nil).Once()
+	jobs.On("Insert", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
 
 	dbc := s.Client()
 	orgs, orgsErr := NewOrganizationsService(dbc, jobs)

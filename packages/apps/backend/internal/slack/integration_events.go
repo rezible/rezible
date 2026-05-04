@@ -20,20 +20,24 @@ type eventHandler struct {
 
 func (i *integration) makeEventHandler() (*eventHandler, error) {
 	h := &eventHandler{services: i.services}
-	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
+
+	i.services.ProviderEvents.RegisterEventProcessor(&slackEventsAPIProcessor{handler: h})
+
+	if msgsErr := h.registerMessageHandlers(i.services.Messages); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
 	}
+
 	return h, nil
 }
 
-func (h *eventHandler) registerMessageHandlers() error {
+func (h *eventHandler) registerMessageHandlers(msgs rez.MessageService) error {
 	return errors.Join(
-		h.services.Messages.AddEventHandlers(
+		msgs.AddEventHandlers(
 			rez.NewEventHandler("slack.events.callback_event", h.onCallbackEvent),
 			rez.NewEventHandler("slack.incidents.on_updated", h.onIncidentUpdated),
 			rez.NewEventHandler("slack.incidents.on_milestone_updated", h.onIncidentMilestoneUpdated),
 		),
-		h.services.Messages.AddCommandHandlers(
+		msgs.AddCommandHandlers(
 			rez.NewCommandHandler("slack.process_slash_command", h.processSlashCommand),
 			rez.NewCommandHandler("slack.process_interaction", h.processInteraction),
 			rez.NewCommandHandler("slack.create_incident_channel", h.createIncidentChannel),
@@ -52,6 +56,10 @@ func (h *eventHandler) OnInteractionCallback(ctx context.Context, data []byte) e
 
 func (h *eventHandler) OnCallbackEvent(ctx context.Context, data []byte) error {
 	return h.services.Messages.PublishEvent(ctx, callbackEvent{Data: data})
+}
+
+func (h *eventHandler) OnEventsAPIEvent(ctx context.Context, event rez.ProviderEvent) error {
+	return h.services.ProviderEvents.IngestEvent(ctx, event)
 }
 
 func (h *eventHandler) OnAppRateLimitedEvent(ctx context.Context) error {
@@ -170,4 +178,27 @@ func (h *eventHandler) onCallbackEvent(ctx context.Context, ev *callbackEvent) e
 	return h.withChatService(ctx, ids, func(chat *ChatService) error {
 		return chat.handleCallbackEvent(ctx, &cb)
 	})
+}
+
+type slackEventsAPIProcessor struct {
+	handler *eventHandler
+}
+
+func (p *slackEventsAPIProcessor) Provider() string { return integrationName }
+
+func (p *slackEventsAPIProcessor) Source() string { return slackEventsAPISource }
+
+func (p *slackEventsAPIProcessor) ProcessProviderEvent(ctx context.Context, event rez.ProviderEvent) error {
+	ev, parseErr := slackevents.ParseEvent(event.Payload, slackevents.OptionNoVerifyToken())
+	if parseErr != nil {
+		return fmt.Errorf("parse event: %w", parseErr)
+	}
+	switch ev.Type {
+	case slackevents.AppRateLimited:
+		return p.handler.OnAppRateLimitedEvent(ctx)
+	case slackevents.CallbackEvent:
+		return p.handler.onCallbackEvent(ctx, &callbackEvent{Data: event.Payload})
+	default:
+		return fmt.Errorf("unhandled events api event type: %s", ev.Type)
+	}
 }

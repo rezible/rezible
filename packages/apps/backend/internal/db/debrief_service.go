@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"log/slog"
+
+	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -100,7 +101,7 @@ func (s *DebriefService) StartDebrief(ctx context.Context, debriefId uuid.UUID) 
 		}
 
 		args := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
-		if genErr := s.jobs.InsertTx(ctx, tx, args, nil); genErr != nil {
+		if _, genErr := s.jobs.InsertTx(ctx, tx, args, nil); genErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genErr)
 		}
 
@@ -134,7 +135,7 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 		}
 
 		args := jobs.GenerateIncidentDebriefSuggestions{DebriefId: debriefId}
-		if genErr := s.jobs.InsertTx(ctx, tx, args, nil); genErr != nil {
+		if _, genErr := s.jobs.InsertTx(ctx, tx, args, nil); genErr != nil {
 			return fmt.Errorf("failed to request suggestions generation: %w", genErr)
 		}
 
@@ -239,7 +240,7 @@ func (s *DebriefService) AddDebriefMessage(ctx context.Context, debriefId uuid.U
 		}
 
 		args := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
-		if genJobErr := s.jobs.InsertTx(ctx, tx, args, nil); genJobErr != nil {
+		if _, genJobErr := s.jobs.InsertTx(ctx, tx, args, nil); genJobErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genJobErr)
 		}
 

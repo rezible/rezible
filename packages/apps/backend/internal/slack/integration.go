@@ -16,7 +16,10 @@ import (
 	"github.com/rezible/rezible/execution"
 )
 
-const integrationName = "slack"
+const (
+	integrationName      = "slack"
+	slackEventsAPISource = "events_api"
+)
 
 var supportedDataKinds = []string{"chat", "users"}
 
