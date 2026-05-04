@@ -48,10 +48,10 @@ format:
 @apply-migrations:
     just run migrations apply
 
-[working-directory("./internal/postgres/migrations")]
+[working-directory(".")]
 @create-initial-migrations:
-    rm -f ./migrations/0001_init*.sql
-    rm -f ./migrations/atlas.sum
+    rm -f ./internal/postgres/migrations/0001_init*.sql
+    rm -f ./internal/postgres/migrations/atlas.sum
     just run migrations update-checksum
     just run migrations create init
     just run migrations update-checksum
