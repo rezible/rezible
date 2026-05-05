@@ -176,3 +176,78 @@ func (s *KnowledgeServiceEventProjectionSuite) TestCodeChangeEventLinksToReposit
 	s.Require().NoError(historyCountErr)
 	s.Equal(3, historyCount, "expected 3 knowledge facts")
 }
+
+func (s *KnowledgeServiceEventProjectionSuite) TestCodeChangeEventDoesNotOverwriteExistingRepositoryDetails() {
+	ctx := s.SeedTenantContext()
+	dbc := s.Client()
+
+	provider := "github"
+	providerSource := "test"
+	repoRef := "rezible/rich-repository-" + uuid.NewString()
+	repoDisplayName := "Rich Repository"
+	repoURL := "https://github.com/rezible/rich-repository"
+
+	repoAttrs := projections.RepositoryObservedAttributes{
+		DisplayName: repoDisplayName,
+		URL:         repoURL,
+	}
+	repoEventKind := ne.KindRepositoryObserved
+	repoEvent := s.createNormalizedEvent(func(c *ent.NormalizedEventCreate) {
+		c.SetProvider(provider).
+			SetProviderSource(providerSource).
+			SetKind(repoEventKind).
+			SetSubjectKind(string(repoEventKind)).
+			SetSubjectRef(repoRef).
+			SetProviderEventRef(repoEventKind.String() + ":" + repoRef + ":" + uuid.NewString()).
+			SetAttributes(repoAttrs.Encode())
+	})
+
+	validatedRepoEvent, repoValidationErr := projections.ValidateEvent(repoEvent)
+	s.Require().NoError(repoValidationErr)
+	projectedRepoEvent, repoCastOk := validatedRepoEvent.(projections.RepositoryObserved)
+	s.Require().True(repoCastOk)
+
+	repoProjection := newEventProjectionProcessor(repoEvent)
+	repoResult, repoProjectionErr := repoProjection.projectRepositoryObserved(ctx, projectedRepoEvent)
+	s.Require().NoError(repoProjectionErr)
+	s.Require().NoError(repoProjection.saveProjectionResult(ctx, dbc, repoResult), "saving repository projection result")
+
+	changeAttrs := projections.ChangeEventObservedAttributes{
+		RepositoryExternalRef: repoRef,
+		DisplayName:           "Fix repository sync",
+	}
+	changeEventKind := ne.KindChangeEventObserved
+	changeSubjectRef := "github:pull_request:" + uuid.NewString()
+	changeEvent := s.createNormalizedEvent(func(c *ent.NormalizedEventCreate) {
+		c.SetProvider(provider).
+			SetProviderSource(providerSource).
+			SetKind(changeEventKind).
+			SetSubjectKind(string(changeEventKind)).
+			SetSubjectRef(changeSubjectRef).
+			SetProviderEventRef(changeEventKind.String() + ":" + changeSubjectRef + ":" + uuid.NewString()).
+			SetAttributes(changeAttrs.Encode())
+	})
+
+	validatedChangeEvent, changeValidationErr := projections.ValidateEvent(changeEvent)
+	s.Require().NoError(changeValidationErr)
+	projectedChangeEvent, changeCastOk := validatedChangeEvent.(projections.ChangeEventObserved)
+	s.Require().True(changeCastOk)
+
+	changeProjection := newEventProjectionProcessor(changeEvent)
+	changeResult, changeProjectionErr := changeProjection.projectCodeChangeEventObserved(ctx, projectedChangeEvent)
+	s.Require().NoError(changeProjectionErr)
+	s.Require().NoError(changeProjection.saveProjectionResult(ctx, dbc, changeResult), "saving change event projection result")
+
+	repoAlias, repoAliasErr := dbc.KnowledgeEntityAlias.Query().
+		Where(knea.Provider(provider), knea.ProviderSource(providerSource)).
+		Where(knea.SubjectKind("repository"), knea.SubjectRef(repoRef)).
+		Only(ctx)
+	s.Require().NoError(repoAliasErr)
+
+	repoEntity, repoEntityErr := dbc.KnowledgeEntity.Get(ctx, repoAlias.EntityID)
+	s.Require().NoError(repoEntityErr)
+	s.Equal(kne.KindRepository, repoEntity.Kind)
+	s.Equal(repoDisplayName, repoEntity.DisplayName)
+	s.Equal(repoURL, repoEntity.Properties["url"])
+	s.Equal(repoRef, repoEntity.Properties["external_ref"])
+}

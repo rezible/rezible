@@ -18,8 +18,13 @@ import (
 )
 
 type ProjectionResult struct {
-	Entities      ent.KnowledgeEntities
+	Entities      []ProjectedEntity
 	Relationships []ProjectedRelationship
+}
+
+type ProjectedEntity struct {
+	Entity        *ent.KnowledgeEntity
+	IsPlaceholder bool
 }
 
 type ProjectedRelationship struct {
@@ -131,7 +136,8 @@ func (ps *eventProjectionProcessor) projectAndSave(ctx context.Context, db *ent.
 func (ps *eventProjectionProcessor) saveProjectionResult(ctx context.Context, dbc *ent.Client, result ProjectionResult) error {
 	projEntityAliasRefs := make([][]EntityAliasRef, len(result.Entities))
 
-	for i, projEntity := range result.Entities {
+	for i, projectedEntity := range result.Entities {
+		projEntity := projectedEntity.Entity
 		if projEntity == nil {
 			return fmt.Errorf("nil entity in projection result (index %d)", i)
 		}
@@ -220,27 +226,49 @@ func (ps *eventProjectionProcessor) resolveExistingProjectedEntityID(ctx context
 	return entityId, nil
 }
 
-func (ps *eventProjectionProcessor) saveProjectedEntity(ctx context.Context, db *ent.Client, projEnt *ent.KnowledgeEntity, aliasRefs []EntityAliasRef) (*ent.KnowledgeEntity, error) {
+func (ps *eventProjectionProcessor) saveProjectedEntity(ctx context.Context, db *ent.Client, projEnt ProjectedEntity, aliasRefs []EntityAliasRef) (*ent.KnowledgeEntity, error) {
 	// needed as knowledge entities do not have a stable identifier
 	existingId, lookupErr := ps.resolveExistingProjectedEntityID(ctx, db, aliasRefs...)
 	if lookupErr != nil {
 		return nil, fmt.Errorf("failed to resolve existing projected entity: %w", lookupErr)
 	}
 
+	var existing *ent.KnowledgeEntity
+	if existingId != uuid.Nil {
+		var existingErr error
+		existing, existingErr = db.KnowledgeEntity.Get(ctx, existingId)
+		if existingErr != nil {
+			return nil, fmt.Errorf("query existing projected entity: %w", existingErr)
+		}
+	}
+
 	ks := NewKnowledgeService(db)
+	pe := projEnt.Entity
 
 	setEntity := func(m *ent.KnowledgeEntityMutation) {
-		m.SetKind(projEnt.Kind)
-		m.SetDisplayName(projEnt.DisplayName)
-		m.SetProperties(projEnt.Properties)
-		m.SetDescription(projEnt.Description)
+		if existing != nil && projEnt.IsPlaceholder {
+			m.SetKind(existing.Kind)
+			m.SetDisplayName(existing.DisplayName)
+			m.SetProperties(mergeProperties(projEnt, existing.Properties))
+			m.SetDescription(existing.Description)
+			return
+		}
+
+		m.SetKind(pe.Kind)
+		m.SetDisplayName(pe.DisplayName)
+		if existing != nil {
+			m.SetProperties(mergeProperties(projEnt, existing.Properties))
+		} else {
+			m.SetProperties(pe.Properties)
+		}
+		m.SetDescription(pe.Description)
 	}
 	savedEntity, entityErr := ks.SetEntity(ctx, existingId, setEntity)
 	if entityErr != nil {
 		return nil, fmt.Errorf("set knowledge entity: %w", entityErr)
 	}
 
-	for _, alias := range projEnt.Edges.Aliases {
+	for _, alias := range pe.Edges.Aliases {
 		setEntityAlias := func(m *ent.KnowledgeEntityAliasMutation) {
 			m.SetEntityID(savedEntity.ID)
 			m.SetProvider(alias.Provider)
@@ -279,10 +307,10 @@ func (ps *eventProjectionProcessor) saveProjectedEntity(ctx context.Context, db 
 			m.SetExtractionMethod("normalized_event_projection")
 			m.SetAttributes(map[string]any{
 				"entity_id":       savedEntity.ID.String(),
-				"entity_kind":     projEnt.Kind.String(),
+				"entity_kind":     pe.Kind.String(),
 				"subject_kind":    alias.SubjectKind,
 				"subject_ref":     alias.SubjectRef,
-				"display_name":    projEnt.DisplayName,
+				"display_name":    pe.DisplayName,
 				"normalized_kind": ps.event.Kind.String(),
 			})
 		}
@@ -292,6 +320,21 @@ func (ps *eventProjectionProcessor) saveProjectedEntity(ctx context.Context, db 
 		}
 	}
 	return savedEntity, nil
+}
+
+func mergeProperties(projEnt ProjectedEntity, existing map[string]any) map[string]any {
+	pp := projEnt.Entity.Properties
+	merged := make(map[string]any, len(existing)+len(pp))
+	for k, v := range existing {
+		merged[k] = v
+	}
+	for k, v := range pp {
+		if _, exists := merged[k]; exists && projEnt.IsPlaceholder {
+			continue
+		}
+		merged[k] = v
+	}
+	return merged
 }
 
 func (ps *eventProjectionProcessor) saveProjectedRelationship(ctx context.Context, db *ent.Client, projRel ProjectedRelationship) error {
@@ -391,7 +434,7 @@ func (ps *eventProjectionProcessor) projectRepositoryObserved(ctx context.Contex
 			},
 		},
 	}
-	return ProjectionResult{Entities: ent.KnowledgeEntities{repoEntity}}, nil
+	return ProjectionResult{Entities: []ProjectedEntity{{Entity: repoEntity}}}, nil
 }
 
 func (ps *eventProjectionProcessor) projectCodeChangeEventObserved(_ context.Context, event projections.ChangeEventObserved) (ProjectionResult, error) {
@@ -419,7 +462,7 @@ func (ps *eventProjectionProcessor) projectCodeChangeEventObserved(_ context.Con
 		},
 	}
 
-	entities := ent.KnowledgeEntities{changeEventEntity}
+	entities := []ProjectedEntity{{Entity: changeEventEntity}}
 	relationships := make([]ProjectedRelationship, 0, 1)
 
 	if attrs.RepositoryExternalRef != "" {
@@ -444,7 +487,10 @@ func (ps *eventProjectionProcessor) projectCodeChangeEventObserved(_ context.Con
 				},
 			},
 		}
-		entities = append(entities, repoEntity)
+		entities = append(entities, ProjectedEntity{
+			Entity:        repoEntity,
+			IsPlaceholder: true,
+		})
 
 		repoChangeRelationship := ProjectedRelationship{
 			Relationship: &ent.KnowledgeRelationship{
