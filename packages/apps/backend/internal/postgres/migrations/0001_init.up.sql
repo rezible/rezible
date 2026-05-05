@@ -140,6 +140,18 @@ CREATE INDEX "knowledgeentityalias_tenant_id" ON "knowledge_entity_alias" ("tena
 CREATE UNIQUE INDEX "knowledgeentityalias_tenant_id_6a564074d6ae0ee855485e16d49cce29" ON "knowledge_entity_alias" ("tenant_id", "provider", "source", "external_kind", "external_id");
 -- create index "knowledgeentityalias_tenant_id_entity_id" to table: "knowledge_entity_alias"
 CREATE INDEX "knowledgeentityalias_tenant_id_entity_id" ON "knowledge_entity_alias" ("tenant_id", "entity_id");
+-- create "knowledge_fact_histories" table
+CREATE TABLE "knowledge_fact_histories" ("id" uuid NOT NULL, "fact_kind" character varying NOT NULL, "event_kind" character varying NOT NULL, "history_key" character varying NOT NULL, "occurred_at" timestamptz NOT NULL, "recorded_at" timestamptz NOT NULL, "source_provider" character varying NOT NULL, "source" character varying NOT NULL, "source_ref" character varying NULL, "extraction_method" character varying NOT NULL, "attributes" jsonb NULL, "tenant_id" bigint NOT NULL, "alias_id" uuid NULL, "relationship_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "knowledgefacthistory_tenant_id" to table: "knowledge_fact_histories"
+CREATE INDEX "knowledgefacthistory_tenant_id" ON "knowledge_fact_histories" ("tenant_id");
+-- create index "knowledgefacthistory_tenant_id_history_key" to table: "knowledge_fact_histories"
+CREATE UNIQUE INDEX "knowledgefacthistory_tenant_id_history_key" ON "knowledge_fact_histories" ("tenant_id", "history_key");
+-- create index "knowledgefacthistory_tenant_id_alias_id_occurred_at" to table: "knowledge_fact_histories"
+CREATE INDEX "knowledgefacthistory_tenant_id_alias_id_occurred_at" ON "knowledge_fact_histories" ("tenant_id", "alias_id", "occurred_at");
+-- create index "knowledgefacthistory_tenant_id_relationship_id_occurred_at" to table: "knowledge_fact_histories"
+CREATE INDEX "knowledgefacthistory_tenant_id_relationship_id_occurred_at" ON "knowledge_fact_histories" ("tenant_id", "relationship_id", "occurred_at");
+-- create index "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at" to table: "knowledge_fact_histories"
+CREATE INDEX "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at" ON "knowledge_fact_histories" ("tenant_id", "fact_kind", "event_kind", "occurred_at");
 -- create "knowledge_fact_provenances" table
 CREATE TABLE "knowledge_fact_provenances" ("id" uuid NOT NULL, "source_provider" character varying NOT NULL, "source" character varying NOT NULL, "source_ref" character varying NULL, "extraction_method" character varying NOT NULL, "confidence" double precision NOT NULL DEFAULT 1, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "alias_id" uuid NULL, "relationship_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "knowledgefactprovenance_tenant_id" to table: "knowledge_fact_provenances"
@@ -446,6 +458,8 @@ ALTER TABLE "integration_oauth_states" ADD CONSTRAINT "integration_oauth_states_
 ALTER TABLE "knowledge_entities" ADD CONSTRAINT "knowledge_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_entity_alias" table
 ALTER TABLE "knowledge_entity_alias" ADD CONSTRAINT "knowledge_entity_alias_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_entity_alias_knowledge_entities_entity" FOREIGN KEY ("entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_entity_alias_normalized_events_normalized_event" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
+-- modify "knowledge_fact_histories" table
+ALTER TABLE "knowledge_fact_histories" ADD CONSTRAINT "knowledge_fact_histories_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_fact_histories_knowledge_entity_alias_alias" FOREIGN KEY ("alias_id") REFERENCES "knowledge_entity_alias" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_fact_histories_knowledge_relationships_relationship" FOREIGN KEY ("relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_fact_histories_normalized_events_normalized_event" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
 -- modify "knowledge_fact_provenances" table
 ALTER TABLE "knowledge_fact_provenances" ADD CONSTRAINT "knowledge_fact_provenances_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_fact_provenances_knowledge_entity_alias_alias" FOREIGN KEY ("alias_id") REFERENCES "knowledge_entity_alias" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_fact_provenances_knowledge_relationships_relationship" FOREIGN KEY ("relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_fact_provenances_normalized_events_normalized_event" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
 -- modify "knowledge_relationships" table

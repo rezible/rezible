@@ -108,6 +108,8 @@ ALTER TABLE "meeting_schedules" DROP CONSTRAINT "meeting_schedules_tenants_tenan
 ALTER TABLE "knowledge_relationships" DROP CONSTRAINT "knowledge_relationships_knowledge_entities_target_entity", DROP CONSTRAINT "knowledge_relationships_knowledge_entities_source_entity", DROP CONSTRAINT "knowledge_relationships_tenants_tenant";
 -- reverse: modify "knowledge_fact_provenances" table
 ALTER TABLE "knowledge_fact_provenances" DROP CONSTRAINT "knowledge_fact_provenances_normalized_events_normalized_event", DROP CONSTRAINT "knowledge_fact_provenances_knowledge_relationships_relationship", DROP CONSTRAINT "knowledge_fact_provenances_knowledge_entity_alias_alias", DROP CONSTRAINT "knowledge_fact_provenances_tenants_tenant";
+-- reverse: modify "knowledge_fact_histories" table
+ALTER TABLE "knowledge_fact_histories" DROP CONSTRAINT "knowledge_fact_histories_normalized_events_normalized_event", DROP CONSTRAINT "knowledge_fact_histories_knowledge_relationships_relationship", DROP CONSTRAINT "knowledge_fact_histories_knowledge_entity_alias_alias", DROP CONSTRAINT "knowledge_fact_histories_tenants_tenant";
 -- reverse: modify "knowledge_entity_alias" table
 ALTER TABLE "knowledge_entity_alias" DROP CONSTRAINT "knowledge_entity_alias_normalized_events_normalized_event", DROP CONSTRAINT "knowledge_entity_alias_knowledge_entities_entity", DROP CONSTRAINT "knowledge_entity_alias_tenants_tenant";
 -- reverse: modify "knowledge_entities" table
@@ -414,6 +416,18 @@ DROP INDEX "knowledgefactprovenance_tenant_id_alias_id";
 DROP INDEX "knowledgefactprovenance_tenant_id";
 -- reverse: create "knowledge_fact_provenances" table
 DROP TABLE "knowledge_fact_provenances";
+-- reverse: create index "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at" to table: "knowledge_fact_histories"
+DROP INDEX "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at";
+-- reverse: create index "knowledgefacthistory_tenant_id_relationship_id_occurred_at" to table: "knowledge_fact_histories"
+DROP INDEX "knowledgefacthistory_tenant_id_relationship_id_occurred_at";
+-- reverse: create index "knowledgefacthistory_tenant_id_alias_id_occurred_at" to table: "knowledge_fact_histories"
+DROP INDEX "knowledgefacthistory_tenant_id_alias_id_occurred_at";
+-- reverse: create index "knowledgefacthistory_tenant_id_history_key" to table: "knowledge_fact_histories"
+DROP INDEX "knowledgefacthistory_tenant_id_history_key";
+-- reverse: create index "knowledgefacthistory_tenant_id" to table: "knowledge_fact_histories"
+DROP INDEX "knowledgefacthistory_tenant_id";
+-- reverse: create "knowledge_fact_histories" table
+DROP TABLE "knowledge_fact_histories";
 -- reverse: create index "knowledgeentityalias_tenant_id_entity_id" to table: "knowledge_entity_alias"
 DROP INDEX "knowledgeentityalias_tenant_id_entity_id";
 -- reverse: create index "knowledgeentityalias_tenant_id_6a564074d6ae0ee855485e16d49cce29" to table: "knowledge_entity_alias"
