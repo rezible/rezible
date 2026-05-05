@@ -37,9 +37,9 @@ func (_c *NormalizedEventCreate) SetProvider(v string) *NormalizedEventCreate {
 	return _c
 }
 
-// SetSource sets the "source" field.
-func (_c *NormalizedEventCreate) SetSource(v string) *NormalizedEventCreate {
-	_c.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_c *NormalizedEventCreate) SetProviderSource(v string) *NormalizedEventCreate {
+	_c.mutation.SetProviderSource(v)
 	return _c
 }
 
@@ -55,15 +55,15 @@ func (_c *NormalizedEventCreate) SetSubjectKind(v string) *NormalizedEventCreate
 	return _c
 }
 
-// SetSubjectExternalRef sets the "subject_external_ref" field.
-func (_c *NormalizedEventCreate) SetSubjectExternalRef(v string) *NormalizedEventCreate {
-	_c.mutation.SetSubjectExternalRef(v)
+// SetSubjectRef sets the "subject_ref" field.
+func (_c *NormalizedEventCreate) SetSubjectRef(v string) *NormalizedEventCreate {
+	_c.mutation.SetSubjectRef(v)
 	return _c
 }
 
-// SetSourceEventKey sets the "source_event_key" field.
-func (_c *NormalizedEventCreate) SetSourceEventKey(v string) *NormalizedEventCreate {
-	_c.mutation.SetSourceEventKey(v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_c *NormalizedEventCreate) SetProviderEventRef(v string) *NormalizedEventCreate {
+	_c.mutation.SetProviderEventRef(v)
 	return _c
 }
 
@@ -205,12 +205,12 @@ func (_c *NormalizedEventCreate) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "NormalizedEvent.source"`)}
+	if _, ok := _c.mutation.ProviderSource(); !ok {
+		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "NormalizedEvent.provider_source"`)}
 	}
-	if v, ok := _c.mutation.Source(); ok {
-		if err := normalizedevent.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.source": %w`, err)}
+	if v, ok := _c.mutation.ProviderSource(); ok {
+		if err := normalizedevent.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Kind(); !ok {
@@ -229,20 +229,20 @@ func (_c *NormalizedEventCreate) check() error {
 			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_kind": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.SubjectExternalRef(); !ok {
-		return &ValidationError{Name: "subject_external_ref", err: errors.New(`ent: missing required field "NormalizedEvent.subject_external_ref"`)}
+	if _, ok := _c.mutation.SubjectRef(); !ok {
+		return &ValidationError{Name: "subject_ref", err: errors.New(`ent: missing required field "NormalizedEvent.subject_ref"`)}
 	}
-	if v, ok := _c.mutation.SubjectExternalRef(); ok {
-		if err := normalizedevent.SubjectExternalRefValidator(v); err != nil {
-			return &ValidationError{Name: "subject_external_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_external_ref": %w`, err)}
+	if v, ok := _c.mutation.SubjectRef(); ok {
+		if err := normalizedevent.SubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.SourceEventKey(); !ok {
-		return &ValidationError{Name: "source_event_key", err: errors.New(`ent: missing required field "NormalizedEvent.source_event_key"`)}
+	if _, ok := _c.mutation.ProviderEventRef(); !ok {
+		return &ValidationError{Name: "provider_event_ref", err: errors.New(`ent: missing required field "NormalizedEvent.provider_event_ref"`)}
 	}
-	if v, ok := _c.mutation.SourceEventKey(); ok {
-		if err := normalizedevent.SourceEventKeyValidator(v); err != nil {
-			return &ValidationError{Name: "source_event_key", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.source_event_key": %w`, err)}
+	if v, ok := _c.mutation.ProviderEventRef(); ok {
+		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.OccurredAt(); !ok {
@@ -309,9 +309,9 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
 		_node.Provider = value
 	}
-	if value, ok := _c.mutation.Source(); ok {
-		_spec.SetField(normalizedevent.FieldSource, field.TypeString, value)
-		_node.Source = value
+	if value, ok := _c.mutation.ProviderSource(); ok {
+		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
+		_node.ProviderSource = value
 	}
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
@@ -321,13 +321,13 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
 		_node.SubjectKind = value
 	}
-	if value, ok := _c.mutation.SubjectExternalRef(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectExternalRef, field.TypeString, value)
-		_node.SubjectExternalRef = value
+	if value, ok := _c.mutation.SubjectRef(); ok {
+		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
+		_node.SubjectRef = value
 	}
-	if value, ok := _c.mutation.SourceEventKey(); ok {
-		_spec.SetField(normalizedevent.FieldSourceEventKey, field.TypeString, value)
-		_node.SourceEventKey = value
+	if value, ok := _c.mutation.ProviderEventRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
+		_node.ProviderEventRef = value
 	}
 	if value, ok := _c.mutation.DedupeKey(); ok {
 		_spec.SetField(normalizedevent.FieldDedupeKey, field.TypeString, value)
@@ -435,15 +435,15 @@ func (u *NormalizedEventUpsert) UpdateProvider() *NormalizedEventUpsert {
 	return u
 }
 
-// SetSource sets the "source" field.
-func (u *NormalizedEventUpsert) SetSource(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldSource, v)
+// SetProviderSource sets the "provider_source" field.
+func (u *NormalizedEventUpsert) SetProviderSource(v string) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldProviderSource, v)
 	return u
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateSource() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldSource)
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateProviderSource() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldProviderSource)
 	return u
 }
 
@@ -471,27 +471,27 @@ func (u *NormalizedEventUpsert) UpdateSubjectKind() *NormalizedEventUpsert {
 	return u
 }
 
-// SetSubjectExternalRef sets the "subject_external_ref" field.
-func (u *NormalizedEventUpsert) SetSubjectExternalRef(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldSubjectExternalRef, v)
+// SetSubjectRef sets the "subject_ref" field.
+func (u *NormalizedEventUpsert) SetSubjectRef(v string) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldSubjectRef, v)
 	return u
 }
 
-// UpdateSubjectExternalRef sets the "subject_external_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateSubjectExternalRef() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldSubjectExternalRef)
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateSubjectRef() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldSubjectRef)
 	return u
 }
 
-// SetSourceEventKey sets the "source_event_key" field.
-func (u *NormalizedEventUpsert) SetSourceEventKey(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldSourceEventKey, v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *NormalizedEventUpsert) SetProviderEventRef(v string) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldProviderEventRef, v)
 	return u
 }
 
-// UpdateSourceEventKey sets the "source_event_key" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateSourceEventKey() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldSourceEventKey)
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateProviderEventRef() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldProviderEventRef)
 	return u
 }
 
@@ -638,17 +638,17 @@ func (u *NormalizedEventUpsertOne) UpdateProvider() *NormalizedEventUpsertOne {
 	})
 }
 
-// SetSource sets the "source" field.
-func (u *NormalizedEventUpsertOne) SetSource(v string) *NormalizedEventUpsertOne {
+// SetProviderSource sets the "provider_source" field.
+func (u *NormalizedEventUpsertOne) SetProviderSource(v string) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSource(v)
+		s.SetProviderSource(v)
 	})
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateSource() *NormalizedEventUpsertOne {
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateProviderSource() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSource()
+		s.UpdateProviderSource()
 	})
 }
 
@@ -680,31 +680,31 @@ func (u *NormalizedEventUpsertOne) UpdateSubjectKind() *NormalizedEventUpsertOne
 	})
 }
 
-// SetSubjectExternalRef sets the "subject_external_ref" field.
-func (u *NormalizedEventUpsertOne) SetSubjectExternalRef(v string) *NormalizedEventUpsertOne {
+// SetSubjectRef sets the "subject_ref" field.
+func (u *NormalizedEventUpsertOne) SetSubjectRef(v string) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSubjectExternalRef(v)
+		s.SetSubjectRef(v)
 	})
 }
 
-// UpdateSubjectExternalRef sets the "subject_external_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateSubjectExternalRef() *NormalizedEventUpsertOne {
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateSubjectRef() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSubjectExternalRef()
+		s.UpdateSubjectRef()
 	})
 }
 
-// SetSourceEventKey sets the "source_event_key" field.
-func (u *NormalizedEventUpsertOne) SetSourceEventKey(v string) *NormalizedEventUpsertOne {
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *NormalizedEventUpsertOne) SetProviderEventRef(v string) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSourceEventKey(v)
+		s.SetProviderEventRef(v)
 	})
 }
 
-// UpdateSourceEventKey sets the "source_event_key" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateSourceEventKey() *NormalizedEventUpsertOne {
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateProviderEventRef() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSourceEventKey()
+		s.UpdateProviderEventRef()
 	})
 }
 
@@ -1031,17 +1031,17 @@ func (u *NormalizedEventUpsertBulk) UpdateProvider() *NormalizedEventUpsertBulk 
 	})
 }
 
-// SetSource sets the "source" field.
-func (u *NormalizedEventUpsertBulk) SetSource(v string) *NormalizedEventUpsertBulk {
+// SetProviderSource sets the "provider_source" field.
+func (u *NormalizedEventUpsertBulk) SetProviderSource(v string) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSource(v)
+		s.SetProviderSource(v)
 	})
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateSource() *NormalizedEventUpsertBulk {
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateProviderSource() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSource()
+		s.UpdateProviderSource()
 	})
 }
 
@@ -1073,31 +1073,31 @@ func (u *NormalizedEventUpsertBulk) UpdateSubjectKind() *NormalizedEventUpsertBu
 	})
 }
 
-// SetSubjectExternalRef sets the "subject_external_ref" field.
-func (u *NormalizedEventUpsertBulk) SetSubjectExternalRef(v string) *NormalizedEventUpsertBulk {
+// SetSubjectRef sets the "subject_ref" field.
+func (u *NormalizedEventUpsertBulk) SetSubjectRef(v string) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSubjectExternalRef(v)
+		s.SetSubjectRef(v)
 	})
 }
 
-// UpdateSubjectExternalRef sets the "subject_external_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateSubjectExternalRef() *NormalizedEventUpsertBulk {
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateSubjectRef() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSubjectExternalRef()
+		s.UpdateSubjectRef()
 	})
 }
 
-// SetSourceEventKey sets the "source_event_key" field.
-func (u *NormalizedEventUpsertBulk) SetSourceEventKey(v string) *NormalizedEventUpsertBulk {
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *NormalizedEventUpsertBulk) SetProviderEventRef(v string) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSourceEventKey(v)
+		s.SetProviderEventRef(v)
 	})
 }
 
-// UpdateSourceEventKey sets the "source_event_key" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateSourceEventKey() *NormalizedEventUpsertBulk {
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateProviderEventRef() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSourceEventKey()
+		s.UpdateProviderEventRef()
 	})
 }
 

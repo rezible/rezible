@@ -21,16 +21,16 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
-	// FieldSource holds the string denoting the source field in the database.
-	FieldSource = "source"
+	// FieldProviderSource holds the string denoting the provider_source field in the database.
+	FieldProviderSource = "provider_source"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
 	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
 	FieldSubjectKind = "subject_kind"
-	// FieldSubjectExternalRef holds the string denoting the subject_external_ref field in the database.
-	FieldSubjectExternalRef = "subject_external_ref"
-	// FieldSourceEventKey holds the string denoting the source_event_key field in the database.
-	FieldSourceEventKey = "source_event_key"
+	// FieldSubjectRef holds the string denoting the subject_ref field in the database.
+	FieldSubjectRef = "subject_ref"
+	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
+	FieldProviderEventRef = "provider_event_ref"
 	// FieldDedupeKey holds the string denoting the dedupe_key field in the database.
 	FieldDedupeKey = "dedupe_key"
 	// FieldOccurredAt holds the string denoting the occurred_at field in the database.
@@ -61,11 +61,11 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldProvider,
-	FieldSource,
+	FieldProviderSource,
 	FieldKind,
 	FieldSubjectKind,
-	FieldSubjectExternalRef,
-	FieldSourceEventKey,
+	FieldSubjectRef,
+	FieldProviderEventRef,
 	FieldDedupeKey,
 	FieldOccurredAt,
 	FieldReceivedAt,
@@ -94,14 +94,14 @@ var (
 	Policy ent.Policy
 	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	ProviderValidator func(string) error
-	// SourceValidator is a validator for the "source" field. It is called by the builders before save.
-	SourceValidator func(string) error
+	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
+	ProviderSourceValidator func(string) error
 	// SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
 	SubjectKindValidator func(string) error
-	// SubjectExternalRefValidator is a validator for the "subject_external_ref" field. It is called by the builders before save.
-	SubjectExternalRefValidator func(string) error
-	// SourceEventKeyValidator is a validator for the "source_event_key" field. It is called by the builders before save.
-	SourceEventKeyValidator func(string) error
+	// SubjectRefValidator is a validator for the "subject_ref" field. It is called by the builders before save.
+	SubjectRefValidator func(string) error
+	// ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
+	ProviderEventRefValidator func(string) error
 	// ProcessingVersionValidator is a validator for the "processing_version" field. It is called by the builders before save.
 	ProcessingVersionValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -152,9 +152,9 @@ func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
 }
 
-// BySource orders the results by the source field.
-func BySource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSource, opts...).ToFunc()
+// ByProviderSource orders the results by the provider_source field.
+func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
 }
 
 // ByKind orders the results by the kind field.
@@ -167,14 +167,14 @@ func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
 }
 
-// BySubjectExternalRef orders the results by the subject_external_ref field.
-func BySubjectExternalRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubjectExternalRef, opts...).ToFunc()
+// BySubjectRef orders the results by the subject_ref field.
+func BySubjectRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubjectRef, opts...).ToFunc()
 }
 
-// BySourceEventKey orders the results by the source_event_key field.
-func BySourceEventKey(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSourceEventKey, opts...).ToFunc()
+// ByProviderEventRef orders the results by the provider_event_ref field.
+func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
 }
 
 // ByDedupeKey orders the results by the dedupe_key field.

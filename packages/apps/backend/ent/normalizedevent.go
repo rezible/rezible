@@ -19,32 +19,33 @@ import (
 type NormalizedEvent struct {
 	config `json:"-"`
 	// ID of the ent.
+	// Internal identifier for this normalized event record.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// Provider holds the value of the "provider" field.
+	// Integration provider that produced the event, such as slack or github.
 	Provider string `json:"provider,omitempty"`
-	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
-	// Kind holds the value of the "kind" field.
+	// Provider-specific event stream or webhook source the event came from.
+	ProviderSource string `json:"provider_source,omitempty"`
+	// Normalized event type used to select validation and projection behavior.
 	Kind normalizedevent.Kind `json:"kind,omitempty"`
-	// SubjectKind holds the value of the "subject_kind" field.
+	// Provider-neutral type of the primary subject this event is about.
 	SubjectKind string `json:"subject_kind,omitempty"`
-	// SubjectExternalRef holds the value of the "subject_external_ref" field.
-	SubjectExternalRef string `json:"subject_external_ref,omitempty"`
-	// SourceEventKey holds the value of the "source_event_key" field.
-	SourceEventKey string `json:"source_event_key,omitempty"`
-	// DedupeKey holds the value of the "dedupe_key" field.
+	// Stable external reference for the primary subject this event is about.
+	SubjectRef string `json:"subject_ref,omitempty"`
+	// Stable provider reference for the source event, used with the provider fields for idempotency.
+	ProviderEventRef string `json:"provider_event_ref,omitempty"`
+	// Optional ingestion dedupe key from the upstream provider event pipeline.
 	DedupeKey string `json:"dedupe_key,omitempty"`
-	// OccurredAt holds the value of the "occurred_at" field.
+	// Time the event occurred according to the provider or normalized payload.
 	OccurredAt time.Time `json:"occurred_at,omitempty"`
-	// ReceivedAt holds the value of the "received_at" field.
+	// Time the raw provider event was received by Rezible.
 	ReceivedAt time.Time `json:"received_at,omitempty"`
-	// ProcessingVersion holds the value of the "processing_version" field.
+	// Normalizer version used to produce this event shape and attributes.
 	ProcessingVersion string `json:"processing_version,omitempty"`
-	// Attributes holds the value of the "attributes" field.
+	// Validated normalized attributes for this event kind.
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
+	// Time this normalized event record was persisted.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NormalizedEventQuery when eager-loading is set.
@@ -81,7 +82,7 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case normalizedevent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedevent.FieldProvider, normalizedevent.FieldSource, normalizedevent.FieldKind, normalizedevent.FieldSubjectKind, normalizedevent.FieldSubjectExternalRef, normalizedevent.FieldSourceEventKey, normalizedevent.FieldDedupeKey, normalizedevent.FieldProcessingVersion:
+		case normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldKind, normalizedevent.FieldSubjectKind, normalizedevent.FieldSubjectRef, normalizedevent.FieldProviderEventRef, normalizedevent.FieldDedupeKey, normalizedevent.FieldProcessingVersion:
 			values[i] = new(sql.NullString)
 		case normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt, normalizedevent.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -120,11 +121,11 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Provider = value.String
 			}
-		case normalizedevent.FieldSource:
+		case normalizedevent.FieldProviderSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
 			} else if value.Valid {
-				_m.Source = value.String
+				_m.ProviderSource = value.String
 			}
 		case normalizedevent.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -138,17 +139,17 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.SubjectKind = value.String
 			}
-		case normalizedevent.FieldSubjectExternalRef:
+		case normalizedevent.FieldSubjectRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subject_external_ref", values[i])
+				return fmt.Errorf("unexpected type %T for field subject_ref", values[i])
 			} else if value.Valid {
-				_m.SubjectExternalRef = value.String
+				_m.SubjectRef = value.String
 			}
-		case normalizedevent.FieldSourceEventKey:
+		case normalizedevent.FieldProviderEventRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source_event_key", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_event_ref", values[i])
 			} else if value.Valid {
-				_m.SourceEventKey = value.String
+				_m.ProviderEventRef = value.String
 			}
 		case normalizedevent.FieldDedupeKey:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -235,8 +236,8 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
-	builder.WriteString("source=")
-	builder.WriteString(_m.Source)
+	builder.WriteString("provider_source=")
+	builder.WriteString(_m.ProviderSource)
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
@@ -244,11 +245,11 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("subject_kind=")
 	builder.WriteString(_m.SubjectKind)
 	builder.WriteString(", ")
-	builder.WriteString("subject_external_ref=")
-	builder.WriteString(_m.SubjectExternalRef)
+	builder.WriteString("subject_ref=")
+	builder.WriteString(_m.SubjectRef)
 	builder.WriteString(", ")
-	builder.WriteString("source_event_key=")
-	builder.WriteString(_m.SourceEventKey)
+	builder.WriteString("provider_event_ref=")
+	builder.WriteString(_m.ProviderEventRef)
 	builder.WriteString(", ")
 	builder.WriteString("dedupe_key=")
 	builder.WriteString(_m.DedupeKey)

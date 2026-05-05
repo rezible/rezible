@@ -133,15 +133,15 @@ CREATE INDEX "knowledgeentity_tenant_id" ON "knowledge_entities" ("tenant_id");
 -- create index "knowledgeentity_tenant_id_kind" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id_kind" ON "knowledge_entities" ("tenant_id", "kind");
 -- create "knowledge_entity_alias" table
-CREATE TABLE "knowledge_entity_alias" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "source" character varying NOT NULL, "external_kind" character varying NOT NULL, "external_id" character varying NOT NULL, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_entity_alias" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_ref" character varying NOT NULL, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentityalias_tenant_id" to table: "knowledge_entity_alias"
 CREATE INDEX "knowledgeentityalias_tenant_id" ON "knowledge_entity_alias" ("tenant_id");
 -- create index "knowledgeentityalias_tenant_id_6a564074d6ae0ee855485e16d49cce29" to table: "knowledge_entity_alias"
-CREATE UNIQUE INDEX "knowledgeentityalias_tenant_id_6a564074d6ae0ee855485e16d49cce29" ON "knowledge_entity_alias" ("tenant_id", "provider", "source", "external_kind", "external_id");
+CREATE UNIQUE INDEX "knowledgeentityalias_tenant_id_provider_provider_source_subject_kind_subject_ref" ON "knowledge_entity_alias" ("tenant_id", "provider", "provider_source", "subject_kind", "subject_ref");
 -- create index "knowledgeentityalias_tenant_id_entity_id" to table: "knowledge_entity_alias"
 CREATE INDEX "knowledgeentityalias_tenant_id_entity_id" ON "knowledge_entity_alias" ("tenant_id", "entity_id");
 -- create "knowledge_fact_histories" table
-CREATE TABLE "knowledge_fact_histories" ("id" uuid NOT NULL, "fact_kind" character varying NOT NULL, "event_kind" character varying NOT NULL, "history_key" character varying NOT NULL, "occurred_at" timestamptz NOT NULL, "recorded_at" timestamptz NOT NULL, "source_provider" character varying NOT NULL, "source" character varying NOT NULL, "source_ref" character varying NULL, "extraction_method" character varying NOT NULL, "attributes" jsonb NULL, "tenant_id" bigint NOT NULL, "alias_id" uuid NULL, "relationship_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_fact_histories" ("id" uuid NOT NULL, "fact_kind" character varying NULL, "event_kind" character varying NOT NULL, "history_key" character varying NOT NULL, "occurred_at" timestamptz NOT NULL, "recorded_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "extraction_method" character varying NOT NULL, "attributes" jsonb NULL, "tenant_id" bigint NOT NULL, "alias_id" uuid NULL, "relationship_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "knowledgefacthistory_tenant_id" to table: "knowledge_fact_histories"
 CREATE INDEX "knowledgefacthistory_tenant_id" ON "knowledge_fact_histories" ("tenant_id");
 -- create index "knowledgefacthistory_tenant_id_history_key" to table: "knowledge_fact_histories"
@@ -153,7 +153,7 @@ CREATE INDEX "knowledgefacthistory_tenant_id_relationship_id_occurred_at" ON "kn
 -- create index "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at" to table: "knowledge_fact_histories"
 CREATE INDEX "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at" ON "knowledge_fact_histories" ("tenant_id", "fact_kind", "event_kind", "occurred_at");
 -- create "knowledge_fact_provenances" table
-CREATE TABLE "knowledge_fact_provenances" ("id" uuid NOT NULL, "source_provider" character varying NOT NULL, "source" character varying NOT NULL, "source_ref" character varying NULL, "extraction_method" character varying NOT NULL, "confidence" double precision NOT NULL DEFAULT 1, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "alias_id" uuid NULL, "relationship_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_fact_provenances" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "extraction_method" character varying NOT NULL, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "alias_id" uuid NULL, "relationship_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "knowledgefactprovenance_tenant_id" to table: "knowledge_fact_provenances"
 CREATE INDEX "knowledgefactprovenance_tenant_id" ON "knowledge_fact_provenances" ("tenant_id");
 -- create index "knowledgefactprovenance_tenant_id_alias_id" to table: "knowledge_fact_provenances"
@@ -161,11 +161,11 @@ CREATE INDEX "knowledgefactprovenance_tenant_id_alias_id" ON "knowledge_fact_pro
 -- create index "knowledgefactprovenance_tenant_id_relationship_id" to table: "knowledge_fact_provenances"
 CREATE INDEX "knowledgefactprovenance_tenant_id_relationship_id" ON "knowledge_fact_provenances" ("tenant_id", "relationship_id");
 -- create index "knowledgefactprovenance_tenant_5eaab5ee15855c67f0930fe3485e30cc" to table: "knowledge_fact_provenances"
-CREATE INDEX "knowledgefactprovenance_tenant_5eaab5ee15855c67f0930fe3485e30cc" ON "knowledge_fact_provenances" ("tenant_id", "source_provider", "source", "source_ref");
+CREATE INDEX "knowledgefactprovenance_tenant_id_provider_provider_source_provider_event_ref" ON "knowledge_fact_provenances" ("tenant_id", "provider", "provider_source", "provider_event_ref");
 -- create index "knowledgefactprovenance_alias_source_unique" to table: "knowledge_fact_provenances"
-CREATE UNIQUE INDEX "knowledgefactprovenance_alias_source_unique" ON "knowledge_fact_provenances" ("tenant_id", "alias_id", "source_provider", "source", "source_ref", "extraction_method");
+CREATE UNIQUE INDEX "knowledgefactprovenance_alias_source_unique" ON "knowledge_fact_provenances" ("tenant_id", "alias_id", "provider", "provider_source", "provider_event_ref", "extraction_method");
 -- create index "knowledgefactprovenance_relationship_source_unique" to table: "knowledge_fact_provenances"
-CREATE UNIQUE INDEX "knowledgefactprovenance_relationship_source_unique" ON "knowledge_fact_provenances" ("tenant_id", "relationship_id", "source_provider", "source", "source_ref", "extraction_method");
+CREATE UNIQUE INDEX "knowledgefactprovenance_relationship_source_unique" ON "knowledge_fact_provenances" ("tenant_id", "relationship_id", "provider", "provider_source", "provider_event_ref", "extraction_method");
 -- create "knowledge_relationships" table
 CREATE TABLE "knowledge_relationships" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "display_name" character varying NULL, "description" text NULL, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "source_entity_id" uuid NOT NULL, "target_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgerelationship_tenant_id" to table: "knowledge_relationships"
@@ -183,11 +183,11 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "source" character varying NOT NULL, "kind" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_external_ref" character varying NOT NULL, "source_event_key" character varying NOT NULL, "dedupe_key" character varying NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "processing_version" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "kind" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_ref" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "dedupe_key" character varying NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "processing_version" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
 -- create index "normalizedevent_tenant_id_prov_638c8c856d6f3c634d0a153c69b60402" to table: "normalized_events"
-CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_638c8c856d6f3c634d0a153c69b60402" ON "normalized_events" ("tenant_id", "provider", "source", "processing_version", "source_event_key", "kind", "subject_external_ref");
+CREATE UNIQUE INDEX "normalizedevent_tenant_id_provider_provider_source_processing_version_provider_event_ref_kind_subject_ref" ON "normalized_events" ("tenant_id", "provider", "provider_source", "processing_version", "provider_event_ref", "kind", "subject_ref");
 -- create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id_kind_occurred_at" ON "normalized_events" ("tenant_id", "kind", "occurred_at");
 -- create "oncall_handover_templates" table

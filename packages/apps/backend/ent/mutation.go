@@ -24390,12 +24390,12 @@ type KnowledgeEntityMutation struct {
 	op                          Op
 	typ                         string
 	id                          *uuid.UUID
+	created_at                  *time.Time
+	updated_at                  *time.Time
 	kind                        *knowledgeentity.Kind
 	display_name                *string
 	description                 *string
 	properties                  *map[string]interface{}
-	created_at                  *time.Time
-	updated_at                  *time.Time
 	clearedFields               map[string]struct{}
 	tenant                      *int
 	clearedtenant               bool
@@ -24551,6 +24551,78 @@ func (m *KnowledgeEntityMutation) OldTenantID(ctx context.Context) (v int, err e
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *KnowledgeEntityMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *KnowledgeEntityMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *KnowledgeEntityMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeEntity entity.
+// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *KnowledgeEntityMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *KnowledgeEntityMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *KnowledgeEntityMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeEntity entity.
+// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *KnowledgeEntityMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // SetKind sets the "kind" field.
@@ -24721,78 +24793,6 @@ func (m *KnowledgeEntityMutation) PropertiesCleared() bool {
 func (m *KnowledgeEntityMutation) ResetProperties() {
 	m.properties = nil
 	delete(m.clearedFields, knowledgeentity.FieldProperties)
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeEntityMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeEntityMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeEntityMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *KnowledgeEntityMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *KnowledgeEntityMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *KnowledgeEntityMutation) ResetUpdatedAt() {
-	m.updated_at = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -25022,6 +25022,12 @@ func (m *KnowledgeEntityMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, knowledgeentity.FieldTenantID)
 	}
+	if m.created_at != nil {
+		fields = append(fields, knowledgeentity.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, knowledgeentity.FieldUpdatedAt)
+	}
 	if m.kind != nil {
 		fields = append(fields, knowledgeentity.FieldKind)
 	}
@@ -25034,12 +25040,6 @@ func (m *KnowledgeEntityMutation) Fields() []string {
 	if m.properties != nil {
 		fields = append(fields, knowledgeentity.FieldProperties)
 	}
-	if m.created_at != nil {
-		fields = append(fields, knowledgeentity.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, knowledgeentity.FieldUpdatedAt)
-	}
 	return fields
 }
 
@@ -25050,6 +25050,10 @@ func (m *KnowledgeEntityMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case knowledgeentity.FieldTenantID:
 		return m.TenantID()
+	case knowledgeentity.FieldCreatedAt:
+		return m.CreatedAt()
+	case knowledgeentity.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case knowledgeentity.FieldKind:
 		return m.Kind()
 	case knowledgeentity.FieldDisplayName:
@@ -25058,10 +25062,6 @@ func (m *KnowledgeEntityMutation) Field(name string) (ent.Value, bool) {
 		return m.Description()
 	case knowledgeentity.FieldProperties:
 		return m.Properties()
-	case knowledgeentity.FieldCreatedAt:
-		return m.CreatedAt()
-	case knowledgeentity.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -25073,6 +25073,10 @@ func (m *KnowledgeEntityMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case knowledgeentity.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case knowledgeentity.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case knowledgeentity.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case knowledgeentity.FieldKind:
 		return m.OldKind(ctx)
 	case knowledgeentity.FieldDisplayName:
@@ -25081,10 +25085,6 @@ func (m *KnowledgeEntityMutation) OldField(ctx context.Context, name string) (en
 		return m.OldDescription(ctx)
 	case knowledgeentity.FieldProperties:
 		return m.OldProperties(ctx)
-	case knowledgeentity.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case knowledgeentity.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeEntity field %s", name)
 }
@@ -25100,6 +25100,20 @@ func (m *KnowledgeEntityMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case knowledgeentity.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case knowledgeentity.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	case knowledgeentity.FieldKind:
 		v, ok := value.(knowledgeentity.Kind)
@@ -25128,20 +25142,6 @@ func (m *KnowledgeEntityMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProperties(v)
-		return nil
-	case knowledgeentity.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case knowledgeentity.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
@@ -25213,6 +25213,12 @@ func (m *KnowledgeEntityMutation) ResetField(name string) error {
 	case knowledgeentity.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case knowledgeentity.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case knowledgeentity.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case knowledgeentity.FieldKind:
 		m.ResetKind()
 		return nil
@@ -25224,12 +25230,6 @@ func (m *KnowledgeEntityMutation) ResetField(name string) error {
 		return nil
 	case knowledgeentity.FieldProperties:
 		m.ResetProperties()
-		return nil
-	case knowledgeentity.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case knowledgeentity.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
@@ -25395,14 +25395,14 @@ type KnowledgeEntityAliasMutation struct {
 	op                      Op
 	typ                     string
 	id                      *uuid.UUID
-	provider                *string
-	source                  *string
-	external_kind           *string
-	external_id             *string
-	first_seen_at           *time.Time
-	last_seen_at            *time.Time
 	created_at              *time.Time
 	updated_at              *time.Time
+	provider                *string
+	provider_source         *string
+	subject_kind            *string
+	subject_ref             *string
+	first_seen_at           *time.Time
+	last_seen_at            *time.Time
 	clearedFields           map[string]struct{}
 	tenant                  *int
 	clearedtenant           bool
@@ -25558,6 +25558,78 @@ func (m *KnowledgeEntityAliasMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *KnowledgeEntityAliasMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *KnowledgeEntityAliasMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeEntityAlias entity.
+// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityAliasMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *KnowledgeEntityAliasMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *KnowledgeEntityAliasMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *KnowledgeEntityAliasMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeEntityAlias entity.
+// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeEntityAliasMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *KnowledgeEntityAliasMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // SetEntityID sets the "entity_id" field.
 func (m *KnowledgeEntityAliasMutation) SetEntityID(u uuid.UUID) {
 	m.entity = &u
@@ -25630,112 +25702,112 @@ func (m *KnowledgeEntityAliasMutation) ResetProvider() {
 	m.provider = nil
 }
 
-// SetSource sets the "source" field.
-func (m *KnowledgeEntityAliasMutation) SetSource(s string) {
-	m.source = &s
+// SetProviderSource sets the "provider_source" field.
+func (m *KnowledgeEntityAliasMutation) SetProviderSource(s string) {
+	m.provider_source = &s
 }
 
-// Source returns the value of the "source" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) Source() (r string, exists bool) {
-	v := m.source
+// ProviderSource returns the value of the "provider_source" field in the mutation.
+func (m *KnowledgeEntityAliasMutation) ProviderSource() (r string, exists bool) {
+	v := m.provider_source
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSource returns the old "source" field's value of the KnowledgeEntityAlias entity.
+// OldProviderSource returns the old "provider_source" field's value of the KnowledgeEntityAlias entity.
 // If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldSource(ctx context.Context) (v string, err error) {
+func (m *KnowledgeEntityAliasMutation) OldProviderSource(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSource requires an ID field in the mutation")
+		return v, errors.New("OldProviderSource requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
 	}
-	return oldValue.Source, nil
+	return oldValue.ProviderSource, nil
 }
 
-// ResetSource resets all changes to the "source" field.
-func (m *KnowledgeEntityAliasMutation) ResetSource() {
-	m.source = nil
+// ResetProviderSource resets all changes to the "provider_source" field.
+func (m *KnowledgeEntityAliasMutation) ResetProviderSource() {
+	m.provider_source = nil
 }
 
-// SetExternalKind sets the "external_kind" field.
-func (m *KnowledgeEntityAliasMutation) SetExternalKind(s string) {
-	m.external_kind = &s
+// SetSubjectKind sets the "subject_kind" field.
+func (m *KnowledgeEntityAliasMutation) SetSubjectKind(s string) {
+	m.subject_kind = &s
 }
 
-// ExternalKind returns the value of the "external_kind" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) ExternalKind() (r string, exists bool) {
-	v := m.external_kind
+// SubjectKind returns the value of the "subject_kind" field in the mutation.
+func (m *KnowledgeEntityAliasMutation) SubjectKind() (r string, exists bool) {
+	v := m.subject_kind
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldExternalKind returns the old "external_kind" field's value of the KnowledgeEntityAlias entity.
+// OldSubjectKind returns the old "subject_kind" field's value of the KnowledgeEntityAlias entity.
 // If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldExternalKind(ctx context.Context) (v string, err error) {
+func (m *KnowledgeEntityAliasMutation) OldSubjectKind(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExternalKind is only allowed on UpdateOne operations")
+		return v, errors.New("OldSubjectKind is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExternalKind requires an ID field in the mutation")
+		return v, errors.New("OldSubjectKind requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExternalKind: %w", err)
+		return v, fmt.Errorf("querying old value for OldSubjectKind: %w", err)
 	}
-	return oldValue.ExternalKind, nil
+	return oldValue.SubjectKind, nil
 }
 
-// ResetExternalKind resets all changes to the "external_kind" field.
-func (m *KnowledgeEntityAliasMutation) ResetExternalKind() {
-	m.external_kind = nil
+// ResetSubjectKind resets all changes to the "subject_kind" field.
+func (m *KnowledgeEntityAliasMutation) ResetSubjectKind() {
+	m.subject_kind = nil
 }
 
-// SetExternalID sets the "external_id" field.
-func (m *KnowledgeEntityAliasMutation) SetExternalID(s string) {
-	m.external_id = &s
+// SetSubjectRef sets the "subject_ref" field.
+func (m *KnowledgeEntityAliasMutation) SetSubjectRef(s string) {
+	m.subject_ref = &s
 }
 
-// ExternalID returns the value of the "external_id" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) ExternalID() (r string, exists bool) {
-	v := m.external_id
+// SubjectRef returns the value of the "subject_ref" field in the mutation.
+func (m *KnowledgeEntityAliasMutation) SubjectRef() (r string, exists bool) {
+	v := m.subject_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldExternalID returns the old "external_id" field's value of the KnowledgeEntityAlias entity.
+// OldSubjectRef returns the old "subject_ref" field's value of the KnowledgeEntityAlias entity.
 // If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldExternalID(ctx context.Context) (v string, err error) {
+func (m *KnowledgeEntityAliasMutation) OldSubjectRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExternalID is only allowed on UpdateOne operations")
+		return v, errors.New("OldSubjectRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExternalID requires an ID field in the mutation")
+		return v, errors.New("OldSubjectRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExternalID: %w", err)
+		return v, fmt.Errorf("querying old value for OldSubjectRef: %w", err)
 	}
-	return oldValue.ExternalID, nil
+	return oldValue.SubjectRef, nil
 }
 
-// ResetExternalID resets all changes to the "external_id" field.
-func (m *KnowledgeEntityAliasMutation) ResetExternalID() {
-	m.external_id = nil
+// ResetSubjectRef resets all changes to the "subject_ref" field.
+func (m *KnowledgeEntityAliasMutation) ResetSubjectRef() {
+	m.subject_ref = nil
 }
 
 // SetNormalizedEventID sets the "normalized_event_id" field.
@@ -25857,78 +25929,6 @@ func (m *KnowledgeEntityAliasMutation) OldLastSeenAt(ctx context.Context) (v tim
 // ResetLastSeenAt resets all changes to the "last_seen_at" field.
 func (m *KnowledgeEntityAliasMutation) ResetLastSeenAt() {
 	m.last_seen_at = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeEntityAliasMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeEntityAliasMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *KnowledgeEntityAliasMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *KnowledgeEntityAliasMutation) ResetUpdatedAt() {
-	m.updated_at = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -26104,20 +26104,26 @@ func (m *KnowledgeEntityAliasMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, knowledgeentityalias.FieldTenantID)
 	}
+	if m.created_at != nil {
+		fields = append(fields, knowledgeentityalias.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, knowledgeentityalias.FieldUpdatedAt)
+	}
 	if m.entity != nil {
 		fields = append(fields, knowledgeentityalias.FieldEntityID)
 	}
 	if m.provider != nil {
 		fields = append(fields, knowledgeentityalias.FieldProvider)
 	}
-	if m.source != nil {
-		fields = append(fields, knowledgeentityalias.FieldSource)
+	if m.provider_source != nil {
+		fields = append(fields, knowledgeentityalias.FieldProviderSource)
 	}
-	if m.external_kind != nil {
-		fields = append(fields, knowledgeentityalias.FieldExternalKind)
+	if m.subject_kind != nil {
+		fields = append(fields, knowledgeentityalias.FieldSubjectKind)
 	}
-	if m.external_id != nil {
-		fields = append(fields, knowledgeentityalias.FieldExternalID)
+	if m.subject_ref != nil {
+		fields = append(fields, knowledgeentityalias.FieldSubjectRef)
 	}
 	if m.normalized_event != nil {
 		fields = append(fields, knowledgeentityalias.FieldNormalizedEventID)
@@ -26127,12 +26133,6 @@ func (m *KnowledgeEntityAliasMutation) Fields() []string {
 	}
 	if m.last_seen_at != nil {
 		fields = append(fields, knowledgeentityalias.FieldLastSeenAt)
-	}
-	if m.created_at != nil {
-		fields = append(fields, knowledgeentityalias.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, knowledgeentityalias.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -26144,26 +26144,26 @@ func (m *KnowledgeEntityAliasMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case knowledgeentityalias.FieldTenantID:
 		return m.TenantID()
+	case knowledgeentityalias.FieldCreatedAt:
+		return m.CreatedAt()
+	case knowledgeentityalias.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case knowledgeentityalias.FieldEntityID:
 		return m.EntityID()
 	case knowledgeentityalias.FieldProvider:
 		return m.Provider()
-	case knowledgeentityalias.FieldSource:
-		return m.Source()
-	case knowledgeentityalias.FieldExternalKind:
-		return m.ExternalKind()
-	case knowledgeentityalias.FieldExternalID:
-		return m.ExternalID()
+	case knowledgeentityalias.FieldProviderSource:
+		return m.ProviderSource()
+	case knowledgeentityalias.FieldSubjectKind:
+		return m.SubjectKind()
+	case knowledgeentityalias.FieldSubjectRef:
+		return m.SubjectRef()
 	case knowledgeentityalias.FieldNormalizedEventID:
 		return m.NormalizedEventID()
 	case knowledgeentityalias.FieldFirstSeenAt:
 		return m.FirstSeenAt()
 	case knowledgeentityalias.FieldLastSeenAt:
 		return m.LastSeenAt()
-	case knowledgeentityalias.FieldCreatedAt:
-		return m.CreatedAt()
-	case knowledgeentityalias.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -26175,26 +26175,26 @@ func (m *KnowledgeEntityAliasMutation) OldField(ctx context.Context, name string
 	switch name {
 	case knowledgeentityalias.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case knowledgeentityalias.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case knowledgeentityalias.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case knowledgeentityalias.FieldEntityID:
 		return m.OldEntityID(ctx)
 	case knowledgeentityalias.FieldProvider:
 		return m.OldProvider(ctx)
-	case knowledgeentityalias.FieldSource:
-		return m.OldSource(ctx)
-	case knowledgeentityalias.FieldExternalKind:
-		return m.OldExternalKind(ctx)
-	case knowledgeentityalias.FieldExternalID:
-		return m.OldExternalID(ctx)
+	case knowledgeentityalias.FieldProviderSource:
+		return m.OldProviderSource(ctx)
+	case knowledgeentityalias.FieldSubjectKind:
+		return m.OldSubjectKind(ctx)
+	case knowledgeentityalias.FieldSubjectRef:
+		return m.OldSubjectRef(ctx)
 	case knowledgeentityalias.FieldNormalizedEventID:
 		return m.OldNormalizedEventID(ctx)
 	case knowledgeentityalias.FieldFirstSeenAt:
 		return m.OldFirstSeenAt(ctx)
 	case knowledgeentityalias.FieldLastSeenAt:
 		return m.OldLastSeenAt(ctx)
-	case knowledgeentityalias.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case knowledgeentityalias.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeEntityAlias field %s", name)
 }
@@ -26211,6 +26211,20 @@ func (m *KnowledgeEntityAliasMutation) SetField(name string, value ent.Value) er
 		}
 		m.SetTenantID(v)
 		return nil
+	case knowledgeentityalias.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case knowledgeentityalias.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
 	case knowledgeentityalias.FieldEntityID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
@@ -26225,26 +26239,26 @@ func (m *KnowledgeEntityAliasMutation) SetField(name string, value ent.Value) er
 		}
 		m.SetProvider(v)
 		return nil
-	case knowledgeentityalias.FieldSource:
+	case knowledgeentityalias.FieldProviderSource:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSource(v)
+		m.SetProviderSource(v)
 		return nil
-	case knowledgeentityalias.FieldExternalKind:
+	case knowledgeentityalias.FieldSubjectKind:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetExternalKind(v)
+		m.SetSubjectKind(v)
 		return nil
-	case knowledgeentityalias.FieldExternalID:
+	case knowledgeentityalias.FieldSubjectRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetExternalID(v)
+		m.SetSubjectRef(v)
 		return nil
 	case knowledgeentityalias.FieldNormalizedEventID:
 		v, ok := value.(uuid.UUID)
@@ -26266,20 +26280,6 @@ func (m *KnowledgeEntityAliasMutation) SetField(name string, value ent.Value) er
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLastSeenAt(v)
-		return nil
-	case knowledgeentityalias.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case knowledgeentityalias.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntityAlias field %s", name)
@@ -26345,20 +26345,26 @@ func (m *KnowledgeEntityAliasMutation) ResetField(name string) error {
 	case knowledgeentityalias.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case knowledgeentityalias.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case knowledgeentityalias.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case knowledgeentityalias.FieldEntityID:
 		m.ResetEntityID()
 		return nil
 	case knowledgeentityalias.FieldProvider:
 		m.ResetProvider()
 		return nil
-	case knowledgeentityalias.FieldSource:
-		m.ResetSource()
+	case knowledgeentityalias.FieldProviderSource:
+		m.ResetProviderSource()
 		return nil
-	case knowledgeentityalias.FieldExternalKind:
-		m.ResetExternalKind()
+	case knowledgeentityalias.FieldSubjectKind:
+		m.ResetSubjectKind()
 		return nil
-	case knowledgeentityalias.FieldExternalID:
-		m.ResetExternalID()
+	case knowledgeentityalias.FieldSubjectRef:
+		m.ResetSubjectRef()
 		return nil
 	case knowledgeentityalias.FieldNormalizedEventID:
 		m.ResetNormalizedEventID()
@@ -26368,12 +26374,6 @@ func (m *KnowledgeEntityAliasMutation) ResetField(name string) error {
 		return nil
 	case knowledgeentityalias.FieldLastSeenAt:
 		m.ResetLastSeenAt()
-		return nil
-	case knowledgeentityalias.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case knowledgeentityalias.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEntityAlias field %s", name)
@@ -26523,14 +26523,14 @@ type KnowledgeFactHistoryMutation struct {
 	op                      Op
 	typ                     string
 	id                      *uuid.UUID
-	fact_kind               *string
+	fact_kind               *knowledgefacthistory.FactKind
 	event_kind              *string
 	history_key             *string
 	occurred_at             *time.Time
 	recorded_at             *time.Time
-	source_provider         *string
-	source                  *string
-	source_ref              *string
+	provider                *string
+	provider_source         *string
+	provider_event_ref      *string
 	extraction_method       *string
 	attributes              *map[string]interface{}
 	clearedFields           map[string]struct{}
@@ -26688,12 +26688,12 @@ func (m *KnowledgeFactHistoryMutation) ResetTenantID() {
 }
 
 // SetFactKind sets the "fact_kind" field.
-func (m *KnowledgeFactHistoryMutation) SetFactKind(s string) {
-	m.fact_kind = &s
+func (m *KnowledgeFactHistoryMutation) SetFactKind(kk knowledgefacthistory.FactKind) {
+	m.fact_kind = &kk
 }
 
 // FactKind returns the value of the "fact_kind" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) FactKind() (r string, exists bool) {
+func (m *KnowledgeFactHistoryMutation) FactKind() (r knowledgefacthistory.FactKind, exists bool) {
 	v := m.fact_kind
 	if v == nil {
 		return
@@ -26704,7 +26704,7 @@ func (m *KnowledgeFactHistoryMutation) FactKind() (r string, exists bool) {
 // OldFactKind returns the old "fact_kind" field's value of the KnowledgeFactHistory entity.
 // If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldFactKind(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactHistoryMutation) OldFactKind(ctx context.Context) (v *knowledgefacthistory.FactKind, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldFactKind is only allowed on UpdateOne operations")
 	}
@@ -26718,9 +26718,22 @@ func (m *KnowledgeFactHistoryMutation) OldFactKind(ctx context.Context) (v strin
 	return oldValue.FactKind, nil
 }
 
+// ClearFactKind clears the value of the "fact_kind" field.
+func (m *KnowledgeFactHistoryMutation) ClearFactKind() {
+	m.fact_kind = nil
+	m.clearedFields[knowledgefacthistory.FieldFactKind] = struct{}{}
+}
+
+// FactKindCleared returns if the "fact_kind" field was cleared in this mutation.
+func (m *KnowledgeFactHistoryMutation) FactKindCleared() bool {
+	_, ok := m.clearedFields[knowledgefacthistory.FieldFactKind]
+	return ok
+}
+
 // ResetFactKind resets all changes to the "fact_kind" field.
 func (m *KnowledgeFactHistoryMutation) ResetFactKind() {
 	m.fact_kind = nil
+	delete(m.clearedFields, knowledgefacthistory.FieldFactKind)
 }
 
 // SetAliasID sets the "alias_id" field.
@@ -27014,125 +27027,112 @@ func (m *KnowledgeFactHistoryMutation) ResetRecordedAt() {
 	m.recorded_at = nil
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (m *KnowledgeFactHistoryMutation) SetSourceProvider(s string) {
-	m.source_provider = &s
+// SetProvider sets the "provider" field.
+func (m *KnowledgeFactHistoryMutation) SetProvider(s string) {
+	m.provider = &s
 }
 
-// SourceProvider returns the value of the "source_provider" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) SourceProvider() (r string, exists bool) {
-	v := m.source_provider
+// Provider returns the value of the "provider" field in the mutation.
+func (m *KnowledgeFactHistoryMutation) Provider() (r string, exists bool) {
+	v := m.provider
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceProvider returns the old "source_provider" field's value of the KnowledgeFactHistory entity.
+// OldProvider returns the old "provider" field's value of the KnowledgeFactHistory entity.
 // If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldSourceProvider(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactHistoryMutation) OldProvider(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceProvider is only allowed on UpdateOne operations")
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceProvider requires an ID field in the mutation")
+		return v, errors.New("OldProvider requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceProvider: %w", err)
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
 	}
-	return oldValue.SourceProvider, nil
+	return oldValue.Provider, nil
 }
 
-// ResetSourceProvider resets all changes to the "source_provider" field.
-func (m *KnowledgeFactHistoryMutation) ResetSourceProvider() {
-	m.source_provider = nil
+// ResetProvider resets all changes to the "provider" field.
+func (m *KnowledgeFactHistoryMutation) ResetProvider() {
+	m.provider = nil
 }
 
-// SetSource sets the "source" field.
-func (m *KnowledgeFactHistoryMutation) SetSource(s string) {
-	m.source = &s
+// SetProviderSource sets the "provider_source" field.
+func (m *KnowledgeFactHistoryMutation) SetProviderSource(s string) {
+	m.provider_source = &s
 }
 
-// Source returns the value of the "source" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) Source() (r string, exists bool) {
-	v := m.source
+// ProviderSource returns the value of the "provider_source" field in the mutation.
+func (m *KnowledgeFactHistoryMutation) ProviderSource() (r string, exists bool) {
+	v := m.provider_source
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSource returns the old "source" field's value of the KnowledgeFactHistory entity.
+// OldProviderSource returns the old "provider_source" field's value of the KnowledgeFactHistory entity.
 // If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldSource(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactHistoryMutation) OldProviderSource(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSource requires an ID field in the mutation")
+		return v, errors.New("OldProviderSource requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
 	}
-	return oldValue.Source, nil
+	return oldValue.ProviderSource, nil
 }
 
-// ResetSource resets all changes to the "source" field.
-func (m *KnowledgeFactHistoryMutation) ResetSource() {
-	m.source = nil
+// ResetProviderSource resets all changes to the "provider_source" field.
+func (m *KnowledgeFactHistoryMutation) ResetProviderSource() {
+	m.provider_source = nil
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (m *KnowledgeFactHistoryMutation) SetSourceRef(s string) {
-	m.source_ref = &s
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (m *KnowledgeFactHistoryMutation) SetProviderEventRef(s string) {
+	m.provider_event_ref = &s
 }
 
-// SourceRef returns the value of the "source_ref" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) SourceRef() (r string, exists bool) {
-	v := m.source_ref
+// ProviderEventRef returns the value of the "provider_event_ref" field in the mutation.
+func (m *KnowledgeFactHistoryMutation) ProviderEventRef() (r string, exists bool) {
+	v := m.provider_event_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceRef returns the old "source_ref" field's value of the KnowledgeFactHistory entity.
+// OldProviderEventRef returns the old "provider_event_ref" field's value of the KnowledgeFactHistory entity.
 // If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldSourceRef(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactHistoryMutation) OldProviderEventRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceRef is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderEventRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceRef requires an ID field in the mutation")
+		return v, errors.New("OldProviderEventRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceRef: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderEventRef: %w", err)
 	}
-	return oldValue.SourceRef, nil
+	return oldValue.ProviderEventRef, nil
 }
 
-// ClearSourceRef clears the value of the "source_ref" field.
-func (m *KnowledgeFactHistoryMutation) ClearSourceRef() {
-	m.source_ref = nil
-	m.clearedFields[knowledgefacthistory.FieldSourceRef] = struct{}{}
-}
-
-// SourceRefCleared returns if the "source_ref" field was cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) SourceRefCleared() bool {
-	_, ok := m.clearedFields[knowledgefacthistory.FieldSourceRef]
-	return ok
-}
-
-// ResetSourceRef resets all changes to the "source_ref" field.
-func (m *KnowledgeFactHistoryMutation) ResetSourceRef() {
-	m.source_ref = nil
-	delete(m.clearedFields, knowledgefacthistory.FieldSourceRef)
+// ResetProviderEventRef resets all changes to the "provider_event_ref" field.
+func (m *KnowledgeFactHistoryMutation) ResetProviderEventRef() {
+	m.provider_event_ref = nil
 }
 
 // SetExtractionMethod sets the "extraction_method" field.
@@ -27390,14 +27390,14 @@ func (m *KnowledgeFactHistoryMutation) Fields() []string {
 	if m.recorded_at != nil {
 		fields = append(fields, knowledgefacthistory.FieldRecordedAt)
 	}
-	if m.source_provider != nil {
-		fields = append(fields, knowledgefacthistory.FieldSourceProvider)
+	if m.provider != nil {
+		fields = append(fields, knowledgefacthistory.FieldProvider)
 	}
-	if m.source != nil {
-		fields = append(fields, knowledgefacthistory.FieldSource)
+	if m.provider_source != nil {
+		fields = append(fields, knowledgefacthistory.FieldProviderSource)
 	}
-	if m.source_ref != nil {
-		fields = append(fields, knowledgefacthistory.FieldSourceRef)
+	if m.provider_event_ref != nil {
+		fields = append(fields, knowledgefacthistory.FieldProviderEventRef)
 	}
 	if m.extraction_method != nil {
 		fields = append(fields, knowledgefacthistory.FieldExtractionMethod)
@@ -27431,12 +27431,12 @@ func (m *KnowledgeFactHistoryMutation) Field(name string) (ent.Value, bool) {
 		return m.OccurredAt()
 	case knowledgefacthistory.FieldRecordedAt:
 		return m.RecordedAt()
-	case knowledgefacthistory.FieldSourceProvider:
-		return m.SourceProvider()
-	case knowledgefacthistory.FieldSource:
-		return m.Source()
-	case knowledgefacthistory.FieldSourceRef:
-		return m.SourceRef()
+	case knowledgefacthistory.FieldProvider:
+		return m.Provider()
+	case knowledgefacthistory.FieldProviderSource:
+		return m.ProviderSource()
+	case knowledgefacthistory.FieldProviderEventRef:
+		return m.ProviderEventRef()
 	case knowledgefacthistory.FieldExtractionMethod:
 		return m.ExtractionMethod()
 	case knowledgefacthistory.FieldAttributes:
@@ -27468,12 +27468,12 @@ func (m *KnowledgeFactHistoryMutation) OldField(ctx context.Context, name string
 		return m.OldOccurredAt(ctx)
 	case knowledgefacthistory.FieldRecordedAt:
 		return m.OldRecordedAt(ctx)
-	case knowledgefacthistory.FieldSourceProvider:
-		return m.OldSourceProvider(ctx)
-	case knowledgefacthistory.FieldSource:
-		return m.OldSource(ctx)
-	case knowledgefacthistory.FieldSourceRef:
-		return m.OldSourceRef(ctx)
+	case knowledgefacthistory.FieldProvider:
+		return m.OldProvider(ctx)
+	case knowledgefacthistory.FieldProviderSource:
+		return m.OldProviderSource(ctx)
+	case knowledgefacthistory.FieldProviderEventRef:
+		return m.OldProviderEventRef(ctx)
 	case knowledgefacthistory.FieldExtractionMethod:
 		return m.OldExtractionMethod(ctx)
 	case knowledgefacthistory.FieldAttributes:
@@ -27495,7 +27495,7 @@ func (m *KnowledgeFactHistoryMutation) SetField(name string, value ent.Value) er
 		m.SetTenantID(v)
 		return nil
 	case knowledgefacthistory.FieldFactKind:
-		v, ok := value.(string)
+		v, ok := value.(knowledgefacthistory.FactKind)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
@@ -27550,26 +27550,26 @@ func (m *KnowledgeFactHistoryMutation) SetField(name string, value ent.Value) er
 		}
 		m.SetRecordedAt(v)
 		return nil
-	case knowledgefacthistory.FieldSourceProvider:
+	case knowledgefacthistory.FieldProvider:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSourceProvider(v)
+		m.SetProvider(v)
 		return nil
-	case knowledgefacthistory.FieldSource:
+	case knowledgefacthistory.FieldProviderSource:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSource(v)
+		m.SetProviderSource(v)
 		return nil
-	case knowledgefacthistory.FieldSourceRef:
+	case knowledgefacthistory.FieldProviderEventRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSourceRef(v)
+		m.SetProviderEventRef(v)
 		return nil
 	case knowledgefacthistory.FieldExtractionMethod:
 		v, ok := value.(string)
@@ -27618,6 +27618,9 @@ func (m *KnowledgeFactHistoryMutation) AddField(name string, value ent.Value) er
 // mutation.
 func (m *KnowledgeFactHistoryMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(knowledgefacthistory.FieldFactKind) {
+		fields = append(fields, knowledgefacthistory.FieldFactKind)
+	}
 	if m.FieldCleared(knowledgefacthistory.FieldAliasID) {
 		fields = append(fields, knowledgefacthistory.FieldAliasID)
 	}
@@ -27626,9 +27629,6 @@ func (m *KnowledgeFactHistoryMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(knowledgefacthistory.FieldNormalizedEventID) {
 		fields = append(fields, knowledgefacthistory.FieldNormalizedEventID)
-	}
-	if m.FieldCleared(knowledgefacthistory.FieldSourceRef) {
-		fields = append(fields, knowledgefacthistory.FieldSourceRef)
 	}
 	if m.FieldCleared(knowledgefacthistory.FieldAttributes) {
 		fields = append(fields, knowledgefacthistory.FieldAttributes)
@@ -27647,6 +27647,9 @@ func (m *KnowledgeFactHistoryMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *KnowledgeFactHistoryMutation) ClearField(name string) error {
 	switch name {
+	case knowledgefacthistory.FieldFactKind:
+		m.ClearFactKind()
+		return nil
 	case knowledgefacthistory.FieldAliasID:
 		m.ClearAliasID()
 		return nil
@@ -27655,9 +27658,6 @@ func (m *KnowledgeFactHistoryMutation) ClearField(name string) error {
 		return nil
 	case knowledgefacthistory.FieldNormalizedEventID:
 		m.ClearNormalizedEventID()
-		return nil
-	case knowledgefacthistory.FieldSourceRef:
-		m.ClearSourceRef()
 		return nil
 	case knowledgefacthistory.FieldAttributes:
 		m.ClearAttributes()
@@ -27697,14 +27697,14 @@ func (m *KnowledgeFactHistoryMutation) ResetField(name string) error {
 	case knowledgefacthistory.FieldRecordedAt:
 		m.ResetRecordedAt()
 		return nil
-	case knowledgefacthistory.FieldSourceProvider:
-		m.ResetSourceProvider()
+	case knowledgefacthistory.FieldProvider:
+		m.ResetProvider()
 		return nil
-	case knowledgefacthistory.FieldSource:
-		m.ResetSource()
+	case knowledgefacthistory.FieldProviderSource:
+		m.ResetProviderSource()
 		return nil
-	case knowledgefacthistory.FieldSourceRef:
-		m.ResetSourceRef()
+	case knowledgefacthistory.FieldProviderEventRef:
+		m.ResetProviderEventRef()
 		return nil
 	case knowledgefacthistory.FieldExtractionMethod:
 		m.ResetExtractionMethod()
@@ -27850,16 +27850,14 @@ type KnowledgeFactProvenanceMutation struct {
 	op                      Op
 	typ                     string
 	id                      *uuid.UUID
-	source_provider         *string
-	source                  *string
-	source_ref              *string
-	extraction_method       *string
-	confidence              *float64
-	addconfidence           *float64
-	first_seen_at           *time.Time
-	last_seen_at            *time.Time
 	created_at              *time.Time
 	updated_at              *time.Time
+	provider                *string
+	provider_source         *string
+	provider_event_ref      *string
+	extraction_method       *string
+	first_seen_at           *time.Time
+	last_seen_at            *time.Time
 	clearedFields           map[string]struct{}
 	tenant                  *int
 	clearedtenant           bool
@@ -28014,6 +28012,78 @@ func (m *KnowledgeFactProvenanceMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (m *KnowledgeFactProvenanceMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *KnowledgeFactProvenanceMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeFactProvenance entity.
+// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeFactProvenanceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *KnowledgeFactProvenanceMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *KnowledgeFactProvenanceMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *KnowledgeFactProvenanceMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeFactProvenance entity.
+// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeFactProvenanceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *KnowledgeFactProvenanceMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
 // SetAliasID sets the "alias_id" field.
 func (m *KnowledgeFactProvenanceMutation) SetAliasID(u uuid.UUID) {
 	m.alias = &u
@@ -28161,125 +28231,112 @@ func (m *KnowledgeFactProvenanceMutation) ResetNormalizedEventID() {
 	delete(m.clearedFields, knowledgefactprovenance.FieldNormalizedEventID)
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (m *KnowledgeFactProvenanceMutation) SetSourceProvider(s string) {
-	m.source_provider = &s
+// SetProvider sets the "provider" field.
+func (m *KnowledgeFactProvenanceMutation) SetProvider(s string) {
+	m.provider = &s
 }
 
-// SourceProvider returns the value of the "source_provider" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) SourceProvider() (r string, exists bool) {
-	v := m.source_provider
+// Provider returns the value of the "provider" field in the mutation.
+func (m *KnowledgeFactProvenanceMutation) Provider() (r string, exists bool) {
+	v := m.provider
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceProvider returns the old "source_provider" field's value of the KnowledgeFactProvenance entity.
+// OldProvider returns the old "provider" field's value of the KnowledgeFactProvenance entity.
 // If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldSourceProvider(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactProvenanceMutation) OldProvider(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceProvider is only allowed on UpdateOne operations")
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceProvider requires an ID field in the mutation")
+		return v, errors.New("OldProvider requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceProvider: %w", err)
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
 	}
-	return oldValue.SourceProvider, nil
+	return oldValue.Provider, nil
 }
 
-// ResetSourceProvider resets all changes to the "source_provider" field.
-func (m *KnowledgeFactProvenanceMutation) ResetSourceProvider() {
-	m.source_provider = nil
+// ResetProvider resets all changes to the "provider" field.
+func (m *KnowledgeFactProvenanceMutation) ResetProvider() {
+	m.provider = nil
 }
 
-// SetSource sets the "source" field.
-func (m *KnowledgeFactProvenanceMutation) SetSource(s string) {
-	m.source = &s
+// SetProviderSource sets the "provider_source" field.
+func (m *KnowledgeFactProvenanceMutation) SetProviderSource(s string) {
+	m.provider_source = &s
 }
 
-// Source returns the value of the "source" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) Source() (r string, exists bool) {
-	v := m.source
+// ProviderSource returns the value of the "provider_source" field in the mutation.
+func (m *KnowledgeFactProvenanceMutation) ProviderSource() (r string, exists bool) {
+	v := m.provider_source
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSource returns the old "source" field's value of the KnowledgeFactProvenance entity.
+// OldProviderSource returns the old "provider_source" field's value of the KnowledgeFactProvenance entity.
 // If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldSource(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactProvenanceMutation) OldProviderSource(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSource requires an ID field in the mutation")
+		return v, errors.New("OldProviderSource requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
 	}
-	return oldValue.Source, nil
+	return oldValue.ProviderSource, nil
 }
 
-// ResetSource resets all changes to the "source" field.
-func (m *KnowledgeFactProvenanceMutation) ResetSource() {
-	m.source = nil
+// ResetProviderSource resets all changes to the "provider_source" field.
+func (m *KnowledgeFactProvenanceMutation) ResetProviderSource() {
+	m.provider_source = nil
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (m *KnowledgeFactProvenanceMutation) SetSourceRef(s string) {
-	m.source_ref = &s
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (m *KnowledgeFactProvenanceMutation) SetProviderEventRef(s string) {
+	m.provider_event_ref = &s
 }
 
-// SourceRef returns the value of the "source_ref" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) SourceRef() (r string, exists bool) {
-	v := m.source_ref
+// ProviderEventRef returns the value of the "provider_event_ref" field in the mutation.
+func (m *KnowledgeFactProvenanceMutation) ProviderEventRef() (r string, exists bool) {
+	v := m.provider_event_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceRef returns the old "source_ref" field's value of the KnowledgeFactProvenance entity.
+// OldProviderEventRef returns the old "provider_event_ref" field's value of the KnowledgeFactProvenance entity.
 // If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldSourceRef(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactProvenanceMutation) OldProviderEventRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceRef is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderEventRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceRef requires an ID field in the mutation")
+		return v, errors.New("OldProviderEventRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceRef: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderEventRef: %w", err)
 	}
-	return oldValue.SourceRef, nil
+	return oldValue.ProviderEventRef, nil
 }
 
-// ClearSourceRef clears the value of the "source_ref" field.
-func (m *KnowledgeFactProvenanceMutation) ClearSourceRef() {
-	m.source_ref = nil
-	m.clearedFields[knowledgefactprovenance.FieldSourceRef] = struct{}{}
-}
-
-// SourceRefCleared returns if the "source_ref" field was cleared in this mutation.
-func (m *KnowledgeFactProvenanceMutation) SourceRefCleared() bool {
-	_, ok := m.clearedFields[knowledgefactprovenance.FieldSourceRef]
-	return ok
-}
-
-// ResetSourceRef resets all changes to the "source_ref" field.
-func (m *KnowledgeFactProvenanceMutation) ResetSourceRef() {
-	m.source_ref = nil
-	delete(m.clearedFields, knowledgefactprovenance.FieldSourceRef)
+// ResetProviderEventRef resets all changes to the "provider_event_ref" field.
+func (m *KnowledgeFactProvenanceMutation) ResetProviderEventRef() {
+	m.provider_event_ref = nil
 }
 
 // SetExtractionMethod sets the "extraction_method" field.
@@ -28316,62 +28373,6 @@ func (m *KnowledgeFactProvenanceMutation) OldExtractionMethod(ctx context.Contex
 // ResetExtractionMethod resets all changes to the "extraction_method" field.
 func (m *KnowledgeFactProvenanceMutation) ResetExtractionMethod() {
 	m.extraction_method = nil
-}
-
-// SetConfidence sets the "confidence" field.
-func (m *KnowledgeFactProvenanceMutation) SetConfidence(f float64) {
-	m.confidence = &f
-	m.addconfidence = nil
-}
-
-// Confidence returns the value of the "confidence" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) Confidence() (r float64, exists bool) {
-	v := m.confidence
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldConfidence returns the old "confidence" field's value of the KnowledgeFactProvenance entity.
-// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldConfidence(ctx context.Context) (v float64, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldConfidence is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldConfidence requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldConfidence: %w", err)
-	}
-	return oldValue.Confidence, nil
-}
-
-// AddConfidence adds f to the "confidence" field.
-func (m *KnowledgeFactProvenanceMutation) AddConfidence(f float64) {
-	if m.addconfidence != nil {
-		*m.addconfidence += f
-	} else {
-		m.addconfidence = &f
-	}
-}
-
-// AddedConfidence returns the value that was added to the "confidence" field in this mutation.
-func (m *KnowledgeFactProvenanceMutation) AddedConfidence() (r float64, exists bool) {
-	v := m.addconfidence
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetConfidence resets all changes to the "confidence" field.
-func (m *KnowledgeFactProvenanceMutation) ResetConfidence() {
-	m.confidence = nil
-	m.addconfidence = nil
 }
 
 // SetFirstSeenAt sets the "first_seen_at" field.
@@ -28444,78 +28445,6 @@ func (m *KnowledgeFactProvenanceMutation) OldLastSeenAt(ctx context.Context) (v 
 // ResetLastSeenAt resets all changes to the "last_seen_at" field.
 func (m *KnowledgeFactProvenanceMutation) ResetLastSeenAt() {
 	m.last_seen_at = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeFactProvenanceMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeFactProvenance entity.
-// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeFactProvenanceMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *KnowledgeFactProvenanceMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeFactProvenance entity.
-// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *KnowledgeFactProvenanceMutation) ResetUpdatedAt() {
-	m.updated_at = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -28660,9 +28589,15 @@ func (m *KnowledgeFactProvenanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeFactProvenanceMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 12)
 	if m.tenant != nil {
 		fields = append(fields, knowledgefactprovenance.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, knowledgefactprovenance.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, knowledgefactprovenance.FieldUpdatedAt)
 	}
 	if m.alias != nil {
 		fields = append(fields, knowledgefactprovenance.FieldAliasID)
@@ -28673,32 +28608,23 @@ func (m *KnowledgeFactProvenanceMutation) Fields() []string {
 	if m.normalized_event != nil {
 		fields = append(fields, knowledgefactprovenance.FieldNormalizedEventID)
 	}
-	if m.source_provider != nil {
-		fields = append(fields, knowledgefactprovenance.FieldSourceProvider)
+	if m.provider != nil {
+		fields = append(fields, knowledgefactprovenance.FieldProvider)
 	}
-	if m.source != nil {
-		fields = append(fields, knowledgefactprovenance.FieldSource)
+	if m.provider_source != nil {
+		fields = append(fields, knowledgefactprovenance.FieldProviderSource)
 	}
-	if m.source_ref != nil {
-		fields = append(fields, knowledgefactprovenance.FieldSourceRef)
+	if m.provider_event_ref != nil {
+		fields = append(fields, knowledgefactprovenance.FieldProviderEventRef)
 	}
 	if m.extraction_method != nil {
 		fields = append(fields, knowledgefactprovenance.FieldExtractionMethod)
-	}
-	if m.confidence != nil {
-		fields = append(fields, knowledgefactprovenance.FieldConfidence)
 	}
 	if m.first_seen_at != nil {
 		fields = append(fields, knowledgefactprovenance.FieldFirstSeenAt)
 	}
 	if m.last_seen_at != nil {
 		fields = append(fields, knowledgefactprovenance.FieldLastSeenAt)
-	}
-	if m.created_at != nil {
-		fields = append(fields, knowledgefactprovenance.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, knowledgefactprovenance.FieldUpdatedAt)
 	}
 	return fields
 }
@@ -28710,30 +28636,28 @@ func (m *KnowledgeFactProvenanceMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case knowledgefactprovenance.FieldTenantID:
 		return m.TenantID()
+	case knowledgefactprovenance.FieldCreatedAt:
+		return m.CreatedAt()
+	case knowledgefactprovenance.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case knowledgefactprovenance.FieldAliasID:
 		return m.AliasID()
 	case knowledgefactprovenance.FieldRelationshipID:
 		return m.RelationshipID()
 	case knowledgefactprovenance.FieldNormalizedEventID:
 		return m.NormalizedEventID()
-	case knowledgefactprovenance.FieldSourceProvider:
-		return m.SourceProvider()
-	case knowledgefactprovenance.FieldSource:
-		return m.Source()
-	case knowledgefactprovenance.FieldSourceRef:
-		return m.SourceRef()
+	case knowledgefactprovenance.FieldProvider:
+		return m.Provider()
+	case knowledgefactprovenance.FieldProviderSource:
+		return m.ProviderSource()
+	case knowledgefactprovenance.FieldProviderEventRef:
+		return m.ProviderEventRef()
 	case knowledgefactprovenance.FieldExtractionMethod:
 		return m.ExtractionMethod()
-	case knowledgefactprovenance.FieldConfidence:
-		return m.Confidence()
 	case knowledgefactprovenance.FieldFirstSeenAt:
 		return m.FirstSeenAt()
 	case knowledgefactprovenance.FieldLastSeenAt:
 		return m.LastSeenAt()
-	case knowledgefactprovenance.FieldCreatedAt:
-		return m.CreatedAt()
-	case knowledgefactprovenance.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -28745,30 +28669,28 @@ func (m *KnowledgeFactProvenanceMutation) OldField(ctx context.Context, name str
 	switch name {
 	case knowledgefactprovenance.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case knowledgefactprovenance.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case knowledgefactprovenance.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case knowledgefactprovenance.FieldAliasID:
 		return m.OldAliasID(ctx)
 	case knowledgefactprovenance.FieldRelationshipID:
 		return m.OldRelationshipID(ctx)
 	case knowledgefactprovenance.FieldNormalizedEventID:
 		return m.OldNormalizedEventID(ctx)
-	case knowledgefactprovenance.FieldSourceProvider:
-		return m.OldSourceProvider(ctx)
-	case knowledgefactprovenance.FieldSource:
-		return m.OldSource(ctx)
-	case knowledgefactprovenance.FieldSourceRef:
-		return m.OldSourceRef(ctx)
+	case knowledgefactprovenance.FieldProvider:
+		return m.OldProvider(ctx)
+	case knowledgefactprovenance.FieldProviderSource:
+		return m.OldProviderSource(ctx)
+	case knowledgefactprovenance.FieldProviderEventRef:
+		return m.OldProviderEventRef(ctx)
 	case knowledgefactprovenance.FieldExtractionMethod:
 		return m.OldExtractionMethod(ctx)
-	case knowledgefactprovenance.FieldConfidence:
-		return m.OldConfidence(ctx)
 	case knowledgefactprovenance.FieldFirstSeenAt:
 		return m.OldFirstSeenAt(ctx)
 	case knowledgefactprovenance.FieldLastSeenAt:
 		return m.OldLastSeenAt(ctx)
-	case knowledgefactprovenance.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case knowledgefactprovenance.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeFactProvenance field %s", name)
 }
@@ -28784,6 +28706,20 @@ func (m *KnowledgeFactProvenanceMutation) SetField(name string, value ent.Value)
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case knowledgefactprovenance.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case knowledgefactprovenance.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	case knowledgefactprovenance.FieldAliasID:
 		v, ok := value.(uuid.UUID)
@@ -28806,26 +28742,26 @@ func (m *KnowledgeFactProvenanceMutation) SetField(name string, value ent.Value)
 		}
 		m.SetNormalizedEventID(v)
 		return nil
-	case knowledgefactprovenance.FieldSourceProvider:
+	case knowledgefactprovenance.FieldProvider:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSourceProvider(v)
+		m.SetProvider(v)
 		return nil
-	case knowledgefactprovenance.FieldSource:
+	case knowledgefactprovenance.FieldProviderSource:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSource(v)
+		m.SetProviderSource(v)
 		return nil
-	case knowledgefactprovenance.FieldSourceRef:
+	case knowledgefactprovenance.FieldProviderEventRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSourceRef(v)
+		m.SetProviderEventRef(v)
 		return nil
 	case knowledgefactprovenance.FieldExtractionMethod:
 		v, ok := value.(string)
@@ -28833,13 +28769,6 @@ func (m *KnowledgeFactProvenanceMutation) SetField(name string, value ent.Value)
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetExtractionMethod(v)
-		return nil
-	case knowledgefactprovenance.FieldConfidence:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetConfidence(v)
 		return nil
 	case knowledgefactprovenance.FieldFirstSeenAt:
 		v, ok := value.(time.Time)
@@ -28855,20 +28784,6 @@ func (m *KnowledgeFactProvenanceMutation) SetField(name string, value ent.Value)
 		}
 		m.SetLastSeenAt(v)
 		return nil
-	case knowledgefactprovenance.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case knowledgefactprovenance.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeFactProvenance field %s", name)
 }
@@ -28877,9 +28792,6 @@ func (m *KnowledgeFactProvenanceMutation) SetField(name string, value ent.Value)
 // this mutation.
 func (m *KnowledgeFactProvenanceMutation) AddedFields() []string {
 	var fields []string
-	if m.addconfidence != nil {
-		fields = append(fields, knowledgefactprovenance.FieldConfidence)
-	}
 	return fields
 }
 
@@ -28888,8 +28800,6 @@ func (m *KnowledgeFactProvenanceMutation) AddedFields() []string {
 // was not set, or was not defined in the schema.
 func (m *KnowledgeFactProvenanceMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
-	case knowledgefactprovenance.FieldConfidence:
-		return m.AddedConfidence()
 	}
 	return nil, false
 }
@@ -28899,13 +28809,6 @@ func (m *KnowledgeFactProvenanceMutation) AddedField(name string) (ent.Value, bo
 // type.
 func (m *KnowledgeFactProvenanceMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case knowledgefactprovenance.FieldConfidence:
-		v, ok := value.(float64)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddConfidence(v)
-		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeFactProvenance numeric field %s", name)
 }
@@ -28922,9 +28825,6 @@ func (m *KnowledgeFactProvenanceMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(knowledgefactprovenance.FieldNormalizedEventID) {
 		fields = append(fields, knowledgefactprovenance.FieldNormalizedEventID)
-	}
-	if m.FieldCleared(knowledgefactprovenance.FieldSourceRef) {
-		fields = append(fields, knowledgefactprovenance.FieldSourceRef)
 	}
 	return fields
 }
@@ -28949,9 +28849,6 @@ func (m *KnowledgeFactProvenanceMutation) ClearField(name string) error {
 	case knowledgefactprovenance.FieldNormalizedEventID:
 		m.ClearNormalizedEventID()
 		return nil
-	case knowledgefactprovenance.FieldSourceRef:
-		m.ClearSourceRef()
-		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeFactProvenance nullable field %s", name)
 }
@@ -28963,6 +28860,12 @@ func (m *KnowledgeFactProvenanceMutation) ResetField(name string) error {
 	case knowledgefactprovenance.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case knowledgefactprovenance.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case knowledgefactprovenance.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case knowledgefactprovenance.FieldAliasID:
 		m.ResetAliasID()
 		return nil
@@ -28972,32 +28875,23 @@ func (m *KnowledgeFactProvenanceMutation) ResetField(name string) error {
 	case knowledgefactprovenance.FieldNormalizedEventID:
 		m.ResetNormalizedEventID()
 		return nil
-	case knowledgefactprovenance.FieldSourceProvider:
-		m.ResetSourceProvider()
+	case knowledgefactprovenance.FieldProvider:
+		m.ResetProvider()
 		return nil
-	case knowledgefactprovenance.FieldSource:
-		m.ResetSource()
+	case knowledgefactprovenance.FieldProviderSource:
+		m.ResetProviderSource()
 		return nil
-	case knowledgefactprovenance.FieldSourceRef:
-		m.ResetSourceRef()
+	case knowledgefactprovenance.FieldProviderEventRef:
+		m.ResetProviderEventRef()
 		return nil
 	case knowledgefactprovenance.FieldExtractionMethod:
 		m.ResetExtractionMethod()
-		return nil
-	case knowledgefactprovenance.FieldConfidence:
-		m.ResetConfidence()
 		return nil
 	case knowledgefactprovenance.FieldFirstSeenAt:
 		m.ResetFirstSeenAt()
 		return nil
 	case knowledgefactprovenance.FieldLastSeenAt:
 		m.ResetLastSeenAt()
-		return nil
-	case knowledgefactprovenance.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case knowledgefactprovenance.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeFactProvenance field %s", name)
@@ -29137,13 +29031,13 @@ type KnowledgeRelationshipMutation struct {
 	op                   Op
 	typ                  string
 	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
 	kind                 *string
 	display_name         *string
 	description          *string
 	first_seen_at        *time.Time
 	last_seen_at         *time.Time
-	created_at           *time.Time
-	updated_at           *time.Time
 	clearedFields        map[string]struct{}
 	tenant               *int
 	clearedtenant        bool
@@ -29297,6 +29191,78 @@ func (m *KnowledgeRelationshipMutation) OldTenantID(ctx context.Context) (v int,
 // ResetTenantID resets all changes to the "tenant_id" field.
 func (m *KnowledgeRelationshipMutation) ResetTenantID() {
 	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *KnowledgeRelationshipMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *KnowledgeRelationshipMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeRelationship entity.
+// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeRelationshipMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *KnowledgeRelationshipMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *KnowledgeRelationshipMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *KnowledgeRelationshipMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeRelationship entity.
+// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeRelationshipMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *KnowledgeRelationshipMutation) ResetUpdatedAt() {
+	m.updated_at = nil
 }
 
 // SetSourceEntityID sets the "source_entity_id" field.
@@ -29577,78 +29543,6 @@ func (m *KnowledgeRelationshipMutation) ResetLastSeenAt() {
 	m.last_seen_at = nil
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeRelationshipMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeRelationshipMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeRelationshipMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *KnowledgeRelationshipMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *KnowledgeRelationshipMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *KnowledgeRelationshipMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *KnowledgeRelationshipMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -29822,6 +29716,12 @@ func (m *KnowledgeRelationshipMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, knowledgerelationship.FieldTenantID)
 	}
+	if m.created_at != nil {
+		fields = append(fields, knowledgerelationship.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, knowledgerelationship.FieldUpdatedAt)
+	}
 	if m.source_entity != nil {
 		fields = append(fields, knowledgerelationship.FieldSourceEntityID)
 	}
@@ -29843,12 +29743,6 @@ func (m *KnowledgeRelationshipMutation) Fields() []string {
 	if m.last_seen_at != nil {
 		fields = append(fields, knowledgerelationship.FieldLastSeenAt)
 	}
-	if m.created_at != nil {
-		fields = append(fields, knowledgerelationship.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, knowledgerelationship.FieldUpdatedAt)
-	}
 	return fields
 }
 
@@ -29859,6 +29753,10 @@ func (m *KnowledgeRelationshipMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case knowledgerelationship.FieldTenantID:
 		return m.TenantID()
+	case knowledgerelationship.FieldCreatedAt:
+		return m.CreatedAt()
+	case knowledgerelationship.FieldUpdatedAt:
+		return m.UpdatedAt()
 	case knowledgerelationship.FieldSourceEntityID:
 		return m.SourceEntityID()
 	case knowledgerelationship.FieldTargetEntityID:
@@ -29873,10 +29771,6 @@ func (m *KnowledgeRelationshipMutation) Field(name string) (ent.Value, bool) {
 		return m.FirstSeenAt()
 	case knowledgerelationship.FieldLastSeenAt:
 		return m.LastSeenAt()
-	case knowledgerelationship.FieldCreatedAt:
-		return m.CreatedAt()
-	case knowledgerelationship.FieldUpdatedAt:
-		return m.UpdatedAt()
 	}
 	return nil, false
 }
@@ -29888,6 +29782,10 @@ func (m *KnowledgeRelationshipMutation) OldField(ctx context.Context, name strin
 	switch name {
 	case knowledgerelationship.FieldTenantID:
 		return m.OldTenantID(ctx)
+	case knowledgerelationship.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case knowledgerelationship.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
 	case knowledgerelationship.FieldSourceEntityID:
 		return m.OldSourceEntityID(ctx)
 	case knowledgerelationship.FieldTargetEntityID:
@@ -29902,10 +29800,6 @@ func (m *KnowledgeRelationshipMutation) OldField(ctx context.Context, name strin
 		return m.OldFirstSeenAt(ctx)
 	case knowledgerelationship.FieldLastSeenAt:
 		return m.OldLastSeenAt(ctx)
-	case knowledgerelationship.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case knowledgerelationship.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeRelationship field %s", name)
 }
@@ -29921,6 +29815,20 @@ func (m *KnowledgeRelationshipMutation) SetField(name string, value ent.Value) e
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
+		return nil
+	case knowledgerelationship.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case knowledgerelationship.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
 		return nil
 	case knowledgerelationship.FieldSourceEntityID:
 		v, ok := value.(uuid.UUID)
@@ -29970,20 +29878,6 @@ func (m *KnowledgeRelationshipMutation) SetField(name string, value ent.Value) e
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetLastSeenAt(v)
-		return nil
-	case knowledgerelationship.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case knowledgerelationship.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeRelationship field %s", name)
@@ -30055,6 +29949,12 @@ func (m *KnowledgeRelationshipMutation) ResetField(name string) error {
 	case knowledgerelationship.FieldTenantID:
 		m.ResetTenantID()
 		return nil
+	case knowledgerelationship.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case knowledgerelationship.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
 	case knowledgerelationship.FieldSourceEntityID:
 		m.ResetSourceEntityID()
 		return nil
@@ -30075,12 +29975,6 @@ func (m *KnowledgeRelationshipMutation) ResetField(name string) error {
 		return nil
 	case knowledgerelationship.FieldLastSeenAt:
 		m.ResetLastSeenAt()
-		return nil
-	case knowledgerelationship.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case knowledgerelationship.FieldUpdatedAt:
-		m.ResetUpdatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeRelationship field %s", name)
@@ -32529,27 +32423,27 @@ func (m *MeetingSessionMutation) ResetEdge(name string) error {
 // NormalizedEventMutation represents an operation that mutates the NormalizedEvent nodes in the graph.
 type NormalizedEventMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	provider             *string
-	source               *string
-	kind                 *normalizedevent.Kind
-	subject_kind         *string
-	subject_external_ref *string
-	source_event_key     *string
-	dedupe_key           *string
-	occurred_at          *time.Time
-	received_at          *time.Time
-	processing_version   *string
-	attributes           *map[string]interface{}
-	created_at           *time.Time
-	clearedFields        map[string]struct{}
-	tenant               *int
-	clearedtenant        bool
-	done                 bool
-	oldValue             func(context.Context) (*NormalizedEvent, error)
-	predicates           []predicate.NormalizedEvent
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	provider           *string
+	provider_source    *string
+	kind               *normalizedevent.Kind
+	subject_kind       *string
+	subject_ref        *string
+	provider_event_ref *string
+	dedupe_key         *string
+	occurred_at        *time.Time
+	received_at        *time.Time
+	processing_version *string
+	attributes         *map[string]interface{}
+	created_at         *time.Time
+	clearedFields      map[string]struct{}
+	tenant             *int
+	clearedtenant      bool
+	done               bool
+	oldValue           func(context.Context) (*NormalizedEvent, error)
+	predicates         []predicate.NormalizedEvent
 }
 
 var _ ent.Mutation = (*NormalizedEventMutation)(nil)
@@ -32728,40 +32622,40 @@ func (m *NormalizedEventMutation) ResetProvider() {
 	m.provider = nil
 }
 
-// SetSource sets the "source" field.
-func (m *NormalizedEventMutation) SetSource(s string) {
-	m.source = &s
+// SetProviderSource sets the "provider_source" field.
+func (m *NormalizedEventMutation) SetProviderSource(s string) {
+	m.provider_source = &s
 }
 
-// Source returns the value of the "source" field in the mutation.
-func (m *NormalizedEventMutation) Source() (r string, exists bool) {
-	v := m.source
+// ProviderSource returns the value of the "provider_source" field in the mutation.
+func (m *NormalizedEventMutation) ProviderSource() (r string, exists bool) {
+	v := m.provider_source
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSource returns the old "source" field's value of the NormalizedEvent entity.
+// OldProviderSource returns the old "provider_source" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldSource(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventMutation) OldProviderSource(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSource requires an ID field in the mutation")
+		return v, errors.New("OldProviderSource requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
 	}
-	return oldValue.Source, nil
+	return oldValue.ProviderSource, nil
 }
 
-// ResetSource resets all changes to the "source" field.
-func (m *NormalizedEventMutation) ResetSource() {
-	m.source = nil
+// ResetProviderSource resets all changes to the "provider_source" field.
+func (m *NormalizedEventMutation) ResetProviderSource() {
+	m.provider_source = nil
 }
 
 // SetKind sets the "kind" field.
@@ -32836,76 +32730,76 @@ func (m *NormalizedEventMutation) ResetSubjectKind() {
 	m.subject_kind = nil
 }
 
-// SetSubjectExternalRef sets the "subject_external_ref" field.
-func (m *NormalizedEventMutation) SetSubjectExternalRef(s string) {
-	m.subject_external_ref = &s
+// SetSubjectRef sets the "subject_ref" field.
+func (m *NormalizedEventMutation) SetSubjectRef(s string) {
+	m.subject_ref = &s
 }
 
-// SubjectExternalRef returns the value of the "subject_external_ref" field in the mutation.
-func (m *NormalizedEventMutation) SubjectExternalRef() (r string, exists bool) {
-	v := m.subject_external_ref
+// SubjectRef returns the value of the "subject_ref" field in the mutation.
+func (m *NormalizedEventMutation) SubjectRef() (r string, exists bool) {
+	v := m.subject_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSubjectExternalRef returns the old "subject_external_ref" field's value of the NormalizedEvent entity.
+// OldSubjectRef returns the old "subject_ref" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldSubjectExternalRef(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventMutation) OldSubjectRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubjectExternalRef is only allowed on UpdateOne operations")
+		return v, errors.New("OldSubjectRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubjectExternalRef requires an ID field in the mutation")
+		return v, errors.New("OldSubjectRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubjectExternalRef: %w", err)
+		return v, fmt.Errorf("querying old value for OldSubjectRef: %w", err)
 	}
-	return oldValue.SubjectExternalRef, nil
+	return oldValue.SubjectRef, nil
 }
 
-// ResetSubjectExternalRef resets all changes to the "subject_external_ref" field.
-func (m *NormalizedEventMutation) ResetSubjectExternalRef() {
-	m.subject_external_ref = nil
+// ResetSubjectRef resets all changes to the "subject_ref" field.
+func (m *NormalizedEventMutation) ResetSubjectRef() {
+	m.subject_ref = nil
 }
 
-// SetSourceEventKey sets the "source_event_key" field.
-func (m *NormalizedEventMutation) SetSourceEventKey(s string) {
-	m.source_event_key = &s
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (m *NormalizedEventMutation) SetProviderEventRef(s string) {
+	m.provider_event_ref = &s
 }
 
-// SourceEventKey returns the value of the "source_event_key" field in the mutation.
-func (m *NormalizedEventMutation) SourceEventKey() (r string, exists bool) {
-	v := m.source_event_key
+// ProviderEventRef returns the value of the "provider_event_ref" field in the mutation.
+func (m *NormalizedEventMutation) ProviderEventRef() (r string, exists bool) {
+	v := m.provider_event_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceEventKey returns the old "source_event_key" field's value of the NormalizedEvent entity.
+// OldProviderEventRef returns the old "provider_event_ref" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldSourceEventKey(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventMutation) OldProviderEventRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceEventKey is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderEventRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceEventKey requires an ID field in the mutation")
+		return v, errors.New("OldProviderEventRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceEventKey: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderEventRef: %w", err)
 	}
-	return oldValue.SourceEventKey, nil
+	return oldValue.ProviderEventRef, nil
 }
 
-// ResetSourceEventKey resets all changes to the "source_event_key" field.
-func (m *NormalizedEventMutation) ResetSourceEventKey() {
-	m.source_event_key = nil
+// ResetProviderEventRef resets all changes to the "provider_event_ref" field.
+func (m *NormalizedEventMutation) ResetProviderEventRef() {
+	m.provider_event_ref = nil
 }
 
 // SetDedupeKey sets the "dedupe_key" field.
@@ -33205,8 +33099,8 @@ func (m *NormalizedEventMutation) Fields() []string {
 	if m.provider != nil {
 		fields = append(fields, normalizedevent.FieldProvider)
 	}
-	if m.source != nil {
-		fields = append(fields, normalizedevent.FieldSource)
+	if m.provider_source != nil {
+		fields = append(fields, normalizedevent.FieldProviderSource)
 	}
 	if m.kind != nil {
 		fields = append(fields, normalizedevent.FieldKind)
@@ -33214,11 +33108,11 @@ func (m *NormalizedEventMutation) Fields() []string {
 	if m.subject_kind != nil {
 		fields = append(fields, normalizedevent.FieldSubjectKind)
 	}
-	if m.subject_external_ref != nil {
-		fields = append(fields, normalizedevent.FieldSubjectExternalRef)
+	if m.subject_ref != nil {
+		fields = append(fields, normalizedevent.FieldSubjectRef)
 	}
-	if m.source_event_key != nil {
-		fields = append(fields, normalizedevent.FieldSourceEventKey)
+	if m.provider_event_ref != nil {
+		fields = append(fields, normalizedevent.FieldProviderEventRef)
 	}
 	if m.dedupe_key != nil {
 		fields = append(fields, normalizedevent.FieldDedupeKey)
@@ -33250,16 +33144,16 @@ func (m *NormalizedEventMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case normalizedevent.FieldProvider:
 		return m.Provider()
-	case normalizedevent.FieldSource:
-		return m.Source()
+	case normalizedevent.FieldProviderSource:
+		return m.ProviderSource()
 	case normalizedevent.FieldKind:
 		return m.Kind()
 	case normalizedevent.FieldSubjectKind:
 		return m.SubjectKind()
-	case normalizedevent.FieldSubjectExternalRef:
-		return m.SubjectExternalRef()
-	case normalizedevent.FieldSourceEventKey:
-		return m.SourceEventKey()
+	case normalizedevent.FieldSubjectRef:
+		return m.SubjectRef()
+	case normalizedevent.FieldProviderEventRef:
+		return m.ProviderEventRef()
 	case normalizedevent.FieldDedupeKey:
 		return m.DedupeKey()
 	case normalizedevent.FieldOccurredAt:
@@ -33285,16 +33179,16 @@ func (m *NormalizedEventMutation) OldField(ctx context.Context, name string) (en
 		return m.OldTenantID(ctx)
 	case normalizedevent.FieldProvider:
 		return m.OldProvider(ctx)
-	case normalizedevent.FieldSource:
-		return m.OldSource(ctx)
+	case normalizedevent.FieldProviderSource:
+		return m.OldProviderSource(ctx)
 	case normalizedevent.FieldKind:
 		return m.OldKind(ctx)
 	case normalizedevent.FieldSubjectKind:
 		return m.OldSubjectKind(ctx)
-	case normalizedevent.FieldSubjectExternalRef:
-		return m.OldSubjectExternalRef(ctx)
-	case normalizedevent.FieldSourceEventKey:
-		return m.OldSourceEventKey(ctx)
+	case normalizedevent.FieldSubjectRef:
+		return m.OldSubjectRef(ctx)
+	case normalizedevent.FieldProviderEventRef:
+		return m.OldProviderEventRef(ctx)
 	case normalizedevent.FieldDedupeKey:
 		return m.OldDedupeKey(ctx)
 	case normalizedevent.FieldOccurredAt:
@@ -33330,12 +33224,12 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProvider(v)
 		return nil
-	case normalizedevent.FieldSource:
+	case normalizedevent.FieldProviderSource:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSource(v)
+		m.SetProviderSource(v)
 		return nil
 	case normalizedevent.FieldKind:
 		v, ok := value.(normalizedevent.Kind)
@@ -33351,19 +33245,19 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSubjectKind(v)
 		return nil
-	case normalizedevent.FieldSubjectExternalRef:
+	case normalizedevent.FieldSubjectRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSubjectExternalRef(v)
+		m.SetSubjectRef(v)
 		return nil
-	case normalizedevent.FieldSourceEventKey:
+	case normalizedevent.FieldProviderEventRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSourceEventKey(v)
+		m.SetProviderEventRef(v)
 		return nil
 	case normalizedevent.FieldDedupeKey:
 		v, ok := value.(string)
@@ -33474,8 +33368,8 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 	case normalizedevent.FieldProvider:
 		m.ResetProvider()
 		return nil
-	case normalizedevent.FieldSource:
-		m.ResetSource()
+	case normalizedevent.FieldProviderSource:
+		m.ResetProviderSource()
 		return nil
 	case normalizedevent.FieldKind:
 		m.ResetKind()
@@ -33483,11 +33377,11 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 	case normalizedevent.FieldSubjectKind:
 		m.ResetSubjectKind()
 		return nil
-	case normalizedevent.FieldSubjectExternalRef:
-		m.ResetSubjectExternalRef()
+	case normalizedevent.FieldSubjectRef:
+		m.ResetSubjectRef()
 		return nil
-	case normalizedevent.FieldSourceEventKey:
-		m.ResetSourceEventKey()
+	case normalizedevent.FieldProviderEventRef:
+		m.ResetProviderEventRef()
 		return nil
 	case normalizedevent.FieldDedupeKey:
 		m.ResetDedupeKey()

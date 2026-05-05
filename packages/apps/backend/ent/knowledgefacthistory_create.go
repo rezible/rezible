@@ -35,8 +35,16 @@ func (_c *KnowledgeFactHistoryCreate) SetTenantID(v int) *KnowledgeFactHistoryCr
 }
 
 // SetFactKind sets the "fact_kind" field.
-func (_c *KnowledgeFactHistoryCreate) SetFactKind(v string) *KnowledgeFactHistoryCreate {
+func (_c *KnowledgeFactHistoryCreate) SetFactKind(v knowledgefacthistory.FactKind) *KnowledgeFactHistoryCreate {
 	_c.mutation.SetFactKind(v)
+	return _c
+}
+
+// SetNillableFactKind sets the "fact_kind" field if the given value is not nil.
+func (_c *KnowledgeFactHistoryCreate) SetNillableFactKind(v *knowledgefacthistory.FactKind) *KnowledgeFactHistoryCreate {
+	if v != nil {
+		_c.SetFactKind(*v)
+	}
 	return _c
 }
 
@@ -114,29 +122,21 @@ func (_c *KnowledgeFactHistoryCreate) SetNillableRecordedAt(v *time.Time) *Knowl
 	return _c
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (_c *KnowledgeFactHistoryCreate) SetSourceProvider(v string) *KnowledgeFactHistoryCreate {
-	_c.mutation.SetSourceProvider(v)
+// SetProvider sets the "provider" field.
+func (_c *KnowledgeFactHistoryCreate) SetProvider(v string) *KnowledgeFactHistoryCreate {
+	_c.mutation.SetProvider(v)
 	return _c
 }
 
-// SetSource sets the "source" field.
-func (_c *KnowledgeFactHistoryCreate) SetSource(v string) *KnowledgeFactHistoryCreate {
-	_c.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_c *KnowledgeFactHistoryCreate) SetProviderSource(v string) *KnowledgeFactHistoryCreate {
+	_c.mutation.SetProviderSource(v)
 	return _c
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (_c *KnowledgeFactHistoryCreate) SetSourceRef(v string) *KnowledgeFactHistoryCreate {
-	_c.mutation.SetSourceRef(v)
-	return _c
-}
-
-// SetNillableSourceRef sets the "source_ref" field if the given value is not nil.
-func (_c *KnowledgeFactHistoryCreate) SetNillableSourceRef(v *string) *KnowledgeFactHistoryCreate {
-	if v != nil {
-		_c.SetSourceRef(*v)
-	}
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_c *KnowledgeFactHistoryCreate) SetProviderEventRef(v string) *KnowledgeFactHistoryCreate {
+	_c.mutation.SetProviderEventRef(v)
 	return _c
 }
 
@@ -245,9 +245,6 @@ func (_c *KnowledgeFactHistoryCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "KnowledgeFactHistory.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.FactKind(); !ok {
-		return &ValidationError{Name: "fact_kind", err: errors.New(`ent: missing required field "KnowledgeFactHistory.fact_kind"`)}
-	}
 	if v, ok := _c.mutation.FactKind(); ok {
 		if err := knowledgefacthistory.FactKindValidator(v); err != nil {
 			return &ValidationError{Name: "fact_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.fact_kind": %w`, err)}
@@ -275,20 +272,28 @@ func (_c *KnowledgeFactHistoryCreate) check() error {
 	if _, ok := _c.mutation.RecordedAt(); !ok {
 		return &ValidationError{Name: "recorded_at", err: errors.New(`ent: missing required field "KnowledgeFactHistory.recorded_at"`)}
 	}
-	if _, ok := _c.mutation.SourceProvider(); !ok {
-		return &ValidationError{Name: "source_provider", err: errors.New(`ent: missing required field "KnowledgeFactHistory.source_provider"`)}
+	if _, ok := _c.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "KnowledgeFactHistory.provider"`)}
 	}
-	if v, ok := _c.mutation.SourceProvider(); ok {
-		if err := knowledgefacthistory.SourceProviderValidator(v); err != nil {
-			return &ValidationError{Name: "source_provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.source_provider": %w`, err)}
+	if v, ok := _c.mutation.Provider(); ok {
+		if err := knowledgefacthistory.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "KnowledgeFactHistory.source"`)}
+	if _, ok := _c.mutation.ProviderSource(); !ok {
+		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "KnowledgeFactHistory.provider_source"`)}
 	}
-	if v, ok := _c.mutation.Source(); ok {
-		if err := knowledgefacthistory.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.source": %w`, err)}
+	if v, ok := _c.mutation.ProviderSource(); ok {
+		if err := knowledgefacthistory.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider_source": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ProviderEventRef(); !ok {
+		return &ValidationError{Name: "provider_event_ref", err: errors.New(`ent: missing required field "KnowledgeFactHistory.provider_event_ref"`)}
+	}
+	if v, ok := _c.mutation.ProviderEventRef(); ok {
+		if err := knowledgefacthistory.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider_event_ref": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.ExtractionMethod(); !ok {
@@ -340,8 +345,8 @@ func (_c *KnowledgeFactHistoryCreate) createSpec() (*KnowledgeFactHistory, *sqlg
 		_spec.ID.Value = &id
 	}
 	if value, ok := _c.mutation.FactKind(); ok {
-		_spec.SetField(knowledgefacthistory.FieldFactKind, field.TypeString, value)
-		_node.FactKind = value
+		_spec.SetField(knowledgefacthistory.FieldFactKind, field.TypeEnum, value)
+		_node.FactKind = &value
 	}
 	if value, ok := _c.mutation.EventKind(); ok {
 		_spec.SetField(knowledgefacthistory.FieldEventKind, field.TypeString, value)
@@ -359,17 +364,17 @@ func (_c *KnowledgeFactHistoryCreate) createSpec() (*KnowledgeFactHistory, *sqlg
 		_spec.SetField(knowledgefacthistory.FieldRecordedAt, field.TypeTime, value)
 		_node.RecordedAt = value
 	}
-	if value, ok := _c.mutation.SourceProvider(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSourceProvider, field.TypeString, value)
-		_node.SourceProvider = value
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProvider, field.TypeString, value)
+		_node.Provider = value
 	}
-	if value, ok := _c.mutation.Source(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSource, field.TypeString, value)
-		_node.Source = value
+	if value, ok := _c.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProviderSource, field.TypeString, value)
+		_node.ProviderSource = value
 	}
-	if value, ok := _c.mutation.SourceRef(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSourceRef, field.TypeString, value)
-		_node.SourceRef = value
+	if value, ok := _c.mutation.ProviderEventRef(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProviderEventRef, field.TypeString, value)
+		_node.ProviderEventRef = value
 	}
 	if value, ok := _c.mutation.ExtractionMethod(); ok {
 		_spec.SetField(knowledgefacthistory.FieldExtractionMethod, field.TypeString, value)
@@ -504,7 +509,7 @@ type (
 )
 
 // SetFactKind sets the "fact_kind" field.
-func (u *KnowledgeFactHistoryUpsert) SetFactKind(v string) *KnowledgeFactHistoryUpsert {
+func (u *KnowledgeFactHistoryUpsert) SetFactKind(v knowledgefacthistory.FactKind) *KnowledgeFactHistoryUpsert {
 	u.Set(knowledgefacthistory.FieldFactKind, v)
 	return u
 }
@@ -512,6 +517,12 @@ func (u *KnowledgeFactHistoryUpsert) SetFactKind(v string) *KnowledgeFactHistory
 // UpdateFactKind sets the "fact_kind" field to the value that was provided on create.
 func (u *KnowledgeFactHistoryUpsert) UpdateFactKind() *KnowledgeFactHistoryUpsert {
 	u.SetExcluded(knowledgefacthistory.FieldFactKind)
+	return u
+}
+
+// ClearFactKind clears the value of the "fact_kind" field.
+func (u *KnowledgeFactHistoryUpsert) ClearFactKind() *KnowledgeFactHistoryUpsert {
+	u.SetNull(knowledgefacthistory.FieldFactKind)
 	return u
 }
 
@@ -617,45 +628,39 @@ func (u *KnowledgeFactHistoryUpsert) UpdateRecordedAt() *KnowledgeFactHistoryUps
 	return u
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (u *KnowledgeFactHistoryUpsert) SetSourceProvider(v string) *KnowledgeFactHistoryUpsert {
-	u.Set(knowledgefacthistory.FieldSourceProvider, v)
+// SetProvider sets the "provider" field.
+func (u *KnowledgeFactHistoryUpsert) SetProvider(v string) *KnowledgeFactHistoryUpsert {
+	u.Set(knowledgefacthistory.FieldProvider, v)
 	return u
 }
 
-// UpdateSourceProvider sets the "source_provider" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsert) UpdateSourceProvider() *KnowledgeFactHistoryUpsert {
-	u.SetExcluded(knowledgefacthistory.FieldSourceProvider)
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsert) UpdateProvider() *KnowledgeFactHistoryUpsert {
+	u.SetExcluded(knowledgefacthistory.FieldProvider)
 	return u
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeFactHistoryUpsert) SetSource(v string) *KnowledgeFactHistoryUpsert {
-	u.Set(knowledgefacthistory.FieldSource, v)
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeFactHistoryUpsert) SetProviderSource(v string) *KnowledgeFactHistoryUpsert {
+	u.Set(knowledgefacthistory.FieldProviderSource, v)
 	return u
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsert) UpdateSource() *KnowledgeFactHistoryUpsert {
-	u.SetExcluded(knowledgefacthistory.FieldSource)
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsert) UpdateProviderSource() *KnowledgeFactHistoryUpsert {
+	u.SetExcluded(knowledgefacthistory.FieldProviderSource)
 	return u
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (u *KnowledgeFactHistoryUpsert) SetSourceRef(v string) *KnowledgeFactHistoryUpsert {
-	u.Set(knowledgefacthistory.FieldSourceRef, v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *KnowledgeFactHistoryUpsert) SetProviderEventRef(v string) *KnowledgeFactHistoryUpsert {
+	u.Set(knowledgefacthistory.FieldProviderEventRef, v)
 	return u
 }
 
-// UpdateSourceRef sets the "source_ref" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsert) UpdateSourceRef() *KnowledgeFactHistoryUpsert {
-	u.SetExcluded(knowledgefacthistory.FieldSourceRef)
-	return u
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (u *KnowledgeFactHistoryUpsert) ClearSourceRef() *KnowledgeFactHistoryUpsert {
-	u.SetNull(knowledgefacthistory.FieldSourceRef)
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsert) UpdateProviderEventRef() *KnowledgeFactHistoryUpsert {
+	u.SetExcluded(knowledgefacthistory.FieldProviderEventRef)
 	return u
 }
 
@@ -741,7 +746,7 @@ func (u *KnowledgeFactHistoryUpsertOne) Update(set func(*KnowledgeFactHistoryUps
 }
 
 // SetFactKind sets the "fact_kind" field.
-func (u *KnowledgeFactHistoryUpsertOne) SetFactKind(v string) *KnowledgeFactHistoryUpsertOne {
+func (u *KnowledgeFactHistoryUpsertOne) SetFactKind(v knowledgefacthistory.FactKind) *KnowledgeFactHistoryUpsertOne {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
 		s.SetFactKind(v)
 	})
@@ -751,6 +756,13 @@ func (u *KnowledgeFactHistoryUpsertOne) SetFactKind(v string) *KnowledgeFactHist
 func (u *KnowledgeFactHistoryUpsertOne) UpdateFactKind() *KnowledgeFactHistoryUpsertOne {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
 		s.UpdateFactKind()
+	})
+}
+
+// ClearFactKind clears the value of the "fact_kind" field.
+func (u *KnowledgeFactHistoryUpsertOne) ClearFactKind() *KnowledgeFactHistoryUpsertOne {
+	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
+		s.ClearFactKind()
 	})
 }
 
@@ -873,52 +885,45 @@ func (u *KnowledgeFactHistoryUpsertOne) UpdateRecordedAt() *KnowledgeFactHistory
 	})
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (u *KnowledgeFactHistoryUpsertOne) SetSourceProvider(v string) *KnowledgeFactHistoryUpsertOne {
+// SetProvider sets the "provider" field.
+func (u *KnowledgeFactHistoryUpsertOne) SetProvider(v string) *KnowledgeFactHistoryUpsertOne {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.SetSourceProvider(v)
+		s.SetProvider(v)
 	})
 }
 
-// UpdateSourceProvider sets the "source_provider" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsertOne) UpdateSourceProvider() *KnowledgeFactHistoryUpsertOne {
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsertOne) UpdateProvider() *KnowledgeFactHistoryUpsertOne {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.UpdateSourceProvider()
+		s.UpdateProvider()
 	})
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeFactHistoryUpsertOne) SetSource(v string) *KnowledgeFactHistoryUpsertOne {
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeFactHistoryUpsertOne) SetProviderSource(v string) *KnowledgeFactHistoryUpsertOne {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.SetSource(v)
+		s.SetProviderSource(v)
 	})
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsertOne) UpdateSource() *KnowledgeFactHistoryUpsertOne {
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsertOne) UpdateProviderSource() *KnowledgeFactHistoryUpsertOne {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.UpdateSource()
+		s.UpdateProviderSource()
 	})
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (u *KnowledgeFactHistoryUpsertOne) SetSourceRef(v string) *KnowledgeFactHistoryUpsertOne {
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *KnowledgeFactHistoryUpsertOne) SetProviderEventRef(v string) *KnowledgeFactHistoryUpsertOne {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.SetSourceRef(v)
+		s.SetProviderEventRef(v)
 	})
 }
 
-// UpdateSourceRef sets the "source_ref" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsertOne) UpdateSourceRef() *KnowledgeFactHistoryUpsertOne {
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsertOne) UpdateProviderEventRef() *KnowledgeFactHistoryUpsertOne {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.UpdateSourceRef()
-	})
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (u *KnowledgeFactHistoryUpsertOne) ClearSourceRef() *KnowledgeFactHistoryUpsertOne {
-	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.ClearSourceRef()
+		s.UpdateProviderEventRef()
 	})
 }
 
@@ -1176,7 +1181,7 @@ func (u *KnowledgeFactHistoryUpsertBulk) Update(set func(*KnowledgeFactHistoryUp
 }
 
 // SetFactKind sets the "fact_kind" field.
-func (u *KnowledgeFactHistoryUpsertBulk) SetFactKind(v string) *KnowledgeFactHistoryUpsertBulk {
+func (u *KnowledgeFactHistoryUpsertBulk) SetFactKind(v knowledgefacthistory.FactKind) *KnowledgeFactHistoryUpsertBulk {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
 		s.SetFactKind(v)
 	})
@@ -1186,6 +1191,13 @@ func (u *KnowledgeFactHistoryUpsertBulk) SetFactKind(v string) *KnowledgeFactHis
 func (u *KnowledgeFactHistoryUpsertBulk) UpdateFactKind() *KnowledgeFactHistoryUpsertBulk {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
 		s.UpdateFactKind()
+	})
+}
+
+// ClearFactKind clears the value of the "fact_kind" field.
+func (u *KnowledgeFactHistoryUpsertBulk) ClearFactKind() *KnowledgeFactHistoryUpsertBulk {
+	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
+		s.ClearFactKind()
 	})
 }
 
@@ -1308,52 +1320,45 @@ func (u *KnowledgeFactHistoryUpsertBulk) UpdateRecordedAt() *KnowledgeFactHistor
 	})
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (u *KnowledgeFactHistoryUpsertBulk) SetSourceProvider(v string) *KnowledgeFactHistoryUpsertBulk {
+// SetProvider sets the "provider" field.
+func (u *KnowledgeFactHistoryUpsertBulk) SetProvider(v string) *KnowledgeFactHistoryUpsertBulk {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.SetSourceProvider(v)
+		s.SetProvider(v)
 	})
 }
 
-// UpdateSourceProvider sets the "source_provider" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsertBulk) UpdateSourceProvider() *KnowledgeFactHistoryUpsertBulk {
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsertBulk) UpdateProvider() *KnowledgeFactHistoryUpsertBulk {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.UpdateSourceProvider()
+		s.UpdateProvider()
 	})
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeFactHistoryUpsertBulk) SetSource(v string) *KnowledgeFactHistoryUpsertBulk {
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeFactHistoryUpsertBulk) SetProviderSource(v string) *KnowledgeFactHistoryUpsertBulk {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.SetSource(v)
+		s.SetProviderSource(v)
 	})
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsertBulk) UpdateSource() *KnowledgeFactHistoryUpsertBulk {
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsertBulk) UpdateProviderSource() *KnowledgeFactHistoryUpsertBulk {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.UpdateSource()
+		s.UpdateProviderSource()
 	})
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (u *KnowledgeFactHistoryUpsertBulk) SetSourceRef(v string) *KnowledgeFactHistoryUpsertBulk {
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *KnowledgeFactHistoryUpsertBulk) SetProviderEventRef(v string) *KnowledgeFactHistoryUpsertBulk {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.SetSourceRef(v)
+		s.SetProviderEventRef(v)
 	})
 }
 
-// UpdateSourceRef sets the "source_ref" field to the value that was provided on create.
-func (u *KnowledgeFactHistoryUpsertBulk) UpdateSourceRef() *KnowledgeFactHistoryUpsertBulk {
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *KnowledgeFactHistoryUpsertBulk) UpdateProviderEventRef() *KnowledgeFactHistoryUpsertBulk {
 	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.UpdateSourceRef()
-	})
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (u *KnowledgeFactHistoryUpsertBulk) ClearSourceRef() *KnowledgeFactHistoryUpsertBulk {
-	return u.Update(func(s *KnowledgeFactHistoryUpsert) {
-		s.ClearSourceRef()
+		s.UpdateProviderEventRef()
 	})
 }
 

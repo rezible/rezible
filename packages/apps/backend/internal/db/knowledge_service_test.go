@@ -5,12 +5,15 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
-	"github.com/rezible/rezible/testkit"
 	"github.com/stretchr/testify/suite"
+
+	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
+	knfh "github.com/rezible/rezible/ent/knowledgefacthistory"
+	knfp "github.com/rezible/rezible/ent/knowledgefactprovenance"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/testkit"
 )
 
 type KnowledgeServiceSuite struct {
@@ -27,7 +30,7 @@ func (s *KnowledgeServiceSuite) service() *KnowledgeService {
 
 func (s *KnowledgeServiceSuite) createEntity() uuid.UUID {
 	entity, err := s.service().SetEntity(s.SeedTenantContext(), uuid.Nil, func(m *ent.KnowledgeEntityMutation) {
-		m.SetKind(knowledgeentity.KindComponent)
+		m.SetKind(kne.KindComponent)
 		m.SetDisplayName("Payments API")
 		m.SetDescription("Handles payment requests")
 		m.SetProperties(map[string]any{"tier": "backend"})
@@ -46,18 +49,18 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasCreatesEntityAliasAndGetEntity
 	alias, err := svc.SetEntityAlias(ctx, uuid.Nil, func(m *ent.KnowledgeEntityAliasMutation) {
 		m.SetEntityID(entityID)
 		m.SetProvider("fake")
-		m.SetSource("datasync/system_components")
-		m.SetExternalKind("system_component")
-		m.SetExternalID(externalID)
+		m.SetProviderSource("datasync/system_components")
+		m.SetSubjectKind("system_component")
+		m.SetSubjectRef(externalID)
 		m.SetFirstSeenAt(observedAt)
 		m.SetLastSeenAt(observedAt)
 	})
 	s.Require().NoError(err)
 	s.NotEqual(uuid.Nil, alias.ID)
 
-	entity, err := svc.GetEntity(ctx, knowledgeentity.ID(alias.EntityID))
+	entity, err := svc.GetEntity(ctx, kne.ID(alias.EntityID))
 	s.Require().NoError(err)
-	s.Equal(knowledgeentity.KindComponent, entity.Kind)
+	s.Equal(kne.KindComponent, entity.Kind)
 	s.Equal("Payments API", entity.DisplayName)
 }
 
@@ -71,9 +74,9 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasIsIdempotentOnProviderExternal
 	firstAlias, err := svc.SetEntityAlias(ctx, uuid.Nil, func(m *ent.KnowledgeEntityAliasMutation) {
 		m.SetEntityID(entityID)
 		m.SetProvider("fake")
-		m.SetSource("datasync/system_components")
-		m.SetExternalKind("system_component")
-		m.SetExternalID(externalID)
+		m.SetProviderSource("datasync/system_components")
+		m.SetSubjectKind("system_component")
+		m.SetSubjectRef(externalID)
 		m.SetFirstSeenAt(observedAt)
 		m.SetLastSeenAt(observedAt)
 	})
@@ -83,9 +86,9 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasIsIdempotentOnProviderExternal
 	secondAlias, err := svc.SetEntityAlias(ctx, uuid.Nil, func(m *ent.KnowledgeEntityAliasMutation) {
 		m.SetEntityID(entityID)
 		m.SetProvider("fake")
-		m.SetSource("datasync/system_components")
-		m.SetExternalKind("system_component")
-		m.SetExternalID(externalID)
+		m.SetProviderSource("datasync/system_components")
+		m.SetSubjectKind("system_component")
+		m.SetSubjectRef(externalID)
 		m.SetFirstSeenAt(secondObservedAt)
 		m.SetLastSeenAt(secondObservedAt)
 	})
@@ -94,10 +97,10 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasIsIdempotentOnProviderExternal
 
 	aliasCount, err := s.Client().KnowledgeEntityAlias.Query().
 		Where(
-			knowledgeentityalias.Provider("fake"),
-			knowledgeentityalias.Source("datasync/system_components"),
-			knowledgeentityalias.ExternalKind("system_component"),
-			knowledgeentityalias.ExternalID(externalID),
+			knea.Provider("fake"),
+			knea.ProviderSource("datasync/system_components"),
+			knea.SubjectKind("system_component"),
+			knea.SubjectRef(externalID),
 		).
 		Count(ctx)
 	s.Require().NoError(err)
@@ -135,9 +138,9 @@ func (s *KnowledgeServiceSuite) TestSetRelationshipIsIdempotentOnSourceTargetKin
 
 	relationshipCount, err := s.Client().KnowledgeRelationship.Query().
 		Where(
-			knowledgerelationship.SourceEntityID(sourceID),
-			knowledgerelationship.TargetEntityID(targetID),
-			knowledgerelationship.Kind("depends_on"),
+			knr.SourceEntityID(sourceID),
+			knr.TargetEntityID(targetID),
+			knr.Kind("depends_on"),
 		).
 		Count(ctx)
 	s.Require().NoError(err)
@@ -147,12 +150,12 @@ func (s *KnowledgeServiceSuite) TestSetRelationshipIsIdempotentOnSourceTargetKin
 func (s *KnowledgeServiceSuite) TestSupportedCanonicalKindsCanBePersisted() {
 	ctx := s.SeedTenantContext()
 	svc := s.service()
-	kinds := []knowledgeentity.Kind{
-		knowledgeentity.KindComponent,
-		knowledgeentity.KindService,
-		knowledgeentity.KindRepository,
-		knowledgeentity.KindIncident,
-		knowledgeentity.KindChangeEvent,
+	kinds := []kne.Kind{
+		kne.KindComponent,
+		kne.KindService,
+		kne.KindRepository,
+		kne.KindIncident,
+		kne.KindChangeEvent,
 	}
 
 	for _, kind := range kinds {
@@ -163,4 +166,173 @@ func (s *KnowledgeServiceSuite) TestSupportedCanonicalKindsCanBePersisted() {
 		})
 		s.Require().NoError(err)
 	}
+}
+
+func (s *KnowledgeServiceSuite) TestSetFactProvenanceIsIdempotentOnEvidenceSource() {
+	ctx := s.SeedTenantContext()
+	svc := s.service()
+	entityID := s.createEntity()
+	observedAt := time.Now().UTC()
+
+	alias, err := svc.SetEntityAlias(ctx, uuid.Nil, func(m *ent.KnowledgeEntityAliasMutation) {
+		m.SetEntityID(entityID)
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetSubjectKind("repository")
+		m.SetSubjectRef("rezible/rezible")
+		m.SetFirstSeenAt(observedAt)
+		m.SetLastSeenAt(observedAt)
+	})
+	s.Require().NoError(err)
+
+	first, err := svc.SetFactProvenance(ctx, uuid.Nil, func(m *ent.KnowledgeFactProvenanceMutation) {
+		m.SetAliasID(alias.ID)
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetProviderEventRef("repo:rezible/rezible")
+		m.SetExtractionMethod("test_projection")
+		m.SetFirstSeenAt(observedAt)
+		m.SetLastSeenAt(observedAt)
+	})
+	s.Require().NoError(err)
+
+	second, err := svc.SetFactProvenance(ctx, uuid.Nil, func(m *ent.KnowledgeFactProvenanceMutation) {
+		m.SetAliasID(alias.ID)
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetProviderEventRef("repo:rezible/rezible")
+		m.SetExtractionMethod("test_projection")
+		m.SetFirstSeenAt(observedAt.Add(time.Minute))
+		m.SetLastSeenAt(observedAt.Add(time.Minute))
+	})
+	s.Require().NoError(err)
+	s.Equal(first.ID, second.ID)
+	s.True(second.LastSeenAt.After(first.LastSeenAt))
+
+	count, err := s.Client().KnowledgeFactProvenance.Query().
+		Where(
+			knfp.AliasID(alias.ID),
+			knfp.Provider("github"),
+			knfp.ProviderSource("normalized_events"),
+			knfp.ProviderEventRef("repo:rezible/rezible"),
+			knfp.ExtractionMethod("test_projection"),
+		).
+		Count(ctx)
+	s.Require().NoError(err)
+	s.Equal(1, count)
+}
+
+func (s *KnowledgeServiceSuite) TestSetFactHistoryIsAppendOnlyAndDedupeByHistoryKey() {
+	ctx := s.SeedTenantContext()
+	svc := s.service()
+	entityID := s.createEntity()
+	observedAt := time.Now().UTC()
+	alias, err := svc.SetEntityAlias(ctx, uuid.Nil, func(m *ent.KnowledgeEntityAliasMutation) {
+		m.SetEntityID(entityID)
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetSubjectKind("repository")
+		m.SetSubjectRef("rezible/rezible")
+		m.SetFirstSeenAt(observedAt)
+		m.SetLastSeenAt(observedAt)
+	})
+	s.Require().NoError(err)
+
+	first, err := svc.SetFactHistory(ctx, uuid.Nil, func(m *ent.KnowledgeFactHistoryMutation) {
+		m.SetFactKind("alias")
+		m.SetAliasID(alias.ID)
+		m.SetEventKind("alias_observed")
+		m.SetHistoryKey("alias:" + alias.ID.String() + ":repo-1")
+		m.SetOccurredAt(observedAt)
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetProviderEventRef("repo-1")
+		m.SetExtractionMethod("test_projection")
+		m.SetAttributes(map[string]any{})
+	})
+	s.Require().NoError(err)
+	second, err := svc.SetFactHistory(ctx, uuid.Nil, func(m *ent.KnowledgeFactHistoryMutation) {
+		m.SetFactKind("alias")
+		m.SetAliasID(alias.ID)
+		m.SetEventKind("alias_observed")
+		m.SetHistoryKey("alias:" + alias.ID.String() + ":repo-1")
+		m.SetOccurredAt(observedAt.Add(time.Minute))
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetProviderEventRef("repo-1")
+		m.SetExtractionMethod("test_projection")
+		m.SetAttributes(map[string]any{})
+	})
+	s.Require().NoError(err)
+	s.Equal(first.ID, second.ID)
+
+	_, err = svc.SetFactHistory(ctx, uuid.Nil, func(m *ent.KnowledgeFactHistoryMutation) {
+		m.SetFactKind("alias")
+		m.SetAliasID(alias.ID)
+		m.SetEventKind("alias_observed")
+		m.SetHistoryKey("alias:" + alias.ID.String() + ":repo-2")
+		m.SetOccurredAt(observedAt.Add(2 * time.Minute))
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetProviderEventRef("repo-2")
+		m.SetExtractionMethod("test_projection")
+		m.SetAttributes(map[string]any{})
+	})
+	s.Require().NoError(err)
+
+	count, err := s.Client().KnowledgeFactHistory.Query().
+		Where(knfh.AliasID(alias.ID)).
+		Count(ctx)
+	s.Require().NoError(err)
+	s.Equal(2, count)
+}
+
+func (s *KnowledgeServiceSuite) TestGetRelationshipWithEvidenceReturnsHistory() {
+	ctx := s.SeedTenantContext()
+	svc := s.service()
+	sourceID := s.createEntity()
+	targetID := s.createEntity()
+	observedAt := time.Now().UTC()
+
+	rel, err := svc.SetRelationship(ctx, uuid.Nil, func(m *ent.KnowledgeRelationshipMutation) {
+		m.SetSourceEntityID(sourceID)
+		m.SetTargetEntityID(targetID)
+		m.SetKind("changes_repository")
+		m.SetDisplayName("changes repository")
+		m.SetFirstSeenAt(observedAt)
+		m.SetLastSeenAt(observedAt)
+	})
+	s.Require().NoError(err)
+	_, err = svc.SetFactProvenance(ctx, uuid.Nil, func(m *ent.KnowledgeFactProvenanceMutation) {
+		m.SetRelationshipID(rel.ID)
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetProviderEventRef("change-1")
+		m.SetExtractionMethod("test_projection")
+		m.SetFirstSeenAt(observedAt)
+		m.SetLastSeenAt(observedAt)
+	})
+	s.Require().NoError(err)
+	_, err = svc.SetFactHistory(ctx, uuid.Nil, func(m *ent.KnowledgeFactHistoryMutation) {
+		m.SetFactKind("relationship")
+		m.SetRelationshipID(rel.ID)
+		m.SetEventKind("relationship_observed")
+		m.SetHistoryKey("relationship:" + rel.ID.String() + ":change-1")
+		m.SetOccurredAt(observedAt)
+		m.SetProvider("github")
+		m.SetProviderSource("normalized_events")
+		m.SetProviderEventRef("change-1")
+		m.SetExtractionMethod("test_projection")
+		m.SetAttributes(map[string]any{})
+	})
+	s.Require().NoError(err)
+
+	evidenceRel, evidenceRelErr := s.Client().KnowledgeRelationship.Query().
+		Where(knr.ID(rel.ID)).
+		WithProvenance().
+		Only(ctx)
+	s.Require().NoError(evidenceRelErr)
+	s.Equal(rel.ID, evidenceRel.ID)
+	s.Len(evidenceRel.Edges.Provenance, 1)
+	// s.Len(evidenceRel.Edges.History, 1)
 }

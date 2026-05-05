@@ -11,19 +11,19 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/google/uuid"
+	"github.com/riverqueue/river"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/jobs"
-	riverqueue "github.com/riverqueue/river"
 )
 
 type ProviderEventService struct {
-	logger     *slog.Logger
-	db         *ent.Client
+	logger *slog.Logger
+	db     *ent.Client
+
 	jobService rez.JobsService
 
 	processorsMu sync.RWMutex
@@ -32,19 +32,23 @@ type ProviderEventService struct {
 
 func NewProviderEventService(db *ent.Client, js rez.JobsService) *ProviderEventService {
 	pe := &ProviderEventService{
-		logger:     slog.Default(),
-		db:         db,
-		jobService: js,
-		processors: make(map[string]rez.ProviderEventProcessor),
+		logger:       slog.Default(),
+		db:           db,
+		jobService:   js,
+		processorsMu: sync.RWMutex{},
+		processors:   make(map[string]rez.ProviderEventProcessor),
 	}
-
 	jobs.RegisterWorkerFunc(pe.processProviderEvent)
 
 	return pe
 }
 
+func (s *ProviderEventService) RegisterEventProcessor(prov, src string, proc rez.ProviderEventProcessor) {
+	s.setEventProcessor(prov, src, proc)
+}
+
 func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
-	processEvent := processProviderEvent{
+	processEvent := processProviderEventArgs{
 		Provider:        strings.TrimSpace(ev.Provider),
 		Source:          strings.TrimSpace(ev.Source),
 		ReceivedAt:      time.Now().UTC(),
@@ -56,8 +60,14 @@ func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent)
 		processEvent.ReceivedAt = time.Now().UTC()
 	}
 
-	if validErr := s.validateProviderEvent(processEvent); validErr != nil {
-		return fmt.Errorf("invalid event received: %w", validErr)
+	if processEvent.Provider == "" {
+		return fmt.Errorf("provider event provider is required")
+	}
+	if processEvent.Source == "" {
+		return fmt.Errorf("provider event source is required")
+	}
+	if len(processEvent.Payload) == 0 {
+		return fmt.Errorf("provider event payload is required")
 	}
 
 	if processEvent.DedupeKey == "" {
@@ -70,8 +80,8 @@ func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent)
 		processEvent.DedupeKey = hex.EncodeToString(hash.Sum(nil))
 	}
 
-	res, insertErr := s.jobService.Insert(ctx, processEvent, &riverqueue.InsertOpts{
-		UniqueOpts: riverqueue.UniqueOpts{ByArgs: true},
+	res, insertErr := s.jobService.Insert(ctx, processEvent, &river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{ByArgs: true},
 	})
 	if insertErr != nil {
 		return fmt.Errorf("could not insert provider event job: %w", insertErr)
@@ -85,23 +95,7 @@ func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent)
 	return nil
 }
 
-func (s *ProviderEventService) validateProviderEvent(e processProviderEvent) error {
-	if strings.TrimSpace(e.Provider) == "" {
-		return fmt.Errorf("provider event provider is required")
-	}
-	if strings.TrimSpace(e.Source) == "" {
-		return fmt.Errorf("provider event source is required")
-	}
-	if len(e.Payload) == 0 {
-		return fmt.Errorf("provider event payload is required")
-	}
-	return nil
-}
-
-func (s *ProviderEventService) RegisterEventProcessor(prov, src string, proc rez.ProviderEventProcessor) {
-	if proc == nil {
-		return
-	}
+func (s *ProviderEventService) setEventProcessor(prov, src string, proc rez.ProviderEventProcessor) {
 	s.processorsMu.Lock()
 	defer s.processorsMu.Unlock()
 	s.processors[s.makeEventProcessorKey(prov, src)] = proc
@@ -118,7 +112,7 @@ func (s *ProviderEventService) lookupEventProcessor(provider, source string) (re
 	return proc, ok
 }
 
-type processProviderEvent struct {
+type processProviderEventArgs struct {
 	Provider        string            `json:"provider"`
 	Source          string            `json:"source"`
 	ReceivedAt      time.Time         `json:"received_at"`
@@ -128,28 +122,25 @@ type processProviderEvent struct {
 	DedupeKey       string            `json:"dedupe_key,omitempty" river:"unique"`
 }
 
-func (processProviderEvent) Kind() string {
+func (processProviderEventArgs) Kind() string {
 	return "process-provider-event"
 }
 
-func (e processProviderEvent) getEvent() rez.ProviderEvent {
-	return rez.ProviderEvent{
-		Provider:        e.Provider,
-		Source:          e.Source,
-		ReceivedAt:      e.ReceivedAt,
-		Payload:         e.Payload,
-		ContentType:     e.ContentType,
-		RequestMetadata: e.RequestMetadata,
-		DedupeKey:       e.DedupeKey,
-	}
-}
-
-func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov processProviderEvent) error {
-	proc, procExists := s.lookupEventProcessor(prov.Provider, prov.Source)
+func (s *ProviderEventService) processProviderEvent(ctx context.Context, args processProviderEventArgs) error {
+	proc, procExists := s.lookupEventProcessor(args.Provider, args.Source)
 	if !procExists {
-		return fmt.Errorf("no provider event processor registered for %s %s", prov.Provider, prov.Source)
+		return fmt.Errorf("no provider event processor registered for %s %s", args.Provider, args.Source)
 	}
-	normalizedEvents, procErr := proc.Process(ctx, prov.getEvent())
+	provEvent := rez.ProviderEvent{
+		Provider:        args.Provider,
+		Source:          args.Source,
+		ReceivedAt:      args.ReceivedAt,
+		Payload:         args.Payload,
+		ContentType:     args.ContentType,
+		RequestMetadata: args.RequestMetadata,
+		DedupeKey:       args.DedupeKey,
+	}
+	normalizedEvents, procErr := proc.Process(ctx, provEvent)
 	if procErr != nil {
 		return fmt.Errorf("processing provider event: %w", procErr)
 	}
@@ -157,13 +148,13 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov pr
 		return nil
 	}
 	tenantId := normalizedEvents[0].TenantID
-	for i := 1; i < len(normalizedEvents)-1; i++ {
+	for i := 1; i < len(normalizedEvents); i++ {
 		if normalizedEvents[i].TenantID != tenantId {
 			return fmt.Errorf("multiple tenant ids in events")
 		}
 	}
-	ctx = execution.SystemTenantContext(ctx, tenantId)
-	if saveErr := s.saveAndProjectNormalizedEvents(ctx, normalizedEvents); saveErr != nil {
+	tenantCtx := execution.SystemTenantContext(ctx, tenantId)
+	if saveErr := s.saveAndProjectNormalizedEvents(tenantCtx, normalizedEvents); saveErr != nil {
 		return fmt.Errorf("saving normalized events: %w", saveErr)
 	}
 	return nil
@@ -171,24 +162,24 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov pr
 
 func (s *ProviderEventService) saveAndProjectNormalizedEvents(ctx context.Context, normalizedEvents ent.NormalizedEvents) error {
 	upsertCols := sql.ConflictColumns(
-		normalizedevent.FieldTenantID,
-		normalizedevent.FieldProvider,
-		normalizedevent.FieldSource,
-		normalizedevent.FieldProcessingVersion,
-		normalizedevent.FieldSourceEventKey,
-		normalizedevent.FieldKind,
-		normalizedevent.FieldSubjectExternalRef,
+		ne.FieldTenantID,
+		ne.FieldProvider,
+		ne.FieldProviderSource,
+		ne.FieldProcessingVersion,
+		ne.FieldProviderEventRef,
+		ne.FieldKind,
+		ne.FieldSubjectRef,
 	)
 
 	mapEvent := func(c *ent.NormalizedEventCreate, i int) {
 		ev := normalizedEvents[i]
 		c.SetTenantID(ev.TenantID).
 			SetProvider(ev.Provider).
-			SetSource(ev.Source).
+			SetProviderSource(ev.ProviderSource).
 			SetKind(ev.Kind).
 			SetSubjectKind(ev.SubjectKind).
-			SetSubjectExternalRef(ev.SubjectExternalRef).
-			SetSourceEventKey(ev.SourceEventKey).
+			SetSubjectRef(ev.SubjectRef).
+			SetProviderEventRef(ev.ProviderEventRef).
 			SetOccurredAt(ev.OccurredAt).
 			SetReceivedAt(ev.ReceivedAt).
 			SetProcessingVersion(ev.ProcessingVersion).
@@ -197,72 +188,25 @@ func (s *ProviderEventService) saveAndProjectNormalizedEvents(ctx context.Contex
 			OnConflict(upsertCols).UpdateNewValues()
 	}
 
-	persistEventsTx := func(tx *ent.Tx) error {
+	return ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {
 		evs, upsertErr := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, mapEvent).Save(ctx)
 		if upsertErr != nil {
 			return fmt.Errorf("upsert normalized events: %w", upsertErr)
 		}
 
-		projectEvents := make([]riverqueue.InsertManyParams, len(evs))
+		params := make([]river.InsertManyParams, len(evs))
 		for i, ev := range evs {
-			projectEvents[i] = riverqueue.InsertManyParams{
-				Args: projectNormalizedEvent{EventId: ev.ID},
-				InsertOpts: &riverqueue.InsertOpts{
-					UniqueOpts: riverqueue.UniqueOpts{ByArgs: true},
-				},
+			params[i] = river.InsertManyParams{
+				Args:       jobs.ProjectNormalizedEvent{EventId: ev.ID},
+				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
 			}
 		}
-		if _, jobErr := s.jobService.InsertManyTx(ctx, tx, projectEvents); jobErr != nil {
+		res, jobErr := s.jobService.InsertManyTx(ctx, tx, params)
+		if jobErr != nil {
 			return fmt.Errorf("inserting project events: %w", jobErr)
 		}
+		slog.DebugContext(ctx, "requested projection for normalized events", "count", len(res))
 
 		return nil
-	}
-	if txErr := ent.WithTx(ctx, s.db, persistEventsTx); txErr != nil {
-		return fmt.Errorf("persist normalized events: %w", txErr)
-	}
-	return nil
-}
-
-type projectNormalizedEvent struct {
-	EventId uuid.UUID
-}
-
-func (projectNormalizedEvent) Kind() string {
-	return "project-normalized-event"
-}
-
-func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, args projectNormalizedEvent) error {
-	ev, queryErr := s.db.NormalizedEvent.Get(ctx, args.EventId)
-	if queryErr != nil {
-		return fmt.Errorf("query events: %w", queryErr)
-	}
-	switch ev.Kind {
-	case "chat":
-		return s.projectChatMessagePosted(ctx, ev)
-	}
-	return nil
-}
-
-func (s *ProviderEventService) projectChatMessagePosted(ctx context.Context, ev *ent.NormalizedEvent) error {
-	channelID, _ := ev.Attributes["channel_id"].(string)
-	text, _ := ev.Attributes["text"].(string)
-	if channelID == "" {
-		return fmt.Errorf("chat message normalized event missing channel_id attribute")
-	}
-
-	inc, incErr := s.db.Incident.Query().Where(incident.ChatChannelID(channelID)).First(ctx)
-	if incErr != nil {
-		if ent.IsNotFound(incErr) {
-			return nil
-		}
-		return fmt.Errorf("lookup incident by slack channel: %w", incErr)
-	}
-
-	// TODO: incident channel message
-	slog.DebugContext(ctx, "projected incident channel chat message",
-		"incidentId", inc.ID.String(),
-		"text", text,
-	)
-	return nil
+	})
 }

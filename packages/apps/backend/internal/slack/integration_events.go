@@ -6,15 +6,16 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/internal/projections"
 )
 
 const (
@@ -230,109 +231,86 @@ func (p *callbackEventProcessor) Process(ctx context.Context, prov rez.ProviderE
 		return nil, lookupErr
 	}
 	if ci == nil {
-		slog.Warn("received slack event with no configured integration found!",
+		slog.WarnContext(ctx, "received slack event with no configured integration found!",
 			"teamId", ids.TeamId,
 			"enterpriseId", ids.EnterpriseId,
 		)
 		return nil, nil
 	}
 
-	var (
-		channelID       string
-		channelType     string
-		userID          string
-		text            string
-		ts              string
-		threadTS        string
-		eventTS         string
-		subtype         string
-		botMentioned    bool
-		callbackEventID string
-		sourceEventKey  string
-	)
+	result := &ent.NormalizedEvent{
+		Provider:          integrationName,
+		ProviderSource:    callbackEventsSource,
+		Kind:              normalizedevent.KindChatMessage,
+		SubjectKind:       "message",
+		DedupeKey:         prov.DedupeKey,
+		ProcessingVersion: "slack.chat-message-posted.v1",
+	}
+
+	attrs := projections.ChatMessageAttributes{
+		ConversationExternalRef: "",
+		Body:                    "",
+		SenderExternalRef:       "",
+		ThreadExternalRef:       "",
+	}
 
 	if cb, ok := ev.Data.(*slackevents.EventsAPICallbackEvent); ok {
-		callbackEventID = cb.EventID
-		sourceEventKey = cb.EventID
+		result.ProviderEventRef = cb.EventID
+		if result.DedupeKey == "" {
+			result.DedupeKey = cb.EventID
+		}
 	}
+
+	var (
+		ts      string
+		eventTS string
+	)
 
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.MessageEvent:
-		channelID = data.Channel
-		channelType = data.ChannelType
-		userID = data.User
-		text = data.Text
+		attrs.ConversationExternalRef = data.Channel
+		attrs.SenderExternalRef = data.User
+		attrs.Body = data.Text
+		attrs.ThreadExternalRef = data.ThreadTimeStamp
+
 		ts = data.TimeStamp
-		threadTS = data.ThreadTimeStamp
 		eventTS = data.EventTimeStamp
-		subtype = data.SubType
-		botMentioned = strings.Contains(data.Text, "<@"+ci.botUserID()+">")
 	case *slackevents.AppMentionEvent:
-		channelID = data.Channel
-		userID = data.User
-		text = data.Text
+		attrs.ConversationExternalRef = data.Channel
+		attrs.SenderExternalRef = data.User
+		attrs.Body = data.Text
+		attrs.ThreadExternalRef = data.ThreadTimeStamp
+
 		ts = data.TimeStamp
-		threadTS = data.ThreadTimeStamp
 		eventTS = data.EventTimeStamp
-		botMentioned = true
 	default:
 		return nil, nil
 	}
-	if channelID == "" || ts == "" {
+
+	if attrs.ConversationExternalRef == "" || ts == "" {
 		return nil, nil
 	}
-	occurredAt := convertSlackTs(eventTS)
-	if occurredAt.IsZero() {
-		occurredAt = convertSlackTs(ts)
-	}
-	if occurredAt.IsZero() {
-		occurredAt = prov.ReceivedAt
-	}
+
+	occurredAt := tryConvertTs(ts, tryConvertTs(eventTS, prov.ReceivedAt))
 	receivedAt := prov.ReceivedAt
 	if receivedAt.IsZero() {
 		receivedAt = occurredAt
 	}
+	result.OccurredAt = occurredAt
+	result.ReceivedAt = receivedAt
 
+	// TODO: this may be ambiguous?
 	workspaceID := ev.TeamID
 	if workspaceID == "" {
 		workspaceID = ci.teamId()
 	}
-	subjectExternalRef := fmt.Sprintf("slack:%s:%s:%s", workspaceID, channelID, ts)
-	if sourceEventKey == "" {
-		sourceEventKey = subjectExternalRef
+
+	result.SubjectRef = fmt.Sprintf("slack:%s:%s:%s", workspaceID, attrs.ConversationExternalRef, ts)
+	if result.ProviderEventRef == "" {
+		result.ProviderEventRef = result.SubjectRef
 	}
 
-	dedupeKey := prov.DedupeKey
-	if dedupeKey == "" {
-		dedupeKey = callbackEventID
-	}
+	result.Attributes = attrs.Encode()
 
-	normalized := ent.NormalizedEvents{
-		{
-			Provider:           integrationName,
-			Source:             callbackEventsSource,
-			Kind:               "ChatMessagePosted",
-			SubjectKind:        "chat_message",
-			SubjectExternalRef: subjectExternalRef,
-			SourceEventKey:     sourceEventKey,
-			DedupeKey:          dedupeKey,
-			OccurredAt:         occurredAt,
-			ReceivedAt:         receivedAt,
-			ProcessingVersion:  "chat-message-posted.v1",
-			Attributes: map[string]any{
-				"team_id":          ev.TeamID,
-				"enterprise_id":    ev.EnterpriseID,
-				"channel_id":       channelID,
-				"channel_type":     channelType,
-				"user_id":          userID,
-				"text":             text,
-				"timestamp":        ts,
-				"thread_timestamp": threadTS,
-				"subtype":          subtype,
-				"bot_mentioned":    botMentioned,
-			},
-		},
-	}
-
-	return normalized, nil
+	return ent.NormalizedEvents{result}, nil
 }

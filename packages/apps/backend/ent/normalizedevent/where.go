@@ -67,9 +67,9 @@ func Provider(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldProvider, v))
 }
 
-// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
-func Source(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldSource, v))
+// ProviderSource applies equality check predicate on the "provider_source" field. It's identical to ProviderSourceEQ.
+func ProviderSource(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldProviderSource, v))
 }
 
 // SubjectKind applies equality check predicate on the "subject_kind" field. It's identical to SubjectKindEQ.
@@ -77,14 +77,14 @@ func SubjectKind(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectKind, v))
 }
 
-// SubjectExternalRef applies equality check predicate on the "subject_external_ref" field. It's identical to SubjectExternalRefEQ.
-func SubjectExternalRef(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectExternalRef, v))
+// SubjectRef applies equality check predicate on the "subject_ref" field. It's identical to SubjectRefEQ.
+func SubjectRef(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectRef, v))
 }
 
-// SourceEventKey applies equality check predicate on the "source_event_key" field. It's identical to SourceEventKeyEQ.
-func SourceEventKey(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldSourceEventKey, v))
+// ProviderEventRef applies equality check predicate on the "provider_event_ref" field. It's identical to ProviderEventRefEQ.
+func ProviderEventRef(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldProviderEventRef, v))
 }
 
 // DedupeKey applies equality check predicate on the "dedupe_key" field. It's identical to DedupeKeyEQ.
@@ -197,69 +197,69 @@ func ProviderContainsFold(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldProvider, v))
 }
 
-// SourceEQ applies the EQ predicate on the "source" field.
-func SourceEQ(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldSource, v))
+// ProviderSourceEQ applies the EQ predicate on the "provider_source" field.
+func ProviderSourceEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldProviderSource, v))
 }
 
-// SourceNEQ applies the NEQ predicate on the "source" field.
-func SourceNEQ(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNEQ(FieldSource, v))
+// ProviderSourceNEQ applies the NEQ predicate on the "provider_source" field.
+func ProviderSourceNEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldProviderSource, v))
 }
 
-// SourceIn applies the In predicate on the "source" field.
-func SourceIn(vs ...string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldIn(FieldSource, vs...))
+// ProviderSourceIn applies the In predicate on the "provider_source" field.
+func ProviderSourceIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldProviderSource, vs...))
 }
 
-// SourceNotIn applies the NotIn predicate on the "source" field.
-func SourceNotIn(vs ...string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNotIn(FieldSource, vs...))
+// ProviderSourceNotIn applies the NotIn predicate on the "provider_source" field.
+func ProviderSourceNotIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldProviderSource, vs...))
 }
 
-// SourceGT applies the GT predicate on the "source" field.
-func SourceGT(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldGT(FieldSource, v))
+// ProviderSourceGT applies the GT predicate on the "provider_source" field.
+func ProviderSourceGT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGT(FieldProviderSource, v))
 }
 
-// SourceGTE applies the GTE predicate on the "source" field.
-func SourceGTE(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldGTE(FieldSource, v))
+// ProviderSourceGTE applies the GTE predicate on the "provider_source" field.
+func ProviderSourceGTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGTE(FieldProviderSource, v))
 }
 
-// SourceLT applies the LT predicate on the "source" field.
-func SourceLT(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldLT(FieldSource, v))
+// ProviderSourceLT applies the LT predicate on the "provider_source" field.
+func ProviderSourceLT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLT(FieldProviderSource, v))
 }
 
-// SourceLTE applies the LTE predicate on the "source" field.
-func SourceLTE(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldLTE(FieldSource, v))
+// ProviderSourceLTE applies the LTE predicate on the "provider_source" field.
+func ProviderSourceLTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLTE(FieldProviderSource, v))
 }
 
-// SourceContains applies the Contains predicate on the "source" field.
-func SourceContains(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldContains(FieldSource, v))
+// ProviderSourceContains applies the Contains predicate on the "provider_source" field.
+func ProviderSourceContains(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContains(FieldProviderSource, v))
 }
 
-// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
-func SourceHasPrefix(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldSource, v))
+// ProviderSourceHasPrefix applies the HasPrefix predicate on the "provider_source" field.
+func ProviderSourceHasPrefix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldProviderSource, v))
 }
 
-// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
-func SourceHasSuffix(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldSource, v))
+// ProviderSourceHasSuffix applies the HasSuffix predicate on the "provider_source" field.
+func ProviderSourceHasSuffix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldProviderSource, v))
 }
 
-// SourceEqualFold applies the EqualFold predicate on the "source" field.
-func SourceEqualFold(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldSource, v))
+// ProviderSourceEqualFold applies the EqualFold predicate on the "provider_source" field.
+func ProviderSourceEqualFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldProviderSource, v))
 }
 
-// SourceContainsFold applies the ContainsFold predicate on the "source" field.
-func SourceContainsFold(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSource, v))
+// ProviderSourceContainsFold applies the ContainsFold predicate on the "provider_source" field.
+func ProviderSourceContainsFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldProviderSource, v))
 }
 
 // KindEQ applies the EQ predicate on the "kind" field.
@@ -347,134 +347,134 @@ func SubjectKindContainsFold(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSubjectKind, v))
 }
 
-// SubjectExternalRefEQ applies the EQ predicate on the "subject_external_ref" field.
-func SubjectExternalRefEQ(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectExternalRef, v))
+// SubjectRefEQ applies the EQ predicate on the "subject_ref" field.
+func SubjectRefEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefNEQ applies the NEQ predicate on the "subject_external_ref" field.
-func SubjectExternalRefNEQ(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNEQ(FieldSubjectExternalRef, v))
+// SubjectRefNEQ applies the NEQ predicate on the "subject_ref" field.
+func SubjectRefNEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefIn applies the In predicate on the "subject_external_ref" field.
-func SubjectExternalRefIn(vs ...string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldIn(FieldSubjectExternalRef, vs...))
+// SubjectRefIn applies the In predicate on the "subject_ref" field.
+func SubjectRefIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldSubjectRef, vs...))
 }
 
-// SubjectExternalRefNotIn applies the NotIn predicate on the "subject_external_ref" field.
-func SubjectExternalRefNotIn(vs ...string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNotIn(FieldSubjectExternalRef, vs...))
+// SubjectRefNotIn applies the NotIn predicate on the "subject_ref" field.
+func SubjectRefNotIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldSubjectRef, vs...))
 }
 
-// SubjectExternalRefGT applies the GT predicate on the "subject_external_ref" field.
-func SubjectExternalRefGT(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldGT(FieldSubjectExternalRef, v))
+// SubjectRefGT applies the GT predicate on the "subject_ref" field.
+func SubjectRefGT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGT(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefGTE applies the GTE predicate on the "subject_external_ref" field.
-func SubjectExternalRefGTE(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldGTE(FieldSubjectExternalRef, v))
+// SubjectRefGTE applies the GTE predicate on the "subject_ref" field.
+func SubjectRefGTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGTE(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefLT applies the LT predicate on the "subject_external_ref" field.
-func SubjectExternalRefLT(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldLT(FieldSubjectExternalRef, v))
+// SubjectRefLT applies the LT predicate on the "subject_ref" field.
+func SubjectRefLT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLT(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefLTE applies the LTE predicate on the "subject_external_ref" field.
-func SubjectExternalRefLTE(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldLTE(FieldSubjectExternalRef, v))
+// SubjectRefLTE applies the LTE predicate on the "subject_ref" field.
+func SubjectRefLTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLTE(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefContains applies the Contains predicate on the "subject_external_ref" field.
-func SubjectExternalRefContains(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldContains(FieldSubjectExternalRef, v))
+// SubjectRefContains applies the Contains predicate on the "subject_ref" field.
+func SubjectRefContains(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContains(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefHasPrefix applies the HasPrefix predicate on the "subject_external_ref" field.
-func SubjectExternalRefHasPrefix(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldSubjectExternalRef, v))
+// SubjectRefHasPrefix applies the HasPrefix predicate on the "subject_ref" field.
+func SubjectRefHasPrefix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefHasSuffix applies the HasSuffix predicate on the "subject_external_ref" field.
-func SubjectExternalRefHasSuffix(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldSubjectExternalRef, v))
+// SubjectRefHasSuffix applies the HasSuffix predicate on the "subject_ref" field.
+func SubjectRefHasSuffix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefEqualFold applies the EqualFold predicate on the "subject_external_ref" field.
-func SubjectExternalRefEqualFold(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldSubjectExternalRef, v))
+// SubjectRefEqualFold applies the EqualFold predicate on the "subject_ref" field.
+func SubjectRefEqualFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldSubjectRef, v))
 }
 
-// SubjectExternalRefContainsFold applies the ContainsFold predicate on the "subject_external_ref" field.
-func SubjectExternalRefContainsFold(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSubjectExternalRef, v))
+// SubjectRefContainsFold applies the ContainsFold predicate on the "subject_ref" field.
+func SubjectRefContainsFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSubjectRef, v))
 }
 
-// SourceEventKeyEQ applies the EQ predicate on the "source_event_key" field.
-func SourceEventKeyEQ(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldSourceEventKey, v))
+// ProviderEventRefEQ applies the EQ predicate on the "provider_event_ref" field.
+func ProviderEventRefEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyNEQ applies the NEQ predicate on the "source_event_key" field.
-func SourceEventKeyNEQ(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNEQ(FieldSourceEventKey, v))
+// ProviderEventRefNEQ applies the NEQ predicate on the "provider_event_ref" field.
+func ProviderEventRefNEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyIn applies the In predicate on the "source_event_key" field.
-func SourceEventKeyIn(vs ...string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldIn(FieldSourceEventKey, vs...))
+// ProviderEventRefIn applies the In predicate on the "provider_event_ref" field.
+func ProviderEventRefIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldProviderEventRef, vs...))
 }
 
-// SourceEventKeyNotIn applies the NotIn predicate on the "source_event_key" field.
-func SourceEventKeyNotIn(vs ...string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNotIn(FieldSourceEventKey, vs...))
+// ProviderEventRefNotIn applies the NotIn predicate on the "provider_event_ref" field.
+func ProviderEventRefNotIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldProviderEventRef, vs...))
 }
 
-// SourceEventKeyGT applies the GT predicate on the "source_event_key" field.
-func SourceEventKeyGT(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldGT(FieldSourceEventKey, v))
+// ProviderEventRefGT applies the GT predicate on the "provider_event_ref" field.
+func ProviderEventRefGT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGT(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyGTE applies the GTE predicate on the "source_event_key" field.
-func SourceEventKeyGTE(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldGTE(FieldSourceEventKey, v))
+// ProviderEventRefGTE applies the GTE predicate on the "provider_event_ref" field.
+func ProviderEventRefGTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGTE(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyLT applies the LT predicate on the "source_event_key" field.
-func SourceEventKeyLT(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldLT(FieldSourceEventKey, v))
+// ProviderEventRefLT applies the LT predicate on the "provider_event_ref" field.
+func ProviderEventRefLT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLT(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyLTE applies the LTE predicate on the "source_event_key" field.
-func SourceEventKeyLTE(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldLTE(FieldSourceEventKey, v))
+// ProviderEventRefLTE applies the LTE predicate on the "provider_event_ref" field.
+func ProviderEventRefLTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLTE(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyContains applies the Contains predicate on the "source_event_key" field.
-func SourceEventKeyContains(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldContains(FieldSourceEventKey, v))
+// ProviderEventRefContains applies the Contains predicate on the "provider_event_ref" field.
+func ProviderEventRefContains(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContains(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyHasPrefix applies the HasPrefix predicate on the "source_event_key" field.
-func SourceEventKeyHasPrefix(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldSourceEventKey, v))
+// ProviderEventRefHasPrefix applies the HasPrefix predicate on the "provider_event_ref" field.
+func ProviderEventRefHasPrefix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyHasSuffix applies the HasSuffix predicate on the "source_event_key" field.
-func SourceEventKeyHasSuffix(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldSourceEventKey, v))
+// ProviderEventRefHasSuffix applies the HasSuffix predicate on the "provider_event_ref" field.
+func ProviderEventRefHasSuffix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyEqualFold applies the EqualFold predicate on the "source_event_key" field.
-func SourceEventKeyEqualFold(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldSourceEventKey, v))
+// ProviderEventRefEqualFold applies the EqualFold predicate on the "provider_event_ref" field.
+func ProviderEventRefEqualFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldProviderEventRef, v))
 }
 
-// SourceEventKeyContainsFold applies the ContainsFold predicate on the "source_event_key" field.
-func SourceEventKeyContainsFold(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSourceEventKey, v))
+// ProviderEventRefContainsFold applies the ContainsFold predicate on the "provider_event_ref" field.
+func ProviderEventRefContainsFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldProviderEventRef, v))
 }
 
 // DedupeKeyEQ applies the EQ predicate on the "dedupe_key" field.

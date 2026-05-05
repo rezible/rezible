@@ -124,9 +124,15 @@ type (
 
 type (
 	KnowledgeService interface {
-		SetRelationship(context.Context, uuid.UUID, func(relationship *ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
-		SetEntityAlias(context.Context, uuid.UUID, func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error)
 		GetEntity(context.Context, predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error)
+		SetEntity(context.Context, uuid.UUID, func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error)
+
+		SetEntityAlias(context.Context, uuid.UUID, func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error)
+
+		SetRelationship(context.Context, uuid.UUID, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
+
+		SetFactProvenance(context.Context, uuid.UUID, func(*ent.KnowledgeFactProvenanceMutation)) (*ent.KnowledgeFactProvenance, error)
+		SetFactHistory(context.Context, uuid.UUID, func(*ent.KnowledgeFactHistoryMutation)) (*ent.KnowledgeFactHistory, error)
 	}
 )
 

@@ -62,6 +62,16 @@ func TenantID(v int) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldTenantID, v))
 }
 
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
 // EntityID applies equality check predicate on the "entity_id" field. It's identical to EntityIDEQ.
 func EntityID(v uuid.UUID) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldEntityID, v))
@@ -72,19 +82,19 @@ func Provider(v string) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldProvider, v))
 }
 
-// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
-func Source(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldSource, v))
+// ProviderSource applies equality check predicate on the "provider_source" field. It's identical to ProviderSourceEQ.
+func ProviderSource(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldProviderSource, v))
 }
 
-// ExternalKind applies equality check predicate on the "external_kind" field. It's identical to ExternalKindEQ.
-func ExternalKind(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldExternalKind, v))
+// SubjectKind applies equality check predicate on the "subject_kind" field. It's identical to SubjectKindEQ.
+func SubjectKind(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldSubjectKind, v))
 }
 
-// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
-func ExternalID(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldExternalID, v))
+// SubjectRef applies equality check predicate on the "subject_ref" field. It's identical to SubjectRefEQ.
+func SubjectRef(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldSubjectRef, v))
 }
 
 // NormalizedEventID applies equality check predicate on the "normalized_event_id" field. It's identical to NormalizedEventIDEQ.
@@ -100,16 +110,6 @@ func FirstSeenAt(v time.Time) predicate.KnowledgeEntityAlias {
 // LastSeenAt applies equality check predicate on the "last_seen_at" field. It's identical to LastSeenAtEQ.
 func LastSeenAt(v time.Time) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldLastSeenAt, v))
-}
-
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
-func UpdatedAt(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -130,6 +130,86 @@ func TenantIDIn(vs ...int) predicate.KnowledgeEntityAlias {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // EntityIDEQ applies the EQ predicate on the "entity_id" field.
@@ -217,199 +297,199 @@ func ProviderContainsFold(v string) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldProvider, v))
 }
 
-// SourceEQ applies the EQ predicate on the "source" field.
-func SourceEQ(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldSource, v))
+// ProviderSourceEQ applies the EQ predicate on the "provider_source" field.
+func ProviderSourceEQ(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldProviderSource, v))
 }
 
-// SourceNEQ applies the NEQ predicate on the "source" field.
-func SourceNEQ(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldSource, v))
+// ProviderSourceNEQ applies the NEQ predicate on the "provider_source" field.
+func ProviderSourceNEQ(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldProviderSource, v))
 }
 
-// SourceIn applies the In predicate on the "source" field.
-func SourceIn(vs ...string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldSource, vs...))
+// ProviderSourceIn applies the In predicate on the "provider_source" field.
+func ProviderSourceIn(vs ...string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldProviderSource, vs...))
 }
 
-// SourceNotIn applies the NotIn predicate on the "source" field.
-func SourceNotIn(vs ...string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldSource, vs...))
+// ProviderSourceNotIn applies the NotIn predicate on the "provider_source" field.
+func ProviderSourceNotIn(vs ...string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldProviderSource, vs...))
 }
 
-// SourceGT applies the GT predicate on the "source" field.
-func SourceGT(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldSource, v))
+// ProviderSourceGT applies the GT predicate on the "provider_source" field.
+func ProviderSourceGT(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldProviderSource, v))
 }
 
-// SourceGTE applies the GTE predicate on the "source" field.
-func SourceGTE(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldSource, v))
+// ProviderSourceGTE applies the GTE predicate on the "provider_source" field.
+func ProviderSourceGTE(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldProviderSource, v))
 }
 
-// SourceLT applies the LT predicate on the "source" field.
-func SourceLT(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldSource, v))
+// ProviderSourceLT applies the LT predicate on the "provider_source" field.
+func ProviderSourceLT(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldProviderSource, v))
 }
 
-// SourceLTE applies the LTE predicate on the "source" field.
-func SourceLTE(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldSource, v))
+// ProviderSourceLTE applies the LTE predicate on the "provider_source" field.
+func ProviderSourceLTE(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldProviderSource, v))
 }
 
-// SourceContains applies the Contains predicate on the "source" field.
-func SourceContains(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldContains(FieldSource, v))
+// ProviderSourceContains applies the Contains predicate on the "provider_source" field.
+func ProviderSourceContains(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldContains(FieldProviderSource, v))
 }
 
-// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
-func SourceHasPrefix(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldHasPrefix(FieldSource, v))
+// ProviderSourceHasPrefix applies the HasPrefix predicate on the "provider_source" field.
+func ProviderSourceHasPrefix(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldHasPrefix(FieldProviderSource, v))
 }
 
-// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
-func SourceHasSuffix(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldHasSuffix(FieldSource, v))
+// ProviderSourceHasSuffix applies the HasSuffix predicate on the "provider_source" field.
+func ProviderSourceHasSuffix(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldHasSuffix(FieldProviderSource, v))
 }
 
-// SourceEqualFold applies the EqualFold predicate on the "source" field.
-func SourceEqualFold(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEqualFold(FieldSource, v))
+// ProviderSourceEqualFold applies the EqualFold predicate on the "provider_source" field.
+func ProviderSourceEqualFold(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEqualFold(FieldProviderSource, v))
 }
 
-// SourceContainsFold applies the ContainsFold predicate on the "source" field.
-func SourceContainsFold(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldSource, v))
+// ProviderSourceContainsFold applies the ContainsFold predicate on the "provider_source" field.
+func ProviderSourceContainsFold(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldProviderSource, v))
 }
 
-// ExternalKindEQ applies the EQ predicate on the "external_kind" field.
-func ExternalKindEQ(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldExternalKind, v))
+// SubjectKindEQ applies the EQ predicate on the "subject_kind" field.
+func SubjectKindEQ(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldSubjectKind, v))
 }
 
-// ExternalKindNEQ applies the NEQ predicate on the "external_kind" field.
-func ExternalKindNEQ(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldExternalKind, v))
+// SubjectKindNEQ applies the NEQ predicate on the "subject_kind" field.
+func SubjectKindNEQ(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldSubjectKind, v))
 }
 
-// ExternalKindIn applies the In predicate on the "external_kind" field.
-func ExternalKindIn(vs ...string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldExternalKind, vs...))
+// SubjectKindIn applies the In predicate on the "subject_kind" field.
+func SubjectKindIn(vs ...string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldSubjectKind, vs...))
 }
 
-// ExternalKindNotIn applies the NotIn predicate on the "external_kind" field.
-func ExternalKindNotIn(vs ...string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldExternalKind, vs...))
+// SubjectKindNotIn applies the NotIn predicate on the "subject_kind" field.
+func SubjectKindNotIn(vs ...string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldSubjectKind, vs...))
 }
 
-// ExternalKindGT applies the GT predicate on the "external_kind" field.
-func ExternalKindGT(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldExternalKind, v))
+// SubjectKindGT applies the GT predicate on the "subject_kind" field.
+func SubjectKindGT(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldSubjectKind, v))
 }
 
-// ExternalKindGTE applies the GTE predicate on the "external_kind" field.
-func ExternalKindGTE(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldExternalKind, v))
+// SubjectKindGTE applies the GTE predicate on the "subject_kind" field.
+func SubjectKindGTE(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldSubjectKind, v))
 }
 
-// ExternalKindLT applies the LT predicate on the "external_kind" field.
-func ExternalKindLT(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldExternalKind, v))
+// SubjectKindLT applies the LT predicate on the "subject_kind" field.
+func SubjectKindLT(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldSubjectKind, v))
 }
 
-// ExternalKindLTE applies the LTE predicate on the "external_kind" field.
-func ExternalKindLTE(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldExternalKind, v))
+// SubjectKindLTE applies the LTE predicate on the "subject_kind" field.
+func SubjectKindLTE(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldSubjectKind, v))
 }
 
-// ExternalKindContains applies the Contains predicate on the "external_kind" field.
-func ExternalKindContains(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldContains(FieldExternalKind, v))
+// SubjectKindContains applies the Contains predicate on the "subject_kind" field.
+func SubjectKindContains(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldContains(FieldSubjectKind, v))
 }
 
-// ExternalKindHasPrefix applies the HasPrefix predicate on the "external_kind" field.
-func ExternalKindHasPrefix(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldHasPrefix(FieldExternalKind, v))
+// SubjectKindHasPrefix applies the HasPrefix predicate on the "subject_kind" field.
+func SubjectKindHasPrefix(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldHasPrefix(FieldSubjectKind, v))
 }
 
-// ExternalKindHasSuffix applies the HasSuffix predicate on the "external_kind" field.
-func ExternalKindHasSuffix(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldHasSuffix(FieldExternalKind, v))
+// SubjectKindHasSuffix applies the HasSuffix predicate on the "subject_kind" field.
+func SubjectKindHasSuffix(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldHasSuffix(FieldSubjectKind, v))
 }
 
-// ExternalKindEqualFold applies the EqualFold predicate on the "external_kind" field.
-func ExternalKindEqualFold(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEqualFold(FieldExternalKind, v))
+// SubjectKindEqualFold applies the EqualFold predicate on the "subject_kind" field.
+func SubjectKindEqualFold(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEqualFold(FieldSubjectKind, v))
 }
 
-// ExternalKindContainsFold applies the ContainsFold predicate on the "external_kind" field.
-func ExternalKindContainsFold(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldExternalKind, v))
+// SubjectKindContainsFold applies the ContainsFold predicate on the "subject_kind" field.
+func SubjectKindContainsFold(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldSubjectKind, v))
 }
 
-// ExternalIDEQ applies the EQ predicate on the "external_id" field.
-func ExternalIDEQ(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldExternalID, v))
+// SubjectRefEQ applies the EQ predicate on the "subject_ref" field.
+func SubjectRefEQ(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldSubjectRef, v))
 }
 
-// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
-func ExternalIDNEQ(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldExternalID, v))
+// SubjectRefNEQ applies the NEQ predicate on the "subject_ref" field.
+func SubjectRefNEQ(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldSubjectRef, v))
 }
 
-// ExternalIDIn applies the In predicate on the "external_id" field.
-func ExternalIDIn(vs ...string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldExternalID, vs...))
+// SubjectRefIn applies the In predicate on the "subject_ref" field.
+func SubjectRefIn(vs ...string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldSubjectRef, vs...))
 }
 
-// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
-func ExternalIDNotIn(vs ...string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldExternalID, vs...))
+// SubjectRefNotIn applies the NotIn predicate on the "subject_ref" field.
+func SubjectRefNotIn(vs ...string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldSubjectRef, vs...))
 }
 
-// ExternalIDGT applies the GT predicate on the "external_id" field.
-func ExternalIDGT(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldExternalID, v))
+// SubjectRefGT applies the GT predicate on the "subject_ref" field.
+func SubjectRefGT(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldSubjectRef, v))
 }
 
-// ExternalIDGTE applies the GTE predicate on the "external_id" field.
-func ExternalIDGTE(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldExternalID, v))
+// SubjectRefGTE applies the GTE predicate on the "subject_ref" field.
+func SubjectRefGTE(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldSubjectRef, v))
 }
 
-// ExternalIDLT applies the LT predicate on the "external_id" field.
-func ExternalIDLT(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldExternalID, v))
+// SubjectRefLT applies the LT predicate on the "subject_ref" field.
+func SubjectRefLT(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldSubjectRef, v))
 }
 
-// ExternalIDLTE applies the LTE predicate on the "external_id" field.
-func ExternalIDLTE(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldExternalID, v))
+// SubjectRefLTE applies the LTE predicate on the "subject_ref" field.
+func SubjectRefLTE(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldSubjectRef, v))
 }
 
-// ExternalIDContains applies the Contains predicate on the "external_id" field.
-func ExternalIDContains(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldContains(FieldExternalID, v))
+// SubjectRefContains applies the Contains predicate on the "subject_ref" field.
+func SubjectRefContains(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldContains(FieldSubjectRef, v))
 }
 
-// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
-func ExternalIDHasPrefix(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldHasPrefix(FieldExternalID, v))
+// SubjectRefHasPrefix applies the HasPrefix predicate on the "subject_ref" field.
+func SubjectRefHasPrefix(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldHasPrefix(FieldSubjectRef, v))
 }
 
-// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
-func ExternalIDHasSuffix(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldHasSuffix(FieldExternalID, v))
+// SubjectRefHasSuffix applies the HasSuffix predicate on the "subject_ref" field.
+func SubjectRefHasSuffix(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldHasSuffix(FieldSubjectRef, v))
 }
 
-// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
-func ExternalIDEqualFold(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEqualFold(FieldExternalID, v))
+// SubjectRefEqualFold applies the EqualFold predicate on the "subject_ref" field.
+func SubjectRefEqualFold(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldEqualFold(FieldSubjectRef, v))
 }
 
-// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
-func ExternalIDContainsFold(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldExternalID, v))
+// SubjectRefContainsFold applies the ContainsFold predicate on the "subject_ref" field.
+func SubjectRefContainsFold(v string) predicate.KnowledgeEntityAlias {
+	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldSubjectRef, v))
 }
 
 // NormalizedEventIDEQ applies the EQ predicate on the "normalized_event_id" field.
@@ -520,86 +600,6 @@ func LastSeenAtLT(v time.Time) predicate.KnowledgeEntityAlias {
 // LastSeenAtLTE applies the LTE predicate on the "last_seen_at" field.
 func LastSeenAtLTE(v time.Time) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldLastSeenAt, v))
-}
-
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldCreatedAt, v))
-}
-
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldCreatedAt, v))
-}
-
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldCreatedAt, v))
-}
-
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldCreatedAt, v))
-}
-
-// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
-func UpdatedAtEQ(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
-func UpdatedAtNEQ(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldUpdatedAt, v))
-}
-
-// UpdatedAtIn applies the In predicate on the "updated_at" field.
-func UpdatedAtIn(vs ...time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldUpdatedAt, vs...))
-}
-
-// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
-func UpdatedAtNotIn(vs ...time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldUpdatedAt, vs...))
-}
-
-// UpdatedAtGT applies the GT predicate on the "updated_at" field.
-func UpdatedAtGT(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldUpdatedAt, v))
-}
-
-// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
-func UpdatedAtGTE(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldUpdatedAt, v))
-}
-
-// UpdatedAtLT applies the LT predicate on the "updated_at" field.
-func UpdatedAtLT(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldUpdatedAt, v))
-}
-
-// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
-func UpdatedAtLTE(v time.Time) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

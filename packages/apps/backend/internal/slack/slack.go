@@ -50,6 +50,13 @@ func convertSlackTs(ts string) time.Time {
 	return time.Unix(secs, 0)
 }
 
+func tryConvertTs(ts string, fallback time.Time) time.Time {
+	if conv := convertSlackTs(ts); !conv.IsZero() {
+		return conv
+	}
+	return fallback
+}
+
 type messageId string
 
 func (m messageId) getTimestamp() time.Time {

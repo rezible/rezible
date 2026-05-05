@@ -33,6 +33,34 @@ func (_c *KnowledgeRelationshipCreate) SetTenantID(v int) *KnowledgeRelationship
 	return _c
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_c *KnowledgeRelationshipCreate) SetCreatedAt(v time.Time) *KnowledgeRelationshipCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *KnowledgeRelationshipCreate) SetUpdatedAt(v time.Time) *KnowledgeRelationshipCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *KnowledgeRelationshipCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeRelationshipCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (_c *KnowledgeRelationshipCreate) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipCreate {
 	_c.mutation.SetSourceEntityID(v)
@@ -103,34 +131,6 @@ func (_c *KnowledgeRelationshipCreate) SetLastSeenAt(v time.Time) *KnowledgeRela
 func (_c *KnowledgeRelationshipCreate) SetNillableLastSeenAt(v *time.Time) *KnowledgeRelationshipCreate {
 	if v != nil {
 		_c.SetLastSeenAt(*v)
-	}
-	return _c
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_c *KnowledgeRelationshipCreate) SetCreatedAt(v time.Time) *KnowledgeRelationshipCreate {
-	_c.mutation.SetCreatedAt(v)
-	return _c
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *KnowledgeRelationshipCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeRelationshipCreate {
-	if v != nil {
-		_c.SetCreatedAt(*v)
-	}
-	return _c
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_c *KnowledgeRelationshipCreate) SetUpdatedAt(v time.Time) *KnowledgeRelationshipCreate {
-	_c.mutation.SetUpdatedAt(v)
-	return _c
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *KnowledgeRelationshipCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeRelationshipCreate {
-	if v != nil {
-		_c.SetUpdatedAt(*v)
 	}
 	return _c
 }
@@ -216,20 +216,6 @@ func (_c *KnowledgeRelationshipCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *KnowledgeRelationshipCreate) defaults() error {
-	if _, ok := _c.mutation.FirstSeenAt(); !ok {
-		if knowledgerelationship.DefaultFirstSeenAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgerelationship.DefaultFirstSeenAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgerelationship.DefaultFirstSeenAt()
-		_c.mutation.SetFirstSeenAt(v)
-	}
-	if _, ok := _c.mutation.LastSeenAt(); !ok {
-		if knowledgerelationship.DefaultLastSeenAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgerelationship.DefaultLastSeenAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgerelationship.DefaultLastSeenAt()
-		_c.mutation.SetLastSeenAt(v)
-	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if knowledgerelationship.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized knowledgerelationship.DefaultCreatedAt (forgotten import ent/runtime?)")
@@ -243,6 +229,20 @@ func (_c *KnowledgeRelationshipCreate) defaults() error {
 		}
 		v := knowledgerelationship.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := _c.mutation.FirstSeenAt(); !ok {
+		if knowledgerelationship.DefaultFirstSeenAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgerelationship.DefaultFirstSeenAt (forgotten import ent/runtime?)")
+		}
+		v := knowledgerelationship.DefaultFirstSeenAt()
+		_c.mutation.SetFirstSeenAt(v)
+	}
+	if _, ok := _c.mutation.LastSeenAt(); !ok {
+		if knowledgerelationship.DefaultLastSeenAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgerelationship.DefaultLastSeenAt (forgotten import ent/runtime?)")
+		}
+		v := knowledgerelationship.DefaultLastSeenAt()
+		_c.mutation.SetLastSeenAt(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgerelationship.DefaultID == nil {
@@ -258,6 +258,12 @@ func (_c *KnowledgeRelationshipCreate) defaults() error {
 func (_c *KnowledgeRelationshipCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "KnowledgeRelationship.tenant_id"`)}
+	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeRelationship.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeRelationship.updated_at"`)}
 	}
 	if _, ok := _c.mutation.SourceEntityID(); !ok {
 		return &ValidationError{Name: "source_entity_id", err: errors.New(`ent: missing required field "KnowledgeRelationship.source_entity_id"`)}
@@ -278,12 +284,6 @@ func (_c *KnowledgeRelationshipCreate) check() error {
 	}
 	if _, ok := _c.mutation.LastSeenAt(); !ok {
 		return &ValidationError{Name: "last_seen_at", err: errors.New(`ent: missing required field "KnowledgeRelationship.last_seen_at"`)}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeRelationship.created_at"`)}
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeRelationship.updated_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeRelationship.tenant"`)}
@@ -331,6 +331,14 @@ func (_c *KnowledgeRelationshipCreate) createSpec() (*KnowledgeRelationship, *sq
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(knowledgerelationship.FieldKind, field.TypeString, value)
 		_node.Kind = value
@@ -350,14 +358,6 @@ func (_c *KnowledgeRelationshipCreate) createSpec() (*KnowledgeRelationship, *sq
 	if value, ok := _c.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldLastSeenAt, field.TypeTime, value)
 		_node.LastSeenAt = value
-	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgerelationship.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -482,6 +482,30 @@ type (
 	}
 )
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeRelationshipUpsert) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateCreatedAt() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeRelationshipUpsert) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateUpdatedAt() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldUpdatedAt)
+	return u
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (u *KnowledgeRelationshipUpsert) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsert {
 	u.Set(knowledgerelationship.FieldSourceEntityID, v)
@@ -578,30 +602,6 @@ func (u *KnowledgeRelationshipUpsert) UpdateLastSeenAt() *KnowledgeRelationshipU
 	return u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeRelationshipUpsert) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpsert {
-	u.Set(knowledgerelationship.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsert) UpdateCreatedAt() *KnowledgeRelationshipUpsert {
-	u.SetExcluded(knowledgerelationship.FieldCreatedAt)
-	return u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeRelationshipUpsert) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpsert {
-	u.Set(knowledgerelationship.FieldUpdatedAt, v)
-	return u
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsert) UpdateUpdatedAt() *KnowledgeRelationshipUpsert {
-	u.SetExcluded(knowledgerelationship.FieldUpdatedAt)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -651,6 +651,34 @@ func (u *KnowledgeRelationshipUpsertOne) Update(set func(*KnowledgeRelationshipU
 		set(&KnowledgeRelationshipUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeRelationshipUpsertOne) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateCreatedAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeRelationshipUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateUpdatedAt() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateUpdatedAt()
+	})
 }
 
 // SetSourceEntityID sets the "source_entity_id" field.
@@ -762,34 +790,6 @@ func (u *KnowledgeRelationshipUpsertOne) SetLastSeenAt(v time.Time) *KnowledgeRe
 func (u *KnowledgeRelationshipUpsertOne) UpdateLastSeenAt() *KnowledgeRelationshipUpsertOne {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateLastSeenAt()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeRelationshipUpsertOne) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertOne) UpdateCreatedAt() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeRelationshipUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertOne) UpdateUpdatedAt() *KnowledgeRelationshipUpsertOne {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 
@@ -1011,6 +1011,34 @@ func (u *KnowledgeRelationshipUpsertBulk) Update(set func(*KnowledgeRelationship
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateCreatedAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateUpdatedAt() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (u *KnowledgeRelationshipUpsertBulk) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpsertBulk {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
@@ -1120,34 +1148,6 @@ func (u *KnowledgeRelationshipUpsertBulk) SetLastSeenAt(v time.Time) *KnowledgeR
 func (u *KnowledgeRelationshipUpsertBulk) UpdateLastSeenAt() *KnowledgeRelationshipUpsertBulk {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.UpdateLastSeenAt()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeRelationshipUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertBulk) UpdateCreatedAt() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeRelationshipUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeRelationshipUpsertBulk) UpdateUpdatedAt() *KnowledgeRelationshipUpsertBulk {
-	return u.Update(func(s *KnowledgeRelationshipUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 

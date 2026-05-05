@@ -15,6 +15,14 @@ func (SyncIntegrationsData) Kind() string {
 	return "sync-integrations-data"
 }
 
+type ProjectNormalizedEvent struct {
+	EventId uuid.UUID
+}
+
+func (ProjectNormalizedEvent) Kind() string {
+	return "project-normalized-event"
+}
+
 type SendIncidentDebriefRequests struct {
 	IncidentId uuid.UUID
 }

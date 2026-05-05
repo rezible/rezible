@@ -34,6 +34,34 @@ func (_c *KnowledgeFactProvenanceCreate) SetTenantID(v int) *KnowledgeFactProven
 	return _c
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_c *KnowledgeFactProvenanceCreate) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *KnowledgeFactProvenanceCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeFactProvenanceCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *KnowledgeFactProvenanceCreate) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *KnowledgeFactProvenanceCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeFactProvenanceCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
 // SetAliasID sets the "alias_id" field.
 func (_c *KnowledgeFactProvenanceCreate) SetAliasID(v uuid.UUID) *KnowledgeFactProvenanceCreate {
 	_c.mutation.SetAliasID(v)
@@ -76,49 +104,27 @@ func (_c *KnowledgeFactProvenanceCreate) SetNillableNormalizedEventID(v *uuid.UU
 	return _c
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (_c *KnowledgeFactProvenanceCreate) SetSourceProvider(v string) *KnowledgeFactProvenanceCreate {
-	_c.mutation.SetSourceProvider(v)
+// SetProvider sets the "provider" field.
+func (_c *KnowledgeFactProvenanceCreate) SetProvider(v string) *KnowledgeFactProvenanceCreate {
+	_c.mutation.SetProvider(v)
 	return _c
 }
 
-// SetSource sets the "source" field.
-func (_c *KnowledgeFactProvenanceCreate) SetSource(v string) *KnowledgeFactProvenanceCreate {
-	_c.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_c *KnowledgeFactProvenanceCreate) SetProviderSource(v string) *KnowledgeFactProvenanceCreate {
+	_c.mutation.SetProviderSource(v)
 	return _c
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (_c *KnowledgeFactProvenanceCreate) SetSourceRef(v string) *KnowledgeFactProvenanceCreate {
-	_c.mutation.SetSourceRef(v)
-	return _c
-}
-
-// SetNillableSourceRef sets the "source_ref" field if the given value is not nil.
-func (_c *KnowledgeFactProvenanceCreate) SetNillableSourceRef(v *string) *KnowledgeFactProvenanceCreate {
-	if v != nil {
-		_c.SetSourceRef(*v)
-	}
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_c *KnowledgeFactProvenanceCreate) SetProviderEventRef(v string) *KnowledgeFactProvenanceCreate {
+	_c.mutation.SetProviderEventRef(v)
 	return _c
 }
 
 // SetExtractionMethod sets the "extraction_method" field.
 func (_c *KnowledgeFactProvenanceCreate) SetExtractionMethod(v string) *KnowledgeFactProvenanceCreate {
 	_c.mutation.SetExtractionMethod(v)
-	return _c
-}
-
-// SetConfidence sets the "confidence" field.
-func (_c *KnowledgeFactProvenanceCreate) SetConfidence(v float64) *KnowledgeFactProvenanceCreate {
-	_c.mutation.SetConfidence(v)
-	return _c
-}
-
-// SetNillableConfidence sets the "confidence" field if the given value is not nil.
-func (_c *KnowledgeFactProvenanceCreate) SetNillableConfidence(v *float64) *KnowledgeFactProvenanceCreate {
-	if v != nil {
-		_c.SetConfidence(*v)
-	}
 	return _c
 }
 
@@ -146,34 +152,6 @@ func (_c *KnowledgeFactProvenanceCreate) SetLastSeenAt(v time.Time) *KnowledgeFa
 func (_c *KnowledgeFactProvenanceCreate) SetNillableLastSeenAt(v *time.Time) *KnowledgeFactProvenanceCreate {
 	if v != nil {
 		_c.SetLastSeenAt(*v)
-	}
-	return _c
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_c *KnowledgeFactProvenanceCreate) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceCreate {
-	_c.mutation.SetCreatedAt(v)
-	return _c
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *KnowledgeFactProvenanceCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeFactProvenanceCreate {
-	if v != nil {
-		_c.SetCreatedAt(*v)
-	}
-	return _c
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_c *KnowledgeFactProvenanceCreate) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceCreate {
-	_c.mutation.SetUpdatedAt(v)
-	return _c
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *KnowledgeFactProvenanceCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeFactProvenanceCreate {
-	if v != nil {
-		_c.SetUpdatedAt(*v)
 	}
 	return _c
 }
@@ -249,9 +227,19 @@ func (_c *KnowledgeFactProvenanceCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *KnowledgeFactProvenanceCreate) defaults() error {
-	if _, ok := _c.mutation.Confidence(); !ok {
-		v := knowledgefactprovenance.DefaultConfidence
-		_c.mutation.SetConfidence(v)
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		if knowledgefactprovenance.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgefactprovenance.DefaultCreatedAt (forgotten import ent/runtime?)")
+		}
+		v := knowledgefactprovenance.DefaultCreatedAt()
+		_c.mutation.SetCreatedAt(v)
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		if knowledgefactprovenance.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgefactprovenance.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		}
+		v := knowledgefactprovenance.DefaultUpdatedAt()
+		_c.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := _c.mutation.FirstSeenAt(); !ok {
 		if knowledgefactprovenance.DefaultFirstSeenAt == nil {
@@ -266,20 +254,6 @@ func (_c *KnowledgeFactProvenanceCreate) defaults() error {
 		}
 		v := knowledgefactprovenance.DefaultLastSeenAt()
 		_c.mutation.SetLastSeenAt(v)
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		if knowledgefactprovenance.DefaultCreatedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgefactprovenance.DefaultCreatedAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgefactprovenance.DefaultCreatedAt()
-		_c.mutation.SetCreatedAt(v)
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		if knowledgefactprovenance.DefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgefactprovenance.DefaultUpdatedAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgefactprovenance.DefaultUpdatedAt()
-		_c.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgefactprovenance.DefaultID == nil {
@@ -296,20 +270,34 @@ func (_c *KnowledgeFactProvenanceCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.SourceProvider(); !ok {
-		return &ValidationError{Name: "source_provider", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.source_provider"`)}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.created_at"`)}
 	}
-	if v, ok := _c.mutation.SourceProvider(); ok {
-		if err := knowledgefactprovenance.SourceProviderValidator(v); err != nil {
-			return &ValidationError{Name: "source_provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.source_provider": %w`, err)}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.updated_at"`)}
+	}
+	if _, ok := _c.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.provider"`)}
+	}
+	if v, ok := _c.mutation.Provider(); ok {
+		if err := knowledgefactprovenance.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.source"`)}
+	if _, ok := _c.mutation.ProviderSource(); !ok {
+		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.provider_source"`)}
 	}
-	if v, ok := _c.mutation.Source(); ok {
-		if err := knowledgefactprovenance.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.source": %w`, err)}
+	if v, ok := _c.mutation.ProviderSource(); ok {
+		if err := knowledgefactprovenance.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider_source": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.ProviderEventRef(); !ok {
+		return &ValidationError{Name: "provider_event_ref", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.provider_event_ref"`)}
+	}
+	if v, ok := _c.mutation.ProviderEventRef(); ok {
+		if err := knowledgefactprovenance.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider_event_ref": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.ExtractionMethod(); !ok {
@@ -320,20 +308,11 @@ func (_c *KnowledgeFactProvenanceCreate) check() error {
 			return &ValidationError{Name: "extraction_method", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.extraction_method": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Confidence(); !ok {
-		return &ValidationError{Name: "confidence", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.confidence"`)}
-	}
 	if _, ok := _c.mutation.FirstSeenAt(); !ok {
 		return &ValidationError{Name: "first_seen_at", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.first_seen_at"`)}
 	}
 	if _, ok := _c.mutation.LastSeenAt(); !ok {
 		return &ValidationError{Name: "last_seen_at", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.last_seen_at"`)}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.created_at"`)}
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeFactProvenance.updated_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeFactProvenance.tenant"`)}
@@ -375,25 +354,29 @@ func (_c *KnowledgeFactProvenanceCreate) createSpec() (*KnowledgeFactProvenance,
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.SourceProvider(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSourceProvider, field.TypeString, value)
-		_node.SourceProvider = value
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
-	if value, ok := _c.mutation.Source(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSource, field.TypeString, value)
-		_node.Source = value
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.SourceRef(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSourceRef, field.TypeString, value)
-		_node.SourceRef = value
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProvider, field.TypeString, value)
+		_node.Provider = value
+	}
+	if value, ok := _c.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProviderSource, field.TypeString, value)
+		_node.ProviderSource = value
+	}
+	if value, ok := _c.mutation.ProviderEventRef(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProviderEventRef, field.TypeString, value)
+		_node.ProviderEventRef = value
 	}
 	if value, ok := _c.mutation.ExtractionMethod(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldExtractionMethod, field.TypeString, value)
 		_node.ExtractionMethod = value
-	}
-	if value, ok := _c.mutation.Confidence(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldConfidence, field.TypeFloat64, value)
-		_node.Confidence = value
 	}
 	if value, ok := _c.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldFirstSeenAt, field.TypeTime, value)
@@ -402,14 +385,6 @@ func (_c *KnowledgeFactProvenanceCreate) createSpec() (*KnowledgeFactProvenance,
 	if value, ok := _c.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldLastSeenAt, field.TypeTime, value)
 		_node.LastSeenAt = value
-	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -535,6 +510,30 @@ type (
 	}
 )
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeFactProvenanceUpsert) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpsert {
+	u.Set(knowledgefactprovenance.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsert) UpdateCreatedAt() *KnowledgeFactProvenanceUpsert {
+	u.SetExcluded(knowledgefactprovenance.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeFactProvenanceUpsert) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpsert {
+	u.Set(knowledgefactprovenance.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsert) UpdateUpdatedAt() *KnowledgeFactProvenanceUpsert {
+	u.SetExcluded(knowledgefactprovenance.FieldUpdatedAt)
+	return u
+}
+
 // SetAliasID sets the "alias_id" field.
 func (u *KnowledgeFactProvenanceUpsert) SetAliasID(v uuid.UUID) *KnowledgeFactProvenanceUpsert {
 	u.Set(knowledgefactprovenance.FieldAliasID, v)
@@ -589,45 +588,39 @@ func (u *KnowledgeFactProvenanceUpsert) ClearNormalizedEventID() *KnowledgeFactP
 	return u
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (u *KnowledgeFactProvenanceUpsert) SetSourceProvider(v string) *KnowledgeFactProvenanceUpsert {
-	u.Set(knowledgefactprovenance.FieldSourceProvider, v)
+// SetProvider sets the "provider" field.
+func (u *KnowledgeFactProvenanceUpsert) SetProvider(v string) *KnowledgeFactProvenanceUpsert {
+	u.Set(knowledgefactprovenance.FieldProvider, v)
 	return u
 }
 
-// UpdateSourceProvider sets the "source_provider" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsert) UpdateSourceProvider() *KnowledgeFactProvenanceUpsert {
-	u.SetExcluded(knowledgefactprovenance.FieldSourceProvider)
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsert) UpdateProvider() *KnowledgeFactProvenanceUpsert {
+	u.SetExcluded(knowledgefactprovenance.FieldProvider)
 	return u
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeFactProvenanceUpsert) SetSource(v string) *KnowledgeFactProvenanceUpsert {
-	u.Set(knowledgefactprovenance.FieldSource, v)
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeFactProvenanceUpsert) SetProviderSource(v string) *KnowledgeFactProvenanceUpsert {
+	u.Set(knowledgefactprovenance.FieldProviderSource, v)
 	return u
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsert) UpdateSource() *KnowledgeFactProvenanceUpsert {
-	u.SetExcluded(knowledgefactprovenance.FieldSource)
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsert) UpdateProviderSource() *KnowledgeFactProvenanceUpsert {
+	u.SetExcluded(knowledgefactprovenance.FieldProviderSource)
 	return u
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (u *KnowledgeFactProvenanceUpsert) SetSourceRef(v string) *KnowledgeFactProvenanceUpsert {
-	u.Set(knowledgefactprovenance.FieldSourceRef, v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *KnowledgeFactProvenanceUpsert) SetProviderEventRef(v string) *KnowledgeFactProvenanceUpsert {
+	u.Set(knowledgefactprovenance.FieldProviderEventRef, v)
 	return u
 }
 
-// UpdateSourceRef sets the "source_ref" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsert) UpdateSourceRef() *KnowledgeFactProvenanceUpsert {
-	u.SetExcluded(knowledgefactprovenance.FieldSourceRef)
-	return u
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (u *KnowledgeFactProvenanceUpsert) ClearSourceRef() *KnowledgeFactProvenanceUpsert {
-	u.SetNull(knowledgefactprovenance.FieldSourceRef)
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsert) UpdateProviderEventRef() *KnowledgeFactProvenanceUpsert {
+	u.SetExcluded(knowledgefactprovenance.FieldProviderEventRef)
 	return u
 }
 
@@ -640,24 +633,6 @@ func (u *KnowledgeFactProvenanceUpsert) SetExtractionMethod(v string) *Knowledge
 // UpdateExtractionMethod sets the "extraction_method" field to the value that was provided on create.
 func (u *KnowledgeFactProvenanceUpsert) UpdateExtractionMethod() *KnowledgeFactProvenanceUpsert {
 	u.SetExcluded(knowledgefactprovenance.FieldExtractionMethod)
-	return u
-}
-
-// SetConfidence sets the "confidence" field.
-func (u *KnowledgeFactProvenanceUpsert) SetConfidence(v float64) *KnowledgeFactProvenanceUpsert {
-	u.Set(knowledgefactprovenance.FieldConfidence, v)
-	return u
-}
-
-// UpdateConfidence sets the "confidence" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsert) UpdateConfidence() *KnowledgeFactProvenanceUpsert {
-	u.SetExcluded(knowledgefactprovenance.FieldConfidence)
-	return u
-}
-
-// AddConfidence adds v to the "confidence" field.
-func (u *KnowledgeFactProvenanceUpsert) AddConfidence(v float64) *KnowledgeFactProvenanceUpsert {
-	u.Add(knowledgefactprovenance.FieldConfidence, v)
 	return u
 }
 
@@ -682,30 +657,6 @@ func (u *KnowledgeFactProvenanceUpsert) SetLastSeenAt(v time.Time) *KnowledgeFac
 // UpdateLastSeenAt sets the "last_seen_at" field to the value that was provided on create.
 func (u *KnowledgeFactProvenanceUpsert) UpdateLastSeenAt() *KnowledgeFactProvenanceUpsert {
 	u.SetExcluded(knowledgefactprovenance.FieldLastSeenAt)
-	return u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeFactProvenanceUpsert) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpsert {
-	u.Set(knowledgefactprovenance.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsert) UpdateCreatedAt() *KnowledgeFactProvenanceUpsert {
-	u.SetExcluded(knowledgefactprovenance.FieldCreatedAt)
-	return u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeFactProvenanceUpsert) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpsert {
-	u.Set(knowledgefactprovenance.FieldUpdatedAt, v)
-	return u
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsert) UpdateUpdatedAt() *KnowledgeFactProvenanceUpsert {
-	u.SetExcluded(knowledgefactprovenance.FieldUpdatedAt)
 	return u
 }
 
@@ -758,6 +709,34 @@ func (u *KnowledgeFactProvenanceUpsertOne) Update(set func(*KnowledgeFactProvena
 		set(&KnowledgeFactProvenanceUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeFactProvenanceUpsertOne) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpsertOne {
+	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertOne) UpdateCreatedAt() *KnowledgeFactProvenanceUpsertOne {
+	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeFactProvenanceUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpsertOne {
+	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertOne) UpdateUpdatedAt() *KnowledgeFactProvenanceUpsertOne {
+	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
+		s.UpdateUpdatedAt()
+	})
 }
 
 // SetAliasID sets the "alias_id" field.
@@ -823,52 +802,45 @@ func (u *KnowledgeFactProvenanceUpsertOne) ClearNormalizedEventID() *KnowledgeFa
 	})
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (u *KnowledgeFactProvenanceUpsertOne) SetSourceProvider(v string) *KnowledgeFactProvenanceUpsertOne {
+// SetProvider sets the "provider" field.
+func (u *KnowledgeFactProvenanceUpsertOne) SetProvider(v string) *KnowledgeFactProvenanceUpsertOne {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetSourceProvider(v)
+		s.SetProvider(v)
 	})
 }
 
-// UpdateSourceProvider sets the "source_provider" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertOne) UpdateSourceProvider() *KnowledgeFactProvenanceUpsertOne {
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertOne) UpdateProvider() *KnowledgeFactProvenanceUpsertOne {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateSourceProvider()
+		s.UpdateProvider()
 	})
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeFactProvenanceUpsertOne) SetSource(v string) *KnowledgeFactProvenanceUpsertOne {
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeFactProvenanceUpsertOne) SetProviderSource(v string) *KnowledgeFactProvenanceUpsertOne {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetSource(v)
+		s.SetProviderSource(v)
 	})
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertOne) UpdateSource() *KnowledgeFactProvenanceUpsertOne {
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertOne) UpdateProviderSource() *KnowledgeFactProvenanceUpsertOne {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateSource()
+		s.UpdateProviderSource()
 	})
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (u *KnowledgeFactProvenanceUpsertOne) SetSourceRef(v string) *KnowledgeFactProvenanceUpsertOne {
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *KnowledgeFactProvenanceUpsertOne) SetProviderEventRef(v string) *KnowledgeFactProvenanceUpsertOne {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetSourceRef(v)
+		s.SetProviderEventRef(v)
 	})
 }
 
-// UpdateSourceRef sets the "source_ref" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertOne) UpdateSourceRef() *KnowledgeFactProvenanceUpsertOne {
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertOne) UpdateProviderEventRef() *KnowledgeFactProvenanceUpsertOne {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateSourceRef()
-	})
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (u *KnowledgeFactProvenanceUpsertOne) ClearSourceRef() *KnowledgeFactProvenanceUpsertOne {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.ClearSourceRef()
+		s.UpdateProviderEventRef()
 	})
 }
 
@@ -883,27 +855,6 @@ func (u *KnowledgeFactProvenanceUpsertOne) SetExtractionMethod(v string) *Knowle
 func (u *KnowledgeFactProvenanceUpsertOne) UpdateExtractionMethod() *KnowledgeFactProvenanceUpsertOne {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
 		s.UpdateExtractionMethod()
-	})
-}
-
-// SetConfidence sets the "confidence" field.
-func (u *KnowledgeFactProvenanceUpsertOne) SetConfidence(v float64) *KnowledgeFactProvenanceUpsertOne {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetConfidence(v)
-	})
-}
-
-// AddConfidence adds v to the "confidence" field.
-func (u *KnowledgeFactProvenanceUpsertOne) AddConfidence(v float64) *KnowledgeFactProvenanceUpsertOne {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.AddConfidence(v)
-	})
-}
-
-// UpdateConfidence sets the "confidence" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertOne) UpdateConfidence() *KnowledgeFactProvenanceUpsertOne {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateConfidence()
 	})
 }
 
@@ -932,34 +883,6 @@ func (u *KnowledgeFactProvenanceUpsertOne) SetLastSeenAt(v time.Time) *Knowledge
 func (u *KnowledgeFactProvenanceUpsertOne) UpdateLastSeenAt() *KnowledgeFactProvenanceUpsertOne {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
 		s.UpdateLastSeenAt()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeFactProvenanceUpsertOne) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpsertOne {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertOne) UpdateCreatedAt() *KnowledgeFactProvenanceUpsertOne {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeFactProvenanceUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpsertOne {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertOne) UpdateUpdatedAt() *KnowledgeFactProvenanceUpsertOne {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 
@@ -1181,6 +1104,34 @@ func (u *KnowledgeFactProvenanceUpsertBulk) Update(set func(*KnowledgeFactProven
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeFactProvenanceUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpsertBulk {
+	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertBulk) UpdateCreatedAt() *KnowledgeFactProvenanceUpsertBulk {
+	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeFactProvenanceUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpsertBulk {
+	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertBulk) UpdateUpdatedAt() *KnowledgeFactProvenanceUpsertBulk {
+	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetAliasID sets the "alias_id" field.
 func (u *KnowledgeFactProvenanceUpsertBulk) SetAliasID(v uuid.UUID) *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
@@ -1244,52 +1195,45 @@ func (u *KnowledgeFactProvenanceUpsertBulk) ClearNormalizedEventID() *KnowledgeF
 	})
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (u *KnowledgeFactProvenanceUpsertBulk) SetSourceProvider(v string) *KnowledgeFactProvenanceUpsertBulk {
+// SetProvider sets the "provider" field.
+func (u *KnowledgeFactProvenanceUpsertBulk) SetProvider(v string) *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetSourceProvider(v)
+		s.SetProvider(v)
 	})
 }
 
-// UpdateSourceProvider sets the "source_provider" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertBulk) UpdateSourceProvider() *KnowledgeFactProvenanceUpsertBulk {
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertBulk) UpdateProvider() *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateSourceProvider()
+		s.UpdateProvider()
 	})
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeFactProvenanceUpsertBulk) SetSource(v string) *KnowledgeFactProvenanceUpsertBulk {
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeFactProvenanceUpsertBulk) SetProviderSource(v string) *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetSource(v)
+		s.SetProviderSource(v)
 	})
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertBulk) UpdateSource() *KnowledgeFactProvenanceUpsertBulk {
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertBulk) UpdateProviderSource() *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateSource()
+		s.UpdateProviderSource()
 	})
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (u *KnowledgeFactProvenanceUpsertBulk) SetSourceRef(v string) *KnowledgeFactProvenanceUpsertBulk {
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *KnowledgeFactProvenanceUpsertBulk) SetProviderEventRef(v string) *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetSourceRef(v)
+		s.SetProviderEventRef(v)
 	})
 }
 
-// UpdateSourceRef sets the "source_ref" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertBulk) UpdateSourceRef() *KnowledgeFactProvenanceUpsertBulk {
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *KnowledgeFactProvenanceUpsertBulk) UpdateProviderEventRef() *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateSourceRef()
-	})
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (u *KnowledgeFactProvenanceUpsertBulk) ClearSourceRef() *KnowledgeFactProvenanceUpsertBulk {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.ClearSourceRef()
+		s.UpdateProviderEventRef()
 	})
 }
 
@@ -1304,27 +1248,6 @@ func (u *KnowledgeFactProvenanceUpsertBulk) SetExtractionMethod(v string) *Knowl
 func (u *KnowledgeFactProvenanceUpsertBulk) UpdateExtractionMethod() *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
 		s.UpdateExtractionMethod()
-	})
-}
-
-// SetConfidence sets the "confidence" field.
-func (u *KnowledgeFactProvenanceUpsertBulk) SetConfidence(v float64) *KnowledgeFactProvenanceUpsertBulk {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetConfidence(v)
-	})
-}
-
-// AddConfidence adds v to the "confidence" field.
-func (u *KnowledgeFactProvenanceUpsertBulk) AddConfidence(v float64) *KnowledgeFactProvenanceUpsertBulk {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.AddConfidence(v)
-	})
-}
-
-// UpdateConfidence sets the "confidence" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertBulk) UpdateConfidence() *KnowledgeFactProvenanceUpsertBulk {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateConfidence()
 	})
 }
 
@@ -1353,34 +1276,6 @@ func (u *KnowledgeFactProvenanceUpsertBulk) SetLastSeenAt(v time.Time) *Knowledg
 func (u *KnowledgeFactProvenanceUpsertBulk) UpdateLastSeenAt() *KnowledgeFactProvenanceUpsertBulk {
 	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
 		s.UpdateLastSeenAt()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeFactProvenanceUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpsertBulk {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertBulk) UpdateCreatedAt() *KnowledgeFactProvenanceUpsertBulk {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeFactProvenanceUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpsertBulk {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeFactProvenanceUpsertBulk) UpdateUpdatedAt() *KnowledgeFactProvenanceUpsertBulk {
-	return u.Update(func(s *KnowledgeFactProvenanceUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 

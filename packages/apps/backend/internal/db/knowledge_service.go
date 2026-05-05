@@ -3,117 +3,202 @@ package db
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+
 	"github.com/rezible/rezible/ent"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
+	kfh "github.com/rezible/rezible/ent/knowledgefacthistory"
+	kfp "github.com/rezible/rezible/ent/knowledgefactprovenance"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/jobs"
 )
 
 type KnowledgeService struct {
-	db *ent.Client
+	dbc *ent.Client
 }
 
-func NewKnowledgeService(db *ent.Client) *KnowledgeService {
-	return &KnowledgeService{db: db}
+var registerKnowledgeServiceJobs sync.Once
+
+func NewKnowledgeService(dbc *ent.Client) *KnowledgeService {
+	svc := &KnowledgeService{dbc: dbc}
+	registerKnowledgeServiceJobs.Do(svc.registerJobs)
+	return svc
+}
+
+func (s *KnowledgeService) registerJobs() {
+	jobs.RegisterWorkerFunc(s.HandleEventProjection)
 }
 
 func (s *KnowledgeService) GetEntity(ctx context.Context, p predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error) {
-	return s.db.KnowledgeEntity.Query().Where(p).Only(ctx)
+	return s.dbc.KnowledgeEntity.Query().Where(p).Only(ctx)
 }
 
 func (s *KnowledgeService) SetEntity(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error) {
-	return ent.WithTxReturning(ctx, s.db, func(tx *ent.Tx) (*ent.KnowledgeEntity, error) {
-		var mutator ent.EntityMutator[*ent.KnowledgeEntity, *ent.KnowledgeEntityMutation]
-		if id == uuid.Nil {
-			mutator = tx.KnowledgeEntity.Create().SetID(uuid.New())
-		} else {
-			mutator = tx.KnowledgeEntity.UpdateOneID(id)
-		}
+	var mutator ent.EntityMutator[*ent.KnowledgeEntity, *ent.KnowledgeEntityMutation]
+	if id == uuid.Nil {
+		mutator = s.dbc.KnowledgeEntity.Create().SetID(uuid.New())
+	} else {
+		mutator = s.dbc.KnowledgeEntity.UpdateOneID(id)
+	}
 
-		setFn(mutator.Mutation())
+	setFn(mutator.Mutation())
 
-		savedEntity, saveErr := mutator.Save(ctx)
-		if saveErr != nil {
-			return nil, fmt.Errorf("save: %w", saveErr)
-		}
-		return savedEntity, nil
-	})
+	savedEntity, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save: %w", saveErr)
+	}
+	return savedEntity, nil
 }
 
 func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error) {
-	return ent.WithTxReturning(ctx, s.db, func(tx *ent.Tx) (*ent.KnowledgeEntityAlias, error) {
-		var mutator ent.EntityMutator[*ent.KnowledgeEntityAlias, *ent.KnowledgeEntityAliasMutation]
-		if id == uuid.Nil {
-			create := tx.KnowledgeEntityAlias.Create().SetID(uuid.New())
-			mutator = create
-			create.OnConflict(sql.ConflictColumns(
-				knea.FieldTenantID,
-				knea.FieldProvider,
-				knea.FieldSource,
-				knea.FieldExternalKind,
-				knea.FieldExternalID,
-			)).Update(func(u *ent.KnowledgeEntityAliasUpsert) {
-				u.UpdateEntityID()
-				u.UpdateLastSeenAt()
-				u.UpdateUpdatedAt()
-				u.UpdateNormalizedEventID()
-			})
-		} else {
-			mutator = tx.KnowledgeEntityAlias.UpdateOneID(id)
-		}
+	var mutator ent.EntityMutator[*ent.KnowledgeEntityAlias, *ent.KnowledgeEntityAliasMutation]
+	if id == uuid.Nil {
+		create := s.dbc.KnowledgeEntityAlias.Create().SetID(uuid.New())
+		mutator = create
+		conflictCols := sql.ConflictColumns(
+			knea.FieldTenantID,
+			knea.FieldProvider,
+			knea.FieldProviderSource,
+			knea.FieldSubjectKind,
+			knea.FieldSubjectRef,
+		)
+		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeEntityAliasUpsert) {
+			u.UpdateEntityID()
+			u.UpdateLastSeenAt()
+			u.UpdateUpdatedAt()
+			u.UpdateNormalizedEventID()
+		})
+	} else {
+		mutator = s.dbc.KnowledgeEntityAlias.UpdateOneID(id)
+	}
 
-		setFn(mutator.Mutation())
+	setFn(mutator.Mutation())
 
-		alias, saveErr := mutator.Save(ctx)
-		if saveErr != nil {
-			return nil, fmt.Errorf("save: %w", saveErr)
-		}
+	alias, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save: %w", saveErr)
+	}
 
-		return alias, nil
-	})
+	return alias, nil
 }
 
 func (s *KnowledgeService) GetRelationship(ctx context.Context, p predicate.KnowledgeRelationship) (*ent.KnowledgeRelationship, error) {
-	return s.db.KnowledgeRelationship.Query().Where(p).Only(ctx)
+	return s.dbc.KnowledgeRelationship.Query().Where(p).Only(ctx)
 }
 
 func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error) {
-	return ent.WithTxReturning(ctx, s.db, func(tx *ent.Tx) (*ent.KnowledgeRelationship, error) {
-		var mutator ent.EntityMutator[*ent.KnowledgeRelationship, *ent.KnowledgeRelationshipMutation]
-		var mutation *ent.KnowledgeRelationshipMutation
-		if id == uuid.Nil {
-			create := tx.KnowledgeRelationship.Create().SetID(uuid.New())
-			mutator = create
-			create.OnConflict(sql.ConflictColumns(
-				knr.FieldTenantID,
-				knr.FieldSourceEntityID,
-				knr.FieldTargetEntityID,
-				knr.FieldKind,
-			)).
-				Update(func(u *ent.KnowledgeRelationshipUpsert) {
-					u.UpdateLastSeenAt()
-					u.UpdateUpdatedAt()
-					if _, ok := mutation.DisplayName(); ok {
-						u.UpdateDisplayName()
-					}
-					if _, ok := mutation.Description(); ok {
-						u.UpdateDescription()
-					}
-				})
+	var mutator ent.EntityMutator[*ent.KnowledgeRelationship, *ent.KnowledgeRelationshipMutation]
+	var create *ent.KnowledgeRelationshipCreate
+	creating := id == uuid.Nil
+	if creating {
+		create = s.dbc.KnowledgeRelationship.Create().SetID(uuid.New())
+		mutator = create
+	} else {
+		mutator = s.dbc.KnowledgeRelationship.UpdateOneID(id)
+	}
+
+	mutation := mutator.Mutation()
+	setFn(mutation)
+
+	if creating {
+		conflictCols := sql.ConflictColumns(
+			knr.FieldTenantID,
+			knr.FieldSourceEntityID,
+			knr.FieldTargetEntityID,
+			knr.FieldKind,
+		)
+		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeRelationshipUpsert) {
+			u.UpdateLastSeenAt()
+			u.UpdateUpdatedAt()
+			if _, ok := mutation.DisplayName(); ok {
+				u.UpdateDisplayName()
+			}
+			if _, ok := mutation.Description(); ok {
+				u.UpdateDescription()
+			}
+		})
+	}
+
+	rel, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save relationship: %w", saveErr)
+	}
+	return rel, nil
+}
+
+func (s *KnowledgeService) SetFactProvenance(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeFactProvenanceMutation)) (*ent.KnowledgeFactProvenance, error) {
+	creating := id == uuid.Nil
+	var mutator ent.EntityMutator[*ent.KnowledgeFactProvenance, *ent.KnowledgeFactProvenanceMutation]
+	var create *ent.KnowledgeFactProvenanceCreate
+	if creating {
+		create = s.dbc.KnowledgeFactProvenance.Create().SetID(uuid.New())
+		mutator = create
+	} else {
+		mutator = s.dbc.KnowledgeFactProvenance.UpdateOneID(id)
+	}
+
+	mutation := mutator.Mutation()
+	setFn(mutation)
+
+	if creating {
+		_, aliasSet := mutation.AliasID()
+		_, relationshipSet := mutation.RelationshipID()
+		if aliasSet == relationshipSet {
+			return nil, fmt.Errorf("fact provenance must reference exactly one alias or relationship")
+		}
+		conflictCols := []string{
+			kfp.FieldTenantID,
+			kfp.FieldProvider,
+			kfp.FieldProviderSource,
+			kfp.FieldProviderEventRef,
+			kfp.FieldExtractionMethod,
+		}
+		if aliasSet {
+			conflictCols = append(conflictCols, kfp.FieldAliasID)
 		} else {
-			mutator = tx.KnowledgeRelationship.UpdateOneID(id)
+			conflictCols = append(conflictCols, kfp.FieldRelationshipID)
 		}
-		mutation = mutator.Mutation()
+		create.
+			OnConflict(sql.ConflictColumns(conflictCols...)).
+			Update(func(u *ent.KnowledgeFactProvenanceUpsert) {
+				u.UpdateLastSeenAt()
+				u.UpdateUpdatedAt()
+				if _, ok := mutation.NormalizedEventID(); ok {
+					u.UpdateNormalizedEventID()
+				}
+			})
+	}
 
-		setFn(mutation)
+	prov, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save fact provenance: %w", saveErr)
+	}
+	return prov, nil
+}
 
-		rel, saveErr := mutator.Save(ctx)
-		if saveErr != nil {
-			return nil, fmt.Errorf("save relationship: %w", saveErr)
-		}
-		return rel, nil
-	})
+func (s *KnowledgeService) SetFactHistory(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeFactHistoryMutation)) (*ent.KnowledgeFactHistory, error) {
+	var mutator ent.EntityMutator[*ent.KnowledgeFactHistory, *ent.KnowledgeFactHistoryMutation]
+	if id == uuid.Nil {
+		create := s.dbc.KnowledgeFactHistory.Create().SetID(uuid.New())
+		conflictCols := sql.ConflictColumns(
+			kfh.FieldTenantID,
+			kfh.FieldHistoryKey,
+		)
+		create.OnConflict(conflictCols).Ignore()
+		mutator = create
+	} else {
+		mutator = s.dbc.KnowledgeFactHistory.UpdateOneID(id)
+	}
+
+	setFn(mutator.Mutation())
+
+	history, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save fact history: %w", saveErr)
+	}
+	return history, nil
 }

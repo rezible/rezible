@@ -35,16 +35,22 @@ func (_u *KnowledgeFactHistoryUpdate) Where(ps ...predicate.KnowledgeFactHistory
 }
 
 // SetFactKind sets the "fact_kind" field.
-func (_u *KnowledgeFactHistoryUpdate) SetFactKind(v string) *KnowledgeFactHistoryUpdate {
+func (_u *KnowledgeFactHistoryUpdate) SetFactKind(v knowledgefacthistory.FactKind) *KnowledgeFactHistoryUpdate {
 	_u.mutation.SetFactKind(v)
 	return _u
 }
 
 // SetNillableFactKind sets the "fact_kind" field if the given value is not nil.
-func (_u *KnowledgeFactHistoryUpdate) SetNillableFactKind(v *string) *KnowledgeFactHistoryUpdate {
+func (_u *KnowledgeFactHistoryUpdate) SetNillableFactKind(v *knowledgefacthistory.FactKind) *KnowledgeFactHistoryUpdate {
 	if v != nil {
 		_u.SetFactKind(*v)
 	}
+	return _u
+}
+
+// ClearFactKind clears the value of the "fact_kind" field.
+func (_u *KnowledgeFactHistoryUpdate) ClearFactKind() *KnowledgeFactHistoryUpdate {
+	_u.mutation.ClearFactKind()
 	return _u
 }
 
@@ -164,51 +170,45 @@ func (_u *KnowledgeFactHistoryUpdate) SetNillableRecordedAt(v *time.Time) *Knowl
 	return _u
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (_u *KnowledgeFactHistoryUpdate) SetSourceProvider(v string) *KnowledgeFactHistoryUpdate {
-	_u.mutation.SetSourceProvider(v)
+// SetProvider sets the "provider" field.
+func (_u *KnowledgeFactHistoryUpdate) SetProvider(v string) *KnowledgeFactHistoryUpdate {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableSourceProvider sets the "source_provider" field if the given value is not nil.
-func (_u *KnowledgeFactHistoryUpdate) SetNillableSourceProvider(v *string) *KnowledgeFactHistoryUpdate {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *KnowledgeFactHistoryUpdate) SetNillableProvider(v *string) *KnowledgeFactHistoryUpdate {
 	if v != nil {
-		_u.SetSourceProvider(*v)
+		_u.SetProvider(*v)
 	}
 	return _u
 }
 
-// SetSource sets the "source" field.
-func (_u *KnowledgeFactHistoryUpdate) SetSource(v string) *KnowledgeFactHistoryUpdate {
-	_u.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_u *KnowledgeFactHistoryUpdate) SetProviderSource(v string) *KnowledgeFactHistoryUpdate {
+	_u.mutation.SetProviderSource(v)
 	return _u
 }
 
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *KnowledgeFactHistoryUpdate) SetNillableSource(v *string) *KnowledgeFactHistoryUpdate {
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_u *KnowledgeFactHistoryUpdate) SetNillableProviderSource(v *string) *KnowledgeFactHistoryUpdate {
 	if v != nil {
-		_u.SetSource(*v)
+		_u.SetProviderSource(*v)
 	}
 	return _u
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (_u *KnowledgeFactHistoryUpdate) SetSourceRef(v string) *KnowledgeFactHistoryUpdate {
-	_u.mutation.SetSourceRef(v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_u *KnowledgeFactHistoryUpdate) SetProviderEventRef(v string) *KnowledgeFactHistoryUpdate {
+	_u.mutation.SetProviderEventRef(v)
 	return _u
 }
 
-// SetNillableSourceRef sets the "source_ref" field if the given value is not nil.
-func (_u *KnowledgeFactHistoryUpdate) SetNillableSourceRef(v *string) *KnowledgeFactHistoryUpdate {
+// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
+func (_u *KnowledgeFactHistoryUpdate) SetNillableProviderEventRef(v *string) *KnowledgeFactHistoryUpdate {
 	if v != nil {
-		_u.SetSourceRef(*v)
+		_u.SetProviderEventRef(*v)
 	}
-	return _u
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (_u *KnowledgeFactHistoryUpdate) ClearSourceRef() *KnowledgeFactHistoryUpdate {
-	_u.mutation.ClearSourceRef()
 	return _u
 }
 
@@ -320,14 +320,19 @@ func (_u *KnowledgeFactHistoryUpdate) check() error {
 			return &ValidationError{Name: "history_key", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.history_key": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.SourceProvider(); ok {
-		if err := knowledgefacthistory.SourceProviderValidator(v); err != nil {
-			return &ValidationError{Name: "source_provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.source_provider": %w`, err)}
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := knowledgefacthistory.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := knowledgefacthistory.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.source": %w`, err)}
+	if v, ok := _u.mutation.ProviderSource(); ok {
+		if err := knowledgefacthistory.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider_source": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ProviderEventRef(); ok {
+		if err := knowledgefacthistory.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider_event_ref": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ExtractionMethod(); ok {
@@ -360,7 +365,10 @@ func (_u *KnowledgeFactHistoryUpdate) sqlSave(ctx context.Context) (_node int, e
 		}
 	}
 	if value, ok := _u.mutation.FactKind(); ok {
-		_spec.SetField(knowledgefacthistory.FieldFactKind, field.TypeString, value)
+		_spec.SetField(knowledgefacthistory.FieldFactKind, field.TypeEnum, value)
+	}
+	if _u.mutation.FactKindCleared() {
+		_spec.ClearField(knowledgefacthistory.FieldFactKind, field.TypeEnum)
 	}
 	if value, ok := _u.mutation.EventKind(); ok {
 		_spec.SetField(knowledgefacthistory.FieldEventKind, field.TypeString, value)
@@ -374,17 +382,14 @@ func (_u *KnowledgeFactHistoryUpdate) sqlSave(ctx context.Context) (_node int, e
 	if value, ok := _u.mutation.RecordedAt(); ok {
 		_spec.SetField(knowledgefacthistory.FieldRecordedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.SourceProvider(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSourceProvider, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSource, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProviderSource, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SourceRef(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSourceRef, field.TypeString, value)
-	}
-	if _u.mutation.SourceRefCleared() {
-		_spec.ClearField(knowledgefacthistory.FieldSourceRef, field.TypeString)
+	if value, ok := _u.mutation.ProviderEventRef(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProviderEventRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ExtractionMethod(); ok {
 		_spec.SetField(knowledgefacthistory.FieldExtractionMethod, field.TypeString, value)
@@ -513,16 +518,22 @@ type KnowledgeFactHistoryUpdateOne struct {
 }
 
 // SetFactKind sets the "fact_kind" field.
-func (_u *KnowledgeFactHistoryUpdateOne) SetFactKind(v string) *KnowledgeFactHistoryUpdateOne {
+func (_u *KnowledgeFactHistoryUpdateOne) SetFactKind(v knowledgefacthistory.FactKind) *KnowledgeFactHistoryUpdateOne {
 	_u.mutation.SetFactKind(v)
 	return _u
 }
 
 // SetNillableFactKind sets the "fact_kind" field if the given value is not nil.
-func (_u *KnowledgeFactHistoryUpdateOne) SetNillableFactKind(v *string) *KnowledgeFactHistoryUpdateOne {
+func (_u *KnowledgeFactHistoryUpdateOne) SetNillableFactKind(v *knowledgefacthistory.FactKind) *KnowledgeFactHistoryUpdateOne {
 	if v != nil {
 		_u.SetFactKind(*v)
 	}
+	return _u
+}
+
+// ClearFactKind clears the value of the "fact_kind" field.
+func (_u *KnowledgeFactHistoryUpdateOne) ClearFactKind() *KnowledgeFactHistoryUpdateOne {
+	_u.mutation.ClearFactKind()
 	return _u
 }
 
@@ -642,51 +653,45 @@ func (_u *KnowledgeFactHistoryUpdateOne) SetNillableRecordedAt(v *time.Time) *Kn
 	return _u
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (_u *KnowledgeFactHistoryUpdateOne) SetSourceProvider(v string) *KnowledgeFactHistoryUpdateOne {
-	_u.mutation.SetSourceProvider(v)
+// SetProvider sets the "provider" field.
+func (_u *KnowledgeFactHistoryUpdateOne) SetProvider(v string) *KnowledgeFactHistoryUpdateOne {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableSourceProvider sets the "source_provider" field if the given value is not nil.
-func (_u *KnowledgeFactHistoryUpdateOne) SetNillableSourceProvider(v *string) *KnowledgeFactHistoryUpdateOne {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *KnowledgeFactHistoryUpdateOne) SetNillableProvider(v *string) *KnowledgeFactHistoryUpdateOne {
 	if v != nil {
-		_u.SetSourceProvider(*v)
+		_u.SetProvider(*v)
 	}
 	return _u
 }
 
-// SetSource sets the "source" field.
-func (_u *KnowledgeFactHistoryUpdateOne) SetSource(v string) *KnowledgeFactHistoryUpdateOne {
-	_u.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_u *KnowledgeFactHistoryUpdateOne) SetProviderSource(v string) *KnowledgeFactHistoryUpdateOne {
+	_u.mutation.SetProviderSource(v)
 	return _u
 }
 
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *KnowledgeFactHistoryUpdateOne) SetNillableSource(v *string) *KnowledgeFactHistoryUpdateOne {
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_u *KnowledgeFactHistoryUpdateOne) SetNillableProviderSource(v *string) *KnowledgeFactHistoryUpdateOne {
 	if v != nil {
-		_u.SetSource(*v)
+		_u.SetProviderSource(*v)
 	}
 	return _u
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (_u *KnowledgeFactHistoryUpdateOne) SetSourceRef(v string) *KnowledgeFactHistoryUpdateOne {
-	_u.mutation.SetSourceRef(v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_u *KnowledgeFactHistoryUpdateOne) SetProviderEventRef(v string) *KnowledgeFactHistoryUpdateOne {
+	_u.mutation.SetProviderEventRef(v)
 	return _u
 }
 
-// SetNillableSourceRef sets the "source_ref" field if the given value is not nil.
-func (_u *KnowledgeFactHistoryUpdateOne) SetNillableSourceRef(v *string) *KnowledgeFactHistoryUpdateOne {
+// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
+func (_u *KnowledgeFactHistoryUpdateOne) SetNillableProviderEventRef(v *string) *KnowledgeFactHistoryUpdateOne {
 	if v != nil {
-		_u.SetSourceRef(*v)
+		_u.SetProviderEventRef(*v)
 	}
-	return _u
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (_u *KnowledgeFactHistoryUpdateOne) ClearSourceRef() *KnowledgeFactHistoryUpdateOne {
-	_u.mutation.ClearSourceRef()
 	return _u
 }
 
@@ -811,14 +816,19 @@ func (_u *KnowledgeFactHistoryUpdateOne) check() error {
 			return &ValidationError{Name: "history_key", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.history_key": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.SourceProvider(); ok {
-		if err := knowledgefacthistory.SourceProviderValidator(v); err != nil {
-			return &ValidationError{Name: "source_provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.source_provider": %w`, err)}
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := knowledgefacthistory.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := knowledgefacthistory.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.source": %w`, err)}
+	if v, ok := _u.mutation.ProviderSource(); ok {
+		if err := knowledgefacthistory.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider_source": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ProviderEventRef(); ok {
+		if err := knowledgefacthistory.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactHistory.provider_event_ref": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ExtractionMethod(); ok {
@@ -868,7 +878,10 @@ func (_u *KnowledgeFactHistoryUpdateOne) sqlSave(ctx context.Context) (_node *Kn
 		}
 	}
 	if value, ok := _u.mutation.FactKind(); ok {
-		_spec.SetField(knowledgefacthistory.FieldFactKind, field.TypeString, value)
+		_spec.SetField(knowledgefacthistory.FieldFactKind, field.TypeEnum, value)
+	}
+	if _u.mutation.FactKindCleared() {
+		_spec.ClearField(knowledgefacthistory.FieldFactKind, field.TypeEnum)
 	}
 	if value, ok := _u.mutation.EventKind(); ok {
 		_spec.SetField(knowledgefacthistory.FieldEventKind, field.TypeString, value)
@@ -882,17 +895,14 @@ func (_u *KnowledgeFactHistoryUpdateOne) sqlSave(ctx context.Context) (_node *Kn
 	if value, ok := _u.mutation.RecordedAt(); ok {
 		_spec.SetField(knowledgefacthistory.FieldRecordedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.SourceProvider(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSourceProvider, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSource, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProviderSource, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SourceRef(); ok {
-		_spec.SetField(knowledgefacthistory.FieldSourceRef, field.TypeString, value)
-	}
-	if _u.mutation.SourceRefCleared() {
-		_spec.ClearField(knowledgefacthistory.FieldSourceRef, field.TypeString)
+	if value, ok := _u.mutation.ProviderEventRef(); ok {
+		_spec.SetField(knowledgefacthistory.FieldProviderEventRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ExtractionMethod(); ok {
 		_spec.SetField(knowledgefacthistory.FieldExtractionMethod, field.TypeString, value)

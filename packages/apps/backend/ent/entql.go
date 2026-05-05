@@ -639,12 +639,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "KnowledgeEntity",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			knowledgeentity.FieldTenantID:    {Type: field.TypeInt, Column: knowledgeentity.FieldTenantID},
+			knowledgeentity.FieldCreatedAt:   {Type: field.TypeTime, Column: knowledgeentity.FieldCreatedAt},
+			knowledgeentity.FieldUpdatedAt:   {Type: field.TypeTime, Column: knowledgeentity.FieldUpdatedAt},
 			knowledgeentity.FieldKind:        {Type: field.TypeEnum, Column: knowledgeentity.FieldKind},
 			knowledgeentity.FieldDisplayName: {Type: field.TypeString, Column: knowledgeentity.FieldDisplayName},
 			knowledgeentity.FieldDescription: {Type: field.TypeString, Column: knowledgeentity.FieldDescription},
 			knowledgeentity.FieldProperties:  {Type: field.TypeJSON, Column: knowledgeentity.FieldProperties},
-			knowledgeentity.FieldCreatedAt:   {Type: field.TypeTime, Column: knowledgeentity.FieldCreatedAt},
-			knowledgeentity.FieldUpdatedAt:   {Type: field.TypeTime, Column: knowledgeentity.FieldUpdatedAt},
 		},
 	}
 	graph.Nodes[30] = &sqlgraph.Node{
@@ -659,16 +659,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "KnowledgeEntityAlias",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			knowledgeentityalias.FieldTenantID:          {Type: field.TypeInt, Column: knowledgeentityalias.FieldTenantID},
+			knowledgeentityalias.FieldCreatedAt:         {Type: field.TypeTime, Column: knowledgeentityalias.FieldCreatedAt},
+			knowledgeentityalias.FieldUpdatedAt:         {Type: field.TypeTime, Column: knowledgeentityalias.FieldUpdatedAt},
 			knowledgeentityalias.FieldEntityID:          {Type: field.TypeUUID, Column: knowledgeentityalias.FieldEntityID},
 			knowledgeentityalias.FieldProvider:          {Type: field.TypeString, Column: knowledgeentityalias.FieldProvider},
-			knowledgeentityalias.FieldSource:            {Type: field.TypeString, Column: knowledgeentityalias.FieldSource},
-			knowledgeentityalias.FieldExternalKind:      {Type: field.TypeString, Column: knowledgeentityalias.FieldExternalKind},
-			knowledgeentityalias.FieldExternalID:        {Type: field.TypeString, Column: knowledgeentityalias.FieldExternalID},
+			knowledgeentityalias.FieldProviderSource:    {Type: field.TypeString, Column: knowledgeentityalias.FieldProviderSource},
+			knowledgeentityalias.FieldSubjectKind:       {Type: field.TypeString, Column: knowledgeentityalias.FieldSubjectKind},
+			knowledgeentityalias.FieldSubjectRef:        {Type: field.TypeString, Column: knowledgeentityalias.FieldSubjectRef},
 			knowledgeentityalias.FieldNormalizedEventID: {Type: field.TypeUUID, Column: knowledgeentityalias.FieldNormalizedEventID},
 			knowledgeentityalias.FieldFirstSeenAt:       {Type: field.TypeTime, Column: knowledgeentityalias.FieldFirstSeenAt},
 			knowledgeentityalias.FieldLastSeenAt:        {Type: field.TypeTime, Column: knowledgeentityalias.FieldLastSeenAt},
-			knowledgeentityalias.FieldCreatedAt:         {Type: field.TypeTime, Column: knowledgeentityalias.FieldCreatedAt},
-			knowledgeentityalias.FieldUpdatedAt:         {Type: field.TypeTime, Column: knowledgeentityalias.FieldUpdatedAt},
 		},
 	}
 	graph.Nodes[31] = &sqlgraph.Node{
@@ -683,7 +683,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "KnowledgeFactHistory",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			knowledgefacthistory.FieldTenantID:          {Type: field.TypeInt, Column: knowledgefacthistory.FieldTenantID},
-			knowledgefacthistory.FieldFactKind:          {Type: field.TypeString, Column: knowledgefacthistory.FieldFactKind},
+			knowledgefacthistory.FieldFactKind:          {Type: field.TypeEnum, Column: knowledgefacthistory.FieldFactKind},
 			knowledgefacthistory.FieldAliasID:           {Type: field.TypeUUID, Column: knowledgefacthistory.FieldAliasID},
 			knowledgefacthistory.FieldRelationshipID:    {Type: field.TypeUUID, Column: knowledgefacthistory.FieldRelationshipID},
 			knowledgefacthistory.FieldNormalizedEventID: {Type: field.TypeUUID, Column: knowledgefacthistory.FieldNormalizedEventID},
@@ -691,9 +691,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgefacthistory.FieldHistoryKey:        {Type: field.TypeString, Column: knowledgefacthistory.FieldHistoryKey},
 			knowledgefacthistory.FieldOccurredAt:        {Type: field.TypeTime, Column: knowledgefacthistory.FieldOccurredAt},
 			knowledgefacthistory.FieldRecordedAt:        {Type: field.TypeTime, Column: knowledgefacthistory.FieldRecordedAt},
-			knowledgefacthistory.FieldSourceProvider:    {Type: field.TypeString, Column: knowledgefacthistory.FieldSourceProvider},
-			knowledgefacthistory.FieldSource:            {Type: field.TypeString, Column: knowledgefacthistory.FieldSource},
-			knowledgefacthistory.FieldSourceRef:         {Type: field.TypeString, Column: knowledgefacthistory.FieldSourceRef},
+			knowledgefacthistory.FieldProvider:          {Type: field.TypeString, Column: knowledgefacthistory.FieldProvider},
+			knowledgefacthistory.FieldProviderSource:    {Type: field.TypeString, Column: knowledgefacthistory.FieldProviderSource},
+			knowledgefacthistory.FieldProviderEventRef:  {Type: field.TypeString, Column: knowledgefacthistory.FieldProviderEventRef},
 			knowledgefacthistory.FieldExtractionMethod:  {Type: field.TypeString, Column: knowledgefacthistory.FieldExtractionMethod},
 			knowledgefacthistory.FieldAttributes:        {Type: field.TypeJSON, Column: knowledgefacthistory.FieldAttributes},
 		},
@@ -710,18 +710,17 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "KnowledgeFactProvenance",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			knowledgefactprovenance.FieldTenantID:          {Type: field.TypeInt, Column: knowledgefactprovenance.FieldTenantID},
+			knowledgefactprovenance.FieldCreatedAt:         {Type: field.TypeTime, Column: knowledgefactprovenance.FieldCreatedAt},
+			knowledgefactprovenance.FieldUpdatedAt:         {Type: field.TypeTime, Column: knowledgefactprovenance.FieldUpdatedAt},
 			knowledgefactprovenance.FieldAliasID:           {Type: field.TypeUUID, Column: knowledgefactprovenance.FieldAliasID},
 			knowledgefactprovenance.FieldRelationshipID:    {Type: field.TypeUUID, Column: knowledgefactprovenance.FieldRelationshipID},
 			knowledgefactprovenance.FieldNormalizedEventID: {Type: field.TypeUUID, Column: knowledgefactprovenance.FieldNormalizedEventID},
-			knowledgefactprovenance.FieldSourceProvider:    {Type: field.TypeString, Column: knowledgefactprovenance.FieldSourceProvider},
-			knowledgefactprovenance.FieldSource:            {Type: field.TypeString, Column: knowledgefactprovenance.FieldSource},
-			knowledgefactprovenance.FieldSourceRef:         {Type: field.TypeString, Column: knowledgefactprovenance.FieldSourceRef},
+			knowledgefactprovenance.FieldProvider:          {Type: field.TypeString, Column: knowledgefactprovenance.FieldProvider},
+			knowledgefactprovenance.FieldProviderSource:    {Type: field.TypeString, Column: knowledgefactprovenance.FieldProviderSource},
+			knowledgefactprovenance.FieldProviderEventRef:  {Type: field.TypeString, Column: knowledgefactprovenance.FieldProviderEventRef},
 			knowledgefactprovenance.FieldExtractionMethod:  {Type: field.TypeString, Column: knowledgefactprovenance.FieldExtractionMethod},
-			knowledgefactprovenance.FieldConfidence:        {Type: field.TypeFloat64, Column: knowledgefactprovenance.FieldConfidence},
 			knowledgefactprovenance.FieldFirstSeenAt:       {Type: field.TypeTime, Column: knowledgefactprovenance.FieldFirstSeenAt},
 			knowledgefactprovenance.FieldLastSeenAt:        {Type: field.TypeTime, Column: knowledgefactprovenance.FieldLastSeenAt},
-			knowledgefactprovenance.FieldCreatedAt:         {Type: field.TypeTime, Column: knowledgefactprovenance.FieldCreatedAt},
-			knowledgefactprovenance.FieldUpdatedAt:         {Type: field.TypeTime, Column: knowledgefactprovenance.FieldUpdatedAt},
 		},
 	}
 	graph.Nodes[33] = &sqlgraph.Node{
@@ -736,6 +735,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Type: "KnowledgeRelationship",
 		Fields: map[string]*sqlgraph.FieldSpec{
 			knowledgerelationship.FieldTenantID:       {Type: field.TypeInt, Column: knowledgerelationship.FieldTenantID},
+			knowledgerelationship.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldCreatedAt},
+			knowledgerelationship.FieldUpdatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldUpdatedAt},
 			knowledgerelationship.FieldSourceEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldSourceEntityID},
 			knowledgerelationship.FieldTargetEntityID: {Type: field.TypeUUID, Column: knowledgerelationship.FieldTargetEntityID},
 			knowledgerelationship.FieldKind:           {Type: field.TypeString, Column: knowledgerelationship.FieldKind},
@@ -743,8 +744,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgerelationship.FieldDescription:    {Type: field.TypeString, Column: knowledgerelationship.FieldDescription},
 			knowledgerelationship.FieldFirstSeenAt:    {Type: field.TypeTime, Column: knowledgerelationship.FieldFirstSeenAt},
 			knowledgerelationship.FieldLastSeenAt:     {Type: field.TypeTime, Column: knowledgerelationship.FieldLastSeenAt},
-			knowledgerelationship.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldCreatedAt},
-			knowledgerelationship.FieldUpdatedAt:      {Type: field.TypeTime, Column: knowledgerelationship.FieldUpdatedAt},
 		},
 	}
 	graph.Nodes[34] = &sqlgraph.Node{
@@ -802,19 +801,19 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "NormalizedEvent",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			normalizedevent.FieldTenantID:           {Type: field.TypeInt, Column: normalizedevent.FieldTenantID},
-			normalizedevent.FieldProvider:           {Type: field.TypeString, Column: normalizedevent.FieldProvider},
-			normalizedevent.FieldSource:             {Type: field.TypeString, Column: normalizedevent.FieldSource},
-			normalizedevent.FieldKind:               {Type: field.TypeEnum, Column: normalizedevent.FieldKind},
-			normalizedevent.FieldSubjectKind:        {Type: field.TypeString, Column: normalizedevent.FieldSubjectKind},
-			normalizedevent.FieldSubjectExternalRef: {Type: field.TypeString, Column: normalizedevent.FieldSubjectExternalRef},
-			normalizedevent.FieldSourceEventKey:     {Type: field.TypeString, Column: normalizedevent.FieldSourceEventKey},
-			normalizedevent.FieldDedupeKey:          {Type: field.TypeString, Column: normalizedevent.FieldDedupeKey},
-			normalizedevent.FieldOccurredAt:         {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
-			normalizedevent.FieldReceivedAt:         {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
-			normalizedevent.FieldProcessingVersion:  {Type: field.TypeString, Column: normalizedevent.FieldProcessingVersion},
-			normalizedevent.FieldAttributes:         {Type: field.TypeJSON, Column: normalizedevent.FieldAttributes},
-			normalizedevent.FieldCreatedAt:          {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
+			normalizedevent.FieldTenantID:          {Type: field.TypeInt, Column: normalizedevent.FieldTenantID},
+			normalizedevent.FieldProvider:          {Type: field.TypeString, Column: normalizedevent.FieldProvider},
+			normalizedevent.FieldProviderSource:    {Type: field.TypeString, Column: normalizedevent.FieldProviderSource},
+			normalizedevent.FieldKind:              {Type: field.TypeEnum, Column: normalizedevent.FieldKind},
+			normalizedevent.FieldSubjectKind:       {Type: field.TypeString, Column: normalizedevent.FieldSubjectKind},
+			normalizedevent.FieldSubjectRef:        {Type: field.TypeString, Column: normalizedevent.FieldSubjectRef},
+			normalizedevent.FieldProviderEventRef:  {Type: field.TypeString, Column: normalizedevent.FieldProviderEventRef},
+			normalizedevent.FieldDedupeKey:         {Type: field.TypeString, Column: normalizedevent.FieldDedupeKey},
+			normalizedevent.FieldOccurredAt:        {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
+			normalizedevent.FieldReceivedAt:        {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
+			normalizedevent.FieldProcessingVersion: {Type: field.TypeString, Column: normalizedevent.FieldProcessingVersion},
+			normalizedevent.FieldAttributes:        {Type: field.TypeJSON, Column: normalizedevent.FieldAttributes},
+			normalizedevent.FieldCreatedAt:         {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
 		},
 	}
 	graph.Nodes[37] = &sqlgraph.Node{
@@ -8365,6 +8364,16 @@ func (f *KnowledgeEntityFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(knowledgeentity.FieldTenantID))
 }
 
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeEntityFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentity.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *KnowledgeEntityFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentity.FieldUpdatedAt))
+}
+
 // WhereKind applies the entql string predicate on the kind field.
 func (f *KnowledgeEntityFilter) WhereKind(p entql.StringP) {
 	f.Where(p.Field(knowledgeentity.FieldKind))
@@ -8383,16 +8392,6 @@ func (f *KnowledgeEntityFilter) WhereDescription(p entql.StringP) {
 // WhereProperties applies the entql json.RawMessage predicate on the properties field.
 func (f *KnowledgeEntityFilter) WhereProperties(p entql.BytesP) {
 	f.Where(p.Field(knowledgeentity.FieldProperties))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *KnowledgeEntityFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentity.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *KnowledgeEntityFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentity.FieldUpdatedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -8496,6 +8495,16 @@ func (f *KnowledgeEntityAliasFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(knowledgeentityalias.FieldTenantID))
 }
 
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeEntityAliasFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentityalias.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *KnowledgeEntityAliasFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgeentityalias.FieldUpdatedAt))
+}
+
 // WhereEntityID applies the entql [16]byte predicate on the entity_id field.
 func (f *KnowledgeEntityAliasFilter) WhereEntityID(p entql.ValueP) {
 	f.Where(p.Field(knowledgeentityalias.FieldEntityID))
@@ -8506,19 +8515,19 @@ func (f *KnowledgeEntityAliasFilter) WhereProvider(p entql.StringP) {
 	f.Where(p.Field(knowledgeentityalias.FieldProvider))
 }
 
-// WhereSource applies the entql string predicate on the source field.
-func (f *KnowledgeEntityAliasFilter) WhereSource(p entql.StringP) {
-	f.Where(p.Field(knowledgeentityalias.FieldSource))
+// WhereProviderSource applies the entql string predicate on the provider_source field.
+func (f *KnowledgeEntityAliasFilter) WhereProviderSource(p entql.StringP) {
+	f.Where(p.Field(knowledgeentityalias.FieldProviderSource))
 }
 
-// WhereExternalKind applies the entql string predicate on the external_kind field.
-func (f *KnowledgeEntityAliasFilter) WhereExternalKind(p entql.StringP) {
-	f.Where(p.Field(knowledgeentityalias.FieldExternalKind))
+// WhereSubjectKind applies the entql string predicate on the subject_kind field.
+func (f *KnowledgeEntityAliasFilter) WhereSubjectKind(p entql.StringP) {
+	f.Where(p.Field(knowledgeentityalias.FieldSubjectKind))
 }
 
-// WhereExternalID applies the entql string predicate on the external_id field.
-func (f *KnowledgeEntityAliasFilter) WhereExternalID(p entql.StringP) {
-	f.Where(p.Field(knowledgeentityalias.FieldExternalID))
+// WhereSubjectRef applies the entql string predicate on the subject_ref field.
+func (f *KnowledgeEntityAliasFilter) WhereSubjectRef(p entql.StringP) {
+	f.Where(p.Field(knowledgeentityalias.FieldSubjectRef))
 }
 
 // WhereNormalizedEventID applies the entql [16]byte predicate on the normalized_event_id field.
@@ -8534,16 +8543,6 @@ func (f *KnowledgeEntityAliasFilter) WhereFirstSeenAt(p entql.TimeP) {
 // WhereLastSeenAt applies the entql time.Time predicate on the last_seen_at field.
 func (f *KnowledgeEntityAliasFilter) WhereLastSeenAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgeentityalias.FieldLastSeenAt))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *KnowledgeEntityAliasFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentityalias.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *KnowledgeEntityAliasFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgeentityalias.FieldUpdatedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -8687,19 +8686,19 @@ func (f *KnowledgeFactHistoryFilter) WhereRecordedAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgefacthistory.FieldRecordedAt))
 }
 
-// WhereSourceProvider applies the entql string predicate on the source_provider field.
-func (f *KnowledgeFactHistoryFilter) WhereSourceProvider(p entql.StringP) {
-	f.Where(p.Field(knowledgefacthistory.FieldSourceProvider))
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *KnowledgeFactHistoryFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(knowledgefacthistory.FieldProvider))
 }
 
-// WhereSource applies the entql string predicate on the source field.
-func (f *KnowledgeFactHistoryFilter) WhereSource(p entql.StringP) {
-	f.Where(p.Field(knowledgefacthistory.FieldSource))
+// WhereProviderSource applies the entql string predicate on the provider_source field.
+func (f *KnowledgeFactHistoryFilter) WhereProviderSource(p entql.StringP) {
+	f.Where(p.Field(knowledgefacthistory.FieldProviderSource))
 }
 
-// WhereSourceRef applies the entql string predicate on the source_ref field.
-func (f *KnowledgeFactHistoryFilter) WhereSourceRef(p entql.StringP) {
-	f.Where(p.Field(knowledgefacthistory.FieldSourceRef))
+// WhereProviderEventRef applies the entql string predicate on the provider_event_ref field.
+func (f *KnowledgeFactHistoryFilter) WhereProviderEventRef(p entql.StringP) {
+	f.Where(p.Field(knowledgefacthistory.FieldProviderEventRef))
 }
 
 // WhereExtractionMethod applies the entql string predicate on the extraction_method field.
@@ -8813,6 +8812,16 @@ func (f *KnowledgeFactProvenanceFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(knowledgefactprovenance.FieldTenantID))
 }
 
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeFactProvenanceFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgefactprovenance.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *KnowledgeFactProvenanceFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgefactprovenance.FieldUpdatedAt))
+}
+
 // WhereAliasID applies the entql [16]byte predicate on the alias_id field.
 func (f *KnowledgeFactProvenanceFilter) WhereAliasID(p entql.ValueP) {
 	f.Where(p.Field(knowledgefactprovenance.FieldAliasID))
@@ -8828,29 +8837,24 @@ func (f *KnowledgeFactProvenanceFilter) WhereNormalizedEventID(p entql.ValueP) {
 	f.Where(p.Field(knowledgefactprovenance.FieldNormalizedEventID))
 }
 
-// WhereSourceProvider applies the entql string predicate on the source_provider field.
-func (f *KnowledgeFactProvenanceFilter) WhereSourceProvider(p entql.StringP) {
-	f.Where(p.Field(knowledgefactprovenance.FieldSourceProvider))
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *KnowledgeFactProvenanceFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(knowledgefactprovenance.FieldProvider))
 }
 
-// WhereSource applies the entql string predicate on the source field.
-func (f *KnowledgeFactProvenanceFilter) WhereSource(p entql.StringP) {
-	f.Where(p.Field(knowledgefactprovenance.FieldSource))
+// WhereProviderSource applies the entql string predicate on the provider_source field.
+func (f *KnowledgeFactProvenanceFilter) WhereProviderSource(p entql.StringP) {
+	f.Where(p.Field(knowledgefactprovenance.FieldProviderSource))
 }
 
-// WhereSourceRef applies the entql string predicate on the source_ref field.
-func (f *KnowledgeFactProvenanceFilter) WhereSourceRef(p entql.StringP) {
-	f.Where(p.Field(knowledgefactprovenance.FieldSourceRef))
+// WhereProviderEventRef applies the entql string predicate on the provider_event_ref field.
+func (f *KnowledgeFactProvenanceFilter) WhereProviderEventRef(p entql.StringP) {
+	f.Where(p.Field(knowledgefactprovenance.FieldProviderEventRef))
 }
 
 // WhereExtractionMethod applies the entql string predicate on the extraction_method field.
 func (f *KnowledgeFactProvenanceFilter) WhereExtractionMethod(p entql.StringP) {
 	f.Where(p.Field(knowledgefactprovenance.FieldExtractionMethod))
-}
-
-// WhereConfidence applies the entql float64 predicate on the confidence field.
-func (f *KnowledgeFactProvenanceFilter) WhereConfidence(p entql.Float64P) {
-	f.Where(p.Field(knowledgefactprovenance.FieldConfidence))
 }
 
 // WhereFirstSeenAt applies the entql time.Time predicate on the first_seen_at field.
@@ -8861,16 +8865,6 @@ func (f *KnowledgeFactProvenanceFilter) WhereFirstSeenAt(p entql.TimeP) {
 // WhereLastSeenAt applies the entql time.Time predicate on the last_seen_at field.
 func (f *KnowledgeFactProvenanceFilter) WhereLastSeenAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgefactprovenance.FieldLastSeenAt))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *KnowledgeFactProvenanceFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgefactprovenance.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *KnowledgeFactProvenanceFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgefactprovenance.FieldUpdatedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -8974,6 +8968,16 @@ func (f *KnowledgeRelationshipFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(knowledgerelationship.FieldTenantID))
 }
 
+// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
+func (f *KnowledgeRelationshipFilter) WhereCreatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgerelationship.FieldCreatedAt))
+}
+
+// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
+func (f *KnowledgeRelationshipFilter) WhereUpdatedAt(p entql.TimeP) {
+	f.Where(p.Field(knowledgerelationship.FieldUpdatedAt))
+}
+
 // WhereSourceEntityID applies the entql [16]byte predicate on the source_entity_id field.
 func (f *KnowledgeRelationshipFilter) WhereSourceEntityID(p entql.ValueP) {
 	f.Where(p.Field(knowledgerelationship.FieldSourceEntityID))
@@ -9007,16 +9011,6 @@ func (f *KnowledgeRelationshipFilter) WhereFirstSeenAt(p entql.TimeP) {
 // WhereLastSeenAt applies the entql time.Time predicate on the last_seen_at field.
 func (f *KnowledgeRelationshipFilter) WhereLastSeenAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgerelationship.FieldLastSeenAt))
-}
-
-// WhereCreatedAt applies the entql time.Time predicate on the created_at field.
-func (f *KnowledgeRelationshipFilter) WhereCreatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgerelationship.FieldCreatedAt))
-}
-
-// WhereUpdatedAt applies the entql time.Time predicate on the updated_at field.
-func (f *KnowledgeRelationshipFilter) WhereUpdatedAt(p entql.TimeP) {
-	f.Where(p.Field(knowledgerelationship.FieldUpdatedAt))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -9393,9 +9387,9 @@ func (f *NormalizedEventFilter) WhereProvider(p entql.StringP) {
 	f.Where(p.Field(normalizedevent.FieldProvider))
 }
 
-// WhereSource applies the entql string predicate on the source field.
-func (f *NormalizedEventFilter) WhereSource(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldSource))
+// WhereProviderSource applies the entql string predicate on the provider_source field.
+func (f *NormalizedEventFilter) WhereProviderSource(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldProviderSource))
 }
 
 // WhereKind applies the entql string predicate on the kind field.
@@ -9408,14 +9402,14 @@ func (f *NormalizedEventFilter) WhereSubjectKind(p entql.StringP) {
 	f.Where(p.Field(normalizedevent.FieldSubjectKind))
 }
 
-// WhereSubjectExternalRef applies the entql string predicate on the subject_external_ref field.
-func (f *NormalizedEventFilter) WhereSubjectExternalRef(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldSubjectExternalRef))
+// WhereSubjectRef applies the entql string predicate on the subject_ref field.
+func (f *NormalizedEventFilter) WhereSubjectRef(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldSubjectRef))
 }
 
-// WhereSourceEventKey applies the entql string predicate on the source_event_key field.
-func (f *NormalizedEventFilter) WhereSourceEventKey(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldSourceEventKey))
+// WhereProviderEventRef applies the entql string predicate on the provider_event_ref field.
+func (f *NormalizedEventFilter) WhereProviderEventRef(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldProviderEventRef))
 }
 
 // WhereDedupeKey applies the entql string predicate on the dedupe_key field.

@@ -33,6 +33,26 @@ func (_u *KnowledgeRelationshipUpdate) Where(ps ...predicate.KnowledgeRelationsh
 	return _u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *KnowledgeRelationshipUpdate) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeRelationshipUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *KnowledgeRelationshipUpdate) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (_u *KnowledgeRelationshipUpdate) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpdate {
 	_u.mutation.SetSourceEntityID(v)
@@ -140,26 +160,6 @@ func (_u *KnowledgeRelationshipUpdate) SetNillableLastSeenAt(v *time.Time) *Know
 	if v != nil {
 		_u.SetLastSeenAt(*v)
 	}
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeRelationshipUpdate) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpdate {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeRelationshipUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeRelationshipUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeRelationshipUpdate) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpdate {
-	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -305,6 +305,12 @@ func (_u *KnowledgeRelationshipUpdate) sqlSave(ctx context.Context) (_node int, 
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(knowledgerelationship.FieldKind, field.TypeString, value)
 	}
@@ -325,12 +331,6 @@ func (_u *KnowledgeRelationshipUpdate) sqlSave(ctx context.Context) (_node int, 
 	}
 	if value, ok := _u.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldLastSeenAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgerelationship.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.SourceEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -466,6 +466,26 @@ type KnowledgeRelationshipUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *KnowledgeRelationshipUpdateOne) SetNillableCreatedAt(v *time.Time) *KnowledgeRelationshipUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetSourceEntityID sets the "source_entity_id" field.
 func (_u *KnowledgeRelationshipUpdateOne) SetSourceEntityID(v uuid.UUID) *KnowledgeRelationshipUpdateOne {
 	_u.mutation.SetSourceEntityID(v)
@@ -573,26 +593,6 @@ func (_u *KnowledgeRelationshipUpdateOne) SetNillableLastSeenAt(v *time.Time) *K
 	if v != nil {
 		_u.SetLastSeenAt(*v)
 	}
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeRelationshipUpdateOne) SetCreatedAt(v time.Time) *KnowledgeRelationshipUpdateOne {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeRelationshipUpdateOne) SetNillableCreatedAt(v *time.Time) *KnowledgeRelationshipUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeRelationshipUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeRelationshipUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -768,6 +768,12 @@ func (_u *KnowledgeRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *K
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(knowledgerelationship.FieldKind, field.TypeString, value)
 	}
@@ -788,12 +794,6 @@ func (_u *KnowledgeRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *K
 	}
 	if value, ok := _u.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldLastSeenAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgerelationship.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgerelationship.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.SourceEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{

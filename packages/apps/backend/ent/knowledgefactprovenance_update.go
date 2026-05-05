@@ -34,6 +34,26 @@ func (_u *KnowledgeFactProvenanceUpdate) Where(ps ...predicate.KnowledgeFactProv
 	return _u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *KnowledgeFactProvenanceUpdate) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *KnowledgeFactProvenanceUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeFactProvenanceUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *KnowledgeFactProvenanceUpdate) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetAliasID sets the "alias_id" field.
 func (_u *KnowledgeFactProvenanceUpdate) SetAliasID(v uuid.UUID) *KnowledgeFactProvenanceUpdate {
 	_u.mutation.SetAliasID(v)
@@ -94,51 +114,45 @@ func (_u *KnowledgeFactProvenanceUpdate) ClearNormalizedEventID() *KnowledgeFact
 	return _u
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (_u *KnowledgeFactProvenanceUpdate) SetSourceProvider(v string) *KnowledgeFactProvenanceUpdate {
-	_u.mutation.SetSourceProvider(v)
+// SetProvider sets the "provider" field.
+func (_u *KnowledgeFactProvenanceUpdate) SetProvider(v string) *KnowledgeFactProvenanceUpdate {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableSourceProvider sets the "source_provider" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdate) SetNillableSourceProvider(v *string) *KnowledgeFactProvenanceUpdate {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *KnowledgeFactProvenanceUpdate) SetNillableProvider(v *string) *KnowledgeFactProvenanceUpdate {
 	if v != nil {
-		_u.SetSourceProvider(*v)
+		_u.SetProvider(*v)
 	}
 	return _u
 }
 
-// SetSource sets the "source" field.
-func (_u *KnowledgeFactProvenanceUpdate) SetSource(v string) *KnowledgeFactProvenanceUpdate {
-	_u.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_u *KnowledgeFactProvenanceUpdate) SetProviderSource(v string) *KnowledgeFactProvenanceUpdate {
+	_u.mutation.SetProviderSource(v)
 	return _u
 }
 
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdate) SetNillableSource(v *string) *KnowledgeFactProvenanceUpdate {
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_u *KnowledgeFactProvenanceUpdate) SetNillableProviderSource(v *string) *KnowledgeFactProvenanceUpdate {
 	if v != nil {
-		_u.SetSource(*v)
+		_u.SetProviderSource(*v)
 	}
 	return _u
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (_u *KnowledgeFactProvenanceUpdate) SetSourceRef(v string) *KnowledgeFactProvenanceUpdate {
-	_u.mutation.SetSourceRef(v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_u *KnowledgeFactProvenanceUpdate) SetProviderEventRef(v string) *KnowledgeFactProvenanceUpdate {
+	_u.mutation.SetProviderEventRef(v)
 	return _u
 }
 
-// SetNillableSourceRef sets the "source_ref" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdate) SetNillableSourceRef(v *string) *KnowledgeFactProvenanceUpdate {
+// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
+func (_u *KnowledgeFactProvenanceUpdate) SetNillableProviderEventRef(v *string) *KnowledgeFactProvenanceUpdate {
 	if v != nil {
-		_u.SetSourceRef(*v)
+		_u.SetProviderEventRef(*v)
 	}
-	return _u
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (_u *KnowledgeFactProvenanceUpdate) ClearSourceRef() *KnowledgeFactProvenanceUpdate {
-	_u.mutation.ClearSourceRef()
 	return _u
 }
 
@@ -153,27 +167,6 @@ func (_u *KnowledgeFactProvenanceUpdate) SetNillableExtractionMethod(v *string) 
 	if v != nil {
 		_u.SetExtractionMethod(*v)
 	}
-	return _u
-}
-
-// SetConfidence sets the "confidence" field.
-func (_u *KnowledgeFactProvenanceUpdate) SetConfidence(v float64) *KnowledgeFactProvenanceUpdate {
-	_u.mutation.ResetConfidence()
-	_u.mutation.SetConfidence(v)
-	return _u
-}
-
-// SetNillableConfidence sets the "confidence" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdate) SetNillableConfidence(v *float64) *KnowledgeFactProvenanceUpdate {
-	if v != nil {
-		_u.SetConfidence(*v)
-	}
-	return _u
-}
-
-// AddConfidence adds value to the "confidence" field.
-func (_u *KnowledgeFactProvenanceUpdate) AddConfidence(v float64) *KnowledgeFactProvenanceUpdate {
-	_u.mutation.AddConfidence(v)
 	return _u
 }
 
@@ -202,26 +195,6 @@ func (_u *KnowledgeFactProvenanceUpdate) SetNillableLastSeenAt(v *time.Time) *Kn
 	if v != nil {
 		_u.SetLastSeenAt(*v)
 	}
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeFactProvenanceUpdate) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpdate {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeFactProvenanceUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeFactProvenanceUpdate) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpdate {
-	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -307,14 +280,19 @@ func (_u *KnowledgeFactProvenanceUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *KnowledgeFactProvenanceUpdate) check() error {
-	if v, ok := _u.mutation.SourceProvider(); ok {
-		if err := knowledgefactprovenance.SourceProviderValidator(v); err != nil {
-			return &ValidationError{Name: "source_provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.source_provider": %w`, err)}
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := knowledgefactprovenance.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := knowledgefactprovenance.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.source": %w`, err)}
+	if v, ok := _u.mutation.ProviderSource(); ok {
+		if err := knowledgefactprovenance.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider_source": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ProviderEventRef(); ok {
+		if err := knowledgefactprovenance.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider_event_ref": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ExtractionMethod(); ok {
@@ -346,38 +324,29 @@ func (_u *KnowledgeFactProvenanceUpdate) sqlSave(ctx context.Context) (_node int
 			}
 		}
 	}
-	if value, ok := _u.mutation.SourceProvider(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSourceProvider, field.TypeString, value)
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSource, field.TypeString, value)
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.SourceRef(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSourceRef, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProvider, field.TypeString, value)
 	}
-	if _u.mutation.SourceRefCleared() {
-		_spec.ClearField(knowledgefactprovenance.FieldSourceRef, field.TypeString)
+	if value, ok := _u.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProviderSource, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ProviderEventRef(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProviderEventRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ExtractionMethod(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldExtractionMethod, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Confidence(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldConfidence, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.AddedConfidence(); ok {
-		_spec.AddField(knowledgefactprovenance.FieldConfidence, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldFirstSeenAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldLastSeenAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.AliasCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -496,6 +465,26 @@ type KnowledgeFactProvenanceUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableCreatedAt(v *time.Time) *KnowledgeFactProvenanceUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetAliasID sets the "alias_id" field.
 func (_u *KnowledgeFactProvenanceUpdateOne) SetAliasID(v uuid.UUID) *KnowledgeFactProvenanceUpdateOne {
 	_u.mutation.SetAliasID(v)
@@ -556,51 +545,45 @@ func (_u *KnowledgeFactProvenanceUpdateOne) ClearNormalizedEventID() *KnowledgeF
 	return _u
 }
 
-// SetSourceProvider sets the "source_provider" field.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetSourceProvider(v string) *KnowledgeFactProvenanceUpdateOne {
-	_u.mutation.SetSourceProvider(v)
+// SetProvider sets the "provider" field.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetProvider(v string) *KnowledgeFactProvenanceUpdateOne {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableSourceProvider sets the "source_provider" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableSourceProvider(v *string) *KnowledgeFactProvenanceUpdateOne {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableProvider(v *string) *KnowledgeFactProvenanceUpdateOne {
 	if v != nil {
-		_u.SetSourceProvider(*v)
+		_u.SetProvider(*v)
 	}
 	return _u
 }
 
-// SetSource sets the "source" field.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetSource(v string) *KnowledgeFactProvenanceUpdateOne {
-	_u.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetProviderSource(v string) *KnowledgeFactProvenanceUpdateOne {
+	_u.mutation.SetProviderSource(v)
 	return _u
 }
 
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableSource(v *string) *KnowledgeFactProvenanceUpdateOne {
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableProviderSource(v *string) *KnowledgeFactProvenanceUpdateOne {
 	if v != nil {
-		_u.SetSource(*v)
+		_u.SetProviderSource(*v)
 	}
 	return _u
 }
 
-// SetSourceRef sets the "source_ref" field.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetSourceRef(v string) *KnowledgeFactProvenanceUpdateOne {
-	_u.mutation.SetSourceRef(v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetProviderEventRef(v string) *KnowledgeFactProvenanceUpdateOne {
+	_u.mutation.SetProviderEventRef(v)
 	return _u
 }
 
-// SetNillableSourceRef sets the "source_ref" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableSourceRef(v *string) *KnowledgeFactProvenanceUpdateOne {
+// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
+func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableProviderEventRef(v *string) *KnowledgeFactProvenanceUpdateOne {
 	if v != nil {
-		_u.SetSourceRef(*v)
+		_u.SetProviderEventRef(*v)
 	}
-	return _u
-}
-
-// ClearSourceRef clears the value of the "source_ref" field.
-func (_u *KnowledgeFactProvenanceUpdateOne) ClearSourceRef() *KnowledgeFactProvenanceUpdateOne {
-	_u.mutation.ClearSourceRef()
 	return _u
 }
 
@@ -615,27 +598,6 @@ func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableExtractionMethod(v *strin
 	if v != nil {
 		_u.SetExtractionMethod(*v)
 	}
-	return _u
-}
-
-// SetConfidence sets the "confidence" field.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetConfidence(v float64) *KnowledgeFactProvenanceUpdateOne {
-	_u.mutation.ResetConfidence()
-	_u.mutation.SetConfidence(v)
-	return _u
-}
-
-// SetNillableConfidence sets the "confidence" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableConfidence(v *float64) *KnowledgeFactProvenanceUpdateOne {
-	if v != nil {
-		_u.SetConfidence(*v)
-	}
-	return _u
-}
-
-// AddConfidence adds value to the "confidence" field.
-func (_u *KnowledgeFactProvenanceUpdateOne) AddConfidence(v float64) *KnowledgeFactProvenanceUpdateOne {
-	_u.mutation.AddConfidence(v)
 	return _u
 }
 
@@ -664,26 +626,6 @@ func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableLastSeenAt(v *time.Time) 
 	if v != nil {
 		_u.SetLastSeenAt(*v)
 	}
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetCreatedAt(v time.Time) *KnowledgeFactProvenanceUpdateOne {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetNillableCreatedAt(v *time.Time) *KnowledgeFactProvenanceUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeFactProvenanceUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeFactProvenanceUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -782,14 +724,19 @@ func (_u *KnowledgeFactProvenanceUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *KnowledgeFactProvenanceUpdateOne) check() error {
-	if v, ok := _u.mutation.SourceProvider(); ok {
-		if err := knowledgefactprovenance.SourceProviderValidator(v); err != nil {
-			return &ValidationError{Name: "source_provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.source_provider": %w`, err)}
+	if v, ok := _u.mutation.Provider(); ok {
+		if err := knowledgefactprovenance.ProviderValidator(v); err != nil {
+			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := knowledgefactprovenance.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.source": %w`, err)}
+	if v, ok := _u.mutation.ProviderSource(); ok {
+		if err := knowledgefactprovenance.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider_source": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.ProviderEventRef(); ok {
+		if err := knowledgefactprovenance.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFactProvenance.provider_event_ref": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ExtractionMethod(); ok {
@@ -838,38 +785,29 @@ func (_u *KnowledgeFactProvenanceUpdateOne) sqlSave(ctx context.Context) (_node 
 			}
 		}
 	}
-	if value, ok := _u.mutation.SourceProvider(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSourceProvider, field.TypeString, value)
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldCreatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSource, field.TypeString, value)
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.SourceRef(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldSourceRef, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProvider, field.TypeString, value)
 	}
-	if _u.mutation.SourceRefCleared() {
-		_spec.ClearField(knowledgefactprovenance.FieldSourceRef, field.TypeString)
+	if value, ok := _u.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProviderSource, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ProviderEventRef(); ok {
+		_spec.SetField(knowledgefactprovenance.FieldProviderEventRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ExtractionMethod(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldExtractionMethod, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Confidence(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldConfidence, field.TypeFloat64, value)
-	}
-	if value, ok := _u.mutation.AddedConfidence(); ok {
-		_spec.AddField(knowledgefactprovenance.FieldConfidence, field.TypeFloat64, value)
 	}
 	if value, ok := _u.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldFirstSeenAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgefactprovenance.FieldLastSeenAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgefactprovenance.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.AliasCleared() {
 		edge := &sqlgraph.EdgeSpec{

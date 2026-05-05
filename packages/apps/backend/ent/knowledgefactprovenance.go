@@ -21,33 +21,32 @@ import (
 type KnowledgeFactProvenance struct {
 	config `json:"-"`
 	// ID of the ent.
+	// Internal identifier for this knowledge fact provenance record.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// AliasID holds the value of the "alias_id" field.
-	AliasID *uuid.UUID `json:"alias_id,omitempty"`
-	// RelationshipID holds the value of the "relationship_id" field.
-	RelationshipID *uuid.UUID `json:"relationship_id,omitempty"`
-	// NormalizedEventID holds the value of the "normalized_event_id" field.
-	NormalizedEventID *uuid.UUID `json:"normalized_event_id,omitempty"`
-	// SourceProvider holds the value of the "source_provider" field.
-	SourceProvider string `json:"source_provider,omitempty"`
-	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
-	// SourceRef holds the value of the "source_ref" field.
-	SourceRef string `json:"source_ref,omitempty"`
-	// ExtractionMethod holds the value of the "extraction_method" field.
-	ExtractionMethod string `json:"extraction_method,omitempty"`
-	// Confidence holds the value of the "confidence" field.
-	Confidence float64 `json:"confidence,omitempty"`
-	// FirstSeenAt holds the value of the "first_seen_at" field.
-	FirstSeenAt time.Time `json:"first_seen_at,omitempty"`
-	// LastSeenAt holds the value of the "last_seen_at" field.
-	LastSeenAt time.Time `json:"last_seen_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Alias this provenance supports. Exactly one of alias_id or relationship_id must be set.
+	AliasID *uuid.UUID `json:"alias_id,omitempty"`
+	// Relationship this provenance supports. Exactly one of alias_id or relationship_id must be set.
+	RelationshipID *uuid.UUID `json:"relationship_id,omitempty"`
+	// Normalized event that produced this provenance record, when available.
+	NormalizedEventID *uuid.UUID `json:"normalized_event_id,omitempty"`
+	// Integration provider that supplied the evidence for this fact.
+	Provider string `json:"provider,omitempty"`
+	// Provider-specific stream, API, or dataset where the evidence was observed.
+	ProviderSource string `json:"provider_source,omitempty"`
+	// Stable provider reference for the event or record that supports this fact.
+	ProviderEventRef string `json:"provider_event_ref,omitempty"`
+	// Projection, sync, or extraction method that created this provenance record.
+	ExtractionMethod string `json:"extraction_method,omitempty"`
+	// First time this fact was observed from this provider evidence.
+	FirstSeenAt time.Time `json:"first_seen_at,omitempty"`
+	// Most recent time this fact was observed from this provider evidence.
+	LastSeenAt time.Time `json:"last_seen_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeFactProvenanceQuery when eager-loading is set.
 	Edges        KnowledgeFactProvenanceEdges `json:"edges"`
@@ -120,13 +119,11 @@ func (*KnowledgeFactProvenance) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgefactprovenance.FieldAliasID, knowledgefactprovenance.FieldRelationshipID, knowledgefactprovenance.FieldNormalizedEventID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case knowledgefactprovenance.FieldConfidence:
-			values[i] = new(sql.NullFloat64)
 		case knowledgefactprovenance.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgefactprovenance.FieldSourceProvider, knowledgefactprovenance.FieldSource, knowledgefactprovenance.FieldSourceRef, knowledgefactprovenance.FieldExtractionMethod:
+		case knowledgefactprovenance.FieldProvider, knowledgefactprovenance.FieldProviderSource, knowledgefactprovenance.FieldProviderEventRef, knowledgefactprovenance.FieldExtractionMethod:
 			values[i] = new(sql.NullString)
-		case knowledgefactprovenance.FieldFirstSeenAt, knowledgefactprovenance.FieldLastSeenAt, knowledgefactprovenance.FieldCreatedAt, knowledgefactprovenance.FieldUpdatedAt:
+		case knowledgefactprovenance.FieldCreatedAt, knowledgefactprovenance.FieldUpdatedAt, knowledgefactprovenance.FieldFirstSeenAt, knowledgefactprovenance.FieldLastSeenAt:
 			values[i] = new(sql.NullTime)
 		case knowledgefactprovenance.FieldID:
 			values[i] = new(uuid.UUID)
@@ -157,6 +154,18 @@ func (_m *KnowledgeFactProvenance) assignValues(columns []string, values []any) 
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case knowledgefactprovenance.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				_m.CreatedAt = value.Time
+			}
+		case knowledgefactprovenance.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				_m.UpdatedAt = value.Time
+			}
 		case knowledgefactprovenance.FieldAliasID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
 				return fmt.Errorf("unexpected type %T for field alias_id", values[i])
@@ -178,35 +187,29 @@ func (_m *KnowledgeFactProvenance) assignValues(columns []string, values []any) 
 				_m.NormalizedEventID = new(uuid.UUID)
 				*_m.NormalizedEventID = *value.S.(*uuid.UUID)
 			}
-		case knowledgefactprovenance.FieldSourceProvider:
+		case knowledgefactprovenance.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source_provider", values[i])
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
-				_m.SourceProvider = value.String
+				_m.Provider = value.String
 			}
-		case knowledgefactprovenance.FieldSource:
+		case knowledgefactprovenance.FieldProviderSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
 			} else if value.Valid {
-				_m.Source = value.String
+				_m.ProviderSource = value.String
 			}
-		case knowledgefactprovenance.FieldSourceRef:
+		case knowledgefactprovenance.FieldProviderEventRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source_ref", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_event_ref", values[i])
 			} else if value.Valid {
-				_m.SourceRef = value.String
+				_m.ProviderEventRef = value.String
 			}
 		case knowledgefactprovenance.FieldExtractionMethod:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field extraction_method", values[i])
 			} else if value.Valid {
 				_m.ExtractionMethod = value.String
-			}
-		case knowledgefactprovenance.FieldConfidence:
-			if value, ok := values[i].(*sql.NullFloat64); !ok {
-				return fmt.Errorf("unexpected type %T for field confidence", values[i])
-			} else if value.Valid {
-				_m.Confidence = value.Float64
 			}
 		case knowledgefactprovenance.FieldFirstSeenAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -219,18 +222,6 @@ func (_m *KnowledgeFactProvenance) assignValues(columns []string, values []any) 
 				return fmt.Errorf("unexpected type %T for field last_seen_at", values[i])
 			} else if value.Valid {
 				_m.LastSeenAt = value.Time
-			}
-		case knowledgefactprovenance.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				_m.CreatedAt = value.Time
-			}
-		case knowledgefactprovenance.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				_m.UpdatedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -291,6 +282,12 @@ func (_m *KnowledgeFactProvenance) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	if v := _m.AliasID; v != nil {
 		builder.WriteString("alias_id=")
 		builder.WriteString(fmt.Sprintf("%v", *v))
@@ -306,32 +303,23 @@ func (_m *KnowledgeFactProvenance) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("source_provider=")
-	builder.WriteString(_m.SourceProvider)
+	builder.WriteString("provider=")
+	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
-	builder.WriteString("source=")
-	builder.WriteString(_m.Source)
+	builder.WriteString("provider_source=")
+	builder.WriteString(_m.ProviderSource)
 	builder.WriteString(", ")
-	builder.WriteString("source_ref=")
-	builder.WriteString(_m.SourceRef)
+	builder.WriteString("provider_event_ref=")
+	builder.WriteString(_m.ProviderEventRef)
 	builder.WriteString(", ")
 	builder.WriteString("extraction_method=")
 	builder.WriteString(_m.ExtractionMethod)
-	builder.WriteString(", ")
-	builder.WriteString("confidence=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Confidence))
 	builder.WriteString(", ")
 	builder.WriteString("first_seen_at=")
 	builder.WriteString(_m.FirstSeenAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("last_seen_at=")
 	builder.WriteString(_m.LastSeenAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

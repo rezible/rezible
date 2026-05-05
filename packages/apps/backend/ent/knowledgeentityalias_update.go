@@ -34,6 +34,26 @@ func (_u *KnowledgeEntityAliasUpdate) Where(ps ...predicate.KnowledgeEntityAlias
 	return _u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *KnowledgeEntityAliasUpdate) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *KnowledgeEntityAliasUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityAliasUpdate {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *KnowledgeEntityAliasUpdate) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpdate {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetEntityID sets the "entity_id" field.
 func (_u *KnowledgeEntityAliasUpdate) SetEntityID(v uuid.UUID) *KnowledgeEntityAliasUpdate {
 	_u.mutation.SetEntityID(v)
@@ -62,44 +82,44 @@ func (_u *KnowledgeEntityAliasUpdate) SetNillableProvider(v *string) *KnowledgeE
 	return _u
 }
 
-// SetSource sets the "source" field.
-func (_u *KnowledgeEntityAliasUpdate) SetSource(v string) *KnowledgeEntityAliasUpdate {
-	_u.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_u *KnowledgeEntityAliasUpdate) SetProviderSource(v string) *KnowledgeEntityAliasUpdate {
+	_u.mutation.SetProviderSource(v)
 	return _u
 }
 
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdate) SetNillableSource(v *string) *KnowledgeEntityAliasUpdate {
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_u *KnowledgeEntityAliasUpdate) SetNillableProviderSource(v *string) *KnowledgeEntityAliasUpdate {
 	if v != nil {
-		_u.SetSource(*v)
+		_u.SetProviderSource(*v)
 	}
 	return _u
 }
 
-// SetExternalKind sets the "external_kind" field.
-func (_u *KnowledgeEntityAliasUpdate) SetExternalKind(v string) *KnowledgeEntityAliasUpdate {
-	_u.mutation.SetExternalKind(v)
+// SetSubjectKind sets the "subject_kind" field.
+func (_u *KnowledgeEntityAliasUpdate) SetSubjectKind(v string) *KnowledgeEntityAliasUpdate {
+	_u.mutation.SetSubjectKind(v)
 	return _u
 }
 
-// SetNillableExternalKind sets the "external_kind" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdate) SetNillableExternalKind(v *string) *KnowledgeEntityAliasUpdate {
+// SetNillableSubjectKind sets the "subject_kind" field if the given value is not nil.
+func (_u *KnowledgeEntityAliasUpdate) SetNillableSubjectKind(v *string) *KnowledgeEntityAliasUpdate {
 	if v != nil {
-		_u.SetExternalKind(*v)
+		_u.SetSubjectKind(*v)
 	}
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *KnowledgeEntityAliasUpdate) SetExternalID(v string) *KnowledgeEntityAliasUpdate {
-	_u.mutation.SetExternalID(v)
+// SetSubjectRef sets the "subject_ref" field.
+func (_u *KnowledgeEntityAliasUpdate) SetSubjectRef(v string) *KnowledgeEntityAliasUpdate {
+	_u.mutation.SetSubjectRef(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdate) SetNillableExternalID(v *string) *KnowledgeEntityAliasUpdate {
+// SetNillableSubjectRef sets the "subject_ref" field if the given value is not nil.
+func (_u *KnowledgeEntityAliasUpdate) SetNillableSubjectRef(v *string) *KnowledgeEntityAliasUpdate {
 	if v != nil {
-		_u.SetExternalID(*v)
+		_u.SetSubjectRef(*v)
 	}
 	return _u
 }
@@ -149,26 +169,6 @@ func (_u *KnowledgeEntityAliasUpdate) SetNillableLastSeenAt(v *time.Time) *Knowl
 	if v != nil {
 		_u.SetLastSeenAt(*v)
 	}
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeEntityAliasUpdate) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpdate {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdate) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityAliasUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeEntityAliasUpdate) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpdate {
-	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -284,19 +284,19 @@ func (_u *KnowledgeEntityAliasUpdate) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := knowledgeentityalias.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.source": %w`, err)}
+	if v, ok := _u.mutation.ProviderSource(); ok {
+		if err := knowledgeentityalias.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.provider_source": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.ExternalKind(); ok {
-		if err := knowledgeentityalias.ExternalKindValidator(v); err != nil {
-			return &ValidationError{Name: "external_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.external_kind": %w`, err)}
+	if v, ok := _u.mutation.SubjectKind(); ok {
+		if err := knowledgeentityalias.SubjectKindValidator(v); err != nil {
+			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.subject_kind": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.ExternalID(); ok {
-		if err := knowledgeentityalias.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.external_id": %w`, err)}
+	if v, ok := _u.mutation.SubjectRef(); ok {
+		if err := knowledgeentityalias.SubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.subject_ref": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -326,29 +326,29 @@ func (_u *KnowledgeEntityAliasUpdate) sqlSave(ctx context.Context) (_node int, e
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgeentityalias.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgeentityalias.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(knowledgeentityalias.FieldSource, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgeentityalias.FieldProviderSource, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ExternalKind(); ok {
-		_spec.SetField(knowledgeentityalias.FieldExternalKind, field.TypeString, value)
+	if value, ok := _u.mutation.SubjectKind(); ok {
+		_spec.SetField(knowledgeentityalias.FieldSubjectKind, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(knowledgeentityalias.FieldExternalID, field.TypeString, value)
+	if value, ok := _u.mutation.SubjectRef(); ok {
+		_spec.SetField(knowledgeentityalias.FieldSubjectRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgeentityalias.FieldFirstSeenAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgeentityalias.FieldLastSeenAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgeentityalias.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgeentityalias.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.EntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -484,6 +484,26 @@ type KnowledgeEntityAliasUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_u *KnowledgeEntityAliasUpdateOne) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *KnowledgeEntityAliasUpdateOne) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityAliasUpdateOne {
+	if v != nil {
+		_u.SetCreatedAt(*v)
+	}
+	return _u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_u *KnowledgeEntityAliasUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpdateOne {
+	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
 // SetEntityID sets the "entity_id" field.
 func (_u *KnowledgeEntityAliasUpdateOne) SetEntityID(v uuid.UUID) *KnowledgeEntityAliasUpdateOne {
 	_u.mutation.SetEntityID(v)
@@ -512,44 +532,44 @@ func (_u *KnowledgeEntityAliasUpdateOne) SetNillableProvider(v *string) *Knowled
 	return _u
 }
 
-// SetSource sets the "source" field.
-func (_u *KnowledgeEntityAliasUpdateOne) SetSource(v string) *KnowledgeEntityAliasUpdateOne {
-	_u.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_u *KnowledgeEntityAliasUpdateOne) SetProviderSource(v string) *KnowledgeEntityAliasUpdateOne {
+	_u.mutation.SetProviderSource(v)
 	return _u
 }
 
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdateOne) SetNillableSource(v *string) *KnowledgeEntityAliasUpdateOne {
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_u *KnowledgeEntityAliasUpdateOne) SetNillableProviderSource(v *string) *KnowledgeEntityAliasUpdateOne {
 	if v != nil {
-		_u.SetSource(*v)
+		_u.SetProviderSource(*v)
 	}
 	return _u
 }
 
-// SetExternalKind sets the "external_kind" field.
-func (_u *KnowledgeEntityAliasUpdateOne) SetExternalKind(v string) *KnowledgeEntityAliasUpdateOne {
-	_u.mutation.SetExternalKind(v)
+// SetSubjectKind sets the "subject_kind" field.
+func (_u *KnowledgeEntityAliasUpdateOne) SetSubjectKind(v string) *KnowledgeEntityAliasUpdateOne {
+	_u.mutation.SetSubjectKind(v)
 	return _u
 }
 
-// SetNillableExternalKind sets the "external_kind" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdateOne) SetNillableExternalKind(v *string) *KnowledgeEntityAliasUpdateOne {
+// SetNillableSubjectKind sets the "subject_kind" field if the given value is not nil.
+func (_u *KnowledgeEntityAliasUpdateOne) SetNillableSubjectKind(v *string) *KnowledgeEntityAliasUpdateOne {
 	if v != nil {
-		_u.SetExternalKind(*v)
+		_u.SetSubjectKind(*v)
 	}
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *KnowledgeEntityAliasUpdateOne) SetExternalID(v string) *KnowledgeEntityAliasUpdateOne {
-	_u.mutation.SetExternalID(v)
+// SetSubjectRef sets the "subject_ref" field.
+func (_u *KnowledgeEntityAliasUpdateOne) SetSubjectRef(v string) *KnowledgeEntityAliasUpdateOne {
+	_u.mutation.SetSubjectRef(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdateOne) SetNillableExternalID(v *string) *KnowledgeEntityAliasUpdateOne {
+// SetNillableSubjectRef sets the "subject_ref" field if the given value is not nil.
+func (_u *KnowledgeEntityAliasUpdateOne) SetNillableSubjectRef(v *string) *KnowledgeEntityAliasUpdateOne {
 	if v != nil {
-		_u.SetExternalID(*v)
+		_u.SetSubjectRef(*v)
 	}
 	return _u
 }
@@ -599,26 +619,6 @@ func (_u *KnowledgeEntityAliasUpdateOne) SetNillableLastSeenAt(v *time.Time) *Kn
 	if v != nil {
 		_u.SetLastSeenAt(*v)
 	}
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *KnowledgeEntityAliasUpdateOne) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpdateOne {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdateOne) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityAliasUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
-	}
-	return _u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_u *KnowledgeEntityAliasUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpdateOne {
-	_u.mutation.SetUpdatedAt(v)
 	return _u
 }
 
@@ -747,19 +747,19 @@ func (_u *KnowledgeEntityAliasUpdateOne) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := knowledgeentityalias.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.source": %w`, err)}
+	if v, ok := _u.mutation.ProviderSource(); ok {
+		if err := knowledgeentityalias.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.provider_source": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.ExternalKind(); ok {
-		if err := knowledgeentityalias.ExternalKindValidator(v); err != nil {
-			return &ValidationError{Name: "external_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.external_kind": %w`, err)}
+	if v, ok := _u.mutation.SubjectKind(); ok {
+		if err := knowledgeentityalias.SubjectKindValidator(v); err != nil {
+			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.subject_kind": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.ExternalID(); ok {
-		if err := knowledgeentityalias.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.external_id": %w`, err)}
+	if v, ok := _u.mutation.SubjectRef(); ok {
+		if err := knowledgeentityalias.SubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.subject_ref": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -806,29 +806,29 @@ func (_u *KnowledgeEntityAliasUpdateOne) sqlSave(ctx context.Context) (_node *Kn
 			}
 		}
 	}
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgeentityalias.FieldCreatedAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgeentityalias.FieldUpdatedAt, field.TypeTime, value)
+	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(knowledgeentityalias.FieldSource, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgeentityalias.FieldProviderSource, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ExternalKind(); ok {
-		_spec.SetField(knowledgeentityalias.FieldExternalKind, field.TypeString, value)
+	if value, ok := _u.mutation.SubjectKind(); ok {
+		_spec.SetField(knowledgeentityalias.FieldSubjectKind, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(knowledgeentityalias.FieldExternalID, field.TypeString, value)
+	if value, ok := _u.mutation.SubjectRef(); ok {
+		_spec.SetField(knowledgeentityalias.FieldSubjectRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgeentityalias.FieldFirstSeenAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgeentityalias.FieldLastSeenAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgeentityalias.FieldCreatedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgeentityalias.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if _u.mutation.EntityCleared() {
 		edge := &sqlgraph.EdgeSpec{

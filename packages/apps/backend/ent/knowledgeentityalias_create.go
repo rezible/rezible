@@ -34,6 +34,34 @@ func (_c *KnowledgeEntityAliasCreate) SetTenantID(v int) *KnowledgeEntityAliasCr
 	return _c
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_c *KnowledgeEntityAliasCreate) SetCreatedAt(v time.Time) *KnowledgeEntityAliasCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *KnowledgeEntityAliasCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityAliasCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *KnowledgeEntityAliasCreate) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *KnowledgeEntityAliasCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEntityAliasCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
 // SetEntityID sets the "entity_id" field.
 func (_c *KnowledgeEntityAliasCreate) SetEntityID(v uuid.UUID) *KnowledgeEntityAliasCreate {
 	_c.mutation.SetEntityID(v)
@@ -46,21 +74,21 @@ func (_c *KnowledgeEntityAliasCreate) SetProvider(v string) *KnowledgeEntityAlia
 	return _c
 }
 
-// SetSource sets the "source" field.
-func (_c *KnowledgeEntityAliasCreate) SetSource(v string) *KnowledgeEntityAliasCreate {
-	_c.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_c *KnowledgeEntityAliasCreate) SetProviderSource(v string) *KnowledgeEntityAliasCreate {
+	_c.mutation.SetProviderSource(v)
 	return _c
 }
 
-// SetExternalKind sets the "external_kind" field.
-func (_c *KnowledgeEntityAliasCreate) SetExternalKind(v string) *KnowledgeEntityAliasCreate {
-	_c.mutation.SetExternalKind(v)
+// SetSubjectKind sets the "subject_kind" field.
+func (_c *KnowledgeEntityAliasCreate) SetSubjectKind(v string) *KnowledgeEntityAliasCreate {
+	_c.mutation.SetSubjectKind(v)
 	return _c
 }
 
-// SetExternalID sets the "external_id" field.
-func (_c *KnowledgeEntityAliasCreate) SetExternalID(v string) *KnowledgeEntityAliasCreate {
-	_c.mutation.SetExternalID(v)
+// SetSubjectRef sets the "subject_ref" field.
+func (_c *KnowledgeEntityAliasCreate) SetSubjectRef(v string) *KnowledgeEntityAliasCreate {
+	_c.mutation.SetSubjectRef(v)
 	return _c
 }
 
@@ -102,34 +130,6 @@ func (_c *KnowledgeEntityAliasCreate) SetLastSeenAt(v time.Time) *KnowledgeEntit
 func (_c *KnowledgeEntityAliasCreate) SetNillableLastSeenAt(v *time.Time) *KnowledgeEntityAliasCreate {
 	if v != nil {
 		_c.SetLastSeenAt(*v)
-	}
-	return _c
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_c *KnowledgeEntityAliasCreate) SetCreatedAt(v time.Time) *KnowledgeEntityAliasCreate {
-	_c.mutation.SetCreatedAt(v)
-	return _c
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *KnowledgeEntityAliasCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityAliasCreate {
-	if v != nil {
-		_c.SetCreatedAt(*v)
-	}
-	return _c
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_c *KnowledgeEntityAliasCreate) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasCreate {
-	_c.mutation.SetUpdatedAt(v)
-	return _c
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *KnowledgeEntityAliasCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEntityAliasCreate {
-	if v != nil {
-		_c.SetUpdatedAt(*v)
 	}
 	return _c
 }
@@ -215,20 +215,6 @@ func (_c *KnowledgeEntityAliasCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *KnowledgeEntityAliasCreate) defaults() error {
-	if _, ok := _c.mutation.FirstSeenAt(); !ok {
-		if knowledgeentityalias.DefaultFirstSeenAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgeentityalias.DefaultFirstSeenAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgeentityalias.DefaultFirstSeenAt()
-		_c.mutation.SetFirstSeenAt(v)
-	}
-	if _, ok := _c.mutation.LastSeenAt(); !ok {
-		if knowledgeentityalias.DefaultLastSeenAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgeentityalias.DefaultLastSeenAt (forgotten import ent/runtime?)")
-		}
-		v := knowledgeentityalias.DefaultLastSeenAt()
-		_c.mutation.SetLastSeenAt(v)
-	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
 		if knowledgeentityalias.DefaultCreatedAt == nil {
 			return fmt.Errorf("ent: uninitialized knowledgeentityalias.DefaultCreatedAt (forgotten import ent/runtime?)")
@@ -242,6 +228,20 @@ func (_c *KnowledgeEntityAliasCreate) defaults() error {
 		}
 		v := knowledgeentityalias.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
+	}
+	if _, ok := _c.mutation.FirstSeenAt(); !ok {
+		if knowledgeentityalias.DefaultFirstSeenAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgeentityalias.DefaultFirstSeenAt (forgotten import ent/runtime?)")
+		}
+		v := knowledgeentityalias.DefaultFirstSeenAt()
+		_c.mutation.SetFirstSeenAt(v)
+	}
+	if _, ok := _c.mutation.LastSeenAt(); !ok {
+		if knowledgeentityalias.DefaultLastSeenAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgeentityalias.DefaultLastSeenAt (forgotten import ent/runtime?)")
+		}
+		v := knowledgeentityalias.DefaultLastSeenAt()
+		_c.mutation.SetLastSeenAt(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if knowledgeentityalias.DefaultID == nil {
@@ -258,6 +258,12 @@ func (_c *KnowledgeEntityAliasCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.updated_at"`)}
+	}
 	if _, ok := _c.mutation.EntityID(); !ok {
 		return &ValidationError{Name: "entity_id", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.entity_id"`)}
 	}
@@ -269,28 +275,28 @@ func (_c *KnowledgeEntityAliasCreate) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.provider": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.source"`)}
+	if _, ok := _c.mutation.ProviderSource(); !ok {
+		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.provider_source"`)}
 	}
-	if v, ok := _c.mutation.Source(); ok {
-		if err := knowledgeentityalias.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.source": %w`, err)}
+	if v, ok := _c.mutation.ProviderSource(); ok {
+		if err := knowledgeentityalias.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.provider_source": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ExternalKind(); !ok {
-		return &ValidationError{Name: "external_kind", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.external_kind"`)}
+	if _, ok := _c.mutation.SubjectKind(); !ok {
+		return &ValidationError{Name: "subject_kind", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.subject_kind"`)}
 	}
-	if v, ok := _c.mutation.ExternalKind(); ok {
-		if err := knowledgeentityalias.ExternalKindValidator(v); err != nil {
-			return &ValidationError{Name: "external_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.external_kind": %w`, err)}
+	if v, ok := _c.mutation.SubjectKind(); ok {
+		if err := knowledgeentityalias.SubjectKindValidator(v); err != nil {
+			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.subject_kind": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ExternalID(); !ok {
-		return &ValidationError{Name: "external_id", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.external_id"`)}
+	if _, ok := _c.mutation.SubjectRef(); !ok {
+		return &ValidationError{Name: "subject_ref", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.subject_ref"`)}
 	}
-	if v, ok := _c.mutation.ExternalID(); ok {
-		if err := knowledgeentityalias.ExternalIDValidator(v); err != nil {
-			return &ValidationError{Name: "external_id", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.external_id": %w`, err)}
+	if v, ok := _c.mutation.SubjectRef(); ok {
+		if err := knowledgeentityalias.SubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntityAlias.subject_ref": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.FirstSeenAt(); !ok {
@@ -298,12 +304,6 @@ func (_c *KnowledgeEntityAliasCreate) check() error {
 	}
 	if _, ok := _c.mutation.LastSeenAt(); !ok {
 		return &ValidationError{Name: "last_seen_at", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.last_seen_at"`)}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.created_at"`)}
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.updated_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEntityAlias.tenant"`)}
@@ -348,21 +348,29 @@ func (_c *KnowledgeEntityAliasCreate) createSpec() (*KnowledgeEntityAlias, *sqlg
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgeentityalias.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgeentityalias.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := _c.mutation.Provider(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProvider, field.TypeString, value)
 		_node.Provider = value
 	}
-	if value, ok := _c.mutation.Source(); ok {
-		_spec.SetField(knowledgeentityalias.FieldSource, field.TypeString, value)
-		_node.Source = value
+	if value, ok := _c.mutation.ProviderSource(); ok {
+		_spec.SetField(knowledgeentityalias.FieldProviderSource, field.TypeString, value)
+		_node.ProviderSource = value
 	}
-	if value, ok := _c.mutation.ExternalKind(); ok {
-		_spec.SetField(knowledgeentityalias.FieldExternalKind, field.TypeString, value)
-		_node.ExternalKind = value
+	if value, ok := _c.mutation.SubjectKind(); ok {
+		_spec.SetField(knowledgeentityalias.FieldSubjectKind, field.TypeString, value)
+		_node.SubjectKind = value
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(knowledgeentityalias.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
+	if value, ok := _c.mutation.SubjectRef(); ok {
+		_spec.SetField(knowledgeentityalias.FieldSubjectRef, field.TypeString, value)
+		_node.SubjectRef = value
 	}
 	if value, ok := _c.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgeentityalias.FieldFirstSeenAt, field.TypeTime, value)
@@ -371,14 +379,6 @@ func (_c *KnowledgeEntityAliasCreate) createSpec() (*KnowledgeEntityAlias, *sqlg
 	if value, ok := _c.mutation.LastSeenAt(); ok {
 		_spec.SetField(knowledgeentityalias.FieldLastSeenAt, field.TypeTime, value)
 		_node.LastSeenAt = value
-	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgeentityalias.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgeentityalias.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -503,6 +503,30 @@ type (
 	}
 )
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeEntityAliasUpsert) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpsert {
+	u.Set(knowledgeentityalias.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsert) UpdateCreatedAt() *KnowledgeEntityAliasUpsert {
+	u.SetExcluded(knowledgeentityalias.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeEntityAliasUpsert) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpsert {
+	u.Set(knowledgeentityalias.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsert) UpdateUpdatedAt() *KnowledgeEntityAliasUpsert {
+	u.SetExcluded(knowledgeentityalias.FieldUpdatedAt)
+	return u
+}
+
 // SetEntityID sets the "entity_id" field.
 func (u *KnowledgeEntityAliasUpsert) SetEntityID(v uuid.UUID) *KnowledgeEntityAliasUpsert {
 	u.Set(knowledgeentityalias.FieldEntityID, v)
@@ -527,39 +551,39 @@ func (u *KnowledgeEntityAliasUpsert) UpdateProvider() *KnowledgeEntityAliasUpser
 	return u
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeEntityAliasUpsert) SetSource(v string) *KnowledgeEntityAliasUpsert {
-	u.Set(knowledgeentityalias.FieldSource, v)
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeEntityAliasUpsert) SetProviderSource(v string) *KnowledgeEntityAliasUpsert {
+	u.Set(knowledgeentityalias.FieldProviderSource, v)
 	return u
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsert) UpdateSource() *KnowledgeEntityAliasUpsert {
-	u.SetExcluded(knowledgeentityalias.FieldSource)
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsert) UpdateProviderSource() *KnowledgeEntityAliasUpsert {
+	u.SetExcluded(knowledgeentityalias.FieldProviderSource)
 	return u
 }
 
-// SetExternalKind sets the "external_kind" field.
-func (u *KnowledgeEntityAliasUpsert) SetExternalKind(v string) *KnowledgeEntityAliasUpsert {
-	u.Set(knowledgeentityalias.FieldExternalKind, v)
+// SetSubjectKind sets the "subject_kind" field.
+func (u *KnowledgeEntityAliasUpsert) SetSubjectKind(v string) *KnowledgeEntityAliasUpsert {
+	u.Set(knowledgeentityalias.FieldSubjectKind, v)
 	return u
 }
 
-// UpdateExternalKind sets the "external_kind" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsert) UpdateExternalKind() *KnowledgeEntityAliasUpsert {
-	u.SetExcluded(knowledgeentityalias.FieldExternalKind)
+// UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsert) UpdateSubjectKind() *KnowledgeEntityAliasUpsert {
+	u.SetExcluded(knowledgeentityalias.FieldSubjectKind)
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *KnowledgeEntityAliasUpsert) SetExternalID(v string) *KnowledgeEntityAliasUpsert {
-	u.Set(knowledgeentityalias.FieldExternalID, v)
+// SetSubjectRef sets the "subject_ref" field.
+func (u *KnowledgeEntityAliasUpsert) SetSubjectRef(v string) *KnowledgeEntityAliasUpsert {
+	u.Set(knowledgeentityalias.FieldSubjectRef, v)
 	return u
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsert) UpdateExternalID() *KnowledgeEntityAliasUpsert {
-	u.SetExcluded(knowledgeentityalias.FieldExternalID)
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsert) UpdateSubjectRef() *KnowledgeEntityAliasUpsert {
+	u.SetExcluded(knowledgeentityalias.FieldSubjectRef)
 	return u
 }
 
@@ -602,30 +626,6 @@ func (u *KnowledgeEntityAliasUpsert) SetLastSeenAt(v time.Time) *KnowledgeEntity
 // UpdateLastSeenAt sets the "last_seen_at" field to the value that was provided on create.
 func (u *KnowledgeEntityAliasUpsert) UpdateLastSeenAt() *KnowledgeEntityAliasUpsert {
 	u.SetExcluded(knowledgeentityalias.FieldLastSeenAt)
-	return u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityAliasUpsert) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpsert {
-	u.Set(knowledgeentityalias.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsert) UpdateCreatedAt() *KnowledgeEntityAliasUpsert {
-	u.SetExcluded(knowledgeentityalias.FieldCreatedAt)
-	return u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityAliasUpsert) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpsert {
-	u.Set(knowledgeentityalias.FieldUpdatedAt, v)
-	return u
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsert) UpdateUpdatedAt() *KnowledgeEntityAliasUpsert {
-	u.SetExcluded(knowledgeentityalias.FieldUpdatedAt)
 	return u
 }
 
@@ -680,6 +680,34 @@ func (u *KnowledgeEntityAliasUpsertOne) Update(set func(*KnowledgeEntityAliasUps
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeEntityAliasUpsertOne) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpsertOne {
+	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertOne) UpdateCreatedAt() *KnowledgeEntityAliasUpsertOne {
+	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeEntityAliasUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpsertOne {
+	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertOne) UpdateUpdatedAt() *KnowledgeEntityAliasUpsertOne {
+	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetEntityID sets the "entity_id" field.
 func (u *KnowledgeEntityAliasUpsertOne) SetEntityID(v uuid.UUID) *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
@@ -708,45 +736,45 @@ func (u *KnowledgeEntityAliasUpsertOne) UpdateProvider() *KnowledgeEntityAliasUp
 	})
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeEntityAliasUpsertOne) SetSource(v string) *KnowledgeEntityAliasUpsertOne {
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeEntityAliasUpsertOne) SetProviderSource(v string) *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetSource(v)
+		s.SetProviderSource(v)
 	})
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertOne) UpdateSource() *KnowledgeEntityAliasUpsertOne {
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertOne) UpdateProviderSource() *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateSource()
+		s.UpdateProviderSource()
 	})
 }
 
-// SetExternalKind sets the "external_kind" field.
-func (u *KnowledgeEntityAliasUpsertOne) SetExternalKind(v string) *KnowledgeEntityAliasUpsertOne {
+// SetSubjectKind sets the "subject_kind" field.
+func (u *KnowledgeEntityAliasUpsertOne) SetSubjectKind(v string) *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetExternalKind(v)
+		s.SetSubjectKind(v)
 	})
 }
 
-// UpdateExternalKind sets the "external_kind" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertOne) UpdateExternalKind() *KnowledgeEntityAliasUpsertOne {
+// UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertOne) UpdateSubjectKind() *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateExternalKind()
+		s.UpdateSubjectKind()
 	})
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *KnowledgeEntityAliasUpsertOne) SetExternalID(v string) *KnowledgeEntityAliasUpsertOne {
+// SetSubjectRef sets the "subject_ref" field.
+func (u *KnowledgeEntityAliasUpsertOne) SetSubjectRef(v string) *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetExternalID(v)
+		s.SetSubjectRef(v)
 	})
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertOne) UpdateExternalID() *KnowledgeEntityAliasUpsertOne {
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertOne) UpdateSubjectRef() *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateExternalID()
+		s.UpdateSubjectRef()
 	})
 }
 
@@ -796,34 +824,6 @@ func (u *KnowledgeEntityAliasUpsertOne) SetLastSeenAt(v time.Time) *KnowledgeEnt
 func (u *KnowledgeEntityAliasUpsertOne) UpdateLastSeenAt() *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
 		s.UpdateLastSeenAt()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityAliasUpsertOne) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpsertOne {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertOne) UpdateCreatedAt() *KnowledgeEntityAliasUpsertOne {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityAliasUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpsertOne {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertOne) UpdateUpdatedAt() *KnowledgeEntityAliasUpsertOne {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 
@@ -1045,6 +1045,34 @@ func (u *KnowledgeEntityAliasUpsertBulk) Update(set func(*KnowledgeEntityAliasUp
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeEntityAliasUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertBulk) UpdateCreatedAt() *KnowledgeEntityAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeEntityAliasUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityAliasUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetEntityID sets the "entity_id" field.
 func (u *KnowledgeEntityAliasUpsertBulk) SetEntityID(v uuid.UUID) *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
@@ -1073,45 +1101,45 @@ func (u *KnowledgeEntityAliasUpsertBulk) UpdateProvider() *KnowledgeEntityAliasU
 	})
 }
 
-// SetSource sets the "source" field.
-func (u *KnowledgeEntityAliasUpsertBulk) SetSource(v string) *KnowledgeEntityAliasUpsertBulk {
+// SetProviderSource sets the "provider_source" field.
+func (u *KnowledgeEntityAliasUpsertBulk) SetProviderSource(v string) *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetSource(v)
+		s.SetProviderSource(v)
 	})
 }
 
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertBulk) UpdateSource() *KnowledgeEntityAliasUpsertBulk {
+// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertBulk) UpdateProviderSource() *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateSource()
+		s.UpdateProviderSource()
 	})
 }
 
-// SetExternalKind sets the "external_kind" field.
-func (u *KnowledgeEntityAliasUpsertBulk) SetExternalKind(v string) *KnowledgeEntityAliasUpsertBulk {
+// SetSubjectKind sets the "subject_kind" field.
+func (u *KnowledgeEntityAliasUpsertBulk) SetSubjectKind(v string) *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetExternalKind(v)
+		s.SetSubjectKind(v)
 	})
 }
 
-// UpdateExternalKind sets the "external_kind" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertBulk) UpdateExternalKind() *KnowledgeEntityAliasUpsertBulk {
+// UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertBulk) UpdateSubjectKind() *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateExternalKind()
+		s.UpdateSubjectKind()
 	})
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *KnowledgeEntityAliasUpsertBulk) SetExternalID(v string) *KnowledgeEntityAliasUpsertBulk {
+// SetSubjectRef sets the "subject_ref" field.
+func (u *KnowledgeEntityAliasUpsertBulk) SetSubjectRef(v string) *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetExternalID(v)
+		s.SetSubjectRef(v)
 	})
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertBulk) UpdateExternalID() *KnowledgeEntityAliasUpsertBulk {
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *KnowledgeEntityAliasUpsertBulk) UpdateSubjectRef() *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateExternalID()
+		s.UpdateSubjectRef()
 	})
 }
 
@@ -1161,34 +1189,6 @@ func (u *KnowledgeEntityAliasUpsertBulk) SetLastSeenAt(v time.Time) *KnowledgeEn
 func (u *KnowledgeEntityAliasUpsertBulk) UpdateLastSeenAt() *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
 		s.UpdateLastSeenAt()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityAliasUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeEntityAliasUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertBulk) UpdateCreatedAt() *KnowledgeEntityAliasUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityAliasUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeEntityAliasUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityAliasUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 

@@ -44,16 +44,16 @@ func (_u *NormalizedEventUpdate) SetNillableProvider(v *string) *NormalizedEvent
 	return _u
 }
 
-// SetSource sets the "source" field.
-func (_u *NormalizedEventUpdate) SetSource(v string) *NormalizedEventUpdate {
-	_u.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_u *NormalizedEventUpdate) SetProviderSource(v string) *NormalizedEventUpdate {
+	_u.mutation.SetProviderSource(v)
 	return _u
 }
 
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableSource(v *string) *NormalizedEventUpdate {
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableProviderSource(v *string) *NormalizedEventUpdate {
 	if v != nil {
-		_u.SetSource(*v)
+		_u.SetProviderSource(*v)
 	}
 	return _u
 }
@@ -86,30 +86,30 @@ func (_u *NormalizedEventUpdate) SetNillableSubjectKind(v *string) *NormalizedEv
 	return _u
 }
 
-// SetSubjectExternalRef sets the "subject_external_ref" field.
-func (_u *NormalizedEventUpdate) SetSubjectExternalRef(v string) *NormalizedEventUpdate {
-	_u.mutation.SetSubjectExternalRef(v)
+// SetSubjectRef sets the "subject_ref" field.
+func (_u *NormalizedEventUpdate) SetSubjectRef(v string) *NormalizedEventUpdate {
+	_u.mutation.SetSubjectRef(v)
 	return _u
 }
 
-// SetNillableSubjectExternalRef sets the "subject_external_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableSubjectExternalRef(v *string) *NormalizedEventUpdate {
+// SetNillableSubjectRef sets the "subject_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableSubjectRef(v *string) *NormalizedEventUpdate {
 	if v != nil {
-		_u.SetSubjectExternalRef(*v)
+		_u.SetSubjectRef(*v)
 	}
 	return _u
 }
 
-// SetSourceEventKey sets the "source_event_key" field.
-func (_u *NormalizedEventUpdate) SetSourceEventKey(v string) *NormalizedEventUpdate {
-	_u.mutation.SetSourceEventKey(v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_u *NormalizedEventUpdate) SetProviderEventRef(v string) *NormalizedEventUpdate {
+	_u.mutation.SetProviderEventRef(v)
 	return _u
 }
 
-// SetNillableSourceEventKey sets the "source_event_key" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableSourceEventKey(v *string) *NormalizedEventUpdate {
+// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableProviderEventRef(v *string) *NormalizedEventUpdate {
 	if v != nil {
-		_u.SetSourceEventKey(*v)
+		_u.SetProviderEventRef(*v)
 	}
 	return _u
 }
@@ -235,9 +235,9 @@ func (_u *NormalizedEventUpdate) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := normalizedevent.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.source": %w`, err)}
+	if v, ok := _u.mutation.ProviderSource(); ok {
+		if err := normalizedevent.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Kind(); ok {
@@ -250,14 +250,14 @@ func (_u *NormalizedEventUpdate) check() error {
 			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_kind": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.SubjectExternalRef(); ok {
-		if err := normalizedevent.SubjectExternalRefValidator(v); err != nil {
-			return &ValidationError{Name: "subject_external_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_external_ref": %w`, err)}
+	if v, ok := _u.mutation.SubjectRef(); ok {
+		if err := normalizedevent.SubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.SourceEventKey(); ok {
-		if err := normalizedevent.SourceEventKeyValidator(v); err != nil {
-			return &ValidationError{Name: "source_event_key", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.source_event_key": %w`, err)}
+	if v, ok := _u.mutation.ProviderEventRef(); ok {
+		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ProcessingVersion(); ok {
@@ -292,8 +292,8 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(normalizedevent.FieldSource, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderSource(); ok {
+		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
@@ -301,11 +301,11 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.SubjectKind(); ok {
 		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SubjectExternalRef(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectExternalRef, field.TypeString, value)
+	if value, ok := _u.mutation.SubjectRef(); ok {
+		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SourceEventKey(); ok {
-		_spec.SetField(normalizedevent.FieldSourceEventKey, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderEventRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DedupeKey(); ok {
 		_spec.SetField(normalizedevent.FieldDedupeKey, field.TypeString, value)
@@ -366,16 +366,16 @@ func (_u *NormalizedEventUpdateOne) SetNillableProvider(v *string) *NormalizedEv
 	return _u
 }
 
-// SetSource sets the "source" field.
-func (_u *NormalizedEventUpdateOne) SetSource(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetSource(v)
+// SetProviderSource sets the "provider_source" field.
+func (_u *NormalizedEventUpdateOne) SetProviderSource(v string) *NormalizedEventUpdateOne {
+	_u.mutation.SetProviderSource(v)
 	return _u
 }
 
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableSource(v *string) *NormalizedEventUpdateOne {
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableProviderSource(v *string) *NormalizedEventUpdateOne {
 	if v != nil {
-		_u.SetSource(*v)
+		_u.SetProviderSource(*v)
 	}
 	return _u
 }
@@ -408,30 +408,30 @@ func (_u *NormalizedEventUpdateOne) SetNillableSubjectKind(v *string) *Normalize
 	return _u
 }
 
-// SetSubjectExternalRef sets the "subject_external_ref" field.
-func (_u *NormalizedEventUpdateOne) SetSubjectExternalRef(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetSubjectExternalRef(v)
+// SetSubjectRef sets the "subject_ref" field.
+func (_u *NormalizedEventUpdateOne) SetSubjectRef(v string) *NormalizedEventUpdateOne {
+	_u.mutation.SetSubjectRef(v)
 	return _u
 }
 
-// SetNillableSubjectExternalRef sets the "subject_external_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableSubjectExternalRef(v *string) *NormalizedEventUpdateOne {
+// SetNillableSubjectRef sets the "subject_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableSubjectRef(v *string) *NormalizedEventUpdateOne {
 	if v != nil {
-		_u.SetSubjectExternalRef(*v)
+		_u.SetSubjectRef(*v)
 	}
 	return _u
 }
 
-// SetSourceEventKey sets the "source_event_key" field.
-func (_u *NormalizedEventUpdateOne) SetSourceEventKey(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetSourceEventKey(v)
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_u *NormalizedEventUpdateOne) SetProviderEventRef(v string) *NormalizedEventUpdateOne {
+	_u.mutation.SetProviderEventRef(v)
 	return _u
 }
 
-// SetNillableSourceEventKey sets the "source_event_key" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableSourceEventKey(v *string) *NormalizedEventUpdateOne {
+// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableProviderEventRef(v *string) *NormalizedEventUpdateOne {
 	if v != nil {
-		_u.SetSourceEventKey(*v)
+		_u.SetProviderEventRef(*v)
 	}
 	return _u
 }
@@ -570,9 +570,9 @@ func (_u *NormalizedEventUpdateOne) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := normalizedevent.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.source": %w`, err)}
+	if v, ok := _u.mutation.ProviderSource(); ok {
+		if err := normalizedevent.ProviderSourceValidator(v); err != nil {
+			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Kind(); ok {
@@ -585,14 +585,14 @@ func (_u *NormalizedEventUpdateOne) check() error {
 			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_kind": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.SubjectExternalRef(); ok {
-		if err := normalizedevent.SubjectExternalRefValidator(v); err != nil {
-			return &ValidationError{Name: "subject_external_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_external_ref": %w`, err)}
+	if v, ok := _u.mutation.SubjectRef(); ok {
+		if err := normalizedevent.SubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.SourceEventKey(); ok {
-		if err := normalizedevent.SourceEventKeyValidator(v); err != nil {
-			return &ValidationError{Name: "source_event_key", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.source_event_key": %w`, err)}
+	if v, ok := _u.mutation.ProviderEventRef(); ok {
+		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.ProcessingVersion(); ok {
@@ -644,8 +644,8 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(normalizedevent.FieldSource, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderSource(); ok {
+		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
@@ -653,11 +653,11 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	if value, ok := _u.mutation.SubjectKind(); ok {
 		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SubjectExternalRef(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectExternalRef, field.TypeString, value)
+	if value, ok := _u.mutation.SubjectRef(); ok {
+		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SourceEventKey(); ok {
-		_spec.SetField(normalizedevent.FieldSourceEventKey, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderEventRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DedupeKey(); ok {
 		_spec.SetField(normalizedevent.FieldDedupeKey, field.TypeString, value)

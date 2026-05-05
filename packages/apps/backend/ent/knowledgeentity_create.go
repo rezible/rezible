@@ -33,6 +33,34 @@ func (_c *KnowledgeEntityCreate) SetTenantID(v int) *KnowledgeEntityCreate {
 	return _c
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (_c *KnowledgeEntityCreate) SetCreatedAt(v time.Time) *KnowledgeEntityCreate {
+	_c.mutation.SetCreatedAt(v)
+	return _c
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetCreatedAt(*v)
+	}
+	return _c
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (_c *KnowledgeEntityCreate) SetUpdatedAt(v time.Time) *KnowledgeEntityCreate {
+	_c.mutation.SetUpdatedAt(v)
+	return _c
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (_c *KnowledgeEntityCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEntityCreate {
+	if v != nil {
+		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
 // SetKind sets the "kind" field.
 func (_c *KnowledgeEntityCreate) SetKind(v knowledgeentity.Kind) *KnowledgeEntityCreate {
 	_c.mutation.SetKind(v)
@@ -62,34 +90,6 @@ func (_c *KnowledgeEntityCreate) SetNillableDescription(v *string) *KnowledgeEnt
 // SetProperties sets the "properties" field.
 func (_c *KnowledgeEntityCreate) SetProperties(v map[string]interface{}) *KnowledgeEntityCreate {
 	_c.mutation.SetProperties(v)
-	return _c
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_c *KnowledgeEntityCreate) SetCreatedAt(v time.Time) *KnowledgeEntityCreate {
-	_c.mutation.SetCreatedAt(v)
-	return _c
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityCreate {
-	if v != nil {
-		_c.SetCreatedAt(*v)
-	}
-	return _c
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (_c *KnowledgeEntityCreate) SetUpdatedAt(v time.Time) *KnowledgeEntityCreate {
-	_c.mutation.SetUpdatedAt(v)
-	return _c
-}
-
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEntityCreate {
-	if v != nil {
-		_c.SetUpdatedAt(*v)
-	}
 	return _c
 }
 
@@ -223,6 +223,12 @@ func (_c *KnowledgeEntityCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "KnowledgeEntity.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeEntity.created_at"`)}
+	}
+	if _, ok := _c.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeEntity.updated_at"`)}
+	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "KnowledgeEntity.kind"`)}
 	}
@@ -238,12 +244,6 @@ func (_c *KnowledgeEntityCreate) check() error {
 		if err := knowledgeentity.DisplayNameValidator(v); err != nil {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.display_name": %w`, err)}
 		}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeEntity.created_at"`)}
-	}
-	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeEntity.updated_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEntity.tenant"`)}
@@ -285,6 +285,14 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(knowledgeentity.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
+	}
+	if value, ok := _c.mutation.UpdatedAt(); ok {
+		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
+		_node.UpdatedAt = value
+	}
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(knowledgeentity.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
@@ -300,14 +308,6 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 	if value, ok := _c.mutation.Properties(); ok {
 		_spec.SetField(knowledgeentity.FieldProperties, field.TypeJSON, value)
 		_node.Properties = value
-	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgeentity.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
-	}
-	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
-		_node.UpdatedAt = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -430,6 +430,30 @@ type (
 	}
 )
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeEntityUpsert) SetCreatedAt(v time.Time) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateCreatedAt() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeEntityUpsert) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsert {
+	u.Set(knowledgeentity.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsert) UpdateUpdatedAt() *KnowledgeEntityUpsert {
+	u.SetExcluded(knowledgeentity.FieldUpdatedAt)
+	return u
+}
+
 // SetKind sets the "kind" field.
 func (u *KnowledgeEntityUpsert) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsert {
 	u.Set(knowledgeentity.FieldKind, v)
@@ -490,30 +514,6 @@ func (u *KnowledgeEntityUpsert) ClearProperties() *KnowledgeEntityUpsert {
 	return u
 }
 
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityUpsert) SetCreatedAt(v time.Time) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateCreatedAt() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldCreatedAt)
-	return u
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityUpsert) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldUpdatedAt, v)
-	return u
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateUpdatedAt() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldUpdatedAt)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -563,6 +563,34 @@ func (u *KnowledgeEntityUpsertOne) Update(set func(*KnowledgeEntityUpsert)) *Kno
 		set(&KnowledgeEntityUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeEntityUpsertOne) SetCreatedAt(v time.Time) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateCreatedAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeEntityUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertOne) UpdateUpdatedAt() *KnowledgeEntityUpsertOne {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateUpdatedAt()
+	})
 }
 
 // SetKind sets the "kind" field.
@@ -632,34 +660,6 @@ func (u *KnowledgeEntityUpsertOne) UpdateProperties() *KnowledgeEntityUpsertOne 
 func (u *KnowledgeEntityUpsertOne) ClearProperties() *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.ClearProperties()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityUpsertOne) SetCreatedAt(v time.Time) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateCreatedAt() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateUpdatedAt() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 
@@ -881,6 +881,34 @@ func (u *KnowledgeEntityUpsertBulk) Update(set func(*KnowledgeEntityUpsert)) *Kn
 	return u
 }
 
+// SetCreatedAt sets the "created_at" field.
+func (u *KnowledgeEntityUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateCreatedAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *KnowledgeEntityUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *KnowledgeEntityUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityUpsertBulk {
+	return u.Update(func(s *KnowledgeEntityUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
 // SetKind sets the "kind" field.
 func (u *KnowledgeEntityUpsertBulk) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
@@ -948,34 +976,6 @@ func (u *KnowledgeEntityUpsertBulk) UpdateProperties() *KnowledgeEntityUpsertBul
 func (u *KnowledgeEntityUpsertBulk) ClearProperties() *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.ClearProperties()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateCreatedAt() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateCreatedAt()
-	})
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.SetUpdatedAt(v)
-	})
-}
-
-// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
-		s.UpdateUpdatedAt()
 	})
 }
 

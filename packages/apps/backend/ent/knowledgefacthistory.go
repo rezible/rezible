@@ -22,34 +22,35 @@ import (
 type KnowledgeFactHistory struct {
 	config `json:"-"`
 	// ID of the ent.
+	// Internal identifier for this knowledge fact history record.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// FactKind holds the value of the "fact_kind" field.
-	FactKind string `json:"fact_kind,omitempty"`
-	// AliasID holds the value of the "alias_id" field.
+	// Kind of knowledge fact captured by this history record.
+	FactKind *knowledgefacthistory.FactKind `json:"fact_kind,omitempty"`
+	// Alias this history record is about, when fact_kind is alias.
 	AliasID *uuid.UUID `json:"alias_id,omitempty"`
-	// RelationshipID holds the value of the "relationship_id" field.
+	// Relationship this history record is about, when fact_kind is relationship.
 	RelationshipID *uuid.UUID `json:"relationship_id,omitempty"`
-	// NormalizedEventID holds the value of the "normalized_event_id" field.
+	// Normalized event that produced this history record, when available.
 	NormalizedEventID *uuid.UUID `json:"normalized_event_id,omitempty"`
-	// EventKind holds the value of the "event_kind" field.
+	// Type of history event, such as alias_observed or relationship_observed.
 	EventKind string `json:"event_kind,omitempty"`
-	// HistoryKey holds the value of the "history_key" field.
+	// Stable idempotency key for this history record.
 	HistoryKey string `json:"history_key,omitempty"`
-	// OccurredAt holds the value of the "occurred_at" field.
+	// Time the underlying provider event or observation occurred.
 	OccurredAt time.Time `json:"occurred_at,omitempty"`
-	// RecordedAt holds the value of the "recorded_at" field.
+	// Time this history record was persisted.
 	RecordedAt time.Time `json:"recorded_at,omitempty"`
-	// SourceProvider holds the value of the "source_provider" field.
-	SourceProvider string `json:"source_provider,omitempty"`
-	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
-	// SourceRef holds the value of the "source_ref" field.
-	SourceRef string `json:"source_ref,omitempty"`
-	// ExtractionMethod holds the value of the "extraction_method" field.
+	// Integration provider that supplied the evidence for this history record.
+	Provider string `json:"provider,omitempty"`
+	// Provider-specific stream, API, or dataset where the evidence was observed.
+	ProviderSource string `json:"provider_source,omitempty"`
+	// Stable provider reference for the event or record that supports this history record.
+	ProviderEventRef string `json:"provider_event_ref,omitempty"`
+	// Projection, sync, or extraction method that created this history record.
 	ExtractionMethod string `json:"extraction_method,omitempty"`
-	// Attributes holds the value of the "attributes" field.
+	// Structured details captured for this history event.
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeFactHistoryQuery when eager-loading is set.
@@ -127,7 +128,7 @@ func (*KnowledgeFactHistory) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case knowledgefacthistory.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgefacthistory.FieldFactKind, knowledgefacthistory.FieldEventKind, knowledgefacthistory.FieldHistoryKey, knowledgefacthistory.FieldSourceProvider, knowledgefacthistory.FieldSource, knowledgefacthistory.FieldSourceRef, knowledgefacthistory.FieldExtractionMethod:
+		case knowledgefacthistory.FieldFactKind, knowledgefacthistory.FieldEventKind, knowledgefacthistory.FieldHistoryKey, knowledgefacthistory.FieldProvider, knowledgefacthistory.FieldProviderSource, knowledgefacthistory.FieldProviderEventRef, knowledgefacthistory.FieldExtractionMethod:
 			values[i] = new(sql.NullString)
 		case knowledgefacthistory.FieldOccurredAt, knowledgefacthistory.FieldRecordedAt:
 			values[i] = new(sql.NullTime)
@@ -164,7 +165,8 @@ func (_m *KnowledgeFactHistory) assignValues(columns []string, values []any) err
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field fact_kind", values[i])
 			} else if value.Valid {
-				_m.FactKind = value.String
+				_m.FactKind = new(knowledgefacthistory.FactKind)
+				*_m.FactKind = knowledgefacthistory.FactKind(value.String)
 			}
 		case knowledgefacthistory.FieldAliasID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -211,23 +213,23 @@ func (_m *KnowledgeFactHistory) assignValues(columns []string, values []any) err
 			} else if value.Valid {
 				_m.RecordedAt = value.Time
 			}
-		case knowledgefacthistory.FieldSourceProvider:
+		case knowledgefacthistory.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source_provider", values[i])
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
-				_m.SourceProvider = value.String
+				_m.Provider = value.String
 			}
-		case knowledgefacthistory.FieldSource:
+		case knowledgefacthistory.FieldProviderSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
 			} else if value.Valid {
-				_m.Source = value.String
+				_m.ProviderSource = value.String
 			}
-		case knowledgefacthistory.FieldSourceRef:
+		case knowledgefacthistory.FieldProviderEventRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source_ref", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_event_ref", values[i])
 			} else if value.Valid {
-				_m.SourceRef = value.String
+				_m.ProviderEventRef = value.String
 			}
 		case knowledgefacthistory.FieldExtractionMethod:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -302,8 +304,10 @@ func (_m *KnowledgeFactHistory) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("fact_kind=")
-	builder.WriteString(_m.FactKind)
+	if v := _m.FactKind; v != nil {
+		builder.WriteString("fact_kind=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	if v := _m.AliasID; v != nil {
 		builder.WriteString("alias_id=")
@@ -332,14 +336,14 @@ func (_m *KnowledgeFactHistory) String() string {
 	builder.WriteString("recorded_at=")
 	builder.WriteString(_m.RecordedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("source_provider=")
-	builder.WriteString(_m.SourceProvider)
+	builder.WriteString("provider=")
+	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
-	builder.WriteString("source=")
-	builder.WriteString(_m.Source)
+	builder.WriteString("provider_source=")
+	builder.WriteString(_m.ProviderSource)
 	builder.WriteString(", ")
-	builder.WriteString("source_ref=")
-	builder.WriteString(_m.SourceRef)
+	builder.WriteString("provider_event_ref=")
+	builder.WriteString(_m.ProviderEventRef)
 	builder.WriteString(", ")
 	builder.WriteString("extraction_method=")
 	builder.WriteString(_m.ExtractionMethod)

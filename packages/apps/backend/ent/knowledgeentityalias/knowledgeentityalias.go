@@ -18,26 +18,26 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// FieldEntityID holds the string denoting the entity_id field in the database.
 	FieldEntityID = "entity_id"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
-	// FieldSource holds the string denoting the source field in the database.
-	FieldSource = "source"
-	// FieldExternalKind holds the string denoting the external_kind field in the database.
-	FieldExternalKind = "external_kind"
-	// FieldExternalID holds the string denoting the external_id field in the database.
-	FieldExternalID = "external_id"
+	// FieldProviderSource holds the string denoting the provider_source field in the database.
+	FieldProviderSource = "provider_source"
+	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
+	FieldSubjectKind = "subject_kind"
+	// FieldSubjectRef holds the string denoting the subject_ref field in the database.
+	FieldSubjectRef = "subject_ref"
 	// FieldNormalizedEventID holds the string denoting the normalized_event_id field in the database.
 	FieldNormalizedEventID = "normalized_event_id"
 	// FieldFirstSeenAt holds the string denoting the first_seen_at field in the database.
 	FieldFirstSeenAt = "first_seen_at"
 	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
 	FieldLastSeenAt = "last_seen_at"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEntity holds the string denoting the entity edge name in mutations.
@@ -82,16 +82,16 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 	FieldEntityID,
 	FieldProvider,
-	FieldSource,
-	FieldExternalKind,
-	FieldExternalID,
+	FieldProviderSource,
+	FieldSubjectKind,
+	FieldSubjectRef,
 	FieldNormalizedEventID,
 	FieldFirstSeenAt,
 	FieldLastSeenAt,
-	FieldCreatedAt,
-	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -112,24 +112,24 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
-	ProviderValidator func(string) error
-	// SourceValidator is a validator for the "source" field. It is called by the builders before save.
-	SourceValidator func(string) error
-	// ExternalKindValidator is a validator for the "external_kind" field. It is called by the builders before save.
-	ExternalKindValidator func(string) error
-	// ExternalIDValidator is a validator for the "external_id" field. It is called by the builders before save.
-	ExternalIDValidator func(string) error
-	// DefaultFirstSeenAt holds the default value on creation for the "first_seen_at" field.
-	DefaultFirstSeenAt func() time.Time
-	// DefaultLastSeenAt holds the default value on creation for the "last_seen_at" field.
-	DefaultLastSeenAt func() time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	ProviderValidator func(string) error
+	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
+	ProviderSourceValidator func(string) error
+	// SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
+	SubjectKindValidator func(string) error
+	// SubjectRefValidator is a validator for the "subject_ref" field. It is called by the builders before save.
+	SubjectRefValidator func(string) error
+	// DefaultFirstSeenAt holds the default value on creation for the "first_seen_at" field.
+	DefaultFirstSeenAt func() time.Time
+	// DefaultLastSeenAt holds the default value on creation for the "last_seen_at" field.
+	DefaultLastSeenAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -147,6 +147,16 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
 // ByEntityID orders the results by the entity_id field.
 func ByEntityID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEntityID, opts...).ToFunc()
@@ -157,19 +167,19 @@ func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
 }
 
-// BySource orders the results by the source field.
-func BySource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSource, opts...).ToFunc()
+// ByProviderSource orders the results by the provider_source field.
+func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
 }
 
-// ByExternalKind orders the results by the external_kind field.
-func ByExternalKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalKind, opts...).ToFunc()
+// BySubjectKind orders the results by the subject_kind field.
+func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
 }
 
-// ByExternalID orders the results by the external_id field.
-func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
+// BySubjectRef orders the results by the subject_ref field.
+func BySubjectRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubjectRef, opts...).ToFunc()
 }
 
 // ByNormalizedEventID orders the results by the normalized_event_id field.
@@ -185,16 +195,6 @@ func ByFirstSeenAt(opts ...sql.OrderTermOption) OrderOption {
 // ByLastSeenAt orders the results by the last_seen_at field.
 func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastSeenAt, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

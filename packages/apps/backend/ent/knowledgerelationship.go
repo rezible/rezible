@@ -22,6 +22,10 @@ type KnowledgeRelationship struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// SourceEntityID holds the value of the "source_entity_id" field.
 	SourceEntityID uuid.UUID `json:"source_entity_id,omitempty"`
 	// TargetEntityID holds the value of the "target_entity_id" field.
@@ -36,10 +40,6 @@ type KnowledgeRelationship struct {
 	FirstSeenAt time.Time `json:"first_seen_at,omitempty"`
 	// LastSeenAt holds the value of the "last_seen_at" field.
 	LastSeenAt time.Time `json:"last_seen_at,omitempty"`
-	// CreatedAt holds the value of the "created_at" field.
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeRelationshipQuery when eager-loading is set.
 	Edges        KnowledgeRelationshipEdges `json:"edges"`
@@ -112,7 +112,7 @@ func (*KnowledgeRelationship) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case knowledgerelationship.FieldKind, knowledgerelationship.FieldDisplayName, knowledgerelationship.FieldDescription:
 			values[i] = new(sql.NullString)
-		case knowledgerelationship.FieldFirstSeenAt, knowledgerelationship.FieldLastSeenAt, knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt:
+		case knowledgerelationship.FieldCreatedAt, knowledgerelationship.FieldUpdatedAt, knowledgerelationship.FieldFirstSeenAt, knowledgerelationship.FieldLastSeenAt:
 			values[i] = new(sql.NullTime)
 		case knowledgerelationship.FieldID, knowledgerelationship.FieldSourceEntityID, knowledgerelationship.FieldTargetEntityID:
 			values[i] = new(uuid.UUID)
@@ -142,6 +142,18 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
+			}
+		case knowledgerelationship.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				_m.CreatedAt = value.Time
+			}
+		case knowledgerelationship.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				_m.UpdatedAt = value.Time
 			}
 		case knowledgerelationship.FieldSourceEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -184,18 +196,6 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field last_seen_at", values[i])
 			} else if value.Valid {
 				_m.LastSeenAt = value.Time
-			}
-		case knowledgerelationship.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				_m.CreatedAt = value.Time
-			}
-		case knowledgerelationship.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				_m.UpdatedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -256,6 +256,12 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("source_entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SourceEntityID))
 	builder.WriteString(", ")
@@ -276,12 +282,6 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("last_seen_at=")
 	builder.WriteString(_m.LastSeenAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

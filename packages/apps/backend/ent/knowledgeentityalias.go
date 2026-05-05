@@ -20,29 +20,30 @@ import (
 type KnowledgeEntityAlias struct {
 	config `json:"-"`
 	// ID of the ent.
+	// Internal identifier for this knowledge entity alias.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// EntityID holds the value of the "entity_id" field.
-	EntityID uuid.UUID `json:"entity_id,omitempty"`
-	// Provider holds the value of the "provider" field.
-	Provider string `json:"provider,omitempty"`
-	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
-	// ExternalKind holds the value of the "external_kind" field.
-	ExternalKind string `json:"external_kind,omitempty"`
-	// ExternalID holds the value of the "external_id" field.
-	ExternalID string `json:"external_id,omitempty"`
-	// NormalizedEventID holds the value of the "normalized_event_id" field.
-	NormalizedEventID *uuid.UUID `json:"normalized_event_id,omitempty"`
-	// FirstSeenAt holds the value of the "first_seen_at" field.
-	FirstSeenAt time.Time `json:"first_seen_at,omitempty"`
-	// LastSeenAt holds the value of the "last_seen_at" field.
-	LastSeenAt time.Time `json:"last_seen_at,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Knowledge entity this alias resolves to.
+	EntityID uuid.UUID `json:"entity_id,omitempty"`
+	// Integration provider that supplied this alias, such as slack or github.
+	Provider string `json:"provider,omitempty"`
+	// Provider-specific stream, API, or dataset where this alias was observed.
+	ProviderSource string `json:"provider_source,omitempty"`
+	// Provider-neutral type of the external subject this alias identifies.
+	SubjectKind string `json:"subject_kind,omitempty"`
+	// Stable external reference for the subject this alias identifies.
+	SubjectRef string `json:"subject_ref,omitempty"`
+	// Normalized event that most recently observed or updated this alias.
+	NormalizedEventID *uuid.UUID `json:"normalized_event_id,omitempty"`
+	// First time this alias was observed.
+	FirstSeenAt time.Time `json:"first_seen_at,omitempty"`
+	// Most recent time this alias was observed.
+	LastSeenAt time.Time `json:"last_seen_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEntityAliasQuery when eager-loading is set.
 	Edges        KnowledgeEntityAliasEdges `json:"edges"`
@@ -115,9 +116,9 @@ func (*KnowledgeEntityAlias) scanValues(columns []string) ([]any, error) {
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case knowledgeentityalias.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeentityalias.FieldProvider, knowledgeentityalias.FieldSource, knowledgeentityalias.FieldExternalKind, knowledgeentityalias.FieldExternalID:
+		case knowledgeentityalias.FieldProvider, knowledgeentityalias.FieldProviderSource, knowledgeentityalias.FieldSubjectKind, knowledgeentityalias.FieldSubjectRef:
 			values[i] = new(sql.NullString)
-		case knowledgeentityalias.FieldFirstSeenAt, knowledgeentityalias.FieldLastSeenAt, knowledgeentityalias.FieldCreatedAt, knowledgeentityalias.FieldUpdatedAt:
+		case knowledgeentityalias.FieldCreatedAt, knowledgeentityalias.FieldUpdatedAt, knowledgeentityalias.FieldFirstSeenAt, knowledgeentityalias.FieldLastSeenAt:
 			values[i] = new(sql.NullTime)
 		case knowledgeentityalias.FieldID, knowledgeentityalias.FieldEntityID:
 			values[i] = new(uuid.UUID)
@@ -148,6 +149,18 @@ func (_m *KnowledgeEntityAlias) assignValues(columns []string, values []any) err
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case knowledgeentityalias.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				_m.CreatedAt = value.Time
+			}
+		case knowledgeentityalias.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				_m.UpdatedAt = value.Time
+			}
 		case knowledgeentityalias.FieldEntityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field entity_id", values[i])
@@ -160,23 +173,23 @@ func (_m *KnowledgeEntityAlias) assignValues(columns []string, values []any) err
 			} else if value.Valid {
 				_m.Provider = value.String
 			}
-		case knowledgeentityalias.FieldSource:
+		case knowledgeentityalias.FieldProviderSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
 			} else if value.Valid {
-				_m.Source = value.String
+				_m.ProviderSource = value.String
 			}
-		case knowledgeentityalias.FieldExternalKind:
+		case knowledgeentityalias.FieldSubjectKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_kind", values[i])
+				return fmt.Errorf("unexpected type %T for field subject_kind", values[i])
 			} else if value.Valid {
-				_m.ExternalKind = value.String
+				_m.SubjectKind = value.String
 			}
-		case knowledgeentityalias.FieldExternalID:
+		case knowledgeentityalias.FieldSubjectRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_id", values[i])
+				return fmt.Errorf("unexpected type %T for field subject_ref", values[i])
 			} else if value.Valid {
-				_m.ExternalID = value.String
+				_m.SubjectRef = value.String
 			}
 		case knowledgeentityalias.FieldNormalizedEventID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -196,18 +209,6 @@ func (_m *KnowledgeEntityAlias) assignValues(columns []string, values []any) err
 				return fmt.Errorf("unexpected type %T for field last_seen_at", values[i])
 			} else if value.Valid {
 				_m.LastSeenAt = value.Time
-			}
-		case knowledgeentityalias.FieldCreatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field created_at", values[i])
-			} else if value.Valid {
-				_m.CreatedAt = value.Time
-			}
-		case knowledgeentityalias.FieldUpdatedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
-			} else if value.Valid {
-				_m.UpdatedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -268,20 +269,26 @@ func (_m *KnowledgeEntityAlias) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("updated_at=")
+	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
 	builder.WriteString("entity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EntityID))
 	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
-	builder.WriteString("source=")
-	builder.WriteString(_m.Source)
+	builder.WriteString("provider_source=")
+	builder.WriteString(_m.ProviderSource)
 	builder.WriteString(", ")
-	builder.WriteString("external_kind=")
-	builder.WriteString(_m.ExternalKind)
+	builder.WriteString("subject_kind=")
+	builder.WriteString(_m.SubjectKind)
 	builder.WriteString(", ")
-	builder.WriteString("external_id=")
-	builder.WriteString(_m.ExternalID)
+	builder.WriteString("subject_ref=")
+	builder.WriteString(_m.SubjectRef)
 	builder.WriteString(", ")
 	if v := _m.NormalizedEventID; v != nil {
 		builder.WriteString("normalized_event_id=")
@@ -293,12 +300,6 @@ func (_m *KnowledgeEntityAlias) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("last_seen_at=")
 	builder.WriteString(_m.LastSeenAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("updated_at=")
-	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

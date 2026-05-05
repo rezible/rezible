@@ -18,30 +18,28 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
+	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
+	FieldUpdatedAt = "updated_at"
 	// FieldAliasID holds the string denoting the alias_id field in the database.
 	FieldAliasID = "alias_id"
 	// FieldRelationshipID holds the string denoting the relationship_id field in the database.
 	FieldRelationshipID = "relationship_id"
 	// FieldNormalizedEventID holds the string denoting the normalized_event_id field in the database.
 	FieldNormalizedEventID = "normalized_event_id"
-	// FieldSourceProvider holds the string denoting the source_provider field in the database.
-	FieldSourceProvider = "source_provider"
-	// FieldSource holds the string denoting the source field in the database.
-	FieldSource = "source"
-	// FieldSourceRef holds the string denoting the source_ref field in the database.
-	FieldSourceRef = "source_ref"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldProviderSource holds the string denoting the provider_source field in the database.
+	FieldProviderSource = "provider_source"
+	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
+	FieldProviderEventRef = "provider_event_ref"
 	// FieldExtractionMethod holds the string denoting the extraction_method field in the database.
 	FieldExtractionMethod = "extraction_method"
-	// FieldConfidence holds the string denoting the confidence field in the database.
-	FieldConfidence = "confidence"
 	// FieldFirstSeenAt holds the string denoting the first_seen_at field in the database.
 	FieldFirstSeenAt = "first_seen_at"
 	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
 	FieldLastSeenAt = "last_seen_at"
-	// FieldCreatedAt holds the string denoting the created_at field in the database.
-	FieldCreatedAt = "created_at"
-	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
-	FieldUpdatedAt = "updated_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAlias holds the string denoting the alias edge name in mutations.
@@ -86,18 +84,17 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldCreatedAt,
+	FieldUpdatedAt,
 	FieldAliasID,
 	FieldRelationshipID,
 	FieldNormalizedEventID,
-	FieldSourceProvider,
-	FieldSource,
-	FieldSourceRef,
+	FieldProvider,
+	FieldProviderSource,
+	FieldProviderEventRef,
 	FieldExtractionMethod,
-	FieldConfidence,
 	FieldFirstSeenAt,
 	FieldLastSeenAt,
-	FieldCreatedAt,
-	FieldUpdatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -118,24 +115,24 @@ func ValidColumn(column string) bool {
 var (
 	Hooks  [1]ent.Hook
 	Policy ent.Policy
-	// SourceProviderValidator is a validator for the "source_provider" field. It is called by the builders before save.
-	SourceProviderValidator func(string) error
-	// SourceValidator is a validator for the "source" field. It is called by the builders before save.
-	SourceValidator func(string) error
-	// ExtractionMethodValidator is a validator for the "extraction_method" field. It is called by the builders before save.
-	ExtractionMethodValidator func(string) error
-	// DefaultConfidence holds the default value on creation for the "confidence" field.
-	DefaultConfidence float64
-	// DefaultFirstSeenAt holds the default value on creation for the "first_seen_at" field.
-	DefaultFirstSeenAt func() time.Time
-	// DefaultLastSeenAt holds the default value on creation for the "last_seen_at" field.
-	DefaultLastSeenAt func() time.Time
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
+	ProviderValidator func(string) error
+	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
+	ProviderSourceValidator func(string) error
+	// ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
+	ProviderEventRefValidator func(string) error
+	// ExtractionMethodValidator is a validator for the "extraction_method" field. It is called by the builders before save.
+	ExtractionMethodValidator func(string) error
+	// DefaultFirstSeenAt holds the default value on creation for the "first_seen_at" field.
+	DefaultFirstSeenAt func() time.Time
+	// DefaultLastSeenAt holds the default value on creation for the "last_seen_at" field.
+	DefaultLastSeenAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -153,6 +150,16 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByUpdatedAt orders the results by the updated_at field.
+func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
 // ByAliasID orders the results by the alias_id field.
 func ByAliasID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAliasID, opts...).ToFunc()
@@ -168,29 +175,24 @@ func ByNormalizedEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNormalizedEventID, opts...).ToFunc()
 }
 
-// BySourceProvider orders the results by the source_provider field.
-func BySourceProvider(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSourceProvider, opts...).ToFunc()
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
 }
 
-// BySource orders the results by the source field.
-func BySource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSource, opts...).ToFunc()
+// ByProviderSource orders the results by the provider_source field.
+func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
 }
 
-// BySourceRef orders the results by the source_ref field.
-func BySourceRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSourceRef, opts...).ToFunc()
+// ByProviderEventRef orders the results by the provider_event_ref field.
+func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
 }
 
 // ByExtractionMethod orders the results by the extraction_method field.
 func ByExtractionMethod(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldExtractionMethod, opts...).ToFunc()
-}
-
-// ByConfidence orders the results by the confidence field.
-func ByConfidence(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldConfidence, opts...).ToFunc()
 }
 
 // ByFirstSeenAt orders the results by the first_seen_at field.
@@ -201,16 +203,6 @@ func ByFirstSeenAt(opts ...sql.OrderTermOption) OrderOption {
 // ByLastSeenAt orders the results by the last_seen_at field.
 func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLastSeenAt, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
-}
-
-// ByUpdatedAt orders the results by the updated_at field.
-func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

@@ -62,6 +62,16 @@ func TenantID(v int) predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldTenantID, v))
 }
 
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
+func UpdatedAt(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
 // AliasID applies equality check predicate on the "alias_id" field. It's identical to AliasIDEQ.
 func AliasID(v uuid.UUID) predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldAliasID, v))
@@ -77,29 +87,24 @@ func NormalizedEventID(v uuid.UUID) predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldNormalizedEventID, v))
 }
 
-// SourceProvider applies equality check predicate on the "source_provider" field. It's identical to SourceProviderEQ.
-func SourceProvider(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldSourceProvider, v))
+// Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
+func Provider(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldProvider, v))
 }
 
-// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
-func Source(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldSource, v))
+// ProviderSource applies equality check predicate on the "provider_source" field. It's identical to ProviderSourceEQ.
+func ProviderSource(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldProviderSource, v))
 }
 
-// SourceRef applies equality check predicate on the "source_ref" field. It's identical to SourceRefEQ.
-func SourceRef(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldSourceRef, v))
+// ProviderEventRef applies equality check predicate on the "provider_event_ref" field. It's identical to ProviderEventRefEQ.
+func ProviderEventRef(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldProviderEventRef, v))
 }
 
 // ExtractionMethod applies equality check predicate on the "extraction_method" field. It's identical to ExtractionMethodEQ.
 func ExtractionMethod(v string) predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldExtractionMethod, v))
-}
-
-// Confidence applies equality check predicate on the "confidence" field. It's identical to ConfidenceEQ.
-func Confidence(v float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldConfidence, v))
 }
 
 // FirstSeenAt applies equality check predicate on the "first_seen_at" field. It's identical to FirstSeenAtEQ.
@@ -110,16 +115,6 @@ func FirstSeenAt(v time.Time) predicate.KnowledgeFactProvenance {
 // LastSeenAt applies equality check predicate on the "last_seen_at" field. It's identical to LastSeenAtEQ.
 func LastSeenAt(v time.Time) predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldLastSeenAt, v))
-}
-
-// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
-func CreatedAt(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
-func UpdatedAt(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -140,6 +135,86 @@ func TenantIDIn(vs ...int) predicate.KnowledgeFactProvenance {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldCreatedAt, v))
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldCreatedAt, vs...))
+}
+
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldCreatedAt, v))
+}
+
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldCreatedAt, v))
+}
+
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldCreatedAt, v))
+}
+
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
+func UpdatedAtEQ(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
+func UpdatedAtNEQ(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldUpdatedAt, v))
+}
+
+// UpdatedAtIn applies the In predicate on the "updated_at" field.
+func UpdatedAtIn(vs ...time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
+func UpdatedAtNotIn(vs ...time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldUpdatedAt, vs...))
+}
+
+// UpdatedAtGT applies the GT predicate on the "updated_at" field.
+func UpdatedAtGT(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
+func UpdatedAtGTE(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLT applies the LT predicate on the "updated_at" field.
+func UpdatedAtLT(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldUpdatedAt, v))
+}
+
+// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
+func UpdatedAtLTE(v time.Time) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // AliasIDEQ applies the EQ predicate on the "alias_id" field.
@@ -232,209 +307,199 @@ func NormalizedEventIDNotNil() predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldNotNull(FieldNormalizedEventID))
 }
 
-// SourceProviderEQ applies the EQ predicate on the "source_provider" field.
-func SourceProviderEQ(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldSourceProvider, v))
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldProvider, v))
 }
 
-// SourceProviderNEQ applies the NEQ predicate on the "source_provider" field.
-func SourceProviderNEQ(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldSourceProvider, v))
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldProvider, v))
 }
 
-// SourceProviderIn applies the In predicate on the "source_provider" field.
-func SourceProviderIn(vs ...string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldSourceProvider, vs...))
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldProvider, vs...))
 }
 
-// SourceProviderNotIn applies the NotIn predicate on the "source_provider" field.
-func SourceProviderNotIn(vs ...string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldSourceProvider, vs...))
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldProvider, vs...))
 }
 
-// SourceProviderGT applies the GT predicate on the "source_provider" field.
-func SourceProviderGT(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldSourceProvider, v))
+// ProviderGT applies the GT predicate on the "provider" field.
+func ProviderGT(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldProvider, v))
 }
 
-// SourceProviderGTE applies the GTE predicate on the "source_provider" field.
-func SourceProviderGTE(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldSourceProvider, v))
+// ProviderGTE applies the GTE predicate on the "provider" field.
+func ProviderGTE(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldProvider, v))
 }
 
-// SourceProviderLT applies the LT predicate on the "source_provider" field.
-func SourceProviderLT(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldSourceProvider, v))
+// ProviderLT applies the LT predicate on the "provider" field.
+func ProviderLT(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldProvider, v))
 }
 
-// SourceProviderLTE applies the LTE predicate on the "source_provider" field.
-func SourceProviderLTE(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldSourceProvider, v))
+// ProviderLTE applies the LTE predicate on the "provider" field.
+func ProviderLTE(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldProvider, v))
 }
 
-// SourceProviderContains applies the Contains predicate on the "source_provider" field.
-func SourceProviderContains(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldContains(FieldSourceProvider, v))
+// ProviderContains applies the Contains predicate on the "provider" field.
+func ProviderContains(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldContains(FieldProvider, v))
 }
 
-// SourceProviderHasPrefix applies the HasPrefix predicate on the "source_provider" field.
-func SourceProviderHasPrefix(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldHasPrefix(FieldSourceProvider, v))
+// ProviderHasPrefix applies the HasPrefix predicate on the "provider" field.
+func ProviderHasPrefix(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldHasPrefix(FieldProvider, v))
 }
 
-// SourceProviderHasSuffix applies the HasSuffix predicate on the "source_provider" field.
-func SourceProviderHasSuffix(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldHasSuffix(FieldSourceProvider, v))
+// ProviderHasSuffix applies the HasSuffix predicate on the "provider" field.
+func ProviderHasSuffix(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldHasSuffix(FieldProvider, v))
 }
 
-// SourceProviderEqualFold applies the EqualFold predicate on the "source_provider" field.
-func SourceProviderEqualFold(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEqualFold(FieldSourceProvider, v))
+// ProviderEqualFold applies the EqualFold predicate on the "provider" field.
+func ProviderEqualFold(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEqualFold(FieldProvider, v))
 }
 
-// SourceProviderContainsFold applies the ContainsFold predicate on the "source_provider" field.
-func SourceProviderContainsFold(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldContainsFold(FieldSourceProvider, v))
+// ProviderContainsFold applies the ContainsFold predicate on the "provider" field.
+func ProviderContainsFold(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldContainsFold(FieldProvider, v))
 }
 
-// SourceEQ applies the EQ predicate on the "source" field.
-func SourceEQ(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldSource, v))
+// ProviderSourceEQ applies the EQ predicate on the "provider_source" field.
+func ProviderSourceEQ(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldProviderSource, v))
 }
 
-// SourceNEQ applies the NEQ predicate on the "source" field.
-func SourceNEQ(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldSource, v))
+// ProviderSourceNEQ applies the NEQ predicate on the "provider_source" field.
+func ProviderSourceNEQ(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldProviderSource, v))
 }
 
-// SourceIn applies the In predicate on the "source" field.
-func SourceIn(vs ...string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldSource, vs...))
+// ProviderSourceIn applies the In predicate on the "provider_source" field.
+func ProviderSourceIn(vs ...string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldProviderSource, vs...))
 }
 
-// SourceNotIn applies the NotIn predicate on the "source" field.
-func SourceNotIn(vs ...string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldSource, vs...))
+// ProviderSourceNotIn applies the NotIn predicate on the "provider_source" field.
+func ProviderSourceNotIn(vs ...string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldProviderSource, vs...))
 }
 
-// SourceGT applies the GT predicate on the "source" field.
-func SourceGT(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldSource, v))
+// ProviderSourceGT applies the GT predicate on the "provider_source" field.
+func ProviderSourceGT(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldProviderSource, v))
 }
 
-// SourceGTE applies the GTE predicate on the "source" field.
-func SourceGTE(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldSource, v))
+// ProviderSourceGTE applies the GTE predicate on the "provider_source" field.
+func ProviderSourceGTE(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldProviderSource, v))
 }
 
-// SourceLT applies the LT predicate on the "source" field.
-func SourceLT(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldSource, v))
+// ProviderSourceLT applies the LT predicate on the "provider_source" field.
+func ProviderSourceLT(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldProviderSource, v))
 }
 
-// SourceLTE applies the LTE predicate on the "source" field.
-func SourceLTE(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldSource, v))
+// ProviderSourceLTE applies the LTE predicate on the "provider_source" field.
+func ProviderSourceLTE(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldProviderSource, v))
 }
 
-// SourceContains applies the Contains predicate on the "source" field.
-func SourceContains(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldContains(FieldSource, v))
+// ProviderSourceContains applies the Contains predicate on the "provider_source" field.
+func ProviderSourceContains(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldContains(FieldProviderSource, v))
 }
 
-// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
-func SourceHasPrefix(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldHasPrefix(FieldSource, v))
+// ProviderSourceHasPrefix applies the HasPrefix predicate on the "provider_source" field.
+func ProviderSourceHasPrefix(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldHasPrefix(FieldProviderSource, v))
 }
 
-// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
-func SourceHasSuffix(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldHasSuffix(FieldSource, v))
+// ProviderSourceHasSuffix applies the HasSuffix predicate on the "provider_source" field.
+func ProviderSourceHasSuffix(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldHasSuffix(FieldProviderSource, v))
 }
 
-// SourceEqualFold applies the EqualFold predicate on the "source" field.
-func SourceEqualFold(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEqualFold(FieldSource, v))
+// ProviderSourceEqualFold applies the EqualFold predicate on the "provider_source" field.
+func ProviderSourceEqualFold(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEqualFold(FieldProviderSource, v))
 }
 
-// SourceContainsFold applies the ContainsFold predicate on the "source" field.
-func SourceContainsFold(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldContainsFold(FieldSource, v))
+// ProviderSourceContainsFold applies the ContainsFold predicate on the "provider_source" field.
+func ProviderSourceContainsFold(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldContainsFold(FieldProviderSource, v))
 }
 
-// SourceRefEQ applies the EQ predicate on the "source_ref" field.
-func SourceRefEQ(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldSourceRef, v))
+// ProviderEventRefEQ applies the EQ predicate on the "provider_event_ref" field.
+func ProviderEventRefEQ(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldProviderEventRef, v))
 }
 
-// SourceRefNEQ applies the NEQ predicate on the "source_ref" field.
-func SourceRefNEQ(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldSourceRef, v))
+// ProviderEventRefNEQ applies the NEQ predicate on the "provider_event_ref" field.
+func ProviderEventRefNEQ(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldProviderEventRef, v))
 }
 
-// SourceRefIn applies the In predicate on the "source_ref" field.
-func SourceRefIn(vs ...string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldSourceRef, vs...))
+// ProviderEventRefIn applies the In predicate on the "provider_event_ref" field.
+func ProviderEventRefIn(vs ...string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldProviderEventRef, vs...))
 }
 
-// SourceRefNotIn applies the NotIn predicate on the "source_ref" field.
-func SourceRefNotIn(vs ...string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldSourceRef, vs...))
+// ProviderEventRefNotIn applies the NotIn predicate on the "provider_event_ref" field.
+func ProviderEventRefNotIn(vs ...string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldProviderEventRef, vs...))
 }
 
-// SourceRefGT applies the GT predicate on the "source_ref" field.
-func SourceRefGT(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldSourceRef, v))
+// ProviderEventRefGT applies the GT predicate on the "provider_event_ref" field.
+func ProviderEventRefGT(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldProviderEventRef, v))
 }
 
-// SourceRefGTE applies the GTE predicate on the "source_ref" field.
-func SourceRefGTE(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldSourceRef, v))
+// ProviderEventRefGTE applies the GTE predicate on the "provider_event_ref" field.
+func ProviderEventRefGTE(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldProviderEventRef, v))
 }
 
-// SourceRefLT applies the LT predicate on the "source_ref" field.
-func SourceRefLT(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldSourceRef, v))
+// ProviderEventRefLT applies the LT predicate on the "provider_event_ref" field.
+func ProviderEventRefLT(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldProviderEventRef, v))
 }
 
-// SourceRefLTE applies the LTE predicate on the "source_ref" field.
-func SourceRefLTE(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldSourceRef, v))
+// ProviderEventRefLTE applies the LTE predicate on the "provider_event_ref" field.
+func ProviderEventRefLTE(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldProviderEventRef, v))
 }
 
-// SourceRefContains applies the Contains predicate on the "source_ref" field.
-func SourceRefContains(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldContains(FieldSourceRef, v))
+// ProviderEventRefContains applies the Contains predicate on the "provider_event_ref" field.
+func ProviderEventRefContains(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldContains(FieldProviderEventRef, v))
 }
 
-// SourceRefHasPrefix applies the HasPrefix predicate on the "source_ref" field.
-func SourceRefHasPrefix(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldHasPrefix(FieldSourceRef, v))
+// ProviderEventRefHasPrefix applies the HasPrefix predicate on the "provider_event_ref" field.
+func ProviderEventRefHasPrefix(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldHasPrefix(FieldProviderEventRef, v))
 }
 
-// SourceRefHasSuffix applies the HasSuffix predicate on the "source_ref" field.
-func SourceRefHasSuffix(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldHasSuffix(FieldSourceRef, v))
+// ProviderEventRefHasSuffix applies the HasSuffix predicate on the "provider_event_ref" field.
+func ProviderEventRefHasSuffix(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldHasSuffix(FieldProviderEventRef, v))
 }
 
-// SourceRefIsNil applies the IsNil predicate on the "source_ref" field.
-func SourceRefIsNil() predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldIsNull(FieldSourceRef))
+// ProviderEventRefEqualFold applies the EqualFold predicate on the "provider_event_ref" field.
+func ProviderEventRefEqualFold(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldEqualFold(FieldProviderEventRef, v))
 }
 
-// SourceRefNotNil applies the NotNil predicate on the "source_ref" field.
-func SourceRefNotNil() predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNotNull(FieldSourceRef))
-}
-
-// SourceRefEqualFold applies the EqualFold predicate on the "source_ref" field.
-func SourceRefEqualFold(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEqualFold(FieldSourceRef, v))
-}
-
-// SourceRefContainsFold applies the ContainsFold predicate on the "source_ref" field.
-func SourceRefContainsFold(v string) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldContainsFold(FieldSourceRef, v))
+// ProviderEventRefContainsFold applies the ContainsFold predicate on the "provider_event_ref" field.
+func ProviderEventRefContainsFold(v string) predicate.KnowledgeFactProvenance {
+	return predicate.KnowledgeFactProvenance(sql.FieldContainsFold(FieldProviderEventRef, v))
 }
 
 // ExtractionMethodEQ applies the EQ predicate on the "extraction_method" field.
@@ -500,46 +565,6 @@ func ExtractionMethodEqualFold(v string) predicate.KnowledgeFactProvenance {
 // ExtractionMethodContainsFold applies the ContainsFold predicate on the "extraction_method" field.
 func ExtractionMethodContainsFold(v string) predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldContainsFold(FieldExtractionMethod, v))
-}
-
-// ConfidenceEQ applies the EQ predicate on the "confidence" field.
-func ConfidenceEQ(v float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldConfidence, v))
-}
-
-// ConfidenceNEQ applies the NEQ predicate on the "confidence" field.
-func ConfidenceNEQ(v float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldConfidence, v))
-}
-
-// ConfidenceIn applies the In predicate on the "confidence" field.
-func ConfidenceIn(vs ...float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldConfidence, vs...))
-}
-
-// ConfidenceNotIn applies the NotIn predicate on the "confidence" field.
-func ConfidenceNotIn(vs ...float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldConfidence, vs...))
-}
-
-// ConfidenceGT applies the GT predicate on the "confidence" field.
-func ConfidenceGT(v float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldConfidence, v))
-}
-
-// ConfidenceGTE applies the GTE predicate on the "confidence" field.
-func ConfidenceGTE(v float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldConfidence, v))
-}
-
-// ConfidenceLT applies the LT predicate on the "confidence" field.
-func ConfidenceLT(v float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldConfidence, v))
-}
-
-// ConfidenceLTE applies the LTE predicate on the "confidence" field.
-func ConfidenceLTE(v float64) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldConfidence, v))
 }
 
 // FirstSeenAtEQ applies the EQ predicate on the "first_seen_at" field.
@@ -620,86 +645,6 @@ func LastSeenAtLT(v time.Time) predicate.KnowledgeFactProvenance {
 // LastSeenAtLTE applies the LTE predicate on the "last_seen_at" field.
 func LastSeenAtLTE(v time.Time) predicate.KnowledgeFactProvenance {
 	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldLastSeenAt, v))
-}
-
-// CreatedAtEQ applies the EQ predicate on the "created_at" field.
-func CreatedAtEQ(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
-func CreatedAtNEQ(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldCreatedAt, v))
-}
-
-// CreatedAtIn applies the In predicate on the "created_at" field.
-func CreatedAtIn(vs ...time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
-func CreatedAtNotIn(vs ...time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldCreatedAt, vs...))
-}
-
-// CreatedAtGT applies the GT predicate on the "created_at" field.
-func CreatedAtGT(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldCreatedAt, v))
-}
-
-// CreatedAtGTE applies the GTE predicate on the "created_at" field.
-func CreatedAtGTE(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldCreatedAt, v))
-}
-
-// CreatedAtLT applies the LT predicate on the "created_at" field.
-func CreatedAtLT(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldCreatedAt, v))
-}
-
-// CreatedAtLTE applies the LTE predicate on the "created_at" field.
-func CreatedAtLTE(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldCreatedAt, v))
-}
-
-// UpdatedAtEQ applies the EQ predicate on the "updated_at" field.
-func UpdatedAtEQ(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// UpdatedAtNEQ applies the NEQ predicate on the "updated_at" field.
-func UpdatedAtNEQ(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNEQ(FieldUpdatedAt, v))
-}
-
-// UpdatedAtIn applies the In predicate on the "updated_at" field.
-func UpdatedAtIn(vs ...time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldIn(FieldUpdatedAt, vs...))
-}
-
-// UpdatedAtNotIn applies the NotIn predicate on the "updated_at" field.
-func UpdatedAtNotIn(vs ...time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldNotIn(FieldUpdatedAt, vs...))
-}
-
-// UpdatedAtGT applies the GT predicate on the "updated_at" field.
-func UpdatedAtGT(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGT(FieldUpdatedAt, v))
-}
-
-// UpdatedAtGTE applies the GTE predicate on the "updated_at" field.
-func UpdatedAtGTE(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldGTE(FieldUpdatedAt, v))
-}
-
-// UpdatedAtLT applies the LT predicate on the "updated_at" field.
-func UpdatedAtLT(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLT(FieldUpdatedAt, v))
-}
-
-// UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
-func UpdatedAtLTE(v time.Time) predicate.KnowledgeFactProvenance {
-	return predicate.KnowledgeFactProvenance(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
