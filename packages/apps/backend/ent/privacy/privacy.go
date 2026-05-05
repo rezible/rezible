@@ -843,6 +843,30 @@ func (f KnowledgeEntityAliasMutationRuleFunc) EvalMutation(ctx context.Context, 
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityAliasMutation", m)
 }
 
+// The KnowledgeFactHistoryQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type KnowledgeFactHistoryQueryRuleFunc func(context.Context, *ent.KnowledgeFactHistoryQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f KnowledgeFactHistoryQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeFactHistoryQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeFactHistoryQuery", q)
+}
+
+// The KnowledgeFactHistoryMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type KnowledgeFactHistoryMutationRuleFunc func(context.Context, *ent.KnowledgeFactHistoryMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f KnowledgeFactHistoryMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeFactHistoryMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeFactHistoryMutation", m)
+}
+
 // The KnowledgeFactProvenanceQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type KnowledgeFactProvenanceQueryRuleFunc func(context.Context, *ent.KnowledgeFactProvenanceQuery) error
@@ -1876,6 +1900,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.KnowledgeEntityAliasQuery:
 		return q.Filter(), nil
+	case *ent.KnowledgeFactHistoryQuery:
+		return q.Filter(), nil
 	case *ent.KnowledgeFactProvenanceQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeRelationshipQuery:
@@ -2020,6 +2046,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.KnowledgeEntityMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeEntityAliasMutation:
+		return m.Filter(), nil
+	case *ent.KnowledgeFactHistoryMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeFactProvenanceMutation:
 		return m.Filter(), nil

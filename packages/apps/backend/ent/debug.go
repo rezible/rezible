@@ -252,6 +252,14 @@ func (c *KnowledgeEntityAliasClient) Debug() *KnowledgeEntityAliasClient {
 	return &KnowledgeEntityAliasClient{config: cfg}
 }
 
+func (c *KnowledgeFactHistoryClient) Debug() *KnowledgeFactHistoryClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &KnowledgeFactHistoryClient{config: cfg}
+}
+
 func (c *KnowledgeFactProvenanceClient) Debug() *KnowledgeFactProvenanceClient {
 	if c.debug {
 		return c

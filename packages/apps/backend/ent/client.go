@@ -46,6 +46,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgefacthistory"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -156,6 +157,8 @@ type Client struct {
 	KnowledgeEntity *KnowledgeEntityClient
 	// KnowledgeEntityAlias is the client for interacting with the KnowledgeEntityAlias builders.
 	KnowledgeEntityAlias *KnowledgeEntityAliasClient
+	// KnowledgeFactHistory is the client for interacting with the KnowledgeFactHistory builders.
+	KnowledgeFactHistory *KnowledgeFactHistoryClient
 	// KnowledgeFactProvenance is the client for interacting with the KnowledgeFactProvenance builders.
 	KnowledgeFactProvenance *KnowledgeFactProvenanceClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
@@ -276,6 +279,7 @@ func (c *Client) init() {
 	c.IntegrationOAuthState = NewIntegrationOAuthStateClient(c.config)
 	c.KnowledgeEntity = NewKnowledgeEntityClient(c.config)
 	c.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(c.config)
+	c.KnowledgeFactHistory = NewKnowledgeFactHistoryClient(c.config)
 	c.KnowledgeFactProvenance = NewKnowledgeFactProvenanceClient(c.config)
 	c.KnowledgeRelationship = NewKnowledgeRelationshipClient(c.config)
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
@@ -441,6 +445,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IntegrationOAuthState:            NewIntegrationOAuthStateClient(cfg),
 		KnowledgeEntity:                  NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityAlias:             NewKnowledgeEntityAliasClient(cfg),
+		KnowledgeFactHistory:             NewKnowledgeFactHistoryClient(cfg),
 		KnowledgeFactProvenance:          NewKnowledgeFactProvenanceClient(cfg),
 		KnowledgeRelationship:            NewKnowledgeRelationshipClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
@@ -530,6 +535,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IntegrationOAuthState:            NewIntegrationOAuthStateClient(cfg),
 		KnowledgeEntity:                  NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityAlias:             NewKnowledgeEntityAliasClient(cfg),
+		KnowledgeFactHistory:             NewKnowledgeFactHistoryClient(cfg),
 		KnowledgeFactProvenance:          NewKnowledgeFactProvenanceClient(cfg),
 		KnowledgeRelationship:            NewKnowledgeRelationshipClient(cfg),
 		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
@@ -607,10 +613,11 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
 		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
-		c.KnowledgeFactProvenance, c.KnowledgeRelationship, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.KnowledgeFactHistory, c.KnowledgeFactProvenance, c.KnowledgeRelationship,
+		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationRole, c.Playbook, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
@@ -636,10 +643,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
 		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
-		c.KnowledgeFactProvenance, c.KnowledgeRelationship, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.KnowledgeFactHistory, c.KnowledgeFactProvenance, c.KnowledgeRelationship,
+		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationRole, c.Playbook, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
@@ -715,6 +723,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.KnowledgeEntity.mutate(ctx, m)
 	case *KnowledgeEntityAliasMutation:
 		return c.KnowledgeEntityAlias.mutate(ctx, m)
+	case *KnowledgeFactHistoryMutation:
+		return c.KnowledgeFactHistory.mutate(ctx, m)
 	case *KnowledgeFactProvenanceMutation:
 		return c.KnowledgeFactProvenance.mutate(ctx, m)
 	case *KnowledgeRelationshipMutation:
@@ -7036,6 +7046,216 @@ func (c *KnowledgeEntityAliasClient) mutate(ctx context.Context, m *KnowledgeEnt
 		return (&KnowledgeEntityAliasDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown KnowledgeEntityAlias mutation op: %q", m.Op())
+	}
+}
+
+// KnowledgeFactHistoryClient is a client for the KnowledgeFactHistory schema.
+type KnowledgeFactHistoryClient struct {
+	config
+}
+
+// NewKnowledgeFactHistoryClient returns a client for the KnowledgeFactHistory from the given config.
+func NewKnowledgeFactHistoryClient(c config) *KnowledgeFactHistoryClient {
+	return &KnowledgeFactHistoryClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `knowledgefacthistory.Hooks(f(g(h())))`.
+func (c *KnowledgeFactHistoryClient) Use(hooks ...Hook) {
+	c.hooks.KnowledgeFactHistory = append(c.hooks.KnowledgeFactHistory, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `knowledgefacthistory.Intercept(f(g(h())))`.
+func (c *KnowledgeFactHistoryClient) Intercept(interceptors ...Interceptor) {
+	c.inters.KnowledgeFactHistory = append(c.inters.KnowledgeFactHistory, interceptors...)
+}
+
+// Create returns a builder for creating a KnowledgeFactHistory entity.
+func (c *KnowledgeFactHistoryClient) Create() *KnowledgeFactHistoryCreate {
+	mutation := newKnowledgeFactHistoryMutation(c.config, OpCreate)
+	return &KnowledgeFactHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of KnowledgeFactHistory entities.
+func (c *KnowledgeFactHistoryClient) CreateBulk(builders ...*KnowledgeFactHistoryCreate) *KnowledgeFactHistoryCreateBulk {
+	return &KnowledgeFactHistoryCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *KnowledgeFactHistoryClient) MapCreateBulk(slice any, setFunc func(*KnowledgeFactHistoryCreate, int)) *KnowledgeFactHistoryCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &KnowledgeFactHistoryCreateBulk{err: fmt.Errorf("calling to KnowledgeFactHistoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*KnowledgeFactHistoryCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &KnowledgeFactHistoryCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for KnowledgeFactHistory.
+func (c *KnowledgeFactHistoryClient) Update() *KnowledgeFactHistoryUpdate {
+	mutation := newKnowledgeFactHistoryMutation(c.config, OpUpdate)
+	return &KnowledgeFactHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *KnowledgeFactHistoryClient) UpdateOne(_m *KnowledgeFactHistory) *KnowledgeFactHistoryUpdateOne {
+	mutation := newKnowledgeFactHistoryMutation(c.config, OpUpdateOne, withKnowledgeFactHistory(_m))
+	return &KnowledgeFactHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *KnowledgeFactHistoryClient) UpdateOneID(id uuid.UUID) *KnowledgeFactHistoryUpdateOne {
+	mutation := newKnowledgeFactHistoryMutation(c.config, OpUpdateOne, withKnowledgeFactHistoryID(id))
+	return &KnowledgeFactHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for KnowledgeFactHistory.
+func (c *KnowledgeFactHistoryClient) Delete() *KnowledgeFactHistoryDelete {
+	mutation := newKnowledgeFactHistoryMutation(c.config, OpDelete)
+	return &KnowledgeFactHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *KnowledgeFactHistoryClient) DeleteOne(_m *KnowledgeFactHistory) *KnowledgeFactHistoryDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *KnowledgeFactHistoryClient) DeleteOneID(id uuid.UUID) *KnowledgeFactHistoryDeleteOne {
+	builder := c.Delete().Where(knowledgefacthistory.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &KnowledgeFactHistoryDeleteOne{builder}
+}
+
+// Query returns a query builder for KnowledgeFactHistory.
+func (c *KnowledgeFactHistoryClient) Query() *KnowledgeFactHistoryQuery {
+	return &KnowledgeFactHistoryQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeKnowledgeFactHistory},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a KnowledgeFactHistory entity by its id.
+func (c *KnowledgeFactHistoryClient) Get(ctx context.Context, id uuid.UUID) (*KnowledgeFactHistory, error) {
+	return c.Query().Where(knowledgefacthistory.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *KnowledgeFactHistoryClient) GetX(ctx context.Context, id uuid.UUID) *KnowledgeFactHistory {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a KnowledgeFactHistory.
+func (c *KnowledgeFactHistoryClient) QueryTenant(_m *KnowledgeFactHistory) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgefacthistory.Table, knowledgefacthistory.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefacthistory.TenantTable, knowledgefacthistory.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.KnowledgeFactHistory
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlias queries the alias edge of a KnowledgeFactHistory.
+func (c *KnowledgeFactHistoryClient) QueryAlias(_m *KnowledgeFactHistory) *KnowledgeEntityAliasQuery {
+	query := (&KnowledgeEntityAliasClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgefacthistory.Table, knowledgefacthistory.FieldID, id),
+			sqlgraph.To(knowledgeentityalias.Table, knowledgeentityalias.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefacthistory.AliasTable, knowledgefacthistory.AliasColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntityAlias
+		step.Edge.Schema = schemaConfig.KnowledgeFactHistory
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryRelationship queries the relationship edge of a KnowledgeFactHistory.
+func (c *KnowledgeFactHistoryClient) QueryRelationship(_m *KnowledgeFactHistory) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgefacthistory.Table, knowledgefacthistory.FieldID, id),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefacthistory.RelationshipTable, knowledgefacthistory.RelationshipColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeFactHistory
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNormalizedEvent queries the normalized_event edge of a KnowledgeFactHistory.
+func (c *KnowledgeFactHistoryClient) QueryNormalizedEvent(_m *KnowledgeFactHistory) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(knowledgefacthistory.Table, knowledgefacthistory.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefacthistory.NormalizedEventTable, knowledgefacthistory.NormalizedEventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.KnowledgeFactHistory
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *KnowledgeFactHistoryClient) Hooks() []Hook {
+	hooks := c.hooks.KnowledgeFactHistory
+	return append(hooks[:len(hooks):len(hooks)], knowledgefacthistory.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *KnowledgeFactHistoryClient) Interceptors() []Interceptor {
+	return c.inters.KnowledgeFactHistory
+}
+
+func (c *KnowledgeFactHistoryClient) mutate(ctx context.Context, m *KnowledgeFactHistoryMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&KnowledgeFactHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&KnowledgeFactHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&KnowledgeFactHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&KnowledgeFactHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown KnowledgeFactHistory mutation op: %q", m.Op())
 	}
 }
 
@@ -15356,17 +15576,18 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, KnowledgeEntity,
-		KnowledgeEntityAlias, KnowledgeFactProvenance, KnowledgeRelationship,
-		MeetingSchedule, MeetingSession, NormalizedEvent, OncallHandoverTemplate,
-		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
-		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
-		OrganizationRole, Playbook, ProviderSyncHistory, Retrospective,
-		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
-		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
-		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
-		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
+		KnowledgeEntityAlias, KnowledgeFactHistory, KnowledgeFactProvenance,
+		KnowledgeRelationship, MeetingSchedule, MeetingSession, NormalizedEvent,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		OncallShiftMetrics, Organization, OrganizationRole, Playbook,
+		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
+		SystemComponent, SystemComponentConstraint, SystemComponentControl,
+		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
+		SystemHazard, SystemRelationshipControlAction,
+		SystemRelationshipFeedbackSignal, Task, Team, TeamMembership, Tenant, Ticket,
+		User, VideoConference []ent.Hook
 	}
 	inters struct {
 		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, DocumentAccess,
@@ -15376,17 +15597,18 @@ type (
 		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, KnowledgeEntity,
-		KnowledgeEntityAlias, KnowledgeFactProvenance, KnowledgeRelationship,
-		MeetingSchedule, MeetingSession, NormalizedEvent, OncallHandoverTemplate,
-		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
-		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
-		OrganizationRole, Playbook, ProviderSyncHistory, Retrospective,
-		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisComponent, SystemAnalysisRelationship, SystemComponent,
-		SystemComponentConstraint, SystemComponentControl, SystemComponentKind,
-		SystemComponentRelationship, SystemComponentSignal, SystemHazard,
-		SystemRelationshipControlAction, SystemRelationshipFeedbackSignal, Task, Team,
-		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
+		KnowledgeEntityAlias, KnowledgeFactHistory, KnowledgeFactProvenance,
+		KnowledgeRelationship, MeetingSchedule, MeetingSession, NormalizedEvent,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		OncallShiftMetrics, Organization, OrganizationRole, Playbook,
+		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
+		SystemComponent, SystemComponentConstraint, SystemComponentControl,
+		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
+		SystemHazard, SystemRelationshipControlAction,
+		SystemRelationshipFeedbackSignal, Task, Team, TeamMembership, Tenant, Ticket,
+		User, VideoConference []ent.Interceptor
 	}
 )
 
@@ -15432,6 +15654,7 @@ var (
 		IntegrationOAuthState:                     tableSchemas[0],
 		KnowledgeEntity:                           tableSchemas[0],
 		KnowledgeEntityAlias:                      tableSchemas[0],
+		KnowledgeFactHistory:                      tableSchemas[0],
 		KnowledgeFactProvenance:                   tableSchemas[0],
 		KnowledgeRelationship:                     tableSchemas[0],
 		MeetingSchedule:                           tableSchemas[0],

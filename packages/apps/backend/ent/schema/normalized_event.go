@@ -26,7 +26,11 @@ func (NormalizedEvent) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("provider").NotEmpty(),
 		field.String("source").NotEmpty(),
-		field.Enum("kind").Values("chat_message"),
+		field.Enum("kind").Values(
+			"chat_message",
+			"repository_observed",
+			"change_event_observed",
+		),
 		field.String("subject_kind").NotEmpty(),
 		field.String("subject_external_ref").NotEmpty(),
 		field.String("source_event_key").NotEmpty(),

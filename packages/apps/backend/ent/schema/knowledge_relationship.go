@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -112,5 +113,60 @@ func (KnowledgeFactProvenance) Indexes() []ent.Index {
 		index.Fields("tenant_id", "relationship_id", "source_provider", "source", "source_ref", "extraction_method").
 			Unique().
 			StorageKey("knowledgefactprovenance_relationship_source_unique"),
+	}
+}
+
+type KnowledgeFactHistory struct {
+	ent.Schema
+}
+
+func (KnowledgeFactHistory) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (KnowledgeFactHistory) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.String("fact_kind").NotEmpty(),
+		field.UUID("alias_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("relationship_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("normalized_event_id", uuid.UUID{}).Optional().Nillable(),
+		field.String("event_kind").NotEmpty(),
+		field.String("history_key").NotEmpty(),
+		field.Time("occurred_at"),
+		field.Time("recorded_at").Default(time.Now),
+		field.String("source_provider").NotEmpty(),
+		field.String("source").NotEmpty(),
+		field.String("source_ref").Optional(),
+		field.String("extraction_method").NotEmpty(),
+		field.JSON("attributes", map[string]any{}).
+			Optional().
+			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
+	}
+}
+
+func (KnowledgeFactHistory) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("alias", KnowledgeEntityAlias.Type).
+			Unique().
+			Field("alias_id"),
+		edge.To("relationship", KnowledgeRelationship.Type).
+			Unique().
+			Field("relationship_id"),
+		edge.To("normalized_event", NormalizedEvent.Type).
+			Unique().
+			Field("normalized_event_id"),
+	}
+}
+
+func (KnowledgeFactHistory) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "history_key").Unique(),
+		index.Fields("tenant_id", "alias_id", "occurred_at"),
+		index.Fields("tenant_id", "relationship_id", "occurred_at"),
+		index.Fields("tenant_id", "fact_kind", "event_kind", "occurred_at"),
 	}
 }

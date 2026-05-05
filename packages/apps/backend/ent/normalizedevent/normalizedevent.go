@@ -115,7 +115,9 @@ type Kind string
 
 // Kind values.
 const (
-	KindChatMessage Kind = "chat_message"
+	KindChatMessage         Kind = "chat_message"
+	KindRepositoryObserved  Kind = "repository_observed"
+	KindChangeEventObserved Kind = "change_event_observed"
 )
 
 func (k Kind) String() string {
@@ -125,7 +127,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindChatMessage:
+	case KindChatMessage, KindRepositoryObserved, KindChangeEventObserved:
 		return nil
 	default:
 		return fmt.Errorf("normalizedevent: invalid enum value for kind field: %q", k)

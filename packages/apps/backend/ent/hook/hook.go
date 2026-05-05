@@ -369,6 +369,18 @@ func (f KnowledgeEntityAliasFunc) Mutate(ctx context.Context, m ent.Mutation) (e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityAliasMutation", m)
 }
 
+// The KnowledgeFactHistoryFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeFactHistory mutator.
+type KnowledgeFactHistoryFunc func(context.Context, *ent.KnowledgeFactHistoryMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f KnowledgeFactHistoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeFactHistoryMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactHistoryMutation", m)
+}
+
 // The KnowledgeFactProvenanceFunc type is an adapter to allow the use of ordinary
 // function as KnowledgeFactProvenance mutator.
 type KnowledgeFactProvenanceFunc func(context.Context, *ent.KnowledgeFactProvenanceMutation) (ent.Value, error)

@@ -48,6 +48,7 @@ type SchemaConfig struct {
 	IntegrationOAuthState                     string // IntegrationOAuthState table.
 	KnowledgeEntity                           string // KnowledgeEntity table.
 	KnowledgeEntityAlias                      string // KnowledgeEntityAlias table.
+	KnowledgeFactHistory                      string // KnowledgeFactHistory table.
 	KnowledgeFactProvenance                   string // KnowledgeFactProvenance table.
 	KnowledgeRelationship                     string // KnowledgeRelationship table.
 	MeetingSchedule                           string // MeetingSchedule table.

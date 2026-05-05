@@ -38,6 +38,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgefacthistory"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -779,6 +780,50 @@ func init() {
 	knowledgeentityaliasDescID := knowledgeentityaliasFields[0].Descriptor()
 	// knowledgeentityalias.DefaultID holds the default value on creation for the id field.
 	knowledgeentityalias.DefaultID = knowledgeentityaliasDescID.Default.(func() uuid.UUID)
+	knowledgefacthistoryMixin := schema.KnowledgeFactHistory{}.Mixin()
+	knowledgefacthistory.Policy = privacy.NewPolicies(knowledgefacthistoryMixin[0], knowledgefacthistoryMixin[1], schema.KnowledgeFactHistory{})
+	knowledgefacthistory.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := knowledgefacthistory.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	knowledgefacthistoryFields := schema.KnowledgeFactHistory{}.Fields()
+	_ = knowledgefacthistoryFields
+	// knowledgefacthistoryDescFactKind is the schema descriptor for fact_kind field.
+	knowledgefacthistoryDescFactKind := knowledgefacthistoryFields[1].Descriptor()
+	// knowledgefacthistory.FactKindValidator is a validator for the "fact_kind" field. It is called by the builders before save.
+	knowledgefacthistory.FactKindValidator = knowledgefacthistoryDescFactKind.Validators[0].(func(string) error)
+	// knowledgefacthistoryDescEventKind is the schema descriptor for event_kind field.
+	knowledgefacthistoryDescEventKind := knowledgefacthistoryFields[5].Descriptor()
+	// knowledgefacthistory.EventKindValidator is a validator for the "event_kind" field. It is called by the builders before save.
+	knowledgefacthistory.EventKindValidator = knowledgefacthistoryDescEventKind.Validators[0].(func(string) error)
+	// knowledgefacthistoryDescHistoryKey is the schema descriptor for history_key field.
+	knowledgefacthistoryDescHistoryKey := knowledgefacthistoryFields[6].Descriptor()
+	// knowledgefacthistory.HistoryKeyValidator is a validator for the "history_key" field. It is called by the builders before save.
+	knowledgefacthistory.HistoryKeyValidator = knowledgefacthistoryDescHistoryKey.Validators[0].(func(string) error)
+	// knowledgefacthistoryDescRecordedAt is the schema descriptor for recorded_at field.
+	knowledgefacthistoryDescRecordedAt := knowledgefacthistoryFields[8].Descriptor()
+	// knowledgefacthistory.DefaultRecordedAt holds the default value on creation for the recorded_at field.
+	knowledgefacthistory.DefaultRecordedAt = knowledgefacthistoryDescRecordedAt.Default.(func() time.Time)
+	// knowledgefacthistoryDescSourceProvider is the schema descriptor for source_provider field.
+	knowledgefacthistoryDescSourceProvider := knowledgefacthistoryFields[9].Descriptor()
+	// knowledgefacthistory.SourceProviderValidator is a validator for the "source_provider" field. It is called by the builders before save.
+	knowledgefacthistory.SourceProviderValidator = knowledgefacthistoryDescSourceProvider.Validators[0].(func(string) error)
+	// knowledgefacthistoryDescSource is the schema descriptor for source field.
+	knowledgefacthistoryDescSource := knowledgefacthistoryFields[10].Descriptor()
+	// knowledgefacthistory.SourceValidator is a validator for the "source" field. It is called by the builders before save.
+	knowledgefacthistory.SourceValidator = knowledgefacthistoryDescSource.Validators[0].(func(string) error)
+	// knowledgefacthistoryDescExtractionMethod is the schema descriptor for extraction_method field.
+	knowledgefacthistoryDescExtractionMethod := knowledgefacthistoryFields[12].Descriptor()
+	// knowledgefacthistory.ExtractionMethodValidator is a validator for the "extraction_method" field. It is called by the builders before save.
+	knowledgefacthistory.ExtractionMethodValidator = knowledgefacthistoryDescExtractionMethod.Validators[0].(func(string) error)
+	// knowledgefacthistoryDescID is the schema descriptor for id field.
+	knowledgefacthistoryDescID := knowledgefacthistoryFields[0].Descriptor()
+	// knowledgefacthistory.DefaultID holds the default value on creation for the id field.
+	knowledgefacthistory.DefaultID = knowledgefacthistoryDescID.Default.(func() uuid.UUID)
 	knowledgefactprovenanceMixin := schema.KnowledgeFactProvenance{}.Mixin()
 	knowledgefactprovenance.Policy = privacy.NewPolicies(knowledgefactprovenanceMixin[0], knowledgefactprovenanceMixin[1], schema.KnowledgeFactProvenance{})
 	knowledgefactprovenance.Hooks[0] = func(next ent.Mutator) ent.Mutator {

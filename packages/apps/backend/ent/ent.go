@@ -43,6 +43,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgefacthistory"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -173,6 +174,7 @@ func checkColumn(t, c string) error {
 			integrationoauthstate.Table:            integrationoauthstate.ValidColumn,
 			knowledgeentity.Table:                  knowledgeentity.ValidColumn,
 			knowledgeentityalias.Table:             knowledgeentityalias.ValidColumn,
+			knowledgefacthistory.Table:             knowledgefacthistory.ValidColumn,
 			knowledgefactprovenance.Table:          knowledgefactprovenance.ValidColumn,
 			knowledgerelationship.Table:            knowledgerelationship.ValidColumn,
 			meetingschedule.Table:                  meetingschedule.ValidColumn,

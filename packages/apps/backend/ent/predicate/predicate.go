@@ -99,6 +99,9 @@ type KnowledgeEntity func(*sql.Selector)
 // KnowledgeEntityAlias is the predicate function for knowledgeentityalias builders.
 type KnowledgeEntityAlias func(*sql.Selector)
 
+// KnowledgeFactHistory is the predicate function for knowledgefacthistory builders.
+type KnowledgeFactHistory func(*sql.Selector)
+
 // KnowledgeFactProvenance is the predicate function for knowledgefactprovenance builders.
 type KnowledgeFactProvenance func(*sql.Selector)
 

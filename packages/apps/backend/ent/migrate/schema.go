@@ -1196,6 +1196,83 @@ var (
 			},
 		},
 	}
+	// KnowledgeFactHistoriesColumns holds the columns for the "knowledge_fact_histories" table.
+	KnowledgeFactHistoriesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "fact_kind", Type: field.TypeString},
+		{Name: "event_kind", Type: field.TypeString},
+		{Name: "history_key", Type: field.TypeString},
+		{Name: "occurred_at", Type: field.TypeTime},
+		{Name: "recorded_at", Type: field.TypeTime},
+		{Name: "source_provider", Type: field.TypeString},
+		{Name: "source", Type: field.TypeString},
+		{Name: "source_ref", Type: field.TypeString, Nullable: true},
+		{Name: "extraction_method", Type: field.TypeString},
+		{Name: "attributes", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "alias_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "relationship_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "normalized_event_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// KnowledgeFactHistoriesTable holds the schema information for the "knowledge_fact_histories" table.
+	KnowledgeFactHistoriesTable = &schema.Table{
+		Name:       "knowledge_fact_histories",
+		Columns:    KnowledgeFactHistoriesColumns,
+		PrimaryKey: []*schema.Column{KnowledgeFactHistoriesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "knowledge_fact_histories_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeFactHistoriesColumns[11]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "knowledge_fact_histories_knowledge_entity_alias_alias",
+				Columns:    []*schema.Column{KnowledgeFactHistoriesColumns[12]},
+				RefColumns: []*schema.Column{KnowledgeEntityAliasColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "knowledge_fact_histories_knowledge_relationships_relationship",
+				Columns:    []*schema.Column{KnowledgeFactHistoriesColumns[13]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "knowledge_fact_histories_normalized_events_normalized_event",
+				Columns:    []*schema.Column{KnowledgeFactHistoriesColumns[14]},
+				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "knowledgefacthistory_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeFactHistoriesColumns[11]},
+			},
+			{
+				Name:    "knowledgefacthistory_tenant_id_history_key",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeFactHistoriesColumns[11], KnowledgeFactHistoriesColumns[3]},
+			},
+			{
+				Name:    "knowledgefacthistory_tenant_id_alias_id_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeFactHistoriesColumns[11], KnowledgeFactHistoriesColumns[12], KnowledgeFactHistoriesColumns[4]},
+			},
+			{
+				Name:    "knowledgefacthistory_tenant_id_relationship_id_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeFactHistoriesColumns[11], KnowledgeFactHistoriesColumns[13], KnowledgeFactHistoriesColumns[4]},
+			},
+			{
+				Name:    "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeFactHistoriesColumns[11], KnowledgeFactHistoriesColumns[1], KnowledgeFactHistoriesColumns[2], KnowledgeFactHistoriesColumns[4]},
+			},
+		},
+	}
 	// KnowledgeFactProvenancesColumns holds the columns for the "knowledge_fact_provenances" table.
 	KnowledgeFactProvenancesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1414,7 +1491,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "provider", Type: field.TypeString},
 		{Name: "source", Type: field.TypeString},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message", "repository_observed", "change_event_observed"}},
 		{Name: "subject_kind", Type: field.TypeString},
 		{Name: "subject_external_ref", Type: field.TypeString},
 		{Name: "source_event_key", Type: field.TypeString},
@@ -3261,6 +3338,7 @@ var (
 		IntegrationOauthStatesTable,
 		KnowledgeEntitiesTable,
 		KnowledgeEntityAliasTable,
+		KnowledgeFactHistoriesTable,
 		KnowledgeFactProvenancesTable,
 		KnowledgeRelationshipsTable,
 		MeetingSchedulesTable,
@@ -3387,6 +3465,10 @@ func init() {
 	KnowledgeEntityAliasTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEntityAliasTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	KnowledgeEntityAliasTable.ForeignKeys[2].RefTable = NormalizedEventsTable
+	KnowledgeFactHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeFactHistoriesTable.ForeignKeys[1].RefTable = KnowledgeEntityAliasTable
+	KnowledgeFactHistoriesTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
+	KnowledgeFactHistoriesTable.ForeignKeys[3].RefTable = NormalizedEventsTable
 	KnowledgeFactProvenancesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeFactProvenancesTable.ForeignKeys[1].RefTable = KnowledgeEntityAliasTable
 	KnowledgeFactProvenancesTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable

@@ -39,6 +39,7 @@ import (
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgefacthistory"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
 	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
@@ -972,6 +973,33 @@ func (f TraverseKnowledgeEntityAlias) Traverse(ctx context.Context, q ent.Query)
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityAliasQuery", q)
+}
+
+// The KnowledgeFactHistoryFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeFactHistoryFunc func(context.Context, *ent.KnowledgeFactHistoryQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f KnowledgeFactHistoryFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeFactHistoryQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactHistoryQuery", q)
+}
+
+// The TraverseKnowledgeFactHistory type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeFactHistory func(context.Context, *ent.KnowledgeFactHistoryQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseKnowledgeFactHistory) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseKnowledgeFactHistory) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeFactHistoryQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactHistoryQuery", q)
 }
 
 // The KnowledgeFactProvenanceFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2092,6 +2120,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.KnowledgeEntityQuery, predicate.KnowledgeEntity, knowledgeentity.OrderOption]{typ: ent.TypeKnowledgeEntity, tq: q}, nil
 	case *ent.KnowledgeEntityAliasQuery:
 		return &query[*ent.KnowledgeEntityAliasQuery, predicate.KnowledgeEntityAlias, knowledgeentityalias.OrderOption]{typ: ent.TypeKnowledgeEntityAlias, tq: q}, nil
+	case *ent.KnowledgeFactHistoryQuery:
+		return &query[*ent.KnowledgeFactHistoryQuery, predicate.KnowledgeFactHistory, knowledgefacthistory.OrderOption]{typ: ent.TypeKnowledgeFactHistory, tq: q}, nil
 	case *ent.KnowledgeFactProvenanceQuery:
 		return &query[*ent.KnowledgeFactProvenanceQuery, predicate.KnowledgeFactProvenance, knowledgefactprovenance.OrderOption]{typ: ent.TypeKnowledgeFactProvenance, tq: q}, nil
 	case *ent.KnowledgeRelationshipQuery:

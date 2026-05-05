@@ -74,6 +74,8 @@ type Tx struct {
 	KnowledgeEntity *KnowledgeEntityClient
 	// KnowledgeEntityAlias is the client for interacting with the KnowledgeEntityAlias builders.
 	KnowledgeEntityAlias *KnowledgeEntityAliasClient
+	// KnowledgeFactHistory is the client for interacting with the KnowledgeFactHistory builders.
+	KnowledgeFactHistory *KnowledgeFactHistoryClient
 	// KnowledgeFactProvenance is the client for interacting with the KnowledgeFactProvenance builders.
 	KnowledgeFactProvenance *KnowledgeFactProvenanceClient
 	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
@@ -314,6 +316,7 @@ func (tx *Tx) init() {
 	tx.IntegrationOAuthState = NewIntegrationOAuthStateClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
 	tx.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(tx.config)
+	tx.KnowledgeFactHistory = NewKnowledgeFactHistoryClient(tx.config)
 	tx.KnowledgeFactProvenance = NewKnowledgeFactProvenanceClient(tx.config)
 	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
