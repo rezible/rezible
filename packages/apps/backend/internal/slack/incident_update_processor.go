@@ -15,11 +15,12 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rezible/rezible/telemetry"
 )
 
 type incidentUpdateProcessor struct {
-	chat      *ChatService
 	logger    *slog.Logger
+	chat      *ChatService
 	incidents rez.IncidentService
 	messages  rez.MessageService
 
@@ -32,8 +33,8 @@ func newIncidentUpdateProcessor(ctx context.Context, chat *ChatService, services
 		return nil, fmt.Errorf("get incident: %w", incErr)
 	}
 	return &incidentUpdateProcessor{
+		logger:    telemetry.NewLogger(ctx, telemetry.WithLogPackage("slack_incidents")),
 		chat:      chat,
-		logger:    slog.Default().With("package", "slack_incidents"),
 		incidents: services.Incidents,
 		messages:  services.Messages,
 		inc:       inc,

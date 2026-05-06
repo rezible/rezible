@@ -57,6 +57,7 @@ func MakeApi(h Handler, auth rez.AuthSessionService) openapi.API {
 
 	adapter := humago.NewAdapter(http.NewServeMux(), VersionPrefix)
 	api := huma.NewAPI(cfg, adapter)
+	api.UseMiddleware(makeAPITelemetryMiddleware())
 	api.UseMiddleware(MakeSecurityMiddleware(api, auth))
 	huma.AutoRegister(api, operations{Handler: h})
 

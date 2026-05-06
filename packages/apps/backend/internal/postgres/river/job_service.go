@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/riverqueue/rivercontrib/otelriver"
 
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
@@ -15,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/telemetry"
 )
 
 const SchemaName = "river"
@@ -26,26 +28,33 @@ type JobService struct {
 	client *riverClient
 }
 
-func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
+func NewJobService(ctx context.Context, pool *pgxpool.Pool) (*JobService, error) {
 	queues := map[string]river.QueueConfig{
 		river.QueueDefault: {MaxWorkers: 20},
 	}
 
 	s := &JobService{
-		logger: slog.New(logger{
-			base:  slog.Default().With("package", "river").Handler(),
-			level: slog.LevelWarn,
-		}),
+		logger: telemetry.NewLogger(ctx, telemetry.WithLogPackage("river"), telemetry.WithMinLogLevel(slog.LevelWarn)),
 	}
+
+	tel := telemetry.Default()
+	telemetryMiddleware := otelriver.NewMiddleware(&otelriver.MiddlewareConfig{
+		DurationUnit:                "s",
+		EnableSemanticMetrics:       true,
+		EnableWorkSpanJobKindSuffix: true,
+		MeterProvider:               tel.MeterProvider(),
+		TracerProvider:              tel.TracerProvider(),
+	})
 
 	cfg := &river.Config{
 		Schema: SchemaName,
+		Logger: s.logger,
 		Middleware: []rivertype.Middleware{
+			telemetryMiddleware,
 			&accessContextMiddleware{},
 		},
 		Workers: jobs.GetWorkers(),
 		Queues:  queues,
-		Logger:  s.logger,
 	}
 	var clientErr error
 	s.client, clientErr = river.NewClient(riverpgxv5.New(pool), cfg)
@@ -62,6 +71,7 @@ func (s *JobService) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to add periodic jobs: %w", pjErr)
 	}
 	jobsCtx := execution.NewContext(ctx, execution.KindSystem, execution.SourceJob)
+	jobsCtx = telemetry.ContextWithLoggerOptions(jobsCtx, telemetry.WithLogValues("source", string(execution.SourceJob)))
 	return s.client.Start(jobsCtx)
 }
 

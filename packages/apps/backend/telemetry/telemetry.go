@@ -4,12 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"log/slog"
 	"os"
-	"time"
-
-	"github.com/lmittmann/tint"
 )
 
 const (
@@ -26,29 +22,13 @@ func Init(ctx context.Context) error {
 
 	slog.SetDefault(slog.New(makeSlogHandler(os.Stderr, cfg)))
 
-	if otelErr := initOpenTelemetry(ctx, cfg); otelErr != nil {
+	svc, otelErr := initOpenTelemetry(ctx, cfg)
+	if otelErr != nil {
 		return fmt.Errorf("otel: %w", otelErr)
 	}
+	SetDefault(svc)
 
 	return nil
-}
-
-func makeSlogHandler(w io.Writer, cfg Config) slog.Handler {
-	opts := &slog.HandlerOptions{
-		AddSource:   cfg.Logging.AddSource,
-		Level:       cfg.getLogLevel(),
-		ReplaceAttr: nil,
-	}
-	if cfg.Logging.Json {
-		return slog.NewJSONHandler(w, opts)
-	}
-	if !cfg.Logging.Color {
-		return slog.NewTextHandler(w, opts)
-	}
-	return tint.NewHandler(w, &tint.Options{
-		Level:      opts.Level,
-		TimeFormat: time.Kitchen,
-	})
 }
 
 func Shutdown(ctx context.Context) error {

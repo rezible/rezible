@@ -114,7 +114,7 @@ func (h *eventHandler) withChatService(ctx context.Context, ids installIds, fn f
 		)
 		return nil
 	}
-	return fn(newChatService(ci))
+	return fn(newChatService(ctx, ci))
 }
 
 func (h *eventHandler) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
@@ -129,7 +129,7 @@ func (h *eventHandler) withIncidentUpdateProcessor(ctx context.Context, id uuid.
 	if !ok {
 		return fmt.Errorf("failed to cast to *ConfiguredIntegration")
 	}
-	p, procErr := newIncidentUpdateProcessor(ctx, newChatService(ci), h.services, id)
+	p, procErr := newIncidentUpdateProcessor(ctx, newChatService(ctx, ci), h.services, id)
 	if procErr != nil {
 		return fmt.Errorf("creating incident update processor: %w", procErr)
 	}

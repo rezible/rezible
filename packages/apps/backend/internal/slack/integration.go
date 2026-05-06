@@ -315,7 +315,7 @@ func (ci *ConfiguredIntegration) GetDataKinds() map[string]bool {
 }
 
 func (ci *ConfiguredIntegration) MakeChatService(ctx context.Context) (rez.ChatService, error) {
-	return newChatService(ci), nil
+	return newChatService(ctx, ci), nil
 }
 
 type installIds struct {

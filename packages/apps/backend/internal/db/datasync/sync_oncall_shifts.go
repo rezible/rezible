@@ -12,9 +12,9 @@ import (
 	"github.com/rezible/rezible/ent/oncallshift"
 )
 
-func syncOncallShifts(ctx context.Context, db *ent.Client, prov rez.OncallDataProvider, opts SyncOptions) error {
+func syncOncallShifts(ctx context.Context, db *ent.Client, prov rez.OncallDataProvider, opts SyncOptions, met *metrics) error {
 	b := &oncallShiftsBatcher{db: db, provider: prov}
-	s := newBatchedDataSyncer[*ent.OncallShift](db, "oncall_shifts", b, opts)
+	s := newBatchedDataSyncer[ent.OncallShift](db, "oncall_shifts", b, opts, met)
 	return s.Sync(ctx)
 }
 

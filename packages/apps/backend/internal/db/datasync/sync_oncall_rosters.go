@@ -16,9 +16,9 @@ import (
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 )
 
-func syncOncallRosters(ctx context.Context, db *ent.Client, prov rez.OncallDataProvider, opts SyncOptions) error {
+func syncOncallRosters(ctx context.Context, db *ent.Client, prov rez.OncallDataProvider, opts SyncOptions, met *metrics) error {
 	b := &oncallRosterBatcher{db: db, provider: prov}
-	s := newBatchedDataSyncer[*ent.OncallRoster](db, "oncall_rosters", b, opts)
+	s := newBatchedDataSyncer[ent.OncallRoster](db, "oncall_rosters", b, opts, met)
 	return s.Sync(ctx)
 }
 

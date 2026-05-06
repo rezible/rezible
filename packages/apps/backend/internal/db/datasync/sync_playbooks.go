@@ -10,9 +10,9 @@ import (
 	"github.com/rezible/rezible/ent/playbook"
 )
 
-func syncPlaybooks(ctx context.Context, db *ent.Client, prov rez.PlaybookDataProvider, opts SyncOptions) error {
+func syncPlaybooks(ctx context.Context, db *ent.Client, prov rez.PlaybookDataProvider, opts SyncOptions, met *metrics) error {
 	b := &playbooksBatcher{db: db, provider: prov}
-	s := newBatchedDataSyncer[*ent.Playbook](db, "playbooks", b, opts)
+	s := newBatchedDataSyncer[ent.Playbook](db, "playbooks", b, opts, met)
 	return s.Sync(ctx)
 }
 

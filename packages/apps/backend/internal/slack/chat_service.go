@@ -8,6 +8,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/telemetry"
 	"github.com/slack-go/slack"
 )
 
@@ -22,11 +23,11 @@ type ChatService struct {
 	annos        rez.EventAnnotationsService
 }
 
-func newChatService(ci *ConfiguredIntegration) *ChatService {
+func newChatService(ctx context.Context, ci *ConfiguredIntegration) *ChatService {
 	return &ChatService{
 		ci:           ci,
 		client:       slack.New(ci.accessToken()),
-		logger:       slog.Default().With("package", "slack"),
+		logger:       telemetry.NewLogger(ctx, telemetry.WithLogPackage("slack")),
 		users:        ci.svcs.Users,
 		integrations: ci.svcs.Integrations,
 		incidents:    ci.svcs.Incidents,

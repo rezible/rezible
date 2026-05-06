@@ -20,8 +20,8 @@ import (
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/prosemirror"
-	"github.com/rezible/rezible/internal/telemetry"
 	"github.com/rezible/rezible/internal/watermill"
+	"github.com/rezible/rezible/telemetry"
 )
 
 type Server struct {
@@ -149,13 +149,13 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	}
 	s.db = pgDb
 
-	msgs, msgsErr := watermill.NewMessageService()
+	msgs, msgsErr := watermill.NewMessageService(ctx)
 	if msgsErr != nil {
 		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
 	}
 	s.listeners["watermill_message_service"] = msgs
 
-	jobSvc, jobSvcErr := river.NewJobService(pgDb.Pool())
+	jobSvc, jobSvcErr := river.NewJobService(ctx, pgDb.Pool())
 	if jobSvcErr != nil {
 		return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
 	}
@@ -165,7 +165,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 
 	knowledge := db.NewKnowledgeService(dbc)
 
-	provEvents := db.NewProviderEventService(dbc, jobSvc)
+	provEvents := db.NewProviderEventService(ctx, dbc, jobSvc)
 
 	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
 	if orgsErr != nil {

@@ -14,11 +14,12 @@ import (
 )
 
 type Syncer struct {
-	db *ent.Client
+	db      *ent.Client
+	metrics *metrics
 }
 
 func NewSyncerService(db *ent.Client) *Syncer {
-	return &Syncer{db: db}
+	return &Syncer{db: db, metrics: newMetrics()}
 }
 
 type SyncOptions struct {
@@ -85,7 +86,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 	}
 	slog.Debug("sync user data", "providers", len(usersProvs))
 	for _, prov := range usersProvs {
-		if syncErr := syncUsers(ctx, s.db, prov, opts); syncErr != nil {
+		if syncErr := syncUsers(ctx, s.db, prov, opts, s.metrics); syncErr != nil {
 			return fmt.Errorf("user provider (%s): %w", reflect.TypeOf(prov).String(), syncErr)
 		}
 	}
@@ -95,7 +96,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 		slog.Error("failed to load teams data providers", "error", teamsErr)
 	} else if len(teamsProviders) > 0 {
 		for _, teams := range teamsProviders {
-			if syncErr := syncTeams(ctx, s.db, teams, opts); syncErr != nil {
+			if syncErr := syncTeams(ctx, s.db, teams, opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("teams: %w", syncErr)
 			}
 		}
@@ -106,10 +107,10 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 		slog.Error("failed to load oncall data providers", "error", oncallErr)
 	} else if len(oncallProviders) > 0 {
 		for _, oncall := range oncallProviders {
-			if syncErr := syncOncallRosters(ctx, s.db, oncall, opts); syncErr != nil {
+			if syncErr := syncOncallRosters(ctx, s.db, oncall, opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("oncall rosters: %w", syncErr)
 			}
-			if syncErr := syncOncallShifts(ctx, s.db, oncall, opts); syncErr != nil {
+			if syncErr := syncOncallShifts(ctx, s.db, oncall, opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("oncall shifts: %w", syncErr)
 			}
 		}
@@ -120,7 +121,7 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 		slog.Error("failed to load components data providers", "error", componentsErr)
 	} else if len(componentsProviders) > 0 {
 		for _, components := range componentsProviders {
-			if syncErr := syncSystemComponents(ctx, s.db, components, opts); syncErr != nil {
+			if syncErr := syncSystemComponents(ctx, s.db, components, opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("system components: %w", syncErr)
 			}
 		}
@@ -131,10 +132,10 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 		slog.Error("failed to load alerts data providers", "error", alertsErr)
 	} else if len(alertsProviders) > 0 {
 		for _, alerts := range alertsProviders {
-			if syncErr := syncAlerts(ctx, s.db, alerts, opts); syncErr != nil {
+			if syncErr := syncAlerts(ctx, s.db, alerts, opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("alerts: %w", syncErr)
 			}
-			if syncErr := syncAlertInstances(ctx, s.db, alerts, opts); syncErr != nil {
+			if syncErr := syncAlertInstances(ctx, s.db, alerts, opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("alert instances: %w", syncErr)
 			}
 		}
@@ -145,10 +146,10 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 		slog.Error("failed to load incidents data providers", "error", incidentsErr)
 	} else if len(incidentsProviders) > 0 {
 		for _, incidents := range incidentsProviders {
-			if syncErr := syncIncidentRoles(ctx, s.db, incidents, opts); syncErr != nil {
+			if syncErr := syncIncidentRoles(ctx, s.db, incidents, opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("incident roles: %w", syncErr)
 			}
-			if syncErr := syncIncidents(ctx, s.db, incidents, opts); syncErr != nil {
+			if syncErr := syncIncidents(ctx, s.db, incidents, opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("incidents: %w", syncErr)
 			}
 		}
