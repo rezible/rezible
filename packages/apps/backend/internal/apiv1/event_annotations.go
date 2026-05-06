@@ -37,7 +37,7 @@ func (h *eventAnnotationsHandler) ListEventAnnotations(ctx context.Context, req 
 
 	listRes, annosErr := h.annos.ListAnnotations(ctx, params)
 	if annosErr != nil {
-		return nil, oapi.Error("query shift annotations", annosErr)
+		return nil, oapi.Error(ctx, "query shift annotations", annosErr)
 	}
 
 	resp.Body.Data = make([]oapi.EventAnnotation, len(listRes.Data))
@@ -57,7 +57,7 @@ func (h *eventAnnotationsHandler) CreateEventAnnotation(ctx context.Context, req
 
 	sess := execution.AuthSession(ctx)
 	if sess == nil {
-		return nil, oapi.Error("failed to get auth session", rez.ErrAuthSessionMissing)
+		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
 
 	attr := request.Body.Attributes
@@ -73,7 +73,7 @@ func (h *eventAnnotationsHandler) CreateEventAnnotation(ctx context.Context, req
 	var createErr error
 	anno, createErr = h.annos.SetAnnotation(ctx, anno)
 	if createErr != nil {
-		return nil, oapi.Error("failed to create annotation", createErr)
+		return nil, oapi.Error(ctx, "failed to create annotation", createErr)
 	}
 	resp.Body.Data = oapi.EventAnnotationFromEnt(anno)
 
@@ -86,7 +86,7 @@ func (h *eventAnnotationsHandler) UpdateEventAnnotation(ctx context.Context, req
 	attr := request.Body.Attributes
 	anno, annoErr := h.annos.GetAnnotation(ctx, request.Id)
 	if annoErr != nil {
-		return nil, oapi.Error("failed to get annotation", annoErr)
+		return nil, oapi.Error(ctx, "failed to get annotation", annoErr)
 	}
 
 	update := anno.Update().
@@ -99,7 +99,7 @@ func (h *eventAnnotationsHandler) UpdateEventAnnotation(ctx context.Context, req
 
 	updated, updateErr := update.Save(ctx)
 	if updateErr != nil {
-		return nil, oapi.Error("failed to update annotation", updateErr)
+		return nil, oapi.Error(ctx, "failed to update annotation", updateErr)
 	}
 	resp.Body.Data = oapi.EventAnnotationFromEnt(updated)
 
@@ -110,7 +110,7 @@ func (h *eventAnnotationsHandler) DeleteEventAnnotation(ctx context.Context, req
 	var resp oapi.DeleteEventAnnotationResponse
 
 	if err := h.annos.DeleteAnnotation(ctx, request.Id); err != nil {
-		return nil, oapi.Error("failed to archive annotation", err)
+		return nil, oapi.Error(ctx, "failed to archive annotation", err)
 	}
 
 	return &resp, nil

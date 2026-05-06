@@ -27,7 +27,7 @@ func (h *incidentEventsHandler) ListIncidentEvents(ctx context.Context, request 
 		Where(incidentevent.IncidentID(request.Id))
 	events, eventsErr := query.All(ctx)
 	if eventsErr != nil {
-		return nil, oapi.Error("failed to list incident events", eventsErr)
+		return nil, oapi.Error(ctx, "failed to list incident events", eventsErr)
 	}
 	resp.Body.Data = make([]oapi.IncidentEvent, len(events))
 	for i, e := range events {
@@ -55,14 +55,14 @@ func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request
 
 	kind := incidentevent.Kind(attr.Kind)
 	if kindErr := incidentevent.KindValidator(kind); kindErr != nil {
-		return nil, oapi.Error("invalid kind", kindErr)
+		return nil, oapi.Error(ctx, "invalid kind", kindErr)
 	}
 
 	// userId := requestUserId(ctx, h.auth)
 
 	sequence, seqErr := h.getEventSequence(ctx, request.Id, attr.Timestamp)
 	if seqErr != nil {
-		return nil, oapi.Error("failed to get sequence for incident event", seqErr)
+		return nil, oapi.Error(ctx, "failed to get sequence for incident event", seqErr)
 	}
 
 	create := h.db.IncidentEvent.Create().
@@ -76,7 +76,7 @@ func (h *incidentEventsHandler) CreateIncidentEvent(ctx context.Context, request
 	created, createErr := create.Save(ctx)
 	if createErr != nil {
 		slog.Error("failed to create", "error", createErr)
-		return nil, oapi.Error("failed to create incident event", createErr)
+		return nil, oapi.Error(ctx, "failed to create incident event", createErr)
 	}
 	resp.Body.Data = oapi.IncidentEventFromEnt(created)
 
@@ -95,14 +95,14 @@ func (h *incidentEventsHandler) UpdateIncidentEvent(ctx context.Context, request
 	if attr.Kind != nil {
 		kind := incidentevent.Kind(*attr.Kind)
 		if kindErr := incidentevent.KindValidator(kind); kindErr != nil {
-			return nil, oapi.Error("invalid kind", kindErr)
+			return nil, oapi.Error(ctx, "invalid kind", kindErr)
 		}
 		update.SetKind(kind)
 	}
 
 	updated, updateErr := update.Save(ctx)
 	if updateErr != nil {
-		return nil, oapi.Error("failed to update incident event", updateErr)
+		return nil, oapi.Error(ctx, "failed to update incident event", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentEventFromEnt(updated)
 
@@ -113,7 +113,7 @@ func (h *incidentEventsHandler) DeleteIncidentEvent(ctx context.Context, request
 	var resp oapi.DeleteIncidentEventResponse
 
 	if deleteErr := h.db.IncidentEvent.DeleteOneID(request.Id).Exec(ctx); deleteErr != nil {
-		return nil, oapi.Error("failed to delete incident event", deleteErr)
+		return nil, oapi.Error(ctx, "failed to delete incident event", deleteErr)
 	}
 
 	return &resp, nil

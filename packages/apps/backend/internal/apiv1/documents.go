@@ -21,7 +21,7 @@ func (h *documentsHandler) GetDocumentAccess(ctx context.Context, request *oapi.
 
 	docAccess, docErr := h.documents.GetDocumentAccess(ctx, request.Id)
 	if docErr != nil {
-		return nil, oapi.Error("get access", docErr)
+		return nil, oapi.Error(ctx, "get access", docErr)
 	}
 	if docAccess == nil {
 		return nil, oapi.ErrForbidden
@@ -36,7 +36,7 @@ func (h *documentsHandler) LoadDocument(ctx context.Context, req *oapi.LoadDocum
 
 	doc, docErr := h.documents.GetDocument(ctx, req.Id)
 	if docErr != nil {
-		return nil, oapi.Error("failed to load document", docErr)
+		return nil, oapi.Error(ctx, "failed to load document", docErr)
 	}
 	resp.Body.Data = oapi.DocumentFromEnt(doc)
 
@@ -52,7 +52,7 @@ func (h *documentsHandler) UpdateDocument(ctx context.Context, req *oapi.UpdateD
 	}
 	doc, docErr := h.documents.SetDocument(ctx, req.Id, updateFn)
 	if docErr != nil {
-		return nil, oapi.Error("failed to update document", docErr)
+		return nil, oapi.Error(ctx, "failed to update document", docErr)
 	}
 	resp.Body.Data = oapi.DocumentFromEnt(doc)
 

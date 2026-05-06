@@ -78,14 +78,14 @@ func asStatusError(msg string, err error) huma.StatusError {
 	return huma.Error500InternalServerError(msg, err)
 }
 
-func Error(msg string, err error) error {
+func Error(ctx context.Context, msg string, err error) error {
 	statusErr := asStatusError(msg, err)
 
 	logLevel := slog.LevelWarn
 	if statusErr.GetStatus() >= 500 {
 		logLevel = slog.LevelError
 	}
-	slog.Log(context.Background(), logLevel, "API Error",
+	slog.Log(ctx, logLevel, "API Error",
 		"message", msg,
 		"status", statusErr.GetStatus(),
 		"error", err,

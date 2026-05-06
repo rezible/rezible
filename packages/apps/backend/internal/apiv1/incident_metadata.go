@@ -48,7 +48,7 @@ func (h *incidentMetadataHandler) GetIncidentMetadata(ctx context.Context, reque
 
 	md, mdErr := h.incidents.GetIncidentMetadata(ctx)
 	if mdErr != nil {
-		return nil, oapi.Error("get metadata", mdErr)
+		return nil, oapi.Error(ctx, "get metadata", mdErr)
 	}
 	resp.Body.Data = oapi.IncidentMetadataFromRez(md)
 
@@ -73,7 +73,7 @@ func (h *incidentMetadataHandler) ListIncidentSeverities(ctx context.Context, re
 
 	res, queryErr := limitedQuery.All(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to query incident severities", queryErr)
+		return nil, oapi.Error(ctx, "Failed to query incident severities", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentSeverity, len(res))
@@ -83,7 +83,7 @@ func (h *incidentMetadataHandler) ListIncidentSeverities(ctx context.Context, re
 
 	count, countErr := query.Count(ctx)
 	if countErr != nil {
-		return nil, oapi.Error("Failed to query incident severity count", countErr)
+		return nil, oapi.Error(ctx, "Failed to query incident severity count", countErr)
 	}
 	resp.Body.Pagination.Total = count
 
@@ -99,7 +99,7 @@ func (h *incidentMetadataHandler) CreateIncidentSeverity(ctx context.Context, re
 
 	sev, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, oapi.Error("Failed to create incident severity", createErr)
+		return nil, oapi.Error(ctx, "Failed to create incident severity", createErr)
 	}
 	resp.Body.Data = oapi.IncidentSeverityFromEnt(sev)
 
@@ -111,7 +111,7 @@ func (h *incidentMetadataHandler) GetIncidentSeverity(ctx context.Context, reque
 
 	sev, queryErr := h.severities.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to get incident tag", queryErr)
+		return nil, oapi.Error(ctx, "Failed to get incident tag", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentSeverityFromEnt(sev)
 
@@ -131,7 +131,7 @@ func (h *incidentMetadataHandler) UpdateIncidentSeverity(ctx context.Context, re
 
 	sev, updateErr := query.Save(ctx)
 	if updateErr != nil {
-		return nil, oapi.Error("Failed to update incident severity", updateErr)
+		return nil, oapi.Error(ctx, "Failed to update incident severity", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentSeverityFromEnt(sev)
 
@@ -143,7 +143,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentSeverity(ctx context.Context, r
 
 	delErr := h.severities.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, oapi.Error("Failed to archive incident severity", delErr)
+		return nil, oapi.Error(ctx, "Failed to archive incident severity", delErr)
 	}
 
 	return &resp, nil
@@ -167,7 +167,7 @@ func (h *incidentMetadataHandler) ListIncidentTypes(ctx context.Context, request
 
 	res, queryErr := limitedQuery.All(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to query incident types", queryErr)
+		return nil, oapi.Error(ctx, "Failed to query incident types", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentType, len(res))
@@ -177,7 +177,7 @@ func (h *incidentMetadataHandler) ListIncidentTypes(ctx context.Context, request
 
 	count, countErr := query.Count(ctx)
 	if countErr != nil {
-		return nil, oapi.Error("Failed to query incident type count", countErr)
+		return nil, oapi.Error(ctx, "Failed to query incident type count", countErr)
 	}
 	resp.Body.Pagination.Total = count
 
@@ -191,7 +191,7 @@ func (h *incidentMetadataHandler) CreateIncidentType(ctx context.Context, reques
 	query := h.types.Create().SetName(attr.Name)
 	t, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, oapi.Error("Failed to create incident type", createErr)
+		return nil, oapi.Error(ctx, "Failed to create incident type", createErr)
 	}
 	resp.Body.Data = oapi.IncidentTypeFromEnt(t)
 
@@ -203,7 +203,7 @@ func (h *incidentMetadataHandler) GetIncidentType(ctx context.Context, request *
 
 	t, queryErr := h.types.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to get incident type", queryErr)
+		return nil, oapi.Error(ctx, "Failed to get incident type", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentTypeFromEnt(t)
 
@@ -223,7 +223,7 @@ func (h *incidentMetadataHandler) UpdateIncidentType(ctx context.Context, reques
 
 	t, updateErr := query.Save(ctx)
 	if updateErr != nil {
-		return nil, oapi.Error("Failed to update incident type", updateErr)
+		return nil, oapi.Error(ctx, "Failed to update incident type", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentTypeFromEnt(t)
 
@@ -235,7 +235,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentType(ctx context.Context, reque
 
 	delErr := h.types.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, oapi.Error("Failed to archive incident type", delErr)
+		return nil, oapi.Error(ctx, "Failed to archive incident type", delErr)
 	}
 
 	return &resp, nil
@@ -252,7 +252,7 @@ func (h *incidentMetadataHandler) ListIncidentRoles(ctx context.Context, request
 
 	res, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to query incident roles", queryErr)
+		return nil, oapi.Error(ctx, "Failed to query incident roles", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentRole, len(res))
@@ -274,7 +274,7 @@ func (h *incidentMetadataHandler) CreateIncidentRole(ctx context.Context, reques
 
 	role, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, oapi.Error("Failed to create incident role", createErr)
+		return nil, oapi.Error(ctx, "Failed to create incident role", createErr)
 	}
 	resp.Body.Data = oapi.IncidentRoleFromEnt(role)
 
@@ -287,7 +287,7 @@ func (h *incidentMetadataHandler) GetIncidentRole(ctx context.Context, request *
 	ctx = schema.IncludeArchived(ctx)
 	role, queryErr := h.roles.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to get incident role", queryErr)
+		return nil, oapi.Error(ctx, "Failed to get incident role", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentRoleFromEnt(role)
 
@@ -308,7 +308,7 @@ func (h *incidentMetadataHandler) UpdateIncidentRole(ctx context.Context, reques
 
 	role, saveErr := query.Save(ctx)
 	if saveErr != nil {
-		return nil, oapi.Error("Failed to update incident role", saveErr)
+		return nil, oapi.Error(ctx, "Failed to update incident role", saveErr)
 	}
 	resp.Body.Data = oapi.IncidentRoleFromEnt(role)
 
@@ -320,7 +320,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentRole(ctx context.Context, reque
 
 	delErr := h.roles.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, oapi.Error("Failed to archive incident role", delErr)
+		return nil, oapi.Error(ctx, "Failed to archive incident role", delErr)
 	}
 
 	return &resp, nil
@@ -344,7 +344,7 @@ func (h *incidentMetadataHandler) ListIncidentTags(ctx context.Context, request 
 
 	res, queryErr := limitedQuery.All(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to query incident tags", queryErr)
+		return nil, oapi.Error(ctx, "Failed to query incident tags", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.IncidentTag, len(res))
@@ -354,7 +354,7 @@ func (h *incidentMetadataHandler) ListIncidentTags(ctx context.Context, request 
 
 	count, countErr := query.Count(ctx)
 	if countErr != nil {
-		return nil, oapi.Error("Failed to query incident tag count", countErr)
+		return nil, oapi.Error(ctx, "Failed to query incident tag count", countErr)
 	}
 	resp.Body.Pagination.Total = count
 
@@ -368,7 +368,7 @@ func (h *incidentMetadataHandler) CreateIncidentTag(ctx context.Context, request
 	query := h.tags.Create().SetValue(attr.Value)
 	tag, createErr := query.Save(ctx)
 	if createErr != nil {
-		return nil, oapi.Error("Failed to create incident tag", createErr)
+		return nil, oapi.Error(ctx, "Failed to create incident tag", createErr)
 	}
 	resp.Body.Data = oapi.IncidentTagFromEnt(tag)
 
@@ -380,7 +380,7 @@ func (h *incidentMetadataHandler) GetIncidentTag(ctx context.Context, request *o
 
 	tag, queryErr := h.tags.Get(ctx, request.Id)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to get incident tag", queryErr)
+		return nil, oapi.Error(ctx, "Failed to get incident tag", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentTagFromEnt(tag)
 
@@ -400,7 +400,7 @@ func (h *incidentMetadataHandler) UpdateIncidentTag(ctx context.Context, request
 
 	tag, updateErr := query.Save(ctx)
 	if updateErr != nil {
-		return nil, oapi.Error("Failed to update incident tag", updateErr)
+		return nil, oapi.Error(ctx, "Failed to update incident tag", updateErr)
 	}
 	resp.Body.Data = oapi.IncidentTagFromEnt(tag)
 
@@ -412,7 +412,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentTag(ctx context.Context, reques
 
 	delErr := h.tags.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, oapi.Error("Failed to archive incident tag", delErr)
+		return nil, oapi.Error(ctx, "Failed to archive incident tag", delErr)
 	}
 
 	return &resp, nil
@@ -432,7 +432,7 @@ func (h *incidentMetadataHandler) ListIncidentFields(ctx context.Context, reques
 
 	res, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to query incident fields", queryErr)
+		return nil, oapi.Error(ctx, "Failed to query incident fields", queryErr)
 	}
 	slog.Debug("ListIncidentFields", "res", res)
 
@@ -477,7 +477,7 @@ func (h *incidentMetadataHandler) CreateIncidentField(ctx context.Context, reque
 	}
 
 	if txErr := ent.WithTx(ctx, h.db, createFieldOptionsTx); txErr != nil {
-		return nil, oapi.Error("Failed to create incident field", txErr)
+		return nil, oapi.Error(ctx, "Failed to create incident field", txErr)
 	}
 
 	return &resp, nil
@@ -492,7 +492,7 @@ func (h *incidentMetadataHandler) GetIncidentField(ctx context.Context, request 
 		WithOptions().
 		Only(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to get incident field", queryErr)
+		return nil, oapi.Error(ctx, "Failed to get incident field", queryErr)
 	}
 	resp.Body.Data = oapi.IncidentFieldFromEnt(field)
 
@@ -504,7 +504,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 		Where(incidentfieldoption.IncidentFieldID(fieldId)).
 		All(ctx)
 	if optionsErr != nil {
-		return oapi.Error("Failed to get incident field options", optionsErr)
+		return oapi.Error(ctx, "Failed to get incident field options", optionsErr)
 	}
 
 	options := make(map[string]*ent.IncidentFieldOption)
@@ -518,7 +518,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 	for _, o := range reqOptions {
 		t := incidentfieldoption.Type(o.FieldOptionType)
 		if len(reqType) > 0 && t != reqType {
-			return oapi.Error("multiple field option types", nil)
+			return oapi.Error(ctx, "multiple field option types", nil)
 		}
 		reqType = t
 	}
@@ -530,7 +530,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 				incidentfieldoption.IncidentFieldID(fieldId),
 				incidentfieldoption.TypeNEQ(reqType)))
 		if _, err := deleteOthers.Exec(ctx); err != nil {
-			return oapi.Error("Failed to delete existing options", err)
+			return oapi.Error(ctx, "Failed to delete existing options", err)
 		}
 	}
 
@@ -549,7 +549,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 		cur, exists := options[*option.Id]
 		if !exists {
 			err := fmt.Errorf("cannot update non-existant option id: %s", *option.Id)
-			return oapi.Error("failed to update field option", err)
+			return oapi.Error(ctx, "failed to update field option", err)
 		}
 		archiveTime := cur.ArchiveTime
 		if o.Archived && archiveTime.IsZero() {
@@ -566,7 +566,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 				update.ClearArchiveTime()
 			}
 			if updateErr := update.Exec(ctx); updateErr != nil {
-				return oapi.Error("failed to update field option", updateErr)
+				return oapi.Error(ctx, "failed to update field option", updateErr)
 			}
 		}
 	}
@@ -577,7 +577,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 			SetIncidentFieldID(opt.IncidentFieldID)
 	})
 	if createErr := create.Exec(ctx); createErr != nil {
-		return oapi.Error("failed to create new field options", createErr)
+		return oapi.Error(ctx, "failed to create new field options", createErr)
 	}
 	return nil
 }
@@ -589,7 +589,7 @@ func (h *incidentMetadataHandler) UpdateIncidentField(ctx context.Context, reque
 
 	tx, txErr := h.db.BeginTx(ctx, nil)
 	if txErr != nil {
-		return nil, oapi.Error("Failed to start db transaction", txErr)
+		return nil, oapi.Error(ctx, "Failed to start db transaction", txErr)
 	}
 	defer tx.Rollback()
 
@@ -613,11 +613,11 @@ func (h *incidentMetadataHandler) UpdateIncidentField(ctx context.Context, reque
 
 	field, saveErr := query.Save(ctx)
 	if saveErr != nil {
-		return nil, oapi.Error("Failed to update incident field", saveErr)
+		return nil, oapi.Error(ctx, "Failed to update incident field", saveErr)
 	}
 
 	if commitErr := tx.Commit(); commitErr != nil {
-		return nil, oapi.Error("Failed to create field", commitErr)
+		return nil, oapi.Error(ctx, "Failed to create field", commitErr)
 	}
 
 	resp.Body.Data = oapi.IncidentFieldFromEnt(field)
@@ -630,7 +630,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentField(ctx context.Context, requ
 
 	delErr := h.fields.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
-		return nil, oapi.Error("Failed to archive incident field", delErr)
+		return nil, oapi.Error(ctx, "Failed to archive incident field", delErr)
 	}
 
 	return &resp, nil

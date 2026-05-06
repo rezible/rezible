@@ -25,17 +25,17 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 
 	sess := execution.AuthSession(ctx)
 	if sess == nil {
-		return nil, oapi.Error("failed to get auth session", rez.ErrAuthSessionMissing)
+		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
 
 	u, userErr := h.users.Get(ctx, user.ID(sess.UserId))
 	if userErr != nil {
-		return nil, oapi.Error("failed to get user", userErr)
+		return nil, oapi.Error(ctx, "failed to get user", userErr)
 	}
 
 	org, orgErr := h.orgs.Get(ctx, organization.TenantID(u.TenantID))
 	if orgErr != nil {
-		return nil, oapi.Error("failed to get organization", orgErr)
+		return nil, oapi.Error(ctx, "failed to get organization", orgErr)
 	}
 
 	resp.Body.Data = oapi.AuthSession{

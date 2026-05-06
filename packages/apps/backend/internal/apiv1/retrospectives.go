@@ -39,7 +39,7 @@ func (h *retrospectivesHandler) UpdateRetrospective(ctx context.Context, req *oa
 	}
 	retro, updateErr := h.retros.Set(ctx, req.Id, setFn)
 	if updateErr != nil {
-		return nil, oapi.Error("update retrospective", updateErr)
+		return nil, oapi.Error(ctx, "update retrospective", updateErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 
@@ -51,7 +51,7 @@ func (h *retrospectivesHandler) GetRetrospective(ctx context.Context, input *oap
 
 	retro, retroErr := h.retros.Get(ctx, retrospective.ID(input.Id))
 	if retroErr != nil {
-		return nil, oapi.Error("failed to get retrospective", retroErr)
+		return nil, oapi.Error(ctx, "failed to get retrospective", retroErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveFromEnt(retro)
 
@@ -91,7 +91,7 @@ func (h *retrospectivesHandler) ListRetrospectiveComments(ctx context.Context, r
 		WithReplies:     true,
 	})
 	if listErr != nil {
-		return nil, oapi.Error("list retrospective comments", listErr)
+		return nil, oapi.Error(ctx, "list retrospective comments", listErr)
 	}
 
 	resp.Body.Data = make([]oapi.RetrospectiveComment, len(comments))
@@ -107,7 +107,7 @@ func (h *retrospectivesHandler) CreateRetrospectiveComment(ctx context.Context, 
 
 	sess := execution.AuthSession(ctx)
 	if sess == nil {
-		return nil, oapi.Error("failed to get auth session", rez.ErrAuthSessionMissing)
+		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
 
 	comment, createErr := h.retros.SetComment(ctx, &ent.RetrospectiveComment{
@@ -116,7 +116,7 @@ func (h *retrospectivesHandler) CreateRetrospectiveComment(ctx context.Context, 
 		Content:         request.Body.Attributes.Content,
 	})
 	if createErr != nil {
-		return nil, oapi.Error("create retrospective comment", createErr)
+		return nil, oapi.Error(ctx, "create retrospective comment", createErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveCommentFromEnt(comment)
 
@@ -128,7 +128,7 @@ func (h *retrospectivesHandler) GetRetrospectiveComment(ctx context.Context, req
 
 	comment, getErr := h.retros.GetComment(ctx, request.Id)
 	if getErr != nil {
-		return nil, oapi.Error("get retrospective comment", getErr)
+		return nil, oapi.Error(ctx, "get retrospective comment", getErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveCommentFromEnt(comment)
 
@@ -140,7 +140,7 @@ func (h *retrospectivesHandler) UpdateRetrospectiveComment(ctx context.Context, 
 
 	comment, getErr := h.retros.GetComment(ctx, request.Id)
 	if getErr != nil {
-		return nil, oapi.Error("get retrospective comment", getErr)
+		return nil, oapi.Error(ctx, "get retrospective comment", getErr)
 	}
 
 	attr := request.Body.Attributes
@@ -151,7 +151,7 @@ func (h *retrospectivesHandler) UpdateRetrospectiveComment(ctx context.Context, 
 
 	updated, saveErr := h.retros.SetComment(ctx, comment)
 	if saveErr != nil {
-		return nil, oapi.Error("update retrospective comment", saveErr)
+		return nil, oapi.Error(ctx, "update retrospective comment", saveErr)
 	}
 	resp.Body.Data = oapi.RetrospectiveCommentFromEnt(updated)
 

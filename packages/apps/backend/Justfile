@@ -56,7 +56,7 @@ format:
     just run migrations apply
 
 [working-directory(".")]
-@create-initial-migrations:
+@create-initial-migration:
     rm -f ./internal/postgres/migrations/0001_init*.sql
     rm -f ./internal/postgres/migrations/atlas.sum
     just run migrations update-checksum

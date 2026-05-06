@@ -42,7 +42,7 @@ func (h *teamsHandler) ListTeams(ctx context.Context, request *oapi.ListTeamsReq
 
 	res, queryErr := limitedQuery.All(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("Failed to query teams", queryErr)
+		return nil, oapi.Error(ctx, "Failed to query teams", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.Team, len(res))
@@ -52,7 +52,7 @@ func (h *teamsHandler) ListTeams(ctx context.Context, request *oapi.ListTeamsReq
 
 	count, countErr := query.Count(ctx)
 	if countErr != nil {
-		return nil, oapi.Error("Failed to query teams count", countErr)
+		return nil, oapi.Error(ctx, "Failed to query teams count", countErr)
 	}
 	resp.Body.Pagination.Total = count
 
@@ -68,7 +68,7 @@ func (h *teamsHandler) CreateTeam(ctx context.Context, request *oapi.CreateTeamR
 
 	team, err := query.Save(ctx)
 	if err != nil {
-		return nil, oapi.Error("failed to create team", err)
+		return nil, oapi.Error(ctx, "failed to create team", err)
 	}
 	resp.Body.Data = oapi.TeamFromEnt(team)
 
@@ -84,7 +84,7 @@ func (h *teamsHandler) GetTeam(ctx context.Context, request *oapi.GetTeamRequest
 	}
 	team, queryErr := h.teams.Query().Where(pred).Only(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("failed to get team", queryErr)
+		return nil, oapi.Error(ctx, "failed to get team", queryErr)
 	}
 	resp.Body.Data = oapi.TeamFromEnt(team)
 
@@ -100,7 +100,7 @@ func (h *teamsHandler) UpdateTeam(ctx context.Context, request *oapi.UpdateTeamR
 
 	team, err := query.Save(ctx)
 	if err != nil {
-		return nil, oapi.Error("failed to update team", err)
+		return nil, oapi.Error(ctx, "failed to update team", err)
 	}
 	resp.Body.Data = oapi.TeamFromEnt(team)
 
@@ -112,7 +112,7 @@ func (h *teamsHandler) ArchiveTeam(ctx context.Context, request *oapi.ArchiveTea
 
 	err := h.teams.DeleteOneID(request.Id).Exec(ctx)
 	if err != nil {
-		return nil, oapi.Error("failed to archive team", err)
+		return nil, oapi.Error(ctx, "failed to archive team", err)
 	}
 
 	return &resp, nil
@@ -137,7 +137,7 @@ func (h *teamsHandler) ListTeamMemberships(ctx context.Context, request *oapi.Li
 		Order(teammembership.ByID())
 	res, queryErr := limitedQuery.All(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("failed to query team memberships", queryErr)
+		return nil, oapi.Error(ctx, "failed to query team memberships", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.TeamMembership, len(res))
@@ -147,7 +147,7 @@ func (h *teamsHandler) ListTeamMemberships(ctx context.Context, request *oapi.Li
 
 	count, countErr := query.Count(ctx)
 	if countErr != nil {
-		return nil, oapi.Error("failed to query team memberships count", countErr)
+		return nil, oapi.Error(ctx, "failed to query team memberships count", countErr)
 	}
 	resp.Body.Pagination.Total = count
 
@@ -164,7 +164,7 @@ func (h *teamsHandler) CreateTeamMembership(ctx context.Context, request *oapi.C
 		SetRole(teammembership.Role(attr.Role)).
 		Save(ctx)
 	if createErr != nil {
-		return nil, oapi.Error("failed to create team membership", createErr)
+		return nil, oapi.Error(ctx, "failed to create team membership", createErr)
 	}
 
 	membership, queryErr := h.memberships.Query().
@@ -173,7 +173,7 @@ func (h *teamsHandler) CreateTeamMembership(ctx context.Context, request *oapi.C
 		WithUser().
 		Only(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("failed to query created team membership", queryErr)
+		return nil, oapi.Error(ctx, "failed to query created team membership", queryErr)
 	}
 	resp.Body.Data = oapi.TeamMembershipFromEnt(membership)
 	return &resp, nil
@@ -188,7 +188,7 @@ func (h *teamsHandler) UpdateTeamMembership(ctx context.Context, request *oapi.U
 		query = query.SetRole(teammembership.Role(*attr.Role))
 	}
 	if _, saveErr := query.Save(ctx); saveErr != nil {
-		return nil, oapi.Error("failed to update team membership", saveErr)
+		return nil, oapi.Error(ctx, "failed to update team membership", saveErr)
 	}
 
 	membership, queryErr := h.memberships.Query().
@@ -197,7 +197,7 @@ func (h *teamsHandler) UpdateTeamMembership(ctx context.Context, request *oapi.U
 		WithUser().
 		Only(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error("failed to query updated team membership", queryErr)
+		return nil, oapi.Error(ctx, "failed to query updated team membership", queryErr)
 	}
 	resp.Body.Data = oapi.TeamMembershipFromEnt(membership)
 	return &resp, nil
@@ -207,7 +207,7 @@ func (h *teamsHandler) ArchiveTeamMembership(ctx context.Context, request *oapi.
 	var resp oapi.ArchiveTeamMembershipResponse
 
 	if delErr := h.memberships.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
-		return nil, oapi.Error("failed to archive team membership", delErr)
+		return nil, oapi.Error(ctx, "failed to archive team membership", delErr)
 	}
 	return &resp, nil
 }

@@ -21,7 +21,7 @@ func (h *organizationsHandler) GetOrganization(ctx context.Context, request *oap
 
 	org, orgErr := h.orgs.Get(ctx, organization.ID(request.Id))
 	if orgErr != nil {
-		return nil, oapi.Error("failed to fetch organization", orgErr)
+		return nil, oapi.Error(ctx, "failed to fetch organization", orgErr)
 	}
 	resp.Body.Data = oapi.OrganizationFromEnt(org)
 
@@ -33,12 +33,12 @@ func (h *organizationsHandler) FinishOrganizationSetup(ctx context.Context, requ
 
 	org, orgErr := h.orgs.Get(ctx, organization.ID(request.Id))
 	if orgErr != nil {
-		return nil, oapi.Error("failed to fetch organization", orgErr)
+		return nil, oapi.Error(ctx, "failed to fetch organization", orgErr)
 	}
 
 	completeErr := h.orgs.CompleteSetup(ctx, org)
 	if completeErr != nil {
-		return nil, oapi.Error("failed to finish setup", completeErr)
+		return nil, oapi.Error(ctx, "failed to finish setup", completeErr)
 	}
 
 	return &resp, nil

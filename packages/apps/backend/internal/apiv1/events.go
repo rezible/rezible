@@ -20,7 +20,7 @@ func (h *eventsHandler) GetEvent(ctx context.Context, req *oapi.GetEventRequest)
 
 	event, eventErr := h.events.GetEvent(ctx, req.Id)
 	if eventErr != nil {
-		return nil, oapi.Error("failed to get event", eventErr)
+		return nil, oapi.Error(ctx, "failed to get event", eventErr)
 	}
 	resp.Body.Data = oapi.EventFromEnt(event)
 
@@ -38,7 +38,7 @@ func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequ
 
 	listRes, eventsErr := h.events.ListEvents(ctx, params)
 	if eventsErr != nil {
-		return nil, oapi.Error("failed to query events", eventsErr)
+		return nil, oapi.Error(ctx, "failed to query events", eventsErr)
 	}
 
 	resp.Body.Data = make([]oapi.Event, len(listRes.Data))

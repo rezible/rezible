@@ -8,7 +8,7 @@ import (
 )
 
 func TestLoggerInheritsParentFromContext(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	handler := newTestHandler()
 	parent := slog.New(handler).With("request_id", "req-1")
 	ctx = ContextWithLogger(ctx, parent)
@@ -32,7 +32,7 @@ func TestLoggerInheritsParentFromContext(t *testing.T) {
 }
 
 func TestLoggerMinLevel(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	logger := NewLogger(ctx, WithParentLogger(slog.New(newTestHandler())), WithMinLogLevel(slog.LevelWarn))
 
 	if logger.Enabled(ctx, slog.LevelInfo) {
