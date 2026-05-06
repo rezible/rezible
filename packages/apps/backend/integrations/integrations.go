@@ -10,6 +10,7 @@ import (
 	"runtime"
 
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/rezible/rezible/telemetry"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
@@ -34,6 +35,7 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 	availablePackages = make([]rez.IntegrationPackage, 0, len(availablePackages))
 	packageNameMap = make(map[string]rez.IntegrationPackage)
 	enabledSupportedDataKinds := mapset.NewSet[string]()
+	logger := telemetry.NewLogger(ctx, telemetry.WithLogPackage("integrations"))
 	for _, setupFn := range setupFuncs {
 		pkg, pkgErr := setupFn(ctx, svcs)
 		if pkgErr != nil {
@@ -41,21 +43,17 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 			return fmt.Errorf("%s: %w", funcName, pkgErr)
 		}
 		available, configErr := pkg.IsAvailable()
-		slog.Debug("integration package",
-			"name", pkg.Name(),
-			"configErr", configErr,
-			"available", available,
-		)
-		if !available {
+		if !available || configErr != nil {
+			lvl := slog.LevelInfo
+			logArgs := []string{"name", pkg.Name()}
+			if configErr != nil {
+				lvl = slog.LevelWarn
+				logArgs = append(logArgs, "config_error", configErr.Error())
+			}
+			logger.Log(ctx, lvl, "integration not available", logArgs)
 			continue
 		}
-		if configErr != nil {
-			slog.Error("integration setup error",
-				"error", configErr,
-				"integration", pkg.Name(),
-			)
-			continue
-		}
+		logger.DebugContext(ctx, "loaded integration", "name", pkg.Name())
 		availablePackages = append(availablePackages, pkg)
 		packageNameMap[pkg.Name()] = pkg
 		enabledSupportedDataKinds.Append(pkg.SupportedDataKinds()...)

@@ -3,6 +3,7 @@ package watermill
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill"
@@ -31,7 +32,7 @@ type MessageService struct {
 }
 
 func NewMessageService(ctx context.Context) (*MessageService, error) {
-	logger := telemetry.NewLogger(ctx, telemetry.WithLogPackage("watermill"))
+	logger := telemetry.NewLogger(ctx, telemetry.WithLogPackage("watermill"), telemetry.WithMinLogLevel(slog.LevelWarn))
 	ms := MessageService{
 		logger:     watermill.NewSlogLogger(logger),
 		marshaller: cqrs.JSONMarshaler{GenerateName: cqrs.FullyQualifiedStructName},
@@ -42,7 +43,13 @@ func NewMessageService(ctx context.Context) (*MessageService, error) {
 		return nil, fmt.Errorf("failed initializing message pubsub: %w", pubSubErr)
 	}
 
-	poison, poisonErr := ms.setupPoisonQueue(pub, sub)
+	router, routerErr := message.NewRouter(message.RouterConfig{CloseTimeout: time.Second * 5}, ms.logger)
+	if routerErr != nil {
+		return nil, fmt.Errorf("failed initializing message router: %w", routerErr)
+	}
+	ms.router = router
+
+	poison, poisonErr := ms.setupPoisonQueue(router, pub, sub)
 	if poisonErr != nil {
 		return nil, fmt.Errorf("failed to setup poison queue: %w", poisonErr)
 	}
@@ -53,11 +60,6 @@ func NewMessageService(ctx context.Context) (*MessageService, error) {
 		Logger:          ms.logger,
 	}
 
-	var routerErr error
-	ms.router, routerErr = message.NewRouter(message.RouterConfig{CloseTimeout: time.Second * 5}, ms.logger)
-	if routerErr != nil {
-		return nil, fmt.Errorf("failed initializing message router: %w", routerErr)
-	}
 	ms.router.AddMiddleware(
 		middleware.CorrelationID,
 		middleware.NewThrottle(10, time.Second).Middleware,

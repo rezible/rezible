@@ -61,7 +61,7 @@ func (ms *MessageService) addPublisherDecorations(base message.Publisher) (messa
 	return pub, nil
 }
 
-func (ms *MessageService) setupPoisonQueue(pub message.Publisher, sub message.Subscriber) (message.HandlerMiddleware, error) {
+func (ms *MessageService) setupPoisonQueue(router *message.Router, pub message.Publisher, sub message.Subscriber) (message.HandlerMiddleware, error) {
 	messagesPoisoned := telemetry.Int64CounterInstrument(telemetry.DefaultMeter(), "backend.messages.poisoned",
 		"Watermill messages sent to the poison queue")
 
@@ -74,9 +74,9 @@ func (ms *MessageService) setupPoisonQueue(pub message.Publisher, sub message.Su
 	if poisonErr != nil {
 		return nil, fmt.Errorf("failed initializing poison queue: %w", poisonErr)
 	}
-	ms.router.AddConsumerHandler("PoisonQueueLogger", poisonQueueTopic, sub, func(msg *message.Message) error {
+	router.AddConsumerHandler("PoisonQueueLogger", poisonQueueTopic, sub, func(msg *message.Message) error {
 		messagesPoisoned.Add(msg.Context(), 1)
-		ms.logger.Info("message sent to poison queue", watermill.LogFields{"uuid": msg.UUID})
+		router.Logger().Info("message sent to poison queue", watermill.LogFields{"uuid": msg.UUID})
 		return nil
 	})
 
