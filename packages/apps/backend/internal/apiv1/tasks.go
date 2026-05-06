@@ -29,7 +29,7 @@ func (h *tasksHandler) ListTasks(ctx context.Context, request *oapi.ListTasksReq
 
 	tasks, queryErr := query.All(ctx)
 	if queryErr != nil {
-		return nil, oapi.Error(ctx, nil, "failed to fetch tasks", queryErr)
+		return nil, oapi.Error(ctx, "failed to fetch tasks", queryErr)
 	}
 
 	resp.Body.Data = make([]oapi.Task, len(tasks))

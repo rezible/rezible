@@ -25,7 +25,7 @@ func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *
 
 	analysis, queryErr := s.components.GetSystemAnalysis(ctx, request.Id)
 	if queryErr != nil {
-		return nil, oapi.Error(ctx, nil, "failed to get system analysis", queryErr)
+		return nil, oapi.Error(ctx, "failed to get system analysis", queryErr)
 	}
 	resp.Body.Data = oapi.SystemAnalysisFromEnt(analysis)
 
