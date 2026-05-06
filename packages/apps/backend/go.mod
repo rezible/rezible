@@ -10,6 +10,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.17.0
 	github.com/danielgtaylor/huma/v2 v2.37.3
 	github.com/deckarep/golang-set/v2 v2.8.0
+	github.com/dentech-floss/watermill-opentelemetry-go-extra v0.1.2
 	github.com/go-chi/chi/v5 v5.2.5
 	github.com/go-chi/httplog/v3 v3.3.0
 	github.com/go-faker/faker/v4 v4.7.0
@@ -28,6 +29,7 @@ require (
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.35.1
 	github.com/riverqueue/river/rivershared v0.35.1
 	github.com/riverqueue/river/rivertype v0.35.1
+	github.com/riverqueue/rivercontrib/otelriver v0.7.0
 	github.com/rotisserie/eris v0.5.4
 	github.com/slack-go/slack v0.20.0
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
@@ -35,10 +37,12 @@ require (
 	github.com/stretchr/testify v1.11.1
 	github.com/texm/prosemirror-go v0.0.0-20241205030628-c6d58982acfd
 	github.com/urfave/cli/v3 v3.8.0
+	github.com/voi-oss/watermill-opentelemetry v0.1.3
 	go.opentelemetry.io/contrib/instrumentation/runtime v0.68.0
 	go.opentelemetry.io/otel v1.43.0
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.43.0
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.43.0
+	go.opentelemetry.io/otel/log v0.19.0
 	go.opentelemetry.io/otel/metric v1.43.0
 	go.opentelemetry.io/otel/sdk v1.43.0
 	go.opentelemetry.io/otel/sdk/metric v1.43.0
@@ -68,7 +72,6 @@ require (
 	github.com/chigopher/pathlib v1.0.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dentech-floss/watermill-opentelemetry-go-extra v0.1.2 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -121,7 +124,6 @@ require (
 	github.com/mitchellh/mapstructure v1.5.1-0.20231216201459-8508981c8b6c // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
-	github.com/nkonev/watermill-opentelemetry v0.1.11 // indirect
 	github.com/oklog/ulid v1.3.1 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
@@ -130,7 +132,6 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
 	github.com/riverqueue/river/cmd/river v0.31.0 // indirect
 	github.com/riverqueue/river/riverdriver/riversqlite v0.31.0 // indirect
-	github.com/riverqueue/rivercontrib/otelriver v0.7.0 // indirect
 	github.com/rs/zerolog v1.35.0 // indirect
 	github.com/sony/gobreaker v1.0.0 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
@@ -148,7 +149,6 @@ require (
 	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/vektra/mockery/v2 v2.28.0 // indirect
 	github.com/vektra/mockery/v3 v3.7.0 // indirect
-	github.com/voi-oss/watermill-opentelemetry v0.1.3 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
@@ -157,7 +157,6 @@ require (
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.67.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.43.0 // indirect
-	go.opentelemetry.io/otel/log v0.19.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
 	go.uber.org/goleak v1.3.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
