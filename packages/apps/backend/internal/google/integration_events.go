@@ -30,14 +30,18 @@ func (i *integration) registerMessageHandlers() error {
 }
 
 func (h *eventHandler) withConfiguredIntegration(ctx context.Context, fn func(*ConfiguredIntegration) error) error {
-	intg, lookupErr := h.services.Integrations.GetConfigured(ctx, integrationName)
+	intgs, lookupErr := h.services.Integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return nil
 		}
 		return fmt.Errorf("error looking up integration: %w", lookupErr)
 	}
-	if ci, ok := intg.(*ConfiguredIntegration); ok {
+	if len(intgs) == 0 {
+		return nil
+	}
+	// TODO: handle multiple installations
+	if ci, ok := intgs[0].(*ConfiguredIntegration); ok {
 		return fn(ci)
 	}
 	return fmt.Errorf("invalid configured integration: %w", lookupErr)

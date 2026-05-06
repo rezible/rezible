@@ -5,18 +5,25 @@
 
 	const ctrl = useIntegrationConfigController();
 
-	const parsedConfig = $derived<Record<string, any>>(ctrl.configured?.attributes.config || {});
-	const team = $derived(parsedConfig?.team?.name);
+	const teams = $derived(
+		ctrl.configured.map((configured) => {
+			const config = configured.attributes.config as Record<string, any>;
+			return {
+				id: configured.id,
+				name: config?.team?.name ?? configured.attributes.displayName,
+			};
+		})
+	);
 </script>
 
-{#if ctrl.configured}
+{#if ctrl.hasConfigured}
 	<Alert.Root>
 		<Alert.Title>Slack connected</Alert.Title>
 		<Alert.Description class="flex items-center gap-2">
 			<span>Authentication is configured via OAuth.</span>
-			{#if team}
-				<Badge variant="secondary">{team}</Badge>
-			{/if}
+			{#each teams as team (team.id)}
+				<Badge variant="secondary">{team.name}</Badge>
+			{/each}
 		</Alert.Description>
 	</Alert.Root>
 {:else}

@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/google/uuid"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
 
@@ -182,9 +183,12 @@ func getTeamInfoFromTokenData(tokenData any) (map[string]any, error) {
 	return data, nil
 }
 
-func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (map[string]any, error) {
+func (i *integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez.ExternalIntegrationOption, error) {
 	if scopesErr := validateOauthTokenScopes(t); scopesErr != nil {
 		return nil, scopesErr
+	}
+	if isEnterprise, ok := t.Extra("is_enterprise_install").(bool); ok && isEnterprise {
+		return nil, fmt.Errorf("slack enterprise org-wide installs are not supported yet")
 	}
 
 	cfg := objx.Map{}
@@ -214,7 +218,13 @@ func (i *integration) ExtractIntegrationConfigFromToken(t *oauth2.Token) (map[st
 		cfg.Set(configWebhookChannelId, channelId.String())
 	}
 
-	return cfg, nil
+	teamID, _ := team["id"].(string)
+	teamName, _ := team["name"].(string)
+	return []rez.ExternalIntegrationOption{{
+		ExternalRef: teamID,
+		DisplayName: teamName,
+		Config:      cfg,
+	}}, nil
 }
 
 func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
@@ -284,8 +294,20 @@ type incidentPreferences struct {
 	InviteMode                string
 }
 
-func (ci *ConfiguredIntegration) Name() string {
-	return integrationName
+func (ci *ConfiguredIntegration) ID() uuid.UUID {
+	return ci.intg.ID
+}
+
+func (ci *ConfiguredIntegration) Provider() string {
+	return ci.intg.Provider
+}
+
+func (ci *ConfiguredIntegration) DisplayName() string {
+	return ci.intg.DisplayName
+}
+
+func (ci *ConfiguredIntegration) ExternalRef() string {
+	return ci.intg.ExternalRef
 }
 
 func (ci *ConfiguredIntegration) GetSanitizedConfig() map[string]any {
@@ -336,8 +358,11 @@ func (i installIds) configValues() map[string]any {
 
 func lookupTenantIntegration(ctx context.Context, integrations rez.IntegrationsService, ids installIds) (*ConfiguredIntegration, error) {
 	params := rez.ListIntegrationsParams{
-		Names:        []string{integrationName},
+		Providers:    []string{integrationName},
 		ConfigValues: ids.configValues(),
+	}
+	if ids.TeamId != "" {
+		params.ExternalRefs = []string{ids.TeamId}
 	}
 	intgs, listErr := integrations.ListConfigured(execution.SystemContext(ctx), params)
 	if listErr != nil {

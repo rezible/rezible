@@ -75,11 +75,6 @@ func (s *Syncer) syncTenantIntegrations(ctx context.Context, tenantId int, opts 
 }
 
 func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts SyncOptions) error {
-	names := make([]string, len(intgs))
-	for i, intg := range intgs {
-		names[i] = intg.Name
-	}
-
 	usersProvs, usersErr := integrations.GetUserDataProviders(ctx, intgs)
 	if usersErr != nil {
 		slog.Error("failed to load user data providers", "error", usersErr)

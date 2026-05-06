@@ -1,16 +1,14 @@
 <script lang="ts">
-	import type { 
-		ConfiguredIntegration,
-		ConfigureIntegrationRequestBody,
-		AvailableIntegration,
-	} from '$lib/api';
+	import type { AvailableIntegration } from "$lib/api";
 
 	import * as Card from "$components/ui/card";
 	import { Badge } from "$components/ui/badge";
 	import { Button } from "$components/ui/button";
-	import { initIntegrationConfigController } from './controller.svelte';
-	import InlineAlert from '$src/components/inline-alert/InlineAlert.svelte';
-	import Spinner from '$src/components/ui/spinner/spinner.svelte';
+	import { initIntegrationConfigController } from "./controller.svelte";
+	import InlineAlert from "$src/components/inline-alert/InlineAlert.svelte";
+	import Spinner from "$src/components/ui/spinner/spinner.svelte";
+	import RiGithubFill from "remixicon-svelte/icons/github-fill";
+	import { Checkbox } from "$components/ui/checkbox";
 
 	type Props = {
 		integration: AvailableIntegration;
@@ -22,9 +20,20 @@
 
 {#snippet oauthFlowButtonContent()}
 	{#if ctrl.name === "slack"}
-	<img alt="Add to Slack" width="139px" height="40px"
-		src="https://platform.slack-edge.com/img/add_to_slack.png" 
-		srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x" />
+		<img
+			alt="Add to Slack"
+			width="139px"
+			height="40px"
+			src="https://platform.slack-edge.com/img/add_to_slack.png"
+			srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
+		/>
+	{:else if ctrl.name === "github"}
+		<span
+			class="inline-flex h-10 items-center gap-2 rounded-md bg-foreground px-4 text-sm font-medium text-background"
+		>
+			<RiGithubFill class="size-5" />
+			Connect GitHub
+		</span>
 	{:else}
 		<span>Start OAuth Flow</span>
 	{/if}
@@ -39,14 +48,16 @@
 					<div class="flex items-center gap-2 text-sm text-muted-foreground">
 						<span>Enabled:</span>
 						<div class="flex flex-wrap gap-2">
-							{#each ctrl.enabledDataKinds as kind}
+							{#each ctrl.enabledDataKinds as kind (kind)}
 								<Badge variant="secondary">{kind}</Badge>
 							{/each}
 						</div>
 					</div>
 				{/if}
 			</div>
-			<Badge variant={ctrl.configured ? "secondary" : "outline"}>{ctrl.configured ? "Configured" : "Not configured"}</Badge>
+			<Badge variant={ctrl.hasConfigured ? "secondary" : "outline"}
+				>{ctrl.hasConfigured ? `${ctrl.configured.length} configured` : "Not configured"}</Badge
+			>
 		</div>
 	</Card.Header>
 
@@ -55,23 +66,90 @@
 			<InlineAlert bind:error={ctrl.configError} />
 		{/if}
 
-		{#if integration.oauthRequired && !ctrl.configured}
+		{#if ctrl.selectionRequired}
+			<div class="flex flex-col gap-3 rounded-md border p-3">
+				<div class="flex flex-col gap-1">
+					<span class="text-sm font-medium">Select installations</span>
+					<span class="text-sm text-muted-foreground">Choose which accounts to connect.</span>
+				</div>
+				<div class="flex flex-col gap-2">
+					{#each ctrl.selectionOptions as option (option.externalRef)}
+						<label class="flex items-center gap-3 rounded-md border p-3 text-sm">
+							<Checkbox
+								checked={ctrl.isSelected(option.externalRef)}
+								onCheckedChange={(checked) => ctrl.toggleSelection(option.externalRef, checked === true)}
+							/>
+							<span class="flex flex-col">
+								<span class="font-medium">{option.displayName}</span>
+								<span class="text-muted-foreground">{option.externalRef}</span>
+							</span>
+						</label>
+					{/each}
+				</div>
+				<Button
+					disabled={ctrl.loading || ctrl.selectedExternalRefs.size === 0}
+					onclick={() => ctrl.selectOAuthOptions()}
+				>
+					{#if ctrl.loading}
+						<Spinner />
+					{/if}
+					Connect selected
+				</Button>
+			</div>
+		{:else if integration.oauthRequired && !ctrl.hasConfigured}
 			<div class="place-self-center">
-				<Button onclick={() => {ctrl.startOAuthFlow()}} variant="ghost" class="w-fit h-fit cursor-pointer p-0">
+				<Button
+					onclick={() => {
+						ctrl.startOAuthFlow();
+					}}
+					variant="ghost"
+					class="w-fit h-fit cursor-pointer p-0"
+				>
 					{@render oauthFlowButtonContent()}
 				</Button>
 			</div>
 		{:else}
+			{#if ctrl.hasConfigured}
+				<div class="flex flex-col gap-2">
+					{#each ctrl.configured as configured (configured.id)}
+						<div class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
+							<div class="min-w-0">
+								<div class="truncate font-medium">{configured.attributes.displayName}</div>
+								<div class="truncate text-muted-foreground">{configured.attributes.externalRef}</div>
+							</div>
+							<div class="flex flex-wrap justify-end gap-1">
+								{#each Object.entries(configured.attributes.dataKinds).filter(([, enabled]) => enabled) as [kind] (kind)}
+									<Badge variant="secondary">{kind}</Badge>
+								{/each}
+							</div>
+						</div>
+					{/each}
+				</div>
+			{/if}
+
 			<ctrl.Component />
 
-			<Button disabled={!ctrl.hasChanges || ctrl.loading}>
-				{#if ctrl.loading}
-					<Spinner />
-					Saving...
-				{:else}
-					Save
+			<div class="flex flex-wrap gap-2">
+				{#if integration.oauthRequired}
+					<Button
+						onclick={() => {
+							ctrl.startOAuthFlow();
+						}}
+						variant="outline"
+						disabled={ctrl.loading}
+					>
+						Connect another
+					</Button>
 				{/if}
-			</Button>
+				<Button disabled={!ctrl.hasChanges || ctrl.loading} onclick={() => ctrl.save()}>
+					{#if ctrl.loading}
+						<Spinner />
+						Saving...
+					{:else}
+						Save
+					{/if}
+				</Button>
+			</div>
 		{/if}
 	</Card.Content>
 </Card.Root>

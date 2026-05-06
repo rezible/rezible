@@ -59,9 +59,21 @@ func (_c *IntegrationCreate) SetNillableUpdatedAt(v *time.Time) *IntegrationCrea
 	return _c
 }
 
-// SetName sets the "name" field.
-func (_c *IntegrationCreate) SetName(v string) *IntegrationCreate {
-	_c.mutation.SetName(v)
+// SetProvider sets the "provider" field.
+func (_c *IntegrationCreate) SetProvider(v string) *IntegrationCreate {
+	_c.mutation.SetProvider(v)
+	return _c
+}
+
+// SetDisplayName sets the "display_name" field.
+func (_c *IntegrationCreate) SetDisplayName(v string) *IntegrationCreate {
+	_c.mutation.SetDisplayName(v)
+	return _c
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (_c *IntegrationCreate) SetExternalRef(v string) *IntegrationCreate {
+	_c.mutation.SetExternalRef(v)
 	return _c
 }
 
@@ -172,8 +184,14 @@ func (_c *IntegrationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Integration.updated_at"`)}
 	}
-	if _, ok := _c.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Integration.name"`)}
+	if _, ok := _c.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "Integration.provider"`)}
+	}
+	if _, ok := _c.mutation.DisplayName(); !ok {
+		return &ValidationError{Name: "display_name", err: errors.New(`ent: missing required field "Integration.display_name"`)}
+	}
+	if _, ok := _c.mutation.ExternalRef(); !ok {
+		return &ValidationError{Name: "external_ref", err: errors.New(`ent: missing required field "Integration.external_ref"`)}
 	}
 	if _, ok := _c.mutation.Config(); !ok {
 		return &ValidationError{Name: "config", err: errors.New(`ent: missing required field "Integration.config"`)}
@@ -226,9 +244,17 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Name(); ok {
-		_spec.SetField(integration.FieldName, field.TypeString, value)
-		_node.Name = value
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(integration.FieldProvider, field.TypeString, value)
+		_node.Provider = value
+	}
+	if value, ok := _c.mutation.DisplayName(); ok {
+		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
+		_node.DisplayName = value
+	}
+	if value, ok := _c.mutation.ExternalRef(); ok {
+		_spec.SetField(integration.FieldExternalRef, field.TypeString, value)
+		_node.ExternalRef = value
 	}
 	if value, ok := _c.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
@@ -332,15 +358,39 @@ func (u *IntegrationUpsert) UpdateUpdatedAt() *IntegrationUpsert {
 	return u
 }
 
-// SetName sets the "name" field.
-func (u *IntegrationUpsert) SetName(v string) *IntegrationUpsert {
-	u.Set(integration.FieldName, v)
+// SetProvider sets the "provider" field.
+func (u *IntegrationUpsert) SetProvider(v string) *IntegrationUpsert {
+	u.Set(integration.FieldProvider, v)
 	return u
 }
 
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *IntegrationUpsert) UpdateName() *IntegrationUpsert {
-	u.SetExcluded(integration.FieldName)
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateProvider() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldProvider)
+	return u
+}
+
+// SetDisplayName sets the "display_name" field.
+func (u *IntegrationUpsert) SetDisplayName(v string) *IntegrationUpsert {
+	u.Set(integration.FieldDisplayName, v)
+	return u
+}
+
+// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateDisplayName() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldDisplayName)
+	return u
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (u *IntegrationUpsert) SetExternalRef(v string) *IntegrationUpsert {
+	u.Set(integration.FieldExternalRef, v)
+	return u
+}
+
+// UpdateExternalRef sets the "external_ref" field to the value that was provided on create.
+func (u *IntegrationUpsert) UpdateExternalRef() *IntegrationUpsert {
+	u.SetExcluded(integration.FieldExternalRef)
 	return u
 }
 
@@ -453,17 +503,45 @@ func (u *IntegrationUpsertOne) UpdateUpdatedAt() *IntegrationUpsertOne {
 	})
 }
 
-// SetName sets the "name" field.
-func (u *IntegrationUpsertOne) SetName(v string) *IntegrationUpsertOne {
+// SetProvider sets the "provider" field.
+func (u *IntegrationUpsertOne) SetProvider(v string) *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetName(v)
+		s.SetProvider(v)
 	})
 }
 
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *IntegrationUpsertOne) UpdateName() *IntegrationUpsertOne {
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateProvider() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateName()
+		s.UpdateProvider()
+	})
+}
+
+// SetDisplayName sets the "display_name" field.
+func (u *IntegrationUpsertOne) SetDisplayName(v string) *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetDisplayName(v)
+	})
+}
+
+// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateDisplayName() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateDisplayName()
+	})
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (u *IntegrationUpsertOne) SetExternalRef(v string) *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetExternalRef(v)
+	})
+}
+
+// UpdateExternalRef sets the "external_ref" field to the value that was provided on create.
+func (u *IntegrationUpsertOne) UpdateExternalRef() *IntegrationUpsertOne {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateExternalRef()
 	})
 }
 
@@ -748,17 +826,45 @@ func (u *IntegrationUpsertBulk) UpdateUpdatedAt() *IntegrationUpsertBulk {
 	})
 }
 
-// SetName sets the "name" field.
-func (u *IntegrationUpsertBulk) SetName(v string) *IntegrationUpsertBulk {
+// SetProvider sets the "provider" field.
+func (u *IntegrationUpsertBulk) SetProvider(v string) *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.SetName(v)
+		s.SetProvider(v)
 	})
 }
 
-// UpdateName sets the "name" field to the value that was provided on create.
-func (u *IntegrationUpsertBulk) UpdateName() *IntegrationUpsertBulk {
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateProvider() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateName()
+		s.UpdateProvider()
+	})
+}
+
+// SetDisplayName sets the "display_name" field.
+func (u *IntegrationUpsertBulk) SetDisplayName(v string) *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetDisplayName(v)
+	})
+}
+
+// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateDisplayName() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateDisplayName()
+	})
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (u *IntegrationUpsertBulk) SetExternalRef(v string) *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.SetExternalRef(v)
+	})
+}
+
+// UpdateExternalRef sets the "external_ref" field to the value that was provided on create.
+func (u *IntegrationUpsertBulk) UpdateExternalRef() *IntegrationUpsertBulk {
+	return u.Update(func(s *IntegrationUpsert) {
+		s.UpdateExternalRef()
 	})
 }
 

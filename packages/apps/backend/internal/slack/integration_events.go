@@ -118,14 +118,18 @@ func (h *eventHandler) withChatService(ctx context.Context, ids installIds, fn f
 }
 
 func (h *eventHandler) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
-	intg, lookupErr := h.services.Integrations.GetConfigured(ctx, integrationName)
+	intgs, lookupErr := h.services.Integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return nil
 		}
 		return fmt.Errorf("getting configured integration: %w", lookupErr)
 	}
-	ci, ok := intg.(*ConfiguredIntegration)
+	// TODO: handle multiple installations
+	if len(intgs) == 0 {
+		return nil
+	}
+	ci, ok := intgs[0].(*ConfiguredIntegration)
 	if !ok {
 		return fmt.Errorf("failed to cast to *ConfiguredIntegration")
 	}

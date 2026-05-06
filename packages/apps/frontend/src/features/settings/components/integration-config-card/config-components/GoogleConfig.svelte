@@ -50,7 +50,7 @@
 </script>
 
 <div class="flex flex-col gap-3">
-	{#if ctrl.configured}
+	{#if ctrl.hasConfigured}
 		<div class="flex items-center justify-between rounded-md border p-3">
 			<div class="flex flex-col gap-1">
 				<Label for="google-video-conference-toggle">Enable incident video conferences</Label>

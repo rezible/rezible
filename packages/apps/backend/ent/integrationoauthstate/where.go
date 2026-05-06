@@ -72,9 +72,9 @@ func State(v string) predicate.IntegrationOAuthState {
 	return predicate.IntegrationOAuthState(sql.FieldEQ(FieldState, v))
 }
 
-// IntegrationName applies equality check predicate on the "integration_name" field. It's identical to IntegrationNameEQ.
-func IntegrationName(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldEQ(FieldIntegrationName, v))
+// Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
+func Provider(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldEQ(FieldProvider, v))
 }
 
 // ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
@@ -187,69 +187,79 @@ func StateContainsFold(v string) predicate.IntegrationOAuthState {
 	return predicate.IntegrationOAuthState(sql.FieldContainsFold(FieldState, v))
 }
 
-// IntegrationNameEQ applies the EQ predicate on the "integration_name" field.
-func IntegrationNameEQ(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldEQ(FieldIntegrationName, v))
+// ProviderEQ applies the EQ predicate on the "provider" field.
+func ProviderEQ(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldEQ(FieldProvider, v))
 }
 
-// IntegrationNameNEQ applies the NEQ predicate on the "integration_name" field.
-func IntegrationNameNEQ(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldNEQ(FieldIntegrationName, v))
+// ProviderNEQ applies the NEQ predicate on the "provider" field.
+func ProviderNEQ(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldNEQ(FieldProvider, v))
 }
 
-// IntegrationNameIn applies the In predicate on the "integration_name" field.
-func IntegrationNameIn(vs ...string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldIn(FieldIntegrationName, vs...))
+// ProviderIn applies the In predicate on the "provider" field.
+func ProviderIn(vs ...string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldIn(FieldProvider, vs...))
 }
 
-// IntegrationNameNotIn applies the NotIn predicate on the "integration_name" field.
-func IntegrationNameNotIn(vs ...string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldNotIn(FieldIntegrationName, vs...))
+// ProviderNotIn applies the NotIn predicate on the "provider" field.
+func ProviderNotIn(vs ...string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldNotIn(FieldProvider, vs...))
 }
 
-// IntegrationNameGT applies the GT predicate on the "integration_name" field.
-func IntegrationNameGT(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldGT(FieldIntegrationName, v))
+// ProviderGT applies the GT predicate on the "provider" field.
+func ProviderGT(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldGT(FieldProvider, v))
 }
 
-// IntegrationNameGTE applies the GTE predicate on the "integration_name" field.
-func IntegrationNameGTE(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldGTE(FieldIntegrationName, v))
+// ProviderGTE applies the GTE predicate on the "provider" field.
+func ProviderGTE(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldGTE(FieldProvider, v))
 }
 
-// IntegrationNameLT applies the LT predicate on the "integration_name" field.
-func IntegrationNameLT(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldLT(FieldIntegrationName, v))
+// ProviderLT applies the LT predicate on the "provider" field.
+func ProviderLT(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldLT(FieldProvider, v))
 }
 
-// IntegrationNameLTE applies the LTE predicate on the "integration_name" field.
-func IntegrationNameLTE(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldLTE(FieldIntegrationName, v))
+// ProviderLTE applies the LTE predicate on the "provider" field.
+func ProviderLTE(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldLTE(FieldProvider, v))
 }
 
-// IntegrationNameContains applies the Contains predicate on the "integration_name" field.
-func IntegrationNameContains(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldContains(FieldIntegrationName, v))
+// ProviderContains applies the Contains predicate on the "provider" field.
+func ProviderContains(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldContains(FieldProvider, v))
 }
 
-// IntegrationNameHasPrefix applies the HasPrefix predicate on the "integration_name" field.
-func IntegrationNameHasPrefix(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldHasPrefix(FieldIntegrationName, v))
+// ProviderHasPrefix applies the HasPrefix predicate on the "provider" field.
+func ProviderHasPrefix(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldHasPrefix(FieldProvider, v))
 }
 
-// IntegrationNameHasSuffix applies the HasSuffix predicate on the "integration_name" field.
-func IntegrationNameHasSuffix(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldHasSuffix(FieldIntegrationName, v))
+// ProviderHasSuffix applies the HasSuffix predicate on the "provider" field.
+func ProviderHasSuffix(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldHasSuffix(FieldProvider, v))
 }
 
-// IntegrationNameEqualFold applies the EqualFold predicate on the "integration_name" field.
-func IntegrationNameEqualFold(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldEqualFold(FieldIntegrationName, v))
+// ProviderEqualFold applies the EqualFold predicate on the "provider" field.
+func ProviderEqualFold(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldEqualFold(FieldProvider, v))
 }
 
-// IntegrationNameContainsFold applies the ContainsFold predicate on the "integration_name" field.
-func IntegrationNameContainsFold(v string) predicate.IntegrationOAuthState {
-	return predicate.IntegrationOAuthState(sql.FieldContainsFold(FieldIntegrationName, v))
+// ProviderContainsFold applies the ContainsFold predicate on the "provider" field.
+func ProviderContainsFold(v string) predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldContainsFold(FieldProvider, v))
+}
+
+// SelectionOptionsIsNil applies the IsNil predicate on the "selection_options" field.
+func SelectionOptionsIsNil() predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldIsNull(FieldSelectionOptions))
+}
+
+// SelectionOptionsNotNil applies the NotNil predicate on the "selection_options" field.
+func SelectionOptionsNotNil() predicate.IntegrationOAuthState {
+	return predicate.IntegrationOAuthState(sql.FieldNotNull(FieldSelectionOptions))
 }
 
 // ExpiresAtEQ applies the EQ predicate on the "expires_at" field.

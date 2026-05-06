@@ -75,7 +75,10 @@ func (s *Server) makeLoggerMiddleware() func(http.Handler) http.Handler {
 func (s *Server) makeApiHandler(auth rez.AuthSessionService, v1h oapiv1.Handler) http.Handler {
 	r := chi.NewRouter()
 	r.Get(healthCheckPath, s.makeHealthCheckHandler())
-	r.Mount(oapiv1.VersionPrefix, oapiv1.MakeApi(v1h, auth).Adapter())
+	api := oapiv1.MakeApi(v1h,
+		oapiv1.MakeAPITelemetryMiddleware(),
+		oapiv1.MakeSecurityMiddleware(auth))
+	r.Mount(oapiv1.VersionPrefix, api.Adapter())
 	r.Mount("/auth", auth.AuthHandler())
 	r.Mount("/webhooks", s.makeWebhooksHandler())
 	if s.cfg.DocumentsProxy.Enabled {

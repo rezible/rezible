@@ -62,24 +62,26 @@ func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
 	}
 }
 
-func MakeSecurityMiddleware(api openapi.API, auth rez.AuthSessionService) openapi.Middleware {
+func MakeSecurityMiddleware(auth rez.AuthSessionService) openapi.Middleware {
 	return func(c openapi.Context, next func(openapi.Context)) {
-		authCtx, authCtxErr := createRequestAuthContext(c, auth)
+		r, w := humago.Unwrap(c)
+		authCtx, authCtxErr := createRequestAuthContext(c, r, auth)
 		if authCtxErr != nil {
-			writeAuthStatusError(api, c, authCtxErr)
+			authErr := convertAuthStatusError(authCtxErr)
+			http.Error(w, authErr.Error(), authErr.GetStatus())
 			return
 		}
 		next(authCtx)
 	}
 }
 
-func createRequestAuthContext(c huma.Context, auth rez.AuthSessionService) (huma.Context, error) {
+func createRequestAuthContext(c huma.Context, r *http.Request, auth rez.AuthSessionService) (huma.Context, error) {
 	opSecurity := c.Operation().Security
 	isExplicitNoSecurity := opSecurity != nil && len(opSecurity) == 0
 	if isExplicitNoSecurity {
 		return c, nil
 	}
-	token, scopes := extractRequestAuth(c, opSecurity)
+	token, scopes := extractRequestAuth(r, opSecurity)
 	if token == "" {
 		return nil, rez.ErrAuthSessionMissing
 	}
@@ -89,11 +91,13 @@ func createRequestAuthContext(c huma.Context, auth rez.AuthSessionService) (huma
 	}
 
 	authCtx, ctxErr := auth.Authenticate(c.Context(), token)
-	return huma.WithContext(c, authCtx), ctxErr
+	if ctxErr != nil {
+		return nil, ctxErr
+	}
+	return huma.WithContext(c, authCtx), nil
 }
 
-func extractRequestAuth(c huma.Context, opSec SecurityMethods) (string, []string) {
-	r, _ := humago.Unwrap(c)
+func extractRequestAuth(r *http.Request, opSec SecurityMethods) (string, []string) {
 	if opSec == nil {
 		opSec = ApiSecurityMethods
 	}
@@ -132,12 +136,12 @@ func GetRequestApiTokenValue(r *http.Request) string {
 	return ""
 }
 
-func writeAuthStatusError(api huma.API, c huma.Context, err error) {
-	authErr := convertAuthStatusError(err)
-	if writeErr := huma.WriteErr(api, c, authErr.GetStatus(), authErr.Error()); writeErr != nil {
-		slog.Error("failed to write api error response", "error", writeErr)
-	}
-}
+//func writeAuthStatusError(w http.ResponseWriter, err error) {
+//	authErr := convertAuthStatusError(err)
+//	if writeErr := huma.WriteErr(api, c, authErr.GetStatus(), authErr.Error()); writeErr != nil {
+//		slog.Error("failed to write api error response", "error", writeErr)
+//	}
+//}
 
 func convertAuthStatusError(err error) huma.StatusError {
 	if errors.Is(err, rez.ErrAuthSessionMissing) {

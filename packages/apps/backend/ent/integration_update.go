@@ -50,16 +50,44 @@ func (_u *IntegrationUpdate) SetUpdatedAt(v time.Time) *IntegrationUpdate {
 	return _u
 }
 
-// SetName sets the "name" field.
-func (_u *IntegrationUpdate) SetName(v string) *IntegrationUpdate {
-	_u.mutation.SetName(v)
+// SetProvider sets the "provider" field.
+func (_u *IntegrationUpdate) SetProvider(v string) *IntegrationUpdate {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableName(v *string) *IntegrationUpdate {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableProvider(v *string) *IntegrationUpdate {
 	if v != nil {
-		_u.SetName(*v)
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// SetDisplayName sets the "display_name" field.
+func (_u *IntegrationUpdate) SetDisplayName(v string) *IntegrationUpdate {
+	_u.mutation.SetDisplayName(v)
+	return _u
+}
+
+// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableDisplayName(v *string) *IntegrationUpdate {
+	if v != nil {
+		_u.SetDisplayName(*v)
+	}
+	return _u
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (_u *IntegrationUpdate) SetExternalRef(v string) *IntegrationUpdate {
+	_u.mutation.SetExternalRef(v)
+	return _u
+}
+
+// SetNillableExternalRef sets the "external_ref" field if the given value is not nil.
+func (_u *IntegrationUpdate) SetNillableExternalRef(v *string) *IntegrationUpdate {
+	if v != nil {
+		_u.SetExternalRef(*v)
 	}
 	return _u
 }
@@ -161,8 +189,14 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Name(); ok {
-		_spec.SetField(integration.FieldName, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(integration.FieldProvider, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DisplayName(); ok {
+		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ExternalRef(); ok {
+		_spec.SetField(integration.FieldExternalRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)
@@ -217,16 +251,44 @@ func (_u *IntegrationUpdateOne) SetUpdatedAt(v time.Time) *IntegrationUpdateOne 
 	return _u
 }
 
-// SetName sets the "name" field.
-func (_u *IntegrationUpdateOne) SetName(v string) *IntegrationUpdateOne {
-	_u.mutation.SetName(v)
+// SetProvider sets the "provider" field.
+func (_u *IntegrationUpdateOne) SetProvider(v string) *IntegrationUpdateOne {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableName(v *string) *IntegrationUpdateOne {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableProvider(v *string) *IntegrationUpdateOne {
 	if v != nil {
-		_u.SetName(*v)
+		_u.SetProvider(*v)
+	}
+	return _u
+}
+
+// SetDisplayName sets the "display_name" field.
+func (_u *IntegrationUpdateOne) SetDisplayName(v string) *IntegrationUpdateOne {
+	_u.mutation.SetDisplayName(v)
+	return _u
+}
+
+// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableDisplayName(v *string) *IntegrationUpdateOne {
+	if v != nil {
+		_u.SetDisplayName(*v)
+	}
+	return _u
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (_u *IntegrationUpdateOne) SetExternalRef(v string) *IntegrationUpdateOne {
+	_u.mutation.SetExternalRef(v)
+	return _u
+}
+
+// SetNillableExternalRef sets the "external_ref" field if the given value is not nil.
+func (_u *IntegrationUpdateOne) SetNillableExternalRef(v *string) *IntegrationUpdateOne {
+	if v != nil {
+		_u.SetExternalRef(*v)
 	}
 	return _u
 }
@@ -358,8 +420,14 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(integration.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Name(); ok {
-		_spec.SetField(integration.FieldName, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(integration.FieldProvider, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.DisplayName(); ok {
+		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.ExternalRef(); ok {
+		_spec.SetField(integration.FieldExternalRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Config(); ok {
 		_spec.SetField(integration.FieldConfig, field.TypeJSON, value)

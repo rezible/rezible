@@ -9,7 +9,7 @@ import (
 	"github.com/rezible/rezible/telemetry"
 )
 
-func makeAPITelemetryMiddleware() func(huma.Context, func(huma.Context)) {
+func MakeAPITelemetryMiddleware() func(huma.Context, func(huma.Context)) {
 	m := telemetry.DefaultMeter()
 	requests := telemetry.Int64CounterInstrument(m, "rezible.backend.http.server.requests", "HTTP requests handled by the backend")
 	requestSeconds := telemetry.Float64HistogramInstrument(m, "rezible.backend.http.server.duration", "HTTP request duration", "s")

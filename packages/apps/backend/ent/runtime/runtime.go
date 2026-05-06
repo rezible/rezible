@@ -669,7 +669,7 @@ func init() {
 	// integration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	integration.UpdateDefaultUpdatedAt = integrationDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// integrationDescUserPreferences is the schema descriptor for user_preferences field.
-	integrationDescUserPreferences := integrationFields[3].Descriptor()
+	integrationDescUserPreferences := integrationFields[5].Descriptor()
 	// integration.DefaultUserPreferences holds the default value on creation for the user_preferences field.
 	integration.DefaultUserPreferences = integrationDescUserPreferences.Default.(map[string]interface{})
 	// integrationDescID is the schema descriptor for id field.
@@ -692,8 +692,12 @@ func init() {
 	integrationoauthstateDescUserID := integrationoauthstateFields[1].Descriptor()
 	// integrationoauthstate.DefaultUserID holds the default value on creation for the user_id field.
 	integrationoauthstate.DefaultUserID = integrationoauthstateDescUserID.Default.(func() uuid.UUID)
+	// integrationoauthstateDescSelectionOptions is the schema descriptor for selection_options field.
+	integrationoauthstateDescSelectionOptions := integrationoauthstateFields[4].Descriptor()
+	// integrationoauthstate.DefaultSelectionOptions holds the default value on creation for the selection_options field.
+	integrationoauthstate.DefaultSelectionOptions = integrationoauthstateDescSelectionOptions.Default.([]map[string]interface{})
 	// integrationoauthstateDescExpiresAt is the schema descriptor for expires_at field.
-	integrationoauthstateDescExpiresAt := integrationoauthstateFields[4].Descriptor()
+	integrationoauthstateDescExpiresAt := integrationoauthstateFields[5].Descriptor()
 	// integrationoauthstate.DefaultExpiresAt holds the default value on creation for the expires_at field.
 	integrationoauthstate.DefaultExpiresAt = integrationoauthstateDescExpiresAt.Default.(func() time.Time)
 	// integrationoauthstateDescID is the schema descriptor for id field.

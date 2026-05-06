@@ -22,8 +22,10 @@ const (
 	FieldUserID = "user_id"
 	// FieldState holds the string denoting the state field in the database.
 	FieldState = "state"
-	// FieldIntegrationName holds the string denoting the integration_name field in the database.
-	FieldIntegrationName = "integration_name"
+	// FieldProvider holds the string denoting the provider field in the database.
+	FieldProvider = "provider"
+	// FieldSelectionOptions holds the string denoting the selection_options field in the database.
+	FieldSelectionOptions = "selection_options"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -54,7 +56,8 @@ var Columns = []string{
 	FieldTenantID,
 	FieldUserID,
 	FieldState,
-	FieldIntegrationName,
+	FieldProvider,
+	FieldSelectionOptions,
 	FieldExpiresAt,
 }
 
@@ -78,6 +81,8 @@ var (
 	Policy ent.Policy
 	// DefaultUserID holds the default value on creation for the "user_id" field.
 	DefaultUserID func() uuid.UUID
+	// DefaultSelectionOptions holds the default value on creation for the "selection_options" field.
+	DefaultSelectionOptions []map[string]interface{}
 	// DefaultExpiresAt holds the default value on creation for the "expires_at" field.
 	DefaultExpiresAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -107,9 +112,9 @@ func ByState(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldState, opts...).ToFunc()
 }
 
-// ByIntegrationName orders the results by the integration_name field.
-func ByIntegrationName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIntegrationName, opts...).ToFunc()
+// ByProvider orders the results by the provider field.
+func ByProvider(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProvider, opts...).ToFunc()
 }
 
 // ByExpiresAt orders the results by the expires_at field.

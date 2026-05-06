@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
@@ -60,17 +61,35 @@ func (_u *IntegrationOAuthStateUpdate) SetNillableState(v *string) *IntegrationO
 	return _u
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (_u *IntegrationOAuthStateUpdate) SetIntegrationName(v string) *IntegrationOAuthStateUpdate {
-	_u.mutation.SetIntegrationName(v)
+// SetProvider sets the "provider" field.
+func (_u *IntegrationOAuthStateUpdate) SetProvider(v string) *IntegrationOAuthStateUpdate {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableIntegrationName sets the "integration_name" field if the given value is not nil.
-func (_u *IntegrationOAuthStateUpdate) SetNillableIntegrationName(v *string) *IntegrationOAuthStateUpdate {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *IntegrationOAuthStateUpdate) SetNillableProvider(v *string) *IntegrationOAuthStateUpdate {
 	if v != nil {
-		_u.SetIntegrationName(*v)
+		_u.SetProvider(*v)
 	}
+	return _u
+}
+
+// SetSelectionOptions sets the "selection_options" field.
+func (_u *IntegrationOAuthStateUpdate) SetSelectionOptions(v []map[string]interface{}) *IntegrationOAuthStateUpdate {
+	_u.mutation.SetSelectionOptions(v)
+	return _u
+}
+
+// AppendSelectionOptions appends value to the "selection_options" field.
+func (_u *IntegrationOAuthStateUpdate) AppendSelectionOptions(v []map[string]interface{}) *IntegrationOAuthStateUpdate {
+	_u.mutation.AppendSelectionOptions(v)
+	return _u
+}
+
+// ClearSelectionOptions clears the value of the "selection_options" field.
+func (_u *IntegrationOAuthStateUpdate) ClearSelectionOptions() *IntegrationOAuthStateUpdate {
+	_u.mutation.ClearSelectionOptions()
 	return _u
 }
 
@@ -163,8 +182,19 @@ func (_u *IntegrationOAuthStateUpdate) sqlSave(ctx context.Context) (_node int, 
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(integrationoauthstate.FieldState, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.IntegrationName(); ok {
-		_spec.SetField(integrationoauthstate.FieldIntegrationName, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(integrationoauthstate.FieldProvider, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.SelectionOptions(); ok {
+		_spec.SetField(integrationoauthstate.FieldSelectionOptions, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSelectionOptions(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, integrationoauthstate.FieldSelectionOptions, value)
+		})
+	}
+	if _u.mutation.SelectionOptionsCleared() {
+		_spec.ClearField(integrationoauthstate.FieldSelectionOptions, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(integrationoauthstate.FieldExpiresAt, field.TypeTime, value)
@@ -252,17 +282,35 @@ func (_u *IntegrationOAuthStateUpdateOne) SetNillableState(v *string) *Integrati
 	return _u
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (_u *IntegrationOAuthStateUpdateOne) SetIntegrationName(v string) *IntegrationOAuthStateUpdateOne {
-	_u.mutation.SetIntegrationName(v)
+// SetProvider sets the "provider" field.
+func (_u *IntegrationOAuthStateUpdateOne) SetProvider(v string) *IntegrationOAuthStateUpdateOne {
+	_u.mutation.SetProvider(v)
 	return _u
 }
 
-// SetNillableIntegrationName sets the "integration_name" field if the given value is not nil.
-func (_u *IntegrationOAuthStateUpdateOne) SetNillableIntegrationName(v *string) *IntegrationOAuthStateUpdateOne {
+// SetNillableProvider sets the "provider" field if the given value is not nil.
+func (_u *IntegrationOAuthStateUpdateOne) SetNillableProvider(v *string) *IntegrationOAuthStateUpdateOne {
 	if v != nil {
-		_u.SetIntegrationName(*v)
+		_u.SetProvider(*v)
 	}
+	return _u
+}
+
+// SetSelectionOptions sets the "selection_options" field.
+func (_u *IntegrationOAuthStateUpdateOne) SetSelectionOptions(v []map[string]interface{}) *IntegrationOAuthStateUpdateOne {
+	_u.mutation.SetSelectionOptions(v)
+	return _u
+}
+
+// AppendSelectionOptions appends value to the "selection_options" field.
+func (_u *IntegrationOAuthStateUpdateOne) AppendSelectionOptions(v []map[string]interface{}) *IntegrationOAuthStateUpdateOne {
+	_u.mutation.AppendSelectionOptions(v)
+	return _u
+}
+
+// ClearSelectionOptions clears the value of the "selection_options" field.
+func (_u *IntegrationOAuthStateUpdateOne) ClearSelectionOptions() *IntegrationOAuthStateUpdateOne {
+	_u.mutation.ClearSelectionOptions()
 	return _u
 }
 
@@ -385,8 +433,19 @@ func (_u *IntegrationOAuthStateUpdateOne) sqlSave(ctx context.Context) (_node *I
 	if value, ok := _u.mutation.State(); ok {
 		_spec.SetField(integrationoauthstate.FieldState, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.IntegrationName(); ok {
-		_spec.SetField(integrationoauthstate.FieldIntegrationName, field.TypeString, value)
+	if value, ok := _u.mutation.Provider(); ok {
+		_spec.SetField(integrationoauthstate.FieldProvider, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.SelectionOptions(); ok {
+		_spec.SetField(integrationoauthstate.FieldSelectionOptions, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedSelectionOptions(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, integrationoauthstate.FieldSelectionOptions, value)
+		})
+	}
+	if _u.mutation.SelectionOptionsCleared() {
+		_spec.ClearField(integrationoauthstate.FieldSelectionOptions, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(integrationoauthstate.FieldExpiresAt, field.TypeTime, value)

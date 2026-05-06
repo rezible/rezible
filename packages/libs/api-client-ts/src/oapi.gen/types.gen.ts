@@ -121,13 +121,15 @@ export type CompleteIntegrationOAuthFlowResponseBody = {
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: ConfiguredIntegration;
+    data: IntegrationOAuthFlowResult;
 };
 
 export type ConfigureIntegrationRequestAttributes = {
     config: {
         [key: string]: unknown;
     };
+    displayName: string;
+    externalRef: string;
 };
 
 export type ConfigureIntegrationRequestBody = {
@@ -148,7 +150,8 @@ export type ConfigureIntegrationResponseBody = {
 
 export type ConfiguredIntegration = {
     attributes: ConfiguredIntegrationAttributes;
-    name: string;
+    id: string;
+    provider: string;
 };
 
 export type ConfiguredIntegrationAttributes = {
@@ -158,6 +161,8 @@ export type ConfiguredIntegrationAttributes = {
     dataKinds: {
         [key: string]: boolean;
     };
+    displayName: string;
+    externalRef: string;
     preferences: {
         [key: string]: unknown;
     };
@@ -188,8 +193,8 @@ export type CreateEventAnnotationResponseBody = {
 
 export type CreateIncidentAttributes = {
     fieldSelectionIds?: Array<string>;
-    summary?: string;
     severityId: string;
+    summary?: string;
     tagIds?: Array<string>;
     title: string;
     typeId: string;
@@ -840,6 +845,14 @@ export type ExpandableUserAttributes = {
     id: string;
 };
 
+export type ExternalIntegrationOption = {
+    config: {
+        [key: string]: unknown;
+    };
+    displayName: string;
+    externalRef: string;
+};
+
 export type ExternalTicket = {
     provider: string;
 };
@@ -1470,6 +1483,13 @@ export type IntegrationOAuthFlow = {
     flow_url: string;
 };
 
+export type IntegrationOAuthFlowResult = {
+    configured: Array<ConfiguredIntegration>;
+    options: Array<ExternalIntegrationOption>;
+    selectionToken?: string;
+    status: string;
+};
+
 export type ListAlertIncidentLinksResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -2038,6 +2058,27 @@ export type RetrospectiveReviewAttributes = {
     comment: ExpandableRetrospectiveCommentAttributes;
     requester: ExpandableUser;
     reviewer: ExpandableUser;
+};
+
+export type SelectIntegrationOAuthFlowRequestAttributes = {
+    externalRefs: Array<string>;
+    selectionToken: string;
+};
+
+export type SelectIntegrationOAuthFlowRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: SelectIntegrationOAuthFlowRequestAttributes;
+};
+
+export type SelectIntegrationOAuthFlowResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IntegrationOAuthFlowResult;
 };
 
 export type SendOncallShiftHandoverAttributes = {
@@ -5982,56 +6023,6 @@ export type CreateIncidentMilestoneResponses = {
 
 export type CreateIncidentMilestoneResponse = CreateIncidentMilestoneResponses[keyof CreateIncidentMilestoneResponses];
 
-export type ListAvailableIntegrationsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/integrations';
-};
-
-export type ListAvailableIntegrationsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListAvailableIntegrationsError = ListAvailableIntegrationsErrors[keyof ListAvailableIntegrationsErrors];
-
-export type ListAvailableIntegrationsResponses = {
-    /**
-     * OK
-     */
-    200: ListAvailableIntegrationsResponseBody;
-};
-
-export type ListAvailableIntegrationsResponse = ListAvailableIntegrationsResponses[keyof ListAvailableIntegrationsResponses];
-
 export type ListConfiguredIntegrationsData = {
     body?: never;
     path?: never;
@@ -6085,7 +6076,7 @@ export type ListConfiguredIntegrationsResponse = ListConfiguredIntegrationsRespo
 export type DeleteIntegrationData = {
     body?: never;
     path: {
-        name: string;
+        id: string;
     };
     query?: never;
     url: '/integrations/configured/{id}';
@@ -6132,10 +6123,10 @@ export type DeleteIntegrationResponse = DeleteIntegrationResponses[keyof DeleteI
 export type GetConfiguredIntegrationData = {
     body?: never;
     path: {
-        name: string;
+        id: string;
     };
     query?: never;
-    url: '/integrations/configured/{name}';
+    url: '/integrations/configured/{id}';
 };
 
 export type GetConfiguredIntegrationErrors = {
@@ -6176,60 +6167,13 @@ export type GetConfiguredIntegrationResponses = {
 
 export type GetConfiguredIntegrationResponse = GetConfiguredIntegrationResponses[keyof GetConfiguredIntegrationResponses];
 
-export type CompleteIntegrationOauthFlowData = {
-    body: CompleteIntegrationOAuthFlowRequestBody;
-    path: {
-        name: string;
-    };
-    query?: never;
-    url: '/integrations/configured/{name}/complete_oauth_flow';
-};
-
-export type CompleteIntegrationOauthFlowErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CompleteIntegrationOauthFlowError = CompleteIntegrationOauthFlowErrors[keyof CompleteIntegrationOauthFlowErrors];
-
-export type CompleteIntegrationOauthFlowResponses = {
-    /**
-     * OK
-     */
-    200: CompleteIntegrationOAuthFlowResponseBody;
-};
-
-export type CompleteIntegrationOauthFlowResponse = CompleteIntegrationOauthFlowResponses[keyof CompleteIntegrationOauthFlowResponses];
-
 export type UpdateConfiguredIntegrationPreferencesData = {
     body: UpdateConfiguredIntegrationPreferencesRequestBody;
     path: {
-        name: string;
+        id: string;
     };
     query?: never;
-    url: '/integrations/configured/{name}/preferences';
+    url: '/integrations/configured/{id}/preferences';
 };
 
 export type UpdateConfiguredIntegrationPreferencesErrors = {
@@ -6270,16 +6214,19 @@ export type UpdateConfiguredIntegrationPreferencesResponses = {
 
 export type UpdateConfiguredIntegrationPreferencesResponse = UpdateConfiguredIntegrationPreferencesResponses[keyof UpdateConfiguredIntegrationPreferencesResponses];
 
-export type StartIntegrationOauthFlowData = {
-    body: StartIntegrationOAuthFlowRequestBody;
-    path: {
-        name: string;
+export type ListAvailableIntegrationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
     };
-    query?: never;
-    url: '/integrations/configured/{name}/start_oauth_flow';
+    url: '/integrations/providers';
 };
 
-export type StartIntegrationOauthFlowErrors = {
+export type ListAvailableIntegrationsErrors = {
     /**
      * Bad Request
      */
@@ -6306,24 +6253,24 @@ export type StartIntegrationOauthFlowErrors = {
     500: ErrorModel;
 };
 
-export type StartIntegrationOauthFlowError = StartIntegrationOauthFlowErrors[keyof StartIntegrationOauthFlowErrors];
+export type ListAvailableIntegrationsError = ListAvailableIntegrationsErrors[keyof ListAvailableIntegrationsErrors];
 
-export type StartIntegrationOauthFlowResponses = {
+export type ListAvailableIntegrationsResponses = {
     /**
      * OK
      */
-    200: StartIntegrationOAuthFlowResponseBody;
+    200: ListAvailableIntegrationsResponseBody;
 };
 
-export type StartIntegrationOauthFlowResponse = StartIntegrationOauthFlowResponses[keyof StartIntegrationOauthFlowResponses];
+export type ListAvailableIntegrationsResponse = ListAvailableIntegrationsResponses[keyof ListAvailableIntegrationsResponses];
 
 export type ConfigureIntegrationData = {
     body: ConfigureIntegrationRequestBody;
     path: {
-        name: string;
+        provider: string;
     };
     query?: never;
-    url: '/integrations/{name}';
+    url: '/integrations/providers/{provider}/configured';
 };
 
 export type ConfigureIntegrationErrors = {
@@ -6363,6 +6310,147 @@ export type ConfigureIntegrationResponses = {
 };
 
 export type ConfigureIntegrationResponse = ConfigureIntegrationResponses[keyof ConfigureIntegrationResponses];
+
+export type CompleteIntegrationOauthFlowData = {
+    body: CompleteIntegrationOAuthFlowRequestBody;
+    path: {
+        provider: string;
+    };
+    query?: never;
+    url: '/integrations/providers/{provider}/oauth/complete';
+};
+
+export type CompleteIntegrationOauthFlowErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CompleteIntegrationOauthFlowError = CompleteIntegrationOauthFlowErrors[keyof CompleteIntegrationOauthFlowErrors];
+
+export type CompleteIntegrationOauthFlowResponses = {
+    /**
+     * OK
+     */
+    200: CompleteIntegrationOAuthFlowResponseBody;
+};
+
+export type CompleteIntegrationOauthFlowResponse = CompleteIntegrationOauthFlowResponses[keyof CompleteIntegrationOauthFlowResponses];
+
+export type SelectIntegrationOauthFlowData = {
+    body: SelectIntegrationOAuthFlowRequestBody;
+    path: {
+        provider: string;
+    };
+    query?: never;
+    url: '/integrations/providers/{provider}/oauth/select';
+};
+
+export type SelectIntegrationOauthFlowErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type SelectIntegrationOauthFlowError = SelectIntegrationOauthFlowErrors[keyof SelectIntegrationOauthFlowErrors];
+
+export type SelectIntegrationOauthFlowResponses = {
+    /**
+     * OK
+     */
+    200: SelectIntegrationOAuthFlowResponseBody;
+};
+
+export type SelectIntegrationOauthFlowResponse = SelectIntegrationOauthFlowResponses[keyof SelectIntegrationOauthFlowResponses];
+
+export type StartIntegrationOauthFlowData = {
+    body: StartIntegrationOAuthFlowRequestBody;
+    path: {
+        provider: string;
+    };
+    query?: never;
+    url: '/integrations/providers/{provider}/oauth/start';
+};
+
+export type StartIntegrationOauthFlowErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type StartIntegrationOauthFlowError = StartIntegrationOauthFlowErrors[keyof StartIntegrationOauthFlowErrors];
+
+export type StartIntegrationOauthFlowResponses = {
+    /**
+     * OK
+     */
+    200: StartIntegrationOAuthFlowResponseBody;
+};
+
+export type StartIntegrationOauthFlowResponse = StartIntegrationOauthFlowResponses[keyof StartIntegrationOauthFlowResponses];
 
 export type ListMeetingSchedulesData = {
     body?: never;

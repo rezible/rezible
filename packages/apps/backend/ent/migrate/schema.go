@@ -1034,7 +1034,9 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "name", Type: field.TypeString},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString},
+		{Name: "external_ref", Type: field.TypeString},
 		{Name: "config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "user_preferences", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1047,7 +1049,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integrations_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationsColumns[6]},
+				Columns:    []*schema.Column{IntegrationsColumns[8]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1056,12 +1058,17 @@ var (
 			{
 				Name:    "integration_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[6]},
+				Columns: []*schema.Column{IntegrationsColumns[8]},
 			},
 			{
-				Name:    "integration_tenant_id_name",
+				Name:    "integration_tenant_id_provider",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationsColumns[8], IntegrationsColumns[3]},
+			},
+			{
+				Name:    "integration_tenant_id_provider_external_ref",
 				Unique:  true,
-				Columns: []*schema.Column{IntegrationsColumns[6], IntegrationsColumns[3]},
+				Columns: []*schema.Column{IntegrationsColumns[8], IntegrationsColumns[3], IntegrationsColumns[5]},
 			},
 		},
 	}
@@ -1069,7 +1076,8 @@ var (
 	IntegrationOauthStatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "state", Type: field.TypeString},
-		{Name: "integration_name", Type: field.TypeString},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "selection_options", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
@@ -1082,13 +1090,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integration_oauth_states_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationOauthStatesColumns[4]},
+				Columns:    []*schema.Column{IntegrationOauthStatesColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "integration_oauth_states_users_user",
-				Columns:    []*schema.Column{IntegrationOauthStatesColumns[5]},
+				Columns:    []*schema.Column{IntegrationOauthStatesColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1097,7 +1105,7 @@ var (
 			{
 				Name:    "integrationoauthstate_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationOauthStatesColumns[4]},
+				Columns: []*schema.Column{IntegrationOauthStatesColumns[5]},
 			},
 		},
 	}

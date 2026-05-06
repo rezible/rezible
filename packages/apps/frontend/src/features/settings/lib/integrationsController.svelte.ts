@@ -1,4 +1,11 @@
-import { configureIntegrationMutation, type ConfigureIntegrationRequestBody, type ErrorModel, listConfiguredIntegrationsOptions, listAvailableIntegrationsOptions } from "$lib/api";
+import {
+	configureIntegrationMutation,
+	type ConfigureIntegrationRequestBody,
+	type ConfiguredIntegration,
+	type ErrorModel,
+	listConfiguredIntegrationsOptions,
+	listAvailableIntegrationsOptions,
+} from "$lib/api";
 import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
@@ -14,7 +21,15 @@ export class IntegrationsController {
 
 	private listConfiguredQuery = createQuery(() => listConfiguredIntegrationsOptions());
 	configured = $derived(this.listConfiguredQuery.data?.data || []);
-	configuredMap = $derived(new SvelteMap(this.configured.map((intg) => [intg.name, intg])));
+	configuredById = $derived(new SvelteMap(this.configured.map((intg) => [intg.id, intg])));
+	configuredByProvider = $derived.by(() => {
+		const grouped = new SvelteMap<string, ConfiguredIntegration[]>();
+		for (const intg of this.configured) {
+			const curr = grouped.get(intg.provider) ?? [];
+			grouped.set(intg.provider, [...curr, intg]);
+		}
+		return grouped;
+	});
 
 	private configureMut = createMutation(() => ({
 		...configureIntegrationMutation({}),
@@ -23,25 +38,25 @@ export class IntegrationsController {
 		},
 	}));
 
-	configuringName = $derived(this.configureMut.variables?.path?.name ?? "");
+	configuringProvider = $derived(this.configureMut.variables?.path?.provider ?? "");
 	configuringError = $derived(this.configureMut.error?.detail || this.configureMut.error?.title || "");
 	isConfiguring = $derived(this.configureMut.isPending);
 
-	async configure(name: string, attributes: ConfigureIntegrationRequestBody["attributes"]) {
+	async configure(provider: string, attributes: ConfigureIntegrationRequestBody["attributes"]) {
 		await this.configureMut.mutateAsync({
-			path: { name },
+			path: { provider },
 			body: { attributes },
 		});
 	}
 
-	errorFor(name: string) {
-		if (this.configuringName !== name) return "";
+	errorFor(provider: string) {
+		if (this.configuringProvider !== provider) return "";
 		return this.configuringError;
 	}
 
-	isSaving(name: string) {
+	isSaving(provider: string) {
 		if (!this.isConfiguring) return false;
-		return this.configuringName === name;
+		return this.configuringProvider === provider;
 	}
 
 	loading = $derived(this.listAvailableQuery.isPending || this.listConfiguredQuery.isPending);

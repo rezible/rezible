@@ -53,7 +53,7 @@ func (h *integrationsHandler) ListConfiguredIntegrations(ctx context.Context, re
 func (h *integrationsHandler) GetConfiguredIntegration(ctx context.Context, req *oapi.GetConfiguredIntegrationRequest) (*oapi.GetConfiguredIntegrationResponse, error) {
 	var resp oapi.GetConfiguredIntegrationResponse
 
-	ci, getErr := h.integrations.GetConfigured(ctx, req.Name)
+	ci, getErr := h.integrations.GetConfigured(ctx, req.Id)
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "failed to get integration", getErr)
 	}
@@ -65,7 +65,13 @@ func (h *integrationsHandler) GetConfiguredIntegration(ctx context.Context, req 
 func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oapi.ConfigureIntegrationRequest) (*oapi.ConfigureIntegrationResponse, error) {
 	var resp oapi.ConfigureIntegrationResponse
 
-	ci, setErr := h.integrations.Configure(ctx, req.Name, req.Body.Attributes.Config)
+	attr := req.Body.Attributes
+	ci, setErr := h.integrations.Configure(ctx, rez.ConfigureIntegrationParams{
+		Provider:    req.Provider,
+		DisplayName: attr.DisplayName,
+		ExternalRef: attr.ExternalRef,
+		Config:      attr.Config,
+	})
 	if setErr != nil {
 		return nil, oapi.Error(ctx, "failed to configure integration", setErr)
 	}
@@ -77,7 +83,7 @@ func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oap
 func (h *integrationsHandler) UpdateConfiguredIntegrationPreferences(ctx context.Context, req *oapi.UpdateConfiguredIntegrationPreferencesRequest) (*oapi.UpdateConfiguredIntegrationPreferencesResponse, error) {
 	var resp oapi.UpdateConfiguredIntegrationPreferencesResponse
 
-	ci, setErr := h.integrations.UpdateConfiguredPreferences(ctx, req.Name, req.Body.Attributes.Preferences)
+	ci, setErr := h.integrations.UpdateConfiguredPreferences(ctx, req.Id, req.Body.Attributes.Preferences)
 	if setErr != nil {
 		return nil, oapi.Error(ctx, "failed to configure integration", setErr)
 	}
@@ -89,7 +95,7 @@ func (h *integrationsHandler) UpdateConfiguredIntegrationPreferences(ctx context
 func (h *integrationsHandler) DeleteConfiguredIntegration(ctx context.Context, req *oapi.DeleteConfiguredIntegrationRequest) (*oapi.DeleteConfiguredIntegrationResponse, error) {
 	var resp oapi.DeleteConfiguredIntegrationResponse
 
-	if delErr := h.integrations.DeleteConfigured(ctx, req.Name); delErr != nil {
+	if delErr := h.integrations.DeleteConfigured(ctx, req.Id); delErr != nil {
 		return nil, oapi.Error(ctx, "failed to delete integration", delErr)
 	}
 
@@ -108,7 +114,7 @@ func (h *integrationsHandler) StartIntegrationOAuthFlow(ctx context.Context, req
 		return nil, oapi.Error(ctx, "invalid callback url", urlErr)
 	}
 
-	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name, redirectUrl)
+	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Provider, redirectUrl)
 	if flowErr != nil {
 		return nil, oapi.Error(ctx, "failed to start flow", flowErr)
 	}
@@ -130,11 +136,27 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 		State:          attr.State,
 		ClientVerifier: attr.ClientVerifier,
 	}
-	ci, completeErr := h.integrations.CompleteOAuth2Flow(ctx, req.Name, params)
+	result, completeErr := h.integrations.CompleteOAuth2Flow(ctx, req.Provider, params)
 	if completeErr != nil {
 		return nil, oapi.Error(ctx, "failed to complete integration", completeErr)
 	}
-	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
+	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromCore(result)
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) SelectIntegrationOAuthFlow(ctx context.Context, req *oapi.SelectIntegrationOAuthFlowRequest) (*oapi.SelectIntegrationOAuthFlowResponse, error) {
+	var resp oapi.SelectIntegrationOAuthFlowResponse
+
+	attr := req.Body.Attributes
+	result, selectErr := h.integrations.SelectOAuth2Flow(ctx, req.Provider, rez.SelectIntegrationOAuth2Params{
+		SelectionToken: attr.SelectionToken,
+		ExternalRefs:   attr.ExternalRefs,
+	})
+	if selectErr != nil {
+		return nil, oapi.Error(ctx, "failed to select integration", selectErr)
+	}
+	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromCore(result)
 
 	return &resp, nil
 }

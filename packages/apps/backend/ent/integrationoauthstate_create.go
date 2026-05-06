@@ -52,9 +52,15 @@ func (_c *IntegrationOAuthStateCreate) SetState(v string) *IntegrationOAuthState
 	return _c
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (_c *IntegrationOAuthStateCreate) SetIntegrationName(v string) *IntegrationOAuthStateCreate {
-	_c.mutation.SetIntegrationName(v)
+// SetProvider sets the "provider" field.
+func (_c *IntegrationOAuthStateCreate) SetProvider(v string) *IntegrationOAuthStateCreate {
+	_c.mutation.SetProvider(v)
+	return _c
+}
+
+// SetSelectionOptions sets the "selection_options" field.
+func (_c *IntegrationOAuthStateCreate) SetSelectionOptions(v []map[string]interface{}) *IntegrationOAuthStateCreate {
+	_c.mutation.SetSelectionOptions(v)
 	return _c
 }
 
@@ -140,6 +146,10 @@ func (_c *IntegrationOAuthStateCreate) defaults() error {
 		v := integrationoauthstate.DefaultUserID()
 		_c.mutation.SetUserID(v)
 	}
+	if _, ok := _c.mutation.SelectionOptions(); !ok {
+		v := integrationoauthstate.DefaultSelectionOptions
+		_c.mutation.SetSelectionOptions(v)
+	}
 	if _, ok := _c.mutation.ExpiresAt(); !ok {
 		if integrationoauthstate.DefaultExpiresAt == nil {
 			return fmt.Errorf("ent: uninitialized integrationoauthstate.DefaultExpiresAt (forgotten import ent/runtime?)")
@@ -168,8 +178,8 @@ func (_c *IntegrationOAuthStateCreate) check() error {
 	if _, ok := _c.mutation.State(); !ok {
 		return &ValidationError{Name: "state", err: errors.New(`ent: missing required field "IntegrationOAuthState.state"`)}
 	}
-	if _, ok := _c.mutation.IntegrationName(); !ok {
-		return &ValidationError{Name: "integration_name", err: errors.New(`ent: missing required field "IntegrationOAuthState.integration_name"`)}
+	if _, ok := _c.mutation.Provider(); !ok {
+		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "IntegrationOAuthState.provider"`)}
 	}
 	if _, ok := _c.mutation.ExpiresAt(); !ok {
 		return &ValidationError{Name: "expires_at", err: errors.New(`ent: missing required field "IntegrationOAuthState.expires_at"`)}
@@ -221,9 +231,13 @@ func (_c *IntegrationOAuthStateCreate) createSpec() (*IntegrationOAuthState, *sq
 		_spec.SetField(integrationoauthstate.FieldState, field.TypeString, value)
 		_node.State = value
 	}
-	if value, ok := _c.mutation.IntegrationName(); ok {
-		_spec.SetField(integrationoauthstate.FieldIntegrationName, field.TypeString, value)
-		_node.IntegrationName = value
+	if value, ok := _c.mutation.Provider(); ok {
+		_spec.SetField(integrationoauthstate.FieldProvider, field.TypeString, value)
+		_node.Provider = value
+	}
+	if value, ok := _c.mutation.SelectionOptions(); ok {
+		_spec.SetField(integrationoauthstate.FieldSelectionOptions, field.TypeJSON, value)
+		_node.SelectionOptions = value
 	}
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(integrationoauthstate.FieldExpiresAt, field.TypeTime, value)
@@ -341,15 +355,33 @@ func (u *IntegrationOAuthStateUpsert) UpdateState() *IntegrationOAuthStateUpsert
 	return u
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (u *IntegrationOAuthStateUpsert) SetIntegrationName(v string) *IntegrationOAuthStateUpsert {
-	u.Set(integrationoauthstate.FieldIntegrationName, v)
+// SetProvider sets the "provider" field.
+func (u *IntegrationOAuthStateUpsert) SetProvider(v string) *IntegrationOAuthStateUpsert {
+	u.Set(integrationoauthstate.FieldProvider, v)
 	return u
 }
 
-// UpdateIntegrationName sets the "integration_name" field to the value that was provided on create.
-func (u *IntegrationOAuthStateUpsert) UpdateIntegrationName() *IntegrationOAuthStateUpsert {
-	u.SetExcluded(integrationoauthstate.FieldIntegrationName)
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *IntegrationOAuthStateUpsert) UpdateProvider() *IntegrationOAuthStateUpsert {
+	u.SetExcluded(integrationoauthstate.FieldProvider)
+	return u
+}
+
+// SetSelectionOptions sets the "selection_options" field.
+func (u *IntegrationOAuthStateUpsert) SetSelectionOptions(v []map[string]interface{}) *IntegrationOAuthStateUpsert {
+	u.Set(integrationoauthstate.FieldSelectionOptions, v)
+	return u
+}
+
+// UpdateSelectionOptions sets the "selection_options" field to the value that was provided on create.
+func (u *IntegrationOAuthStateUpsert) UpdateSelectionOptions() *IntegrationOAuthStateUpsert {
+	u.SetExcluded(integrationoauthstate.FieldSelectionOptions)
+	return u
+}
+
+// ClearSelectionOptions clears the value of the "selection_options" field.
+func (u *IntegrationOAuthStateUpsert) ClearSelectionOptions() *IntegrationOAuthStateUpsert {
+	u.SetNull(integrationoauthstate.FieldSelectionOptions)
 	return u
 }
 
@@ -444,17 +476,38 @@ func (u *IntegrationOAuthStateUpsertOne) UpdateState() *IntegrationOAuthStateUps
 	})
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (u *IntegrationOAuthStateUpsertOne) SetIntegrationName(v string) *IntegrationOAuthStateUpsertOne {
+// SetProvider sets the "provider" field.
+func (u *IntegrationOAuthStateUpsertOne) SetProvider(v string) *IntegrationOAuthStateUpsertOne {
 	return u.Update(func(s *IntegrationOAuthStateUpsert) {
-		s.SetIntegrationName(v)
+		s.SetProvider(v)
 	})
 }
 
-// UpdateIntegrationName sets the "integration_name" field to the value that was provided on create.
-func (u *IntegrationOAuthStateUpsertOne) UpdateIntegrationName() *IntegrationOAuthStateUpsertOne {
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *IntegrationOAuthStateUpsertOne) UpdateProvider() *IntegrationOAuthStateUpsertOne {
 	return u.Update(func(s *IntegrationOAuthStateUpsert) {
-		s.UpdateIntegrationName()
+		s.UpdateProvider()
+	})
+}
+
+// SetSelectionOptions sets the "selection_options" field.
+func (u *IntegrationOAuthStateUpsertOne) SetSelectionOptions(v []map[string]interface{}) *IntegrationOAuthStateUpsertOne {
+	return u.Update(func(s *IntegrationOAuthStateUpsert) {
+		s.SetSelectionOptions(v)
+	})
+}
+
+// UpdateSelectionOptions sets the "selection_options" field to the value that was provided on create.
+func (u *IntegrationOAuthStateUpsertOne) UpdateSelectionOptions() *IntegrationOAuthStateUpsertOne {
+	return u.Update(func(s *IntegrationOAuthStateUpsert) {
+		s.UpdateSelectionOptions()
+	})
+}
+
+// ClearSelectionOptions clears the value of the "selection_options" field.
+func (u *IntegrationOAuthStateUpsertOne) ClearSelectionOptions() *IntegrationOAuthStateUpsertOne {
+	return u.Update(func(s *IntegrationOAuthStateUpsert) {
+		s.ClearSelectionOptions()
 	})
 }
 
@@ -718,17 +771,38 @@ func (u *IntegrationOAuthStateUpsertBulk) UpdateState() *IntegrationOAuthStateUp
 	})
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (u *IntegrationOAuthStateUpsertBulk) SetIntegrationName(v string) *IntegrationOAuthStateUpsertBulk {
+// SetProvider sets the "provider" field.
+func (u *IntegrationOAuthStateUpsertBulk) SetProvider(v string) *IntegrationOAuthStateUpsertBulk {
 	return u.Update(func(s *IntegrationOAuthStateUpsert) {
-		s.SetIntegrationName(v)
+		s.SetProvider(v)
 	})
 }
 
-// UpdateIntegrationName sets the "integration_name" field to the value that was provided on create.
-func (u *IntegrationOAuthStateUpsertBulk) UpdateIntegrationName() *IntegrationOAuthStateUpsertBulk {
+// UpdateProvider sets the "provider" field to the value that was provided on create.
+func (u *IntegrationOAuthStateUpsertBulk) UpdateProvider() *IntegrationOAuthStateUpsertBulk {
 	return u.Update(func(s *IntegrationOAuthStateUpsert) {
-		s.UpdateIntegrationName()
+		s.UpdateProvider()
+	})
+}
+
+// SetSelectionOptions sets the "selection_options" field.
+func (u *IntegrationOAuthStateUpsertBulk) SetSelectionOptions(v []map[string]interface{}) *IntegrationOAuthStateUpsertBulk {
+	return u.Update(func(s *IntegrationOAuthStateUpsert) {
+		s.SetSelectionOptions(v)
+	})
+}
+
+// UpdateSelectionOptions sets the "selection_options" field to the value that was provided on create.
+func (u *IntegrationOAuthStateUpsertBulk) UpdateSelectionOptions() *IntegrationOAuthStateUpsertBulk {
+	return u.Update(func(s *IntegrationOAuthStateUpsert) {
+		s.UpdateSelectionOptions()
+	})
+}
+
+// ClearSelectionOptions clears the value of the "selection_options" field.
+func (u *IntegrationOAuthStateUpsertBulk) ClearSelectionOptions() *IntegrationOAuthStateUpsertBulk {
+	return u.Update(func(s *IntegrationOAuthStateUpsert) {
+		s.ClearSelectionOptions()
 	})
 }
 

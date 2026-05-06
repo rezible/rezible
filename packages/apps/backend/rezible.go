@@ -91,15 +91,28 @@ type (
 	}
 
 	ConfiguredIntegration interface {
-		Name() string
+		ID() uuid.UUID
+		Provider() string
+		DisplayName() string
+		ExternalRef() string
 		GetSanitizedConfig() map[string]any
 		GetUserPreferences() map[string]any
 		GetDataKinds() map[string]bool
 	}
 
 	ListIntegrationsParams struct {
-		Names        []string
+		IDs          []uuid.UUID
+		Providers    []string
+		ExternalRefs []string
 		ConfigValues map[string]any
+	}
+
+	ConfigureIntegrationParams struct {
+		Provider    string
+		DisplayName string
+		ExternalRef string
+		Config      map[string]any
+		Preferences map[string]any
 	}
 
 	CompleteIntegrationOAuth2Params struct {
@@ -108,14 +121,33 @@ type (
 		ClientVerifier *string
 	}
 
+	CompleteIntegrationOAuth2Result struct {
+		Status         string
+		Configured     []ConfiguredIntegration
+		SelectionToken string
+		Options        []ExternalIntegrationOption
+	}
+
+	ExternalIntegrationOption struct {
+		ExternalRef string         `json:"externalRef"`
+		DisplayName string         `json:"displayName"`
+		Config      map[string]any `json:"config"`
+	}
+
+	SelectIntegrationOAuth2Params struct {
+		SelectionToken string
+		ExternalRefs   []string
+	}
+
 	IntegrationsService interface {
-		Configure(ctx context.Context, name string, cfg map[string]any) (ConfiguredIntegration, error)
+		Configure(ctx context.Context, params ConfigureIntegrationParams) (ConfiguredIntegration, error)
 		ListConfigured(ctx context.Context, params ListIntegrationsParams) ([]ConfiguredIntegration, error)
-		GetConfigured(ctx context.Context, name string) (ConfiguredIntegration, error)
-		UpdateConfiguredPreferences(ctx context.Context, name string, prefs map[string]any) (ConfiguredIntegration, error)
-		DeleteConfigured(ctx context.Context, name string) error
-		StartOAuth2Flow(ctx context.Context, name string, redirect *url.URL) (string, error)
-		CompleteOAuth2Flow(ctx context.Context, name string, params CompleteIntegrationOAuth2Params) (ConfiguredIntegration, error)
+		GetConfigured(ctx context.Context, id uuid.UUID) (ConfiguredIntegration, error)
+		UpdateConfiguredPreferences(ctx context.Context, id uuid.UUID, prefs map[string]any) (ConfiguredIntegration, error)
+		DeleteConfigured(ctx context.Context, id uuid.UUID) error
+		StartOAuth2Flow(ctx context.Context, provider string, redirect *url.URL) (string, error)
+		SelectOAuth2Flow(ctx context.Context, provider string, params SelectIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
+		CompleteOAuth2Flow(ctx context.Context, provider string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 
 		GetChatService(ctx context.Context) (ChatService, error)
 		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)

@@ -15,17 +15,17 @@ import (
 	"time"
 
 	"github.com/google/go-github/v84/github"
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/testkit/mocks"
 )
-
-// --- Config tests ---
 
 func TestValidateConfig_MissingCredentials(t *testing.T) {
 	cases := []map[string]any{
@@ -55,9 +55,96 @@ func TestValidateConfig_ValidAppCredentials(t *testing.T) {
 	require.NoError(t, intg.ValidateConfig(cfg))
 }
 
-// --- Push event processor tests ---
+func TestOAuth2Config(t *testing.T) {
+	intg := &integration{cfg: Config{
+		App: struct {
+			AppID         int64  `koanf:"app_id"`
+			ClientID      string `koanf:"client_id"`
+			ClientSecret  string `koanf:"client_secret"`
+			PrivateKeyPEM string `koanf:"private_key_pem"`
+		}{
+			ClientID:     "client-id",
+			ClientSecret: "client-secret",
+		},
+	}}
+	intg.oauth2Config = intg.loadOAuthConfig()
 
-func makePushPayload(t *testing.T, after, fullName, ref, org string) []byte {
+	cfg := intg.OAuth2Config()
+	require.NotNil(t, cfg)
+	assert.Equal(t, "client-id", cfg.ClientID)
+	assert.Equal(t, "client-secret", cfg.ClientSecret)
+	assert.Equal(t, "https://github.com/login/oauth/authorize", cfg.Endpoint.AuthURL)
+	assert.Equal(t, "https://github.com/login/oauth/access_token", cfg.Endpoint.TokenURL)
+
+	authURL := cfg.AuthCodeURL("state-value")
+	assert.Contains(t, authURL, "client_id=client-id")
+	assert.Contains(t, authURL, "state=state-value")
+}
+
+func TestExtractIntegrationOptionsFromToken(t *testing.T) {
+	intg := &integration{
+		cfg: Config{
+			App: struct {
+				AppID         int64  `koanf:"app_id"`
+				ClientID      string `koanf:"client_id"`
+				ClientSecret  string `koanf:"client_secret"`
+				PrivateKeyPEM string `koanf:"private_key_pem"`
+			}{AppID: 123},
+		},
+		listUserInstallations: func(_ context.Context, token string) ([]*github.Installation, error) {
+			assert.Equal(t, "access-token", token)
+			return []*github.Installation{
+				{
+					ID:      github.Ptr[int64](456),
+					AppID:   github.Ptr[int64](123),
+					Account: &github.User{Login: github.Ptr("myorg")},
+				},
+			}, nil
+		},
+	}
+
+	options, err := intg.ExtractIntegrationOptionsFromToken(&oauth2.Token{AccessToken: "access-token"})
+
+	require.NoError(t, err)
+	require.Len(t, options, 1)
+	assert.Equal(t, "456", options[0].ExternalRef)
+	assert.Equal(t, "myorg", options[0].DisplayName)
+	assert.Equal(t, "myorg", options[0].Config[configOrg])
+	assert.Equal(t, int64(456), options[0].Config[configInstallationID])
+}
+
+func TestExtractIntegrationOptionsFromToken_NoInstallations(t *testing.T) {
+	intg := &integration{
+		listUserInstallations: func(_ context.Context, _ string) ([]*github.Installation, error) {
+			return nil, nil
+		},
+	}
+
+	_, err := intg.ExtractIntegrationOptionsFromToken(&oauth2.Token{AccessToken: "access-token"})
+
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), "no valid github app installations")
+}
+
+func TestExtractIntegrationOptionsFromToken_MultipleInstallations(t *testing.T) {
+	intg := &integration{
+		listUserInstallations: func(_ context.Context, _ string) ([]*github.Installation, error) {
+			return []*github.Installation{
+				{ID: github.Ptr[int64](1), Account: &github.User{Login: github.Ptr("org-one")}},
+				{ID: github.Ptr[int64](2), Account: &github.User{Login: github.Ptr("org-two")}},
+			}, nil
+		},
+	}
+
+	options, err := intg.ExtractIntegrationOptionsFromToken(&oauth2.Token{AccessToken: "access-token"})
+
+	require.NoError(t, err)
+	require.Len(t, options, 2)
+	assert.Equal(t, "1", options[0].ExternalRef)
+	assert.Equal(t, "2", options[1].ExternalRef)
+}
+
+func makePushPayload(t *testing.T, after, fullName, ref, org string, installationID int64) []byte {
 	t.Helper()
 	ts := github.Timestamp{Time: time.Now()}
 	event := &github.PushEvent{
@@ -70,6 +157,7 @@ func makePushPayload(t *testing.T, after, fullName, ref, org string) []byte {
 		HeadCommit: &github.HeadCommit{
 			Timestamp: &ts,
 		},
+		Installation: &github.Installation{ID: github.Ptr(installationID)},
 	}
 	b, err := json.Marshal(event)
 	require.NoError(t, err)
@@ -77,38 +165,49 @@ func makePushPayload(t *testing.T, after, fullName, ref, org string) []byte {
 }
 
 func makeIntegrationsServiceWithOrg(t *testing.T, org string, tenantID interface{ GetTenantID() interface{} }) *mockIntegrationsService {
-	return &mockIntegrationsService{org: org}
+	return &mockIntegrationsService{installationID: "123", org: org}
 }
 
-// minimal mock for IntegrationsService
+// TODO: just use a generated mock from testkit
 type mockIntegrationsService struct {
-	org string
+	installationID string
+	org            string
 }
 
-func (m *mockIntegrationsService) Configure(_ context.Context, _ string, _ map[string]any) (rez.ConfiguredIntegration, error) {
+func (m *mockIntegrationsService) Configure(_ context.Context, _ rez.ConfigureIntegrationParams) (rez.ConfiguredIntegration, error) {
 	return nil, nil
 }
 func (m *mockIntegrationsService) ListConfigured(_ context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {
-	orgVal, _ := params.ConfigValues["org"].(string)
-	if orgVal == m.org {
+	if len(params.ExternalRefs) == 0 || params.ExternalRefs[0] == m.installationID {
 		ci := &ConfiguredIntegration{
-			intg: &ent.Integration{Config: map[string]any{"org": m.org}},
+			intg: &ent.Integration{
+				ID:              uuid.New(),
+				TenantID:        1,
+				Provider:        integrationName,
+				DisplayName:     m.org,
+				ExternalRef:     m.installationID,
+				Config:          map[string]any{"org": m.org, "installation_id": float64(123)},
+				UserPreferences: map[string]any{},
+			},
 		}
 		return []rez.ConfiguredIntegration{ci}, nil
 	}
 	return nil, nil
 }
-func (m *mockIntegrationsService) GetConfigured(_ context.Context, _ string) (rez.ConfiguredIntegration, error) {
+func (m *mockIntegrationsService) GetConfigured(_ context.Context, _ uuid.UUID) (rez.ConfiguredIntegration, error) {
 	return nil, nil
 }
-func (m *mockIntegrationsService) UpdateConfiguredPreferences(_ context.Context, _ string, _ map[string]any) (rez.ConfiguredIntegration, error) {
+func (m *mockIntegrationsService) UpdateConfiguredPreferences(_ context.Context, _ uuid.UUID, _ map[string]any) (rez.ConfiguredIntegration, error) {
 	return nil, nil
 }
-func (m *mockIntegrationsService) DeleteConfigured(_ context.Context, _ string) error { return nil }
+func (m *mockIntegrationsService) DeleteConfigured(_ context.Context, _ uuid.UUID) error { return nil }
 func (m *mockIntegrationsService) StartOAuth2Flow(_ context.Context, _ string, _ *url.URL) (string, error) {
 	return "", nil
 }
-func (m *mockIntegrationsService) CompleteOAuth2Flow(_ context.Context, _ string, _ rez.CompleteIntegrationOAuth2Params) (rez.ConfiguredIntegration, error) {
+func (m *mockIntegrationsService) CompleteOAuth2Flow(_ context.Context, _ string, _ rez.CompleteIntegrationOAuth2Params) (*rez.CompleteIntegrationOAuth2Result, error) {
+	return nil, nil
+}
+func (m *mockIntegrationsService) SelectOAuth2Flow(_ context.Context, _ string, _ rez.SelectIntegrationOAuth2Params) (*rez.CompleteIntegrationOAuth2Result, error) {
 	return nil, nil
 }
 func (m *mockIntegrationsService) GetChatService(_ context.Context) (rez.ChatService, error) {
@@ -127,11 +226,11 @@ func TestPushProcessor_ValidPayload(t *testing.T) {
 	)
 
 	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: org},
+		Integrations: &mockIntegrationsService{org: org, installationID: "123"},
 	}
 	proc := &pushEventProcessor{services: svcs}
 
-	payload := makePushPayload(t, after, fullName, ref, org)
+	payload := makePushPayload(t, after, fullName, ref, org, 123)
 	events, err := proc.Process(context.Background(), rez.ProviderEvent{
 		Provider: integrationName,
 		Source:   "push",
@@ -151,11 +250,11 @@ func TestPushProcessor_ValidPayload(t *testing.T) {
 
 func TestPushProcessor_BranchDeletion(t *testing.T) {
 	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: "org"},
+		Integrations: &mockIntegrationsService{org: "org", installationID: "123"},
 	}
 	proc := &pushEventProcessor{services: svcs}
 
-	payload := makePushPayload(t, zeroSHA, "org/repo", "refs/heads/main", "org")
+	payload := makePushPayload(t, zeroSHA, "org/repo", "refs/heads/main", "org", 123)
 	events, err := proc.Process(context.Background(), rez.ProviderEvent{
 		Provider: integrationName,
 		Source:   "push",
@@ -168,7 +267,7 @@ func TestPushProcessor_BranchDeletion(t *testing.T) {
 
 func TestPushProcessor_InvalidJSON(t *testing.T) {
 	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: "org"},
+		Integrations: &mockIntegrationsService{org: "org", installationID: "123"},
 	}
 	proc := &pushEventProcessor{services: svcs}
 
@@ -183,7 +282,7 @@ func TestPushProcessor_InvalidJSON(t *testing.T) {
 
 // --- PR event processor tests ---
 
-func makePRPayload(t *testing.T, prNum int, fullName, title, org string) []byte {
+func makePRPayload(t *testing.T, prNum int, fullName, title, org string, installationID int64) []byte {
 	t.Helper()
 	ts := github.Timestamp{Time: time.Now()}
 	event := &github.PullRequestEvent{
@@ -196,6 +295,7 @@ func makePRPayload(t *testing.T, prNum int, fullName, title, org string) []byte 
 			FullName: github.Ptr(fullName),
 			Owner:    &github.User{Login: github.Ptr(org)},
 		},
+		Installation: &github.Installation{ID: github.Ptr(installationID)},
 	}
 	b, err := json.Marshal(event)
 	require.NoError(t, err)
@@ -211,11 +311,11 @@ func TestPRProcessor_ValidPayload(t *testing.T) {
 	)
 
 	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: org},
+		Integrations: &mockIntegrationsService{org: org, installationID: "123"},
 	}
 	proc := &pullRequestEventProcessor{services: svcs}
 
-	payload := makePRPayload(t, prNum, fullName, title, org)
+	payload := makePRPayload(t, prNum, fullName, title, org, 123)
 	events, err := proc.Process(context.Background(), rez.ProviderEvent{
 		Provider: integrationName,
 		Source:   "pull_request",
@@ -235,7 +335,7 @@ func TestPRProcessor_ValidPayload(t *testing.T) {
 
 func TestPRProcessor_InvalidJSON(t *testing.T) {
 	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: "org"},
+		Integrations: &mockIntegrationsService{org: "org", installationID: "123"},
 	}
 	proc := &pullRequestEventProcessor{services: svcs}
 

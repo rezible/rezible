@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -26,8 +27,10 @@ type IntegrationOAuthState struct {
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// State holds the value of the "state" field.
 	State string `json:"state,omitempty"`
-	// IntegrationName holds the value of the "integration_name" field.
-	IntegrationName string `json:"integration_name,omitempty"`
+	// Provider holds the value of the "provider" field.
+	Provider string `json:"provider,omitempty"`
+	// SelectionOptions holds the value of the "selection_options" field.
+	SelectionOptions []map[string]interface{} `json:"selection_options,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
 	ExpiresAt time.Time `json:"expires_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -74,9 +77,11 @@ func (*IntegrationOAuthState) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case integrationoauthstate.FieldSelectionOptions:
+			values[i] = new([]byte)
 		case integrationoauthstate.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case integrationoauthstate.FieldState, integrationoauthstate.FieldIntegrationName:
+		case integrationoauthstate.FieldState, integrationoauthstate.FieldProvider:
 			values[i] = new(sql.NullString)
 		case integrationoauthstate.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
@@ -121,11 +126,19 @@ func (_m *IntegrationOAuthState) assignValues(columns []string, values []any) er
 			} else if value.Valid {
 				_m.State = value.String
 			}
-		case integrationoauthstate.FieldIntegrationName:
+		case integrationoauthstate.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field integration_name", values[i])
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
-				_m.IntegrationName = value.String
+				_m.Provider = value.String
+			}
+		case integrationoauthstate.FieldSelectionOptions:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field selection_options", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.SelectionOptions); err != nil {
+					return fmt.Errorf("unmarshal field selection_options: %w", err)
+				}
 			}
 		case integrationoauthstate.FieldExpiresAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -188,8 +201,11 @@ func (_m *IntegrationOAuthState) String() string {
 	builder.WriteString("state=")
 	builder.WriteString(_m.State)
 	builder.WriteString(", ")
-	builder.WriteString("integration_name=")
-	builder.WriteString(_m.IntegrationName)
+	builder.WriteString("provider=")
+	builder.WriteString(_m.Provider)
+	builder.WriteString(", ")
+	builder.WriteString("selection_options=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SelectionOptions))
 	builder.WriteString(", ")
 	builder.WriteString("expires_at=")
 	builder.WriteString(_m.ExpiresAt.Format(time.ANSIC))

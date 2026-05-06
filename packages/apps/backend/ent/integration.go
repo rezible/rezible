@@ -26,8 +26,12 @@ type Integration struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	// Provider holds the value of the "provider" field.
+	Provider string `json:"provider,omitempty"`
+	// DisplayName holds the value of the "display_name" field.
+	DisplayName string `json:"display_name,omitempty"`
+	// ExternalRef holds the value of the "external_ref" field.
+	ExternalRef string `json:"external_ref,omitempty"`
 	// Config holds the value of the "config" field.
 	Config map[string]interface{} `json:"config,omitempty"`
 	// UserPreferences holds the value of the "user_preferences" field.
@@ -67,7 +71,7 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case integration.FieldName:
+		case integration.FieldProvider, integration.FieldDisplayName, integration.FieldExternalRef:
 			values[i] = new(sql.NullString)
 		case integration.FieldCreatedAt, integration.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -112,11 +116,23 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case integration.FieldName:
+		case integration.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
-				_m.Name = value.String
+				_m.Provider = value.String
+			}
+		case integration.FieldDisplayName:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field display_name", values[i])
+			} else if value.Valid {
+				_m.DisplayName = value.String
+			}
+		case integration.FieldExternalRef:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field external_ref", values[i])
+			} else if value.Valid {
+				_m.ExternalRef = value.String
 			}
 		case integration.FieldConfig:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -184,8 +200,14 @@ func (_m *Integration) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(_m.Name)
+	builder.WriteString("provider=")
+	builder.WriteString(_m.Provider)
+	builder.WriteString(", ")
+	builder.WriteString("display_name=")
+	builder.WriteString(_m.DisplayName)
+	builder.WriteString(", ")
+	builder.WriteString("external_ref=")
+	builder.WriteString(_m.ExternalRef)
 	builder.WriteString(", ")
 	builder.WriteString("config=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Config))

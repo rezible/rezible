@@ -114,7 +114,7 @@ func GetWebhookHandlers() map[string]http.Handler {
 
 type IntegrationWithOAuth2Flow interface {
 	OAuth2Config() *oauth2.Config
-	ExtractIntegrationConfigFromToken(*oauth2.Token) (map[string]any, error)
+	ExtractIntegrationOptionsFromToken(*oauth2.Token) ([]rez.ExternalIntegrationOption, error)
 }
 
 func GetOAuthIntegration(name string) (IntegrationWithOAuth2Flow, error) {
@@ -135,14 +135,14 @@ func GetOAuthIntegration(name string) (IntegrationWithOAuth2Flow, error) {
 func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Integration) (DP, error)) (map[string]DP, error) {
 	provs := make(map[string]DP)
 	for _, intg := range intgs {
-		if p, valid := packageNameMap[intg.Name]; valid {
+		if p, valid := packageNameMap[intg.Provider]; valid {
 			dpProv, hasSupport := p.(I)
 			if hasSupport {
 				prov, provErr := fn(dpProv, intg)
 				if provErr != nil {
 					return nil, fmt.Errorf("loading data provider: %w", provErr)
 				}
-				provs[intg.Name] = prov
+				provs[intg.ID.String()] = prov
 			}
 		}
 	}

@@ -604,7 +604,9 @@ var schemaGraph = func() *sqlgraph.Schema {
 			integration.FieldTenantID:        {Type: field.TypeInt, Column: integration.FieldTenantID},
 			integration.FieldCreatedAt:       {Type: field.TypeTime, Column: integration.FieldCreatedAt},
 			integration.FieldUpdatedAt:       {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
-			integration.FieldName:            {Type: field.TypeString, Column: integration.FieldName},
+			integration.FieldProvider:        {Type: field.TypeString, Column: integration.FieldProvider},
+			integration.FieldDisplayName:     {Type: field.TypeString, Column: integration.FieldDisplayName},
+			integration.FieldExternalRef:     {Type: field.TypeString, Column: integration.FieldExternalRef},
 			integration.FieldConfig:          {Type: field.TypeJSON, Column: integration.FieldConfig},
 			integration.FieldUserPreferences: {Type: field.TypeJSON, Column: integration.FieldUserPreferences},
 		},
@@ -620,11 +622,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "IntegrationOAuthState",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integrationoauthstate.FieldTenantID:        {Type: field.TypeInt, Column: integrationoauthstate.FieldTenantID},
-			integrationoauthstate.FieldUserID:          {Type: field.TypeUUID, Column: integrationoauthstate.FieldUserID},
-			integrationoauthstate.FieldState:           {Type: field.TypeString, Column: integrationoauthstate.FieldState},
-			integrationoauthstate.FieldIntegrationName: {Type: field.TypeString, Column: integrationoauthstate.FieldIntegrationName},
-			integrationoauthstate.FieldExpiresAt:       {Type: field.TypeTime, Column: integrationoauthstate.FieldExpiresAt},
+			integrationoauthstate.FieldTenantID:         {Type: field.TypeInt, Column: integrationoauthstate.FieldTenantID},
+			integrationoauthstate.FieldUserID:           {Type: field.TypeUUID, Column: integrationoauthstate.FieldUserID},
+			integrationoauthstate.FieldState:            {Type: field.TypeString, Column: integrationoauthstate.FieldState},
+			integrationoauthstate.FieldProvider:         {Type: field.TypeString, Column: integrationoauthstate.FieldProvider},
+			integrationoauthstate.FieldSelectionOptions: {Type: field.TypeJSON, Column: integrationoauthstate.FieldSelectionOptions},
+			integrationoauthstate.FieldExpiresAt:        {Type: field.TypeTime, Column: integrationoauthstate.FieldExpiresAt},
 		},
 	}
 	graph.Nodes[29] = &sqlgraph.Node{
@@ -8197,9 +8200,19 @@ func (f *IntegrationFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(integration.FieldUpdatedAt))
 }
 
-// WhereName applies the entql string predicate on the name field.
-func (f *IntegrationFilter) WhereName(p entql.StringP) {
-	f.Where(p.Field(integration.FieldName))
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *IntegrationFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(integration.FieldProvider))
+}
+
+// WhereDisplayName applies the entql string predicate on the display_name field.
+func (f *IntegrationFilter) WhereDisplayName(p entql.StringP) {
+	f.Where(p.Field(integration.FieldDisplayName))
+}
+
+// WhereExternalRef applies the entql string predicate on the external_ref field.
+func (f *IntegrationFilter) WhereExternalRef(p entql.StringP) {
+	f.Where(p.Field(integration.FieldExternalRef))
 }
 
 // WhereConfig applies the entql json.RawMessage predicate on the config field.
@@ -8281,9 +8294,14 @@ func (f *IntegrationOAuthStateFilter) WhereState(p entql.StringP) {
 	f.Where(p.Field(integrationoauthstate.FieldState))
 }
 
-// WhereIntegrationName applies the entql string predicate on the integration_name field.
-func (f *IntegrationOAuthStateFilter) WhereIntegrationName(p entql.StringP) {
-	f.Where(p.Field(integrationoauthstate.FieldIntegrationName))
+// WhereProvider applies the entql string predicate on the provider field.
+func (f *IntegrationOAuthStateFilter) WhereProvider(p entql.StringP) {
+	f.Where(p.Field(integrationoauthstate.FieldProvider))
+}
+
+// WhereSelectionOptions applies the entql json.RawMessage predicate on the selection_options field.
+func (f *IntegrationOAuthStateFilter) WhereSelectionOptions(p entql.BytesP) {
+	f.Where(p.Field(integrationoauthstate.FieldSelectionOptions))
 }
 
 // WhereExpiresAt applies the entql time.Time predicate on the expires_at field.

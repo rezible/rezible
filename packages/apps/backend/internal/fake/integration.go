@@ -3,6 +3,7 @@ package fakeprovider
 import (
 	"context"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
@@ -50,8 +51,20 @@ type ConfiguredIntegration struct {
 	intg *ent.Integration
 }
 
-func (ci *ConfiguredIntegration) Name() string {
-	return integrationName
+func (ci *ConfiguredIntegration) ID() uuid.UUID {
+	return ci.intg.ID
+}
+
+func (ci *ConfiguredIntegration) Provider() string {
+	return ci.intg.Provider
+}
+
+func (ci *ConfiguredIntegration) DisplayName() string {
+	return ci.intg.DisplayName
+}
+
+func (ci *ConfiguredIntegration) ExternalRef() string {
+	return ci.intg.ExternalRef
 }
 
 func (ci *ConfiguredIntegration) GetSanitizedConfig() map[string]any {

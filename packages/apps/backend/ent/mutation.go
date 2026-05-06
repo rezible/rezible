@@ -23060,7 +23060,9 @@ type IntegrationMutation struct {
 	id               *uuid.UUID
 	created_at       *time.Time
 	updated_at       *time.Time
-	name             *string
+	provider         *string
+	display_name     *string
+	external_ref     *string
 	_config          *map[string]interface{}
 	user_preferences *map[string]interface{}
 	clearedFields    map[string]struct{}
@@ -23283,40 +23285,112 @@ func (m *IntegrationMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetName sets the "name" field.
-func (m *IntegrationMutation) SetName(s string) {
-	m.name = &s
+// SetProvider sets the "provider" field.
+func (m *IntegrationMutation) SetProvider(s string) {
+	m.provider = &s
 }
 
-// Name returns the value of the "name" field in the mutation.
-func (m *IntegrationMutation) Name() (r string, exists bool) {
-	v := m.name
+// Provider returns the value of the "provider" field in the mutation.
+func (m *IntegrationMutation) Provider() (r string, exists bool) {
+	v := m.provider
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldName returns the old "name" field's value of the Integration entity.
+// OldProvider returns the old "provider" field's value of the Integration entity.
 // If the Integration object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldName(ctx context.Context) (v string, err error) {
+func (m *IntegrationMutation) OldProvider(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
+		return v, errors.New("OldProvider requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
 	}
-	return oldValue.Name, nil
+	return oldValue.Provider, nil
 }
 
-// ResetName resets all changes to the "name" field.
-func (m *IntegrationMutation) ResetName() {
-	m.name = nil
+// ResetProvider resets all changes to the "provider" field.
+func (m *IntegrationMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetDisplayName sets the "display_name" field.
+func (m *IntegrationMutation) SetDisplayName(s string) {
+	m.display_name = &s
+}
+
+// DisplayName returns the value of the "display_name" field in the mutation.
+func (m *IntegrationMutation) DisplayName() (r string, exists bool) {
+	v := m.display_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayName returns the old "display_name" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
+	}
+	return oldValue.DisplayName, nil
+}
+
+// ResetDisplayName resets all changes to the "display_name" field.
+func (m *IntegrationMutation) ResetDisplayName() {
+	m.display_name = nil
+}
+
+// SetExternalRef sets the "external_ref" field.
+func (m *IntegrationMutation) SetExternalRef(s string) {
+	m.external_ref = &s
+}
+
+// ExternalRef returns the value of the "external_ref" field in the mutation.
+func (m *IntegrationMutation) ExternalRef() (r string, exists bool) {
+	v := m.external_ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldExternalRef returns the old "external_ref" field's value of the Integration entity.
+// If the Integration object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationMutation) OldExternalRef(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldExternalRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldExternalRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldExternalRef: %w", err)
+	}
+	return oldValue.ExternalRef, nil
+}
+
+// ResetExternalRef resets all changes to the "external_ref" field.
+func (m *IntegrationMutation) ResetExternalRef() {
+	m.external_ref = nil
 }
 
 // SetConfig sets the "config" field.
@@ -23465,7 +23539,7 @@ func (m *IntegrationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntegrationMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
 		fields = append(fields, integration.FieldTenantID)
 	}
@@ -23475,8 +23549,14 @@ func (m *IntegrationMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, integration.FieldUpdatedAt)
 	}
-	if m.name != nil {
-		fields = append(fields, integration.FieldName)
+	if m.provider != nil {
+		fields = append(fields, integration.FieldProvider)
+	}
+	if m.display_name != nil {
+		fields = append(fields, integration.FieldDisplayName)
+	}
+	if m.external_ref != nil {
+		fields = append(fields, integration.FieldExternalRef)
 	}
 	if m._config != nil {
 		fields = append(fields, integration.FieldConfig)
@@ -23498,8 +23578,12 @@ func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case integration.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case integration.FieldName:
-		return m.Name()
+	case integration.FieldProvider:
+		return m.Provider()
+	case integration.FieldDisplayName:
+		return m.DisplayName()
+	case integration.FieldExternalRef:
+		return m.ExternalRef()
 	case integration.FieldConfig:
 		return m.Config()
 	case integration.FieldUserPreferences:
@@ -23519,8 +23603,12 @@ func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldCreatedAt(ctx)
 	case integration.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case integration.FieldName:
-		return m.OldName(ctx)
+	case integration.FieldProvider:
+		return m.OldProvider(ctx)
+	case integration.FieldDisplayName:
+		return m.OldDisplayName(ctx)
+	case integration.FieldExternalRef:
+		return m.OldExternalRef(ctx)
 	case integration.FieldConfig:
 		return m.OldConfig(ctx)
 	case integration.FieldUserPreferences:
@@ -23555,12 +23643,26 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case integration.FieldName:
+	case integration.FieldProvider:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetName(v)
+		m.SetProvider(v)
+		return nil
+	case integration.FieldDisplayName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayName(v)
+		return nil
+	case integration.FieldExternalRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetExternalRef(v)
 		return nil
 	case integration.FieldConfig:
 		v, ok := value.(map[string]interface{})
@@ -23646,8 +23748,14 @@ func (m *IntegrationMutation) ResetField(name string) error {
 	case integration.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case integration.FieldName:
-		m.ResetName()
+	case integration.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case integration.FieldDisplayName:
+		m.ResetDisplayName()
+		return nil
+	case integration.FieldExternalRef:
+		m.ResetExternalRef()
 		return nil
 	case integration.FieldConfig:
 		m.ResetConfig()
@@ -23736,20 +23844,22 @@ func (m *IntegrationMutation) ResetEdge(name string) error {
 // IntegrationOAuthStateMutation represents an operation that mutates the IntegrationOAuthState nodes in the graph.
 type IntegrationOAuthStateMutation struct {
 	config
-	op               Op
-	typ              string
-	id               *uuid.UUID
-	state            *string
-	integration_name *string
-	expires_at       *time.Time
-	clearedFields    map[string]struct{}
-	tenant           *int
-	clearedtenant    bool
-	user             *uuid.UUID
-	cleareduser      bool
-	done             bool
-	oldValue         func(context.Context) (*IntegrationOAuthState, error)
-	predicates       []predicate.IntegrationOAuthState
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	state                   *string
+	provider                *string
+	selection_options       *[]map[string]interface{}
+	appendselection_options []map[string]interface{}
+	expires_at              *time.Time
+	clearedFields           map[string]struct{}
+	tenant                  *int
+	clearedtenant           bool
+	user                    *uuid.UUID
+	cleareduser             bool
+	done                    bool
+	oldValue                func(context.Context) (*IntegrationOAuthState, error)
+	predicates              []predicate.IntegrationOAuthState
 }
 
 var _ ent.Mutation = (*IntegrationOAuthStateMutation)(nil)
@@ -23964,40 +24074,105 @@ func (m *IntegrationOAuthStateMutation) ResetState() {
 	m.state = nil
 }
 
-// SetIntegrationName sets the "integration_name" field.
-func (m *IntegrationOAuthStateMutation) SetIntegrationName(s string) {
-	m.integration_name = &s
+// SetProvider sets the "provider" field.
+func (m *IntegrationOAuthStateMutation) SetProvider(s string) {
+	m.provider = &s
 }
 
-// IntegrationName returns the value of the "integration_name" field in the mutation.
-func (m *IntegrationOAuthStateMutation) IntegrationName() (r string, exists bool) {
-	v := m.integration_name
+// Provider returns the value of the "provider" field in the mutation.
+func (m *IntegrationOAuthStateMutation) Provider() (r string, exists bool) {
+	v := m.provider
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldIntegrationName returns the old "integration_name" field's value of the IntegrationOAuthState entity.
+// OldProvider returns the old "provider" field's value of the IntegrationOAuthState entity.
 // If the IntegrationOAuthState object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationOAuthStateMutation) OldIntegrationName(ctx context.Context) (v string, err error) {
+func (m *IntegrationOAuthStateMutation) OldProvider(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIntegrationName is only allowed on UpdateOne operations")
+		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIntegrationName requires an ID field in the mutation")
+		return v, errors.New("OldProvider requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIntegrationName: %w", err)
+		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
 	}
-	return oldValue.IntegrationName, nil
+	return oldValue.Provider, nil
 }
 
-// ResetIntegrationName resets all changes to the "integration_name" field.
-func (m *IntegrationOAuthStateMutation) ResetIntegrationName() {
-	m.integration_name = nil
+// ResetProvider resets all changes to the "provider" field.
+func (m *IntegrationOAuthStateMutation) ResetProvider() {
+	m.provider = nil
+}
+
+// SetSelectionOptions sets the "selection_options" field.
+func (m *IntegrationOAuthStateMutation) SetSelectionOptions(value []map[string]interface{}) {
+	m.selection_options = &value
+	m.appendselection_options = nil
+}
+
+// SelectionOptions returns the value of the "selection_options" field in the mutation.
+func (m *IntegrationOAuthStateMutation) SelectionOptions() (r []map[string]interface{}, exists bool) {
+	v := m.selection_options
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSelectionOptions returns the old "selection_options" field's value of the IntegrationOAuthState entity.
+// If the IntegrationOAuthState object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationOAuthStateMutation) OldSelectionOptions(ctx context.Context) (v []map[string]interface{}, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSelectionOptions is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSelectionOptions requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSelectionOptions: %w", err)
+	}
+	return oldValue.SelectionOptions, nil
+}
+
+// AppendSelectionOptions adds value to the "selection_options" field.
+func (m *IntegrationOAuthStateMutation) AppendSelectionOptions(value []map[string]interface{}) {
+	m.appendselection_options = append(m.appendselection_options, value...)
+}
+
+// AppendedSelectionOptions returns the list of values that were appended to the "selection_options" field in this mutation.
+func (m *IntegrationOAuthStateMutation) AppendedSelectionOptions() ([]map[string]interface{}, bool) {
+	if len(m.appendselection_options) == 0 {
+		return nil, false
+	}
+	return m.appendselection_options, true
+}
+
+// ClearSelectionOptions clears the value of the "selection_options" field.
+func (m *IntegrationOAuthStateMutation) ClearSelectionOptions() {
+	m.selection_options = nil
+	m.appendselection_options = nil
+	m.clearedFields[integrationoauthstate.FieldSelectionOptions] = struct{}{}
+}
+
+// SelectionOptionsCleared returns if the "selection_options" field was cleared in this mutation.
+func (m *IntegrationOAuthStateMutation) SelectionOptionsCleared() bool {
+	_, ok := m.clearedFields[integrationoauthstate.FieldSelectionOptions]
+	return ok
+}
+
+// ResetSelectionOptions resets all changes to the "selection_options" field.
+func (m *IntegrationOAuthStateMutation) ResetSelectionOptions() {
+	m.selection_options = nil
+	m.appendselection_options = nil
+	delete(m.clearedFields, integrationoauthstate.FieldSelectionOptions)
 }
 
 // SetExpiresAt sets the "expires_at" field.
@@ -24124,7 +24299,7 @@ func (m *IntegrationOAuthStateMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntegrationOAuthStateMutation) Fields() []string {
-	fields := make([]string, 0, 5)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, integrationoauthstate.FieldTenantID)
 	}
@@ -24134,8 +24309,11 @@ func (m *IntegrationOAuthStateMutation) Fields() []string {
 	if m.state != nil {
 		fields = append(fields, integrationoauthstate.FieldState)
 	}
-	if m.integration_name != nil {
-		fields = append(fields, integrationoauthstate.FieldIntegrationName)
+	if m.provider != nil {
+		fields = append(fields, integrationoauthstate.FieldProvider)
+	}
+	if m.selection_options != nil {
+		fields = append(fields, integrationoauthstate.FieldSelectionOptions)
 	}
 	if m.expires_at != nil {
 		fields = append(fields, integrationoauthstate.FieldExpiresAt)
@@ -24154,8 +24332,10 @@ func (m *IntegrationOAuthStateMutation) Field(name string) (ent.Value, bool) {
 		return m.UserID()
 	case integrationoauthstate.FieldState:
 		return m.State()
-	case integrationoauthstate.FieldIntegrationName:
-		return m.IntegrationName()
+	case integrationoauthstate.FieldProvider:
+		return m.Provider()
+	case integrationoauthstate.FieldSelectionOptions:
+		return m.SelectionOptions()
 	case integrationoauthstate.FieldExpiresAt:
 		return m.ExpiresAt()
 	}
@@ -24173,8 +24353,10 @@ func (m *IntegrationOAuthStateMutation) OldField(ctx context.Context, name strin
 		return m.OldUserID(ctx)
 	case integrationoauthstate.FieldState:
 		return m.OldState(ctx)
-	case integrationoauthstate.FieldIntegrationName:
-		return m.OldIntegrationName(ctx)
+	case integrationoauthstate.FieldProvider:
+		return m.OldProvider(ctx)
+	case integrationoauthstate.FieldSelectionOptions:
+		return m.OldSelectionOptions(ctx)
 	case integrationoauthstate.FieldExpiresAt:
 		return m.OldExpiresAt(ctx)
 	}
@@ -24207,12 +24389,19 @@ func (m *IntegrationOAuthStateMutation) SetField(name string, value ent.Value) e
 		}
 		m.SetState(v)
 		return nil
-	case integrationoauthstate.FieldIntegrationName:
+	case integrationoauthstate.FieldProvider:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetIntegrationName(v)
+		m.SetProvider(v)
+		return nil
+	case integrationoauthstate.FieldSelectionOptions:
+		v, ok := value.([]map[string]interface{})
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSelectionOptions(v)
 		return nil
 	case integrationoauthstate.FieldExpiresAt:
 		v, ok := value.(time.Time)
@@ -24253,7 +24442,11 @@ func (m *IntegrationOAuthStateMutation) AddField(name string, value ent.Value) e
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *IntegrationOAuthStateMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(integrationoauthstate.FieldSelectionOptions) {
+		fields = append(fields, integrationoauthstate.FieldSelectionOptions)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -24266,6 +24459,11 @@ func (m *IntegrationOAuthStateMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *IntegrationOAuthStateMutation) ClearField(name string) error {
+	switch name {
+	case integrationoauthstate.FieldSelectionOptions:
+		m.ClearSelectionOptions()
+		return nil
+	}
 	return fmt.Errorf("unknown IntegrationOAuthState nullable field %s", name)
 }
 
@@ -24282,8 +24480,11 @@ func (m *IntegrationOAuthStateMutation) ResetField(name string) error {
 	case integrationoauthstate.FieldState:
 		m.ResetState()
 		return nil
-	case integrationoauthstate.FieldIntegrationName:
-		m.ResetIntegrationName()
+	case integrationoauthstate.FieldProvider:
+		m.ResetProvider()
+		return nil
+	case integrationoauthstate.FieldSelectionOptions:
+		m.ResetSelectionOptions()
 		return nil
 	case integrationoauthstate.FieldExpiresAt:
 		m.ResetExpiresAt()

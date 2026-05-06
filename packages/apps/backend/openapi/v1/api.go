@@ -6,7 +6,6 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/openapi"
 )
 
@@ -48,7 +47,7 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-func MakeApi(h Handler, auth rez.AuthSessionService) openapi.API {
+func MakeApi(h Handler, middlewares ...openapi.Middleware) openapi.API {
 	cfg := MakeConfig()
 
 	//tranformers := []huma.Transformer{
@@ -58,8 +57,7 @@ func MakeApi(h Handler, auth rez.AuthSessionService) openapi.API {
 
 	adapter := humago.NewAdapter(http.NewServeMux(), VersionPrefix)
 	api := huma.NewAPI(cfg, adapter)
-	api.UseMiddleware(makeAPITelemetryMiddleware())
-	api.UseMiddleware(MakeSecurityMiddleware(api, auth))
+	api.UseMiddleware(middlewares...)
 	huma.AutoRegister(api, operations{Handler: h})
 
 	return api
@@ -83,7 +81,7 @@ func MakeConfig() openapi.Config {
 }
 
 func GetSpec(jsonFmt bool) ([]byte, error) {
-	spec := MakeApi(operations{}, nil).OpenAPI()
+	spec := MakeApi(operations{}).OpenAPI()
 	if jsonFmt {
 		return spec.MarshalJSON()
 	}

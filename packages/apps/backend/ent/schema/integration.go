@@ -28,7 +28,9 @@ func (Integration) Mixin() []ent.Mixin {
 func (Integration) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("name"),
+		field.String("provider"),
+		field.String("display_name"),
+		field.String("external_ref"),
 		field.JSON("config", map[string]any{}).
 			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		field.JSON("user_preferences", map[string]any{}).
@@ -39,7 +41,8 @@ func (Integration) Fields() []ent.Field {
 
 func (Integration) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "name").Unique(),
+		index.Fields("tenant_id", "provider"),
+		index.Fields("tenant_id", "provider", "external_ref").Unique(),
 	}
 }
 
@@ -59,7 +62,10 @@ func (IntegrationOAuthState) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("user_id", uuid.New()).Default(uuid.New),
 		field.String("state"),
-		field.String("integration_name"),
+		field.String("provider"),
+		field.JSON("selection_options", []map[string]any{}).
+			Optional().Default([]map[string]any{}).
+			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		field.Time("expires_at").Default(func() time.Time {
 			return time.Now().Add(time.Minute * 10)
 		}),

@@ -265,7 +265,7 @@ components:
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/ConfiguredIntegration"
+          $ref: "#/components/schemas/IntegrationOAuthFlowResult"
       required:
         - data
       type: object
@@ -275,7 +275,13 @@ components:
         config:
           additionalProperties: {}
           type: object
+        displayName:
+          type: string
+        externalRef:
+          type: string
       required:
+        - displayName
+        - externalRef
         - config
       type: object
     ConfigureIntegrationRequestBody:
@@ -313,10 +319,13 @@ components:
       properties:
         attributes:
           $ref: "#/components/schemas/ConfiguredIntegrationAttributes"
-        name:
+        id:
+          type: string
+        provider:
           type: string
       required:
-        - name
+        - id
+        - provider
         - attributes
       type: object
     ConfiguredIntegrationAttributes:
@@ -329,10 +338,16 @@ components:
           additionalProperties:
             type: boolean
           type: object
+        displayName:
+          type: string
+        externalRef:
+          type: string
         preferences:
           additionalProperties: {}
           type: object
       required:
+        - displayName
+        - externalRef
         - config
         - preferences
         - dataKinds
@@ -1705,6 +1720,21 @@ components:
           type: string
       required:
         - id
+      type: object
+    ExternalIntegrationOption:
+      additionalProperties: false
+      properties:
+        config:
+          additionalProperties: {}
+          type: object
+        displayName:
+          type: string
+        externalRef:
+          type: string
+      required:
+        - externalRef
+        - displayName
+        - config
       type: object
     ExternalTicket:
       additionalProperties: false
@@ -3101,6 +3131,26 @@ components:
       required:
         - flow_url
       type: object
+    IntegrationOAuthFlowResult:
+      additionalProperties: false
+      properties:
+        configured:
+          items:
+            $ref: "#/components/schemas/ConfiguredIntegration"
+          type: array
+        options:
+          items:
+            $ref: "#/components/schemas/ExternalIntegrationOption"
+          type: array
+        selectionToken:
+          type: string
+        status:
+          type: string
+      required:
+        - status
+        - configured
+        - options
+      type: object
     ListAlertIncidentLinksResponseBody:
       additionalProperties: false
       properties:
@@ -4459,6 +4509,49 @@ components:
         - requester
         - reviewer
         - comment
+      type: object
+    SelectIntegrationOAuthFlowRequestAttributes:
+      additionalProperties: false
+      properties:
+        externalRefs:
+          items:
+            type: string
+          type: array
+        selectionToken:
+          type: string
+      required:
+        - selectionToken
+        - externalRefs
+      type: object
+    SelectIntegrationOAuthFlowRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - https://example.com/schemas/SelectIntegrationOAuthFlowRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/SelectIntegrationOAuthFlowRequestAttributes"
+      required:
+        - attributes
+      type: object
+    SelectIntegrationOAuthFlowResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - https://example.com/schemas/SelectIntegrationOAuthFlowResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IntegrationOAuthFlowResult"
+      required:
+        - data
       type: object
     SendOncallShiftHandoverAttributes:
       additionalProperties: false
@@ -10184,84 +10277,6 @@ paths:
       summary: Create an Incident Milestone
       tags:
         - Incident Milestones
-  /integrations:
-    get:
-      operationId: list-available-integrations
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListAvailableIntegrationsResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Available Integrations
-      tags:
-        - Integrations
   /integrations/configured:
     get:
       operationId: list-configured-integrations
@@ -10345,7 +10360,7 @@ paths:
       operationId: delete-integration
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
             type: string
@@ -10391,12 +10406,11 @@ paths:
       summary: Delete an Integration
       tags:
         - Integrations
-  /integrations/configured/{name}:
     get:
       operationId: get-configured-integration
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
             type: string
@@ -10446,73 +10460,12 @@ paths:
       summary: Get an Integration
       tags:
         - Integrations
-  /integrations/configured/{name}/complete_oauth_flow:
-    post:
-      operationId: complete-integration-oauth-flow
-      parameters:
-        - in: path
-          name: name
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CompleteIntegrationOAuthFlowRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CompleteIntegrationOAuthFlowResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Complete OAuth flow for an Integration
-      tags:
-        - Integrations
-  /integrations/configured/{name}/preferences:
+  /integrations/configured/{id}/preferences:
     post:
       operationId: update-configured-integration-preferences
       parameters:
         - in: path
-          name: name
+          name: id
           required: true
           schema:
             type: string
@@ -10568,27 +10521,44 @@ paths:
       summary: Update Preferences for a Configured Integration
       tags:
         - Integrations
-  /integrations/configured/{name}/start_oauth_flow:
-    post:
-      operationId: start-integration-oauth-flow
+  /integrations/providers:
+    get:
+      operationId: list-available-integrations
       parameters:
-        - in: path
-          name: name
-          required: true
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 10
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: search
           schema:
             type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/StartIntegrationOAuthFlowRequestBody"
-        required: true
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/StartIntegrationOAuthFlowResponseBody"
+                $ref: "#/components/schemas/ListAvailableIntegrationsResponseBody"
           description: OK
         "400":
           content:
@@ -10626,15 +10596,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Start OAuth flow for an Integration
+      summary: List Available Integrations
       tags:
         - Integrations
-  /integrations/{name}:
+  /integrations/providers/{provider}/configured:
     post:
       operationId: configure-integration
       parameters:
         - in: path
-          name: name
+          name: provider
           required: true
           schema:
             type: string
@@ -10688,6 +10658,189 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Create an Integration
+      tags:
+        - Integrations
+  /integrations/providers/{provider}/oauth/complete:
+    post:
+      operationId: complete-integration-oauth-flow
+      parameters:
+        - in: path
+          name: provider
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteIntegrationOAuthFlowRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompleteIntegrationOAuthFlowResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Complete OAuth flow for an Integration
+      tags:
+        - Integrations
+  /integrations/providers/{provider}/oauth/select:
+    post:
+      operationId: select-integration-oauth-flow
+      parameters:
+        - in: path
+          name: provider
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SelectIntegrationOAuthFlowRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SelectIntegrationOAuthFlowResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Select OAuth installations for an Integration
+      tags:
+        - Integrations
+  /integrations/providers/{provider}/oauth/start:
+    post:
+      operationId: start-integration-oauth-flow
+      parameters:
+        - in: path
+          name: provider
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StartIntegrationOAuthFlowRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StartIntegrationOAuthFlowResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Start OAuth flow for an Integration
       tags:
         - Integrations
   /meeting_schedules:
