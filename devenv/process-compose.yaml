@@ -34,7 +34,7 @@ processes:
       restart: always
 
   documents-server:
-    disabled: true
+    disabled: false
     command: just documents-server dev
     availability:
       restart: on_failure

@@ -1,10 +1,15 @@
 set shell := ["bash", "-uc"]
 
+export DB_URL := "postgresql://"+env("POSTGRES_APP_USER")+":"+env("POSTGRES_APP_USER")+"@localhost:"+env("POSTGRES_PORT")+"/"+env("POSTGRES_APP_DB", "rezible-main")+"?sslmode=disable"
+
 _default:
   @just --list
 
 build:
   bun run build
+
+test:
+  bun run test
 
 dev:
   bun run dev
