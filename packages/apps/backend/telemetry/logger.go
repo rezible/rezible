@@ -16,16 +16,16 @@ type (
 	LogAttr    = slog.Attr
 )
 
-func makeSlogHandler(w io.Writer, cfg Config) slog.Handler {
+func makeSlogConsoleHandler(w io.Writer, cfg Config) slog.Handler {
 	opts := &slog.HandlerOptions{
 		AddSource:   cfg.Logging.AddSource,
-		Level:       cfg.getLogLevel(),
+		Level:       cfg.getSlogLogLevel(cfg.Logging.Console.Level),
 		ReplaceAttr: nil,
 	}
-	if cfg.Logging.Json {
+	if cfg.Logging.Console.Json {
 		return slog.NewJSONHandler(w, opts)
 	}
-	if !cfg.Logging.Color {
+	if !cfg.Logging.Console.Color {
 		return slog.NewTextHandler(w, opts)
 	}
 	return tint.NewHandler(w, &tint.Options{

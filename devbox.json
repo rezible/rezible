@@ -17,6 +17,7 @@
     "AUTH_URL": "https://auth.dev.rezible.com",
     "BACKEND_PORT": "7001",
     "API_URL": "https://api.dev.rezible.com",
+    "GRAFANA_PORT": "7012",
     "POSTGRES_PORT": "7010",
     "POSTGRES_ADMIN_USER": "postgres",
     "POSTGRES_APP_USER": "rez_app"

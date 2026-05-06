@@ -89,6 +89,9 @@ _setup-workspace-db:
 @restart-service SERVICE:
     docker compose restart {{SERVICE}}
 
+@stop-service SERVICE:
+    docker compose down {{SERVICE}}
+
 @start-services:
     docker compose up --wait
 

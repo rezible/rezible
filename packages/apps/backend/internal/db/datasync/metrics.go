@@ -36,13 +36,13 @@ func (m *metrics) recordRun(ctx context.Context, dataType, providerType string, 
 		telemetry.ResultAttr(err),
 		telemetry.BoolAttr("skipped", skipped),
 	}
-	m.runs.Add(ctx, 1, telemetry.WithAttributes(attrs...))
+	m.runs.Add(ctx, 1, telemetry.WithMetricAttributes(attrs...))
 	if res != nil {
-		m.setupSeconds.Record(ctx, res.setupTime.Seconds(), telemetry.WithAttributes(attrs...))
+		m.setupSeconds.Record(ctx, res.setupTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
 		if !skipped {
-			m.syncSeconds.Record(ctx, res.syncTime.Seconds(), telemetry.WithAttributes(attrs...))
-			m.records.Add(ctx, res.recordsCount, telemetry.WithAttributes(attrs...))
-			m.mutations.Add(ctx, res.mutationCount, telemetry.WithAttributes(attrs...))
+			m.syncSeconds.Record(ctx, res.syncTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
+			m.records.Add(ctx, res.recordsCount, telemetry.WithMetricAttributes(attrs...))
+			m.mutations.Add(ctx, res.mutationCount, telemetry.WithMetricAttributes(attrs...))
 		}
 	}
 }

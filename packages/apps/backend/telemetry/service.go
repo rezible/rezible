@@ -8,43 +8,42 @@ import (
 	otelmetric "go.opentelemetry.io/otel/metric"
 )
 
-const defaultMeterName = "github.com/rezible/rezible/backend"
+const defaultMeterName = "github.com/rezible/rezible"
 
 type Service struct {
+	logger         *Logger
 	meterProvider  MeterProvider
 	tracerProvider TracerProvider
 }
 
 var defaultService atomic.Pointer[Service]
 
-func NewService(mp MeterProvider, tp TracerProvider) *Service {
-	return &Service{meterProvider: mp, tracerProvider: tp}
+func NewService(logger *Logger, mp MeterProvider, tp TracerProvider) *Service {
+	return &Service{
+		logger:         logger,
+		meterProvider:  mp,
+		tracerProvider: tp,
+	}
 }
 
 func Default() *Service {
 	if s := defaultService.Load(); s != nil {
 		return s
 	}
-	s := NewService(otel.GetMeterProvider(), otel.GetTracerProvider())
-	if defaultService.CompareAndSwap(nil, s) {
-		return s
-	}
-	return defaultService.Load()
-}
-
-func SetDefault(s *Service) {
-	if s == nil {
-		panic("attempted to set default telemetry service to nil")
-	}
-	defaultService.Store(s)
-}
-
-func MeterFor(name string, opts ...MeterOption) Meter {
-	return Default().Meter(name, opts...)
+	panic("no default telemetry service initialized")
+	//s := NewService(slog.Default(), otel.GetMeterProvider(), otel.GetTracerProvider())
+	//if defaultService.CompareAndSwap(nil, s) {
+	//	return s
+	//}
+	//return defaultService.Load()
 }
 
 func DefaultMeter() Meter {
 	return Default().DefaultMeter()
+}
+
+func DefaultTracer() Tracer {
+	return Default().DefaultTracer()
 }
 
 func (s *Service) MeterProvider() MeterProvider {
@@ -53,6 +52,10 @@ func (s *Service) MeterProvider() MeterProvider {
 
 func (s *Service) TracerProvider() TracerProvider {
 	return s.tracerProvider
+}
+
+func (s *Service) DefaultTracer() Tracer {
+	return s.tracerProvider.Tracer(defaultMeterName)
 }
 
 func (s *Service) Meter(name string, opts ...MeterOption) Meter {
@@ -82,16 +85,15 @@ func Float64HistogramInstrument(meter Meter, name, description, unit string) Flo
 	return inst
 }
 
-func Int64ObservableGaugeInstrument(meter Meter, name, description string) Int64ObservableGauge {
-	inst, err := meter.Int64ObservableGauge(name, otelmetric.WithDescription(description))
-	if err != nil {
-		panic(err)
-	}
-	return inst
+func WithMetricAttributes(attributes ...KeyValue) MeasurementOption {
+	return otelmetric.WithAttributes(attributes...)
 }
 
-func WithAttributes(attributes ...KeyValue) MeasurementOption {
-	return otelmetric.WithAttributes(attributes...)
+func NormalizeLabel(value string) string {
+	if value == "" {
+		return "unknown"
+	}
+	return value
 }
 
 func StringAttr(key, value string) KeyValue {
@@ -111,11 +113,4 @@ func ResultAttr(err error) KeyValue {
 		return StringAttr("result", "error")
 	}
 	return StringAttr("result", "success")
-}
-
-func NormalizeLabel(value string) string {
-	if value == "" {
-		return "unknown"
-	}
-	return value
 }

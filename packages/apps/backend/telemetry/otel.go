@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	"strings"
 
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
@@ -27,6 +26,7 @@ type (
 	KeyValue = otelattribute.KeyValue
 
 	TracerProvider = oteltrace.TracerProvider
+	Tracer         oteltrace.Tracer
 
 	LoggerProvider otellog.LoggerProvider
 
@@ -56,10 +56,22 @@ func initOpenTelemetry(ctx context.Context, cfg Config) (*Service, error) {
 		return nil, resErr
 	}
 
-	var tp TracerProvider
-	if !isTracingEnabled(cfg) {
-		tp = nooptrace.NewTracerProvider()
+	var slogHandlers []slog.Handler
+	if cfg.Logging.Console.Enabled {
+		slogHandlers = append(slogHandlers, makeSlogConsoleHandler(os.Stderr, cfg))
+	}
+
+	//var lp LoggerProvider
+	if cfg.isOTelLoggingEnabled() {
+		// unused
 	} else {
+		//lp = nooplog.NewLoggerProvider()
+	}
+	logger := slog.New(slog.NewMultiHandler(slogHandlers...))
+	slog.SetDefault(logger)
+
+	var tp TracerProvider
+	if cfg.isOTelTracingEnabled() {
 		traceExporter, traceExporterErr := otlptracegrpc.New(ctx)
 		if traceExporterErr != nil {
 			return nil, fmt.Errorf("otlp trace exporter: %w", traceExporterErr)
@@ -67,18 +79,19 @@ func initOpenTelemetry(ctx context.Context, cfg Config) (*Service, error) {
 		sdkTp := sdktrace.NewTracerProvider(sdktrace.WithResource(res), sdktrace.WithBatcher(traceExporter))
 		shutdownFns = append(shutdownFns, sdkTp.Shutdown)
 		tp = sdkTp
+	} else {
+		slog.Info("tracing disabled")
+		tp = nooptrace.NewTracerProvider()
 	}
 	otel.SetTracerProvider(tp)
 
 	var mp MeterProvider
-	if !isMetricsEnabled(cfg) {
-		mp = noopmetric.NewMeterProvider()
-	} else {
+	if cfg.isOTelMetricsEnabled() {
 		metricExporter, metricExporterErr := otlpmetricgrpc.New(ctx)
 		if metricExporterErr != nil {
 			return nil, fmt.Errorf("otlp metric exporter: %w", metricExporterErr)
 		}
-		readerOpts := []sdkmetric.PeriodicReaderOption{}
+		var readerOpts []sdkmetric.PeriodicReaderOption
 		if cfg.Metrics.Interval > 0 {
 			readerOpts = append(readerOpts, sdkmetric.WithInterval(cfg.Metrics.Interval))
 		}
@@ -88,20 +101,17 @@ func initOpenTelemetry(ctx context.Context, cfg Config) (*Service, error) {
 		)
 		shutdownFns = append(shutdownFns, sdkMp.Shutdown)
 		mp = sdkMp
+	} else {
+		slog.Info("metrics disabled")
+		mp = noopmetric.NewMeterProvider()
 	}
 	otel.SetMeterProvider(mp)
-
-	//var lp LoggerProvider
-	//if !isLoggingEnabled(cfg) {
-	//	lp = nooplog.NewLoggerProvider()
-	//}
-	//otel.SetLogger(lp)
 
 	if startErr := runtime.Start(runtime.WithMeterProvider(mp)); startErr != nil {
 		slog.Warn("failed to start runtime metrics", "error", startErr)
 	}
 
-	return NewService(mp, tp), nil
+	return NewService(logger, mp, tp), nil
 }
 
 func makeResource(ctx context.Context, cfg Config) (*resource.Resource, error) {
@@ -116,83 +126,4 @@ func makeResource(ctx context.Context, cfg Config) (*resource.Resource, error) {
 		return nil, fmt.Errorf("otel resource: %w", resErr)
 	}
 	return res, nil
-}
-
-func isOtelDisabled() bool {
-	return strings.EqualFold(os.Getenv("OTEL_SDK_DISABLED"), "true")
-}
-
-func isTracingEnabled(cfg Config) bool {
-	if isOtelDisabled() {
-		return false
-	}
-	tracesExporter := strings.ToLower(strings.TrimSpace(os.Getenv("OTEL_TRACES_EXPORTER")))
-	if tracesExporter == "none" {
-		return false
-	}
-	if cfg.Tracing.Enabled {
-		return true
-	}
-	if tracesExporter == "otlp" {
-		return true
-	}
-	for _, key := range []string{
-		"OTEL_EXPORTER_OTLP_ENDPOINT",
-		"OTEL_EXPORTER_OTLP_TRACES_ENDPOINT",
-	} {
-		if os.Getenv(key) != "" {
-			return true
-		}
-	}
-	return false
-}
-
-func isMetricsEnabled(cfg Config) bool {
-	if isOtelDisabled() {
-		return false
-	}
-	metricsExporter := strings.ToLower(strings.TrimSpace(os.Getenv("OTEL_METRICS_EXPORTER")))
-	if metricsExporter == "none" {
-		return false
-	}
-	if cfg.Metrics.Enabled {
-		return true
-	}
-	if metricsExporter == "otlp" {
-		return true
-	}
-	for _, key := range []string{
-		"OTEL_EXPORTER_OTLP_ENDPOINT",
-		"OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
-	} {
-		if os.Getenv(key) != "" {
-			return true
-		}
-	}
-	return false
-}
-
-func isLoggingEnabled(cfg Config) bool {
-	if strings.EqualFold(os.Getenv("OTEL_SDK_DISABLED"), "true") {
-		return false
-	}
-	logsExporter := strings.ToLower(strings.TrimSpace(os.Getenv("OTEL_LOGS_EXPORTER")))
-	if logsExporter == "none" {
-		return false
-	}
-	if cfg.Logging.Enabled {
-		return true
-	}
-	if logsExporter == "otlp" {
-		return true
-	}
-	for _, key := range []string{
-		"OTEL_EXPORTER_OTLP_ENDPOINT",
-		"OTEL_EXPORTER_OTLP_LOGS_ENDPOINT",
-	} {
-		if os.Getenv(key) != "" {
-			return true
-		}
-	}
-	return false
 }

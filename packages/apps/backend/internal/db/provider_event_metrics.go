@@ -27,7 +27,7 @@ func newProviderEventMetrics() *providerEventMetrics {
 
 func (m *providerEventMetrics) recordIngested(ctx context.Context, provider, source string, res *ingestProviderEventResult, err error) {
 	if m != nil {
-		m.ingested.Add(ctx, 1, telemetry.WithAttributes(
+		m.ingested.Add(ctx, 1, telemetry.WithMetricAttributes(
 			telemetry.StringAttr("provider", telemetry.NormalizeLabel(provider)),
 			telemetry.StringAttr("source", telemetry.NormalizeLabel(source)),
 			telemetry.ResultAttr(err),
@@ -47,12 +47,12 @@ func (m *providerEventMetrics) recordProcessed(ctx context.Context, provider, so
 			telemetry.BoolAttr("process_success", processSuccess),
 			telemetry.BoolAttr("projection_success", projectionSuccess),
 		}
-		m.processed.Add(ctx, 1, telemetry.WithAttributes(attrs...))
+		m.processed.Add(ctx, 1, telemetry.WithMetricAttributes(attrs...))
 		if res != nil {
-			m.processSeconds.Record(ctx, res.processTime.Seconds(), telemetry.WithAttributes(attrs...))
+			m.processSeconds.Record(ctx, res.processTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
 			if res.normalizeCount > 0 {
-				m.normalizedEvents.Add(ctx, int64(res.normalizeCount), telemetry.WithAttributes(attrs...))
-				m.projectionSeconds.Record(ctx, res.projectionTime.Seconds(), telemetry.WithAttributes(attrs...))
+				m.normalizedEvents.Add(ctx, int64(res.normalizeCount), telemetry.WithMetricAttributes(attrs...))
+				m.projectionSeconds.Record(ctx, res.projectionTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
 			}
 		}
 	}

@@ -37,7 +37,7 @@ func makeAPITelemetryMiddleware() func(huma.Context, func(huma.Context)) {
 			telemetry.IntAttr("http.response.status_code", status),
 			telemetry.StringAttr("rezible.operation_id", telemetry.NormalizeLabel(operationID)),
 		}
-		requests.Add(ctx.Context(), 1, telemetry.WithAttributes(attrs...))
-		requestSeconds.Record(ctx.Context(), time.Since(start).Seconds(), telemetry.WithAttributes(attrs...))
+		requests.Add(ctx.Context(), 1, telemetry.WithMetricAttributes(attrs...))
+		requestSeconds.Record(ctx.Context(), time.Since(start).Seconds(), telemetry.WithMetricAttributes(attrs...))
 	}
 }

@@ -45,12 +45,12 @@ func Setup(ctx context.Context, svcs *rez.Services) error {
 		available, configErr := pkg.IsAvailable()
 		if !available || configErr != nil {
 			lvl := slog.LevelInfo
-			logArgs := []string{"name", pkg.Name()}
+			l := logger.With("name", pkg.Name())
 			if configErr != nil {
 				lvl = slog.LevelWarn
-				logArgs = append(logArgs, "config_error", configErr.Error())
+				l = l.With("config_error", configErr.Error())
 			}
-			logger.Log(ctx, lvl, "integration not available", logArgs)
+			l.Log(ctx, lvl, "integration not available")
 			continue
 		}
 		logger.DebugContext(ctx, "loaded integration", "name", pkg.Name())

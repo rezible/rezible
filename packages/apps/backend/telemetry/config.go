@@ -18,11 +18,20 @@ type Config struct {
 }
 
 type loggingConfig struct {
-	Enabled   bool   `koanf:"enabled"`
-	Level     string `koanf:"level"`
-	Json      bool   `koanf:"json"`
-	AddSource bool   `koanf:"add_source"`
-	Color     bool   `koanf:"color"`
+	Console   loggingConsoleConfig `koanf:"console"`
+	OTel      loggingOtelConfig    `koanf:"otel"`
+	AddSource bool                 `koanf:"add_source"`
+}
+
+type loggingConsoleConfig struct {
+	Enabled bool   `koanf:"enabled"`
+	Level   string `koanf:"level"`
+	Json    bool   `koanf:"json"`
+	Color   bool   `koanf:"color"`
+}
+
+type loggingOtelConfig struct {
+	Enabled bool `koanf:"enabled"`
 }
 
 type tracingConfig struct {
@@ -39,22 +48,26 @@ func loadConfig() (Config, error) {
 	cfg := Config{
 		ServiceName: os.Getenv("OTEL_SERVICE_NAME"),
 		Logging: loggingConfig{
-			Level: "info",
-			Json:  true,
+			Console: loggingConsoleConfig{
+				Enabled: true,
+				Level:   "info",
+				Json:    true,
+			},
 		},
 		Tracing: tracingConfig{
-			Enabled: false,
+			Enabled: true,
 		},
 		Metrics: metricsConfig{
-			Enabled:  false,
+			Enabled:  true,
 			Interval: 30 * time.Second,
 		},
 	}
 	if rez.Config.DebugMode() {
-		cfg.Logging = loggingConfig{
-			Level: "debug",
-			Json:  false,
-			Color: true,
+		cfg.Logging.Console = loggingConsoleConfig{
+			Enabled: true,
+			Level:   "debug",
+			Json:    false,
+			Color:   true,
 		}
 	}
 	if cfg.ServiceName == "" {
@@ -68,8 +81,8 @@ func loadConfig() (Config, error) {
 	return cfg, nil
 }
 
-func (cfg Config) getLogLevel() slog.Level {
-	switch strings.ToLower(strings.TrimSpace(cfg.Logging.Level)) {
+func (cfg Config) getSlogLogLevel(raw string) slog.Level {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
 	case "debug":
 		return slog.LevelDebug
 	case "", "info":
@@ -79,6 +92,22 @@ func (cfg Config) getLogLevel() slog.Level {
 	case "error":
 		return slog.LevelError
 	}
-	slog.Default().Error("unknown log level, defaulting to info", "level", cfg.Logging.Level)
+	slog.Error("unknown log level, defaulting to info", "level", raw)
 	return slog.LevelInfo
+}
+
+func (cfg Config) isOtelDisabled() bool {
+	return strings.EqualFold(os.Getenv("OTEL_SDK_DISABLED"), "true")
+}
+
+func (cfg Config) isOTelTracingEnabled() bool {
+	return cfg.Tracing.Enabled && !cfg.isOtelDisabled()
+}
+
+func (cfg Config) isOTelMetricsEnabled() bool {
+	return cfg.Metrics.Enabled && !cfg.isOtelDisabled()
+}
+
+func (cfg Config) isOTelLoggingEnabled() bool {
+	return cfg.Logging.OTel.Enabled && !cfg.isOtelDisabled()
 }

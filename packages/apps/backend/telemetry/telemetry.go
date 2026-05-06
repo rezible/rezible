@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log/slog"
-	"os"
 )
 
 const (
@@ -20,13 +18,11 @@ func Init(ctx context.Context) error {
 		return cfgErr
 	}
 
-	slog.SetDefault(slog.New(makeSlogHandler(os.Stderr, cfg)))
-
 	svc, otelErr := initOpenTelemetry(ctx, cfg)
 	if otelErr != nil {
 		return fmt.Errorf("otel: %w", otelErr)
 	}
-	SetDefault(svc)
+	defaultService.Store(svc)
 
 	return nil
 }

@@ -17,8 +17,20 @@ processes:
       max_restarts: 1
     readiness_probe:
       exec:
-        command: wget -q --spider "http://localhost:$AUTH_PORT/.well-known/openid-configuration"
+        command: wget -q --spider "http://localhost:${AUTH_PORT}/.well-known/openid-configuration"
       period_seconds: 3
+
+  telemetry:
+    command: just dev run-service telemetry
+    is_daemon: true
+    disabled: false
+    availability:
+      restart: on_failure
+      max_restarts: 1
+    readiness_probe:
+      exec:
+        command: wget -q --spider "http://localhost:${GRAFANA_PORT}/api/health"
+      period_seconds: 5
 
   backend:
     command: just backend dev
@@ -26,6 +38,8 @@ processes:
       restart: always
     depends_on:
       postgres:
+        condition: process_healthy
+      telemetry:
         condition: process_healthy
 
   frontend:

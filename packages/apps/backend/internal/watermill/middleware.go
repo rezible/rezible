@@ -29,7 +29,7 @@ func (ms *MessageService) telemetryMiddleware(fn message.HandlerFunc) message.Ha
 		start := time.Now()
 		out, err := fn(msg)
 
-		attrsOpts := telemetry.WithAttributes(
+		attrsOpts := telemetry.WithMetricAttributes(
 			telemetry.StringAttr("message.name", telemetry.NormalizeLabel(name)),
 			telemetry.StringAttr("topic", telemetry.NormalizeLabel(topic)),
 			telemetry.ResultAttr(err),

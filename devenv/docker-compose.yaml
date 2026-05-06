@@ -36,11 +36,11 @@ services:
       - API_URL=${API_URL}
 
   telemetry:
-    profiles: ["telemetry"]
     image: grafana/otel-lgtm:latest
     container_name: otel-lgtm
     ports:
-      - "3000"   # Grafana UI
-      - "4317"   # OpenTelemetry gRPC collector
+      - "${GRAFANA_PORT:-7012}:3000"     # Grafana UI
+      - "${OTEL_GRPC_PORT:-4317}:4317"   # OpenTelemetry gRPC collector
+      - "${OTEL_HTTP_PORT:-4318}:4318"   # OpenTelemetry HTTP collector
     environment:
       ENABLE_LOGS_ALL: "false"
