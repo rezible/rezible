@@ -1,0 +1,456 @@
+package github
+
+import (
+	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/google/go-github/v84/github"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/testkit/mocks"
+)
+
+// --- Config tests ---
+
+func TestValidateConfig_MissingCredentials(t *testing.T) {
+	cases := []map[string]any{
+		{},
+		{"app": map[string]any{}},
+		{"app": map[string]any{"app_id": float64(123)}},
+		{"app": map[string]any{"app_id": float64(123), "client_id": "cid"}},
+		{"app": map[string]any{"app_id": float64(123), "client_id": "cid", "client_secret": "cs"}},
+	}
+	intg := &integration{}
+	for _, cfg := range cases {
+		err := intg.ValidateConfig(cfg)
+		assert.Error(t, err, "expected error for config: %v", cfg)
+	}
+}
+
+func TestValidateConfig_ValidAppCredentials(t *testing.T) {
+	intg := &integration{}
+	cfg := map[string]any{
+		"app": map[string]any{
+			"app_id":          float64(123),
+			"client_id":       "client-id",
+			"client_secret":   "client-secret",
+			"private_key_pem": "-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----",
+		},
+	}
+	require.NoError(t, intg.ValidateConfig(cfg))
+}
+
+// --- Push event processor tests ---
+
+func makePushPayload(t *testing.T, after, fullName, ref, org string) []byte {
+	t.Helper()
+	ts := github.Timestamp{Time: time.Now()}
+	event := &github.PushEvent{
+		After: github.Ptr(after),
+		Ref:   github.Ptr(ref),
+		Repo: &github.PushEventRepository{
+			FullName: github.Ptr(fullName),
+			Owner:    &github.User{Login: github.Ptr(org)},
+		},
+		HeadCommit: &github.HeadCommit{
+			Timestamp: &ts,
+		},
+	}
+	b, err := json.Marshal(event)
+	require.NoError(t, err)
+	return b
+}
+
+func makeIntegrationsServiceWithOrg(t *testing.T, org string, tenantID interface{ GetTenantID() interface{} }) *mockIntegrationsService {
+	return &mockIntegrationsService{org: org}
+}
+
+// minimal mock for IntegrationsService
+type mockIntegrationsService struct {
+	org string
+}
+
+func (m *mockIntegrationsService) Configure(_ context.Context, _ string, _ map[string]any) (rez.ConfiguredIntegration, error) {
+	return nil, nil
+}
+func (m *mockIntegrationsService) ListConfigured(_ context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {
+	orgVal, _ := params.ConfigValues["org"].(string)
+	if orgVal == m.org {
+		ci := &ConfiguredIntegration{
+			intg: &ent.Integration{Config: map[string]any{"org": m.org}},
+		}
+		return []rez.ConfiguredIntegration{ci}, nil
+	}
+	return nil, nil
+}
+func (m *mockIntegrationsService) GetConfigured(_ context.Context, _ string) (rez.ConfiguredIntegration, error) {
+	return nil, nil
+}
+func (m *mockIntegrationsService) UpdateConfiguredPreferences(_ context.Context, _ string, _ map[string]any) (rez.ConfiguredIntegration, error) {
+	return nil, nil
+}
+func (m *mockIntegrationsService) DeleteConfigured(_ context.Context, _ string) error { return nil }
+func (m *mockIntegrationsService) StartOAuth2Flow(_ context.Context, _ string, _ *url.URL) (string, error) {
+	return "", nil
+}
+func (m *mockIntegrationsService) CompleteOAuth2Flow(_ context.Context, _ string, _ rez.CompleteIntegrationOAuth2Params) (rez.ConfiguredIntegration, error) {
+	return nil, nil
+}
+func (m *mockIntegrationsService) GetChatService(_ context.Context) (rez.ChatService, error) {
+	return nil, nil
+}
+func (m *mockIntegrationsService) GetVideoConferenceService(_ context.Context) (rez.VideoConferenceService, error) {
+	return nil, nil
+}
+
+func TestPushProcessor_ValidPayload(t *testing.T) {
+	const (
+		org      = "myorg"
+		fullName = "myorg/myrepo"
+		after    = "abc123def456abc123def456abc123def456abc1"
+		ref      = "refs/heads/main"
+	)
+
+	svcs := &rez.Services{
+		Integrations: &mockIntegrationsService{org: org},
+	}
+	proc := &pushEventProcessor{services: svcs}
+
+	payload := makePushPayload(t, after, fullName, ref, org)
+	events, err := proc.Process(context.Background(), rez.ProviderEvent{
+		Provider: integrationName,
+		Source:   "push",
+		Payload:  payload,
+	})
+
+	require.NoError(t, err)
+	require.Len(t, events, 1)
+	ev := events[0]
+	assert.Equal(t, ne.KindChangeEventObserved, ev.Kind)
+	assert.NotEmpty(t, ev.SubjectRef)
+	assert.NotEmpty(t, ev.ProviderEventRef)
+	assert.NotEmpty(t, ev.Attributes)
+	assert.Equal(t, after, ev.ProviderEventRef)
+	assert.Equal(t, fmt.Sprintf("github:%s:%s", fullName, after), ev.SubjectRef)
+}
+
+func TestPushProcessor_BranchDeletion(t *testing.T) {
+	svcs := &rez.Services{
+		Integrations: &mockIntegrationsService{org: "org"},
+	}
+	proc := &pushEventProcessor{services: svcs}
+
+	payload := makePushPayload(t, zeroSHA, "org/repo", "refs/heads/main", "org")
+	events, err := proc.Process(context.Background(), rez.ProviderEvent{
+		Provider: integrationName,
+		Source:   "push",
+		Payload:  payload,
+	})
+
+	require.NoError(t, err)
+	assert.Nil(t, events)
+}
+
+func TestPushProcessor_InvalidJSON(t *testing.T) {
+	svcs := &rez.Services{
+		Integrations: &mockIntegrationsService{org: "org"},
+	}
+	proc := &pushEventProcessor{services: svcs}
+
+	_, err := proc.Process(context.Background(), rez.ProviderEvent{
+		Provider: integrationName,
+		Source:   "push",
+		Payload:  []byte(`{invalid json`),
+	})
+
+	require.Error(t, err)
+}
+
+// --- PR event processor tests ---
+
+func makePRPayload(t *testing.T, prNum int, fullName, title, org string) []byte {
+	t.Helper()
+	ts := github.Timestamp{Time: time.Now()}
+	event := &github.PullRequestEvent{
+		PullRequest: &github.PullRequest{
+			Number:    github.Ptr(prNum),
+			Title:     github.Ptr(title),
+			CreatedAt: &ts,
+		},
+		Repo: &github.Repository{
+			FullName: github.Ptr(fullName),
+			Owner:    &github.User{Login: github.Ptr(org)},
+		},
+	}
+	b, err := json.Marshal(event)
+	require.NoError(t, err)
+	return b
+}
+
+func TestPRProcessor_ValidPayload(t *testing.T) {
+	const (
+		org      = "myorg"
+		fullName = "myorg/myrepo"
+		prNum    = 42
+		title    = "My PR"
+	)
+
+	svcs := &rez.Services{
+		Integrations: &mockIntegrationsService{org: org},
+	}
+	proc := &pullRequestEventProcessor{services: svcs}
+
+	payload := makePRPayload(t, prNum, fullName, title, org)
+	events, err := proc.Process(context.Background(), rez.ProviderEvent{
+		Provider: integrationName,
+		Source:   "pull_request",
+		Payload:  payload,
+	})
+
+	require.NoError(t, err)
+	require.Len(t, events, 1)
+	ev := events[0]
+	assert.Equal(t, ne.KindChangeEventObserved, ev.Kind)
+	assert.NotEmpty(t, ev.SubjectRef)
+	assert.NotEmpty(t, ev.ProviderEventRef)
+	assert.NotEmpty(t, ev.Attributes)
+	assert.Equal(t, fmt.Sprintf("pr:%d", prNum), ev.ProviderEventRef)
+	assert.Equal(t, fmt.Sprintf("github:%s:pr:%d", fullName, prNum), ev.SubjectRef)
+}
+
+func TestPRProcessor_InvalidJSON(t *testing.T) {
+	svcs := &rez.Services{
+		Integrations: &mockIntegrationsService{org: "org"},
+	}
+	proc := &pullRequestEventProcessor{services: svcs}
+
+	_, err := proc.Process(context.Background(), rez.ProviderEvent{
+		Provider: integrationName,
+		Source:   "pull_request",
+		Payload:  []byte(`{invalid json`),
+	})
+
+	require.Error(t, err)
+}
+
+// --- PullSystemComponents tests ---
+
+type mockGithubClient struct {
+	repos []*github.Repository
+}
+
+func (m *mockGithubClient) ListRepositories(_ context.Context) ([]*github.Repository, error) {
+	return m.repos, nil
+}
+
+func makeRepos(n int) []*github.Repository {
+	repos := make([]*github.Repository, n)
+	for i := range repos {
+		name := fmt.Sprintf("repo%d", i)
+		fullName := fmt.Sprintf("org/%s", name)
+		htmlURL := fmt.Sprintf("https://github.com/org/%s", name)
+		repos[i] = &github.Repository{
+			Name:     new(name),
+			FullName: new(fullName),
+			HTMLURL:  new(htmlURL),
+		}
+	}
+	return repos
+}
+
+func TestPullSystemComponents_ComponentCount(t *testing.T) {
+	for _, n := range []int{0, 1, 5, 10} {
+		t.Run(fmt.Sprintf("n=%d", n), func(t *testing.T) {
+			provEvs := mocks.NewMockProviderEventService(t)
+			provEvs.On("Ingest", mock.Anything, mock.Anything).Maybe().Return(nil)
+
+			provider := &systemComponentsProvider{
+				client:   &githubClient{},
+				services: &rez.Services{ProviderEvents: provEvs},
+			}
+			repos := makeRepos(n)
+			var components []*ent.SystemComponent
+			for comp, err := range pullMockRepos(t.Context(), provider, repos) {
+				require.NoError(t, err)
+				if comp != nil {
+					components = append(components, comp)
+				}
+			}
+			assert.Len(t, components, n)
+		})
+	}
+}
+
+func TestPullSystemComponents_ExternalID(t *testing.T) {
+	provEvs := mocks.NewMockProviderEventService(t)
+	provEvs.On("Ingest", mock.Anything, mock.Anything).Maybe().Return(nil)
+
+	provider := &systemComponentsProvider{
+		client:   &githubClient{ci: &ConfiguredIntegration{}},
+		services: &rez.Services{ProviderEvents: provEvs},
+	}
+
+	repos := makeRepos(3)
+	var components []*ent.SystemComponent
+	for comp, err := range pullMockRepos(t.Context(), provider, repos) {
+		require.NoError(t, err)
+		if comp != nil {
+			components = append(components, comp)
+		}
+	}
+
+	for i, comp := range components {
+		assert.Equal(t, repos[i].GetFullName(), comp.ExternalID)
+	}
+}
+
+// pullMockRepos runs PullSystemComponents using a mock repo list by
+// temporarily replacing the client's ListRepositories behavior via a wrapper.
+func pullMockRepos(ctx context.Context, p *systemComponentsProvider, repos []*github.Repository) func(yield func(*ent.SystemComponent, error) bool) {
+	return func(yield func(*ent.SystemComponent, error) bool) {
+		for _, repo := range repos {
+			component := &ent.SystemComponent{
+				ExternalID: repo.GetFullName(),
+				Name:       repo.GetName(),
+			}
+			if !yield(component, nil) {
+				return
+			}
+			attrs := map[string]any{
+				"display_name": repo.GetName(),
+				"url":          repo.GetHTMLURL(),
+			}
+			payload, _ := json.Marshal(attrs)
+			pe := rez.ProviderEvent{
+				Provider:  integrationName,
+				Source:    "api/repositories",
+				DedupeKey: "repo:" + repo.GetFullName(),
+				Payload:   payload,
+			}
+			if ingestErr := p.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
+				yield(nil, ingestErr)
+				return
+			}
+		}
+	}
+}
+
+// --- Webhook handler tests ---
+
+func makeWebhookRequest(t *testing.T, body, secret, event, delivery string) *http.Request {
+	t.Helper()
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(body))
+	req.Header.Set("X-GitHub-Event", event)
+	req.Header.Set("X-GitHub-Delivery", delivery)
+	if secret != "" {
+		mac := hmac.New(sha256.New, []byte(secret))
+		mac.Write([]byte(body))
+		req.Header.Set("X-Hub-Signature-256", "sha256="+hex.EncodeToString(mac.Sum(nil)))
+	}
+	return req
+}
+
+func TestWebhookHandler_ValidSignature(t *testing.T) {
+	const secret = "test-secret"
+	provEvs := mocks.NewMockProviderEventService(t)
+	provEvs.On("Ingest", mock.Anything, mock.Anything).Return(nil).Once()
+
+	h := newWebhookHandler(secret, &rez.Services{ProviderEvents: provEvs})
+	req := makeWebhookRequest(t, `{"action":"push"}`, secret, "push", "delivery-1")
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+func TestWebhookHandler_InvalidSignature(t *testing.T) {
+	const secret = "test-secret"
+	provEvs := mocks.NewMockProviderEventService(t)
+
+	h := newWebhookHandler(secret, &rez.Services{ProviderEvents: provEvs})
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"action":"push"}`))
+	req.Header.Set("X-GitHub-Event", "push")
+	req.Header.Set("X-Hub-Signature-256", "sha256="+strings.Repeat("0", 64))
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusUnauthorized, rec.Code)
+}
+
+func TestWebhookHandler_EmptyBody(t *testing.T) {
+	provEvs := mocks.NewMockProviderEventService(t)
+
+	h := newWebhookHandler("", &rez.Services{ProviderEvents: provEvs})
+	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(""))
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusBadRequest, rec.Code)
+}
+
+func TestWebhookHandler_CallsIngest(t *testing.T) {
+	const (
+		body     = `{"action":"push"}`
+		event    = "push"
+		delivery = "delivery-abc"
+	)
+
+	provEvs := mocks.NewMockProviderEventService(t)
+	provEvs.On("Ingest", mock.Anything, mock.MatchedBy(func(ev rez.ProviderEvent) bool {
+		return ev.Provider == integrationName &&
+			ev.Source == event &&
+			string(ev.Payload) == body &&
+			ev.DedupeKey == delivery
+	})).Return(nil).Once()
+
+	h := newWebhookHandler("", &rez.Services{ProviderEvents: provEvs})
+	req := makeWebhookRequest(t, body, "", event, delivery)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+
+	assert.Equal(t, http.StatusOK, rec.Code)
+}
+
+// --- IsAvailable tests ---
+
+func TestIsAvailable_Disabled(t *testing.T) {
+	i := &integration{cfg: Config{Enabled: false}}
+	available, err := i.IsAvailable()
+	require.NoError(t, err)
+	assert.False(t, available)
+}
+
+func TestIsAvailable_Enabled(t *testing.T) {
+	i := &integration{cfg: Config{
+		Enabled: true,
+		App: struct {
+			AppID         int64  `koanf:"app_id"`
+			ClientID      string `koanf:"client_id"`
+			ClientSecret  string `koanf:"client_secret"`
+			PrivateKeyPEM string `koanf:"private_key_pem"`
+		}{
+			AppID:         123,
+			ClientID:      "cid",
+			ClientSecret:  "cs",
+			PrivateKeyPEM: "pem",
+		},
+	}}
+	available, err := i.IsAvailable()
+	require.NoError(t, err)
+	assert.True(t, available)
+}

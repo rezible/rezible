@@ -16,6 +16,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/fake"
+	"github.com/rezible/rezible/internal/github"
 	"github.com/rezible/rezible/internal/google"
 	"github.com/rezible/rezible/internal/slack"
 )
@@ -28,6 +29,7 @@ var (
 		fakeprovider.SetupIntegration,
 		slack.SetupIntegration,
 		google.SetupIntegration,
+		github.SetupIntegration,
 	}
 )
 
