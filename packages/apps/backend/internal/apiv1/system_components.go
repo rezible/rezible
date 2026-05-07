@@ -31,12 +31,46 @@ func (s *systemComponentsHandler) ListSystemComponents(ctx context.Context, requ
 		return nil, oapi.Error(ctx, "failed to query system components", queryErr)
 	}
 	resp.Body.Data = make([]oapi.SystemComponent, len(listRes.Data))
+	relationshipCounts, countErr := s.componentRelationshipCounts(ctx, listRes.Data)
+	if countErr != nil {
+		return nil, oapi.Error(ctx, "failed to count system component relationships", countErr)
+	}
 	for i, cmp := range listRes.Data {
-		resp.Body.Data[i] = oapi.SystemComponentFromEnt(cmp)
+		resp.Body.Data[i] = oapi.SystemComponentFromEntWithRelationshipCount(cmp, relationshipCounts[cmp.ID])
 	}
 	resp.Body.Pagination = oapi.ResponsePagination{Total: listRes.Count}
 
 	return &resp, nil
+}
+
+func (s *systemComponentsHandler) componentRelationshipCounts(ctx context.Context, components []*ent.SystemComponent) (map[uuid.UUID]int, error) {
+	counts := make(map[uuid.UUID]int, len(components))
+	if len(components) == 0 {
+		return counts, nil
+	}
+	ids := make([]uuid.UUID, len(components))
+	for i, cmp := range components {
+		ids[i] = cmp.ID
+		counts[cmp.ID] = 0
+	}
+	rels, relErr := s.db.SystemComponentRelationship.Query().
+		Where(systemcomponentrelationship.Or(
+			systemcomponentrelationship.SourceIDIn(ids...),
+			systemcomponentrelationship.TargetIDIn(ids...),
+		)).
+		All(ctx)
+	if relErr != nil {
+		return nil, relErr
+	}
+	for _, rel := range rels {
+		if _, ok := counts[rel.SourceID]; ok {
+			counts[rel.SourceID]++
+		}
+		if _, ok := counts[rel.TargetID]; ok {
+			counts[rel.TargetID]++
+		}
+	}
+	return counts, nil
 }
 
 func (s *systemComponentsHandler) CreateSystemComponent(ctx context.Context, request *oapi.CreateSystemComponentRequest) (*oapi.CreateSystemComponentResponse, error) {
@@ -79,11 +113,11 @@ func (s *systemComponentsHandler) CreateSystemComponent(ctx context.Context, req
 func (s *systemComponentsHandler) GetSystemComponent(ctx context.Context, request *oapi.GetSystemComponentRequest) (*oapi.GetSystemComponentResponse, error) {
 	var resp oapi.GetSystemComponentResponse
 
-	cmp, queryErr := s.db.SystemComponent.Get(ctx, request.Id)
+	cmp, queryErr := s.components.GetComponentWithDetails(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to query system component", queryErr)
 	}
-	resp.Body.Data = oapi.SystemComponentFromEnt(cmp)
+	resp.Body.Data = oapi.SystemComponentFromDetails(cmp)
 
 	return &resp, nil
 }
@@ -136,8 +170,13 @@ func (s *systemComponentsHandler) ListSystemComponentRelationships(ctx context.C
 		query.Where(targetPred)
 	}
 	if request.ComponentId != uuid.Nil {
-		query.Where(systemcomponentrelationship.Or(srcPred, targetPred))
+		query.Where(systemcomponentrelationship.Or(
+			systemcomponentrelationship.SourceID(request.ComponentId),
+			systemcomponentrelationship.TargetID(request.ComponentId),
+		))
 	}
+	query.WithSource()
+	query.WithTarget()
 
 	rels, relsErr := query.All(ctx)
 	if relsErr != nil {

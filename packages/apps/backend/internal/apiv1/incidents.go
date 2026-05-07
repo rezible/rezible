@@ -32,7 +32,8 @@ func (h *incidentsHandler) ListIncidents(ctx context.Context, req *oapi.ListInci
 	var resp oapi.ListIncidentsResponse
 
 	params := rez.ListIncidentsParams{
-		ListParams: req.ListParams(),
+		ListParams:  req.ListParams(),
+		ComponentId: req.ComponentId,
 	}
 	incs, listErr := h.incidents.ListIncidents(ctx, params)
 	if listErr != nil {

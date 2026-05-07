@@ -7,6 +7,7 @@
 	import SearchInput from "$components/search-input/SearchInput.svelte";
 	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
 	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import SystemComponentListItem from "./SystemComponentListItem.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "System Components" }]);
 
@@ -25,10 +26,7 @@
 {/snippet}
 
 {#snippet componentListItem(c: SystemComponent)}
-	<a href="/components/{c.id}">
-		<span>list components</span>
-		<!-- <ListItem title={c.attributes.name} subheading={c.attributes.description} /> -->
-	</a>
+	<SystemComponentListItem component={c} />
 {/snippet}
 
 <FilterPage {filters}>
@@ -38,8 +36,8 @@
 				{#each components as c (c.id)}
 					{@render componentListItem(c)}
 				{:else}
-					<div class="grid place-items-center flex-1">
-						<span class="text-surface-content/80">No Components Found</span>
+					<div class="grid flex-1 place-items-center rounded border border-dashed border-border p-8">
+						<span class="text-sm text-muted-foreground">No components found</span>
 					</div>
 				{/each}
 			{/snippet}

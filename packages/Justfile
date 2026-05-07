@@ -16,4 +16,4 @@ apps_dir := source_dir() / "apps"
 [working-directory("..")]
 @generate-api-client:
     just backend gen-api
-    bun run --filter=@rezible/api-client-ts --elide-lines 0 build
+    bun run --filter=@rezible/api-client-ts build

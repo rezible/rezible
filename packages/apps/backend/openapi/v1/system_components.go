@@ -6,6 +6,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
@@ -85,13 +86,16 @@ type (
 		Attributes SystemComponentAttributes `json:"attributes"`
 	}
 	SystemComponentAttributes struct {
-		Name        string                      `json:"name"`
-		KindId      uuid.UUID                   `json:"kindId"`
-		Description string                      `json:"description"`
-		Properties  map[string]any              `json:"properties"`
-		Constraints []SystemComponentConstraint `json:"constraints"`
-		Signals     []SystemComponentSignal     `json:"signals"`
-		Controls    []SystemComponentControl    `json:"controls"`
+		Name                string                      `json:"name"`
+		KindId              uuid.UUID                   `json:"kindId"`
+		Kind                *SystemComponentKind        `json:"kind,omitempty"`
+		Description         string                      `json:"description"`
+		Properties          map[string]any              `json:"properties"`
+		RelationshipCount   int                         `json:"relationshipCount"`
+		LinkedRepositoryRef *string                     `json:"linkedRepositoryRef" nullable:"true"`
+		Constraints         []SystemComponentConstraint `json:"constraints"`
+		Signals             []SystemComponentSignal     `json:"signals"`
+		Controls            []SystemComponentControl    `json:"controls"`
 	}
 
 	SystemComponentKind struct {
@@ -135,9 +139,11 @@ type (
 		Attributes SystemComponentRelationshipAttributes `json:"attributes"`
 	}
 	SystemComponentRelationshipAttributes struct {
-		SourceId    uuid.UUID `json:"sourceId"`
-		TargetId    uuid.UUID `json:"targetId"`
-		Description string    `json:"description"`
+		SourceId    uuid.UUID        `json:"sourceId"`
+		TargetId    uuid.UUID        `json:"targetId"`
+		Description string           `json:"description"`
+		Source      *SystemComponent `json:"source,omitempty"`
+		Target      *SystemComponent `json:"target,omitempty"`
 	}
 
 	SystemComponentRelationshipFeedbackSignal struct {
@@ -182,10 +188,32 @@ func SystemComponentFromEnt(sc *ent.SystemComponent) SystemComponent {
 		attr.Signals[i] = SystemComponentSignalFromEnt(sig)
 	}
 
+	if kind, kindErr := sc.Edges.KindOrErr(); kindErr == nil {
+		attr.Kind = new(SystemComponentKindFromEnt(kind))
+	}
+	if rels, relsErr := sc.Edges.ComponentRelationshipsOrErr(); relsErr == nil {
+		attr.RelationshipCount = len(rels)
+	}
+
 	return SystemComponent{
 		Id:         sc.ID,
 		Attributes: attr,
 	}
+}
+
+func SystemComponentFromEntWithRelationshipCount(sc *ent.SystemComponent, relationshipCount int) SystemComponent {
+	cmp := SystemComponentFromEnt(sc)
+	cmp.Attributes.RelationshipCount = relationshipCount
+	return cmp
+}
+
+func SystemComponentFromDetails(details *rez.SystemComponentDetails) SystemComponent {
+	cmp := SystemComponentFromEnt(details.Component)
+	cmp.Attributes.RelationshipCount = len(details.Relationships)
+	if details.LinkedRepositoryAlias != nil {
+		cmp.Attributes.LinkedRepositoryRef = &details.LinkedRepositoryAlias.SubjectRef
+	}
+	return cmp
 }
 
 func SystemComponentKindFromEnt(k *ent.SystemComponentKind) SystemComponentKind {
@@ -233,6 +261,12 @@ func SystemComponentRelationshipFromEnt(sc *ent.SystemComponentRelationship) Sys
 		SourceId:    sc.SourceID,
 		TargetId:    sc.TargetID,
 		Description: sc.Description,
+	}
+	if source, sourceErr := sc.Edges.SourceOrErr(); sourceErr == nil {
+		attr.Source = new(SystemComponentFromEnt(source))
+	}
+	if target, targetErr := sc.Edges.TargetOrErr(); targetErr == nil {
+		attr.Target = new(SystemComponentFromEnt(target))
 	}
 
 	/*
@@ -364,7 +398,7 @@ var ListSystemComponentRelationships = huma.Operation{
 
 type ListSystemComponentRelationshipsRequest struct {
 	ListRequest
-	ComponentId uuid.UUID `json:"componentId"`
+	ComponentId uuid.UUID `query:"componentId"`
 	SourceId    uuid.UUID `query:"sourceId"`
 	TargetId    uuid.UUID `query:"targetId"`
 }

@@ -4,23 +4,29 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"log/slog"
+	"reflect"
 
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/systemcomponent"
+	scr "github.com/rezible/rezible/ent/systemcomponentrelationship"
 )
 
-func syncSystemComponents(ctx context.Context, db *ent.Client, prov rez.SystemComponentsDataProvider, opts SyncOptions, met *metrics) error {
-	b := &systemComponentsBatcher{db: db, provider: prov}
+const systemComponentProviderSource = "datasync/system_components"
+
+func syncSystemComponents(ctx context.Context, db *ent.Client, prov rez.SystemComponentsDataProvider, providerName string, opts SyncOptions, met *metrics) error {
+	b := &systemComponentsBatcher{db: db, provider: prov, providerName: providerName}
 	s := newBatchedDataSyncer[ent.SystemComponent](db, "system_component", b, opts, met)
 	return s.Sync(ctx)
 }
 
 type systemComponentsBatcher struct {
-	db       *ent.Client
-	provider rez.SystemComponentsDataProvider
+	db           *ent.Client
+	provider     rez.SystemComponentsDataProvider
+	providerName string
 }
 
 func (b *systemComponentsBatcher) setup(ctx context.Context) error {
@@ -57,12 +63,22 @@ func (b *systemComponentsBatcher) createBatchMutations(ctx context.Context, batc
 	for _, provCmp := range batch {
 		dbCmp, exists := dbIdMap[provCmp.ExternalID]
 		if exists {
-			// don't delete this component
+			provCmp.ID = dbCmp.ID
+		} else {
+			provCmp.ID = uuid.New()
+			dbIdMap[provCmp.ExternalID] = &ent.SystemComponent{
+				ID:         provCmp.ID,
+				ExternalID: provCmp.ExternalID,
+			}
 		}
 		mutations = append(mutations, b.syncComponent(dbCmp, provCmp)...)
 	}
 
-	// TODO: sync component relationships
+	relMutations, relErr := b.syncRelationships(ctx, batch, dbIdMap)
+	if relErr != nil {
+		return nil, fmt.Errorf("sync relationships: %w", relErr)
+	}
+	mutations = append(mutations, relMutations...)
 
 	return mutations, nil
 }
@@ -73,16 +89,21 @@ func (b *systemComponentsBatcher) syncComponent(db, prov *ent.SystemComponent) [
 	var m *ent.SystemComponentMutation
 	needsSync := true
 	if db == nil {
-		m = b.db.SystemComponent.Create().Mutation()
+		m = b.db.SystemComponent.Create().SetID(prov.ID).Mutation()
 	} else {
 		m = b.db.SystemComponent.UpdateOneID(db.ID).Mutation()
 
 		// TODO: get provider mapping support for fields
-		needsSync = db.Name != prov.Name
+		needsSync = db.Name != prov.Name ||
+			db.Description != prov.Description ||
+			db.KindID != prov.KindID ||
+			!reflect.DeepEqual(db.Properties, prov.Properties)
 	}
 
 	if prov.KindID != uuid.Nil {
 		m.SetKindID(prov.KindID)
+	} else if prov.Edges.Kind != nil && prov.Edges.Kind.ID != uuid.Nil {
+		m.SetKindID(prov.Edges.Kind.ID)
 	}
 
 	m.SetExternalID(prov.ExternalID)
@@ -97,36 +118,140 @@ func (b *systemComponentsBatcher) syncComponent(db, prov *ent.SystemComponent) [
 	return mutations
 }
 
-/*
-func (b *systemComponentsBatcher) syncComponentKind(prov *ent.SystemComponentKind) *ent.SystemComponentKindMutation {
-	var m *ent.SystemComponentKindMutation
-	var kindId uuid.UUID
+type componentRelationshipRef struct {
+	sourceID    uuid.UUID
+	targetID    uuid.UUID
+	targetRef   string
+	description string
+}
 
-	dbKind, dbExists := b.componentKindProvIds[prov.ExternalID]
-
-	if !dbExists {
-		kindId = uuid.New()
-		b.componentKindProvIds[prov.ExternalID] = &ent.SystemComponentKind{
-			ID:          kindId,
-			ExternalID:  prov.ExternalID,
-			Label:       prov.Label,
-			Description: prov.Description,
+func (b *systemComponentsBatcher) syncRelationships(ctx context.Context, batch []*ent.SystemComponent, dbIdMap map[string]*ent.SystemComponent) ([]ent.Mutation, error) {
+	refs := make([]componentRelationshipRef, 0)
+	for _, provCmp := range batch {
+		source, ok := dbIdMap[provCmp.ExternalID]
+		if !ok || source.ID == uuid.Nil {
+			slog.Warn("skipping system component relationship with unresolved source", "sourceExternalId", provCmp.ExternalID)
+			continue
 		}
-		m = b.db.SystemComponentKind.Create().SetID(kindId).Mutation()
-	} else {
-		kindId = dbKind.ID
-		m = b.db.SystemComponentKind.UpdateOneID(kindId).Mutation()
-
-		needsSync := dbKind.Label != prov.Label
-		if !needsSync {
-			return nil
+		for _, rel := range provCmp.Edges.ComponentRelationships {
+			if rel == nil {
+				continue
+			}
+			targetRef := rel.ExternalID
+			target, ok := dbIdMap[targetRef]
+			if !ok && targetRef != "" {
+				dbTarget, targetErr := b.db.SystemComponent.Query().
+					Where(systemcomponent.ExternalID(targetRef)).
+					Only(ctx)
+				if targetErr != nil && !ent.IsNotFound(targetErr) {
+					return nil, fmt.Errorf("querying relationship target component: %w", targetErr)
+				}
+				if dbTarget != nil {
+					target = dbTarget
+					dbIdMap[targetRef] = dbTarget
+					ok = true
+				}
+			}
+			if !ok || target == nil || target.ID == uuid.Nil {
+				slog.Warn("skipping system component relationship with unresolved target",
+					"sourceExternalId", provCmp.ExternalID,
+					"targetExternalId", targetRef,
+				)
+				continue
+			}
+			refs = append(refs, componentRelationshipRef{
+				sourceID:    source.ID,
+				targetID:    target.ID,
+				targetRef:   targetRef,
+				description: rel.Description,
+			})
 		}
 	}
+	if len(refs) == 0 {
+		return nil, nil
+	}
 
-	m.SetLabel(prov.Label)
-	m.SetDescription(prov.Description)
-	m.SetExternalID(prov.ExternalID)
+	sourceIDs := make([]uuid.UUID, 0, len(refs))
+	targetIDs := make([]uuid.UUID, 0, len(refs))
+	for _, ref := range refs {
+		sourceIDs = append(sourceIDs, ref.sourceID)
+		targetIDs = append(targetIDs, ref.targetID)
+	}
+	existingRels, queryErr := b.db.SystemComponentRelationship.Query().
+		Where(scr.SourceIDIn(sourceIDs...), scr.TargetIDIn(targetIDs...)).
+		All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("querying db system component relationships: %w", queryErr)
+	}
 
-	return m
+	existingByPair := make(map[string]*ent.SystemComponentRelationship, len(existingRels))
+	for _, rel := range existingRels {
+		existingByPair[relationshipPairKey(rel.SourceID, rel.TargetID)] = rel
+	}
+
+	mutations := make([]ent.Mutation, 0, len(refs))
+	for _, ref := range refs {
+		if existing := existingByPair[relationshipPairKey(ref.sourceID, ref.targetID)]; existing != nil {
+			m := b.db.SystemComponentRelationship.UpdateOneID(existing.ID).Mutation()
+			m.SetExternalID(ref.targetRef)
+			m.SetDescription(ref.description)
+			mutations = append(mutations, m)
+			continue
+		}
+		m := b.db.SystemComponentRelationship.Create().
+			SetID(uuid.New()).
+			SetSourceID(ref.sourceID).
+			SetTargetID(ref.targetID).
+			SetExternalID(ref.targetRef).
+			SetDescription(ref.description).
+			Mutation()
+		mutations = append(mutations, m)
+	}
+
+	return mutations, nil
+}
+
+func relationshipPairKey(sourceID uuid.UUID, targetID uuid.UUID) string {
+	return sourceID.String() + ":" + targetID.String()
+}
+
+// TODO: this will all get replaced by the new provider observation backfill flow anyway
+/*
+func (b *systemComponentsBatcher) afterBatchApplied(ctx context.Context, batch []*ent.SystemComponent) error {
+		if b.messages == nil {
+			return nil
+		}
+		providerName := b.providerName
+		if providerName == "" {
+			providerName = "unknown"
+		}
+		for _, cmp := range batch {
+			if publishErr := b.messages.PublishEvent(ctx, b.observedEvent(providerName, cmp)); publishErr != nil {
+				slog.Error("failed to publish system component observed event", "error", publishErr, "externalId", cmp.ExternalID)
+			}
+		}
+	return nil
+}
+
+func (b *systemComponentsBatcher) observedEvent(providerName string, cmp *ent.SystemComponent) *rez.SystemComponentObserved {
+	event := &rez.SystemComponentObserved{
+		Provider:       providerName,
+		ProviderSource: systemComponentProviderSource,
+		ExternalID:     cmp.ExternalID,
+		Name:           cmp.Name,
+		Description:    cmp.Description,
+		Properties:     cmp.Properties,
+		Relationships:  make([]rez.SystemComponentRelationshipObserved, 0, len(cmp.Edges.ComponentRelationships)),
+	}
+	for _, rel := range cmp.Edges.ComponentRelationships {
+		if rel == nil {
+			continue
+		}
+		event.Relationships = append(event.Relationships, rez.SystemComponentRelationshipObserved{
+			TargetExternalID: rel.ExternalID,
+			Description:      rel.Description,
+		})
+	}
+	return event
 }
 */

@@ -126,6 +126,13 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 	makeKind := func(label string, desc string) *ent.SystemComponentKind {
 		return &ent.SystemComponentKind{ID: uuid.New(), ExternalID: label, Label: label, Description: desc}
 	}
+	makeRelationship := func(targetExternalID string, desc string) *ent.SystemComponentRelationship {
+		return &ent.SystemComponentRelationship{
+			ID:          uuid.New(),
+			ExternalID:  targetExternalID,
+			Description: desc,
+		}
+	}
 
 	frontendKind := makeKind("frontend", "A frontend ui")
 	serviceKind := makeKind("service", "A backend service")
@@ -258,6 +265,18 @@ func makeFakeSystemComponents() []*ent.SystemComponent {
 				makeSignal("Provider Status", "health status"),
 			},
 		},
+	}
+
+	paymentUi.Edges.ComponentRelationships = []*ent.SystemComponentRelationship{
+		makeRelationship(apiGateway.ExternalID, "Payment UI calls the API Gateway for payment requests"),
+	}
+	apiGateway.Edges.ComponentRelationships = []*ent.SystemComponentRelationship{
+		makeRelationship(paymentSvc.ExternalID, "API Gateway routes payment requests to Payments Service"),
+	}
+	paymentSvc.Edges.ComponentRelationships = []*ent.SystemComponentRelationship{
+		makeRelationship(db.ExternalID, "Payments Service stores transaction state in Payments Database"),
+		makeRelationship(paymentsMonitor.ExternalID, "Payments Service emits operational metrics to Payments Monitor"),
+		makeRelationship(extPaymentsProvider.ExternalID, "Payments Service submits transactions to Payment Provider"),
 	}
 
 	return []*ent.SystemComponent{

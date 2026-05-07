@@ -298,10 +298,18 @@ type (
 		ent.ListParams
 	}
 
+	SystemComponentDetails struct {
+		Component             *ent.SystemComponent
+		Relationships         []*ent.SystemComponentRelationship
+		ComponentAlias        *ent.KnowledgeEntityAlias
+		LinkedRepositoryAlias *ent.KnowledgeEntityAlias
+	}
+
 	SystemComponentsService interface {
 		Create(context.Context, ent.SystemComponent) (*ent.SystemComponent, error)
 
 		ListSystemComponents(context.Context, ListSystemComponentsParams) (*ent.ListResult[*ent.SystemComponent], error)
+		GetComponentWithDetails(context.Context, uuid.UUID) (*SystemComponentDetails, error)
 
 		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
 		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
@@ -412,6 +420,7 @@ type (
 	ListIncidentsParams struct {
 		ent.ListParams
 		UserId       uuid.UUID
+		ComponentId  uuid.UUID
 		OpenedAfter  time.Time
 		OpenedBefore time.Time
 	}

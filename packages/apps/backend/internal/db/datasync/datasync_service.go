@@ -7,9 +7,9 @@ import (
 	"reflect"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/execution"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
 )
 
@@ -115,8 +115,12 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 	if componentsErr != nil {
 		slog.Error("failed to load components data providers", "error", componentsErr)
 	} else if len(componentsProviders) > 0 {
-		for _, components := range componentsProviders {
-			if syncErr := syncSystemComponents(ctx, s.db, components, opts, s.metrics); syncErr != nil {
+		providerByIntegrationID := make(map[string]string, len(intgs))
+		for _, intg := range intgs {
+			providerByIntegrationID[intg.ID.String()] = intg.Provider
+		}
+		for integrationID, components := range componentsProviders {
+			if syncErr := syncSystemComponents(ctx, s.db, components, providerByIntegrationID[integrationID], opts, s.metrics); syncErr != nil {
 				return fmt.Errorf("system components: %w", syncErr)
 			}
 		}

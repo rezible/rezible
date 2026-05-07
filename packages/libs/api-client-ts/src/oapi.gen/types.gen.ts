@@ -2167,11 +2167,14 @@ export type SystemComponentAttributes = {
     constraints: Array<SystemComponentConstraint>;
     controls: Array<SystemComponentControl>;
     description: string;
+    kind?: SystemComponentKind;
     kindId: string;
+    linkedRepositoryRef: string | null;
     name: string;
     properties: {
         [key: string]: unknown;
     };
+    relationshipCount: number;
     signals: Array<SystemComponentSignal>;
 };
 
@@ -2212,7 +2215,9 @@ export type SystemComponentRelationship = {
 
 export type SystemComponentRelationshipAttributes = {
     description: string;
+    source?: SystemComponent;
     sourceId: string;
+    target?: SystemComponent;
     targetId: string;
 };
 
@@ -5555,6 +5560,7 @@ export type ListIncidentsData = {
         search?: string;
         archived?: boolean;
         teamId?: string;
+        componentId?: string;
     };
     url: '/incidents';
 };
@@ -9749,6 +9755,7 @@ export type ListSystemComponentRelationshipsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
+        componentId?: string;
         sourceId?: string;
         targetId?: string;
     };

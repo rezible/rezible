@@ -7,7 +7,9 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemcomponent"
 	scr "github.com/rezible/rezible/ent/systemcomponentrelationship"
 )
 
@@ -94,8 +96,59 @@ func (s *SystemComponentsService) Create(ctx context.Context, cmp ent.SystemComp
 }
 
 func (s *SystemComponentsService) ListSystemComponents(ctx context.Context, params rez.ListSystemComponentsParams) (*ent.ListResult[*ent.SystemComponent], error) {
-	query := s.db.SystemComponent.Query()
+	query := s.db.SystemComponent.Query().WithKind()
+	if params.Search != "" {
+		query.Where(systemcomponent.NameContainsFold(params.Search))
+	}
 	return ent.DoListQuery[*ent.SystemComponent, *ent.SystemComponentQuery](ctx, query, params.ListParams)
+}
+
+func (s *SystemComponentsService) GetComponentWithDetails(ctx context.Context, id uuid.UUID) (*rez.SystemComponentDetails, error) {
+	cmp, queryErr := s.db.SystemComponent.Query().
+		Where(systemcomponent.ID(id)).
+		WithKind().
+		Only(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("query system component: %w", queryErr)
+	}
+
+	rels, relErr := s.db.SystemComponentRelationship.Query().
+		Where(scr.Or(scr.SourceID(id), scr.TargetID(id))).
+		WithSource().
+		WithTarget().
+		All(ctx)
+	if relErr != nil {
+		return nil, fmt.Errorf("query system component relationships: %w", relErr)
+	}
+
+	details := &rez.SystemComponentDetails{
+		Component:     cmp,
+		Relationships: rels,
+	}
+
+	componentAlias, aliasErr := s.db.KnowledgeEntityAlias.Query().
+		Where(knea.SubjectKind("system_component"), knea.SubjectRef(cmp.ExternalID)).
+		First(ctx)
+	if aliasErr != nil && !ent.IsNotFound(aliasErr) {
+		return nil, fmt.Errorf("query system component knowledge alias: %w", aliasErr)
+	}
+	if componentAlias != nil {
+		details.ComponentAlias = componentAlias
+
+		repoAlias, repoAliasErr := s.db.KnowledgeEntityAlias.Query().
+			Where(
+				knea.Provider(componentAlias.Provider),
+				knea.SubjectKind("repository"),
+				knea.SubjectRef(cmp.ExternalID),
+			).
+			First(ctx)
+		if repoAliasErr != nil && !ent.IsNotFound(repoAliasErr) {
+			return nil, fmt.Errorf("query linked repository alias: %w", repoAliasErr)
+		}
+		details.LinkedRepositoryAlias = repoAlias
+	}
+
+	return details, nil
 }
 
 func (s *SystemComponentsService) GetRelationship(ctx context.Context, id1 uuid.UUID, id2 uuid.UUID) (*ent.SystemComponentRelationship, error) {

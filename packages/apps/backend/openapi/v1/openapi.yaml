@@ -4737,13 +4737,22 @@ components:
           type: array
         description:
           type: string
+        kind:
+          $ref: "#/components/schemas/SystemComponentKind"
         kindId:
           type: string
+        linkedRepositoryRef:
+          type:
+            - string
+            - "null"
         name:
           type: string
         properties:
           additionalProperties: {}
           type: object
+        relationshipCount:
+          format: int64
+          type: integer
         signals:
           items:
             $ref: "#/components/schemas/SystemComponentSignal"
@@ -4753,6 +4762,8 @@ components:
         - kindId
         - description
         - properties
+        - relationshipCount
+        - linkedRepositoryRef
         - constraints
         - signals
         - controls
@@ -4839,8 +4850,12 @@ components:
       properties:
         description:
           type: string
+        source:
+          $ref: "#/components/schemas/SystemComponent"
         sourceId:
           type: string
+        target:
+          $ref: "#/components/schemas/SystemComponent"
         targetId:
           type: string
       required:
@@ -9695,6 +9710,11 @@ paths:
         - explode: false
           in: query
           name: teamId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: componentId
           schema:
             type: string
       responses:
@@ -15074,6 +15094,11 @@ paths:
           schema:
             default: false
             type: boolean
+        - explode: false
+          in: query
+          name: componentId
+          schema:
+            type: string
         - explode: false
           in: query
           name: sourceId

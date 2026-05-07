@@ -22,8 +22,10 @@ const emptyComponentAttributes = (): SystemComponentAttributes => ({
 	controls: [],
 	description: "",
 	kindId: "",
+	linkedRepositoryRef: null,
 	name: "",
 	properties: {},
+	relationshipCount: 0,
 	signals: []
 })
 
@@ -93,7 +95,17 @@ const createComponentAttributesState = () => {
 		get signals() { return signals },
 		updateSignal,
 		snapshot(): SystemComponentAttributes {
-			return $state.snapshot({ name, kindId, description, constraints, controls, signals, properties })
+			return $state.snapshot({
+				name,
+				kindId,
+				description,
+				constraints,
+				controls,
+				signals,
+				properties,
+				linkedRepositoryRef: null,
+				relationshipCount: 0,
+			})
 		},
 		get valid() { return valid },
 	}
