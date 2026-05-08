@@ -259,7 +259,7 @@ type (
 
 	ProviderEvent struct {
 		Provider        string
-		Source          string
+		ProviderSource  string
 		ReceivedAt      time.Time
 		Payload         []byte
 		ContentType     string

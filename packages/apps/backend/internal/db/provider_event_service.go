@@ -52,7 +52,7 @@ func (s *ProviderEventService) RegisterEventProcessor(prov, src string, proc rez
 
 func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
 	res, ingestErr := s.ingest(ctx, ev)
-	s.metrics.recordIngested(ctx, ev.Provider, ev.Source, res, ingestErr)
+	s.metrics.recordIngested(ctx, ev.Provider, ev.ProviderSource, res, ingestErr)
 	return ingestErr
 }
 
@@ -63,7 +63,7 @@ type ingestProviderEventResult struct {
 func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent) (*ingestProviderEventResult, error) {
 	processEvent := processProviderEventArgs{
 		Provider:        strings.TrimSpace(ev.Provider),
-		Source:          strings.TrimSpace(ev.Source),
+		Source:          strings.TrimSpace(ev.ProviderSource),
 		ReceivedAt:      time.Now().UTC(),
 		DedupeKey:       ev.DedupeKey,
 		RequestMetadata: ev.RequestMetadata,
@@ -105,7 +105,7 @@ func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent)
 		duplicate = true
 		s.logger.Debug("skipped duplicate provider event",
 			"provider", ev.Provider,
-			"source", ev.Source,
+			"source", ev.ProviderSource,
 		)
 	}
 	return &ingestProviderEventResult{duplicate: duplicate}, nil
@@ -167,7 +167,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, args pr
 	}
 	provEvent := rez.ProviderEvent{
 		Provider:        args.Provider,
-		Source:          args.Source,
+		ProviderSource:  args.Source,
 		ReceivedAt:      args.ReceivedAt,
 		Payload:         args.Payload,
 		ContentType:     args.ContentType,

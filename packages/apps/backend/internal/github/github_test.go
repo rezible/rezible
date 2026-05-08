@@ -232,9 +232,9 @@ func TestPushProcessor_ValidPayload(t *testing.T) {
 
 	payload := makePushPayload(t, after, fullName, ref, org, 123)
 	events, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider: integrationName,
-		Source:   "push",
-		Payload:  payload,
+		Provider:       integrationName,
+		ProviderSource: "push",
+		Payload:        payload,
 	})
 
 	require.NoError(t, err)
@@ -256,9 +256,9 @@ func TestPushProcessor_BranchDeletion(t *testing.T) {
 
 	payload := makePushPayload(t, zeroSHA, "org/repo", "refs/heads/main", "org", 123)
 	events, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider: integrationName,
-		Source:   "push",
-		Payload:  payload,
+		Provider:       integrationName,
+		ProviderSource: "push",
+		Payload:        payload,
 	})
 
 	require.NoError(t, err)
@@ -272,9 +272,9 @@ func TestPushProcessor_InvalidJSON(t *testing.T) {
 	proc := &pushEventProcessor{services: svcs}
 
 	_, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider: integrationName,
-		Source:   "push",
-		Payload:  []byte(`{invalid json`),
+		Provider:       integrationName,
+		ProviderSource: "push",
+		Payload:        []byte(`{invalid json`),
 	})
 
 	require.Error(t, err)
@@ -317,9 +317,9 @@ func TestPRProcessor_ValidPayload(t *testing.T) {
 
 	payload := makePRPayload(t, prNum, fullName, title, org, 123)
 	events, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider: integrationName,
-		Source:   "pull_request",
-		Payload:  payload,
+		Provider:       integrationName,
+		ProviderSource: "pull_request",
+		Payload:        payload,
 	})
 
 	require.NoError(t, err)
@@ -340,9 +340,9 @@ func TestPRProcessor_InvalidJSON(t *testing.T) {
 	proc := &pullRequestEventProcessor{services: svcs}
 
 	_, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider: integrationName,
-		Source:   "pull_request",
-		Payload:  []byte(`{invalid json`),
+		Provider:       integrationName,
+		ProviderSource: "pull_request",
+		Payload:        []byte(`{invalid json`),
 	})
 
 	require.Error(t, err)
@@ -411,7 +411,7 @@ func TestWebhookHandler_CallsIngest(t *testing.T) {
 	provEvs := mocks.NewMockProviderEventService(t)
 	provEvs.On("Ingest", mock.Anything, mock.MatchedBy(func(ev rez.ProviderEvent) bool {
 		return ev.Provider == integrationName &&
-			ev.Source == event &&
+			ev.ProviderSource == event &&
 			string(ev.Payload) == body &&
 			ev.DedupeKey == delivery
 	})).Return(nil).Once()

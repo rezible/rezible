@@ -75,7 +75,7 @@ func (h *eventHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Even
 	if processCallbackEventTypes.Contains(innerType) {
 		pe := rez.ProviderEvent{
 			Provider:        integrationName,
-			Source:          callbackEventsSource,
+			ProviderSource:  callbackEventsSource,
 			DedupeKey:       ev.EventID,
 			Payload:         data,
 			RequestMetadata: map[string]string{},

@@ -44,10 +44,10 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pe := rez.ProviderEvent{
-		Provider:  integrationName,
-		Source:    r.Header.Get("X-GitHub-Event"),
-		Payload:   body,
-		DedupeKey: r.Header.Get("X-GitHub-Delivery"),
+		Provider:       integrationName,
+		ProviderSource: r.Header.Get("X-GitHub-Event"),
+		Payload:        body,
+		DedupeKey:      r.Header.Get("X-GitHub-Delivery"),
 	}
 
 	if ingestErr := h.services.ProviderEvents.Ingest(r.Context(), pe); ingestErr != nil {
