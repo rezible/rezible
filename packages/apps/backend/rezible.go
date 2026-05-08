@@ -58,6 +58,7 @@ type Services struct {
 	ProviderEvents   ProviderEventService
 	Messages         MessageService
 	Knowledge        KnowledgeService
+	Topology         SystemTopologyService
 	Auth             AuthSessionService
 	Organizations    OrganizationService
 	Integrations     IntegrationsService
@@ -72,7 +73,6 @@ type Services struct {
 	EventAnnotations EventAnnotationsService
 	Documents        DocumentsService
 	Retros           RetrospectiveService
-	Components       SystemComponentsService
 	Alerts           AlertService
 	Playbooks        PlaybookService
 }
@@ -165,6 +165,59 @@ type (
 
 		SetFactProvenance(context.Context, uuid.UUID, func(*ent.KnowledgeFactProvenanceMutation)) (*ent.KnowledgeFactProvenance, error)
 		SetFactHistory(context.Context, uuid.UUID, func(*ent.KnowledgeFactHistoryMutation)) (*ent.KnowledgeFactHistory, error)
+	}
+)
+
+type (
+	ListSystemTopologyEntitiesParams struct {
+		ent.ListParams
+		Kinds          []string
+		Provider       string
+		ProviderSource string
+		SubjectKind    string
+	}
+
+	ListSystemTopologyRelationshipsParams struct {
+		ent.ListParams
+		Kinds          []string
+		EntityID       uuid.UUID
+		SourceEntityID uuid.UUID
+		TargetEntityID uuid.UUID
+	}
+
+	SystemTopologyNeighborhoodParams struct {
+		Depth             int
+		RelationshipKinds []string
+	}
+
+	CreateSystemTopologySnapshotParams struct {
+		Name              string
+		AsOf              time.Time
+		Scope             string
+		ScopeProperties   map[string]any
+		EntityIDs         []uuid.UUID
+		RootEntityIDs     []uuid.UUID
+		Depth             int
+		EntityKinds       []string
+		RelationshipKinds []string
+		IncludeIncidents  bool
+		IncludeChanges    bool
+		IncludeAlerts     bool
+	}
+
+	SystemTopologyGraph struct {
+		Entities      []*ent.KnowledgeEntity
+		Relationships []*ent.KnowledgeRelationship
+	}
+
+	SystemTopologyService interface {
+		ListEntities(context.Context, ListSystemTopologyEntitiesParams) (*ent.ListResult[*ent.KnowledgeEntity], error)
+		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
+		GetNeighborhood(context.Context, uuid.UUID, SystemTopologyNeighborhoodParams) (*SystemTopologyGraph, error)
+		ListRelationships(context.Context, ListSystemTopologyRelationshipsParams) (*ent.ListResult[*ent.KnowledgeRelationship], error)
+
+		CreateSnapshot(context.Context, CreateSystemTopologySnapshotParams) (*ent.SystemTopologySnapshot, error)
+		GetSnapshot(context.Context, uuid.UUID) (*ent.SystemTopologySnapshot, error)
 	}
 )
 
@@ -275,51 +328,6 @@ type (
 )
 
 type (
-	SystemComponentsDataProvider interface {
-		SystemComponentDataMapping() *ent.SystemComponent
-		PullSystemComponents(context.Context) iter.Seq2[*ent.SystemComponent, error]
-	}
-
-	ComponentTraitReference struct {
-		Id          uuid.UUID
-		Description string
-	}
-
-	CreateSystemAnalysisRelationshipParams struct {
-		AnalysisId      uuid.UUID
-		SourceId        uuid.UUID
-		TargetId        uuid.UUID
-		Description     string
-		FeedbackSignals []ComponentTraitReference
-		ControlActions  []ComponentTraitReference
-	}
-
-	ListSystemComponentsParams struct {
-		ent.ListParams
-	}
-
-	SystemComponentDetails struct {
-		Component             *ent.SystemComponent
-		Relationships         []*ent.SystemComponentRelationship
-		ComponentAlias        *ent.KnowledgeEntityAlias
-		LinkedRepositoryAlias *ent.KnowledgeEntityAlias
-	}
-
-	SystemComponentsService interface {
-		Create(context.Context, ent.SystemComponent) (*ent.SystemComponent, error)
-
-		ListSystemComponents(context.Context, ListSystemComponentsParams) (*ent.ListResult[*ent.SystemComponent], error)
-		GetComponentWithDetails(context.Context, uuid.UUID) (*SystemComponentDetails, error)
-
-		GetRelationship(context.Context, uuid.UUID, uuid.UUID) (*ent.SystemComponentRelationship, error)
-		CreateRelationship(context.Context, ent.SystemComponentRelationship) (*ent.SystemComponentRelationship, error)
-
-		GetSystemAnalysis(context.Context, uuid.UUID) (*ent.SystemAnalysis, error)
-		CreateSystemAnalysisRelationship(context.Context, CreateSystemAnalysisRelationshipParams) (*ent.SystemAnalysisRelationship, error)
-	}
-)
-
-type (
 	TeamDataProvider interface {
 		TeamDataMapping() *ent.Team
 		PullTeams(context.Context) iter.Seq2[*ent.Team, error]
@@ -420,7 +428,6 @@ type (
 	ListIncidentsParams struct {
 		ent.ListParams
 		UserId       uuid.UUID
-		ComponentId  uuid.UUID
 		OpenedAfter  time.Time
 		OpenedBefore time.Time
 	}

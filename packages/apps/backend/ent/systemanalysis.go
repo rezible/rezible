@@ -12,6 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
+	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -22,6 +23,8 @@ type SystemAnalysis struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// TopologySnapshotID holds the value of the "topology_snapshot_id" field.
+	TopologySnapshotID *uuid.UUID `json:"topology_snapshot_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -38,12 +41,12 @@ type SystemAnalysisEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Retrospective holds the value of the retrospective edge.
 	Retrospective *Retrospective `json:"retrospective,omitempty"`
-	// Components holds the value of the components edge.
-	Components []*SystemComponent `json:"components,omitempty"`
-	// Relationships holds the value of the relationships edge.
-	Relationships []*SystemAnalysisRelationship `json:"relationships,omitempty"`
-	// AnalysisComponents holds the value of the analysis_components edge.
-	AnalysisComponents []*SystemAnalysisComponent `json:"analysis_components,omitempty"`
+	// TopologySnapshot holds the value of the topology_snapshot edge.
+	TopologySnapshot *SystemTopologySnapshot `json:"topology_snapshot,omitempty"`
+	// AnalysisNodes holds the value of the analysis_nodes edge.
+	AnalysisNodes []*SystemAnalysisTopologyNode `json:"analysis_nodes,omitempty"`
+	// AnalysisEdges holds the value of the analysis_edges edge.
+	AnalysisEdges []*SystemAnalysisTopologyEdge `json:"analysis_edges,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [5]bool
@@ -71,31 +74,33 @@ func (e SystemAnalysisEdges) RetrospectiveOrErr() (*Retrospective, error) {
 	return nil, &NotLoadedError{edge: "retrospective"}
 }
 
-// ComponentsOrErr returns the Components value or an error if the edge
-// was not loaded in eager-loading.
-func (e SystemAnalysisEdges) ComponentsOrErr() ([]*SystemComponent, error) {
-	if e.loadedTypes[2] {
-		return e.Components, nil
+// TopologySnapshotOrErr returns the TopologySnapshot value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemAnalysisEdges) TopologySnapshotOrErr() (*SystemTopologySnapshot, error) {
+	if e.TopologySnapshot != nil {
+		return e.TopologySnapshot, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: systemtopologysnapshot.Label}
 	}
-	return nil, &NotLoadedError{edge: "components"}
+	return nil, &NotLoadedError{edge: "topology_snapshot"}
 }
 
-// RelationshipsOrErr returns the Relationships value or an error if the edge
+// AnalysisNodesOrErr returns the AnalysisNodes value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemAnalysisEdges) RelationshipsOrErr() ([]*SystemAnalysisRelationship, error) {
+func (e SystemAnalysisEdges) AnalysisNodesOrErr() ([]*SystemAnalysisTopologyNode, error) {
 	if e.loadedTypes[3] {
-		return e.Relationships, nil
+		return e.AnalysisNodes, nil
 	}
-	return nil, &NotLoadedError{edge: "relationships"}
+	return nil, &NotLoadedError{edge: "analysis_nodes"}
 }
 
-// AnalysisComponentsOrErr returns the AnalysisComponents value or an error if the edge
+// AnalysisEdgesOrErr returns the AnalysisEdges value or an error if the edge
 // was not loaded in eager-loading.
-func (e SystemAnalysisEdges) AnalysisComponentsOrErr() ([]*SystemAnalysisComponent, error) {
+func (e SystemAnalysisEdges) AnalysisEdgesOrErr() ([]*SystemAnalysisTopologyEdge, error) {
 	if e.loadedTypes[4] {
-		return e.AnalysisComponents, nil
+		return e.AnalysisEdges, nil
 	}
-	return nil, &NotLoadedError{edge: "analysis_components"}
+	return nil, &NotLoadedError{edge: "analysis_edges"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -103,6 +108,8 @@ func (*SystemAnalysis) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case systemanalysis.FieldTopologySnapshotID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case systemanalysis.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case systemanalysis.FieldCreatedAt, systemanalysis.FieldUpdatedAt:
@@ -135,6 +142,13 @@ func (_m *SystemAnalysis) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
+			}
+		case systemanalysis.FieldTopologySnapshotID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field topology_snapshot_id", values[i])
+			} else if value.Valid {
+				_m.TopologySnapshotID = new(uuid.UUID)
+				*_m.TopologySnapshotID = *value.S.(*uuid.UUID)
 			}
 		case systemanalysis.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -171,19 +185,19 @@ func (_m *SystemAnalysis) QueryRetrospective() *RetrospectiveQuery {
 	return NewSystemAnalysisClient(_m.config).QueryRetrospective(_m)
 }
 
-// QueryComponents queries the "components" edge of the SystemAnalysis entity.
-func (_m *SystemAnalysis) QueryComponents() *SystemComponentQuery {
-	return NewSystemAnalysisClient(_m.config).QueryComponents(_m)
+// QueryTopologySnapshot queries the "topology_snapshot" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryTopologySnapshot() *SystemTopologySnapshotQuery {
+	return NewSystemAnalysisClient(_m.config).QueryTopologySnapshot(_m)
 }
 
-// QueryRelationships queries the "relationships" edge of the SystemAnalysis entity.
-func (_m *SystemAnalysis) QueryRelationships() *SystemAnalysisRelationshipQuery {
-	return NewSystemAnalysisClient(_m.config).QueryRelationships(_m)
+// QueryAnalysisNodes queries the "analysis_nodes" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryAnalysisNodes() *SystemAnalysisTopologyNodeQuery {
+	return NewSystemAnalysisClient(_m.config).QueryAnalysisNodes(_m)
 }
 
-// QueryAnalysisComponents queries the "analysis_components" edge of the SystemAnalysis entity.
-func (_m *SystemAnalysis) QueryAnalysisComponents() *SystemAnalysisComponentQuery {
-	return NewSystemAnalysisClient(_m.config).QueryAnalysisComponents(_m)
+// QueryAnalysisEdges queries the "analysis_edges" edge of the SystemAnalysis entity.
+func (_m *SystemAnalysis) QueryAnalysisEdges() *SystemAnalysisTopologyEdgeQuery {
+	return NewSystemAnalysisClient(_m.config).QueryAnalysisEdges(_m)
 }
 
 // Update returns a builder for updating this SystemAnalysis.
@@ -211,6 +225,11 @@ func (_m *SystemAnalysis) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
+	builder.WriteString(", ")
+	if v := _m.TopologySnapshotID; v != nil {
+		builder.WriteString("topology_snapshot_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

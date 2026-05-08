@@ -46,8 +46,8 @@ type Tx struct {
 	IncidentEventContributingFactor *IncidentEventContributingFactorClient
 	// IncidentEventEvidence is the client for interacting with the IncidentEventEvidence builders.
 	IncidentEventEvidence *IncidentEventEvidenceClient
-	// IncidentEventSystemComponent is the client for interacting with the IncidentEventSystemComponent builders.
-	IncidentEventSystemComponent *IncidentEventSystemComponentClient
+	// IncidentEventTopologyContext is the client for interacting with the IncidentEventTopologyContext builders.
+	IncidentEventTopologyContext *IncidentEventTopologyContextClient
 	// IncidentField is the client for interacting with the IncidentField builders.
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
@@ -118,28 +118,16 @@ type Tx struct {
 	RetrospectiveReview *RetrospectiveReviewClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
-	// SystemAnalysisComponent is the client for interacting with the SystemAnalysisComponent builders.
-	SystemAnalysisComponent *SystemAnalysisComponentClient
-	// SystemAnalysisRelationship is the client for interacting with the SystemAnalysisRelationship builders.
-	SystemAnalysisRelationship *SystemAnalysisRelationshipClient
-	// SystemComponent is the client for interacting with the SystemComponent builders.
-	SystemComponent *SystemComponentClient
-	// SystemComponentConstraint is the client for interacting with the SystemComponentConstraint builders.
-	SystemComponentConstraint *SystemComponentConstraintClient
-	// SystemComponentControl is the client for interacting with the SystemComponentControl builders.
-	SystemComponentControl *SystemComponentControlClient
-	// SystemComponentKind is the client for interacting with the SystemComponentKind builders.
-	SystemComponentKind *SystemComponentKindClient
-	// SystemComponentRelationship is the client for interacting with the SystemComponentRelationship builders.
-	SystemComponentRelationship *SystemComponentRelationshipClient
-	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
-	SystemComponentSignal *SystemComponentSignalClient
-	// SystemHazard is the client for interacting with the SystemHazard builders.
-	SystemHazard *SystemHazardClient
-	// SystemRelationshipControlAction is the client for interacting with the SystemRelationshipControlAction builders.
-	SystemRelationshipControlAction *SystemRelationshipControlActionClient
-	// SystemRelationshipFeedbackSignal is the client for interacting with the SystemRelationshipFeedbackSignal builders.
-	SystemRelationshipFeedbackSignal *SystemRelationshipFeedbackSignalClient
+	// SystemAnalysisTopologyEdge is the client for interacting with the SystemAnalysisTopologyEdge builders.
+	SystemAnalysisTopologyEdge *SystemAnalysisTopologyEdgeClient
+	// SystemAnalysisTopologyNode is the client for interacting with the SystemAnalysisTopologyNode builders.
+	SystemAnalysisTopologyNode *SystemAnalysisTopologyNodeClient
+	// SystemTopologySnapshot is the client for interacting with the SystemTopologySnapshot builders.
+	SystemTopologySnapshot *SystemTopologySnapshotClient
+	// SystemTopologySnapshotEntity is the client for interacting with the SystemTopologySnapshotEntity builders.
+	SystemTopologySnapshotEntity *SystemTopologySnapshotEntityClient
+	// SystemTopologySnapshotRelationship is the client for interacting with the SystemTopologySnapshotRelationship builders.
+	SystemTopologySnapshotRelationship *SystemTopologySnapshotRelationshipClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -302,7 +290,7 @@ func (tx *Tx) init() {
 	tx.IncidentEventContext = NewIncidentEventContextClient(tx.config)
 	tx.IncidentEventContributingFactor = NewIncidentEventContributingFactorClient(tx.config)
 	tx.IncidentEventEvidence = NewIncidentEventEvidenceClient(tx.config)
-	tx.IncidentEventSystemComponent = NewIncidentEventSystemComponentClient(tx.config)
+	tx.IncidentEventTopologyContext = NewIncidentEventTopologyContextClient(tx.config)
 	tx.IncidentField = NewIncidentFieldClient(tx.config)
 	tx.IncidentFieldOption = NewIncidentFieldOptionClient(tx.config)
 	tx.IncidentLink = NewIncidentLinkClient(tx.config)
@@ -338,17 +326,11 @@ func (tx *Tx) init() {
 	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)
 	tx.SystemAnalysis = NewSystemAnalysisClient(tx.config)
-	tx.SystemAnalysisComponent = NewSystemAnalysisComponentClient(tx.config)
-	tx.SystemAnalysisRelationship = NewSystemAnalysisRelationshipClient(tx.config)
-	tx.SystemComponent = NewSystemComponentClient(tx.config)
-	tx.SystemComponentConstraint = NewSystemComponentConstraintClient(tx.config)
-	tx.SystemComponentControl = NewSystemComponentControlClient(tx.config)
-	tx.SystemComponentKind = NewSystemComponentKindClient(tx.config)
-	tx.SystemComponentRelationship = NewSystemComponentRelationshipClient(tx.config)
-	tx.SystemComponentSignal = NewSystemComponentSignalClient(tx.config)
-	tx.SystemHazard = NewSystemHazardClient(tx.config)
-	tx.SystemRelationshipControlAction = NewSystemRelationshipControlActionClient(tx.config)
-	tx.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(tx.config)
+	tx.SystemAnalysisTopologyEdge = NewSystemAnalysisTopologyEdgeClient(tx.config)
+	tx.SystemAnalysisTopologyNode = NewSystemAnalysisTopologyNodeClient(tx.config)
+	tx.SystemTopologySnapshot = NewSystemTopologySnapshotClient(tx.config)
+	tx.SystemTopologySnapshotEntity = NewSystemTopologySnapshotEntityClient(tx.config)
+	tx.SystemTopologySnapshotRelationship = NewSystemTopologySnapshotRelationshipClient(tx.config)
 	tx.Task = NewTaskClient(tx.config)
 	tx.Team = NewTeamClient(tx.config)
 	tx.TeamMembership = NewTeamMembershipClient(tx.config)

@@ -72,6 +72,11 @@ func UpdatedAt(v time.Time) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
+func Kind(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldEQ(FieldKind, v))
+}
+
 // DisplayName applies equality check predicate on the "display_name" field. It's identical to DisplayNameEQ.
 func DisplayName(v string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldEQ(FieldDisplayName, v))
@@ -183,23 +188,68 @@ func UpdatedAtLTE(v time.Time) predicate.KnowledgeEntity {
 }
 
 // KindEQ applies the EQ predicate on the "kind" field.
-func KindEQ(v Kind) predicate.KnowledgeEntity {
+func KindEQ(v string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldEQ(FieldKind, v))
 }
 
 // KindNEQ applies the NEQ predicate on the "kind" field.
-func KindNEQ(v Kind) predicate.KnowledgeEntity {
+func KindNEQ(v string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldNEQ(FieldKind, v))
 }
 
 // KindIn applies the In predicate on the "kind" field.
-func KindIn(vs ...Kind) predicate.KnowledgeEntity {
+func KindIn(vs ...string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldIn(FieldKind, vs...))
 }
 
 // KindNotIn applies the NotIn predicate on the "kind" field.
-func KindNotIn(vs ...Kind) predicate.KnowledgeEntity {
+func KindNotIn(vs ...string) predicate.KnowledgeEntity {
 	return predicate.KnowledgeEntity(sql.FieldNotIn(FieldKind, vs...))
+}
+
+// KindGT applies the GT predicate on the "kind" field.
+func KindGT(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldGT(FieldKind, v))
+}
+
+// KindGTE applies the GTE predicate on the "kind" field.
+func KindGTE(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldGTE(FieldKind, v))
+}
+
+// KindLT applies the LT predicate on the "kind" field.
+func KindLT(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldLT(FieldKind, v))
+}
+
+// KindLTE applies the LTE predicate on the "kind" field.
+func KindLTE(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldLTE(FieldKind, v))
+}
+
+// KindContains applies the Contains predicate on the "kind" field.
+func KindContains(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldContains(FieldKind, v))
+}
+
+// KindHasPrefix applies the HasPrefix predicate on the "kind" field.
+func KindHasPrefix(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldHasPrefix(FieldKind, v))
+}
+
+// KindHasSuffix applies the HasSuffix predicate on the "kind" field.
+func KindHasSuffix(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldHasSuffix(FieldKind, v))
+}
+
+// KindEqualFold applies the EqualFold predicate on the "kind" field.
+func KindEqualFold(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldEqualFold(FieldKind, v))
+}
+
+// KindContainsFold applies the ContainsFold predicate on the "kind" field.
+func KindContainsFold(v string) predicate.KnowledgeEntity {
+	return predicate.KnowledgeEntity(sql.FieldContainsFold(FieldKind, v))
 }
 
 // DisplayNameEQ applies the EQ predicate on the "display_name" field.

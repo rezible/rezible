@@ -24,25 +24,48 @@ export type AddIncidentDebriefUserMessageResponseBody = {
     data: IncidentDebriefMessage;
 };
 
-export type AddSystemAnalysisComponentAttributes = {
-    componentId: string;
+export type AddSystemAnalysisEdgeAttributes = {
+    description: string;
+    snapshotRelationshipId: string;
+};
+
+export type AddSystemAnalysisEdgeRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: AddSystemAnalysisEdgeAttributes;
+};
+
+export type AddSystemAnalysisEdgeResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisEdge;
+};
+
+export type AddSystemAnalysisNodeAttributes = {
+    description: string;
+    knowledgeEntityId?: string;
     position: SystemAnalysisDiagramPosition;
+    snapshotEntityId?: string;
 };
 
-export type AddSystemAnalysisComponentRequestBody = {
+export type AddSystemAnalysisNodeRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: AddSystemAnalysisComponentAttributes;
+    attributes: AddSystemAnalysisNodeAttributes;
 };
 
-export type AddSystemAnalysisComponentResponseBody = {
+export type AddSystemAnalysisNodeResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemAnalysisComponent;
+    data: SystemAnalysisNode;
 };
 
 export type AddWatchedOncallRosterResponseBody = {
@@ -523,160 +546,37 @@ export type CreateRetrospectiveReviewResponseBody = {
     data: RetrospectiveReview;
 };
 
-export type CreateSystemAnalysisRelationshipAttributes = {
-    description: string;
-    sourceId: string;
-    targetId: string;
-};
-
-export type CreateSystemAnalysisRelationshipRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateSystemAnalysisRelationshipAttributes;
-};
-
-export type CreateSystemAnalysisRelationshipResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemAnalysisRelationship;
-};
-
-export type CreateSystemComponentAttributes = {
-    constraints: Array<SystemComponentConstraintAttributes>;
-    controls: Array<SystemComponentControlAttributes>;
-    description: string;
-    kindId: string;
+export type CreateSystemTopologySnapshotAttributes = {
+    asOf?: string;
+    depth: number;
+    entityIds: Array<string>;
+    entityKinds: Array<string>;
+    includeAlerts: boolean;
+    includeChanges: boolean;
+    includeIncidents: boolean;
     name: string;
-    properties: {
+    relationshipKinds: Array<string>;
+    rootEntityIds: Array<string>;
+    scope: 'explicit_entities' | 'root_entities' | 'incident' | 'retrospective' | 'search' | 'analysis';
+    scopeProperties: {
         [key: string]: unknown;
     };
-    signals: Array<SystemComponentSignalAttributes>;
 };
 
-export type CreateSystemComponentConstraintAttributes = {
-    description: string;
-    label: string;
-};
-
-export type CreateSystemComponentConstraintRequestBody = {
+export type CreateSystemTopologySnapshotRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: CreateSystemComponentConstraintAttributes;
+    attributes: CreateSystemTopologySnapshotAttributes;
 };
 
-export type CreateSystemComponentConstraintResponseBody = {
+export type CreateSystemTopologySnapshotResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemComponentConstraint;
-};
-
-export type CreateSystemComponentControlAttributes = {
-    description: string;
-    label: string;
-};
-
-export type CreateSystemComponentControlRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateSystemComponentControlAttributes;
-};
-
-export type CreateSystemComponentControlResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentControl;
-};
-
-export type CreateSystemComponentKindAttributes = {
-    description: string;
-    label: string;
-};
-
-export type CreateSystemComponentKindRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateSystemComponentKindAttributes;
-};
-
-export type CreateSystemComponentKindResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentKind;
-};
-
-export type CreateSystemComponentRelationshipAttributes = {
-    description: string;
-    sourceComponentId: string;
-    targetComponentId: string;
-};
-
-export type CreateSystemComponentRelationshipRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateSystemComponentRelationshipAttributes;
-};
-
-export type CreateSystemComponentRelationshipResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentRelationship;
-};
-
-export type CreateSystemComponentRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateSystemComponentAttributes;
-};
-
-export type CreateSystemComponentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponent;
-};
-
-export type CreateSystemComponentSignalAttributes = {
-    description: string;
-    label: string;
-};
-
-export type CreateSystemComponentSignalRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateSystemComponentSignalAttributes;
-};
-
-export type CreateSystemComponentSignalResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentSignal;
+    data: SystemTopologySnapshot;
 };
 
 export type CreateTaskAttributes = {
@@ -1097,20 +997,20 @@ export type GetRetrospectiveResponseBody = {
     data: Retrospective;
 };
 
-export type GetSystemAnalysisComponentResponseBody = {
+export type GetSystemAnalysisEdgeResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemAnalysisComponent;
+    data: SystemAnalysisEdge;
 };
 
-export type GetSystemAnalysisRelationshipResponseBody = {
+export type GetSystemAnalysisNodeResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemAnalysisRelationship;
+    data: SystemAnalysisNode;
 };
 
 export type GetSystemAnalysisResponseBody = {
@@ -1121,52 +1021,28 @@ export type GetSystemAnalysisResponseBody = {
     data: SystemAnalysis;
 };
 
-export type GetSystemComponentConstraintResponseBody = {
+export type GetSystemTopologyEntityNeighborhoodResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemComponentConstraint;
+    data: SystemTopologyGraph;
 };
 
-export type GetSystemComponentControlResponseBody = {
+export type GetSystemTopologyEntityResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemComponentControl;
+    data: SystemTopologyEntity;
 };
 
-export type GetSystemComponentKindResponseBody = {
+export type GetSystemTopologySnapshotResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemComponentKind;
-};
-
-export type GetSystemComponentRelationshipResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentRelationship;
-};
-
-export type GetSystemComponentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponent;
-};
-
-export type GetSystemComponentSignalResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentSignal;
+    data: SystemTopologySnapshot;
 };
 
 export type GetTaskResponseBody = {
@@ -1291,7 +1167,7 @@ export type IncidentEventAttributes = {
     isKey: boolean;
     kind: 'observation' | 'action' | 'decision' | 'context';
     sequence: number;
-    systemContext: Array<IncidentEventSystemComponent>;
+    systemContext: Array<IncidentEventTopologyContext>;
     timestamp: string;
     title: string;
 };
@@ -1348,15 +1224,15 @@ export type IncidentEventEvidenceAttributes = {
     value: string;
 };
 
-export type IncidentEventSystemComponent = {
-    attributes: IncidentEventSystemComponentAttributes;
+export type IncidentEventTopologyContext = {
+    attributes: IncidentEventTopologyContextAttributes;
     id: string;
 };
 
-export type IncidentEventSystemComponentAttributes = {
-    analysisComponentId: string;
-    description: string;
-    status: string;
+export type IncidentEventTopologyContextAttributes = {
+    knowledgeEntityId?: string;
+    relationship: string;
+    snapshotEntityId?: string;
 };
 
 export type IncidentField = {
@@ -1733,48 +1609,39 @@ export type ListRetrospectivesResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListSystemAnalysisComponentsResponseBody = {
+export type ListSystemAnalysisEdgesResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemAnalysisComponent>;
+    data: Array<SystemAnalysisEdge>;
     pagination: ResponsePagination;
 };
 
-export type ListSystemAnalysisRelationshipsResponseBody = {
+export type ListSystemAnalysisNodesResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemAnalysisRelationship>;
+    data: Array<SystemAnalysisNode>;
     pagination: ResponsePagination;
 };
 
-export type ListSystemComponentKindsResponseBody = {
+export type ListSystemTopologyEntitiesResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemComponentKind>;
+    data: Array<SystemTopologyEntity>;
     pagination: ResponsePagination;
 };
 
-export type ListSystemComponentRelationshipsResponseBody = {
+export type ListSystemTopologyRelationshipsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<SystemComponentRelationship>;
-    pagination: ResponsePagination;
-};
-
-export type ListSystemComponentsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<SystemComponent>;
+    data: Array<SystemTopologyRelationship>;
     pagination: ResponsePagination;
 };
 
@@ -2127,19 +1994,9 @@ export type SystemAnalysis = {
 };
 
 export type SystemAnalysisAttributes = {
-    components: Array<SystemAnalysisComponent>;
-    relationships: Array<SystemAnalysisRelationship>;
-};
-
-export type SystemAnalysisComponent = {
-    attributes: SystemAnalysisComponentAttributes;
-    id: string;
-};
-
-export type SystemAnalysisComponentAttributes = {
-    component: SystemComponent;
-    description: string;
-    position: SystemAnalysisDiagramPosition;
+    edges: Array<SystemAnalysisEdge>;
+    nodes: Array<SystemAnalysisNode>;
+    topologySnapshot?: SystemTopologySnapshot;
 };
 
 export type SystemAnalysisDiagramPosition = {
@@ -2148,87 +2005,132 @@ export type SystemAnalysisDiagramPosition = {
     z?: number;
 };
 
-export type SystemAnalysisRelationship = {
-    attributes: SystemAnalysisRelationshipAttributes;
+export type SystemAnalysisEdge = {
+    attributes: SystemAnalysisTopologyEdgeAttributes;
     id: string;
 };
 
-export type SystemAnalysisRelationshipAttributes = {
-    description: string;
-    relationship: SystemComponentRelationship;
-};
-
-export type SystemComponent = {
-    attributes: SystemComponentAttributes;
+export type SystemAnalysisNode = {
+    attributes: SystemAnalysisNodeAttributes;
     id: string;
 };
 
-export type SystemComponentAttributes = {
-    constraints: Array<SystemComponentConstraint>;
-    controls: Array<SystemComponentControl>;
+export type SystemAnalysisNodeAttributes = {
     description: string;
-    kind?: SystemComponentKind;
-    kindId: string;
-    linkedRepositoryRef: string | null;
-    name: string;
+    position: SystemAnalysisDiagramPosition;
+    snapshotEntity: SystemTopologySnapshotEntity;
+};
+
+export type SystemAnalysisTopologyEdgeAttributes = {
+    description: string;
+    snapshotRelationship: SystemTopologySnapshotRelationship;
+};
+
+export type SystemTopologyEntity = {
+    attributes: SystemTopologyEntityAttributes;
+    id: string;
+};
+
+export type SystemTopologyEntityAlias = {
+    firstSeenAt: string;
+    id: string;
+    lastSeenAt: string;
+    provider: string;
+    providerSource: string;
+    subjectKind: string;
+    subjectRef: string;
+};
+
+export type SystemTopologyEntityAttributes = {
+    aliases: Array<SystemTopologyEntityAlias>;
+    createdAt: string;
+    description: string;
+    displayName: string;
+    kind: string;
     properties: {
         [key: string]: unknown;
     };
-    relationshipCount: number;
-    signals: Array<SystemComponentSignal>;
+    relationships?: Array<SystemTopologyRelationship>;
+    updatedAt: string;
 };
 
-export type SystemComponentConstraint = {
-    attributes: SystemComponentConstraintAttributes;
+export type SystemTopologyGraph = {
+    entities: Array<SystemTopologyEntity>;
+    relationships: Array<SystemTopologyRelationship>;
+};
+
+export type SystemTopologyRelationship = {
+    attributes: SystemTopologyRelationshipAttributes;
     id: string;
 };
 
-export type SystemComponentConstraintAttributes = {
+export type SystemTopologyRelationshipAttributes = {
+    createdAt: string;
     description: string;
-    label: string;
+    displayName: string;
+    firstSeenAt: string;
+    kind: string;
+    lastSeenAt: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    source?: SystemTopologyEntity;
+    sourceEntityId: string;
+    target?: SystemTopologyEntity;
+    targetEntityId: string;
+    updatedAt: string;
 };
 
-export type SystemComponentControl = {
-    attributes: SystemComponentControlAttributes;
+export type SystemTopologySnapshot = {
+    attributes: SystemTopologySnapshotAttributes;
     id: string;
 };
 
-export type SystemComponentControlAttributes = {
-    description: string;
-    label: string;
+export type SystemTopologySnapshotAttributes = {
+    asOf: string;
+    createdAt: string;
+    entities: Array<SystemTopologySnapshotEntity>;
+    name: string;
+    relationships: Array<SystemTopologySnapshotRelationship>;
+    scope: string;
+    scopeProperties: {
+        [key: string]: unknown;
+    };
 };
 
-export type SystemComponentKind = {
-    attributes: SystemComponentKindAttributes;
+export type SystemTopologySnapshotEntity = {
+    attributes: SystemTopologySnapshotEntityAttributes;
     id: string;
 };
 
-export type SystemComponentKindAttributes = {
+export type SystemTopologySnapshotEntityAttributes = {
+    aliases: Array<{
+        [key: string]: unknown;
+    }>;
     description: string;
-    label: string;
+    displayName: string;
+    kind: string;
+    knowledgeEntityId?: string;
+    properties: {
+        [key: string]: unknown;
+    };
 };
 
-export type SystemComponentRelationship = {
-    attributes: SystemComponentRelationshipAttributes;
+export type SystemTopologySnapshotRelationship = {
+    attributes: SystemTopologySnapshotRelationshipAttributes;
     id: string;
 };
 
-export type SystemComponentRelationshipAttributes = {
+export type SystemTopologySnapshotRelationshipAttributes = {
     description: string;
-    source?: SystemComponent;
-    sourceId: string;
-    target?: SystemComponent;
-    targetId: string;
-};
-
-export type SystemComponentSignal = {
-    attributes: SystemComponentSignalAttributes;
-    id: string;
-};
-
-export type SystemComponentSignalAttributes = {
-    description: string;
-    label: string;
+    displayName: string;
+    kind: string;
+    knowledgeRelationshipId?: string;
+    properties: {
+        [key: string]: unknown;
+    };
+    sourceSnapshotEntityId: string;
+    targetSnapshotEntityId: string;
 };
 
 export type Task = {
@@ -2696,173 +2598,45 @@ export type UpdateRetrospectiveReviewResponseBody = {
     data: RetrospectiveReview;
 };
 
-export type UpdateSystemAnalysisComponentAttributes = {
+export type UpdateSystemAnalysisEdgeAttributes = {
+    description?: string;
+};
+
+export type UpdateSystemAnalysisEdgeRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateSystemAnalysisEdgeAttributes;
+};
+
+export type UpdateSystemAnalysisEdgeResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: SystemAnalysisEdge;
+};
+
+export type UpdateSystemAnalysisNodeAttributes = {
+    description?: string;
     position?: SystemAnalysisDiagramPosition;
 };
 
-export type UpdateSystemAnalysisComponentRequestBody = {
+export type UpdateSystemAnalysisNodeRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateSystemAnalysisComponentAttributes;
+    attributes: UpdateSystemAnalysisNodeAttributes;
 };
 
-export type UpdateSystemAnalysisComponentResponseBody = {
+export type UpdateSystemAnalysisNodeResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: SystemAnalysisComponent;
-};
-
-export type UpdateSystemAnalysisRelationshipAttributes = {
-    description?: string;
-};
-
-export type UpdateSystemAnalysisRelationshipRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateSystemAnalysisRelationshipAttributes;
-};
-
-export type UpdateSystemAnalysisRelationshipResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemAnalysisRelationship;
-};
-
-export type UpdateSystemComponentAttributes = {
-    description?: string;
-    kindId?: string;
-    name?: string;
-    properties?: {
-        [key: string]: unknown;
-    };
-};
-
-export type UpdateSystemComponentConstraintAttributes = {
-    description?: string;
-    label?: string;
-};
-
-export type UpdateSystemComponentConstraintRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateSystemComponentConstraintAttributes;
-};
-
-export type UpdateSystemComponentConstraintResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentConstraint;
-};
-
-export type UpdateSystemComponentControlAttributes = {
-    description?: string;
-    label?: string;
-};
-
-export type UpdateSystemComponentControlRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateSystemComponentControlAttributes;
-};
-
-export type UpdateSystemComponentControlResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentControl;
-};
-
-export type UpdateSystemComponentKindAttributes = {
-    description?: string;
-    label?: string;
-};
-
-export type UpdateSystemComponentKindRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateSystemComponentKindAttributes;
-};
-
-export type UpdateSystemComponentKindResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentKind;
-};
-
-export type UpdateSystemComponentRelationshipAttributes = {
-    description?: string;
-};
-
-export type UpdateSystemComponentRelationshipRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateSystemComponentRelationshipAttributes;
-};
-
-export type UpdateSystemComponentRelationshipResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentRelationship;
-};
-
-export type UpdateSystemComponentRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateSystemComponentAttributes;
-};
-
-export type UpdateSystemComponentResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponent;
-};
-
-export type UpdateSystemComponentSignalAttributes = {
-    description?: string;
-    label?: string;
-};
-
-export type UpdateSystemComponentSignalRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateSystemComponentSignalAttributes;
-};
-
-export type UpdateSystemComponentSignalResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: SystemComponentSignal;
+    data: SystemAnalysisNode;
 };
 
 export type UpdateTaskAttributes = {
@@ -5560,7 +5334,6 @@ export type ListIncidentsData = {
         search?: string;
         archived?: boolean;
         teamId?: string;
-        componentId?: string;
     };
     url: '/incidents';
 };
@@ -8748,7 +8521,7 @@ export type GetSystemAnalysisResponses = {
 
 export type GetSystemAnalysisResponse = GetSystemAnalysisResponses[keyof GetSystemAnalysisResponses];
 
-export type ListSystemAnalysisComponentsData = {
+export type ListSystemAnalysisEdgesData = {
     body?: never;
     path: {
         id: string;
@@ -8759,10 +8532,10 @@ export type ListSystemAnalysisComponentsData = {
         search?: string;
         archived?: boolean;
     };
-    url: '/system_analysis/{id}/components';
+    url: '/system_analysis/{id}/edges';
 };
 
-export type ListSystemAnalysisComponentsErrors = {
+export type ListSystemAnalysisEdgesErrors = {
     /**
      * Bad Request
      */
@@ -8789,27 +8562,27 @@ export type ListSystemAnalysisComponentsErrors = {
     500: ErrorModel;
 };
 
-export type ListSystemAnalysisComponentsError = ListSystemAnalysisComponentsErrors[keyof ListSystemAnalysisComponentsErrors];
+export type ListSystemAnalysisEdgesError = ListSystemAnalysisEdgesErrors[keyof ListSystemAnalysisEdgesErrors];
 
-export type ListSystemAnalysisComponentsResponses = {
+export type ListSystemAnalysisEdgesResponses = {
     /**
      * OK
      */
-    200: ListSystemAnalysisComponentsResponseBody;
+    200: ListSystemAnalysisEdgesResponseBody;
 };
 
-export type ListSystemAnalysisComponentsResponse = ListSystemAnalysisComponentsResponses[keyof ListSystemAnalysisComponentsResponses];
+export type ListSystemAnalysisEdgesResponse = ListSystemAnalysisEdgesResponses[keyof ListSystemAnalysisEdgesResponses];
 
-export type AddSystemAnalysisComponentData = {
-    body: AddSystemAnalysisComponentRequestBody;
+export type AddSystemAnalysisEdgeData = {
+    body: AddSystemAnalysisEdgeRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis/{id}/components';
+    url: '/system_analysis/{id}/edges';
 };
 
-export type AddSystemAnalysisComponentErrors = {
+export type AddSystemAnalysisEdgeErrors = {
     /**
      * Bad Request
      */
@@ -8836,18 +8609,18 @@ export type AddSystemAnalysisComponentErrors = {
     500: ErrorModel;
 };
 
-export type AddSystemAnalysisComponentError = AddSystemAnalysisComponentErrors[keyof AddSystemAnalysisComponentErrors];
+export type AddSystemAnalysisEdgeError = AddSystemAnalysisEdgeErrors[keyof AddSystemAnalysisEdgeErrors];
 
-export type AddSystemAnalysisComponentResponses = {
+export type AddSystemAnalysisEdgeResponses = {
     /**
      * OK
      */
-    200: AddSystemAnalysisComponentResponseBody;
+    200: AddSystemAnalysisEdgeResponseBody;
 };
 
-export type AddSystemAnalysisComponentResponse = AddSystemAnalysisComponentResponses[keyof AddSystemAnalysisComponentResponses];
+export type AddSystemAnalysisEdgeResponse = AddSystemAnalysisEdgeResponses[keyof AddSystemAnalysisEdgeResponses];
 
-export type ListSystemAnalysisRelationshipsData = {
+export type ListSystemAnalysisNodesData = {
     body?: never;
     path: {
         id: string;
@@ -8857,12 +8630,11 @@ export type ListSystemAnalysisRelationshipsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
-        analysisComponentId?: string;
     };
-    url: '/system_analysis/{id}/relationships';
+    url: '/system_analysis/{id}/nodes';
 };
 
-export type ListSystemAnalysisRelationshipsErrors = {
+export type ListSystemAnalysisNodesErrors = {
     /**
      * Bad Request
      */
@@ -8889,27 +8661,27 @@ export type ListSystemAnalysisRelationshipsErrors = {
     500: ErrorModel;
 };
 
-export type ListSystemAnalysisRelationshipsError = ListSystemAnalysisRelationshipsErrors[keyof ListSystemAnalysisRelationshipsErrors];
+export type ListSystemAnalysisNodesError = ListSystemAnalysisNodesErrors[keyof ListSystemAnalysisNodesErrors];
 
-export type ListSystemAnalysisRelationshipsResponses = {
+export type ListSystemAnalysisNodesResponses = {
     /**
      * OK
      */
-    200: ListSystemAnalysisRelationshipsResponseBody;
+    200: ListSystemAnalysisNodesResponseBody;
 };
 
-export type ListSystemAnalysisRelationshipsResponse = ListSystemAnalysisRelationshipsResponses[keyof ListSystemAnalysisRelationshipsResponses];
+export type ListSystemAnalysisNodesResponse = ListSystemAnalysisNodesResponses[keyof ListSystemAnalysisNodesResponses];
 
-export type CreateSystemAnalysisRelationshipData = {
-    body: CreateSystemAnalysisRelationshipRequestBody;
+export type AddSystemAnalysisNodeData = {
+    body: AddSystemAnalysisNodeRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis/{id}/relationships';
+    url: '/system_analysis/{id}/nodes';
 };
 
-export type CreateSystemAnalysisRelationshipErrors = {
+export type AddSystemAnalysisNodeErrors = {
     /**
      * Bad Request
      */
@@ -8936,27 +8708,27 @@ export type CreateSystemAnalysisRelationshipErrors = {
     500: ErrorModel;
 };
 
-export type CreateSystemAnalysisRelationshipError = CreateSystemAnalysisRelationshipErrors[keyof CreateSystemAnalysisRelationshipErrors];
+export type AddSystemAnalysisNodeError = AddSystemAnalysisNodeErrors[keyof AddSystemAnalysisNodeErrors];
 
-export type CreateSystemAnalysisRelationshipResponses = {
+export type AddSystemAnalysisNodeResponses = {
     /**
      * OK
      */
-    200: CreateSystemAnalysisRelationshipResponseBody;
+    200: AddSystemAnalysisNodeResponseBody;
 };
 
-export type CreateSystemAnalysisRelationshipResponse = CreateSystemAnalysisRelationshipResponses[keyof CreateSystemAnalysisRelationshipResponses];
+export type AddSystemAnalysisNodeResponse = AddSystemAnalysisNodeResponses[keyof AddSystemAnalysisNodeResponses];
 
-export type DeleteSystemAnalysisComponentData = {
+export type DeleteSystemAnalysisEdgeData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_components/{id}';
+    url: '/system_analysis_edges/{id}';
 };
 
-export type DeleteSystemAnalysisComponentErrors = {
+export type DeleteSystemAnalysisEdgeErrors = {
     /**
      * Bad Request
      */
@@ -8983,27 +8755,27 @@ export type DeleteSystemAnalysisComponentErrors = {
     500: ErrorModel;
 };
 
-export type DeleteSystemAnalysisComponentError = DeleteSystemAnalysisComponentErrors[keyof DeleteSystemAnalysisComponentErrors];
+export type DeleteSystemAnalysisEdgeError = DeleteSystemAnalysisEdgeErrors[keyof DeleteSystemAnalysisEdgeErrors];
 
-export type DeleteSystemAnalysisComponentResponses = {
+export type DeleteSystemAnalysisEdgeResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type DeleteSystemAnalysisComponentResponse = DeleteSystemAnalysisComponentResponses[keyof DeleteSystemAnalysisComponentResponses];
+export type DeleteSystemAnalysisEdgeResponse = DeleteSystemAnalysisEdgeResponses[keyof DeleteSystemAnalysisEdgeResponses];
 
-export type GetSystemAnalysisComponentData = {
+export type GetSystemAnalysisEdgeData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_components/{id}';
+    url: '/system_analysis_edges/{id}';
 };
 
-export type GetSystemAnalysisComponentErrors = {
+export type GetSystemAnalysisEdgeErrors = {
     /**
      * Bad Request
      */
@@ -9030,27 +8802,27 @@ export type GetSystemAnalysisComponentErrors = {
     500: ErrorModel;
 };
 
-export type GetSystemAnalysisComponentError = GetSystemAnalysisComponentErrors[keyof GetSystemAnalysisComponentErrors];
+export type GetSystemAnalysisEdgeError = GetSystemAnalysisEdgeErrors[keyof GetSystemAnalysisEdgeErrors];
 
-export type GetSystemAnalysisComponentResponses = {
+export type GetSystemAnalysisEdgeResponses = {
     /**
      * OK
      */
-    200: GetSystemAnalysisComponentResponseBody;
+    200: GetSystemAnalysisEdgeResponseBody;
 };
 
-export type GetSystemAnalysisComponentResponse = GetSystemAnalysisComponentResponses[keyof GetSystemAnalysisComponentResponses];
+export type GetSystemAnalysisEdgeResponse = GetSystemAnalysisEdgeResponses[keyof GetSystemAnalysisEdgeResponses];
 
-export type UpdateSystemAnalysisComponentData = {
-    body: UpdateSystemAnalysisComponentRequestBody;
+export type UpdateSystemAnalysisEdgeData = {
+    body: UpdateSystemAnalysisEdgeRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_components/{id}';
+    url: '/system_analysis_edges/{id}';
 };
 
-export type UpdateSystemAnalysisComponentErrors = {
+export type UpdateSystemAnalysisEdgeErrors = {
     /**
      * Bad Request
      */
@@ -9077,27 +8849,27 @@ export type UpdateSystemAnalysisComponentErrors = {
     500: ErrorModel;
 };
 
-export type UpdateSystemAnalysisComponentError = UpdateSystemAnalysisComponentErrors[keyof UpdateSystemAnalysisComponentErrors];
+export type UpdateSystemAnalysisEdgeError = UpdateSystemAnalysisEdgeErrors[keyof UpdateSystemAnalysisEdgeErrors];
 
-export type UpdateSystemAnalysisComponentResponses = {
+export type UpdateSystemAnalysisEdgeResponses = {
     /**
      * OK
      */
-    200: UpdateSystemAnalysisComponentResponseBody;
+    200: UpdateSystemAnalysisEdgeResponseBody;
 };
 
-export type UpdateSystemAnalysisComponentResponse = UpdateSystemAnalysisComponentResponses[keyof UpdateSystemAnalysisComponentResponses];
+export type UpdateSystemAnalysisEdgeResponse = UpdateSystemAnalysisEdgeResponses[keyof UpdateSystemAnalysisEdgeResponses];
 
-export type DeleteSystemAnalysisRelationshipData = {
+export type DeleteSystemAnalysisNodeData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_relationships/{id}';
+    url: '/system_analysis_nodes/{id}';
 };
 
-export type DeleteSystemAnalysisRelationshipErrors = {
+export type DeleteSystemAnalysisNodeErrors = {
     /**
      * Bad Request
      */
@@ -9124,27 +8896,27 @@ export type DeleteSystemAnalysisRelationshipErrors = {
     500: ErrorModel;
 };
 
-export type DeleteSystemAnalysisRelationshipError = DeleteSystemAnalysisRelationshipErrors[keyof DeleteSystemAnalysisRelationshipErrors];
+export type DeleteSystemAnalysisNodeError = DeleteSystemAnalysisNodeErrors[keyof DeleteSystemAnalysisNodeErrors];
 
-export type DeleteSystemAnalysisRelationshipResponses = {
+export type DeleteSystemAnalysisNodeResponses = {
     /**
      * No Content
      */
     204: void;
 };
 
-export type DeleteSystemAnalysisRelationshipResponse = DeleteSystemAnalysisRelationshipResponses[keyof DeleteSystemAnalysisRelationshipResponses];
+export type DeleteSystemAnalysisNodeResponse = DeleteSystemAnalysisNodeResponses[keyof DeleteSystemAnalysisNodeResponses];
 
-export type GetSystemAnalysisRelationshipData = {
+export type GetSystemAnalysisNodeData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_relationships/{id}';
+    url: '/system_analysis_nodes/{id}';
 };
 
-export type GetSystemAnalysisRelationshipErrors = {
+export type GetSystemAnalysisNodeErrors = {
     /**
      * Bad Request
      */
@@ -9171,27 +8943,27 @@ export type GetSystemAnalysisRelationshipErrors = {
     500: ErrorModel;
 };
 
-export type GetSystemAnalysisRelationshipError = GetSystemAnalysisRelationshipErrors[keyof GetSystemAnalysisRelationshipErrors];
+export type GetSystemAnalysisNodeError = GetSystemAnalysisNodeErrors[keyof GetSystemAnalysisNodeErrors];
 
-export type GetSystemAnalysisRelationshipResponses = {
+export type GetSystemAnalysisNodeResponses = {
     /**
      * OK
      */
-    200: GetSystemAnalysisRelationshipResponseBody;
+    200: GetSystemAnalysisNodeResponseBody;
 };
 
-export type GetSystemAnalysisRelationshipResponse = GetSystemAnalysisRelationshipResponses[keyof GetSystemAnalysisRelationshipResponses];
+export type GetSystemAnalysisNodeResponse = GetSystemAnalysisNodeResponses[keyof GetSystemAnalysisNodeResponses];
 
-export type UpdateSystemAnalysisRelationshipData = {
-    body: UpdateSystemAnalysisRelationshipRequestBody;
+export type UpdateSystemAnalysisNodeData = {
+    body: UpdateSystemAnalysisNodeRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_analysis_relationships/{id}';
+    url: '/system_analysis_nodes/{id}';
 };
 
-export type UpdateSystemAnalysisRelationshipErrors = {
+export type UpdateSystemAnalysisNodeErrors = {
     /**
      * Bad Request
      */
@@ -9218,300 +8990,18 @@ export type UpdateSystemAnalysisRelationshipErrors = {
     500: ErrorModel;
 };
 
-export type UpdateSystemAnalysisRelationshipError = UpdateSystemAnalysisRelationshipErrors[keyof UpdateSystemAnalysisRelationshipErrors];
+export type UpdateSystemAnalysisNodeError = UpdateSystemAnalysisNodeErrors[keyof UpdateSystemAnalysisNodeErrors];
 
-export type UpdateSystemAnalysisRelationshipResponses = {
+export type UpdateSystemAnalysisNodeResponses = {
     /**
      * OK
      */
-    200: UpdateSystemAnalysisRelationshipResponseBody;
+    200: UpdateSystemAnalysisNodeResponseBody;
 };
 
-export type UpdateSystemAnalysisRelationshipResponse = UpdateSystemAnalysisRelationshipResponses[keyof UpdateSystemAnalysisRelationshipResponses];
+export type UpdateSystemAnalysisNodeResponse = UpdateSystemAnalysisNodeResponses[keyof UpdateSystemAnalysisNodeResponses];
 
-export type ArchiveSystemComponentConstraintData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_constraints/{id}';
-};
-
-export type ArchiveSystemComponentConstraintErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveSystemComponentConstraintError = ArchiveSystemComponentConstraintErrors[keyof ArchiveSystemComponentConstraintErrors];
-
-export type ArchiveSystemComponentConstraintResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveSystemComponentConstraintResponse = ArchiveSystemComponentConstraintResponses[keyof ArchiveSystemComponentConstraintResponses];
-
-export type GetSystemComponentConstraintData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_constraints/{id}';
-};
-
-export type GetSystemComponentConstraintErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentConstraintError = GetSystemComponentConstraintErrors[keyof GetSystemComponentConstraintErrors];
-
-export type GetSystemComponentConstraintResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemComponentConstraintResponseBody;
-};
-
-export type GetSystemComponentConstraintResponse = GetSystemComponentConstraintResponses[keyof GetSystemComponentConstraintResponses];
-
-export type UpdateSystemComponentConstraintData = {
-    body: UpdateSystemComponentConstraintRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_constraints/{id}';
-};
-
-export type UpdateSystemComponentConstraintErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemComponentConstraintError = UpdateSystemComponentConstraintErrors[keyof UpdateSystemComponentConstraintErrors];
-
-export type UpdateSystemComponentConstraintResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemComponentConstraintResponseBody;
-};
-
-export type UpdateSystemComponentConstraintResponse = UpdateSystemComponentConstraintResponses[keyof UpdateSystemComponentConstraintResponses];
-
-export type ArchiveSystemComponentControlData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_controls/{id}';
-};
-
-export type ArchiveSystemComponentControlErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveSystemComponentControlError = ArchiveSystemComponentControlErrors[keyof ArchiveSystemComponentControlErrors];
-
-export type ArchiveSystemComponentControlResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveSystemComponentControlResponse = ArchiveSystemComponentControlResponses[keyof ArchiveSystemComponentControlResponses];
-
-export type GetSystemComponentControlData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_controls/{id}';
-};
-
-export type GetSystemComponentControlErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentControlError = GetSystemComponentControlErrors[keyof GetSystemComponentControlErrors];
-
-export type GetSystemComponentControlResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemComponentControlResponseBody;
-};
-
-export type GetSystemComponentControlResponse = GetSystemComponentControlResponses[keyof GetSystemComponentControlResponses];
-
-export type UpdateSystemComponentControlData = {
-    body: UpdateSystemComponentControlRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_controls/{id}';
-};
-
-export type UpdateSystemComponentControlErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemComponentControlError = UpdateSystemComponentControlErrors[keyof UpdateSystemComponentControlErrors];
-
-export type UpdateSystemComponentControlResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemComponentControlResponseBody;
-};
-
-export type UpdateSystemComponentControlResponse = UpdateSystemComponentControlResponses[keyof UpdateSystemComponentControlResponses];
-
-export type ListSystemComponentKindsData = {
+export type ListSystemTopologyEntitiesData = {
     body?: never;
     path?: never;
     query?: {
@@ -9519,11 +9009,15 @@ export type ListSystemComponentKindsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
+        kind?: Array<string>;
+        provider?: string;
+        providerSource?: string;
+        subjectKind?: string;
     };
-    url: '/system_component_kinds';
+    url: '/system_topology/entities';
 };
 
-export type ListSystemComponentKindsErrors = {
+export type ListSystemTopologyEntitiesErrors = {
     /**
      * Bad Request
      */
@@ -9550,72 +9044,27 @@ export type ListSystemComponentKindsErrors = {
     500: ErrorModel;
 };
 
-export type ListSystemComponentKindsError = ListSystemComponentKindsErrors[keyof ListSystemComponentKindsErrors];
+export type ListSystemTopologyEntitiesError = ListSystemTopologyEntitiesErrors[keyof ListSystemTopologyEntitiesErrors];
 
-export type ListSystemComponentKindsResponses = {
+export type ListSystemTopologyEntitiesResponses = {
     /**
      * OK
      */
-    200: ListSystemComponentKindsResponseBody;
+    200: ListSystemTopologyEntitiesResponseBody;
 };
 
-export type ListSystemComponentKindsResponse = ListSystemComponentKindsResponses[keyof ListSystemComponentKindsResponses];
+export type ListSystemTopologyEntitiesResponse = ListSystemTopologyEntitiesResponses[keyof ListSystemTopologyEntitiesResponses];
 
-export type CreateSystemComponentKindData = {
-    body: CreateSystemComponentKindRequestBody;
-    path?: never;
-    query?: never;
-    url: '/system_component_kinds';
-};
-
-export type CreateSystemComponentKindErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateSystemComponentKindError = CreateSystemComponentKindErrors[keyof CreateSystemComponentKindErrors];
-
-export type CreateSystemComponentKindResponses = {
-    /**
-     * OK
-     */
-    200: CreateSystemComponentKindResponseBody;
-};
-
-export type CreateSystemComponentKindResponse = CreateSystemComponentKindResponses[keyof CreateSystemComponentKindResponses];
-
-export type ArchiveSystemComponentKindData = {
+export type GetSystemTopologyEntityData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_component_kinds/{id}';
+    url: '/system_topology/entities/{id}';
 };
 
-export type ArchiveSystemComponentKindErrors = {
+export type GetSystemTopologyEntityErrors = {
     /**
      * Bad Request
      */
@@ -9642,74 +9091,30 @@ export type ArchiveSystemComponentKindErrors = {
     500: ErrorModel;
 };
 
-export type ArchiveSystemComponentKindError = ArchiveSystemComponentKindErrors[keyof ArchiveSystemComponentKindErrors];
+export type GetSystemTopologyEntityError = GetSystemTopologyEntityErrors[keyof GetSystemTopologyEntityErrors];
 
-export type ArchiveSystemComponentKindResponses = {
+export type GetSystemTopologyEntityResponses = {
     /**
-     * No Content
+     * OK
      */
-    204: void;
+    200: GetSystemTopologyEntityResponseBody;
 };
 
-export type ArchiveSystemComponentKindResponse = ArchiveSystemComponentKindResponses[keyof ArchiveSystemComponentKindResponses];
+export type GetSystemTopologyEntityResponse = GetSystemTopologyEntityResponses[keyof GetSystemTopologyEntityResponses];
 
-export type GetSystemComponentKindData = {
+export type GetSystemTopologyEntityNeighborhoodData = {
     body?: never;
     path: {
         id: string;
     };
-    query?: never;
-    url: '/system_component_kinds/{id}';
-};
-
-export type GetSystemComponentKindErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentKindError = GetSystemComponentKindErrors[keyof GetSystemComponentKindErrors];
-
-export type GetSystemComponentKindResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemComponentKindResponseBody;
-};
-
-export type GetSystemComponentKindResponse = GetSystemComponentKindResponses[keyof GetSystemComponentKindResponses];
-
-export type UpdateSystemComponentKindData = {
-    body: UpdateSystemComponentKindRequestBody;
-    path: {
-        id: string;
+    query?: {
+        depth?: number;
+        relationshipKind?: Array<string>;
     };
-    query?: never;
-    url: '/system_component_kinds/{id}';
+    url: '/system_topology/entities/{id}/neighborhood';
 };
 
-export type UpdateSystemComponentKindErrors = {
+export type GetSystemTopologyEntityNeighborhoodErrors = {
     /**
      * Bad Request
      */
@@ -9736,18 +9141,18 @@ export type UpdateSystemComponentKindErrors = {
     500: ErrorModel;
 };
 
-export type UpdateSystemComponentKindError = UpdateSystemComponentKindErrors[keyof UpdateSystemComponentKindErrors];
+export type GetSystemTopologyEntityNeighborhoodError = GetSystemTopologyEntityNeighborhoodErrors[keyof GetSystemTopologyEntityNeighborhoodErrors];
 
-export type UpdateSystemComponentKindResponses = {
+export type GetSystemTopologyEntityNeighborhoodResponses = {
     /**
      * OK
      */
-    200: UpdateSystemComponentKindResponseBody;
+    200: GetSystemTopologyEntityNeighborhoodResponseBody;
 };
 
-export type UpdateSystemComponentKindResponse = UpdateSystemComponentKindResponses[keyof UpdateSystemComponentKindResponses];
+export type GetSystemTopologyEntityNeighborhoodResponse = GetSystemTopologyEntityNeighborhoodResponses[keyof GetSystemTopologyEntityNeighborhoodResponses];
 
-export type ListSystemComponentRelationshipsData = {
+export type ListSystemTopologyRelationshipsData = {
     body?: never;
     path?: never;
     query?: {
@@ -9755,14 +9160,15 @@ export type ListSystemComponentRelationshipsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
-        componentId?: string;
-        sourceId?: string;
-        targetId?: string;
+        kind?: Array<string>;
+        entityId?: string;
+        sourceEntityId?: string;
+        targetEntityId?: string;
     };
-    url: '/system_component_relationships';
+    url: '/system_topology/relationships';
 };
 
-export type ListSystemComponentRelationshipsErrors = {
+export type ListSystemTopologyRelationshipsErrors = {
     /**
      * Bad Request
      */
@@ -9789,25 +9195,25 @@ export type ListSystemComponentRelationshipsErrors = {
     500: ErrorModel;
 };
 
-export type ListSystemComponentRelationshipsError = ListSystemComponentRelationshipsErrors[keyof ListSystemComponentRelationshipsErrors];
+export type ListSystemTopologyRelationshipsError = ListSystemTopologyRelationshipsErrors[keyof ListSystemTopologyRelationshipsErrors];
 
-export type ListSystemComponentRelationshipsResponses = {
+export type ListSystemTopologyRelationshipsResponses = {
     /**
      * OK
      */
-    200: ListSystemComponentRelationshipsResponseBody;
+    200: ListSystemTopologyRelationshipsResponseBody;
 };
 
-export type ListSystemComponentRelationshipsResponse = ListSystemComponentRelationshipsResponses[keyof ListSystemComponentRelationshipsResponses];
+export type ListSystemTopologyRelationshipsResponse = ListSystemTopologyRelationshipsResponses[keyof ListSystemTopologyRelationshipsResponses];
 
-export type CreateSystemComponentRelationshipData = {
-    body: CreateSystemComponentRelationshipRequestBody;
+export type CreateSystemTopologySnapshotData = {
+    body: CreateSystemTopologySnapshotRequestBody;
     path?: never;
     query?: never;
-    url: '/system_component_relationships';
+    url: '/system_topology/snapshots';
 };
 
-export type CreateSystemComponentRelationshipErrors = {
+export type CreateSystemTopologySnapshotErrors = {
     /**
      * Bad Request
      */
@@ -9834,27 +9240,27 @@ export type CreateSystemComponentRelationshipErrors = {
     500: ErrorModel;
 };
 
-export type CreateSystemComponentRelationshipError = CreateSystemComponentRelationshipErrors[keyof CreateSystemComponentRelationshipErrors];
+export type CreateSystemTopologySnapshotError = CreateSystemTopologySnapshotErrors[keyof CreateSystemTopologySnapshotErrors];
 
-export type CreateSystemComponentRelationshipResponses = {
+export type CreateSystemTopologySnapshotResponses = {
     /**
      * OK
      */
-    200: CreateSystemComponentRelationshipResponseBody;
+    200: CreateSystemTopologySnapshotResponseBody;
 };
 
-export type CreateSystemComponentRelationshipResponse = CreateSystemComponentRelationshipResponses[keyof CreateSystemComponentRelationshipResponses];
+export type CreateSystemTopologySnapshotResponse = CreateSystemTopologySnapshotResponses[keyof CreateSystemTopologySnapshotResponses];
 
-export type ArchiveSystemComponentRelationshipData = {
+export type GetSystemTopologySnapshotData = {
     body?: never;
     path: {
         id: string;
     };
     query?: never;
-    url: '/system_component_relationships/{id}';
+    url: '/system_topology/snapshots/{id}';
 };
 
-export type ArchiveSystemComponentRelationshipErrors = {
+export type GetSystemTopologySnapshotErrors = {
     /**
      * Bad Request
      */
@@ -9881,628 +9287,16 @@ export type ArchiveSystemComponentRelationshipErrors = {
     500: ErrorModel;
 };
 
-export type ArchiveSystemComponentRelationshipError = ArchiveSystemComponentRelationshipErrors[keyof ArchiveSystemComponentRelationshipErrors];
+export type GetSystemTopologySnapshotError = GetSystemTopologySnapshotErrors[keyof GetSystemTopologySnapshotErrors];
 
-export type ArchiveSystemComponentRelationshipResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveSystemComponentRelationshipResponse = ArchiveSystemComponentRelationshipResponses[keyof ArchiveSystemComponentRelationshipResponses];
-
-export type GetSystemComponentRelationshipData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_relationships/{id}';
-};
-
-export type GetSystemComponentRelationshipErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentRelationshipError = GetSystemComponentRelationshipErrors[keyof GetSystemComponentRelationshipErrors];
-
-export type GetSystemComponentRelationshipResponses = {
+export type GetSystemTopologySnapshotResponses = {
     /**
      * OK
      */
-    200: GetSystemComponentRelationshipResponseBody;
+    200: GetSystemTopologySnapshotResponseBody;
 };
 
-export type GetSystemComponentRelationshipResponse = GetSystemComponentRelationshipResponses[keyof GetSystemComponentRelationshipResponses];
-
-export type UpdateSystemComponentRelationshipData = {
-    body: UpdateSystemComponentRelationshipRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_relationships/{id}';
-};
-
-export type UpdateSystemComponentRelationshipErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemComponentRelationshipError = UpdateSystemComponentRelationshipErrors[keyof UpdateSystemComponentRelationshipErrors];
-
-export type UpdateSystemComponentRelationshipResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemComponentRelationshipResponseBody;
-};
-
-export type UpdateSystemComponentRelationshipResponse = UpdateSystemComponentRelationshipResponses[keyof UpdateSystemComponentRelationshipResponses];
-
-export type ArchiveSystemComponentSignalData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_signals/{id}';
-};
-
-export type ArchiveSystemComponentSignalErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveSystemComponentSignalError = ArchiveSystemComponentSignalErrors[keyof ArchiveSystemComponentSignalErrors];
-
-export type ArchiveSystemComponentSignalResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveSystemComponentSignalResponse = ArchiveSystemComponentSignalResponses[keyof ArchiveSystemComponentSignalResponses];
-
-export type GetSystemComponentSignalData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_signals/{id}';
-};
-
-export type GetSystemComponentSignalErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentSignalError = GetSystemComponentSignalErrors[keyof GetSystemComponentSignalErrors];
-
-export type GetSystemComponentSignalResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemComponentSignalResponseBody;
-};
-
-export type GetSystemComponentSignalResponse = GetSystemComponentSignalResponses[keyof GetSystemComponentSignalResponses];
-
-export type UpdateSystemComponentSignalData = {
-    body: UpdateSystemComponentSignalRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_component_signals/{id}';
-};
-
-export type UpdateSystemComponentSignalErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemComponentSignalError = UpdateSystemComponentSignalErrors[keyof UpdateSystemComponentSignalErrors];
-
-export type UpdateSystemComponentSignalResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemComponentSignalResponseBody;
-};
-
-export type UpdateSystemComponentSignalResponse = UpdateSystemComponentSignalResponses[keyof UpdateSystemComponentSignalResponses];
-
-export type ListSystemComponentsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/system_components';
-};
-
-export type ListSystemComponentsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListSystemComponentsError = ListSystemComponentsErrors[keyof ListSystemComponentsErrors];
-
-export type ListSystemComponentsResponses = {
-    /**
-     * OK
-     */
-    200: ListSystemComponentsResponseBody;
-};
-
-export type ListSystemComponentsResponse = ListSystemComponentsResponses[keyof ListSystemComponentsResponses];
-
-export type CreateSystemComponentData = {
-    body: CreateSystemComponentRequestBody;
-    path?: never;
-    query?: never;
-    url: '/system_components';
-};
-
-export type CreateSystemComponentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateSystemComponentError = CreateSystemComponentErrors[keyof CreateSystemComponentErrors];
-
-export type CreateSystemComponentResponses = {
-    /**
-     * OK
-     */
-    200: CreateSystemComponentResponseBody;
-};
-
-export type CreateSystemComponentResponse = CreateSystemComponentResponses[keyof CreateSystemComponentResponses];
-
-export type ArchiveSystemComponentData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_components/{id}';
-};
-
-export type ArchiveSystemComponentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ArchiveSystemComponentError = ArchiveSystemComponentErrors[keyof ArchiveSystemComponentErrors];
-
-export type ArchiveSystemComponentResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type ArchiveSystemComponentResponse = ArchiveSystemComponentResponses[keyof ArchiveSystemComponentResponses];
-
-export type GetSystemComponentData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_components/{id}';
-};
-
-export type GetSystemComponentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetSystemComponentError = GetSystemComponentErrors[keyof GetSystemComponentErrors];
-
-export type GetSystemComponentResponses = {
-    /**
-     * OK
-     */
-    200: GetSystemComponentResponseBody;
-};
-
-export type GetSystemComponentResponse = GetSystemComponentResponses[keyof GetSystemComponentResponses];
-
-export type UpdateSystemComponentData = {
-    body: UpdateSystemComponentRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_components/{id}';
-};
-
-export type UpdateSystemComponentErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateSystemComponentError = UpdateSystemComponentErrors[keyof UpdateSystemComponentErrors];
-
-export type UpdateSystemComponentResponses = {
-    /**
-     * OK
-     */
-    200: UpdateSystemComponentResponseBody;
-};
-
-export type UpdateSystemComponentResponse = UpdateSystemComponentResponses[keyof UpdateSystemComponentResponses];
-
-export type CreateSystemComponentConstraintData = {
-    body: CreateSystemComponentConstraintRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_components/{id}/constraints';
-};
-
-export type CreateSystemComponentConstraintErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateSystemComponentConstraintError = CreateSystemComponentConstraintErrors[keyof CreateSystemComponentConstraintErrors];
-
-export type CreateSystemComponentConstraintResponses = {
-    /**
-     * OK
-     */
-    200: CreateSystemComponentConstraintResponseBody;
-};
-
-export type CreateSystemComponentConstraintResponse = CreateSystemComponentConstraintResponses[keyof CreateSystemComponentConstraintResponses];
-
-export type CreateSystemComponentControlData = {
-    body: CreateSystemComponentControlRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_components/{id}/controls';
-};
-
-export type CreateSystemComponentControlErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateSystemComponentControlError = CreateSystemComponentControlErrors[keyof CreateSystemComponentControlErrors];
-
-export type CreateSystemComponentControlResponses = {
-    /**
-     * OK
-     */
-    200: CreateSystemComponentControlResponseBody;
-};
-
-export type CreateSystemComponentControlResponse = CreateSystemComponentControlResponses[keyof CreateSystemComponentControlResponses];
-
-export type CreateSystemComponentSignalData = {
-    body: CreateSystemComponentSignalRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/system_components/{id}/signals';
-};
-
-export type CreateSystemComponentSignalErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateSystemComponentSignalError = CreateSystemComponentSignalErrors[keyof CreateSystemComponentSignalErrors];
-
-export type CreateSystemComponentSignalResponses = {
-    /**
-     * OK
-     */
-    200: CreateSystemComponentSignalResponseBody;
-};
-
-export type CreateSystemComponentSignalResponse = CreateSystemComponentSignalResponses[keyof CreateSystemComponentSignalResponses];
+export type GetSystemTopologySnapshotResponse = GetSystemTopologySnapshotResponses[keyof GetSystemTopologySnapshotResponses];
 
 export type ListTasksData = {
     body?: never;

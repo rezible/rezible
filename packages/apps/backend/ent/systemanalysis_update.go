@@ -16,9 +16,9 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysiscomponent"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
+	"github.com/rezible/rezible/ent/systemanalysistopologynode"
+	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 )
 
 // SystemAnalysisUpdate is the builder for updating SystemAnalysis entities.
@@ -32,6 +32,26 @@ type SystemAnalysisUpdate struct {
 // Where appends a list predicates to the SystemAnalysisUpdate builder.
 func (_u *SystemAnalysisUpdate) Where(ps ...predicate.SystemAnalysis) *SystemAnalysisUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetTopologySnapshotID sets the "topology_snapshot_id" field.
+func (_u *SystemAnalysisUpdate) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.SetTopologySnapshotID(v)
+	return _u
+}
+
+// SetNillableTopologySnapshotID sets the "topology_snapshot_id" field if the given value is not nil.
+func (_u *SystemAnalysisUpdate) SetNillableTopologySnapshotID(v *uuid.UUID) *SystemAnalysisUpdate {
+	if v != nil {
+		_u.SetTopologySnapshotID(*v)
+	}
+	return _u
+}
+
+// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
+func (_u *SystemAnalysisUpdate) ClearTopologySnapshotID() *SystemAnalysisUpdate {
+	_u.mutation.ClearTopologySnapshotID()
 	return _u
 }
 
@@ -66,49 +86,39 @@ func (_u *SystemAnalysisUpdate) SetRetrospective(v *Retrospective) *SystemAnalys
 	return _u.SetRetrospectiveID(v.ID)
 }
 
-// AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (_u *SystemAnalysisUpdate) AddComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.AddComponentIDs(ids...)
+// SetTopologySnapshot sets the "topology_snapshot" edge to the SystemTopologySnapshot entity.
+func (_u *SystemAnalysisUpdate) SetTopologySnapshot(v *SystemTopologySnapshot) *SystemAnalysisUpdate {
+	return _u.SetTopologySnapshotID(v.ID)
+}
+
+// AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
+func (_u *SystemAnalysisUpdate) AddAnalysisNodeIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddAnalysisNodeIDs(ids...)
 	return _u
 }
 
-// AddComponents adds the "components" edges to the SystemComponent entity.
-func (_u *SystemAnalysisUpdate) AddComponents(v ...*SystemComponent) *SystemAnalysisUpdate {
+// AddAnalysisNodes adds the "analysis_nodes" edges to the SystemAnalysisTopologyNode entity.
+func (_u *SystemAnalysisUpdate) AddAnalysisNodes(v ...*SystemAnalysisTopologyNode) *SystemAnalysisUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddComponentIDs(ids...)
+	return _u.AddAnalysisNodeIDs(ids...)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (_u *SystemAnalysisUpdate) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.AddRelationshipIDs(ids...)
+// AddAnalysisEdgeIDs adds the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity by IDs.
+func (_u *SystemAnalysisUpdate) AddAnalysisEdgeIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.AddAnalysisEdgeIDs(ids...)
 	return _u
 }
 
-// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (_u *SystemAnalysisUpdate) AddRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
+// AddAnalysisEdges adds the "analysis_edges" edges to the SystemAnalysisTopologyEdge entity.
+func (_u *SystemAnalysisUpdate) AddAnalysisEdges(v ...*SystemAnalysisTopologyEdge) *SystemAnalysisUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddRelationshipIDs(ids...)
-}
-
-// AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (_u *SystemAnalysisUpdate) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.AddAnalysisComponentIDs(ids...)
-	return _u
-}
-
-// AddAnalysisComponents adds the "analysis_components" edges to the SystemAnalysisComponent entity.
-func (_u *SystemAnalysisUpdate) AddAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAnalysisComponentIDs(ids...)
+	return _u.AddAnalysisEdgeIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisMutation object of the builder.
@@ -122,67 +132,52 @@ func (_u *SystemAnalysisUpdate) ClearRetrospective() *SystemAnalysisUpdate {
 	return _u
 }
 
-// ClearComponents clears all "components" edges to the SystemComponent entity.
-func (_u *SystemAnalysisUpdate) ClearComponents() *SystemAnalysisUpdate {
-	_u.mutation.ClearComponents()
+// ClearTopologySnapshot clears the "topology_snapshot" edge to the SystemTopologySnapshot entity.
+func (_u *SystemAnalysisUpdate) ClearTopologySnapshot() *SystemAnalysisUpdate {
+	_u.mutation.ClearTopologySnapshot()
 	return _u
 }
 
-// RemoveComponentIDs removes the "components" edge to SystemComponent entities by IDs.
-func (_u *SystemAnalysisUpdate) RemoveComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.RemoveComponentIDs(ids...)
+// ClearAnalysisNodes clears all "analysis_nodes" edges to the SystemAnalysisTopologyNode entity.
+func (_u *SystemAnalysisUpdate) ClearAnalysisNodes() *SystemAnalysisUpdate {
+	_u.mutation.ClearAnalysisNodes()
 	return _u
 }
 
-// RemoveComponents removes "components" edges to SystemComponent entities.
-func (_u *SystemAnalysisUpdate) RemoveComponents(v ...*SystemComponent) *SystemAnalysisUpdate {
+// RemoveAnalysisNodeIDs removes the "analysis_nodes" edge to SystemAnalysisTopologyNode entities by IDs.
+func (_u *SystemAnalysisUpdate) RemoveAnalysisNodeIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveAnalysisNodeIDs(ids...)
+	return _u
+}
+
+// RemoveAnalysisNodes removes "analysis_nodes" edges to SystemAnalysisTopologyNode entities.
+func (_u *SystemAnalysisUpdate) RemoveAnalysisNodes(v ...*SystemAnalysisTopologyNode) *SystemAnalysisUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveComponentIDs(ids...)
+	return _u.RemoveAnalysisNodeIDs(ids...)
 }
 
-// ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
-func (_u *SystemAnalysisUpdate) ClearRelationships() *SystemAnalysisUpdate {
-	_u.mutation.ClearRelationships()
+// ClearAnalysisEdges clears all "analysis_edges" edges to the SystemAnalysisTopologyEdge entity.
+func (_u *SystemAnalysisUpdate) ClearAnalysisEdges() *SystemAnalysisUpdate {
+	_u.mutation.ClearAnalysisEdges()
 	return _u
 }
 
-// RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
-func (_u *SystemAnalysisUpdate) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.RemoveRelationshipIDs(ids...)
+// RemoveAnalysisEdgeIDs removes the "analysis_edges" edge to SystemAnalysisTopologyEdge entities by IDs.
+func (_u *SystemAnalysisUpdate) RemoveAnalysisEdgeIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
+	_u.mutation.RemoveAnalysisEdgeIDs(ids...)
 	return _u
 }
 
-// RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (_u *SystemAnalysisUpdate) RemoveRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdate {
+// RemoveAnalysisEdges removes "analysis_edges" edges to SystemAnalysisTopologyEdge entities.
+func (_u *SystemAnalysisUpdate) RemoveAnalysisEdges(v ...*SystemAnalysisTopologyEdge) *SystemAnalysisUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveRelationshipIDs(ids...)
-}
-
-// ClearAnalysisComponents clears all "analysis_components" edges to the SystemAnalysisComponent entity.
-func (_u *SystemAnalysisUpdate) ClearAnalysisComponents() *SystemAnalysisUpdate {
-	_u.mutation.ClearAnalysisComponents()
-	return _u
-}
-
-// RemoveAnalysisComponentIDs removes the "analysis_components" edge to SystemAnalysisComponent entities by IDs.
-func (_u *SystemAnalysisUpdate) RemoveAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdate {
-	_u.mutation.RemoveAnalysisComponentIDs(ids...)
-	return _u
-}
-
-// RemoveAnalysisComponents removes "analysis_components" edges to SystemAnalysisComponent entities.
-func (_u *SystemAnalysisUpdate) RemoveAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAnalysisComponentIDs(ids...)
+	return _u.RemoveAnalysisEdgeIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -293,166 +288,128 @@ func (_u *SystemAnalysisUpdate) sqlSave(ctx context.Context) (_node int, err err
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ComponentsCleared() {
+	if _u.mutation.TopologySnapshotCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.TopologySnapshotTable,
+			Columns: []string{systemanalysis.TopologySnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
-		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
+		edge.Schema = _u.schemaConfig.SystemAnalysis
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !_u.mutation.ComponentsCleared() {
+	if nodes := _u.mutation.TopologySnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.TopologySnapshotTable,
+			Columns: []string{systemanalysis.TopologySnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ComponentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.RelationshipsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysis.RelationshipsTable,
-			Columns: []string{systemanalysis.RelationshipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.RelationshipsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysis.RelationshipsTable,
-			Columns: []string{systemanalysis.RelationshipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RelationshipsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysis.RelationshipsTable,
-			Columns: []string{systemanalysis.RelationshipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
+		edge.Schema = _u.schemaConfig.SystemAnalysis
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AnalysisComponentsCleared() {
+	if _u.mutation.AnalysisNodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.AnalysisComponentsTable,
-			Columns: []string{systemanalysis.AnalysisComponentsColumn},
+			Table:   systemanalysis.AnalysisNodesTable,
+			Columns: []string{systemanalysis.AnalysisNodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologynode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyNode
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedAnalysisComponentsIDs(); len(nodes) > 0 && !_u.mutation.AnalysisComponentsCleared() {
+	if nodes := _u.mutation.RemovedAnalysisNodesIDs(); len(nodes) > 0 && !_u.mutation.AnalysisNodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.AnalysisComponentsTable,
-			Columns: []string{systemanalysis.AnalysisComponentsColumn},
+			Table:   systemanalysis.AnalysisNodesTable,
+			Columns: []string{systemanalysis.AnalysisNodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologynode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyNode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AnalysisNodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.AnalysisComponentsTable,
-			Columns: []string{systemanalysis.AnalysisComponentsColumn},
+			Table:   systemanalysis.AnalysisNodesTable,
+			Columns: []string{systemanalysis.AnalysisNodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologynode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyNode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AnalysisEdgesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEdgesTable,
+			Columns: []string{systemanalysis.AnalysisEdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAnalysisEdgesIDs(); len(nodes) > 0 && !_u.mutation.AnalysisEdgesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEdgesTable,
+			Columns: []string{systemanalysis.AnalysisEdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AnalysisEdgesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEdgesTable,
+			Columns: []string{systemanalysis.AnalysisEdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -480,6 +437,26 @@ type SystemAnalysisUpdateOne struct {
 	hooks     []Hook
 	mutation  *SystemAnalysisMutation
 	modifiers []func(*sql.UpdateBuilder)
+}
+
+// SetTopologySnapshotID sets the "topology_snapshot_id" field.
+func (_u *SystemAnalysisUpdateOne) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.SetTopologySnapshotID(v)
+	return _u
+}
+
+// SetNillableTopologySnapshotID sets the "topology_snapshot_id" field if the given value is not nil.
+func (_u *SystemAnalysisUpdateOne) SetNillableTopologySnapshotID(v *uuid.UUID) *SystemAnalysisUpdateOne {
+	if v != nil {
+		_u.SetTopologySnapshotID(*v)
+	}
+	return _u
+}
+
+// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
+func (_u *SystemAnalysisUpdateOne) ClearTopologySnapshotID() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearTopologySnapshotID()
+	return _u
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -513,49 +490,39 @@ func (_u *SystemAnalysisUpdateOne) SetRetrospective(v *Retrospective) *SystemAna
 	return _u.SetRetrospectiveID(v.ID)
 }
 
-// AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (_u *SystemAnalysisUpdateOne) AddComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.AddComponentIDs(ids...)
+// SetTopologySnapshot sets the "topology_snapshot" edge to the SystemTopologySnapshot entity.
+func (_u *SystemAnalysisUpdateOne) SetTopologySnapshot(v *SystemTopologySnapshot) *SystemAnalysisUpdateOne {
+	return _u.SetTopologySnapshotID(v.ID)
+}
+
+// AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
+func (_u *SystemAnalysisUpdateOne) AddAnalysisNodeIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddAnalysisNodeIDs(ids...)
 	return _u
 }
 
-// AddComponents adds the "components" edges to the SystemComponent entity.
-func (_u *SystemAnalysisUpdateOne) AddComponents(v ...*SystemComponent) *SystemAnalysisUpdateOne {
+// AddAnalysisNodes adds the "analysis_nodes" edges to the SystemAnalysisTopologyNode entity.
+func (_u *SystemAnalysisUpdateOne) AddAnalysisNodes(v ...*SystemAnalysisTopologyNode) *SystemAnalysisUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddComponentIDs(ids...)
+	return _u.AddAnalysisNodeIDs(ids...)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (_u *SystemAnalysisUpdateOne) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.AddRelationshipIDs(ids...)
+// AddAnalysisEdgeIDs adds the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity by IDs.
+func (_u *SystemAnalysisUpdateOne) AddAnalysisEdgeIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.AddAnalysisEdgeIDs(ids...)
 	return _u
 }
 
-// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (_u *SystemAnalysisUpdateOne) AddRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
+// AddAnalysisEdges adds the "analysis_edges" edges to the SystemAnalysisTopologyEdge entity.
+func (_u *SystemAnalysisUpdateOne) AddAnalysisEdges(v ...*SystemAnalysisTopologyEdge) *SystemAnalysisUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddRelationshipIDs(ids...)
-}
-
-// AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (_u *SystemAnalysisUpdateOne) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.AddAnalysisComponentIDs(ids...)
-	return _u
-}
-
-// AddAnalysisComponents adds the "analysis_components" edges to the SystemAnalysisComponent entity.
-func (_u *SystemAnalysisUpdateOne) AddAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAnalysisComponentIDs(ids...)
+	return _u.AddAnalysisEdgeIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisMutation object of the builder.
@@ -569,67 +536,52 @@ func (_u *SystemAnalysisUpdateOne) ClearRetrospective() *SystemAnalysisUpdateOne
 	return _u
 }
 
-// ClearComponents clears all "components" edges to the SystemComponent entity.
-func (_u *SystemAnalysisUpdateOne) ClearComponents() *SystemAnalysisUpdateOne {
-	_u.mutation.ClearComponents()
+// ClearTopologySnapshot clears the "topology_snapshot" edge to the SystemTopologySnapshot entity.
+func (_u *SystemAnalysisUpdateOne) ClearTopologySnapshot() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearTopologySnapshot()
 	return _u
 }
 
-// RemoveComponentIDs removes the "components" edge to SystemComponent entities by IDs.
-func (_u *SystemAnalysisUpdateOne) RemoveComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.RemoveComponentIDs(ids...)
+// ClearAnalysisNodes clears all "analysis_nodes" edges to the SystemAnalysisTopologyNode entity.
+func (_u *SystemAnalysisUpdateOne) ClearAnalysisNodes() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearAnalysisNodes()
 	return _u
 }
 
-// RemoveComponents removes "components" edges to SystemComponent entities.
-func (_u *SystemAnalysisUpdateOne) RemoveComponents(v ...*SystemComponent) *SystemAnalysisUpdateOne {
+// RemoveAnalysisNodeIDs removes the "analysis_nodes" edge to SystemAnalysisTopologyNode entities by IDs.
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisNodeIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveAnalysisNodeIDs(ids...)
+	return _u
+}
+
+// RemoveAnalysisNodes removes "analysis_nodes" edges to SystemAnalysisTopologyNode entities.
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisNodes(v ...*SystemAnalysisTopologyNode) *SystemAnalysisUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveComponentIDs(ids...)
+	return _u.RemoveAnalysisNodeIDs(ids...)
 }
 
-// ClearRelationships clears all "relationships" edges to the SystemAnalysisRelationship entity.
-func (_u *SystemAnalysisUpdateOne) ClearRelationships() *SystemAnalysisUpdateOne {
-	_u.mutation.ClearRelationships()
+// ClearAnalysisEdges clears all "analysis_edges" edges to the SystemAnalysisTopologyEdge entity.
+func (_u *SystemAnalysisUpdateOne) ClearAnalysisEdges() *SystemAnalysisUpdateOne {
+	_u.mutation.ClearAnalysisEdges()
 	return _u
 }
 
-// RemoveRelationshipIDs removes the "relationships" edge to SystemAnalysisRelationship entities by IDs.
-func (_u *SystemAnalysisUpdateOne) RemoveRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.RemoveRelationshipIDs(ids...)
+// RemoveAnalysisEdgeIDs removes the "analysis_edges" edge to SystemAnalysisTopologyEdge entities by IDs.
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisEdgeIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
+	_u.mutation.RemoveAnalysisEdgeIDs(ids...)
 	return _u
 }
 
-// RemoveRelationships removes "relationships" edges to SystemAnalysisRelationship entities.
-func (_u *SystemAnalysisUpdateOne) RemoveRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisUpdateOne {
+// RemoveAnalysisEdges removes "analysis_edges" edges to SystemAnalysisTopologyEdge entities.
+func (_u *SystemAnalysisUpdateOne) RemoveAnalysisEdges(v ...*SystemAnalysisTopologyEdge) *SystemAnalysisUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveRelationshipIDs(ids...)
-}
-
-// ClearAnalysisComponents clears all "analysis_components" edges to the SystemAnalysisComponent entity.
-func (_u *SystemAnalysisUpdateOne) ClearAnalysisComponents() *SystemAnalysisUpdateOne {
-	_u.mutation.ClearAnalysisComponents()
-	return _u
-}
-
-// RemoveAnalysisComponentIDs removes the "analysis_components" edge to SystemAnalysisComponent entities by IDs.
-func (_u *SystemAnalysisUpdateOne) RemoveAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisUpdateOne {
-	_u.mutation.RemoveAnalysisComponentIDs(ids...)
-	return _u
-}
-
-// RemoveAnalysisComponents removes "analysis_components" edges to SystemAnalysisComponent entities.
-func (_u *SystemAnalysisUpdateOne) RemoveAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAnalysisComponentIDs(ids...)
+	return _u.RemoveAnalysisEdgeIDs(ids...)
 }
 
 // Where appends a list predicates to the SystemAnalysisUpdate builder.
@@ -770,166 +722,128 @@ func (_u *SystemAnalysisUpdateOne) sqlSave(ctx context.Context) (_node *SystemAn
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.ComponentsCleared() {
+	if _u.mutation.TopologySnapshotCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.TopologySnapshotTable,
+			Columns: []string{systemanalysis.TopologySnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
-		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
+		edge.Schema = _u.schemaConfig.SystemAnalysis
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedComponentsIDs(); len(nodes) > 0 && !_u.mutation.ComponentsCleared() {
+	if nodes := _u.mutation.TopologySnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.TopologySnapshotTable,
+			Columns: []string{systemanalysis.TopologySnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.ComponentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &SystemAnalysisComponentCreate{config: _u.config, mutation: newSystemAnalysisComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.RelationshipsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysis.RelationshipsTable,
-			Columns: []string{systemanalysis.RelationshipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedRelationshipsIDs(); len(nodes) > 0 && !_u.mutation.RelationshipsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysis.RelationshipsTable,
-			Columns: []string{systemanalysis.RelationshipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RelationshipsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   systemanalysis.RelationshipsTable,
-			Columns: []string{systemanalysis.RelationshipsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisRelationship
+		edge.Schema = _u.schemaConfig.SystemAnalysis
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AnalysisComponentsCleared() {
+	if _u.mutation.AnalysisNodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.AnalysisComponentsTable,
-			Columns: []string{systemanalysis.AnalysisComponentsColumn},
+			Table:   systemanalysis.AnalysisNodesTable,
+			Columns: []string{systemanalysis.AnalysisNodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologynode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyNode
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedAnalysisComponentsIDs(); len(nodes) > 0 && !_u.mutation.AnalysisComponentsCleared() {
+	if nodes := _u.mutation.RemovedAnalysisNodesIDs(); len(nodes) > 0 && !_u.mutation.AnalysisNodesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.AnalysisComponentsTable,
-			Columns: []string{systemanalysis.AnalysisComponentsColumn},
+			Table:   systemanalysis.AnalysisNodesTable,
+			Columns: []string{systemanalysis.AnalysisNodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologynode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyNode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.AnalysisNodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.AnalysisComponentsTable,
-			Columns: []string{systemanalysis.AnalysisComponentsColumn},
+			Table:   systemanalysis.AnalysisNodesTable,
+			Columns: []string{systemanalysis.AnalysisNodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologynode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.SystemAnalysisComponent
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyNode
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.AnalysisEdgesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEdgesTable,
+			Columns: []string{systemanalysis.AnalysisEdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedAnalysisEdgesIDs(); len(nodes) > 0 && !_u.mutation.AnalysisEdgesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEdgesTable,
+			Columns: []string{systemanalysis.AnalysisEdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.AnalysisEdgesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   systemanalysis.AnalysisEdgesTable,
+			Columns: []string{systemanalysis.AnalysisEdgesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemAnalysisTopologyEdge
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

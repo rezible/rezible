@@ -19,8 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
-	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
-	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -224,34 +223,19 @@ func (_c *IncidentEventCreate) AddEvidence(v ...*IncidentEventEvidence) *Inciden
 	return _c.AddEvidenceIDs(ids...)
 }
 
-// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
-func (_c *IncidentEventCreate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventCreate {
-	_c.mutation.AddSystemComponentIDs(ids...)
+// AddTopologyContextIDs adds the "topology_context" edge to the IncidentEventTopologyContext entity by IDs.
+func (_c *IncidentEventCreate) AddTopologyContextIDs(ids ...uuid.UUID) *IncidentEventCreate {
+	_c.mutation.AddTopologyContextIDs(ids...)
 	return _c
 }
 
-// AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
-func (_c *IncidentEventCreate) AddSystemComponents(v ...*SystemComponent) *IncidentEventCreate {
+// AddTopologyContext adds the "topology_context" edges to the IncidentEventTopologyContext entity.
+func (_c *IncidentEventCreate) AddTopologyContext(v ...*IncidentEventTopologyContext) *IncidentEventCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddSystemComponentIDs(ids...)
-}
-
-// AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
-func (_c *IncidentEventCreate) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventCreate {
-	_c.mutation.AddEventComponentIDs(ids...)
-	return _c
-}
-
-// AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
-func (_c *IncidentEventCreate) AddEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddEventComponentIDs(ids...)
+	return _c.AddTopologyContextIDs(ids...)
 }
 
 // Mutation returns the IncidentEventMutation object of the builder.
@@ -542,42 +526,18 @@ func (_c *IncidentEventCreate) createSpec() (*IncidentEvent, *sqlgraph.CreateSpe
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.SystemComponentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentevent.SystemComponentsTable,
-			Columns: incidentevent.SystemComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentEventSystemComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentEventSystemComponentCreate{config: _c.config, mutation: newIncidentEventSystemComponentMutation(_c.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.EventComponentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TopologyContextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   incidentevent.EventComponentsTable,
-			Columns: []string{incidentevent.EventComponentsColumn},
+			Table:   incidentevent.TopologyContextTable,
+			Columns: []string{incidentevent.TopologyContextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventtopologycontext.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.IncidentEventSystemComponent
+		edge.Schema = _c.schemaConfig.IncidentEventTopologyContext
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

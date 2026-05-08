@@ -681,56 +681,27 @@ func HasEvidenceWith(preds ...predicate.IncidentEventEvidence) predicate.Inciden
 	})
 }
 
-// HasSystemComponents applies the HasEdge predicate on the "system_components" edge.
-func HasSystemComponents() predicate.IncidentEvent {
+// HasTopologyContext applies the HasEdge predicate on the "topology_context" edge.
+func HasTopologyContext() predicate.IncidentEvent {
 	return predicate.IncidentEvent(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, SystemComponentsTable, SystemComponentsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, TopologyContextTable, TopologyContextColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
+		step.To.Schema = schemaConfig.IncidentEventTopologyContext
+		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasSystemComponentsWith applies the HasEdge predicate on the "system_components" edge with a given conditions (other predicates).
-func HasSystemComponentsWith(preds ...predicate.SystemComponent) predicate.IncidentEvent {
+// HasTopologyContextWith applies the HasEdge predicate on the "topology_context" edge with a given conditions (other predicates).
+func HasTopologyContextWith(preds ...predicate.IncidentEventTopologyContext) predicate.IncidentEvent {
 	return predicate.IncidentEvent(func(s *sql.Selector) {
-		step := newSystemComponentsStep()
+		step := newTopologyContextStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasEventComponents applies the HasEdge predicate on the "event_components" edge.
-func HasEventComponents() predicate.IncidentEvent {
-	return predicate.IncidentEvent(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, EventComponentsTable, EventComponentsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentEventSystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasEventComponentsWith applies the HasEdge predicate on the "event_components" edge with a given conditions (other predicates).
-func HasEventComponentsWith(preds ...predicate.IncidentEventSystemComponent) predicate.IncidentEvent {
-	return predicate.IncidentEvent(func(s *sql.Selector) {
-		step := newEventComponentsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentEventSystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
+		step.To.Schema = schemaConfig.IncidentEventTopologyContext
+		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

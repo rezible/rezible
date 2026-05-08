@@ -57,8 +57,8 @@ type IncidentEventContributingFactor func(*sql.Selector)
 // IncidentEventEvidence is the predicate function for incidenteventevidence builders.
 type IncidentEventEvidence func(*sql.Selector)
 
-// IncidentEventSystemComponent is the predicate function for incidenteventsystemcomponent builders.
-type IncidentEventSystemComponent func(*sql.Selector)
+// IncidentEventTopologyContext is the predicate function for incidenteventtopologycontext builders.
+type IncidentEventTopologyContext func(*sql.Selector)
 
 // IncidentField is the predicate function for incidentfield builders.
 type IncidentField func(*sql.Selector)
@@ -165,38 +165,20 @@ type RetrospectiveReview func(*sql.Selector)
 // SystemAnalysis is the predicate function for systemanalysis builders.
 type SystemAnalysis func(*sql.Selector)
 
-// SystemAnalysisComponent is the predicate function for systemanalysiscomponent builders.
-type SystemAnalysisComponent func(*sql.Selector)
+// SystemAnalysisTopologyEdge is the predicate function for systemanalysistopologyedge builders.
+type SystemAnalysisTopologyEdge func(*sql.Selector)
 
-// SystemAnalysisRelationship is the predicate function for systemanalysisrelationship builders.
-type SystemAnalysisRelationship func(*sql.Selector)
+// SystemAnalysisTopologyNode is the predicate function for systemanalysistopologynode builders.
+type SystemAnalysisTopologyNode func(*sql.Selector)
 
-// SystemComponent is the predicate function for systemcomponent builders.
-type SystemComponent func(*sql.Selector)
+// SystemTopologySnapshot is the predicate function for systemtopologysnapshot builders.
+type SystemTopologySnapshot func(*sql.Selector)
 
-// SystemComponentConstraint is the predicate function for systemcomponentconstraint builders.
-type SystemComponentConstraint func(*sql.Selector)
+// SystemTopologySnapshotEntity is the predicate function for systemtopologysnapshotentity builders.
+type SystemTopologySnapshotEntity func(*sql.Selector)
 
-// SystemComponentControl is the predicate function for systemcomponentcontrol builders.
-type SystemComponentControl func(*sql.Selector)
-
-// SystemComponentKind is the predicate function for systemcomponentkind builders.
-type SystemComponentKind func(*sql.Selector)
-
-// SystemComponentRelationship is the predicate function for systemcomponentrelationship builders.
-type SystemComponentRelationship func(*sql.Selector)
-
-// SystemComponentSignal is the predicate function for systemcomponentsignal builders.
-type SystemComponentSignal func(*sql.Selector)
-
-// SystemHazard is the predicate function for systemhazard builders.
-type SystemHazard func(*sql.Selector)
-
-// SystemRelationshipControlAction is the predicate function for systemrelationshipcontrolaction builders.
-type SystemRelationshipControlAction func(*sql.Selector)
-
-// SystemRelationshipFeedbackSignal is the predicate function for systemrelationshipfeedbacksignal builders.
-type SystemRelationshipFeedbackSignal func(*sql.Selector)
+// SystemTopologySnapshotRelationship is the predicate function for systemtopologysnapshotrelationship builders.
+type SystemTopologySnapshotRelationship func(*sql.Selector)
 
 // Task is the predicate function for task builders.
 type Task func(*sql.Selector)

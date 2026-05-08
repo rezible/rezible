@@ -18,6 +18,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldTopologySnapshotID holds the string denoting the topology_snapshot_id field in the database.
+	FieldTopologySnapshotID = "topology_snapshot_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -26,12 +28,12 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
-	// EdgeComponents holds the string denoting the components edge name in mutations.
-	EdgeComponents = "components"
-	// EdgeRelationships holds the string denoting the relationships edge name in mutations.
-	EdgeRelationships = "relationships"
-	// EdgeAnalysisComponents holds the string denoting the analysis_components edge name in mutations.
-	EdgeAnalysisComponents = "analysis_components"
+	// EdgeTopologySnapshot holds the string denoting the topology_snapshot edge name in mutations.
+	EdgeTopologySnapshot = "topology_snapshot"
+	// EdgeAnalysisNodes holds the string denoting the analysis_nodes edge name in mutations.
+	EdgeAnalysisNodes = "analysis_nodes"
+	// EdgeAnalysisEdges holds the string denoting the analysis_edges edge name in mutations.
+	EdgeAnalysisEdges = "analysis_edges"
 	// Table holds the table name of the systemanalysis in the database.
 	Table = "system_analyses"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -48,40 +50,37 @@ const (
 	RetrospectiveInverseTable = "retrospectives"
 	// RetrospectiveColumn is the table column denoting the retrospective relation/edge.
 	RetrospectiveColumn = "system_analysis_id"
-	// ComponentsTable is the table that holds the components relation/edge. The primary key declared below.
-	ComponentsTable = "system_analysis_components"
-	// ComponentsInverseTable is the table name for the SystemComponent entity.
-	// It exists in this package in order to avoid circular dependency with the "systemcomponent" package.
-	ComponentsInverseTable = "system_components"
-	// RelationshipsTable is the table that holds the relationships relation/edge.
-	RelationshipsTable = "system_analysis_relationships"
-	// RelationshipsInverseTable is the table name for the SystemAnalysisRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysisrelationship" package.
-	RelationshipsInverseTable = "system_analysis_relationships"
-	// RelationshipsColumn is the table column denoting the relationships relation/edge.
-	RelationshipsColumn = "analysis_id"
-	// AnalysisComponentsTable is the table that holds the analysis_components relation/edge.
-	AnalysisComponentsTable = "system_analysis_components"
-	// AnalysisComponentsInverseTable is the table name for the SystemAnalysisComponent entity.
-	// It exists in this package in order to avoid circular dependency with the "systemanalysiscomponent" package.
-	AnalysisComponentsInverseTable = "system_analysis_components"
-	// AnalysisComponentsColumn is the table column denoting the analysis_components relation/edge.
-	AnalysisComponentsColumn = "analysis_id"
+	// TopologySnapshotTable is the table that holds the topology_snapshot relation/edge.
+	TopologySnapshotTable = "system_analyses"
+	// TopologySnapshotInverseTable is the table name for the SystemTopologySnapshot entity.
+	// It exists in this package in order to avoid circular dependency with the "systemtopologysnapshot" package.
+	TopologySnapshotInverseTable = "system_topology_snapshots"
+	// TopologySnapshotColumn is the table column denoting the topology_snapshot relation/edge.
+	TopologySnapshotColumn = "topology_snapshot_id"
+	// AnalysisNodesTable is the table that holds the analysis_nodes relation/edge.
+	AnalysisNodesTable = "system_analysis_topology_nodes"
+	// AnalysisNodesInverseTable is the table name for the SystemAnalysisTopologyNode entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysistopologynode" package.
+	AnalysisNodesInverseTable = "system_analysis_topology_nodes"
+	// AnalysisNodesColumn is the table column denoting the analysis_nodes relation/edge.
+	AnalysisNodesColumn = "analysis_id"
+	// AnalysisEdgesTable is the table that holds the analysis_edges relation/edge.
+	AnalysisEdgesTable = "system_analysis_topology_edges"
+	// AnalysisEdgesInverseTable is the table name for the SystemAnalysisTopologyEdge entity.
+	// It exists in this package in order to avoid circular dependency with the "systemanalysistopologyedge" package.
+	AnalysisEdgesInverseTable = "system_analysis_topology_edges"
+	// AnalysisEdgesColumn is the table column denoting the analysis_edges relation/edge.
+	AnalysisEdgesColumn = "analysis_id"
 )
 
 // Columns holds all SQL columns for systemanalysis fields.
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldTopologySnapshotID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
-
-var (
-	// ComponentsPrimaryKey and ComponentsColumn2 are the table columns denoting the
-	// primary key for the components relation (M2M).
-	ComponentsPrimaryKey = []string{"component_id", "analysis_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -124,6 +123,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByTopologySnapshotID orders the results by the topology_snapshot_id field.
+func ByTopologySnapshotID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTopologySnapshotID, opts...).ToFunc()
+}
+
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -148,45 +152,38 @@ func ByRetrospectiveField(field string, opts ...sql.OrderTermOption) OrderOption
 	}
 }
 
-// ByComponentsCount orders the results by components count.
-func ByComponentsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByTopologySnapshotField orders the results by topology_snapshot field.
+func ByTopologySnapshotField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newComponentsStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newTopologySnapshotStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByComponents orders the results by components terms.
-func ByComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByAnalysisNodesCount orders the results by analysis_nodes count.
+func ByAnalysisNodesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborsCount(s, newAnalysisNodesStep(), opts...)
 	}
 }
 
-// ByRelationshipsCount orders the results by relationships count.
-func ByRelationshipsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByAnalysisNodes orders the results by analysis_nodes terms.
+func ByAnalysisNodes(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newRelationshipsStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newAnalysisNodesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
-// ByRelationships orders the results by relationships terms.
-func ByRelationships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByAnalysisEdgesCount orders the results by analysis_edges count.
+func ByAnalysisEdgesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRelationshipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborsCount(s, newAnalysisEdgesStep(), opts...)
 	}
 }
 
-// ByAnalysisComponentsCount orders the results by analysis_components count.
-func ByAnalysisComponentsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByAnalysisEdges orders the results by analysis_edges terms.
+func ByAnalysisEdges(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAnalysisComponentsStep(), opts...)
-	}
-}
-
-// ByAnalysisComponents orders the results by analysis_components terms.
-func ByAnalysisComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAnalysisComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newAnalysisEdgesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -203,24 +200,24 @@ func newRetrospectiveStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2O, false, RetrospectiveTable, RetrospectiveColumn),
 	)
 }
-func newComponentsStep() *sqlgraph.Step {
+func newTopologySnapshotStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ComponentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, true, ComponentsTable, ComponentsPrimaryKey...),
+		sqlgraph.To(TopologySnapshotInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, TopologySnapshotTable, TopologySnapshotColumn),
 	)
 }
-func newRelationshipsStep() *sqlgraph.Step {
+func newAnalysisNodesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RelationshipsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, RelationshipsTable, RelationshipsColumn),
+		sqlgraph.To(AnalysisNodesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisNodesTable, AnalysisNodesColumn),
 	)
 }
-func newAnalysisComponentsStep() *sqlgraph.Step {
+func newAnalysisEdgesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AnalysisComponentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisComponentsTable, AnalysisComponentsColumn),
+		sqlgraph.To(AnalysisEdgesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, AnalysisEdgesTable, AnalysisEdgesColumn),
 	)
 }

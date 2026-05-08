@@ -38,44 +38,89 @@ components:
       required:
         - data
       type: object
-    AddSystemAnalysisComponentAttributes:
+    AddSystemAnalysisEdgeAttributes:
       additionalProperties: false
       properties:
-        componentId:
+        description:
           type: string
-        position:
-          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
+        snapshotRelationshipId:
+          type: string
       required:
-        - componentId
-        - position
+        - snapshotRelationshipId
+        - description
       type: object
-    AddSystemAnalysisComponentRequestBody:
+    AddSystemAnalysisEdgeRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/AddSystemAnalysisComponentRequestBody.json
+            - https://example.com/schemas/AddSystemAnalysisEdgeRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/AddSystemAnalysisComponentAttributes"
+          $ref: "#/components/schemas/AddSystemAnalysisEdgeAttributes"
       required:
         - attributes
       type: object
-    AddSystemAnalysisComponentResponseBody:
+    AddSystemAnalysisEdgeResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/AddSystemAnalysisComponentResponseBody.json
+            - https://example.com/schemas/AddSystemAnalysisEdgeResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemAnalysisComponent"
+          $ref: "#/components/schemas/SystemAnalysisEdge"
+      required:
+        - data
+      type: object
+    AddSystemAnalysisNodeAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        knowledgeEntityId:
+          type: string
+        position:
+          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
+        snapshotEntityId:
+          type: string
+      required:
+        - position
+        - description
+      type: object
+    AddSystemAnalysisNodeRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - https://example.com/schemas/AddSystemAnalysisNodeRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/AddSystemAnalysisNodeAttributes"
+      required:
+        - attributes
+      type: object
+    AddSystemAnalysisNodeResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - https://example.com/schemas/AddSystemAnalysisNodeResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysisNode"
       required:
         - data
       type: object
@@ -1095,318 +1140,91 @@ components:
       required:
         - data
       type: object
-    CreateSystemAnalysisRelationshipAttributes:
+    CreateSystemTopologySnapshotAttributes:
       additionalProperties: false
       properties:
-        description:
+        asOf:
+          format: date-time
           type: string
-        sourceId:
-          type: string
-        targetId:
-          type: string
-      required:
-        - sourceId
-        - targetId
-        - description
-      type: object
-    CreateSystemAnalysisRelationshipRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemAnalysisRelationshipRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateSystemAnalysisRelationshipAttributes"
-      required:
-        - attributes
-      type: object
-    CreateSystemAnalysisRelationshipResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemAnalysisRelationshipResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemAnalysisRelationship"
-      required:
-        - data
-      type: object
-    CreateSystemComponentAttributes:
-      additionalProperties: false
-      properties:
-        constraints:
+        depth:
+          format: int64
+          type: integer
+        entityIds:
           items:
-            $ref: "#/components/schemas/SystemComponentConstraintAttributes"
+            type: string
           type: array
-        controls:
+        entityKinds:
           items:
-            $ref: "#/components/schemas/SystemComponentControlAttributes"
+            type: string
           type: array
-        description:
-          type: string
-        kindId:
-          type: string
+        includeAlerts:
+          type: boolean
+        includeChanges:
+          type: boolean
+        includeIncidents:
+          type: boolean
         name:
           type: string
-        properties:
+        relationshipKinds:
+          items:
+            type: string
+          type: array
+        rootEntityIds:
+          items:
+            type: string
+          type: array
+        scope:
+          enum:
+            - explicit_entities
+            - root_entities
+            - incident
+            - retrospective
+            - search
+            - analysis
+          type: string
+        scopeProperties:
           additionalProperties: {}
           type: object
-        signals:
-          items:
-            $ref: "#/components/schemas/SystemComponentSignalAttributes"
-          type: array
       required:
         - name
-        - kindId
-        - description
-        - properties
-        - constraints
-        - signals
-        - controls
+        - scope
+        - scopeProperties
+        - entityIds
+        - rootEntityIds
+        - depth
+        - entityKinds
+        - relationshipKinds
+        - includeIncidents
+        - includeChanges
+        - includeAlerts
       type: object
-    CreateSystemComponentConstraintAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      required:
-        - label
-        - description
-      type: object
-    CreateSystemComponentConstraintRequestBody:
+    CreateSystemTopologySnapshotRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/CreateSystemComponentConstraintRequestBody.json
+            - https://example.com/schemas/CreateSystemTopologySnapshotRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/CreateSystemComponentConstraintAttributes"
+          $ref: "#/components/schemas/CreateSystemTopologySnapshotAttributes"
       required:
         - attributes
       type: object
-    CreateSystemComponentConstraintResponseBody:
+    CreateSystemTopologySnapshotResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/CreateSystemComponentConstraintResponseBody.json
+            - https://example.com/schemas/CreateSystemTopologySnapshotResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemComponentConstraint"
-      required:
-        - data
-      type: object
-    CreateSystemComponentControlAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      required:
-        - label
-        - description
-      type: object
-    CreateSystemComponentControlRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentControlRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateSystemComponentControlAttributes"
-      required:
-        - attributes
-      type: object
-    CreateSystemComponentControlResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentControlResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentControl"
-      required:
-        - data
-      type: object
-    CreateSystemComponentKindAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      required:
-        - label
-        - description
-      type: object
-    CreateSystemComponentKindRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentKindRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateSystemComponentKindAttributes"
-      required:
-        - attributes
-      type: object
-    CreateSystemComponentKindResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentKindResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentKind"
-      required:
-        - data
-      type: object
-    CreateSystemComponentRelationshipAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        sourceComponentId:
-          type: string
-        targetComponentId:
-          type: string
-      required:
-        - sourceComponentId
-        - targetComponentId
-        - description
-      type: object
-    CreateSystemComponentRelationshipRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentRelationshipRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateSystemComponentRelationshipAttributes"
-      required:
-        - attributes
-      type: object
-    CreateSystemComponentRelationshipResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentRelationshipResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentRelationship"
-      required:
-        - data
-      type: object
-    CreateSystemComponentRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateSystemComponentAttributes"
-      required:
-        - attributes
-      type: object
-    CreateSystemComponentResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponent"
-      required:
-        - data
-      type: object
-    CreateSystemComponentSignalAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      required:
-        - label
-        - description
-      type: object
-    CreateSystemComponentSignalRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentSignalRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateSystemComponentSignalAttributes"
-      required:
-        - attributes
-      type: object
-    CreateSystemComponentSignalResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/CreateSystemComponentSignalResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentSignal"
+          $ref: "#/components/schemas/SystemTopologySnapshot"
       required:
         - data
       type: object
@@ -2194,33 +2012,33 @@ components:
       required:
         - data
       type: object
-    GetSystemAnalysisComponentResponseBody:
+    GetSystemAnalysisEdgeResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/GetSystemAnalysisComponentResponseBody.json
+            - https://example.com/schemas/GetSystemAnalysisEdgeResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemAnalysisComponent"
+          $ref: "#/components/schemas/SystemAnalysisEdge"
       required:
         - data
       type: object
-    GetSystemAnalysisRelationshipResponseBody:
+    GetSystemAnalysisNodeResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/GetSystemAnalysisRelationshipResponseBody.json
+            - https://example.com/schemas/GetSystemAnalysisNodeResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemAnalysisRelationship"
+          $ref: "#/components/schemas/SystemAnalysisNode"
       required:
         - data
       type: object
@@ -2239,93 +2057,48 @@ components:
       required:
         - data
       type: object
-    GetSystemComponentConstraintResponseBody:
+    GetSystemTopologyEntityNeighborhoodResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/GetSystemComponentConstraintResponseBody.json
+            - https://example.com/schemas/GetSystemTopologyEntityNeighborhoodResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemComponentConstraint"
+          $ref: "#/components/schemas/SystemTopologyGraph"
       required:
         - data
       type: object
-    GetSystemComponentControlResponseBody:
+    GetSystemTopologyEntityResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/GetSystemComponentControlResponseBody.json
+            - https://example.com/schemas/GetSystemTopologyEntityResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemComponentControl"
+          $ref: "#/components/schemas/SystemTopologyEntity"
       required:
         - data
       type: object
-    GetSystemComponentKindResponseBody:
+    GetSystemTopologySnapshotResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/GetSystemComponentKindResponseBody.json
+            - https://example.com/schemas/GetSystemTopologySnapshotResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemComponentKind"
-      required:
-        - data
-      type: object
-    GetSystemComponentRelationshipResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/GetSystemComponentRelationshipResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentRelationship"
-      required:
-        - data
-      type: object
-    GetSystemComponentResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/GetSystemComponentResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponent"
-      required:
-        - data
-      type: object
-    GetSystemComponentSignalResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/GetSystemComponentSignalResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentSignal"
+          $ref: "#/components/schemas/SystemTopologySnapshot"
       required:
         - data
       type: object
@@ -2639,7 +2412,7 @@ components:
           type: integer
         systemContext:
           items:
-            $ref: "#/components/schemas/IncidentEventSystemComponent"
+            $ref: "#/components/schemas/IncidentEventTopologyContext"
           type: array
         timestamp:
           format: date-time
@@ -2782,30 +2555,28 @@ components:
         - source
         - value
       type: object
-    IncidentEventSystemComponent:
+    IncidentEventTopologyContext:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/IncidentEventSystemComponentAttributes"
+          $ref: "#/components/schemas/IncidentEventTopologyContextAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    IncidentEventSystemComponentAttributes:
+    IncidentEventTopologyContextAttributes:
       additionalProperties: false
       properties:
-        analysisComponentId:
+        knowledgeEntityId:
           type: string
-        description:
+        relationship:
           type: string
-        status:
+        snapshotEntityId:
           type: string
       required:
-        - analysisComponentId
-        - status
-        - description
+        - relationship
       type: object
     IncidentField:
       additionalProperties: false
@@ -3691,19 +3462,19 @@ components:
         - data
         - pagination
       type: object
-    ListSystemAnalysisComponentsResponseBody:
+    ListSystemAnalysisEdgesResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/ListSystemAnalysisComponentsResponseBody.json
+            - https://example.com/schemas/ListSystemAnalysisEdgesResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/SystemAnalysisComponent"
+            $ref: "#/components/schemas/SystemAnalysisEdge"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3711,19 +3482,19 @@ components:
         - data
         - pagination
       type: object
-    ListSystemAnalysisRelationshipsResponseBody:
+    ListSystemAnalysisNodesResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/ListSystemAnalysisRelationshipsResponseBody.json
+            - https://example.com/schemas/ListSystemAnalysisNodesResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/SystemAnalysisRelationship"
+            $ref: "#/components/schemas/SystemAnalysisNode"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3731,19 +3502,19 @@ components:
         - data
         - pagination
       type: object
-    ListSystemComponentKindsResponseBody:
+    ListSystemTopologyEntitiesResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/ListSystemComponentKindsResponseBody.json
+            - https://example.com/schemas/ListSystemTopologyEntitiesResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/SystemComponentKind"
+            $ref: "#/components/schemas/SystemTopologyEntity"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3751,39 +3522,19 @@ components:
         - data
         - pagination
       type: object
-    ListSystemComponentRelationshipsResponseBody:
+    ListSystemTopologyRelationshipsResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/ListSystemComponentRelationshipsResponseBody.json
+            - https://example.com/schemas/ListSystemTopologyRelationshipsResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/SystemComponentRelationship"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListSystemComponentsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/ListSystemComponentsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/SystemComponent"
+            $ref: "#/components/schemas/SystemTopologyRelationship"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4638,42 +4389,19 @@ components:
     SystemAnalysisAttributes:
       additionalProperties: false
       properties:
-        components:
+        edges:
           items:
-            $ref: "#/components/schemas/SystemAnalysisComponent"
+            $ref: "#/components/schemas/SystemAnalysisEdge"
           type: array
-        relationships:
+        nodes:
           items:
-            $ref: "#/components/schemas/SystemAnalysisRelationship"
+            $ref: "#/components/schemas/SystemAnalysisNode"
           type: array
+        topologySnapshot:
+          $ref: "#/components/schemas/SystemTopologySnapshot"
       required:
-        - components
-        - relationships
-      type: object
-    SystemAnalysisComponent:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemAnalysisComponentAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemAnalysisComponentAttributes:
-      additionalProperties: false
-      properties:
-        component:
-          $ref: "#/components/schemas/SystemComponent"
-        description:
-          type: string
-        position:
-          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
-      required:
-        - component
-        - position
-        - description
+        - nodes
+        - edges
       type: object
     SystemAnalysisDiagramPosition:
       additionalProperties: false
@@ -4691,199 +4419,314 @@ components:
         - x
         - "y"
       type: object
-    SystemAnalysisRelationship:
+    SystemAnalysisEdge:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/SystemAnalysisRelationshipAttributes"
+          $ref: "#/components/schemas/SystemAnalysisTopologyEdgeAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    SystemAnalysisRelationshipAttributes:
+    SystemAnalysisNode:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SystemAnalysisNodeAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SystemAnalysisNodeAttributes:
       additionalProperties: false
       properties:
         description:
           type: string
-        relationship:
-          $ref: "#/components/schemas/SystemComponentRelationship"
+        position:
+          $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
+        snapshotEntity:
+          $ref: "#/components/schemas/SystemTopologySnapshotEntity"
       required:
-        - relationship
+        - snapshotEntity
+        - position
         - description
       type: object
-    SystemComponent:
+    SystemAnalysisTopologyEdgeAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        snapshotRelationship:
+          $ref: "#/components/schemas/SystemTopologySnapshotRelationship"
+      required:
+        - snapshotRelationship
+        - description
+      type: object
+    SystemTopologyEntity:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/SystemComponentAttributes"
+          $ref: "#/components/schemas/SystemTopologyEntityAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    SystemComponentAttributes:
+    SystemTopologyEntityAlias:
       additionalProperties: false
       properties:
-        constraints:
+        firstSeenAt:
+          format: date-time
+          type: string
+        id:
+          type: string
+        lastSeenAt:
+          format: date-time
+          type: string
+        provider:
+          type: string
+        providerSource:
+          type: string
+        subjectKind:
+          type: string
+        subjectRef:
+          type: string
+      required:
+        - id
+        - provider
+        - providerSource
+        - subjectKind
+        - subjectRef
+        - firstSeenAt
+        - lastSeenAt
+      type: object
+    SystemTopologyEntityAttributes:
+      additionalProperties: false
+      properties:
+        aliases:
           items:
-            $ref: "#/components/schemas/SystemComponentConstraint"
+            $ref: "#/components/schemas/SystemTopologyEntityAlias"
           type: array
-        controls:
-          items:
-            $ref: "#/components/schemas/SystemComponentControl"
-          type: array
+        createdAt:
+          format: date-time
+          type: string
         description:
           type: string
-        kind:
-          $ref: "#/components/schemas/SystemComponentKind"
-        kindId:
+        displayName:
           type: string
-        linkedRepositoryRef:
-          type:
-            - string
-            - "null"
-        name:
+        kind:
           type: string
         properties:
           additionalProperties: {}
           type: object
-        relationshipCount:
-          format: int64
-          type: integer
-        signals:
+        relationships:
           items:
-            $ref: "#/components/schemas/SystemComponentSignal"
+            $ref: "#/components/schemas/SystemTopologyRelationship"
           type: array
+        updatedAt:
+          format: date-time
+          type: string
       required:
-        - name
-        - kindId
+        - kind
+        - displayName
         - description
         - properties
-        - relationshipCount
-        - linkedRepositoryRef
-        - constraints
-        - signals
-        - controls
+        - aliases
+        - createdAt
+        - updatedAt
       type: object
-    SystemComponentConstraint:
+    SystemTopologyGraph:
+      additionalProperties: false
+      properties:
+        entities:
+          items:
+            $ref: "#/components/schemas/SystemTopologyEntity"
+          type: array
+        relationships:
+          items:
+            $ref: "#/components/schemas/SystemTopologyRelationship"
+          type: array
+      required:
+        - entities
+        - relationships
+      type: object
+    SystemTopologyRelationship:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/SystemComponentConstraintAttributes"
+          $ref: "#/components/schemas/SystemTopologyRelationshipAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    SystemComponentConstraintAttributes:
+    SystemTopologyRelationshipAttributes:
       additionalProperties: false
       properties:
+        createdAt:
+          format: date-time
+          type: string
         description:
           type: string
-        label:
+        displayName:
           type: string
-      required:
-        - label
-        - description
-      type: object
-    SystemComponentControl:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemComponentControlAttributes"
-        id:
+        firstSeenAt:
+          format: date-time
           type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemComponentControlAttributes:
-      additionalProperties: false
-      properties:
-        description:
+        kind:
           type: string
-        label:
+        lastSeenAt:
+          format: date-time
           type: string
-      required:
-        - label
-        - description
-      type: object
-    SystemComponentKind:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemComponentKindAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemComponentKindAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      required:
-        - label
-        - description
-      type: object
-    SystemComponentRelationship:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/SystemComponentRelationshipAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    SystemComponentRelationshipAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
+        properties:
+          additionalProperties: {}
+          type: object
         source:
-          $ref: "#/components/schemas/SystemComponent"
-        sourceId:
+          $ref: "#/components/schemas/SystemTopologyEntity"
+        sourceEntityId:
           type: string
         target:
-          $ref: "#/components/schemas/SystemComponent"
-        targetId:
+          $ref: "#/components/schemas/SystemTopologyEntity"
+        targetEntityId:
+          type: string
+        updatedAt:
+          format: date-time
           type: string
       required:
-        - sourceId
-        - targetId
+        - sourceEntityId
+        - targetEntityId
+        - kind
+        - displayName
         - description
+        - properties
+        - firstSeenAt
+        - lastSeenAt
+        - createdAt
+        - updatedAt
       type: object
-    SystemComponentSignal:
+    SystemTopologySnapshot:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/SystemComponentSignalAttributes"
+          $ref: "#/components/schemas/SystemTopologySnapshotAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    SystemComponentSignalAttributes:
+    SystemTopologySnapshotAttributes:
+      additionalProperties: false
+      properties:
+        asOf:
+          format: date-time
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        entities:
+          items:
+            $ref: "#/components/schemas/SystemTopologySnapshotEntity"
+          type: array
+        name:
+          type: string
+        relationships:
+          items:
+            $ref: "#/components/schemas/SystemTopologySnapshotRelationship"
+          type: array
+        scope:
+          type: string
+        scopeProperties:
+          additionalProperties: {}
+          type: object
+      required:
+        - name
+        - asOf
+        - scope
+        - scopeProperties
+        - entities
+        - relationships
+        - createdAt
+      type: object
+    SystemTopologySnapshotEntity:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SystemTopologySnapshotEntityAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SystemTopologySnapshotEntityAttributes:
+      additionalProperties: false
+      properties:
+        aliases:
+          items:
+            additionalProperties: {}
+            type: object
+          type: array
+        description:
+          type: string
+        displayName:
+          type: string
+        kind:
+          type: string
+        knowledgeEntityId:
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+      required:
+        - kind
+        - displayName
+        - description
+        - properties
+        - aliases
+      type: object
+    SystemTopologySnapshotRelationship:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/SystemTopologySnapshotRelationshipAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    SystemTopologySnapshotRelationshipAttributes:
       additionalProperties: false
       properties:
         description:
           type: string
-        label:
+        displayName:
+          type: string
+        kind:
+          type: string
+        knowledgeRelationshipId:
+          type: string
+        properties:
+          additionalProperties: {}
+          type: object
+        sourceSnapshotEntityId:
+          type: string
+        targetSnapshotEntityId:
           type: string
       required:
-        - label
+        - sourceSnapshotEntityId
+        - targetSnapshotEntityId
+        - kind
+        - displayName
         - description
+        - properties
       type: object
     Task:
       additionalProperties: false
@@ -5769,306 +5612,77 @@ components:
       required:
         - data
       type: object
-    UpdateSystemAnalysisComponentAttributes:
+    UpdateSystemAnalysisEdgeAttributes:
       additionalProperties: false
       properties:
+        description:
+          type: string
+      type: object
+    UpdateSystemAnalysisEdgeRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - https://example.com/schemas/UpdateSystemAnalysisEdgeRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateSystemAnalysisEdgeAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateSystemAnalysisEdgeResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - https://example.com/schemas/UpdateSystemAnalysisEdgeResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/SystemAnalysisEdge"
+      required:
+        - data
+      type: object
+    UpdateSystemAnalysisNodeAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
         position:
           $ref: "#/components/schemas/SystemAnalysisDiagramPosition"
       type: object
-    UpdateSystemAnalysisComponentRequestBody:
+    UpdateSystemAnalysisNodeRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/UpdateSystemAnalysisComponentRequestBody.json
+            - https://example.com/schemas/UpdateSystemAnalysisNodeRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/UpdateSystemAnalysisComponentAttributes"
+          $ref: "#/components/schemas/UpdateSystemAnalysisNodeAttributes"
       required:
         - attributes
       type: object
-    UpdateSystemAnalysisComponentResponseBody:
+    UpdateSystemAnalysisNodeResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - https://example.com/schemas/UpdateSystemAnalysisComponentResponseBody.json
+            - https://example.com/schemas/UpdateSystemAnalysisNodeResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/SystemAnalysisComponent"
-      required:
-        - data
-      type: object
-    UpdateSystemAnalysisRelationshipAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-      type: object
-    UpdateSystemAnalysisRelationshipRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemAnalysisRelationshipRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateSystemAnalysisRelationshipAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateSystemAnalysisRelationshipResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemAnalysisRelationshipResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemAnalysisRelationship"
-      required:
-        - data
-      type: object
-    UpdateSystemComponentAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        kindId:
-          type: string
-        name:
-          type: string
-        properties:
-          additionalProperties: {}
-          type: object
-      type: object
-    UpdateSystemComponentConstraintAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      type: object
-    UpdateSystemComponentConstraintRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentConstraintRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateSystemComponentConstraintAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateSystemComponentConstraintResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentConstraintResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentConstraint"
-      required:
-        - data
-      type: object
-    UpdateSystemComponentControlAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      type: object
-    UpdateSystemComponentControlRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentControlRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateSystemComponentControlAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateSystemComponentControlResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentControlResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentControl"
-      required:
-        - data
-      type: object
-    UpdateSystemComponentKindAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      type: object
-    UpdateSystemComponentKindRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentKindRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateSystemComponentKindAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateSystemComponentKindResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentKindResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentKind"
-      required:
-        - data
-      type: object
-    UpdateSystemComponentRelationshipAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-      type: object
-    UpdateSystemComponentRelationshipRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentRelationshipRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateSystemComponentRelationshipAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateSystemComponentRelationshipResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentRelationshipResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentRelationship"
-      required:
-        - data
-      type: object
-    UpdateSystemComponentRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateSystemComponentAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateSystemComponentResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponent"
-      required:
-        - data
-      type: object
-    UpdateSystemComponentSignalAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        label:
-          type: string
-      type: object
-    UpdateSystemComponentSignalRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentSignalRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateSystemComponentSignalAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateSystemComponentSignalResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - https://example.com/schemas/UpdateSystemComponentSignalResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/SystemComponentSignal"
+          $ref: "#/components/schemas/SystemAnalysisNode"
       required:
         - data
       type: object
@@ -9710,11 +9324,6 @@ paths:
         - explode: false
           in: query
           name: teamId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: componentId
           schema:
             type: string
       responses:
@@ -13814,9 +13423,9 @@ paths:
       summary: Get System Analysis
       tags:
         - System Analysis
-  /system_analysis/{id}/components:
+  /system_analysis/{id}/edges:
     get:
-      operationId: list-system-analysis-components
+      operationId: list-system-analysis-edges
       parameters:
         - in: path
           name: id
@@ -13856,7 +13465,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListSystemAnalysisComponentsResponseBody"
+                $ref: "#/components/schemas/ListSystemAnalysisEdgesResponseBody"
           description: OK
         "400":
           content:
@@ -13894,11 +13503,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List components in a System analysis
+      summary: List edges in a system analysis
       tags:
         - System Analysis
     post:
-      operationId: add-system-analysis-component
+      operationId: add-system-analysis-edge
       parameters:
         - in: path
           name: id
@@ -13909,14 +13518,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/AddSystemAnalysisComponentRequestBody"
+              $ref: "#/components/schemas/AddSystemAnalysisEdgeRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/AddSystemAnalysisComponentResponseBody"
+                $ref: "#/components/schemas/AddSystemAnalysisEdgeResponseBody"
           description: OK
         "400":
           content:
@@ -13954,12 +13563,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Add a Component to a System Analysis
+      summary: Add an edge to a system analysis
       tags:
         - System Analysis
-  /system_analysis/{id}/relationships:
+  /system_analysis/{id}/nodes:
     get:
-      operationId: list-system-analysis-relationships
+      operationId: list-system-analysis-nodes
       parameters:
         - in: path
           name: id
@@ -13994,17 +13603,12 @@ paths:
           schema:
             default: false
             type: boolean
-        - explode: false
-          in: query
-          name: analysisComponentId
-          schema:
-            type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListSystemAnalysisRelationshipsResponseBody"
+                $ref: "#/components/schemas/ListSystemAnalysisNodesResponseBody"
           description: OK
         "400":
           content:
@@ -14042,11 +13646,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List relationships in a System analysis
+      summary: List nodes in a system analysis
       tags:
         - System Analysis
     post:
-      operationId: create-system-analysis-relationship
+      operationId: add-system-analysis-node
       parameters:
         - in: path
           name: id
@@ -14057,14 +13661,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateSystemAnalysisRelationshipRequestBody"
+              $ref: "#/components/schemas/AddSystemAnalysisNodeRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateSystemAnalysisRelationshipResponseBody"
+                $ref: "#/components/schemas/AddSystemAnalysisNodeResponseBody"
           description: OK
         "400":
           content:
@@ -14102,12 +13706,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Create a Relationship in a System Analysis
+      summary: Add a node to a system analysis
       tags:
         - System Analysis
-  /system_analysis_components/{id}:
+  /system_analysis_edges/{id}:
     delete:
-      operationId: delete-system-analysis-component
+      operationId: delete-system-analysis-edge
       parameters:
         - in: path
           name: id
@@ -14153,11 +13757,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Delete a Component from a System Analysis
+      summary: Delete an edge from a system analysis
       tags:
         - System Analysis
     get:
-      operationId: get-system-analysis-component
+      operationId: get-system-analysis-edge
       parameters:
         - in: path
           name: id
@@ -14169,7 +13773,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetSystemAnalysisComponentResponseBody"
+                $ref: "#/components/schemas/GetSystemAnalysisEdgeResponseBody"
           description: OK
         "400":
           content:
@@ -14207,11 +13811,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get a component in a System analysis
+      summary: Get an edge in a system analysis
       tags:
         - System Analysis
     patch:
-      operationId: update-system-analysis-component
+      operationId: update-system-analysis-edge
       parameters:
         - in: path
           name: id
@@ -14222,14 +13826,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateSystemAnalysisComponentRequestBody"
+              $ref: "#/components/schemas/UpdateSystemAnalysisEdgeRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateSystemAnalysisComponentResponseBody"
+                $ref: "#/components/schemas/UpdateSystemAnalysisEdgeResponseBody"
           description: OK
         "400":
           content:
@@ -14267,12 +13871,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Update a System Analysis Component
+      summary: Update a system analysis edge
       tags:
         - System Analysis
-  /system_analysis_relationships/{id}:
+  /system_analysis_nodes/{id}:
     delete:
-      operationId: delete-system-analysis-relationship
+      operationId: delete-system-analysis-node
       parameters:
         - in: path
           name: id
@@ -14318,11 +13922,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Delete a Relationship from a System Analysis
+      summary: Delete a node from a system analysis
       tags:
         - System Analysis
     get:
-      operationId: get-system-analysis-relationship
+      operationId: get-system-analysis-node
       parameters:
         - in: path
           name: id
@@ -14334,7 +13938,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetSystemAnalysisRelationshipResponseBody"
+                $ref: "#/components/schemas/GetSystemAnalysisNodeResponseBody"
           description: OK
         "400":
           content:
@@ -14372,11 +13976,11 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get a relationship in a System analysis
+      summary: Get a node in a system analysis
       tags:
         - System Analysis
     patch:
-      operationId: update-system-analysis-relationship
+      operationId: update-system-analysis-node
       parameters:
         - in: path
           name: id
@@ -14387,14 +13991,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateSystemAnalysisRelationshipRequestBody"
+              $ref: "#/components/schemas/UpdateSystemAnalysisNodeRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateSystemAnalysisRelationshipResponseBody"
+                $ref: "#/components/schemas/UpdateSystemAnalysisNodeResponseBody"
           description: OK
         "400":
           content:
@@ -14432,639 +14036,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Update a System Analysis Relationship
+      summary: Update a system analysis node
       tags:
         - System Analysis
-  /system_component_constraints/{id}:
-    delete:
-      operationId: archive-system-component-constraint
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Archive a System Component Constraint
-      tags:
-        - System Components
+  /system_topology/entities:
     get:
-      operationId: get-system-component-constraint
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSystemComponentConstraintResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get a System Component
-      tags:
-        - System Components
-    patch:
-      operationId: update-system-component-constraint
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateSystemComponentConstraintRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateSystemComponentConstraintResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update a System Component Constraint
-      tags:
-        - System Components
-  /system_component_controls/{id}:
-    delete:
-      operationId: archive-system-component-control
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Archive a System Component Control
-      tags:
-        - System Components
-    get:
-      operationId: get-system-component-control
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSystemComponentControlResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get a System Component Control
-      tags:
-        - System Components
-    patch:
-      operationId: update-system-component-control
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateSystemComponentControlRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateSystemComponentControlResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update a System Component Control
-      tags:
-        - System Components
-  /system_component_kinds:
-    get:
-      operationId: list-system-component-kinds
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListSystemComponentKindsResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List System Component Kinds
-      tags:
-        - System Components
-    post:
-      operationId: create-system-component-kind
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateSystemComponentKindRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateSystemComponentKindResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create a System Component Kind
-      tags:
-        - System Components
-  /system_component_kinds/{id}:
-    delete:
-      operationId: archive-system-component-kind
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Archive a System Component Kind
-      tags:
-        - System Components
-    get:
-      operationId: get-system-component-kind
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetSystemComponentKindResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get a System Component Kind
-      tags:
-        - System Components
-    patch:
-      operationId: update-system-component-kind
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateSystemComponentKindRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateSystemComponentKindResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update a System Component Kind
-      tags:
-        - System Components
-  /system_component_relationships:
-    get:
-      operationId: list-system-component-relationships
+      operationId: list-system-topology-entities
       parameters:
         - explode: false
           in: query
@@ -15096,17 +14073,24 @@ paths:
             type: boolean
         - explode: false
           in: query
-          name: componentId
+          name: kind
+          schema:
+            items:
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: provider
           schema:
             type: string
         - explode: false
           in: query
-          name: sourceId
+          name: providerSource
           schema:
             type: string
         - explode: false
           in: query
-          name: targetId
+          name: subjectKind
           schema:
             type: string
       responses:
@@ -15114,7 +14098,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListSystemComponentRelationshipsResponseBody"
+                $ref: "#/components/schemas/ListSystemTopologyEntitiesResponseBody"
           description: OK
         "400":
           content:
@@ -15152,116 +14136,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List System Component Relationships
+      summary: List System Topology Entities
       tags:
-        - System Components
-    post:
-      operationId: create-system-component-relationship
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateSystemComponentRelationshipRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateSystemComponentRelationshipResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create a System Component Relationship
-      tags:
-        - System Components
-  /system_component_relationships/{id}:
-    delete:
-      operationId: archive-system-component-relationship
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Archive a System Component Relationship
-      tags:
-        - System Components
+        - SystemTopology
+  /system_topology/entities/{id}:
     get:
-      operationId: get-system-component-relationship
+      operationId: get-system-topology-entity
       parameters:
         - in: path
           name: id
@@ -15273,7 +14153,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetSystemComponentRelationshipResponseBody"
+                $ref: "#/components/schemas/GetSystemTopologyEntityResponseBody"
           description: OK
         "400":
           content:
@@ -15311,134 +14191,40 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get a System Component Relationship
+      summary: Get System Topology Entity
       tags:
-        - System Components
-    patch:
-      operationId: update-system-component-relationship
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateSystemComponentRelationshipRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateSystemComponentRelationshipResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update a System Component Relationship
-      tags:
-        - System Components
-  /system_component_signals/{id}:
-    delete:
-      operationId: archive-system-component-signal
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Archive a System Component Signal
-      tags:
-        - System Components
+        - SystemTopology
+  /system_topology/entities/{id}/neighborhood:
     get:
-      operationId: get-system-component-signal
+      operationId: get-system-topology-entity-neighborhood
       parameters:
         - in: path
           name: id
           required: true
           schema:
             type: string
+        - explode: false
+          in: query
+          name: depth
+          schema:
+            default: 1
+            format: int64
+            maximum: 4
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: relationshipKind
+          schema:
+            items:
+              type: string
+            type: array
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetSystemComponentSignalResponseBody"
+                $ref: "#/components/schemas/GetSystemTopologyEntityNeighborhoodResponseBody"
           description: OK
         "400":
           content:
@@ -15476,72 +14262,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get a System Component Signal
+      summary: Get System Topology Entity Neighborhood
       tags:
-        - System Components
-    patch:
-      operationId: update-system-component-signal
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateSystemComponentSignalRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateSystemComponentSignalResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update a System Component Signal
-      tags:
-        - System Components
-  /system_components:
+        - SystemTopology
+  /system_topology/relationships:
     get:
-      operationId: list-system-components
+      operationId: list-system-topology-relationships
       parameters:
         - explode: false
           in: query
@@ -15571,12 +14297,34 @@ paths:
           schema:
             default: false
             type: boolean
+        - explode: false
+          in: query
+          name: kind
+          schema:
+            items:
+              type: string
+            type: array
+        - explode: false
+          in: query
+          name: entityId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: sourceEntityId
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: targetEntityId
+          schema:
+            type: string
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListSystemComponentsResponseBody"
+                $ref: "#/components/schemas/ListSystemTopologyRelationshipsResponseBody"
           description: OK
         "400":
           content:
@@ -15614,23 +14362,24 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List System Components
+      summary: List System Topology Relationships
       tags:
-        - System Components
+        - SystemTopology
+  /system_topology/snapshots:
     post:
-      operationId: create-system-component
+      operationId: create-system-topology-snapshot
       requestBody:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/CreateSystemComponentRequestBody"
+              $ref: "#/components/schemas/CreateSystemTopologySnapshotRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CreateSystemComponentResponseBody"
+                $ref: "#/components/schemas/CreateSystemTopologySnapshotResponseBody"
           description: OK
         "400":
           content:
@@ -15668,62 +14417,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Create a System Component
+      summary: Create System Topology Snapshot
       tags:
-        - System Components
-  /system_components/{id}:
-    delete:
-      operationId: archive-system-component
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Archive a System Component
-      tags:
-        - System Components
+        - SystemTopology
+  /system_topology/snapshots/{id}:
     get:
-      operationId: get-system-component
+      operationId: get-system-topology-snapshot
       parameters:
         - in: path
           name: id
@@ -15735,7 +14434,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetSystemComponentResponseBody"
+                $ref: "#/components/schemas/GetSystemTopologySnapshotResponseBody"
           description: OK
         "400":
           content:
@@ -15773,252 +14472,9 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get a System Component
+      summary: Get System Topology Snapshot
       tags:
-        - System Components
-    patch:
-      operationId: update-system-component
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateSystemComponentRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateSystemComponentResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update a System Component
-      tags:
-        - System Components
-  /system_components/{id}/constraints:
-    post:
-      operationId: create-system-component-constraint
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateSystemComponentConstraintRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateSystemComponentConstraintResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create a System Component Constraint
-      tags:
-        - System Components
-  /system_components/{id}/controls:
-    post:
-      operationId: create-system-component-control
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateSystemComponentControlRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateSystemComponentControlResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create a System Component Control
-      tags:
-        - System Components
-  /system_components/{id}/signals:
-    post:
-      operationId: create-system-component-signal
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateSystemComponentSignalRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateSystemComponentSignalResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create a System Component Signal
-      tags:
-        - System Components
+        - SystemTopology
   /tasks:
     get:
       operationId: list-tasks

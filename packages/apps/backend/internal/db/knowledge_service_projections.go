@@ -12,7 +12,6 @@ import (
 	"github.com/rezible/rezible/internal/projections"
 	"github.com/rezible/rezible/jobs"
 
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	knfh "github.com/rezible/rezible/ent/knowledgefacthistory"
 )
@@ -307,7 +306,7 @@ func (ps *eventProjectionProcessor) saveProjectedEntity(ctx context.Context, db 
 			m.SetExtractionMethod("normalized_event_projection")
 			m.SetAttributes(map[string]any{
 				"entity_id":       savedEntity.ID.String(),
-				"entity_kind":     pe.Kind.String(),
+				"entity_kind":     pe.Kind,
 				"subject_kind":    alias.SubjectKind,
 				"subject_ref":     alias.SubjectRef,
 				"display_name":    pe.DisplayName,
@@ -356,6 +355,9 @@ func (ps *eventProjectionProcessor) saveProjectedRelationship(ctx context.Contex
 		m.SetKind(rel.Kind)
 		m.SetDisplayName(rel.DisplayName)
 		m.SetDescription(rel.Description)
+		if rel.Properties != nil {
+			m.SetProperties(rel.Properties)
+		}
 		m.SetFirstSeenAt(ps.observedAt)
 		m.SetLastSeenAt(ps.observedAt)
 	}
@@ -420,7 +422,7 @@ func (ps *eventProjectionProcessor) projectChatMessage(ctx context.Context, pe p
 
 func (ps *eventProjectionProcessor) projectRepositoryObserved(ctx context.Context, pe projections.RepositoryObserved) (ProjectionResult, error) {
 	repoEntity := &ent.KnowledgeEntity{
-		Kind:        kne.KindRepository,
+		Kind:        "repository",
 		DisplayName: pe.Attributes.DisplayName,
 		Properties:  pe.Event.Attributes,
 		Edges: ent.KnowledgeEntityEdges{
@@ -447,7 +449,7 @@ func (ps *eventProjectionProcessor) projectCodeChangeEventObserved(_ context.Con
 		SubjectRef:     ev.SubjectRef,
 	}
 	changeEventEntity := &ent.KnowledgeEntity{
-		Kind:        kne.KindChangeEvent,
+		Kind:        "change_event",
 		DisplayName: attrs.DisplayName,
 		Properties:  ev.Attributes,
 		Edges: ent.KnowledgeEntityEdges{
@@ -473,7 +475,7 @@ func (ps *eventProjectionProcessor) projectCodeChangeEventObserved(_ context.Con
 			SubjectRef:     attrs.RepositoryExternalRef,
 		}
 		repoEntity := &ent.KnowledgeEntity{
-			Kind:        kne.KindRepository,
+			Kind:        "repository",
 			DisplayName: attrs.RepositoryExternalRef,
 			Properties:  map[string]any{"external_ref": attrs.RepositoryExternalRef},
 			Edges: ent.KnowledgeEntityEdges{
@@ -496,6 +498,9 @@ func (ps *eventProjectionProcessor) projectCodeChangeEventObserved(_ context.Con
 			Relationship: &ent.KnowledgeRelationship{
 				Kind:        "changes_repository",
 				DisplayName: "changes repository",
+				Properties: map[string]any{
+					"repository_external_ref": attrs.RepositoryExternalRef,
+				},
 			},
 			FromAlias: changeAlias,
 			ToAlias:   repoAlias,

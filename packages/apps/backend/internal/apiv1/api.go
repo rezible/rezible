@@ -27,7 +27,7 @@ type Handler struct {
 	*playbooksHandler
 	*retrospectivesHandler
 	*systemAnalysisHandler
-	*systemComponentsHandler
+	*systemTopologyHandler
 	*teamsHandler
 	*usersHandler
 }
@@ -55,8 +55,8 @@ func NewHandler(svcs *rez.Services, db *ent.Client) *Handler {
 		organizationsHandler:      newOrganizationsHandler(svcs.Organizations),
 		playbooksHandler:          newPlaybooksHandler(svcs.Playbooks),
 		retrospectivesHandler:     newRetrospectivesHandler(svcs.Users, svcs.Incidents, svcs.Retros, svcs.Documents),
-		systemAnalysisHandler:     newSystemAnalysisHandler(db, svcs.Components),
-		systemComponentsHandler:   newSystemComponentsHandler(db, svcs.Components),
+		systemAnalysisHandler:     newSystemAnalysisHandler(db),
+		systemTopologyHandler:     newSystemTopologyHandler(svcs.Topology),
 		teamsHandler:              newTeamsHandler(db.User, db.Team, db.TeamMembership),
 		usersHandler:              newUsersHandler(svcs.Users),
 	}

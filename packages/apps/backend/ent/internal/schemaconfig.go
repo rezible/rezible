@@ -30,11 +30,10 @@ type SchemaConfig struct {
 	IncidentDebriefQuestionIncidentTypes      string // IncidentDebriefQuestion-incident_types->IncidentType table.
 	IncidentDebriefSuggestion                 string // IncidentDebriefSuggestion table.
 	IncidentEvent                             string // IncidentEvent table.
-	IncidentEventSystemComponents             string // IncidentEvent-system_components->SystemComponent table.
 	IncidentEventContext                      string // IncidentEventContext table.
 	IncidentEventContributingFactor           string // IncidentEventContributingFactor table.
 	IncidentEventEvidence                     string // IncidentEventEvidence table.
-	IncidentEventSystemComponent              string // IncidentEventSystemComponent table.
+	IncidentEventTopologyContext              string // IncidentEventTopologyContext table.
 	IncidentField                             string // IncidentField table.
 	IncidentFieldOption                       string // IncidentFieldOption table.
 	IncidentLink                              string // IncidentLink table.
@@ -73,24 +72,11 @@ type SchemaConfig struct {
 	RetrospectiveComment                      string // RetrospectiveComment table.
 	RetrospectiveReview                       string // RetrospectiveReview table.
 	SystemAnalysis                            string // SystemAnalysis table.
-	SystemAnalysisComponent                   string // SystemAnalysisComponent table.
-	SystemAnalysisRelationship                string // SystemAnalysisRelationship table.
-	SystemComponent                           string // SystemComponent table.
-	SystemComponentRelated                    string // SystemComponent-related->SystemComponent table.
-	SystemComponentSystemAnalyses             string // SystemComponent-system_analyses->SystemAnalysis table.
-	SystemComponentConstraint                 string // SystemComponentConstraint table.
-	SystemComponentControl                    string // SystemComponentControl table.
-	SystemComponentKind                       string // SystemComponentKind table.
-	SystemComponentRelationship               string // SystemComponentRelationship table.
-	SystemComponentRelationshipControls       string // SystemComponentRelationship-controls->SystemComponentControl table.
-	SystemComponentRelationshipSignals        string // SystemComponentRelationship-signals->SystemComponentSignal table.
-	SystemComponentSignal                     string // SystemComponentSignal table.
-	SystemHazard                              string // SystemHazard table.
-	SystemHazardComponents                    string // SystemHazard-components->SystemComponent table.
-	SystemHazardConstraints                   string // SystemHazard-constraints->SystemComponentConstraint table.
-	SystemHazardRelationships                 string // SystemHazard-relationships->SystemComponentRelationship table.
-	SystemRelationshipControlAction           string // SystemRelationshipControlAction table.
-	SystemRelationshipFeedbackSignal          string // SystemRelationshipFeedbackSignal table.
+	SystemAnalysisTopologyEdge                string // SystemAnalysisTopologyEdge table.
+	SystemAnalysisTopologyNode                string // SystemAnalysisTopologyNode table.
+	SystemTopologySnapshot                    string // SystemTopologySnapshot table.
+	SystemTopologySnapshotEntity              string // SystemTopologySnapshotEntity table.
+	SystemTopologySnapshotRelationship        string // SystemTopologySnapshotRelationship table.
 	Task                                      string // Task table.
 	TaskTickets                               string // Task-tickets->Ticket table.
 	Team                                      string // Team table.

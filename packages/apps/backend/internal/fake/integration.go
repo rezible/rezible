@@ -10,7 +10,7 @@ import (
 
 const integrationName = "fake"
 
-var supportedDataKinds = []string{"system_components"}
+var supportedDataKinds = []string{"topology_entities"}
 
 type integration struct{}
 
@@ -80,7 +80,3 @@ func (ci *ConfiguredIntegration) GetDataKinds() map[string]bool {
 }
 
 type IntegrationConfig struct{}
-
-func (i *integration) MakeSystemComponentsDataProvider(ctx context.Context, intg *ent.Integration) (rez.SystemComponentsDataProvider, error) {
-	return NewSystemComponentsDataProvider(intg)
-}

@@ -62,6 +62,11 @@ func TenantID(v int) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldTenantID, v))
 }
 
+// TopologySnapshotID applies equality check predicate on the "topology_snapshot_id" field. It's identical to TopologySnapshotIDEQ.
+func TopologySnapshotID(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldTopologySnapshotID, v))
+}
+
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldEQ(FieldCreatedAt, v))
@@ -90,6 +95,36 @@ func TenantIDIn(vs ...int) predicate.SystemAnalysis {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// TopologySnapshotIDEQ applies the EQ predicate on the "topology_snapshot_id" field.
+func TopologySnapshotIDEQ(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldEQ(FieldTopologySnapshotID, v))
+}
+
+// TopologySnapshotIDNEQ applies the NEQ predicate on the "topology_snapshot_id" field.
+func TopologySnapshotIDNEQ(v uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNEQ(FieldTopologySnapshotID, v))
+}
+
+// TopologySnapshotIDIn applies the In predicate on the "topology_snapshot_id" field.
+func TopologySnapshotIDIn(vs ...uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIn(FieldTopologySnapshotID, vs...))
+}
+
+// TopologySnapshotIDNotIn applies the NotIn predicate on the "topology_snapshot_id" field.
+func TopologySnapshotIDNotIn(vs ...uuid.UUID) predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotIn(FieldTopologySnapshotID, vs...))
+}
+
+// TopologySnapshotIDIsNil applies the IsNil predicate on the "topology_snapshot_id" field.
+func TopologySnapshotIDIsNil() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldIsNull(FieldTopologySnapshotID))
+}
+
+// TopologySnapshotIDNotNil applies the NotNil predicate on the "topology_snapshot_id" field.
+func TopologySnapshotIDNotNil() predicate.SystemAnalysis {
+	return predicate.SystemAnalysis(sql.FieldNotNull(FieldTopologySnapshotID))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -230,27 +265,27 @@ func HasRetrospectiveWith(preds ...predicate.Retrospective) predicate.SystemAnal
 	})
 }
 
-// HasComponents applies the HasEdge predicate on the "components" edge.
-func HasComponents() predicate.SystemAnalysis {
+// HasTopologySnapshot applies the HasEdge predicate on the "topology_snapshot" edge.
+func HasTopologySnapshot() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, ComponentsTable, ComponentsPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.M2O, false, TopologySnapshotTable, TopologySnapshotColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemTopologySnapshot
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasComponentsWith applies the HasEdge predicate on the "components" edge with a given conditions (other predicates).
-func HasComponentsWith(preds ...predicate.SystemComponent) predicate.SystemAnalysis {
+// HasTopologySnapshotWith applies the HasEdge predicate on the "topology_snapshot" edge with a given conditions (other predicates).
+func HasTopologySnapshotWith(preds ...predicate.SystemTopologySnapshot) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := newComponentsStep()
+		step := newTopologySnapshotStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemTopologySnapshot
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -259,27 +294,27 @@ func HasComponentsWith(preds ...predicate.SystemComponent) predicate.SystemAnaly
 	})
 }
 
-// HasRelationships applies the HasEdge predicate on the "relationships" edge.
-func HasRelationships() predicate.SystemAnalysis {
+// HasAnalysisNodes applies the HasEdge predicate on the "analysis_nodes" edge.
+func HasAnalysisNodes() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, RelationshipsTable, RelationshipsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisNodesTable, AnalysisNodesColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyNode
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasRelationshipsWith applies the HasEdge predicate on the "relationships" edge with a given conditions (other predicates).
-func HasRelationshipsWith(preds ...predicate.SystemAnalysisRelationship) predicate.SystemAnalysis {
+// HasAnalysisNodesWith applies the HasEdge predicate on the "analysis_nodes" edge with a given conditions (other predicates).
+func HasAnalysisNodesWith(preds ...predicate.SystemAnalysisTopologyNode) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := newRelationshipsStep()
+		step := newAnalysisNodesStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyNode
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)
@@ -288,27 +323,27 @@ func HasRelationshipsWith(preds ...predicate.SystemAnalysisRelationship) predica
 	})
 }
 
-// HasAnalysisComponents applies the HasEdge predicate on the "analysis_components" edge.
-func HasAnalysisComponents() predicate.SystemAnalysis {
+// HasAnalysisEdges applies the HasEdge predicate on the "analysis_edges" edge.
+func HasAnalysisEdges() predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisComponentsTable, AnalysisComponentsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, AnalysisEdgesTable, AnalysisEdgesColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasAnalysisComponentsWith applies the HasEdge predicate on the "analysis_components" edge with a given conditions (other predicates).
-func HasAnalysisComponentsWith(preds ...predicate.SystemAnalysisComponent) predicate.SystemAnalysis {
+// HasAnalysisEdgesWith applies the HasEdge predicate on the "analysis_edges" edge with a given conditions (other predicates).
+func HasAnalysisEdgesWith(preds ...predicate.SystemAnalysisTopologyEdge) predicate.SystemAnalysis {
 	return predicate.SystemAnalysis(func(s *sql.Selector) {
-		step := newAnalysisComponentsStep()
+		step := newAnalysisEdgesStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.SystemAnalysisComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

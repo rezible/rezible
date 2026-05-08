@@ -1,9 +1,6 @@
 <script lang="ts">
-	import { useEdges, useNodes, useSvelteFlow } from "@xyflow/svelte";
+	import { useEdges, useNodes } from "@xyflow/svelte";
 	import { Button } from "$components/ui/button";
-	
-	import { useSystemDiagram } from "./diagramState.svelte";
-	import { useComponentDialog } from "./component-dialog/dialogState.svelte";
 	import AnalysisContextMenu from "../ContextMenu.svelte";
 
 	type Props = {
@@ -14,9 +11,6 @@
 	};
 	const { nodeId, edgeId, containerRect, clickPos }: Props = $props();
 
-	const { screenToFlowPosition } = useSvelteFlow();
-	const componentDialog = useComponentDialog();
-	const diagram = useSystemDiagram();
 	const nodes = useNodes();
 	const edges = useEdges();
 
@@ -25,23 +19,16 @@
 		edges.set(edges.current.filter(({ source, target }) => source !== nodeId && target !== nodeId));
 	};
 
-	const addComponent = () => {
-		const flowPos = screenToFlowPosition(clickPos, {snapToGrid: true});
-		componentDialog.setAdding(flowPos);
-		diagram.closeContextMenu();
-	}
 </script>
 
 <AnalysisContextMenu title="Diagram Actions" {containerRect} {clickPos}>
 	{#if nodeId}
 		<Button onclick={() => {deleteNode(nodeId)}}>
-			Delete Component
+			Delete Entity
 		</Button>
 	{:else if edgeId}
 		<span>relationship</span>
 	{:else}
-		<Button onclick={addComponent}>
-			Add Component
-		</Button>
+		<span>diagram</span>
 	{/if}
 </AnalysisContextMenu>

@@ -27,7 +27,7 @@ type KnowledgeEntity struct {
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Kind holds the value of the "kind" field.
-	Kind knowledgeentity.Kind `json:"kind,omitempty"`
+	Kind string `json:"kind,omitempty"`
 	// DisplayName holds the value of the "display_name" field.
 	DisplayName string `json:"display_name,omitempty"`
 	// Description holds the value of the "description" field.
@@ -151,7 +151,7 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				_m.Kind = knowledgeentity.Kind(value.String)
+				_m.Kind = value.String
 			}
 		case knowledgeentity.FieldDisplayName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -239,7 +239,7 @@ func (_m *KnowledgeEntity) String() string {
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
+	builder.WriteString(_m.Kind)
 	builder.WriteString(", ")
 	builder.WriteString("display_name=")
 	builder.WriteString(_m.DisplayName)

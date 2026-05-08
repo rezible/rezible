@@ -2,17 +2,17 @@ import type { ComponentProps } from "svelte";
 import { Context } from "runed";
 import { createMutation, createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query";
 import {
-	addSystemAnalysisComponentMutation,
-	createSystemAnalysisRelationshipMutation,
-	deleteSystemAnalysisComponentMutation,
-	deleteSystemAnalysisRelationshipMutation,
+	addSystemAnalysisEdgeMutation,
+	addSystemAnalysisNodeMutation,
+	deleteSystemAnalysisEdgeMutation,
+	deleteSystemAnalysisNodeMutation,
 	getSystemAnalysisOptions,
-	updateSystemAnalysisComponentMutation,
-	updateSystemAnalysisRelationshipMutation,
-	type AddSystemAnalysisComponentAttributes,
-	type CreateSystemAnalysisRelationshipAttributes,
-	type UpdateSystemAnalysisComponentAttributes,
-	type UpdateSystemAnalysisRelationshipAttributes,
+	updateSystemAnalysisEdgeMutation,
+	updateSystemAnalysisNodeMutation,
+	type AddSystemAnalysisEdgeAttributes,
+	type AddSystemAnalysisNodeAttributes,
+	type UpdateSystemAnalysisEdgeAttributes,
+	type UpdateSystemAnalysisNodeAttributes,
 } from "$lib/api";
 import { useIncidentView } from "$features/incidents/views/incident/controller.svelte";
 
@@ -47,69 +47,69 @@ export class IncidentAnalysisController {
 		this.analysisQuery.refetch();
 	}
 
-	private addAnalysisComponentMutation = createMutation(() => ({
-		...addSystemAnalysisComponentMutation(),
+	private addAnalysisNodeMutation = createMutation(() => ({
+		...addSystemAnalysisNodeMutation(),
 		onSuccess: () => {
 			this.invalidateAnalysisQuery();
 		},
 	}));
 
-	addComponent(attributes: AddSystemAnalysisComponentAttributes) {
-		return this.addAnalysisComponentMutation.mutateAsync({
+	addNode(attributes: AddSystemAnalysisNodeAttributes) {
+		return this.addAnalysisNodeMutation.mutateAsync({
 			path: { id: this.analysisId },
 			body: { attributes }
 		});
 	}
 
-	private updateAnalysisComponentMut = createMutation(() => ({
-		...updateSystemAnalysisComponentMutation(),
+	private updateAnalysisNodeMut = createMutation(() => ({
+		...updateSystemAnalysisNodeMutation(),
 		onSuccess: () => {
 			this.invalidateAnalysisQuery();
 		},
 	}));
 
-	updateComponent(id: string, attributes: UpdateSystemAnalysisComponentAttributes) {
-		return this.updateAnalysisComponentMut.mutate({ path: { id }, body: { attributes } });
+	updateNode(id: string, attributes: UpdateSystemAnalysisNodeAttributes) {
+		return this.updateAnalysisNodeMut.mutate({ path: { id }, body: { attributes } });
 	}
 
-	private removeAnalysisComponentMut = createMutation(() => ({
-		...deleteSystemAnalysisComponentMutation(),
+	private removeAnalysisNodeMut = createMutation(() => ({
+		...deleteSystemAnalysisNodeMutation(),
 		onSuccess: () => {
 			this.invalidateAnalysisQuery();
 		},
 	}));
-	async removeComponent(id: string) {
-		return this.removeAnalysisComponentMut.mutate({ path: { id } })
+	async removeNode(id: string) {
+		return this.removeAnalysisNodeMut.mutate({ path: { id } })
 	}
 
-	private createRelationshipMut = createMutation(() => ({ 
-		...createSystemAnalysisRelationshipMutation(), 
+	private addEdgeMut = createMutation(() => ({ 
+		...addSystemAnalysisEdgeMutation(), 
 		onSuccess: () => {
 			this.invalidateAnalysisQuery();
 		}, 
 	}));
-	async createRelationship(attributes: CreateSystemAnalysisRelationshipAttributes) {
-		return this.createRelationshipMut.mutate({ path: { id: this.analysisId }, body: { attributes } });
+	async addEdge(attributes: AddSystemAnalysisEdgeAttributes) {
+		return this.addEdgeMut.mutate({ path: { id: this.analysisId }, body: { attributes } });
 	}
 
-	private updateRelationshipMut = createMutation(() => ({
-		...updateSystemAnalysisRelationshipMutation(), 
+	private updateEdgeMut = createMutation(() => ({
+		...updateSystemAnalysisEdgeMutation(), 
 		onSuccess: () => {
 			this.invalidateAnalysisQuery();
 		}, 
 	}));
-	async updateRelationship(id: string, attributes: UpdateSystemAnalysisRelationshipAttributes) {
-		return this.updateRelationshipMut.mutate({ path: { id }, body: { attributes } });
+	async updateEdge(id: string, attributes: UpdateSystemAnalysisEdgeAttributes) {
+		return this.updateEdgeMut.mutate({ path: { id }, body: { attributes } });
 	}
 
-	private removeRelationshipMut = createMutation(() => ({
-		...deleteSystemAnalysisRelationshipMutation(), 
+	private removeEdgeMut = createMutation(() => ({
+		...deleteSystemAnalysisEdgeMutation(), 
 		onSuccess: () => {
 			this.invalidateAnalysisQuery();
 		}, 
 	}));
-	async removeRelationship(id: string) {
-		return this.removeRelationshipMut.mutate({ path: { id }});
+	async removeEdge(id: string) {
+		return this.removeEdgeMut.mutate({ path: { id }});
 	}
 }
 

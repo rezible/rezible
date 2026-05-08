@@ -507,28 +507,28 @@ func (f IncidentEventEvidenceMutationRuleFunc) EvalMutation(ctx context.Context,
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentEventEvidenceMutation", m)
 }
 
-// The IncidentEventSystemComponentQueryRuleFunc type is an adapter to allow the use of ordinary
+// The IncidentEventTopologyContextQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type IncidentEventSystemComponentQueryRuleFunc func(context.Context, *ent.IncidentEventSystemComponentQuery) error
+type IncidentEventTopologyContextQueryRuleFunc func(context.Context, *ent.IncidentEventTopologyContextQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f IncidentEventSystemComponentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentEventSystemComponentQuery); ok {
+func (f IncidentEventTopologyContextQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentEventTopologyContextQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentEventSystemComponentQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IncidentEventTopologyContextQuery", q)
 }
 
-// The IncidentEventSystemComponentMutationRuleFunc type is an adapter to allow the use of ordinary
+// The IncidentEventTopologyContextMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type IncidentEventSystemComponentMutationRuleFunc func(context.Context, *ent.IncidentEventSystemComponentMutation) error
+type IncidentEventTopologyContextMutationRuleFunc func(context.Context, *ent.IncidentEventTopologyContextMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f IncidentEventSystemComponentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IncidentEventSystemComponentMutation); ok {
+func (f IncidentEventTopologyContextMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.IncidentEventTopologyContextMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentEventSystemComponentMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IncidentEventTopologyContextMutation", m)
 }
 
 // The IncidentFieldQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1371,268 +1371,124 @@ func (f SystemAnalysisMutationRuleFunc) EvalMutation(ctx context.Context, m ent.
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisMutation", m)
 }
 
-// The SystemAnalysisComponentQueryRuleFunc type is an adapter to allow the use of ordinary
+// The SystemAnalysisTopologyEdgeQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type SystemAnalysisComponentQueryRuleFunc func(context.Context, *ent.SystemAnalysisComponentQuery) error
+type SystemAnalysisTopologyEdgeQueryRuleFunc func(context.Context, *ent.SystemAnalysisTopologyEdgeQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f SystemAnalysisComponentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemAnalysisComponentQuery); ok {
+func (f SystemAnalysisTopologyEdgeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemAnalysisTopologyEdgeQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisComponentQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisTopologyEdgeQuery", q)
 }
 
-// The SystemAnalysisComponentMutationRuleFunc type is an adapter to allow the use of ordinary
+// The SystemAnalysisTopologyEdgeMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type SystemAnalysisComponentMutationRuleFunc func(context.Context, *ent.SystemAnalysisComponentMutation) error
+type SystemAnalysisTopologyEdgeMutationRuleFunc func(context.Context, *ent.SystemAnalysisTopologyEdgeMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f SystemAnalysisComponentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemAnalysisComponentMutation); ok {
+func (f SystemAnalysisTopologyEdgeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemAnalysisTopologyEdgeMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisComponentMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisTopologyEdgeMutation", m)
 }
 
-// The SystemAnalysisRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
+// The SystemAnalysisTopologyNodeQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type SystemAnalysisRelationshipQueryRuleFunc func(context.Context, *ent.SystemAnalysisRelationshipQuery) error
+type SystemAnalysisTopologyNodeQueryRuleFunc func(context.Context, *ent.SystemAnalysisTopologyNodeQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f SystemAnalysisRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemAnalysisRelationshipQuery); ok {
+func (f SystemAnalysisTopologyNodeQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemAnalysisTopologyNodeQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisRelationshipQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemAnalysisTopologyNodeQuery", q)
 }
 
-// The SystemAnalysisRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
+// The SystemAnalysisTopologyNodeMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type SystemAnalysisRelationshipMutationRuleFunc func(context.Context, *ent.SystemAnalysisRelationshipMutation) error
+type SystemAnalysisTopologyNodeMutationRuleFunc func(context.Context, *ent.SystemAnalysisTopologyNodeMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f SystemAnalysisRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemAnalysisRelationshipMutation); ok {
+func (f SystemAnalysisTopologyNodeMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemAnalysisTopologyNodeMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisRelationshipMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemAnalysisTopologyNodeMutation", m)
 }
 
-// The SystemComponentQueryRuleFunc type is an adapter to allow the use of ordinary
+// The SystemTopologySnapshotQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type SystemComponentQueryRuleFunc func(context.Context, *ent.SystemComponentQuery) error
+type SystemTopologySnapshotQueryRuleFunc func(context.Context, *ent.SystemTopologySnapshotQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f SystemComponentQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemComponentQuery); ok {
+func (f SystemTopologySnapshotQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemTopologySnapshotQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemComponentQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemTopologySnapshotQuery", q)
 }
 
-// The SystemComponentMutationRuleFunc type is an adapter to allow the use of ordinary
+// The SystemTopologySnapshotMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type SystemComponentMutationRuleFunc func(context.Context, *ent.SystemComponentMutation) error
+type SystemTopologySnapshotMutationRuleFunc func(context.Context, *ent.SystemTopologySnapshotMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f SystemComponentMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemComponentMutation); ok {
+func (f SystemTopologySnapshotMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemTopologySnapshotMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemComponentMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemTopologySnapshotMutation", m)
 }
 
-// The SystemComponentConstraintQueryRuleFunc type is an adapter to allow the use of ordinary
+// The SystemTopologySnapshotEntityQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type SystemComponentConstraintQueryRuleFunc func(context.Context, *ent.SystemComponentConstraintQuery) error
+type SystemTopologySnapshotEntityQueryRuleFunc func(context.Context, *ent.SystemTopologySnapshotEntityQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f SystemComponentConstraintQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemComponentConstraintQuery); ok {
+func (f SystemTopologySnapshotEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemTopologySnapshotEntityQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemComponentConstraintQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemTopologySnapshotEntityQuery", q)
 }
 
-// The SystemComponentConstraintMutationRuleFunc type is an adapter to allow the use of ordinary
+// The SystemTopologySnapshotEntityMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type SystemComponentConstraintMutationRuleFunc func(context.Context, *ent.SystemComponentConstraintMutation) error
+type SystemTopologySnapshotEntityMutationRuleFunc func(context.Context, *ent.SystemTopologySnapshotEntityMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f SystemComponentConstraintMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemComponentConstraintMutation); ok {
+func (f SystemTopologySnapshotEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemTopologySnapshotEntityMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemComponentConstraintMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemTopologySnapshotEntityMutation", m)
 }
 
-// The SystemComponentControlQueryRuleFunc type is an adapter to allow the use of ordinary
+// The SystemTopologySnapshotRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type SystemComponentControlQueryRuleFunc func(context.Context, *ent.SystemComponentControlQuery) error
+type SystemTopologySnapshotRelationshipQueryRuleFunc func(context.Context, *ent.SystemTopologySnapshotRelationshipQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f SystemComponentControlQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemComponentControlQuery); ok {
+func (f SystemTopologySnapshotRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.SystemTopologySnapshotRelationshipQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemComponentControlQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemTopologySnapshotRelationshipQuery", q)
 }
 
-// The SystemComponentControlMutationRuleFunc type is an adapter to allow the use of ordinary
+// The SystemTopologySnapshotRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type SystemComponentControlMutationRuleFunc func(context.Context, *ent.SystemComponentControlMutation) error
+type SystemTopologySnapshotRelationshipMutationRuleFunc func(context.Context, *ent.SystemTopologySnapshotRelationshipMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f SystemComponentControlMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemComponentControlMutation); ok {
+func (f SystemTopologySnapshotRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.SystemTopologySnapshotRelationshipMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemComponentControlMutation", m)
-}
-
-// The SystemComponentKindQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemComponentKindQueryRuleFunc func(context.Context, *ent.SystemComponentKindQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemComponentKindQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemComponentKindQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemComponentKindQuery", q)
-}
-
-// The SystemComponentKindMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemComponentKindMutationRuleFunc func(context.Context, *ent.SystemComponentKindMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemComponentKindMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemComponentKindMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemComponentKindMutation", m)
-}
-
-// The SystemComponentRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemComponentRelationshipQueryRuleFunc func(context.Context, *ent.SystemComponentRelationshipQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemComponentRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemComponentRelationshipQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemComponentRelationshipQuery", q)
-}
-
-// The SystemComponentRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemComponentRelationshipMutationRuleFunc func(context.Context, *ent.SystemComponentRelationshipMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemComponentRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemComponentRelationshipMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemComponentRelationshipMutation", m)
-}
-
-// The SystemComponentSignalQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemComponentSignalQueryRuleFunc func(context.Context, *ent.SystemComponentSignalQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemComponentSignalQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemComponentSignalQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemComponentSignalQuery", q)
-}
-
-// The SystemComponentSignalMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemComponentSignalMutationRuleFunc func(context.Context, *ent.SystemComponentSignalMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemComponentSignalMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemComponentSignalMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemComponentSignalMutation", m)
-}
-
-// The SystemHazardQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemHazardQueryRuleFunc func(context.Context, *ent.SystemHazardQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemHazardQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemHazardQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemHazardQuery", q)
-}
-
-// The SystemHazardMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemHazardMutationRuleFunc func(context.Context, *ent.SystemHazardMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemHazardMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemHazardMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemHazardMutation", m)
-}
-
-// The SystemRelationshipControlActionQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemRelationshipControlActionQueryRuleFunc func(context.Context, *ent.SystemRelationshipControlActionQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemRelationshipControlActionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemRelationshipControlActionQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemRelationshipControlActionQuery", q)
-}
-
-// The SystemRelationshipControlActionMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemRelationshipControlActionMutationRuleFunc func(context.Context, *ent.SystemRelationshipControlActionMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemRelationshipControlActionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemRelationshipControlActionMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemRelationshipControlActionMutation", m)
-}
-
-// The SystemRelationshipFeedbackSignalQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type SystemRelationshipFeedbackSignalQueryRuleFunc func(context.Context, *ent.SystemRelationshipFeedbackSignalQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f SystemRelationshipFeedbackSignalQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.SystemRelationshipFeedbackSignalQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.SystemRelationshipFeedbackSignalQuery", q)
-}
-
-// The SystemRelationshipFeedbackSignalMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type SystemRelationshipFeedbackSignalMutationRuleFunc func(context.Context, *ent.SystemRelationshipFeedbackSignalMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f SystemRelationshipFeedbackSignalMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.SystemRelationshipFeedbackSignalMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemRelationshipFeedbackSignalMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.SystemTopologySnapshotRelationshipMutation", m)
 }
 
 // The TaskQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1872,7 +1728,7 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IncidentEventEvidenceQuery:
 		return q.Filter(), nil
-	case *ent.IncidentEventSystemComponentQuery:
+	case *ent.IncidentEventTopologyContextQuery:
 		return q.Filter(), nil
 	case *ent.IncidentFieldQuery:
 		return q.Filter(), nil
@@ -1944,27 +1800,15 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.SystemAnalysisQuery:
 		return q.Filter(), nil
-	case *ent.SystemAnalysisComponentQuery:
+	case *ent.SystemAnalysisTopologyEdgeQuery:
 		return q.Filter(), nil
-	case *ent.SystemAnalysisRelationshipQuery:
+	case *ent.SystemAnalysisTopologyNodeQuery:
 		return q.Filter(), nil
-	case *ent.SystemComponentQuery:
+	case *ent.SystemTopologySnapshotQuery:
 		return q.Filter(), nil
-	case *ent.SystemComponentConstraintQuery:
+	case *ent.SystemTopologySnapshotEntityQuery:
 		return q.Filter(), nil
-	case *ent.SystemComponentControlQuery:
-		return q.Filter(), nil
-	case *ent.SystemComponentKindQuery:
-		return q.Filter(), nil
-	case *ent.SystemComponentRelationshipQuery:
-		return q.Filter(), nil
-	case *ent.SystemComponentSignalQuery:
-		return q.Filter(), nil
-	case *ent.SystemHazardQuery:
-		return q.Filter(), nil
-	case *ent.SystemRelationshipControlActionQuery:
-		return q.Filter(), nil
-	case *ent.SystemRelationshipFeedbackSignalQuery:
+	case *ent.SystemTopologySnapshotRelationshipQuery:
 		return q.Filter(), nil
 	case *ent.TaskQuery:
 		return q.Filter(), nil
@@ -2019,7 +1863,7 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.IncidentEventEvidenceMutation:
 		return m.Filter(), nil
-	case *ent.IncidentEventSystemComponentMutation:
+	case *ent.IncidentEventTopologyContextMutation:
 		return m.Filter(), nil
 	case *ent.IncidentFieldMutation:
 		return m.Filter(), nil
@@ -2091,27 +1935,15 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.SystemAnalysisMutation:
 		return m.Filter(), nil
-	case *ent.SystemAnalysisComponentMutation:
+	case *ent.SystemAnalysisTopologyEdgeMutation:
 		return m.Filter(), nil
-	case *ent.SystemAnalysisRelationshipMutation:
+	case *ent.SystemAnalysisTopologyNodeMutation:
 		return m.Filter(), nil
-	case *ent.SystemComponentMutation:
+	case *ent.SystemTopologySnapshotMutation:
 		return m.Filter(), nil
-	case *ent.SystemComponentConstraintMutation:
+	case *ent.SystemTopologySnapshotEntityMutation:
 		return m.Filter(), nil
-	case *ent.SystemComponentControlMutation:
-		return m.Filter(), nil
-	case *ent.SystemComponentKindMutation:
-		return m.Filter(), nil
-	case *ent.SystemComponentRelationshipMutation:
-		return m.Filter(), nil
-	case *ent.SystemComponentSignalMutation:
-		return m.Filter(), nil
-	case *ent.SystemHazardMutation:
-		return m.Filter(), nil
-	case *ent.SystemRelationshipControlActionMutation:
-		return m.Filter(), nil
-	case *ent.SystemRelationshipFeedbackSignalMutation:
+	case *ent.SystemTopologySnapshotRelationshipMutation:
 		return m.Filter(), nil
 	case *ent.TaskMutation:
 		return m.Filter(), nil

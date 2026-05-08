@@ -201,8 +201,7 @@ var ListIncidents = huma.Operation{
 
 type ListIncidentsRequest struct {
 	ListRequest
-	TeamId      uuid.UUID `query:"teamId" required:"false"`
-	ComponentId uuid.UUID `query:"componentId" required:"false"`
+	TeamId uuid.UUID `query:"teamId" required:"false"`
 }
 type ListIncidentsResponse ListResponse[Incident]
 

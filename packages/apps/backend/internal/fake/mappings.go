@@ -62,7 +62,3 @@ var (
 
 	shiftMapping = ent.OncallShift{}
 )
-
-var (
-	systemComponentDataMapping = ent.SystemComponent{}
-)

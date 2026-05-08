@@ -1,25 +1,21 @@
 <script lang="ts">
 	import { useSvelteFlow, ViewportPortal } from "@xyflow/svelte";
 	import { Button } from "$components/ui/button";
-	import { useSystemDiagram, type SystemComponentNodeData, type SystemRelationshipEdgeData } from "./diagramState.svelte";
+	import { useSystemDiagram, type SystemTopologyNodeData, type SystemRelationshipEdgeData } from "./diagramState.svelte";
 	import { IsMounted } from "runed";
 	import { useIncidentAnalysis } from "../controller.svelte";
-	import { useComponentDialog } from "./component-dialog/dialogState.svelte";
-	import { useRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
 
 	const analysis = useIncidentAnalysis();
 	const diagram = useSystemDiagram();
-	const componentDialog = useComponentDialog();
-	const relationshipDialog = useRelationshipDialog();
 	const { getNodesBounds } = useSvelteFlow();
 
 	const { node, edge } = $derived(diagram.selected);
 
-	const nodeData = $derived(node?.data as SystemComponentNodeData | undefined);
-	const component = $derived(nodeData?.analysisComponent);
+	const nodeData = $derived(node?.data as SystemTopologyNodeData | undefined);
+	const analysisNode = $derived(nodeData?.analysisNode);
 
 	const edgeData = $derived(edge?.data as SystemRelationshipEdgeData | undefined);
-	const relationship = $derived(edgeData?.relationship);
+	const analysisEdge = $derived(edgeData?.edge);
 
 	const rect = $derived.by(() => {
 		if (node) return getNodesBounds([node]);
@@ -35,17 +31,11 @@
 		return `translate(${posX}px, ${posY}px) translate(-50%, 0%)`
 	});
 
-	const openEditDialog = () => {
-		if (!!component) componentDialog.setEditing(component);
-		if (!!relationship) relationshipDialog.setEditing(relationship);
-		diagram.setSelected({});
-	};
-	
 	const confirmDelete = () => {
-		if (component && confirm("Remove this component?")) {
-			analysis.removeComponent(component.id);
-		} else if (relationship && confirm("Remove this relationship?")) {
-			analysis.removeRelationship(relationship.id);
+		if (analysisNode && confirm("Remove this node?")) {
+			analysis.removeNode(analysisNode.id);
+		} else if (analysisEdge && confirm("Remove this edge?")) {
+			analysis.removeEdge(analysisEdge.id);
 		}
 		diagram.setSelected({});
 	};
@@ -60,7 +50,6 @@
 				class="pointer-events-auto absolute border rounded-lg bg-surface-100 p-1 z-[1001]"
 				style:transform
 			>
-				<Button onclick={openEditDialog}>edit</Button>
 				<Button onclick={confirmDelete}>delete</Button>
 			</div>
 		{/if}

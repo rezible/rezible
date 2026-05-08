@@ -135,6 +135,18 @@ func (_u *KnowledgeRelationshipUpdate) ClearDescription() *KnowledgeRelationship
 	return _u
 }
 
+// SetProperties sets the "properties" field.
+func (_u *KnowledgeRelationshipUpdate) SetProperties(v map[string]interface{}) *KnowledgeRelationshipUpdate {
+	_u.mutation.SetProperties(v)
+	return _u
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (_u *KnowledgeRelationshipUpdate) ClearProperties() *KnowledgeRelationshipUpdate {
+	_u.mutation.ClearProperties()
+	return _u
+}
+
 // SetFirstSeenAt sets the "first_seen_at" field.
 func (_u *KnowledgeRelationshipUpdate) SetFirstSeenAt(v time.Time) *KnowledgeRelationshipUpdate {
 	_u.mutation.SetFirstSeenAt(v)
@@ -325,6 +337,12 @@ func (_u *KnowledgeRelationshipUpdate) sqlSave(ctx context.Context) (_node int, 
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(knowledgerelationship.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.Properties(); ok {
+		_spec.SetField(knowledgerelationship.FieldProperties, field.TypeJSON, value)
+	}
+	if _u.mutation.PropertiesCleared() {
+		_spec.ClearField(knowledgerelationship.FieldProperties, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldFirstSeenAt, field.TypeTime, value)
@@ -568,6 +586,18 @@ func (_u *KnowledgeRelationshipUpdateOne) ClearDescription() *KnowledgeRelations
 	return _u
 }
 
+// SetProperties sets the "properties" field.
+func (_u *KnowledgeRelationshipUpdateOne) SetProperties(v map[string]interface{}) *KnowledgeRelationshipUpdateOne {
+	_u.mutation.SetProperties(v)
+	return _u
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (_u *KnowledgeRelationshipUpdateOne) ClearProperties() *KnowledgeRelationshipUpdateOne {
+	_u.mutation.ClearProperties()
+	return _u
+}
+
 // SetFirstSeenAt sets the "first_seen_at" field.
 func (_u *KnowledgeRelationshipUpdateOne) SetFirstSeenAt(v time.Time) *KnowledgeRelationshipUpdateOne {
 	_u.mutation.SetFirstSeenAt(v)
@@ -788,6 +818,12 @@ func (_u *KnowledgeRelationshipUpdateOne) sqlSave(ctx context.Context) (_node *K
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(knowledgerelationship.FieldDescription, field.TypeString)
+	}
+	if value, ok := _u.mutation.Properties(); ok {
+		_spec.SetField(knowledgerelationship.FieldProperties, field.TypeJSON, value)
+	}
+	if _u.mutation.PropertiesCleared() {
+		_spec.ClearField(knowledgerelationship.FieldProperties, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldFirstSeenAt, field.TypeTime, value)

@@ -1,16 +1,16 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import {
-		listSystemAnalysisComponentsOptions,
-		type IncidentEventSystemComponent,
-		type IncidentEventSystemComponentAttributes,
-		type SystemAnalysisComponent,
+		listSystemAnalysisNodesOptions,
+		type IncidentEventTopologyContext,
+		type IncidentEventTopologyContextAttributes,
+		type SystemAnalysisNode,
 	} from "$lib/api";
 	import { v4 as uuidv4 } from "uuid";
 	import { SvelteMap } from "svelte/reactivity";
 	import { Button } from "$components/ui/button";
 	import Icon from "$components/icon/Icon.svelte";
-	import { mdiPencil, mdiPlus, mdiShapeSquareRoundedPlus, mdiTrashCan } from "@mdi/js";
+	import { mdiPlus } from "@mdi/js";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
 	import { useIncidentAnalysis } from "$features/incidents/views/incident/analysis/controller.svelte";
@@ -20,101 +20,78 @@
 	const analysis = useIncidentAnalysis();
 	const analysisId = $derived(analysis.analysisId);
 
-	const analysisComponentsQuery = createQuery(() => ({
-		...listSystemAnalysisComponentsOptions({ path: { id: analysisId } }),
+	const analysisNodesQuery = createQuery(() => ({
+		...listSystemAnalysisNodesOptions({ path: { id: analysisId } }),
 		enabled: !!analysisId,
 	}));
-	const analysisComponents = $derived(analysisComponentsQuery.data?.data ?? []);
-	const analysisComponentMap = $derived(
-		new SvelteMap(analysisComponents.map((c) => [c.id, c]))
+	const analysisNodes = $derived(analysisNodesQuery.data?.data ?? []);
+	const analysisNodeMap = $derived(
+		new SvelteMap(analysisNodes.map((node) => [node.attributes.snapshotEntity.id, node]))
 	);
 
-	let description = $state("");
-	let status = $state<string | "normal" | "degraded" | "failing">("normal");
+	let relationship = $state("affected");
 
-	const getAttributes = (cmp: SystemAnalysisComponent): IncidentEventSystemComponentAttributes => ({
-		analysisComponentId: $state.snapshot(cmp.id),
-		description: $state.snapshot(description),
-		status: $state.snapshot(status),
+	const getAttributes = (node: SystemAnalysisNode): IncidentEventTopologyContextAttributes => ({
+		snapshotEntityId: $state.snapshot(node.attributes.snapshotEntity.id),
+		relationship: $state.snapshot(relationship),
 	});
 
 	let selecting = $state(false);
-	let selectedComponent = $state<SystemAnalysisComponent>();
-	let editing = $state<IncidentEventSystemComponent>();
-	const editComponent = $derived(
-		editing ? analysisComponentMap.get(editing.attributes.analysisComponentId) : undefined
+	let selectedNode = $state<SystemAnalysisNode>();
+	let editing = $state<IncidentEventTopologyContext>();
+	const editNode = $derived(
+		editing?.attributes.snapshotEntityId ? analysisNodeMap.get(editing.attributes.snapshotEntityId) : undefined
 	);
 
-	/*
-	const focusComponentId = $derived(selectedComponent?.id ?? editComponent?.id);
-	const relationshipsQuery = createQuery(() => ({
-		...listSystemAnalysisRelationshipsOptions({ 
-			path: { id: analysisId }, 
-			query: { analysisComponentId: focusComponentId } }),
-		enabled: !!focusComponentId,
-	}));
-	const relationships = $derived(!relationshipsQuery.isStale ? (relationshipsQuery.data?.data ?? []) : []);
-	*/
-
-	const setEditing = (cx: IncidentEventSystemComponent) => {
+	const setEditing = (cx: IncidentEventTopologyContext) => {
 		editing = $state.snapshot(cx);
-		description = $state.snapshot(cx.attributes.description);
-		status = $state.snapshot(cx.attributes.status);
+		relationship = $state.snapshot(cx.attributes.relationship);
 	};
 
-	const confirmDelete = (cx: IncidentEventSystemComponent) => {
-		const cmp = analysisComponentMap.get(cx.attributes.analysisComponentId);
+	const confirmDelete = (cx: IncidentEventTopologyContext) => {
+		const node = cx.attributes.snapshotEntityId ? analysisNodeMap.get(cx.attributes.snapshotEntityId) : undefined;
 		editing = undefined;
-		if (!cmp || !confirm(`Are you sure you want to remove ${cmp.attributes.component.attributes.name}?`)) return;
+		if (!node || !confirm(`Are you sure you want to remove ${node.attributes.snapshotEntity.attributes.displayName}?`)) return;
 		const idx = attributes.systemContext.findIndex((c) => c.id === cx.id);
 		if (idx >= 0) attributes.systemContext.splice(idx, 1);
 	};
 
 	const resetState = () => {
 		selecting = false;
-		selectedComponent = undefined;
+		selectedNode = undefined;
 		editing = undefined;
-		description = "";
-		status = "normal";
+		relationship = "affected";
 	}
 
 	const onCancel = () => {
-		if (selecting && selectedComponent) {
-			selectedComponent = undefined;
+		if (selecting && selectedNode) {
+			selectedNode = undefined;
 		} else {
 			resetState();
 		}
 	};
 
 	const onConfirm = () => {
-		if (selecting && selectedComponent) {
+		if (selecting && selectedNode) {
 			attributes.systemContext.push({
 				id: uuidv4(),
-				attributes: getAttributes(selectedComponent),
+				attributes: getAttributes(selectedNode),
 			});
-		} else if (editing && editComponent) {
+		} else if (editing && editNode) {
 			const idx = attributes.systemContext.findIndex((c) => c.id === editing?.id);
 			if (idx < 0) return;
-			attributes.systemContext[idx].attributes = getAttributes(editComponent);
+			attributes.systemContext[idx].attributes = getAttributes(editNode);
 		}
 		resetState();
 	};
 </script>
 
 <div class="flex flex-col gap-1 bg-surface-100">
-	{#snippet componentContextEditor(cmp: SystemAnalysisComponent)}
-		{@const attrs = cmp.attributes.component.attributes}
-		<span class="text-lg">{attrs.name}</span>
+	{#snippet topologyContextEditor(node: SystemAnalysisNode)}
+		{@const attrs = node.attributes.snapshotEntity.attributes}
+		<span class="text-lg">{attrs.displayName}</span>
 
-		<span>status select</span>
-		<!-- <ToggleGroup variant="fill-surface" bind:value={status} gap>
-			<ToggleOption value="normal">Normal</ToggleOption>
-			<ToggleOption value="degraded">Degraded</ToggleOption>
-			<ToggleOption value="failing">Failing</ToggleOption>
-		</ToggleGroup> -->
-
-		<span>description field</span>
-		<!-- <TextField label="Description" bind:value={description} multiline /> -->
+		<span>relationship select</span>
 	{/snippet}
 
 	{#snippet confirmButtons()}
@@ -124,77 +101,44 @@
 				onClose={onCancel}
 				confirmText={selecting ? "Add" : "Save"}
 				{onConfirm}
-				saveEnabled={!!selectedComponent}
+				saveEnabled={!!selectedNode}
 			/>
 		</div>
 	{/snippet}
 
-	{#snippet componentSelector()}
-		{#each analysisComponents as c (c.id)}
-		{@const attr = c.attributes.component.attributes}
-			<span>component list item: {attr.name}</span>
-			<!-- <ListItem
-				title={attr.name}
-				subheading={attr.description}
-				avatar={{ class: "bg-surface-content/50 text-surface-100/90" }}
-				class="flex-1"
-				noShadow
-			>
-				<div slot="avatar" class="rounded-xl size-8 grid place-content-center">
-					<Icon data={getIconForComponentKind(attr.kindId)} classes={{ root: "size-5" }} />
-				</div>
-				<div slot="actions">
-					<Button
-						icon={mdiShapeSquareRoundedPlus}
-						iconOnly
-						onclick={() => (selectedComponent = $state.snapshot(c))}
-					/>
-				</div>
-			</ListItem> -->
+	{#snippet topologyNodeSelector()}
+		{#each analysisNodes as node (node.id)}
+			{@const attr = node.attributes.snapshotEntity.attributes}
+			<span>entity list item: {attr.displayName}</span>
 		{/each}
 
-		{#if analysisComponents.length === 0 && analysisComponentsQuery.isFetched}
-			<span>No components linked to this incident</span>
+		{#if analysisNodes.length === 0 && analysisNodesQuery.isFetched}
+			<span>No topology nodes linked to this analysis</span>
 		{/if}
 	{/snippet}
 
 	{#if selecting || editing}
 		<div class="border rounded flex flex-col gap-2 p-2">
 			{#if selecting}
-				{#if selectedComponent}
-					{@render componentContextEditor(selectedComponent)}
+				{#if selectedNode}
+					{@render topologyContextEditor(selectedNode)}
 				{:else}
-					{@render componentSelector()}
+					{@render topologyNodeSelector()}
 				{/if}
 
 				{@render confirmButtons()}
 			{:else if editing}
-				{#if editComponent}
-					{@render componentContextEditor(editComponent)}
+				{#if editNode}
+					{@render topologyContextEditor(editNode)}
 				{/if}
 
 				{@render confirmButtons()}
 			{/if}
 		</div>
 	{:else}
-		{#each attributes.systemContext as cx, i}
-			{@const cmp = analysisComponentMap.get(cx.attributes.analysisComponentId)?.attributes.component}
-			<span>component list item: {cmp?.attributes.name ?? "Unknown Component"}</span>
-			<!-- <ListItem
-				title={cmp?.attributes.name ?? "Unknown Component"}
-				subheading={cx.attributes.description}
-				classes={{ root: "border first:border-t rounded elevation-0" }}
-				class="flex-1"
-				noShadow
-			>
-				<div slot="avatar">
-					<span>{cx.attributes.status}</span>
-				</div>
-				<div slot="actions">
-					<Button icon={mdiPencil} iconOnly onclick={() => setEditing(cx)} />
-					<Button icon={mdiTrashCan} iconOnly onclick={() => confirmDelete(cx)} />
-				</div>
-			</ListItem> -->
+		{#each attributes.systemContext as cx (cx.id)}
+			{@const node = cx.attributes.snapshotEntityId ? analysisNodeMap.get(cx.attributes.snapshotEntityId) : undefined}
+			<span>entity list item: {node?.attributes.snapshotEntity.attributes.displayName ?? "Unknown Entity"}</span>
 		{/each}
 
 		<Button
@@ -202,7 +146,7 @@
 			onclick={() => (selecting = true)}
 		>
 			<span class="flex items-center gap-2 text-primary-content">
-				Add Component
+				Add Entity
 				<Icon data={mdiPlus} />
 			</span>
 		</Button>

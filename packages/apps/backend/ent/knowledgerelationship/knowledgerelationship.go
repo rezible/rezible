@@ -32,6 +32,8 @@ const (
 	FieldDisplayName = "display_name"
 	// FieldDescription holds the string denoting the description field in the database.
 	FieldDescription = "description"
+	// FieldProperties holds the string denoting the properties field in the database.
+	FieldProperties = "properties"
 	// FieldFirstSeenAt holds the string denoting the first_seen_at field in the database.
 	FieldFirstSeenAt = "first_seen_at"
 	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
@@ -87,6 +89,7 @@ var Columns = []string{
 	FieldKind,
 	FieldDisplayName,
 	FieldDescription,
+	FieldProperties,
 	FieldFirstSeenAt,
 	FieldLastSeenAt,
 }

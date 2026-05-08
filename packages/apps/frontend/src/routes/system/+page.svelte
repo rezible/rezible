@@ -1,5 +1,5 @@
 <script lang="ts">
-	import SystemComponentsListView from "$features/system/views/system-components-list";	
+	import SystemTopologyEntitiesListView from "$features/system-topology/views/system-topology-entities-list";
 </script>
 
-<SystemComponentsListView />
+<SystemTopologyEntitiesListView />

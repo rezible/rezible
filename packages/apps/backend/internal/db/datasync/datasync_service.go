@@ -111,21 +111,6 @@ func (s *Syncer) syncData(ctx context.Context, intgs ent.Integrations, opts Sync
 		}
 	}
 
-	componentsProviders, componentsErr := integrations.GetSystemComponentsDataProviders(ctx, intgs)
-	if componentsErr != nil {
-		slog.Error("failed to load components data providers", "error", componentsErr)
-	} else if len(componentsProviders) > 0 {
-		providerByIntegrationID := make(map[string]string, len(intgs))
-		for _, intg := range intgs {
-			providerByIntegrationID[intg.ID.String()] = intg.Provider
-		}
-		for integrationID, components := range componentsProviders {
-			if syncErr := syncSystemComponents(ctx, s.db, components, providerByIntegrationID[integrationID], opts, s.metrics); syncErr != nil {
-				return fmt.Errorf("system components: %w", syncErr)
-			}
-		}
-	}
-
 	alertsProviders, alertsErr := integrations.GetAlertDataProviders(ctx, intgs)
 	if alertsErr != nil {
 		slog.Error("failed to load alerts data providers", "error", alertsErr)

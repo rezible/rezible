@@ -169,17 +169,17 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 
 	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
 	if orgsErr != nil {
-		return nil, fmt.Errorf("postgres.NewOrganizationsService: %w", orgsErr)
+		return nil, fmt.Errorf("db.NewOrganizationsService: %w", orgsErr)
 	}
 
 	users, usersErr := db.NewUserService(dbc, orgs)
 	if usersErr != nil {
-		return nil, fmt.Errorf("postgres.NewUserService: %w", usersErr)
+		return nil, fmt.Errorf("db.NewUserService: %w", usersErr)
 	}
 
 	teams, teamsErr := db.NewTeamService(dbc)
 	if teamsErr != nil {
-		return nil, fmt.Errorf("postgres.NewTeamService: %w", teamsErr)
+		return nil, fmt.Errorf("db.NewTeamService: %w", teamsErr)
 	}
 
 	auth, authErr := oidc.NewAuthSessionService(ctx, orgs, users)
@@ -199,12 +199,12 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 
 	events, eventsErr := db.NewEventsService(dbc, users)
 	if eventsErr != nil {
-		return nil, fmt.Errorf("postgres.NewEventsService: %w", eventsErr)
+		return nil, fmt.Errorf("db.NewEventsService: %w", eventsErr)
 	}
 
 	annos, annosErr := db.NewEventAnnotationsService(dbc, events)
 	if annosErr != nil {
-		return nil, fmt.Errorf("postgres.NewEventAnnotationsService: %w", annosErr)
+		return nil, fmt.Errorf("db.NewEventAnnotationsService: %w", annosErr)
 	}
 
 	_, nodesErr := prosemirror.NewNodeService()
@@ -214,47 +214,47 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 
 	incidents, incidentsErr := db.NewIncidentService(dbc, jobSvc, msgs, users)
 	if incidentsErr != nil {
-		return nil, fmt.Errorf("postgres.NewIncidentService: %w", incidentsErr)
+		return nil, fmt.Errorf("db.NewIncidentService: %w", incidentsErr)
 	}
 
 	rosters, rostersErr := db.NewOncallRostersService(dbc, jobSvc)
 	if rostersErr != nil {
-		return nil, fmt.Errorf("postgres.NewOncallRostersService: %w", rostersErr)
+		return nil, fmt.Errorf("db.NewOncallRostersService: %w", rostersErr)
 	}
 
-	components, componentsErr := db.NewSystemComponentsService(dbc)
-	if componentsErr != nil {
-		return nil, fmt.Errorf("postgres.NewSystemComponentsService: %w", componentsErr)
+	topology, topologyErr := db.NewSystemTopologyService(dbc)
+	if topologyErr != nil {
+		return nil, fmt.Errorf("db.NewTopologyService: %w", topologyErr)
 	}
 
 	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc, intgs)
 	if shiftsErr != nil {
-		return nil, fmt.Errorf("postgres.NewOncallShiftsService: %w", shiftsErr)
+		return nil, fmt.Errorf("db.NewOncallShiftsService: %w", shiftsErr)
 	}
 
 	oncallMetrics, oncallMetricsErr := db.NewOncallMetricsService(dbc, jobSvc, shifts)
 	if oncallMetricsErr != nil {
-		return nil, fmt.Errorf("postgres.NewOncallMetricsService: %w", oncallMetricsErr)
+		return nil, fmt.Errorf("db.NewOncallMetricsService: %w", oncallMetricsErr)
 	}
 
 	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, agents)
 	if debriefsErr != nil {
-		return nil, fmt.Errorf("postgres.NewDebriefService: %w", debriefsErr)
+		return nil, fmt.Errorf("db.NewDebriefService: %w", debriefsErr)
 	}
 
 	retros, retrosErr := db.NewRetrospectiveService(dbc, msgs, incidents)
 	if retrosErr != nil {
-		return nil, fmt.Errorf("postgres.NewRetrospectiveService: %w", retrosErr)
+		return nil, fmt.Errorf("db.NewRetrospectiveService: %w", retrosErr)
 	}
 
 	alerts, alertsErr := db.NewAlertService(dbc)
 	if alertsErr != nil {
-		return nil, fmt.Errorf("postgres.NewAlertService: %w", alertsErr)
+		return nil, fmt.Errorf("db.NewAlertService: %w", alertsErr)
 	}
 
 	playbooks, playbooksErr := db.NewPlaybookService(dbc)
 	if playbooksErr != nil {
-		return nil, fmt.Errorf("postgres.NewPlaybookService: %w", playbooksErr)
+		return nil, fmt.Errorf("db.NewPlaybookService: %w", playbooksErr)
 	}
 
 	docs, docsErr := db.NewDocumentsService(dbc, teams)
@@ -267,6 +267,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		ProviderEvents:   provEvents,
 		Messages:         msgs,
 		Knowledge:        knowledge,
+		Topology:         topology,
 		Auth:             auth,
 		Organizations:    orgs,
 		Integrations:     intgs,
@@ -281,7 +282,6 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 		EventAnnotations: annos,
 		Documents:        docs,
 		Retros:           retros,
-		Components:       components,
 		Alerts:           alerts,
 		Playbooks:        playbooks,
 	}, nil

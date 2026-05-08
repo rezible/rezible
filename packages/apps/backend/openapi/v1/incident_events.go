@@ -45,7 +45,7 @@ type (
 		DecisionContext     *IncidentEventDecisionContext     `json:"decisionContext,omitempty"`
 		ContributingFactors []IncidentEventContributingFactor `json:"contributingFactors"`
 		Evidence            []IncidentEventEvidence           `json:"evidence"`
-		SystemContext       []IncidentEventSystemComponent    `json:"systemContext"`
+		SystemContext       []IncidentEventTopologyContext    `json:"systemContext"`
 	}
 
 	IncidentEventDecisionContext struct {
@@ -76,16 +76,15 @@ type (
 		Properties *map[string]string `json:"properties,omitempty"`
 	}
 
-	IncidentEventSystemComponent struct {
+	IncidentEventTopologyContext struct {
 		Id         uuid.UUID                              `json:"id"`
-		Attributes IncidentEventSystemComponentAttributes `json:"attributes"`
+		Attributes IncidentEventTopologyContextAttributes `json:"attributes"`
 	}
 
-	IncidentEventSystemComponentAttributes struct {
-		AnalysisComponentId uuid.UUID `json:"analysisComponentId"`
-		Status              string    `json:"status"`
-		Description         string    `json:"description"`
-		// TODO: what else do we want as context?
+	IncidentEventTopologyContextAttributes struct {
+		KnowledgeEntityId *uuid.UUID `json:"knowledgeEntityId,omitempty"`
+		SnapshotEntityId  *uuid.UUID `json:"snapshotEntityId,omitempty"`
+		Relationship      string     `json:"relationship"`
 	}
 
 	IncidentEventContributingFactorCategory struct {
@@ -137,9 +136,9 @@ func IncidentEventFromEnt(e *ent.IncidentEvent) IncidentEvent {
 		attr.Evidence[i] = IncidentEventEvidenceFromEnt(evi)
 	}
 
-	attr.SystemContext = make([]IncidentEventSystemComponent, len(e.Edges.EventComponents))
-	for i, c := range e.Edges.EventComponents {
-		attr.SystemContext[i] = IncidentEventSystemComponentFromEnt(c)
+	attr.SystemContext = make([]IncidentEventTopologyContext, len(e.Edges.TopologyContext))
+	for i, c := range e.Edges.TopologyContext {
+		attr.SystemContext[i] = IncidentEventTopologyContextFromEnt(c)
 	}
 
 	return IncidentEvent{Id: e.ID, Attributes: attr}
@@ -175,13 +174,13 @@ func IncidentEventEvidenceFromEnt(evi *ent.IncidentEventEvidence) IncidentEventE
 	}
 }
 
-func IncidentEventSystemComponentFromEnt(c *ent.IncidentEventSystemComponent) IncidentEventSystemComponent {
-	return IncidentEventSystemComponent{
-		Id:         c.ID,
-		Attributes: IncidentEventSystemComponentAttributes{
-			//AnalysisComponentId: uuid.UUID{},
-			//Status:              "",
-			//Description:         "",
+func IncidentEventTopologyContextFromEnt(c *ent.IncidentEventTopologyContext) IncidentEventTopologyContext {
+	return IncidentEventTopologyContext{
+		Id: c.ID,
+		Attributes: IncidentEventTopologyContextAttributes{
+			KnowledgeEntityId: c.KnowledgeEntityID,
+			SnapshotEntityId:  c.SnapshotEntityID,
+			Relationship:      c.Relationship.String(),
 		},
 	}
 }

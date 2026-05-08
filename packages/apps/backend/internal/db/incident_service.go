@@ -13,13 +13,11 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/incidentevent"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	imodel "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
 type IncidentService struct {
@@ -86,11 +84,6 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 		query.WithRoleAssignments(func(q *ent.IncidentRoleAssignmentQuery) {
 			q.Where(ira.UserID(params.UserId))
 		})
-	}
-	if params.ComponentId != uuid.Nil {
-		query.Where(incident.HasEventsWith(
-			incidentevent.HasSystemComponentsWith(systemcomponent.ID(params.ComponentId)),
-		))
 	}
 	s.allQueryEdges(query)
 

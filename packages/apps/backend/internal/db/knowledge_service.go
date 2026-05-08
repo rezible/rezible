@@ -120,6 +120,9 @@ func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, se
 			if _, ok := mutation.Description(); ok {
 				u.UpdateDescription()
 			}
+			if _, ok := mutation.Properties(); ok {
+				u.UpdateProperties()
+			}
 		})
 	}
 

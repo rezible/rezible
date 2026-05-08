@@ -193,12 +193,3 @@ func GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) (map[
 		return dpi.MakeIncidentDataProvider(ctx, i)
 	})
 }
-
-func GetSystemComponentsDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.SystemComponentsDataProvider, error) {
-	type integrationWithSystemComponentsDataProvider interface {
-		MakeSystemComponentsDataProvider(context.Context, *ent.Integration) (rez.SystemComponentsDataProvider, error)
-	}
-	return getDataProviders(intgs, func(dpi integrationWithSystemComponentsDataProvider, i *ent.Integration) (rez.SystemComponentsDataProvider, error) {
-		return dpi.MakeSystemComponentsDataProvider(ctx, i)
-	})
-}

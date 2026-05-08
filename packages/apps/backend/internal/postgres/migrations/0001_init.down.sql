@@ -4,12 +4,6 @@ ALTER TABLE "user_watched_oncall_rosters" DROP CONSTRAINT "user_watched_oncall_r
 ALTER TABLE "team_oncall_rosters" DROP CONSTRAINT "team_oncall_rosters_oncall_roster_id", DROP CONSTRAINT "team_oncall_rosters_team_id";
 -- reverse: modify "task_tickets" table
 ALTER TABLE "task_tickets" DROP CONSTRAINT "task_tickets_ticket_id", DROP CONSTRAINT "task_tickets_task_id";
--- reverse: modify "system_hazard_relationships" table
-ALTER TABLE "system_hazard_relationships" DROP CONSTRAINT "system_hazard_relationships_system_component_relationship_id", DROP CONSTRAINT "system_hazard_relationships_system_hazard_id";
--- reverse: modify "system_hazard_constraints" table
-ALTER TABLE "system_hazard_constraints" DROP CONSTRAINT "system_hazard_constraints_system_component_constraint_id", DROP CONSTRAINT "system_hazard_constraints_system_hazard_id";
--- reverse: modify "system_hazard_components" table
-ALTER TABLE "system_hazard_components" DROP CONSTRAINT "system_hazard_components_system_component_id", DROP CONSTRAINT "system_hazard_components_system_hazard_id";
 -- reverse: modify "playbook_alerts" table
 ALTER TABLE "playbook_alerts" DROP CONSTRAINT "playbook_alerts_alert_id", DROP CONSTRAINT "playbook_alerts_playbook_id";
 -- reverse: modify "oncall_shift_handover_pinned_annotations" table
@@ -36,6 +30,12 @@ ALTER TABLE "incident_field_selections" DROP CONSTRAINT "incident_field_selectio
 ALTER TABLE "video_conferences" DROP CONSTRAINT "video_conferences_tenants_tenant", DROP CONSTRAINT "video_conferences_meeting_sessions_video_conference", DROP CONSTRAINT "video_conferences_incidents_video_conferences";
 -- reverse: modify "users" table
 ALTER TABLE "users" DROP CONSTRAINT "users_tenants_tenant";
+-- reverse: modify "topology_snapshot_relationships" table
+ALTER TABLE "topology_snapshot_relationships" DROP CONSTRAINT "topology_snapshot_relationship_f9981a5ea4e0c1fd6def7bf1d10049ec", DROP CONSTRAINT "topology_snapshot_relationship_ca28ad6ad79c599a07f5587ff8183c64", DROP CONSTRAINT "topology_snapshot_relationship_8395fb382ef6c7a5cc3ad95b11f692ce", DROP CONSTRAINT "topology_snapshot_relationships_topology_snapshots_snapshot", DROP CONSTRAINT "topology_snapshot_relationships_tenants_tenant";
+-- reverse: modify "topology_snapshot_entities" table
+ALTER TABLE "topology_snapshot_entities" DROP CONSTRAINT "topology_snapshot_entities_knowledge_entities_knowledge_entity", DROP CONSTRAINT "topology_snapshot_entities_topology_snapshots_snapshot", DROP CONSTRAINT "topology_snapshot_entities_tenants_tenant";
+-- reverse: modify "topology_snapshots" table
+ALTER TABLE "topology_snapshots" DROP CONSTRAINT "topology_snapshots_tenants_tenant";
 -- reverse: modify "tickets" table
 ALTER TABLE "tickets" DROP CONSTRAINT "tickets_tenants_tenant";
 -- reverse: modify "team_memberships" table
@@ -44,30 +44,12 @@ ALTER TABLE "team_memberships" DROP CONSTRAINT "team_memberships_users_user", DR
 ALTER TABLE "teams" DROP CONSTRAINT "teams_tenants_tenant";
 -- reverse: modify "tasks" table
 ALTER TABLE "tasks" DROP CONSTRAINT "tasks_users_created_tasks", DROP CONSTRAINT "tasks_users_assigned_tasks", DROP CONSTRAINT "tasks_tenants_tenant", DROP CONSTRAINT "tasks_incidents_tasks";
--- reverse: modify "system_relationship_feedback_signals" table
-ALTER TABLE "system_relationship_feedback_signals" DROP CONSTRAINT "system_relationship_feedback_s_6f55fe5b92f1a576065bd207d9dce675", DROP CONSTRAINT "system_relationship_feedback_s_39c0e6fe83e88c85b812ba9411e28182", DROP CONSTRAINT "system_relationship_feedback_signals_tenants_tenant";
--- reverse: modify "system_relationship_control_actions" table
-ALTER TABLE "system_relationship_control_actions" DROP CONSTRAINT "system_relationship_control_ac_12aa32796847b4e25eb84b90c585973c", DROP CONSTRAINT "system_relationship_control_ac_742bb3020af53fe20337f3c129a7d01d", DROP CONSTRAINT "system_relationship_control_actions_tenants_tenant";
--- reverse: modify "system_hazards" table
-ALTER TABLE "system_hazards" DROP CONSTRAINT "system_hazards_tenants_tenant";
--- reverse: modify "system_component_signals" table
-ALTER TABLE "system_component_signals" DROP CONSTRAINT "system_component_signals_system_components_component", DROP CONSTRAINT "system_component_signals_tenants_tenant";
--- reverse: modify "system_component_relationships" table
-ALTER TABLE "system_component_relationships" DROP CONSTRAINT "system_component_relationships_system_components_target", DROP CONSTRAINT "system_component_relationships_system_components_source", DROP CONSTRAINT "system_component_relationships_tenants_tenant";
--- reverse: modify "system_component_kinds" table
-ALTER TABLE "system_component_kinds" DROP CONSTRAINT "system_component_kinds_tenants_tenant";
--- reverse: modify "system_component_controls" table
-ALTER TABLE "system_component_controls" DROP CONSTRAINT "system_component_controls_system_components_component", DROP CONSTRAINT "system_component_controls_tenants_tenant";
--- reverse: modify "system_component_constraints" table
-ALTER TABLE "system_component_constraints" DROP CONSTRAINT "system_component_constraints_system_components_component", DROP CONSTRAINT "system_component_constraints_tenants_tenant";
--- reverse: modify "system_components" table
-ALTER TABLE "system_components" DROP CONSTRAINT "system_components_system_component_kinds_kind", DROP CONSTRAINT "system_components_tenants_tenant";
--- reverse: modify "system_analysis_relationships" table
-ALTER TABLE "system_analysis_relationships" DROP CONSTRAINT "system_analysis_relationships__78049507d24c4a0660356c42d5058c63", DROP CONSTRAINT "system_analysis_relationships_system_analyses_system_analysis", DROP CONSTRAINT "system_analysis_relationships_tenants_tenant";
--- reverse: modify "system_analysis_components" table
-ALTER TABLE "system_analysis_components" DROP CONSTRAINT "system_analysis_components_system_components_component", DROP CONSTRAINT "system_analysis_components_system_analyses_analysis", DROP CONSTRAINT "system_analysis_components_tenants_tenant";
+-- reverse: modify "system_analysis_topology_edges" table
+ALTER TABLE "system_analysis_topology_edges" DROP CONSTRAINT "system_analysis_topology_edges_9bdc8dd94b6af3ebd7986fcbe82e93f1", DROP CONSTRAINT "system_analysis_topology_edges_system_analyses_analysis", DROP CONSTRAINT "system_analysis_topology_edges_tenants_tenant";
+-- reverse: modify "system_analysis_nodes" table
+ALTER TABLE "system_analysis_nodes" DROP CONSTRAINT "system_analysis_nodes_topology_2dbeba01349a016d66da8a5736d9f5a1", DROP CONSTRAINT "system_analysis_nodes_system_analyses_analysis", DROP CONSTRAINT "system_analysis_nodes_tenants_tenant";
 -- reverse: modify "system_analyses" table
-ALTER TABLE "system_analyses" DROP CONSTRAINT "system_analyses_tenants_tenant";
+ALTER TABLE "system_analyses" DROP CONSTRAINT "system_analyses_topology_snapshots_topology_snapshot", DROP CONSTRAINT "system_analyses_tenants_tenant";
 -- reverse: modify "retrospective_reviews" table
 ALTER TABLE "retrospective_reviews" DROP CONSTRAINT "retrospective_reviews_retrospective_comments_comment", DROP CONSTRAINT "retrospective_reviews_users_reviewer", DROP CONSTRAINT "retrospective_reviews_users_requester", DROP CONSTRAINT "retrospective_reviews_retrospectives_retrospective", DROP CONSTRAINT "retrospective_reviews_tenants_tenant";
 -- reverse: modify "retrospective_comments" table
@@ -136,8 +118,8 @@ ALTER TABLE "incident_links" DROP CONSTRAINT "incident_links_incidents_linked_in
 ALTER TABLE "incident_field_options" DROP CONSTRAINT "incident_field_options_tenants_tenant", DROP CONSTRAINT "incident_field_options_incident_fields_options";
 -- reverse: modify "incident_fields" table
 ALTER TABLE "incident_fields" DROP CONSTRAINT "incident_fields_tenants_tenant";
--- reverse: modify "incident_event_system_components" table
-ALTER TABLE "incident_event_system_components" DROP CONSTRAINT "incident_event_system_componen_426e7b9f5e52750ab9f88715a403e203", DROP CONSTRAINT "incident_event_system_components_tenants_tenant";
+-- reverse: modify "incident_event_topology_contexts" table
+ALTER TABLE "incident_event_topology_contexts" DROP CONSTRAINT "incident_event_topology_contex_a87b1dface31e85d292278580731ba85", DROP CONSTRAINT "incident_event_topology_contex_b2409285a56a4f4f12a362a2778ee979", DROP CONSTRAINT "incident_event_topology_contexts_incident_events_event", DROP CONSTRAINT "incident_event_topology_contexts_tenants_tenant";
 -- reverse: modify "incident_event_evidences" table
 ALTER TABLE "incident_event_evidences" DROP CONSTRAINT "incident_event_evidences_tenants_tenant", DROP CONSTRAINT "incident_event_evidences_incident_events_evidence";
 -- reverse: modify "incident_event_contributing_factors" table
@@ -176,12 +158,6 @@ DROP TABLE "user_watched_oncall_rosters";
 DROP TABLE "team_oncall_rosters";
 -- reverse: create "task_tickets" table
 DROP TABLE "task_tickets";
--- reverse: create "system_hazard_relationships" table
-DROP TABLE "system_hazard_relationships";
--- reverse: create "system_hazard_constraints" table
-DROP TABLE "system_hazard_constraints";
--- reverse: create "system_hazard_components" table
-DROP TABLE "system_hazard_components";
 -- reverse: create "playbook_alerts" table
 DROP TABLE "playbook_alerts";
 -- reverse: create "oncall_shift_handover_pinned_annotations" table
@@ -220,6 +196,38 @@ DROP INDEX "user_auth_provider_id";
 DROP INDEX "user_tenant_id";
 -- reverse: create "users" table
 DROP TABLE "users";
+-- reverse: create index "topologysnapshotrelationship_t_2162a710bf7499f3f88499e99718b9be" to table: "topology_snapshot_relationships"
+DROP INDEX "topologysnapshotrelationship_t_2162a710bf7499f3f88499e99718b9be";
+-- reverse: create index "topologysnapshotrelationship_t_77b29a8905b37561dfed0ed41329c366" to table: "topology_snapshot_relationships"
+DROP INDEX "topologysnapshotrelationship_t_77b29a8905b37561dfed0ed41329c366";
+-- reverse: create index "topologysnapshotrelationship_t_2577fed32087ac28f4fe4d7e9ac75be3" to table: "topology_snapshot_relationships"
+DROP INDEX "topologysnapshotrelationship_t_2577fed32087ac28f4fe4d7e9ac75be3";
+-- reverse: create index "topologysnapshotrelationship_t_0d9515a939c86b80e989d784bee27251" to table: "topology_snapshot_relationships"
+DROP INDEX "topologysnapshotrelationship_t_0d9515a939c86b80e989d784bee27251";
+-- reverse: create index "topologysnapshotrelationship_tenant_id_snapshot_id" to table: "topology_snapshot_relationships"
+DROP INDEX "topologysnapshotrelationship_tenant_id_snapshot_id";
+-- reverse: create index "topologysnapshotrelationship_tenant_id" to table: "topology_snapshot_relationships"
+DROP INDEX "topologysnapshotrelationship_tenant_id";
+-- reverse: create "topology_snapshot_relationships" table
+DROP TABLE "topology_snapshot_relationships";
+-- reverse: create index "topologysnapshotentity_tenant__f6f1711f029985fd518043cc1f3b7cbe" to table: "topology_snapshot_entities"
+DROP INDEX "topologysnapshotentity_tenant__f6f1711f029985fd518043cc1f3b7cbe";
+-- reverse: create index "topologysnapshotentity_tenant_id_knowledge_entity_id" to table: "topology_snapshot_entities"
+DROP INDEX "topologysnapshotentity_tenant_id_knowledge_entity_id";
+-- reverse: create index "topologysnapshotentity_tenant_id_snapshot_id" to table: "topology_snapshot_entities"
+DROP INDEX "topologysnapshotentity_tenant_id_snapshot_id";
+-- reverse: create index "topologysnapshotentity_tenant_id" to table: "topology_snapshot_entities"
+DROP INDEX "topologysnapshotentity_tenant_id";
+-- reverse: create "topology_snapshot_entities" table
+DROP TABLE "topology_snapshot_entities";
+-- reverse: create index "topologysnapshot_tenant_id_created_at" to table: "topology_snapshots"
+DROP INDEX "topologysnapshot_tenant_id_created_at";
+-- reverse: create index "topologysnapshot_tenant_id_as_of" to table: "topology_snapshots"
+DROP INDEX "topologysnapshot_tenant_id_as_of";
+-- reverse: create index "topologysnapshot_tenant_id" to table: "topology_snapshots"
+DROP INDEX "topologysnapshot_tenant_id";
+-- reverse: create "topology_snapshots" table
+DROP TABLE "topology_snapshots";
 -- reverse: create index "ticket_tenant_id" to table: "tickets"
 DROP INDEX "ticket_tenant_id";
 -- reverse: create "tickets" table
@@ -242,58 +250,14 @@ DROP TABLE "teams";
 DROP INDEX "task_tenant_id";
 -- reverse: create "tasks" table
 DROP TABLE "tasks";
--- reverse: create index "systemrelationshipfeedbacksignal_relationship_id_signal_id" to table: "system_relationship_feedback_signals"
-DROP INDEX "systemrelationshipfeedbacksignal_relationship_id_signal_id";
--- reverse: create index "systemrelationshipfeedbacksignal_tenant_id" to table: "system_relationship_feedback_signals"
-DROP INDEX "systemrelationshipfeedbacksignal_tenant_id";
--- reverse: create "system_relationship_feedback_signals" table
-DROP TABLE "system_relationship_feedback_signals";
--- reverse: create index "systemrelationshipcontrolaction_relationship_id_control_id" to table: "system_relationship_control_actions"
-DROP INDEX "systemrelationshipcontrolaction_relationship_id_control_id";
--- reverse: create index "systemrelationshipcontrolaction_tenant_id" to table: "system_relationship_control_actions"
-DROP INDEX "systemrelationshipcontrolaction_tenant_id";
--- reverse: create "system_relationship_control_actions" table
-DROP TABLE "system_relationship_control_actions";
--- reverse: create index "systemhazard_tenant_id" to table: "system_hazards"
-DROP INDEX "systemhazard_tenant_id";
--- reverse: create "system_hazards" table
-DROP TABLE "system_hazards";
--- reverse: create index "systemcomponentsignal_tenant_id" to table: "system_component_signals"
-DROP INDEX "systemcomponentsignal_tenant_id";
--- reverse: create "system_component_signals" table
-DROP TABLE "system_component_signals";
--- reverse: create index "systemcomponentrelationship_source_id_target_id" to table: "system_component_relationships"
-DROP INDEX "systemcomponentrelationship_source_id_target_id";
--- reverse: create index "systemcomponentrelationship_tenant_id" to table: "system_component_relationships"
-DROP INDEX "systemcomponentrelationship_tenant_id";
--- reverse: create "system_component_relationships" table
-DROP TABLE "system_component_relationships";
--- reverse: create index "systemcomponentkind_tenant_id" to table: "system_component_kinds"
-DROP INDEX "systemcomponentkind_tenant_id";
--- reverse: create "system_component_kinds" table
-DROP TABLE "system_component_kinds";
--- reverse: create index "systemcomponentcontrol_tenant_id" to table: "system_component_controls"
-DROP INDEX "systemcomponentcontrol_tenant_id";
--- reverse: create "system_component_controls" table
-DROP TABLE "system_component_controls";
--- reverse: create index "systemcomponentconstraint_tenant_id" to table: "system_component_constraints"
-DROP INDEX "systemcomponentconstraint_tenant_id";
--- reverse: create "system_component_constraints" table
-DROP TABLE "system_component_constraints";
--- reverse: create index "systemcomponent_tenant_id" to table: "system_components"
-DROP INDEX "systemcomponent_tenant_id";
--- reverse: create "system_components" table
-DROP TABLE "system_components";
--- reverse: create index "systemanalysisrelationship_tenant_id" to table: "system_analysis_relationships"
-DROP INDEX "systemanalysisrelationship_tenant_id";
--- reverse: create "system_analysis_relationships" table
-DROP TABLE "system_analysis_relationships";
--- reverse: create index "systemanalysiscomponent_component_id_analysis_id" to table: "system_analysis_components"
-DROP INDEX "systemanalysiscomponent_component_id_analysis_id";
--- reverse: create index "systemanalysiscomponent_tenant_id" to table: "system_analysis_components"
-DROP INDEX "systemanalysiscomponent_tenant_id";
--- reverse: create "system_analysis_components" table
-DROP TABLE "system_analysis_components";
+-- reverse: create index "systemanalysistopologyedge_tenant_id" to table: "system_analysis_topology_edges"
+DROP INDEX "systemanalysistopologyedge_tenant_id";
+-- reverse: create "system_analysis_topology_edges" table
+DROP TABLE "system_analysis_topology_edges";
+-- reverse: create index "systemanalysisnode_tenant_id" to table: "system_analysis_nodes"
+DROP INDEX "systemanalysisnode_tenant_id";
+-- reverse: create "system_analysis_nodes" table
+DROP TABLE "system_analysis_nodes";
 -- reverse: create index "systemanalysis_tenant_id" to table: "system_analyses"
 DROP INDEX "systemanalysis_tenant_id";
 -- reverse: create "system_analyses" table
@@ -380,8 +344,8 @@ DROP INDEX "oncallhandovertemplate_tenant_id";
 DROP TABLE "oncall_handover_templates";
 -- reverse: create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
 DROP INDEX "normalizedevent_tenant_id_kind_occurred_at";
--- reverse: create index "normalizedevent_tenant_id_prov_638c8c856d6f3c634d0a153c69b60402" to table: "normalized_events"
-DROP INDEX "normalizedevent_tenant_id_prov_638c8c856d6f3c634d0a153c69b60402";
+-- reverse: create index "normalizedevent_tenant_id_prov_c0af9de518dc8d99688159f28d11be68" to table: "normalized_events"
+DROP INDEX "normalizedevent_tenant_id_prov_c0af9de518dc8d99688159f28d11be68";
 -- reverse: create index "normalizedevent_tenant_id" to table: "normalized_events"
 DROP INDEX "normalizedevent_tenant_id";
 -- reverse: create "normalized_events" table
@@ -394,10 +358,16 @@ DROP TABLE "meeting_sessions";
 DROP INDEX "meetingschedule_tenant_id";
 -- reverse: create "meeting_schedules" table
 DROP TABLE "meeting_schedules";
+-- reverse: create index "knowledgerelationship_tenant_id_updated_at" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_id_updated_at";
+-- reverse: create index "knowledgerelationship_tenant_id_target_entity_id" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_id_target_entity_id";
+-- reverse: create index "knowledgerelationship_tenant_id_source_entity_id" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_id_source_entity_id";
 -- reverse: create index "knowledgerelationship_tenant_id_kind" to table: "knowledge_relationships"
 DROP INDEX "knowledgerelationship_tenant_id_kind";
--- reverse: create index "knowledgerelationship_tenant_i_2d0a26e6358523d6b866080ea96f807e" to table: "knowledge_relationships"
-DROP INDEX "knowledgerelationship_tenant_i_2d0a26e6358523d6b866080ea96f807e";
+-- reverse: create index "knowledgerelationship_tenant_i_c2e180b6bf727a089ab234a0504ce8ba" to table: "knowledge_relationships"
+DROP INDEX "knowledgerelationship_tenant_i_c2e180b6bf727a089ab234a0504ce8ba";
 -- reverse: create index "knowledgerelationship_tenant_id" to table: "knowledge_relationships"
 DROP INDEX "knowledgerelationship_tenant_id";
 -- reverse: create "knowledge_relationships" table
@@ -406,8 +376,8 @@ DROP TABLE "knowledge_relationships";
 DROP INDEX "knowledgefactprovenance_relationship_source_unique";
 -- reverse: create index "knowledgefactprovenance_alias_source_unique" to table: "knowledge_fact_provenances"
 DROP INDEX "knowledgefactprovenance_alias_source_unique";
--- reverse: create index "knowledgefactprovenance_tenant_5eaab5ee15855c67f0930fe3485e30cc" to table: "knowledge_fact_provenances"
-DROP INDEX "knowledgefactprovenance_tenant_5eaab5ee15855c67f0930fe3485e30cc";
+-- reverse: create index "knowledgefactprovenance_tenant_eecb6cf88f188a01f21e94797164bf33" to table: "knowledge_fact_provenances"
+DROP INDEX "knowledgefactprovenance_tenant_eecb6cf88f188a01f21e94797164bf33";
 -- reverse: create index "knowledgefactprovenance_tenant_id_relationship_id" to table: "knowledge_fact_provenances"
 DROP INDEX "knowledgefactprovenance_tenant_id_relationship_id";
 -- reverse: create index "knowledgefactprovenance_tenant_id_alias_id" to table: "knowledge_fact_provenances"
@@ -430,12 +400,14 @@ DROP INDEX "knowledgefacthistory_tenant_id";
 DROP TABLE "knowledge_fact_histories";
 -- reverse: create index "knowledgeentityalias_tenant_id_entity_id" to table: "knowledge_entity_alias"
 DROP INDEX "knowledgeentityalias_tenant_id_entity_id";
--- reverse: create index "knowledgeentityalias_tenant_id_6a564074d6ae0ee855485e16d49cce29" to table: "knowledge_entity_alias"
-DROP INDEX "knowledgeentityalias_tenant_id_6a564074d6ae0ee855485e16d49cce29";
+-- reverse: create index "knowledgeentityalias_tenant_id_0cd6124182b4672d8182a7dabfd3c941" to table: "knowledge_entity_alias"
+DROP INDEX "knowledgeentityalias_tenant_id_0cd6124182b4672d8182a7dabfd3c941";
 -- reverse: create index "knowledgeentityalias_tenant_id" to table: "knowledge_entity_alias"
 DROP INDEX "knowledgeentityalias_tenant_id";
 -- reverse: create "knowledge_entity_alias" table
 DROP TABLE "knowledge_entity_alias";
+-- reverse: create index "knowledgeentity_tenant_id_updated_at" to table: "knowledge_entities"
+DROP INDEX "knowledgeentity_tenant_id_updated_at";
 -- reverse: create index "knowledgeentity_tenant_id_kind" to table: "knowledge_entities"
 DROP INDEX "knowledgeentity_tenant_id_kind";
 -- reverse: create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
@@ -446,8 +418,10 @@ DROP TABLE "knowledge_entities";
 DROP INDEX "integrationoauthstate_tenant_id";
 -- reverse: create "integration_oauth_states" table
 DROP TABLE "integration_oauth_states";
--- reverse: create index "integration_tenant_id_name" to table: "integrations"
-DROP INDEX "integration_tenant_id_name";
+-- reverse: create index "integration_tenant_id_provider_external_ref" to table: "integrations"
+DROP INDEX "integration_tenant_id_provider_external_ref";
+-- reverse: create index "integration_tenant_id_provider" to table: "integrations"
+DROP INDEX "integration_tenant_id_provider";
 -- reverse: create index "integration_tenant_id" to table: "integrations"
 DROP INDEX "integration_tenant_id";
 -- reverse: create "integrations" table
@@ -492,14 +466,10 @@ DROP TABLE "incident_field_options";
 DROP INDEX "incidentfield_tenant_id";
 -- reverse: create "incident_fields" table
 DROP TABLE "incident_fields";
--- reverse: create index "incidenteventsystemcomponent_i_68243ec125e2acebf985bc112b82147a" to table: "incident_event_system_components"
-DROP INDEX "incidenteventsystemcomponent_i_68243ec125e2acebf985bc112b82147a";
--- reverse: create index "incidenteventsystemcomponent_tenant_id" to table: "incident_event_system_components"
-DROP INDEX "incidenteventsystemcomponent_tenant_id";
--- reverse: create index "incident_event_system_components_incident_event_id_key" to table: "incident_event_system_components"
-DROP INDEX "incident_event_system_components_incident_event_id_key";
--- reverse: create "incident_event_system_components" table
-DROP TABLE "incident_event_system_components";
+-- reverse: create index "incidenteventtopologycontext_tenant_id" to table: "incident_event_topology_contexts"
+DROP INDEX "incidenteventtopologycontext_tenant_id";
+-- reverse: create "incident_event_topology_contexts" table
+DROP TABLE "incident_event_topology_contexts";
 -- reverse: create index "incidenteventevidence_tenant_id" to table: "incident_event_evidences"
 DROP INDEX "incidenteventevidence_tenant_id";
 -- reverse: create "incident_event_evidences" table

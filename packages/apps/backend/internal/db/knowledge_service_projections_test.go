@@ -8,7 +8,6 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	"github.com/rezible/rezible/ent"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	knfh "github.com/rezible/rezible/ent/knowledgefacthistory"
 	knfp "github.com/rezible/rezible/ent/knowledgefactprovenance"
@@ -84,7 +83,7 @@ func (s *KnowledgeServiceEventProjectionSuite) TestRepositoryObservedCreatesAlia
 
 	entity, entityErr := dbc.KnowledgeEntity.Get(ctx, alias.EntityID)
 	s.Require().NoError(entityErr)
-	s.Equal(kne.KindRepository, entity.Kind)
+	s.Equal("repository", entity.Kind)
 	s.Equal(repoRef, entity.DisplayName)
 
 	queryFactProvenance := dbc.KnowledgeFactProvenance.Query().
@@ -140,7 +139,7 @@ func (s *KnowledgeServiceEventProjectionSuite) TestCodeChangeEventLinksToReposit
 
 	changeEntity, changeEntityErr := dbc.KnowledgeEntity.Get(ctx, changeAlias.EntityID)
 	s.Require().NoError(changeEntityErr)
-	s.Equal(kne.KindChangeEvent, changeEntity.Kind)
+	s.Equal("change_event", changeEntity.Kind)
 
 	queryRepoAlias := dbc.KnowledgeEntityAlias.Query().
 		Where(knea.SubjectKind("repository"), knea.SubjectRef(attrs.RepositoryExternalRef))
@@ -149,7 +148,7 @@ func (s *KnowledgeServiceEventProjectionSuite) TestCodeChangeEventLinksToReposit
 
 	repoEntity, repoEntityErr := dbc.KnowledgeEntity.Get(ctx, repoAlias.EntityID)
 	s.Require().NoError(repoEntityErr)
-	s.Equal(kne.KindRepository, repoEntity.Kind)
+	s.Equal("repository", repoEntity.Kind)
 
 	queryEntityAliases := dbc.KnowledgeEntityAlias.Query().
 		Where(knea.IDIn(changeAlias.ID, repoAlias.ID))
@@ -160,9 +159,9 @@ func (s *KnowledgeServiceEventProjectionSuite) TestCodeChangeEventLinksToReposit
 	queryRelationships := dbc.KnowledgeRelationship.Query().
 		Where(knr.Kind("changes_repository")).
 		Where(knr.SourceEntityID(changeEntity.ID), knr.TargetEntityID(repoEntity.ID))
-	relCount, relCountErr := queryRelationships.Count(ctx)
-	s.Require().NoError(relCountErr)
-	s.Equal(1, relCount, "expected only one relationship to be created")
+	relationship, relationshipErr := queryRelationships.Only(ctx)
+	s.Require().NoError(relationshipErr)
+	s.Equal(attrs.RepositoryExternalRef, relationship.Properties["repository_external_ref"])
 
 	queryProvs := dbc.KnowledgeFactProvenance.Query().
 		Where(knfp.ProviderEventRef(ev.ProviderEventRef))
@@ -246,7 +245,7 @@ func (s *KnowledgeServiceEventProjectionSuite) TestCodeChangeEventDoesNotOverwri
 
 	repoEntity, repoEntityErr := dbc.KnowledgeEntity.Get(ctx, repoAlias.EntityID)
 	s.Require().NoError(repoEntityErr)
-	s.Equal(kne.KindRepository, repoEntity.Kind)
+	s.Equal("repository", repoEntity.Kind)
 	s.Equal(repoDisplayName, repoEntity.DisplayName)
 	s.Equal(repoURL, repoEntity.Properties["url"])
 	s.Equal(repoRef, repoEntity.Properties["external_ref"])

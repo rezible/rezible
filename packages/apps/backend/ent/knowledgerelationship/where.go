@@ -462,6 +462,16 @@ func DescriptionContainsFold(v string) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldContainsFold(FieldDescription, v))
 }
 
+// PropertiesIsNil applies the IsNil predicate on the "properties" field.
+func PropertiesIsNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldIsNull(FieldProperties))
+}
+
+// PropertiesNotNil applies the NotNil predicate on the "properties" field.
+func PropertiesNotNil() predicate.KnowledgeRelationship {
+	return predicate.KnowledgeRelationship(sql.FieldNotNull(FieldProperties))
+}
+
 // FirstSeenAtEQ applies the EQ predicate on the "first_seen_at" field.
 func FirstSeenAtEQ(v time.Time) predicate.KnowledgeRelationship {
 	return predicate.KnowledgeRelationship(sql.FieldEQ(FieldFirstSeenAt, v))

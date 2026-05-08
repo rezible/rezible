@@ -9,102 +9,45 @@ import {
 	type Connection,
 } from "@xyflow/svelte";
 
-import { type SystemAnalysis, type SystemAnalysisComponent, type SystemAnalysisRelationship, type SystemComponent } from "$lib/api";
+import {
+	type SystemAnalysis,
+	type SystemAnalysisNode,
+	type SystemAnalysisEdge,
+	type SystemTopologyEntity,
+} from "$lib/api";
 
 import { useIncidentAnalysis } from "../controller.svelte";
 
-/*
-const convertRelationshipToEdge = ({id, attributes}: SystemComponentRelationship): Edge => {
-	const {kind, details} = attributes;
-	let source = "", target = "", label = "";
-	if (kind === "control") {
-		source = details.controllerId;
-		target = details.controlledId;
-		label = details.control;
-	} else if (kind === "feedback") {
-		source = details.sourceId;
-		target = details.targetId;
-		label = details.feedback;
-	}
-	return {
-		type: attributes.kind,
-		id,
-		source,
-		target,
-		label,
-		markerEnd: {
-			type: MarkerType.ArrowClosed
-		}
-	};
-};
-
-const translateIncidentComponents = (incidentComponents: IncidentSystemComponent[]) => {
-	const positions = new Map<string, XYPosition>();
-
-	let nodes: Node[] = [];
-	let edges: Edge[] = [];
-
-	let nextPos = {x: 0, y: 0};
-	const relationships = new Map<string, SystemComponentRelationship>();
-	incidentComponents.forEach(ic => {
-		const component = ic.attributes.component;
-		const id = component.id;
-
-		let position = positions.get(id);
-		if (!position) {
-			position = {x: nextPos.x, y: nextPos.y};
-			nextPos = {x: nextPos.x + 100, y: nextPos.y + 100};
-		}
-
-		nodes.push({
-			id: id,
-			type: component.attributes.kind,
-			data: {
-				label: component.attributes.name,
-				role: ic.attributes.role,
-			},
-			position,
-		});
-
-		component.attributes.relationships.forEach(r => relationships.set(r.id, r));
-	});
-
-	relationships.forEach(rel => edges.push(convertRelationshipToEdge(rel)));
-
-	return {nodes, edges};
-}
-*/
-
-export type SystemComponentNodeData = {
-	analysisComponent: SystemAnalysisComponent;
+export type SystemTopologyNodeData = {
+	analysisNode: SystemAnalysisNode;
 };
 
 export type SystemRelationshipEdgeData = {
-	relationship: SystemAnalysisRelationship;
+	edge: SystemAnalysisEdge;
 };
 
 const translateSystemAnalysis = (an: SystemAnalysis) => {
 	let nodes: Node[] = [];
-	an.attributes.components.forEach(analysisComponent => {
-		const { position, component } = analysisComponent.attributes;
+	an.attributes.nodes.forEach(analysisNode => {
+		const { position, snapshotEntity } = analysisNode.attributes;
 		nodes.push({
-			id: component.id,
+			id: snapshotEntity.id,
 			type: "component",
 			position,
-			data: { analysisComponent } as SystemComponentNodeData,
+			data: { analysisNode } as SystemTopologyNodeData,
 		});
 	});
 
 	let edges: Edge[] = [];
-	an.attributes.relationships.forEach(sr => {
+	an.attributes.edges.forEach(sr => {
 		const { id, attributes } = sr;
-		const relattr = attributes.relationship.attributes;
+		const relattr = attributes.snapshotRelationship.attributes;
 		edges.push({
 			id,
 			type: "relationship",
-			source: relattr.sourceId,
-			target: relattr.targetId,
-			data: { relationship: sr } as SystemRelationshipEdgeData,
+			source: relattr.sourceSnapshotEntityId,
+			target: relattr.targetSnapshotEntityId,
+			data: { edge: sr } as SystemRelationshipEdgeData,
 		});
 	});
 
@@ -120,7 +63,7 @@ export class SystemDiagramState {
 	selectedLivePosition = $state<XYPosition>();
 
 	containerEl = $state.raw<HTMLElement>(null!);
-	addingComponentGhost = $state.raw<SystemComponent>();
+	addingEntityGhost = $state.raw<SystemTopologyEntity>();
 
 	constructor(containerElFn: () => HTMLElement) {
 		watch(containerElFn, ref => { this.containerEl = ref });
@@ -184,22 +127,22 @@ export class SystemDiagramState {
 
 	handleNodeDragStop(e: { targetNode?: Node | null }) {
 		if (!e.targetNode) return;
-		const { analysisComponent } = e.targetNode.data as SystemComponentNodeData;
-		if (!analysisComponent) return;
+		const { analysisNode } = e.targetNode.data as SystemTopologyNodeData;
+		if (!analysisNode) return;
 
-		this.analysis.updateComponent(analysisComponent.id, {
+		this.analysis.updateNode(analysisNode.id, {
 			position: e.targetNode.position,
-		});		
+		});
 	};
 
-	setAddingComponentGhost(c?: SystemComponent) {
-		this.addingComponentGhost = c;
+	setAddingEntityGhost(c?: SystemTopologyEntity) {
+		this.addingEntityGhost = c;
 	};
 
 	handlePaneClicked({ event }: { event: MouseEvent }) {
 		this.setSelected({});
 
-		if (this.addingComponentGhost) {
+		if (this.addingEntityGhost) {
 			event.preventDefault();
 
 			if (!this.containerEl || !("pageX" in event)) return;
@@ -207,10 +150,10 @@ export class SystemDiagramState {
 			const { x, y } = this.containerEl.getBoundingClientRect();
 
 			const position = { x: event.pageX - x, y: event.pageY - y };
-			const componentId = $state.snapshot(this.addingComponentGhost.id);
-			this.analysis.addComponent({componentId, position});
+			const knowledgeEntityId = $state.snapshot(this.addingEntityGhost.id);
+			this.analysis.addNode({knowledgeEntityId, position, description: ""});
 			// TODO: check if success? show pending state?
-			this.setAddingComponentGhost();
+			this.setAddingEntityGhost();
 		}
 	};
 

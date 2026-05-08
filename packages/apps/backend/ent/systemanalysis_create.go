@@ -15,9 +15,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysiscomponent"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
+	"github.com/rezible/rezible/ent/systemanalysistopologynode"
+	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -32,6 +32,20 @@ type SystemAnalysisCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (_c *SystemAnalysisCreate) SetTenantID(v int) *SystemAnalysisCreate {
 	_c.mutation.SetTenantID(v)
+	return _c
+}
+
+// SetTopologySnapshotID sets the "topology_snapshot_id" field.
+func (_c *SystemAnalysisCreate) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.SetTopologySnapshotID(v)
+	return _c
+}
+
+// SetNillableTopologySnapshotID sets the "topology_snapshot_id" field if the given value is not nil.
+func (_c *SystemAnalysisCreate) SetNillableTopologySnapshotID(v *uuid.UUID) *SystemAnalysisCreate {
+	if v != nil {
+		_c.SetTopologySnapshotID(*v)
+	}
 	return _c
 }
 
@@ -93,49 +107,39 @@ func (_c *SystemAnalysisCreate) SetRetrospective(v *Retrospective) *SystemAnalys
 	return _c.SetRetrospectiveID(v.ID)
 }
 
-// AddComponentIDs adds the "components" edge to the SystemComponent entity by IDs.
-func (_c *SystemAnalysisCreate) AddComponentIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
-	_c.mutation.AddComponentIDs(ids...)
+// SetTopologySnapshot sets the "topology_snapshot" edge to the SystemTopologySnapshot entity.
+func (_c *SystemAnalysisCreate) SetTopologySnapshot(v *SystemTopologySnapshot) *SystemAnalysisCreate {
+	return _c.SetTopologySnapshotID(v.ID)
+}
+
+// AddAnalysisNodeIDs adds the "analysis_nodes" edge to the SystemAnalysisTopologyNode entity by IDs.
+func (_c *SystemAnalysisCreate) AddAnalysisNodeIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.AddAnalysisNodeIDs(ids...)
 	return _c
 }
 
-// AddComponents adds the "components" edges to the SystemComponent entity.
-func (_c *SystemAnalysisCreate) AddComponents(v ...*SystemComponent) *SystemAnalysisCreate {
+// AddAnalysisNodes adds the "analysis_nodes" edges to the SystemAnalysisTopologyNode entity.
+func (_c *SystemAnalysisCreate) AddAnalysisNodes(v ...*SystemAnalysisTopologyNode) *SystemAnalysisCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddComponentIDs(ids...)
+	return _c.AddAnalysisNodeIDs(ids...)
 }
 
-// AddRelationshipIDs adds the "relationships" edge to the SystemAnalysisRelationship entity by IDs.
-func (_c *SystemAnalysisCreate) AddRelationshipIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
-	_c.mutation.AddRelationshipIDs(ids...)
+// AddAnalysisEdgeIDs adds the "analysis_edges" edge to the SystemAnalysisTopologyEdge entity by IDs.
+func (_c *SystemAnalysisCreate) AddAnalysisEdgeIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
+	_c.mutation.AddAnalysisEdgeIDs(ids...)
 	return _c
 }
 
-// AddRelationships adds the "relationships" edges to the SystemAnalysisRelationship entity.
-func (_c *SystemAnalysisCreate) AddRelationships(v ...*SystemAnalysisRelationship) *SystemAnalysisCreate {
+// AddAnalysisEdges adds the "analysis_edges" edges to the SystemAnalysisTopologyEdge entity.
+func (_c *SystemAnalysisCreate) AddAnalysisEdges(v ...*SystemAnalysisTopologyEdge) *SystemAnalysisCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddRelationshipIDs(ids...)
-}
-
-// AddAnalysisComponentIDs adds the "analysis_components" edge to the SystemAnalysisComponent entity by IDs.
-func (_c *SystemAnalysisCreate) AddAnalysisComponentIDs(ids ...uuid.UUID) *SystemAnalysisCreate {
-	_c.mutation.AddAnalysisComponentIDs(ids...)
-	return _c
-}
-
-// AddAnalysisComponents adds the "analysis_components" edges to the SystemAnalysisComponent entity.
-func (_c *SystemAnalysisCreate) AddAnalysisComponents(v ...*SystemAnalysisComponent) *SystemAnalysisCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAnalysisComponentIDs(ids...)
+	return _c.AddAnalysisEdgeIDs(ids...)
 }
 
 // Mutation returns the SystemAnalysisMutation object of the builder.
@@ -296,59 +300,53 @@ func (_c *SystemAnalysisCreate) createSpec() (*SystemAnalysis, *sqlgraph.CreateS
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ComponentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TopologySnapshotIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: true,
-			Table:   systemanalysis.ComponentsTable,
-			Columns: systemanalysis.ComponentsPrimaryKey,
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemanalysis.TopologySnapshotTable,
+			Columns: []string{systemanalysis.TopologySnapshotColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
+		edge.Schema = _c.schemaConfig.SystemAnalysis
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		createE := &SystemAnalysisComponentCreate{config: _c.config, mutation: newSystemAnalysisComponentMutation(_c.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
+		_node.TopologySnapshotID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.RelationshipsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AnalysisNodesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.RelationshipsTable,
-			Columns: []string{systemanalysis.RelationshipsColumn},
+			Table:   systemanalysis.AnalysisNodesTable,
+			Columns: []string{systemanalysis.AnalysisNodesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysisrelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologynode.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SystemAnalysisRelationship
+		edge.Schema = _c.schemaConfig.SystemAnalysisTopologyNode
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AnalysisComponentsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AnalysisEdgesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   systemanalysis.AnalysisComponentsTable,
-			Columns: []string{systemanalysis.AnalysisComponentsColumn},
+			Table:   systemanalysis.AnalysisEdgesTable,
+			Columns: []string{systemanalysis.AnalysisEdgesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemanalysiscomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(systemanalysistopologyedge.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.SystemAnalysisComponent
+		edge.Schema = _c.schemaConfig.SystemAnalysisTopologyEdge
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -405,6 +403,24 @@ type (
 		*sql.UpdateSet
 	}
 )
+
+// SetTopologySnapshotID sets the "topology_snapshot_id" field.
+func (u *SystemAnalysisUpsert) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpsert {
+	u.Set(systemanalysis.FieldTopologySnapshotID, v)
+	return u
+}
+
+// UpdateTopologySnapshotID sets the "topology_snapshot_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsert) UpdateTopologySnapshotID() *SystemAnalysisUpsert {
+	u.SetExcluded(systemanalysis.FieldTopologySnapshotID)
+	return u
+}
+
+// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
+func (u *SystemAnalysisUpsert) ClearTopologySnapshotID() *SystemAnalysisUpsert {
+	u.SetNull(systemanalysis.FieldTopologySnapshotID)
+	return u
+}
 
 // SetCreatedAt sets the "created_at" field.
 func (u *SystemAnalysisUpsert) SetCreatedAt(v time.Time) *SystemAnalysisUpsert {
@@ -479,6 +495,27 @@ func (u *SystemAnalysisUpsertOne) Update(set func(*SystemAnalysisUpsert)) *Syste
 		set(&SystemAnalysisUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetTopologySnapshotID sets the "topology_snapshot_id" field.
+func (u *SystemAnalysisUpsertOne) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.SetTopologySnapshotID(v)
+	})
+}
+
+// UpdateTopologySnapshotID sets the "topology_snapshot_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertOne) UpdateTopologySnapshotID() *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.UpdateTopologySnapshotID()
+	})
+}
+
+// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
+func (u *SystemAnalysisUpsertOne) ClearTopologySnapshotID() *SystemAnalysisUpsertOne {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.ClearTopologySnapshotID()
+	})
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -725,6 +762,27 @@ func (u *SystemAnalysisUpsertBulk) Update(set func(*SystemAnalysisUpsert)) *Syst
 		set(&SystemAnalysisUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetTopologySnapshotID sets the "topology_snapshot_id" field.
+func (u *SystemAnalysisUpsertBulk) SetTopologySnapshotID(v uuid.UUID) *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.SetTopologySnapshotID(v)
+	})
+}
+
+// UpdateTopologySnapshotID sets the "topology_snapshot_id" field to the value that was provided on create.
+func (u *SystemAnalysisUpsertBulk) UpdateTopologySnapshotID() *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.UpdateTopologySnapshotID()
+	})
+}
+
+// ClearTopologySnapshotID clears the value of the "topology_snapshot_id" field.
+func (u *SystemAnalysisUpsertBulk) ClearTopologySnapshotID() *SystemAnalysisUpsertBulk {
+	return u.Update(func(s *SystemAnalysisUpsert) {
+		s.ClearTopologySnapshotID()
+	})
 }
 
 // SetCreatedAt sets the "created_at" field.

@@ -26,13 +26,7 @@ func (KnowledgeEntity) Mixin() []ent.Mixin {
 func (KnowledgeEntity) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.Enum("kind").Values(
-			"component",
-			"service",
-			"repository",
-			"incident",
-			"change_event",
-		),
+		field.String("kind").NotEmpty(),
 		field.String("display_name").NotEmpty(),
 		field.Text("description").Optional(),
 		field.JSON("properties", map[string]any{}).
@@ -55,6 +49,7 @@ func (KnowledgeEntity) Edges() []ent.Edge {
 func (KnowledgeEntity) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "kind"),
+		index.Fields("tenant_id", "updated_at"),
 	}
 }
 
@@ -136,6 +131,9 @@ func (KnowledgeRelationship) Fields() []ent.Field {
 		field.String("kind").NotEmpty(),
 		field.String("display_name").Optional(),
 		field.Text("description").Optional(),
+		field.JSON("properties", map[string]any{}).
+			Optional().
+			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 		field.Time("first_seen_at").Default(time.Now),
 		field.Time("last_seen_at").Default(time.Now),
 	}
@@ -163,5 +161,8 @@ func (KnowledgeRelationship) Indexes() []ent.Index {
 			Edges("source_entity", "target_entity").
 			Unique(),
 		index.Fields("tenant_id", "kind"),
+		index.Fields("tenant_id", "source_entity_id"),
+		index.Fields("tenant_id", "target_entity_id"),
+		index.Fields("tenant_id", "updated_at"),
 	}
 }

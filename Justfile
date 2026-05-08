@@ -14,3 +14,7 @@ mod packages 'packages'
     just --list backend --unsorted --list-heading $'Frontend\n'
     just --list backend --unsorted --list-heading $'Documents Server\n'
     just --list packages --unsorted --list-heading $'Packages\n'
+
+@codegen:
+    just backend::codegen
+    just packages::generate-api-client

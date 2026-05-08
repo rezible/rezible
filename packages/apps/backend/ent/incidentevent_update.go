@@ -18,10 +18,9 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
-	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
+	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemcomponent"
 )
 
 // IncidentEventUpdate is the builder for updating IncidentEvent entities.
@@ -248,34 +247,19 @@ func (_u *IncidentEventUpdate) AddEvidence(v ...*IncidentEventEvidence) *Inciden
 	return _u.AddEvidenceIDs(ids...)
 }
 
-// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
-func (_u *IncidentEventUpdate) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	_u.mutation.AddSystemComponentIDs(ids...)
+// AddTopologyContextIDs adds the "topology_context" edge to the IncidentEventTopologyContext entity by IDs.
+func (_u *IncidentEventUpdate) AddTopologyContextIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.AddTopologyContextIDs(ids...)
 	return _u
 }
 
-// AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
-func (_u *IncidentEventUpdate) AddSystemComponents(v ...*SystemComponent) *IncidentEventUpdate {
+// AddTopologyContext adds the "topology_context" edges to the IncidentEventTopologyContext entity.
+func (_u *IncidentEventUpdate) AddTopologyContext(v ...*IncidentEventTopologyContext) *IncidentEventUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddSystemComponentIDs(ids...)
-}
-
-// AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
-func (_u *IncidentEventUpdate) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	_u.mutation.AddEventComponentIDs(ids...)
-	return _u
-}
-
-// AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
-func (_u *IncidentEventUpdate) AddEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddEventComponentIDs(ids...)
+	return _u.AddTopologyContextIDs(ids...)
 }
 
 // Mutation returns the IncidentEventMutation object of the builder.
@@ -343,46 +327,25 @@ func (_u *IncidentEventUpdate) RemoveEvidence(v ...*IncidentEventEvidence) *Inci
 	return _u.RemoveEvidenceIDs(ids...)
 }
 
-// ClearSystemComponents clears all "system_components" edges to the SystemComponent entity.
-func (_u *IncidentEventUpdate) ClearSystemComponents() *IncidentEventUpdate {
-	_u.mutation.ClearSystemComponents()
+// ClearTopologyContext clears all "topology_context" edges to the IncidentEventTopologyContext entity.
+func (_u *IncidentEventUpdate) ClearTopologyContext() *IncidentEventUpdate {
+	_u.mutation.ClearTopologyContext()
 	return _u
 }
 
-// RemoveSystemComponentIDs removes the "system_components" edge to SystemComponent entities by IDs.
-func (_u *IncidentEventUpdate) RemoveSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	_u.mutation.RemoveSystemComponentIDs(ids...)
+// RemoveTopologyContextIDs removes the "topology_context" edge to IncidentEventTopologyContext entities by IDs.
+func (_u *IncidentEventUpdate) RemoveTopologyContextIDs(ids ...uuid.UUID) *IncidentEventUpdate {
+	_u.mutation.RemoveTopologyContextIDs(ids...)
 	return _u
 }
 
-// RemoveSystemComponents removes "system_components" edges to SystemComponent entities.
-func (_u *IncidentEventUpdate) RemoveSystemComponents(v ...*SystemComponent) *IncidentEventUpdate {
+// RemoveTopologyContext removes "topology_context" edges to IncidentEventTopologyContext entities.
+func (_u *IncidentEventUpdate) RemoveTopologyContext(v ...*IncidentEventTopologyContext) *IncidentEventUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveSystemComponentIDs(ids...)
-}
-
-// ClearEventComponents clears all "event_components" edges to the IncidentEventSystemComponent entity.
-func (_u *IncidentEventUpdate) ClearEventComponents() *IncidentEventUpdate {
-	_u.mutation.ClearEventComponents()
-	return _u
-}
-
-// RemoveEventComponentIDs removes the "event_components" edge to IncidentEventSystemComponent entities by IDs.
-func (_u *IncidentEventUpdate) RemoveEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdate {
-	_u.mutation.RemoveEventComponentIDs(ids...)
-	return _u
-}
-
-// RemoveEventComponents removes "event_components" edges to IncidentEventSystemComponent entities.
-func (_u *IncidentEventUpdate) RemoveEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveEventComponentIDs(ids...)
+	return _u.RemoveTopologyContextIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -685,118 +648,49 @@ func (_u *IncidentEventUpdate) sqlSave(ctx context.Context) (_node int, err erro
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SystemComponentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentevent.SystemComponentsTable,
-			Columns: incidentevent.SystemComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
-		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedSystemComponentsIDs(); len(nodes) > 0 && !_u.mutation.SystemComponentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentevent.SystemComponentsTable,
-			Columns: incidentevent.SystemComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SystemComponentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentevent.SystemComponentsTable,
-			Columns: incidentevent.SystemComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.EventComponentsCleared() {
+	if _u.mutation.TopologyContextCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   incidentevent.EventComponentsTable,
-			Columns: []string{incidentevent.EventComponentsColumn},
+			Table:   incidentevent.TopologyContextTable,
+			Columns: []string{incidentevent.TopologyContextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventtopologycontext.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
+		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedEventComponentsIDs(); len(nodes) > 0 && !_u.mutation.EventComponentsCleared() {
+	if nodes := _u.mutation.RemovedTopologyContextIDs(); len(nodes) > 0 && !_u.mutation.TopologyContextCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   incidentevent.EventComponentsTable,
-			Columns: []string{incidentevent.EventComponentsColumn},
+			Table:   incidentevent.TopologyContextTable,
+			Columns: []string{incidentevent.TopologyContextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventtopologycontext.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
+		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.EventComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TopologyContextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   incidentevent.EventComponentsTable,
-			Columns: []string{incidentevent.EventComponentsColumn},
+			Table:   incidentevent.TopologyContextTable,
+			Columns: []string{incidentevent.TopologyContextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventtopologycontext.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
+		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1036,34 +930,19 @@ func (_u *IncidentEventUpdateOne) AddEvidence(v ...*IncidentEventEvidence) *Inci
 	return _u.AddEvidenceIDs(ids...)
 }
 
-// AddSystemComponentIDs adds the "system_components" edge to the SystemComponent entity by IDs.
-func (_u *IncidentEventUpdateOne) AddSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	_u.mutation.AddSystemComponentIDs(ids...)
+// AddTopologyContextIDs adds the "topology_context" edge to the IncidentEventTopologyContext entity by IDs.
+func (_u *IncidentEventUpdateOne) AddTopologyContextIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.AddTopologyContextIDs(ids...)
 	return _u
 }
 
-// AddSystemComponents adds the "system_components" edges to the SystemComponent entity.
-func (_u *IncidentEventUpdateOne) AddSystemComponents(v ...*SystemComponent) *IncidentEventUpdateOne {
+// AddTopologyContext adds the "topology_context" edges to the IncidentEventTopologyContext entity.
+func (_u *IncidentEventUpdateOne) AddTopologyContext(v ...*IncidentEventTopologyContext) *IncidentEventUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddSystemComponentIDs(ids...)
-}
-
-// AddEventComponentIDs adds the "event_components" edge to the IncidentEventSystemComponent entity by IDs.
-func (_u *IncidentEventUpdateOne) AddEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	_u.mutation.AddEventComponentIDs(ids...)
-	return _u
-}
-
-// AddEventComponents adds the "event_components" edges to the IncidentEventSystemComponent entity.
-func (_u *IncidentEventUpdateOne) AddEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddEventComponentIDs(ids...)
+	return _u.AddTopologyContextIDs(ids...)
 }
 
 // Mutation returns the IncidentEventMutation object of the builder.
@@ -1131,46 +1010,25 @@ func (_u *IncidentEventUpdateOne) RemoveEvidence(v ...*IncidentEventEvidence) *I
 	return _u.RemoveEvidenceIDs(ids...)
 }
 
-// ClearSystemComponents clears all "system_components" edges to the SystemComponent entity.
-func (_u *IncidentEventUpdateOne) ClearSystemComponents() *IncidentEventUpdateOne {
-	_u.mutation.ClearSystemComponents()
+// ClearTopologyContext clears all "topology_context" edges to the IncidentEventTopologyContext entity.
+func (_u *IncidentEventUpdateOne) ClearTopologyContext() *IncidentEventUpdateOne {
+	_u.mutation.ClearTopologyContext()
 	return _u
 }
 
-// RemoveSystemComponentIDs removes the "system_components" edge to SystemComponent entities by IDs.
-func (_u *IncidentEventUpdateOne) RemoveSystemComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	_u.mutation.RemoveSystemComponentIDs(ids...)
+// RemoveTopologyContextIDs removes the "topology_context" edge to IncidentEventTopologyContext entities by IDs.
+func (_u *IncidentEventUpdateOne) RemoveTopologyContextIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
+	_u.mutation.RemoveTopologyContextIDs(ids...)
 	return _u
 }
 
-// RemoveSystemComponents removes "system_components" edges to SystemComponent entities.
-func (_u *IncidentEventUpdateOne) RemoveSystemComponents(v ...*SystemComponent) *IncidentEventUpdateOne {
+// RemoveTopologyContext removes "topology_context" edges to IncidentEventTopologyContext entities.
+func (_u *IncidentEventUpdateOne) RemoveTopologyContext(v ...*IncidentEventTopologyContext) *IncidentEventUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveSystemComponentIDs(ids...)
-}
-
-// ClearEventComponents clears all "event_components" edges to the IncidentEventSystemComponent entity.
-func (_u *IncidentEventUpdateOne) ClearEventComponents() *IncidentEventUpdateOne {
-	_u.mutation.ClearEventComponents()
-	return _u
-}
-
-// RemoveEventComponentIDs removes the "event_components" edge to IncidentEventSystemComponent entities by IDs.
-func (_u *IncidentEventUpdateOne) RemoveEventComponentIDs(ids ...uuid.UUID) *IncidentEventUpdateOne {
-	_u.mutation.RemoveEventComponentIDs(ids...)
-	return _u
-}
-
-// RemoveEventComponents removes "event_components" edges to IncidentEventSystemComponent entities.
-func (_u *IncidentEventUpdateOne) RemoveEventComponents(v ...*IncidentEventSystemComponent) *IncidentEventUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveEventComponentIDs(ids...)
+	return _u.RemoveTopologyContextIDs(ids...)
 }
 
 // Where appends a list predicates to the IncidentEventUpdate builder.
@@ -1503,118 +1361,49 @@ func (_u *IncidentEventUpdateOne) sqlSave(ctx context.Context) (_node *IncidentE
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.SystemComponentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentevent.SystemComponentsTable,
-			Columns: incidentevent.SystemComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
-		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedSystemComponentsIDs(); len(nodes) > 0 && !_u.mutation.SystemComponentsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentevent.SystemComponentsTable,
-			Columns: incidentevent.SystemComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.SystemComponentsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2M,
-			Inverse: false,
-			Table:   incidentevent.SystemComponentsTable,
-			Columns: incidentevent.SystemComponentsPrimaryKey,
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(systemcomponent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		createE := &IncidentEventSystemComponentCreate{config: _u.config, mutation: newIncidentEventSystemComponentMutation(_u.config, OpCreate)}
-		_ = createE.defaults()
-		_, specE := createE.createSpec()
-		edge.Target.Fields = specE.Fields
-		if specE.ID.Value != nil {
-			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.EventComponentsCleared() {
+	if _u.mutation.TopologyContextCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   incidentevent.EventComponentsTable,
-			Columns: []string{incidentevent.EventComponentsColumn},
+			Table:   incidentevent.TopologyContextTable,
+			Columns: []string{incidentevent.TopologyContextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventtopologycontext.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
+		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedEventComponentsIDs(); len(nodes) > 0 && !_u.mutation.EventComponentsCleared() {
+	if nodes := _u.mutation.RemovedTopologyContextIDs(); len(nodes) > 0 && !_u.mutation.TopologyContextCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   incidentevent.EventComponentsTable,
-			Columns: []string{incidentevent.EventComponentsColumn},
+			Table:   incidentevent.TopologyContextTable,
+			Columns: []string{incidentevent.TopologyContextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventtopologycontext.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
+		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.EventComponentsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TopologyContextIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   incidentevent.EventComponentsTable,
-			Columns: []string{incidentevent.EventComponentsColumn},
+			Table:   incidentevent.TopologyContextTable,
+			Columns: []string{incidentevent.TopologyContextColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidenteventsystemcomponent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenteventtopologycontext.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEventSystemComponent
+		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

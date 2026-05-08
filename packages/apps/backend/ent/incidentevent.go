@@ -64,13 +64,11 @@ type IncidentEventEdges struct {
 	Factors []*IncidentEventContributingFactor `json:"factors,omitempty"`
 	// Evidence holds the value of the evidence edge.
 	Evidence []*IncidentEventEvidence `json:"evidence,omitempty"`
-	// SystemComponents holds the value of the system_components edge.
-	SystemComponents []*SystemComponent `json:"system_components,omitempty"`
-	// EventComponents holds the value of the event_components edge.
-	EventComponents []*IncidentEventSystemComponent `json:"event_components,omitempty"`
+	// TopologyContext holds the value of the topology_context edge.
+	TopologyContext []*IncidentEventTopologyContext `json:"topology_context,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [7]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -135,22 +133,13 @@ func (e IncidentEventEdges) EvidenceOrErr() ([]*IncidentEventEvidence, error) {
 	return nil, &NotLoadedError{edge: "evidence"}
 }
 
-// SystemComponentsOrErr returns the SystemComponents value or an error if the edge
+// TopologyContextOrErr returns the TopologyContext value or an error if the edge
 // was not loaded in eager-loading.
-func (e IncidentEventEdges) SystemComponentsOrErr() ([]*SystemComponent, error) {
+func (e IncidentEventEdges) TopologyContextOrErr() ([]*IncidentEventTopologyContext, error) {
 	if e.loadedTypes[6] {
-		return e.SystemComponents, nil
+		return e.TopologyContext, nil
 	}
-	return nil, &NotLoadedError{edge: "system_components"}
-}
-
-// EventComponentsOrErr returns the EventComponents value or an error if the edge
-// was not loaded in eager-loading.
-func (e IncidentEventEdges) EventComponentsOrErr() ([]*IncidentEventSystemComponent, error) {
-	if e.loadedTypes[7] {
-		return e.EventComponents, nil
-	}
-	return nil, &NotLoadedError{edge: "event_components"}
+	return nil, &NotLoadedError{edge: "topology_context"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -298,14 +287,9 @@ func (_m *IncidentEvent) QueryEvidence() *IncidentEventEvidenceQuery {
 	return NewIncidentEventClient(_m.config).QueryEvidence(_m)
 }
 
-// QuerySystemComponents queries the "system_components" edge of the IncidentEvent entity.
-func (_m *IncidentEvent) QuerySystemComponents() *SystemComponentQuery {
-	return NewIncidentEventClient(_m.config).QuerySystemComponents(_m)
-}
-
-// QueryEventComponents queries the "event_components" edge of the IncidentEvent entity.
-func (_m *IncidentEvent) QueryEventComponents() *IncidentEventSystemComponentQuery {
-	return NewIncidentEventClient(_m.config).QueryEventComponents(_m)
+// QueryTopologyContext queries the "topology_context" edge of the IncidentEvent entity.
+func (_m *IncidentEvent) QueryTopologyContext() *IncidentEventTopologyContextQuery {
+	return NewIncidentEventClient(_m.config).QueryTopologyContext(_m)
 }
 
 // Update returns a builder for updating this IncidentEvent.

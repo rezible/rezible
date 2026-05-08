@@ -24,7 +24,8 @@ func (h *incidentEventsHandler) ListIncidentEvents(ctx context.Context, request 
 	var resp oapi.ListIncidentEventsResponse
 
 	query := h.db.IncidentEvent.Query().
-		Where(incidentevent.IncidentID(request.Id))
+		Where(incidentevent.IncidentID(request.Id)).
+		WithTopologyContext()
 	events, eventsErr := query.All(ctx)
 	if eventsErr != nil {
 		return nil, oapi.Error(ctx, "failed to list incident events", eventsErr)

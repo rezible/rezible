@@ -3,7 +3,6 @@
 package knowledgeentity
 
 import (
-	"fmt"
 	"time"
 
 	"entgo.io/ent"
@@ -107,37 +106,13 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	KindValidator func(string) error
 	// DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
 	DisplayNameValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// Kind defines the type for the "kind" enum field.
-type Kind string
-
-// Kind values.
-const (
-	KindComponent   Kind = "component"
-	KindService     Kind = "service"
-	KindRepository  Kind = "repository"
-	KindIncident    Kind = "incident"
-	KindChangeEvent Kind = "change_event"
-)
-
-func (k Kind) String() string {
-	return string(k)
-}
-
-// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
-func KindValidator(k Kind) error {
-	switch k {
-	case KindComponent, KindService, KindRepository, KindIncident, KindChangeEvent:
-		return nil
-	default:
-		return fmt.Errorf("knowledgeentity: invalid enum value for kind field: %q", k)
-	}
-}
 
 // OrderOption defines the ordering options for the KnowledgeEntity queries.
 type OrderOption func(*sql.Selector)

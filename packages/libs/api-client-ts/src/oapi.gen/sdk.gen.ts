@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisComponentData, AddSystemAnalysisComponentErrors, AddSystemAnalysisComponentResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveSystemComponentConstraintData, ArchiveSystemComponentConstraintErrors, ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentControlData, ArchiveSystemComponentControlErrors, ArchiveSystemComponentControlResponses, ArchiveSystemComponentData, ArchiveSystemComponentErrors, ArchiveSystemComponentKindData, ArchiveSystemComponentKindErrors, ArchiveSystemComponentKindResponses, ArchiveSystemComponentRelationshipData, ArchiveSystemComponentRelationshipErrors, ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentResponses, ArchiveSystemComponentSignalData, ArchiveSystemComponentSignalErrors, ArchiveSystemComponentSignalResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamMembershipData, ArchiveTeamMembershipErrors, ArchiveTeamMembershipResponses, ArchiveTeamResponses, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowErrors, CompleteIntegrationOauthFlowResponses, ConfigureIntegrationData, ConfigureIntegrationErrors, ConfigureIntegrationResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentEventData, CreateIncidentEventErrors, CreateIncidentEventResponses, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemAnalysisRelationshipData, CreateSystemAnalysisRelationshipErrors, CreateSystemAnalysisRelationshipResponses, CreateSystemComponentConstraintData, CreateSystemComponentConstraintErrors, CreateSystemComponentConstraintResponses, CreateSystemComponentControlData, CreateSystemComponentControlErrors, CreateSystemComponentControlResponses, CreateSystemComponentData, CreateSystemComponentErrors, CreateSystemComponentKindData, CreateSystemComponentKindErrors, CreateSystemComponentKindResponses, CreateSystemComponentRelationshipData, CreateSystemComponentRelationshipErrors, CreateSystemComponentRelationshipResponses, CreateSystemComponentResponses, CreateSystemComponentSignalData, CreateSystemComponentSignalErrors, CreateSystemComponentSignalResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamMembershipData, CreateTeamMembershipErrors, CreateTeamMembershipResponses, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentEventData, DeleteIncidentEventErrors, DeleteIncidentEventResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIntegrationData, DeleteIntegrationErrors, DeleteIntegrationResponses, DeleteSystemAnalysisComponentData, DeleteSystemAnalysisComponentErrors, DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisRelationshipData, DeleteSystemAnalysisRelationshipErrors, DeleteSystemAnalysisRelationshipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, FinishOrganizationSetupData, FinishOrganizationSetupErrors, FinishOrganizationSetupResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetConfiguredIntegrationData, GetConfiguredIntegrationErrors, GetConfiguredIntegrationResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetDocumentAccessData, GetDocumentAccessErrors, GetDocumentAccessResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentMetadataData, GetIncidentMetadataErrors, GetIncidentMetadataResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveResponses, GetSystemAnalysisComponentData, GetSystemAnalysisComponentErrors, GetSystemAnalysisComponentResponses, GetSystemAnalysisData, GetSystemAnalysisErrors, GetSystemAnalysisRelationshipData, GetSystemAnalysisRelationshipErrors, GetSystemAnalysisRelationshipResponses, GetSystemAnalysisResponses, GetSystemComponentConstraintData, GetSystemComponentConstraintErrors, GetSystemComponentConstraintResponses, GetSystemComponentControlData, GetSystemComponentControlErrors, GetSystemComponentControlResponses, GetSystemComponentData, GetSystemComponentErrors, GetSystemComponentKindData, GetSystemComponentKindErrors, GetSystemComponentKindResponses, GetSystemComponentRelationshipData, GetSystemComponentRelationshipErrors, GetSystemComponentRelationshipResponses, GetSystemComponentResponses, GetSystemComponentSignalData, GetSystemComponentSignalErrors, GetSystemComponentSignalResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListAvailableIntegrationsData, ListAvailableIntegrationsErrors, ListAvailableIntegrationsResponses, ListConfiguredIntegrationsData, ListConfiguredIntegrationsErrors, ListConfiguredIntegrationsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesErrors, ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventsData, ListIncidentEventsErrors, ListIncidentEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisComponentsData, ListSystemAnalysisComponentsErrors, ListSystemAnalysisComponentsResponses, ListSystemAnalysisRelationshipsData, ListSystemAnalysisRelationshipsErrors, ListSystemAnalysisRelationshipsResponses, ListSystemComponentKindsData, ListSystemComponentKindsErrors, ListSystemComponentKindsResponses, ListSystemComponentRelationshipsData, ListSystemComponentRelationshipsErrors, ListSystemComponentRelationshipsResponses, ListSystemComponentsData, ListSystemComponentsErrors, ListSystemComponentsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamMembershipsData, ListTeamMembershipsErrors, ListTeamMembershipsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, SelectIntegrationOauthFlowData, SelectIntegrationOauthFlowErrors, SelectIntegrationOauthFlowResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, StartIntegrationOauthFlowData, StartIntegrationOauthFlowErrors, StartIntegrationOauthFlowResponses, UpdateConfiguredIntegrationPreferencesData, UpdateConfiguredIntegrationPreferencesErrors, UpdateConfiguredIntegrationPreferencesResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentEventData, UpdateIncidentEventErrors, UpdateIncidentEventResponses, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveData, UpdateRetrospectiveErrors, UpdateRetrospectiveResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisComponentData, UpdateSystemAnalysisComponentErrors, UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisRelationshipData, UpdateSystemAnalysisRelationshipErrors, UpdateSystemAnalysisRelationshipResponses, UpdateSystemComponentConstraintData, UpdateSystemComponentConstraintErrors, UpdateSystemComponentConstraintResponses, UpdateSystemComponentControlData, UpdateSystemComponentControlErrors, UpdateSystemComponentControlResponses, UpdateSystemComponentData, UpdateSystemComponentErrors, UpdateSystemComponentKindData, UpdateSystemComponentKindErrors, UpdateSystemComponentKindResponses, UpdateSystemComponentRelationshipData, UpdateSystemComponentRelationshipErrors, UpdateSystemComponentRelationshipResponses, UpdateSystemComponentResponses, UpdateSystemComponentSignalData, UpdateSystemComponentSignalErrors, UpdateSystemComponentSignalResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamMembershipData, UpdateTeamMembershipErrors, UpdateTeamMembershipResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
+import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisEdgeData, AddSystemAnalysisEdgeErrors, AddSystemAnalysisEdgeResponses, AddSystemAnalysisNodeData, AddSystemAnalysisNodeErrors, AddSystemAnalysisNodeResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamMembershipData, ArchiveTeamMembershipErrors, ArchiveTeamMembershipResponses, ArchiveTeamResponses, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowErrors, CompleteIntegrationOauthFlowResponses, ConfigureIntegrationData, ConfigureIntegrationErrors, ConfigureIntegrationResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentEventData, CreateIncidentEventErrors, CreateIncidentEventResponses, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemTopologySnapshotData, CreateSystemTopologySnapshotErrors, CreateSystemTopologySnapshotResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamMembershipData, CreateTeamMembershipErrors, CreateTeamMembershipResponses, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentEventData, DeleteIncidentEventErrors, DeleteIncidentEventResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIntegrationData, DeleteIntegrationErrors, DeleteIntegrationResponses, DeleteSystemAnalysisEdgeData, DeleteSystemAnalysisEdgeErrors, DeleteSystemAnalysisEdgeResponses, DeleteSystemAnalysisNodeData, DeleteSystemAnalysisNodeErrors, DeleteSystemAnalysisNodeResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, FinishOrganizationSetupData, FinishOrganizationSetupErrors, FinishOrganizationSetupResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetConfiguredIntegrationData, GetConfiguredIntegrationErrors, GetConfiguredIntegrationResponses, GetCurrentAuthSessionData, GetCurrentAuthSessionErrors, GetCurrentAuthSessionResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetDocumentAccessData, GetDocumentAccessErrors, GetDocumentAccessResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentMetadataData, GetIncidentMetadataErrors, GetIncidentMetadataResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveResponses, GetSystemAnalysisData, GetSystemAnalysisEdgeData, GetSystemAnalysisEdgeErrors, GetSystemAnalysisEdgeResponses, GetSystemAnalysisErrors, GetSystemAnalysisNodeData, GetSystemAnalysisNodeErrors, GetSystemAnalysisNodeResponses, GetSystemAnalysisResponses, GetSystemTopologyEntityData, GetSystemTopologyEntityErrors, GetSystemTopologyEntityNeighborhoodData, GetSystemTopologyEntityNeighborhoodErrors, GetSystemTopologyEntityNeighborhoodResponses, GetSystemTopologyEntityResponses, GetSystemTopologySnapshotData, GetSystemTopologySnapshotErrors, GetSystemTopologySnapshotResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListAvailableIntegrationsData, ListAvailableIntegrationsErrors, ListAvailableIntegrationsResponses, ListConfiguredIntegrationsData, ListConfiguredIntegrationsErrors, ListConfiguredIntegrationsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesErrors, ListIncidentEventContributingFactorCategoriesResponses, ListIncidentEventsData, ListIncidentEventsErrors, ListIncidentEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisEdgesData, ListSystemAnalysisEdgesErrors, ListSystemAnalysisEdgesResponses, ListSystemAnalysisNodesData, ListSystemAnalysisNodesErrors, ListSystemAnalysisNodesResponses, ListSystemTopologyEntitiesData, ListSystemTopologyEntitiesErrors, ListSystemTopologyEntitiesResponses, ListSystemTopologyRelationshipsData, ListSystemTopologyRelationshipsErrors, ListSystemTopologyRelationshipsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamMembershipsData, ListTeamMembershipsErrors, ListTeamMembershipsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, SelectIntegrationOauthFlowData, SelectIntegrationOauthFlowErrors, SelectIntegrationOauthFlowResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, StartIntegrationOauthFlowData, StartIntegrationOauthFlowErrors, StartIntegrationOauthFlowResponses, UpdateConfiguredIntegrationPreferencesData, UpdateConfiguredIntegrationPreferencesErrors, UpdateConfiguredIntegrationPreferencesResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentEventData, UpdateIncidentEventErrors, UpdateIncidentEventResponses, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveData, UpdateRetrospectiveErrors, UpdateRetrospectiveResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisEdgeData, UpdateSystemAnalysisEdgeErrors, UpdateSystemAnalysisEdgeResponses, UpdateSystemAnalysisNodeData, UpdateSystemAnalysisNodeErrors, UpdateSystemAnalysisNodeResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamMembershipData, UpdateTeamMembershipErrors, UpdateTeamMembershipResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -1276,20 +1276,20 @@ export const getSystemAnalysis = <ThrowOnError extends boolean = false>(options:
 });
 
 /**
- * List components in a System analysis
+ * List edges in a system analysis
  */
-export const listSystemAnalysisComponents = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisComponentsData, ThrowOnError>) => (options.client ?? client).get<ListSystemAnalysisComponentsResponses, ListSystemAnalysisComponentsErrors, ThrowOnError>({
+export const listSystemAnalysisEdges = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisEdgesData, ThrowOnError>) => (options.client ?? client).get<ListSystemAnalysisEdgesResponses, ListSystemAnalysisEdgesErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis/{id}/components',
+    url: '/system_analysis/{id}/edges',
     ...options
 });
 
 /**
- * Add a Component to a System Analysis
+ * Add an edge to a system analysis
  */
-export const addSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<AddSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).post<AddSystemAnalysisComponentResponses, AddSystemAnalysisComponentErrors, ThrowOnError>({
+export const addSystemAnalysisEdge = <ThrowOnError extends boolean = false>(options: Options<AddSystemAnalysisEdgeData, ThrowOnError>) => (options.client ?? client).post<AddSystemAnalysisEdgeResponses, AddSystemAnalysisEdgeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis/{id}/components',
+    url: '/system_analysis/{id}/edges',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1298,20 +1298,20 @@ export const addSystemAnalysisComponent = <ThrowOnError extends boolean = false>
 });
 
 /**
- * List relationships in a System analysis
+ * List nodes in a system analysis
  */
-export const listSystemAnalysisRelationships = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisRelationshipsData, ThrowOnError>) => (options.client ?? client).get<ListSystemAnalysisRelationshipsResponses, ListSystemAnalysisRelationshipsErrors, ThrowOnError>({
+export const listSystemAnalysisNodes = <ThrowOnError extends boolean = false>(options: Options<ListSystemAnalysisNodesData, ThrowOnError>) => (options.client ?? client).get<ListSystemAnalysisNodesResponses, ListSystemAnalysisNodesErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis/{id}/relationships',
+    url: '/system_analysis/{id}/nodes',
     ...options
 });
 
 /**
- * Create a Relationship in a System Analysis
+ * Add a node to a system analysis
  */
-export const createSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<CreateSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).post<CreateSystemAnalysisRelationshipResponses, CreateSystemAnalysisRelationshipErrors, ThrowOnError>({
+export const addSystemAnalysisNode = <ThrowOnError extends boolean = false>(options: Options<AddSystemAnalysisNodeData, ThrowOnError>) => (options.client ?? client).post<AddSystemAnalysisNodeResponses, AddSystemAnalysisNodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis/{id}/relationships',
+    url: '/system_analysis/{id}/nodes',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1320,29 +1320,29 @@ export const createSystemAnalysisRelationship = <ThrowOnError extends boolean = 
 });
 
 /**
- * Delete a Component from a System Analysis
+ * Delete an edge from a system analysis
  */
-export const deleteSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemAnalysisComponentResponses, DeleteSystemAnalysisComponentErrors, ThrowOnError>({
+export const deleteSystemAnalysisEdge = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisEdgeData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemAnalysisEdgeResponses, DeleteSystemAnalysisEdgeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis_components/{id}',
+    url: '/system_analysis_edges/{id}',
     ...options
 });
 
 /**
- * Get a component in a System analysis
+ * Get an edge in a system analysis
  */
-export const getSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisComponentResponses, GetSystemAnalysisComponentErrors, ThrowOnError>({
+export const getSystemAnalysisEdge = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisEdgeData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisEdgeResponses, GetSystemAnalysisEdgeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis_components/{id}',
+    url: '/system_analysis_edges/{id}',
     ...options
 });
 
 /**
- * Update a System Analysis Component
+ * Update a system analysis edge
  */
-export const updateSystemAnalysisComponent = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisComponentData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemAnalysisComponentResponses, UpdateSystemAnalysisComponentErrors, ThrowOnError>({
+export const updateSystemAnalysisEdge = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisEdgeData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemAnalysisEdgeResponses, UpdateSystemAnalysisEdgeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis_components/{id}',
+    url: '/system_analysis_edges/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1351,29 +1351,29 @@ export const updateSystemAnalysisComponent = <ThrowOnError extends boolean = fal
 });
 
 /**
- * Delete a Relationship from a System Analysis
+ * Delete a node from a system analysis
  */
-export const deleteSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemAnalysisRelationshipResponses, DeleteSystemAnalysisRelationshipErrors, ThrowOnError>({
+export const deleteSystemAnalysisNode = <ThrowOnError extends boolean = false>(options: Options<DeleteSystemAnalysisNodeData, ThrowOnError>) => (options.client ?? client).delete<DeleteSystemAnalysisNodeResponses, DeleteSystemAnalysisNodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis_relationships/{id}',
+    url: '/system_analysis_nodes/{id}',
     ...options
 });
 
 /**
- * Get a relationship in a System analysis
+ * Get a node in a system analysis
  */
-export const getSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisRelationshipResponses, GetSystemAnalysisRelationshipErrors, ThrowOnError>({
+export const getSystemAnalysisNode = <ThrowOnError extends boolean = false>(options: Options<GetSystemAnalysisNodeData, ThrowOnError>) => (options.client ?? client).get<GetSystemAnalysisNodeResponses, GetSystemAnalysisNodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis_relationships/{id}',
+    url: '/system_analysis_nodes/{id}',
     ...options
 });
 
 /**
- * Update a System Analysis Relationship
+ * Update a system analysis node
  */
-export const updateSystemAnalysisRelationship = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisRelationshipData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemAnalysisRelationshipResponses, UpdateSystemAnalysisRelationshipErrors, ThrowOnError>({
+export const updateSystemAnalysisNode = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemAnalysisNodeData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemAnalysisNodeResponses, UpdateSystemAnalysisNodeErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_analysis_relationships/{id}',
+    url: '/system_analysis_nodes/{id}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1382,29 +1382,50 @@ export const updateSystemAnalysisRelationship = <ThrowOnError extends boolean = 
 });
 
 /**
- * Archive a System Component Constraint
+ * List System Topology Entities
  */
-export const archiveSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentConstraintResponses, ArchiveSystemComponentConstraintErrors, ThrowOnError>({
+export const listSystemTopologyEntities = <ThrowOnError extends boolean = false>(options?: Options<ListSystemTopologyEntitiesData, ThrowOnError>) => (options?.client ?? client).get<ListSystemTopologyEntitiesResponses, ListSystemTopologyEntitiesErrors, ThrowOnError>({
+    querySerializer: { parameters: { kind: { array: { explode: false } } } },
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_constraints/{id}',
+    url: '/system_topology/entities',
     ...options
 });
 
 /**
- * Get a System Component
+ * Get System Topology Entity
  */
-export const getSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentConstraintResponses, GetSystemComponentConstraintErrors, ThrowOnError>({
+export const getSystemTopologyEntity = <ThrowOnError extends boolean = false>(options: Options<GetSystemTopologyEntityData, ThrowOnError>) => (options.client ?? client).get<GetSystemTopologyEntityResponses, GetSystemTopologyEntityErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_constraints/{id}',
+    url: '/system_topology/entities/{id}',
     ...options
 });
 
 /**
- * Update a System Component Constraint
+ * Get System Topology Entity Neighborhood
  */
-export const updateSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentConstraintResponses, UpdateSystemComponentConstraintErrors, ThrowOnError>({
+export const getSystemTopologyEntityNeighborhood = <ThrowOnError extends boolean = false>(options: Options<GetSystemTopologyEntityNeighborhoodData, ThrowOnError>) => (options.client ?? client).get<GetSystemTopologyEntityNeighborhoodResponses, GetSystemTopologyEntityNeighborhoodErrors, ThrowOnError>({
+    querySerializer: { parameters: { relationshipKind: { array: { explode: false } } } },
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_constraints/{id}',
+    url: '/system_topology/entities/{id}/neighborhood',
+    ...options
+});
+
+/**
+ * List System Topology Relationships
+ */
+export const listSystemTopologyRelationships = <ThrowOnError extends boolean = false>(options?: Options<ListSystemTopologyRelationshipsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemTopologyRelationshipsResponses, ListSystemTopologyRelationshipsErrors, ThrowOnError>({
+    querySerializer: { parameters: { kind: { array: { explode: false } } } },
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_topology/relationships',
+    ...options
+});
+
+/**
+ * Create System Topology Snapshot
+ */
+export const createSystemTopologySnapshot = <ThrowOnError extends boolean = false>(options: Options<CreateSystemTopologySnapshotData, ThrowOnError>) => (options.client ?? client).post<CreateSystemTopologySnapshotResponses, CreateSystemTopologySnapshotErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/system_topology/snapshots',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -1413,263 +1434,12 @@ export const updateSystemComponentConstraint = <ThrowOnError extends boolean = f
 });
 
 /**
- * Archive a System Component Control
+ * Get System Topology Snapshot
  */
-export const archiveSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentControlData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentControlResponses, ArchiveSystemComponentControlErrors, ThrowOnError>({
+export const getSystemTopologySnapshot = <ThrowOnError extends boolean = false>(options: Options<GetSystemTopologySnapshotData, ThrowOnError>) => (options.client ?? client).get<GetSystemTopologySnapshotResponses, GetSystemTopologySnapshotErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_controls/{id}',
+    url: '/system_topology/snapshots/{id}',
     ...options
-});
-
-/**
- * Get a System Component Control
- */
-export const getSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentControlData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentControlResponses, GetSystemComponentControlErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_controls/{id}',
-    ...options
-});
-
-/**
- * Update a System Component Control
- */
-export const updateSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentControlData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentControlResponses, UpdateSystemComponentControlErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_controls/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List System Component Kinds
- */
-export const listSystemComponentKinds = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentKindsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentKindsResponses, ListSystemComponentKindsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_kinds',
-    ...options
-});
-
-/**
- * Create a System Component Kind
- */
-export const createSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentKindData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentKindResponses, CreateSystemComponentKindErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_kinds',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Archive a System Component Kind
- */
-export const archiveSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentKindData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentKindResponses, ArchiveSystemComponentKindErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_kinds/{id}',
-    ...options
-});
-
-/**
- * Get a System Component Kind
- */
-export const getSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentKindData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentKindResponses, GetSystemComponentKindErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_kinds/{id}',
-    ...options
-});
-
-/**
- * Update a System Component Kind
- */
-export const updateSystemComponentKind = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentKindData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentKindResponses, UpdateSystemComponentKindErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_kinds/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List System Component Relationships
- */
-export const listSystemComponentRelationships = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentRelationshipsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentRelationshipsResponses, ListSystemComponentRelationshipsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_relationships',
-    ...options
-});
-
-/**
- * Create a System Component Relationship
- */
-export const createSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentRelationshipResponses, CreateSystemComponentRelationshipErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_relationships',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Archive a System Component Relationship
- */
-export const archiveSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentRelationshipResponses, ArchiveSystemComponentRelationshipErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_relationships/{id}',
-    ...options
-});
-
-/**
- * Get a System Component Relationship
- */
-export const getSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentRelationshipResponses, GetSystemComponentRelationshipErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_relationships/{id}',
-    ...options
-});
-
-/**
- * Update a System Component Relationship
- */
-export const updateSystemComponentRelationship = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentRelationshipData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentRelationshipResponses, UpdateSystemComponentRelationshipErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_relationships/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Archive a System Component Signal
- */
-export const archiveSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentSignalResponses, ArchiveSystemComponentSignalErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_signals/{id}',
-    ...options
-});
-
-/**
- * Get a System Component Signal
- */
-export const getSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentSignalResponses, GetSystemComponentSignalErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_signals/{id}',
-    ...options
-});
-
-/**
- * Update a System Component Signal
- */
-export const updateSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentSignalResponses, UpdateSystemComponentSignalErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_component_signals/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List System Components
- */
-export const listSystemComponents = <ThrowOnError extends boolean = false>(options?: Options<ListSystemComponentsData, ThrowOnError>) => (options?.client ?? client).get<ListSystemComponentsResponses, ListSystemComponentsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_components',
-    ...options
-});
-
-/**
- * Create a System Component
- */
-export const createSystemComponent = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentResponses, CreateSystemComponentErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_components',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Archive a System Component
- */
-export const archiveSystemComponent = <ThrowOnError extends boolean = false>(options: Options<ArchiveSystemComponentData, ThrowOnError>) => (options.client ?? client).delete<ArchiveSystemComponentResponses, ArchiveSystemComponentErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_components/{id}',
-    ...options
-});
-
-/**
- * Get a System Component
- */
-export const getSystemComponent = <ThrowOnError extends boolean = false>(options: Options<GetSystemComponentData, ThrowOnError>) => (options.client ?? client).get<GetSystemComponentResponses, GetSystemComponentErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_components/{id}',
-    ...options
-});
-
-/**
- * Update a System Component
- */
-export const updateSystemComponent = <ThrowOnError extends boolean = false>(options: Options<UpdateSystemComponentData, ThrowOnError>) => (options.client ?? client).patch<UpdateSystemComponentResponses, UpdateSystemComponentErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_components/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Create a System Component Constraint
- */
-export const createSystemComponentConstraint = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentConstraintData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentConstraintResponses, CreateSystemComponentConstraintErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_components/{id}/constraints',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Create a System Component Control
- */
-export const createSystemComponentControl = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentControlData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentControlResponses, CreateSystemComponentControlErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_components/{id}/controls',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Create a System Component Signal
- */
-export const createSystemComponentSignal = <ThrowOnError extends boolean = false>(options: Options<CreateSystemComponentSignalData, ThrowOnError>) => (options.client ?? client).post<CreateSystemComponentSignalResponses, CreateSystemComponentSignalErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/system_components/{id}/signals',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
 });
 
 /**

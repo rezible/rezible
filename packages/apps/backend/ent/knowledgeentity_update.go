@@ -54,13 +54,13 @@ func (_u *KnowledgeEntityUpdate) SetUpdatedAt(v time.Time) *KnowledgeEntityUpdat
 }
 
 // SetKind sets the "kind" field.
-func (_u *KnowledgeEntityUpdate) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpdate {
+func (_u *KnowledgeEntityUpdate) SetKind(v string) *KnowledgeEntityUpdate {
 	_u.mutation.SetKind(v)
 	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdate) SetNillableKind(v *knowledgeentity.Kind) *KnowledgeEntityUpdate {
+func (_u *KnowledgeEntityUpdate) SetNillableKind(v *string) *KnowledgeEntityUpdate {
 	if v != nil {
 		_u.SetKind(*v)
 	}
@@ -311,7 +311,7 @@ func (_u *KnowledgeEntityUpdate) sqlSave(ctx context.Context) (_node int, err er
 		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(knowledgeentity.FieldKind, field.TypeEnum, value)
+		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(knowledgeentity.FieldDisplayName, field.TypeString, value)
@@ -517,13 +517,13 @@ func (_u *KnowledgeEntityUpdateOne) SetUpdatedAt(v time.Time) *KnowledgeEntityUp
 }
 
 // SetKind sets the "kind" field.
-func (_u *KnowledgeEntityUpdateOne) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpdateOne {
+func (_u *KnowledgeEntityUpdateOne) SetKind(v string) *KnowledgeEntityUpdateOne {
 	_u.mutation.SetKind(v)
 	return _u
 }
 
 // SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *KnowledgeEntityUpdateOne) SetNillableKind(v *knowledgeentity.Kind) *KnowledgeEntityUpdateOne {
+func (_u *KnowledgeEntityUpdateOne) SetNillableKind(v *string) *KnowledgeEntityUpdateOne {
 	if v != nil {
 		_u.SetKind(*v)
 	}
@@ -804,7 +804,7 @@ func (_u *KnowledgeEntityUpdateOne) sqlSave(ctx context.Context) (_node *Knowled
 		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(knowledgeentity.FieldKind, field.TypeEnum, value)
+		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DisplayName(); ok {
 		_spec.SetField(knowledgeentity.FieldDisplayName, field.TypeString, value)

@@ -655,50 +655,52 @@ var (
 			},
 		},
 	}
-	// IncidentEventSystemComponentsColumns holds the columns for the "incident_event_system_components" table.
-	IncidentEventSystemComponentsColumns = []*schema.Column{
+	// IncidentEventTopologyContextsColumns holds the columns for the "incident_event_topology_contexts" table.
+	IncidentEventTopologyContextsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "relationship", Type: field.TypeEnum, Enums: []string{"primary", "affected", "contributing"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "incident_event_id", Type: field.TypeUUID, Unique: true, Nullable: true},
-		{Name: "system_component_id", Type: field.TypeUUID},
+		{Name: "incident_event_id", Type: field.TypeUUID},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "snapshot_entity_id", Type: field.TypeUUID, Nullable: true},
 	}
-	// IncidentEventSystemComponentsTable holds the schema information for the "incident_event_system_components" table.
-	IncidentEventSystemComponentsTable = &schema.Table{
-		Name:       "incident_event_system_components",
-		Columns:    IncidentEventSystemComponentsColumns,
-		PrimaryKey: []*schema.Column{IncidentEventSystemComponentsColumns[0]},
+	// IncidentEventTopologyContextsTable holds the schema information for the "incident_event_topology_contexts" table.
+	IncidentEventTopologyContextsTable = &schema.Table{
+		Name:       "incident_event_topology_contexts",
+		Columns:    IncidentEventTopologyContextsColumns,
+		PrimaryKey: []*schema.Column{IncidentEventTopologyContextsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "incident_event_system_components_tenants_tenant",
-				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[3]},
+				Symbol:     "incident_event_topology_contexts_tenants_tenant",
+				Columns:    []*schema.Column{IncidentEventTopologyContextsColumns[3]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "incident_event_system_components_incident_event_system_components_event",
-				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[4]},
-				RefColumns: []*schema.Column{IncidentEventSystemComponentsColumns[0]},
+				Symbol:     "incident_event_topology_contexts_incident_events_event",
+				Columns:    []*schema.Column{IncidentEventTopologyContextsColumns[4]},
+				RefColumns: []*schema.Column{IncidentEventsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_event_topology_contexts_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{IncidentEventTopologyContextsColumns[5]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "incident_event_system_components_system_components_system_component",
-				Columns:    []*schema.Column{IncidentEventSystemComponentsColumns[5]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Symbol:     "incident_event_topology_contexts_system_topology_snapshot_entities_snapshot_entity",
+				Columns:    []*schema.Column{IncidentEventTopologyContextsColumns[6]},
+				RefColumns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "incidenteventsystemcomponent_tenant_id",
+				Name:    "incidenteventtopologycontext_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IncidentEventSystemComponentsColumns[3]},
-			},
-			{
-				Name:    "incidenteventsystemcomponent_incident_event_id_system_component_id",
-				Unique:  true,
-				Columns: []*schema.Column{IncidentEventSystemComponentsColumns[4], IncidentEventSystemComponentsColumns[5]},
+				Columns: []*schema.Column{IncidentEventTopologyContextsColumns[3]},
 			},
 		},
 	}
@@ -1114,7 +1116,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"component", "service", "repository", "incident", "change_event"}},
+		{Name: "kind", Type: field.TypeString},
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
@@ -1143,6 +1145,11 @@ var (
 				Name:    "knowledgeentity_tenant_id_kind",
 				Unique:  false,
 				Columns: []*schema.Column{KnowledgeEntitiesColumns[7], KnowledgeEntitiesColumns[3]},
+			},
+			{
+				Name:    "knowledgeentity_tenant_id_updated_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[7], KnowledgeEntitiesColumns[2]},
 			},
 		},
 	}
@@ -1369,6 +1376,7 @@ var (
 		{Name: "kind", Type: field.TypeString},
 		{Name: "display_name", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "first_seen_at", Type: field.TypeTime},
 		{Name: "last_seen_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1383,19 +1391,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_relationships_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[8]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[9]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_relationships_knowledge_entities_source_entity",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[9]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[10]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_relationships_knowledge_entities_target_entity",
-				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[10]},
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[11]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1404,17 +1412,32 @@ var (
 			{
 				Name:    "knowledgerelationship_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[8]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[9]},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_kind_source_entity_id_target_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[8], KnowledgeRelationshipsColumns[3], KnowledgeRelationshipsColumns[9], KnowledgeRelationshipsColumns[10]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[9], KnowledgeRelationshipsColumns[3], KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[11]},
 			},
 			{
 				Name:    "knowledgerelationship_tenant_id_kind",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeRelationshipsColumns[8], KnowledgeRelationshipsColumns[3]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[9], KnowledgeRelationshipsColumns[3]},
+			},
+			{
+				Name:    "knowledgerelationship_tenant_id_source_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[9], KnowledgeRelationshipsColumns[10]},
+			},
+			{
+				Name:    "knowledgerelationship_tenant_id_target_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[9], KnowledgeRelationshipsColumns[11]},
+			},
+			{
+				Name:    "knowledgerelationship_tenant_id_updated_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[9], KnowledgeRelationshipsColumns[2]},
 			},
 		},
 	}
@@ -2162,6 +2185,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "topology_snapshot_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// SystemAnalysesTable holds the schema information for the "system_analyses" table.
 	SystemAnalysesTable = &schema.Table{
@@ -2175,6 +2199,12 @@ var (
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
+			{
+				Symbol:     "system_analyses_system_topology_snapshots_topology_snapshot",
+				Columns:    []*schema.Column{SystemAnalysesColumns[4]},
+				RefColumns: []*schema.Column{SystemTopologySnapshotsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
 		},
 		Indexes: []*schema.Index{
 			{
@@ -2184,446 +2214,277 @@ var (
 			},
 		},
 	}
-	// SystemAnalysisComponentsColumns holds the columns for the "system_analysis_components" table.
-	SystemAnalysisComponentsColumns = []*schema.Column{
+	// SystemAnalysisTopologyEdgesColumns holds the columns for the "system_analysis_topology_edges" table.
+	SystemAnalysisTopologyEdgesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "analysis_id", Type: field.TypeUUID},
+		{Name: "snapshot_relationship_id", Type: field.TypeUUID},
+	}
+	// SystemAnalysisTopologyEdgesTable holds the schema information for the "system_analysis_topology_edges" table.
+	SystemAnalysisTopologyEdgesTable = &schema.Table{
+		Name:       "system_analysis_topology_edges",
+		Columns:    SystemAnalysisTopologyEdgesColumns,
+		PrimaryKey: []*schema.Column{SystemAnalysisTopologyEdgesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_analysis_topology_edges_tenants_tenant",
+				Columns:    []*schema.Column{SystemAnalysisTopologyEdgesColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_topology_edges_system_analyses_analysis",
+				Columns:    []*schema.Column{SystemAnalysisTopologyEdgesColumns[5]},
+				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_analysis_topology_edges_system_topology_snapshot_relationships_snapshot_relationship",
+				Columns:    []*schema.Column{SystemAnalysisTopologyEdgesColumns[6]},
+				RefColumns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemanalysistopologyedge_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemAnalysisTopologyEdgesColumns[4]},
+			},
+		},
+	}
+	// SystemAnalysisTopologyNodesColumns holds the columns for the "system_analysis_topology_nodes" table.
+	SystemAnalysisTopologyNodesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "pos_x", Type: field.TypeFloat64, Default: 0},
 		{Name: "pos_y", Type: field.TypeFloat64, Default: 0},
-		{Name: "created_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "analysis_id", Type: field.TypeUUID},
-		{Name: "component_id", Type: field.TypeUUID},
+		{Name: "snapshot_entity_id", Type: field.TypeUUID},
 	}
-	// SystemAnalysisComponentsTable holds the schema information for the "system_analysis_components" table.
-	SystemAnalysisComponentsTable = &schema.Table{
-		Name:       "system_analysis_components",
-		Columns:    SystemAnalysisComponentsColumns,
-		PrimaryKey: []*schema.Column{SystemAnalysisComponentsColumns[0]},
+	// SystemAnalysisTopologyNodesTable holds the schema information for the "system_analysis_topology_nodes" table.
+	SystemAnalysisTopologyNodesTable = &schema.Table{
+		Name:       "system_analysis_topology_nodes",
+		Columns:    SystemAnalysisTopologyNodesColumns,
+		PrimaryKey: []*schema.Column{SystemAnalysisTopologyNodesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_analysis_components_tenants_tenant",
-				Columns:    []*schema.Column{SystemAnalysisComponentsColumns[5]},
+				Symbol:     "system_analysis_topology_nodes_tenants_tenant",
+				Columns:    []*schema.Column{SystemAnalysisTopologyNodesColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_components_system_analyses_analysis",
-				Columns:    []*schema.Column{SystemAnalysisComponentsColumns[6]},
+				Symbol:     "system_analysis_topology_nodes_system_analyses_analysis",
+				Columns:    []*schema.Column{SystemAnalysisTopologyNodesColumns[7]},
 				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_components_system_components_component",
-				Columns:    []*schema.Column{SystemAnalysisComponentsColumns[7]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
+				Symbol:     "system_analysis_topology_nodes_system_topology_snapshot_entities_snapshot_entity",
+				Columns:    []*schema.Column{SystemAnalysisTopologyNodesColumns[8]},
+				RefColumns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "systemanalysiscomponent_tenant_id",
+				Name:    "systemanalysistopologynode_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisComponentsColumns[5]},
+				Columns: []*schema.Column{SystemAnalysisTopologyNodesColumns[6]},
+			},
+		},
+	}
+	// SystemTopologySnapshotsColumns holds the columns for the "system_topology_snapshots" table.
+	SystemTopologySnapshotsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "as_of", Type: field.TypeTime},
+		{Name: "name", Type: field.TypeString, Nullable: true},
+		{Name: "scope", Type: field.TypeEnum, Enums: []string{"explicit_entities", "root_entities", "incident", "retrospective", "search", "analysis"}, Default: "explicit_entities"},
+		{Name: "scope_properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// SystemTopologySnapshotsTable holds the schema information for the "system_topology_snapshots" table.
+	SystemTopologySnapshotsTable = &schema.Table{
+		Name:       "system_topology_snapshots",
+		Columns:    SystemTopologySnapshotsColumns,
+		PrimaryKey: []*schema.Column{SystemTopologySnapshotsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_topology_snapshots_tenants_tenant",
+				Columns:    []*schema.Column{SystemTopologySnapshotsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemtopologysnapshot_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemTopologySnapshotsColumns[6]},
 			},
 			{
-				Name:    "systemanalysiscomponent_component_id_analysis_id",
+				Name:    "systemtopologysnapshot_tenant_id_as_of",
+				Unique:  false,
+				Columns: []*schema.Column{SystemTopologySnapshotsColumns[6], SystemTopologySnapshotsColumns[1]},
+			},
+			{
+				Name:    "systemtopologysnapshot_tenant_id_created_at",
+				Unique:  false,
+				Columns: []*schema.Column{SystemTopologySnapshotsColumns[6], SystemTopologySnapshotsColumns[5]},
+			},
+		},
+	}
+	// SystemTopologySnapshotEntitiesColumns holds the columns for the "system_topology_snapshot_entities" table.
+	SystemTopologySnapshotEntitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "entity_kind", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString},
+		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "aliases", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "snapshot_id", Type: field.TypeUUID},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// SystemTopologySnapshotEntitiesTable holds the schema information for the "system_topology_snapshot_entities" table.
+	SystemTopologySnapshotEntitiesTable = &schema.Table{
+		Name:       "system_topology_snapshot_entities",
+		Columns:    SystemTopologySnapshotEntitiesColumns,
+		PrimaryKey: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "system_topology_snapshot_entities_tenants_tenant",
+				Columns:    []*schema.Column{SystemTopologySnapshotEntitiesColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_topology_snapshot_entities_system_topology_snapshots_snapshot",
+				Columns:    []*schema.Column{SystemTopologySnapshotEntitiesColumns[8]},
+				RefColumns: []*schema.Column{SystemTopologySnapshotsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_topology_snapshot_entities_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{SystemTopologySnapshotEntitiesColumns[9]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "systemtopologysnapshotentity_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[7]},
+			},
+			{
+				Name:    "systemtopologysnapshotentity_tenant_id_snapshot_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[7], SystemTopologySnapshotEntitiesColumns[8]},
+			},
+			{
+				Name:    "systemtopologysnapshotentity_tenant_id_knowledge_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[7], SystemTopologySnapshotEntitiesColumns[9]},
+			},
+			{
+				Name:    "systemtopologysnapshotentity_tenant_id_snapshot_id_knowledge_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{SystemAnalysisComponentsColumns[7], SystemAnalysisComponentsColumns[6]},
+				Columns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[7], SystemTopologySnapshotEntitiesColumns[8], SystemTopologySnapshotEntitiesColumns[9]},
 			},
 		},
 	}
-	// SystemAnalysisRelationshipsColumns holds the columns for the "system_analysis_relationships" table.
-	SystemAnalysisRelationshipsColumns = []*schema.Column{
+	// SystemTopologySnapshotRelationshipsColumns holds the columns for the "system_topology_snapshot_relationships" table.
+	SystemTopologySnapshotRelationshipsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
+		{Name: "relationship_kind", Type: field.TypeString},
+		{Name: "display_name", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "analysis_id", Type: field.TypeUUID},
-		{Name: "relationship_id", Type: field.TypeUUID},
+		{Name: "snapshot_id", Type: field.TypeUUID},
+		{Name: "knowledge_relationship_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "source_snapshot_entity_id", Type: field.TypeUUID},
+		{Name: "target_snapshot_entity_id", Type: field.TypeUUID},
 	}
-	// SystemAnalysisRelationshipsTable holds the schema information for the "system_analysis_relationships" table.
-	SystemAnalysisRelationshipsTable = &schema.Table{
-		Name:       "system_analysis_relationships",
-		Columns:    SystemAnalysisRelationshipsColumns,
-		PrimaryKey: []*schema.Column{SystemAnalysisRelationshipsColumns[0]},
+	// SystemTopologySnapshotRelationshipsTable holds the schema information for the "system_topology_snapshot_relationships" table.
+	SystemTopologySnapshotRelationshipsTable = &schema.Table{
+		Name:       "system_topology_snapshot_relationships",
+		Columns:    SystemTopologySnapshotRelationshipsColumns,
+		PrimaryKey: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_analysis_relationships_tenants_tenant",
-				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[3]},
+				Symbol:     "system_topology_snapshot_relationships_tenants_tenant",
+				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_relationships_system_analyses_system_analysis",
-				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[4]},
-				RefColumns: []*schema.Column{SystemAnalysesColumns[0]},
+				Symbol:     "system_topology_snapshot_relationships_system_topology_snapshots_snapshot",
+				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[7]},
+				RefColumns: []*schema.Column{SystemTopologySnapshotsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_analysis_relationships_system_component_relationships_relationship",
-				Columns:    []*schema.Column{SystemAnalysisRelationshipsColumns[5]},
-				RefColumns: []*schema.Column{SystemComponentRelationshipsColumns[0]},
+				Symbol:     "system_topology_snapshot_relationships_knowledge_relationships_knowledge_relationship",
+				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[8]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "system_topology_snapshot_relationships_system_topology_snapshot_entities_source_snapshot_entity",
+				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[9]},
+				RefColumns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "system_topology_snapshot_relationships_system_topology_snapshot_entities_target_snapshot_entity",
+				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[10]},
+				RefColumns: []*schema.Column{SystemTopologySnapshotEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "systemanalysisrelationship_tenant_id",
+				Name:    "systemtopologysnapshotrelationship_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemAnalysisRelationshipsColumns[3]},
-			},
-		},
-	}
-	// SystemComponentsColumns holds the columns for the "system_components" table.
-	SystemComponentsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "external_id", Type: field.TypeString, Nullable: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "properties", Type: field.TypeJSON, Nullable: true},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "kind_id", Type: field.TypeUUID},
-	}
-	// SystemComponentsTable holds the schema information for the "system_components" table.
-	SystemComponentsTable = &schema.Table{
-		Name:       "system_components",
-		Columns:    SystemComponentsColumns,
-		PrimaryKey: []*schema.Column{SystemComponentsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_components_tenants_tenant",
-				Columns:    []*schema.Column{SystemComponentsColumns[7]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6]},
 			},
 			{
-				Symbol:     "system_components_system_component_kinds_kind",
-				Columns:    []*schema.Column{SystemComponentsColumns[8]},
-				RefColumns: []*schema.Column{SystemComponentKindsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemcomponent_tenant_id",
+				Name:    "systemtopologysnapshotrelationship_tenant_id_snapshot_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemComponentsColumns[7]},
-			},
-		},
-	}
-	// SystemComponentConstraintsColumns holds the columns for the "system_component_constraints" table.
-	SystemComponentConstraintsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "label", Type: field.TypeString, Size: 2147483647},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "component_id", Type: field.TypeUUID},
-	}
-	// SystemComponentConstraintsTable holds the schema information for the "system_component_constraints" table.
-	SystemComponentConstraintsTable = &schema.Table{
-		Name:       "system_component_constraints",
-		Columns:    SystemComponentConstraintsColumns,
-		PrimaryKey: []*schema.Column{SystemComponentConstraintsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_component_constraints_tenants_tenant",
-				Columns:    []*schema.Column{SystemComponentConstraintsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[7]},
 			},
 			{
-				Symbol:     "system_component_constraints_system_components_component",
-				Columns:    []*schema.Column{SystemComponentConstraintsColumns[5]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemcomponentconstraint_tenant_id",
+				Name:    "systemtopologysnapshotrelationship_tenant_id_knowledge_relationship_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemComponentConstraintsColumns[4]},
-			},
-		},
-	}
-	// SystemComponentControlsColumns holds the columns for the "system_component_controls" table.
-	SystemComponentControlsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "label", Type: field.TypeString, Size: 2147483647},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "component_id", Type: field.TypeUUID},
-	}
-	// SystemComponentControlsTable holds the schema information for the "system_component_controls" table.
-	SystemComponentControlsTable = &schema.Table{
-		Name:       "system_component_controls",
-		Columns:    SystemComponentControlsColumns,
-		PrimaryKey: []*schema.Column{SystemComponentControlsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_component_controls_tenants_tenant",
-				Columns:    []*schema.Column{SystemComponentControlsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[8]},
 			},
 			{
-				Symbol:     "system_component_controls_system_components_component",
-				Columns:    []*schema.Column{SystemComponentControlsColumns[5]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemcomponentcontrol_tenant_id",
+				Name:    "systemtopologysnapshotrelationship_tenant_id_source_snapshot_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemComponentControlsColumns[4]},
+				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[9]},
 			},
-		},
-	}
-	// SystemComponentKindsColumns holds the columns for the "system_component_kinds" table.
-	SystemComponentKindsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "external_id", Type: field.TypeString, Nullable: true},
-		{Name: "label", Type: field.TypeString, Size: 2147483647},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// SystemComponentKindsTable holds the schema information for the "system_component_kinds" table.
-	SystemComponentKindsTable = &schema.Table{
-		Name:       "system_component_kinds",
-		Columns:    SystemComponentKindsColumns,
-		PrimaryKey: []*schema.Column{SystemComponentKindsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "system_component_kinds_tenants_tenant",
-				Columns:    []*schema.Column{SystemComponentKindsColumns[5]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemcomponentkind_tenant_id",
+				Name:    "systemtopologysnapshotrelationship_tenant_id_target_snapshot_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{SystemComponentKindsColumns[5]},
-			},
-		},
-	}
-	// SystemComponentRelationshipsColumns holds the columns for the "system_component_relationships" table.
-	SystemComponentRelationshipsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "external_id", Type: field.TypeString, Nullable: true},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "source_id", Type: field.TypeUUID},
-		{Name: "target_id", Type: field.TypeUUID},
-	}
-	// SystemComponentRelationshipsTable holds the schema information for the "system_component_relationships" table.
-	SystemComponentRelationshipsTable = &schema.Table{
-		Name:       "system_component_relationships",
-		Columns:    SystemComponentRelationshipsColumns,
-		PrimaryKey: []*schema.Column{SystemComponentRelationshipsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_component_relationships_tenants_tenant",
-				Columns:    []*schema.Column{SystemComponentRelationshipsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
+				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[10]},
 			},
 			{
-				Symbol:     "system_component_relationships_system_components_source",
-				Columns:    []*schema.Column{SystemComponentRelationshipsColumns[5]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_component_relationships_system_components_target",
-				Columns:    []*schema.Column{SystemComponentRelationshipsColumns[6]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemcomponentrelationship_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemComponentRelationshipsColumns[4]},
-			},
-			{
-				Name:    "systemcomponentrelationship_source_id_target_id",
+				Name:    "systemtopologysnapshotrelationship_tenant_id_snapshot_id_knowledge_relationship_id",
 				Unique:  true,
-				Columns: []*schema.Column{SystemComponentRelationshipsColumns[5], SystemComponentRelationshipsColumns[6]},
-			},
-		},
-	}
-	// SystemComponentSignalsColumns holds the columns for the "system_component_signals" table.
-	SystemComponentSignalsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "label", Type: field.TypeString, Size: 2147483647},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "component_id", Type: field.TypeUUID},
-	}
-	// SystemComponentSignalsTable holds the schema information for the "system_component_signals" table.
-	SystemComponentSignalsTable = &schema.Table{
-		Name:       "system_component_signals",
-		Columns:    SystemComponentSignalsColumns,
-		PrimaryKey: []*schema.Column{SystemComponentSignalsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_component_signals_tenants_tenant",
-				Columns:    []*schema.Column{SystemComponentSignalsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_component_signals_system_components_component",
-				Columns:    []*schema.Column{SystemComponentSignalsColumns[5]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemcomponentsignal_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemComponentSignalsColumns[4]},
-			},
-		},
-	}
-	// SystemHazardsColumns holds the columns for the "system_hazards" table.
-	SystemHazardsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "external_id", Type: field.TypeString, Nullable: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// SystemHazardsTable holds the schema information for the "system_hazards" table.
-	SystemHazardsTable = &schema.Table{
-		Name:       "system_hazards",
-		Columns:    SystemHazardsColumns,
-		PrimaryKey: []*schema.Column{SystemHazardsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_hazards_tenants_tenant",
-				Columns:    []*schema.Column{SystemHazardsColumns[6]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemhazard_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemHazardsColumns[6]},
-			},
-		},
-	}
-	// SystemRelationshipControlActionsColumns holds the columns for the "system_relationship_control_actions" table.
-	SystemRelationshipControlActionsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "relationship_id", Type: field.TypeUUID},
-		{Name: "control_id", Type: field.TypeUUID},
-	}
-	// SystemRelationshipControlActionsTable holds the schema information for the "system_relationship_control_actions" table.
-	SystemRelationshipControlActionsTable = &schema.Table{
-		Name:       "system_relationship_control_actions",
-		Columns:    SystemRelationshipControlActionsColumns,
-		PrimaryKey: []*schema.Column{SystemRelationshipControlActionsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_relationship_control_actions_tenants_tenant",
-				Columns:    []*schema.Column{SystemRelationshipControlActionsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_relationship_control_actions_system_component_relationships_relationship",
-				Columns:    []*schema.Column{SystemRelationshipControlActionsColumns[5]},
-				RefColumns: []*schema.Column{SystemComponentRelationshipsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_relationship_control_actions_system_component_controls_control",
-				Columns:    []*schema.Column{SystemRelationshipControlActionsColumns[6]},
-				RefColumns: []*schema.Column{SystemComponentControlsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemrelationshipcontrolaction_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemRelationshipControlActionsColumns[4]},
-			},
-			{
-				Name:    "systemrelationshipcontrolaction_relationship_id_control_id",
-				Unique:  true,
-				Columns: []*schema.Column{SystemRelationshipControlActionsColumns[5], SystemRelationshipControlActionsColumns[6]},
-			},
-		},
-	}
-	// SystemRelationshipFeedbackSignalsColumns holds the columns for the "system_relationship_feedback_signals" table.
-	SystemRelationshipFeedbackSignalsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "relationship_id", Type: field.TypeUUID},
-		{Name: "signal_id", Type: field.TypeUUID},
-	}
-	// SystemRelationshipFeedbackSignalsTable holds the schema information for the "system_relationship_feedback_signals" table.
-	SystemRelationshipFeedbackSignalsTable = &schema.Table{
-		Name:       "system_relationship_feedback_signals",
-		Columns:    SystemRelationshipFeedbackSignalsColumns,
-		PrimaryKey: []*schema.Column{SystemRelationshipFeedbackSignalsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_relationship_feedback_signals_tenants_tenant",
-				Columns:    []*schema.Column{SystemRelationshipFeedbackSignalsColumns[4]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_relationship_feedback_signals_system_component_relationships_relationship",
-				Columns:    []*schema.Column{SystemRelationshipFeedbackSignalsColumns[5]},
-				RefColumns: []*schema.Column{SystemComponentRelationshipsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "system_relationship_feedback_signals_system_component_signals_signal",
-				Columns:    []*schema.Column{SystemRelationshipFeedbackSignalsColumns[6]},
-				RefColumns: []*schema.Column{SystemComponentSignalsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "systemrelationshipfeedbacksignal_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{SystemRelationshipFeedbackSignalsColumns[4]},
-			},
-			{
-				Name:    "systemrelationshipfeedbacksignal_relationship_id_signal_id",
-				Unique:  true,
-				Columns: []*schema.Column{SystemRelationshipFeedbackSignalsColumns[5], SystemRelationshipFeedbackSignalsColumns[6]},
+				Columns: []*schema.Column{SystemTopologySnapshotRelationshipsColumns[6], SystemTopologySnapshotRelationshipsColumns[7], SystemTopologySnapshotRelationshipsColumns[8]},
 			},
 		},
 	}
@@ -3163,81 +3024,6 @@ var (
 			},
 		},
 	}
-	// SystemHazardComponentsColumns holds the columns for the "system_hazard_components" table.
-	SystemHazardComponentsColumns = []*schema.Column{
-		{Name: "system_hazard_id", Type: field.TypeUUID},
-		{Name: "system_component_id", Type: field.TypeUUID},
-	}
-	// SystemHazardComponentsTable holds the schema information for the "system_hazard_components" table.
-	SystemHazardComponentsTable = &schema.Table{
-		Name:       "system_hazard_components",
-		Columns:    SystemHazardComponentsColumns,
-		PrimaryKey: []*schema.Column{SystemHazardComponentsColumns[0], SystemHazardComponentsColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_hazard_components_system_hazard_id",
-				Columns:    []*schema.Column{SystemHazardComponentsColumns[0]},
-				RefColumns: []*schema.Column{SystemHazardsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "system_hazard_components_system_component_id",
-				Columns:    []*schema.Column{SystemHazardComponentsColumns[1]},
-				RefColumns: []*schema.Column{SystemComponentsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// SystemHazardConstraintsColumns holds the columns for the "system_hazard_constraints" table.
-	SystemHazardConstraintsColumns = []*schema.Column{
-		{Name: "system_hazard_id", Type: field.TypeUUID},
-		{Name: "system_component_constraint_id", Type: field.TypeUUID},
-	}
-	// SystemHazardConstraintsTable holds the schema information for the "system_hazard_constraints" table.
-	SystemHazardConstraintsTable = &schema.Table{
-		Name:       "system_hazard_constraints",
-		Columns:    SystemHazardConstraintsColumns,
-		PrimaryKey: []*schema.Column{SystemHazardConstraintsColumns[0], SystemHazardConstraintsColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_hazard_constraints_system_hazard_id",
-				Columns:    []*schema.Column{SystemHazardConstraintsColumns[0]},
-				RefColumns: []*schema.Column{SystemHazardsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "system_hazard_constraints_system_component_constraint_id",
-				Columns:    []*schema.Column{SystemHazardConstraintsColumns[1]},
-				RefColumns: []*schema.Column{SystemComponentConstraintsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
-	// SystemHazardRelationshipsColumns holds the columns for the "system_hazard_relationships" table.
-	SystemHazardRelationshipsColumns = []*schema.Column{
-		{Name: "system_hazard_id", Type: field.TypeUUID},
-		{Name: "system_component_relationship_id", Type: field.TypeUUID},
-	}
-	// SystemHazardRelationshipsTable holds the schema information for the "system_hazard_relationships" table.
-	SystemHazardRelationshipsTable = &schema.Table{
-		Name:       "system_hazard_relationships",
-		Columns:    SystemHazardRelationshipsColumns,
-		PrimaryKey: []*schema.Column{SystemHazardRelationshipsColumns[0], SystemHazardRelationshipsColumns[1]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "system_hazard_relationships_system_hazard_id",
-				Columns:    []*schema.Column{SystemHazardRelationshipsColumns[0]},
-				RefColumns: []*schema.Column{SystemHazardsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-			{
-				Symbol:     "system_hazard_relationships_system_component_relationship_id",
-				Columns:    []*schema.Column{SystemHazardRelationshipsColumns[1]},
-				RefColumns: []*schema.Column{SystemComponentRelationshipsColumns[0]},
-				OnDelete:   schema.Cascade,
-			},
-		},
-	}
 	// TaskTicketsColumns holds the columns for the "task_tickets" table.
 	TaskTicketsColumns = []*schema.Column{
 		{Name: "task_id", Type: field.TypeUUID},
@@ -3331,7 +3117,7 @@ var (
 		IncidentEventContextsTable,
 		IncidentEventContributingFactorsTable,
 		IncidentEventEvidencesTable,
-		IncidentEventSystemComponentsTable,
+		IncidentEventTopologyContextsTable,
 		IncidentFieldsTable,
 		IncidentFieldOptionsTable,
 		IncidentLinksTable,
@@ -3367,17 +3153,11 @@ var (
 		RetrospectiveCommentsTable,
 		RetrospectiveReviewsTable,
 		SystemAnalysesTable,
-		SystemAnalysisComponentsTable,
-		SystemAnalysisRelationshipsTable,
-		SystemComponentsTable,
-		SystemComponentConstraintsTable,
-		SystemComponentControlsTable,
-		SystemComponentKindsTable,
-		SystemComponentRelationshipsTable,
-		SystemComponentSignalsTable,
-		SystemHazardsTable,
-		SystemRelationshipControlActionsTable,
-		SystemRelationshipFeedbackSignalsTable,
+		SystemAnalysisTopologyEdgesTable,
+		SystemAnalysisTopologyNodesTable,
+		SystemTopologySnapshotsTable,
+		SystemTopologySnapshotEntitiesTable,
+		SystemTopologySnapshotRelationshipsTable,
 		TasksTable,
 		TeamsTable,
 		TeamMembershipsTable,
@@ -3396,9 +3176,6 @@ var (
 		MeetingScheduleOwningTeamTable,
 		OncallShiftHandoverPinnedAnnotationsTable,
 		PlaybookAlertsTable,
-		SystemHazardComponentsTable,
-		SystemHazardConstraintsTable,
-		SystemHazardRelationshipsTable,
 		TaskTicketsTable,
 		TeamOncallRostersTable,
 		UserWatchedOncallRostersTable,
@@ -3445,9 +3222,10 @@ func init() {
 	IncidentEventContributingFactorsTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentEventEvidencesTable.ForeignKeys[0].RefTable = IncidentEventsTable
 	IncidentEventEvidencesTable.ForeignKeys[1].RefTable = TenantsTable
-	IncidentEventSystemComponentsTable.ForeignKeys[0].RefTable = TenantsTable
-	IncidentEventSystemComponentsTable.ForeignKeys[1].RefTable = IncidentEventSystemComponentsTable
-	IncidentEventSystemComponentsTable.ForeignKeys[2].RefTable = SystemComponentsTable
+	IncidentEventTopologyContextsTable.ForeignKeys[0].RefTable = TenantsTable
+	IncidentEventTopologyContextsTable.ForeignKeys[1].RefTable = IncidentEventsTable
+	IncidentEventTopologyContextsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	IncidentEventTopologyContextsTable.ForeignKeys[3].RefTable = SystemTopologySnapshotEntitiesTable
 	IncidentFieldsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentFieldOptionsTable.ForeignKeys[0].RefTable = IncidentFieldsTable
 	IncidentFieldOptionsTable.ForeignKeys[1].RefTable = TenantsTable
@@ -3526,31 +3304,22 @@ func init() {
 	RetrospectiveReviewsTable.ForeignKeys[3].RefTable = UsersTable
 	RetrospectiveReviewsTable.ForeignKeys[4].RefTable = RetrospectiveCommentsTable
 	SystemAnalysesTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemAnalysisComponentsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemAnalysisComponentsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
-	SystemAnalysisComponentsTable.ForeignKeys[2].RefTable = SystemComponentsTable
-	SystemAnalysisRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemAnalysisRelationshipsTable.ForeignKeys[1].RefTable = SystemAnalysesTable
-	SystemAnalysisRelationshipsTable.ForeignKeys[2].RefTable = SystemComponentRelationshipsTable
-	SystemComponentsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemComponentsTable.ForeignKeys[1].RefTable = SystemComponentKindsTable
-	SystemComponentConstraintsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemComponentConstraintsTable.ForeignKeys[1].RefTable = SystemComponentsTable
-	SystemComponentControlsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemComponentControlsTable.ForeignKeys[1].RefTable = SystemComponentsTable
-	SystemComponentKindsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemComponentRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemComponentRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentsTable
-	SystemComponentRelationshipsTable.ForeignKeys[2].RefTable = SystemComponentsTable
-	SystemComponentSignalsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemComponentSignalsTable.ForeignKeys[1].RefTable = SystemComponentsTable
-	SystemHazardsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemRelationshipControlActionsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemRelationshipControlActionsTable.ForeignKeys[1].RefTable = SystemComponentRelationshipsTable
-	SystemRelationshipControlActionsTable.ForeignKeys[2].RefTable = SystemComponentControlsTable
-	SystemRelationshipFeedbackSignalsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemRelationshipFeedbackSignalsTable.ForeignKeys[1].RefTable = SystemComponentRelationshipsTable
-	SystemRelationshipFeedbackSignalsTable.ForeignKeys[2].RefTable = SystemComponentSignalsTable
+	SystemAnalysesTable.ForeignKeys[1].RefTable = SystemTopologySnapshotsTable
+	SystemAnalysisTopologyEdgesTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisTopologyEdgesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
+	SystemAnalysisTopologyEdgesTable.ForeignKeys[2].RefTable = SystemTopologySnapshotRelationshipsTable
+	SystemAnalysisTopologyNodesTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemAnalysisTopologyNodesTable.ForeignKeys[1].RefTable = SystemAnalysesTable
+	SystemAnalysisTopologyNodesTable.ForeignKeys[2].RefTable = SystemTopologySnapshotEntitiesTable
+	SystemTopologySnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemTopologySnapshotEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemTopologySnapshotEntitiesTable.ForeignKeys[1].RefTable = SystemTopologySnapshotsTable
+	SystemTopologySnapshotEntitiesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
+	SystemTopologySnapshotRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
+	SystemTopologySnapshotRelationshipsTable.ForeignKeys[1].RefTable = SystemTopologySnapshotsTable
+	SystemTopologySnapshotRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
+	SystemTopologySnapshotRelationshipsTable.ForeignKeys[3].RefTable = SystemTopologySnapshotEntitiesTable
+	SystemTopologySnapshotRelationshipsTable.ForeignKeys[4].RefTable = SystemTopologySnapshotEntitiesTable
 	TasksTable.ForeignKeys[0].RefTable = IncidentsTable
 	TasksTable.ForeignKeys[1].RefTable = TenantsTable
 	TasksTable.ForeignKeys[2].RefTable = UsersTable
@@ -3586,12 +3355,6 @@ func init() {
 	OncallShiftHandoverPinnedAnnotationsTable.ForeignKeys[1].RefTable = EventAnnotationsTable
 	PlaybookAlertsTable.ForeignKeys[0].RefTable = PlaybooksTable
 	PlaybookAlertsTable.ForeignKeys[1].RefTable = AlertsTable
-	SystemHazardComponentsTable.ForeignKeys[0].RefTable = SystemHazardsTable
-	SystemHazardComponentsTable.ForeignKeys[1].RefTable = SystemComponentsTable
-	SystemHazardConstraintsTable.ForeignKeys[0].RefTable = SystemHazardsTable
-	SystemHazardConstraintsTable.ForeignKeys[1].RefTable = SystemComponentConstraintsTable
-	SystemHazardRelationshipsTable.ForeignKeys[0].RefTable = SystemHazardsTable
-	SystemHazardRelationshipsTable.ForeignKeys[1].RefTable = SystemComponentRelationshipsTable
 	TaskTicketsTable.ForeignKeys[0].RefTable = TasksTable
 	TaskTicketsTable.ForeignKeys[1].RefTable = TicketsTable
 	TeamOncallRostersTable.ForeignKeys[0].RefTable = TeamsTable

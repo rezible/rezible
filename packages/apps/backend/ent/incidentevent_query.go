@@ -20,29 +20,27 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
-	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
+	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/systemcomponent"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // IncidentEventQuery is the builder for querying IncidentEvent entities.
 type IncidentEventQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []incidentevent.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.IncidentEvent
-	withTenant           *TenantQuery
-	withIncident         *IncidentQuery
-	withEvent            *EventQuery
-	withContext          *IncidentEventContextQuery
-	withFactors          *IncidentEventContributingFactorQuery
-	withEvidence         *IncidentEventEvidenceQuery
-	withSystemComponents *SystemComponentQuery
-	withEventComponents  *IncidentEventSystemComponentQuery
-	modifiers            []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []incidentevent.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.IncidentEvent
+	withTenant          *TenantQuery
+	withIncident        *IncidentQuery
+	withEvent           *EventQuery
+	withContext         *IncidentEventContextQuery
+	withFactors         *IncidentEventContributingFactorQuery
+	withEvidence        *IncidentEventEvidenceQuery
+	withTopologyContext *IncidentEventTopologyContextQuery
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -229,9 +227,9 @@ func (_q *IncidentEventQuery) QueryEvidence() *IncidentEventEvidenceQuery {
 	return query
 }
 
-// QuerySystemComponents chains the current query on the "system_components" edge.
-func (_q *IncidentEventQuery) QuerySystemComponents() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: _q.config}).Query()
+// QueryTopologyContext chains the current query on the "topology_context" edge.
+func (_q *IncidentEventQuery) QueryTopologyContext() *IncidentEventTopologyContextQuery {
+	query := (&IncidentEventTopologyContextClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -242,37 +240,12 @@ func (_q *IncidentEventQuery) QuerySystemComponents() *SystemComponentQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, selector),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incidentevent.SystemComponentsTable, incidentevent.SystemComponentsPrimaryKey...),
+			sqlgraph.To(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incidentevent.TopologyContextTable, incidentevent.TopologyContextColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryEventComponents chains the current query on the "event_components" edge.
-func (_q *IncidentEventQuery) QueryEventComponents() *IncidentEventSystemComponentQuery {
-	query := (&IncidentEventSystemComponentClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, selector),
-			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incidentevent.EventComponentsTable, incidentevent.EventComponentsColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEventSystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
+		step.To.Schema = schemaConfig.IncidentEventTopologyContext
+		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -466,19 +439,18 @@ func (_q *IncidentEventQuery) Clone() *IncidentEventQuery {
 		return nil
 	}
 	return &IncidentEventQuery{
-		config:               _q.config,
-		ctx:                  _q.ctx.Clone(),
-		order:                append([]incidentevent.OrderOption{}, _q.order...),
-		inters:               append([]Interceptor{}, _q.inters...),
-		predicates:           append([]predicate.IncidentEvent{}, _q.predicates...),
-		withTenant:           _q.withTenant.Clone(),
-		withIncident:         _q.withIncident.Clone(),
-		withEvent:            _q.withEvent.Clone(),
-		withContext:          _q.withContext.Clone(),
-		withFactors:          _q.withFactors.Clone(),
-		withEvidence:         _q.withEvidence.Clone(),
-		withSystemComponents: _q.withSystemComponents.Clone(),
-		withEventComponents:  _q.withEventComponents.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]incidentevent.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.IncidentEvent{}, _q.predicates...),
+		withTenant:          _q.withTenant.Clone(),
+		withIncident:        _q.withIncident.Clone(),
+		withEvent:           _q.withEvent.Clone(),
+		withContext:         _q.withContext.Clone(),
+		withFactors:         _q.withFactors.Clone(),
+		withEvidence:        _q.withEvidence.Clone(),
+		withTopologyContext: _q.withTopologyContext.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -552,25 +524,14 @@ func (_q *IncidentEventQuery) WithEvidence(opts ...func(*IncidentEventEvidenceQu
 	return _q
 }
 
-// WithSystemComponents tells the query-builder to eager-load the nodes that are connected to
-// the "system_components" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentEventQuery) WithSystemComponents(opts ...func(*SystemComponentQuery)) *IncidentEventQuery {
-	query := (&SystemComponentClient{config: _q.config}).Query()
+// WithTopologyContext tells the query-builder to eager-load the nodes that are connected to
+// the "topology_context" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IncidentEventQuery) WithTopologyContext(opts ...func(*IncidentEventTopologyContextQuery)) *IncidentEventQuery {
+	query := (&IncidentEventTopologyContextClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSystemComponents = query
-	return _q
-}
-
-// WithEventComponents tells the query-builder to eager-load the nodes that are connected to
-// the "event_components" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentEventQuery) WithEventComponents(opts ...func(*IncidentEventSystemComponentQuery)) *IncidentEventQuery {
-	query := (&IncidentEventSystemComponentClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withEventComponents = query
+	_q.withTopologyContext = query
 	return _q
 }
 
@@ -658,15 +619,14 @@ func (_q *IncidentEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	var (
 		nodes       = []*IncidentEvent{}
 		_spec       = _q.querySpec()
-		loadedTypes = [8]bool{
+		loadedTypes = [7]bool{
 			_q.withTenant != nil,
 			_q.withIncident != nil,
 			_q.withEvent != nil,
 			_q.withContext != nil,
 			_q.withFactors != nil,
 			_q.withEvidence != nil,
-			_q.withSystemComponents != nil,
-			_q.withEventComponents != nil,
+			_q.withTopologyContext != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -732,20 +692,11 @@ func (_q *IncidentEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := _q.withSystemComponents; query != nil {
-		if err := _q.loadSystemComponents(ctx, query, nodes,
-			func(n *IncidentEvent) { n.Edges.SystemComponents = []*SystemComponent{} },
-			func(n *IncidentEvent, e *SystemComponent) {
-				n.Edges.SystemComponents = append(n.Edges.SystemComponents, e)
-			}); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withEventComponents; query != nil {
-		if err := _q.loadEventComponents(ctx, query, nodes,
-			func(n *IncidentEvent) { n.Edges.EventComponents = []*IncidentEventSystemComponent{} },
-			func(n *IncidentEvent, e *IncidentEventSystemComponent) {
-				n.Edges.EventComponents = append(n.Edges.EventComponents, e)
+	if query := _q.withTopologyContext; query != nil {
+		if err := _q.loadTopologyContext(ctx, query, nodes,
+			func(n *IncidentEvent) { n.Edges.TopologyContext = []*IncidentEventTopologyContext{} },
+			func(n *IncidentEvent, e *IncidentEventTopologyContext) {
+				n.Edges.TopologyContext = append(n.Edges.TopologyContext, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -930,69 +881,7 @@ func (_q *IncidentEventQuery) loadEvidence(ctx context.Context, query *IncidentE
 	}
 	return nil
 }
-func (_q *IncidentEventQuery) loadSystemComponents(ctx context.Context, query *SystemComponentQuery, nodes []*IncidentEvent, init func(*IncidentEvent), assign func(*IncidentEvent, *SystemComponent)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*IncidentEvent)
-	nids := make(map[uuid.UUID]map[*IncidentEvent]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
-		}
-	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(incidentevent.SystemComponentsTable)
-		joinT.Schema(_q.schemaConfig.IncidentEventSystemComponent)
-		s.Join(joinT).On(s.C(systemcomponent.FieldID), joinT.C(incidentevent.SystemComponentsPrimaryKey[1]))
-		s.Where(sql.InValues(joinT.C(incidentevent.SystemComponentsPrimaryKey[0]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(incidentevent.SystemComponentsPrimaryKey[0]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
-	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*IncidentEvent]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*SystemComponent](ctx, query, qr, query.inters)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected "system_components" node returned %v`, n.ID)
-		}
-		for kn := range nodes {
-			assign(kn, n)
-		}
-	}
-	return nil
-}
-func (_q *IncidentEventQuery) loadEventComponents(ctx context.Context, query *IncidentEventSystemComponentQuery, nodes []*IncidentEvent, init func(*IncidentEvent), assign func(*IncidentEvent, *IncidentEventSystemComponent)) error {
+func (_q *IncidentEventQuery) loadTopologyContext(ctx context.Context, query *IncidentEventTopologyContextQuery, nodes []*IncidentEvent, init func(*IncidentEvent), assign func(*IncidentEvent, *IncidentEventTopologyContext)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*IncidentEvent)
 	for i := range nodes {
@@ -1003,10 +892,10 @@ func (_q *IncidentEventQuery) loadEventComponents(ctx context.Context, query *In
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidenteventsystemcomponent.FieldIncidentEventID)
+		query.ctx.AppendFieldOnce(incidenteventtopologycontext.FieldIncidentEventID)
 	}
-	query.Where(predicate.IncidentEventSystemComponent(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incidentevent.EventComponentsColumn), fks...))
+	query.Where(predicate.IncidentEventTopologyContext(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incidentevent.TopologyContextColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {

@@ -22,23 +22,13 @@
 	import ConnectionLine from "./ConnectionLine.svelte";
 	import ActionsBar from "./SystemDiagramActionsBar.svelte";
 	import EditToolbar from "./EditToolbar.svelte";
-	import AddingComponentGhostNode from "./AddingComponentGhostNode.svelte";
+	import AddingEntityGhostNode from "./AddingEntityGhostNode.svelte";
 	import ComponentNode from "./ComponentNode.svelte";
 	import RelationshipEdge from "./RelationshipEdge.svelte";
-	import ComponentDialog from "./component-dialog/ComponentDialog.svelte";
-	import RelationshipDialog from "./relationship-dialog/RelationshipDialog.svelte";
-	import { ComponentDialogState, setComponentDialog } from "./component-dialog/dialogState.svelte";
-	import { RelationshipDialogState, setRelationshipDialog } from "./relationship-dialog/dialogState.svelte";
 	import { useIncidentAnalysis } from "../controller.svelte";
 
 	const analysis = useIncidentAnalysis();
 	const diagram = useSystemDiagram();
-
-	const componentDialog = new ComponentDialogState();
-	setComponentDialog(componentDialog);
-
-	const relationshipDialog = new RelationshipDialogState();
-	setRelationshipDialog(relationshipDialog);
 
 	const colorMode = $derived<ColorMode>("dark");
 
@@ -80,7 +70,7 @@
 	bind:edges={diagram.edges}
 	bind:viewport
 	oninit={() => diagram.onFlowInit()}
-	onconnect={e => {diagram.onEdgeConnect(e); relationshipDialog.setCreating(e.source, e.target)}}
+	onconnect={e => diagram.onEdgeConnect(e)}
 	onpanecontextmenu={e => diagram.handleContextMenuEvent(e)}
 	onedgecontextmenu={e => diagram.handleContextMenuEvent(e)}
 	onnodecontextmenu={e => diagram.handleContextMenuEvent(e)}
@@ -99,12 +89,9 @@
 		<SystemDiagramContextMenu {...analysis.contextMenu.diagram} />
 	{/if}
 	<EditToolbar />
-	<AddingComponentGhostNode />
+	<AddingEntityGhostNode />
 
 	<Panel position="bottom-right">
 		<ActionsBar />
 	</Panel>
 </SvelteFlow>
-
-<ComponentDialog />
-<RelationshipDialog />

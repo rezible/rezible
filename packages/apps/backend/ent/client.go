@@ -32,7 +32,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenteventcontext"
 	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
 	"github.com/rezible/rezible/ent/incidenteventevidence"
-	"github.com/rezible/rezible/ent/incidenteventsystemcomponent"
+	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
@@ -68,17 +68,11 @@ import (
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysiscomponent"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponent"
-	"github.com/rezible/rezible/ent/systemcomponentconstraint"
-	"github.com/rezible/rezible/ent/systemcomponentcontrol"
-	"github.com/rezible/rezible/ent/systemcomponentkind"
-	"github.com/rezible/rezible/ent/systemcomponentrelationship"
-	"github.com/rezible/rezible/ent/systemcomponentsignal"
-	"github.com/rezible/rezible/ent/systemhazard"
-	"github.com/rezible/rezible/ent/systemrelationshipcontrolaction"
-	"github.com/rezible/rezible/ent/systemrelationshipfeedbacksignal"
+	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
+	"github.com/rezible/rezible/ent/systemanalysistopologynode"
+	"github.com/rezible/rezible/ent/systemtopologysnapshot"
+	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
+	"github.com/rezible/rezible/ent/systemtopologysnapshotrelationship"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -129,8 +123,8 @@ type Client struct {
 	IncidentEventContributingFactor *IncidentEventContributingFactorClient
 	// IncidentEventEvidence is the client for interacting with the IncidentEventEvidence builders.
 	IncidentEventEvidence *IncidentEventEvidenceClient
-	// IncidentEventSystemComponent is the client for interacting with the IncidentEventSystemComponent builders.
-	IncidentEventSystemComponent *IncidentEventSystemComponentClient
+	// IncidentEventTopologyContext is the client for interacting with the IncidentEventTopologyContext builders.
+	IncidentEventTopologyContext *IncidentEventTopologyContextClient
 	// IncidentField is the client for interacting with the IncidentField builders.
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
@@ -201,28 +195,16 @@ type Client struct {
 	RetrospectiveReview *RetrospectiveReviewClient
 	// SystemAnalysis is the client for interacting with the SystemAnalysis builders.
 	SystemAnalysis *SystemAnalysisClient
-	// SystemAnalysisComponent is the client for interacting with the SystemAnalysisComponent builders.
-	SystemAnalysisComponent *SystemAnalysisComponentClient
-	// SystemAnalysisRelationship is the client for interacting with the SystemAnalysisRelationship builders.
-	SystemAnalysisRelationship *SystemAnalysisRelationshipClient
-	// SystemComponent is the client for interacting with the SystemComponent builders.
-	SystemComponent *SystemComponentClient
-	// SystemComponentConstraint is the client for interacting with the SystemComponentConstraint builders.
-	SystemComponentConstraint *SystemComponentConstraintClient
-	// SystemComponentControl is the client for interacting with the SystemComponentControl builders.
-	SystemComponentControl *SystemComponentControlClient
-	// SystemComponentKind is the client for interacting with the SystemComponentKind builders.
-	SystemComponentKind *SystemComponentKindClient
-	// SystemComponentRelationship is the client for interacting with the SystemComponentRelationship builders.
-	SystemComponentRelationship *SystemComponentRelationshipClient
-	// SystemComponentSignal is the client for interacting with the SystemComponentSignal builders.
-	SystemComponentSignal *SystemComponentSignalClient
-	// SystemHazard is the client for interacting with the SystemHazard builders.
-	SystemHazard *SystemHazardClient
-	// SystemRelationshipControlAction is the client for interacting with the SystemRelationshipControlAction builders.
-	SystemRelationshipControlAction *SystemRelationshipControlActionClient
-	// SystemRelationshipFeedbackSignal is the client for interacting with the SystemRelationshipFeedbackSignal builders.
-	SystemRelationshipFeedbackSignal *SystemRelationshipFeedbackSignalClient
+	// SystemAnalysisTopologyEdge is the client for interacting with the SystemAnalysisTopologyEdge builders.
+	SystemAnalysisTopologyEdge *SystemAnalysisTopologyEdgeClient
+	// SystemAnalysisTopologyNode is the client for interacting with the SystemAnalysisTopologyNode builders.
+	SystemAnalysisTopologyNode *SystemAnalysisTopologyNodeClient
+	// SystemTopologySnapshot is the client for interacting with the SystemTopologySnapshot builders.
+	SystemTopologySnapshot *SystemTopologySnapshotClient
+	// SystemTopologySnapshotEntity is the client for interacting with the SystemTopologySnapshotEntity builders.
+	SystemTopologySnapshotEntity *SystemTopologySnapshotEntityClient
+	// SystemTopologySnapshotRelationship is the client for interacting with the SystemTopologySnapshotRelationship builders.
+	SystemTopologySnapshotRelationship *SystemTopologySnapshotRelationshipClient
 	// Task is the client for interacting with the Task builders.
 	Task *TaskClient
 	// Team is the client for interacting with the Team builders.
@@ -265,7 +247,7 @@ func (c *Client) init() {
 	c.IncidentEventContext = NewIncidentEventContextClient(c.config)
 	c.IncidentEventContributingFactor = NewIncidentEventContributingFactorClient(c.config)
 	c.IncidentEventEvidence = NewIncidentEventEvidenceClient(c.config)
-	c.IncidentEventSystemComponent = NewIncidentEventSystemComponentClient(c.config)
+	c.IncidentEventTopologyContext = NewIncidentEventTopologyContextClient(c.config)
 	c.IncidentField = NewIncidentFieldClient(c.config)
 	c.IncidentFieldOption = NewIncidentFieldOptionClient(c.config)
 	c.IncidentLink = NewIncidentLinkClient(c.config)
@@ -301,17 +283,11 @@ func (c *Client) init() {
 	c.RetrospectiveComment = NewRetrospectiveCommentClient(c.config)
 	c.RetrospectiveReview = NewRetrospectiveReviewClient(c.config)
 	c.SystemAnalysis = NewSystemAnalysisClient(c.config)
-	c.SystemAnalysisComponent = NewSystemAnalysisComponentClient(c.config)
-	c.SystemAnalysisRelationship = NewSystemAnalysisRelationshipClient(c.config)
-	c.SystemComponent = NewSystemComponentClient(c.config)
-	c.SystemComponentConstraint = NewSystemComponentConstraintClient(c.config)
-	c.SystemComponentControl = NewSystemComponentControlClient(c.config)
-	c.SystemComponentKind = NewSystemComponentKindClient(c.config)
-	c.SystemComponentRelationship = NewSystemComponentRelationshipClient(c.config)
-	c.SystemComponentSignal = NewSystemComponentSignalClient(c.config)
-	c.SystemHazard = NewSystemHazardClient(c.config)
-	c.SystemRelationshipControlAction = NewSystemRelationshipControlActionClient(c.config)
-	c.SystemRelationshipFeedbackSignal = NewSystemRelationshipFeedbackSignalClient(c.config)
+	c.SystemAnalysisTopologyEdge = NewSystemAnalysisTopologyEdgeClient(c.config)
+	c.SystemAnalysisTopologyNode = NewSystemAnalysisTopologyNodeClient(c.config)
+	c.SystemTopologySnapshot = NewSystemTopologySnapshotClient(c.config)
+	c.SystemTopologySnapshotEntity = NewSystemTopologySnapshotEntityClient(c.config)
+	c.SystemTopologySnapshotRelationship = NewSystemTopologySnapshotRelationshipClient(c.config)
 	c.Task = NewTaskClient(c.config)
 	c.Team = NewTeamClient(c.config)
 	c.TeamMembership = NewTeamMembershipClient(c.config)
@@ -412,79 +388,73 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                              ctx,
-		config:                           cfg,
-		Alert:                            NewAlertClient(cfg),
-		AlertFeedback:                    NewAlertFeedbackClient(cfg),
-		AlertInstance:                    NewAlertInstanceClient(cfg),
-		AlertMetrics:                     NewAlertMetricsClient(cfg),
-		Document:                         NewDocumentClient(cfg),
-		DocumentAccess:                   NewDocumentAccessClient(cfg),
-		Event:                            NewEventClient(cfg),
-		EventAnnotation:                  NewEventAnnotationClient(cfg),
-		Incident:                         NewIncidentClient(cfg),
-		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
-		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
-		IncidentDebriefQuestion:          NewIncidentDebriefQuestionClient(cfg),
-		IncidentDebriefSuggestion:        NewIncidentDebriefSuggestionClient(cfg),
-		IncidentEvent:                    NewIncidentEventClient(cfg),
-		IncidentEventContext:             NewIncidentEventContextClient(cfg),
-		IncidentEventContributingFactor:  NewIncidentEventContributingFactorClient(cfg),
-		IncidentEventEvidence:            NewIncidentEventEvidenceClient(cfg),
-		IncidentEventSystemComponent:     NewIncidentEventSystemComponentClient(cfg),
-		IncidentField:                    NewIncidentFieldClient(cfg),
-		IncidentFieldOption:              NewIncidentFieldOptionClient(cfg),
-		IncidentLink:                     NewIncidentLinkClient(cfg),
-		IncidentMilestone:                NewIncidentMilestoneClient(cfg),
-		IncidentRole:                     NewIncidentRoleClient(cfg),
-		IncidentRoleAssignment:           NewIncidentRoleAssignmentClient(cfg),
-		IncidentSeverity:                 NewIncidentSeverityClient(cfg),
-		IncidentTag:                      NewIncidentTagClient(cfg),
-		IncidentType:                     NewIncidentTypeClient(cfg),
-		Integration:                      NewIntegrationClient(cfg),
-		IntegrationOAuthState:            NewIntegrationOAuthStateClient(cfg),
-		KnowledgeEntity:                  NewKnowledgeEntityClient(cfg),
-		KnowledgeEntityAlias:             NewKnowledgeEntityAliasClient(cfg),
-		KnowledgeFactHistory:             NewKnowledgeFactHistoryClient(cfg),
-		KnowledgeFactProvenance:          NewKnowledgeFactProvenanceClient(cfg),
-		KnowledgeRelationship:            NewKnowledgeRelationshipClient(cfg),
-		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
-		MeetingSession:                   NewMeetingSessionClient(cfg),
-		NormalizedEvent:                  NewNormalizedEventClient(cfg),
-		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
-		OncallRoster:                     NewOncallRosterClient(cfg),
-		OncallRosterMetrics:              NewOncallRosterMetricsClient(cfg),
-		OncallSchedule:                   NewOncallScheduleClient(cfg),
-		OncallScheduleParticipant:        NewOncallScheduleParticipantClient(cfg),
-		OncallShift:                      NewOncallShiftClient(cfg),
-		OncallShiftHandover:              NewOncallShiftHandoverClient(cfg),
-		OncallShiftMetrics:               NewOncallShiftMetricsClient(cfg),
-		Organization:                     NewOrganizationClient(cfg),
-		OrganizationRole:                 NewOrganizationRoleClient(cfg),
-		Playbook:                         NewPlaybookClient(cfg),
-		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
-		Retrospective:                    NewRetrospectiveClient(cfg),
-		RetrospectiveComment:             NewRetrospectiveCommentClient(cfg),
-		RetrospectiveReview:              NewRetrospectiveReviewClient(cfg),
-		SystemAnalysis:                   NewSystemAnalysisClient(cfg),
-		SystemAnalysisComponent:          NewSystemAnalysisComponentClient(cfg),
-		SystemAnalysisRelationship:       NewSystemAnalysisRelationshipClient(cfg),
-		SystemComponent:                  NewSystemComponentClient(cfg),
-		SystemComponentConstraint:        NewSystemComponentConstraintClient(cfg),
-		SystemComponentControl:           NewSystemComponentControlClient(cfg),
-		SystemComponentKind:              NewSystemComponentKindClient(cfg),
-		SystemComponentRelationship:      NewSystemComponentRelationshipClient(cfg),
-		SystemComponentSignal:            NewSystemComponentSignalClient(cfg),
-		SystemHazard:                     NewSystemHazardClient(cfg),
-		SystemRelationshipControlAction:  NewSystemRelationshipControlActionClient(cfg),
-		SystemRelationshipFeedbackSignal: NewSystemRelationshipFeedbackSignalClient(cfg),
-		Task:                             NewTaskClient(cfg),
-		Team:                             NewTeamClient(cfg),
-		TeamMembership:                   NewTeamMembershipClient(cfg),
-		Tenant:                           NewTenantClient(cfg),
-		Ticket:                           NewTicketClient(cfg),
-		User:                             NewUserClient(cfg),
-		VideoConference:                  NewVideoConferenceClient(cfg),
+		ctx:                                ctx,
+		config:                             cfg,
+		Alert:                              NewAlertClient(cfg),
+		AlertFeedback:                      NewAlertFeedbackClient(cfg),
+		AlertInstance:                      NewAlertInstanceClient(cfg),
+		AlertMetrics:                       NewAlertMetricsClient(cfg),
+		Document:                           NewDocumentClient(cfg),
+		DocumentAccess:                     NewDocumentAccessClient(cfg),
+		Event:                              NewEventClient(cfg),
+		EventAnnotation:                    NewEventAnnotationClient(cfg),
+		Incident:                           NewIncidentClient(cfg),
+		IncidentDebrief:                    NewIncidentDebriefClient(cfg),
+		IncidentDebriefMessage:             NewIncidentDebriefMessageClient(cfg),
+		IncidentDebriefQuestion:            NewIncidentDebriefQuestionClient(cfg),
+		IncidentDebriefSuggestion:          NewIncidentDebriefSuggestionClient(cfg),
+		IncidentEvent:                      NewIncidentEventClient(cfg),
+		IncidentEventContext:               NewIncidentEventContextClient(cfg),
+		IncidentEventContributingFactor:    NewIncidentEventContributingFactorClient(cfg),
+		IncidentEventEvidence:              NewIncidentEventEvidenceClient(cfg),
+		IncidentEventTopologyContext:       NewIncidentEventTopologyContextClient(cfg),
+		IncidentField:                      NewIncidentFieldClient(cfg),
+		IncidentFieldOption:                NewIncidentFieldOptionClient(cfg),
+		IncidentLink:                       NewIncidentLinkClient(cfg),
+		IncidentMilestone:                  NewIncidentMilestoneClient(cfg),
+		IncidentRole:                       NewIncidentRoleClient(cfg),
+		IncidentRoleAssignment:             NewIncidentRoleAssignmentClient(cfg),
+		IncidentSeverity:                   NewIncidentSeverityClient(cfg),
+		IncidentTag:                        NewIncidentTagClient(cfg),
+		IncidentType:                       NewIncidentTypeClient(cfg),
+		Integration:                        NewIntegrationClient(cfg),
+		IntegrationOAuthState:              NewIntegrationOAuthStateClient(cfg),
+		KnowledgeEntity:                    NewKnowledgeEntityClient(cfg),
+		KnowledgeEntityAlias:               NewKnowledgeEntityAliasClient(cfg),
+		KnowledgeFactHistory:               NewKnowledgeFactHistoryClient(cfg),
+		KnowledgeFactProvenance:            NewKnowledgeFactProvenanceClient(cfg),
+		KnowledgeRelationship:              NewKnowledgeRelationshipClient(cfg),
+		MeetingSchedule:                    NewMeetingScheduleClient(cfg),
+		MeetingSession:                     NewMeetingSessionClient(cfg),
+		NormalizedEvent:                    NewNormalizedEventClient(cfg),
+		OncallHandoverTemplate:             NewOncallHandoverTemplateClient(cfg),
+		OncallRoster:                       NewOncallRosterClient(cfg),
+		OncallRosterMetrics:                NewOncallRosterMetricsClient(cfg),
+		OncallSchedule:                     NewOncallScheduleClient(cfg),
+		OncallScheduleParticipant:          NewOncallScheduleParticipantClient(cfg),
+		OncallShift:                        NewOncallShiftClient(cfg),
+		OncallShiftHandover:                NewOncallShiftHandoverClient(cfg),
+		OncallShiftMetrics:                 NewOncallShiftMetricsClient(cfg),
+		Organization:                       NewOrganizationClient(cfg),
+		OrganizationRole:                   NewOrganizationRoleClient(cfg),
+		Playbook:                           NewPlaybookClient(cfg),
+		ProviderSyncHistory:                NewProviderSyncHistoryClient(cfg),
+		Retrospective:                      NewRetrospectiveClient(cfg),
+		RetrospectiveComment:               NewRetrospectiveCommentClient(cfg),
+		RetrospectiveReview:                NewRetrospectiveReviewClient(cfg),
+		SystemAnalysis:                     NewSystemAnalysisClient(cfg),
+		SystemAnalysisTopologyEdge:         NewSystemAnalysisTopologyEdgeClient(cfg),
+		SystemAnalysisTopologyNode:         NewSystemAnalysisTopologyNodeClient(cfg),
+		SystemTopologySnapshot:             NewSystemTopologySnapshotClient(cfg),
+		SystemTopologySnapshotEntity:       NewSystemTopologySnapshotEntityClient(cfg),
+		SystemTopologySnapshotRelationship: NewSystemTopologySnapshotRelationshipClient(cfg),
+		Task:                               NewTaskClient(cfg),
+		Team:                               NewTeamClient(cfg),
+		TeamMembership:                     NewTeamMembershipClient(cfg),
+		Tenant:                             NewTenantClient(cfg),
+		Ticket:                             NewTicketClient(cfg),
+		User:                               NewUserClient(cfg),
+		VideoConference:                    NewVideoConferenceClient(cfg),
 	}, nil
 }
 
@@ -502,79 +472,73 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                              ctx,
-		config:                           cfg,
-		Alert:                            NewAlertClient(cfg),
-		AlertFeedback:                    NewAlertFeedbackClient(cfg),
-		AlertInstance:                    NewAlertInstanceClient(cfg),
-		AlertMetrics:                     NewAlertMetricsClient(cfg),
-		Document:                         NewDocumentClient(cfg),
-		DocumentAccess:                   NewDocumentAccessClient(cfg),
-		Event:                            NewEventClient(cfg),
-		EventAnnotation:                  NewEventAnnotationClient(cfg),
-		Incident:                         NewIncidentClient(cfg),
-		IncidentDebrief:                  NewIncidentDebriefClient(cfg),
-		IncidentDebriefMessage:           NewIncidentDebriefMessageClient(cfg),
-		IncidentDebriefQuestion:          NewIncidentDebriefQuestionClient(cfg),
-		IncidentDebriefSuggestion:        NewIncidentDebriefSuggestionClient(cfg),
-		IncidentEvent:                    NewIncidentEventClient(cfg),
-		IncidentEventContext:             NewIncidentEventContextClient(cfg),
-		IncidentEventContributingFactor:  NewIncidentEventContributingFactorClient(cfg),
-		IncidentEventEvidence:            NewIncidentEventEvidenceClient(cfg),
-		IncidentEventSystemComponent:     NewIncidentEventSystemComponentClient(cfg),
-		IncidentField:                    NewIncidentFieldClient(cfg),
-		IncidentFieldOption:              NewIncidentFieldOptionClient(cfg),
-		IncidentLink:                     NewIncidentLinkClient(cfg),
-		IncidentMilestone:                NewIncidentMilestoneClient(cfg),
-		IncidentRole:                     NewIncidentRoleClient(cfg),
-		IncidentRoleAssignment:           NewIncidentRoleAssignmentClient(cfg),
-		IncidentSeverity:                 NewIncidentSeverityClient(cfg),
-		IncidentTag:                      NewIncidentTagClient(cfg),
-		IncidentType:                     NewIncidentTypeClient(cfg),
-		Integration:                      NewIntegrationClient(cfg),
-		IntegrationOAuthState:            NewIntegrationOAuthStateClient(cfg),
-		KnowledgeEntity:                  NewKnowledgeEntityClient(cfg),
-		KnowledgeEntityAlias:             NewKnowledgeEntityAliasClient(cfg),
-		KnowledgeFactHistory:             NewKnowledgeFactHistoryClient(cfg),
-		KnowledgeFactProvenance:          NewKnowledgeFactProvenanceClient(cfg),
-		KnowledgeRelationship:            NewKnowledgeRelationshipClient(cfg),
-		MeetingSchedule:                  NewMeetingScheduleClient(cfg),
-		MeetingSession:                   NewMeetingSessionClient(cfg),
-		NormalizedEvent:                  NewNormalizedEventClient(cfg),
-		OncallHandoverTemplate:           NewOncallHandoverTemplateClient(cfg),
-		OncallRoster:                     NewOncallRosterClient(cfg),
-		OncallRosterMetrics:              NewOncallRosterMetricsClient(cfg),
-		OncallSchedule:                   NewOncallScheduleClient(cfg),
-		OncallScheduleParticipant:        NewOncallScheduleParticipantClient(cfg),
-		OncallShift:                      NewOncallShiftClient(cfg),
-		OncallShiftHandover:              NewOncallShiftHandoverClient(cfg),
-		OncallShiftMetrics:               NewOncallShiftMetricsClient(cfg),
-		Organization:                     NewOrganizationClient(cfg),
-		OrganizationRole:                 NewOrganizationRoleClient(cfg),
-		Playbook:                         NewPlaybookClient(cfg),
-		ProviderSyncHistory:              NewProviderSyncHistoryClient(cfg),
-		Retrospective:                    NewRetrospectiveClient(cfg),
-		RetrospectiveComment:             NewRetrospectiveCommentClient(cfg),
-		RetrospectiveReview:              NewRetrospectiveReviewClient(cfg),
-		SystemAnalysis:                   NewSystemAnalysisClient(cfg),
-		SystemAnalysisComponent:          NewSystemAnalysisComponentClient(cfg),
-		SystemAnalysisRelationship:       NewSystemAnalysisRelationshipClient(cfg),
-		SystemComponent:                  NewSystemComponentClient(cfg),
-		SystemComponentConstraint:        NewSystemComponentConstraintClient(cfg),
-		SystemComponentControl:           NewSystemComponentControlClient(cfg),
-		SystemComponentKind:              NewSystemComponentKindClient(cfg),
-		SystemComponentRelationship:      NewSystemComponentRelationshipClient(cfg),
-		SystemComponentSignal:            NewSystemComponentSignalClient(cfg),
-		SystemHazard:                     NewSystemHazardClient(cfg),
-		SystemRelationshipControlAction:  NewSystemRelationshipControlActionClient(cfg),
-		SystemRelationshipFeedbackSignal: NewSystemRelationshipFeedbackSignalClient(cfg),
-		Task:                             NewTaskClient(cfg),
-		Team:                             NewTeamClient(cfg),
-		TeamMembership:                   NewTeamMembershipClient(cfg),
-		Tenant:                           NewTenantClient(cfg),
-		Ticket:                           NewTicketClient(cfg),
-		User:                             NewUserClient(cfg),
-		VideoConference:                  NewVideoConferenceClient(cfg),
+		ctx:                                ctx,
+		config:                             cfg,
+		Alert:                              NewAlertClient(cfg),
+		AlertFeedback:                      NewAlertFeedbackClient(cfg),
+		AlertInstance:                      NewAlertInstanceClient(cfg),
+		AlertMetrics:                       NewAlertMetricsClient(cfg),
+		Document:                           NewDocumentClient(cfg),
+		DocumentAccess:                     NewDocumentAccessClient(cfg),
+		Event:                              NewEventClient(cfg),
+		EventAnnotation:                    NewEventAnnotationClient(cfg),
+		Incident:                           NewIncidentClient(cfg),
+		IncidentDebrief:                    NewIncidentDebriefClient(cfg),
+		IncidentDebriefMessage:             NewIncidentDebriefMessageClient(cfg),
+		IncidentDebriefQuestion:            NewIncidentDebriefQuestionClient(cfg),
+		IncidentDebriefSuggestion:          NewIncidentDebriefSuggestionClient(cfg),
+		IncidentEvent:                      NewIncidentEventClient(cfg),
+		IncidentEventContext:               NewIncidentEventContextClient(cfg),
+		IncidentEventContributingFactor:    NewIncidentEventContributingFactorClient(cfg),
+		IncidentEventEvidence:              NewIncidentEventEvidenceClient(cfg),
+		IncidentEventTopologyContext:       NewIncidentEventTopologyContextClient(cfg),
+		IncidentField:                      NewIncidentFieldClient(cfg),
+		IncidentFieldOption:                NewIncidentFieldOptionClient(cfg),
+		IncidentLink:                       NewIncidentLinkClient(cfg),
+		IncidentMilestone:                  NewIncidentMilestoneClient(cfg),
+		IncidentRole:                       NewIncidentRoleClient(cfg),
+		IncidentRoleAssignment:             NewIncidentRoleAssignmentClient(cfg),
+		IncidentSeverity:                   NewIncidentSeverityClient(cfg),
+		IncidentTag:                        NewIncidentTagClient(cfg),
+		IncidentType:                       NewIncidentTypeClient(cfg),
+		Integration:                        NewIntegrationClient(cfg),
+		IntegrationOAuthState:              NewIntegrationOAuthStateClient(cfg),
+		KnowledgeEntity:                    NewKnowledgeEntityClient(cfg),
+		KnowledgeEntityAlias:               NewKnowledgeEntityAliasClient(cfg),
+		KnowledgeFactHistory:               NewKnowledgeFactHistoryClient(cfg),
+		KnowledgeFactProvenance:            NewKnowledgeFactProvenanceClient(cfg),
+		KnowledgeRelationship:              NewKnowledgeRelationshipClient(cfg),
+		MeetingSchedule:                    NewMeetingScheduleClient(cfg),
+		MeetingSession:                     NewMeetingSessionClient(cfg),
+		NormalizedEvent:                    NewNormalizedEventClient(cfg),
+		OncallHandoverTemplate:             NewOncallHandoverTemplateClient(cfg),
+		OncallRoster:                       NewOncallRosterClient(cfg),
+		OncallRosterMetrics:                NewOncallRosterMetricsClient(cfg),
+		OncallSchedule:                     NewOncallScheduleClient(cfg),
+		OncallScheduleParticipant:          NewOncallScheduleParticipantClient(cfg),
+		OncallShift:                        NewOncallShiftClient(cfg),
+		OncallShiftHandover:                NewOncallShiftHandoverClient(cfg),
+		OncallShiftMetrics:                 NewOncallShiftMetricsClient(cfg),
+		Organization:                       NewOrganizationClient(cfg),
+		OrganizationRole:                   NewOrganizationRoleClient(cfg),
+		Playbook:                           NewPlaybookClient(cfg),
+		ProviderSyncHistory:                NewProviderSyncHistoryClient(cfg),
+		Retrospective:                      NewRetrospectiveClient(cfg),
+		RetrospectiveComment:               NewRetrospectiveCommentClient(cfg),
+		RetrospectiveReview:                NewRetrospectiveReviewClient(cfg),
+		SystemAnalysis:                     NewSystemAnalysisClient(cfg),
+		SystemAnalysisTopologyEdge:         NewSystemAnalysisTopologyEdgeClient(cfg),
+		SystemAnalysisTopologyNode:         NewSystemAnalysisTopologyNodeClient(cfg),
+		SystemTopologySnapshot:             NewSystemTopologySnapshotClient(cfg),
+		SystemTopologySnapshotEntity:       NewSystemTopologySnapshotEntityClient(cfg),
+		SystemTopologySnapshotRelationship: NewSystemTopologySnapshotRelationshipClient(cfg),
+		Task:                               NewTaskClient(cfg),
+		Team:                               NewTeamClient(cfg),
+		TeamMembership:                     NewTeamMembershipClient(cfg),
+		Tenant:                             NewTenantClient(cfg),
+		Ticket:                             NewTicketClient(cfg),
+		User:                               NewUserClient(cfg),
+		VideoConference:                    NewVideoConferenceClient(cfg),
 	}, nil
 }
 
@@ -609,7 +573,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
-		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentEventTopologyContext, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
 		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
@@ -620,11 +584,10 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationRole, c.Playbook, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
-		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
-		c.SystemComponentRelationship, c.SystemComponentSignal, c.SystemHazard,
-		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
-		c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User, c.VideoConference,
+		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
+		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
+		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
+		c.Tenant, c.Ticket, c.User, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -639,7 +602,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
 		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
-		c.IncidentEventSystemComponent, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentEventTopologyContext, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
 		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
 		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
@@ -650,11 +613,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationRole, c.Playbook, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisComponent, c.SystemAnalysisRelationship, c.SystemComponent,
-		c.SystemComponentConstraint, c.SystemComponentControl, c.SystemComponentKind,
-		c.SystemComponentRelationship, c.SystemComponentSignal, c.SystemHazard,
-		c.SystemRelationshipControlAction, c.SystemRelationshipFeedbackSignal, c.Task,
-		c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User, c.VideoConference,
+		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
+		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
+		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
+		c.Tenant, c.Ticket, c.User, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -695,8 +657,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentEventContributingFactor.mutate(ctx, m)
 	case *IncidentEventEvidenceMutation:
 		return c.IncidentEventEvidence.mutate(ctx, m)
-	case *IncidentEventSystemComponentMutation:
-		return c.IncidentEventSystemComponent.mutate(ctx, m)
+	case *IncidentEventTopologyContextMutation:
+		return c.IncidentEventTopologyContext.mutate(ctx, m)
 	case *IncidentFieldMutation:
 		return c.IncidentField.mutate(ctx, m)
 	case *IncidentFieldOptionMutation:
@@ -767,28 +729,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.RetrospectiveReview.mutate(ctx, m)
 	case *SystemAnalysisMutation:
 		return c.SystemAnalysis.mutate(ctx, m)
-	case *SystemAnalysisComponentMutation:
-		return c.SystemAnalysisComponent.mutate(ctx, m)
-	case *SystemAnalysisRelationshipMutation:
-		return c.SystemAnalysisRelationship.mutate(ctx, m)
-	case *SystemComponentMutation:
-		return c.SystemComponent.mutate(ctx, m)
-	case *SystemComponentConstraintMutation:
-		return c.SystemComponentConstraint.mutate(ctx, m)
-	case *SystemComponentControlMutation:
-		return c.SystemComponentControl.mutate(ctx, m)
-	case *SystemComponentKindMutation:
-		return c.SystemComponentKind.mutate(ctx, m)
-	case *SystemComponentRelationshipMutation:
-		return c.SystemComponentRelationship.mutate(ctx, m)
-	case *SystemComponentSignalMutation:
-		return c.SystemComponentSignal.mutate(ctx, m)
-	case *SystemHazardMutation:
-		return c.SystemHazard.mutate(ctx, m)
-	case *SystemRelationshipControlActionMutation:
-		return c.SystemRelationshipControlAction.mutate(ctx, m)
-	case *SystemRelationshipFeedbackSignalMutation:
-		return c.SystemRelationshipFeedbackSignal.mutate(ctx, m)
+	case *SystemAnalysisTopologyEdgeMutation:
+		return c.SystemAnalysisTopologyEdge.mutate(ctx, m)
+	case *SystemAnalysisTopologyNodeMutation:
+		return c.SystemAnalysisTopologyNode.mutate(ctx, m)
+	case *SystemTopologySnapshotMutation:
+		return c.SystemTopologySnapshot.mutate(ctx, m)
+	case *SystemTopologySnapshotEntityMutation:
+		return c.SystemTopologySnapshotEntity.mutate(ctx, m)
+	case *SystemTopologySnapshotRelationshipMutation:
+		return c.SystemTopologySnapshotRelationship.mutate(ctx, m)
 	case *TaskMutation:
 		return c.Task.mutate(ctx, m)
 	case *TeamMutation:
@@ -3789,38 +3739,19 @@ func (c *IncidentEventClient) QueryEvidence(_m *IncidentEvent) *IncidentEventEvi
 	return query
 }
 
-// QuerySystemComponents queries the system_components edge of a IncidentEvent.
-func (c *IncidentEventClient) QuerySystemComponents(_m *IncidentEvent) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QueryTopologyContext queries the topology_context edge of a IncidentEvent.
+func (c *IncidentEventClient) QueryTopologyContext(_m *IncidentEvent) *IncidentEventTopologyContextQuery {
+	query := (&IncidentEventTopologyContextClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, incidentevent.SystemComponentsTable, incidentevent.SystemComponentsPrimaryKey...),
+			sqlgraph.To(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incidentevent.TopologyContextTable, incidentevent.TopologyContextColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEventComponents queries the event_components edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryEventComponents(_m *IncidentEvent) *IncidentEventSystemComponentQuery {
-	query := (&IncidentEventSystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incidentevent.EventComponentsTable, incidentevent.EventComponentsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEventSystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
+		step.To.Schema = schemaConfig.IncidentEventTopologyContext
+		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -4369,107 +4300,107 @@ func (c *IncidentEventEvidenceClient) mutate(ctx context.Context, m *IncidentEve
 	}
 }
 
-// IncidentEventSystemComponentClient is a client for the IncidentEventSystemComponent schema.
-type IncidentEventSystemComponentClient struct {
+// IncidentEventTopologyContextClient is a client for the IncidentEventTopologyContext schema.
+type IncidentEventTopologyContextClient struct {
 	config
 }
 
-// NewIncidentEventSystemComponentClient returns a client for the IncidentEventSystemComponent from the given config.
-func NewIncidentEventSystemComponentClient(c config) *IncidentEventSystemComponentClient {
-	return &IncidentEventSystemComponentClient{config: c}
+// NewIncidentEventTopologyContextClient returns a client for the IncidentEventTopologyContext from the given config.
+func NewIncidentEventTopologyContextClient(c config) *IncidentEventTopologyContextClient {
+	return &IncidentEventTopologyContextClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidenteventsystemcomponent.Hooks(f(g(h())))`.
-func (c *IncidentEventSystemComponentClient) Use(hooks ...Hook) {
-	c.hooks.IncidentEventSystemComponent = append(c.hooks.IncidentEventSystemComponent, hooks...)
+// A call to `Use(f, g, h)` equals to `incidenteventtopologycontext.Hooks(f(g(h())))`.
+func (c *IncidentEventTopologyContextClient) Use(hooks ...Hook) {
+	c.hooks.IncidentEventTopologyContext = append(c.hooks.IncidentEventTopologyContext, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidenteventsystemcomponent.Intercept(f(g(h())))`.
-func (c *IncidentEventSystemComponentClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentEventSystemComponent = append(c.inters.IncidentEventSystemComponent, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `incidenteventtopologycontext.Intercept(f(g(h())))`.
+func (c *IncidentEventTopologyContextClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentEventTopologyContext = append(c.inters.IncidentEventTopologyContext, interceptors...)
 }
 
-// Create returns a builder for creating a IncidentEventSystemComponent entity.
-func (c *IncidentEventSystemComponentClient) Create() *IncidentEventSystemComponentCreate {
-	mutation := newIncidentEventSystemComponentMutation(c.config, OpCreate)
-	return &IncidentEventSystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a IncidentEventTopologyContext entity.
+func (c *IncidentEventTopologyContextClient) Create() *IncidentEventTopologyContextCreate {
+	mutation := newIncidentEventTopologyContextMutation(c.config, OpCreate)
+	return &IncidentEventTopologyContextCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of IncidentEventSystemComponent entities.
-func (c *IncidentEventSystemComponentClient) CreateBulk(builders ...*IncidentEventSystemComponentCreate) *IncidentEventSystemComponentCreateBulk {
-	return &IncidentEventSystemComponentCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of IncidentEventTopologyContext entities.
+func (c *IncidentEventTopologyContextClient) CreateBulk(builders ...*IncidentEventTopologyContextCreate) *IncidentEventTopologyContextCreateBulk {
+	return &IncidentEventTopologyContextCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *IncidentEventSystemComponentClient) MapCreateBulk(slice any, setFunc func(*IncidentEventSystemComponentCreate, int)) *IncidentEventSystemComponentCreateBulk {
+func (c *IncidentEventTopologyContextClient) MapCreateBulk(slice any, setFunc func(*IncidentEventTopologyContextCreate, int)) *IncidentEventTopologyContextCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &IncidentEventSystemComponentCreateBulk{err: fmt.Errorf("calling to IncidentEventSystemComponentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &IncidentEventTopologyContextCreateBulk{err: fmt.Errorf("calling to IncidentEventTopologyContextClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*IncidentEventSystemComponentCreate, rv.Len())
+	builders := make([]*IncidentEventTopologyContextCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &IncidentEventSystemComponentCreateBulk{config: c.config, builders: builders}
+	return &IncidentEventTopologyContextCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for IncidentEventSystemComponent.
-func (c *IncidentEventSystemComponentClient) Update() *IncidentEventSystemComponentUpdate {
-	mutation := newIncidentEventSystemComponentMutation(c.config, OpUpdate)
-	return &IncidentEventSystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for IncidentEventTopologyContext.
+func (c *IncidentEventTopologyContextClient) Update() *IncidentEventTopologyContextUpdate {
+	mutation := newIncidentEventTopologyContextMutation(c.config, OpUpdate)
+	return &IncidentEventTopologyContextUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *IncidentEventSystemComponentClient) UpdateOne(_m *IncidentEventSystemComponent) *IncidentEventSystemComponentUpdateOne {
-	mutation := newIncidentEventSystemComponentMutation(c.config, OpUpdateOne, withIncidentEventSystemComponent(_m))
-	return &IncidentEventSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *IncidentEventTopologyContextClient) UpdateOne(_m *IncidentEventTopologyContext) *IncidentEventTopologyContextUpdateOne {
+	mutation := newIncidentEventTopologyContextMutation(c.config, OpUpdateOne, withIncidentEventTopologyContext(_m))
+	return &IncidentEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *IncidentEventSystemComponentClient) UpdateOneID(id uuid.UUID) *IncidentEventSystemComponentUpdateOne {
-	mutation := newIncidentEventSystemComponentMutation(c.config, OpUpdateOne, withIncidentEventSystemComponentID(id))
-	return &IncidentEventSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *IncidentEventTopologyContextClient) UpdateOneID(id uuid.UUID) *IncidentEventTopologyContextUpdateOne {
+	mutation := newIncidentEventTopologyContextMutation(c.config, OpUpdateOne, withIncidentEventTopologyContextID(id))
+	return &IncidentEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for IncidentEventSystemComponent.
-func (c *IncidentEventSystemComponentClient) Delete() *IncidentEventSystemComponentDelete {
-	mutation := newIncidentEventSystemComponentMutation(c.config, OpDelete)
-	return &IncidentEventSystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for IncidentEventTopologyContext.
+func (c *IncidentEventTopologyContextClient) Delete() *IncidentEventTopologyContextDelete {
+	mutation := newIncidentEventTopologyContextMutation(c.config, OpDelete)
+	return &IncidentEventTopologyContextDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentEventSystemComponentClient) DeleteOne(_m *IncidentEventSystemComponent) *IncidentEventSystemComponentDeleteOne {
+func (c *IncidentEventTopologyContextClient) DeleteOne(_m *IncidentEventTopologyContext) *IncidentEventTopologyContextDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentEventSystemComponentClient) DeleteOneID(id uuid.UUID) *IncidentEventSystemComponentDeleteOne {
-	builder := c.Delete().Where(incidenteventsystemcomponent.ID(id))
+func (c *IncidentEventTopologyContextClient) DeleteOneID(id uuid.UUID) *IncidentEventTopologyContextDeleteOne {
+	builder := c.Delete().Where(incidenteventtopologycontext.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &IncidentEventSystemComponentDeleteOne{builder}
+	return &IncidentEventTopologyContextDeleteOne{builder}
 }
 
-// Query returns a query builder for IncidentEventSystemComponent.
-func (c *IncidentEventSystemComponentClient) Query() *IncidentEventSystemComponentQuery {
-	return &IncidentEventSystemComponentQuery{
+// Query returns a query builder for IncidentEventTopologyContext.
+func (c *IncidentEventTopologyContextClient) Query() *IncidentEventTopologyContextQuery {
+	return &IncidentEventTopologyContextQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentEventSystemComponent},
+		ctx:    &QueryContext{Type: TypeIncidentEventTopologyContext},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a IncidentEventSystemComponent entity by its id.
-func (c *IncidentEventSystemComponentClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventSystemComponent, error) {
-	return c.Query().Where(incidenteventsystemcomponent.ID(id)).Only(ctx)
+// Get returns a IncidentEventTopologyContext entity by its id.
+func (c *IncidentEventTopologyContextClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventTopologyContext, error) {
+	return c.Query().Where(incidenteventtopologycontext.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *IncidentEventSystemComponentClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventSystemComponent {
+func (c *IncidentEventTopologyContextClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventTopologyContext {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -4477,57 +4408,76 @@ func (c *IncidentEventSystemComponentClient) GetX(ctx context.Context, id uuid.U
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a IncidentEventSystemComponent.
-func (c *IncidentEventSystemComponentClient) QueryTenant(_m *IncidentEventSystemComponent) *TenantQuery {
+// QueryTenant queries the tenant edge of a IncidentEventTopologyContext.
+func (c *IncidentEventTopologyContextClient) QueryTenant(_m *IncidentEventTopologyContext) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID, id),
+			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventsystemcomponent.TenantTable, incidenteventsystemcomponent.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.TenantTable, incidenteventtopologycontext.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
+		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryEvent queries the event edge of a IncidentEventSystemComponent.
-func (c *IncidentEventSystemComponentClient) QueryEvent(_m *IncidentEventSystemComponent) *IncidentEventSystemComponentQuery {
-	query := (&IncidentEventSystemComponentClient{config: c.config}).Query()
+// QueryEvent queries the event edge of a IncidentEventTopologyContext.
+func (c *IncidentEventTopologyContextClient) QueryEvent(_m *IncidentEventTopologyContext) *IncidentEventQuery {
+	query := (&IncidentEventClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID, id),
-			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, incidenteventsystemcomponent.EventTable, incidenteventsystemcomponent.EventColumn),
+			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, id),
+			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.EventTable, incidenteventtopologycontext.EventColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEventSystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
+		step.To.Schema = schemaConfig.IncidentEvent
+		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QuerySystemComponent queries the system_component edge of a IncidentEventSystemComponent.
-func (c *IncidentEventSystemComponentClient) QuerySystemComponent(_m *IncidentEventSystemComponent) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QueryKnowledgeEntity queries the knowledge_entity edge of a IncidentEventTopologyContext.
+func (c *IncidentEventTopologyContextClient) QueryKnowledgeEntity(_m *IncidentEventTopologyContext) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventsystemcomponent.SystemComponentTable, incidenteventsystemcomponent.SystemComponentColumn),
+			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.KnowledgeEntityTable, incidenteventtopologycontext.KnowledgeEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySnapshotEntity queries the snapshot_entity edge of a IncidentEventTopologyContext.
+func (c *IncidentEventTopologyContextClient) QuerySnapshotEntity(_m *IncidentEventTopologyContext) *SystemTopologySnapshotEntityQuery {
+	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.SnapshotEntityTable, incidenteventtopologycontext.SnapshotEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -4535,28 +4485,28 @@ func (c *IncidentEventSystemComponentClient) QuerySystemComponent(_m *IncidentEv
 }
 
 // Hooks returns the client hooks.
-func (c *IncidentEventSystemComponentClient) Hooks() []Hook {
-	hooks := c.hooks.IncidentEventSystemComponent
-	return append(hooks[:len(hooks):len(hooks)], incidenteventsystemcomponent.Hooks[:]...)
+func (c *IncidentEventTopologyContextClient) Hooks() []Hook {
+	hooks := c.hooks.IncidentEventTopologyContext
+	return append(hooks[:len(hooks):len(hooks)], incidenteventtopologycontext.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *IncidentEventSystemComponentClient) Interceptors() []Interceptor {
-	return c.inters.IncidentEventSystemComponent
+func (c *IncidentEventTopologyContextClient) Interceptors() []Interceptor {
+	return c.inters.IncidentEventTopologyContext
 }
 
-func (c *IncidentEventSystemComponentClient) mutate(ctx context.Context, m *IncidentEventSystemComponentMutation) (Value, error) {
+func (c *IncidentEventTopologyContextClient) mutate(ctx context.Context, m *IncidentEventTopologyContextMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&IncidentEventSystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IncidentEventTopologyContextCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&IncidentEventSystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IncidentEventTopologyContextUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&IncidentEventSystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IncidentEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&IncidentEventSystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&IncidentEventTopologyContextDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown IncidentEventSystemComponent mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown IncidentEventTopologyContext mutation op: %q", m.Op())
 	}
 }
 
@@ -11399,57 +11349,57 @@ func (c *SystemAnalysisClient) QueryRetrospective(_m *SystemAnalysis) *Retrospec
 	return query
 }
 
-// QueryComponents queries the components edge of a SystemAnalysis.
-func (c *SystemAnalysisClient) QueryComponents(_m *SystemAnalysis) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QueryTopologySnapshot queries the topology_snapshot edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryTopologySnapshot(_m *SystemAnalysis) *SystemTopologySnapshotQuery {
+	query := (&SystemTopologySnapshotClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemanalysis.ComponentsTable, systemanalysis.ComponentsPrimaryKey...),
+			sqlgraph.To(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.TopologySnapshotTable, systemanalysis.TopologySnapshotColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemTopologySnapshot
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryRelationships queries the relationships edge of a SystemAnalysis.
-func (c *SystemAnalysisClient) QueryRelationships(_m *SystemAnalysis) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
+// QueryAnalysisNodes queries the analysis_nodes edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryAnalysisNodes(_m *SystemAnalysis) *SystemAnalysisTopologyNodeQuery {
+	query := (&SystemAnalysisTopologyNodeClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
-			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.RelationshipsTable, systemanalysis.RelationshipsColumn),
+			sqlgraph.To(systemanalysistopologynode.Table, systemanalysistopologynode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisNodesTable, systemanalysis.AnalysisNodesColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyNode
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryAnalysisComponents queries the analysis_components edge of a SystemAnalysis.
-func (c *SystemAnalysisClient) QueryAnalysisComponents(_m *SystemAnalysis) *SystemAnalysisComponentQuery {
-	query := (&SystemAnalysisComponentClient{config: c.config}).Query()
+// QueryAnalysisEdges queries the analysis_edges edge of a SystemAnalysis.
+func (c *SystemAnalysisClient) QueryAnalysisEdges(_m *SystemAnalysis) *SystemAnalysisTopologyEdgeQuery {
+	query := (&SystemAnalysisTopologyEdgeClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, id),
-			sqlgraph.To(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisComponentsTable, systemanalysis.AnalysisComponentsColumn),
+			sqlgraph.To(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisEdgesTable, systemanalysis.AnalysisEdgesColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -11482,107 +11432,107 @@ func (c *SystemAnalysisClient) mutate(ctx context.Context, m *SystemAnalysisMuta
 	}
 }
 
-// SystemAnalysisComponentClient is a client for the SystemAnalysisComponent schema.
-type SystemAnalysisComponentClient struct {
+// SystemAnalysisTopologyEdgeClient is a client for the SystemAnalysisTopologyEdge schema.
+type SystemAnalysisTopologyEdgeClient struct {
 	config
 }
 
-// NewSystemAnalysisComponentClient returns a client for the SystemAnalysisComponent from the given config.
-func NewSystemAnalysisComponentClient(c config) *SystemAnalysisComponentClient {
-	return &SystemAnalysisComponentClient{config: c}
+// NewSystemAnalysisTopologyEdgeClient returns a client for the SystemAnalysisTopologyEdge from the given config.
+func NewSystemAnalysisTopologyEdgeClient(c config) *SystemAnalysisTopologyEdgeClient {
+	return &SystemAnalysisTopologyEdgeClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemanalysiscomponent.Hooks(f(g(h())))`.
-func (c *SystemAnalysisComponentClient) Use(hooks ...Hook) {
-	c.hooks.SystemAnalysisComponent = append(c.hooks.SystemAnalysisComponent, hooks...)
+// A call to `Use(f, g, h)` equals to `systemanalysistopologyedge.Hooks(f(g(h())))`.
+func (c *SystemAnalysisTopologyEdgeClient) Use(hooks ...Hook) {
+	c.hooks.SystemAnalysisTopologyEdge = append(c.hooks.SystemAnalysisTopologyEdge, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemanalysiscomponent.Intercept(f(g(h())))`.
-func (c *SystemAnalysisComponentClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemAnalysisComponent = append(c.inters.SystemAnalysisComponent, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `systemanalysistopologyedge.Intercept(f(g(h())))`.
+func (c *SystemAnalysisTopologyEdgeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemAnalysisTopologyEdge = append(c.inters.SystemAnalysisTopologyEdge, interceptors...)
 }
 
-// Create returns a builder for creating a SystemAnalysisComponent entity.
-func (c *SystemAnalysisComponentClient) Create() *SystemAnalysisComponentCreate {
-	mutation := newSystemAnalysisComponentMutation(c.config, OpCreate)
-	return &SystemAnalysisComponentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a SystemAnalysisTopologyEdge entity.
+func (c *SystemAnalysisTopologyEdgeClient) Create() *SystemAnalysisTopologyEdgeCreate {
+	mutation := newSystemAnalysisTopologyEdgeMutation(c.config, OpCreate)
+	return &SystemAnalysisTopologyEdgeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of SystemAnalysisComponent entities.
-func (c *SystemAnalysisComponentClient) CreateBulk(builders ...*SystemAnalysisComponentCreate) *SystemAnalysisComponentCreateBulk {
-	return &SystemAnalysisComponentCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of SystemAnalysisTopologyEdge entities.
+func (c *SystemAnalysisTopologyEdgeClient) CreateBulk(builders ...*SystemAnalysisTopologyEdgeCreate) *SystemAnalysisTopologyEdgeCreateBulk {
+	return &SystemAnalysisTopologyEdgeCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *SystemAnalysisComponentClient) MapCreateBulk(slice any, setFunc func(*SystemAnalysisComponentCreate, int)) *SystemAnalysisComponentCreateBulk {
+func (c *SystemAnalysisTopologyEdgeClient) MapCreateBulk(slice any, setFunc func(*SystemAnalysisTopologyEdgeCreate, int)) *SystemAnalysisTopologyEdgeCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &SystemAnalysisComponentCreateBulk{err: fmt.Errorf("calling to SystemAnalysisComponentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &SystemAnalysisTopologyEdgeCreateBulk{err: fmt.Errorf("calling to SystemAnalysisTopologyEdgeClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*SystemAnalysisComponentCreate, rv.Len())
+	builders := make([]*SystemAnalysisTopologyEdgeCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &SystemAnalysisComponentCreateBulk{config: c.config, builders: builders}
+	return &SystemAnalysisTopologyEdgeCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for SystemAnalysisComponent.
-func (c *SystemAnalysisComponentClient) Update() *SystemAnalysisComponentUpdate {
-	mutation := newSystemAnalysisComponentMutation(c.config, OpUpdate)
-	return &SystemAnalysisComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for SystemAnalysisTopologyEdge.
+func (c *SystemAnalysisTopologyEdgeClient) Update() *SystemAnalysisTopologyEdgeUpdate {
+	mutation := newSystemAnalysisTopologyEdgeMutation(c.config, OpUpdate)
+	return &SystemAnalysisTopologyEdgeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SystemAnalysisComponentClient) UpdateOne(_m *SystemAnalysisComponent) *SystemAnalysisComponentUpdateOne {
-	mutation := newSystemAnalysisComponentMutation(c.config, OpUpdateOne, withSystemAnalysisComponent(_m))
-	return &SystemAnalysisComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemAnalysisTopologyEdgeClient) UpdateOne(_m *SystemAnalysisTopologyEdge) *SystemAnalysisTopologyEdgeUpdateOne {
+	mutation := newSystemAnalysisTopologyEdgeMutation(c.config, OpUpdateOne, withSystemAnalysisTopologyEdge(_m))
+	return &SystemAnalysisTopologyEdgeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SystemAnalysisComponentClient) UpdateOneID(id uuid.UUID) *SystemAnalysisComponentUpdateOne {
-	mutation := newSystemAnalysisComponentMutation(c.config, OpUpdateOne, withSystemAnalysisComponentID(id))
-	return &SystemAnalysisComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemAnalysisTopologyEdgeClient) UpdateOneID(id uuid.UUID) *SystemAnalysisTopologyEdgeUpdateOne {
+	mutation := newSystemAnalysisTopologyEdgeMutation(c.config, OpUpdateOne, withSystemAnalysisTopologyEdgeID(id))
+	return &SystemAnalysisTopologyEdgeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for SystemAnalysisComponent.
-func (c *SystemAnalysisComponentClient) Delete() *SystemAnalysisComponentDelete {
-	mutation := newSystemAnalysisComponentMutation(c.config, OpDelete)
-	return &SystemAnalysisComponentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for SystemAnalysisTopologyEdge.
+func (c *SystemAnalysisTopologyEdgeClient) Delete() *SystemAnalysisTopologyEdgeDelete {
+	mutation := newSystemAnalysisTopologyEdgeMutation(c.config, OpDelete)
+	return &SystemAnalysisTopologyEdgeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SystemAnalysisComponentClient) DeleteOne(_m *SystemAnalysisComponent) *SystemAnalysisComponentDeleteOne {
+func (c *SystemAnalysisTopologyEdgeClient) DeleteOne(_m *SystemAnalysisTopologyEdge) *SystemAnalysisTopologyEdgeDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemAnalysisComponentClient) DeleteOneID(id uuid.UUID) *SystemAnalysisComponentDeleteOne {
-	builder := c.Delete().Where(systemanalysiscomponent.ID(id))
+func (c *SystemAnalysisTopologyEdgeClient) DeleteOneID(id uuid.UUID) *SystemAnalysisTopologyEdgeDeleteOne {
+	builder := c.Delete().Where(systemanalysistopologyedge.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &SystemAnalysisComponentDeleteOne{builder}
+	return &SystemAnalysisTopologyEdgeDeleteOne{builder}
 }
 
-// Query returns a query builder for SystemAnalysisComponent.
-func (c *SystemAnalysisComponentClient) Query() *SystemAnalysisComponentQuery {
-	return &SystemAnalysisComponentQuery{
+// Query returns a query builder for SystemAnalysisTopologyEdge.
+func (c *SystemAnalysisTopologyEdgeClient) Query() *SystemAnalysisTopologyEdgeQuery {
+	return &SystemAnalysisTopologyEdgeQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemAnalysisComponent},
+		ctx:    &QueryContext{Type: TypeSystemAnalysisTopologyEdge},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a SystemAnalysisComponent entity by its id.
-func (c *SystemAnalysisComponentClient) Get(ctx context.Context, id uuid.UUID) (*SystemAnalysisComponent, error) {
-	return c.Query().Where(systemanalysiscomponent.ID(id)).Only(ctx)
+// Get returns a SystemAnalysisTopologyEdge entity by its id.
+func (c *SystemAnalysisTopologyEdgeClient) Get(ctx context.Context, id uuid.UUID) (*SystemAnalysisTopologyEdge, error) {
+	return c.Query().Where(systemanalysistopologyedge.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SystemAnalysisComponentClient) GetX(ctx context.Context, id uuid.UUID) *SystemAnalysisComponent {
+func (c *SystemAnalysisTopologyEdgeClient) GetX(ctx context.Context, id uuid.UUID) *SystemAnalysisTopologyEdge {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -11590,57 +11540,57 @@ func (c *SystemAnalysisComponentClient) GetX(ctx context.Context, id uuid.UUID) 
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a SystemAnalysisComponent.
-func (c *SystemAnalysisComponentClient) QueryTenant(_m *SystemAnalysisComponent) *TenantQuery {
+// QueryTenant queries the tenant edge of a SystemAnalysisTopologyEdge.
+func (c *SystemAnalysisTopologyEdgeClient) QueryTenant(_m *SystemAnalysisTopologyEdge) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID, id),
+			sqlgraph.From(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysiscomponent.TenantTable, systemanalysiscomponent.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologyedge.TenantTable, systemanalysistopologyedge.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryAnalysis queries the analysis edge of a SystemAnalysisComponent.
-func (c *SystemAnalysisComponentClient) QueryAnalysis(_m *SystemAnalysisComponent) *SystemAnalysisQuery {
+// QueryAnalysis queries the analysis edge of a SystemAnalysisTopologyEdge.
+func (c *SystemAnalysisTopologyEdgeClient) QueryAnalysis(_m *SystemAnalysisTopologyEdge) *SystemAnalysisQuery {
 	query := (&SystemAnalysisClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID, id),
+			sqlgraph.From(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID, id),
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysiscomponent.AnalysisTable, systemanalysiscomponent.AnalysisColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologyedge.AnalysisTable, systemanalysistopologyedge.AnalysisColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryComponent queries the component edge of a SystemAnalysisComponent.
-func (c *SystemAnalysisComponentClient) QueryComponent(_m *SystemAnalysisComponent) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QuerySnapshotRelationship queries the snapshot_relationship edge of a SystemAnalysisTopologyEdge.
+func (c *SystemAnalysisTopologyEdgeClient) QuerySnapshotRelationship(_m *SystemAnalysisTopologyEdge) *SystemTopologySnapshotRelationshipQuery {
+	query := (&SystemTopologySnapshotRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysiscomponent.ComponentTable, systemanalysiscomponent.ComponentColumn),
+			sqlgraph.From(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologyedge.SnapshotRelationshipTable, systemanalysistopologyedge.SnapshotRelationshipColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -11648,132 +11598,132 @@ func (c *SystemAnalysisComponentClient) QueryComponent(_m *SystemAnalysisCompone
 }
 
 // Hooks returns the client hooks.
-func (c *SystemAnalysisComponentClient) Hooks() []Hook {
-	hooks := c.hooks.SystemAnalysisComponent
-	return append(hooks[:len(hooks):len(hooks)], systemanalysiscomponent.Hooks[:]...)
+func (c *SystemAnalysisTopologyEdgeClient) Hooks() []Hook {
+	hooks := c.hooks.SystemAnalysisTopologyEdge
+	return append(hooks[:len(hooks):len(hooks)], systemanalysistopologyedge.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *SystemAnalysisComponentClient) Interceptors() []Interceptor {
-	return c.inters.SystemAnalysisComponent
+func (c *SystemAnalysisTopologyEdgeClient) Interceptors() []Interceptor {
+	return c.inters.SystemAnalysisTopologyEdge
 }
 
-func (c *SystemAnalysisComponentClient) mutate(ctx context.Context, m *SystemAnalysisComponentMutation) (Value, error) {
+func (c *SystemAnalysisTopologyEdgeClient) mutate(ctx context.Context, m *SystemAnalysisTopologyEdgeMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&SystemAnalysisComponentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemAnalysisTopologyEdgeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&SystemAnalysisComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemAnalysisTopologyEdgeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&SystemAnalysisComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemAnalysisTopologyEdgeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&SystemAnalysisComponentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&SystemAnalysisTopologyEdgeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown SystemAnalysisComponent mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown SystemAnalysisTopologyEdge mutation op: %q", m.Op())
 	}
 }
 
-// SystemAnalysisRelationshipClient is a client for the SystemAnalysisRelationship schema.
-type SystemAnalysisRelationshipClient struct {
+// SystemAnalysisTopologyNodeClient is a client for the SystemAnalysisTopologyNode schema.
+type SystemAnalysisTopologyNodeClient struct {
 	config
 }
 
-// NewSystemAnalysisRelationshipClient returns a client for the SystemAnalysisRelationship from the given config.
-func NewSystemAnalysisRelationshipClient(c config) *SystemAnalysisRelationshipClient {
-	return &SystemAnalysisRelationshipClient{config: c}
+// NewSystemAnalysisTopologyNodeClient returns a client for the SystemAnalysisTopologyNode from the given config.
+func NewSystemAnalysisTopologyNodeClient(c config) *SystemAnalysisTopologyNodeClient {
+	return &SystemAnalysisTopologyNodeClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemanalysisrelationship.Hooks(f(g(h())))`.
-func (c *SystemAnalysisRelationshipClient) Use(hooks ...Hook) {
-	c.hooks.SystemAnalysisRelationship = append(c.hooks.SystemAnalysisRelationship, hooks...)
+// A call to `Use(f, g, h)` equals to `systemanalysistopologynode.Hooks(f(g(h())))`.
+func (c *SystemAnalysisTopologyNodeClient) Use(hooks ...Hook) {
+	c.hooks.SystemAnalysisTopologyNode = append(c.hooks.SystemAnalysisTopologyNode, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemanalysisrelationship.Intercept(f(g(h())))`.
-func (c *SystemAnalysisRelationshipClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemAnalysisRelationship = append(c.inters.SystemAnalysisRelationship, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `systemanalysistopologynode.Intercept(f(g(h())))`.
+func (c *SystemAnalysisTopologyNodeClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemAnalysisTopologyNode = append(c.inters.SystemAnalysisTopologyNode, interceptors...)
 }
 
-// Create returns a builder for creating a SystemAnalysisRelationship entity.
-func (c *SystemAnalysisRelationshipClient) Create() *SystemAnalysisRelationshipCreate {
-	mutation := newSystemAnalysisRelationshipMutation(c.config, OpCreate)
-	return &SystemAnalysisRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a SystemAnalysisTopologyNode entity.
+func (c *SystemAnalysisTopologyNodeClient) Create() *SystemAnalysisTopologyNodeCreate {
+	mutation := newSystemAnalysisTopologyNodeMutation(c.config, OpCreate)
+	return &SystemAnalysisTopologyNodeCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of SystemAnalysisRelationship entities.
-func (c *SystemAnalysisRelationshipClient) CreateBulk(builders ...*SystemAnalysisRelationshipCreate) *SystemAnalysisRelationshipCreateBulk {
-	return &SystemAnalysisRelationshipCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of SystemAnalysisTopologyNode entities.
+func (c *SystemAnalysisTopologyNodeClient) CreateBulk(builders ...*SystemAnalysisTopologyNodeCreate) *SystemAnalysisTopologyNodeCreateBulk {
+	return &SystemAnalysisTopologyNodeCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *SystemAnalysisRelationshipClient) MapCreateBulk(slice any, setFunc func(*SystemAnalysisRelationshipCreate, int)) *SystemAnalysisRelationshipCreateBulk {
+func (c *SystemAnalysisTopologyNodeClient) MapCreateBulk(slice any, setFunc func(*SystemAnalysisTopologyNodeCreate, int)) *SystemAnalysisTopologyNodeCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &SystemAnalysisRelationshipCreateBulk{err: fmt.Errorf("calling to SystemAnalysisRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &SystemAnalysisTopologyNodeCreateBulk{err: fmt.Errorf("calling to SystemAnalysisTopologyNodeClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*SystemAnalysisRelationshipCreate, rv.Len())
+	builders := make([]*SystemAnalysisTopologyNodeCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &SystemAnalysisRelationshipCreateBulk{config: c.config, builders: builders}
+	return &SystemAnalysisTopologyNodeCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) Update() *SystemAnalysisRelationshipUpdate {
-	mutation := newSystemAnalysisRelationshipMutation(c.config, OpUpdate)
-	return &SystemAnalysisRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for SystemAnalysisTopologyNode.
+func (c *SystemAnalysisTopologyNodeClient) Update() *SystemAnalysisTopologyNodeUpdate {
+	mutation := newSystemAnalysisTopologyNodeMutation(c.config, OpUpdate)
+	return &SystemAnalysisTopologyNodeUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SystemAnalysisRelationshipClient) UpdateOne(_m *SystemAnalysisRelationship) *SystemAnalysisRelationshipUpdateOne {
-	mutation := newSystemAnalysisRelationshipMutation(c.config, OpUpdateOne, withSystemAnalysisRelationship(_m))
-	return &SystemAnalysisRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemAnalysisTopologyNodeClient) UpdateOne(_m *SystemAnalysisTopologyNode) *SystemAnalysisTopologyNodeUpdateOne {
+	mutation := newSystemAnalysisTopologyNodeMutation(c.config, OpUpdateOne, withSystemAnalysisTopologyNode(_m))
+	return &SystemAnalysisTopologyNodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SystemAnalysisRelationshipClient) UpdateOneID(id uuid.UUID) *SystemAnalysisRelationshipUpdateOne {
-	mutation := newSystemAnalysisRelationshipMutation(c.config, OpUpdateOne, withSystemAnalysisRelationshipID(id))
-	return &SystemAnalysisRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemAnalysisTopologyNodeClient) UpdateOneID(id uuid.UUID) *SystemAnalysisTopologyNodeUpdateOne {
+	mutation := newSystemAnalysisTopologyNodeMutation(c.config, OpUpdateOne, withSystemAnalysisTopologyNodeID(id))
+	return &SystemAnalysisTopologyNodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) Delete() *SystemAnalysisRelationshipDelete {
-	mutation := newSystemAnalysisRelationshipMutation(c.config, OpDelete)
-	return &SystemAnalysisRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for SystemAnalysisTopologyNode.
+func (c *SystemAnalysisTopologyNodeClient) Delete() *SystemAnalysisTopologyNodeDelete {
+	mutation := newSystemAnalysisTopologyNodeMutation(c.config, OpDelete)
+	return &SystemAnalysisTopologyNodeDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SystemAnalysisRelationshipClient) DeleteOne(_m *SystemAnalysisRelationship) *SystemAnalysisRelationshipDeleteOne {
+func (c *SystemAnalysisTopologyNodeClient) DeleteOne(_m *SystemAnalysisTopologyNode) *SystemAnalysisTopologyNodeDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemAnalysisRelationshipClient) DeleteOneID(id uuid.UUID) *SystemAnalysisRelationshipDeleteOne {
-	builder := c.Delete().Where(systemanalysisrelationship.ID(id))
+func (c *SystemAnalysisTopologyNodeClient) DeleteOneID(id uuid.UUID) *SystemAnalysisTopologyNodeDeleteOne {
+	builder := c.Delete().Where(systemanalysistopologynode.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &SystemAnalysisRelationshipDeleteOne{builder}
+	return &SystemAnalysisTopologyNodeDeleteOne{builder}
 }
 
-// Query returns a query builder for SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) Query() *SystemAnalysisRelationshipQuery {
-	return &SystemAnalysisRelationshipQuery{
+// Query returns a query builder for SystemAnalysisTopologyNode.
+func (c *SystemAnalysisTopologyNodeClient) Query() *SystemAnalysisTopologyNodeQuery {
+	return &SystemAnalysisTopologyNodeQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemAnalysisRelationship},
+		ctx:    &QueryContext{Type: TypeSystemAnalysisTopologyNode},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a SystemAnalysisRelationship entity by its id.
-func (c *SystemAnalysisRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*SystemAnalysisRelationship, error) {
-	return c.Query().Where(systemanalysisrelationship.ID(id)).Only(ctx)
+// Get returns a SystemAnalysisTopologyNode entity by its id.
+func (c *SystemAnalysisTopologyNodeClient) Get(ctx context.Context, id uuid.UUID) (*SystemAnalysisTopologyNode, error) {
+	return c.Query().Where(systemanalysistopologynode.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SystemAnalysisRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *SystemAnalysisRelationship {
+func (c *SystemAnalysisTopologyNodeClient) GetX(ctx context.Context, id uuid.UUID) *SystemAnalysisTopologyNode {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -11781,57 +11731,57 @@ func (c *SystemAnalysisRelationshipClient) GetX(ctx context.Context, id uuid.UUI
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QueryTenant(_m *SystemAnalysisRelationship) *TenantQuery {
+// QueryTenant queries the tenant edge of a SystemAnalysisTopologyNode.
+func (c *SystemAnalysisTopologyNodeClient) QueryTenant(_m *SystemAnalysisTopologyNode) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
+			sqlgraph.From(systemanalysistopologynode.Table, systemanalysistopologynode.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.TenantTable, systemanalysisrelationship.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologynode.TenantTable, systemanalysistopologynode.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QuerySystemAnalysis queries the system_analysis edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QuerySystemAnalysis(_m *SystemAnalysisRelationship) *SystemAnalysisQuery {
+// QueryAnalysis queries the analysis edge of a SystemAnalysisTopologyNode.
+func (c *SystemAnalysisTopologyNodeClient) QueryAnalysis(_m *SystemAnalysisTopologyNode) *SystemAnalysisQuery {
 	query := (&SystemAnalysisClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
+			sqlgraph.From(systemanalysistopologynode.Table, systemanalysistopologynode.FieldID, id),
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.SystemAnalysisTable, systemanalysisrelationship.SystemAnalysisColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologynode.AnalysisTable, systemanalysistopologynode.AnalysisColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryRelationship queries the relationship edge of a SystemAnalysisRelationship.
-func (c *SystemAnalysisRelationshipClient) QueryRelationship(_m *SystemAnalysisRelationship) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
+// QuerySnapshotEntity queries the snapshot_entity edge of a SystemAnalysisTopologyNode.
+func (c *SystemAnalysisTopologyNodeClient) QuerySnapshotEntity(_m *SystemAnalysisTopologyNode) *SystemTopologySnapshotEntityQuery {
+	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID, id),
-			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysisrelationship.RelationshipTable, systemanalysisrelationship.RelationshipColumn),
+			sqlgraph.From(systemanalysistopologynode.Table, systemanalysistopologynode.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysistopologynode.SnapshotEntityTable, systemanalysistopologynode.SnapshotEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -11839,132 +11789,132 @@ func (c *SystemAnalysisRelationshipClient) QueryRelationship(_m *SystemAnalysisR
 }
 
 // Hooks returns the client hooks.
-func (c *SystemAnalysisRelationshipClient) Hooks() []Hook {
-	hooks := c.hooks.SystemAnalysisRelationship
-	return append(hooks[:len(hooks):len(hooks)], systemanalysisrelationship.Hooks[:]...)
+func (c *SystemAnalysisTopologyNodeClient) Hooks() []Hook {
+	hooks := c.hooks.SystemAnalysisTopologyNode
+	return append(hooks[:len(hooks):len(hooks)], systemanalysistopologynode.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *SystemAnalysisRelationshipClient) Interceptors() []Interceptor {
-	return c.inters.SystemAnalysisRelationship
+func (c *SystemAnalysisTopologyNodeClient) Interceptors() []Interceptor {
+	return c.inters.SystemAnalysisTopologyNode
 }
 
-func (c *SystemAnalysisRelationshipClient) mutate(ctx context.Context, m *SystemAnalysisRelationshipMutation) (Value, error) {
+func (c *SystemAnalysisTopologyNodeClient) mutate(ctx context.Context, m *SystemAnalysisTopologyNodeMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&SystemAnalysisRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemAnalysisTopologyNodeCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&SystemAnalysisRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemAnalysisTopologyNodeUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&SystemAnalysisRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemAnalysisTopologyNodeUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&SystemAnalysisRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&SystemAnalysisTopologyNodeDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown SystemAnalysisRelationship mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown SystemAnalysisTopologyNode mutation op: %q", m.Op())
 	}
 }
 
-// SystemComponentClient is a client for the SystemComponent schema.
-type SystemComponentClient struct {
+// SystemTopologySnapshotClient is a client for the SystemTopologySnapshot schema.
+type SystemTopologySnapshotClient struct {
 	config
 }
 
-// NewSystemComponentClient returns a client for the SystemComponent from the given config.
-func NewSystemComponentClient(c config) *SystemComponentClient {
-	return &SystemComponentClient{config: c}
+// NewSystemTopologySnapshotClient returns a client for the SystemTopologySnapshot from the given config.
+func NewSystemTopologySnapshotClient(c config) *SystemTopologySnapshotClient {
+	return &SystemTopologySnapshotClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemcomponent.Hooks(f(g(h())))`.
-func (c *SystemComponentClient) Use(hooks ...Hook) {
-	c.hooks.SystemComponent = append(c.hooks.SystemComponent, hooks...)
+// A call to `Use(f, g, h)` equals to `systemtopologysnapshot.Hooks(f(g(h())))`.
+func (c *SystemTopologySnapshotClient) Use(hooks ...Hook) {
+	c.hooks.SystemTopologySnapshot = append(c.hooks.SystemTopologySnapshot, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemcomponent.Intercept(f(g(h())))`.
-func (c *SystemComponentClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemComponent = append(c.inters.SystemComponent, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `systemtopologysnapshot.Intercept(f(g(h())))`.
+func (c *SystemTopologySnapshotClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemTopologySnapshot = append(c.inters.SystemTopologySnapshot, interceptors...)
 }
 
-// Create returns a builder for creating a SystemComponent entity.
-func (c *SystemComponentClient) Create() *SystemComponentCreate {
-	mutation := newSystemComponentMutation(c.config, OpCreate)
-	return &SystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a SystemTopologySnapshot entity.
+func (c *SystemTopologySnapshotClient) Create() *SystemTopologySnapshotCreate {
+	mutation := newSystemTopologySnapshotMutation(c.config, OpCreate)
+	return &SystemTopologySnapshotCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of SystemComponent entities.
-func (c *SystemComponentClient) CreateBulk(builders ...*SystemComponentCreate) *SystemComponentCreateBulk {
-	return &SystemComponentCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of SystemTopologySnapshot entities.
+func (c *SystemTopologySnapshotClient) CreateBulk(builders ...*SystemTopologySnapshotCreate) *SystemTopologySnapshotCreateBulk {
+	return &SystemTopologySnapshotCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *SystemComponentClient) MapCreateBulk(slice any, setFunc func(*SystemComponentCreate, int)) *SystemComponentCreateBulk {
+func (c *SystemTopologySnapshotClient) MapCreateBulk(slice any, setFunc func(*SystemTopologySnapshotCreate, int)) *SystemTopologySnapshotCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &SystemComponentCreateBulk{err: fmt.Errorf("calling to SystemComponentClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &SystemTopologySnapshotCreateBulk{err: fmt.Errorf("calling to SystemTopologySnapshotClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*SystemComponentCreate, rv.Len())
+	builders := make([]*SystemTopologySnapshotCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &SystemComponentCreateBulk{config: c.config, builders: builders}
+	return &SystemTopologySnapshotCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for SystemComponent.
-func (c *SystemComponentClient) Update() *SystemComponentUpdate {
-	mutation := newSystemComponentMutation(c.config, OpUpdate)
-	return &SystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for SystemTopologySnapshot.
+func (c *SystemTopologySnapshotClient) Update() *SystemTopologySnapshotUpdate {
+	mutation := newSystemTopologySnapshotMutation(c.config, OpUpdate)
+	return &SystemTopologySnapshotUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SystemComponentClient) UpdateOne(_m *SystemComponent) *SystemComponentUpdateOne {
-	mutation := newSystemComponentMutation(c.config, OpUpdateOne, withSystemComponent(_m))
-	return &SystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemTopologySnapshotClient) UpdateOne(_m *SystemTopologySnapshot) *SystemTopologySnapshotUpdateOne {
+	mutation := newSystemTopologySnapshotMutation(c.config, OpUpdateOne, withSystemTopologySnapshot(_m))
+	return &SystemTopologySnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SystemComponentClient) UpdateOneID(id uuid.UUID) *SystemComponentUpdateOne {
-	mutation := newSystemComponentMutation(c.config, OpUpdateOne, withSystemComponentID(id))
-	return &SystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemTopologySnapshotClient) UpdateOneID(id uuid.UUID) *SystemTopologySnapshotUpdateOne {
+	mutation := newSystemTopologySnapshotMutation(c.config, OpUpdateOne, withSystemTopologySnapshotID(id))
+	return &SystemTopologySnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for SystemComponent.
-func (c *SystemComponentClient) Delete() *SystemComponentDelete {
-	mutation := newSystemComponentMutation(c.config, OpDelete)
-	return &SystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for SystemTopologySnapshot.
+func (c *SystemTopologySnapshotClient) Delete() *SystemTopologySnapshotDelete {
+	mutation := newSystemTopologySnapshotMutation(c.config, OpDelete)
+	return &SystemTopologySnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SystemComponentClient) DeleteOne(_m *SystemComponent) *SystemComponentDeleteOne {
+func (c *SystemTopologySnapshotClient) DeleteOne(_m *SystemTopologySnapshot) *SystemTopologySnapshotDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemComponentClient) DeleteOneID(id uuid.UUID) *SystemComponentDeleteOne {
-	builder := c.Delete().Where(systemcomponent.ID(id))
+func (c *SystemTopologySnapshotClient) DeleteOneID(id uuid.UUID) *SystemTopologySnapshotDeleteOne {
+	builder := c.Delete().Where(systemtopologysnapshot.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &SystemComponentDeleteOne{builder}
+	return &SystemTopologySnapshotDeleteOne{builder}
 }
 
-// Query returns a query builder for SystemComponent.
-func (c *SystemComponentClient) Query() *SystemComponentQuery {
-	return &SystemComponentQuery{
+// Query returns a query builder for SystemTopologySnapshot.
+func (c *SystemTopologySnapshotClient) Query() *SystemTopologySnapshotQuery {
+	return &SystemTopologySnapshotQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemComponent},
+		ctx:    &QueryContext{Type: TypeSystemTopologySnapshot},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a SystemComponent entity by its id.
-func (c *SystemComponentClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponent, error) {
-	return c.Query().Where(systemcomponent.ID(id)).Only(ctx)
+// Get returns a SystemTopologySnapshot entity by its id.
+func (c *SystemTopologySnapshotClient) Get(ctx context.Context, id uuid.UUID) (*SystemTopologySnapshot, error) {
+	return c.Query().Where(systemtopologysnapshot.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SystemComponentClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponent {
+func (c *SystemTopologySnapshotClient) GetX(ctx context.Context, id uuid.UUID) *SystemTopologySnapshot {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -11972,228 +11922,76 @@ func (c *SystemComponentClient) GetX(ctx context.Context, id uuid.UUID) *SystemC
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a SystemComponent.
-func (c *SystemComponentClient) QueryTenant(_m *SystemComponent) *TenantQuery {
+// QueryTenant queries the tenant edge of a SystemTopologySnapshot.
+func (c *SystemTopologySnapshotClient) QueryTenant(_m *SystemTopologySnapshot) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.From(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponent.TenantTable, systemcomponent.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshot.TenantTable, systemtopologysnapshot.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemComponent
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshot
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryKind queries the kind edge of a SystemComponent.
-func (c *SystemComponentClient) QueryKind(_m *SystemComponent) *SystemComponentKindQuery {
-	query := (&SystemComponentKindClient{config: c.config}).Query()
+// QueryEntities queries the entities edge of a SystemTopologySnapshot.
+func (c *SystemTopologySnapshotClient) QueryEntities(_m *SystemTopologySnapshot) *SystemTopologySnapshotEntityQuery {
+	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponentkind.Table, systemcomponentkind.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponent.KindTable, systemcomponent.KindColumn),
+			sqlgraph.From(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshot.EntitiesTable, systemtopologysnapshot.EntitiesColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentKind
-		step.Edge.Schema = schemaConfig.SystemComponent
+		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotEntity
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryRelated queries the related edge of a SystemComponent.
-func (c *SystemComponentClient) QueryRelated(_m *SystemComponent) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QueryRelationships queries the relationships edge of a SystemTopologySnapshot.
+func (c *SystemTopologySnapshotClient) QueryRelationships(_m *SystemTopologySnapshot) *SystemTopologySnapshotRelationshipQuery {
+	query := (&SystemTopologySnapshotRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponent.RelatedTable, systemcomponent.RelatedPrimaryKey...),
+			sqlgraph.From(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshot.RelationshipsTable, systemtopologysnapshot.RelationshipsColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemComponentRelationship
+		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QuerySystemAnalyses queries the system_analyses edge of a SystemComponent.
-func (c *SystemComponentClient) QuerySystemAnalyses(_m *SystemComponent) *SystemAnalysisQuery {
+// QuerySystemAnalyses queries the system_analyses edge of a SystemTopologySnapshot.
+func (c *SystemTopologySnapshotClient) QuerySystemAnalyses(_m *SystemTopologySnapshot) *SystemAnalysisQuery {
 	query := (&SystemAnalysisClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
+			sqlgraph.From(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID, id),
 			sqlgraph.To(systemanalysis.Table, systemanalysis.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponent.SystemAnalysesTable, systemcomponent.SystemAnalysesPrimaryKey...),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshot.SystemAnalysesTable, systemtopologysnapshot.SystemAnalysesColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.SystemAnalysis
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEvents queries the events edge of a SystemComponent.
-func (c *SystemComponentClient) QueryEvents(_m *SystemComponent) *IncidentEventQuery {
-	query := (&IncidentEventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.EventsTable, systemcomponent.EventsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryConstraints queries the constraints edge of a SystemComponent.
-func (c *SystemComponentClient) QueryConstraints(_m *SystemComponent) *SystemComponentConstraintQuery {
-	query := (&SystemComponentConstraintClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ConstraintsTable, systemcomponent.ConstraintsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentConstraint
-		step.Edge.Schema = schemaConfig.SystemComponentConstraint
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryControls queries the controls edge of a SystemComponent.
-func (c *SystemComponentClient) QueryControls(_m *SystemComponent) *SystemComponentControlQuery {
-	query := (&SystemComponentControlClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ControlsTable, systemcomponent.ControlsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentControl
-		step.Edge.Schema = schemaConfig.SystemComponentControl
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySignals queries the signals edge of a SystemComponent.
-func (c *SystemComponentClient) QuerySignals(_m *SystemComponent) *SystemComponentSignalQuery {
-	query := (&SystemComponentSignalClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.SignalsTable, systemcomponent.SignalsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentSignal
-		step.Edge.Schema = schemaConfig.SystemComponentSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryHazards queries the hazards edge of a SystemComponent.
-func (c *SystemComponentClient) QueryHazards(_m *SystemComponent) *SystemHazardQuery {
-	query := (&SystemHazardClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponent.HazardsTable, systemcomponent.HazardsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemHazard
-		step.Edge.Schema = schemaConfig.SystemHazardComponents
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryComponentRelationships queries the component_relationships edge of a SystemComponent.
-func (c *SystemComponentClient) QueryComponentRelationships(_m *SystemComponent) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.ComponentRelationshipsTable, systemcomponent.ComponentRelationshipsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentRelationship
-		step.Edge.Schema = schemaConfig.SystemComponentRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySystemAnalysisComponents queries the system_analysis_components edge of a SystemComponent.
-func (c *SystemComponentClient) QuerySystemAnalysisComponents(_m *SystemComponent) *SystemAnalysisComponentQuery {
-	query := (&SystemAnalysisComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.SystemAnalysisComponentsTable, systemcomponent.SystemAnalysisComponentsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEventComponents queries the event_components edge of a SystemComponent.
-func (c *SystemComponentClient) QueryEventComponents(_m *SystemComponent) *IncidentEventSystemComponentQuery {
-	query := (&IncidentEventSystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponent.Table, systemcomponent.FieldID, id),
-			sqlgraph.To(incidenteventsystemcomponent.Table, incidenteventsystemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponent.EventComponentsTable, systemcomponent.EventComponentsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEventSystemComponent
-		step.Edge.Schema = schemaConfig.IncidentEventSystemComponent
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -12201,132 +11999,132 @@ func (c *SystemComponentClient) QueryEventComponents(_m *SystemComponent) *Incid
 }
 
 // Hooks returns the client hooks.
-func (c *SystemComponentClient) Hooks() []Hook {
-	hooks := c.hooks.SystemComponent
-	return append(hooks[:len(hooks):len(hooks)], systemcomponent.Hooks[:]...)
+func (c *SystemTopologySnapshotClient) Hooks() []Hook {
+	hooks := c.hooks.SystemTopologySnapshot
+	return append(hooks[:len(hooks):len(hooks)], systemtopologysnapshot.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *SystemComponentClient) Interceptors() []Interceptor {
-	return c.inters.SystemComponent
+func (c *SystemTopologySnapshotClient) Interceptors() []Interceptor {
+	return c.inters.SystemTopologySnapshot
 }
 
-func (c *SystemComponentClient) mutate(ctx context.Context, m *SystemComponentMutation) (Value, error) {
+func (c *SystemTopologySnapshotClient) mutate(ctx context.Context, m *SystemTopologySnapshotMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&SystemComponentCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&SystemComponentUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&SystemComponentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&SystemComponentDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&SystemTopologySnapshotDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown SystemComponent mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown SystemTopologySnapshot mutation op: %q", m.Op())
 	}
 }
 
-// SystemComponentConstraintClient is a client for the SystemComponentConstraint schema.
-type SystemComponentConstraintClient struct {
+// SystemTopologySnapshotEntityClient is a client for the SystemTopologySnapshotEntity schema.
+type SystemTopologySnapshotEntityClient struct {
 	config
 }
 
-// NewSystemComponentConstraintClient returns a client for the SystemComponentConstraint from the given config.
-func NewSystemComponentConstraintClient(c config) *SystemComponentConstraintClient {
-	return &SystemComponentConstraintClient{config: c}
+// NewSystemTopologySnapshotEntityClient returns a client for the SystemTopologySnapshotEntity from the given config.
+func NewSystemTopologySnapshotEntityClient(c config) *SystemTopologySnapshotEntityClient {
+	return &SystemTopologySnapshotEntityClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemcomponentconstraint.Hooks(f(g(h())))`.
-func (c *SystemComponentConstraintClient) Use(hooks ...Hook) {
-	c.hooks.SystemComponentConstraint = append(c.hooks.SystemComponentConstraint, hooks...)
+// A call to `Use(f, g, h)` equals to `systemtopologysnapshotentity.Hooks(f(g(h())))`.
+func (c *SystemTopologySnapshotEntityClient) Use(hooks ...Hook) {
+	c.hooks.SystemTopologySnapshotEntity = append(c.hooks.SystemTopologySnapshotEntity, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemcomponentconstraint.Intercept(f(g(h())))`.
-func (c *SystemComponentConstraintClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemComponentConstraint = append(c.inters.SystemComponentConstraint, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `systemtopologysnapshotentity.Intercept(f(g(h())))`.
+func (c *SystemTopologySnapshotEntityClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemTopologySnapshotEntity = append(c.inters.SystemTopologySnapshotEntity, interceptors...)
 }
 
-// Create returns a builder for creating a SystemComponentConstraint entity.
-func (c *SystemComponentConstraintClient) Create() *SystemComponentConstraintCreate {
-	mutation := newSystemComponentConstraintMutation(c.config, OpCreate)
-	return &SystemComponentConstraintCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a SystemTopologySnapshotEntity entity.
+func (c *SystemTopologySnapshotEntityClient) Create() *SystemTopologySnapshotEntityCreate {
+	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpCreate)
+	return &SystemTopologySnapshotEntityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of SystemComponentConstraint entities.
-func (c *SystemComponentConstraintClient) CreateBulk(builders ...*SystemComponentConstraintCreate) *SystemComponentConstraintCreateBulk {
-	return &SystemComponentConstraintCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of SystemTopologySnapshotEntity entities.
+func (c *SystemTopologySnapshotEntityClient) CreateBulk(builders ...*SystemTopologySnapshotEntityCreate) *SystemTopologySnapshotEntityCreateBulk {
+	return &SystemTopologySnapshotEntityCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *SystemComponentConstraintClient) MapCreateBulk(slice any, setFunc func(*SystemComponentConstraintCreate, int)) *SystemComponentConstraintCreateBulk {
+func (c *SystemTopologySnapshotEntityClient) MapCreateBulk(slice any, setFunc func(*SystemTopologySnapshotEntityCreate, int)) *SystemTopologySnapshotEntityCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &SystemComponentConstraintCreateBulk{err: fmt.Errorf("calling to SystemComponentConstraintClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &SystemTopologySnapshotEntityCreateBulk{err: fmt.Errorf("calling to SystemTopologySnapshotEntityClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*SystemComponentConstraintCreate, rv.Len())
+	builders := make([]*SystemTopologySnapshotEntityCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &SystemComponentConstraintCreateBulk{config: c.config, builders: builders}
+	return &SystemTopologySnapshotEntityCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for SystemComponentConstraint.
-func (c *SystemComponentConstraintClient) Update() *SystemComponentConstraintUpdate {
-	mutation := newSystemComponentConstraintMutation(c.config, OpUpdate)
-	return &SystemComponentConstraintUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) Update() *SystemTopologySnapshotEntityUpdate {
+	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpUpdate)
+	return &SystemTopologySnapshotEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SystemComponentConstraintClient) UpdateOne(_m *SystemComponentConstraint) *SystemComponentConstraintUpdateOne {
-	mutation := newSystemComponentConstraintMutation(c.config, OpUpdateOne, withSystemComponentConstraint(_m))
-	return &SystemComponentConstraintUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemTopologySnapshotEntityClient) UpdateOne(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotEntityUpdateOne {
+	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpUpdateOne, withSystemTopologySnapshotEntity(_m))
+	return &SystemTopologySnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SystemComponentConstraintClient) UpdateOneID(id uuid.UUID) *SystemComponentConstraintUpdateOne {
-	mutation := newSystemComponentConstraintMutation(c.config, OpUpdateOne, withSystemComponentConstraintID(id))
-	return &SystemComponentConstraintUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemTopologySnapshotEntityClient) UpdateOneID(id uuid.UUID) *SystemTopologySnapshotEntityUpdateOne {
+	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpUpdateOne, withSystemTopologySnapshotEntityID(id))
+	return &SystemTopologySnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for SystemComponentConstraint.
-func (c *SystemComponentConstraintClient) Delete() *SystemComponentConstraintDelete {
-	mutation := newSystemComponentConstraintMutation(c.config, OpDelete)
-	return &SystemComponentConstraintDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) Delete() *SystemTopologySnapshotEntityDelete {
+	mutation := newSystemTopologySnapshotEntityMutation(c.config, OpDelete)
+	return &SystemTopologySnapshotEntityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SystemComponentConstraintClient) DeleteOne(_m *SystemComponentConstraint) *SystemComponentConstraintDeleteOne {
+func (c *SystemTopologySnapshotEntityClient) DeleteOne(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotEntityDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemComponentConstraintClient) DeleteOneID(id uuid.UUID) *SystemComponentConstraintDeleteOne {
-	builder := c.Delete().Where(systemcomponentconstraint.ID(id))
+func (c *SystemTopologySnapshotEntityClient) DeleteOneID(id uuid.UUID) *SystemTopologySnapshotEntityDeleteOne {
+	builder := c.Delete().Where(systemtopologysnapshotentity.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &SystemComponentConstraintDeleteOne{builder}
+	return &SystemTopologySnapshotEntityDeleteOne{builder}
 }
 
-// Query returns a query builder for SystemComponentConstraint.
-func (c *SystemComponentConstraintClient) Query() *SystemComponentConstraintQuery {
-	return &SystemComponentConstraintQuery{
+// Query returns a query builder for SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) Query() *SystemTopologySnapshotEntityQuery {
+	return &SystemTopologySnapshotEntityQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemComponentConstraint},
+		ctx:    &QueryContext{Type: TypeSystemTopologySnapshotEntity},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a SystemComponentConstraint entity by its id.
-func (c *SystemComponentConstraintClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentConstraint, error) {
-	return c.Query().Where(systemcomponentconstraint.ID(id)).Only(ctx)
+// Get returns a SystemTopologySnapshotEntity entity by its id.
+func (c *SystemTopologySnapshotEntityClient) Get(ctx context.Context, id uuid.UUID) (*SystemTopologySnapshotEntity, error) {
+	return c.Query().Where(systemtopologysnapshotentity.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SystemComponentConstraintClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentConstraint {
+func (c *SystemTopologySnapshotEntityClient) GetX(ctx context.Context, id uuid.UUID) *SystemTopologySnapshotEntity {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -12334,57 +12132,114 @@ func (c *SystemComponentConstraintClient) GetX(ctx context.Context, id uuid.UUID
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a SystemComponentConstraint.
-func (c *SystemComponentConstraintClient) QueryTenant(_m *SystemComponentConstraint) *TenantQuery {
+// QueryTenant queries the tenant edge of a SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) QueryTenant(_m *SystemTopologySnapshotEntity) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID, id),
+			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentconstraint.TenantTable, systemcomponentconstraint.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotentity.TenantTable, systemtopologysnapshotentity.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemComponentConstraint
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotEntity
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryComponent queries the component edge of a SystemComponentConstraint.
-func (c *SystemComponentConstraintClient) QueryComponent(_m *SystemComponentConstraint) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QuerySnapshot queries the snapshot edge of a SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) QuerySnapshot(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotQuery {
+	query := (&SystemTopologySnapshotClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentconstraint.ComponentTable, systemcomponentconstraint.ComponentColumn),
+			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
+			sqlgraph.To(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotentity.SnapshotTable, systemtopologysnapshotentity.SnapshotColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemComponentConstraint
+		step.To.Schema = schemaConfig.SystemTopologySnapshot
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotEntity
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryHazards queries the hazards edge of a SystemComponentConstraint.
-func (c *SystemComponentConstraintClient) QueryHazards(_m *SystemComponentConstraint) *SystemHazardQuery {
-	query := (&SystemHazardClient{config: c.config}).Query()
+// QueryKnowledgeEntity queries the knowledge_entity edge of a SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) QueryKnowledgeEntity(_m *SystemTopologySnapshotEntity) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID, id),
-			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentconstraint.HazardsTable, systemcomponentconstraint.HazardsPrimaryKey...),
+			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotentity.KnowledgeEntityTable, systemtopologysnapshotentity.KnowledgeEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemHazard
-		step.Edge.Schema = schemaConfig.SystemHazardConstraints
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySourceRelationships queries the source_relationships edge of a SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) QuerySourceRelationships(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotRelationshipQuery {
+	query := (&SystemTopologySnapshotRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshotentity.SourceRelationshipsTable, systemtopologysnapshotentity.SourceRelationshipsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetRelationships queries the target_relationships edge of a SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) QueryTargetRelationships(_m *SystemTopologySnapshotEntity) *SystemTopologySnapshotRelationshipQuery {
+	query := (&SystemTopologySnapshotRelationshipClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshotentity.TargetRelationshipsTable, systemtopologysnapshotentity.TargetRelationshipsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysisNodes queries the analysis_nodes edge of a SystemTopologySnapshotEntity.
+func (c *SystemTopologySnapshotEntityClient) QueryAnalysisNodes(_m *SystemTopologySnapshotEntity) *SystemAnalysisTopologyNodeQuery {
+	query := (&SystemAnalysisTopologyNodeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID, id),
+			sqlgraph.To(systemanalysistopologynode.Table, systemanalysistopologynode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshotentity.AnalysisNodesTable, systemtopologysnapshotentity.AnalysisNodesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyNode
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -12392,132 +12247,132 @@ func (c *SystemComponentConstraintClient) QueryHazards(_m *SystemComponentConstr
 }
 
 // Hooks returns the client hooks.
-func (c *SystemComponentConstraintClient) Hooks() []Hook {
-	hooks := c.hooks.SystemComponentConstraint
-	return append(hooks[:len(hooks):len(hooks)], systemcomponentconstraint.Hooks[:]...)
+func (c *SystemTopologySnapshotEntityClient) Hooks() []Hook {
+	hooks := c.hooks.SystemTopologySnapshotEntity
+	return append(hooks[:len(hooks):len(hooks)], systemtopologysnapshotentity.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *SystemComponentConstraintClient) Interceptors() []Interceptor {
-	return c.inters.SystemComponentConstraint
+func (c *SystemTopologySnapshotEntityClient) Interceptors() []Interceptor {
+	return c.inters.SystemTopologySnapshotEntity
 }
 
-func (c *SystemComponentConstraintClient) mutate(ctx context.Context, m *SystemComponentConstraintMutation) (Value, error) {
+func (c *SystemTopologySnapshotEntityClient) mutate(ctx context.Context, m *SystemTopologySnapshotEntityMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&SystemComponentConstraintCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotEntityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&SystemComponentConstraintUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&SystemComponentConstraintUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&SystemComponentConstraintDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&SystemTopologySnapshotEntityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown SystemComponentConstraint mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown SystemTopologySnapshotEntity mutation op: %q", m.Op())
 	}
 }
 
-// SystemComponentControlClient is a client for the SystemComponentControl schema.
-type SystemComponentControlClient struct {
+// SystemTopologySnapshotRelationshipClient is a client for the SystemTopologySnapshotRelationship schema.
+type SystemTopologySnapshotRelationshipClient struct {
 	config
 }
 
-// NewSystemComponentControlClient returns a client for the SystemComponentControl from the given config.
-func NewSystemComponentControlClient(c config) *SystemComponentControlClient {
-	return &SystemComponentControlClient{config: c}
+// NewSystemTopologySnapshotRelationshipClient returns a client for the SystemTopologySnapshotRelationship from the given config.
+func NewSystemTopologySnapshotRelationshipClient(c config) *SystemTopologySnapshotRelationshipClient {
+	return &SystemTopologySnapshotRelationshipClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemcomponentcontrol.Hooks(f(g(h())))`.
-func (c *SystemComponentControlClient) Use(hooks ...Hook) {
-	c.hooks.SystemComponentControl = append(c.hooks.SystemComponentControl, hooks...)
+// A call to `Use(f, g, h)` equals to `systemtopologysnapshotrelationship.Hooks(f(g(h())))`.
+func (c *SystemTopologySnapshotRelationshipClient) Use(hooks ...Hook) {
+	c.hooks.SystemTopologySnapshotRelationship = append(c.hooks.SystemTopologySnapshotRelationship, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemcomponentcontrol.Intercept(f(g(h())))`.
-func (c *SystemComponentControlClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemComponentControl = append(c.inters.SystemComponentControl, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `systemtopologysnapshotrelationship.Intercept(f(g(h())))`.
+func (c *SystemTopologySnapshotRelationshipClient) Intercept(interceptors ...Interceptor) {
+	c.inters.SystemTopologySnapshotRelationship = append(c.inters.SystemTopologySnapshotRelationship, interceptors...)
 }
 
-// Create returns a builder for creating a SystemComponentControl entity.
-func (c *SystemComponentControlClient) Create() *SystemComponentControlCreate {
-	mutation := newSystemComponentControlMutation(c.config, OpCreate)
-	return &SystemComponentControlCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a SystemTopologySnapshotRelationship entity.
+func (c *SystemTopologySnapshotRelationshipClient) Create() *SystemTopologySnapshotRelationshipCreate {
+	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpCreate)
+	return &SystemTopologySnapshotRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of SystemComponentControl entities.
-func (c *SystemComponentControlClient) CreateBulk(builders ...*SystemComponentControlCreate) *SystemComponentControlCreateBulk {
-	return &SystemComponentControlCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of SystemTopologySnapshotRelationship entities.
+func (c *SystemTopologySnapshotRelationshipClient) CreateBulk(builders ...*SystemTopologySnapshotRelationshipCreate) *SystemTopologySnapshotRelationshipCreateBulk {
+	return &SystemTopologySnapshotRelationshipCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *SystemComponentControlClient) MapCreateBulk(slice any, setFunc func(*SystemComponentControlCreate, int)) *SystemComponentControlCreateBulk {
+func (c *SystemTopologySnapshotRelationshipClient) MapCreateBulk(slice any, setFunc func(*SystemTopologySnapshotRelationshipCreate, int)) *SystemTopologySnapshotRelationshipCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &SystemComponentControlCreateBulk{err: fmt.Errorf("calling to SystemComponentControlClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &SystemTopologySnapshotRelationshipCreateBulk{err: fmt.Errorf("calling to SystemTopologySnapshotRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*SystemComponentControlCreate, rv.Len())
+	builders := make([]*SystemTopologySnapshotRelationshipCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &SystemComponentControlCreateBulk{config: c.config, builders: builders}
+	return &SystemTopologySnapshotRelationshipCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for SystemComponentControl.
-func (c *SystemComponentControlClient) Update() *SystemComponentControlUpdate {
-	mutation := newSystemComponentControlMutation(c.config, OpUpdate)
-	return &SystemComponentControlUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) Update() *SystemTopologySnapshotRelationshipUpdate {
+	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpUpdate)
+	return &SystemTopologySnapshotRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *SystemComponentControlClient) UpdateOne(_m *SystemComponentControl) *SystemComponentControlUpdateOne {
-	mutation := newSystemComponentControlMutation(c.config, OpUpdateOne, withSystemComponentControl(_m))
-	return &SystemComponentControlUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemTopologySnapshotRelationshipClient) UpdateOne(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotRelationshipUpdateOne {
+	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpUpdateOne, withSystemTopologySnapshotRelationship(_m))
+	return &SystemTopologySnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *SystemComponentControlClient) UpdateOneID(id uuid.UUID) *SystemComponentControlUpdateOne {
-	mutation := newSystemComponentControlMutation(c.config, OpUpdateOne, withSystemComponentControlID(id))
-	return &SystemComponentControlUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *SystemTopologySnapshotRelationshipClient) UpdateOneID(id uuid.UUID) *SystemTopologySnapshotRelationshipUpdateOne {
+	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpUpdateOne, withSystemTopologySnapshotRelationshipID(id))
+	return &SystemTopologySnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for SystemComponentControl.
-func (c *SystemComponentControlClient) Delete() *SystemComponentControlDelete {
-	mutation := newSystemComponentControlMutation(c.config, OpDelete)
-	return &SystemComponentControlDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) Delete() *SystemTopologySnapshotRelationshipDelete {
+	mutation := newSystemTopologySnapshotRelationshipMutation(c.config, OpDelete)
+	return &SystemTopologySnapshotRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *SystemComponentControlClient) DeleteOne(_m *SystemComponentControl) *SystemComponentControlDeleteOne {
+func (c *SystemTopologySnapshotRelationshipClient) DeleteOne(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotRelationshipDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemComponentControlClient) DeleteOneID(id uuid.UUID) *SystemComponentControlDeleteOne {
-	builder := c.Delete().Where(systemcomponentcontrol.ID(id))
+func (c *SystemTopologySnapshotRelationshipClient) DeleteOneID(id uuid.UUID) *SystemTopologySnapshotRelationshipDeleteOne {
+	builder := c.Delete().Where(systemtopologysnapshotrelationship.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &SystemComponentControlDeleteOne{builder}
+	return &SystemTopologySnapshotRelationshipDeleteOne{builder}
 }
 
-// Query returns a query builder for SystemComponentControl.
-func (c *SystemComponentControlClient) Query() *SystemComponentControlQuery {
-	return &SystemComponentControlQuery{
+// Query returns a query builder for SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) Query() *SystemTopologySnapshotRelationshipQuery {
+	return &SystemTopologySnapshotRelationshipQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemComponentControl},
+		ctx:    &QueryContext{Type: TypeSystemTopologySnapshotRelationship},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a SystemComponentControl entity by its id.
-func (c *SystemComponentControlClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentControl, error) {
-	return c.Query().Where(systemcomponentcontrol.ID(id)).Only(ctx)
+// Get returns a SystemTopologySnapshotRelationship entity by its id.
+func (c *SystemTopologySnapshotRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*SystemTopologySnapshotRelationship, error) {
+	return c.Query().Where(systemtopologysnapshotrelationship.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *SystemComponentControlClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentControl {
+func (c *SystemTopologySnapshotRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *SystemTopologySnapshotRelationship {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -12525,76 +12380,114 @@ func (c *SystemComponentControlClient) GetX(ctx context.Context, id uuid.UUID) *
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a SystemComponentControl.
-func (c *SystemComponentControlClient) QueryTenant(_m *SystemComponentControl) *TenantQuery {
+// QueryTenant queries the tenant edge of a SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) QueryTenant(_m *SystemTopologySnapshotRelationship) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, id),
+			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentcontrol.TenantTable, systemcomponentcontrol.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.TenantTable, systemtopologysnapshotrelationship.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemComponentControl
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryComponent queries the component edge of a SystemComponentControl.
-func (c *SystemComponentControlClient) QueryComponent(_m *SystemComponentControl) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
+// QuerySnapshot queries the snapshot edge of a SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) QuerySnapshot(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotQuery {
+	query := (&SystemTopologySnapshotClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentcontrol.ComponentTable, systemcomponentcontrol.ComponentColumn),
+			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
+			sqlgraph.To(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.SnapshotTable, systemtopologysnapshotrelationship.SnapshotColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemComponentControl
+		step.To.Schema = schemaConfig.SystemTopologySnapshot
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryRelationships queries the relationships edge of a SystemComponentControl.
-func (c *SystemComponentControlClient) QueryRelationships(_m *SystemComponentControl) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
+// QueryKnowledgeRelationship queries the knowledge_relationship edge of a SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) QueryKnowledgeRelationship(_m *SystemTopologySnapshotRelationship) *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, id),
-			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentcontrol.RelationshipsTable, systemcomponentcontrol.RelationshipsPrimaryKey...),
+			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.KnowledgeRelationshipTable, systemtopologysnapshotrelationship.KnowledgeRelationshipColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentRelationship
-		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
+		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryControlActions queries the control_actions edge of a SystemComponentControl.
-func (c *SystemComponentControlClient) QueryControlActions(_m *SystemComponentControl) *SystemRelationshipControlActionQuery {
-	query := (&SystemRelationshipControlActionClient{config: c.config}).Query()
+// QuerySourceSnapshotEntity queries the source_snapshot_entity edge of a SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) QuerySourceSnapshotEntity(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotEntityQuery {
+	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID, id),
-			sqlgraph.To(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentcontrol.ControlActionsTable, systemcomponentcontrol.ControlActionsColumn),
+			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.SourceSnapshotEntityTable, systemtopologysnapshotrelationship.SourceSnapshotEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemRelationshipControlAction
-		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
+		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTargetSnapshotEntity queries the target_snapshot_entity edge of a SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) QueryTargetSnapshotEntity(_m *SystemTopologySnapshotRelationship) *SystemTopologySnapshotEntityQuery {
+	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.TargetSnapshotEntityTable, systemtopologysnapshotrelationship.TargetSnapshotEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAnalysisEdges queries the analysis_edges edge of a SystemTopologySnapshotRelationship.
+func (c *SystemTopologySnapshotRelationshipClient) QueryAnalysisEdges(_m *SystemTopologySnapshotRelationship) *SystemAnalysisTopologyEdgeQuery {
+	query := (&SystemAnalysisTopologyEdgeClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, id),
+			sqlgraph.To(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemtopologysnapshotrelationship.AnalysisEdgesTable, systemtopologysnapshotrelationship.AnalysisEdgesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -12602,1307 +12495,28 @@ func (c *SystemComponentControlClient) QueryControlActions(_m *SystemComponentCo
 }
 
 // Hooks returns the client hooks.
-func (c *SystemComponentControlClient) Hooks() []Hook {
-	hooks := c.hooks.SystemComponentControl
-	return append(hooks[:len(hooks):len(hooks)], systemcomponentcontrol.Hooks[:]...)
+func (c *SystemTopologySnapshotRelationshipClient) Hooks() []Hook {
+	hooks := c.hooks.SystemTopologySnapshotRelationship
+	return append(hooks[:len(hooks):len(hooks)], systemtopologysnapshotrelationship.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *SystemComponentControlClient) Interceptors() []Interceptor {
-	return c.inters.SystemComponentControl
+func (c *SystemTopologySnapshotRelationshipClient) Interceptors() []Interceptor {
+	return c.inters.SystemTopologySnapshotRelationship
 }
 
-func (c *SystemComponentControlClient) mutate(ctx context.Context, m *SystemComponentControlMutation) (Value, error) {
+func (c *SystemTopologySnapshotRelationshipClient) mutate(ctx context.Context, m *SystemTopologySnapshotRelationshipMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&SystemComponentControlCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&SystemComponentControlUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&SystemComponentControlUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&SystemTopologySnapshotRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&SystemComponentControlDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&SystemTopologySnapshotRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown SystemComponentControl mutation op: %q", m.Op())
-	}
-}
-
-// SystemComponentKindClient is a client for the SystemComponentKind schema.
-type SystemComponentKindClient struct {
-	config
-}
-
-// NewSystemComponentKindClient returns a client for the SystemComponentKind from the given config.
-func NewSystemComponentKindClient(c config) *SystemComponentKindClient {
-	return &SystemComponentKindClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemcomponentkind.Hooks(f(g(h())))`.
-func (c *SystemComponentKindClient) Use(hooks ...Hook) {
-	c.hooks.SystemComponentKind = append(c.hooks.SystemComponentKind, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemcomponentkind.Intercept(f(g(h())))`.
-func (c *SystemComponentKindClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemComponentKind = append(c.inters.SystemComponentKind, interceptors...)
-}
-
-// Create returns a builder for creating a SystemComponentKind entity.
-func (c *SystemComponentKindClient) Create() *SystemComponentKindCreate {
-	mutation := newSystemComponentKindMutation(c.config, OpCreate)
-	return &SystemComponentKindCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemComponentKind entities.
-func (c *SystemComponentKindClient) CreateBulk(builders ...*SystemComponentKindCreate) *SystemComponentKindCreateBulk {
-	return &SystemComponentKindCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemComponentKindClient) MapCreateBulk(slice any, setFunc func(*SystemComponentKindCreate, int)) *SystemComponentKindCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemComponentKindCreateBulk{err: fmt.Errorf("calling to SystemComponentKindClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemComponentKindCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemComponentKindCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemComponentKind.
-func (c *SystemComponentKindClient) Update() *SystemComponentKindUpdate {
-	mutation := newSystemComponentKindMutation(c.config, OpUpdate)
-	return &SystemComponentKindUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemComponentKindClient) UpdateOne(_m *SystemComponentKind) *SystemComponentKindUpdateOne {
-	mutation := newSystemComponentKindMutation(c.config, OpUpdateOne, withSystemComponentKind(_m))
-	return &SystemComponentKindUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemComponentKindClient) UpdateOneID(id uuid.UUID) *SystemComponentKindUpdateOne {
-	mutation := newSystemComponentKindMutation(c.config, OpUpdateOne, withSystemComponentKindID(id))
-	return &SystemComponentKindUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemComponentKind.
-func (c *SystemComponentKindClient) Delete() *SystemComponentKindDelete {
-	mutation := newSystemComponentKindMutation(c.config, OpDelete)
-	return &SystemComponentKindDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemComponentKindClient) DeleteOne(_m *SystemComponentKind) *SystemComponentKindDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemComponentKindClient) DeleteOneID(id uuid.UUID) *SystemComponentKindDeleteOne {
-	builder := c.Delete().Where(systemcomponentkind.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemComponentKindDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemComponentKind.
-func (c *SystemComponentKindClient) Query() *SystemComponentKindQuery {
-	return &SystemComponentKindQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemComponentKind},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemComponentKind entity by its id.
-func (c *SystemComponentKindClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentKind, error) {
-	return c.Query().Where(systemcomponentkind.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemComponentKindClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentKind {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemComponentKind.
-func (c *SystemComponentKindClient) QueryTenant(_m *SystemComponentKind) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentkind.Table, systemcomponentkind.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentkind.TenantTable, systemcomponentkind.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemComponentKind
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryComponents queries the components edge of a SystemComponentKind.
-func (c *SystemComponentKindClient) QueryComponents(_m *SystemComponentKind) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentkind.Table, systemcomponentkind.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentkind.ComponentsTable, systemcomponentkind.ComponentsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemComponent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemComponentKindClient) Hooks() []Hook {
-	hooks := c.hooks.SystemComponentKind
-	return append(hooks[:len(hooks):len(hooks)], systemcomponentkind.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemComponentKindClient) Interceptors() []Interceptor {
-	return c.inters.SystemComponentKind
-}
-
-func (c *SystemComponentKindClient) mutate(ctx context.Context, m *SystemComponentKindMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemComponentKindCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemComponentKindUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemComponentKindUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemComponentKindDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemComponentKind mutation op: %q", m.Op())
-	}
-}
-
-// SystemComponentRelationshipClient is a client for the SystemComponentRelationship schema.
-type SystemComponentRelationshipClient struct {
-	config
-}
-
-// NewSystemComponentRelationshipClient returns a client for the SystemComponentRelationship from the given config.
-func NewSystemComponentRelationshipClient(c config) *SystemComponentRelationshipClient {
-	return &SystemComponentRelationshipClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemcomponentrelationship.Hooks(f(g(h())))`.
-func (c *SystemComponentRelationshipClient) Use(hooks ...Hook) {
-	c.hooks.SystemComponentRelationship = append(c.hooks.SystemComponentRelationship, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemcomponentrelationship.Intercept(f(g(h())))`.
-func (c *SystemComponentRelationshipClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemComponentRelationship = append(c.inters.SystemComponentRelationship, interceptors...)
-}
-
-// Create returns a builder for creating a SystemComponentRelationship entity.
-func (c *SystemComponentRelationshipClient) Create() *SystemComponentRelationshipCreate {
-	mutation := newSystemComponentRelationshipMutation(c.config, OpCreate)
-	return &SystemComponentRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemComponentRelationship entities.
-func (c *SystemComponentRelationshipClient) CreateBulk(builders ...*SystemComponentRelationshipCreate) *SystemComponentRelationshipCreateBulk {
-	return &SystemComponentRelationshipCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemComponentRelationshipClient) MapCreateBulk(slice any, setFunc func(*SystemComponentRelationshipCreate, int)) *SystemComponentRelationshipCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemComponentRelationshipCreateBulk{err: fmt.Errorf("calling to SystemComponentRelationshipClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemComponentRelationshipCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemComponentRelationshipCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) Update() *SystemComponentRelationshipUpdate {
-	mutation := newSystemComponentRelationshipMutation(c.config, OpUpdate)
-	return &SystemComponentRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemComponentRelationshipClient) UpdateOne(_m *SystemComponentRelationship) *SystemComponentRelationshipUpdateOne {
-	mutation := newSystemComponentRelationshipMutation(c.config, OpUpdateOne, withSystemComponentRelationship(_m))
-	return &SystemComponentRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemComponentRelationshipClient) UpdateOneID(id uuid.UUID) *SystemComponentRelationshipUpdateOne {
-	mutation := newSystemComponentRelationshipMutation(c.config, OpUpdateOne, withSystemComponentRelationshipID(id))
-	return &SystemComponentRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) Delete() *SystemComponentRelationshipDelete {
-	mutation := newSystemComponentRelationshipMutation(c.config, OpDelete)
-	return &SystemComponentRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemComponentRelationshipClient) DeleteOne(_m *SystemComponentRelationship) *SystemComponentRelationshipDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemComponentRelationshipClient) DeleteOneID(id uuid.UUID) *SystemComponentRelationshipDeleteOne {
-	builder := c.Delete().Where(systemcomponentrelationship.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemComponentRelationshipDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) Query() *SystemComponentRelationshipQuery {
-	return &SystemComponentRelationshipQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemComponentRelationship},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemComponentRelationship entity by its id.
-func (c *SystemComponentRelationshipClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentRelationship, error) {
-	return c.Query().Where(systemcomponentrelationship.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemComponentRelationshipClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentRelationship {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QueryTenant(_m *SystemComponentRelationship) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.TenantTable, systemcomponentrelationship.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemComponentRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySource queries the source edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QuerySource(_m *SystemComponentRelationship) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.SourceTable, systemcomponentrelationship.SourceColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemComponentRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTarget queries the target edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QueryTarget(_m *SystemComponentRelationship) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentrelationship.TargetTable, systemcomponentrelationship.TargetColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemComponentRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySystemAnalyses queries the system_analyses edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QuerySystemAnalyses(_m *SystemComponentRelationship) *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentrelationship.SystemAnalysesTable, systemcomponentrelationship.SystemAnalysesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryHazards queries the hazards edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QueryHazards(_m *SystemComponentRelationship) *SystemHazardQuery {
-	query := (&SystemHazardClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(systemhazard.Table, systemhazard.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentrelationship.HazardsTable, systemcomponentrelationship.HazardsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemHazard
-		step.Edge.Schema = schemaConfig.SystemHazardRelationships
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryControls queries the controls edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QueryControls(_m *SystemComponentRelationship) *SystemComponentControlQuery {
-	query := (&SystemComponentControlClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponentrelationship.ControlsTable, systemcomponentrelationship.ControlsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentControl
-		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySignals queries the signals edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QuerySignals(_m *SystemComponentRelationship) *SystemComponentSignalQuery {
-	query := (&SystemComponentSignalClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemcomponentrelationship.SignalsTable, systemcomponentrelationship.SignalsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentSignal
-		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryControlActions queries the control_actions edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QueryControlActions(_m *SystemComponentRelationship) *SystemRelationshipControlActionQuery {
-	query := (&SystemRelationshipControlActionClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentrelationship.ControlActionsTable, systemcomponentrelationship.ControlActionsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemRelationshipControlAction
-		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFeedbackSignals queries the feedback_signals edge of a SystemComponentRelationship.
-func (c *SystemComponentRelationshipClient) QueryFeedbackSignals(_m *SystemComponentRelationship) *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID, id),
-			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentrelationship.FeedbackSignalsTable, systemcomponentrelationship.FeedbackSignalsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemComponentRelationshipClient) Hooks() []Hook {
-	hooks := c.hooks.SystemComponentRelationship
-	return append(hooks[:len(hooks):len(hooks)], systemcomponentrelationship.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemComponentRelationshipClient) Interceptors() []Interceptor {
-	return c.inters.SystemComponentRelationship
-}
-
-func (c *SystemComponentRelationshipClient) mutate(ctx context.Context, m *SystemComponentRelationshipMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemComponentRelationshipCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemComponentRelationshipUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemComponentRelationshipUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemComponentRelationshipDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemComponentRelationship mutation op: %q", m.Op())
-	}
-}
-
-// SystemComponentSignalClient is a client for the SystemComponentSignal schema.
-type SystemComponentSignalClient struct {
-	config
-}
-
-// NewSystemComponentSignalClient returns a client for the SystemComponentSignal from the given config.
-func NewSystemComponentSignalClient(c config) *SystemComponentSignalClient {
-	return &SystemComponentSignalClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemcomponentsignal.Hooks(f(g(h())))`.
-func (c *SystemComponentSignalClient) Use(hooks ...Hook) {
-	c.hooks.SystemComponentSignal = append(c.hooks.SystemComponentSignal, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemcomponentsignal.Intercept(f(g(h())))`.
-func (c *SystemComponentSignalClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemComponentSignal = append(c.inters.SystemComponentSignal, interceptors...)
-}
-
-// Create returns a builder for creating a SystemComponentSignal entity.
-func (c *SystemComponentSignalClient) Create() *SystemComponentSignalCreate {
-	mutation := newSystemComponentSignalMutation(c.config, OpCreate)
-	return &SystemComponentSignalCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemComponentSignal entities.
-func (c *SystemComponentSignalClient) CreateBulk(builders ...*SystemComponentSignalCreate) *SystemComponentSignalCreateBulk {
-	return &SystemComponentSignalCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemComponentSignalClient) MapCreateBulk(slice any, setFunc func(*SystemComponentSignalCreate, int)) *SystemComponentSignalCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemComponentSignalCreateBulk{err: fmt.Errorf("calling to SystemComponentSignalClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemComponentSignalCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemComponentSignalCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemComponentSignal.
-func (c *SystemComponentSignalClient) Update() *SystemComponentSignalUpdate {
-	mutation := newSystemComponentSignalMutation(c.config, OpUpdate)
-	return &SystemComponentSignalUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemComponentSignalClient) UpdateOne(_m *SystemComponentSignal) *SystemComponentSignalUpdateOne {
-	mutation := newSystemComponentSignalMutation(c.config, OpUpdateOne, withSystemComponentSignal(_m))
-	return &SystemComponentSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemComponentSignalClient) UpdateOneID(id uuid.UUID) *SystemComponentSignalUpdateOne {
-	mutation := newSystemComponentSignalMutation(c.config, OpUpdateOne, withSystemComponentSignalID(id))
-	return &SystemComponentSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemComponentSignal.
-func (c *SystemComponentSignalClient) Delete() *SystemComponentSignalDelete {
-	mutation := newSystemComponentSignalMutation(c.config, OpDelete)
-	return &SystemComponentSignalDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemComponentSignalClient) DeleteOne(_m *SystemComponentSignal) *SystemComponentSignalDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemComponentSignalClient) DeleteOneID(id uuid.UUID) *SystemComponentSignalDeleteOne {
-	builder := c.Delete().Where(systemcomponentsignal.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemComponentSignalDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemComponentSignal.
-func (c *SystemComponentSignalClient) Query() *SystemComponentSignalQuery {
-	return &SystemComponentSignalQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemComponentSignal},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemComponentSignal entity by its id.
-func (c *SystemComponentSignalClient) Get(ctx context.Context, id uuid.UUID) (*SystemComponentSignal, error) {
-	return c.Query().Where(systemcomponentsignal.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemComponentSignalClient) GetX(ctx context.Context, id uuid.UUID) *SystemComponentSignal {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemComponentSignal.
-func (c *SystemComponentSignalClient) QueryTenant(_m *SystemComponentSignal) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.TenantTable, systemcomponentsignal.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemComponentSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryComponent queries the component edge of a SystemComponentSignal.
-func (c *SystemComponentSignalClient) QueryComponent(_m *SystemComponentSignal) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemcomponentsignal.ComponentTable, systemcomponentsignal.ComponentColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemComponentSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRelationships queries the relationships edge of a SystemComponentSignal.
-func (c *SystemComponentSignalClient) QueryRelationships(_m *SystemComponentSignal) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, id),
-			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemcomponentsignal.RelationshipsTable, systemcomponentsignal.RelationshipsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentRelationship
-		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFeedbackSignals queries the feedback_signals edge of a SystemComponentSignal.
-func (c *SystemComponentSignalClient) QueryFeedbackSignals(_m *SystemComponentSignal) *SystemRelationshipFeedbackSignalQuery {
-	query := (&SystemRelationshipFeedbackSignalClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemcomponentsignal.Table, systemcomponentsignal.FieldID, id),
-			sqlgraph.To(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemcomponentsignal.FeedbackSignalsTable, systemcomponentsignal.FeedbackSignalsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemComponentSignalClient) Hooks() []Hook {
-	hooks := c.hooks.SystemComponentSignal
-	return append(hooks[:len(hooks):len(hooks)], systemcomponentsignal.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemComponentSignalClient) Interceptors() []Interceptor {
-	return c.inters.SystemComponentSignal
-}
-
-func (c *SystemComponentSignalClient) mutate(ctx context.Context, m *SystemComponentSignalMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemComponentSignalCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemComponentSignalUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemComponentSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemComponentSignalDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemComponentSignal mutation op: %q", m.Op())
-	}
-}
-
-// SystemHazardClient is a client for the SystemHazard schema.
-type SystemHazardClient struct {
-	config
-}
-
-// NewSystemHazardClient returns a client for the SystemHazard from the given config.
-func NewSystemHazardClient(c config) *SystemHazardClient {
-	return &SystemHazardClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemhazard.Hooks(f(g(h())))`.
-func (c *SystemHazardClient) Use(hooks ...Hook) {
-	c.hooks.SystemHazard = append(c.hooks.SystemHazard, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemhazard.Intercept(f(g(h())))`.
-func (c *SystemHazardClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemHazard = append(c.inters.SystemHazard, interceptors...)
-}
-
-// Create returns a builder for creating a SystemHazard entity.
-func (c *SystemHazardClient) Create() *SystemHazardCreate {
-	mutation := newSystemHazardMutation(c.config, OpCreate)
-	return &SystemHazardCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemHazard entities.
-func (c *SystemHazardClient) CreateBulk(builders ...*SystemHazardCreate) *SystemHazardCreateBulk {
-	return &SystemHazardCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemHazardClient) MapCreateBulk(slice any, setFunc func(*SystemHazardCreate, int)) *SystemHazardCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemHazardCreateBulk{err: fmt.Errorf("calling to SystemHazardClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemHazardCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemHazardCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemHazard.
-func (c *SystemHazardClient) Update() *SystemHazardUpdate {
-	mutation := newSystemHazardMutation(c.config, OpUpdate)
-	return &SystemHazardUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemHazardClient) UpdateOne(_m *SystemHazard) *SystemHazardUpdateOne {
-	mutation := newSystemHazardMutation(c.config, OpUpdateOne, withSystemHazard(_m))
-	return &SystemHazardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemHazardClient) UpdateOneID(id uuid.UUID) *SystemHazardUpdateOne {
-	mutation := newSystemHazardMutation(c.config, OpUpdateOne, withSystemHazardID(id))
-	return &SystemHazardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemHazard.
-func (c *SystemHazardClient) Delete() *SystemHazardDelete {
-	mutation := newSystemHazardMutation(c.config, OpDelete)
-	return &SystemHazardDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemHazardClient) DeleteOne(_m *SystemHazard) *SystemHazardDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemHazardClient) DeleteOneID(id uuid.UUID) *SystemHazardDeleteOne {
-	builder := c.Delete().Where(systemhazard.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemHazardDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemHazard.
-func (c *SystemHazardClient) Query() *SystemHazardQuery {
-	return &SystemHazardQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemHazard},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemHazard entity by its id.
-func (c *SystemHazardClient) Get(ctx context.Context, id uuid.UUID) (*SystemHazard, error) {
-	return c.Query().Where(systemhazard.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemHazardClient) GetX(ctx context.Context, id uuid.UUID) *SystemHazard {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemHazard.
-func (c *SystemHazardClient) QueryTenant(_m *SystemHazard) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemhazard.TenantTable, systemhazard.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemHazard
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryComponents queries the components edge of a SystemHazard.
-func (c *SystemHazardClient) QueryComponents(_m *SystemHazard) *SystemComponentQuery {
-	query := (&SystemComponentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.ComponentsTable, systemhazard.ComponentsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemHazardComponents
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryConstraints queries the constraints edge of a SystemHazard.
-func (c *SystemHazardClient) QueryConstraints(_m *SystemHazard) *SystemComponentConstraintQuery {
-	query := (&SystemComponentConstraintClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
-			sqlgraph.To(systemcomponentconstraint.Table, systemcomponentconstraint.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.ConstraintsTable, systemhazard.ConstraintsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentConstraint
-		step.Edge.Schema = schemaConfig.SystemHazardConstraints
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRelationships queries the relationships edge of a SystemHazard.
-func (c *SystemHazardClient) QueryRelationships(_m *SystemHazard) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemhazard.Table, systemhazard.FieldID, id),
-			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, false, systemhazard.RelationshipsTable, systemhazard.RelationshipsPrimaryKey...),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentRelationship
-		step.Edge.Schema = schemaConfig.SystemHazardRelationships
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemHazardClient) Hooks() []Hook {
-	hooks := c.hooks.SystemHazard
-	return append(hooks[:len(hooks):len(hooks)], systemhazard.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemHazardClient) Interceptors() []Interceptor {
-	return c.inters.SystemHazard
-}
-
-func (c *SystemHazardClient) mutate(ctx context.Context, m *SystemHazardMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemHazardCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemHazardUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemHazardUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemHazardDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemHazard mutation op: %q", m.Op())
-	}
-}
-
-// SystemRelationshipControlActionClient is a client for the SystemRelationshipControlAction schema.
-type SystemRelationshipControlActionClient struct {
-	config
-}
-
-// NewSystemRelationshipControlActionClient returns a client for the SystemRelationshipControlAction from the given config.
-func NewSystemRelationshipControlActionClient(c config) *SystemRelationshipControlActionClient {
-	return &SystemRelationshipControlActionClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemrelationshipcontrolaction.Hooks(f(g(h())))`.
-func (c *SystemRelationshipControlActionClient) Use(hooks ...Hook) {
-	c.hooks.SystemRelationshipControlAction = append(c.hooks.SystemRelationshipControlAction, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemrelationshipcontrolaction.Intercept(f(g(h())))`.
-func (c *SystemRelationshipControlActionClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemRelationshipControlAction = append(c.inters.SystemRelationshipControlAction, interceptors...)
-}
-
-// Create returns a builder for creating a SystemRelationshipControlAction entity.
-func (c *SystemRelationshipControlActionClient) Create() *SystemRelationshipControlActionCreate {
-	mutation := newSystemRelationshipControlActionMutation(c.config, OpCreate)
-	return &SystemRelationshipControlActionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemRelationshipControlAction entities.
-func (c *SystemRelationshipControlActionClient) CreateBulk(builders ...*SystemRelationshipControlActionCreate) *SystemRelationshipControlActionCreateBulk {
-	return &SystemRelationshipControlActionCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemRelationshipControlActionClient) MapCreateBulk(slice any, setFunc func(*SystemRelationshipControlActionCreate, int)) *SystemRelationshipControlActionCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemRelationshipControlActionCreateBulk{err: fmt.Errorf("calling to SystemRelationshipControlActionClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemRelationshipControlActionCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemRelationshipControlActionCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemRelationshipControlAction.
-func (c *SystemRelationshipControlActionClient) Update() *SystemRelationshipControlActionUpdate {
-	mutation := newSystemRelationshipControlActionMutation(c.config, OpUpdate)
-	return &SystemRelationshipControlActionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemRelationshipControlActionClient) UpdateOne(_m *SystemRelationshipControlAction) *SystemRelationshipControlActionUpdateOne {
-	mutation := newSystemRelationshipControlActionMutation(c.config, OpUpdateOne, withSystemRelationshipControlAction(_m))
-	return &SystemRelationshipControlActionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemRelationshipControlActionClient) UpdateOneID(id uuid.UUID) *SystemRelationshipControlActionUpdateOne {
-	mutation := newSystemRelationshipControlActionMutation(c.config, OpUpdateOne, withSystemRelationshipControlActionID(id))
-	return &SystemRelationshipControlActionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemRelationshipControlAction.
-func (c *SystemRelationshipControlActionClient) Delete() *SystemRelationshipControlActionDelete {
-	mutation := newSystemRelationshipControlActionMutation(c.config, OpDelete)
-	return &SystemRelationshipControlActionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemRelationshipControlActionClient) DeleteOne(_m *SystemRelationshipControlAction) *SystemRelationshipControlActionDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemRelationshipControlActionClient) DeleteOneID(id uuid.UUID) *SystemRelationshipControlActionDeleteOne {
-	builder := c.Delete().Where(systemrelationshipcontrolaction.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemRelationshipControlActionDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemRelationshipControlAction.
-func (c *SystemRelationshipControlActionClient) Query() *SystemRelationshipControlActionQuery {
-	return &SystemRelationshipControlActionQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemRelationshipControlAction},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemRelationshipControlAction entity by its id.
-func (c *SystemRelationshipControlActionClient) Get(ctx context.Context, id uuid.UUID) (*SystemRelationshipControlAction, error) {
-	return c.Query().Where(systemrelationshipcontrolaction.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemRelationshipControlActionClient) GetX(ctx context.Context, id uuid.UUID) *SystemRelationshipControlAction {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemRelationshipControlAction.
-func (c *SystemRelationshipControlActionClient) QueryTenant(_m *SystemRelationshipControlAction) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.TenantTable, systemrelationshipcontrolaction.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRelationship queries the relationship edge of a SystemRelationshipControlAction.
-func (c *SystemRelationshipControlActionClient) QueryRelationship(_m *SystemRelationshipControlAction) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, id),
-			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.RelationshipTable, systemrelationshipcontrolaction.RelationshipColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentRelationship
-		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryControl queries the control edge of a SystemRelationshipControlAction.
-func (c *SystemRelationshipControlActionClient) QueryControl(_m *SystemRelationshipControlAction) *SystemComponentControlQuery {
-	query := (&SystemComponentControlClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemrelationshipcontrolaction.Table, systemrelationshipcontrolaction.FieldID, id),
-			sqlgraph.To(systemcomponentcontrol.Table, systemcomponentcontrol.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipcontrolaction.ControlTable, systemrelationshipcontrolaction.ControlColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentControl
-		step.Edge.Schema = schemaConfig.SystemRelationshipControlAction
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemRelationshipControlActionClient) Hooks() []Hook {
-	hooks := c.hooks.SystemRelationshipControlAction
-	return append(hooks[:len(hooks):len(hooks)], systemrelationshipcontrolaction.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemRelationshipControlActionClient) Interceptors() []Interceptor {
-	return c.inters.SystemRelationshipControlAction
-}
-
-func (c *SystemRelationshipControlActionClient) mutate(ctx context.Context, m *SystemRelationshipControlActionMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemRelationshipControlActionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemRelationshipControlActionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemRelationshipControlActionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemRelationshipControlActionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemRelationshipControlAction mutation op: %q", m.Op())
-	}
-}
-
-// SystemRelationshipFeedbackSignalClient is a client for the SystemRelationshipFeedbackSignal schema.
-type SystemRelationshipFeedbackSignalClient struct {
-	config
-}
-
-// NewSystemRelationshipFeedbackSignalClient returns a client for the SystemRelationshipFeedbackSignal from the given config.
-func NewSystemRelationshipFeedbackSignalClient(c config) *SystemRelationshipFeedbackSignalClient {
-	return &SystemRelationshipFeedbackSignalClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `systemrelationshipfeedbacksignal.Hooks(f(g(h())))`.
-func (c *SystemRelationshipFeedbackSignalClient) Use(hooks ...Hook) {
-	c.hooks.SystemRelationshipFeedbackSignal = append(c.hooks.SystemRelationshipFeedbackSignal, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `systemrelationshipfeedbacksignal.Intercept(f(g(h())))`.
-func (c *SystemRelationshipFeedbackSignalClient) Intercept(interceptors ...Interceptor) {
-	c.inters.SystemRelationshipFeedbackSignal = append(c.inters.SystemRelationshipFeedbackSignal, interceptors...)
-}
-
-// Create returns a builder for creating a SystemRelationshipFeedbackSignal entity.
-func (c *SystemRelationshipFeedbackSignalClient) Create() *SystemRelationshipFeedbackSignalCreate {
-	mutation := newSystemRelationshipFeedbackSignalMutation(c.config, OpCreate)
-	return &SystemRelationshipFeedbackSignalCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of SystemRelationshipFeedbackSignal entities.
-func (c *SystemRelationshipFeedbackSignalClient) CreateBulk(builders ...*SystemRelationshipFeedbackSignalCreate) *SystemRelationshipFeedbackSignalCreateBulk {
-	return &SystemRelationshipFeedbackSignalCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *SystemRelationshipFeedbackSignalClient) MapCreateBulk(slice any, setFunc func(*SystemRelationshipFeedbackSignalCreate, int)) *SystemRelationshipFeedbackSignalCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &SystemRelationshipFeedbackSignalCreateBulk{err: fmt.Errorf("calling to SystemRelationshipFeedbackSignalClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*SystemRelationshipFeedbackSignalCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &SystemRelationshipFeedbackSignalCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for SystemRelationshipFeedbackSignal.
-func (c *SystemRelationshipFeedbackSignalClient) Update() *SystemRelationshipFeedbackSignalUpdate {
-	mutation := newSystemRelationshipFeedbackSignalMutation(c.config, OpUpdate)
-	return &SystemRelationshipFeedbackSignalUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *SystemRelationshipFeedbackSignalClient) UpdateOne(_m *SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalUpdateOne {
-	mutation := newSystemRelationshipFeedbackSignalMutation(c.config, OpUpdateOne, withSystemRelationshipFeedbackSignal(_m))
-	return &SystemRelationshipFeedbackSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *SystemRelationshipFeedbackSignalClient) UpdateOneID(id uuid.UUID) *SystemRelationshipFeedbackSignalUpdateOne {
-	mutation := newSystemRelationshipFeedbackSignalMutation(c.config, OpUpdateOne, withSystemRelationshipFeedbackSignalID(id))
-	return &SystemRelationshipFeedbackSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for SystemRelationshipFeedbackSignal.
-func (c *SystemRelationshipFeedbackSignalClient) Delete() *SystemRelationshipFeedbackSignalDelete {
-	mutation := newSystemRelationshipFeedbackSignalMutation(c.config, OpDelete)
-	return &SystemRelationshipFeedbackSignalDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *SystemRelationshipFeedbackSignalClient) DeleteOne(_m *SystemRelationshipFeedbackSignal) *SystemRelationshipFeedbackSignalDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *SystemRelationshipFeedbackSignalClient) DeleteOneID(id uuid.UUID) *SystemRelationshipFeedbackSignalDeleteOne {
-	builder := c.Delete().Where(systemrelationshipfeedbacksignal.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &SystemRelationshipFeedbackSignalDeleteOne{builder}
-}
-
-// Query returns a query builder for SystemRelationshipFeedbackSignal.
-func (c *SystemRelationshipFeedbackSignalClient) Query() *SystemRelationshipFeedbackSignalQuery {
-	return &SystemRelationshipFeedbackSignalQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeSystemRelationshipFeedbackSignal},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a SystemRelationshipFeedbackSignal entity by its id.
-func (c *SystemRelationshipFeedbackSignalClient) Get(ctx context.Context, id uuid.UUID) (*SystemRelationshipFeedbackSignal, error) {
-	return c.Query().Where(systemrelationshipfeedbacksignal.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *SystemRelationshipFeedbackSignalClient) GetX(ctx context.Context, id uuid.UUID) *SystemRelationshipFeedbackSignal {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a SystemRelationshipFeedbackSignal.
-func (c *SystemRelationshipFeedbackSignalClient) QueryTenant(_m *SystemRelationshipFeedbackSignal) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.TenantTable, systemrelationshipfeedbacksignal.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryRelationship queries the relationship edge of a SystemRelationshipFeedbackSignal.
-func (c *SystemRelationshipFeedbackSignalClient) QueryRelationship(_m *SystemRelationshipFeedbackSignal) *SystemComponentRelationshipQuery {
-	query := (&SystemComponentRelationshipClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID, id),
-			sqlgraph.To(systemcomponentrelationship.Table, systemcomponentrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.RelationshipTable, systemrelationshipfeedbacksignal.RelationshipColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentRelationship
-		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySignal queries the signal edge of a SystemRelationshipFeedbackSignal.
-func (c *SystemRelationshipFeedbackSignalClient) QuerySignal(_m *SystemRelationshipFeedbackSignal) *SystemComponentSignalQuery {
-	query := (&SystemComponentSignalClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(systemrelationshipfeedbacksignal.Table, systemrelationshipfeedbacksignal.FieldID, id),
-			sqlgraph.To(systemcomponentsignal.Table, systemcomponentsignal.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, systemrelationshipfeedbacksignal.SignalTable, systemrelationshipfeedbacksignal.SignalColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponentSignal
-		step.Edge.Schema = schemaConfig.SystemRelationshipFeedbackSignal
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *SystemRelationshipFeedbackSignalClient) Hooks() []Hook {
-	hooks := c.hooks.SystemRelationshipFeedbackSignal
-	return append(hooks[:len(hooks):len(hooks)], systemrelationshipfeedbacksignal.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *SystemRelationshipFeedbackSignalClient) Interceptors() []Interceptor {
-	return c.inters.SystemRelationshipFeedbackSignal
-}
-
-func (c *SystemRelationshipFeedbackSignalClient) mutate(ctx context.Context, m *SystemRelationshipFeedbackSignalMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&SystemRelationshipFeedbackSignalCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&SystemRelationshipFeedbackSignalUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&SystemRelationshipFeedbackSignalUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&SystemRelationshipFeedbackSignalDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown SystemRelationshipFeedbackSignal mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown SystemTopologySnapshotRelationship mutation op: %q", m.Op())
 	}
 }
 
@@ -15573,7 +14187,7 @@ type (
 		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
+		IncidentEventTopologyContext, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, KnowledgeEntity,
 		KnowledgeEntityAlias, KnowledgeFactHistory, KnowledgeFactProvenance,
@@ -15582,11 +14196,9 @@ type (
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Organization, OrganizationRole, Playbook,
 		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
-		SystemComponent, SystemComponentConstraint, SystemComponentControl,
-		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
-		SystemHazard, SystemRelationshipControlAction,
-		SystemRelationshipFeedbackSignal, Task, Team, TeamMembership, Tenant, Ticket,
+		SystemAnalysis, SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode,
+		SystemTopologySnapshot, SystemTopologySnapshotEntity,
+		SystemTopologySnapshotRelationship, Task, Team, TeamMembership, Tenant, Ticket,
 		User, VideoConference []ent.Hook
 	}
 	inters struct {
@@ -15594,7 +14206,7 @@ type (
 		Event, EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
 		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
 		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentEventSystemComponent, IncidentField, IncidentFieldOption, IncidentLink,
+		IncidentEventTopologyContext, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, KnowledgeEntity,
 		KnowledgeEntityAlias, KnowledgeFactHistory, KnowledgeFactProvenance,
@@ -15603,11 +14215,9 @@ type (
 		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
 		OncallShiftMetrics, Organization, OrganizationRole, Playbook,
 		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisComponent, SystemAnalysisRelationship,
-		SystemComponent, SystemComponentConstraint, SystemComponentControl,
-		SystemComponentKind, SystemComponentRelationship, SystemComponentSignal,
-		SystemHazard, SystemRelationshipControlAction,
-		SystemRelationshipFeedbackSignal, Task, Team, TeamMembership, Tenant, Ticket,
+		SystemAnalysis, SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode,
+		SystemTopologySnapshot, SystemTopologySnapshotEntity,
+		SystemTopologySnapshotRelationship, Task, Team, TeamMembership, Tenant, Ticket,
 		User, VideoConference []ent.Interceptor
 	}
 )
@@ -15640,7 +14250,7 @@ var (
 		IncidentEventContext:                      tableSchemas[0],
 		IncidentEventContributingFactor:           tableSchemas[0],
 		IncidentEventEvidence:                     tableSchemas[0],
-		IncidentEventSystemComponent:              tableSchemas[0],
+		IncidentEventTopologyContext:              tableSchemas[0],
 		IncidentField:                             tableSchemas[0],
 		IncidentFieldOption:                       tableSchemas[0],
 		IncidentLink:                              tableSchemas[0],
@@ -15679,20 +14289,11 @@ var (
 		RetrospectiveComment:                      tableSchemas[0],
 		RetrospectiveReview:                       tableSchemas[0],
 		SystemAnalysis:                            tableSchemas[0],
-		SystemAnalysisComponent:                   tableSchemas[0],
-		SystemAnalysisRelationship:                tableSchemas[0],
-		SystemComponent:                           tableSchemas[0],
-		SystemComponentConstraint:                 tableSchemas[0],
-		SystemComponentControl:                    tableSchemas[0],
-		SystemComponentKind:                       tableSchemas[0],
-		SystemComponentRelationship:               tableSchemas[0],
-		SystemComponentSignal:                     tableSchemas[0],
-		SystemHazard:                              tableSchemas[0],
-		SystemHazardComponents:                    tableSchemas[0],
-		SystemHazardConstraints:                   tableSchemas[0],
-		SystemHazardRelationships:                 tableSchemas[0],
-		SystemRelationshipControlAction:           tableSchemas[0],
-		SystemRelationshipFeedbackSignal:          tableSchemas[0],
+		SystemAnalysisTopologyEdge:                tableSchemas[0],
+		SystemAnalysisTopologyNode:                tableSchemas[0],
+		SystemTopologySnapshot:                    tableSchemas[0],
+		SystemTopologySnapshotEntity:              tableSchemas[0],
+		SystemTopologySnapshotRelationship:        tableSchemas[0],
 		Task:                                      tableSchemas[0],
 		TaskTickets:                               tableSchemas[0],
 		Team:                                      tableSchemas[0],

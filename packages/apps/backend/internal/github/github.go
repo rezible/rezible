@@ -181,15 +181,6 @@ func (i *integration) WebhookHandlers() map[string]http.Handler {
 	return i.webhookHandlers
 }
 
-func (i *integration) MakeSystemComponentsDataProvider(ctx context.Context, intg *ent.Integration) (rez.SystemComponentsDataProvider, error) {
-	ci := newConfiguredIntegration(i.services, intg)
-	client, err := newClient(ctx, ci)
-	if err != nil {
-		return nil, fmt.Errorf("create github client: %w", err)
-	}
-	return &systemComponentsProvider{client: client, services: i.services}, nil
-}
-
 // ConfiguredIntegration wraps an *ent.Integration for a specific tenant installation.
 type ConfiguredIntegration struct {
 	svcs *rez.Services

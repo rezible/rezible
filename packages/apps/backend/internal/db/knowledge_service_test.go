@@ -30,7 +30,7 @@ func (s *KnowledgeServiceSuite) service() *KnowledgeService {
 
 func (s *KnowledgeServiceSuite) createEntity() uuid.UUID {
 	entity, err := s.service().SetEntity(s.SeedTenantContext(), uuid.Nil, func(m *ent.KnowledgeEntityMutation) {
-		m.SetKind(kne.KindComponent)
+		m.SetKind("component")
 		m.SetDisplayName("Payments API")
 		m.SetDescription("Handles payment requests")
 		m.SetProperties(map[string]any{"tier": "backend"})
@@ -49,8 +49,8 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasCreatesEntityAliasAndGetEntity
 	alias, err := svc.SetEntityAlias(ctx, uuid.Nil, func(m *ent.KnowledgeEntityAliasMutation) {
 		m.SetEntityID(entityID)
 		m.SetProvider("fake")
-		m.SetProviderSource("datasync/system_components")
-		m.SetSubjectKind("system_component")
+		m.SetProviderSource("datasync/topology_entities")
+		m.SetSubjectKind("topology_entity")
 		m.SetSubjectRef(externalID)
 		m.SetFirstSeenAt(observedAt)
 		m.SetLastSeenAt(observedAt)
@@ -60,7 +60,7 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasCreatesEntityAliasAndGetEntity
 
 	entity, err := svc.GetEntity(ctx, kne.ID(alias.EntityID))
 	s.Require().NoError(err)
-	s.Equal(kne.KindComponent, entity.Kind)
+	s.Equal("component", entity.Kind)
 	s.Equal("Payments API", entity.DisplayName)
 }
 
@@ -74,8 +74,8 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasIsIdempotentOnProviderExternal
 	firstAlias, err := svc.SetEntityAlias(ctx, uuid.Nil, func(m *ent.KnowledgeEntityAliasMutation) {
 		m.SetEntityID(entityID)
 		m.SetProvider("fake")
-		m.SetProviderSource("datasync/system_components")
-		m.SetSubjectKind("system_component")
+		m.SetProviderSource("datasync/topology_entities")
+		m.SetSubjectKind("topology_entity")
 		m.SetSubjectRef(externalID)
 		m.SetFirstSeenAt(observedAt)
 		m.SetLastSeenAt(observedAt)
@@ -86,8 +86,8 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasIsIdempotentOnProviderExternal
 	secondAlias, err := svc.SetEntityAlias(ctx, uuid.Nil, func(m *ent.KnowledgeEntityAliasMutation) {
 		m.SetEntityID(entityID)
 		m.SetProvider("fake")
-		m.SetProviderSource("datasync/system_components")
-		m.SetSubjectKind("system_component")
+		m.SetProviderSource("datasync/topology_entities")
+		m.SetSubjectKind("topology_entity")
 		m.SetSubjectRef(externalID)
 		m.SetFirstSeenAt(secondObservedAt)
 		m.SetLastSeenAt(secondObservedAt)
@@ -98,8 +98,8 @@ func (s *KnowledgeServiceSuite) TestSetEntityAliasIsIdempotentOnProviderExternal
 	aliasCount, err := s.Client().KnowledgeEntityAlias.Query().
 		Where(
 			knea.Provider("fake"),
-			knea.ProviderSource("datasync/system_components"),
-			knea.SubjectKind("system_component"),
+			knea.ProviderSource("datasync/topology_entities"),
+			knea.SubjectKind("topology_entity"),
 			knea.SubjectRef(externalID),
 		).
 		Count(ctx)
@@ -150,18 +150,18 @@ func (s *KnowledgeServiceSuite) TestSetRelationshipIsIdempotentOnSourceTargetKin
 func (s *KnowledgeServiceSuite) TestSupportedCanonicalKindsCanBePersisted() {
 	ctx := s.SeedTenantContext()
 	svc := s.service()
-	kinds := []kne.Kind{
-		kne.KindComponent,
-		kne.KindService,
-		kne.KindRepository,
-		kne.KindIncident,
-		kne.KindChangeEvent,
+	kinds := []string{
+		"component",
+		"service",
+		"repository",
+		"incident",
+		"change_event",
 	}
 
 	for _, kind := range kinds {
 		_, err := svc.SetEntity(ctx, uuid.Nil, func(m *ent.KnowledgeEntityMutation) {
 			m.SetKind(kind)
-			m.SetDisplayName(string(kind))
+			m.SetDisplayName(kind)
 			m.SetProperties(map[string]any{})
 		})
 		s.Require().NoError(err)

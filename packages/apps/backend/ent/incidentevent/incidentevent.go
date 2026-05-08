@@ -51,10 +51,8 @@ const (
 	EdgeFactors = "factors"
 	// EdgeEvidence holds the string denoting the evidence edge name in mutations.
 	EdgeEvidence = "evidence"
-	// EdgeSystemComponents holds the string denoting the system_components edge name in mutations.
-	EdgeSystemComponents = "system_components"
-	// EdgeEventComponents holds the string denoting the event_components edge name in mutations.
-	EdgeEventComponents = "event_components"
+	// EdgeTopologyContext holds the string denoting the topology_context edge name in mutations.
+	EdgeTopologyContext = "topology_context"
 	// Table holds the table name of the incidentevent in the database.
 	Table = "incident_events"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -99,18 +97,13 @@ const (
 	EvidenceInverseTable = "incident_event_evidences"
 	// EvidenceColumn is the table column denoting the evidence relation/edge.
 	EvidenceColumn = "incident_event_evidence"
-	// SystemComponentsTable is the table that holds the system_components relation/edge. The primary key declared below.
-	SystemComponentsTable = "incident_event_system_components"
-	// SystemComponentsInverseTable is the table name for the SystemComponent entity.
-	// It exists in this package in order to avoid circular dependency with the "systemcomponent" package.
-	SystemComponentsInverseTable = "system_components"
-	// EventComponentsTable is the table that holds the event_components relation/edge.
-	EventComponentsTable = "incident_event_system_components"
-	// EventComponentsInverseTable is the table name for the IncidentEventSystemComponent entity.
-	// It exists in this package in order to avoid circular dependency with the "incidenteventsystemcomponent" package.
-	EventComponentsInverseTable = "incident_event_system_components"
-	// EventComponentsColumn is the table column denoting the event_components relation/edge.
-	EventComponentsColumn = "incident_event_id"
+	// TopologyContextTable is the table that holds the topology_context relation/edge.
+	TopologyContextTable = "incident_event_topology_contexts"
+	// TopologyContextInverseTable is the table name for the IncidentEventTopologyContext entity.
+	// It exists in this package in order to avoid circular dependency with the "incidenteventtopologycontext" package.
+	TopologyContextInverseTable = "incident_event_topology_contexts"
+	// TopologyContextColumn is the table column denoting the topology_context relation/edge.
+	TopologyContextColumn = "incident_event_id"
 )
 
 // Columns holds all SQL columns for incidentevent fields.
@@ -128,12 +121,6 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
-
-var (
-	// SystemComponentsPrimaryKey and SystemComponentsColumn2 are the table columns denoting the
-	// primary key for the system_components relation (M2M).
-	SystemComponentsPrimaryKey = []string{"incident_event_id", "system_component_id"}
-)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -313,31 +300,17 @@ func ByEvidence(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// BySystemComponentsCount orders the results by system_components count.
-func BySystemComponentsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByTopologyContextCount orders the results by topology_context count.
+func ByTopologyContextCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newSystemComponentsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newTopologyContextStep(), opts...)
 	}
 }
 
-// BySystemComponents orders the results by system_components terms.
-func BySystemComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByTopologyContext orders the results by topology_context terms.
+func ByTopologyContext(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSystemComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByEventComponentsCount orders the results by event_components count.
-func ByEventComponentsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEventComponentsStep(), opts...)
-	}
-}
-
-// ByEventComponents orders the results by event_components terms.
-func ByEventComponents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEventComponentsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newTopologyContextStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -382,17 +355,10 @@ func newEvidenceStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, EvidenceTable, EvidenceColumn),
 	)
 }
-func newSystemComponentsStep() *sqlgraph.Step {
+func newTopologyContextStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SystemComponentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2M, false, SystemComponentsTable, SystemComponentsPrimaryKey...),
-	)
-}
-func newEventComponentsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EventComponentsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, EventComponentsTable, EventComponentsColumn),
+		sqlgraph.To(TopologyContextInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, TopologyContextTable, TopologyContextColumn),
 	)
 }

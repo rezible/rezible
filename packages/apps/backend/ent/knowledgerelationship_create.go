@@ -107,6 +107,12 @@ func (_c *KnowledgeRelationshipCreate) SetNillableDescription(v *string) *Knowle
 	return _c
 }
 
+// SetProperties sets the "properties" field.
+func (_c *KnowledgeRelationshipCreate) SetProperties(v map[string]interface{}) *KnowledgeRelationshipCreate {
+	_c.mutation.SetProperties(v)
+	return _c
+}
+
 // SetFirstSeenAt sets the "first_seen_at" field.
 func (_c *KnowledgeRelationshipCreate) SetFirstSeenAt(v time.Time) *KnowledgeRelationshipCreate {
 	_c.mutation.SetFirstSeenAt(v)
@@ -351,6 +357,10 @@ func (_c *KnowledgeRelationshipCreate) createSpec() (*KnowledgeRelationship, *sq
 		_spec.SetField(knowledgerelationship.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
+	if value, ok := _c.mutation.Properties(); ok {
+		_spec.SetField(knowledgerelationship.FieldProperties, field.TypeJSON, value)
+		_node.Properties = value
+	}
 	if value, ok := _c.mutation.FirstSeenAt(); ok {
 		_spec.SetField(knowledgerelationship.FieldFirstSeenAt, field.TypeTime, value)
 		_node.FirstSeenAt = value
@@ -578,6 +588,24 @@ func (u *KnowledgeRelationshipUpsert) ClearDescription() *KnowledgeRelationshipU
 	return u
 }
 
+// SetProperties sets the "properties" field.
+func (u *KnowledgeRelationshipUpsert) SetProperties(v map[string]interface{}) *KnowledgeRelationshipUpsert {
+	u.Set(knowledgerelationship.FieldProperties, v)
+	return u
+}
+
+// UpdateProperties sets the "properties" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsert) UpdateProperties() *KnowledgeRelationshipUpsert {
+	u.SetExcluded(knowledgerelationship.FieldProperties)
+	return u
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (u *KnowledgeRelationshipUpsert) ClearProperties() *KnowledgeRelationshipUpsert {
+	u.SetNull(knowledgerelationship.FieldProperties)
+	return u
+}
+
 // SetFirstSeenAt sets the "first_seen_at" field.
 func (u *KnowledgeRelationshipUpsert) SetFirstSeenAt(v time.Time) *KnowledgeRelationshipUpsert {
 	u.Set(knowledgerelationship.FieldFirstSeenAt, v)
@@ -762,6 +790,27 @@ func (u *KnowledgeRelationshipUpsertOne) UpdateDescription() *KnowledgeRelations
 func (u *KnowledgeRelationshipUpsertOne) ClearDescription() *KnowledgeRelationshipUpsertOne {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.ClearDescription()
+	})
+}
+
+// SetProperties sets the "properties" field.
+func (u *KnowledgeRelationshipUpsertOne) SetProperties(v map[string]interface{}) *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetProperties(v)
+	})
+}
+
+// UpdateProperties sets the "properties" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertOne) UpdateProperties() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateProperties()
+	})
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (u *KnowledgeRelationshipUpsertOne) ClearProperties() *KnowledgeRelationshipUpsertOne {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearProperties()
 	})
 }
 
@@ -1120,6 +1169,27 @@ func (u *KnowledgeRelationshipUpsertBulk) UpdateDescription() *KnowledgeRelation
 func (u *KnowledgeRelationshipUpsertBulk) ClearDescription() *KnowledgeRelationshipUpsertBulk {
 	return u.Update(func(s *KnowledgeRelationshipUpsert) {
 		s.ClearDescription()
+	})
+}
+
+// SetProperties sets the "properties" field.
+func (u *KnowledgeRelationshipUpsertBulk) SetProperties(v map[string]interface{}) *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.SetProperties(v)
+	})
+}
+
+// UpdateProperties sets the "properties" field to the value that was provided on create.
+func (u *KnowledgeRelationshipUpsertBulk) UpdateProperties() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.UpdateProperties()
+	})
+}
+
+// ClearProperties clears the value of the "properties" field.
+func (u *KnowledgeRelationshipUpsertBulk) ClearProperties() *KnowledgeRelationshipUpsertBulk {
+	return u.Update(func(s *KnowledgeRelationshipUpsert) {
+		s.ClearProperties()
 	})
 }
 

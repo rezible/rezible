@@ -62,7 +62,7 @@ func (_c *KnowledgeEntityCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEn
 }
 
 // SetKind sets the "kind" field.
-func (_c *KnowledgeEntityCreate) SetKind(v knowledgeentity.Kind) *KnowledgeEntityCreate {
+func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
 	_c.mutation.SetKind(v)
 	return _c
 }
@@ -294,7 +294,7 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		_node.UpdatedAt = value
 	}
 	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(knowledgeentity.FieldKind, field.TypeEnum, value)
+		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
 		_node.Kind = value
 	}
 	if value, ok := _c.mutation.DisplayName(); ok {
@@ -455,7 +455,7 @@ func (u *KnowledgeEntityUpsert) UpdateUpdatedAt() *KnowledgeEntityUpsert {
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsert) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsert {
+func (u *KnowledgeEntityUpsert) SetKind(v string) *KnowledgeEntityUpsert {
 	u.Set(knowledgeentity.FieldKind, v)
 	return u
 }
@@ -594,7 +594,7 @@ func (u *KnowledgeEntityUpsertOne) UpdateUpdatedAt() *KnowledgeEntityUpsertOne {
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsertOne) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsertOne {
+func (u *KnowledgeEntityUpsertOne) SetKind(v string) *KnowledgeEntityUpsertOne {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.SetKind(v)
 	})
@@ -910,7 +910,7 @@ func (u *KnowledgeEntityUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityUpsertBulk
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsertBulk) SetKind(v knowledgeentity.Kind) *KnowledgeEntityUpsertBulk {
+func (u *KnowledgeEntityUpsertBulk) SetKind(v string) *KnowledgeEntityUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityUpsert) {
 		s.SetKind(v)
 	})

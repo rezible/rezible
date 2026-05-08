@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { SystemAnalysisRelationshipAttributes } from "$lib/api";
 	import { type EdgeProps, EdgeLabel, getSmoothStepPath } from "@xyflow/svelte";
+	import type { SystemRelationshipEdgeData } from "./diagramState.svelte";
 
 	const props: EdgeProps = $props();
-	const data = $derived(props.data as SystemAnalysisRelationshipAttributes);
+	const data = $derived(props.data as SystemRelationshipEdgeData);
 
 	const centerX = $derived((props.sourceX + props.targetX) / 2);
 	const centerY = $derived((props.sourceY + props.targetY) / 2);
@@ -87,7 +87,7 @@
 
 <EdgeLabel>
 	<!--div class="nodrag nopan relationship-label flex flex-col gap-2" style={labelTransformStyle}>
-		<span class="">{data.description}relationship</span>
+		<span class="">{data.edge.attributes.description}relationship</span>
 	</div-->
 </EdgeLabel>
 

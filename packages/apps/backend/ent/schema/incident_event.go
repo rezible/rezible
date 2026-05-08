@@ -67,28 +67,29 @@ func (IncidentEvent) Edges() []ent.Edge {
 			Unique(),
 		edge.To("factors", IncidentEventContributingFactor.Type),
 		edge.To("evidence", IncidentEventEvidence.Type),
-		edge.To("system_components", SystemComponent.Type).
-			Through("event_components", IncidentEventSystemComponent.Type),
+		edge.From("topology_context", IncidentEventTopologyContext.Type).
+			Ref("event"),
 	}
 }
 
-type IncidentEventSystemComponent struct {
+type IncidentEventTopologyContext struct {
 	ent.Schema
 }
 
-func (IncidentEventSystemComponent) Mixin() []ent.Mixin {
+func (IncidentEventTopologyContext) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (IncidentEventSystemComponent) Fields() []ent.Field {
+func (IncidentEventTopologyContext) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).
 			Default(uuid.New),
 		field.UUID("incident_event_id", uuid.UUID{}),
-		field.UUID("system_component_id", uuid.UUID{}),
+		field.UUID("knowledge_entity_id", uuid.UUID{}).Optional().Nillable(),
+		field.UUID("snapshot_entity_id", uuid.UUID{}).Optional().Nillable(),
 		field.Enum("relationship").
 			Values("primary", "affected", "contributing"),
 		field.Time("created_at").
@@ -96,10 +97,11 @@ func (IncidentEventSystemComponent) Fields() []ent.Field {
 	}
 }
 
-func (IncidentEventSystemComponent) Edges() []ent.Edge {
+func (IncidentEventTopologyContext) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("event", IncidentEventSystemComponent.Type).Unique().Required().Field("incident_event_id"),
-		edge.To("system_component", SystemComponent.Type).Unique().Required().Field("system_component_id"),
+		edge.To("event", IncidentEvent.Type).Unique().Required().Field("incident_event_id"),
+		edge.To("knowledge_entity", KnowledgeEntity.Type).Unique().Field("knowledge_entity_id"),
+		edge.To("snapshot_entity", SystemTopologySnapshotEntity.Type).Unique().Field("snapshot_entity_id"),
 	}
 }
 

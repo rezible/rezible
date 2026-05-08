@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -36,6 +37,8 @@ type KnowledgeRelationship struct {
 	DisplayName string `json:"display_name,omitempty"`
 	// Description holds the value of the "description" field.
 	Description string `json:"description,omitempty"`
+	// Properties holds the value of the "properties" field.
+	Properties map[string]interface{} `json:"properties,omitempty"`
 	// FirstSeenAt holds the value of the "first_seen_at" field.
 	FirstSeenAt time.Time `json:"first_seen_at,omitempty"`
 	// LastSeenAt holds the value of the "last_seen_at" field.
@@ -108,6 +111,8 @@ func (*KnowledgeRelationship) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case knowledgerelationship.FieldProperties:
+			values[i] = new([]byte)
 		case knowledgerelationship.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgerelationship.FieldKind, knowledgerelationship.FieldDisplayName, knowledgerelationship.FieldDescription:
@@ -184,6 +189,14 @@ func (_m *KnowledgeRelationship) assignValues(columns []string, values []any) er
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
+			}
+		case knowledgerelationship.FieldProperties:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field properties", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Properties); err != nil {
+					return fmt.Errorf("unmarshal field properties: %w", err)
+				}
 			}
 		case knowledgerelationship.FieldFirstSeenAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -276,6 +289,9 @@ func (_m *KnowledgeRelationship) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("description=")
 	builder.WriteString(_m.Description)
+	builder.WriteString(", ")
+	builder.WriteString("properties=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Properties))
 	builder.WriteString(", ")
 	builder.WriteString("first_seen_at=")
 	builder.WriteString(_m.FirstSeenAt.Format(time.ANSIC))

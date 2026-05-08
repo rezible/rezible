@@ -18,25 +18,25 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/ent/systemanalysiscomponent"
-	"github.com/rezible/rezible/ent/systemanalysisrelationship"
-	"github.com/rezible/rezible/ent/systemcomponent"
+	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
+	"github.com/rezible/rezible/ent/systemanalysistopologynode"
+	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
 // SystemAnalysisQuery is the builder for querying SystemAnalysis entities.
 type SystemAnalysisQuery struct {
 	config
-	ctx                    *QueryContext
-	order                  []systemanalysis.OrderOption
-	inters                 []Interceptor
-	predicates             []predicate.SystemAnalysis
-	withTenant             *TenantQuery
-	withRetrospective      *RetrospectiveQuery
-	withComponents         *SystemComponentQuery
-	withRelationships      *SystemAnalysisRelationshipQuery
-	withAnalysisComponents *SystemAnalysisComponentQuery
-	modifiers              []func(*sql.Selector)
+	ctx                  *QueryContext
+	order                []systemanalysis.OrderOption
+	inters               []Interceptor
+	predicates           []predicate.SystemAnalysis
+	withTenant           *TenantQuery
+	withRetrospective    *RetrospectiveQuery
+	withTopologySnapshot *SystemTopologySnapshotQuery
+	withAnalysisNodes    *SystemAnalysisTopologyNodeQuery
+	withAnalysisEdges    *SystemAnalysisTopologyEdgeQuery
+	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -123,9 +123,9 @@ func (_q *SystemAnalysisQuery) QueryRetrospective() *RetrospectiveQuery {
 	return query
 }
 
-// QueryComponents chains the current query on the "components" edge.
-func (_q *SystemAnalysisQuery) QueryComponents() *SystemComponentQuery {
-	query := (&SystemComponentClient{config: _q.config}).Query()
+// QueryTopologySnapshot chains the current query on the "topology_snapshot" edge.
+func (_q *SystemAnalysisQuery) QueryTopologySnapshot() *SystemTopologySnapshotQuery {
+	query := (&SystemTopologySnapshotClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -136,21 +136,21 @@ func (_q *SystemAnalysisQuery) QueryComponents() *SystemComponentQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
-			sqlgraph.To(systemcomponent.Table, systemcomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2M, true, systemanalysis.ComponentsTable, systemanalysis.ComponentsPrimaryKey...),
+			sqlgraph.To(systemtopologysnapshot.Table, systemtopologysnapshot.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, systemanalysis.TopologySnapshotTable, systemanalysis.TopologySnapshotColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemTopologySnapshot
+		step.Edge.Schema = schemaConfig.SystemAnalysis
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryRelationships chains the current query on the "relationships" edge.
-func (_q *SystemAnalysisQuery) QueryRelationships() *SystemAnalysisRelationshipQuery {
-	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
+// QueryAnalysisNodes chains the current query on the "analysis_nodes" edge.
+func (_q *SystemAnalysisQuery) QueryAnalysisNodes() *SystemAnalysisTopologyNodeQuery {
+	query := (&SystemAnalysisTopologyNodeClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -161,21 +161,21 @@ func (_q *SystemAnalysisQuery) QueryRelationships() *SystemAnalysisRelationshipQ
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
-			sqlgraph.To(systemanalysisrelationship.Table, systemanalysisrelationship.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.RelationshipsTable, systemanalysis.RelationshipsColumn),
+			sqlgraph.To(systemanalysistopologynode.Table, systemanalysistopologynode.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisNodesTable, systemanalysis.AnalysisNodesColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisRelationship
-		step.Edge.Schema = schemaConfig.SystemAnalysisRelationship
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyNode
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyNode
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryAnalysisComponents chains the current query on the "analysis_components" edge.
-func (_q *SystemAnalysisQuery) QueryAnalysisComponents() *SystemAnalysisComponentQuery {
-	query := (&SystemAnalysisComponentClient{config: _q.config}).Query()
+// QueryAnalysisEdges chains the current query on the "analysis_edges" edge.
+func (_q *SystemAnalysisQuery) QueryAnalysisEdges() *SystemAnalysisTopologyEdgeQuery {
+	query := (&SystemAnalysisTopologyEdgeClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -186,12 +186,12 @@ func (_q *SystemAnalysisQuery) QueryAnalysisComponents() *SystemAnalysisComponen
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemanalysis.Table, systemanalysis.FieldID, selector),
-			sqlgraph.To(systemanalysiscomponent.Table, systemanalysiscomponent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisComponentsTable, systemanalysis.AnalysisComponentsColumn),
+			sqlgraph.To(systemanalysistopologyedge.Table, systemanalysistopologyedge.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, systemanalysis.AnalysisEdgesTable, systemanalysis.AnalysisEdgesColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.SystemAnalysisComponent
-		step.Edge.Schema = schemaConfig.SystemAnalysisComponent
+		step.To.Schema = schemaConfig.SystemAnalysisTopologyEdge
+		step.Edge.Schema = schemaConfig.SystemAnalysisTopologyEdge
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -385,16 +385,16 @@ func (_q *SystemAnalysisQuery) Clone() *SystemAnalysisQuery {
 		return nil
 	}
 	return &SystemAnalysisQuery{
-		config:                 _q.config,
-		ctx:                    _q.ctx.Clone(),
-		order:                  append([]systemanalysis.OrderOption{}, _q.order...),
-		inters:                 append([]Interceptor{}, _q.inters...),
-		predicates:             append([]predicate.SystemAnalysis{}, _q.predicates...),
-		withTenant:             _q.withTenant.Clone(),
-		withRetrospective:      _q.withRetrospective.Clone(),
-		withComponents:         _q.withComponents.Clone(),
-		withRelationships:      _q.withRelationships.Clone(),
-		withAnalysisComponents: _q.withAnalysisComponents.Clone(),
+		config:               _q.config,
+		ctx:                  _q.ctx.Clone(),
+		order:                append([]systemanalysis.OrderOption{}, _q.order...),
+		inters:               append([]Interceptor{}, _q.inters...),
+		predicates:           append([]predicate.SystemAnalysis{}, _q.predicates...),
+		withTenant:           _q.withTenant.Clone(),
+		withRetrospective:    _q.withRetrospective.Clone(),
+		withTopologySnapshot: _q.withTopologySnapshot.Clone(),
+		withAnalysisNodes:    _q.withAnalysisNodes.Clone(),
+		withAnalysisEdges:    _q.withAnalysisEdges.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -424,36 +424,36 @@ func (_q *SystemAnalysisQuery) WithRetrospective(opts ...func(*RetrospectiveQuer
 	return _q
 }
 
-// WithComponents tells the query-builder to eager-load the nodes that are connected to
-// the "components" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisQuery) WithComponents(opts ...func(*SystemComponentQuery)) *SystemAnalysisQuery {
-	query := (&SystemComponentClient{config: _q.config}).Query()
+// WithTopologySnapshot tells the query-builder to eager-load the nodes that are connected to
+// the "topology_snapshot" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisQuery) WithTopologySnapshot(opts ...func(*SystemTopologySnapshotQuery)) *SystemAnalysisQuery {
+	query := (&SystemTopologySnapshotClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withComponents = query
+	_q.withTopologySnapshot = query
 	return _q
 }
 
-// WithRelationships tells the query-builder to eager-load the nodes that are connected to
-// the "relationships" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisQuery) WithRelationships(opts ...func(*SystemAnalysisRelationshipQuery)) *SystemAnalysisQuery {
-	query := (&SystemAnalysisRelationshipClient{config: _q.config}).Query()
+// WithAnalysisNodes tells the query-builder to eager-load the nodes that are connected to
+// the "analysis_nodes" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisQuery) WithAnalysisNodes(opts ...func(*SystemAnalysisTopologyNodeQuery)) *SystemAnalysisQuery {
+	query := (&SystemAnalysisTopologyNodeClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withRelationships = query
+	_q.withAnalysisNodes = query
 	return _q
 }
 
-// WithAnalysisComponents tells the query-builder to eager-load the nodes that are connected to
-// the "analysis_components" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemAnalysisQuery) WithAnalysisComponents(opts ...func(*SystemAnalysisComponentQuery)) *SystemAnalysisQuery {
-	query := (&SystemAnalysisComponentClient{config: _q.config}).Query()
+// WithAnalysisEdges tells the query-builder to eager-load the nodes that are connected to
+// the "analysis_edges" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *SystemAnalysisQuery) WithAnalysisEdges(opts ...func(*SystemAnalysisTopologyEdgeQuery)) *SystemAnalysisQuery {
+	query := (&SystemAnalysisTopologyEdgeClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withAnalysisComponents = query
+	_q.withAnalysisEdges = query
 	return _q
 }
 
@@ -544,9 +544,9 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withRetrospective != nil,
-			_q.withComponents != nil,
-			_q.withRelationships != nil,
-			_q.withAnalysisComponents != nil,
+			_q.withTopologySnapshot != nil,
+			_q.withAnalysisNodes != nil,
+			_q.withAnalysisEdges != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -584,27 +584,26 @@ func (_q *SystemAnalysisQuery) sqlAll(ctx context.Context, hooks ...queryHook) (
 			return nil, err
 		}
 	}
-	if query := _q.withComponents; query != nil {
-		if err := _q.loadComponents(ctx, query, nodes,
-			func(n *SystemAnalysis) { n.Edges.Components = []*SystemComponent{} },
-			func(n *SystemAnalysis, e *SystemComponent) { n.Edges.Components = append(n.Edges.Components, e) }); err != nil {
+	if query := _q.withTopologySnapshot; query != nil {
+		if err := _q.loadTopologySnapshot(ctx, query, nodes, nil,
+			func(n *SystemAnalysis, e *SystemTopologySnapshot) { n.Edges.TopologySnapshot = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withRelationships; query != nil {
-		if err := _q.loadRelationships(ctx, query, nodes,
-			func(n *SystemAnalysis) { n.Edges.Relationships = []*SystemAnalysisRelationship{} },
-			func(n *SystemAnalysis, e *SystemAnalysisRelationship) {
-				n.Edges.Relationships = append(n.Edges.Relationships, e)
+	if query := _q.withAnalysisNodes; query != nil {
+		if err := _q.loadAnalysisNodes(ctx, query, nodes,
+			func(n *SystemAnalysis) { n.Edges.AnalysisNodes = []*SystemAnalysisTopologyNode{} },
+			func(n *SystemAnalysis, e *SystemAnalysisTopologyNode) {
+				n.Edges.AnalysisNodes = append(n.Edges.AnalysisNodes, e)
 			}); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withAnalysisComponents; query != nil {
-		if err := _q.loadAnalysisComponents(ctx, query, nodes,
-			func(n *SystemAnalysis) { n.Edges.AnalysisComponents = []*SystemAnalysisComponent{} },
-			func(n *SystemAnalysis, e *SystemAnalysisComponent) {
-				n.Edges.AnalysisComponents = append(n.Edges.AnalysisComponents, e)
+	if query := _q.withAnalysisEdges; query != nil {
+		if err := _q.loadAnalysisEdges(ctx, query, nodes,
+			func(n *SystemAnalysis) { n.Edges.AnalysisEdges = []*SystemAnalysisTopologyEdge{} },
+			func(n *SystemAnalysis, e *SystemAnalysisTopologyEdge) {
+				n.Edges.AnalysisEdges = append(n.Edges.AnalysisEdges, e)
 			}); err != nil {
 			return nil, err
 		}
@@ -668,69 +667,39 @@ func (_q *SystemAnalysisQuery) loadRetrospective(ctx context.Context, query *Ret
 	}
 	return nil
 }
-func (_q *SystemAnalysisQuery) loadComponents(ctx context.Context, query *SystemComponentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemComponent)) error {
-	edgeIDs := make([]driver.Value, len(nodes))
-	byID := make(map[uuid.UUID]*SystemAnalysis)
-	nids := make(map[uuid.UUID]map[*SystemAnalysis]struct{})
-	for i, node := range nodes {
-		edgeIDs[i] = node.ID
-		byID[node.ID] = node
-		if init != nil {
-			init(node)
+func (_q *SystemAnalysisQuery) loadTopologySnapshot(ctx context.Context, query *SystemTopologySnapshotQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemTopologySnapshot)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*SystemAnalysis)
+	for i := range nodes {
+		if nodes[i].TopologySnapshotID == nil {
+			continue
 		}
+		fk := *nodes[i].TopologySnapshotID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	query.Where(func(s *sql.Selector) {
-		joinT := sql.Table(systemanalysis.ComponentsTable)
-		joinT.Schema(_q.schemaConfig.SystemAnalysisComponent)
-		s.Join(joinT).On(s.C(systemcomponent.FieldID), joinT.C(systemanalysis.ComponentsPrimaryKey[0]))
-		s.Where(sql.InValues(joinT.C(systemanalysis.ComponentsPrimaryKey[1]), edgeIDs...))
-		columns := s.SelectedColumns()
-		s.Select(joinT.C(systemanalysis.ComponentsPrimaryKey[1]))
-		s.AppendSelect(columns...)
-		s.SetDistinct(false)
-	})
-	if err := query.prepareQuery(ctx); err != nil {
-		return err
+	if len(ids) == 0 {
+		return nil
 	}
-	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
-		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
-			assign := spec.Assign
-			values := spec.ScanValues
-			spec.ScanValues = func(columns []string) ([]any, error) {
-				values, err := values(columns[1:])
-				if err != nil {
-					return nil, err
-				}
-				return append([]any{new(uuid.UUID)}, values...), nil
-			}
-			spec.Assign = func(columns []string, values []any) error {
-				outValue := *values[0].(*uuid.UUID)
-				inValue := *values[1].(*uuid.UUID)
-				if nids[inValue] == nil {
-					nids[inValue] = map[*SystemAnalysis]struct{}{byID[outValue]: {}}
-					return assign(columns[1:], values[1:])
-				}
-				nids[inValue][byID[outValue]] = struct{}{}
-				return nil
-			}
-		})
-	})
-	neighbors, err := withInterceptors[[]*SystemComponent](ctx, query, qr, query.inters)
+	query.Where(systemtopologysnapshot.IDIn(ids...))
+	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		nodes, ok := nids[n.ID]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected "components" node returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "topology_snapshot_id" returned %v`, n.ID)
 		}
-		for kn := range nodes {
-			assign(kn, n)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
 	}
 	return nil
 }
-func (_q *SystemAnalysisQuery) loadRelationships(ctx context.Context, query *SystemAnalysisRelationshipQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisRelationship)) error {
+func (_q *SystemAnalysisQuery) loadAnalysisNodes(ctx context.Context, query *SystemAnalysisTopologyNodeQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisTopologyNode)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemAnalysis)
 	for i := range nodes {
@@ -741,10 +710,10 @@ func (_q *SystemAnalysisQuery) loadRelationships(ctx context.Context, query *Sys
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemanalysisrelationship.FieldAnalysisID)
+		query.ctx.AppendFieldOnce(systemanalysistopologynode.FieldAnalysisID)
 	}
-	query.Where(predicate.SystemAnalysisRelationship(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemanalysis.RelationshipsColumn), fks...))
+	query.Where(predicate.SystemAnalysisTopologyNode(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysis.AnalysisNodesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -760,7 +729,7 @@ func (_q *SystemAnalysisQuery) loadRelationships(ctx context.Context, query *Sys
 	}
 	return nil
 }
-func (_q *SystemAnalysisQuery) loadAnalysisComponents(ctx context.Context, query *SystemAnalysisComponentQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisComponent)) error {
+func (_q *SystemAnalysisQuery) loadAnalysisEdges(ctx context.Context, query *SystemAnalysisTopologyEdgeQuery, nodes []*SystemAnalysis, init func(*SystemAnalysis), assign func(*SystemAnalysis, *SystemAnalysisTopologyEdge)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*SystemAnalysis)
 	for i := range nodes {
@@ -771,10 +740,10 @@ func (_q *SystemAnalysisQuery) loadAnalysisComponents(ctx context.Context, query
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(systemanalysiscomponent.FieldAnalysisID)
+		query.ctx.AppendFieldOnce(systemanalysistopologyedge.FieldAnalysisID)
 	}
-	query.Where(predicate.SystemAnalysisComponent(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(systemanalysis.AnalysisComponentsColumn), fks...))
+	query.Where(predicate.SystemAnalysisTopologyEdge(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(systemanalysis.AnalysisEdgesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -823,6 +792,9 @@ func (_q *SystemAnalysisQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(systemanalysis.FieldTenantID)
+		}
+		if _q.withTopologySnapshot != nil {
+			_spec.Node.AddColumnOnce(systemanalysis.FieldTopologySnapshotID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
