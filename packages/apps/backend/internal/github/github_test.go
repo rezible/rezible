@@ -412,8 +412,9 @@ func TestWebhookHandler_CallsIngest(t *testing.T) {
 	provEvs.On("Ingest", mock.Anything, mock.MatchedBy(func(ev rez.ProviderEvent) bool {
 		return ev.Provider == integrationName &&
 			ev.ProviderSource == event &&
+			ev.SubjectRef == "github:push:delivery-abc" &&
 			string(ev.Payload) == body &&
-			ev.DedupeKey == delivery
+			ev.ProviderDeliveryRef == delivery
 	})).Return(nil).Once()
 
 	h := newWebhookHandler("", &rez.Services{ProviderEvents: provEvs})

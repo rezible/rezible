@@ -794,8 +794,8 @@ func (_c *MockProviderEventService_Ingest_Call) RunAndReturn(run func(context1 c
 }
 
 // RegisterEventProcessor provides a mock function for the type MockProviderEventService
-func (_mock *MockProviderEventService) RegisterEventProcessor(provider string, source string, processor rez.ProviderEventProcessor) {
-	_mock.Called(provider, source, processor)
+func (_mock *MockProviderEventService) RegisterEventProcessor(provider string, providerSource string, processor rez.ProviderEventProcessor) {
+	_mock.Called(provider, providerSource, processor)
 	return
 }
 
@@ -806,13 +806,13 @@ type MockProviderEventService_RegisterEventProcessor_Call struct {
 
 // RegisterEventProcessor is a helper method to define mock.On call
 //   - provider string
-//   - source string
+//   - providerSource string
 //   - processor rez.ProviderEventProcessor
-func (_e *MockProviderEventService_Expecter) RegisterEventProcessor(provider interface{}, source interface{}, processor interface{}) *MockProviderEventService_RegisterEventProcessor_Call {
-	return &MockProviderEventService_RegisterEventProcessor_Call{Call: _e.mock.On("RegisterEventProcessor", provider, source, processor)}
+func (_e *MockProviderEventService_Expecter) RegisterEventProcessor(provider interface{}, providerSource interface{}, processor interface{}) *MockProviderEventService_RegisterEventProcessor_Call {
+	return &MockProviderEventService_RegisterEventProcessor_Call{Call: _e.mock.On("RegisterEventProcessor", provider, providerSource, processor)}
 }
 
-func (_c *MockProviderEventService_RegisterEventProcessor_Call) Run(run func(provider string, source string, processor rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessor_Call {
+func (_c *MockProviderEventService_RegisterEventProcessor_Call) Run(run func(provider string, providerSource string, processor rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessor_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 string
 		if args[0] != nil {
@@ -840,7 +840,7 @@ func (_c *MockProviderEventService_RegisterEventProcessor_Call) Return() *MockPr
 	return _c
 }
 
-func (_c *MockProviderEventService_RegisterEventProcessor_Call) RunAndReturn(run func(provider string, source string, processor rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessor_Call {
+func (_c *MockProviderEventService_RegisterEventProcessor_Call) RunAndReturn(run func(provider string, providerSource string, processor rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessor_Call {
 	_c.Run(run)
 	return _c
 }

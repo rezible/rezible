@@ -25,24 +25,24 @@ func newProviderEventMetrics() *providerEventMetrics {
 	}
 }
 
-func (m *providerEventMetrics) recordIngested(ctx context.Context, provider, source string, res *ingestProviderEventResult, err error) {
+func (m *providerEventMetrics) recordIngested(ctx context.Context, provider, providerSource string, res *ingestProviderEventResult, err error) {
 	if m != nil {
 		m.ingested.Add(ctx, 1, telemetry.WithMetricAttributes(
 			telemetry.StringAttr("provider", telemetry.NormalizeLabel(provider)),
-			telemetry.StringAttr("source", telemetry.NormalizeLabel(source)),
+			telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(providerSource)),
 			telemetry.ResultAttr(err),
 			telemetry.BoolAttr("duplicate", res != nil && res.duplicate),
 		))
 	}
 }
 
-func (m *providerEventMetrics) recordProcessed(ctx context.Context, provider, source string, res *processProviderEventResult, err error) {
+func (m *providerEventMetrics) recordProcessed(ctx context.Context, provider, providerSource string, res *processProviderEventResult, err error) {
 	if m != nil {
 		processSuccess := res != nil && res.processSuccess
 		projectionSuccess := res != nil && res.projectionSuccess
 		attrs := []telemetry.KeyValue{
 			telemetry.StringAttr("provider", telemetry.NormalizeLabel(provider)),
-			telemetry.StringAttr("source", telemetry.NormalizeLabel(source)),
+			telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(providerSource)),
 			telemetry.ResultAttr(err),
 			telemetry.BoolAttr("process_success", processSuccess),
 			telemetry.BoolAttr("projection_success", projectionSuccess),

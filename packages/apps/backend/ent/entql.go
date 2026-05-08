@@ -800,19 +800,19 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "NormalizedEvent",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			normalizedevent.FieldTenantID:          {Type: field.TypeInt, Column: normalizedevent.FieldTenantID},
-			normalizedevent.FieldProvider:          {Type: field.TypeString, Column: normalizedevent.FieldProvider},
-			normalizedevent.FieldProviderSource:    {Type: field.TypeString, Column: normalizedevent.FieldProviderSource},
-			normalizedevent.FieldKind:              {Type: field.TypeEnum, Column: normalizedevent.FieldKind},
-			normalizedevent.FieldSubjectKind:       {Type: field.TypeString, Column: normalizedevent.FieldSubjectKind},
-			normalizedevent.FieldSubjectRef:        {Type: field.TypeString, Column: normalizedevent.FieldSubjectRef},
-			normalizedevent.FieldProviderEventRef:  {Type: field.TypeString, Column: normalizedevent.FieldProviderEventRef},
-			normalizedevent.FieldDedupeKey:         {Type: field.TypeString, Column: normalizedevent.FieldDedupeKey},
-			normalizedevent.FieldOccurredAt:        {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
-			normalizedevent.FieldReceivedAt:        {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
-			normalizedevent.FieldProcessingVersion: {Type: field.TypeString, Column: normalizedevent.FieldProcessingVersion},
-			normalizedevent.FieldAttributes:        {Type: field.TypeJSON, Column: normalizedevent.FieldAttributes},
-			normalizedevent.FieldCreatedAt:         {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
+			normalizedevent.FieldTenantID:                 {Type: field.TypeInt, Column: normalizedevent.FieldTenantID},
+			normalizedevent.FieldProvider:                 {Type: field.TypeString, Column: normalizedevent.FieldProvider},
+			normalizedevent.FieldProviderSource:           {Type: field.TypeString, Column: normalizedevent.FieldProviderSource},
+			normalizedevent.FieldKind:                     {Type: field.TypeEnum, Column: normalizedevent.FieldKind},
+			normalizedevent.FieldSubjectKind:              {Type: field.TypeString, Column: normalizedevent.FieldSubjectKind},
+			normalizedevent.FieldSubjectRef:               {Type: field.TypeString, Column: normalizedevent.FieldSubjectRef},
+			normalizedevent.FieldProviderEventRef:         {Type: field.TypeString, Column: normalizedevent.FieldProviderEventRef},
+			normalizedevent.FieldProviderEventDeliveryRef: {Type: field.TypeString, Column: normalizedevent.FieldProviderEventDeliveryRef},
+			normalizedevent.FieldOccurredAt:               {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
+			normalizedevent.FieldReceivedAt:               {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
+			normalizedevent.FieldProcessingVersion:        {Type: field.TypeString, Column: normalizedevent.FieldProcessingVersion},
+			normalizedevent.FieldAttributes:               {Type: field.TypeJSON, Column: normalizedevent.FieldAttributes},
+			normalizedevent.FieldCreatedAt:                {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
 		},
 	}
 	graph.Nodes[37] = &sqlgraph.Node{
@@ -8998,9 +8998,9 @@ func (f *NormalizedEventFilter) WhereProviderEventRef(p entql.StringP) {
 	f.Where(p.Field(normalizedevent.FieldProviderEventRef))
 }
 
-// WhereDedupeKey applies the entql string predicate on the dedupe_key field.
-func (f *NormalizedEventFilter) WhereDedupeKey(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldDedupeKey))
+// WhereProviderEventDeliveryRef applies the entql string predicate on the provider_event_delivery_ref field.
+func (f *NormalizedEventFilter) WhereProviderEventDeliveryRef(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldProviderEventDeliveryRef))
 }
 
 // WhereOccurredAt applies the entql time.Time predicate on the occurred_at field.

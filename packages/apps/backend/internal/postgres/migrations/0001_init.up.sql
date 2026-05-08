@@ -189,7 +189,7 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "kind" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_ref" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "dedupe_key" character varying NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "processing_version" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "kind" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_ref" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "provider_event_delivery_ref" character varying NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "processing_version" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
 -- create index "normalizedevent_tenant_id_prov_c0af9de518dc8d99688159f28d11be68" to table: "normalized_events"
@@ -280,14 +280,46 @@ CREATE INDEX "retrospectivereview_tenant_id" ON "retrospective_reviews" ("tenant
 CREATE TABLE "system_analyses" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "topology_snapshot_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "systemanalysis_tenant_id" to table: "system_analyses"
 CREATE INDEX "systemanalysis_tenant_id" ON "system_analyses" ("tenant_id");
--- create "system_analysis_nodes" table
-CREATE TABLE "system_analysis_nodes" ("id" uuid NOT NULL, "description" text NULL, "pos_x" double precision NOT NULL DEFAULT 0, "pos_y" double precision NOT NULL DEFAULT 0, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, "snapshot_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
--- create index "systemanalysisnode_tenant_id" to table: "system_analysis_nodes"
-CREATE INDEX "systemanalysisnode_tenant_id" ON "system_analysis_nodes" ("tenant_id");
 -- create "system_analysis_topology_edges" table
-CREATE TABLE "system_analysis_topology_edges" ("id" uuid NOT NULL, "description" text NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, "snapshot_relationship_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "system_analysis_topology_edges" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "description" text NULL, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, "snapshot_relationship_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "systemanalysistopologyedge_tenant_id" to table: "system_analysis_topology_edges"
 CREATE INDEX "systemanalysistopologyedge_tenant_id" ON "system_analysis_topology_edges" ("tenant_id");
+-- create "system_analysis_topology_nodes" table
+CREATE TABLE "system_analysis_topology_nodes" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "description" text NULL, "pos_x" double precision NOT NULL DEFAULT 0, "pos_y" double precision NOT NULL DEFAULT 0, "tenant_id" bigint NOT NULL, "analysis_id" uuid NOT NULL, "snapshot_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "systemanalysistopologynode_tenant_id" to table: "system_analysis_topology_nodes"
+CREATE INDEX "systemanalysistopologynode_tenant_id" ON "system_analysis_topology_nodes" ("tenant_id");
+-- create "system_topology_snapshots" table
+CREATE TABLE "system_topology_snapshots" ("id" uuid NOT NULL, "as_of" timestamptz NOT NULL, "name" character varying NULL, "scope" character varying NOT NULL DEFAULT 'explicit_entities', "scope_properties" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+-- create index "systemtopologysnapshot_tenant_id" to table: "system_topology_snapshots"
+CREATE INDEX "systemtopologysnapshot_tenant_id" ON "system_topology_snapshots" ("tenant_id");
+-- create index "systemtopologysnapshot_tenant_id_as_of" to table: "system_topology_snapshots"
+CREATE INDEX "systemtopologysnapshot_tenant_id_as_of" ON "system_topology_snapshots" ("tenant_id", "as_of");
+-- create index "systemtopologysnapshot_tenant_id_created_at" to table: "system_topology_snapshots"
+CREATE INDEX "systemtopologysnapshot_tenant_id_created_at" ON "system_topology_snapshots" ("tenant_id", "created_at");
+-- create "system_topology_snapshot_entities" table
+CREATE TABLE "system_topology_snapshot_entities" ("id" uuid NOT NULL, "entity_kind" character varying NOT NULL, "display_name" character varying NOT NULL, "description" text NULL, "properties" jsonb NULL, "aliases" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "snapshot_id" uuid NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "systemtopologysnapshotentity_tenant_id" to table: "system_topology_snapshot_entities"
+CREATE INDEX "systemtopologysnapshotentity_tenant_id" ON "system_topology_snapshot_entities" ("tenant_id");
+-- create index "systemtopologysnapshotentity_tenant_id_snapshot_id" to table: "system_topology_snapshot_entities"
+CREATE INDEX "systemtopologysnapshotentity_tenant_id_snapshot_id" ON "system_topology_snapshot_entities" ("tenant_id", "snapshot_id");
+-- create index "systemtopologysnapshotentity_tenant_id_knowledge_entity_id" to table: "system_topology_snapshot_entities"
+CREATE INDEX "systemtopologysnapshotentity_tenant_id_knowledge_entity_id" ON "system_topology_snapshot_entities" ("tenant_id", "knowledge_entity_id");
+-- create index "systemtopologysnapshotentity_t_f5c4f8cfa84671bf6a92d9f49c2f214d" to table: "system_topology_snapshot_entities"
+CREATE UNIQUE INDEX "systemtopologysnapshotentity_t_f5c4f8cfa84671bf6a92d9f49c2f214d" ON "system_topology_snapshot_entities" ("tenant_id", "snapshot_id", "knowledge_entity_id");
+-- create "system_topology_snapshot_relationships" table
+CREATE TABLE "system_topology_snapshot_relationships" ("id" uuid NOT NULL, "relationship_kind" character varying NOT NULL, "display_name" character varying NULL, "description" text NULL, "properties" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "snapshot_id" uuid NOT NULL, "knowledge_relationship_id" uuid NULL, "source_snapshot_entity_id" uuid NOT NULL, "target_snapshot_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "systemtopologysnapshotrelationship_tenant_id" to table: "system_topology_snapshot_relationships"
+CREATE INDEX "systemtopologysnapshotrelationship_tenant_id" ON "system_topology_snapshot_relationships" ("tenant_id");
+-- create index "systemtopologysnapshotrelationship_tenant_id_snapshot_id" to table: "system_topology_snapshot_relationships"
+CREATE INDEX "systemtopologysnapshotrelationship_tenant_id_snapshot_id" ON "system_topology_snapshot_relationships" ("tenant_id", "snapshot_id");
+-- create index "systemtopologysnapshotrelation_a06f34ed83db45fd13d05244cf667720" to table: "system_topology_snapshot_relationships"
+CREATE INDEX "systemtopologysnapshotrelation_a06f34ed83db45fd13d05244cf667720" ON "system_topology_snapshot_relationships" ("tenant_id", "knowledge_relationship_id");
+-- create index "systemtopologysnapshotrelation_ce56930e9b9fd6d129909352010bc447" to table: "system_topology_snapshot_relationships"
+CREATE INDEX "systemtopologysnapshotrelation_ce56930e9b9fd6d129909352010bc447" ON "system_topology_snapshot_relationships" ("tenant_id", "source_snapshot_entity_id");
+-- create index "systemtopologysnapshotrelation_8bfb42b7b88bb99b0dab90f97e7c8e86" to table: "system_topology_snapshot_relationships"
+CREATE INDEX "systemtopologysnapshotrelation_8bfb42b7b88bb99b0dab90f97e7c8e86" ON "system_topology_snapshot_relationships" ("tenant_id", "target_snapshot_entity_id");
+-- create index "systemtopologysnapshotrelation_96315e4d75ceda9b93720e1ad418db13" to table: "system_topology_snapshot_relationships"
+CREATE UNIQUE INDEX "systemtopologysnapshotrelation_96315e4d75ceda9b93720e1ad418db13" ON "system_topology_snapshot_relationships" ("tenant_id", "snapshot_id", "knowledge_relationship_id");
 -- create "tasks" table
 CREATE TABLE "tasks" ("id" uuid NOT NULL, "type" character varying NOT NULL, "title" character varying NOT NULL, "incident_id" uuid NULL, "tenant_id" bigint NOT NULL, "assignee_id" uuid NULL, "creator_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "task_tenant_id" to table: "tasks"
@@ -310,38 +342,6 @@ CREATE TABLE "tenants" ("id" bigint NOT NULL GENERATED BY DEFAULT AS IDENTITY, P
 CREATE TABLE "tickets" ("id" uuid NOT NULL, "external_id" character varying NULL, "title" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "ticket_tenant_id" to table: "tickets"
 CREATE INDEX "ticket_tenant_id" ON "tickets" ("tenant_id");
--- create "topology_snapshots" table
-CREATE TABLE "topology_snapshots" ("id" uuid NOT NULL, "as_of" timestamptz NOT NULL, "name" character varying NULL, "scope" character varying NOT NULL DEFAULT 'explicit_entities', "scope_properties" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "topologysnapshot_tenant_id" to table: "topology_snapshots"
-CREATE INDEX "topologysnapshot_tenant_id" ON "topology_snapshots" ("tenant_id");
--- create index "topologysnapshot_tenant_id_as_of" to table: "topology_snapshots"
-CREATE INDEX "topologysnapshot_tenant_id_as_of" ON "topology_snapshots" ("tenant_id", "as_of");
--- create index "topologysnapshot_tenant_id_created_at" to table: "topology_snapshots"
-CREATE INDEX "topologysnapshot_tenant_id_created_at" ON "topology_snapshots" ("tenant_id", "created_at");
--- create "topology_snapshot_entities" table
-CREATE TABLE "topology_snapshot_entities" ("id" uuid NOT NULL, "entity_kind" character varying NOT NULL, "display_name" character varying NOT NULL, "description" text NULL, "properties" jsonb NULL, "aliases" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "snapshot_id" uuid NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "topologysnapshotentity_tenant_id" to table: "topology_snapshot_entities"
-CREATE INDEX "topologysnapshotentity_tenant_id" ON "topology_snapshot_entities" ("tenant_id");
--- create index "topologysnapshotentity_tenant_id_snapshot_id" to table: "topology_snapshot_entities"
-CREATE INDEX "topologysnapshotentity_tenant_id_snapshot_id" ON "topology_snapshot_entities" ("tenant_id", "snapshot_id");
--- create index "topologysnapshotentity_tenant_id_knowledge_entity_id" to table: "topology_snapshot_entities"
-CREATE INDEX "topologysnapshotentity_tenant_id_knowledge_entity_id" ON "topology_snapshot_entities" ("tenant_id", "knowledge_entity_id");
--- create index "topologysnapshotentity_tenant__f6f1711f029985fd518043cc1f3b7cbe" to table: "topology_snapshot_entities"
-CREATE UNIQUE INDEX "topologysnapshotentity_tenant__f6f1711f029985fd518043cc1f3b7cbe" ON "topology_snapshot_entities" ("tenant_id", "snapshot_id", "knowledge_entity_id");
--- create "topology_snapshot_relationships" table
-CREATE TABLE "topology_snapshot_relationships" ("id" uuid NOT NULL, "relationship_kind" character varying NOT NULL, "display_name" character varying NULL, "description" text NULL, "properties" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "snapshot_id" uuid NOT NULL, "knowledge_relationship_id" uuid NULL, "source_snapshot_entity_id" uuid NOT NULL, "target_snapshot_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
--- create index "topologysnapshotrelationship_tenant_id" to table: "topology_snapshot_relationships"
-CREATE INDEX "topologysnapshotrelationship_tenant_id" ON "topology_snapshot_relationships" ("tenant_id");
--- create index "topologysnapshotrelationship_tenant_id_snapshot_id" to table: "topology_snapshot_relationships"
-CREATE INDEX "topologysnapshotrelationship_tenant_id_snapshot_id" ON "topology_snapshot_relationships" ("tenant_id", "snapshot_id");
--- create index "topologysnapshotrelationship_t_0d9515a939c86b80e989d784bee27251" to table: "topology_snapshot_relationships"
-CREATE INDEX "topologysnapshotrelationship_t_0d9515a939c86b80e989d784bee27251" ON "topology_snapshot_relationships" ("tenant_id", "knowledge_relationship_id");
--- create index "topologysnapshotrelationship_t_2577fed32087ac28f4fe4d7e9ac75be3" to table: "topology_snapshot_relationships"
-CREATE INDEX "topologysnapshotrelationship_t_2577fed32087ac28f4fe4d7e9ac75be3" ON "topology_snapshot_relationships" ("tenant_id", "source_snapshot_entity_id");
--- create index "topologysnapshotrelationship_t_77b29a8905b37561dfed0ed41329c366" to table: "topology_snapshot_relationships"
-CREATE INDEX "topologysnapshotrelationship_t_77b29a8905b37561dfed0ed41329c366" ON "topology_snapshot_relationships" ("tenant_id", "target_snapshot_entity_id");
--- create index "topologysnapshotrelationship_t_2162a710bf7499f3f88499e99718b9be" to table: "topology_snapshot_relationships"
-CREATE UNIQUE INDEX "topologysnapshotrelationship_t_2162a710bf7499f3f88499e99718b9be" ON "topology_snapshot_relationships" ("tenant_id", "snapshot_id", "knowledge_relationship_id");
 -- create "users" table
 CREATE TABLE "users" ("id" uuid NOT NULL, "email" character varying NOT NULL, "name" character varying NOT NULL DEFAULT '', "chat_id" character varying NULL, "timezone" character varying NULL, "auth_provider_id" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "user_tenant_id" to table: "users"
@@ -419,7 +419,7 @@ ALTER TABLE "incident_event_contributing_factors" ADD CONSTRAINT "incident_event
 -- modify "incident_event_evidences" table
 ALTER TABLE "incident_event_evidences" ADD CONSTRAINT "incident_event_evidences_incident_events_evidence" FOREIGN KEY ("incident_event_evidence") REFERENCES "incident_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_evidences_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "incident_event_topology_contexts" table
-ALTER TABLE "incident_event_topology_contexts" ADD CONSTRAINT "incident_event_topology_contexts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_topology_contexts_incident_events_event" FOREIGN KEY ("incident_event_id") REFERENCES "incident_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_topology_contex_b2409285a56a4f4f12a362a2778ee979" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "incident_event_topology_contex_a87b1dface31e85d292278580731ba85" FOREIGN KEY ("snapshot_entity_id") REFERENCES "topology_snapshot_entities" ("id") ON DELETE SET NULL;
+ALTER TABLE "incident_event_topology_contexts" ADD CONSTRAINT "incident_event_topology_contexts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_topology_contexts_incident_events_event" FOREIGN KEY ("incident_event_id") REFERENCES "incident_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_topology_contex_b2409285a56a4f4f12a362a2778ee979" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "incident_event_topology_contex_d1a9f110c3f1f9c744c079c1c462929b" FOREIGN KEY ("snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE SET NULL;
 -- modify "incident_fields" table
 ALTER TABLE "incident_fields" ADD CONSTRAINT "incident_fields_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "incident_field_options" table
@@ -489,11 +489,17 @@ ALTER TABLE "retrospective_comments" ADD CONSTRAINT "retrospective_comments_tena
 -- modify "retrospective_reviews" table
 ALTER TABLE "retrospective_reviews" ADD CONSTRAINT "retrospective_reviews_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospective_reviews_retrospectives_retrospective" FOREIGN KEY ("retrospective_id") REFERENCES "retrospectives" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospective_reviews_users_requester" FOREIGN KEY ("requester_id") REFERENCES "users" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospective_reviews_users_reviewer" FOREIGN KEY ("reviewer_id") REFERENCES "users" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospective_reviews_retrospective_comments_comment" FOREIGN KEY ("comment_id") REFERENCES "retrospective_comments" ("id") ON DELETE NO ACTION;
 -- modify "system_analyses" table
-ALTER TABLE "system_analyses" ADD CONSTRAINT "system_analyses_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analyses_topology_snapshots_topology_snapshot" FOREIGN KEY ("topology_snapshot_id") REFERENCES "topology_snapshots" ("id") ON DELETE SET NULL;
--- modify "system_analysis_nodes" table
-ALTER TABLE "system_analysis_nodes" ADD CONSTRAINT "system_analysis_nodes_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_nodes_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_nodes_topology_2dbeba01349a016d66da8a5736d9f5a1" FOREIGN KEY ("snapshot_entity_id") REFERENCES "topology_snapshot_entities" ("id") ON DELETE NO ACTION;
+ALTER TABLE "system_analyses" ADD CONSTRAINT "system_analyses_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analyses_system_topology_snapshots_topology_snapshot" FOREIGN KEY ("topology_snapshot_id") REFERENCES "system_topology_snapshots" ("id") ON DELETE SET NULL;
 -- modify "system_analysis_topology_edges" table
-ALTER TABLE "system_analysis_topology_edges" ADD CONSTRAINT "system_analysis_topology_edges_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_topology_edges_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_topology_edges_9bdc8dd94b6af3ebd7986fcbe82e93f1" FOREIGN KEY ("snapshot_relationship_id") REFERENCES "topology_snapshot_relationships" ("id") ON DELETE NO ACTION;
+ALTER TABLE "system_analysis_topology_edges" ADD CONSTRAINT "system_analysis_topology_edges_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_topology_edges_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_topology_edges_c4b40b33a79f2054fdf3e995173eda08" FOREIGN KEY ("snapshot_relationship_id") REFERENCES "system_topology_snapshot_relationships" ("id") ON DELETE NO ACTION;
+-- modify "system_analysis_topology_nodes" table
+ALTER TABLE "system_analysis_topology_nodes" ADD CONSTRAINT "system_analysis_topology_nodes_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_topology_nodes_system_analyses_analysis" FOREIGN KEY ("analysis_id") REFERENCES "system_analyses" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_analysis_topology_nodes_1dea46edc4c4b6fa57943e6a9c4a3f02" FOREIGN KEY ("snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE NO ACTION;
+-- modify "system_topology_snapshots" table
+ALTER TABLE "system_topology_snapshots" ADD CONSTRAINT "system_topology_snapshots_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "system_topology_snapshot_entities" table
+ALTER TABLE "system_topology_snapshot_entities" ADD CONSTRAINT "system_topology_snapshot_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_entit_624ed73670c571ebba5995e15ccf51fd" FOREIGN KEY ("snapshot_id") REFERENCES "system_topology_snapshots" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_entit_6acf350be9828a2b8ba4f3166002a8fd" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
+-- modify "system_topology_snapshot_relationships" table
+ALTER TABLE "system_topology_snapshot_relationships" ADD CONSTRAINT "system_topology_snapshot_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_8618d8e705fc800d4b45f7ba21b7151f" FOREIGN KEY ("snapshot_id") REFERENCES "system_topology_snapshots" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_5f2c55c7b6ad86bc36bd1003d1e2579f" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_topology_snapshot_relat_020fdabf27aca33de3b8244fcbb40d4d" FOREIGN KEY ("source_snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_49bd6a99a61ed2571218b82bfd309a9d" FOREIGN KEY ("target_snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE NO ACTION;
 -- modify "tasks" table
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_incidents_tasks" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE SET NULL, ADD CONSTRAINT "tasks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "tasks_users_assigned_tasks" FOREIGN KEY ("assignee_id") REFERENCES "users" ("id") ON DELETE SET NULL, ADD CONSTRAINT "tasks_users_created_tasks" FOREIGN KEY ("creator_id") REFERENCES "users" ("id") ON DELETE SET NULL;
 -- modify "teams" table
@@ -502,12 +508,6 @@ ALTER TABLE "teams" ADD CONSTRAINT "teams_tenants_tenant" FOREIGN KEY ("tenant_i
 ALTER TABLE "team_memberships" ADD CONSTRAINT "team_memberships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "team_memberships_teams_team" FOREIGN KEY ("team_id") REFERENCES "teams" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "team_memberships_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "tickets" table
 ALTER TABLE "tickets" ADD CONSTRAINT "tickets_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "topology_snapshots" table
-ALTER TABLE "topology_snapshots" ADD CONSTRAINT "topology_snapshots_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "topology_snapshot_entities" table
-ALTER TABLE "topology_snapshot_entities" ADD CONSTRAINT "topology_snapshot_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "topology_snapshot_entities_topology_snapshots_snapshot" FOREIGN KEY ("snapshot_id") REFERENCES "topology_snapshots" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "topology_snapshot_entities_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
--- modify "topology_snapshot_relationships" table
-ALTER TABLE "topology_snapshot_relationships" ADD CONSTRAINT "topology_snapshot_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "topology_snapshot_relationships_topology_snapshots_snapshot" FOREIGN KEY ("snapshot_id") REFERENCES "topology_snapshots" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "topology_snapshot_relationship_8395fb382ef6c7a5cc3ad95b11f692ce" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "topology_snapshot_relationship_ca28ad6ad79c599a07f5587ff8183c64" FOREIGN KEY ("source_snapshot_entity_id") REFERENCES "topology_snapshot_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "topology_snapshot_relationship_f9981a5ea4e0c1fd6def7bf1d10049ec" FOREIGN KEY ("target_snapshot_entity_id") REFERENCES "topology_snapshot_entities" ("id") ON DELETE NO ACTION;
 -- modify "users" table
 ALTER TABLE "users" ADD CONSTRAINT "users_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "video_conferences" table

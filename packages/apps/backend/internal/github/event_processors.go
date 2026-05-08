@@ -71,17 +71,22 @@ func (p *pushEventProcessor) Process(ctx context.Context, prov rez.ProviderEvent
 		occurredAt = hc.GetTimestamp().Time
 	}
 
+	subjectRef := prov.SubjectRef
+	if subjectRef == "" {
+		subjectRef = fmt.Sprintf("github:%s:%s", event.GetRepo().GetFullName(), event.GetAfter())
+	}
+
 	result := &ent.NormalizedEvent{
-		TenantID:          ci.intg.TenantID,
-		Provider:          integrationName,
-		ProviderSource:    "push",
-		Kind:              ne.KindChangeEventObserved,
-		SubjectKind:       "change_event",
-		ProviderEventRef:  event.GetAfter(),
-		SubjectRef:        fmt.Sprintf("github:%s:%s", event.GetRepo().GetFullName(), event.GetAfter()),
-		OccurredAt:        occurredAt,
-		ProcessingVersion: "github.change-event-observed.v1",
-		DedupeKey:         prov.DedupeKey,
+		Kind:                     ne.KindChangeEventObserved,
+		TenantID:                 ci.intg.TenantID,
+		Provider:                 integrationName,
+		ProviderSource:           "push",
+		SubjectKind:              "change_event",
+		ProviderEventRef:         event.GetAfter(),
+		ProviderEventDeliveryRef: prov.ProviderDeliveryRef,
+		SubjectRef:               subjectRef,
+		OccurredAt:               occurredAt,
+		ProcessingVersion:        "github.change-event-observed.v1",
 		Attributes: projections.ChangeEventObservedAttributes{
 			RepositoryExternalRef: event.GetRepo().GetFullName(),
 			DisplayName:           event.GetRef(),
@@ -114,17 +119,22 @@ func (p *pullRequestEventProcessor) Process(ctx context.Context, prov rez.Provid
 	pr := event.GetPullRequest()
 	prNum := pr.GetNumber()
 
+	subjectRef := prov.SubjectRef
+	if subjectRef == "" {
+		subjectRef = fmt.Sprintf("github:%s:pr:%d", event.GetRepo().GetFullName(), prNum)
+	}
+
 	result := &ent.NormalizedEvent{
-		TenantID:          ci.intg.TenantID,
-		Provider:          integrationName,
-		ProviderSource:    "pull_request",
-		Kind:              ne.KindChangeEventObserved,
-		SubjectKind:       "change_event",
-		ProviderEventRef:  fmt.Sprintf("pr:%d", prNum),
-		SubjectRef:        fmt.Sprintf("github:%s:pr:%d", event.GetRepo().GetFullName(), prNum),
-		OccurredAt:        pr.GetCreatedAt().Time,
-		ProcessingVersion: "github.change-event-observed.v1",
-		DedupeKey:         prov.DedupeKey,
+		TenantID:                 ci.intg.TenantID,
+		Provider:                 integrationName,
+		ProviderSource:           "pull_request",
+		Kind:                     ne.KindChangeEventObserved,
+		SubjectKind:              "change_event",
+		ProviderEventRef:         fmt.Sprintf("pr:%d", prNum),
+		SubjectRef:               subjectRef,
+		OccurredAt:               pr.GetCreatedAt().Time,
+		ProcessingVersion:        "github.change-event-observed.v1",
+		ProviderEventDeliveryRef: prov.ProviderDeliveryRef,
 		Attributes: projections.ChangeEventObservedAttributes{
 			RepositoryExternalRef: event.GetRepo().GetFullName(),
 			DisplayName:           pr.GetTitle(),

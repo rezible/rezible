@@ -31,8 +31,8 @@ const (
 	FieldSubjectRef = "subject_ref"
 	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
 	FieldProviderEventRef = "provider_event_ref"
-	// FieldDedupeKey holds the string denoting the dedupe_key field in the database.
-	FieldDedupeKey = "dedupe_key"
+	// FieldProviderEventDeliveryRef holds the string denoting the provider_event_delivery_ref field in the database.
+	FieldProviderEventDeliveryRef = "provider_event_delivery_ref"
 	// FieldOccurredAt holds the string denoting the occurred_at field in the database.
 	FieldOccurredAt = "occurred_at"
 	// FieldReceivedAt holds the string denoting the received_at field in the database.
@@ -66,7 +66,7 @@ var Columns = []string{
 	FieldSubjectKind,
 	FieldSubjectRef,
 	FieldProviderEventRef,
-	FieldDedupeKey,
+	FieldProviderEventDeliveryRef,
 	FieldOccurredAt,
 	FieldReceivedAt,
 	FieldProcessingVersion,
@@ -177,9 +177,9 @@ func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
 }
 
-// ByDedupeKey orders the results by the dedupe_key field.
-func ByDedupeKey(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDedupeKey, opts...).ToFunc()
+// ByProviderEventDeliveryRef orders the results by the provider_event_delivery_ref field.
+func ByProviderEventDeliveryRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderEventDeliveryRef, opts...).ToFunc()
 }
 
 // ByOccurredAt orders the results by the occurred_at field.

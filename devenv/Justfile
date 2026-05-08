@@ -32,7 +32,7 @@ dbName := "rez-"+branchId
     if [[ "{{workspace_setup}}" == "true" ]]; then \
       if [[ "{{force}}" == "false" ]]; then echo "{{alreadySetupErr}}"; exit 1; fi; \
       rm "{{workspace_env_file}}"; \
-      docker compose down -v; \
+      docker compose down -v postgres; \
     fi
     just _write-workspace-env
     docker compose up --wait

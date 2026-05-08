@@ -46,8 +46,8 @@ func NewProviderEventService(ctx context.Context, db *ent.Client, js rez.JobsSer
 	return pe
 }
 
-func (s *ProviderEventService) RegisterEventProcessor(prov, src string, proc rez.ProviderEventProcessor) {
-	s.setEventProcessor(prov, src, proc)
+func (s *ProviderEventService) RegisterEventProcessor(provider, providerSource string, proc rez.ProviderEventProcessor) {
+	s.setEventProcessor(provider, providerSource, proc)
 }
 
 func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
@@ -62,12 +62,14 @@ type ingestProviderEventResult struct {
 
 func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent) (*ingestProviderEventResult, error) {
 	processEvent := processProviderEventArgs{
-		Provider:        strings.TrimSpace(ev.Provider),
-		Source:          strings.TrimSpace(ev.ProviderSource),
-		ReceivedAt:      time.Now().UTC(),
-		DedupeKey:       ev.DedupeKey,
-		RequestMetadata: ev.RequestMetadata,
-		Payload:         ev.Payload,
+		Provider:                 strings.TrimSpace(ev.Provider),
+		ProviderSource:           strings.TrimSpace(ev.ProviderSource),
+		SubjectRef:               strings.TrimSpace(ev.SubjectRef),
+		ReceivedAt:               ev.ReceivedAt,
+		ProviderEventDeliveryRef: ev.ProviderDeliveryRef,
+		ContentType:              ev.ContentType,
+		RequestMetadata:          ev.RequestMetadata,
+		Payload:                  ev.Payload,
 	}
 	if processEvent.ReceivedAt.IsZero() {
 		processEvent.ReceivedAt = time.Now().UTC()
@@ -76,21 +78,24 @@ func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent)
 	if processEvent.Provider == "" {
 		return nil, fmt.Errorf("provider event provider is required")
 	}
-	if processEvent.Source == "" {
-		return nil, fmt.Errorf("provider event source is required")
+	if processEvent.ProviderSource == "" {
+		return nil, fmt.Errorf("provider event provider_source is required")
+	}
+	if processEvent.SubjectRef == "" {
+		return nil, fmt.Errorf("provider event subject_ref is required")
 	}
 	if len(processEvent.Payload) == 0 {
 		return nil, fmt.Errorf("provider event payload is required")
 	}
 
-	if processEvent.DedupeKey == "" {
+	if processEvent.ProviderEventDeliveryRef == "" {
 		hash := sha256.New()
 		hash.Write([]byte(strings.TrimSpace(processEvent.Provider)))
 		hash.Write([]byte{0})
-		hash.Write([]byte(strings.TrimSpace(processEvent.Source)))
+		hash.Write([]byte(strings.TrimSpace(processEvent.ProviderSource)))
 		hash.Write([]byte{0})
 		hash.Write(processEvent.Payload)
-		processEvent.DedupeKey = hex.EncodeToString(hash.Sum(nil))
+		processEvent.ProviderEventDeliveryRef = hex.EncodeToString(hash.Sum(nil))
 	}
 
 	res, insertErr := s.jobService.Insert(ctx, processEvent, &river.InsertOpts{
@@ -111,31 +116,32 @@ func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent)
 	return &ingestProviderEventResult{duplicate: duplicate}, nil
 }
 
-func (s *ProviderEventService) setEventProcessor(prov, src string, proc rez.ProviderEventProcessor) {
+func (s *ProviderEventService) setEventProcessor(provider, providerSource string, proc rez.ProviderEventProcessor) {
 	s.processorsMu.Lock()
 	defer s.processorsMu.Unlock()
-	s.processors[s.makeEventProcessorKey(prov, src)] = proc
+	s.processors[s.makeEventProcessorKey(provider, providerSource)] = proc
 }
 
-func (s *ProviderEventService) makeEventProcessorKey(provider, source string) string {
-	return fmt.Sprintf("%s:%s", strings.ToLower(strings.TrimSpace(provider)), strings.TrimSpace(source))
+func (s *ProviderEventService) makeEventProcessorKey(provider, providerSource string) string {
+	return fmt.Sprintf("%s:%s", strings.ToLower(strings.TrimSpace(provider)), strings.TrimSpace(providerSource))
 }
 
-func (s *ProviderEventService) lookupEventProcessor(provider, source string) (rez.ProviderEventProcessor, bool) {
+func (s *ProviderEventService) lookupEventProcessor(provider, providerSource string) (rez.ProviderEventProcessor, bool) {
 	s.processorsMu.Lock()
 	defer s.processorsMu.Unlock()
-	proc, ok := s.processors[s.makeEventProcessorKey(provider, source)]
+	proc, ok := s.processors[s.makeEventProcessorKey(provider, providerSource)]
 	return proc, ok
 }
 
 type processProviderEventArgs struct {
-	Provider        string            `json:"provider"`
-	Source          string            `json:"source"`
-	ReceivedAt      time.Time         `json:"received_at"`
-	Payload         []byte            `json:"payload"`
-	ContentType     string            `json:"content_type,omitempty"`
-	RequestMetadata map[string]string `json:"request_metadata,omitempty"`
-	DedupeKey       string            `json:"dedupe_key,omitempty" river:"unique"`
+	Provider                 string            `json:"provider"`
+	ProviderSource           string            `json:"provider_source"`
+	SubjectRef               string            `json:"subject_ref"`
+	ReceivedAt               time.Time         `json:"received_at"`
+	Payload                  []byte            `json:"payload"`
+	ContentType              string            `json:"content_type,omitempty"`
+	RequestMetadata          map[string]string `json:"request_metadata,omitempty"`
+	ProviderEventDeliveryRef string            `json:"provider_event_delivery_ref,omitempty" river:"unique"`
 }
 
 func (processProviderEventArgs) Kind() string {
@@ -144,7 +150,7 @@ func (processProviderEventArgs) Kind() string {
 
 func (s *ProviderEventService) ProcessProviderEvent(ctx context.Context, args processProviderEventArgs) error {
 	res, err := s.processProviderEvent(ctx, args)
-	s.metrics.recordProcessed(ctx, args.Provider, args.Source, res, err)
+	s.metrics.recordProcessed(ctx, args.Provider, args.ProviderSource, res, err)
 	return err
 }
 
@@ -161,18 +167,19 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, args pr
 	res := &processProviderEventResult{}
 
 	processStart := time.Now()
-	proc, procExists := s.lookupEventProcessor(args.Provider, args.Source)
+	proc, procExists := s.lookupEventProcessor(args.Provider, args.ProviderSource)
 	if !procExists {
-		return nil, fmt.Errorf("no provider event processor registered for %s %s", args.Provider, args.Source)
+		return nil, fmt.Errorf("no provider event processor registered for %s %s", args.Provider, args.ProviderSource)
 	}
 	provEvent := rez.ProviderEvent{
-		Provider:        args.Provider,
-		ProviderSource:  args.Source,
-		ReceivedAt:      args.ReceivedAt,
-		Payload:         args.Payload,
-		ContentType:     args.ContentType,
-		RequestMetadata: args.RequestMetadata,
-		DedupeKey:       args.DedupeKey,
+		Provider:            args.Provider,
+		ProviderSource:      args.ProviderSource,
+		SubjectRef:          args.SubjectRef,
+		ReceivedAt:          args.ReceivedAt,
+		Payload:             args.Payload,
+		ContentType:         args.ContentType,
+		RequestMetadata:     args.RequestMetadata,
+		ProviderDeliveryRef: args.ProviderEventDeliveryRef,
 	}
 	normalizedEvents, procErr := proc.Process(ctx, provEvent)
 	res.processTime = time.Since(processStart)
@@ -221,12 +228,13 @@ func (s *ProviderEventService) projectNormalizedEvents(ctx context.Context, norm
 			SetSubjectKind(ev.SubjectKind).
 			SetSubjectRef(ev.SubjectRef).
 			SetProviderEventRef(ev.ProviderEventRef).
+			SetProviderEventDeliveryRef(ev.ProviderEventDeliveryRef).
 			SetOccurredAt(ev.OccurredAt).
 			SetReceivedAt(ev.ReceivedAt).
 			SetProcessingVersion(ev.ProcessingVersion).
-			SetAttributes(ev.Attributes).
-			SetDedupeKey(ev.DedupeKey).
-			OnConflict(upsertCols).UpdateNewValues()
+			SetAttributes(ev.Attributes)
+
+		c.OnConflict(upsertCols).UpdateNewValues()
 	}
 
 	return ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {

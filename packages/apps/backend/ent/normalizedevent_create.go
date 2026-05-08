@@ -67,16 +67,16 @@ func (_c *NormalizedEventCreate) SetProviderEventRef(v string) *NormalizedEventC
 	return _c
 }
 
-// SetDedupeKey sets the "dedupe_key" field.
-func (_c *NormalizedEventCreate) SetDedupeKey(v string) *NormalizedEventCreate {
-	_c.mutation.SetDedupeKey(v)
+// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
+func (_c *NormalizedEventCreate) SetProviderEventDeliveryRef(v string) *NormalizedEventCreate {
+	_c.mutation.SetProviderEventDeliveryRef(v)
 	return _c
 }
 
-// SetNillableDedupeKey sets the "dedupe_key" field if the given value is not nil.
-func (_c *NormalizedEventCreate) SetNillableDedupeKey(v *string) *NormalizedEventCreate {
+// SetNillableProviderEventDeliveryRef sets the "provider_event_delivery_ref" field if the given value is not nil.
+func (_c *NormalizedEventCreate) SetNillableProviderEventDeliveryRef(v *string) *NormalizedEventCreate {
 	if v != nil {
-		_c.SetDedupeKey(*v)
+		_c.SetProviderEventDeliveryRef(*v)
 	}
 	return _c
 }
@@ -329,9 +329,9 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 		_node.ProviderEventRef = value
 	}
-	if value, ok := _c.mutation.DedupeKey(); ok {
-		_spec.SetField(normalizedevent.FieldDedupeKey, field.TypeString, value)
-		_node.DedupeKey = value
+	if value, ok := _c.mutation.ProviderEventDeliveryRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString, value)
+		_node.ProviderEventDeliveryRef = value
 	}
 	if value, ok := _c.mutation.OccurredAt(); ok {
 		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)
@@ -495,21 +495,21 @@ func (u *NormalizedEventUpsert) UpdateProviderEventRef() *NormalizedEventUpsert 
 	return u
 }
 
-// SetDedupeKey sets the "dedupe_key" field.
-func (u *NormalizedEventUpsert) SetDedupeKey(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldDedupeKey, v)
+// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
+func (u *NormalizedEventUpsert) SetProviderEventDeliveryRef(v string) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldProviderEventDeliveryRef, v)
 	return u
 }
 
-// UpdateDedupeKey sets the "dedupe_key" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateDedupeKey() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldDedupeKey)
+// UpdateProviderEventDeliveryRef sets the "provider_event_delivery_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateProviderEventDeliveryRef() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldProviderEventDeliveryRef)
 	return u
 }
 
-// ClearDedupeKey clears the value of the "dedupe_key" field.
-func (u *NormalizedEventUpsert) ClearDedupeKey() *NormalizedEventUpsert {
-	u.SetNull(normalizedevent.FieldDedupeKey)
+// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
+func (u *NormalizedEventUpsert) ClearProviderEventDeliveryRef() *NormalizedEventUpsert {
+	u.SetNull(normalizedevent.FieldProviderEventDeliveryRef)
 	return u
 }
 
@@ -708,24 +708,24 @@ func (u *NormalizedEventUpsertOne) UpdateProviderEventRef() *NormalizedEventUpse
 	})
 }
 
-// SetDedupeKey sets the "dedupe_key" field.
-func (u *NormalizedEventUpsertOne) SetDedupeKey(v string) *NormalizedEventUpsertOne {
+// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
+func (u *NormalizedEventUpsertOne) SetProviderEventDeliveryRef(v string) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetDedupeKey(v)
+		s.SetProviderEventDeliveryRef(v)
 	})
 }
 
-// UpdateDedupeKey sets the "dedupe_key" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateDedupeKey() *NormalizedEventUpsertOne {
+// UpdateProviderEventDeliveryRef sets the "provider_event_delivery_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateProviderEventDeliveryRef() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateDedupeKey()
+		s.UpdateProviderEventDeliveryRef()
 	})
 }
 
-// ClearDedupeKey clears the value of the "dedupe_key" field.
-func (u *NormalizedEventUpsertOne) ClearDedupeKey() *NormalizedEventUpsertOne {
+// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
+func (u *NormalizedEventUpsertOne) ClearProviderEventDeliveryRef() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.ClearDedupeKey()
+		s.ClearProviderEventDeliveryRef()
 	})
 }
 
@@ -1101,24 +1101,24 @@ func (u *NormalizedEventUpsertBulk) UpdateProviderEventRef() *NormalizedEventUps
 	})
 }
 
-// SetDedupeKey sets the "dedupe_key" field.
-func (u *NormalizedEventUpsertBulk) SetDedupeKey(v string) *NormalizedEventUpsertBulk {
+// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
+func (u *NormalizedEventUpsertBulk) SetProviderEventDeliveryRef(v string) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetDedupeKey(v)
+		s.SetProviderEventDeliveryRef(v)
 	})
 }
 
-// UpdateDedupeKey sets the "dedupe_key" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateDedupeKey() *NormalizedEventUpsertBulk {
+// UpdateProviderEventDeliveryRef sets the "provider_event_delivery_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateProviderEventDeliveryRef() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateDedupeKey()
+		s.UpdateProviderEventDeliveryRef()
 	})
 }
 
-// ClearDedupeKey clears the value of the "dedupe_key" field.
-func (u *NormalizedEventUpsertBulk) ClearDedupeKey() *NormalizedEventUpsertBulk {
+// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
+func (u *NormalizedEventUpsertBulk) ClearProviderEventDeliveryRef() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.ClearDedupeKey()
+		s.ClearProviderEventDeliveryRef()
 	})
 }
 

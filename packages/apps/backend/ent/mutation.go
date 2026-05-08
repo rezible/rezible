@@ -32743,27 +32743,27 @@ func (m *MeetingSessionMutation) ResetEdge(name string) error {
 // NormalizedEventMutation represents an operation that mutates the NormalizedEvent nodes in the graph.
 type NormalizedEventMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	provider           *string
-	provider_source    *string
-	kind               *normalizedevent.Kind
-	subject_kind       *string
-	subject_ref        *string
-	provider_event_ref *string
-	dedupe_key         *string
-	occurred_at        *time.Time
-	received_at        *time.Time
-	processing_version *string
-	attributes         *map[string]interface{}
-	created_at         *time.Time
-	clearedFields      map[string]struct{}
-	tenant             *int
-	clearedtenant      bool
-	done               bool
-	oldValue           func(context.Context) (*NormalizedEvent, error)
-	predicates         []predicate.NormalizedEvent
+	op                          Op
+	typ                         string
+	id                          *uuid.UUID
+	provider                    *string
+	provider_source             *string
+	kind                        *normalizedevent.Kind
+	subject_kind                *string
+	subject_ref                 *string
+	provider_event_ref          *string
+	provider_event_delivery_ref *string
+	occurred_at                 *time.Time
+	received_at                 *time.Time
+	processing_version          *string
+	attributes                  *map[string]interface{}
+	created_at                  *time.Time
+	clearedFields               map[string]struct{}
+	tenant                      *int
+	clearedtenant               bool
+	done                        bool
+	oldValue                    func(context.Context) (*NormalizedEvent, error)
+	predicates                  []predicate.NormalizedEvent
 }
 
 var _ ent.Mutation = (*NormalizedEventMutation)(nil)
@@ -33122,53 +33122,53 @@ func (m *NormalizedEventMutation) ResetProviderEventRef() {
 	m.provider_event_ref = nil
 }
 
-// SetDedupeKey sets the "dedupe_key" field.
-func (m *NormalizedEventMutation) SetDedupeKey(s string) {
-	m.dedupe_key = &s
+// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
+func (m *NormalizedEventMutation) SetProviderEventDeliveryRef(s string) {
+	m.provider_event_delivery_ref = &s
 }
 
-// DedupeKey returns the value of the "dedupe_key" field in the mutation.
-func (m *NormalizedEventMutation) DedupeKey() (r string, exists bool) {
-	v := m.dedupe_key
+// ProviderEventDeliveryRef returns the value of the "provider_event_delivery_ref" field in the mutation.
+func (m *NormalizedEventMutation) ProviderEventDeliveryRef() (r string, exists bool) {
+	v := m.provider_event_delivery_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldDedupeKey returns the old "dedupe_key" field's value of the NormalizedEvent entity.
+// OldProviderEventDeliveryRef returns the old "provider_event_delivery_ref" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldDedupeKey(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventMutation) OldProviderEventDeliveryRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDedupeKey is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderEventDeliveryRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDedupeKey requires an ID field in the mutation")
+		return v, errors.New("OldProviderEventDeliveryRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDedupeKey: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderEventDeliveryRef: %w", err)
 	}
-	return oldValue.DedupeKey, nil
+	return oldValue.ProviderEventDeliveryRef, nil
 }
 
-// ClearDedupeKey clears the value of the "dedupe_key" field.
-func (m *NormalizedEventMutation) ClearDedupeKey() {
-	m.dedupe_key = nil
-	m.clearedFields[normalizedevent.FieldDedupeKey] = struct{}{}
+// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
+func (m *NormalizedEventMutation) ClearProviderEventDeliveryRef() {
+	m.provider_event_delivery_ref = nil
+	m.clearedFields[normalizedevent.FieldProviderEventDeliveryRef] = struct{}{}
 }
 
-// DedupeKeyCleared returns if the "dedupe_key" field was cleared in this mutation.
-func (m *NormalizedEventMutation) DedupeKeyCleared() bool {
-	_, ok := m.clearedFields[normalizedevent.FieldDedupeKey]
+// ProviderEventDeliveryRefCleared returns if the "provider_event_delivery_ref" field was cleared in this mutation.
+func (m *NormalizedEventMutation) ProviderEventDeliveryRefCleared() bool {
+	_, ok := m.clearedFields[normalizedevent.FieldProviderEventDeliveryRef]
 	return ok
 }
 
-// ResetDedupeKey resets all changes to the "dedupe_key" field.
-func (m *NormalizedEventMutation) ResetDedupeKey() {
-	m.dedupe_key = nil
-	delete(m.clearedFields, normalizedevent.FieldDedupeKey)
+// ResetProviderEventDeliveryRef resets all changes to the "provider_event_delivery_ref" field.
+func (m *NormalizedEventMutation) ResetProviderEventDeliveryRef() {
+	m.provider_event_delivery_ref = nil
+	delete(m.clearedFields, normalizedevent.FieldProviderEventDeliveryRef)
 }
 
 // SetOccurredAt sets the "occurred_at" field.
@@ -33434,8 +33434,8 @@ func (m *NormalizedEventMutation) Fields() []string {
 	if m.provider_event_ref != nil {
 		fields = append(fields, normalizedevent.FieldProviderEventRef)
 	}
-	if m.dedupe_key != nil {
-		fields = append(fields, normalizedevent.FieldDedupeKey)
+	if m.provider_event_delivery_ref != nil {
+		fields = append(fields, normalizedevent.FieldProviderEventDeliveryRef)
 	}
 	if m.occurred_at != nil {
 		fields = append(fields, normalizedevent.FieldOccurredAt)
@@ -33474,8 +33474,8 @@ func (m *NormalizedEventMutation) Field(name string) (ent.Value, bool) {
 		return m.SubjectRef()
 	case normalizedevent.FieldProviderEventRef:
 		return m.ProviderEventRef()
-	case normalizedevent.FieldDedupeKey:
-		return m.DedupeKey()
+	case normalizedevent.FieldProviderEventDeliveryRef:
+		return m.ProviderEventDeliveryRef()
 	case normalizedevent.FieldOccurredAt:
 		return m.OccurredAt()
 	case normalizedevent.FieldReceivedAt:
@@ -33509,8 +33509,8 @@ func (m *NormalizedEventMutation) OldField(ctx context.Context, name string) (en
 		return m.OldSubjectRef(ctx)
 	case normalizedevent.FieldProviderEventRef:
 		return m.OldProviderEventRef(ctx)
-	case normalizedevent.FieldDedupeKey:
-		return m.OldDedupeKey(ctx)
+	case normalizedevent.FieldProviderEventDeliveryRef:
+		return m.OldProviderEventDeliveryRef(ctx)
 	case normalizedevent.FieldOccurredAt:
 		return m.OldOccurredAt(ctx)
 	case normalizedevent.FieldReceivedAt:
@@ -33579,12 +33579,12 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProviderEventRef(v)
 		return nil
-	case normalizedevent.FieldDedupeKey:
+	case normalizedevent.FieldProviderEventDeliveryRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetDedupeKey(v)
+		m.SetProviderEventDeliveryRef(v)
 		return nil
 	case normalizedevent.FieldOccurredAt:
 		v, ok := value.(time.Time)
@@ -33654,8 +33654,8 @@ func (m *NormalizedEventMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *NormalizedEventMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(normalizedevent.FieldDedupeKey) {
-		fields = append(fields, normalizedevent.FieldDedupeKey)
+	if m.FieldCleared(normalizedevent.FieldProviderEventDeliveryRef) {
+		fields = append(fields, normalizedevent.FieldProviderEventDeliveryRef)
 	}
 	return fields
 }
@@ -33671,8 +33671,8 @@ func (m *NormalizedEventMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *NormalizedEventMutation) ClearField(name string) error {
 	switch name {
-	case normalizedevent.FieldDedupeKey:
-		m.ClearDedupeKey()
+	case normalizedevent.FieldProviderEventDeliveryRef:
+		m.ClearProviderEventDeliveryRef()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent nullable field %s", name)
@@ -33703,8 +33703,8 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 	case normalizedevent.FieldProviderEventRef:
 		m.ResetProviderEventRef()
 		return nil
-	case normalizedevent.FieldDedupeKey:
-		m.ResetDedupeKey()
+	case normalizedevent.FieldProviderEventDeliveryRef:
+		m.ResetProviderEventDeliveryRef()
 		return nil
 	case normalizedevent.FieldOccurredAt:
 		m.ResetOccurredAt()

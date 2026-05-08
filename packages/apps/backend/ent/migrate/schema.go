@@ -1525,7 +1525,7 @@ var (
 		{Name: "subject_kind", Type: field.TypeString},
 		{Name: "subject_ref", Type: field.TypeString},
 		{Name: "provider_event_ref", Type: field.TypeString},
-		{Name: "dedupe_key", Type: field.TypeString, Nullable: true},
+		{Name: "provider_event_delivery_ref", Type: field.TypeString, Nullable: true},
 		{Name: "occurred_at", Type: field.TypeTime},
 		{Name: "received_at", Type: field.TypeTime},
 		{Name: "processing_version", Type: field.TypeString},

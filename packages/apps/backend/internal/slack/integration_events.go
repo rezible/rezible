@@ -74,11 +74,12 @@ func (h *eventHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Even
 	innerType := slackevents.EventsAPIType(inner.Type)
 	if processCallbackEventTypes.Contains(innerType) {
 		pe := rez.ProviderEvent{
-			Provider:        integrationName,
-			ProviderSource:  callbackEventsSource,
-			DedupeKey:       ev.EventID,
-			Payload:         data,
-			RequestMetadata: map[string]string{},
+			Provider:            integrationName,
+			ProviderSource:      callbackEventsSource,
+			SubjectRef:          callbackEventSubjectRef(ev, data),
+			ProviderDeliveryRef: ev.EventID,
+			Payload:             data,
+			RequestMetadata:     map[string]string{},
 		}
 		if ingestErr := h.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
 			return fmt.Errorf("ingest event: %w", ingestErr)
@@ -90,6 +91,40 @@ func (h *eventHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Even
 		}
 	}
 	return nil
+}
+
+func callbackEventSubjectRef(ev *slackevents.EventsAPICallbackEvent, data []byte) string {
+	var payload struct {
+		TeamID       string `json:"team_id"`
+		EnterpriseID string `json:"enterprise_id"`
+		Event        struct {
+			Channel string `json:"channel"`
+			Ts      string `json:"ts"`
+			EventTs string `json:"event_ts"`
+		} `json:"event"`
+	}
+	if err := json.Unmarshal(data, &payload); err == nil {
+		workspaceID := payload.TeamID
+		if workspaceID == "" {
+			workspaceID = payload.EnterpriseID
+		}
+		ts := payload.Event.Ts
+		if ts == "" {
+			ts = payload.Event.EventTs
+		}
+		if workspaceID != "" && payload.Event.Channel != "" && ts != "" {
+			return fmt.Sprintf("slack:%s:%s:%s", workspaceID, payload.Event.Channel, ts)
+		}
+	}
+
+	workspaceID := ev.TeamID
+	if workspaceID == "" {
+		workspaceID = ev.EnterpriseID
+	}
+	if ev.EventID != "" {
+		return fmt.Sprintf("slack:event:%s", ev.EventID)
+	}
+	return "slack:event_callback"
 }
 
 func (h *eventHandler) OnAppRateLimitedEvent(ctx context.Context) error {
@@ -243,12 +278,12 @@ func (p *callbackEventProcessor) Process(ctx context.Context, prov rez.ProviderE
 	}
 
 	result := &ent.NormalizedEvent{
-		Provider:          integrationName,
-		ProviderSource:    callbackEventsSource,
-		Kind:              normalizedevent.KindChatMessage,
-		SubjectKind:       "message",
-		DedupeKey:         prov.DedupeKey,
-		ProcessingVersion: "slack.chat-message-posted.v1",
+		Provider:                 integrationName,
+		ProviderSource:           callbackEventsSource,
+		Kind:                     normalizedevent.KindChatMessage,
+		SubjectKind:              "message",
+		ProviderEventDeliveryRef: prov.ProviderDeliveryRef,
+		ProcessingVersion:        "slack.chat-message-posted.v1",
 	}
 
 	attrs := projections.ChatMessageAttributes{
@@ -260,8 +295,8 @@ func (p *callbackEventProcessor) Process(ctx context.Context, prov rez.ProviderE
 
 	if cb, ok := ev.Data.(*slackevents.EventsAPICallbackEvent); ok {
 		result.ProviderEventRef = cb.EventID
-		if result.DedupeKey == "" {
-			result.DedupeKey = cb.EventID
+		if result.ProviderEventDeliveryRef == "" {
+			result.ProviderEventDeliveryRef = cb.EventID
 		}
 	}
 
@@ -309,7 +344,10 @@ func (p *callbackEventProcessor) Process(ctx context.Context, prov rez.ProviderE
 		workspaceID = ci.teamId()
 	}
 
-	result.SubjectRef = fmt.Sprintf("slack:%s:%s:%s", workspaceID, attrs.ConversationExternalRef, ts)
+	result.SubjectRef = prov.SubjectRef
+	if result.SubjectRef == "" {
+		result.SubjectRef = fmt.Sprintf("slack:%s:%s:%s", workspaceID, attrs.ConversationExternalRef, ts)
+	}
 	if result.ProviderEventRef == "" {
 		result.ProviderEventRef = result.SubjectRef
 	}

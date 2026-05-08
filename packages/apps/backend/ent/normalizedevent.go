@@ -35,8 +35,8 @@ type NormalizedEvent struct {
 	SubjectRef string `json:"subject_ref,omitempty"`
 	// Stable provider reference for the source event, used with the provider fields for idempotency.
 	ProviderEventRef string `json:"provider_event_ref,omitempty"`
-	// Optional ingestion dedupe key from the upstream provider event pipeline.
-	DedupeKey string `json:"dedupe_key,omitempty"`
+	// Optional ingestion reference from the upstream provider event pipeline.
+	ProviderEventDeliveryRef string `json:"provider_event_delivery_ref,omitempty"`
 	// Time the event occurred according to the provider or normalized payload.
 	OccurredAt time.Time `json:"occurred_at,omitempty"`
 	// Time the raw provider event was received by Rezible.
@@ -82,7 +82,7 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case normalizedevent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldKind, normalizedevent.FieldSubjectKind, normalizedevent.FieldSubjectRef, normalizedevent.FieldProviderEventRef, normalizedevent.FieldDedupeKey, normalizedevent.FieldProcessingVersion:
+		case normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldKind, normalizedevent.FieldSubjectKind, normalizedevent.FieldSubjectRef, normalizedevent.FieldProviderEventRef, normalizedevent.FieldProviderEventDeliveryRef, normalizedevent.FieldProcessingVersion:
 			values[i] = new(sql.NullString)
 		case normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt, normalizedevent.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
@@ -151,11 +151,11 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ProviderEventRef = value.String
 			}
-		case normalizedevent.FieldDedupeKey:
+		case normalizedevent.FieldProviderEventDeliveryRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field dedupe_key", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_event_delivery_ref", values[i])
 			} else if value.Valid {
-				_m.DedupeKey = value.String
+				_m.ProviderEventDeliveryRef = value.String
 			}
 		case normalizedevent.FieldOccurredAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -251,8 +251,8 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("provider_event_ref=")
 	builder.WriteString(_m.ProviderEventRef)
 	builder.WriteString(", ")
-	builder.WriteString("dedupe_key=")
-	builder.WriteString(_m.DedupeKey)
+	builder.WriteString("provider_event_delivery_ref=")
+	builder.WriteString(_m.ProviderEventDeliveryRef)
 	builder.WriteString(", ")
 	builder.WriteString("occurred_at=")
 	builder.WriteString(_m.OccurredAt.Format(time.ANSIC))

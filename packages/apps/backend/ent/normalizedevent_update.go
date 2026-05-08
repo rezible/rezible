@@ -114,23 +114,23 @@ func (_u *NormalizedEventUpdate) SetNillableProviderEventRef(v *string) *Normali
 	return _u
 }
 
-// SetDedupeKey sets the "dedupe_key" field.
-func (_u *NormalizedEventUpdate) SetDedupeKey(v string) *NormalizedEventUpdate {
-	_u.mutation.SetDedupeKey(v)
+// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
+func (_u *NormalizedEventUpdate) SetProviderEventDeliveryRef(v string) *NormalizedEventUpdate {
+	_u.mutation.SetProviderEventDeliveryRef(v)
 	return _u
 }
 
-// SetNillableDedupeKey sets the "dedupe_key" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableDedupeKey(v *string) *NormalizedEventUpdate {
+// SetNillableProviderEventDeliveryRef sets the "provider_event_delivery_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableProviderEventDeliveryRef(v *string) *NormalizedEventUpdate {
 	if v != nil {
-		_u.SetDedupeKey(*v)
+		_u.SetProviderEventDeliveryRef(*v)
 	}
 	return _u
 }
 
-// ClearDedupeKey clears the value of the "dedupe_key" field.
-func (_u *NormalizedEventUpdate) ClearDedupeKey() *NormalizedEventUpdate {
-	_u.mutation.ClearDedupeKey()
+// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
+func (_u *NormalizedEventUpdate) ClearProviderEventDeliveryRef() *NormalizedEventUpdate {
+	_u.mutation.ClearProviderEventDeliveryRef()
 	return _u
 }
 
@@ -307,11 +307,11 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.ProviderEventRef(); ok {
 		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.DedupeKey(); ok {
-		_spec.SetField(normalizedevent.FieldDedupeKey, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderEventDeliveryRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString, value)
 	}
-	if _u.mutation.DedupeKeyCleared() {
-		_spec.ClearField(normalizedevent.FieldDedupeKey, field.TypeString)
+	if _u.mutation.ProviderEventDeliveryRefCleared() {
+		_spec.ClearField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString)
 	}
 	if value, ok := _u.mutation.OccurredAt(); ok {
 		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)
@@ -436,23 +436,23 @@ func (_u *NormalizedEventUpdateOne) SetNillableProviderEventRef(v *string) *Norm
 	return _u
 }
 
-// SetDedupeKey sets the "dedupe_key" field.
-func (_u *NormalizedEventUpdateOne) SetDedupeKey(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetDedupeKey(v)
+// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
+func (_u *NormalizedEventUpdateOne) SetProviderEventDeliveryRef(v string) *NormalizedEventUpdateOne {
+	_u.mutation.SetProviderEventDeliveryRef(v)
 	return _u
 }
 
-// SetNillableDedupeKey sets the "dedupe_key" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableDedupeKey(v *string) *NormalizedEventUpdateOne {
+// SetNillableProviderEventDeliveryRef sets the "provider_event_delivery_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableProviderEventDeliveryRef(v *string) *NormalizedEventUpdateOne {
 	if v != nil {
-		_u.SetDedupeKey(*v)
+		_u.SetProviderEventDeliveryRef(*v)
 	}
 	return _u
 }
 
-// ClearDedupeKey clears the value of the "dedupe_key" field.
-func (_u *NormalizedEventUpdateOne) ClearDedupeKey() *NormalizedEventUpdateOne {
-	_u.mutation.ClearDedupeKey()
+// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
+func (_u *NormalizedEventUpdateOne) ClearProviderEventDeliveryRef() *NormalizedEventUpdateOne {
+	_u.mutation.ClearProviderEventDeliveryRef()
 	return _u
 }
 
@@ -659,11 +659,11 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	if value, ok := _u.mutation.ProviderEventRef(); ok {
 		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.DedupeKey(); ok {
-		_spec.SetField(normalizedevent.FieldDedupeKey, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderEventDeliveryRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString, value)
 	}
-	if _u.mutation.DedupeKeyCleared() {
-		_spec.ClearField(normalizedevent.FieldDedupeKey, field.TypeString)
+	if _u.mutation.ProviderEventDeliveryRefCleared() {
+		_spec.ClearField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString)
 	}
 	if value, ok := _u.mutation.OccurredAt(); ok {
 		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)

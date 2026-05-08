@@ -253,18 +253,19 @@ type (
 
 type (
 	ProviderEventService interface {
-		RegisterEventProcessor(provider string, source string, processor ProviderEventProcessor)
+		RegisterEventProcessor(provider string, providerSource string, processor ProviderEventProcessor)
 		Ingest(context.Context, ProviderEvent) error
 	}
 
 	ProviderEvent struct {
-		Provider        string
-		ProviderSource  string
-		ReceivedAt      time.Time
-		Payload         []byte
-		ContentType     string
-		RequestMetadata map[string]string
-		DedupeKey       string
+		Provider            string
+		ProviderSource      string
+		ProviderDeliveryRef string
+		SubjectRef          string
+		ReceivedAt          time.Time
+		Payload             []byte
+		ContentType         string
+		RequestMetadata     map[string]string
 	}
 
 	ProviderEventProcessor interface {

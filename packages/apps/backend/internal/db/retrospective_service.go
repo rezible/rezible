@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/topologysnapshot"
+	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -132,8 +132,8 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 		}
 
 		if kind == retrospective.KindFull {
-			topologySnapshot, createSnapshotErr := tx.TopologySnapshot.Create().
-				SetScope(topologysnapshot.ScopeIncident).
+			topologySnapshot, createSnapshotErr := tx.SystemTopologySnapshot.Create().
+				SetScope(systemtopologysnapshot.ScopeIncident).
 				SetScopeProperties(map[string]any{
 					"incidentId": inc.ID.String(),
 				}).

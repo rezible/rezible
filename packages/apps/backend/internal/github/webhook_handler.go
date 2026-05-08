@@ -4,6 +4,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log/slog"
@@ -44,10 +45,11 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	pe := rez.ProviderEvent{
-		Provider:       integrationName,
-		ProviderSource: r.Header.Get("X-GitHub-Event"),
-		Payload:        body,
-		DedupeKey:      r.Header.Get("X-GitHub-Delivery"),
+		Provider:            integrationName,
+		ProviderSource:      r.Header.Get("X-GitHub-Event"),
+		SubjectRef:          githubWebhookSubjectRef(r.Header.Get("X-GitHub-Event"), r.Header.Get("X-GitHub-Delivery"), body),
+		Payload:             body,
+		ProviderDeliveryRef: r.Header.Get("X-GitHub-Delivery"),
 	}
 
 	if ingestErr := h.services.ProviderEvents.Ingest(r.Context(), pe); ingestErr != nil {
@@ -57,6 +59,35 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func githubWebhookSubjectRef(event, delivery string, body []byte) string {
+	switch event {
+	case "push":
+		var payload struct {
+			After      string `json:"after"`
+			Repository struct {
+				FullName string `json:"full_name"`
+			} `json:"repository"`
+		}
+		if err := json.Unmarshal(body, &payload); err == nil && payload.Repository.FullName != "" && payload.After != "" {
+			return fmt.Sprintf("github:%s:%s", payload.Repository.FullName, payload.After)
+		}
+	case "pull_request":
+		var payload struct {
+			Number     int `json:"number"`
+			Repository struct {
+				FullName string `json:"full_name"`
+			} `json:"repository"`
+		}
+		if err := json.Unmarshal(body, &payload); err == nil && payload.Repository.FullName != "" && payload.Number != 0 {
+			return fmt.Sprintf("github:%s:pr:%d", payload.Repository.FullName, payload.Number)
+		}
+	}
+	if delivery != "" {
+		return fmt.Sprintf("github:%s:%s", event, delivery)
+	}
+	return fmt.Sprintf("github:%s", event)
 }
 
 func validateHMAC(body []byte, signature, secret string) bool {
