@@ -143,3 +143,66 @@ func (p *pullRequestEventProcessor) Process(ctx context.Context, prov rez.Provid
 
 	return ent.NormalizedEvents{result}, nil
 }
+
+type repositoryObservedProcessor struct {
+	services *rez.Services
+}
+
+func (p *repositoryObservedProcessor) Process(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	var payload githubRepositoryObservedPayload
+	if err := json.Unmarshal(prov.Payload, &payload); err != nil {
+		return nil, fmt.Errorf("unmarshal repository observed event: %w", err)
+	}
+	if payload.FullName == "" {
+		return nil, fmt.Errorf("repository observed payload missing full_name")
+	}
+
+	ci, lookupErr := lookupTenantIntegration(ctx, p.services.Integrations, payload.InstallationID)
+	if lookupErr != nil {
+		return nil, lookupErr
+	}
+	if ci == nil {
+		slog.WarnContext(ctx, "received github repository event with no configured integration", "installationId", payload.InstallationID)
+		return nil, nil
+	}
+
+	occurredAt := payload.UpdatedAt
+	if occurredAt.IsZero() {
+		occurredAt = payload.CreatedAt
+	}
+	if occurredAt.IsZero() {
+		occurredAt = prov.ReceivedAt
+	}
+	if occurredAt.IsZero() {
+		occurredAt = time.Now().UTC()
+	}
+
+	repositoryRef := payload.FullName
+
+	eventRefID := repositoryRef
+	if payload.ID != 0 {
+		eventRefID = fmt.Sprintf("%d", payload.ID)
+	}
+	result := &ent.NormalizedEvent{
+		TenantID:                 ci.intg.TenantID,
+		Provider:                 integrationName,
+		ProviderSource:           "repositories",
+		Kind:                     ne.KindRepositoryObserved,
+		SubjectKind:              "repository",
+		ProviderEventRef:         "repository:" + eventRefID,
+		ProviderEventDeliveryRef: prov.ProviderDeliveryRef,
+		SubjectRef:               repositoryRef,
+		OccurredAt:               occurredAt,
+		ReceivedAt:               prov.ReceivedAt,
+		ProcessingVersion:        "github.repository-observed.v1",
+		Attributes: projections.RepositoryObservedAttributes{
+			DisplayName: repositoryRef,
+			URL:         payload.HTMLURL,
+		}.Encode(),
+	}
+	if result.ReceivedAt.IsZero() {
+		result.ReceivedAt = occurredAt
+	}
+
+	return ent.NormalizedEvents{result}, nil
+}

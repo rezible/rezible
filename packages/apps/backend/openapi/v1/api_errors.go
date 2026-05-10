@@ -42,14 +42,8 @@ var (
 	}
 )
 
-func isClientError(err error) bool {
-
-	return false
-}
-
 func asStatusError(msg string, err error) huma.StatusError {
-	var statusError huma.StatusError
-	if errors.As(err, &statusError) {
+	if statusError, ok := errors.AsType[huma.StatusError](err); ok {
 		return statusError
 	}
 

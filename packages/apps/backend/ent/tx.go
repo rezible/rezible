@@ -86,6 +86,8 @@ type Tx struct {
 	MeetingSession *MeetingSessionClient
 	// NormalizedEvent is the client for interacting with the NormalizedEvent builders.
 	NormalizedEvent *NormalizedEventClient
+	// NormalizedEventProjectionStatus is the client for interacting with the NormalizedEventProjectionStatus builders.
+	NormalizedEventProjectionStatus *NormalizedEventProjectionStatusClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -108,6 +110,10 @@ type Tx struct {
 	OrganizationRole *OrganizationRoleClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
+	// ProviderEventSyncCursor is the client for interacting with the ProviderEventSyncCursor builders.
+	ProviderEventSyncCursor *ProviderEventSyncCursorClient
+	// ProviderEventSyncRun is the client for interacting with the ProviderEventSyncRun builders.
+	ProviderEventSyncRun *ProviderEventSyncRunClient
 	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
 	ProviderSyncHistory *ProviderSyncHistoryClient
 	// Retrospective is the client for interacting with the Retrospective builders.
@@ -310,6 +316,7 @@ func (tx *Tx) init() {
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.NormalizedEvent = NewNormalizedEventClient(tx.config)
+	tx.NormalizedEventProjectionStatus = NewNormalizedEventProjectionStatusClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)
 	tx.OncallRosterMetrics = NewOncallRosterMetricsClient(tx.config)
@@ -321,6 +328,8 @@ func (tx *Tx) init() {
 	tx.Organization = NewOrganizationClient(tx.config)
 	tx.OrganizationRole = NewOrganizationRoleClient(tx.config)
 	tx.Playbook = NewPlaybookClient(tx.config)
+	tx.ProviderEventSyncCursor = NewProviderEventSyncCursorClient(tx.config)
+	tx.ProviderEventSyncRun = NewProviderEventSyncRunClient(tx.config)
 	tx.ProviderSyncHistory = NewProviderSyncHistoryClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
 	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)

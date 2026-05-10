@@ -137,6 +137,22 @@ func (s *IntegrationsService) DeleteConfigured(ctx context.Context, id uuid.UUID
 	return deleteErr
 }
 
+func (s *IntegrationsService) GetProviderEventQueriers(ctx context.Context, provider string) ([]rez.ProviderEventQuerier, error) {
+	intgs, queryErr := s.db.Integration.Query().Where(integration.ProviderEQ(provider)).All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("failed to get integrations: %w", queryErr)
+	}
+	var queriers []rez.ProviderEventQuerier
+	for _, intg := range intgs {
+		q, qErr := integrations.GetProviderSourceEventQueriers(ctx, intg)
+		if qErr != nil {
+			return nil, fmt.Errorf("failed to get integration event queriers: %w", qErr)
+		}
+		queriers = append(queriers, q...)
+	}
+	return queriers, nil
+}
+
 func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.IntegrationQuery {
 	query := s.db.Integration.Query()
 	if len(p.IDs) > 0 {
@@ -225,10 +241,11 @@ func (s *IntegrationsService) set(ctx context.Context, params rez.ConfigureInteg
 		return nil, fmt.Errorf("failed to save: %w", saveErr)
 	}
 
-	args := jobs.SyncIntegrationsData{
-		IntegrationId: intg.ID,
-	}
 	if s.jobs != nil {
+		args := jobs.ProviderEventSyncJob{
+			Provider:   intg.Provider,
+			SyncReason: "configured",
+		}
 		if _, jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 			slog.Error("failed to insert sync job", "error", jobErr)
 		}
@@ -242,6 +259,7 @@ func (s *IntegrationsService) makeOAuthState(ctx context.Context, provider strin
 	if !ok {
 		return "", rez.ErrAuthSessionMissing
 	}
+	// TODO: replace this with something actually random
 	state := uuid.New().String()
 	create := s.db.IntegrationOAuthState.Create().
 		SetUserID(userId).
@@ -262,7 +280,8 @@ func (s *IntegrationsService) getOAuthState(ctx context.Context, provider string
 	if queryErr != nil {
 		return nil, fmt.Errorf("query failed: %w", queryErr)
 	}
-	cleanup := s.db.IntegrationOAuthState.Delete().Where(userIntegrationStates, ioas.ExpiresAtLT(time.Now()))
+	cleanup := s.db.IntegrationOAuthState.Delete().
+		Where(userIntegrationStates, ioas.ExpiresAtLT(time.Now()))
 	if _, cleanupErr := cleanup.Exec(ctx); cleanupErr != nil {
 		slog.Error("failed to cleanup old integration user oauth states",
 			"error", cleanupErr,
@@ -294,9 +313,9 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, provider s
 	if oiErr != nil {
 		return nil, fmt.Errorf("invalid oauth2 integration: %w", oiErr)
 	}
-	oauthCfg := oi.OAuth2Config()
-	var opts []oauth2.AuthCodeOption
+
 	var oauthState *ent.IntegrationOAuthState
+	var opts []oauth2.AuthCodeOption
 	if params.State != nil {
 		state, stateErr := s.getOAuthState(ctx, provider, *params.State)
 		if stateErr != nil {
@@ -308,7 +327,8 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, provider s
 	} else {
 		return nil, fmt.Errorf("invalid oauth2 integration: missing state or client_verifier")
 	}
-	token, tokenErr := oauthCfg.Exchange(ctx, params.Code, opts...)
+
+	token, tokenErr := oi.OAuth2Config().Exchange(ctx, params.Code, opts...)
 	if tokenErr != nil {
 		return nil, fmt.Errorf("exchange token: %w", tokenErr)
 	}
@@ -319,26 +339,31 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, provider s
 	if len(options) == 0 {
 		return nil, fmt.Errorf("no integration options returned")
 	}
-	if len(options) > 1 {
-		if oauthState == nil {
-			return nil, fmt.Errorf("multiple integration options require oauth state")
+	if len(options) == 1 {
+		configured, cfgErr := s.configureOptions(ctx, provider, options)
+		if cfgErr != nil {
+			return nil, cfgErr
 		}
-		if _, saveErr := s.db.IntegrationOAuthState.UpdateOneID(oauthState.ID).
-			SetSelectionOptions(externalOptionsToMaps(options)).
-			Save(ctx); saveErr != nil {
-			return nil, fmt.Errorf("save oauth selection options: %w", saveErr)
+		res := &rez.CompleteIntegrationOAuth2Result{
+			Status:     "configured",
+			Configured: configured,
 		}
-		return &rez.CompleteIntegrationOAuth2Result{
-			Status:         "selection_required",
-			SelectionToken: oauthState.State,
-			Options:        options,
-		}, nil
+		return res, nil
 	}
-	configured, cfgErr := s.configureOptions(ctx, provider, options)
-	if cfgErr != nil {
-		return nil, cfgErr
+	if oauthState == nil {
+		return nil, fmt.Errorf("multiple integration options require oauth state")
 	}
-	return &rez.CompleteIntegrationOAuth2Result{Status: "configured", Configured: configured}, nil
+	stateUpdate := oauthState.Update().
+		SetSelectionOptions(s.externalOptionsToMaps(options))
+	if updateErr := stateUpdate.Exec(ctx); updateErr != nil {
+		return nil, fmt.Errorf("save oauth selection options: %w", updateErr)
+	}
+	res := &rez.CompleteIntegrationOAuth2Result{
+		Status:         "selection_required",
+		SelectionToken: oauthState.State,
+		Options:        options,
+	}
+	return res, nil
 }
 
 func (s *IntegrationsService) SelectOAuth2Flow(ctx context.Context, provider string, params rez.SelectIntegrationOAuth2Params) (*rez.CompleteIntegrationOAuth2Result, error) {
@@ -346,7 +371,7 @@ func (s *IntegrationsService) SelectOAuth2Flow(ctx context.Context, provider str
 	if stateErr != nil {
 		return nil, fmt.Errorf("invalid state: %w", stateErr)
 	}
-	options := externalOptionsFromMaps(state.SelectionOptions)
+	options := s.externalOptionsFromMaps(state.SelectionOptions)
 	allowed := make(map[string]rez.ExternalIntegrationOption, len(options))
 	for _, option := range options {
 		allowed[option.ExternalRef] = option
@@ -375,12 +400,13 @@ func (s *IntegrationsService) SelectOAuth2Flow(ctx context.Context, provider str
 func (s *IntegrationsService) configureOptions(ctx context.Context, provider string, options []rez.ExternalIntegrationOption) ([]rez.ConfiguredIntegration, error) {
 	configured := make([]rez.ConfiguredIntegration, 0, len(options))
 	for _, option := range options {
-		ci, cfgErr := s.Configure(ctx, rez.ConfigureIntegrationParams{
+		params := rez.ConfigureIntegrationParams{
 			Provider:    provider,
 			DisplayName: option.DisplayName,
 			ExternalRef: option.ExternalRef,
 			Config:      option.Config,
-		})
+		}
+		ci, cfgErr := s.Configure(ctx, params)
 		if cfgErr != nil {
 			return nil, fmt.Errorf("set integration %s/%s: %w", provider, option.ExternalRef, cfgErr)
 		}
@@ -389,7 +415,7 @@ func (s *IntegrationsService) configureOptions(ctx context.Context, provider str
 	return configured, nil
 }
 
-func externalOptionsToMaps(options []rez.ExternalIntegrationOption) []map[string]any {
+func (s *IntegrationsService) externalOptionsToMaps(options []rez.ExternalIntegrationOption) []map[string]any {
 	result := make([]map[string]any, 0, len(options))
 	for _, option := range options {
 		result = append(result, map[string]any{
@@ -401,7 +427,7 @@ func externalOptionsToMaps(options []rez.ExternalIntegrationOption) []map[string
 	return result
 }
 
-func externalOptionsFromMaps(raw []map[string]any) []rez.ExternalIntegrationOption {
+func (s *IntegrationsService) externalOptionsFromMaps(raw []map[string]any) []rez.ExternalIntegrationOption {
 	result := make([]rez.ExternalIntegrationOption, 0, len(raw))
 	for _, item := range raw {
 		option := rez.ExternalIntegrationOption{}
@@ -462,7 +488,7 @@ func (s *IntegrationsService) GetChatService(ctx context.Context) (rez.ChatServi
 }
 
 type IntegrationWithVideoConference interface {
-	MakeVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error)
+	MakeVideoConferenceService(context.Context) (rez.VideoConferenceService, error)
 }
 
 func (s *IntegrationsService) GetVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error) {

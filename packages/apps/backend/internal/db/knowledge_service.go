@@ -3,34 +3,23 @@ package db
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-
 	"github.com/rezible/rezible/ent"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	kfh "github.com/rezible/rezible/ent/knowledgefacthistory"
 	kfp "github.com/rezible/rezible/ent/knowledgefactprovenance"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/jobs"
 )
 
 type KnowledgeService struct {
 	dbc *ent.Client
 }
 
-var registerKnowledgeServiceJobs sync.Once
-
-func NewKnowledgeService(dbc *ent.Client) *KnowledgeService {
-	svc := &KnowledgeService{dbc: dbc}
-	registerKnowledgeServiceJobs.Do(svc.registerJobs)
-	return svc
-}
-
-func (s *KnowledgeService) registerJobs() {
-	jobs.RegisterWorkerFunc(s.HandleEventProjection)
+func newKnowledgeService(dbc *ent.Client) *KnowledgeService {
+	return &KnowledgeService{dbc: dbc}
 }
 
 func (s *KnowledgeService) GetEntity(ctx context.Context, p predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error) {
@@ -84,6 +73,13 @@ func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, set
 	}
 
 	return alias, nil
+}
+
+func (s *KnowledgeService) lookupEntityAliasRef(ctx context.Context, ref EntityAliasRef) (*ent.KnowledgeEntityAlias, error) {
+	queryExisting := s.dbc.KnowledgeEntityAlias.Query().Where(
+		knea.Provider(ref.Provider), knea.ProviderSource(ref.ProviderSource),
+		knea.SubjectKind(ref.SubjectKind), knea.SubjectRef(ref.SubjectRef))
+	return queryExisting.Only(ctx)
 }
 
 func (s *KnowledgeService) GetRelationship(ctx context.Context, p predicate.KnowledgeRelationship) (*ent.KnowledgeRelationship, error) {

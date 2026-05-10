@@ -52,6 +52,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -63,6 +64,8 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
+	"github.com/rezible/rezible/ent/providereventsynccursor"
+	"github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -163,6 +166,8 @@ type Client struct {
 	MeetingSession *MeetingSessionClient
 	// NormalizedEvent is the client for interacting with the NormalizedEvent builders.
 	NormalizedEvent *NormalizedEventClient
+	// NormalizedEventProjectionStatus is the client for interacting with the NormalizedEventProjectionStatus builders.
+	NormalizedEventProjectionStatus *NormalizedEventProjectionStatusClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -185,6 +190,10 @@ type Client struct {
 	OrganizationRole *OrganizationRoleClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
+	// ProviderEventSyncCursor is the client for interacting with the ProviderEventSyncCursor builders.
+	ProviderEventSyncCursor *ProviderEventSyncCursorClient
+	// ProviderEventSyncRun is the client for interacting with the ProviderEventSyncRun builders.
+	ProviderEventSyncRun *ProviderEventSyncRunClient
 	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
 	ProviderSyncHistory *ProviderSyncHistoryClient
 	// Retrospective is the client for interacting with the Retrospective builders.
@@ -267,6 +276,7 @@ func (c *Client) init() {
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
 	c.NormalizedEvent = NewNormalizedEventClient(c.config)
+	c.NormalizedEventProjectionStatus = NewNormalizedEventProjectionStatusClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
 	c.OncallRoster = NewOncallRosterClient(c.config)
 	c.OncallRosterMetrics = NewOncallRosterMetricsClient(c.config)
@@ -278,6 +288,8 @@ func (c *Client) init() {
 	c.Organization = NewOrganizationClient(c.config)
 	c.OrganizationRole = NewOrganizationRoleClient(c.config)
 	c.Playbook = NewPlaybookClient(c.config)
+	c.ProviderEventSyncCursor = NewProviderEventSyncCursorClient(c.config)
+	c.ProviderEventSyncRun = NewProviderEventSyncRunClient(c.config)
 	c.ProviderSyncHistory = NewProviderSyncHistoryClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
 	c.RetrospectiveComment = NewRetrospectiveCommentClient(c.config)
@@ -427,6 +439,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MeetingSchedule:                    NewMeetingScheduleClient(cfg),
 		MeetingSession:                     NewMeetingSessionClient(cfg),
 		NormalizedEvent:                    NewNormalizedEventClient(cfg),
+		NormalizedEventProjectionStatus:    NewNormalizedEventProjectionStatusClient(cfg),
 		OncallHandoverTemplate:             NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                       NewOncallRosterClient(cfg),
 		OncallRosterMetrics:                NewOncallRosterMetricsClient(cfg),
@@ -438,6 +451,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Organization:                       NewOrganizationClient(cfg),
 		OrganizationRole:                   NewOrganizationRoleClient(cfg),
 		Playbook:                           NewPlaybookClient(cfg),
+		ProviderEventSyncCursor:            NewProviderEventSyncCursorClient(cfg),
+		ProviderEventSyncRun:               NewProviderEventSyncRunClient(cfg),
 		ProviderSyncHistory:                NewProviderSyncHistoryClient(cfg),
 		Retrospective:                      NewRetrospectiveClient(cfg),
 		RetrospectiveComment:               NewRetrospectiveCommentClient(cfg),
@@ -511,6 +526,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MeetingSchedule:                    NewMeetingScheduleClient(cfg),
 		MeetingSession:                     NewMeetingSessionClient(cfg),
 		NormalizedEvent:                    NewNormalizedEventClient(cfg),
+		NormalizedEventProjectionStatus:    NewNormalizedEventProjectionStatusClient(cfg),
 		OncallHandoverTemplate:             NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                       NewOncallRosterClient(cfg),
 		OncallRosterMetrics:                NewOncallRosterMetricsClient(cfg),
@@ -522,6 +538,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Organization:                       NewOrganizationClient(cfg),
 		OrganizationRole:                   NewOrganizationRoleClient(cfg),
 		Playbook:                           NewPlaybookClient(cfg),
+		ProviderEventSyncCursor:            NewProviderEventSyncCursorClient(cfg),
+		ProviderEventSyncRun:               NewProviderEventSyncRunClient(cfg),
 		ProviderSyncHistory:                NewProviderSyncHistoryClient(cfg),
 		Retrospective:                      NewRetrospectiveClient(cfg),
 		RetrospectiveComment:               NewRetrospectiveCommentClient(cfg),
@@ -579,10 +597,11 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeFactHistory, c.KnowledgeFactProvenance, c.KnowledgeRelationship,
 		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationRole, c.Playbook, c.ProviderSyncHistory, c.Retrospective,
+		c.NormalizedEventProjectionStatus, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.OrganizationRole, c.Playbook, c.ProviderEventSyncCursor,
+		c.ProviderEventSyncRun, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
 		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
@@ -608,10 +627,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeFactHistory, c.KnowledgeFactProvenance, c.KnowledgeRelationship,
 		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationRole, c.Playbook, c.ProviderSyncHistory, c.Retrospective,
+		c.NormalizedEventProjectionStatus, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.OrganizationRole, c.Playbook, c.ProviderEventSyncCursor,
+		c.ProviderEventSyncRun, c.ProviderSyncHistory, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
 		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
@@ -697,6 +717,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MeetingSession.mutate(ctx, m)
 	case *NormalizedEventMutation:
 		return c.NormalizedEvent.mutate(ctx, m)
+	case *NormalizedEventProjectionStatusMutation:
+		return c.NormalizedEventProjectionStatus.mutate(ctx, m)
 	case *OncallHandoverTemplateMutation:
 		return c.OncallHandoverTemplate.mutate(ctx, m)
 	case *OncallRosterMutation:
@@ -719,6 +741,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OrganizationRole.mutate(ctx, m)
 	case *PlaybookMutation:
 		return c.Playbook.mutate(ctx, m)
+	case *ProviderEventSyncCursorMutation:
+		return c.ProviderEventSyncCursor.mutate(ctx, m)
+	case *ProviderEventSyncRunMutation:
+		return c.ProviderEventSyncRun.mutate(ctx, m)
 	case *ProviderSyncHistoryMutation:
 		return c.ProviderSyncHistory.mutate(ctx, m)
 	case *RetrospectiveMutation:
@@ -8184,6 +8210,178 @@ func (c *NormalizedEventClient) mutate(ctx context.Context, m *NormalizedEventMu
 	}
 }
 
+// NormalizedEventProjectionStatusClient is a client for the NormalizedEventProjectionStatus schema.
+type NormalizedEventProjectionStatusClient struct {
+	config
+}
+
+// NewNormalizedEventProjectionStatusClient returns a client for the NormalizedEventProjectionStatus from the given config.
+func NewNormalizedEventProjectionStatusClient(c config) *NormalizedEventProjectionStatusClient {
+	return &NormalizedEventProjectionStatusClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `normalizedeventprojectionstatus.Hooks(f(g(h())))`.
+func (c *NormalizedEventProjectionStatusClient) Use(hooks ...Hook) {
+	c.hooks.NormalizedEventProjectionStatus = append(c.hooks.NormalizedEventProjectionStatus, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `normalizedeventprojectionstatus.Intercept(f(g(h())))`.
+func (c *NormalizedEventProjectionStatusClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NormalizedEventProjectionStatus = append(c.inters.NormalizedEventProjectionStatus, interceptors...)
+}
+
+// Create returns a builder for creating a NormalizedEventProjectionStatus entity.
+func (c *NormalizedEventProjectionStatusClient) Create() *NormalizedEventProjectionStatusCreate {
+	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpCreate)
+	return &NormalizedEventProjectionStatusCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NormalizedEventProjectionStatus entities.
+func (c *NormalizedEventProjectionStatusClient) CreateBulk(builders ...*NormalizedEventProjectionStatusCreate) *NormalizedEventProjectionStatusCreateBulk {
+	return &NormalizedEventProjectionStatusCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NormalizedEventProjectionStatusClient) MapCreateBulk(slice any, setFunc func(*NormalizedEventProjectionStatusCreate, int)) *NormalizedEventProjectionStatusCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NormalizedEventProjectionStatusCreateBulk{err: fmt.Errorf("calling to NormalizedEventProjectionStatusClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NormalizedEventProjectionStatusCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NormalizedEventProjectionStatusCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NormalizedEventProjectionStatus.
+func (c *NormalizedEventProjectionStatusClient) Update() *NormalizedEventProjectionStatusUpdate {
+	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpUpdate)
+	return &NormalizedEventProjectionStatusUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NormalizedEventProjectionStatusClient) UpdateOne(_m *NormalizedEventProjectionStatus) *NormalizedEventProjectionStatusUpdateOne {
+	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpUpdateOne, withNormalizedEventProjectionStatus(_m))
+	return &NormalizedEventProjectionStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NormalizedEventProjectionStatusClient) UpdateOneID(id uuid.UUID) *NormalizedEventProjectionStatusUpdateOne {
+	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpUpdateOne, withNormalizedEventProjectionStatusID(id))
+	return &NormalizedEventProjectionStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NormalizedEventProjectionStatus.
+func (c *NormalizedEventProjectionStatusClient) Delete() *NormalizedEventProjectionStatusDelete {
+	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpDelete)
+	return &NormalizedEventProjectionStatusDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NormalizedEventProjectionStatusClient) DeleteOne(_m *NormalizedEventProjectionStatus) *NormalizedEventProjectionStatusDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NormalizedEventProjectionStatusClient) DeleteOneID(id uuid.UUID) *NormalizedEventProjectionStatusDeleteOne {
+	builder := c.Delete().Where(normalizedeventprojectionstatus.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NormalizedEventProjectionStatusDeleteOne{builder}
+}
+
+// Query returns a query builder for NormalizedEventProjectionStatus.
+func (c *NormalizedEventProjectionStatusClient) Query() *NormalizedEventProjectionStatusQuery {
+	return &NormalizedEventProjectionStatusQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNormalizedEventProjectionStatus},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NormalizedEventProjectionStatus entity by its id.
+func (c *NormalizedEventProjectionStatusClient) Get(ctx context.Context, id uuid.UUID) (*NormalizedEventProjectionStatus, error) {
+	return c.Query().Where(normalizedeventprojectionstatus.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NormalizedEventProjectionStatusClient) GetX(ctx context.Context, id uuid.UUID) *NormalizedEventProjectionStatus {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a NormalizedEventProjectionStatus.
+func (c *NormalizedEventProjectionStatusClient) QueryTenant(_m *NormalizedEventProjectionStatus) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedeventprojectionstatus.Table, normalizedeventprojectionstatus.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionstatus.TenantTable, normalizedeventprojectionstatus.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.NormalizedEventProjectionStatus
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryNormalizedEvent queries the normalized_event edge of a NormalizedEventProjectionStatus.
+func (c *NormalizedEventProjectionStatusClient) QueryNormalizedEvent(_m *NormalizedEventProjectionStatus) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedeventprojectionstatus.Table, normalizedeventprojectionstatus.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionstatus.NormalizedEventTable, normalizedeventprojectionstatus.NormalizedEventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.NormalizedEventProjectionStatus
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NormalizedEventProjectionStatusClient) Hooks() []Hook {
+	hooks := c.hooks.NormalizedEventProjectionStatus
+	return append(hooks[:len(hooks):len(hooks)], normalizedeventprojectionstatus.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *NormalizedEventProjectionStatusClient) Interceptors() []Interceptor {
+	return c.inters.NormalizedEventProjectionStatus
+}
+
+func (c *NormalizedEventProjectionStatusClient) mutate(ctx context.Context, m *NormalizedEventProjectionStatusMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NormalizedEventProjectionStatusCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NormalizedEventProjectionStatusUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NormalizedEventProjectionStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NormalizedEventProjectionStatusDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NormalizedEventProjectionStatus mutation op: %q", m.Op())
+	}
+}
+
 // OncallHandoverTemplateClient is a client for the OncallHandoverTemplate schema.
 type OncallHandoverTemplateClient struct {
 	config
@@ -10341,6 +10539,312 @@ func (c *PlaybookClient) mutate(ctx context.Context, m *PlaybookMutation) (Value
 		return (&PlaybookDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Playbook mutation op: %q", m.Op())
+	}
+}
+
+// ProviderEventSyncCursorClient is a client for the ProviderEventSyncCursor schema.
+type ProviderEventSyncCursorClient struct {
+	config
+}
+
+// NewProviderEventSyncCursorClient returns a client for the ProviderEventSyncCursor from the given config.
+func NewProviderEventSyncCursorClient(c config) *ProviderEventSyncCursorClient {
+	return &ProviderEventSyncCursorClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `providereventsynccursor.Hooks(f(g(h())))`.
+func (c *ProviderEventSyncCursorClient) Use(hooks ...Hook) {
+	c.hooks.ProviderEventSyncCursor = append(c.hooks.ProviderEventSyncCursor, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `providereventsynccursor.Intercept(f(g(h())))`.
+func (c *ProviderEventSyncCursorClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProviderEventSyncCursor = append(c.inters.ProviderEventSyncCursor, interceptors...)
+}
+
+// Create returns a builder for creating a ProviderEventSyncCursor entity.
+func (c *ProviderEventSyncCursorClient) Create() *ProviderEventSyncCursorCreate {
+	mutation := newProviderEventSyncCursorMutation(c.config, OpCreate)
+	return &ProviderEventSyncCursorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProviderEventSyncCursor entities.
+func (c *ProviderEventSyncCursorClient) CreateBulk(builders ...*ProviderEventSyncCursorCreate) *ProviderEventSyncCursorCreateBulk {
+	return &ProviderEventSyncCursorCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ProviderEventSyncCursorClient) MapCreateBulk(slice any, setFunc func(*ProviderEventSyncCursorCreate, int)) *ProviderEventSyncCursorCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ProviderEventSyncCursorCreateBulk{err: fmt.Errorf("calling to ProviderEventSyncCursorClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ProviderEventSyncCursorCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ProviderEventSyncCursorCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProviderEventSyncCursor.
+func (c *ProviderEventSyncCursorClient) Update() *ProviderEventSyncCursorUpdate {
+	mutation := newProviderEventSyncCursorMutation(c.config, OpUpdate)
+	return &ProviderEventSyncCursorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProviderEventSyncCursorClient) UpdateOne(_m *ProviderEventSyncCursor) *ProviderEventSyncCursorUpdateOne {
+	mutation := newProviderEventSyncCursorMutation(c.config, OpUpdateOne, withProviderEventSyncCursor(_m))
+	return &ProviderEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProviderEventSyncCursorClient) UpdateOneID(id uuid.UUID) *ProviderEventSyncCursorUpdateOne {
+	mutation := newProviderEventSyncCursorMutation(c.config, OpUpdateOne, withProviderEventSyncCursorID(id))
+	return &ProviderEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProviderEventSyncCursor.
+func (c *ProviderEventSyncCursorClient) Delete() *ProviderEventSyncCursorDelete {
+	mutation := newProviderEventSyncCursorMutation(c.config, OpDelete)
+	return &ProviderEventSyncCursorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProviderEventSyncCursorClient) DeleteOne(_m *ProviderEventSyncCursor) *ProviderEventSyncCursorDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProviderEventSyncCursorClient) DeleteOneID(id uuid.UUID) *ProviderEventSyncCursorDeleteOne {
+	builder := c.Delete().Where(providereventsynccursor.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProviderEventSyncCursorDeleteOne{builder}
+}
+
+// Query returns a query builder for ProviderEventSyncCursor.
+func (c *ProviderEventSyncCursorClient) Query() *ProviderEventSyncCursorQuery {
+	return &ProviderEventSyncCursorQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProviderEventSyncCursor},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProviderEventSyncCursor entity by its id.
+func (c *ProviderEventSyncCursorClient) Get(ctx context.Context, id uuid.UUID) (*ProviderEventSyncCursor, error) {
+	return c.Query().Where(providereventsynccursor.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProviderEventSyncCursorClient) GetX(ctx context.Context, id uuid.UUID) *ProviderEventSyncCursor {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a ProviderEventSyncCursor.
+func (c *ProviderEventSyncCursorClient) QueryTenant(_m *ProviderEventSyncCursor) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(providereventsynccursor.Table, providereventsynccursor.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, providereventsynccursor.TenantTable, providereventsynccursor.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.ProviderEventSyncCursor
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProviderEventSyncCursorClient) Hooks() []Hook {
+	hooks := c.hooks.ProviderEventSyncCursor
+	return append(hooks[:len(hooks):len(hooks)], providereventsynccursor.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProviderEventSyncCursorClient) Interceptors() []Interceptor {
+	return c.inters.ProviderEventSyncCursor
+}
+
+func (c *ProviderEventSyncCursorClient) mutate(ctx context.Context, m *ProviderEventSyncCursorMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProviderEventSyncCursorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProviderEventSyncCursorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProviderEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProviderEventSyncCursorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ProviderEventSyncCursor mutation op: %q", m.Op())
+	}
+}
+
+// ProviderEventSyncRunClient is a client for the ProviderEventSyncRun schema.
+type ProviderEventSyncRunClient struct {
+	config
+}
+
+// NewProviderEventSyncRunClient returns a client for the ProviderEventSyncRun from the given config.
+func NewProviderEventSyncRunClient(c config) *ProviderEventSyncRunClient {
+	return &ProviderEventSyncRunClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `providereventsyncrun.Hooks(f(g(h())))`.
+func (c *ProviderEventSyncRunClient) Use(hooks ...Hook) {
+	c.hooks.ProviderEventSyncRun = append(c.hooks.ProviderEventSyncRun, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `providereventsyncrun.Intercept(f(g(h())))`.
+func (c *ProviderEventSyncRunClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ProviderEventSyncRun = append(c.inters.ProviderEventSyncRun, interceptors...)
+}
+
+// Create returns a builder for creating a ProviderEventSyncRun entity.
+func (c *ProviderEventSyncRunClient) Create() *ProviderEventSyncRunCreate {
+	mutation := newProviderEventSyncRunMutation(c.config, OpCreate)
+	return &ProviderEventSyncRunCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ProviderEventSyncRun entities.
+func (c *ProviderEventSyncRunClient) CreateBulk(builders ...*ProviderEventSyncRunCreate) *ProviderEventSyncRunCreateBulk {
+	return &ProviderEventSyncRunCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ProviderEventSyncRunClient) MapCreateBulk(slice any, setFunc func(*ProviderEventSyncRunCreate, int)) *ProviderEventSyncRunCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ProviderEventSyncRunCreateBulk{err: fmt.Errorf("calling to ProviderEventSyncRunClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ProviderEventSyncRunCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ProviderEventSyncRunCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ProviderEventSyncRun.
+func (c *ProviderEventSyncRunClient) Update() *ProviderEventSyncRunUpdate {
+	mutation := newProviderEventSyncRunMutation(c.config, OpUpdate)
+	return &ProviderEventSyncRunUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ProviderEventSyncRunClient) UpdateOne(_m *ProviderEventSyncRun) *ProviderEventSyncRunUpdateOne {
+	mutation := newProviderEventSyncRunMutation(c.config, OpUpdateOne, withProviderEventSyncRun(_m))
+	return &ProviderEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ProviderEventSyncRunClient) UpdateOneID(id uuid.UUID) *ProviderEventSyncRunUpdateOne {
+	mutation := newProviderEventSyncRunMutation(c.config, OpUpdateOne, withProviderEventSyncRunID(id))
+	return &ProviderEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ProviderEventSyncRun.
+func (c *ProviderEventSyncRunClient) Delete() *ProviderEventSyncRunDelete {
+	mutation := newProviderEventSyncRunMutation(c.config, OpDelete)
+	return &ProviderEventSyncRunDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ProviderEventSyncRunClient) DeleteOne(_m *ProviderEventSyncRun) *ProviderEventSyncRunDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ProviderEventSyncRunClient) DeleteOneID(id uuid.UUID) *ProviderEventSyncRunDeleteOne {
+	builder := c.Delete().Where(providereventsyncrun.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ProviderEventSyncRunDeleteOne{builder}
+}
+
+// Query returns a query builder for ProviderEventSyncRun.
+func (c *ProviderEventSyncRunClient) Query() *ProviderEventSyncRunQuery {
+	return &ProviderEventSyncRunQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeProviderEventSyncRun},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ProviderEventSyncRun entity by its id.
+func (c *ProviderEventSyncRunClient) Get(ctx context.Context, id uuid.UUID) (*ProviderEventSyncRun, error) {
+	return c.Query().Where(providereventsyncrun.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ProviderEventSyncRunClient) GetX(ctx context.Context, id uuid.UUID) *ProviderEventSyncRun {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a ProviderEventSyncRun.
+func (c *ProviderEventSyncRunClient) QueryTenant(_m *ProviderEventSyncRun) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(providereventsyncrun.Table, providereventsyncrun.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, providereventsyncrun.TenantTable, providereventsyncrun.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.ProviderEventSyncRun
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ProviderEventSyncRunClient) Hooks() []Hook {
+	hooks := c.hooks.ProviderEventSyncRun
+	return append(hooks[:len(hooks):len(hooks)], providereventsyncrun.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *ProviderEventSyncRunClient) Interceptors() []Interceptor {
+	return c.inters.ProviderEventSyncRun
+}
+
+func (c *ProviderEventSyncRunClient) mutate(ctx context.Context, m *ProviderEventSyncRunMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ProviderEventSyncRunCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ProviderEventSyncRunUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ProviderEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ProviderEventSyncRunDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown ProviderEventSyncRun mutation op: %q", m.Op())
 	}
 }
 
@@ -14192,14 +14696,14 @@ type (
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, KnowledgeEntity,
 		KnowledgeEntityAlias, KnowledgeFactHistory, KnowledgeFactProvenance,
 		KnowledgeRelationship, MeetingSchedule, MeetingSession, NormalizedEvent,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationRole, Playbook,
-		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode,
-		SystemTopologySnapshot, SystemTopologySnapshotEntity,
-		SystemTopologySnapshotRelationship, Task, Team, TeamMembership, Tenant, Ticket,
-		User, VideoConference []ent.Hook
+		NormalizedEventProjectionStatus, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationRole,
+		Playbook, ProviderEventSyncCursor, ProviderEventSyncRun, ProviderSyncHistory,
+		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
+		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
+		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
 	inters struct {
 		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, DocumentAccess,
@@ -14211,14 +14715,14 @@ type (
 		IncidentTag, IncidentType, Integration, IntegrationOAuthState, KnowledgeEntity,
 		KnowledgeEntityAlias, KnowledgeFactHistory, KnowledgeFactProvenance,
 		KnowledgeRelationship, MeetingSchedule, MeetingSession, NormalizedEvent,
-		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
-		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
-		OncallShiftMetrics, Organization, OrganizationRole, Playbook,
-		ProviderSyncHistory, Retrospective, RetrospectiveComment, RetrospectiveReview,
-		SystemAnalysis, SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode,
-		SystemTopologySnapshot, SystemTopologySnapshotEntity,
-		SystemTopologySnapshotRelationship, Task, Team, TeamMembership, Tenant, Ticket,
-		User, VideoConference []ent.Interceptor
+		NormalizedEventProjectionStatus, OncallHandoverTemplate, OncallRoster,
+		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
+		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationRole,
+		Playbook, ProviderEventSyncCursor, ProviderEventSyncRun, ProviderSyncHistory,
+		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
+		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
+		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
 	}
 )
 
@@ -14271,6 +14775,7 @@ var (
 		MeetingScheduleOwningTeam:                 tableSchemas[0],
 		MeetingSession:                            tableSchemas[0],
 		NormalizedEvent:                           tableSchemas[0],
+		NormalizedEventProjectionStatus:           tableSchemas[0],
 		OncallHandoverTemplate:                    tableSchemas[0],
 		OncallRoster:                              tableSchemas[0],
 		OncallRosterMetrics:                       tableSchemas[0],
@@ -14284,6 +14789,8 @@ var (
 		OrganizationRole:                          tableSchemas[0],
 		Playbook:                                  tableSchemas[0],
 		PlaybookAlerts:                            tableSchemas[0],
+		ProviderEventSyncCursor:                   tableSchemas[0],
+		ProviderEventSyncRun:                      tableSchemas[0],
 		ProviderSyncHistory:                       tableSchemas[0],
 		Retrospective:                             tableSchemas[0],
 		RetrospectiveComment:                      tableSchemas[0],

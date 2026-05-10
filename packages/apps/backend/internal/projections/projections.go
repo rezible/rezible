@@ -1,8 +1,10 @@
 package projections
 
 import (
+	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/rezible/rezible/ent"
@@ -14,6 +16,21 @@ type Event[T any] struct {
 	Attributes T
 }
 
+type EventProjectionHandlerFunc = func(context.Context, *ent.Client, *ent.NormalizedEvent) error
+
+var projectionFuncsMu sync.RWMutex
+var projectionFuncs = make(map[string]EventProjectionHandlerFunc)
+
+func RegisterProjectionHandler(name string, handler EventProjectionHandlerFunc) {
+	projectionFuncsMu.Lock()
+	defer projectionFuncsMu.Unlock()
+	projectionFuncs[name] = handler
+}
+
+func GetEventProjectionHandlers(kind ne.Kind) map[string]EventProjectionHandlerFunc {
+	return projectionFuncs
+}
+
 type decoder func(*ent.NormalizedEvent) (any, error)
 
 var decoders = map[ne.Kind]decoder{
@@ -22,7 +39,7 @@ var decoders = map[ne.Kind]decoder{
 	ne.KindChangeEventObserved: decodeChangeEventObservedEvent,
 }
 
-func ValidateEvent(ev *ent.NormalizedEvent) (any, error) {
+func DecodeEvent(ev *ent.NormalizedEvent) (any, error) {
 	if ev == nil {
 		return nil, fmt.Errorf("normalized event is nil")
 	}

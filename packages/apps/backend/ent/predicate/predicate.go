@@ -117,6 +117,9 @@ type MeetingSession func(*sql.Selector)
 // NormalizedEvent is the predicate function for normalizedevent builders.
 type NormalizedEvent func(*sql.Selector)
 
+// NormalizedEventProjectionStatus is the predicate function for normalizedeventprojectionstatus builders.
+type NormalizedEventProjectionStatus func(*sql.Selector)
+
 // OncallHandoverTemplate is the predicate function for oncallhandovertemplate builders.
 type OncallHandoverTemplate func(*sql.Selector)
 
@@ -149,6 +152,12 @@ type OrganizationRole func(*sql.Selector)
 
 // Playbook is the predicate function for playbook builders.
 type Playbook func(*sql.Selector)
+
+// ProviderEventSyncCursor is the predicate function for providereventsynccursor builders.
+type ProviderEventSyncCursor func(*sql.Selector)
+
+// ProviderEventSyncRun is the predicate function for providereventsyncrun builders.
+type ProviderEventSyncRun func(*sql.Selector)
 
 // ProviderSyncHistory is the predicate function for providersynchistory builders.
 type ProviderSyncHistory func(*sql.Selector)

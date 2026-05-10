@@ -41,8 +41,11 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 	i.oauth2Config = i.loadOAuthConfig()
 
 	if i.cfg.Enabled {
-		svcs.ProviderEvents.RegisterEventProcessor(integrationName, "push", &pushEventProcessor{services: svcs})
-		svcs.ProviderEvents.RegisterEventProcessor(integrationName, "pull_request", &pullRequestEventProcessor{services: svcs})
+		svcs.ProviderEvents.RegisterEventProcessors(integrationName, map[string]rez.ProviderEventProcessor{
+			"push":         &pushEventProcessor{services: svcs},
+			"pull_request": &pullRequestEventProcessor{services: svcs},
+			"repositories": &repositoryObservedProcessor{services: svcs},
+		})
 		i.webhookHandlers["/"] = newWebhookHandler(i.cfg.WebhookSecret, svcs)
 	}
 
@@ -175,6 +178,17 @@ func (i *integration) ValidateUserPreferences(_ map[string]any) error {
 
 func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
 	return newConfiguredIntegration(i.services, intg)
+}
+
+func (i *integration) MakeProviderSourceEventQueriers(ctx context.Context, intg *ent.Integration) ([]rez.ProviderEventQuerier, error) {
+	ci := newConfiguredIntegration(i.services, intg)
+	client, clientErr := newClient(ctx, ci)
+	if clientErr != nil {
+		return nil, clientErr
+	}
+	return []rez.ProviderEventQuerier{
+		&repositoryEventQuerier{ci: ci, client: client},
+	}, nil
 }
 
 func (i *integration) WebhookHandlers() map[string]http.Handler {

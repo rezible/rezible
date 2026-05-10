@@ -49,6 +49,7 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -60,6 +61,8 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
+	"github.com/rezible/rezible/ent/providereventsynccursor"
+	"github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
@@ -174,6 +177,7 @@ func checkColumn(t, c string) error {
 			meetingschedule.Table:                    meetingschedule.ValidColumn,
 			meetingsession.Table:                     meetingsession.ValidColumn,
 			normalizedevent.Table:                    normalizedevent.ValidColumn,
+			normalizedeventprojectionstatus.Table:    normalizedeventprojectionstatus.ValidColumn,
 			oncallhandovertemplate.Table:             oncallhandovertemplate.ValidColumn,
 			oncallroster.Table:                       oncallroster.ValidColumn,
 			oncallrostermetrics.Table:                oncallrostermetrics.ValidColumn,
@@ -185,6 +189,8 @@ func checkColumn(t, c string) error {
 			organization.Table:                       organization.ValidColumn,
 			organizationrole.Table:                   organizationrole.ValidColumn,
 			playbook.Table:                           playbook.ValidColumn,
+			providereventsynccursor.Table:            providereventsynccursor.ValidColumn,
+			providereventsyncrun.Table:               providereventsyncrun.ValidColumn,
 			providersynchistory.Table:                providersynchistory.ValidColumn,
 			retrospective.Table:                      retrospective.ValidColumn,
 			retrospectivecomment.Table:               retrospectivecomment.ValidColumn,

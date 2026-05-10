@@ -441,6 +441,18 @@ func (f NormalizedEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NormalizedEventMutation", m)
 }
 
+// The NormalizedEventProjectionStatusFunc type is an adapter to allow the use of ordinary
+// function as NormalizedEventProjectionStatus mutator.
+type NormalizedEventProjectionStatusFunc func(context.Context, *ent.NormalizedEventProjectionStatusMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NormalizedEventProjectionStatusFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NormalizedEventProjectionStatusMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NormalizedEventProjectionStatusMutation", m)
+}
+
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary
 // function as OncallHandoverTemplate mutator.
 type OncallHandoverTemplateFunc func(context.Context, *ent.OncallHandoverTemplateMutation) (ent.Value, error)
@@ -571,6 +583,30 @@ func (f PlaybookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlaybookMutation", m)
+}
+
+// The ProviderEventSyncCursorFunc type is an adapter to allow the use of ordinary
+// function as ProviderEventSyncCursor mutator.
+type ProviderEventSyncCursorFunc func(context.Context, *ent.ProviderEventSyncCursorMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProviderEventSyncCursorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProviderEventSyncCursorMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderEventSyncCursorMutation", m)
+}
+
+// The ProviderEventSyncRunFunc type is an adapter to allow the use of ordinary
+// function as ProviderEventSyncRun mutator.
+type ProviderEventSyncRunFunc func(context.Context, *ent.ProviderEventSyncRunMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ProviderEventSyncRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ProviderEventSyncRunMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderEventSyncRunMutation", m)
 }
 
 // The ProviderSyncHistoryFunc type is an adapter to allow the use of ordinary

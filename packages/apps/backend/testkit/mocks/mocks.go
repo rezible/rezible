@@ -11,6 +11,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -737,20 +738,31 @@ func (_m *MockProviderEventService) EXPECT() *MockProviderEventService_Expecter 
 }
 
 // Ingest provides a mock function for the type MockProviderEventService
-func (_mock *MockProviderEventService) Ingest(context1 context.Context, providerEvent rez.ProviderEvent) error {
+func (_mock *MockProviderEventService) Ingest(context1 context.Context, providerEvent rez.ProviderEvent) (*rez.ProviderEventIngestResult, error) {
 	ret := _mock.Called(context1, providerEvent)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Ingest")
 	}
 
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEvent) error); ok {
+	var r0 *rez.ProviderEventIngestResult
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEvent) (*rez.ProviderEventIngestResult, error)); ok {
+		return returnFunc(context1, providerEvent)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEvent) *rez.ProviderEventIngestResult); ok {
 		r0 = returnFunc(context1, providerEvent)
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*rez.ProviderEventIngestResult)
+		}
 	}
-	return r0
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ProviderEvent) error); ok {
+		r1 = returnFunc(context1, providerEvent)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
 }
 
 // MockProviderEventService_Ingest_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Ingest'
@@ -783,48 +795,145 @@ func (_c *MockProviderEventService_Ingest_Call) Run(run func(context1 context.Co
 	return _c
 }
 
-func (_c *MockProviderEventService_Ingest_Call) Return(err error) *MockProviderEventService_Ingest_Call {
-	_c.Call.Return(err)
+func (_c *MockProviderEventService_Ingest_Call) Return(providerEventIngestResult *rez.ProviderEventIngestResult, err error) *MockProviderEventService_Ingest_Call {
+	_c.Call.Return(providerEventIngestResult, err)
 	return _c
 }
 
-func (_c *MockProviderEventService_Ingest_Call) RunAndReturn(run func(context1 context.Context, providerEvent rez.ProviderEvent) error) *MockProviderEventService_Ingest_Call {
+func (_c *MockProviderEventService_Ingest_Call) RunAndReturn(run func(context1 context.Context, providerEvent rez.ProviderEvent) (*rez.ProviderEventIngestResult, error)) *MockProviderEventService_Ingest_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
-// RegisterEventProcessor provides a mock function for the type MockProviderEventService
-func (_mock *MockProviderEventService) RegisterEventProcessor(provider string, providerSource string, processor rez.ProviderEventProcessor) {
-	_mock.Called(provider, providerSource, processor)
+// RegisterEventProcessors provides a mock function for the type MockProviderEventService
+func (_mock *MockProviderEventService) RegisterEventProcessors(provider string, sourceProcessors map[string]rez.ProviderEventProcessor) {
+	_mock.Called(provider, sourceProcessors)
 	return
 }
 
-// MockProviderEventService_RegisterEventProcessor_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterEventProcessor'
-type MockProviderEventService_RegisterEventProcessor_Call struct {
+// MockProviderEventService_RegisterEventProcessors_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterEventProcessors'
+type MockProviderEventService_RegisterEventProcessors_Call struct {
 	*mock.Call
 }
 
-// RegisterEventProcessor is a helper method to define mock.On call
+// RegisterEventProcessors is a helper method to define mock.On call
 //   - provider string
-//   - providerSource string
-//   - processor rez.ProviderEventProcessor
-func (_e *MockProviderEventService_Expecter) RegisterEventProcessor(provider interface{}, providerSource interface{}, processor interface{}) *MockProviderEventService_RegisterEventProcessor_Call {
-	return &MockProviderEventService_RegisterEventProcessor_Call{Call: _e.mock.On("RegisterEventProcessor", provider, providerSource, processor)}
+//   - sourceProcessors map[string]rez.ProviderEventProcessor
+func (_e *MockProviderEventService_Expecter) RegisterEventProcessors(provider interface{}, sourceProcessors interface{}) *MockProviderEventService_RegisterEventProcessors_Call {
+	return &MockProviderEventService_RegisterEventProcessors_Call{Call: _e.mock.On("RegisterEventProcessors", provider, sourceProcessors)}
 }
 
-func (_c *MockProviderEventService_RegisterEventProcessor_Call) Run(run func(provider string, providerSource string, processor rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessor_Call {
+func (_c *MockProviderEventService_RegisterEventProcessors_Call) Run(run func(provider string, sourceProcessors map[string]rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessors_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 string
 		if args[0] != nil {
 			arg0 = args[0].(string)
 		}
-		var arg1 string
+		var arg1 map[string]rez.ProviderEventProcessor
 		if args[1] != nil {
-			arg1 = args[1].(string)
+			arg1 = args[1].(map[string]rez.ProviderEventProcessor)
 		}
-		var arg2 rez.ProviderEventProcessor
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderEventService_RegisterEventProcessors_Call) Return() *MockProviderEventService_RegisterEventProcessors_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockProviderEventService_RegisterEventProcessors_Call) RunAndReturn(run func(provider string, sourceProcessors map[string]rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessors_Call {
+	_c.Run(run)
+	return _c
+}
+
+// RegisterProjectionHandlers provides a mock function for the type MockProviderEventService
+func (_mock *MockProviderEventService) RegisterEventProjector(kindHandlers map[normalizedevent.Kind]rez.EventProjectionHandler) {
+	_mock.Called(kindHandlers)
+	return
+}
+
+// MockProviderEventService_RegisterProjectionHandlers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterProjectionHandlers'
+type MockProviderEventService_RegisterProjectionHandlers_Call struct {
+	*mock.Call
+}
+
+// RegisterProjectionHandlers is a helper method to define mock.On call
+//   - kindHandlers map[normalizedevent.Kind]rez.EventProjectionHandler
+func (_e *MockProviderEventService_Expecter) RegisterProjectionHandlers(kindHandlers interface{}) *MockProviderEventService_RegisterProjectionHandlers_Call {
+	return &MockProviderEventService_RegisterProjectionHandlers_Call{Call: _e.mock.On("RegisterProjectionHandlers", kindHandlers)}
+}
+
+func (_c *MockProviderEventService_RegisterProjectionHandlers_Call) Run(run func(kindHandlers map[normalizedevent.Kind]rez.EventProjectionHandler)) *MockProviderEventService_RegisterProjectionHandlers_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 map[normalizedevent.Kind]rez.EventProjectionHandler
+		if args[0] != nil {
+			arg0 = args[0].(map[normalizedevent.Kind]rez.EventProjectionHandler)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderEventService_RegisterProjectionHandlers_Call) Return() *MockProviderEventService_RegisterProjectionHandlers_Call {
+	_c.Call.Return()
+	return _c
+}
+
+func (_c *MockProviderEventService_RegisterProjectionHandlers_Call) RunAndReturn(run func(kindHandlers map[normalizedevent.Kind]rez.EventProjectionHandler)) *MockProviderEventService_RegisterProjectionHandlers_Call {
+	_c.Run(run)
+	return _c
+}
+
+// SyncEvents provides a mock function for the type MockProviderEventService
+func (_mock *MockProviderEventService) SyncEvents(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSyncOptions rez.ProviderEventSyncOptions) error {
+	ret := _mock.Called(context1, providerEventQuerier, providerEventSyncOptions)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SyncEvents")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEventQuerier, rez.ProviderEventSyncOptions) error); ok {
+		r0 = returnFunc(context1, providerEventQuerier, providerEventSyncOptions)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockProviderEventService_SyncEvents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SyncEvents'
+type MockProviderEventService_SyncEvents_Call struct {
+	*mock.Call
+}
+
+// SyncEvents is a helper method to define mock.On call
+//   - context1 context.Context
+//   - providerEventQuerier rez.ProviderEventQuerier
+//   - providerEventSyncOptions rez.ProviderEventSyncOptions
+func (_e *MockProviderEventService_Expecter) SyncEvents(context1 interface{}, providerEventQuerier interface{}, providerEventSyncOptions interface{}) *MockProviderEventService_SyncEvents_Call {
+	return &MockProviderEventService_SyncEvents_Call{Call: _e.mock.On("SyncEvents", context1, providerEventQuerier, providerEventSyncOptions)}
+}
+
+func (_c *MockProviderEventService_SyncEvents_Call) Run(run func(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSyncOptions rez.ProviderEventSyncOptions)) *MockProviderEventService_SyncEvents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ProviderEventQuerier
+		if args[1] != nil {
+			arg1 = args[1].(rez.ProviderEventQuerier)
+		}
+		var arg2 rez.ProviderEventSyncOptions
 		if args[2] != nil {
-			arg2 = args[2].(rez.ProviderEventProcessor)
+			arg2 = args[2].(rez.ProviderEventSyncOptions)
 		}
 		run(
 			arg0,
@@ -835,13 +944,13 @@ func (_c *MockProviderEventService_RegisterEventProcessor_Call) Run(run func(pro
 	return _c
 }
 
-func (_c *MockProviderEventService_RegisterEventProcessor_Call) Return() *MockProviderEventService_RegisterEventProcessor_Call {
-	_c.Call.Return()
+func (_c *MockProviderEventService_SyncEvents_Call) Return(err error) *MockProviderEventService_SyncEvents_Call {
+	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockProviderEventService_RegisterEventProcessor_Call) RunAndReturn(run func(provider string, providerSource string, processor rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessor_Call {
-	_c.Run(run)
+func (_c *MockProviderEventService_SyncEvents_Call) RunAndReturn(run func(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSyncOptions rez.ProviderEventSyncOptions) error) *MockProviderEventService_SyncEvents_Call {
+	_c.Call.Return(run)
 	return _c
 }
 

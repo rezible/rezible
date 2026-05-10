@@ -57,7 +57,6 @@ type Services struct {
 	Jobs             JobsService
 	ProviderEvents   ProviderEventService
 	Messages         MessageService
-	Knowledge        KnowledgeService
 	Topology         SystemTopologyService
 	Auth             AuthSessionService
 	Organizations    OrganizationService
@@ -76,6 +75,36 @@ type Services struct {
 	Alerts           AlertService
 	Playbooks        PlaybookService
 }
+
+type (
+	MessageService interface {
+		AddCommandHandlers(handlers ...cqrs.CommandHandler) error
+		SendCommand(ctx context.Context, cmd any) error
+
+		AddEventHandlers(handlers ...cqrs.EventHandler) error
+		PublishEvent(ctx context.Context, event any) error
+	}
+)
+
+func NewCommandHandler[T any](name string, handleFn func(context.Context, *T) error) cqrs.CommandHandler {
+	return cqrs.NewCommandHandler[T](name, handleFn)
+}
+
+func NewEventHandler[T any](name string, handleFn func(context.Context, *T) error) cqrs.EventHandler {
+	return cqrs.NewEventHandler[T](name, handleFn)
+}
+
+type (
+	JobsService interface {
+		Start(context.Context) error
+		Stop(context.Context) error
+
+		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
+		InsertTx(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
+		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
+		InsertManyTx(ctx context.Context, tx *ent.Tx, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
+	}
+)
 
 type (
 	PackageSetupFunc = func(context.Context, *Services) (IntegrationPackage, error)
@@ -145,12 +174,60 @@ type (
 		GetConfigured(ctx context.Context, id uuid.UUID) (ConfiguredIntegration, error)
 		UpdateConfiguredPreferences(ctx context.Context, id uuid.UUID, prefs map[string]any) (ConfiguredIntegration, error)
 		DeleteConfigured(ctx context.Context, id uuid.UUID) error
+		GetProviderEventQueriers(ctx context.Context, provider string) ([]ProviderEventQuerier, error)
 		StartOAuth2Flow(ctx context.Context, provider string, redirect *url.URL) (string, error)
 		SelectOAuth2Flow(ctx context.Context, provider string, params SelectIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 		CompleteOAuth2Flow(ctx context.Context, provider string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 
 		GetChatService(ctx context.Context) (ChatService, error)
 		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)
+	}
+)
+
+type (
+	ProviderEvent struct {
+		Provider            string
+		ProviderSource      string
+		ProviderDeliveryRef string
+		SubjectRef          string
+		ReceivedAt          time.Time
+		Payload             []byte
+		ContentType         string
+		RequestMetadata     map[string]string
+	}
+
+	ProviderEventProcessor interface {
+		Process(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
+	}
+
+	ProviderEventQuerier interface {
+		Provider() string
+		ProviderSource() string
+		PullEvents(context.Context, ProviderEventQueryRequest) iter.Seq2[ProviderEventQueryResult, error]
+	}
+
+	ProviderEventQueryRequest struct {
+		CursorAfter string
+	}
+
+	ProviderEventQueryResult struct {
+		Event       ProviderEvent
+		CursorAfter *string
+	}
+
+	ProviderEventSyncOptions struct {
+		CursorAfter *string
+		SyncReason  string
+	}
+
+	ProviderEventService interface {
+		RegisterEventProcessors(provider string, sourceProcessors map[string]ProviderEventProcessor)
+		Ingest(context.Context, ProviderEvent) (*ProviderEventIngestResult, error)
+		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
+	}
+
+	ProviderEventIngestResult struct {
+		Duplicate bool
 	}
 )
 
@@ -218,58 +295,6 @@ type (
 
 		CreateSnapshot(context.Context, CreateSystemTopologySnapshotParams) (*ent.SystemTopologySnapshot, error)
 		GetSnapshot(context.Context, uuid.UUID) (*ent.SystemTopologySnapshot, error)
-	}
-)
-
-type (
-	MessageService interface {
-		AddCommandHandlers(handlers ...cqrs.CommandHandler) error
-		SendCommand(ctx context.Context, cmd any) error
-
-		AddEventHandlers(handlers ...cqrs.EventHandler) error
-		PublishEvent(ctx context.Context, event any) error
-	}
-)
-
-func NewCommandHandler[T any](name string, handleFn func(context.Context, *T) error) cqrs.CommandHandler {
-	return cqrs.NewCommandHandler[T](name, handleFn)
-}
-
-func NewEventHandler[T any](name string, handleFn func(context.Context, *T) error) cqrs.EventHandler {
-	return cqrs.NewEventHandler[T](name, handleFn)
-}
-
-type (
-	JobsService interface {
-		Start(context.Context) error
-		Stop(context.Context) error
-
-		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
-		InsertTx(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
-		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
-		InsertManyTx(ctx context.Context, tx *ent.Tx, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
-	}
-)
-
-type (
-	ProviderEventService interface {
-		RegisterEventProcessor(provider string, providerSource string, processor ProviderEventProcessor)
-		Ingest(context.Context, ProviderEvent) error
-	}
-
-	ProviderEvent struct {
-		Provider            string
-		ProviderSource      string
-		ProviderDeliveryRef string
-		SubjectRef          string
-		ReceivedAt          time.Time
-		Payload             []byte
-		ContentType         string
-		RequestMetadata     map[string]string
-	}
-
-	ProviderEventProcessor interface {
-		Process(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
 	}
 )
 

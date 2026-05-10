@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
@@ -39,8 +40,18 @@ func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.Lis
 	if len(params.Kinds) > 0 {
 		query.Where(kne.KindIn(params.Kinds...))
 	}
-	if params.Provider != "" || params.ProviderSource != "" || params.SubjectKind != "" {
-		query.Where(kne.HasAliasesWith(aliasPredicates(params.Provider, params.ProviderSource, params.SubjectKind)...))
+	aliasPredicates := make([]predicate.KnowledgeEntityAlias, 0, 3)
+	if params.Provider != "" {
+		aliasPredicates = append(aliasPredicates, knea.Provider(params.Provider))
+	}
+	if params.ProviderSource != "" {
+		aliasPredicates = append(aliasPredicates, knea.ProviderSource(params.ProviderSource))
+	}
+	if params.SubjectKind != "" {
+		aliasPredicates = append(aliasPredicates, knea.SubjectKind(params.SubjectKind))
+	}
+	if len(aliasPredicates) > 0 {
+		query.Where(kne.HasAliasesWith(aliasPredicates...))
 	}
 	return ent.DoListQuery[*ent.KnowledgeEntity, *ent.KnowledgeEntityQuery](ctx, query, params.ListParams)
 }
@@ -149,9 +160,17 @@ func (s *SystemTopologyService) CreateSnapshot(ctx context.Context, params rez.C
 	}
 	scopeProperties := params.ScopeProperties
 	if scopeProperties == nil {
+		entityIds := make([]string, len(params.EntityIDs))
+		for i, id := range params.EntityIDs {
+			entityIds[i] = id.String()
+		}
+		rootIds := make([]string, len(params.RootEntityIDs))
+		for i, id := range params.EntityIDs {
+			rootIds[i] = id.String()
+		}
 		scopeProperties = map[string]any{
-			"entityIds":   uuidStrings(params.EntityIDs),
-			"rootIds":     uuidStrings(params.RootEntityIDs),
+			"entityIds":   entityIds,
+			"rootIds":     rootIds,
 			"depth":       params.Depth,
 			"entityKinds": params.EntityKinds,
 			"relKinds":    params.RelationshipKinds,
@@ -175,7 +194,18 @@ func (s *SystemTopologyService) CreateSnapshot(ctx context.Context, params rez.C
 
 		snapshotEntities := make(map[uuid.UUID]*ent.SystemTopologySnapshotEntity, len(graph.Entities))
 		for _, entity := range graph.Entities {
-			aliases := snapshotAliases(entity.Edges.Aliases)
+			snapshotAliases := make([]map[string]any, len(entity.Edges.Aliases))
+			for i, alias := range entity.Edges.Aliases {
+				snapshotAliases[i] = map[string]any{
+					"id":             alias.ID.String(),
+					"provider":       alias.Provider,
+					"providerSource": alias.ProviderSource,
+					"subjectKind":    alias.SubjectKind,
+					"subjectRef":     alias.SubjectRef,
+					"firstSeenAt":    alias.FirstSeenAt,
+					"lastSeenAt":     alias.LastSeenAt,
+				}
+			}
 			snapEntity, entityErr := tx.SystemTopologySnapshotEntity.Create().
 				SetSnapshotID(snapshot.ID).
 				SetKnowledgeEntityID(entity.ID).
@@ -183,7 +213,7 @@ func (s *SystemTopologyService) CreateSnapshot(ctx context.Context, params rez.C
 				SetDisplayName(entity.DisplayName).
 				SetDescription(entity.Description).
 				SetProperties(entity.Properties).
-				SetAliases(aliases).
+				SetAliases(snapshotAliases).
 				Save(ctx)
 			if entityErr != nil {
 				return fmt.Errorf("create snapshot entity: %w", entityErr)
@@ -231,9 +261,10 @@ func (s *SystemTopologyService) GetSnapshot(ctx context.Context, id uuid.UUID) (
 }
 
 func (s *SystemTopologyService) snapshotGraph(ctx context.Context, params rez.CreateSystemTopologySnapshotParams) (*rez.SystemTopologyGraph, error) {
+	var entities []*ent.KnowledgeEntity
+	var relationships []*ent.KnowledgeRelationship
 	if len(params.RootEntityIDs) > 0 {
-		graph := &rez.SystemTopologyGraph{}
-		seen := make(map[uuid.UUID]*ent.KnowledgeEntity)
+		seenEntities := make(map[uuid.UUID]*ent.KnowledgeEntity)
 		seenRelationships := make(map[uuid.UUID]*ent.KnowledgeRelationship)
 		for _, rootID := range params.RootEntityIDs {
 			partial, neighborhoodErr := s.GetNeighborhood(ctx, rootID, rez.SystemTopologyNeighborhoodParams{
@@ -244,48 +275,45 @@ func (s *SystemTopologyService) snapshotGraph(ctx context.Context, params rez.Cr
 				return nil, neighborhoodErr
 			}
 			for _, entity := range partial.Entities {
-				seen[entity.ID] = entity
+				seenEntities[entity.ID] = entity
 			}
 			for _, rel := range partial.Relationships {
 				seenRelationships[rel.ID] = rel
 			}
 		}
-		for _, entity := range seen {
-			graph.Entities = append(graph.Entities, entity)
+		for _, entity := range seenEntities {
+			entities = append(entities, entity)
 		}
 		for _, rel := range seenRelationships {
-			graph.Relationships = append(graph.Relationships, rel)
+			relationships = append(relationships, rel)
 		}
-		return graph, nil
-	}
-
-	if len(params.EntityIDs) == 0 {
+	} else if len(params.EntityIDs) > 0 {
+		var queryErr error
+		entities, queryErr = s.db.KnowledgeEntity.Query().
+			Where(kne.IDIn(params.EntityIDs...)).
+			WithAliases().
+			All(ctx)
+		if queryErr != nil {
+			return nil, fmt.Errorf("query knowledge entities: %w", queryErr)
+		}
+		rels, relErr := s.relationshipsTouching(ctx, params.EntityIDs, params.RelationshipKinds)
+		if relErr != nil {
+			return nil, fmt.Errorf("query snapshot relationships: %w", relErr)
+		}
+		entitySet := mapset.NewSet[uuid.UUID]()
+		for _, entity := range entities {
+			entitySet.Add(entity.ID)
+		}
+		relationships = make([]*ent.KnowledgeRelationship, 0, len(rels))
+		for _, rel := range rels {
+			if entitySet.Contains(rel.SourceEntityID, rel.TargetEntityID) {
+				relationships = append(relationships, rel)
+			}
+		}
+	} else {
 		return nil, fmt.Errorf("snapshot requires entity IDs or root entity IDs")
 	}
-	entities, entityErr := s.db.KnowledgeEntity.Query().
-		Where(kne.IDIn(params.EntityIDs...)).
-		WithAliases().
-		All(ctx)
-	if entityErr != nil {
-		return nil, fmt.Errorf("query snapshot entities: %w", entityErr)
-	}
-	rels, relErr := s.relationshipsTouching(ctx, params.EntityIDs, params.RelationshipKinds)
-	if relErr != nil {
-		return nil, fmt.Errorf("query snapshot relationships: %w", relErr)
-	}
-	entitySet := make(map[uuid.UUID]struct{}, len(entities))
-	for _, entity := range entities {
-		entitySet[entity.ID] = struct{}{}
-	}
-	filteredRels := make([]*ent.KnowledgeRelationship, 0, len(rels))
-	for _, rel := range rels {
-		_, sourceOK := entitySet[rel.SourceEntityID]
-		_, targetOK := entitySet[rel.TargetEntityID]
-		if sourceOK && targetOK {
-			filteredRels = append(filteredRels, rel)
-		}
-	}
-	return &rez.SystemTopologyGraph{Entities: entities, Relationships: filteredRels}, nil
+	return &rez.SystemTopologyGraph{Entities: entities, Relationships: relationships}, nil
 }
 
 func (s *SystemTopologyService) relationshipsTouching(ctx context.Context, entityIDs []uuid.UUID, kinds []string) ([]*ent.KnowledgeRelationship, error) {
@@ -300,42 +328,4 @@ func (s *SystemTopologyService) relationshipsTouching(ctx context.Context, entit
 		query.Where(knr.KindIn(kinds...))
 	}
 	return query.All(ctx)
-}
-
-func aliasPredicates(provider, providerSource, subjectKind string) []predicate.KnowledgeEntityAlias {
-	predicates := make([]predicate.KnowledgeEntityAlias, 0, 3)
-	if provider != "" {
-		predicates = append(predicates, knea.Provider(provider))
-	}
-	if providerSource != "" {
-		predicates = append(predicates, knea.ProviderSource(providerSource))
-	}
-	if subjectKind != "" {
-		predicates = append(predicates, knea.SubjectKind(subjectKind))
-	}
-	return predicates
-}
-
-func snapshotAliases(aliases []*ent.KnowledgeEntityAlias) []map[string]any {
-	res := make([]map[string]any, len(aliases))
-	for i, alias := range aliases {
-		res[i] = map[string]any{
-			"id":             alias.ID.String(),
-			"provider":       alias.Provider,
-			"providerSource": alias.ProviderSource,
-			"subjectKind":    alias.SubjectKind,
-			"subjectRef":     alias.SubjectRef,
-			"firstSeenAt":    alias.FirstSeenAt,
-			"lastSeenAt":     alias.LastSeenAt,
-		}
-	}
-	return res
-}
-
-func uuidStrings(ids []uuid.UUID) []string {
-	res := make([]string, len(ids))
-	for i, id := range ids {
-		res[i] = id.String()
-	}
-	return res
 }

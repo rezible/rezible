@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/rezible/rezible/internal/projections"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/rezible/rezible"
@@ -163,9 +164,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 
 	dbc := s.db.Client()
 
-	knowledge := db.NewKnowledgeService(dbc)
-
-	provEvents := db.NewProviderEventService(ctx, dbc, jobSvc)
+	projections.RegisterProjectionHandler("knowledge", db.KnowledgeEntityEventProjectionHandler)
 
 	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
 	if orgsErr != nil {
@@ -191,6 +190,8 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	if intgsErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
 	}
+
+	provEvents := db.NewProviderEventService(ctx, dbc, jobSvc, intgs)
 
 	agents, agentsErr := adk.NewAgentService()
 	if agentsErr != nil {
@@ -263,10 +264,10 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	}
 
 	return &rez.Services{
-		Jobs:             jobSvc,
-		ProviderEvents:   provEvents,
-		Messages:         msgs,
-		Knowledge:        knowledge,
+		Jobs:           jobSvc,
+		ProviderEvents: provEvents,
+		Messages:       msgs,
+		//Knowledge:        knowledge,
 		Topology:         topology,
 		Auth:             auth,
 		Organizations:    orgs,

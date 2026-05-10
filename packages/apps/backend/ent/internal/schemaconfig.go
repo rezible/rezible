@@ -54,6 +54,7 @@ type SchemaConfig struct {
 	MeetingScheduleOwningTeam                 string // MeetingSchedule-owning_team->Team table.
 	MeetingSession                            string // MeetingSession table.
 	NormalizedEvent                           string // NormalizedEvent table.
+	NormalizedEventProjectionStatus           string // NormalizedEventProjectionStatus table.
 	OncallHandoverTemplate                    string // OncallHandoverTemplate table.
 	OncallRoster                              string // OncallRoster table.
 	OncallRosterMetrics                       string // OncallRosterMetrics table.
@@ -67,6 +68,8 @@ type SchemaConfig struct {
 	OrganizationRole                          string // OrganizationRole table.
 	Playbook                                  string // Playbook table.
 	PlaybookAlerts                            string // Playbook-alerts->Alert table.
+	ProviderEventSyncCursor                   string // ProviderEventSyncCursor table.
+	ProviderEventSyncRun                      string // ProviderEventSyncRun table.
 	ProviderSyncHistory                       string // ProviderSyncHistory table.
 	Retrospective                             string // Retrospective table.
 	RetrospectiveComment                      string // RetrospectiveComment table.

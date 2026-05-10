@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/telemetry"
 )
 
@@ -25,13 +26,13 @@ func newProviderEventMetrics() *providerEventMetrics {
 	}
 }
 
-func (m *providerEventMetrics) recordIngested(ctx context.Context, provider, providerSource string, res *ingestProviderEventResult, err error) {
+func (m *providerEventMetrics) recordIngested(ctx context.Context, provider, providerSource string, res *rez.ProviderEventIngestResult, err error) {
 	if m != nil {
 		m.ingested.Add(ctx, 1, telemetry.WithMetricAttributes(
 			telemetry.StringAttr("provider", telemetry.NormalizeLabel(provider)),
 			telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(providerSource)),
 			telemetry.ResultAttr(err),
-			telemetry.BoolAttr("duplicate", res != nil && res.duplicate),
+			telemetry.BoolAttr("duplicate", res != nil && res.Duplicate),
 		))
 	}
 }

@@ -1564,6 +1564,57 @@ var (
 			},
 		},
 	}
+	// NormalizedEventProjectionStatusColumns holds the columns for the "normalized_event_projection_status" table.
+	NormalizedEventProjectionStatusColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "handler_name", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "succeeded", "failed"}, Default: "pending"},
+		{Name: "last_error", Type: field.TypeString, Nullable: true},
+		{Name: "last_attempted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "succeeded_at", Type: field.TypeTime, Nullable: true},
+		{Name: "failed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "normalized_event_id", Type: field.TypeUUID},
+	}
+	// NormalizedEventProjectionStatusTable holds the schema information for the "normalized_event_projection_status" table.
+	NormalizedEventProjectionStatusTable = &schema.Table{
+		Name:       "normalized_event_projection_status",
+		Columns:    NormalizedEventProjectionStatusColumns,
+		PrimaryKey: []*schema.Column{NormalizedEventProjectionStatusColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "normalized_event_projection_status_tenants_tenant",
+				Columns:    []*schema.Column{NormalizedEventProjectionStatusColumns[9]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "normalized_event_projection_status_normalized_events_normalized_event",
+				Columns:    []*schema.Column{NormalizedEventProjectionStatusColumns[10]},
+				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "normalizedeventprojectionstatus_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{NormalizedEventProjectionStatusColumns[9]},
+			},
+			{
+				Name:    "normalizedeventprojectionstatus_tenant_id_normalized_event_id_handler_name",
+				Unique:  true,
+				Columns: []*schema.Column{NormalizedEventProjectionStatusColumns[9], NormalizedEventProjectionStatusColumns[10], NormalizedEventProjectionStatusColumns[3]},
+			},
+			{
+				Name:    "normalizedeventprojectionstatus_tenant_id_status_updated_at",
+				Unique:  false,
+				Columns: []*schema.Column{NormalizedEventProjectionStatusColumns[9], NormalizedEventProjectionStatusColumns[4], NormalizedEventProjectionStatusColumns[2]},
+			},
+		},
+	}
 	// OncallHandoverTemplatesColumns holds the columns for the "oncall_handover_templates" table.
 	OncallHandoverTemplatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1987,6 +2038,89 @@ var (
 				Name:    "playbook_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{PlaybooksColumns[4]},
+			},
+		},
+	}
+	// ProviderEventSyncCursorsColumns holds the columns for the "provider_event_sync_cursors" table.
+	ProviderEventSyncCursorsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "provider_source", Type: field.TypeString},
+		{Name: "cursor", Type: field.TypeString, Nullable: true},
+		{Name: "last_synced_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// ProviderEventSyncCursorsTable holds the schema information for the "provider_event_sync_cursors" table.
+	ProviderEventSyncCursorsTable = &schema.Table{
+		Name:       "provider_event_sync_cursors",
+		Columns:    ProviderEventSyncCursorsColumns,
+		PrimaryKey: []*schema.Column{ProviderEventSyncCursorsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "provider_event_sync_cursors_tenants_tenant",
+				Columns:    []*schema.Column{ProviderEventSyncCursorsColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "providereventsynccursor_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{ProviderEventSyncCursorsColumns[7]},
+			},
+			{
+				Name:    "providereventsynccursor_tenant_id_provider_provider_source",
+				Unique:  true,
+				Columns: []*schema.Column{ProviderEventSyncCursorsColumns[7], ProviderEventSyncCursorsColumns[3], ProviderEventSyncCursorsColumns[4]},
+			},
+		},
+	}
+	// ProviderEventSyncRunsColumns holds the columns for the "provider_event_sync_runs" table.
+	ProviderEventSyncRunsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "provider", Type: field.TypeString},
+		{Name: "provider_source", Type: field.TypeString},
+		{Name: "sync_reason", Type: field.TypeString, Default: "manual"},
+		{Name: "started_at", Type: field.TypeTime},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"success", "failed", "skipped"}},
+		{Name: "events_pulled", Type: field.TypeInt, Default: 0},
+		{Name: "events_ingested", Type: field.TypeInt, Default: 0},
+		{Name: "duplicates", Type: field.TypeInt, Default: 0},
+		{Name: "failure_message", Type: field.TypeString, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// ProviderEventSyncRunsTable holds the schema information for the "provider_event_sync_runs" table.
+	ProviderEventSyncRunsTable = &schema.Table{
+		Name:       "provider_event_sync_runs",
+		Columns:    ProviderEventSyncRunsColumns,
+		PrimaryKey: []*schema.Column{ProviderEventSyncRunsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "provider_event_sync_runs_tenants_tenant",
+				Columns:    []*schema.Column{ProviderEventSyncRunsColumns[11]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "providereventsyncrun_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11]},
+			},
+			{
+				Name:    "providereventsyncrun_tenant_id_provider_provider_source_started_at",
+				Unique:  false,
+				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11], ProviderEventSyncRunsColumns[1], ProviderEventSyncRunsColumns[2], ProviderEventSyncRunsColumns[4]},
+			},
+			{
+				Name:    "providereventsyncrun_tenant_id_status_started_at",
+				Unique:  false,
+				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11], ProviderEventSyncRunsColumns[6], ProviderEventSyncRunsColumns[4]},
 			},
 		},
 	}
@@ -3137,6 +3271,7 @@ var (
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
 		NormalizedEventsTable,
+		NormalizedEventProjectionStatusTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
 		OncallRosterMetricsTable,
@@ -3148,6 +3283,8 @@ var (
 		OrganizationsTable,
 		OrganizationRolesTable,
 		PlaybooksTable,
+		ProviderEventSyncCursorsTable,
+		ProviderEventSyncRunsTable,
 		ProviderSyncHistoriesTable,
 		RetrospectivesTable,
 		RetrospectiveCommentsTable,
@@ -3265,6 +3402,8 @@ func init() {
 	MeetingSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable
 	NormalizedEventsTable.ForeignKeys[0].RefTable = TenantsTable
+	NormalizedEventProjectionStatusTable.ForeignKeys[0].RefTable = TenantsTable
+	NormalizedEventProjectionStatusTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	OncallHandoverTemplatesTable.ForeignKeys[0].RefTable = TenantsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallRostersTable.ForeignKeys[1].RefTable = TenantsTable
@@ -3288,6 +3427,8 @@ func init() {
 	OrganizationRolesTable.ForeignKeys[1].RefTable = OrganizationsTable
 	OrganizationRolesTable.ForeignKeys[2].RefTable = UsersTable
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
+	ProviderEventSyncCursorsTable.ForeignKeys[0].RefTable = TenantsTable
+	ProviderEventSyncRunsTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = DocumentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable

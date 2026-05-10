@@ -30,7 +30,9 @@ func (i *integration) makeEventHandler() (*eventHandler, error) {
 	svcs := i.services
 	h := &eventHandler{services: svcs}
 
-	svcs.ProviderEvents.RegisterEventProcessor(integrationName, callbackEventsSource, &callbackEventProcessor{handler: h})
+	svcs.ProviderEvents.RegisterEventProcessors(integrationName, map[string]rez.ProviderEventProcessor{
+		callbackEventsSource: &callbackEventProcessor{handler: h},
+	})
 
 	if msgsErr := h.registerMessageHandlers(svcs.Messages); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
@@ -81,7 +83,7 @@ func (h *eventHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Even
 			Payload:             data,
 			RequestMetadata:     map[string]string{},
 		}
-		if ingestErr := h.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
+		if _, ingestErr := h.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
 			return fmt.Errorf("ingest event: %w", ingestErr)
 		}
 	}

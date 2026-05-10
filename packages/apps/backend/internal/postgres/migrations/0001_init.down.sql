@@ -58,6 +58,10 @@ ALTER TABLE "retrospective_comments" DROP CONSTRAINT "retrospective_comments_ret
 ALTER TABLE "retrospectives" DROP CONSTRAINT "retrospectives_system_analyses_retrospective", DROP CONSTRAINT "retrospectives_tenants_tenant", DROP CONSTRAINT "retrospectives_incidents_retrospective", DROP CONSTRAINT "retrospectives_documents_retrospective";
 -- reverse: modify "provider_sync_histories" table
 ALTER TABLE "provider_sync_histories" DROP CONSTRAINT "provider_sync_histories_tenants_tenant";
+-- reverse: modify "provider_event_sync_runs" table
+ALTER TABLE "provider_event_sync_runs" DROP CONSTRAINT "provider_event_sync_runs_integrations_integration", DROP CONSTRAINT "provider_event_sync_runs_tenants_tenant";
+-- reverse: modify "provider_event_sync_cursors" table
+ALTER TABLE "provider_event_sync_cursors" DROP CONSTRAINT "provider_event_sync_cursors_integrations_integration", DROP CONSTRAINT "provider_event_sync_cursors_tenants_tenant";
 -- reverse: modify "playbooks" table
 ALTER TABLE "playbooks" DROP CONSTRAINT "playbooks_tenants_tenant";
 -- reverse: modify "organization_roles" table
@@ -80,6 +84,8 @@ ALTER TABLE "oncall_roster_metrics" DROP CONSTRAINT "oncall_roster_metrics_oncal
 ALTER TABLE "oncall_rosters" DROP CONSTRAINT "oncall_rosters_tenants_tenant", DROP CONSTRAINT "oncall_rosters_oncall_handover_templates_roster";
 -- reverse: modify "oncall_handover_templates" table
 ALTER TABLE "oncall_handover_templates" DROP CONSTRAINT "oncall_handover_templates_tenants_tenant";
+-- reverse: modify "normalized_event_projection_status" table
+ALTER TABLE "normalized_event_projection_status" DROP CONSTRAINT "normalized_event_projection_st_57b31f9b9ba804f03db1c8815e863e31", DROP CONSTRAINT "normalized_event_projection_status_tenants_tenant";
 -- reverse: modify "normalized_events" table
 ALTER TABLE "normalized_events" DROP CONSTRAINT "normalized_events_tenants_tenant";
 -- reverse: modify "meeting_sessions" table
@@ -284,6 +290,20 @@ DROP TABLE "retrospectives";
 DROP INDEX "providersynchistory_tenant_id";
 -- reverse: create "provider_sync_histories" table
 DROP TABLE "provider_sync_histories";
+-- reverse: create index "providereventsyncrun_tenant_id_status_started_at" to table: "provider_event_sync_runs"
+DROP INDEX "providereventsyncrun_tenant_id_status_started_at";
+-- reverse: create index "providereventsyncrun_tenant_id_0e4bcaeb602704b5084ecaa9022d5964" to table: "provider_event_sync_runs"
+DROP INDEX "providereventsyncrun_tenant_id_0e4bcaeb602704b5084ecaa9022d5964";
+-- reverse: create index "providereventsyncrun_tenant_id" to table: "provider_event_sync_runs"
+DROP INDEX "providereventsyncrun_tenant_id";
+-- reverse: create "provider_event_sync_runs" table
+DROP TABLE "provider_event_sync_runs";
+-- reverse: create index "providereventsynccursor_tenant_5fac8d239f3bb203d415d214d787550c" to table: "provider_event_sync_cursors"
+DROP INDEX "providereventsynccursor_tenant_5fac8d239f3bb203d415d214d787550c";
+-- reverse: create index "providereventsynccursor_tenant_id" to table: "provider_event_sync_cursors"
+DROP INDEX "providereventsynccursor_tenant_id";
+-- reverse: create "provider_event_sync_cursors" table
+DROP TABLE "provider_event_sync_cursors";
 -- reverse: create index "playbook_tenant_id" to table: "playbooks"
 DROP INDEX "playbook_tenant_id";
 -- reverse: create "playbooks" table
@@ -342,6 +362,14 @@ DROP TABLE "oncall_rosters";
 DROP INDEX "oncallhandovertemplate_tenant_id";
 -- reverse: create "oncall_handover_templates" table
 DROP TABLE "oncall_handover_templates";
+-- reverse: create index "normalizedeventprojectionstatus_tenant_id_status_updated_at" to table: "normalized_event_projection_status"
+DROP INDEX "normalizedeventprojectionstatus_tenant_id_status_updated_at";
+-- reverse: create index "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8" to table: "normalized_event_projection_status"
+DROP INDEX "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8";
+-- reverse: create index "normalizedeventprojectionstatus_tenant_id" to table: "normalized_event_projection_status"
+DROP INDEX "normalizedeventprojectionstatus_tenant_id";
+-- reverse: create "normalized_event_projection_status" table
+DROP TABLE "normalized_event_projection_status";
 -- reverse: create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
 DROP INDEX "normalizedevent_tenant_id_kind_occurred_at";
 -- reverse: create index "normalizedevent_tenant_id_prov_c0af9de518dc8d99688159f28d11be68" to table: "normalized_events"

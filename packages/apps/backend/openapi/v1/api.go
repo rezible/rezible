@@ -5,7 +5,6 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
-
 	"github.com/rezible/rezible/openapi"
 )
 
@@ -47,23 +46,7 @@ type Handler interface {
 }
 type operations struct{ Handler }
 
-func MakeApi(h Handler, middlewares ...openapi.Middleware) openapi.API {
-	cfg := MakeConfig()
-
-	//tranformers := []huma.Transformer{
-	//	interceptErrors(s),
-	//}
-	//cfg.Transformers = append(cfg.Transformers, tranformers...)
-
-	adapter := humago.NewAdapter(http.NewServeMux(), VersionPrefix)
-	api := huma.NewAPI(cfg, adapter)
-	api.UseMiddleware(middlewares...)
-	huma.AutoRegister(api, operations{Handler: h})
-
-	return api
-}
-
-func MakeConfig() openapi.Config {
+func makeConfig() openapi.Config {
 	cfg := huma.DefaultConfig("Rezible API", "0.0.1")
 	cfg.DocsPath = ""
 	cfg.OpenAPIPath = "/openapi"
@@ -80,8 +63,19 @@ func MakeConfig() openapi.Config {
 	return cfg
 }
 
+func MakeApi(h Handler, middlewares ...openapi.Middleware) openapi.API {
+	api := humago.NewWithPrefix(http.NewServeMux(), VersionPrefix, makeConfig())
+	api.UseMiddleware(middlewares...)
+	huma.AutoRegister(api, operations{Handler: h})
+	return api
+}
+
+func makeNilApi() openapi.API {
+	return MakeApi(operations{})
+}
+
 func GetSpec(jsonFmt bool) ([]byte, error) {
-	spec := MakeApi(operations{}).OpenAPI()
+	spec := makeNilApi().OpenAPI()
 	if jsonFmt {
 		return spec.MarshalJSON()
 	}

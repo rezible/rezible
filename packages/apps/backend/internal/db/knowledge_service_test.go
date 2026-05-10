@@ -25,7 +25,7 @@ func TestKnowledgeServiceSuite(t *testing.T) {
 }
 
 func (s *KnowledgeServiceSuite) service() *KnowledgeService {
-	return NewKnowledgeService(s.Client())
+	return newKnowledgeService(s.Client())
 }
 
 func (s *KnowledgeServiceSuite) createEntity() uuid.UUID {

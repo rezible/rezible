@@ -132,6 +132,22 @@ func GetOAuthIntegration(name string) (IntegrationWithOAuth2Flow, error) {
 	return oauth2Intg, nil
 }
 
+type IntegrationWithProviderSourceEventQueriers interface {
+	MakeProviderSourceEventQueriers(context.Context, *ent.Integration) ([]rez.ProviderEventQuerier, error)
+}
+
+func GetProviderSourceEventQueriers(ctx context.Context, intg *ent.Integration) ([]rez.ProviderEventQuerier, error) {
+	pkg, valid := packageNameMap[intg.Provider]
+	if !valid {
+		return nil, fmt.Errorf("unknown integration package: %s", intg.Provider)
+	}
+	querierPkg, ok := pkg.(IntegrationWithProviderSourceEventQueriers)
+	if !ok {
+		return nil, nil
+	}
+	return querierPkg.MakeProviderSourceEventQueriers(ctx, intg)
+}
+
 func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Integration) (DP, error)) (map[string]DP, error) {
 	provs := make(map[string]DP)
 	for _, intg := range intgs {

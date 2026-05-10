@@ -23,6 +23,17 @@ func (ProjectNormalizedEvent) Kind() string {
 	return "project-normalized-event"
 }
 
+type ProviderEventSyncJob struct {
+	Provider        string   `json:"provider"`
+	ProviderSources []string `json:"provider_sources,omitempty"`
+	CursorAfter     *string  `json:"cursor_after,omitempty"`
+	SyncReason      string   `json:"sync_reason,omitempty"`
+}
+
+func (ProviderEventSyncJob) Kind() string {
+	return "provider-event-sync"
+}
+
 type SendIncidentDebriefRequests struct {
 	IncidentId uuid.UUID
 }

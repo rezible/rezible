@@ -196,6 +196,14 @@ CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
 CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_c0af9de518dc8d99688159f28d11be68" ON "normalized_events" ("tenant_id", "provider", "provider_source", "processing_version", "provider_event_ref", "kind", "subject_ref");
 -- create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id_kind_occurred_at" ON "normalized_events" ("tenant_id", "kind", "occurred_at");
+-- create "normalized_event_projection_status" table
+CREATE TABLE "normalized_event_projection_status" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "handler_name" character varying NOT NULL, "status" character varying NOT NULL DEFAULT 'pending', "last_error" character varying NULL, "last_attempted_at" timestamptz NULL, "succeeded_at" timestamptz NULL, "failed_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "normalized_event_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "normalizedeventprojectionstatus_tenant_id" to table: "normalized_event_projection_status"
+CREATE INDEX "normalizedeventprojectionstatus_tenant_id" ON "normalized_event_projection_status" ("tenant_id");
+-- create index "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8" to table: "normalized_event_projection_status"
+CREATE UNIQUE INDEX "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8" ON "normalized_event_projection_status" ("tenant_id", "normalized_event_id", "handler_name");
+-- create index "normalizedeventprojectionstatus_tenant_id_status_updated_at" to table: "normalized_event_projection_status"
+CREATE INDEX "normalizedeventprojectionstatus_tenant_id_status_updated_at" ON "normalized_event_projection_status" ("tenant_id", "status", "updated_at");
 -- create "oncall_handover_templates" table
 CREATE TABLE "oncall_handover_templates" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "contents" bytea NOT NULL, "is_default" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "oncallhandovertemplate_tenant_id" to table: "oncall_handover_templates"
@@ -254,6 +262,20 @@ CREATE UNIQUE INDEX "organizationrole_org_id_user_id" ON "organization_roles" ("
 CREATE TABLE "playbooks" ("id" uuid NOT NULL, "external_id" character varying NULL, "title" character varying NOT NULL, "content" bytea NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "playbook_tenant_id" to table: "playbooks"
 CREATE INDEX "playbook_tenant_id" ON "playbooks" ("tenant_id");
+-- create "provider_event_sync_cursors" table
+CREATE TABLE "provider_event_sync_cursors" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "cursor" character varying NULL, "last_synced_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "providereventsynccursor_tenant_id" to table: "provider_event_sync_cursors"
+CREATE INDEX "providereventsynccursor_tenant_id" ON "provider_event_sync_cursors" ("tenant_id");
+-- create index "providereventsynccursor_tenant_5fac8d239f3bb203d415d214d787550c" to table: "provider_event_sync_cursors"
+CREATE UNIQUE INDEX "providereventsynccursor_tenant_5fac8d239f3bb203d415d214d787550c" ON "provider_event_sync_cursors" ("tenant_id", "integration_id", "provider", "provider_source");
+-- create "provider_event_sync_runs" table
+CREATE TABLE "provider_event_sync_runs" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "providereventsyncrun_tenant_id" to table: "provider_event_sync_runs"
+CREATE INDEX "providereventsyncrun_tenant_id" ON "provider_event_sync_runs" ("tenant_id");
+-- create index "providereventsyncrun_tenant_id_0e4bcaeb602704b5084ecaa9022d5964" to table: "provider_event_sync_runs"
+CREATE INDEX "providereventsyncrun_tenant_id_0e4bcaeb602704b5084ecaa9022d5964" ON "provider_event_sync_runs" ("tenant_id", "integration_id", "provider", "provider_source", "started_at");
+-- create index "providereventsyncrun_tenant_id_status_started_at" to table: "provider_event_sync_runs"
+CREATE INDEX "providereventsyncrun_tenant_id_status_started_at" ON "provider_event_sync_runs" ("tenant_id", "status", "started_at");
 -- create "provider_sync_histories" table
 CREATE TABLE "provider_sync_histories" ("id" uuid NOT NULL, "data_type" character varying NOT NULL, "started_at" timestamptz NOT NULL, "finished_at" timestamptz NOT NULL, "num_mutations" bigint NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "providersynchistory_tenant_id" to table: "provider_sync_histories"
@@ -458,6 +480,8 @@ ALTER TABLE "meeting_schedules" ADD CONSTRAINT "meeting_schedules_tenants_tenant
 ALTER TABLE "meeting_sessions" ADD CONSTRAINT "meeting_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "meeting_sessions_meeting_schedules_schedule" FOREIGN KEY ("meeting_session_schedule") REFERENCES "meeting_schedules" ("id") ON DELETE SET NULL;
 -- modify "normalized_events" table
 ALTER TABLE "normalized_events" ADD CONSTRAINT "normalized_events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "normalized_event_projection_status" table
+ALTER TABLE "normalized_event_projection_status" ADD CONSTRAINT "normalized_event_projection_status_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "normalized_event_projection_st_57b31f9b9ba804f03db1c8815e863e31" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION;
 -- modify "oncall_handover_templates" table
 ALTER TABLE "oncall_handover_templates" ADD CONSTRAINT "oncall_handover_templates_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "oncall_rosters" table
@@ -480,6 +504,10 @@ ALTER TABLE "organizations" ADD CONSTRAINT "organizations_tenants_tenant" FOREIG
 ALTER TABLE "organization_roles" ADD CONSTRAINT "organization_roles_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_organizations_organization" FOREIGN KEY ("org_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_users_organization_role" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "playbooks" table
 ALTER TABLE "playbooks" ADD CONSTRAINT "playbooks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "provider_event_sync_cursors" table
+ALTER TABLE "provider_event_sync_cursors" ADD CONSTRAINT "provider_event_sync_cursors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "provider_event_sync_cursors_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE NO ACTION;
+-- modify "provider_event_sync_runs" table
+ALTER TABLE "provider_event_sync_runs" ADD CONSTRAINT "provider_event_sync_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "provider_event_sync_runs_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE NO ACTION;
 -- modify "provider_sync_histories" table
 ALTER TABLE "provider_sync_histories" ADD CONSTRAINT "provider_sync_histories_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "retrospectives" table
