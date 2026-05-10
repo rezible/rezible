@@ -59,9 +59,9 @@ const (
 	TenantColumn = "tenant_id"
 	// KnowledgeRelationshipTable is the table that holds the knowledge_relationship relation/edge.
 	KnowledgeRelationshipTable = "system_topology_snapshot_relationships"
-	// KnowledgeRelationshipInverseTable is the table name for the KnowledgeFactRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgefactrelationship" package.
-	KnowledgeRelationshipInverseTable = "knowledge_fact_relationships"
+	// KnowledgeRelationshipInverseTable is the table name for the KnowledgeRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgerelationship" package.
+	KnowledgeRelationshipInverseTable = "knowledge_relationships"
 	// KnowledgeRelationshipColumn is the table column denoting the knowledge_relationship relation/edge.
 	KnowledgeRelationshipColumn = "knowledge_relationship_id"
 	// SnapshotTable is the table that holds the snapshot relation/edge.

@@ -16,7 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgefact"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
@@ -31,7 +31,7 @@ type IncidentEventTopologyContextQuery struct {
 	predicates          []predicate.IncidentEventTopologyContext
 	withTenant          *TenantQuery
 	withEvent           *IncidentEventQuery
-	withKnowledgeEntity *KnowledgeFactQuery
+	withKnowledgeEntity *KnowledgeEntityQuery
 	withSnapshotEntity  *SystemTopologySnapshotEntityQuery
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -121,8 +121,8 @@ func (_q *IncidentEventTopologyContextQuery) QueryEvent() *IncidentEventQuery {
 }
 
 // QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
-func (_q *IncidentEventTopologyContextQuery) QueryKnowledgeEntity() *KnowledgeFactQuery {
-	query := (&KnowledgeFactClient{config: _q.config}).Query()
+func (_q *IncidentEventTopologyContextQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -133,11 +133,11 @@ func (_q *IncidentEventTopologyContextQuery) QueryKnowledgeEntity() *KnowledgeFa
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, selector),
-			sqlgraph.To(knowledgefact.Table, knowledgefact.FieldID),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.KnowledgeEntityTable, incidenteventtopologycontext.KnowledgeEntityColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeFact
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -397,8 +397,8 @@ func (_q *IncidentEventTopologyContextQuery) WithEvent(opts ...func(*IncidentEve
 
 // WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
 // the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentEventTopologyContextQuery) WithKnowledgeEntity(opts ...func(*KnowledgeFactQuery)) *IncidentEventTopologyContextQuery {
-	query := (&KnowledgeFactClient{config: _q.config}).Query()
+func (_q *IncidentEventTopologyContextQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *IncidentEventTopologyContextQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -545,7 +545,7 @@ func (_q *IncidentEventTopologyContextQuery) sqlAll(ctx context.Context, hooks .
 	}
 	if query := _q.withKnowledgeEntity; query != nil {
 		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
-			func(n *IncidentEventTopologyContext, e *KnowledgeFact) { n.Edges.KnowledgeEntity = e }); err != nil {
+			func(n *IncidentEventTopologyContext, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -616,7 +616,7 @@ func (_q *IncidentEventTopologyContextQuery) loadEvent(ctx context.Context, quer
 	}
 	return nil
 }
-func (_q *IncidentEventTopologyContextQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeFactQuery, nodes []*IncidentEventTopologyContext, init func(*IncidentEventTopologyContext), assign func(*IncidentEventTopologyContext, *KnowledgeFact)) error {
+func (_q *IncidentEventTopologyContextQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*IncidentEventTopologyContext, init func(*IncidentEventTopologyContext), assign func(*IncidentEventTopologyContext, *KnowledgeEntity)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*IncidentEventTopologyContext)
 	for i := range nodes {
@@ -632,7 +632,7 @@ func (_q *IncidentEventTopologyContextQuery) loadKnowledgeEntity(ctx context.Con
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(knowledgefact.IDIn(ids...))
+	query.Where(knowledgeentity.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err

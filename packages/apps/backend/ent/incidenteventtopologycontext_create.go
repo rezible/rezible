@@ -15,7 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
-	"github.com/rezible/rezible/ent/knowledgefact"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -118,8 +118,8 @@ func (_c *IncidentEventTopologyContextCreate) SetEvent(v *IncidentEvent) *Incide
 	return _c.SetEventID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeFact entity.
-func (_c *IncidentEventTopologyContextCreate) SetKnowledgeEntity(v *KnowledgeFact) *IncidentEventTopologyContextCreate {
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_c *IncidentEventTopologyContextCreate) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentEventTopologyContextCreate {
 	return _c.SetKnowledgeEntityID(v.ID)
 }
 
@@ -296,7 +296,7 @@ func (_c *IncidentEventTopologyContextCreate) createSpec() (*IncidentEventTopolo
 			Columns: []string{incidenteventtopologycontext.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.IncidentEventTopologyContext

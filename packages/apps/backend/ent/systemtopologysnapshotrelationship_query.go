@@ -15,7 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgefactrelationship"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemtopologysnapshot"
@@ -32,7 +32,7 @@ type SystemTopologySnapshotRelationshipQuery struct {
 	inters                    []Interceptor
 	predicates                []predicate.SystemTopologySnapshotRelationship
 	withTenant                *TenantQuery
-	withKnowledgeRelationship *KnowledgeFactRelationshipQuery
+	withKnowledgeRelationship *KnowledgeRelationshipQuery
 	withSnapshot              *SystemTopologySnapshotQuery
 	withSourceSnapshotEntity  *SystemTopologySnapshotEntityQuery
 	withTargetSnapshotEntity  *SystemTopologySnapshotEntityQuery
@@ -100,8 +100,8 @@ func (_q *SystemTopologySnapshotRelationshipQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryKnowledgeRelationship chains the current query on the "knowledge_relationship" edge.
-func (_q *SystemTopologySnapshotRelationshipQuery) QueryKnowledgeRelationship() *KnowledgeFactRelationshipQuery {
-	query := (&KnowledgeFactRelationshipClient{config: _q.config}).Query()
+func (_q *SystemTopologySnapshotRelationshipQuery) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -112,11 +112,11 @@ func (_q *SystemTopologySnapshotRelationshipQuery) QueryKnowledgeRelationship() 
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(systemtopologysnapshotrelationship.Table, systemtopologysnapshotrelationship.FieldID, selector),
-			sqlgraph.To(knowledgefactrelationship.Table, knowledgefactrelationship.FieldID),
+			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, systemtopologysnapshotrelationship.KnowledgeRelationshipTable, systemtopologysnapshotrelationship.KnowledgeRelationshipColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeFactRelationship
+		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -442,8 +442,8 @@ func (_q *SystemTopologySnapshotRelationshipQuery) WithTenant(opts ...func(*Tena
 
 // WithKnowledgeRelationship tells the query-builder to eager-load the nodes that are connected to
 // the "knowledge_relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *SystemTopologySnapshotRelationshipQuery) WithKnowledgeRelationship(opts ...func(*KnowledgeFactRelationshipQuery)) *SystemTopologySnapshotRelationshipQuery {
-	query := (&KnowledgeFactRelationshipClient{config: _q.config}).Query()
+func (_q *SystemTopologySnapshotRelationshipQuery) WithKnowledgeRelationship(opts ...func(*KnowledgeRelationshipQuery)) *SystemTopologySnapshotRelationshipQuery {
+	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -619,7 +619,7 @@ func (_q *SystemTopologySnapshotRelationshipQuery) sqlAll(ctx context.Context, h
 	}
 	if query := _q.withKnowledgeRelationship; query != nil {
 		if err := _q.loadKnowledgeRelationship(ctx, query, nodes, nil,
-			func(n *SystemTopologySnapshotRelationship, e *KnowledgeFactRelationship) {
+			func(n *SystemTopologySnapshotRelationship, e *KnowledgeRelationship) {
 				n.Edges.KnowledgeRelationship = e
 			}); err != nil {
 			return nil, err
@@ -688,7 +688,7 @@ func (_q *SystemTopologySnapshotRelationshipQuery) loadTenant(ctx context.Contex
 	}
 	return nil
 }
-func (_q *SystemTopologySnapshotRelationshipQuery) loadKnowledgeRelationship(ctx context.Context, query *KnowledgeFactRelationshipQuery, nodes []*SystemTopologySnapshotRelationship, init func(*SystemTopologySnapshotRelationship), assign func(*SystemTopologySnapshotRelationship, *KnowledgeFactRelationship)) error {
+func (_q *SystemTopologySnapshotRelationshipQuery) loadKnowledgeRelationship(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*SystemTopologySnapshotRelationship, init func(*SystemTopologySnapshotRelationship), assign func(*SystemTopologySnapshotRelationship, *KnowledgeRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*SystemTopologySnapshotRelationship)
 	for i := range nodes {
@@ -704,7 +704,7 @@ func (_q *SystemTopologySnapshotRelationshipQuery) loadKnowledgeRelationship(ctx
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(knowledgefactrelationship.IDIn(ids...))
+	query.Where(knowledgerelationship.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err

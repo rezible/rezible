@@ -45,10 +45,10 @@ type SchemaConfig struct {
 	IncidentType                              string // IncidentType table.
 	Integration                               string // Integration table.
 	IntegrationOAuthState                     string // IntegrationOAuthState table.
-	KnowledgeFact                             string // KnowledgeFact table.
-	KnowledgeFactAlias                        string // KnowledgeFactAlias table.
-	KnowledgeFactProvenance                   string // KnowledgeFactProvenance table.
-	KnowledgeFactRelationship                 string // KnowledgeFactRelationship table.
+	KnowledgeEntity                           string // KnowledgeEntity table.
+	KnowledgeEntityAlias                      string // KnowledgeEntityAlias table.
+	KnowledgeEvidence                         string // KnowledgeEvidence table.
+	KnowledgeRelationship                     string // KnowledgeRelationship table.
 	MeetingSchedule                           string // MeetingSchedule table.
 	MeetingScheduleOwningTeam                 string // MeetingSchedule-owning_team->Team table.
 	MeetingSession                            string // MeetingSession table.

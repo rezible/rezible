@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgefact"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
@@ -53,7 +53,7 @@ type SystemTopologySnapshotEntityEdges struct {
 	// Snapshot holds the value of the snapshot edge.
 	Snapshot *SystemTopologySnapshot `json:"snapshot,omitempty"`
 	// KnowledgeEntity holds the value of the knowledge_entity edge.
-	KnowledgeEntity *KnowledgeFact `json:"knowledge_entity,omitempty"`
+	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// SourceRelationships holds the value of the source_relationships edge.
 	SourceRelationships []*SystemTopologySnapshotRelationship `json:"source_relationships,omitempty"`
 	// TargetRelationships holds the value of the target_relationships edge.
@@ -89,11 +89,11 @@ func (e SystemTopologySnapshotEntityEdges) SnapshotOrErr() (*SystemTopologySnaps
 
 // KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e SystemTopologySnapshotEntityEdges) KnowledgeEntityOrErr() (*KnowledgeFact, error) {
+func (e SystemTopologySnapshotEntityEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
 	if e.KnowledgeEntity != nil {
 		return e.KnowledgeEntity, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: knowledgefact.Label}
+		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
 	return nil, &NotLoadedError{edge: "knowledge_entity"}
 }
@@ -246,7 +246,7 @@ func (_m *SystemTopologySnapshotEntity) QuerySnapshot() *SystemTopologySnapshotQ
 }
 
 // QueryKnowledgeEntity queries the "knowledge_entity" edge of the SystemTopologySnapshotEntity entity.
-func (_m *SystemTopologySnapshotEntity) QueryKnowledgeEntity() *KnowledgeFactQuery {
+func (_m *SystemTopologySnapshotEntity) QueryKnowledgeEntity() *KnowledgeEntityQuery {
 	return NewSystemTopologySnapshotEntityClient(_m.config).QueryKnowledgeEntity(_m)
 }
 

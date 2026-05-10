@@ -64,9 +64,9 @@ const (
 	SnapshotColumn = "snapshot_id"
 	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
 	KnowledgeEntityTable = "system_topology_snapshot_entities"
-	// KnowledgeEntityInverseTable is the table name for the KnowledgeFact entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgefact" package.
-	KnowledgeEntityInverseTable = "knowledge_facts"
+	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	KnowledgeEntityInverseTable = "knowledge_entities"
 	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
 	KnowledgeEntityColumn = "knowledge_entity_id"
 	// SourceRelationshipsTable is the table that holds the source_relationships relation/edge.

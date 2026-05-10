@@ -36,10 +36,10 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
-	"github.com/rezible/rezible/ent/knowledgefact"
-	"github.com/rezible/rezible/ent/knowledgefactalias"
-	"github.com/rezible/rezible/ent/knowledgefactprovenance"
-	"github.com/rezible/rezible/ent/knowledgefactrelationship"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
@@ -700,134 +700,138 @@ func init() {
 	integrationoauthstateDescID := integrationoauthstateFields[0].Descriptor()
 	// integrationoauthstate.DefaultID holds the default value on creation for the id field.
 	integrationoauthstate.DefaultID = integrationoauthstateDescID.Default.(func() uuid.UUID)
-	knowledgefactMixin := schema.KnowledgeFact{}.Mixin()
-	knowledgefact.Policy = privacy.NewPolicies(knowledgefactMixin[0], knowledgefactMixin[1], schema.KnowledgeFact{})
-	knowledgefact.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	knowledgeentityMixin := schema.KnowledgeEntity{}.Mixin()
+	knowledgeentity.Policy = privacy.NewPolicies(knowledgeentityMixin[0], knowledgeentityMixin[1], schema.KnowledgeEntity{})
+	knowledgeentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgefact.Policy.EvalMutation(ctx, m); err != nil {
+			if err := knowledgeentity.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgefactMixinFields2 := knowledgefactMixin[2].Fields()
-	_ = knowledgefactMixinFields2
-	knowledgefactFields := schema.KnowledgeFact{}.Fields()
-	_ = knowledgefactFields
-	// knowledgefactDescCreatedAt is the schema descriptor for created_at field.
-	knowledgefactDescCreatedAt := knowledgefactMixinFields2[0].Descriptor()
-	// knowledgefact.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgefact.DefaultCreatedAt = knowledgefactDescCreatedAt.Default.(func() time.Time)
-	// knowledgefactDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgefactDescUpdatedAt := knowledgefactMixinFields2[1].Descriptor()
-	// knowledgefact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	knowledgefact.DefaultUpdatedAt = knowledgefactDescUpdatedAt.Default.(func() time.Time)
-	// knowledgefact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	knowledgefact.UpdateDefaultUpdatedAt = knowledgefactDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// knowledgefactDescKind is the schema descriptor for kind field.
-	knowledgefactDescKind := knowledgefactFields[1].Descriptor()
-	// knowledgefact.KindValidator is a validator for the "kind" field. It is called by the builders before save.
-	knowledgefact.KindValidator = knowledgefactDescKind.Validators[0].(func(string) error)
-	// knowledgefactDescDisplayName is the schema descriptor for display_name field.
-	knowledgefactDescDisplayName := knowledgefactFields[2].Descriptor()
-	// knowledgefact.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
-	knowledgefact.DisplayNameValidator = knowledgefactDescDisplayName.Validators[0].(func(string) error)
-	// knowledgefactDescID is the schema descriptor for id field.
-	knowledgefactDescID := knowledgefactFields[0].Descriptor()
-	// knowledgefact.DefaultID holds the default value on creation for the id field.
-	knowledgefact.DefaultID = knowledgefactDescID.Default.(func() uuid.UUID)
-	knowledgefactaliasMixin := schema.KnowledgeFactAlias{}.Mixin()
-	knowledgefactalias.Policy = privacy.NewPolicies(knowledgefactaliasMixin[0], knowledgefactaliasMixin[1], schema.KnowledgeFactAlias{})
-	knowledgefactalias.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	knowledgeentityMixinFields2 := knowledgeentityMixin[2].Fields()
+	_ = knowledgeentityMixinFields2
+	knowledgeentityFields := schema.KnowledgeEntity{}.Fields()
+	_ = knowledgeentityFields
+	// knowledgeentityDescCreatedAt is the schema descriptor for created_at field.
+	knowledgeentityDescCreatedAt := knowledgeentityMixinFields2[0].Descriptor()
+	// knowledgeentity.DefaultCreatedAt holds the default value on creation for the created_at field.
+	knowledgeentity.DefaultCreatedAt = knowledgeentityDescCreatedAt.Default.(func() time.Time)
+	// knowledgeentityDescUpdatedAt is the schema descriptor for updated_at field.
+	knowledgeentityDescUpdatedAt := knowledgeentityMixinFields2[1].Descriptor()
+	// knowledgeentity.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	knowledgeentity.DefaultUpdatedAt = knowledgeentityDescUpdatedAt.Default.(func() time.Time)
+	// knowledgeentity.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	knowledgeentity.UpdateDefaultUpdatedAt = knowledgeentityDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// knowledgeentityDescKind is the schema descriptor for kind field.
+	knowledgeentityDescKind := knowledgeentityFields[1].Descriptor()
+	// knowledgeentity.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	knowledgeentity.KindValidator = knowledgeentityDescKind.Validators[0].(func(string) error)
+	// knowledgeentityDescDisplayName is the schema descriptor for display_name field.
+	knowledgeentityDescDisplayName := knowledgeentityFields[2].Descriptor()
+	// knowledgeentity.DisplayNameValidator is a validator for the "display_name" field. It is called by the builders before save.
+	knowledgeentity.DisplayNameValidator = knowledgeentityDescDisplayName.Validators[0].(func(string) error)
+	// knowledgeentityDescID is the schema descriptor for id field.
+	knowledgeentityDescID := knowledgeentityFields[0].Descriptor()
+	// knowledgeentity.DefaultID holds the default value on creation for the id field.
+	knowledgeentity.DefaultID = knowledgeentityDescID.Default.(func() uuid.UUID)
+	knowledgeentityaliasMixin := schema.KnowledgeEntityAlias{}.Mixin()
+	knowledgeentityalias.Policy = privacy.NewPolicies(knowledgeentityaliasMixin[0], knowledgeentityaliasMixin[1], schema.KnowledgeEntityAlias{})
+	knowledgeentityalias.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgefactalias.Policy.EvalMutation(ctx, m); err != nil {
+			if err := knowledgeentityalias.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgefactaliasMixinFields2 := knowledgefactaliasMixin[2].Fields()
-	_ = knowledgefactaliasMixinFields2
-	knowledgefactaliasFields := schema.KnowledgeFactAlias{}.Fields()
-	_ = knowledgefactaliasFields
-	// knowledgefactaliasDescCreatedAt is the schema descriptor for created_at field.
-	knowledgefactaliasDescCreatedAt := knowledgefactaliasMixinFields2[0].Descriptor()
-	// knowledgefactalias.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgefactalias.DefaultCreatedAt = knowledgefactaliasDescCreatedAt.Default.(func() time.Time)
-	// knowledgefactaliasDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgefactaliasDescUpdatedAt := knowledgefactaliasMixinFields2[1].Descriptor()
-	// knowledgefactalias.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	knowledgefactalias.DefaultUpdatedAt = knowledgefactaliasDescUpdatedAt.Default.(func() time.Time)
-	// knowledgefactalias.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	knowledgefactalias.UpdateDefaultUpdatedAt = knowledgefactaliasDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// knowledgefactaliasDescID is the schema descriptor for id field.
-	knowledgefactaliasDescID := knowledgefactaliasFields[0].Descriptor()
-	// knowledgefactalias.DefaultID holds the default value on creation for the id field.
-	knowledgefactalias.DefaultID = knowledgefactaliasDescID.Default.(func() uuid.UUID)
-	knowledgefactprovenanceMixin := schema.KnowledgeFactProvenance{}.Mixin()
-	knowledgefactprovenance.Policy = privacy.NewPolicies(knowledgefactprovenanceMixin[0], knowledgefactprovenanceMixin[1], schema.KnowledgeFactProvenance{})
-	knowledgefactprovenance.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	knowledgeentityaliasMixinFields2 := knowledgeentityaliasMixin[2].Fields()
+	_ = knowledgeentityaliasMixinFields2
+	knowledgeentityaliasFields := schema.KnowledgeEntityAlias{}.Fields()
+	_ = knowledgeentityaliasFields
+	// knowledgeentityaliasDescCreatedAt is the schema descriptor for created_at field.
+	knowledgeentityaliasDescCreatedAt := knowledgeentityaliasMixinFields2[0].Descriptor()
+	// knowledgeentityalias.DefaultCreatedAt holds the default value on creation for the created_at field.
+	knowledgeentityalias.DefaultCreatedAt = knowledgeentityaliasDescCreatedAt.Default.(func() time.Time)
+	// knowledgeentityaliasDescUpdatedAt is the schema descriptor for updated_at field.
+	knowledgeentityaliasDescUpdatedAt := knowledgeentityaliasMixinFields2[1].Descriptor()
+	// knowledgeentityalias.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	knowledgeentityalias.DefaultUpdatedAt = knowledgeentityaliasDescUpdatedAt.Default.(func() time.Time)
+	// knowledgeentityalias.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	knowledgeentityalias.UpdateDefaultUpdatedAt = knowledgeentityaliasDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// knowledgeentityaliasDescID is the schema descriptor for id field.
+	knowledgeentityaliasDescID := knowledgeentityaliasFields[0].Descriptor()
+	// knowledgeentityalias.DefaultID holds the default value on creation for the id field.
+	knowledgeentityalias.DefaultID = knowledgeentityaliasDescID.Default.(func() uuid.UUID)
+	knowledgeevidenceMixin := schema.KnowledgeEvidence{}.Mixin()
+	knowledgeevidence.Policy = privacy.NewPolicies(knowledgeevidenceMixin[0], knowledgeevidenceMixin[1], schema.KnowledgeEvidence{})
+	knowledgeevidence.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgefactprovenance.Policy.EvalMutation(ctx, m); err != nil {
+			if err := knowledgeevidence.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgefactprovenanceMixinFields2 := knowledgefactprovenanceMixin[2].Fields()
-	_ = knowledgefactprovenanceMixinFields2
-	knowledgefactprovenanceFields := schema.KnowledgeFactProvenance{}.Fields()
-	_ = knowledgefactprovenanceFields
-	// knowledgefactprovenanceDescCreatedAt is the schema descriptor for created_at field.
-	knowledgefactprovenanceDescCreatedAt := knowledgefactprovenanceMixinFields2[0].Descriptor()
-	// knowledgefactprovenance.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgefactprovenance.DefaultCreatedAt = knowledgefactprovenanceDescCreatedAt.Default.(func() time.Time)
-	// knowledgefactprovenanceDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgefactprovenanceDescUpdatedAt := knowledgefactprovenanceMixinFields2[1].Descriptor()
-	// knowledgefactprovenance.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	knowledgefactprovenance.DefaultUpdatedAt = knowledgefactprovenanceDescUpdatedAt.Default.(func() time.Time)
-	// knowledgefactprovenance.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	knowledgefactprovenance.UpdateDefaultUpdatedAt = knowledgefactprovenanceDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// knowledgefactprovenanceDescSource is the schema descriptor for source field.
-	knowledgefactprovenanceDescSource := knowledgefactprovenanceFields[4].Descriptor()
-	// knowledgefactprovenance.SourceValidator is a validator for the "source" field. It is called by the builders before save.
-	knowledgefactprovenance.SourceValidator = knowledgefactprovenanceDescSource.Validators[0].(func(string) error)
-	// knowledgefactprovenanceDescID is the schema descriptor for id field.
-	knowledgefactprovenanceDescID := knowledgefactprovenanceFields[0].Descriptor()
-	// knowledgefactprovenance.DefaultID holds the default value on creation for the id field.
-	knowledgefactprovenance.DefaultID = knowledgefactprovenanceDescID.Default.(func() uuid.UUID)
-	knowledgefactrelationshipMixin := schema.KnowledgeFactRelationship{}.Mixin()
-	knowledgefactrelationship.Policy = privacy.NewPolicies(knowledgefactrelationshipMixin[0], knowledgefactrelationshipMixin[1], schema.KnowledgeFactRelationship{})
-	knowledgefactrelationship.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	knowledgeevidenceMixinFields2 := knowledgeevidenceMixin[2].Fields()
+	_ = knowledgeevidenceMixinFields2
+	knowledgeevidenceFields := schema.KnowledgeEvidence{}.Fields()
+	_ = knowledgeevidenceFields
+	// knowledgeevidenceDescCreatedAt is the schema descriptor for created_at field.
+	knowledgeevidenceDescCreatedAt := knowledgeevidenceMixinFields2[0].Descriptor()
+	// knowledgeevidence.DefaultCreatedAt holds the default value on creation for the created_at field.
+	knowledgeevidence.DefaultCreatedAt = knowledgeevidenceDescCreatedAt.Default.(func() time.Time)
+	// knowledgeevidenceDescUpdatedAt is the schema descriptor for updated_at field.
+	knowledgeevidenceDescUpdatedAt := knowledgeevidenceMixinFields2[1].Descriptor()
+	// knowledgeevidence.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	knowledgeevidence.DefaultUpdatedAt = knowledgeevidenceDescUpdatedAt.Default.(func() time.Time)
+	// knowledgeevidence.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	knowledgeevidence.UpdateDefaultUpdatedAt = knowledgeevidenceDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// knowledgeevidenceDescAssertionKind is the schema descriptor for assertion_kind field.
+	knowledgeevidenceDescAssertionKind := knowledgeevidenceFields[6].Descriptor()
+	// knowledgeevidence.AssertionKindValidator is a validator for the "assertion_kind" field. It is called by the builders before save.
+	knowledgeevidence.AssertionKindValidator = knowledgeevidenceDescAssertionKind.Validators[0].(func(string) error)
+	// knowledgeevidenceDescSource is the schema descriptor for source field.
+	knowledgeevidenceDescSource := knowledgeevidenceFields[10].Descriptor()
+	// knowledgeevidence.SourceValidator is a validator for the "source" field. It is called by the builders before save.
+	knowledgeevidence.SourceValidator = knowledgeevidenceDescSource.Validators[0].(func(string) error)
+	// knowledgeevidenceDescID is the schema descriptor for id field.
+	knowledgeevidenceDescID := knowledgeevidenceFields[0].Descriptor()
+	// knowledgeevidence.DefaultID holds the default value on creation for the id field.
+	knowledgeevidence.DefaultID = knowledgeevidenceDescID.Default.(func() uuid.UUID)
+	knowledgerelationshipMixin := schema.KnowledgeRelationship{}.Mixin()
+	knowledgerelationship.Policy = privacy.NewPolicies(knowledgerelationshipMixin[0], knowledgerelationshipMixin[1], schema.KnowledgeRelationship{})
+	knowledgerelationship.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := knowledgefactrelationship.Policy.EvalMutation(ctx, m); err != nil {
+			if err := knowledgerelationship.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	knowledgefactrelationshipMixinFields2 := knowledgefactrelationshipMixin[2].Fields()
-	_ = knowledgefactrelationshipMixinFields2
-	knowledgefactrelationshipFields := schema.KnowledgeFactRelationship{}.Fields()
-	_ = knowledgefactrelationshipFields
-	// knowledgefactrelationshipDescCreatedAt is the schema descriptor for created_at field.
-	knowledgefactrelationshipDescCreatedAt := knowledgefactrelationshipMixinFields2[0].Descriptor()
-	// knowledgefactrelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
-	knowledgefactrelationship.DefaultCreatedAt = knowledgefactrelationshipDescCreatedAt.Default.(func() time.Time)
-	// knowledgefactrelationshipDescUpdatedAt is the schema descriptor for updated_at field.
-	knowledgefactrelationshipDescUpdatedAt := knowledgefactrelationshipMixinFields2[1].Descriptor()
-	// knowledgefactrelationship.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	knowledgefactrelationship.DefaultUpdatedAt = knowledgefactrelationshipDescUpdatedAt.Default.(func() time.Time)
-	// knowledgefactrelationship.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	knowledgefactrelationship.UpdateDefaultUpdatedAt = knowledgefactrelationshipDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// knowledgefactrelationshipDescKind is the schema descriptor for kind field.
-	knowledgefactrelationshipDescKind := knowledgefactrelationshipFields[3].Descriptor()
-	// knowledgefactrelationship.KindValidator is a validator for the "kind" field. It is called by the builders before save.
-	knowledgefactrelationship.KindValidator = knowledgefactrelationshipDescKind.Validators[0].(func(string) error)
-	// knowledgefactrelationshipDescID is the schema descriptor for id field.
-	knowledgefactrelationshipDescID := knowledgefactrelationshipFields[0].Descriptor()
-	// knowledgefactrelationship.DefaultID holds the default value on creation for the id field.
-	knowledgefactrelationship.DefaultID = knowledgefactrelationshipDescID.Default.(func() uuid.UUID)
+	knowledgerelationshipMixinFields2 := knowledgerelationshipMixin[2].Fields()
+	_ = knowledgerelationshipMixinFields2
+	knowledgerelationshipFields := schema.KnowledgeRelationship{}.Fields()
+	_ = knowledgerelationshipFields
+	// knowledgerelationshipDescCreatedAt is the schema descriptor for created_at field.
+	knowledgerelationshipDescCreatedAt := knowledgerelationshipMixinFields2[0].Descriptor()
+	// knowledgerelationship.DefaultCreatedAt holds the default value on creation for the created_at field.
+	knowledgerelationship.DefaultCreatedAt = knowledgerelationshipDescCreatedAt.Default.(func() time.Time)
+	// knowledgerelationshipDescUpdatedAt is the schema descriptor for updated_at field.
+	knowledgerelationshipDescUpdatedAt := knowledgerelationshipMixinFields2[1].Descriptor()
+	// knowledgerelationship.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	knowledgerelationship.DefaultUpdatedAt = knowledgerelationshipDescUpdatedAt.Default.(func() time.Time)
+	// knowledgerelationship.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	knowledgerelationship.UpdateDefaultUpdatedAt = knowledgerelationshipDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// knowledgerelationshipDescKind is the schema descriptor for kind field.
+	knowledgerelationshipDescKind := knowledgerelationshipFields[3].Descriptor()
+	// knowledgerelationship.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	knowledgerelationship.KindValidator = knowledgerelationshipDescKind.Validators[0].(func(string) error)
+	// knowledgerelationshipDescID is the schema descriptor for id field.
+	knowledgerelationshipDescID := knowledgerelationshipFields[0].Descriptor()
+	// knowledgerelationship.DefaultID holds the default value on creation for the id field.
+	knowledgerelationship.DefaultID = knowledgerelationshipDescID.Default.(func() uuid.UUID)
 	meetingscheduleMixin := schema.MeetingSchedule{}.Mixin()
 	meetingschedule.Policy = privacy.NewPolicies(meetingscheduleMixin[0], meetingscheduleMixin[1], schema.MeetingSchedule{})
 	meetingschedule.Hooks[0] = func(next ent.Mutator) ent.Mutator {

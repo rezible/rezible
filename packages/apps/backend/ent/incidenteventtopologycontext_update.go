@@ -15,7 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgefact"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 )
@@ -127,8 +127,8 @@ func (_u *IncidentEventTopologyContextUpdate) SetEvent(v *IncidentEvent) *Incide
 	return _u.SetEventID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeFact entity.
-func (_u *IncidentEventTopologyContextUpdate) SetKnowledgeEntity(v *KnowledgeFact) *IncidentEventTopologyContextUpdate {
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *IncidentEventTopologyContextUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentEventTopologyContextUpdate {
 	return _u.SetKnowledgeEntityID(v.ID)
 }
 
@@ -148,7 +148,7 @@ func (_u *IncidentEventTopologyContextUpdate) ClearEvent() *IncidentEventTopolog
 	return _u
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeFact entity.
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *IncidentEventTopologyContextUpdate) ClearKnowledgeEntity() *IncidentEventTopologyContextUpdate {
 	_u.mutation.ClearKnowledgeEntity()
 	return _u
@@ -266,7 +266,7 @@ func (_u *IncidentEventTopologyContextUpdate) sqlSave(ctx context.Context) (_nod
 			Columns: []string{incidenteventtopologycontext.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
@@ -280,7 +280,7 @@ func (_u *IncidentEventTopologyContextUpdate) sqlSave(ctx context.Context) (_nod
 			Columns: []string{incidenteventtopologycontext.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
@@ -437,8 +437,8 @@ func (_u *IncidentEventTopologyContextUpdateOne) SetEvent(v *IncidentEvent) *Inc
 	return _u.SetEventID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeFact entity.
-func (_u *IncidentEventTopologyContextUpdateOne) SetKnowledgeEntity(v *KnowledgeFact) *IncidentEventTopologyContextUpdateOne {
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *IncidentEventTopologyContextUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *IncidentEventTopologyContextUpdateOne {
 	return _u.SetKnowledgeEntityID(v.ID)
 }
 
@@ -458,7 +458,7 @@ func (_u *IncidentEventTopologyContextUpdateOne) ClearEvent() *IncidentEventTopo
 	return _u
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeFact entity.
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *IncidentEventTopologyContextUpdateOne) ClearKnowledgeEntity() *IncidentEventTopologyContextUpdateOne {
 	_u.mutation.ClearKnowledgeEntity()
 	return _u
@@ -606,7 +606,7 @@ func (_u *IncidentEventTopologyContextUpdateOne) sqlSave(ctx context.Context) (_
 			Columns: []string{incidenteventtopologycontext.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext
@@ -620,7 +620,7 @@ func (_u *IncidentEventTopologyContextUpdateOne) sqlSave(ctx context.Context) (_
 			Columns: []string{incidenteventtopologycontext.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentEventTopologyContext

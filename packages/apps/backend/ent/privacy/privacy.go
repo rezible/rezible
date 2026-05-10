@@ -795,100 +795,100 @@ func (f IntegrationOAuthStateMutationRuleFunc) EvalMutation(ctx context.Context,
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationOAuthStateMutation", m)
 }
 
-// The KnowledgeFactQueryRuleFunc type is an adapter to allow the use of ordinary
+// The KnowledgeEntityQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type KnowledgeFactQueryRuleFunc func(context.Context, *ent.KnowledgeFactQuery) error
+type KnowledgeEntityQueryRuleFunc func(context.Context, *ent.KnowledgeEntityQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f KnowledgeFactQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeFactQuery); ok {
+func (f KnowledgeEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEntityQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeFactQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeEntityQuery", q)
 }
 
-// The KnowledgeFactMutationRuleFunc type is an adapter to allow the use of ordinary
+// The KnowledgeEntityMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type KnowledgeFactMutationRuleFunc func(context.Context, *ent.KnowledgeFactMutation) error
+type KnowledgeEntityMutationRuleFunc func(context.Context, *ent.KnowledgeEntityMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f KnowledgeFactMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeFactMutation); ok {
+func (f KnowledgeEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeEntityMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeFactMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityMutation", m)
 }
 
-// The KnowledgeFactAliasQueryRuleFunc type is an adapter to allow the use of ordinary
+// The KnowledgeEntityAliasQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type KnowledgeFactAliasQueryRuleFunc func(context.Context, *ent.KnowledgeFactAliasQuery) error
+type KnowledgeEntityAliasQueryRuleFunc func(context.Context, *ent.KnowledgeEntityAliasQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f KnowledgeFactAliasQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeFactAliasQuery); ok {
+func (f KnowledgeEntityAliasQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEntityAliasQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeFactAliasQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeEntityAliasQuery", q)
 }
 
-// The KnowledgeFactAliasMutationRuleFunc type is an adapter to allow the use of ordinary
+// The KnowledgeEntityAliasMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type KnowledgeFactAliasMutationRuleFunc func(context.Context, *ent.KnowledgeFactAliasMutation) error
+type KnowledgeEntityAliasMutationRuleFunc func(context.Context, *ent.KnowledgeEntityAliasMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f KnowledgeFactAliasMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeFactAliasMutation); ok {
+func (f KnowledgeEntityAliasMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeEntityAliasMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeFactAliasMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEntityAliasMutation", m)
 }
 
-// The KnowledgeFactProvenanceQueryRuleFunc type is an adapter to allow the use of ordinary
+// The KnowledgeEvidenceQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type KnowledgeFactProvenanceQueryRuleFunc func(context.Context, *ent.KnowledgeFactProvenanceQuery) error
+type KnowledgeEvidenceQueryRuleFunc func(context.Context, *ent.KnowledgeEvidenceQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f KnowledgeFactProvenanceQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeFactProvenanceQuery); ok {
+func (f KnowledgeEvidenceQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEvidenceQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeFactProvenanceQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeEvidenceQuery", q)
 }
 
-// The KnowledgeFactProvenanceMutationRuleFunc type is an adapter to allow the use of ordinary
+// The KnowledgeEvidenceMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type KnowledgeFactProvenanceMutationRuleFunc func(context.Context, *ent.KnowledgeFactProvenanceMutation) error
+type KnowledgeEvidenceMutationRuleFunc func(context.Context, *ent.KnowledgeEvidenceMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f KnowledgeFactProvenanceMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeFactProvenanceMutation); ok {
+func (f KnowledgeEvidenceMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeEvidenceMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeFactProvenanceMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeEvidenceMutation", m)
 }
 
-// The KnowledgeFactRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
+// The KnowledgeRelationshipQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type KnowledgeFactRelationshipQueryRuleFunc func(context.Context, *ent.KnowledgeFactRelationshipQuery) error
+type KnowledgeRelationshipQueryRuleFunc func(context.Context, *ent.KnowledgeRelationshipQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f KnowledgeFactRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeFactRelationshipQuery); ok {
+func (f KnowledgeRelationshipQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeRelationshipQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeFactRelationshipQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.KnowledgeRelationshipQuery", q)
 }
 
-// The KnowledgeFactRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
+// The KnowledgeRelationshipMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type KnowledgeFactRelationshipMutationRuleFunc func(context.Context, *ent.KnowledgeFactRelationshipMutation) error
+type KnowledgeRelationshipMutationRuleFunc func(context.Context, *ent.KnowledgeRelationshipMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f KnowledgeFactRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.KnowledgeFactRelationshipMutation); ok {
+func (f KnowledgeRelationshipMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.KnowledgeRelationshipMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeFactRelationshipMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.KnowledgeRelationshipMutation", m)
 }
 
 // The MeetingScheduleQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1800,13 +1800,13 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IntegrationOAuthStateQuery:
 		return q.Filter(), nil
-	case *ent.KnowledgeFactQuery:
+	case *ent.KnowledgeEntityQuery:
 		return q.Filter(), nil
-	case *ent.KnowledgeFactAliasQuery:
+	case *ent.KnowledgeEntityAliasQuery:
 		return q.Filter(), nil
-	case *ent.KnowledgeFactProvenanceQuery:
+	case *ent.KnowledgeEvidenceQuery:
 		return q.Filter(), nil
-	case *ent.KnowledgeFactRelationshipQuery:
+	case *ent.KnowledgeRelationshipQuery:
 		return q.Filter(), nil
 	case *ent.MeetingScheduleQuery:
 		return q.Filter(), nil
@@ -1939,13 +1939,13 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.IntegrationOAuthStateMutation:
 		return m.Filter(), nil
-	case *ent.KnowledgeFactMutation:
+	case *ent.KnowledgeEntityMutation:
 		return m.Filter(), nil
-	case *ent.KnowledgeFactAliasMutation:
+	case *ent.KnowledgeEntityAliasMutation:
 		return m.Filter(), nil
-	case *ent.KnowledgeFactProvenanceMutation:
+	case *ent.KnowledgeEvidenceMutation:
 		return m.Filter(), nil
-	case *ent.KnowledgeFactRelationshipMutation:
+	case *ent.KnowledgeRelationshipMutation:
 		return m.Filter(), nil
 	case *ent.MeetingScheduleMutation:
 		return m.Filter(), nil

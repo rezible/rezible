@@ -345,52 +345,52 @@ func (f IntegrationOAuthStateFunc) Mutate(ctx context.Context, m ent.Mutation) (
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationOAuthStateMutation", m)
 }
 
-// The KnowledgeFactFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeFact mutator.
-type KnowledgeFactFunc func(context.Context, *ent.KnowledgeFactMutation) (ent.Value, error)
+// The KnowledgeEntityFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeEntity mutator.
+type KnowledgeEntityFunc func(context.Context, *ent.KnowledgeEntityMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f KnowledgeFactFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeFactMutation); ok {
+func (f KnowledgeEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeEntityMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityMutation", m)
 }
 
-// The KnowledgeFactAliasFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeFactAlias mutator.
-type KnowledgeFactAliasFunc func(context.Context, *ent.KnowledgeFactAliasMutation) (ent.Value, error)
+// The KnowledgeEntityAliasFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeEntityAlias mutator.
+type KnowledgeEntityAliasFunc func(context.Context, *ent.KnowledgeEntityAliasMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f KnowledgeFactAliasFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeFactAliasMutation); ok {
+func (f KnowledgeEntityAliasFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeEntityAliasMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactAliasMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityAliasMutation", m)
 }
 
-// The KnowledgeFactProvenanceFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeFactProvenance mutator.
-type KnowledgeFactProvenanceFunc func(context.Context, *ent.KnowledgeFactProvenanceMutation) (ent.Value, error)
+// The KnowledgeEvidenceFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeEvidence mutator.
+type KnowledgeEvidenceFunc func(context.Context, *ent.KnowledgeEvidenceMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f KnowledgeFactProvenanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeFactProvenanceMutation); ok {
+func (f KnowledgeEvidenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeEvidenceMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactProvenanceMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEvidenceMutation", m)
 }
 
-// The KnowledgeFactRelationshipFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeFactRelationship mutator.
-type KnowledgeFactRelationshipFunc func(context.Context, *ent.KnowledgeFactRelationshipMutation) (ent.Value, error)
+// The KnowledgeRelationshipFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeRelationship mutator.
+type KnowledgeRelationshipFunc func(context.Context, *ent.KnowledgeRelationshipMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f KnowledgeFactRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeFactRelationshipMutation); ok {
+func (f KnowledgeRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeRelationshipMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactRelationshipMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeRelationshipMutation", m)
 }
 
 // The MeetingScheduleFunc type is an adapter to allow the use of ordinary

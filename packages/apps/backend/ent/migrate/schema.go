@@ -684,9 +684,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "incident_event_topology_contexts_knowledge_facts_knowledge_entity",
+				Symbol:     "incident_event_topology_contexts_knowledge_entities_knowledge_entity",
 				Columns:    []*schema.Column{IncidentEventTopologyContextsColumns[5]},
-				RefColumns: []*schema.Column{KnowledgeFactsColumns[0]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
@@ -1111,50 +1111,63 @@ var (
 			},
 		},
 	}
-	// KnowledgeFactsColumns holds the columns for the "knowledge_facts" table.
-	KnowledgeFactsColumns = []*schema.Column{
+	// KnowledgeEntitiesColumns holds the columns for the "knowledge_entities" table.
+	KnowledgeEntitiesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "kind", Type: field.TypeString},
 		{Name: "display_name", Type: field.TypeString},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "first_observed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_observed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
-	// KnowledgeFactsTable holds the schema information for the "knowledge_facts" table.
-	KnowledgeFactsTable = &schema.Table{
-		Name:       "knowledge_facts",
-		Columns:    KnowledgeFactsColumns,
-		PrimaryKey: []*schema.Column{KnowledgeFactsColumns[0]},
+	// KnowledgeEntitiesTable holds the schema information for the "knowledge_entities" table.
+	KnowledgeEntitiesTable = &schema.Table{
+		Name:       "knowledge_entities",
+		Columns:    KnowledgeEntitiesColumns,
+		PrimaryKey: []*schema.Column{KnowledgeEntitiesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "knowledge_facts_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeFactsColumns[7]},
+				Symbol:     "knowledge_entities_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeEntitiesColumns[10]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "knowledgefact_tenant_id",
+				Name:    "knowledgeentity_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactsColumns[7]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[10]},
 			},
 			{
-				Name:    "knowledgefact_tenant_id_kind",
+				Name:    "knowledgeentity_tenant_id_kind",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactsColumns[7], KnowledgeFactsColumns[3]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[10], KnowledgeEntitiesColumns[3]},
 			},
 			{
-				Name:    "knowledgefact_tenant_id_updated_at",
+				Name:    "knowledgeentity_tenant_id_updated_at",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactsColumns[7], KnowledgeFactsColumns[2]},
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[10], KnowledgeEntitiesColumns[2]},
+			},
+			{
+				Name:    "knowledgeentity_tenant_id_kind_last_observed_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[10], KnowledgeEntitiesColumns[3], KnowledgeEntitiesColumns[7]},
+			},
+			{
+				Name:    "knowledgeentity_tenant_id_kind_deleted_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEntitiesColumns[10], KnowledgeEntitiesColumns[3], KnowledgeEntitiesColumns[8]},
 			},
 		},
 	}
-	// KnowledgeFactAliasColumns holds the columns for the "knowledge_fact_alias" table.
-	KnowledgeFactAliasColumns = []*schema.Column{
+	// KnowledgeEntityAliasColumns holds the columns for the "knowledge_entity_alias" table.
+	KnowledgeEntityAliasColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
@@ -1163,173 +1176,224 @@ var (
 		{Name: "provider_source", Type: field.TypeString},
 		{Name: "provider_subject_ref", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "fact_id", Type: field.TypeUUID},
+		{Name: "entity_id", Type: field.TypeUUID},
 	}
-	// KnowledgeFactAliasTable holds the schema information for the "knowledge_fact_alias" table.
-	KnowledgeFactAliasTable = &schema.Table{
-		Name:       "knowledge_fact_alias",
-		Columns:    KnowledgeFactAliasColumns,
-		PrimaryKey: []*schema.Column{KnowledgeFactAliasColumns[0]},
+	// KnowledgeEntityAliasTable holds the schema information for the "knowledge_entity_alias" table.
+	KnowledgeEntityAliasTable = &schema.Table{
+		Name:       "knowledge_entity_alias",
+		Columns:    KnowledgeEntityAliasColumns,
+		PrimaryKey: []*schema.Column{KnowledgeEntityAliasColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "knowledge_fact_alias_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeFactAliasColumns[7]},
+				Symbol:     "knowledge_entity_alias_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeEntityAliasColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "knowledge_fact_alias_knowledge_facts_fact",
-				Columns:    []*schema.Column{KnowledgeFactAliasColumns[8]},
-				RefColumns: []*schema.Column{KnowledgeFactsColumns[0]},
+				Symbol:     "knowledge_entity_alias_knowledge_entities_entity",
+				Columns:    []*schema.Column{KnowledgeEntityAliasColumns[8]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "knowledgefactalias_tenant_id",
+				Name:    "knowledgeentityalias_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactAliasColumns[7]},
+				Columns: []*schema.Column{KnowledgeEntityAliasColumns[7]},
 			},
 			{
-				Name:    "knowledgefactalias_tenant_id_fact_id",
+				Name:    "knowledgeentityalias_tenant_id_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactAliasColumns[7], KnowledgeFactAliasColumns[8]},
+				Columns: []*schema.Column{KnowledgeEntityAliasColumns[7], KnowledgeEntityAliasColumns[8]},
+			},
+			{
+				Name:    "knowledgeentityalias_tenant_id_provider_provider_source_provider_subject_ref",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeEntityAliasColumns[7], KnowledgeEntityAliasColumns[4], KnowledgeEntityAliasColumns[5], KnowledgeEntityAliasColumns[6]},
 			},
 		},
 	}
-	// KnowledgeFactProvenancesColumns holds the columns for the "knowledge_fact_provenances" table.
-	KnowledgeFactProvenancesColumns = []*schema.Column{
+	// KnowledgeEvidencesColumns holds the columns for the "knowledge_evidences" table.
+	KnowledgeEvidencesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "subject_type", Type: field.TypeEnum, Enums: []string{"entity", "relationship"}},
+		{Name: "assertion_kind", Type: field.TypeString},
+		{Name: "evidence_kind", Type: field.TypeEnum, Enums: []string{"observed", "changed", "deleted", "contradicted"}},
+		{Name: "observed_at", Type: field.TypeTime},
+		{Name: "effective_at", Type: field.TypeTime, Nullable: true},
 		{Name: "source", Type: field.TypeString},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "alias_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "relationship_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "alias_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "normalized_event_id", Type: field.TypeUUID},
 	}
-	// KnowledgeFactProvenancesTable holds the schema information for the "knowledge_fact_provenances" table.
-	KnowledgeFactProvenancesTable = &schema.Table{
-		Name:       "knowledge_fact_provenances",
-		Columns:    KnowledgeFactProvenancesColumns,
-		PrimaryKey: []*schema.Column{KnowledgeFactProvenancesColumns[0]},
+	// KnowledgeEvidencesTable holds the schema information for the "knowledge_evidences" table.
+	KnowledgeEvidencesTable = &schema.Table{
+		Name:       "knowledge_evidences",
+		Columns:    KnowledgeEvidencesColumns,
+		PrimaryKey: []*schema.Column{KnowledgeEvidencesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "knowledge_fact_provenances_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeFactProvenancesColumns[4]},
+				Symbol:     "knowledge_evidences_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeEvidencesColumns[10]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "knowledge_fact_provenances_knowledge_fact_alias_alias",
-				Columns:    []*schema.Column{KnowledgeFactProvenancesColumns[5]},
-				RefColumns: []*schema.Column{KnowledgeFactAliasColumns[0]},
+				Symbol:     "knowledge_evidences_knowledge_entities_entity",
+				Columns:    []*schema.Column{KnowledgeEvidencesColumns[11]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "knowledge_fact_provenances_knowledge_fact_relationships_relationship",
-				Columns:    []*schema.Column{KnowledgeFactProvenancesColumns[6]},
-				RefColumns: []*schema.Column{KnowledgeFactRelationshipsColumns[0]},
+				Symbol:     "knowledge_evidences_knowledge_relationships_relationship",
+				Columns:    []*schema.Column{KnowledgeEvidencesColumns[12]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
-				Symbol:     "knowledge_fact_provenances_normalized_events_normalized_event",
-				Columns:    []*schema.Column{KnowledgeFactProvenancesColumns[7]},
+				Symbol:     "knowledge_evidences_knowledge_entity_alias_alias",
+				Columns:    []*schema.Column{KnowledgeEvidencesColumns[13]},
+				RefColumns: []*schema.Column{KnowledgeEntityAliasColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+			{
+				Symbol:     "knowledge_evidences_normalized_events_normalized_event",
+				Columns:    []*schema.Column{KnowledgeEvidencesColumns[14]},
 				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "knowledgefactprovenance_tenant_id",
+				Name:    "knowledgeevidence_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactProvenancesColumns[4]},
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[10]},
 			},
 			{
-				Name:    "knowledgefactprovenance_tenant_id_alias_id",
+				Name:    "knowledgeevidence_tenant_id_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactProvenancesColumns[4], KnowledgeFactProvenancesColumns[5]},
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[11]},
 			},
 			{
-				Name:    "knowledgefactprovenance_tenant_id_relationship_id",
+				Name:    "knowledgeevidence_tenant_id_relationship_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactProvenancesColumns[4], KnowledgeFactProvenancesColumns[6]},
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[12]},
 			},
 			{
-				Name:    "knowledgefactprovenance_tenant_id_normalized_event_id",
+				Name:    "knowledgeevidence_tenant_id_alias_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactProvenancesColumns[4], KnowledgeFactProvenancesColumns[7]},
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[13]},
+			},
+			{
+				Name:    "knowledgeevidence_tenant_id_normalized_event_id",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[14]},
+			},
+			{
+				Name:    "knowledgeevidence_tenant_id_assertion_kind_evidence_kind_observed_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[4], KnowledgeEvidencesColumns[5], KnowledgeEvidencesColumns[6]},
+			},
+			{
+				Name:    "knowledgeevidence_tenant_id_normalized_event_id_assertion_kind_subject_type_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[14], KnowledgeEvidencesColumns[4], KnowledgeEvidencesColumns[3], KnowledgeEvidencesColumns[11]},
+			},
+			{
+				Name:    "knowledgeevidence_tenant_id_normalized_event_id_assertion_kind_subject_type_relationship_id",
+				Unique:  true,
+				Columns: []*schema.Column{KnowledgeEvidencesColumns[10], KnowledgeEvidencesColumns[14], KnowledgeEvidencesColumns[4], KnowledgeEvidencesColumns[3], KnowledgeEvidencesColumns[12]},
 			},
 		},
 	}
-	// KnowledgeFactRelationshipsColumns holds the columns for the "knowledge_fact_relationships" table.
-	KnowledgeFactRelationshipsColumns = []*schema.Column{
+	// KnowledgeRelationshipsColumns holds the columns for the "knowledge_relationships" table.
+	KnowledgeRelationshipsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "kind", Type: field.TypeString},
 		{Name: "display_name", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "first_observed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "last_observed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
 		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "source_fact_id", Type: field.TypeUUID},
-		{Name: "target_fact_id", Type: field.TypeUUID},
+		{Name: "source_entity_id", Type: field.TypeUUID},
+		{Name: "target_entity_id", Type: field.TypeUUID},
 	}
-	// KnowledgeFactRelationshipsTable holds the schema information for the "knowledge_fact_relationships" table.
-	KnowledgeFactRelationshipsTable = &schema.Table{
-		Name:       "knowledge_fact_relationships",
-		Columns:    KnowledgeFactRelationshipsColumns,
-		PrimaryKey: []*schema.Column{KnowledgeFactRelationshipsColumns[0]},
+	// KnowledgeRelationshipsTable holds the schema information for the "knowledge_relationships" table.
+	KnowledgeRelationshipsTable = &schema.Table{
+		Name:       "knowledge_relationships",
+		Columns:    KnowledgeRelationshipsColumns,
+		PrimaryKey: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "knowledge_fact_relationships_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeFactRelationshipsColumns[7]},
+				Symbol:     "knowledge_relationships_tenants_tenant",
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[10]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "knowledge_fact_relationships_knowledge_facts_source_fact",
-				Columns:    []*schema.Column{KnowledgeFactRelationshipsColumns[8]},
-				RefColumns: []*schema.Column{KnowledgeFactsColumns[0]},
+				Symbol:     "knowledge_relationships_knowledge_entities_source_entity",
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[11]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "knowledge_fact_relationships_knowledge_facts_target_fact",
-				Columns:    []*schema.Column{KnowledgeFactRelationshipsColumns[9]},
-				RefColumns: []*schema.Column{KnowledgeFactsColumns[0]},
+				Symbol:     "knowledge_relationships_knowledge_entities_target_entity",
+				Columns:    []*schema.Column{KnowledgeRelationshipsColumns[12]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "knowledgefactrelationship_tenant_id",
+				Name:    "knowledgerelationship_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactRelationshipsColumns[7]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10]},
 			},
 			{
-				Name:    "knowledgefactrelationship_tenant_id_kind_source_fact_id_target_fact_id",
+				Name:    "knowledgerelationship_tenant_id_kind_source_entity_id_target_entity_id",
 				Unique:  true,
-				Columns: []*schema.Column{KnowledgeFactRelationshipsColumns[7], KnowledgeFactRelationshipsColumns[3], KnowledgeFactRelationshipsColumns[8], KnowledgeFactRelationshipsColumns[9]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[3], KnowledgeRelationshipsColumns[11], KnowledgeRelationshipsColumns[12]},
 			},
 			{
-				Name:    "knowledgefactrelationship_tenant_id_kind",
+				Name:    "knowledgerelationship_tenant_id_kind",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactRelationshipsColumns[7], KnowledgeFactRelationshipsColumns[3]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[3]},
 			},
 			{
-				Name:    "knowledgefactrelationship_tenant_id_source_fact_id",
+				Name:    "knowledgerelationship_tenant_id_source_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactRelationshipsColumns[7], KnowledgeFactRelationshipsColumns[8]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[11]},
 			},
 			{
-				Name:    "knowledgefactrelationship_tenant_id_target_fact_id",
+				Name:    "knowledgerelationship_tenant_id_target_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactRelationshipsColumns[7], KnowledgeFactRelationshipsColumns[9]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[12]},
 			},
 			{
-				Name:    "knowledgefactrelationship_tenant_id_updated_at",
+				Name:    "knowledgerelationship_tenant_id_updated_at",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeFactRelationshipsColumns[7], KnowledgeFactRelationshipsColumns[2]},
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[2]},
+			},
+			{
+				Name:    "knowledgerelationship_tenant_id_kind_last_observed_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[3], KnowledgeRelationshipsColumns[7]},
+			},
+			{
+				Name:    "knowledgerelationship_tenant_id_kind_deleted_at",
+				Unique:  false,
+				Columns: []*schema.Column{KnowledgeRelationshipsColumns[10], KnowledgeRelationshipsColumns[3], KnowledgeRelationshipsColumns[8]},
 			},
 		},
 	}
@@ -2401,9 +2465,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_topology_snapshot_entities_knowledge_facts_knowledge_entity",
+				Symbol:     "system_topology_snapshot_entities_knowledge_entities_knowledge_entity",
 				Columns:    []*schema.Column{SystemTopologySnapshotEntitiesColumns[9]},
-				RefColumns: []*schema.Column{KnowledgeFactsColumns[0]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -2457,9 +2521,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "system_topology_snapshot_relationships_knowledge_fact_relationships_knowledge_relationship",
+				Symbol:     "system_topology_snapshot_relationships_knowledge_relationships_knowledge_relationship",
 				Columns:    []*schema.Column{SystemTopologySnapshotRelationshipsColumns[7]},
-				RefColumns: []*schema.Column{KnowledgeFactRelationshipsColumns[0]},
+				RefColumns: []*schema.Column{KnowledgeRelationshipsColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
@@ -3155,10 +3219,10 @@ var (
 		IncidentTypesTable,
 		IntegrationsTable,
 		IntegrationOauthStatesTable,
-		KnowledgeFactsTable,
-		KnowledgeFactAliasTable,
-		KnowledgeFactProvenancesTable,
-		KnowledgeFactRelationshipsTable,
+		KnowledgeEntitiesTable,
+		KnowledgeEntityAliasTable,
+		KnowledgeEvidencesTable,
+		KnowledgeRelationshipsTable,
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
 		NormalizedEventsTable,
@@ -3252,7 +3316,7 @@ func init() {
 	IncidentEventEvidencesTable.ForeignKeys[1].RefTable = TenantsTable
 	IncidentEventTopologyContextsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentEventTopologyContextsTable.ForeignKeys[1].RefTable = IncidentEventsTable
-	IncidentEventTopologyContextsTable.ForeignKeys[2].RefTable = KnowledgeFactsTable
+	IncidentEventTopologyContextsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	IncidentEventTopologyContextsTable.ForeignKeys[3].RefTable = SystemTopologySnapshotEntitiesTable
 	IncidentFieldsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentFieldOptionsTable.ForeignKeys[0].RefTable = IncidentFieldsTable
@@ -3274,16 +3338,17 @@ func init() {
 	IntegrationsTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationOauthStatesTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationOauthStatesTable.ForeignKeys[1].RefTable = UsersTable
-	KnowledgeFactsTable.ForeignKeys[0].RefTable = TenantsTable
-	KnowledgeFactAliasTable.ForeignKeys[0].RefTable = TenantsTable
-	KnowledgeFactAliasTable.ForeignKeys[1].RefTable = KnowledgeFactsTable
-	KnowledgeFactProvenancesTable.ForeignKeys[0].RefTable = TenantsTable
-	KnowledgeFactProvenancesTable.ForeignKeys[1].RefTable = KnowledgeFactAliasTable
-	KnowledgeFactProvenancesTable.ForeignKeys[2].RefTable = KnowledgeFactRelationshipsTable
-	KnowledgeFactProvenancesTable.ForeignKeys[3].RefTable = NormalizedEventsTable
-	KnowledgeFactRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
-	KnowledgeFactRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeFactsTable
-	KnowledgeFactRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeFactsTable
+	KnowledgeEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeEntityAliasTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeEntityAliasTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	KnowledgeEvidencesTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeEvidencesTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	KnowledgeEvidencesTable.ForeignKeys[2].RefTable = KnowledgeRelationshipsTable
+	KnowledgeEvidencesTable.ForeignKeys[3].RefTable = KnowledgeEntityAliasTable
+	KnowledgeEvidencesTable.ForeignKeys[4].RefTable = NormalizedEventsTable
+	KnowledgeRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
+	KnowledgeRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	KnowledgeRelationshipsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	MeetingSchedulesTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable
@@ -3341,9 +3406,9 @@ func init() {
 	SystemTopologySnapshotsTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemTopologySnapshotEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
 	SystemTopologySnapshotEntitiesTable.ForeignKeys[1].RefTable = SystemTopologySnapshotsTable
-	SystemTopologySnapshotEntitiesTable.ForeignKeys[2].RefTable = KnowledgeFactsTable
+	SystemTopologySnapshotEntitiesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	SystemTopologySnapshotRelationshipsTable.ForeignKeys[0].RefTable = TenantsTable
-	SystemTopologySnapshotRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeFactRelationshipsTable
+	SystemTopologySnapshotRelationshipsTable.ForeignKeys[1].RefTable = KnowledgeRelationshipsTable
 	SystemTopologySnapshotRelationshipsTable.ForeignKeys[2].RefTable = SystemTopologySnapshotsTable
 	SystemTopologySnapshotRelationshipsTable.ForeignKeys[3].RefTable = SystemTopologySnapshotEntitiesTable
 	SystemTopologySnapshotRelationshipsTable.ForeignKeys[4].RefTable = SystemTopologySnapshotEntitiesTable

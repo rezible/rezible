@@ -37,10 +37,10 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
-	"github.com/rezible/rezible/ent/knowledgefact"
-	"github.com/rezible/rezible/ent/knowledgefactalias"
-	"github.com/rezible/rezible/ent/knowledgefactprovenance"
-	"github.com/rezible/rezible/ent/knowledgefactrelationship"
+	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgeevidence"
+	"github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
@@ -917,112 +917,112 @@ func (f TraverseIntegrationOAuthState) Traverse(ctx context.Context, q ent.Query
 	return fmt.Errorf("unexpected query type %T. expect *ent.IntegrationOAuthStateQuery", q)
 }
 
-// The KnowledgeFactFunc type is an adapter to allow the use of ordinary function as a Querier.
-type KnowledgeFactFunc func(context.Context, *ent.KnowledgeFactQuery) (ent.Value, error)
+// The KnowledgeEntityFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeEntityFunc func(context.Context, *ent.KnowledgeEntityQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f KnowledgeFactFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.KnowledgeFactQuery); ok {
+func (f KnowledgeEntityFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeEntityQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityQuery", q)
 }
 
-// The TraverseKnowledgeFact type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseKnowledgeFact func(context.Context, *ent.KnowledgeFactQuery) error
+// The TraverseKnowledgeEntity type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeEntity func(context.Context, *ent.KnowledgeEntityQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseKnowledgeFact) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseKnowledgeEntity) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseKnowledgeFact) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeFactQuery); ok {
+func (f TraverseKnowledgeEntity) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEntityQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityQuery", q)
 }
 
-// The KnowledgeFactAliasFunc type is an adapter to allow the use of ordinary function as a Querier.
-type KnowledgeFactAliasFunc func(context.Context, *ent.KnowledgeFactAliasQuery) (ent.Value, error)
+// The KnowledgeEntityAliasFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeEntityAliasFunc func(context.Context, *ent.KnowledgeEntityAliasQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f KnowledgeFactAliasFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.KnowledgeFactAliasQuery); ok {
+func (f KnowledgeEntityAliasFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeEntityAliasQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactAliasQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityAliasQuery", q)
 }
 
-// The TraverseKnowledgeFactAlias type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseKnowledgeFactAlias func(context.Context, *ent.KnowledgeFactAliasQuery) error
+// The TraverseKnowledgeEntityAlias type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeEntityAlias func(context.Context, *ent.KnowledgeEntityAliasQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseKnowledgeFactAlias) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseKnowledgeEntityAlias) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseKnowledgeFactAlias) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeFactAliasQuery); ok {
+func (f TraverseKnowledgeEntityAlias) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEntityAliasQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactAliasQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEntityAliasQuery", q)
 }
 
-// The KnowledgeFactProvenanceFunc type is an adapter to allow the use of ordinary function as a Querier.
-type KnowledgeFactProvenanceFunc func(context.Context, *ent.KnowledgeFactProvenanceQuery) (ent.Value, error)
+// The KnowledgeEvidenceFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeEvidenceFunc func(context.Context, *ent.KnowledgeEvidenceQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f KnowledgeFactProvenanceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.KnowledgeFactProvenanceQuery); ok {
+func (f KnowledgeEvidenceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeEvidenceQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactProvenanceQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEvidenceQuery", q)
 }
 
-// The TraverseKnowledgeFactProvenance type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseKnowledgeFactProvenance func(context.Context, *ent.KnowledgeFactProvenanceQuery) error
+// The TraverseKnowledgeEvidence type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeEvidence func(context.Context, *ent.KnowledgeEvidenceQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseKnowledgeFactProvenance) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseKnowledgeEvidence) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseKnowledgeFactProvenance) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeFactProvenanceQuery); ok {
+func (f TraverseKnowledgeEvidence) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeEvidenceQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactProvenanceQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeEvidenceQuery", q)
 }
 
-// The KnowledgeFactRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
-type KnowledgeFactRelationshipFunc func(context.Context, *ent.KnowledgeFactRelationshipQuery) (ent.Value, error)
+// The KnowledgeRelationshipFunc type is an adapter to allow the use of ordinary function as a Querier.
+type KnowledgeRelationshipFunc func(context.Context, *ent.KnowledgeRelationshipQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f KnowledgeFactRelationshipFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.KnowledgeFactRelationshipQuery); ok {
+func (f KnowledgeRelationshipFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.KnowledgeRelationshipQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactRelationshipQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeRelationshipQuery", q)
 }
 
-// The TraverseKnowledgeFactRelationship type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseKnowledgeFactRelationship func(context.Context, *ent.KnowledgeFactRelationshipQuery) error
+// The TraverseKnowledgeRelationship type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseKnowledgeRelationship func(context.Context, *ent.KnowledgeRelationshipQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseKnowledgeFactRelationship) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseKnowledgeRelationship) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseKnowledgeFactRelationship) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.KnowledgeFactRelationshipQuery); ok {
+func (f TraverseKnowledgeRelationship) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.KnowledgeRelationshipQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeFactRelationshipQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.KnowledgeRelationshipQuery", q)
 }
 
 // The MeetingScheduleFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2004,14 +2004,14 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IntegrationQuery, predicate.Integration, integration.OrderOption]{typ: ent.TypeIntegration, tq: q}, nil
 	case *ent.IntegrationOAuthStateQuery:
 		return &query[*ent.IntegrationOAuthStateQuery, predicate.IntegrationOAuthState, integrationoauthstate.OrderOption]{typ: ent.TypeIntegrationOAuthState, tq: q}, nil
-	case *ent.KnowledgeFactQuery:
-		return &query[*ent.KnowledgeFactQuery, predicate.KnowledgeFact, knowledgefact.OrderOption]{typ: ent.TypeKnowledgeFact, tq: q}, nil
-	case *ent.KnowledgeFactAliasQuery:
-		return &query[*ent.KnowledgeFactAliasQuery, predicate.KnowledgeFactAlias, knowledgefactalias.OrderOption]{typ: ent.TypeKnowledgeFactAlias, tq: q}, nil
-	case *ent.KnowledgeFactProvenanceQuery:
-		return &query[*ent.KnowledgeFactProvenanceQuery, predicate.KnowledgeFactProvenance, knowledgefactprovenance.OrderOption]{typ: ent.TypeKnowledgeFactProvenance, tq: q}, nil
-	case *ent.KnowledgeFactRelationshipQuery:
-		return &query[*ent.KnowledgeFactRelationshipQuery, predicate.KnowledgeFactRelationship, knowledgefactrelationship.OrderOption]{typ: ent.TypeKnowledgeFactRelationship, tq: q}, nil
+	case *ent.KnowledgeEntityQuery:
+		return &query[*ent.KnowledgeEntityQuery, predicate.KnowledgeEntity, knowledgeentity.OrderOption]{typ: ent.TypeKnowledgeEntity, tq: q}, nil
+	case *ent.KnowledgeEntityAliasQuery:
+		return &query[*ent.KnowledgeEntityAliasQuery, predicate.KnowledgeEntityAlias, knowledgeentityalias.OrderOption]{typ: ent.TypeKnowledgeEntityAlias, tq: q}, nil
+	case *ent.KnowledgeEvidenceQuery:
+		return &query[*ent.KnowledgeEvidenceQuery, predicate.KnowledgeEvidence, knowledgeevidence.OrderOption]{typ: ent.TypeKnowledgeEvidence, tq: q}, nil
+	case *ent.KnowledgeRelationshipQuery:
+		return &query[*ent.KnowledgeRelationshipQuery, predicate.KnowledgeRelationship, knowledgerelationship.OrderOption]{typ: ent.TypeKnowledgeRelationship, tq: q}, nil
 	case *ent.MeetingScheduleQuery:
 		return &query[*ent.MeetingScheduleQuery, predicate.MeetingSchedule, meetingschedule.OrderOption]{typ: ent.TypeMeetingSchedule, tq: q}, nil
 	case *ent.MeetingSessionQuery:

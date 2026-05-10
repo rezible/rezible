@@ -14,7 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgefact"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
 	"github.com/rezible/rezible/ent/systemtopologysnapshot"
@@ -167,8 +167,8 @@ func (_u *SystemTopologySnapshotEntityUpdate) SetSnapshot(v *SystemTopologySnaps
 	return _u.SetSnapshotID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeFact entity.
-func (_u *SystemTopologySnapshotEntityUpdate) SetKnowledgeEntity(v *KnowledgeFact) *SystemTopologySnapshotEntityUpdate {
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SystemTopologySnapshotEntityUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *SystemTopologySnapshotEntityUpdate {
 	return _u.SetKnowledgeEntityID(v.ID)
 }
 
@@ -228,7 +228,7 @@ func (_u *SystemTopologySnapshotEntityUpdate) ClearSnapshot() *SystemTopologySna
 	return _u
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeFact entity.
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *SystemTopologySnapshotEntityUpdate) ClearKnowledgeEntity() *SystemTopologySnapshotEntityUpdate {
 	_u.mutation.ClearKnowledgeEntity()
 	return _u
@@ -434,7 +434,7 @@ func (_u *SystemTopologySnapshotEntityUpdate) sqlSave(ctx context.Context) (_nod
 			Columns: []string{systemtopologysnapshotentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemTopologySnapshotEntity
@@ -448,7 +448,7 @@ func (_u *SystemTopologySnapshotEntityUpdate) sqlSave(ctx context.Context) (_nod
 			Columns: []string{systemtopologysnapshotentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemTopologySnapshotEntity
@@ -756,8 +756,8 @@ func (_u *SystemTopologySnapshotEntityUpdateOne) SetSnapshot(v *SystemTopologySn
 	return _u.SetSnapshotID(v.ID)
 }
 
-// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeFact entity.
-func (_u *SystemTopologySnapshotEntityUpdateOne) SetKnowledgeEntity(v *KnowledgeFact) *SystemTopologySnapshotEntityUpdateOne {
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *SystemTopologySnapshotEntityUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *SystemTopologySnapshotEntityUpdateOne {
 	return _u.SetKnowledgeEntityID(v.ID)
 }
 
@@ -817,7 +817,7 @@ func (_u *SystemTopologySnapshotEntityUpdateOne) ClearSnapshot() *SystemTopology
 	return _u
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeFact entity.
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *SystemTopologySnapshotEntityUpdateOne) ClearKnowledgeEntity() *SystemTopologySnapshotEntityUpdateOne {
 	_u.mutation.ClearKnowledgeEntity()
 	return _u
@@ -1053,7 +1053,7 @@ func (_u *SystemTopologySnapshotEntityUpdateOne) sqlSave(ctx context.Context) (_
 			Columns: []string{systemtopologysnapshotentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemTopologySnapshotEntity
@@ -1067,7 +1067,7 @@ func (_u *SystemTopologySnapshotEntityUpdateOne) sqlSave(ctx context.Context) (_
 			Columns: []string{systemtopologysnapshotentity.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemTopologySnapshotEntity

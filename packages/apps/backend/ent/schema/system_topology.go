@@ -90,7 +90,7 @@ func (SystemTopologySnapshotEntity) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("snapshot_id"),
-		edge.To("knowledge_entity", KnowledgeFact.Type).
+		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Unique().
 			Field("knowledge_entity_id"),
 		edge.From("source_relationships", SystemTopologySnapshotRelationship.Type).
@@ -141,7 +141,7 @@ func (SystemTopologySnapshotRelationship) Fields() []ent.Field {
 
 func (SystemTopologySnapshotRelationship) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("knowledge_relationship", KnowledgeFactRelationship.Type).
+		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
 			Unique().
 			Field("knowledge_relationship_id"),
 		edge.To("snapshot", SystemTopologySnapshot.Type).

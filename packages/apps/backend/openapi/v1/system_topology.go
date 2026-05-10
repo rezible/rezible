@@ -119,34 +119,34 @@ type (
 	}
 )
 
-func SystemTopologyEntityFromEnt(fact *ent.KnowledgeFact) SystemTopologyEntity {
+func SystemTopologyEntityFromEnt(entity *ent.KnowledgeEntity) SystemTopologyEntity {
 	attr := SystemTopologyEntityAttributes{
-		Kind:        fact.Kind,
-		DisplayName: fact.DisplayName,
-		Description: fact.Description,
-		Properties:  fact.Properties,
-		CreatedAt:   fact.CreatedAt,
-		UpdatedAt:   fact.UpdatedAt,
+		Kind:        entity.Kind,
+		DisplayName: entity.DisplayName,
+		Description: entity.Description,
+		Properties:  entity.Properties,
+		CreatedAt:   entity.CreatedAt,
+		UpdatedAt:   entity.UpdatedAt,
 	}
 
-	attr.Aliases = make([]SystemTopologyEntityAlias, len(fact.Edges.Aliases))
-	for i, alias := range fact.Edges.Aliases {
+	attr.Aliases = make([]SystemTopologyEntityAlias, len(entity.Edges.Aliases))
+	for i, alias := range entity.Edges.Aliases {
 		attr.Aliases[i] = SystemTopologyEntityAliasFromEnt(alias)
 	}
 
-	numSourceRels := len(fact.Edges.SourceRelationships)
-	attr.Relationships = make([]SystemTopologyRelationship, numSourceRels+len(fact.Edges.TargetRelationships))
-	for i, rel := range fact.Edges.SourceRelationships {
+	numSourceRels := len(entity.Edges.SourceRelationships)
+	attr.Relationships = make([]SystemTopologyRelationship, numSourceRels+len(entity.Edges.TargetRelationships))
+	for i, rel := range entity.Edges.SourceRelationships {
 		attr.Relationships[i] = SystemTopologyRelationshipFromEnt(rel)
 	}
-	for i, rel := range fact.Edges.TargetRelationships {
+	for i, rel := range entity.Edges.TargetRelationships {
 		attr.Relationships[numSourceRels+i] = SystemTopologyRelationshipFromEnt(rel)
 	}
 
-	return SystemTopologyEntity{Id: fact.ID, Attributes: attr}
+	return SystemTopologyEntity{Id: entity.ID, Attributes: attr}
 }
 
-func SystemTopologyEntityAliasFromEnt(alias *ent.KnowledgeFactAlias) SystemTopologyEntityAlias {
+func SystemTopologyEntityAliasFromEnt(alias *ent.KnowledgeEntityAlias) SystemTopologyEntityAlias {
 	return SystemTopologyEntityAlias{
 		Id: alias.ID,
 		//Provider:       alias.Provider,
@@ -158,10 +158,10 @@ func SystemTopologyEntityAliasFromEnt(alias *ent.KnowledgeFactAlias) SystemTopol
 	}
 }
 
-func SystemTopologyRelationshipFromEnt(rel *ent.KnowledgeFactRelationship) SystemTopologyRelationship {
+func SystemTopologyRelationshipFromEnt(rel *ent.KnowledgeRelationship) SystemTopologyRelationship {
 	attr := SystemTopologyRelationshipAttributes{
-		SourceEntityId: rel.SourceFactID,
-		TargetEntityId: rel.TargetFactID,
+		SourceEntityId: rel.SourceEntityID,
+		TargetEntityId: rel.TargetEntityID,
 		Kind:           rel.Kind,
 		DisplayName:    rel.DisplayName,
 		Description:    rel.Description,
@@ -169,10 +169,10 @@ func SystemTopologyRelationshipFromEnt(rel *ent.KnowledgeFactRelationship) Syste
 		CreatedAt:      rel.CreatedAt,
 		UpdatedAt:      rel.UpdatedAt,
 	}
-	if source, err := rel.Edges.SourceFactOrErr(); err == nil {
+	if source, err := rel.Edges.SourceEntityOrErr(); err == nil {
 		attr.Source = new(SystemTopologyEntityFromEnt(source))
 	}
-	if target, err := rel.Edges.TargetFactOrErr(); err == nil {
+	if target, err := rel.Edges.TargetEntityOrErr(); err == nil {
 		attr.Target = new(SystemTopologyEntityFromEnt(target))
 	}
 	return SystemTopologyRelationship{Id: rel.ID, Attributes: attr}

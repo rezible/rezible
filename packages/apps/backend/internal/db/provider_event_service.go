@@ -468,6 +468,8 @@ func (s *ProviderEventService) ProjectNormalizedEvent(ctx context.Context, args 
 		} else {
 			status, statusErr = s.db.NormalizedEventProjectionStatus.Create().
 				SetStatus(neps.StatusPending).
+				SetNormalizedEventID(args.EventId).
+				SetHandlerName(name).
 				SetLastAttemptedAt(time.Now().UTC()).
 				Save(ctx)
 			if statusErr != nil {

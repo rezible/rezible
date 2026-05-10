@@ -100,7 +100,7 @@ func (IncidentEventTopologyContext) Fields() []ent.Field {
 func (IncidentEventTopologyContext) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("event", IncidentEvent.Type).Unique().Required().Field("incident_event_id"),
-		edge.To("knowledge_entity", KnowledgeFact.Type).Unique().Field("knowledge_entity_id"),
+		edge.To("knowledge_entity", KnowledgeEntity.Type).Unique().Field("knowledge_entity_id"),
 		edge.To("snapshot_entity", SystemTopologySnapshotEntity.Type).Unique().Field("snapshot_entity_id"),
 	}
 }

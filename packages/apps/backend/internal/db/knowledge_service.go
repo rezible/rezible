@@ -7,8 +7,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	knfa "github.com/rezible/rezible/ent/knowledgefactalias"
-	knfr "github.com/rezible/rezible/ent/knowledgefactrelationship"
+	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
+	knev "github.com/rezible/rezible/ent/knowledgeevidence"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -20,42 +21,44 @@ func newKnowledgeService(dbc *ent.Client) *KnowledgeService {
 	return &KnowledgeService{dbc: dbc}
 }
 
-func (s *KnowledgeService) GetFact(ctx context.Context, p predicate.KnowledgeFact) (*ent.KnowledgeFact, error) {
-	return s.dbc.KnowledgeFact.Query().Where(p).Only(ctx)
+func (s *KnowledgeService) GetEntity(ctx context.Context, p predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error) {
+	return s.dbc.KnowledgeEntity.Query().Where(p).Only(ctx)
 }
 
-func (s *KnowledgeService) SetFact(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeFactMutation)) (*ent.KnowledgeFact, error) {
-	var mutator ent.EntityMutator[*ent.KnowledgeFact, *ent.KnowledgeFactMutation]
+func (s *KnowledgeService) SetEntity(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error) {
+	var mutator ent.EntityMutator[*ent.KnowledgeEntity, *ent.KnowledgeEntityMutation]
 	if id == uuid.Nil {
-		mutator = s.dbc.KnowledgeFact.Create().SetID(uuid.New())
+		mutator = s.dbc.KnowledgeEntity.Create().SetID(uuid.New())
 	} else {
-		mutator = s.dbc.KnowledgeFact.UpdateOneID(id)
+		mutator = s.dbc.KnowledgeEntity.UpdateOneID(id)
 	}
 
 	setFn(mutator.Mutation())
 
-	savedFact, saveErr := mutator.Save(ctx)
+	savedEntity, saveErr := mutator.Save(ctx)
 	if saveErr != nil {
 		return nil, fmt.Errorf("save: %w", saveErr)
 	}
-	return savedFact, nil
+	return savedEntity, nil
 }
 
-func (s *KnowledgeService) SetFactAlias(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeFactAliasMutation)) (*ent.KnowledgeFactAlias, error) {
-	var mutator ent.EntityMutator[*ent.KnowledgeFactAlias, *ent.KnowledgeFactAliasMutation]
+func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error) {
+	var mutator ent.EntityMutator[*ent.KnowledgeEntityAlias, *ent.KnowledgeEntityAliasMutation]
 	if id == uuid.Nil {
-		create := s.dbc.KnowledgeFactAlias.Create().SetID(uuid.New())
+		create := s.dbc.KnowledgeEntityAlias.Create().SetID(uuid.New())
 		mutator = create
 		conflictCols := sql.ConflictColumns(
-			knfa.FieldTenantID,
-			knfa.FieldFactID,
+			knea.FieldTenantID,
+			knea.FieldProvider,
+			knea.FieldProviderSource,
+			knea.FieldProviderSubjectRef,
 		)
-		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeFactAliasUpsert) {
+		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeEntityAliasUpsert) {
 			u.UpdateUpdatedAt()
 			u.UpdateDisplayName()
 		})
 	} else {
-		mutator = s.dbc.KnowledgeFactAlias.UpdateOneID(id)
+		mutator = s.dbc.KnowledgeEntityAlias.UpdateOneID(id)
 	}
 
 	setFn(mutator.Mutation())
@@ -68,26 +71,26 @@ func (s *KnowledgeService) SetFactAlias(ctx context.Context, id uuid.UUID, setFn
 	return alias, nil
 }
 
-func (s *KnowledgeService) lookupFactAliasRef(ctx context.Context, ref FactAliasRef) (*ent.KnowledgeFactAlias, error) {
-	queryExisting := s.dbc.KnowledgeFactAlias.Query().Where(
-		knfa.Provider(ref.Provider), knfa.ProviderSource(ref.ProviderSource),
-		knfa.ProviderSubjectRef(ref.ProviderSubjectRef))
+func (s *KnowledgeService) lookupEntityAliasRef(ctx context.Context, ref EntityAliasRef) (*ent.KnowledgeEntityAlias, error) {
+	queryExisting := s.dbc.KnowledgeEntityAlias.Query().Where(
+		knea.Provider(ref.Provider), knea.ProviderSource(ref.ProviderSource),
+		knea.ProviderSubjectRef(ref.ProviderSubjectRef))
 	return queryExisting.Only(ctx)
 }
 
-func (s *KnowledgeService) GetRelationship(ctx context.Context, p predicate.KnowledgeFactRelationship) (*ent.KnowledgeFactRelationship, error) {
-	return s.dbc.KnowledgeFactRelationship.Query().Where(p).Only(ctx)
+func (s *KnowledgeService) GetRelationship(ctx context.Context, p predicate.KnowledgeRelationship) (*ent.KnowledgeRelationship, error) {
+	return s.dbc.KnowledgeRelationship.Query().Where(p).Only(ctx)
 }
 
-func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeFactRelationshipMutation)) (*ent.KnowledgeFactRelationship, error) {
-	var mutator ent.EntityMutator[*ent.KnowledgeFactRelationship, *ent.KnowledgeFactRelationshipMutation]
-	var create *ent.KnowledgeFactRelationshipCreate
+func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error) {
+	var mutator ent.EntityMutator[*ent.KnowledgeRelationship, *ent.KnowledgeRelationshipMutation]
+	var create *ent.KnowledgeRelationshipCreate
 	creating := id == uuid.Nil
 	if creating {
-		create = s.dbc.KnowledgeFactRelationship.Create().SetID(uuid.New())
+		create = s.dbc.KnowledgeRelationship.Create().SetID(uuid.New())
 		mutator = create
 	} else {
-		mutator = s.dbc.KnowledgeFactRelationship.UpdateOneID(id)
+		mutator = s.dbc.KnowledgeRelationship.UpdateOneID(id)
 	}
 
 	mutation := mutator.Mutation()
@@ -95,12 +98,12 @@ func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, se
 
 	if creating {
 		conflictCols := sql.ConflictColumns(
-			knfr.FieldTenantID,
-			knfr.FieldSourceFactID,
-			knfr.FieldTargetFactID,
-			knfr.FieldKind,
+			knr.FieldTenantID,
+			knr.FieldSourceEntityID,
+			knr.FieldTargetEntityID,
+			knr.FieldKind,
 		)
-		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeFactRelationshipUpsert) {
+		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeRelationshipUpsert) {
 			u.UpdateUpdatedAt()
 			if _, ok := mutation.DisplayName(); ok {
 				u.UpdateDisplayName()
@@ -110,6 +113,17 @@ func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, se
 			}
 			if _, ok := mutation.Properties(); ok {
 				u.UpdateProperties()
+			}
+			if _, ok := mutation.FirstObservedAt(); ok {
+				u.UpdateFirstObservedAt()
+			}
+			if _, ok := mutation.LastObservedAt(); ok {
+				u.UpdateLastObservedAt()
+			}
+			if mutation.DeletedAtCleared() {
+				u.ClearDeletedAt()
+			} else if _, ok := mutation.DeletedAt(); ok {
+				u.UpdateDeletedAt()
 			}
 		})
 	}
@@ -121,15 +135,42 @@ func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, se
 	return rel, nil
 }
 
-func (s *KnowledgeService) AddFactProvenance(ctx context.Context, setFn func(*ent.KnowledgeFactProvenanceMutation)) (*ent.KnowledgeFactProvenance, error) {
-	create := s.dbc.KnowledgeFactProvenance.Create().SetID(uuid.New())
+func (s *KnowledgeService) AddEvidence(ctx context.Context, setFn func(*ent.KnowledgeEvidenceMutation)) (*ent.KnowledgeEvidence, error) {
+	create := s.dbc.KnowledgeEvidence.Create().SetID(uuid.New())
 	mutation := create.Mutation()
 
 	setFn(mutation)
 
-	prov, saveErr := create.Save(ctx)
-	if saveErr != nil {
-		return nil, fmt.Errorf("save fact provenance: %w", saveErr)
+	entityID, hasEntity := mutation.EntityID()
+	relationshipID, hasRelationship := mutation.RelationshipID()
+	if hasEntity == hasRelationship {
+		return nil, fmt.Errorf("knowledge evidence requires exactly one of entity_id or relationship_id")
 	}
-	return prov, nil
+	if subjectType, ok := mutation.SubjectType(); ok {
+		if hasEntity && subjectType != knev.SubjectTypeEntity {
+			return nil, fmt.Errorf("knowledge evidence subject_type must be entity for entity_id %s", entityID)
+		}
+		if hasRelationship && subjectType != knev.SubjectTypeRelationship {
+			return nil, fmt.Errorf("knowledge evidence subject_type must be relationship for relationship_id %s", relationshipID)
+		}
+	}
+
+	conflictCols := []string{
+		knev.FieldTenantID,
+		knev.FieldNormalizedEventID,
+		knev.FieldAssertionKind,
+		knev.FieldSubjectType,
+	}
+	if hasEntity {
+		conflictCols = append(conflictCols, knev.FieldEntityID)
+	} else {
+		conflictCols = append(conflictCols, knev.FieldRelationshipID)
+	}
+	create.OnConflict(sql.ConflictColumns(conflictCols...)).DoNothing()
+
+	evidence, saveErr := create.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save knowledge evidence: %w", saveErr)
+	}
+	return evidence, nil
 }
