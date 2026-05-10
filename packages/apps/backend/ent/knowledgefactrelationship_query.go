@@ -15,63 +15,63 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgefact"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgefactrelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// KnowledgeRelationshipQuery is the builder for querying KnowledgeRelationship entities.
-type KnowledgeRelationshipQuery struct {
+// KnowledgeFactRelationshipQuery is the builder for querying KnowledgeFactRelationship entities.
+type KnowledgeFactRelationshipQuery struct {
 	config
-	ctx              *QueryContext
-	order            []knowledgerelationship.OrderOption
-	inters           []Interceptor
-	predicates       []predicate.KnowledgeRelationship
-	withTenant       *TenantQuery
-	withSourceEntity *KnowledgeEntityQuery
-	withTargetEntity *KnowledgeEntityQuery
-	withProvenance   *KnowledgeFactProvenanceQuery
-	modifiers        []func(*sql.Selector)
+	ctx            *QueryContext
+	order          []knowledgefactrelationship.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.KnowledgeFactRelationship
+	withTenant     *TenantQuery
+	withSourceFact *KnowledgeFactQuery
+	withTargetFact *KnowledgeFactQuery
+	withProvenance *KnowledgeFactProvenanceQuery
+	modifiers      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the KnowledgeRelationshipQuery builder.
-func (_q *KnowledgeRelationshipQuery) Where(ps ...predicate.KnowledgeRelationship) *KnowledgeRelationshipQuery {
+// Where adds a new predicate for the KnowledgeFactRelationshipQuery builder.
+func (_q *KnowledgeFactRelationshipQuery) Where(ps ...predicate.KnowledgeFactRelationship) *KnowledgeFactRelationshipQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *KnowledgeRelationshipQuery) Limit(limit int) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeFactRelationshipQuery) Limit(limit int) *KnowledgeFactRelationshipQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *KnowledgeRelationshipQuery) Offset(offset int) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeFactRelationshipQuery) Offset(offset int) *KnowledgeFactRelationshipQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *KnowledgeRelationshipQuery) Unique(unique bool) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeFactRelationshipQuery) Unique(unique bool) *KnowledgeFactRelationshipQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *KnowledgeRelationshipQuery) Order(o ...knowledgerelationship.OrderOption) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeFactRelationshipQuery) Order(o ...knowledgefactrelationship.OrderOption) *KnowledgeFactRelationshipQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *KnowledgeRelationshipQuery) QueryTenant() *TenantQuery {
+func (_q *KnowledgeFactRelationshipQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -82,22 +82,22 @@ func (_q *KnowledgeRelationshipQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
+			sqlgraph.From(knowledgefactrelationship.Table, knowledgefactrelationship.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgerelationship.TenantTable, knowledgerelationship.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefactrelationship.TenantTable, knowledgefactrelationship.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		step.Edge.Schema = schemaConfig.KnowledgeFactRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QuerySourceEntity chains the current query on the "source_entity" edge.
-func (_q *KnowledgeRelationshipQuery) QuerySourceEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// QuerySourceFact chains the current query on the "source_fact" edge.
+func (_q *KnowledgeFactRelationshipQuery) QuerySourceFact() *KnowledgeFactQuery {
+	query := (&KnowledgeFactClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -107,22 +107,22 @@ func (_q *KnowledgeRelationshipQuery) QuerySourceEntity() *KnowledgeEntityQuery 
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgerelationship.SourceEntityTable, knowledgerelationship.SourceEntityColumn),
+			sqlgraph.From(knowledgefactrelationship.Table, knowledgefactrelationship.FieldID, selector),
+			sqlgraph.To(knowledgefact.Table, knowledgefact.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefactrelationship.SourceFactTable, knowledgefactrelationship.SourceFactColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		step.To.Schema = schemaConfig.KnowledgeFact
+		step.Edge.Schema = schemaConfig.KnowledgeFactRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryTargetEntity chains the current query on the "target_entity" edge.
-func (_q *KnowledgeRelationshipQuery) QueryTargetEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// QueryTargetFact chains the current query on the "target_fact" edge.
+func (_q *KnowledgeFactRelationshipQuery) QueryTargetFact() *KnowledgeFactQuery {
+	query := (&KnowledgeFactClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -132,13 +132,13 @@ func (_q *KnowledgeRelationshipQuery) QueryTargetEntity() *KnowledgeEntityQuery 
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgerelationship.TargetEntityTable, knowledgerelationship.TargetEntityColumn),
+			sqlgraph.From(knowledgefactrelationship.Table, knowledgefactrelationship.FieldID, selector),
+			sqlgraph.To(knowledgefact.Table, knowledgefact.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefactrelationship.TargetFactTable, knowledgefactrelationship.TargetFactColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.KnowledgeRelationship
+		step.To.Schema = schemaConfig.KnowledgeFact
+		step.Edge.Schema = schemaConfig.KnowledgeFactRelationship
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -146,7 +146,7 @@ func (_q *KnowledgeRelationshipQuery) QueryTargetEntity() *KnowledgeEntityQuery 
 }
 
 // QueryProvenance chains the current query on the "provenance" edge.
-func (_q *KnowledgeRelationshipQuery) QueryProvenance() *KnowledgeFactProvenanceQuery {
+func (_q *KnowledgeFactRelationshipQuery) QueryProvenance() *KnowledgeFactProvenanceQuery {
 	query := (&KnowledgeFactProvenanceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -157,9 +157,9 @@ func (_q *KnowledgeRelationshipQuery) QueryProvenance() *KnowledgeFactProvenance
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgerelationship.Table, knowledgerelationship.FieldID, selector),
+			sqlgraph.From(knowledgefactrelationship.Table, knowledgefactrelationship.FieldID, selector),
 			sqlgraph.To(knowledgefactprovenance.Table, knowledgefactprovenance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, knowledgerelationship.ProvenanceTable, knowledgerelationship.ProvenanceColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgefactrelationship.ProvenanceTable, knowledgefactrelationship.ProvenanceColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeFactProvenance
@@ -170,21 +170,21 @@ func (_q *KnowledgeRelationshipQuery) QueryProvenance() *KnowledgeFactProvenance
 	return query
 }
 
-// First returns the first KnowledgeRelationship entity from the query.
-// Returns a *NotFoundError when no KnowledgeRelationship was found.
-func (_q *KnowledgeRelationshipQuery) First(ctx context.Context) (*KnowledgeRelationship, error) {
+// First returns the first KnowledgeFactRelationship entity from the query.
+// Returns a *NotFoundError when no KnowledgeFactRelationship was found.
+func (_q *KnowledgeFactRelationshipQuery) First(ctx context.Context) (*KnowledgeFactRelationship, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{knowledgerelationship.Label}
+		return nil, &NotFoundError{knowledgefactrelationship.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) FirstX(ctx context.Context) *KnowledgeRelationship {
+func (_q *KnowledgeFactRelationshipQuery) FirstX(ctx context.Context) *KnowledgeFactRelationship {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -192,22 +192,22 @@ func (_q *KnowledgeRelationshipQuery) FirstX(ctx context.Context) *KnowledgeRela
 	return node
 }
 
-// FirstID returns the first KnowledgeRelationship ID from the query.
-// Returns a *NotFoundError when no KnowledgeRelationship ID was found.
-func (_q *KnowledgeRelationshipQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first KnowledgeFactRelationship ID from the query.
+// Returns a *NotFoundError when no KnowledgeFactRelationship ID was found.
+func (_q *KnowledgeFactRelationshipQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{knowledgerelationship.Label}
+		err = &NotFoundError{knowledgefactrelationship.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *KnowledgeFactRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -215,10 +215,10 @@ func (_q *KnowledgeRelationshipQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single KnowledgeRelationship entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one KnowledgeRelationship entity is found.
-// Returns a *NotFoundError when no KnowledgeRelationship entities are found.
-func (_q *KnowledgeRelationshipQuery) Only(ctx context.Context) (*KnowledgeRelationship, error) {
+// Only returns a single KnowledgeFactRelationship entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one KnowledgeFactRelationship entity is found.
+// Returns a *NotFoundError when no KnowledgeFactRelationship entities are found.
+func (_q *KnowledgeFactRelationshipQuery) Only(ctx context.Context) (*KnowledgeFactRelationship, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -227,14 +227,14 @@ func (_q *KnowledgeRelationshipQuery) Only(ctx context.Context) (*KnowledgeRelat
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{knowledgerelationship.Label}
+		return nil, &NotFoundError{knowledgefactrelationship.Label}
 	default:
-		return nil, &NotSingularError{knowledgerelationship.Label}
+		return nil, &NotSingularError{knowledgefactrelationship.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) OnlyX(ctx context.Context) *KnowledgeRelationship {
+func (_q *KnowledgeFactRelationshipQuery) OnlyX(ctx context.Context) *KnowledgeFactRelationship {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -242,10 +242,10 @@ func (_q *KnowledgeRelationshipQuery) OnlyX(ctx context.Context) *KnowledgeRelat
 	return node
 }
 
-// OnlyID is like Only, but returns the only KnowledgeRelationship ID in the query.
-// Returns a *NotSingularError when more than one KnowledgeRelationship ID is found.
+// OnlyID is like Only, but returns the only KnowledgeFactRelationship ID in the query.
+// Returns a *NotSingularError when more than one KnowledgeFactRelationship ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *KnowledgeRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *KnowledgeFactRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -254,15 +254,15 @@ func (_q *KnowledgeRelationshipQuery) OnlyID(ctx context.Context) (id uuid.UUID,
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{knowledgerelationship.Label}
+		err = &NotFoundError{knowledgefactrelationship.Label}
 	default:
-		err = &NotSingularError{knowledgerelationship.Label}
+		err = &NotSingularError{knowledgefactrelationship.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *KnowledgeFactRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -270,18 +270,18 @@ func (_q *KnowledgeRelationshipQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of KnowledgeRelationships.
-func (_q *KnowledgeRelationshipQuery) All(ctx context.Context) ([]*KnowledgeRelationship, error) {
+// All executes the query and returns a list of KnowledgeFactRelationships.
+func (_q *KnowledgeFactRelationshipQuery) All(ctx context.Context) ([]*KnowledgeFactRelationship, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*KnowledgeRelationship, *KnowledgeRelationshipQuery]()
-	return withInterceptors[[]*KnowledgeRelationship](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*KnowledgeFactRelationship, *KnowledgeFactRelationshipQuery]()
+	return withInterceptors[[]*KnowledgeFactRelationship](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) AllX(ctx context.Context) []*KnowledgeRelationship {
+func (_q *KnowledgeFactRelationshipQuery) AllX(ctx context.Context) []*KnowledgeFactRelationship {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -289,20 +289,20 @@ func (_q *KnowledgeRelationshipQuery) AllX(ctx context.Context) []*KnowledgeRela
 	return nodes
 }
 
-// IDs executes the query and returns a list of KnowledgeRelationship IDs.
-func (_q *KnowledgeRelationshipQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of KnowledgeFactRelationship IDs.
+func (_q *KnowledgeFactRelationshipQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(knowledgerelationship.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(knowledgefactrelationship.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *KnowledgeFactRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -311,16 +311,16 @@ func (_q *KnowledgeRelationshipQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *KnowledgeRelationshipQuery) Count(ctx context.Context) (int, error) {
+func (_q *KnowledgeFactRelationshipQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*KnowledgeRelationshipQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*KnowledgeFactRelationshipQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) CountX(ctx context.Context) int {
+func (_q *KnowledgeFactRelationshipQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -329,7 +329,7 @@ func (_q *KnowledgeRelationshipQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *KnowledgeRelationshipQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *KnowledgeFactRelationshipQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -342,7 +342,7 @@ func (_q *KnowledgeRelationshipQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *KnowledgeRelationshipQuery) ExistX(ctx context.Context) bool {
+func (_q *KnowledgeFactRelationshipQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -350,22 +350,22 @@ func (_q *KnowledgeRelationshipQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the KnowledgeRelationshipQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the KnowledgeFactRelationshipQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *KnowledgeRelationshipQuery) Clone() *KnowledgeRelationshipQuery {
+func (_q *KnowledgeFactRelationshipQuery) Clone() *KnowledgeFactRelationshipQuery {
 	if _q == nil {
 		return nil
 	}
-	return &KnowledgeRelationshipQuery{
-		config:           _q.config,
-		ctx:              _q.ctx.Clone(),
-		order:            append([]knowledgerelationship.OrderOption{}, _q.order...),
-		inters:           append([]Interceptor{}, _q.inters...),
-		predicates:       append([]predicate.KnowledgeRelationship{}, _q.predicates...),
-		withTenant:       _q.withTenant.Clone(),
-		withSourceEntity: _q.withSourceEntity.Clone(),
-		withTargetEntity: _q.withTargetEntity.Clone(),
-		withProvenance:   _q.withProvenance.Clone(),
+	return &KnowledgeFactRelationshipQuery{
+		config:         _q.config,
+		ctx:            _q.ctx.Clone(),
+		order:          append([]knowledgefactrelationship.OrderOption{}, _q.order...),
+		inters:         append([]Interceptor{}, _q.inters...),
+		predicates:     append([]predicate.KnowledgeFactRelationship{}, _q.predicates...),
+		withTenant:     _q.withTenant.Clone(),
+		withSourceFact: _q.withSourceFact.Clone(),
+		withTargetFact: _q.withTargetFact.Clone(),
+		withProvenance: _q.withProvenance.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -375,7 +375,7 @@ func (_q *KnowledgeRelationshipQuery) Clone() *KnowledgeRelationshipQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeFactRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *KnowledgeFactRelationshipQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -384,31 +384,31 @@ func (_q *KnowledgeRelationshipQuery) WithTenant(opts ...func(*TenantQuery)) *Kn
 	return _q
 }
 
-// WithSourceEntity tells the query-builder to eager-load the nodes that are connected to
-// the "source_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeRelationshipQuery) WithSourceEntity(opts ...func(*KnowledgeEntityQuery)) *KnowledgeRelationshipQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// WithSourceFact tells the query-builder to eager-load the nodes that are connected to
+// the "source_fact" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeFactRelationshipQuery) WithSourceFact(opts ...func(*KnowledgeFactQuery)) *KnowledgeFactRelationshipQuery {
+	query := (&KnowledgeFactClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withSourceEntity = query
+	_q.withSourceFact = query
 	return _q
 }
 
-// WithTargetEntity tells the query-builder to eager-load the nodes that are connected to
-// the "target_entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeRelationshipQuery) WithTargetEntity(opts ...func(*KnowledgeEntityQuery)) *KnowledgeRelationshipQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// WithTargetFact tells the query-builder to eager-load the nodes that are connected to
+// the "target_fact" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeFactRelationshipQuery) WithTargetFact(opts ...func(*KnowledgeFactQuery)) *KnowledgeFactRelationshipQuery {
+	query := (&KnowledgeFactClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withTargetEntity = query
+	_q.withTargetFact = query
 	return _q
 }
 
 // WithProvenance tells the query-builder to eager-load the nodes that are connected to
 // the "provenance" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeRelationshipQuery) WithProvenance(opts ...func(*KnowledgeFactProvenanceQuery)) *KnowledgeRelationshipQuery {
+func (_q *KnowledgeFactRelationshipQuery) WithProvenance(opts ...func(*KnowledgeFactProvenanceQuery)) *KnowledgeFactRelationshipQuery {
 	query := (&KnowledgeFactProvenanceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -427,15 +427,15 @@ func (_q *KnowledgeRelationshipQuery) WithProvenance(opts ...func(*KnowledgeFact
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.KnowledgeRelationship.Query().
-//		GroupBy(knowledgerelationship.FieldTenantID).
+//	client.KnowledgeFactRelationship.Query().
+//		GroupBy(knowledgefactrelationship.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *KnowledgeRelationshipQuery) GroupBy(field string, fields ...string) *KnowledgeRelationshipGroupBy {
+func (_q *KnowledgeFactRelationshipQuery) GroupBy(field string, fields ...string) *KnowledgeFactRelationshipGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &KnowledgeRelationshipGroupBy{build: _q}
+	grbuild := &KnowledgeFactRelationshipGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = knowledgerelationship.Label
+	grbuild.label = knowledgefactrelationship.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -449,23 +449,23 @@ func (_q *KnowledgeRelationshipQuery) GroupBy(field string, fields ...string) *K
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.KnowledgeRelationship.Query().
-//		Select(knowledgerelationship.FieldTenantID).
+//	client.KnowledgeFactRelationship.Query().
+//		Select(knowledgefactrelationship.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *KnowledgeRelationshipQuery) Select(fields ...string) *KnowledgeRelationshipSelect {
+func (_q *KnowledgeFactRelationshipQuery) Select(fields ...string) *KnowledgeFactRelationshipSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &KnowledgeRelationshipSelect{KnowledgeRelationshipQuery: _q}
-	sbuild.label = knowledgerelationship.Label
+	sbuild := &KnowledgeFactRelationshipSelect{KnowledgeFactRelationshipQuery: _q}
+	sbuild.label = knowledgefactrelationship.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a KnowledgeRelationshipSelect configured with the given aggregations.
-func (_q *KnowledgeRelationshipQuery) Aggregate(fns ...AggregateFunc) *KnowledgeRelationshipSelect {
+// Aggregate returns a KnowledgeFactRelationshipSelect configured with the given aggregations.
+func (_q *KnowledgeFactRelationshipQuery) Aggregate(fns ...AggregateFunc) *KnowledgeFactRelationshipSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *KnowledgeRelationshipQuery) prepareQuery(ctx context.Context) error {
+func (_q *KnowledgeFactRelationshipQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -477,7 +477,7 @@ func (_q *KnowledgeRelationshipQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !knowledgerelationship.ValidColumn(f) {
+		if !knowledgefactrelationship.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -488,36 +488,36 @@ func (_q *KnowledgeRelationshipQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if knowledgerelationship.Policy == nil {
-		return errors.New("ent: uninitialized knowledgerelationship.Policy (forgotten import ent/runtime?)")
+	if knowledgefactrelationship.Policy == nil {
+		return errors.New("ent: uninitialized knowledgefactrelationship.Policy (forgotten import ent/runtime?)")
 	}
-	if err := knowledgerelationship.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := knowledgefactrelationship.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *KnowledgeRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*KnowledgeRelationship, error) {
+func (_q *KnowledgeFactRelationshipQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*KnowledgeFactRelationship, error) {
 	var (
-		nodes       = []*KnowledgeRelationship{}
+		nodes       = []*KnowledgeFactRelationship{}
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
 			_q.withTenant != nil,
-			_q.withSourceEntity != nil,
-			_q.withTargetEntity != nil,
+			_q.withSourceFact != nil,
+			_q.withTargetFact != nil,
 			_q.withProvenance != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*KnowledgeRelationship).scanValues(nil, columns)
+		return (*KnowledgeFactRelationship).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &KnowledgeRelationship{config: _q.config}
+		node := &KnowledgeFactRelationship{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.KnowledgeRelationship
+	_spec.Node.Schema = _q.schemaConfig.KnowledgeFactRelationship
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -533,26 +533,26 @@ func (_q *KnowledgeRelationshipQuery) sqlAll(ctx context.Context, hooks ...query
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *KnowledgeRelationship, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *KnowledgeFactRelationship, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withSourceEntity; query != nil {
-		if err := _q.loadSourceEntity(ctx, query, nodes, nil,
-			func(n *KnowledgeRelationship, e *KnowledgeEntity) { n.Edges.SourceEntity = e }); err != nil {
+	if query := _q.withSourceFact; query != nil {
+		if err := _q.loadSourceFact(ctx, query, nodes, nil,
+			func(n *KnowledgeFactRelationship, e *KnowledgeFact) { n.Edges.SourceFact = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withTargetEntity; query != nil {
-		if err := _q.loadTargetEntity(ctx, query, nodes, nil,
-			func(n *KnowledgeRelationship, e *KnowledgeEntity) { n.Edges.TargetEntity = e }); err != nil {
+	if query := _q.withTargetFact; query != nil {
+		if err := _q.loadTargetFact(ctx, query, nodes, nil,
+			func(n *KnowledgeFactRelationship, e *KnowledgeFact) { n.Edges.TargetFact = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withProvenance; query != nil {
 		if err := _q.loadProvenance(ctx, query, nodes,
-			func(n *KnowledgeRelationship) { n.Edges.Provenance = []*KnowledgeFactProvenance{} },
-			func(n *KnowledgeRelationship, e *KnowledgeFactProvenance) {
+			func(n *KnowledgeFactRelationship) { n.Edges.Provenance = []*KnowledgeFactProvenance{} },
+			func(n *KnowledgeFactRelationship, e *KnowledgeFactProvenance) {
 				n.Edges.Provenance = append(n.Edges.Provenance, e)
 			}); err != nil {
 			return nil, err
@@ -561,9 +561,9 @@ func (_q *KnowledgeRelationshipQuery) sqlAll(ctx context.Context, hooks ...query
 	return nodes, nil
 }
 
-func (_q *KnowledgeRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *Tenant)) error {
+func (_q *KnowledgeFactRelationshipQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*KnowledgeFactRelationship, init func(*KnowledgeFactRelationship), assign func(*KnowledgeFactRelationship, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*KnowledgeRelationship)
+	nodeids := make(map[int][]*KnowledgeFactRelationship)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -590,11 +590,11 @@ func (_q *KnowledgeRelationshipQuery) loadTenant(ctx context.Context, query *Ten
 	}
 	return nil
 }
-func (_q *KnowledgeRelationshipQuery) loadSourceEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *KnowledgeEntity)) error {
+func (_q *KnowledgeFactRelationshipQuery) loadSourceFact(ctx context.Context, query *KnowledgeFactQuery, nodes []*KnowledgeFactRelationship, init func(*KnowledgeFactRelationship), assign func(*KnowledgeFactRelationship, *KnowledgeFact)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*KnowledgeRelationship)
+	nodeids := make(map[uuid.UUID][]*KnowledgeFactRelationship)
 	for i := range nodes {
-		fk := nodes[i].SourceEntityID
+		fk := nodes[i].SourceFactID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -603,7 +603,7 @@ func (_q *KnowledgeRelationshipQuery) loadSourceEntity(ctx context.Context, quer
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(knowledgeentity.IDIn(ids...))
+	query.Where(knowledgefact.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -611,7 +611,7 @@ func (_q *KnowledgeRelationshipQuery) loadSourceEntity(ctx context.Context, quer
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "source_entity_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "source_fact_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -619,11 +619,11 @@ func (_q *KnowledgeRelationshipQuery) loadSourceEntity(ctx context.Context, quer
 	}
 	return nil
 }
-func (_q *KnowledgeRelationshipQuery) loadTargetEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *KnowledgeEntity)) error {
+func (_q *KnowledgeFactRelationshipQuery) loadTargetFact(ctx context.Context, query *KnowledgeFactQuery, nodes []*KnowledgeFactRelationship, init func(*KnowledgeFactRelationship), assign func(*KnowledgeFactRelationship, *KnowledgeFact)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*KnowledgeRelationship)
+	nodeids := make(map[uuid.UUID][]*KnowledgeFactRelationship)
 	for i := range nodes {
-		fk := nodes[i].TargetEntityID
+		fk := nodes[i].TargetFactID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -632,7 +632,7 @@ func (_q *KnowledgeRelationshipQuery) loadTargetEntity(ctx context.Context, quer
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(knowledgeentity.IDIn(ids...))
+	query.Where(knowledgefact.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -640,7 +640,7 @@ func (_q *KnowledgeRelationshipQuery) loadTargetEntity(ctx context.Context, quer
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "target_entity_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "target_fact_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -648,9 +648,9 @@ func (_q *KnowledgeRelationshipQuery) loadTargetEntity(ctx context.Context, quer
 	}
 	return nil
 }
-func (_q *KnowledgeRelationshipQuery) loadProvenance(ctx context.Context, query *KnowledgeFactProvenanceQuery, nodes []*KnowledgeRelationship, init func(*KnowledgeRelationship), assign func(*KnowledgeRelationship, *KnowledgeFactProvenance)) error {
+func (_q *KnowledgeFactRelationshipQuery) loadProvenance(ctx context.Context, query *KnowledgeFactProvenanceQuery, nodes []*KnowledgeFactRelationship, init func(*KnowledgeFactRelationship), assign func(*KnowledgeFactRelationship, *KnowledgeFactProvenance)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*KnowledgeRelationship)
+	nodeids := make(map[uuid.UUID]*KnowledgeFactRelationship)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -662,7 +662,7 @@ func (_q *KnowledgeRelationshipQuery) loadProvenance(ctx context.Context, query 
 		query.ctx.AppendFieldOnce(knowledgefactprovenance.FieldRelationshipID)
 	}
 	query.Where(predicate.KnowledgeFactProvenance(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(knowledgerelationship.ProvenanceColumn), fks...))
+		s.Where(sql.InValues(s.C(knowledgefactrelationship.ProvenanceColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -682,9 +682,9 @@ func (_q *KnowledgeRelationshipQuery) loadProvenance(ctx context.Context, query 
 	return nil
 }
 
-func (_q *KnowledgeRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *KnowledgeFactRelationshipQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.KnowledgeRelationship
+	_spec.Node.Schema = _q.schemaConfig.KnowledgeFactRelationship
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -696,8 +696,8 @@ func (_q *KnowledgeRelationshipQuery) sqlCount(ctx context.Context) (int, error)
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *KnowledgeRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(knowledgerelationship.Table, knowledgerelationship.Columns, sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID))
+func (_q *KnowledgeFactRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(knowledgefactrelationship.Table, knowledgefactrelationship.Columns, sqlgraph.NewFieldSpec(knowledgefactrelationship.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -706,20 +706,20 @@ func (_q *KnowledgeRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, knowledgerelationship.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, knowledgefactrelationship.FieldID)
 		for i := range fields {
-			if fields[i] != knowledgerelationship.FieldID {
+			if fields[i] != knowledgefactrelationship.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(knowledgerelationship.FieldTenantID)
+			_spec.Node.AddColumnOnce(knowledgefactrelationship.FieldTenantID)
 		}
-		if _q.withSourceEntity != nil {
-			_spec.Node.AddColumnOnce(knowledgerelationship.FieldSourceEntityID)
+		if _q.withSourceFact != nil {
+			_spec.Node.AddColumnOnce(knowledgefactrelationship.FieldSourceFactID)
 		}
-		if _q.withTargetEntity != nil {
-			_spec.Node.AddColumnOnce(knowledgerelationship.FieldTargetEntityID)
+		if _q.withTargetFact != nil {
+			_spec.Node.AddColumnOnce(knowledgefactrelationship.FieldTargetFactID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -745,12 +745,12 @@ func (_q *KnowledgeRelationshipQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *KnowledgeRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *KnowledgeFactRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(knowledgerelationship.Table)
+	t1 := builder.Table(knowledgefactrelationship.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = knowledgerelationship.Columns
+		columns = knowledgefactrelationship.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -760,7 +760,7 @@ func (_q *KnowledgeRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selecto
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.KnowledgeRelationship)
+	t1.Schema(_q.schemaConfig.KnowledgeFactRelationship)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -784,33 +784,33 @@ func (_q *KnowledgeRelationshipQuery) sqlQuery(ctx context.Context) *sql.Selecto
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *KnowledgeRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeRelationshipSelect {
+func (_q *KnowledgeFactRelationshipQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeFactRelationshipSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// KnowledgeRelationshipGroupBy is the group-by builder for KnowledgeRelationship entities.
-type KnowledgeRelationshipGroupBy struct {
+// KnowledgeFactRelationshipGroupBy is the group-by builder for KnowledgeFactRelationship entities.
+type KnowledgeFactRelationshipGroupBy struct {
 	selector
-	build *KnowledgeRelationshipQuery
+	build *KnowledgeFactRelationshipQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *KnowledgeRelationshipGroupBy) Aggregate(fns ...AggregateFunc) *KnowledgeRelationshipGroupBy {
+func (_g *KnowledgeFactRelationshipGroupBy) Aggregate(fns ...AggregateFunc) *KnowledgeFactRelationshipGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *KnowledgeRelationshipGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *KnowledgeFactRelationshipGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*KnowledgeRelationshipQuery, *KnowledgeRelationshipGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*KnowledgeFactRelationshipQuery, *KnowledgeFactRelationshipGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *KnowledgeRelationshipGroupBy) sqlScan(ctx context.Context, root *KnowledgeRelationshipQuery, v any) error {
+func (_g *KnowledgeFactRelationshipGroupBy) sqlScan(ctx context.Context, root *KnowledgeFactRelationshipQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -837,28 +837,28 @@ func (_g *KnowledgeRelationshipGroupBy) sqlScan(ctx context.Context, root *Knowl
 	return sql.ScanSlice(rows, v)
 }
 
-// KnowledgeRelationshipSelect is the builder for selecting fields of KnowledgeRelationship entities.
-type KnowledgeRelationshipSelect struct {
-	*KnowledgeRelationshipQuery
+// KnowledgeFactRelationshipSelect is the builder for selecting fields of KnowledgeFactRelationship entities.
+type KnowledgeFactRelationshipSelect struct {
+	*KnowledgeFactRelationshipQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *KnowledgeRelationshipSelect) Aggregate(fns ...AggregateFunc) *KnowledgeRelationshipSelect {
+func (_s *KnowledgeFactRelationshipSelect) Aggregate(fns ...AggregateFunc) *KnowledgeFactRelationshipSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *KnowledgeRelationshipSelect) Scan(ctx context.Context, v any) error {
+func (_s *KnowledgeFactRelationshipSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*KnowledgeRelationshipQuery, *KnowledgeRelationshipSelect](ctx, _s.KnowledgeRelationshipQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*KnowledgeFactRelationshipQuery, *KnowledgeFactRelationshipSelect](ctx, _s.KnowledgeFactRelationshipQuery, _s, _s.inters, v)
 }
 
-func (_s *KnowledgeRelationshipSelect) sqlScan(ctx context.Context, root *KnowledgeRelationshipQuery, v any) error {
+func (_s *KnowledgeFactRelationshipSelect) sqlScan(ctx context.Context, root *KnowledgeFactRelationshipQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -880,7 +880,7 @@ func (_s *KnowledgeRelationshipSelect) sqlScan(ctx context.Context, root *Knowle
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *KnowledgeRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeRelationshipSelect {
+func (_s *KnowledgeFactRelationshipSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeFactRelationshipSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

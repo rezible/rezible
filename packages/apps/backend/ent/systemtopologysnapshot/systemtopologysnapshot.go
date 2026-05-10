@@ -109,17 +109,13 @@ var (
 // Scope defines the type for the "scope" enum field.
 type Scope string
 
-// ScopeExplicitEntities is the default value of the Scope enum.
-const DefaultScope = ScopeExplicitEntities
+// ScopeAll is the default value of the Scope enum.
+const DefaultScope = ScopeAll
 
 // Scope values.
 const (
-	ScopeExplicitEntities Scope = "explicit_entities"
-	ScopeRootEntities     Scope = "root_entities"
-	ScopeIncident         Scope = "incident"
-	ScopeRetrospective    Scope = "retrospective"
-	ScopeSearch           Scope = "search"
-	ScopeAnalysis         Scope = "analysis"
+	ScopeAll      Scope = "all"
+	ScopeIncident Scope = "incident"
 )
 
 func (s Scope) String() string {
@@ -129,7 +125,7 @@ func (s Scope) String() string {
 // ScopeValidator is a validator for the "scope" field enum values. It is called by the builders before save.
 func ScopeValidator(s Scope) error {
 	switch s {
-	case ScopeExplicitEntities, ScopeRootEntities, ScopeIncident, ScopeRetrospective, ScopeSearch, ScopeAnalysis:
+	case ScopeAll, ScopeIncident:
 		return nil
 	default:
 		return fmt.Errorf("systemtopologysnapshot: invalid enum value for scope field: %q", s)

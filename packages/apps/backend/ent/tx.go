@@ -70,16 +70,14 @@ type Tx struct {
 	Integration *IntegrationClient
 	// IntegrationOAuthState is the client for interacting with the IntegrationOAuthState builders.
 	IntegrationOAuthState *IntegrationOAuthStateClient
-	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
-	KnowledgeEntity *KnowledgeEntityClient
-	// KnowledgeEntityAlias is the client for interacting with the KnowledgeEntityAlias builders.
-	KnowledgeEntityAlias *KnowledgeEntityAliasClient
-	// KnowledgeFactHistory is the client for interacting with the KnowledgeFactHistory builders.
-	KnowledgeFactHistory *KnowledgeFactHistoryClient
+	// KnowledgeFact is the client for interacting with the KnowledgeFact builders.
+	KnowledgeFact *KnowledgeFactClient
+	// KnowledgeFactAlias is the client for interacting with the KnowledgeFactAlias builders.
+	KnowledgeFactAlias *KnowledgeFactAliasClient
 	// KnowledgeFactProvenance is the client for interacting with the KnowledgeFactProvenance builders.
 	KnowledgeFactProvenance *KnowledgeFactProvenanceClient
-	// KnowledgeRelationship is the client for interacting with the KnowledgeRelationship builders.
-	KnowledgeRelationship *KnowledgeRelationshipClient
+	// KnowledgeFactRelationship is the client for interacting with the KnowledgeFactRelationship builders.
+	KnowledgeFactRelationship *KnowledgeFactRelationshipClient
 	// MeetingSchedule is the client for interacting with the MeetingSchedule builders.
 	MeetingSchedule *MeetingScheduleClient
 	// MeetingSession is the client for interacting with the MeetingSession builders.
@@ -308,11 +306,10 @@ func (tx *Tx) init() {
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.Integration = NewIntegrationClient(tx.config)
 	tx.IntegrationOAuthState = NewIntegrationOAuthStateClient(tx.config)
-	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
-	tx.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(tx.config)
-	tx.KnowledgeFactHistory = NewKnowledgeFactHistoryClient(tx.config)
+	tx.KnowledgeFact = NewKnowledgeFactClient(tx.config)
+	tx.KnowledgeFactAlias = NewKnowledgeFactAliasClient(tx.config)
 	tx.KnowledgeFactProvenance = NewKnowledgeFactProvenanceClient(tx.config)
-	tx.KnowledgeRelationship = NewKnowledgeRelationshipClient(tx.config)
+	tx.KnowledgeFactRelationship = NewKnowledgeFactRelationshipClient(tx.config)
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.NormalizedEvent = NewNormalizedEventClient(tx.config)

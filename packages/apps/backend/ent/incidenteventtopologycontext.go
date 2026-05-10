@@ -12,7 +12,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgefact"
 	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -47,7 +47,7 @@ type IncidentEventTopologyContextEdges struct {
 	// Event holds the value of the event edge.
 	Event *IncidentEvent `json:"event,omitempty"`
 	// KnowledgeEntity holds the value of the knowledge_entity edge.
-	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
+	KnowledgeEntity *KnowledgeFact `json:"knowledge_entity,omitempty"`
 	// SnapshotEntity holds the value of the snapshot_entity edge.
 	SnapshotEntity *SystemTopologySnapshotEntity `json:"snapshot_entity,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -79,11 +79,11 @@ func (e IncidentEventTopologyContextEdges) EventOrErr() (*IncidentEvent, error) 
 
 // KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e IncidentEventTopologyContextEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+func (e IncidentEventTopologyContextEdges) KnowledgeEntityOrErr() (*KnowledgeFact, error) {
 	if e.KnowledgeEntity != nil {
 		return e.KnowledgeEntity, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: knowledgeentity.Label}
+		return nil, &NotFoundError{label: knowledgefact.Label}
 	}
 	return nil, &NotLoadedError{edge: "knowledge_entity"}
 }
@@ -197,7 +197,7 @@ func (_m *IncidentEventTopologyContext) QueryEvent() *IncidentEventQuery {
 }
 
 // QueryKnowledgeEntity queries the "knowledge_entity" edge of the IncidentEventTopologyContext entity.
-func (_m *IncidentEventTopologyContext) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+func (_m *IncidentEventTopologyContext) QueryKnowledgeEntity() *KnowledgeFactQuery {
 	return NewIncidentEventTopologyContextClient(_m.config).QueryKnowledgeEntity(_m)
 }
 

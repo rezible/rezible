@@ -13,7 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgefactrelationship"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemtopologysnapshot"
@@ -177,14 +177,14 @@ func (_u *SystemTopologySnapshotRelationshipUpdate) SetNillableCreatedAt(v *time
 	return _u
 }
 
+// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeFactRelationship entity.
+func (_u *SystemTopologySnapshotRelationshipUpdate) SetKnowledgeRelationship(v *KnowledgeFactRelationship) *SystemTopologySnapshotRelationshipUpdate {
+	return _u.SetKnowledgeRelationshipID(v.ID)
+}
+
 // SetSnapshot sets the "snapshot" edge to the SystemTopologySnapshot entity.
 func (_u *SystemTopologySnapshotRelationshipUpdate) SetSnapshot(v *SystemTopologySnapshot) *SystemTopologySnapshotRelationshipUpdate {
 	return _u.SetSnapshotID(v.ID)
-}
-
-// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemTopologySnapshotRelationshipUpdate) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemTopologySnapshotRelationshipUpdate {
-	return _u.SetKnowledgeRelationshipID(v.ID)
 }
 
 // SetSourceSnapshotEntity sets the "source_snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
@@ -217,15 +217,15 @@ func (_u *SystemTopologySnapshotRelationshipUpdate) Mutation() *SystemTopologySn
 	return _u.mutation
 }
 
-// ClearSnapshot clears the "snapshot" edge to the SystemTopologySnapshot entity.
-func (_u *SystemTopologySnapshotRelationshipUpdate) ClearSnapshot() *SystemTopologySnapshotRelationshipUpdate {
-	_u.mutation.ClearSnapshot()
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeFactRelationship entity.
+func (_u *SystemTopologySnapshotRelationshipUpdate) ClearKnowledgeRelationship() *SystemTopologySnapshotRelationshipUpdate {
+	_u.mutation.ClearKnowledgeRelationship()
 	return _u
 }
 
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemTopologySnapshotRelationshipUpdate) ClearKnowledgeRelationship() *SystemTopologySnapshotRelationshipUpdate {
-	_u.mutation.ClearKnowledgeRelationship()
+// ClearSnapshot clears the "snapshot" edge to the SystemTopologySnapshot entity.
+func (_u *SystemTopologySnapshotRelationshipUpdate) ClearSnapshot() *SystemTopologySnapshotRelationshipUpdate {
+	_u.mutation.ClearSnapshot()
 	return _u
 }
 
@@ -353,6 +353,37 @@ func (_u *SystemTopologySnapshotRelationshipUpdate) sqlSave(ctx context.Context)
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemtopologysnapshotrelationship.FieldCreatedAt, field.TypeTime, value)
 	}
+	if _u.mutation.KnowledgeRelationshipCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
+			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgefactrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
+			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgefactrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.SnapshotCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -376,37 +407,6 @@ func (_u *SystemTopologySnapshotRelationshipUpdate) sqlSave(ctx context.Context)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeRelationshipCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
@@ -691,14 +691,14 @@ func (_u *SystemTopologySnapshotRelationshipUpdateOne) SetNillableCreatedAt(v *t
 	return _u
 }
 
+// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeFactRelationship entity.
+func (_u *SystemTopologySnapshotRelationshipUpdateOne) SetKnowledgeRelationship(v *KnowledgeFactRelationship) *SystemTopologySnapshotRelationshipUpdateOne {
+	return _u.SetKnowledgeRelationshipID(v.ID)
+}
+
 // SetSnapshot sets the "snapshot" edge to the SystemTopologySnapshot entity.
 func (_u *SystemTopologySnapshotRelationshipUpdateOne) SetSnapshot(v *SystemTopologySnapshot) *SystemTopologySnapshotRelationshipUpdateOne {
 	return _u.SetSnapshotID(v.ID)
-}
-
-// SetKnowledgeRelationship sets the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemTopologySnapshotRelationshipUpdateOne) SetKnowledgeRelationship(v *KnowledgeRelationship) *SystemTopologySnapshotRelationshipUpdateOne {
-	return _u.SetKnowledgeRelationshipID(v.ID)
 }
 
 // SetSourceSnapshotEntity sets the "source_snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
@@ -731,15 +731,15 @@ func (_u *SystemTopologySnapshotRelationshipUpdateOne) Mutation() *SystemTopolog
 	return _u.mutation
 }
 
-// ClearSnapshot clears the "snapshot" edge to the SystemTopologySnapshot entity.
-func (_u *SystemTopologySnapshotRelationshipUpdateOne) ClearSnapshot() *SystemTopologySnapshotRelationshipUpdateOne {
-	_u.mutation.ClearSnapshot()
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeFactRelationship entity.
+func (_u *SystemTopologySnapshotRelationshipUpdateOne) ClearKnowledgeRelationship() *SystemTopologySnapshotRelationshipUpdateOne {
+	_u.mutation.ClearKnowledgeRelationship()
 	return _u
 }
 
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (_u *SystemTopologySnapshotRelationshipUpdateOne) ClearKnowledgeRelationship() *SystemTopologySnapshotRelationshipUpdateOne {
-	_u.mutation.ClearKnowledgeRelationship()
+// ClearSnapshot clears the "snapshot" edge to the SystemTopologySnapshot entity.
+func (_u *SystemTopologySnapshotRelationshipUpdateOne) ClearSnapshot() *SystemTopologySnapshotRelationshipUpdateOne {
+	_u.mutation.ClearSnapshot()
 	return _u
 }
 
@@ -897,6 +897,37 @@ func (_u *SystemTopologySnapshotRelationshipUpdateOne) sqlSave(ctx context.Conte
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(systemtopologysnapshotrelationship.FieldCreatedAt, field.TypeTime, value)
 	}
+	if _u.mutation.KnowledgeRelationshipCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
+			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgefactrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
+			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgefactrelationship.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.SnapshotCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -920,37 +951,6 @@ func (_u *SystemTopologySnapshotRelationshipUpdateOne) sqlSave(ctx context.Conte
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(systemtopologysnapshot.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.KnowledgeRelationshipCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.KnowledgeRelationshipIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   systemtopologysnapshotrelationship.KnowledgeRelationshipTable,
-			Columns: []string{systemtopologysnapshotrelationship.KnowledgeRelationshipColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.SystemTopologySnapshotRelationship

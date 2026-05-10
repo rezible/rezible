@@ -62,6 +62,12 @@ type (
 		Description    string                        `json:"description"`
 	}
 
+	SystemAnalysisDiagramPosition struct {
+		X float64  `json:"x"`
+		Y float64  `json:"y"`
+		Z *float64 `json:"z,omitempty"`
+	}
+
 	SystemAnalysisEdge struct {
 		Id         uuid.UUID                            `json:"id"`
 		Attributes SystemAnalysisTopologyEdgeAttributes `json:"attributes"`
@@ -69,12 +75,6 @@ type (
 	SystemAnalysisTopologyEdgeAttributes struct {
 		SnapshotRelationship SystemTopologySnapshotRelationship `json:"snapshotRelationship"`
 		Description          string                             `json:"description"`
-	}
-
-	SystemAnalysisDiagramPosition struct {
-		X float64  `json:"x"`
-		Y float64  `json:"y"`
-		Z *float64 `json:"z,omitempty"`
 	}
 )
 

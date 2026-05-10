@@ -2,17 +2,11 @@ package apiv1
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/danielgtaylor/huma/v2"
-	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	ke "github.com/rezible/rezible/ent/knowledgeentity"
 	sa "github.com/rezible/rezible/ent/systemanalysis"
 	sate "github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	satn "github.com/rezible/rezible/ent/systemanalysistopologynode"
-	sts "github.com/rezible/rezible/ent/systemtopologysnapshot"
-	stse "github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -22,83 +16,6 @@ type systemAnalysisHandler struct {
 
 func newSystemAnalysisHandler(db *ent.Client) *systemAnalysisHandler {
 	return &systemAnalysisHandler{db: db}
-}
-
-func snapshotAliases(aliases []*ent.KnowledgeEntityAlias) []map[string]any {
-	res := make([]map[string]any, len(aliases))
-	for i, alias := range aliases {
-		res[i] = map[string]any{
-			"id":             alias.ID.String(),
-			"provider":       alias.Provider,
-			"providerSource": alias.ProviderSource,
-			"subjectKind":    alias.SubjectKind,
-			"subjectRef":     alias.SubjectRef,
-			"firstSeenAt":    alias.FirstSeenAt,
-			"lastSeenAt":     alias.LastSeenAt,
-		}
-	}
-	return res
-}
-
-func ensureAnalysisSnapshot(ctx context.Context, tx *ent.Tx, analysis *ent.SystemAnalysis) (*ent.SystemAnalysis, error) {
-	if analysis.TopologySnapshotID != nil {
-		return analysis, nil
-	}
-
-	snapshot, createSnapshotErr := tx.SystemTopologySnapshot.Create().
-		SetScope(sts.ScopeAnalysis).
-		SetScopeProperties(map[string]any{
-			"analysisId": analysis.ID.String(),
-		}).
-		Save(ctx)
-	if createSnapshotErr != nil {
-		return nil, fmt.Errorf("create topology snapshot: %w", createSnapshotErr)
-	}
-
-	updated, updateErr := tx.SystemAnalysis.UpdateOneID(analysis.ID).
-		SetTopologySnapshotID(snapshot.ID).
-		Save(ctx)
-	if updateErr != nil {
-		return nil, fmt.Errorf("attach topology snapshot: %w", updateErr)
-	}
-	return updated, nil
-}
-
-func copyKnowledgeEntityToSnapshot(ctx context.Context, tx *ent.Tx, snapshotID uuid.UUID, knowledgeEntityID uuid.UUID) (*ent.SystemTopologySnapshotEntity, error) {
-	existing, existingErr := tx.SystemTopologySnapshotEntity.Query().
-		Where(
-			stse.SnapshotID(snapshotID),
-			stse.KnowledgeEntityID(knowledgeEntityID),
-		).
-		Only(ctx)
-	if existingErr == nil {
-		return existing, nil
-	}
-	if !ent.IsNotFound(existingErr) {
-		return nil, fmt.Errorf("query existing snapshot entity: %w", existingErr)
-	}
-
-	entity, entityErr := tx.KnowledgeEntity.Query().
-		Where(ke.ID(knowledgeEntityID)).
-		WithAliases().
-		Only(ctx)
-	if entityErr != nil {
-		return nil, fmt.Errorf("query knowledge entity: %w", entityErr)
-	}
-
-	snapshotEntity, createErr := tx.SystemTopologySnapshotEntity.Create().
-		SetSnapshotID(snapshotID).
-		SetKnowledgeEntityID(entity.ID).
-		SetEntityKind(entity.Kind).
-		SetDisplayName(entity.DisplayName).
-		SetDescription(entity.Description).
-		SetProperties(entity.Properties).
-		SetAliases(snapshotAliases(entity.Edges.Aliases)).
-		Save(ctx)
-	if createErr != nil {
-		return nil, fmt.Errorf("create snapshot entity: %w", createErr)
-	}
-	return snapshotEntity, nil
 }
 
 func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *oapi.GetSystemAnalysisRequest) (*oapi.GetSystemAnalysisResponse, error) {
@@ -145,51 +62,6 @@ func (s *systemAnalysisHandler) ListSystemAnalysisNodes(ctx context.Context, req
 
 func (s *systemAnalysisHandler) AddSystemAnalysisNode(ctx context.Context, request *oapi.AddSystemAnalysisNodeRequest) (*oapi.AddSystemAnalysisNodeResponse, error) {
 	var resp oapi.AddSystemAnalysisNodeResponse
-
-	attr := request.Body.Attributes
-	if attr.SnapshotEntityId == nil && attr.KnowledgeEntityId == nil {
-		return nil, huma.Error400BadRequest("snapshotEntityId or knowledgeEntityId is required")
-	}
-
-	var added *ent.SystemAnalysisTopologyNode
-	var addedSnapshotEntityID uuid.UUID
-	txErr := ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {
-		snapshotEntityID := attr.SnapshotEntityId
-		if snapshotEntityID == nil {
-			analysis, analysisErr := tx.SystemAnalysis.Get(ctx, request.Id)
-			if analysisErr != nil {
-				return fmt.Errorf("query analysis: %w", analysisErr)
-			}
-			analysis, analysisErr = ensureAnalysisSnapshot(ctx, tx, analysis)
-			if analysisErr != nil {
-				return analysisErr
-			}
-			snapshotEntity, snapshotEntityErr := copyKnowledgeEntityToSnapshot(ctx, tx, *analysis.TopologySnapshotID, *attr.KnowledgeEntityId)
-			if snapshotEntityErr != nil {
-				return snapshotEntityErr
-			}
-			snapshotEntityID = &snapshotEntity.ID
-		}
-
-		var addErr error
-		added, addErr = tx.SystemAnalysisTopologyNode.Create().
-			SetAnalysisID(request.Id).
-			SetSnapshotEntityID(*snapshotEntityID).
-			SetPosY(attr.Position.Y).
-			SetPosX(attr.Position.X).
-			SetDescription(attr.Description).
-			Save(ctx)
-		if addErr != nil {
-			return fmt.Errorf("create analysis node: %w", addErr)
-		}
-		addedSnapshotEntityID = *snapshotEntityID
-		return nil
-	})
-	if txErr != nil {
-		return nil, oapi.Error(ctx, "failed to add system analysis node", txErr)
-	}
-	added.Edges.SnapshotEntity, _ = s.db.SystemTopologySnapshotEntity.Get(ctx, addedSnapshotEntityID)
-	resp.Body.Data = oapi.SystemAnalysisNodeFromEnt(added)
 
 	return &resp, nil
 }

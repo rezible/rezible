@@ -236,28 +236,20 @@ func (c *IntegrationOAuthStateClient) Debug() *IntegrationOAuthStateClient {
 	return &IntegrationOAuthStateClient{config: cfg}
 }
 
-func (c *KnowledgeEntityClient) Debug() *KnowledgeEntityClient {
+func (c *KnowledgeFactClient) Debug() *KnowledgeFactClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &KnowledgeEntityClient{config: cfg}
+	return &KnowledgeFactClient{config: cfg}
 }
 
-func (c *KnowledgeEntityAliasClient) Debug() *KnowledgeEntityAliasClient {
+func (c *KnowledgeFactAliasClient) Debug() *KnowledgeFactAliasClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &KnowledgeEntityAliasClient{config: cfg}
-}
-
-func (c *KnowledgeFactHistoryClient) Debug() *KnowledgeFactHistoryClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &KnowledgeFactHistoryClient{config: cfg}
+	return &KnowledgeFactAliasClient{config: cfg}
 }
 
 func (c *KnowledgeFactProvenanceClient) Debug() *KnowledgeFactProvenanceClient {
@@ -268,12 +260,12 @@ func (c *KnowledgeFactProvenanceClient) Debug() *KnowledgeFactProvenanceClient {
 	return &KnowledgeFactProvenanceClient{config: cfg}
 }
 
-func (c *KnowledgeRelationshipClient) Debug() *KnowledgeRelationshipClient {
+func (c *KnowledgeFactRelationshipClient) Debug() *KnowledgeFactRelationshipClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &KnowledgeRelationshipClient{config: cfg}
+	return &KnowledgeFactRelationshipClient{config: cfg}
 }
 
 func (c *MeetingScheduleClient) Debug() *MeetingScheduleClient {

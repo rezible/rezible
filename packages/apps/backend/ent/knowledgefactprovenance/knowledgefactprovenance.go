@@ -28,18 +28,8 @@ const (
 	FieldRelationshipID = "relationship_id"
 	// FieldNormalizedEventID holds the string denoting the normalized_event_id field in the database.
 	FieldNormalizedEventID = "normalized_event_id"
-	// FieldProvider holds the string denoting the provider field in the database.
-	FieldProvider = "provider"
-	// FieldProviderSource holds the string denoting the provider_source field in the database.
-	FieldProviderSource = "provider_source"
-	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
-	FieldProviderEventRef = "provider_event_ref"
-	// FieldExtractionMethod holds the string denoting the extraction_method field in the database.
-	FieldExtractionMethod = "extraction_method"
-	// FieldFirstSeenAt holds the string denoting the first_seen_at field in the database.
-	FieldFirstSeenAt = "first_seen_at"
-	// FieldLastSeenAt holds the string denoting the last_seen_at field in the database.
-	FieldLastSeenAt = "last_seen_at"
+	// FieldSource holds the string denoting the source field in the database.
+	FieldSource = "source"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAlias holds the string denoting the alias edge name in mutations.
@@ -59,16 +49,16 @@ const (
 	TenantColumn = "tenant_id"
 	// AliasTable is the table that holds the alias relation/edge.
 	AliasTable = "knowledge_fact_provenances"
-	// AliasInverseTable is the table name for the KnowledgeEntityAlias entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentityalias" package.
-	AliasInverseTable = "knowledge_entity_alias"
+	// AliasInverseTable is the table name for the KnowledgeFactAlias entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgefactalias" package.
+	AliasInverseTable = "knowledge_fact_alias"
 	// AliasColumn is the table column denoting the alias relation/edge.
 	AliasColumn = "alias_id"
 	// RelationshipTable is the table that holds the relationship relation/edge.
 	RelationshipTable = "knowledge_fact_provenances"
-	// RelationshipInverseTable is the table name for the KnowledgeRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgerelationship" package.
-	RelationshipInverseTable = "knowledge_relationships"
+	// RelationshipInverseTable is the table name for the KnowledgeFactRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgefactrelationship" package.
+	RelationshipInverseTable = "knowledge_fact_relationships"
 	// RelationshipColumn is the table column denoting the relationship relation/edge.
 	RelationshipColumn = "relationship_id"
 	// NormalizedEventTable is the table that holds the normalized_event relation/edge.
@@ -89,12 +79,7 @@ var Columns = []string{
 	FieldAliasID,
 	FieldRelationshipID,
 	FieldNormalizedEventID,
-	FieldProvider,
-	FieldProviderSource,
-	FieldProviderEventRef,
-	FieldExtractionMethod,
-	FieldFirstSeenAt,
-	FieldLastSeenAt,
+	FieldSource,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -121,18 +106,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
-	ProviderValidator func(string) error
-	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	ProviderSourceValidator func(string) error
-	// ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
-	ProviderEventRefValidator func(string) error
-	// ExtractionMethodValidator is a validator for the "extraction_method" field. It is called by the builders before save.
-	ExtractionMethodValidator func(string) error
-	// DefaultFirstSeenAt holds the default value on creation for the "first_seen_at" field.
-	DefaultFirstSeenAt func() time.Time
-	// DefaultLastSeenAt holds the default value on creation for the "last_seen_at" field.
-	DefaultLastSeenAt func() time.Time
+	// SourceValidator is a validator for the "source" field. It is called by the builders before save.
+	SourceValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -175,34 +150,9 @@ func ByNormalizedEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNormalizedEventID, opts...).ToFunc()
 }
 
-// ByProvider orders the results by the provider field.
-func ByProvider(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProvider, opts...).ToFunc()
-}
-
-// ByProviderSource orders the results by the provider_source field.
-func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
-}
-
-// ByProviderEventRef orders the results by the provider_event_ref field.
-func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
-}
-
-// ByExtractionMethod orders the results by the extraction_method field.
-func ByExtractionMethod(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExtractionMethod, opts...).ToFunc()
-}
-
-// ByFirstSeenAt orders the results by the first_seen_at field.
-func ByFirstSeenAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFirstSeenAt, opts...).ToFunc()
-}
-
-// ByLastSeenAt orders the results by the last_seen_at field.
-func ByLastSeenAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldLastSeenAt, opts...).ToFunc()
+// BySource orders the results by the source field.
+func BySource(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSource, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

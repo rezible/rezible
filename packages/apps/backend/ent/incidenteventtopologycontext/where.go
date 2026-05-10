@@ -308,18 +308,18 @@ func HasKnowledgeEntity() predicate.IncidentEventTopologyContext {
 			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.To.Schema = schemaConfig.KnowledgeFact
 		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
-func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.IncidentEventTopologyContext {
+func HasKnowledgeEntityWith(preds ...predicate.KnowledgeFact) predicate.IncidentEventTopologyContext {
 	return predicate.IncidentEventTopologyContext(func(s *sql.Selector) {
 		step := newKnowledgeEntityStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.To.Schema = schemaConfig.KnowledgeFact
 		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

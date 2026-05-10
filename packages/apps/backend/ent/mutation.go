@@ -41,11 +41,10 @@ import (
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
-	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
-	"github.com/rezible/rezible/ent/knowledgefacthistory"
+	"github.com/rezible/rezible/ent/knowledgefact"
+	"github.com/rezible/rezible/ent/knowledgefactalias"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgefactrelationship"
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
@@ -120,11 +119,10 @@ const (
 	TypeIncidentType                       = "IncidentType"
 	TypeIntegration                        = "Integration"
 	TypeIntegrationOAuthState              = "IntegrationOAuthState"
-	TypeKnowledgeEntity                    = "KnowledgeEntity"
-	TypeKnowledgeEntityAlias               = "KnowledgeEntityAlias"
-	TypeKnowledgeFactHistory               = "KnowledgeFactHistory"
+	TypeKnowledgeFact                      = "KnowledgeFact"
+	TypeKnowledgeFactAlias                 = "KnowledgeFactAlias"
 	TypeKnowledgeFactProvenance            = "KnowledgeFactProvenance"
-	TypeKnowledgeRelationship              = "KnowledgeRelationship"
+	TypeKnowledgeFactRelationship          = "KnowledgeFactRelationship"
 	TypeMeetingSchedule                    = "MeetingSchedule"
 	TypeMeetingSession                     = "MeetingSession"
 	TypeNormalizedEvent                    = "NormalizedEvent"
@@ -15687,13 +15685,13 @@ func (m *IncidentEventTopologyContextMutation) ResetEvent() {
 	m.clearedevent = false
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeFact entity.
 func (m *IncidentEventTopologyContextMutation) ClearKnowledgeEntity() {
 	m.clearedknowledge_entity = true
 	m.clearedFields[incidenteventtopologycontext.FieldKnowledgeEntityID] = struct{}{}
 }
 
-// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeFact entity was cleared.
 func (m *IncidentEventTopologyContextMutation) KnowledgeEntityCleared() bool {
 	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
 }
@@ -24637,8 +24635,8 @@ func (m *IntegrationOAuthStateMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown IntegrationOAuthState edge %s", name)
 }
 
-// KnowledgeEntityMutation represents an operation that mutates the KnowledgeEntity nodes in the graph.
-type KnowledgeEntityMutation struct {
+// KnowledgeFactMutation represents an operation that mutates the KnowledgeFact nodes in the graph.
+type KnowledgeFactMutation struct {
 	config
 	op                          Op
 	typ                         string
@@ -24662,21 +24660,21 @@ type KnowledgeEntityMutation struct {
 	removedtarget_relationships map[uuid.UUID]struct{}
 	clearedtarget_relationships bool
 	done                        bool
-	oldValue                    func(context.Context) (*KnowledgeEntity, error)
-	predicates                  []predicate.KnowledgeEntity
+	oldValue                    func(context.Context) (*KnowledgeFact, error)
+	predicates                  []predicate.KnowledgeFact
 }
 
-var _ ent.Mutation = (*KnowledgeEntityMutation)(nil)
+var _ ent.Mutation = (*KnowledgeFactMutation)(nil)
 
-// knowledgeentityOption allows management of the mutation configuration using functional options.
-type knowledgeentityOption func(*KnowledgeEntityMutation)
+// knowledgefactOption allows management of the mutation configuration using functional options.
+type knowledgefactOption func(*KnowledgeFactMutation)
 
-// newKnowledgeEntityMutation creates new mutation for the KnowledgeEntity entity.
-func newKnowledgeEntityMutation(c config, op Op, opts ...knowledgeentityOption) *KnowledgeEntityMutation {
-	m := &KnowledgeEntityMutation{
+// newKnowledgeFactMutation creates new mutation for the KnowledgeFact entity.
+func newKnowledgeFactMutation(c config, op Op, opts ...knowledgefactOption) *KnowledgeFactMutation {
+	m := &KnowledgeFactMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeKnowledgeEntity,
+		typ:           TypeKnowledgeFact,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -24685,20 +24683,20 @@ func newKnowledgeEntityMutation(c config, op Op, opts ...knowledgeentityOption) 
 	return m
 }
 
-// withKnowledgeEntityID sets the ID field of the mutation.
-func withKnowledgeEntityID(id uuid.UUID) knowledgeentityOption {
-	return func(m *KnowledgeEntityMutation) {
+// withKnowledgeFactID sets the ID field of the mutation.
+func withKnowledgeFactID(id uuid.UUID) knowledgefactOption {
+	return func(m *KnowledgeFactMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *KnowledgeEntity
+			value *KnowledgeFact
 		)
-		m.oldValue = func(ctx context.Context) (*KnowledgeEntity, error) {
+		m.oldValue = func(ctx context.Context) (*KnowledgeFact, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().KnowledgeEntity.Get(ctx, id)
+					value, err = m.Client().KnowledgeFact.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -24707,10 +24705,10 @@ func withKnowledgeEntityID(id uuid.UUID) knowledgeentityOption {
 	}
 }
 
-// withKnowledgeEntity sets the old KnowledgeEntity of the mutation.
-func withKnowledgeEntity(node *KnowledgeEntity) knowledgeentityOption {
-	return func(m *KnowledgeEntityMutation) {
-		m.oldValue = func(context.Context) (*KnowledgeEntity, error) {
+// withKnowledgeFact sets the old KnowledgeFact of the mutation.
+func withKnowledgeFact(node *KnowledgeFact) knowledgefactOption {
+	return func(m *KnowledgeFactMutation) {
+		m.oldValue = func(context.Context) (*KnowledgeFact, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -24719,7 +24717,7 @@ func withKnowledgeEntity(node *KnowledgeEntity) knowledgeentityOption {
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m KnowledgeEntityMutation) Client() *Client {
+func (m KnowledgeFactMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -24727,7 +24725,7 @@ func (m KnowledgeEntityMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m KnowledgeEntityMutation) Tx() (*Tx, error) {
+func (m KnowledgeFactMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -24737,14 +24735,14 @@ func (m KnowledgeEntityMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of KnowledgeEntity entities.
-func (m *KnowledgeEntityMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of KnowledgeFact entities.
+func (m *KnowledgeFactMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *KnowledgeEntityMutation) ID() (id uuid.UUID, exists bool) {
+func (m *KnowledgeFactMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -24755,7 +24753,7 @@ func (m *KnowledgeEntityMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *KnowledgeEntityMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *KnowledgeFactMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -24764,19 +24762,19 @@ func (m *KnowledgeEntityMutation) IDs(ctx context.Context) ([]uuid.UUID, error) 
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().KnowledgeEntity.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().KnowledgeFact.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *KnowledgeEntityMutation) SetTenantID(i int) {
+func (m *KnowledgeFactMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *KnowledgeEntityMutation) TenantID() (r int, exists bool) {
+func (m *KnowledgeFactMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -24784,10 +24782,10 @@ func (m *KnowledgeEntityMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the KnowledgeFact entity.
+// If the KnowledgeFact object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *KnowledgeFactMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -24802,17 +24800,17 @@ func (m *KnowledgeEntityMutation) OldTenantID(ctx context.Context) (v int, err e
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *KnowledgeEntityMutation) ResetTenantID() {
+func (m *KnowledgeFactMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeEntityMutation) SetCreatedAt(t time.Time) {
+func (m *KnowledgeFactMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeEntityMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *KnowledgeFactMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -24820,10 +24818,10 @@ func (m *KnowledgeEntityMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeFact entity.
+// If the KnowledgeFact object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *KnowledgeFactMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -24838,17 +24836,17 @@ func (m *KnowledgeEntityMutation) OldCreatedAt(ctx context.Context) (v time.Time
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeEntityMutation) ResetCreatedAt() {
+func (m *KnowledgeFactMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (m *KnowledgeEntityMutation) SetUpdatedAt(t time.Time) {
+func (m *KnowledgeFactMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
 }
 
 // UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *KnowledgeEntityMutation) UpdatedAt() (r time.Time, exists bool) {
+func (m *KnowledgeFactMutation) UpdatedAt() (r time.Time, exists bool) {
 	v := m.updated_at
 	if v == nil {
 		return
@@ -24856,10 +24854,10 @@ func (m *KnowledgeEntityMutation) UpdatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeFact entity.
+// If the KnowledgeFact object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *KnowledgeFactMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
 	}
@@ -24874,17 +24872,17 @@ func (m *KnowledgeEntityMutation) OldUpdatedAt(ctx context.Context) (v time.Time
 }
 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *KnowledgeEntityMutation) ResetUpdatedAt() {
+func (m *KnowledgeFactMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
 // SetKind sets the "kind" field.
-func (m *KnowledgeEntityMutation) SetKind(s string) {
+func (m *KnowledgeFactMutation) SetKind(s string) {
 	m.kind = &s
 }
 
 // Kind returns the value of the "kind" field in the mutation.
-func (m *KnowledgeEntityMutation) Kind() (r string, exists bool) {
+func (m *KnowledgeFactMutation) Kind() (r string, exists bool) {
 	v := m.kind
 	if v == nil {
 		return
@@ -24892,10 +24890,10 @@ func (m *KnowledgeEntityMutation) Kind() (r string, exists bool) {
 	return *v, true
 }
 
-// OldKind returns the old "kind" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// OldKind returns the old "kind" field's value of the KnowledgeFact entity.
+// If the KnowledgeFact object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldKind(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactMutation) OldKind(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKind is only allowed on UpdateOne operations")
 	}
@@ -24910,17 +24908,17 @@ func (m *KnowledgeEntityMutation) OldKind(ctx context.Context) (v string, err er
 }
 
 // ResetKind resets all changes to the "kind" field.
-func (m *KnowledgeEntityMutation) ResetKind() {
+func (m *KnowledgeFactMutation) ResetKind() {
 	m.kind = nil
 }
 
 // SetDisplayName sets the "display_name" field.
-func (m *KnowledgeEntityMutation) SetDisplayName(s string) {
+func (m *KnowledgeFactMutation) SetDisplayName(s string) {
 	m.display_name = &s
 }
 
 // DisplayName returns the value of the "display_name" field in the mutation.
-func (m *KnowledgeEntityMutation) DisplayName() (r string, exists bool) {
+func (m *KnowledgeFactMutation) DisplayName() (r string, exists bool) {
 	v := m.display_name
 	if v == nil {
 		return
@@ -24928,10 +24926,10 @@ func (m *KnowledgeEntityMutation) DisplayName() (r string, exists bool) {
 	return *v, true
 }
 
-// OldDisplayName returns the old "display_name" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// OldDisplayName returns the old "display_name" field's value of the KnowledgeFact entity.
+// If the KnowledgeFact object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactMutation) OldDisplayName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
 	}
@@ -24946,17 +24944,17 @@ func (m *KnowledgeEntityMutation) OldDisplayName(ctx context.Context) (v string,
 }
 
 // ResetDisplayName resets all changes to the "display_name" field.
-func (m *KnowledgeEntityMutation) ResetDisplayName() {
+func (m *KnowledgeFactMutation) ResetDisplayName() {
 	m.display_name = nil
 }
 
 // SetDescription sets the "description" field.
-func (m *KnowledgeEntityMutation) SetDescription(s string) {
+func (m *KnowledgeFactMutation) SetDescription(s string) {
 	m.description = &s
 }
 
 // Description returns the value of the "description" field in the mutation.
-func (m *KnowledgeEntityMutation) Description() (r string, exists bool) {
+func (m *KnowledgeFactMutation) Description() (r string, exists bool) {
 	v := m.description
 	if v == nil {
 		return
@@ -24964,10 +24962,10 @@ func (m *KnowledgeEntityMutation) Description() (r string, exists bool) {
 	return *v, true
 }
 
-// OldDescription returns the old "description" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// OldDescription returns the old "description" field's value of the KnowledgeFact entity.
+// If the KnowledgeFact object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldDescription(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactMutation) OldDescription(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -24982,30 +24980,30 @@ func (m *KnowledgeEntityMutation) OldDescription(ctx context.Context) (v string,
 }
 
 // ClearDescription clears the value of the "description" field.
-func (m *KnowledgeEntityMutation) ClearDescription() {
+func (m *KnowledgeFactMutation) ClearDescription() {
 	m.description = nil
-	m.clearedFields[knowledgeentity.FieldDescription] = struct{}{}
+	m.clearedFields[knowledgefact.FieldDescription] = struct{}{}
 }
 
 // DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *KnowledgeEntityMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[knowledgeentity.FieldDescription]
+func (m *KnowledgeFactMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[knowledgefact.FieldDescription]
 	return ok
 }
 
 // ResetDescription resets all changes to the "description" field.
-func (m *KnowledgeEntityMutation) ResetDescription() {
+func (m *KnowledgeFactMutation) ResetDescription() {
 	m.description = nil
-	delete(m.clearedFields, knowledgeentity.FieldDescription)
+	delete(m.clearedFields, knowledgefact.FieldDescription)
 }
 
 // SetProperties sets the "properties" field.
-func (m *KnowledgeEntityMutation) SetProperties(value map[string]interface{}) {
+func (m *KnowledgeFactMutation) SetProperties(value map[string]interface{}) {
 	m.properties = &value
 }
 
 // Properties returns the value of the "properties" field in the mutation.
-func (m *KnowledgeEntityMutation) Properties() (r map[string]interface{}, exists bool) {
+func (m *KnowledgeFactMutation) Properties() (r map[string]interface{}, exists bool) {
 	v := m.properties
 	if v == nil {
 		return
@@ -25013,10 +25011,10 @@ func (m *KnowledgeEntityMutation) Properties() (r map[string]interface{}, exists
 	return *v, true
 }
 
-// OldProperties returns the old "properties" field's value of the KnowledgeEntity entity.
-// If the KnowledgeEntity object wasn't provided to the builder, the object is fetched from the database.
+// OldProperties returns the old "properties" field's value of the KnowledgeFact entity.
+// If the KnowledgeFact object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *KnowledgeFactMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProperties is only allowed on UpdateOne operations")
 	}
@@ -25031,38 +25029,38 @@ func (m *KnowledgeEntityMutation) OldProperties(ctx context.Context) (v map[stri
 }
 
 // ClearProperties clears the value of the "properties" field.
-func (m *KnowledgeEntityMutation) ClearProperties() {
+func (m *KnowledgeFactMutation) ClearProperties() {
 	m.properties = nil
-	m.clearedFields[knowledgeentity.FieldProperties] = struct{}{}
+	m.clearedFields[knowledgefact.FieldProperties] = struct{}{}
 }
 
 // PropertiesCleared returns if the "properties" field was cleared in this mutation.
-func (m *KnowledgeEntityMutation) PropertiesCleared() bool {
-	_, ok := m.clearedFields[knowledgeentity.FieldProperties]
+func (m *KnowledgeFactMutation) PropertiesCleared() bool {
+	_, ok := m.clearedFields[knowledgefact.FieldProperties]
 	return ok
 }
 
 // ResetProperties resets all changes to the "properties" field.
-func (m *KnowledgeEntityMutation) ResetProperties() {
+func (m *KnowledgeFactMutation) ResetProperties() {
 	m.properties = nil
-	delete(m.clearedFields, knowledgeentity.FieldProperties)
+	delete(m.clearedFields, knowledgefact.FieldProperties)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *KnowledgeEntityMutation) ClearTenant() {
+func (m *KnowledgeFactMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[knowledgeentity.FieldTenantID] = struct{}{}
+	m.clearedFields[knowledgefact.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *KnowledgeEntityMutation) TenantCleared() bool {
+func (m *KnowledgeFactMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeEntityMutation) TenantIDs() (ids []int) {
+func (m *KnowledgeFactMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -25070,13 +25068,13 @@ func (m *KnowledgeEntityMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *KnowledgeEntityMutation) ResetTenant() {
+func (m *KnowledgeFactMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
-// AddAliasIDs adds the "aliases" edge to the KnowledgeEntityAlias entity by ids.
-func (m *KnowledgeEntityMutation) AddAliasIDs(ids ...uuid.UUID) {
+// AddAliasIDs adds the "aliases" edge to the KnowledgeFactAlias entity by ids.
+func (m *KnowledgeFactMutation) AddAliasIDs(ids ...uuid.UUID) {
 	if m.aliases == nil {
 		m.aliases = make(map[uuid.UUID]struct{})
 	}
@@ -25085,18 +25083,18 @@ func (m *KnowledgeEntityMutation) AddAliasIDs(ids ...uuid.UUID) {
 	}
 }
 
-// ClearAliases clears the "aliases" edge to the KnowledgeEntityAlias entity.
-func (m *KnowledgeEntityMutation) ClearAliases() {
+// ClearAliases clears the "aliases" edge to the KnowledgeFactAlias entity.
+func (m *KnowledgeFactMutation) ClearAliases() {
 	m.clearedaliases = true
 }
 
-// AliasesCleared reports if the "aliases" edge to the KnowledgeEntityAlias entity was cleared.
-func (m *KnowledgeEntityMutation) AliasesCleared() bool {
+// AliasesCleared reports if the "aliases" edge to the KnowledgeFactAlias entity was cleared.
+func (m *KnowledgeFactMutation) AliasesCleared() bool {
 	return m.clearedaliases
 }
 
-// RemoveAliasIDs removes the "aliases" edge to the KnowledgeEntityAlias entity by IDs.
-func (m *KnowledgeEntityMutation) RemoveAliasIDs(ids ...uuid.UUID) {
+// RemoveAliasIDs removes the "aliases" edge to the KnowledgeFactAlias entity by IDs.
+func (m *KnowledgeFactMutation) RemoveAliasIDs(ids ...uuid.UUID) {
 	if m.removedaliases == nil {
 		m.removedaliases = make(map[uuid.UUID]struct{})
 	}
@@ -25106,8 +25104,8 @@ func (m *KnowledgeEntityMutation) RemoveAliasIDs(ids ...uuid.UUID) {
 	}
 }
 
-// RemovedAliases returns the removed IDs of the "aliases" edge to the KnowledgeEntityAlias entity.
-func (m *KnowledgeEntityMutation) RemovedAliasesIDs() (ids []uuid.UUID) {
+// RemovedAliases returns the removed IDs of the "aliases" edge to the KnowledgeFactAlias entity.
+func (m *KnowledgeFactMutation) RemovedAliasesIDs() (ids []uuid.UUID) {
 	for id := range m.removedaliases {
 		ids = append(ids, id)
 	}
@@ -25115,7 +25113,7 @@ func (m *KnowledgeEntityMutation) RemovedAliasesIDs() (ids []uuid.UUID) {
 }
 
 // AliasesIDs returns the "aliases" edge IDs in the mutation.
-func (m *KnowledgeEntityMutation) AliasesIDs() (ids []uuid.UUID) {
+func (m *KnowledgeFactMutation) AliasesIDs() (ids []uuid.UUID) {
 	for id := range m.aliases {
 		ids = append(ids, id)
 	}
@@ -25123,14 +25121,14 @@ func (m *KnowledgeEntityMutation) AliasesIDs() (ids []uuid.UUID) {
 }
 
 // ResetAliases resets all changes to the "aliases" edge.
-func (m *KnowledgeEntityMutation) ResetAliases() {
+func (m *KnowledgeFactMutation) ResetAliases() {
 	m.aliases = nil
 	m.clearedaliases = false
 	m.removedaliases = nil
 }
 
-// AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeRelationship entity by ids.
-func (m *KnowledgeEntityMutation) AddSourceRelationshipIDs(ids ...uuid.UUID) {
+// AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeFactRelationship entity by ids.
+func (m *KnowledgeFactMutation) AddSourceRelationshipIDs(ids ...uuid.UUID) {
 	if m.source_relationships == nil {
 		m.source_relationships = make(map[uuid.UUID]struct{})
 	}
@@ -25139,18 +25137,18 @@ func (m *KnowledgeEntityMutation) AddSourceRelationshipIDs(ids ...uuid.UUID) {
 	}
 }
 
-// ClearSourceRelationships clears the "source_relationships" edge to the KnowledgeRelationship entity.
-func (m *KnowledgeEntityMutation) ClearSourceRelationships() {
+// ClearSourceRelationships clears the "source_relationships" edge to the KnowledgeFactRelationship entity.
+func (m *KnowledgeFactMutation) ClearSourceRelationships() {
 	m.clearedsource_relationships = true
 }
 
-// SourceRelationshipsCleared reports if the "source_relationships" edge to the KnowledgeRelationship entity was cleared.
-func (m *KnowledgeEntityMutation) SourceRelationshipsCleared() bool {
+// SourceRelationshipsCleared reports if the "source_relationships" edge to the KnowledgeFactRelationship entity was cleared.
+func (m *KnowledgeFactMutation) SourceRelationshipsCleared() bool {
 	return m.clearedsource_relationships
 }
 
-// RemoveSourceRelationshipIDs removes the "source_relationships" edge to the KnowledgeRelationship entity by IDs.
-func (m *KnowledgeEntityMutation) RemoveSourceRelationshipIDs(ids ...uuid.UUID) {
+// RemoveSourceRelationshipIDs removes the "source_relationships" edge to the KnowledgeFactRelationship entity by IDs.
+func (m *KnowledgeFactMutation) RemoveSourceRelationshipIDs(ids ...uuid.UUID) {
 	if m.removedsource_relationships == nil {
 		m.removedsource_relationships = make(map[uuid.UUID]struct{})
 	}
@@ -25160,8 +25158,8 @@ func (m *KnowledgeEntityMutation) RemoveSourceRelationshipIDs(ids ...uuid.UUID) 
 	}
 }
 
-// RemovedSourceRelationships returns the removed IDs of the "source_relationships" edge to the KnowledgeRelationship entity.
-func (m *KnowledgeEntityMutation) RemovedSourceRelationshipsIDs() (ids []uuid.UUID) {
+// RemovedSourceRelationships returns the removed IDs of the "source_relationships" edge to the KnowledgeFactRelationship entity.
+func (m *KnowledgeFactMutation) RemovedSourceRelationshipsIDs() (ids []uuid.UUID) {
 	for id := range m.removedsource_relationships {
 		ids = append(ids, id)
 	}
@@ -25169,7 +25167,7 @@ func (m *KnowledgeEntityMutation) RemovedSourceRelationshipsIDs() (ids []uuid.UU
 }
 
 // SourceRelationshipsIDs returns the "source_relationships" edge IDs in the mutation.
-func (m *KnowledgeEntityMutation) SourceRelationshipsIDs() (ids []uuid.UUID) {
+func (m *KnowledgeFactMutation) SourceRelationshipsIDs() (ids []uuid.UUID) {
 	for id := range m.source_relationships {
 		ids = append(ids, id)
 	}
@@ -25177,14 +25175,14 @@ func (m *KnowledgeEntityMutation) SourceRelationshipsIDs() (ids []uuid.UUID) {
 }
 
 // ResetSourceRelationships resets all changes to the "source_relationships" edge.
-func (m *KnowledgeEntityMutation) ResetSourceRelationships() {
+func (m *KnowledgeFactMutation) ResetSourceRelationships() {
 	m.source_relationships = nil
 	m.clearedsource_relationships = false
 	m.removedsource_relationships = nil
 }
 
-// AddTargetRelationshipIDs adds the "target_relationships" edge to the KnowledgeRelationship entity by ids.
-func (m *KnowledgeEntityMutation) AddTargetRelationshipIDs(ids ...uuid.UUID) {
+// AddTargetRelationshipIDs adds the "target_relationships" edge to the KnowledgeFactRelationship entity by ids.
+func (m *KnowledgeFactMutation) AddTargetRelationshipIDs(ids ...uuid.UUID) {
 	if m.target_relationships == nil {
 		m.target_relationships = make(map[uuid.UUID]struct{})
 	}
@@ -25193,18 +25191,18 @@ func (m *KnowledgeEntityMutation) AddTargetRelationshipIDs(ids ...uuid.UUID) {
 	}
 }
 
-// ClearTargetRelationships clears the "target_relationships" edge to the KnowledgeRelationship entity.
-func (m *KnowledgeEntityMutation) ClearTargetRelationships() {
+// ClearTargetRelationships clears the "target_relationships" edge to the KnowledgeFactRelationship entity.
+func (m *KnowledgeFactMutation) ClearTargetRelationships() {
 	m.clearedtarget_relationships = true
 }
 
-// TargetRelationshipsCleared reports if the "target_relationships" edge to the KnowledgeRelationship entity was cleared.
-func (m *KnowledgeEntityMutation) TargetRelationshipsCleared() bool {
+// TargetRelationshipsCleared reports if the "target_relationships" edge to the KnowledgeFactRelationship entity was cleared.
+func (m *KnowledgeFactMutation) TargetRelationshipsCleared() bool {
 	return m.clearedtarget_relationships
 }
 
-// RemoveTargetRelationshipIDs removes the "target_relationships" edge to the KnowledgeRelationship entity by IDs.
-func (m *KnowledgeEntityMutation) RemoveTargetRelationshipIDs(ids ...uuid.UUID) {
+// RemoveTargetRelationshipIDs removes the "target_relationships" edge to the KnowledgeFactRelationship entity by IDs.
+func (m *KnowledgeFactMutation) RemoveTargetRelationshipIDs(ids ...uuid.UUID) {
 	if m.removedtarget_relationships == nil {
 		m.removedtarget_relationships = make(map[uuid.UUID]struct{})
 	}
@@ -25214,8 +25212,8 @@ func (m *KnowledgeEntityMutation) RemoveTargetRelationshipIDs(ids ...uuid.UUID) 
 	}
 }
 
-// RemovedTargetRelationships returns the removed IDs of the "target_relationships" edge to the KnowledgeRelationship entity.
-func (m *KnowledgeEntityMutation) RemovedTargetRelationshipsIDs() (ids []uuid.UUID) {
+// RemovedTargetRelationships returns the removed IDs of the "target_relationships" edge to the KnowledgeFactRelationship entity.
+func (m *KnowledgeFactMutation) RemovedTargetRelationshipsIDs() (ids []uuid.UUID) {
 	for id := range m.removedtarget_relationships {
 		ids = append(ids, id)
 	}
@@ -25223,7 +25221,7 @@ func (m *KnowledgeEntityMutation) RemovedTargetRelationshipsIDs() (ids []uuid.UU
 }
 
 // TargetRelationshipsIDs returns the "target_relationships" edge IDs in the mutation.
-func (m *KnowledgeEntityMutation) TargetRelationshipsIDs() (ids []uuid.UUID) {
+func (m *KnowledgeFactMutation) TargetRelationshipsIDs() (ids []uuid.UUID) {
 	for id := range m.target_relationships {
 		ids = append(ids, id)
 	}
@@ -25231,21 +25229,21 @@ func (m *KnowledgeEntityMutation) TargetRelationshipsIDs() (ids []uuid.UUID) {
 }
 
 // ResetTargetRelationships resets all changes to the "target_relationships" edge.
-func (m *KnowledgeEntityMutation) ResetTargetRelationships() {
+func (m *KnowledgeFactMutation) ResetTargetRelationships() {
 	m.target_relationships = nil
 	m.clearedtarget_relationships = false
 	m.removedtarget_relationships = nil
 }
 
-// Where appends a list predicates to the KnowledgeEntityMutation builder.
-func (m *KnowledgeEntityMutation) Where(ps ...predicate.KnowledgeEntity) {
+// Where appends a list predicates to the KnowledgeFactMutation builder.
+func (m *KnowledgeFactMutation) Where(ps ...predicate.KnowledgeFact) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the KnowledgeEntityMutation builder. Using this method,
+// WhereP appends storage-level predicates to the KnowledgeFactMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *KnowledgeEntityMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.KnowledgeEntity, len(ps))
+func (m *KnowledgeFactMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KnowledgeFact, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -25253,45 +25251,45 @@ func (m *KnowledgeEntityMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *KnowledgeEntityMutation) Op() Op {
+func (m *KnowledgeFactMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *KnowledgeEntityMutation) SetOp(op Op) {
+func (m *KnowledgeFactMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (KnowledgeEntity).
-func (m *KnowledgeEntityMutation) Type() string {
+// Type returns the node type of this mutation (KnowledgeFact).
+func (m *KnowledgeFactMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *KnowledgeEntityMutation) Fields() []string {
+func (m *KnowledgeFactMutation) Fields() []string {
 	fields := make([]string, 0, 7)
 	if m.tenant != nil {
-		fields = append(fields, knowledgeentity.FieldTenantID)
+		fields = append(fields, knowledgefact.FieldTenantID)
 	}
 	if m.created_at != nil {
-		fields = append(fields, knowledgeentity.FieldCreatedAt)
+		fields = append(fields, knowledgefact.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
-		fields = append(fields, knowledgeentity.FieldUpdatedAt)
+		fields = append(fields, knowledgefact.FieldUpdatedAt)
 	}
 	if m.kind != nil {
-		fields = append(fields, knowledgeentity.FieldKind)
+		fields = append(fields, knowledgefact.FieldKind)
 	}
 	if m.display_name != nil {
-		fields = append(fields, knowledgeentity.FieldDisplayName)
+		fields = append(fields, knowledgefact.FieldDisplayName)
 	}
 	if m.description != nil {
-		fields = append(fields, knowledgeentity.FieldDescription)
+		fields = append(fields, knowledgefact.FieldDescription)
 	}
 	if m.properties != nil {
-		fields = append(fields, knowledgeentity.FieldProperties)
+		fields = append(fields, knowledgefact.FieldProperties)
 	}
 	return fields
 }
@@ -25299,21 +25297,21 @@ func (m *KnowledgeEntityMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *KnowledgeEntityMutation) Field(name string) (ent.Value, bool) {
+func (m *KnowledgeFactMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case knowledgeentity.FieldTenantID:
+	case knowledgefact.FieldTenantID:
 		return m.TenantID()
-	case knowledgeentity.FieldCreatedAt:
+	case knowledgefact.FieldCreatedAt:
 		return m.CreatedAt()
-	case knowledgeentity.FieldUpdatedAt:
+	case knowledgefact.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case knowledgeentity.FieldKind:
+	case knowledgefact.FieldKind:
 		return m.Kind()
-	case knowledgeentity.FieldDisplayName:
+	case knowledgefact.FieldDisplayName:
 		return m.DisplayName()
-	case knowledgeentity.FieldDescription:
+	case knowledgefact.FieldDescription:
 		return m.Description()
-	case knowledgeentity.FieldProperties:
+	case knowledgefact.FieldProperties:
 		return m.Properties()
 	}
 	return nil, false
@@ -25322,74 +25320,74 @@ func (m *KnowledgeEntityMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *KnowledgeEntityMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *KnowledgeFactMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case knowledgeentity.FieldTenantID:
+	case knowledgefact.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case knowledgeentity.FieldCreatedAt:
+	case knowledgefact.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case knowledgeentity.FieldUpdatedAt:
+	case knowledgefact.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case knowledgeentity.FieldKind:
+	case knowledgefact.FieldKind:
 		return m.OldKind(ctx)
-	case knowledgeentity.FieldDisplayName:
+	case knowledgefact.FieldDisplayName:
 		return m.OldDisplayName(ctx)
-	case knowledgeentity.FieldDescription:
+	case knowledgefact.FieldDescription:
 		return m.OldDescription(ctx)
-	case knowledgeentity.FieldProperties:
+	case knowledgefact.FieldProperties:
 		return m.OldProperties(ctx)
 	}
-	return nil, fmt.Errorf("unknown KnowledgeEntity field %s", name)
+	return nil, fmt.Errorf("unknown KnowledgeFact field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *KnowledgeEntityMutation) SetField(name string, value ent.Value) error {
+func (m *KnowledgeFactMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case knowledgeentity.FieldTenantID:
+	case knowledgefact.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case knowledgeentity.FieldCreatedAt:
+	case knowledgefact.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case knowledgeentity.FieldUpdatedAt:
+	case knowledgefact.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case knowledgeentity.FieldKind:
+	case knowledgefact.FieldKind:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetKind(v)
 		return nil
-	case knowledgeentity.FieldDisplayName:
+	case knowledgefact.FieldDisplayName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDisplayName(v)
 		return nil
-	case knowledgeentity.FieldDescription:
+	case knowledgefact.FieldDescription:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
 		return nil
-	case knowledgeentity.FieldProperties:
+	case knowledgefact.FieldProperties:
 		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
@@ -25397,12 +25395,12 @@ func (m *KnowledgeEntityMutation) SetField(name string, value ent.Value) error {
 		m.SetProperties(v)
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
+	return fmt.Errorf("unknown KnowledgeFact field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *KnowledgeEntityMutation) AddedFields() []string {
+func (m *KnowledgeFactMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -25410,7 +25408,7 @@ func (m *KnowledgeEntityMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *KnowledgeEntityMutation) AddedField(name string) (ent.Value, bool) {
+func (m *KnowledgeFactMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -25419,114 +25417,114 @@ func (m *KnowledgeEntityMutation) AddedField(name string) (ent.Value, bool) {
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *KnowledgeEntityMutation) AddField(name string, value ent.Value) error {
+func (m *KnowledgeFactMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown KnowledgeEntity numeric field %s", name)
+	return fmt.Errorf("unknown KnowledgeFact numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *KnowledgeEntityMutation) ClearedFields() []string {
+func (m *KnowledgeFactMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(knowledgeentity.FieldDescription) {
-		fields = append(fields, knowledgeentity.FieldDescription)
+	if m.FieldCleared(knowledgefact.FieldDescription) {
+		fields = append(fields, knowledgefact.FieldDescription)
 	}
-	if m.FieldCleared(knowledgeentity.FieldProperties) {
-		fields = append(fields, knowledgeentity.FieldProperties)
+	if m.FieldCleared(knowledgefact.FieldProperties) {
+		fields = append(fields, knowledgefact.FieldProperties)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *KnowledgeEntityMutation) FieldCleared(name string) bool {
+func (m *KnowledgeFactMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *KnowledgeEntityMutation) ClearField(name string) error {
+func (m *KnowledgeFactMutation) ClearField(name string) error {
 	switch name {
-	case knowledgeentity.FieldDescription:
+	case knowledgefact.FieldDescription:
 		m.ClearDescription()
 		return nil
-	case knowledgeentity.FieldProperties:
+	case knowledgefact.FieldProperties:
 		m.ClearProperties()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntity nullable field %s", name)
+	return fmt.Errorf("unknown KnowledgeFact nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *KnowledgeEntityMutation) ResetField(name string) error {
+func (m *KnowledgeFactMutation) ResetField(name string) error {
 	switch name {
-	case knowledgeentity.FieldTenantID:
+	case knowledgefact.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case knowledgeentity.FieldCreatedAt:
+	case knowledgefact.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case knowledgeentity.FieldUpdatedAt:
+	case knowledgefact.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case knowledgeentity.FieldKind:
+	case knowledgefact.FieldKind:
 		m.ResetKind()
 		return nil
-	case knowledgeentity.FieldDisplayName:
+	case knowledgefact.FieldDisplayName:
 		m.ResetDisplayName()
 		return nil
-	case knowledgeentity.FieldDescription:
+	case knowledgefact.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case knowledgeentity.FieldProperties:
+	case knowledgefact.FieldProperties:
 		m.ResetProperties()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntity field %s", name)
+	return fmt.Errorf("unknown KnowledgeFact field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *KnowledgeEntityMutation) AddedEdges() []string {
+func (m *KnowledgeFactMutation) AddedEdges() []string {
 	edges := make([]string, 0, 4)
 	if m.tenant != nil {
-		edges = append(edges, knowledgeentity.EdgeTenant)
+		edges = append(edges, knowledgefact.EdgeTenant)
 	}
 	if m.aliases != nil {
-		edges = append(edges, knowledgeentity.EdgeAliases)
+		edges = append(edges, knowledgefact.EdgeAliases)
 	}
 	if m.source_relationships != nil {
-		edges = append(edges, knowledgeentity.EdgeSourceRelationships)
+		edges = append(edges, knowledgefact.EdgeSourceRelationships)
 	}
 	if m.target_relationships != nil {
-		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
+		edges = append(edges, knowledgefact.EdgeTargetRelationships)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *KnowledgeEntityMutation) AddedIDs(name string) []ent.Value {
+func (m *KnowledgeFactMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case knowledgeentity.EdgeTenant:
+	case knowledgefact.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case knowledgeentity.EdgeAliases:
+	case knowledgefact.EdgeAliases:
 		ids := make([]ent.Value, 0, len(m.aliases))
 		for id := range m.aliases {
 			ids = append(ids, id)
 		}
 		return ids
-	case knowledgeentity.EdgeSourceRelationships:
+	case knowledgefact.EdgeSourceRelationships:
 		ids := make([]ent.Value, 0, len(m.source_relationships))
 		for id := range m.source_relationships {
 			ids = append(ids, id)
 		}
 		return ids
-	case knowledgeentity.EdgeTargetRelationships:
+	case knowledgefact.EdgeTargetRelationships:
 		ids := make([]ent.Value, 0, len(m.target_relationships))
 		for id := range m.target_relationships {
 			ids = append(ids, id)
@@ -25537,37 +25535,37 @@ func (m *KnowledgeEntityMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *KnowledgeEntityMutation) RemovedEdges() []string {
+func (m *KnowledgeFactMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
 	if m.removedaliases != nil {
-		edges = append(edges, knowledgeentity.EdgeAliases)
+		edges = append(edges, knowledgefact.EdgeAliases)
 	}
 	if m.removedsource_relationships != nil {
-		edges = append(edges, knowledgeentity.EdgeSourceRelationships)
+		edges = append(edges, knowledgefact.EdgeSourceRelationships)
 	}
 	if m.removedtarget_relationships != nil {
-		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
+		edges = append(edges, knowledgefact.EdgeTargetRelationships)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *KnowledgeEntityMutation) RemovedIDs(name string) []ent.Value {
+func (m *KnowledgeFactMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case knowledgeentity.EdgeAliases:
+	case knowledgefact.EdgeAliases:
 		ids := make([]ent.Value, 0, len(m.removedaliases))
 		for id := range m.removedaliases {
 			ids = append(ids, id)
 		}
 		return ids
-	case knowledgeentity.EdgeSourceRelationships:
+	case knowledgefact.EdgeSourceRelationships:
 		ids := make([]ent.Value, 0, len(m.removedsource_relationships))
 		for id := range m.removedsource_relationships {
 			ids = append(ids, id)
 		}
 		return ids
-	case knowledgeentity.EdgeTargetRelationships:
+	case knowledgefact.EdgeTargetRelationships:
 		ids := make([]ent.Value, 0, len(m.removedtarget_relationships))
 		for id := range m.removedtarget_relationships {
 			ids = append(ids, id)
@@ -25578,34 +25576,34 @@ func (m *KnowledgeEntityMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *KnowledgeEntityMutation) ClearedEdges() []string {
+func (m *KnowledgeFactMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 4)
 	if m.clearedtenant {
-		edges = append(edges, knowledgeentity.EdgeTenant)
+		edges = append(edges, knowledgefact.EdgeTenant)
 	}
 	if m.clearedaliases {
-		edges = append(edges, knowledgeentity.EdgeAliases)
+		edges = append(edges, knowledgefact.EdgeAliases)
 	}
 	if m.clearedsource_relationships {
-		edges = append(edges, knowledgeentity.EdgeSourceRelationships)
+		edges = append(edges, knowledgefact.EdgeSourceRelationships)
 	}
 	if m.clearedtarget_relationships {
-		edges = append(edges, knowledgeentity.EdgeTargetRelationships)
+		edges = append(edges, knowledgefact.EdgeTargetRelationships)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *KnowledgeEntityMutation) EdgeCleared(name string) bool {
+func (m *KnowledgeFactMutation) EdgeCleared(name string) bool {
 	switch name {
-	case knowledgeentity.EdgeTenant:
+	case knowledgefact.EdgeTenant:
 		return m.clearedtenant
-	case knowledgeentity.EdgeAliases:
+	case knowledgefact.EdgeAliases:
 		return m.clearedaliases
-	case knowledgeentity.EdgeSourceRelationships:
+	case knowledgefact.EdgeSourceRelationships:
 		return m.clearedsource_relationships
-	case knowledgeentity.EdgeTargetRelationships:
+	case knowledgefact.EdgeTargetRelationships:
 		return m.clearedtarget_relationships
 	}
 	return false
@@ -25613,75 +25611,71 @@ func (m *KnowledgeEntityMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *KnowledgeEntityMutation) ClearEdge(name string) error {
+func (m *KnowledgeFactMutation) ClearEdge(name string) error {
 	switch name {
-	case knowledgeentity.EdgeTenant:
+	case knowledgefact.EdgeTenant:
 		m.ClearTenant()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntity unique edge %s", name)
+	return fmt.Errorf("unknown KnowledgeFact unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *KnowledgeEntityMutation) ResetEdge(name string) error {
+func (m *KnowledgeFactMutation) ResetEdge(name string) error {
 	switch name {
-	case knowledgeentity.EdgeTenant:
+	case knowledgefact.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case knowledgeentity.EdgeAliases:
+	case knowledgefact.EdgeAliases:
 		m.ResetAliases()
 		return nil
-	case knowledgeentity.EdgeSourceRelationships:
+	case knowledgefact.EdgeSourceRelationships:
 		m.ResetSourceRelationships()
 		return nil
-	case knowledgeentity.EdgeTargetRelationships:
+	case knowledgefact.EdgeTargetRelationships:
 		m.ResetTargetRelationships()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntity edge %s", name)
+	return fmt.Errorf("unknown KnowledgeFact edge %s", name)
 }
 
-// KnowledgeEntityAliasMutation represents an operation that mutates the KnowledgeEntityAlias nodes in the graph.
-type KnowledgeEntityAliasMutation struct {
+// KnowledgeFactAliasMutation represents an operation that mutates the KnowledgeFactAlias nodes in the graph.
+type KnowledgeFactAliasMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	created_at              *time.Time
-	updated_at              *time.Time
-	provider                *string
-	provider_source         *string
-	subject_kind            *string
-	subject_ref             *string
-	first_seen_at           *time.Time
-	last_seen_at            *time.Time
-	clearedFields           map[string]struct{}
-	tenant                  *int
-	clearedtenant           bool
-	entity                  *uuid.UUID
-	clearedentity           bool
-	normalized_event        *uuid.UUID
-	clearednormalized_event bool
-	provenance              map[uuid.UUID]struct{}
-	removedprovenance       map[uuid.UUID]struct{}
-	clearedprovenance       bool
-	done                    bool
-	oldValue                func(context.Context) (*KnowledgeEntityAlias, error)
-	predicates              []predicate.KnowledgeEntityAlias
+	op                   Op
+	typ                  string
+	id                   *uuid.UUID
+	created_at           *time.Time
+	updated_at           *time.Time
+	display_name         *string
+	provider             *string
+	provider_source      *string
+	provider_subject_ref *string
+	clearedFields        map[string]struct{}
+	tenant               *int
+	clearedtenant        bool
+	fact                 *uuid.UUID
+	clearedfact          bool
+	provenance           map[uuid.UUID]struct{}
+	removedprovenance    map[uuid.UUID]struct{}
+	clearedprovenance    bool
+	done                 bool
+	oldValue             func(context.Context) (*KnowledgeFactAlias, error)
+	predicates           []predicate.KnowledgeFactAlias
 }
 
-var _ ent.Mutation = (*KnowledgeEntityAliasMutation)(nil)
+var _ ent.Mutation = (*KnowledgeFactAliasMutation)(nil)
 
-// knowledgeentityaliasOption allows management of the mutation configuration using functional options.
-type knowledgeentityaliasOption func(*KnowledgeEntityAliasMutation)
+// knowledgefactaliasOption allows management of the mutation configuration using functional options.
+type knowledgefactaliasOption func(*KnowledgeFactAliasMutation)
 
-// newKnowledgeEntityAliasMutation creates new mutation for the KnowledgeEntityAlias entity.
-func newKnowledgeEntityAliasMutation(c config, op Op, opts ...knowledgeentityaliasOption) *KnowledgeEntityAliasMutation {
-	m := &KnowledgeEntityAliasMutation{
+// newKnowledgeFactAliasMutation creates new mutation for the KnowledgeFactAlias entity.
+func newKnowledgeFactAliasMutation(c config, op Op, opts ...knowledgefactaliasOption) *KnowledgeFactAliasMutation {
+	m := &KnowledgeFactAliasMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeKnowledgeEntityAlias,
+		typ:           TypeKnowledgeFactAlias,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -25690,20 +25684,20 @@ func newKnowledgeEntityAliasMutation(c config, op Op, opts ...knowledgeentityali
 	return m
 }
 
-// withKnowledgeEntityAliasID sets the ID field of the mutation.
-func withKnowledgeEntityAliasID(id uuid.UUID) knowledgeentityaliasOption {
-	return func(m *KnowledgeEntityAliasMutation) {
+// withKnowledgeFactAliasID sets the ID field of the mutation.
+func withKnowledgeFactAliasID(id uuid.UUID) knowledgefactaliasOption {
+	return func(m *KnowledgeFactAliasMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *KnowledgeEntityAlias
+			value *KnowledgeFactAlias
 		)
-		m.oldValue = func(ctx context.Context) (*KnowledgeEntityAlias, error) {
+		m.oldValue = func(ctx context.Context) (*KnowledgeFactAlias, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().KnowledgeEntityAlias.Get(ctx, id)
+					value, err = m.Client().KnowledgeFactAlias.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -25712,10 +25706,10 @@ func withKnowledgeEntityAliasID(id uuid.UUID) knowledgeentityaliasOption {
 	}
 }
 
-// withKnowledgeEntityAlias sets the old KnowledgeEntityAlias of the mutation.
-func withKnowledgeEntityAlias(node *KnowledgeEntityAlias) knowledgeentityaliasOption {
-	return func(m *KnowledgeEntityAliasMutation) {
-		m.oldValue = func(context.Context) (*KnowledgeEntityAlias, error) {
+// withKnowledgeFactAlias sets the old KnowledgeFactAlias of the mutation.
+func withKnowledgeFactAlias(node *KnowledgeFactAlias) knowledgefactaliasOption {
+	return func(m *KnowledgeFactAliasMutation) {
+		m.oldValue = func(context.Context) (*KnowledgeFactAlias, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -25724,7 +25718,7 @@ func withKnowledgeEntityAlias(node *KnowledgeEntityAlias) knowledgeentityaliasOp
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m KnowledgeEntityAliasMutation) Client() *Client {
+func (m KnowledgeFactAliasMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -25732,7 +25726,7 @@ func (m KnowledgeEntityAliasMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m KnowledgeEntityAliasMutation) Tx() (*Tx, error) {
+func (m KnowledgeFactAliasMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -25742,14 +25736,14 @@ func (m KnowledgeEntityAliasMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of KnowledgeEntityAlias entities.
-func (m *KnowledgeEntityAliasMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of KnowledgeFactAlias entities.
+func (m *KnowledgeFactAliasMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *KnowledgeEntityAliasMutation) ID() (id uuid.UUID, exists bool) {
+func (m *KnowledgeFactAliasMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -25760,7 +25754,7 @@ func (m *KnowledgeEntityAliasMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *KnowledgeEntityAliasMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *KnowledgeFactAliasMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -25769,19 +25763,19 @@ func (m *KnowledgeEntityAliasMutation) IDs(ctx context.Context) ([]uuid.UUID, er
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().KnowledgeEntityAlias.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().KnowledgeFactAlias.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *KnowledgeEntityAliasMutation) SetTenantID(i int) {
+func (m *KnowledgeFactAliasMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) TenantID() (r int, exists bool) {
+func (m *KnowledgeFactAliasMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -25789,10 +25783,10 @@ func (m *KnowledgeEntityAliasMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the KnowledgeFactAlias entity.
+// If the KnowledgeFactAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *KnowledgeFactAliasMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -25807,17 +25801,17 @@ func (m *KnowledgeEntityAliasMutation) OldTenantID(ctx context.Context) (v int, 
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *KnowledgeEntityAliasMutation) ResetTenantID() {
+func (m *KnowledgeFactAliasMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeEntityAliasMutation) SetCreatedAt(t time.Time) {
+func (m *KnowledgeFactAliasMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *KnowledgeFactAliasMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -25825,10 +25819,10 @@ func (m *KnowledgeEntityAliasMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeFactAlias entity.
+// If the KnowledgeFactAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *KnowledgeFactAliasMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -25843,17 +25837,17 @@ func (m *KnowledgeEntityAliasMutation) OldCreatedAt(ctx context.Context) (v time
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeEntityAliasMutation) ResetCreatedAt() {
+func (m *KnowledgeFactAliasMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (m *KnowledgeEntityAliasMutation) SetUpdatedAt(t time.Time) {
+func (m *KnowledgeFactAliasMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
 }
 
 // UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) UpdatedAt() (r time.Time, exists bool) {
+func (m *KnowledgeFactAliasMutation) UpdatedAt() (r time.Time, exists bool) {
 	v := m.updated_at
 	if v == nil {
 		return
@@ -25861,10 +25855,10 @@ func (m *KnowledgeEntityAliasMutation) UpdatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeFactAlias entity.
+// If the KnowledgeFactAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *KnowledgeFactAliasMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
 	}
@@ -25879,53 +25873,102 @@ func (m *KnowledgeEntityAliasMutation) OldUpdatedAt(ctx context.Context) (v time
 }
 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *KnowledgeEntityAliasMutation) ResetUpdatedAt() {
+func (m *KnowledgeFactAliasMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetEntityID sets the "entity_id" field.
-func (m *KnowledgeEntityAliasMutation) SetEntityID(u uuid.UUID) {
-	m.entity = &u
+// SetFactID sets the "fact_id" field.
+func (m *KnowledgeFactAliasMutation) SetFactID(u uuid.UUID) {
+	m.fact = &u
 }
 
-// EntityID returns the value of the "entity_id" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) EntityID() (r uuid.UUID, exists bool) {
-	v := m.entity
+// FactID returns the value of the "fact_id" field in the mutation.
+func (m *KnowledgeFactAliasMutation) FactID() (r uuid.UUID, exists bool) {
+	v := m.fact
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldEntityID returns the old "entity_id" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// OldFactID returns the old "fact_id" field's value of the KnowledgeFactAlias entity.
+// If the KnowledgeFactAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldEntityID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *KnowledgeFactAliasMutation) OldFactID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEntityID is only allowed on UpdateOne operations")
+		return v, errors.New("OldFactID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEntityID requires an ID field in the mutation")
+		return v, errors.New("OldFactID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEntityID: %w", err)
+		return v, fmt.Errorf("querying old value for OldFactID: %w", err)
 	}
-	return oldValue.EntityID, nil
+	return oldValue.FactID, nil
 }
 
-// ResetEntityID resets all changes to the "entity_id" field.
-func (m *KnowledgeEntityAliasMutation) ResetEntityID() {
-	m.entity = nil
+// ResetFactID resets all changes to the "fact_id" field.
+func (m *KnowledgeFactAliasMutation) ResetFactID() {
+	m.fact = nil
+}
+
+// SetDisplayName sets the "display_name" field.
+func (m *KnowledgeFactAliasMutation) SetDisplayName(s string) {
+	m.display_name = &s
+}
+
+// DisplayName returns the value of the "display_name" field in the mutation.
+func (m *KnowledgeFactAliasMutation) DisplayName() (r string, exists bool) {
+	v := m.display_name
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDisplayName returns the old "display_name" field's value of the KnowledgeFactAlias entity.
+// If the KnowledgeFactAlias object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *KnowledgeFactAliasMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDisplayName requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
+	}
+	return oldValue.DisplayName, nil
+}
+
+// ClearDisplayName clears the value of the "display_name" field.
+func (m *KnowledgeFactAliasMutation) ClearDisplayName() {
+	m.display_name = nil
+	m.clearedFields[knowledgefactalias.FieldDisplayName] = struct{}{}
+}
+
+// DisplayNameCleared returns if the "display_name" field was cleared in this mutation.
+func (m *KnowledgeFactAliasMutation) DisplayNameCleared() bool {
+	_, ok := m.clearedFields[knowledgefactalias.FieldDisplayName]
+	return ok
+}
+
+// ResetDisplayName resets all changes to the "display_name" field.
+func (m *KnowledgeFactAliasMutation) ResetDisplayName() {
+	m.display_name = nil
+	delete(m.clearedFields, knowledgefactalias.FieldDisplayName)
 }
 
 // SetProvider sets the "provider" field.
-func (m *KnowledgeEntityAliasMutation) SetProvider(s string) {
+func (m *KnowledgeFactAliasMutation) SetProvider(s string) {
 	m.provider = &s
 }
 
 // Provider returns the value of the "provider" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) Provider() (r string, exists bool) {
+func (m *KnowledgeFactAliasMutation) Provider() (r string, exists bool) {
 	v := m.provider
 	if v == nil {
 		return
@@ -25933,10 +25976,10 @@ func (m *KnowledgeEntityAliasMutation) Provider() (r string, exists bool) {
 	return *v, true
 }
 
-// OldProvider returns the old "provider" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// OldProvider returns the old "provider" field's value of the KnowledgeFactAlias entity.
+// If the KnowledgeFactAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldProvider(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactAliasMutation) OldProvider(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
 	}
@@ -25951,17 +25994,17 @@ func (m *KnowledgeEntityAliasMutation) OldProvider(ctx context.Context) (v strin
 }
 
 // ResetProvider resets all changes to the "provider" field.
-func (m *KnowledgeEntityAliasMutation) ResetProvider() {
+func (m *KnowledgeFactAliasMutation) ResetProvider() {
 	m.provider = nil
 }
 
 // SetProviderSource sets the "provider_source" field.
-func (m *KnowledgeEntityAliasMutation) SetProviderSource(s string) {
+func (m *KnowledgeFactAliasMutation) SetProviderSource(s string) {
 	m.provider_source = &s
 }
 
 // ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) ProviderSource() (r string, exists bool) {
+func (m *KnowledgeFactAliasMutation) ProviderSource() (r string, exists bool) {
 	v := m.provider_source
 	if v == nil {
 		return
@@ -25969,10 +26012,10 @@ func (m *KnowledgeEntityAliasMutation) ProviderSource() (r string, exists bool) 
 	return *v, true
 }
 
-// OldProviderSource returns the old "provider_source" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// OldProviderSource returns the old "provider_source" field's value of the KnowledgeFactAlias entity.
+// If the KnowledgeFactAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldProviderSource(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactAliasMutation) OldProviderSource(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
 	}
@@ -25987,218 +26030,61 @@ func (m *KnowledgeEntityAliasMutation) OldProviderSource(ctx context.Context) (v
 }
 
 // ResetProviderSource resets all changes to the "provider_source" field.
-func (m *KnowledgeEntityAliasMutation) ResetProviderSource() {
+func (m *KnowledgeFactAliasMutation) ResetProviderSource() {
 	m.provider_source = nil
 }
 
-// SetSubjectKind sets the "subject_kind" field.
-func (m *KnowledgeEntityAliasMutation) SetSubjectKind(s string) {
-	m.subject_kind = &s
+// SetProviderSubjectRef sets the "provider_subject_ref" field.
+func (m *KnowledgeFactAliasMutation) SetProviderSubjectRef(s string) {
+	m.provider_subject_ref = &s
 }
 
-// SubjectKind returns the value of the "subject_kind" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) SubjectKind() (r string, exists bool) {
-	v := m.subject_kind
+// ProviderSubjectRef returns the value of the "provider_subject_ref" field in the mutation.
+func (m *KnowledgeFactAliasMutation) ProviderSubjectRef() (r string, exists bool) {
+	v := m.provider_subject_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSubjectKind returns the old "subject_kind" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
+// OldProviderSubjectRef returns the old "provider_subject_ref" field's value of the KnowledgeFactAlias entity.
+// If the KnowledgeFactAlias object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldSubjectKind(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactAliasMutation) OldProviderSubjectRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubjectKind is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderSubjectRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubjectKind requires an ID field in the mutation")
+		return v, errors.New("OldProviderSubjectRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubjectKind: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderSubjectRef: %w", err)
 	}
-	return oldValue.SubjectKind, nil
+	return oldValue.ProviderSubjectRef, nil
 }
 
-// ResetSubjectKind resets all changes to the "subject_kind" field.
-func (m *KnowledgeEntityAliasMutation) ResetSubjectKind() {
-	m.subject_kind = nil
-}
-
-// SetSubjectRef sets the "subject_ref" field.
-func (m *KnowledgeEntityAliasMutation) SetSubjectRef(s string) {
-	m.subject_ref = &s
-}
-
-// SubjectRef returns the value of the "subject_ref" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) SubjectRef() (r string, exists bool) {
-	v := m.subject_ref
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSubjectRef returns the old "subject_ref" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldSubjectRef(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubjectRef is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubjectRef requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubjectRef: %w", err)
-	}
-	return oldValue.SubjectRef, nil
-}
-
-// ResetSubjectRef resets all changes to the "subject_ref" field.
-func (m *KnowledgeEntityAliasMutation) ResetSubjectRef() {
-	m.subject_ref = nil
-}
-
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (m *KnowledgeEntityAliasMutation) SetNormalizedEventID(u uuid.UUID) {
-	m.normalized_event = &u
-}
-
-// NormalizedEventID returns the value of the "normalized_event_id" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) NormalizedEventID() (r uuid.UUID, exists bool) {
-	v := m.normalized_event
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNormalizedEventID returns the old "normalized_event_id" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldNormalizedEventID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNormalizedEventID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNormalizedEventID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNormalizedEventID: %w", err)
-	}
-	return oldValue.NormalizedEventID, nil
-}
-
-// ClearNormalizedEventID clears the value of the "normalized_event_id" field.
-func (m *KnowledgeEntityAliasMutation) ClearNormalizedEventID() {
-	m.normalized_event = nil
-	m.clearedFields[knowledgeentityalias.FieldNormalizedEventID] = struct{}{}
-}
-
-// NormalizedEventIDCleared returns if the "normalized_event_id" field was cleared in this mutation.
-func (m *KnowledgeEntityAliasMutation) NormalizedEventIDCleared() bool {
-	_, ok := m.clearedFields[knowledgeentityalias.FieldNormalizedEventID]
-	return ok
-}
-
-// ResetNormalizedEventID resets all changes to the "normalized_event_id" field.
-func (m *KnowledgeEntityAliasMutation) ResetNormalizedEventID() {
-	m.normalized_event = nil
-	delete(m.clearedFields, knowledgeentityalias.FieldNormalizedEventID)
-}
-
-// SetFirstSeenAt sets the "first_seen_at" field.
-func (m *KnowledgeEntityAliasMutation) SetFirstSeenAt(t time.Time) {
-	m.first_seen_at = &t
-}
-
-// FirstSeenAt returns the value of the "first_seen_at" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) FirstSeenAt() (r time.Time, exists bool) {
-	v := m.first_seen_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFirstSeenAt returns the old "first_seen_at" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldFirstSeenAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFirstSeenAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFirstSeenAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFirstSeenAt: %w", err)
-	}
-	return oldValue.FirstSeenAt, nil
-}
-
-// ResetFirstSeenAt resets all changes to the "first_seen_at" field.
-func (m *KnowledgeEntityAliasMutation) ResetFirstSeenAt() {
-	m.first_seen_at = nil
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (m *KnowledgeEntityAliasMutation) SetLastSeenAt(t time.Time) {
-	m.last_seen_at = &t
-}
-
-// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) LastSeenAt() (r time.Time, exists bool) {
-	v := m.last_seen_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLastSeenAt returns the old "last_seen_at" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldLastSeenAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
-	}
-	return oldValue.LastSeenAt, nil
-}
-
-// ResetLastSeenAt resets all changes to the "last_seen_at" field.
-func (m *KnowledgeEntityAliasMutation) ResetLastSeenAt() {
-	m.last_seen_at = nil
+// ResetProviderSubjectRef resets all changes to the "provider_subject_ref" field.
+func (m *KnowledgeFactAliasMutation) ResetProviderSubjectRef() {
+	m.provider_subject_ref = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *KnowledgeEntityAliasMutation) ClearTenant() {
+func (m *KnowledgeFactAliasMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[knowledgeentityalias.FieldTenantID] = struct{}{}
+	m.clearedFields[knowledgefactalias.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *KnowledgeEntityAliasMutation) TenantCleared() bool {
+func (m *KnowledgeFactAliasMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeEntityAliasMutation) TenantIDs() (ids []int) {
+func (m *KnowledgeFactAliasMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -26206,67 +26092,40 @@ func (m *KnowledgeEntityAliasMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *KnowledgeEntityAliasMutation) ResetTenant() {
+func (m *KnowledgeFactAliasMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
-// ClearEntity clears the "entity" edge to the KnowledgeEntity entity.
-func (m *KnowledgeEntityAliasMutation) ClearEntity() {
-	m.clearedentity = true
-	m.clearedFields[knowledgeentityalias.FieldEntityID] = struct{}{}
+// ClearFact clears the "fact" edge to the KnowledgeFact entity.
+func (m *KnowledgeFactAliasMutation) ClearFact() {
+	m.clearedfact = true
+	m.clearedFields[knowledgefactalias.FieldFactID] = struct{}{}
 }
 
-// EntityCleared reports if the "entity" edge to the KnowledgeEntity entity was cleared.
-func (m *KnowledgeEntityAliasMutation) EntityCleared() bool {
-	return m.clearedentity
+// FactCleared reports if the "fact" edge to the KnowledgeFact entity was cleared.
+func (m *KnowledgeFactAliasMutation) FactCleared() bool {
+	return m.clearedfact
 }
 
-// EntityIDs returns the "entity" edge IDs in the mutation.
+// FactIDs returns the "fact" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// EntityID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeEntityAliasMutation) EntityIDs() (ids []uuid.UUID) {
-	if id := m.entity; id != nil {
+// FactID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeFactAliasMutation) FactIDs() (ids []uuid.UUID) {
+	if id := m.fact; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetEntity resets all changes to the "entity" edge.
-func (m *KnowledgeEntityAliasMutation) ResetEntity() {
-	m.entity = nil
-	m.clearedentity = false
-}
-
-// ClearNormalizedEvent clears the "normalized_event" edge to the NormalizedEvent entity.
-func (m *KnowledgeEntityAliasMutation) ClearNormalizedEvent() {
-	m.clearednormalized_event = true
-	m.clearedFields[knowledgeentityalias.FieldNormalizedEventID] = struct{}{}
-}
-
-// NormalizedEventCleared reports if the "normalized_event" edge to the NormalizedEvent entity was cleared.
-func (m *KnowledgeEntityAliasMutation) NormalizedEventCleared() bool {
-	return m.NormalizedEventIDCleared() || m.clearednormalized_event
-}
-
-// NormalizedEventIDs returns the "normalized_event" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// NormalizedEventID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeEntityAliasMutation) NormalizedEventIDs() (ids []uuid.UUID) {
-	if id := m.normalized_event; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetNormalizedEvent resets all changes to the "normalized_event" edge.
-func (m *KnowledgeEntityAliasMutation) ResetNormalizedEvent() {
-	m.normalized_event = nil
-	m.clearednormalized_event = false
+// ResetFact resets all changes to the "fact" edge.
+func (m *KnowledgeFactAliasMutation) ResetFact() {
+	m.fact = nil
+	m.clearedfact = false
 }
 
 // AddProvenanceIDs adds the "provenance" edge to the KnowledgeFactProvenance entity by ids.
-func (m *KnowledgeEntityAliasMutation) AddProvenanceIDs(ids ...uuid.UUID) {
+func (m *KnowledgeFactAliasMutation) AddProvenanceIDs(ids ...uuid.UUID) {
 	if m.provenance == nil {
 		m.provenance = make(map[uuid.UUID]struct{})
 	}
@@ -26276,17 +26135,17 @@ func (m *KnowledgeEntityAliasMutation) AddProvenanceIDs(ids ...uuid.UUID) {
 }
 
 // ClearProvenance clears the "provenance" edge to the KnowledgeFactProvenance entity.
-func (m *KnowledgeEntityAliasMutation) ClearProvenance() {
+func (m *KnowledgeFactAliasMutation) ClearProvenance() {
 	m.clearedprovenance = true
 }
 
 // ProvenanceCleared reports if the "provenance" edge to the KnowledgeFactProvenance entity was cleared.
-func (m *KnowledgeEntityAliasMutation) ProvenanceCleared() bool {
+func (m *KnowledgeFactAliasMutation) ProvenanceCleared() bool {
 	return m.clearedprovenance
 }
 
 // RemoveProvenanceIDs removes the "provenance" edge to the KnowledgeFactProvenance entity by IDs.
-func (m *KnowledgeEntityAliasMutation) RemoveProvenanceIDs(ids ...uuid.UUID) {
+func (m *KnowledgeFactAliasMutation) RemoveProvenanceIDs(ids ...uuid.UUID) {
 	if m.removedprovenance == nil {
 		m.removedprovenance = make(map[uuid.UUID]struct{})
 	}
@@ -26297,7 +26156,7 @@ func (m *KnowledgeEntityAliasMutation) RemoveProvenanceIDs(ids ...uuid.UUID) {
 }
 
 // RemovedProvenance returns the removed IDs of the "provenance" edge to the KnowledgeFactProvenance entity.
-func (m *KnowledgeEntityAliasMutation) RemovedProvenanceIDs() (ids []uuid.UUID) {
+func (m *KnowledgeFactAliasMutation) RemovedProvenanceIDs() (ids []uuid.UUID) {
 	for id := range m.removedprovenance {
 		ids = append(ids, id)
 	}
@@ -26305,7 +26164,7 @@ func (m *KnowledgeEntityAliasMutation) RemovedProvenanceIDs() (ids []uuid.UUID) 
 }
 
 // ProvenanceIDs returns the "provenance" edge IDs in the mutation.
-func (m *KnowledgeEntityAliasMutation) ProvenanceIDs() (ids []uuid.UUID) {
+func (m *KnowledgeFactAliasMutation) ProvenanceIDs() (ids []uuid.UUID) {
 	for id := range m.provenance {
 		ids = append(ids, id)
 	}
@@ -26313,21 +26172,21 @@ func (m *KnowledgeEntityAliasMutation) ProvenanceIDs() (ids []uuid.UUID) {
 }
 
 // ResetProvenance resets all changes to the "provenance" edge.
-func (m *KnowledgeEntityAliasMutation) ResetProvenance() {
+func (m *KnowledgeFactAliasMutation) ResetProvenance() {
 	m.provenance = nil
 	m.clearedprovenance = false
 	m.removedprovenance = nil
 }
 
-// Where appends a list predicates to the KnowledgeEntityAliasMutation builder.
-func (m *KnowledgeEntityAliasMutation) Where(ps ...predicate.KnowledgeEntityAlias) {
+// Where appends a list predicates to the KnowledgeFactAliasMutation builder.
+func (m *KnowledgeFactAliasMutation) Where(ps ...predicate.KnowledgeFactAlias) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the KnowledgeEntityAliasMutation builder. Using this method,
+// WhereP appends storage-level predicates to the KnowledgeFactAliasMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *KnowledgeEntityAliasMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.KnowledgeEntityAlias, len(ps))
+func (m *KnowledgeFactAliasMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KnowledgeFactAlias, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -26335,57 +26194,48 @@ func (m *KnowledgeEntityAliasMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *KnowledgeEntityAliasMutation) Op() Op {
+func (m *KnowledgeFactAliasMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *KnowledgeEntityAliasMutation) SetOp(op Op) {
+func (m *KnowledgeFactAliasMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (KnowledgeEntityAlias).
-func (m *KnowledgeEntityAliasMutation) Type() string {
+// Type returns the node type of this mutation (KnowledgeFactAlias).
+func (m *KnowledgeFactAliasMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *KnowledgeEntityAliasMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+func (m *KnowledgeFactAliasMutation) Fields() []string {
+	fields := make([]string, 0, 8)
 	if m.tenant != nil {
-		fields = append(fields, knowledgeentityalias.FieldTenantID)
+		fields = append(fields, knowledgefactalias.FieldTenantID)
 	}
 	if m.created_at != nil {
-		fields = append(fields, knowledgeentityalias.FieldCreatedAt)
+		fields = append(fields, knowledgefactalias.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
-		fields = append(fields, knowledgeentityalias.FieldUpdatedAt)
+		fields = append(fields, knowledgefactalias.FieldUpdatedAt)
 	}
-	if m.entity != nil {
-		fields = append(fields, knowledgeentityalias.FieldEntityID)
+	if m.fact != nil {
+		fields = append(fields, knowledgefactalias.FieldFactID)
+	}
+	if m.display_name != nil {
+		fields = append(fields, knowledgefactalias.FieldDisplayName)
 	}
 	if m.provider != nil {
-		fields = append(fields, knowledgeentityalias.FieldProvider)
+		fields = append(fields, knowledgefactalias.FieldProvider)
 	}
 	if m.provider_source != nil {
-		fields = append(fields, knowledgeentityalias.FieldProviderSource)
+		fields = append(fields, knowledgefactalias.FieldProviderSource)
 	}
-	if m.subject_kind != nil {
-		fields = append(fields, knowledgeentityalias.FieldSubjectKind)
-	}
-	if m.subject_ref != nil {
-		fields = append(fields, knowledgeentityalias.FieldSubjectRef)
-	}
-	if m.normalized_event != nil {
-		fields = append(fields, knowledgeentityalias.FieldNormalizedEventID)
-	}
-	if m.first_seen_at != nil {
-		fields = append(fields, knowledgeentityalias.FieldFirstSeenAt)
-	}
-	if m.last_seen_at != nil {
-		fields = append(fields, knowledgeentityalias.FieldLastSeenAt)
+	if m.provider_subject_ref != nil {
+		fields = append(fields, knowledgefactalias.FieldProviderSubjectRef)
 	}
 	return fields
 }
@@ -26393,30 +26243,24 @@ func (m *KnowledgeEntityAliasMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *KnowledgeEntityAliasMutation) Field(name string) (ent.Value, bool) {
+func (m *KnowledgeFactAliasMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case knowledgeentityalias.FieldTenantID:
+	case knowledgefactalias.FieldTenantID:
 		return m.TenantID()
-	case knowledgeentityalias.FieldCreatedAt:
+	case knowledgefactalias.FieldCreatedAt:
 		return m.CreatedAt()
-	case knowledgeentityalias.FieldUpdatedAt:
+	case knowledgefactalias.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case knowledgeentityalias.FieldEntityID:
-		return m.EntityID()
-	case knowledgeentityalias.FieldProvider:
+	case knowledgefactalias.FieldFactID:
+		return m.FactID()
+	case knowledgefactalias.FieldDisplayName:
+		return m.DisplayName()
+	case knowledgefactalias.FieldProvider:
 		return m.Provider()
-	case knowledgeentityalias.FieldProviderSource:
+	case knowledgefactalias.FieldProviderSource:
 		return m.ProviderSource()
-	case knowledgeentityalias.FieldSubjectKind:
-		return m.SubjectKind()
-	case knowledgeentityalias.FieldSubjectRef:
-		return m.SubjectRef()
-	case knowledgeentityalias.FieldNormalizedEventID:
-		return m.NormalizedEventID()
-	case knowledgeentityalias.FieldFirstSeenAt:
-		return m.FirstSeenAt()
-	case knowledgeentityalias.FieldLastSeenAt:
-		return m.LastSeenAt()
+	case knowledgefactalias.FieldProviderSubjectRef:
+		return m.ProviderSubjectRef()
 	}
 	return nil, false
 }
@@ -26424,123 +26268,96 @@ func (m *KnowledgeEntityAliasMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *KnowledgeEntityAliasMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *KnowledgeFactAliasMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case knowledgeentityalias.FieldTenantID:
+	case knowledgefactalias.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case knowledgeentityalias.FieldCreatedAt:
+	case knowledgefactalias.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case knowledgeentityalias.FieldUpdatedAt:
+	case knowledgefactalias.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case knowledgeentityalias.FieldEntityID:
-		return m.OldEntityID(ctx)
-	case knowledgeentityalias.FieldProvider:
+	case knowledgefactalias.FieldFactID:
+		return m.OldFactID(ctx)
+	case knowledgefactalias.FieldDisplayName:
+		return m.OldDisplayName(ctx)
+	case knowledgefactalias.FieldProvider:
 		return m.OldProvider(ctx)
-	case knowledgeentityalias.FieldProviderSource:
+	case knowledgefactalias.FieldProviderSource:
 		return m.OldProviderSource(ctx)
-	case knowledgeentityalias.FieldSubjectKind:
-		return m.OldSubjectKind(ctx)
-	case knowledgeentityalias.FieldSubjectRef:
-		return m.OldSubjectRef(ctx)
-	case knowledgeentityalias.FieldNormalizedEventID:
-		return m.OldNormalizedEventID(ctx)
-	case knowledgeentityalias.FieldFirstSeenAt:
-		return m.OldFirstSeenAt(ctx)
-	case knowledgeentityalias.FieldLastSeenAt:
-		return m.OldLastSeenAt(ctx)
+	case knowledgefactalias.FieldProviderSubjectRef:
+		return m.OldProviderSubjectRef(ctx)
 	}
-	return nil, fmt.Errorf("unknown KnowledgeEntityAlias field %s", name)
+	return nil, fmt.Errorf("unknown KnowledgeFactAlias field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *KnowledgeEntityAliasMutation) SetField(name string, value ent.Value) error {
+func (m *KnowledgeFactAliasMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case knowledgeentityalias.FieldTenantID:
+	case knowledgefactalias.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case knowledgeentityalias.FieldCreatedAt:
+	case knowledgefactalias.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case knowledgeentityalias.FieldUpdatedAt:
+	case knowledgefactalias.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case knowledgeentityalias.FieldEntityID:
+	case knowledgefactalias.FieldFactID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetEntityID(v)
+		m.SetFactID(v)
 		return nil
-	case knowledgeentityalias.FieldProvider:
+	case knowledgefactalias.FieldDisplayName:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDisplayName(v)
+		return nil
+	case knowledgefactalias.FieldProvider:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProvider(v)
 		return nil
-	case knowledgeentityalias.FieldProviderSource:
+	case knowledgefactalias.FieldProviderSource:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProviderSource(v)
 		return nil
-	case knowledgeentityalias.FieldSubjectKind:
+	case knowledgefactalias.FieldProviderSubjectRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSubjectKind(v)
-		return nil
-	case knowledgeentityalias.FieldSubjectRef:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSubjectRef(v)
-		return nil
-	case knowledgeentityalias.FieldNormalizedEventID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetNormalizedEventID(v)
-		return nil
-	case knowledgeentityalias.FieldFirstSeenAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFirstSeenAt(v)
-		return nil
-	case knowledgeentityalias.FieldLastSeenAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLastSeenAt(v)
+		m.SetProviderSubjectRef(v)
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntityAlias field %s", name)
+	return fmt.Errorf("unknown KnowledgeFactAlias field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *KnowledgeEntityAliasMutation) AddedFields() []string {
+func (m *KnowledgeFactAliasMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -26548,7 +26365,7 @@ func (m *KnowledgeEntityAliasMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *KnowledgeEntityAliasMutation) AddedField(name string) (ent.Value, bool) {
+func (m *KnowledgeFactAliasMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -26557,116 +26374,100 @@ func (m *KnowledgeEntityAliasMutation) AddedField(name string) (ent.Value, bool)
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *KnowledgeEntityAliasMutation) AddField(name string, value ent.Value) error {
+func (m *KnowledgeFactAliasMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown KnowledgeEntityAlias numeric field %s", name)
+	return fmt.Errorf("unknown KnowledgeFactAlias numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *KnowledgeEntityAliasMutation) ClearedFields() []string {
+func (m *KnowledgeFactAliasMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(knowledgeentityalias.FieldNormalizedEventID) {
-		fields = append(fields, knowledgeentityalias.FieldNormalizedEventID)
+	if m.FieldCleared(knowledgefactalias.FieldDisplayName) {
+		fields = append(fields, knowledgefactalias.FieldDisplayName)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *KnowledgeEntityAliasMutation) FieldCleared(name string) bool {
+func (m *KnowledgeFactAliasMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *KnowledgeEntityAliasMutation) ClearField(name string) error {
+func (m *KnowledgeFactAliasMutation) ClearField(name string) error {
 	switch name {
-	case knowledgeentityalias.FieldNormalizedEventID:
-		m.ClearNormalizedEventID()
+	case knowledgefactalias.FieldDisplayName:
+		m.ClearDisplayName()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntityAlias nullable field %s", name)
+	return fmt.Errorf("unknown KnowledgeFactAlias nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *KnowledgeEntityAliasMutation) ResetField(name string) error {
+func (m *KnowledgeFactAliasMutation) ResetField(name string) error {
 	switch name {
-	case knowledgeentityalias.FieldTenantID:
+	case knowledgefactalias.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case knowledgeentityalias.FieldCreatedAt:
+	case knowledgefactalias.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case knowledgeentityalias.FieldUpdatedAt:
+	case knowledgefactalias.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case knowledgeentityalias.FieldEntityID:
-		m.ResetEntityID()
+	case knowledgefactalias.FieldFactID:
+		m.ResetFactID()
 		return nil
-	case knowledgeentityalias.FieldProvider:
+	case knowledgefactalias.FieldDisplayName:
+		m.ResetDisplayName()
+		return nil
+	case knowledgefactalias.FieldProvider:
 		m.ResetProvider()
 		return nil
-	case knowledgeentityalias.FieldProviderSource:
+	case knowledgefactalias.FieldProviderSource:
 		m.ResetProviderSource()
 		return nil
-	case knowledgeentityalias.FieldSubjectKind:
-		m.ResetSubjectKind()
-		return nil
-	case knowledgeentityalias.FieldSubjectRef:
-		m.ResetSubjectRef()
-		return nil
-	case knowledgeentityalias.FieldNormalizedEventID:
-		m.ResetNormalizedEventID()
-		return nil
-	case knowledgeentityalias.FieldFirstSeenAt:
-		m.ResetFirstSeenAt()
-		return nil
-	case knowledgeentityalias.FieldLastSeenAt:
-		m.ResetLastSeenAt()
+	case knowledgefactalias.FieldProviderSubjectRef:
+		m.ResetProviderSubjectRef()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntityAlias field %s", name)
+	return fmt.Errorf("unknown KnowledgeFactAlias field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *KnowledgeEntityAliasMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+func (m *KnowledgeFactAliasMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
-		edges = append(edges, knowledgeentityalias.EdgeTenant)
+		edges = append(edges, knowledgefactalias.EdgeTenant)
 	}
-	if m.entity != nil {
-		edges = append(edges, knowledgeentityalias.EdgeEntity)
-	}
-	if m.normalized_event != nil {
-		edges = append(edges, knowledgeentityalias.EdgeNormalizedEvent)
+	if m.fact != nil {
+		edges = append(edges, knowledgefactalias.EdgeFact)
 	}
 	if m.provenance != nil {
-		edges = append(edges, knowledgeentityalias.EdgeProvenance)
+		edges = append(edges, knowledgefactalias.EdgeProvenance)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *KnowledgeEntityAliasMutation) AddedIDs(name string) []ent.Value {
+func (m *KnowledgeFactAliasMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case knowledgeentityalias.EdgeTenant:
+	case knowledgefactalias.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case knowledgeentityalias.EdgeEntity:
-		if id := m.entity; id != nil {
+	case knowledgefactalias.EdgeFact:
+		if id := m.fact; id != nil {
 			return []ent.Value{*id}
 		}
-	case knowledgeentityalias.EdgeNormalizedEvent:
-		if id := m.normalized_event; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgeentityalias.EdgeProvenance:
+	case knowledgefactalias.EdgeProvenance:
 		ids := make([]ent.Value, 0, len(m.provenance))
 		for id := range m.provenance {
 			ids = append(ids, id)
@@ -26677,19 +26478,19 @@ func (m *KnowledgeEntityAliasMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *KnowledgeEntityAliasMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+func (m *KnowledgeFactAliasMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
 	if m.removedprovenance != nil {
-		edges = append(edges, knowledgeentityalias.EdgeProvenance)
+		edges = append(edges, knowledgefactalias.EdgeProvenance)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *KnowledgeEntityAliasMutation) RemovedIDs(name string) []ent.Value {
+func (m *KnowledgeFactAliasMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case knowledgeentityalias.EdgeProvenance:
+	case knowledgefactalias.EdgeProvenance:
 		ids := make([]ent.Value, 0, len(m.removedprovenance))
 		for id := range m.removedprovenance {
 			ids = append(ids, id)
@@ -26700,34 +26501,29 @@ func (m *KnowledgeEntityAliasMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *KnowledgeEntityAliasMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+func (m *KnowledgeFactAliasMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
-		edges = append(edges, knowledgeentityalias.EdgeTenant)
+		edges = append(edges, knowledgefactalias.EdgeTenant)
 	}
-	if m.clearedentity {
-		edges = append(edges, knowledgeentityalias.EdgeEntity)
-	}
-	if m.clearednormalized_event {
-		edges = append(edges, knowledgeentityalias.EdgeNormalizedEvent)
+	if m.clearedfact {
+		edges = append(edges, knowledgefactalias.EdgeFact)
 	}
 	if m.clearedprovenance {
-		edges = append(edges, knowledgeentityalias.EdgeProvenance)
+		edges = append(edges, knowledgefactalias.EdgeProvenance)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *KnowledgeEntityAliasMutation) EdgeCleared(name string) bool {
+func (m *KnowledgeFactAliasMutation) EdgeCleared(name string) bool {
 	switch name {
-	case knowledgeentityalias.EdgeTenant:
+	case knowledgefactalias.EdgeTenant:
 		return m.clearedtenant
-	case knowledgeentityalias.EdgeEntity:
-		return m.clearedentity
-	case knowledgeentityalias.EdgeNormalizedEvent:
-		return m.clearednormalized_event
-	case knowledgeentityalias.EdgeProvenance:
+	case knowledgefactalias.EdgeFact:
+		return m.clearedfact
+	case knowledgefactalias.EdgeProvenance:
 		return m.clearedprovenance
 	}
 	return false
@@ -26735,1366 +26531,33 @@ func (m *KnowledgeEntityAliasMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *KnowledgeEntityAliasMutation) ClearEdge(name string) error {
+func (m *KnowledgeFactAliasMutation) ClearEdge(name string) error {
 	switch name {
-	case knowledgeentityalias.EdgeTenant:
+	case knowledgefactalias.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case knowledgeentityalias.EdgeEntity:
-		m.ClearEntity()
-		return nil
-	case knowledgeentityalias.EdgeNormalizedEvent:
-		m.ClearNormalizedEvent()
+	case knowledgefactalias.EdgeFact:
+		m.ClearFact()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntityAlias unique edge %s", name)
+	return fmt.Errorf("unknown KnowledgeFactAlias unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *KnowledgeEntityAliasMutation) ResetEdge(name string) error {
+func (m *KnowledgeFactAliasMutation) ResetEdge(name string) error {
 	switch name {
-	case knowledgeentityalias.EdgeTenant:
+	case knowledgefactalias.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case knowledgeentityalias.EdgeEntity:
-		m.ResetEntity()
+	case knowledgefactalias.EdgeFact:
+		m.ResetFact()
 		return nil
-	case knowledgeentityalias.EdgeNormalizedEvent:
-		m.ResetNormalizedEvent()
-		return nil
-	case knowledgeentityalias.EdgeProvenance:
+	case knowledgefactalias.EdgeProvenance:
 		m.ResetProvenance()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeEntityAlias edge %s", name)
-}
-
-// KnowledgeFactHistoryMutation represents an operation that mutates the KnowledgeFactHistory nodes in the graph.
-type KnowledgeFactHistoryMutation struct {
-	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	fact_kind               *knowledgefacthistory.FactKind
-	event_kind              *string
-	history_key             *string
-	occurred_at             *time.Time
-	recorded_at             *time.Time
-	provider                *string
-	provider_source         *string
-	provider_event_ref      *string
-	extraction_method       *string
-	attributes              *map[string]interface{}
-	clearedFields           map[string]struct{}
-	tenant                  *int
-	clearedtenant           bool
-	alias                   *uuid.UUID
-	clearedalias            bool
-	relationship            *uuid.UUID
-	clearedrelationship     bool
-	normalized_event        *uuid.UUID
-	clearednormalized_event bool
-	done                    bool
-	oldValue                func(context.Context) (*KnowledgeFactHistory, error)
-	predicates              []predicate.KnowledgeFactHistory
-}
-
-var _ ent.Mutation = (*KnowledgeFactHistoryMutation)(nil)
-
-// knowledgefacthistoryOption allows management of the mutation configuration using functional options.
-type knowledgefacthistoryOption func(*KnowledgeFactHistoryMutation)
-
-// newKnowledgeFactHistoryMutation creates new mutation for the KnowledgeFactHistory entity.
-func newKnowledgeFactHistoryMutation(c config, op Op, opts ...knowledgefacthistoryOption) *KnowledgeFactHistoryMutation {
-	m := &KnowledgeFactHistoryMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeKnowledgeFactHistory,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withKnowledgeFactHistoryID sets the ID field of the mutation.
-func withKnowledgeFactHistoryID(id uuid.UUID) knowledgefacthistoryOption {
-	return func(m *KnowledgeFactHistoryMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *KnowledgeFactHistory
-		)
-		m.oldValue = func(ctx context.Context) (*KnowledgeFactHistory, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().KnowledgeFactHistory.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withKnowledgeFactHistory sets the old KnowledgeFactHistory of the mutation.
-func withKnowledgeFactHistory(node *KnowledgeFactHistory) knowledgefacthistoryOption {
-	return func(m *KnowledgeFactHistoryMutation) {
-		m.oldValue = func(context.Context) (*KnowledgeFactHistory, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m KnowledgeFactHistoryMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m KnowledgeFactHistoryMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of KnowledgeFactHistory entities.
-func (m *KnowledgeFactHistoryMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *KnowledgeFactHistoryMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *KnowledgeFactHistoryMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().KnowledgeFactHistory.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *KnowledgeFactHistoryMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *KnowledgeFactHistoryMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetFactKind sets the "fact_kind" field.
-func (m *KnowledgeFactHistoryMutation) SetFactKind(kk knowledgefacthistory.FactKind) {
-	m.fact_kind = &kk
-}
-
-// FactKind returns the value of the "fact_kind" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) FactKind() (r knowledgefacthistory.FactKind, exists bool) {
-	v := m.fact_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFactKind returns the old "fact_kind" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldFactKind(ctx context.Context) (v *knowledgefacthistory.FactKind, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFactKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFactKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFactKind: %w", err)
-	}
-	return oldValue.FactKind, nil
-}
-
-// ClearFactKind clears the value of the "fact_kind" field.
-func (m *KnowledgeFactHistoryMutation) ClearFactKind() {
-	m.fact_kind = nil
-	m.clearedFields[knowledgefacthistory.FieldFactKind] = struct{}{}
-}
-
-// FactKindCleared returns if the "fact_kind" field was cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) FactKindCleared() bool {
-	_, ok := m.clearedFields[knowledgefacthistory.FieldFactKind]
-	return ok
-}
-
-// ResetFactKind resets all changes to the "fact_kind" field.
-func (m *KnowledgeFactHistoryMutation) ResetFactKind() {
-	m.fact_kind = nil
-	delete(m.clearedFields, knowledgefacthistory.FieldFactKind)
-}
-
-// SetAliasID sets the "alias_id" field.
-func (m *KnowledgeFactHistoryMutation) SetAliasID(u uuid.UUID) {
-	m.alias = &u
-}
-
-// AliasID returns the value of the "alias_id" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) AliasID() (r uuid.UUID, exists bool) {
-	v := m.alias
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAliasID returns the old "alias_id" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldAliasID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAliasID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAliasID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAliasID: %w", err)
-	}
-	return oldValue.AliasID, nil
-}
-
-// ClearAliasID clears the value of the "alias_id" field.
-func (m *KnowledgeFactHistoryMutation) ClearAliasID() {
-	m.alias = nil
-	m.clearedFields[knowledgefacthistory.FieldAliasID] = struct{}{}
-}
-
-// AliasIDCleared returns if the "alias_id" field was cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) AliasIDCleared() bool {
-	_, ok := m.clearedFields[knowledgefacthistory.FieldAliasID]
-	return ok
-}
-
-// ResetAliasID resets all changes to the "alias_id" field.
-func (m *KnowledgeFactHistoryMutation) ResetAliasID() {
-	m.alias = nil
-	delete(m.clearedFields, knowledgefacthistory.FieldAliasID)
-}
-
-// SetRelationshipID sets the "relationship_id" field.
-func (m *KnowledgeFactHistoryMutation) SetRelationshipID(u uuid.UUID) {
-	m.relationship = &u
-}
-
-// RelationshipID returns the value of the "relationship_id" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) RelationshipID() (r uuid.UUID, exists bool) {
-	v := m.relationship
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRelationshipID returns the old "relationship_id" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldRelationshipID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRelationshipID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRelationshipID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRelationshipID: %w", err)
-	}
-	return oldValue.RelationshipID, nil
-}
-
-// ClearRelationshipID clears the value of the "relationship_id" field.
-func (m *KnowledgeFactHistoryMutation) ClearRelationshipID() {
-	m.relationship = nil
-	m.clearedFields[knowledgefacthistory.FieldRelationshipID] = struct{}{}
-}
-
-// RelationshipIDCleared returns if the "relationship_id" field was cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) RelationshipIDCleared() bool {
-	_, ok := m.clearedFields[knowledgefacthistory.FieldRelationshipID]
-	return ok
-}
-
-// ResetRelationshipID resets all changes to the "relationship_id" field.
-func (m *KnowledgeFactHistoryMutation) ResetRelationshipID() {
-	m.relationship = nil
-	delete(m.clearedFields, knowledgefacthistory.FieldRelationshipID)
-}
-
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (m *KnowledgeFactHistoryMutation) SetNormalizedEventID(u uuid.UUID) {
-	m.normalized_event = &u
-}
-
-// NormalizedEventID returns the value of the "normalized_event_id" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) NormalizedEventID() (r uuid.UUID, exists bool) {
-	v := m.normalized_event
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldNormalizedEventID returns the old "normalized_event_id" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldNormalizedEventID(ctx context.Context) (v *uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNormalizedEventID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNormalizedEventID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNormalizedEventID: %w", err)
-	}
-	return oldValue.NormalizedEventID, nil
-}
-
-// ClearNormalizedEventID clears the value of the "normalized_event_id" field.
-func (m *KnowledgeFactHistoryMutation) ClearNormalizedEventID() {
-	m.normalized_event = nil
-	m.clearedFields[knowledgefacthistory.FieldNormalizedEventID] = struct{}{}
-}
-
-// NormalizedEventIDCleared returns if the "normalized_event_id" field was cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) NormalizedEventIDCleared() bool {
-	_, ok := m.clearedFields[knowledgefacthistory.FieldNormalizedEventID]
-	return ok
-}
-
-// ResetNormalizedEventID resets all changes to the "normalized_event_id" field.
-func (m *KnowledgeFactHistoryMutation) ResetNormalizedEventID() {
-	m.normalized_event = nil
-	delete(m.clearedFields, knowledgefacthistory.FieldNormalizedEventID)
-}
-
-// SetEventKind sets the "event_kind" field.
-func (m *KnowledgeFactHistoryMutation) SetEventKind(s string) {
-	m.event_kind = &s
-}
-
-// EventKind returns the value of the "event_kind" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) EventKind() (r string, exists bool) {
-	v := m.event_kind
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEventKind returns the old "event_kind" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldEventKind(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEventKind is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEventKind requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEventKind: %w", err)
-	}
-	return oldValue.EventKind, nil
-}
-
-// ResetEventKind resets all changes to the "event_kind" field.
-func (m *KnowledgeFactHistoryMutation) ResetEventKind() {
-	m.event_kind = nil
-}
-
-// SetHistoryKey sets the "history_key" field.
-func (m *KnowledgeFactHistoryMutation) SetHistoryKey(s string) {
-	m.history_key = &s
-}
-
-// HistoryKey returns the value of the "history_key" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) HistoryKey() (r string, exists bool) {
-	v := m.history_key
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldHistoryKey returns the old "history_key" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldHistoryKey(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldHistoryKey is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldHistoryKey requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldHistoryKey: %w", err)
-	}
-	return oldValue.HistoryKey, nil
-}
-
-// ResetHistoryKey resets all changes to the "history_key" field.
-func (m *KnowledgeFactHistoryMutation) ResetHistoryKey() {
-	m.history_key = nil
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (m *KnowledgeFactHistoryMutation) SetOccurredAt(t time.Time) {
-	m.occurred_at = &t
-}
-
-// OccurredAt returns the value of the "occurred_at" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) OccurredAt() (r time.Time, exists bool) {
-	v := m.occurred_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldOccurredAt returns the old "occurred_at" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldOccurredAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOccurredAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOccurredAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOccurredAt: %w", err)
-	}
-	return oldValue.OccurredAt, nil
-}
-
-// ResetOccurredAt resets all changes to the "occurred_at" field.
-func (m *KnowledgeFactHistoryMutation) ResetOccurredAt() {
-	m.occurred_at = nil
-}
-
-// SetRecordedAt sets the "recorded_at" field.
-func (m *KnowledgeFactHistoryMutation) SetRecordedAt(t time.Time) {
-	m.recorded_at = &t
-}
-
-// RecordedAt returns the value of the "recorded_at" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) RecordedAt() (r time.Time, exists bool) {
-	v := m.recorded_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldRecordedAt returns the old "recorded_at" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldRecordedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldRecordedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldRecordedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldRecordedAt: %w", err)
-	}
-	return oldValue.RecordedAt, nil
-}
-
-// ResetRecordedAt resets all changes to the "recorded_at" field.
-func (m *KnowledgeFactHistoryMutation) ResetRecordedAt() {
-	m.recorded_at = nil
-}
-
-// SetProvider sets the "provider" field.
-func (m *KnowledgeFactHistoryMutation) SetProvider(s string) {
-	m.provider = &s
-}
-
-// Provider returns the value of the "provider" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) Provider() (r string, exists bool) {
-	v := m.provider
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProvider returns the old "provider" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldProvider(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProvider requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
-	}
-	return oldValue.Provider, nil
-}
-
-// ResetProvider resets all changes to the "provider" field.
-func (m *KnowledgeFactHistoryMutation) ResetProvider() {
-	m.provider = nil
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (m *KnowledgeFactHistoryMutation) SetProviderSource(s string) {
-	m.provider_source = &s
-}
-
-// ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) ProviderSource() (r string, exists bool) {
-	v := m.provider_source
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderSource returns the old "provider_source" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldProviderSource(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSource requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
-	}
-	return oldValue.ProviderSource, nil
-}
-
-// ResetProviderSource resets all changes to the "provider_source" field.
-func (m *KnowledgeFactHistoryMutation) ResetProviderSource() {
-	m.provider_source = nil
-}
-
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (m *KnowledgeFactHistoryMutation) SetProviderEventRef(s string) {
-	m.provider_event_ref = &s
-}
-
-// ProviderEventRef returns the value of the "provider_event_ref" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) ProviderEventRef() (r string, exists bool) {
-	v := m.provider_event_ref
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderEventRef returns the old "provider_event_ref" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldProviderEventRef(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderEventRef is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderEventRef requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderEventRef: %w", err)
-	}
-	return oldValue.ProviderEventRef, nil
-}
-
-// ResetProviderEventRef resets all changes to the "provider_event_ref" field.
-func (m *KnowledgeFactHistoryMutation) ResetProviderEventRef() {
-	m.provider_event_ref = nil
-}
-
-// SetExtractionMethod sets the "extraction_method" field.
-func (m *KnowledgeFactHistoryMutation) SetExtractionMethod(s string) {
-	m.extraction_method = &s
-}
-
-// ExtractionMethod returns the value of the "extraction_method" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) ExtractionMethod() (r string, exists bool) {
-	v := m.extraction_method
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldExtractionMethod returns the old "extraction_method" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldExtractionMethod(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExtractionMethod is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExtractionMethod requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExtractionMethod: %w", err)
-	}
-	return oldValue.ExtractionMethod, nil
-}
-
-// ResetExtractionMethod resets all changes to the "extraction_method" field.
-func (m *KnowledgeFactHistoryMutation) ResetExtractionMethod() {
-	m.extraction_method = nil
-}
-
-// SetAttributes sets the "attributes" field.
-func (m *KnowledgeFactHistoryMutation) SetAttributes(value map[string]interface{}) {
-	m.attributes = &value
-}
-
-// Attributes returns the value of the "attributes" field in the mutation.
-func (m *KnowledgeFactHistoryMutation) Attributes() (r map[string]interface{}, exists bool) {
-	v := m.attributes
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAttributes returns the old "attributes" field's value of the KnowledgeFactHistory entity.
-// If the KnowledgeFactHistory object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactHistoryMutation) OldAttributes(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAttributes is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAttributes requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAttributes: %w", err)
-	}
-	return oldValue.Attributes, nil
-}
-
-// ClearAttributes clears the value of the "attributes" field.
-func (m *KnowledgeFactHistoryMutation) ClearAttributes() {
-	m.attributes = nil
-	m.clearedFields[knowledgefacthistory.FieldAttributes] = struct{}{}
-}
-
-// AttributesCleared returns if the "attributes" field was cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) AttributesCleared() bool {
-	_, ok := m.clearedFields[knowledgefacthistory.FieldAttributes]
-	return ok
-}
-
-// ResetAttributes resets all changes to the "attributes" field.
-func (m *KnowledgeFactHistoryMutation) ResetAttributes() {
-	m.attributes = nil
-	delete(m.clearedFields, knowledgefacthistory.FieldAttributes)
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *KnowledgeFactHistoryMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[knowledgefacthistory.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *KnowledgeFactHistoryMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeFactHistoryMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *KnowledgeFactHistoryMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// ClearAlias clears the "alias" edge to the KnowledgeEntityAlias entity.
-func (m *KnowledgeFactHistoryMutation) ClearAlias() {
-	m.clearedalias = true
-	m.clearedFields[knowledgefacthistory.FieldAliasID] = struct{}{}
-}
-
-// AliasCleared reports if the "alias" edge to the KnowledgeEntityAlias entity was cleared.
-func (m *KnowledgeFactHistoryMutation) AliasCleared() bool {
-	return m.AliasIDCleared() || m.clearedalias
-}
-
-// AliasIDs returns the "alias" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// AliasID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeFactHistoryMutation) AliasIDs() (ids []uuid.UUID) {
-	if id := m.alias; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetAlias resets all changes to the "alias" edge.
-func (m *KnowledgeFactHistoryMutation) ResetAlias() {
-	m.alias = nil
-	m.clearedalias = false
-}
-
-// ClearRelationship clears the "relationship" edge to the KnowledgeRelationship entity.
-func (m *KnowledgeFactHistoryMutation) ClearRelationship() {
-	m.clearedrelationship = true
-	m.clearedFields[knowledgefacthistory.FieldRelationshipID] = struct{}{}
-}
-
-// RelationshipCleared reports if the "relationship" edge to the KnowledgeRelationship entity was cleared.
-func (m *KnowledgeFactHistoryMutation) RelationshipCleared() bool {
-	return m.RelationshipIDCleared() || m.clearedrelationship
-}
-
-// RelationshipIDs returns the "relationship" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// RelationshipID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeFactHistoryMutation) RelationshipIDs() (ids []uuid.UUID) {
-	if id := m.relationship; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetRelationship resets all changes to the "relationship" edge.
-func (m *KnowledgeFactHistoryMutation) ResetRelationship() {
-	m.relationship = nil
-	m.clearedrelationship = false
-}
-
-// ClearNormalizedEvent clears the "normalized_event" edge to the NormalizedEvent entity.
-func (m *KnowledgeFactHistoryMutation) ClearNormalizedEvent() {
-	m.clearednormalized_event = true
-	m.clearedFields[knowledgefacthistory.FieldNormalizedEventID] = struct{}{}
-}
-
-// NormalizedEventCleared reports if the "normalized_event" edge to the NormalizedEvent entity was cleared.
-func (m *KnowledgeFactHistoryMutation) NormalizedEventCleared() bool {
-	return m.NormalizedEventIDCleared() || m.clearednormalized_event
-}
-
-// NormalizedEventIDs returns the "normalized_event" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// NormalizedEventID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeFactHistoryMutation) NormalizedEventIDs() (ids []uuid.UUID) {
-	if id := m.normalized_event; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetNormalizedEvent resets all changes to the "normalized_event" edge.
-func (m *KnowledgeFactHistoryMutation) ResetNormalizedEvent() {
-	m.normalized_event = nil
-	m.clearednormalized_event = false
-}
-
-// Where appends a list predicates to the KnowledgeFactHistoryMutation builder.
-func (m *KnowledgeFactHistoryMutation) Where(ps ...predicate.KnowledgeFactHistory) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the KnowledgeFactHistoryMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *KnowledgeFactHistoryMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.KnowledgeFactHistory, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *KnowledgeFactHistoryMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *KnowledgeFactHistoryMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (KnowledgeFactHistory).
-func (m *KnowledgeFactHistoryMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *KnowledgeFactHistoryMutation) Fields() []string {
-	fields := make([]string, 0, 14)
-	if m.tenant != nil {
-		fields = append(fields, knowledgefacthistory.FieldTenantID)
-	}
-	if m.fact_kind != nil {
-		fields = append(fields, knowledgefacthistory.FieldFactKind)
-	}
-	if m.alias != nil {
-		fields = append(fields, knowledgefacthistory.FieldAliasID)
-	}
-	if m.relationship != nil {
-		fields = append(fields, knowledgefacthistory.FieldRelationshipID)
-	}
-	if m.normalized_event != nil {
-		fields = append(fields, knowledgefacthistory.FieldNormalizedEventID)
-	}
-	if m.event_kind != nil {
-		fields = append(fields, knowledgefacthistory.FieldEventKind)
-	}
-	if m.history_key != nil {
-		fields = append(fields, knowledgefacthistory.FieldHistoryKey)
-	}
-	if m.occurred_at != nil {
-		fields = append(fields, knowledgefacthistory.FieldOccurredAt)
-	}
-	if m.recorded_at != nil {
-		fields = append(fields, knowledgefacthistory.FieldRecordedAt)
-	}
-	if m.provider != nil {
-		fields = append(fields, knowledgefacthistory.FieldProvider)
-	}
-	if m.provider_source != nil {
-		fields = append(fields, knowledgefacthistory.FieldProviderSource)
-	}
-	if m.provider_event_ref != nil {
-		fields = append(fields, knowledgefacthistory.FieldProviderEventRef)
-	}
-	if m.extraction_method != nil {
-		fields = append(fields, knowledgefacthistory.FieldExtractionMethod)
-	}
-	if m.attributes != nil {
-		fields = append(fields, knowledgefacthistory.FieldAttributes)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *KnowledgeFactHistoryMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case knowledgefacthistory.FieldTenantID:
-		return m.TenantID()
-	case knowledgefacthistory.FieldFactKind:
-		return m.FactKind()
-	case knowledgefacthistory.FieldAliasID:
-		return m.AliasID()
-	case knowledgefacthistory.FieldRelationshipID:
-		return m.RelationshipID()
-	case knowledgefacthistory.FieldNormalizedEventID:
-		return m.NormalizedEventID()
-	case knowledgefacthistory.FieldEventKind:
-		return m.EventKind()
-	case knowledgefacthistory.FieldHistoryKey:
-		return m.HistoryKey()
-	case knowledgefacthistory.FieldOccurredAt:
-		return m.OccurredAt()
-	case knowledgefacthistory.FieldRecordedAt:
-		return m.RecordedAt()
-	case knowledgefacthistory.FieldProvider:
-		return m.Provider()
-	case knowledgefacthistory.FieldProviderSource:
-		return m.ProviderSource()
-	case knowledgefacthistory.FieldProviderEventRef:
-		return m.ProviderEventRef()
-	case knowledgefacthistory.FieldExtractionMethod:
-		return m.ExtractionMethod()
-	case knowledgefacthistory.FieldAttributes:
-		return m.Attributes()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *KnowledgeFactHistoryMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case knowledgefacthistory.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case knowledgefacthistory.FieldFactKind:
-		return m.OldFactKind(ctx)
-	case knowledgefacthistory.FieldAliasID:
-		return m.OldAliasID(ctx)
-	case knowledgefacthistory.FieldRelationshipID:
-		return m.OldRelationshipID(ctx)
-	case knowledgefacthistory.FieldNormalizedEventID:
-		return m.OldNormalizedEventID(ctx)
-	case knowledgefacthistory.FieldEventKind:
-		return m.OldEventKind(ctx)
-	case knowledgefacthistory.FieldHistoryKey:
-		return m.OldHistoryKey(ctx)
-	case knowledgefacthistory.FieldOccurredAt:
-		return m.OldOccurredAt(ctx)
-	case knowledgefacthistory.FieldRecordedAt:
-		return m.OldRecordedAt(ctx)
-	case knowledgefacthistory.FieldProvider:
-		return m.OldProvider(ctx)
-	case knowledgefacthistory.FieldProviderSource:
-		return m.OldProviderSource(ctx)
-	case knowledgefacthistory.FieldProviderEventRef:
-		return m.OldProviderEventRef(ctx)
-	case knowledgefacthistory.FieldExtractionMethod:
-		return m.OldExtractionMethod(ctx)
-	case knowledgefacthistory.FieldAttributes:
-		return m.OldAttributes(ctx)
-	}
-	return nil, fmt.Errorf("unknown KnowledgeFactHistory field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *KnowledgeFactHistoryMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case knowledgefacthistory.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case knowledgefacthistory.FieldFactKind:
-		v, ok := value.(knowledgefacthistory.FactKind)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFactKind(v)
-		return nil
-	case knowledgefacthistory.FieldAliasID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAliasID(v)
-		return nil
-	case knowledgefacthistory.FieldRelationshipID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRelationshipID(v)
-		return nil
-	case knowledgefacthistory.FieldNormalizedEventID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetNormalizedEventID(v)
-		return nil
-	case knowledgefacthistory.FieldEventKind:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEventKind(v)
-		return nil
-	case knowledgefacthistory.FieldHistoryKey:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetHistoryKey(v)
-		return nil
-	case knowledgefacthistory.FieldOccurredAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetOccurredAt(v)
-		return nil
-	case knowledgefacthistory.FieldRecordedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetRecordedAt(v)
-		return nil
-	case knowledgefacthistory.FieldProvider:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProvider(v)
-		return nil
-	case knowledgefacthistory.FieldProviderSource:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderSource(v)
-		return nil
-	case knowledgefacthistory.FieldProviderEventRef:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderEventRef(v)
-		return nil
-	case knowledgefacthistory.FieldExtractionMethod:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetExtractionMethod(v)
-		return nil
-	case knowledgefacthistory.FieldAttributes:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAttributes(v)
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeFactHistory field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *KnowledgeFactHistoryMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *KnowledgeFactHistoryMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *KnowledgeFactHistoryMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown KnowledgeFactHistory numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *KnowledgeFactHistoryMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(knowledgefacthistory.FieldFactKind) {
-		fields = append(fields, knowledgefacthistory.FieldFactKind)
-	}
-	if m.FieldCleared(knowledgefacthistory.FieldAliasID) {
-		fields = append(fields, knowledgefacthistory.FieldAliasID)
-	}
-	if m.FieldCleared(knowledgefacthistory.FieldRelationshipID) {
-		fields = append(fields, knowledgefacthistory.FieldRelationshipID)
-	}
-	if m.FieldCleared(knowledgefacthistory.FieldNormalizedEventID) {
-		fields = append(fields, knowledgefacthistory.FieldNormalizedEventID)
-	}
-	if m.FieldCleared(knowledgefacthistory.FieldAttributes) {
-		fields = append(fields, knowledgefacthistory.FieldAttributes)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *KnowledgeFactHistoryMutation) ClearField(name string) error {
-	switch name {
-	case knowledgefacthistory.FieldFactKind:
-		m.ClearFactKind()
-		return nil
-	case knowledgefacthistory.FieldAliasID:
-		m.ClearAliasID()
-		return nil
-	case knowledgefacthistory.FieldRelationshipID:
-		m.ClearRelationshipID()
-		return nil
-	case knowledgefacthistory.FieldNormalizedEventID:
-		m.ClearNormalizedEventID()
-		return nil
-	case knowledgefacthistory.FieldAttributes:
-		m.ClearAttributes()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeFactHistory nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *KnowledgeFactHistoryMutation) ResetField(name string) error {
-	switch name {
-	case knowledgefacthistory.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case knowledgefacthistory.FieldFactKind:
-		m.ResetFactKind()
-		return nil
-	case knowledgefacthistory.FieldAliasID:
-		m.ResetAliasID()
-		return nil
-	case knowledgefacthistory.FieldRelationshipID:
-		m.ResetRelationshipID()
-		return nil
-	case knowledgefacthistory.FieldNormalizedEventID:
-		m.ResetNormalizedEventID()
-		return nil
-	case knowledgefacthistory.FieldEventKind:
-		m.ResetEventKind()
-		return nil
-	case knowledgefacthistory.FieldHistoryKey:
-		m.ResetHistoryKey()
-		return nil
-	case knowledgefacthistory.FieldOccurredAt:
-		m.ResetOccurredAt()
-		return nil
-	case knowledgefacthistory.FieldRecordedAt:
-		m.ResetRecordedAt()
-		return nil
-	case knowledgefacthistory.FieldProvider:
-		m.ResetProvider()
-		return nil
-	case knowledgefacthistory.FieldProviderSource:
-		m.ResetProviderSource()
-		return nil
-	case knowledgefacthistory.FieldProviderEventRef:
-		m.ResetProviderEventRef()
-		return nil
-	case knowledgefacthistory.FieldExtractionMethod:
-		m.ResetExtractionMethod()
-		return nil
-	case knowledgefacthistory.FieldAttributes:
-		m.ResetAttributes()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeFactHistory field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *KnowledgeFactHistoryMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.tenant != nil {
-		edges = append(edges, knowledgefacthistory.EdgeTenant)
-	}
-	if m.alias != nil {
-		edges = append(edges, knowledgefacthistory.EdgeAlias)
-	}
-	if m.relationship != nil {
-		edges = append(edges, knowledgefacthistory.EdgeRelationship)
-	}
-	if m.normalized_event != nil {
-		edges = append(edges, knowledgefacthistory.EdgeNormalizedEvent)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *KnowledgeFactHistoryMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case knowledgefacthistory.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgefacthistory.EdgeAlias:
-		if id := m.alias; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgefacthistory.EdgeRelationship:
-		if id := m.relationship; id != nil {
-			return []ent.Value{*id}
-		}
-	case knowledgefacthistory.EdgeNormalizedEvent:
-		if id := m.normalized_event; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *KnowledgeFactHistoryMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *KnowledgeFactHistoryMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
-	if m.clearedtenant {
-		edges = append(edges, knowledgefacthistory.EdgeTenant)
-	}
-	if m.clearedalias {
-		edges = append(edges, knowledgefacthistory.EdgeAlias)
-	}
-	if m.clearedrelationship {
-		edges = append(edges, knowledgefacthistory.EdgeRelationship)
-	}
-	if m.clearednormalized_event {
-		edges = append(edges, knowledgefacthistory.EdgeNormalizedEvent)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *KnowledgeFactHistoryMutation) EdgeCleared(name string) bool {
-	switch name {
-	case knowledgefacthistory.EdgeTenant:
-		return m.clearedtenant
-	case knowledgefacthistory.EdgeAlias:
-		return m.clearedalias
-	case knowledgefacthistory.EdgeRelationship:
-		return m.clearedrelationship
-	case knowledgefacthistory.EdgeNormalizedEvent:
-		return m.clearednormalized_event
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *KnowledgeFactHistoryMutation) ClearEdge(name string) error {
-	switch name {
-	case knowledgefacthistory.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case knowledgefacthistory.EdgeAlias:
-		m.ClearAlias()
-		return nil
-	case knowledgefacthistory.EdgeRelationship:
-		m.ClearRelationship()
-		return nil
-	case knowledgefacthistory.EdgeNormalizedEvent:
-		m.ClearNormalizedEvent()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeFactHistory unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *KnowledgeFactHistoryMutation) ResetEdge(name string) error {
-	switch name {
-	case knowledgefacthistory.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case knowledgefacthistory.EdgeAlias:
-		m.ResetAlias()
-		return nil
-	case knowledgefacthistory.EdgeRelationship:
-		m.ResetRelationship()
-		return nil
-	case knowledgefacthistory.EdgeNormalizedEvent:
-		m.ResetNormalizedEvent()
-		return nil
-	}
-	return fmt.Errorf("unknown KnowledgeFactHistory edge %s", name)
+	return fmt.Errorf("unknown KnowledgeFactAlias edge %s", name)
 }
 
 // KnowledgeFactProvenanceMutation represents an operation that mutates the KnowledgeFactProvenance nodes in the graph.
@@ -28105,12 +26568,7 @@ type KnowledgeFactProvenanceMutation struct {
 	id                      *uuid.UUID
 	created_at              *time.Time
 	updated_at              *time.Time
-	provider                *string
-	provider_source         *string
-	provider_event_ref      *string
-	extraction_method       *string
-	first_seen_at           *time.Time
-	last_seen_at            *time.Time
+	source                  *string
 	clearedFields           map[string]struct{}
 	tenant                  *int
 	clearedtenant           bool
@@ -28452,7 +26910,7 @@ func (m *KnowledgeFactProvenanceMutation) NormalizedEventID() (r uuid.UUID, exis
 // OldNormalizedEventID returns the old "normalized_event_id" field's value of the KnowledgeFactProvenance entity.
 // If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldNormalizedEventID(ctx context.Context) (v *uuid.UUID, err error) {
+func (m *KnowledgeFactProvenanceMutation) OldNormalizedEventID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldNormalizedEventID is only allowed on UpdateOne operations")
 	}
@@ -28466,238 +26924,45 @@ func (m *KnowledgeFactProvenanceMutation) OldNormalizedEventID(ctx context.Conte
 	return oldValue.NormalizedEventID, nil
 }
 
-// ClearNormalizedEventID clears the value of the "normalized_event_id" field.
-func (m *KnowledgeFactProvenanceMutation) ClearNormalizedEventID() {
-	m.normalized_event = nil
-	m.clearedFields[knowledgefactprovenance.FieldNormalizedEventID] = struct{}{}
-}
-
-// NormalizedEventIDCleared returns if the "normalized_event_id" field was cleared in this mutation.
-func (m *KnowledgeFactProvenanceMutation) NormalizedEventIDCleared() bool {
-	_, ok := m.clearedFields[knowledgefactprovenance.FieldNormalizedEventID]
-	return ok
-}
-
 // ResetNormalizedEventID resets all changes to the "normalized_event_id" field.
 func (m *KnowledgeFactProvenanceMutation) ResetNormalizedEventID() {
 	m.normalized_event = nil
-	delete(m.clearedFields, knowledgefactprovenance.FieldNormalizedEventID)
 }
 
-// SetProvider sets the "provider" field.
-func (m *KnowledgeFactProvenanceMutation) SetProvider(s string) {
-	m.provider = &s
+// SetSource sets the "source" field.
+func (m *KnowledgeFactProvenanceMutation) SetSource(s string) {
+	m.source = &s
 }
 
-// Provider returns the value of the "provider" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) Provider() (r string, exists bool) {
-	v := m.provider
+// Source returns the value of the "source" field in the mutation.
+func (m *KnowledgeFactProvenanceMutation) Source() (r string, exists bool) {
+	v := m.source
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProvider returns the old "provider" field's value of the KnowledgeFactProvenance entity.
+// OldSource returns the old "source" field's value of the KnowledgeFactProvenance entity.
 // If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldProvider(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactProvenanceMutation) OldSource(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
+		return v, errors.New("OldSource is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProvider requires an ID field in the mutation")
+		return v, errors.New("OldSource requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
 	}
-	return oldValue.Provider, nil
+	return oldValue.Source, nil
 }
 
-// ResetProvider resets all changes to the "provider" field.
-func (m *KnowledgeFactProvenanceMutation) ResetProvider() {
-	m.provider = nil
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (m *KnowledgeFactProvenanceMutation) SetProviderSource(s string) {
-	m.provider_source = &s
-}
-
-// ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) ProviderSource() (r string, exists bool) {
-	v := m.provider_source
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderSource returns the old "provider_source" field's value of the KnowledgeFactProvenance entity.
-// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldProviderSource(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSource requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
-	}
-	return oldValue.ProviderSource, nil
-}
-
-// ResetProviderSource resets all changes to the "provider_source" field.
-func (m *KnowledgeFactProvenanceMutation) ResetProviderSource() {
-	m.provider_source = nil
-}
-
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (m *KnowledgeFactProvenanceMutation) SetProviderEventRef(s string) {
-	m.provider_event_ref = &s
-}
-
-// ProviderEventRef returns the value of the "provider_event_ref" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) ProviderEventRef() (r string, exists bool) {
-	v := m.provider_event_ref
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderEventRef returns the old "provider_event_ref" field's value of the KnowledgeFactProvenance entity.
-// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldProviderEventRef(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderEventRef is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderEventRef requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderEventRef: %w", err)
-	}
-	return oldValue.ProviderEventRef, nil
-}
-
-// ResetProviderEventRef resets all changes to the "provider_event_ref" field.
-func (m *KnowledgeFactProvenanceMutation) ResetProviderEventRef() {
-	m.provider_event_ref = nil
-}
-
-// SetExtractionMethod sets the "extraction_method" field.
-func (m *KnowledgeFactProvenanceMutation) SetExtractionMethod(s string) {
-	m.extraction_method = &s
-}
-
-// ExtractionMethod returns the value of the "extraction_method" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) ExtractionMethod() (r string, exists bool) {
-	v := m.extraction_method
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldExtractionMethod returns the old "extraction_method" field's value of the KnowledgeFactProvenance entity.
-// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldExtractionMethod(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldExtractionMethod is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldExtractionMethod requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldExtractionMethod: %w", err)
-	}
-	return oldValue.ExtractionMethod, nil
-}
-
-// ResetExtractionMethod resets all changes to the "extraction_method" field.
-func (m *KnowledgeFactProvenanceMutation) ResetExtractionMethod() {
-	m.extraction_method = nil
-}
-
-// SetFirstSeenAt sets the "first_seen_at" field.
-func (m *KnowledgeFactProvenanceMutation) SetFirstSeenAt(t time.Time) {
-	m.first_seen_at = &t
-}
-
-// FirstSeenAt returns the value of the "first_seen_at" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) FirstSeenAt() (r time.Time, exists bool) {
-	v := m.first_seen_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFirstSeenAt returns the old "first_seen_at" field's value of the KnowledgeFactProvenance entity.
-// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldFirstSeenAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFirstSeenAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFirstSeenAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFirstSeenAt: %w", err)
-	}
-	return oldValue.FirstSeenAt, nil
-}
-
-// ResetFirstSeenAt resets all changes to the "first_seen_at" field.
-func (m *KnowledgeFactProvenanceMutation) ResetFirstSeenAt() {
-	m.first_seen_at = nil
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (m *KnowledgeFactProvenanceMutation) SetLastSeenAt(t time.Time) {
-	m.last_seen_at = &t
-}
-
-// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
-func (m *KnowledgeFactProvenanceMutation) LastSeenAt() (r time.Time, exists bool) {
-	v := m.last_seen_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLastSeenAt returns the old "last_seen_at" field's value of the KnowledgeFactProvenance entity.
-// If the KnowledgeFactProvenance object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeFactProvenanceMutation) OldLastSeenAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
-	}
-	return oldValue.LastSeenAt, nil
-}
-
-// ResetLastSeenAt resets all changes to the "last_seen_at" field.
-func (m *KnowledgeFactProvenanceMutation) ResetLastSeenAt() {
-	m.last_seen_at = nil
+// ResetSource resets all changes to the "source" field.
+func (m *KnowledgeFactProvenanceMutation) ResetSource() {
+	m.source = nil
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
@@ -28727,13 +26992,13 @@ func (m *KnowledgeFactProvenanceMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// ClearAlias clears the "alias" edge to the KnowledgeEntityAlias entity.
+// ClearAlias clears the "alias" edge to the KnowledgeFactAlias entity.
 func (m *KnowledgeFactProvenanceMutation) ClearAlias() {
 	m.clearedalias = true
 	m.clearedFields[knowledgefactprovenance.FieldAliasID] = struct{}{}
 }
 
-// AliasCleared reports if the "alias" edge to the KnowledgeEntityAlias entity was cleared.
+// AliasCleared reports if the "alias" edge to the KnowledgeFactAlias entity was cleared.
 func (m *KnowledgeFactProvenanceMutation) AliasCleared() bool {
 	return m.AliasIDCleared() || m.clearedalias
 }
@@ -28754,13 +27019,13 @@ func (m *KnowledgeFactProvenanceMutation) ResetAlias() {
 	m.clearedalias = false
 }
 
-// ClearRelationship clears the "relationship" edge to the KnowledgeRelationship entity.
+// ClearRelationship clears the "relationship" edge to the KnowledgeFactRelationship entity.
 func (m *KnowledgeFactProvenanceMutation) ClearRelationship() {
 	m.clearedrelationship = true
 	m.clearedFields[knowledgefactprovenance.FieldRelationshipID] = struct{}{}
 }
 
-// RelationshipCleared reports if the "relationship" edge to the KnowledgeRelationship entity was cleared.
+// RelationshipCleared reports if the "relationship" edge to the KnowledgeFactRelationship entity was cleared.
 func (m *KnowledgeFactProvenanceMutation) RelationshipCleared() bool {
 	return m.RelationshipIDCleared() || m.clearedrelationship
 }
@@ -28789,7 +27054,7 @@ func (m *KnowledgeFactProvenanceMutation) ClearNormalizedEvent() {
 
 // NormalizedEventCleared reports if the "normalized_event" edge to the NormalizedEvent entity was cleared.
 func (m *KnowledgeFactProvenanceMutation) NormalizedEventCleared() bool {
-	return m.NormalizedEventIDCleared() || m.clearednormalized_event
+	return m.clearednormalized_event
 }
 
 // NormalizedEventIDs returns the "normalized_event" edge IDs in the mutation.
@@ -28842,7 +27107,7 @@ func (m *KnowledgeFactProvenanceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeFactProvenanceMutation) Fields() []string {
-	fields := make([]string, 0, 12)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, knowledgefactprovenance.FieldTenantID)
 	}
@@ -28861,23 +27126,8 @@ func (m *KnowledgeFactProvenanceMutation) Fields() []string {
 	if m.normalized_event != nil {
 		fields = append(fields, knowledgefactprovenance.FieldNormalizedEventID)
 	}
-	if m.provider != nil {
-		fields = append(fields, knowledgefactprovenance.FieldProvider)
-	}
-	if m.provider_source != nil {
-		fields = append(fields, knowledgefactprovenance.FieldProviderSource)
-	}
-	if m.provider_event_ref != nil {
-		fields = append(fields, knowledgefactprovenance.FieldProviderEventRef)
-	}
-	if m.extraction_method != nil {
-		fields = append(fields, knowledgefactprovenance.FieldExtractionMethod)
-	}
-	if m.first_seen_at != nil {
-		fields = append(fields, knowledgefactprovenance.FieldFirstSeenAt)
-	}
-	if m.last_seen_at != nil {
-		fields = append(fields, knowledgefactprovenance.FieldLastSeenAt)
+	if m.source != nil {
+		fields = append(fields, knowledgefactprovenance.FieldSource)
 	}
 	return fields
 }
@@ -28899,18 +27149,8 @@ func (m *KnowledgeFactProvenanceMutation) Field(name string) (ent.Value, bool) {
 		return m.RelationshipID()
 	case knowledgefactprovenance.FieldNormalizedEventID:
 		return m.NormalizedEventID()
-	case knowledgefactprovenance.FieldProvider:
-		return m.Provider()
-	case knowledgefactprovenance.FieldProviderSource:
-		return m.ProviderSource()
-	case knowledgefactprovenance.FieldProviderEventRef:
-		return m.ProviderEventRef()
-	case knowledgefactprovenance.FieldExtractionMethod:
-		return m.ExtractionMethod()
-	case knowledgefactprovenance.FieldFirstSeenAt:
-		return m.FirstSeenAt()
-	case knowledgefactprovenance.FieldLastSeenAt:
-		return m.LastSeenAt()
+	case knowledgefactprovenance.FieldSource:
+		return m.Source()
 	}
 	return nil, false
 }
@@ -28932,18 +27172,8 @@ func (m *KnowledgeFactProvenanceMutation) OldField(ctx context.Context, name str
 		return m.OldRelationshipID(ctx)
 	case knowledgefactprovenance.FieldNormalizedEventID:
 		return m.OldNormalizedEventID(ctx)
-	case knowledgefactprovenance.FieldProvider:
-		return m.OldProvider(ctx)
-	case knowledgefactprovenance.FieldProviderSource:
-		return m.OldProviderSource(ctx)
-	case knowledgefactprovenance.FieldProviderEventRef:
-		return m.OldProviderEventRef(ctx)
-	case knowledgefactprovenance.FieldExtractionMethod:
-		return m.OldExtractionMethod(ctx)
-	case knowledgefactprovenance.FieldFirstSeenAt:
-		return m.OldFirstSeenAt(ctx)
-	case knowledgefactprovenance.FieldLastSeenAt:
-		return m.OldLastSeenAt(ctx)
+	case knowledgefactprovenance.FieldSource:
+		return m.OldSource(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeFactProvenance field %s", name)
 }
@@ -28995,47 +27225,12 @@ func (m *KnowledgeFactProvenanceMutation) SetField(name string, value ent.Value)
 		}
 		m.SetNormalizedEventID(v)
 		return nil
-	case knowledgefactprovenance.FieldProvider:
+	case knowledgefactprovenance.FieldSource:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProvider(v)
-		return nil
-	case knowledgefactprovenance.FieldProviderSource:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderSource(v)
-		return nil
-	case knowledgefactprovenance.FieldProviderEventRef:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderEventRef(v)
-		return nil
-	case knowledgefactprovenance.FieldExtractionMethod:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetExtractionMethod(v)
-		return nil
-	case knowledgefactprovenance.FieldFirstSeenAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFirstSeenAt(v)
-		return nil
-	case knowledgefactprovenance.FieldLastSeenAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLastSeenAt(v)
+		m.SetSource(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeFactProvenance field %s", name)
@@ -29076,9 +27271,6 @@ func (m *KnowledgeFactProvenanceMutation) ClearedFields() []string {
 	if m.FieldCleared(knowledgefactprovenance.FieldRelationshipID) {
 		fields = append(fields, knowledgefactprovenance.FieldRelationshipID)
 	}
-	if m.FieldCleared(knowledgefactprovenance.FieldNormalizedEventID) {
-		fields = append(fields, knowledgefactprovenance.FieldNormalizedEventID)
-	}
 	return fields
 }
 
@@ -29098,9 +27290,6 @@ func (m *KnowledgeFactProvenanceMutation) ClearField(name string) error {
 		return nil
 	case knowledgefactprovenance.FieldRelationshipID:
 		m.ClearRelationshipID()
-		return nil
-	case knowledgefactprovenance.FieldNormalizedEventID:
-		m.ClearNormalizedEventID()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeFactProvenance nullable field %s", name)
@@ -29128,23 +27317,8 @@ func (m *KnowledgeFactProvenanceMutation) ResetField(name string) error {
 	case knowledgefactprovenance.FieldNormalizedEventID:
 		m.ResetNormalizedEventID()
 		return nil
-	case knowledgefactprovenance.FieldProvider:
-		m.ResetProvider()
-		return nil
-	case knowledgefactprovenance.FieldProviderSource:
-		m.ResetProviderSource()
-		return nil
-	case knowledgefactprovenance.FieldProviderEventRef:
-		m.ResetProviderEventRef()
-		return nil
-	case knowledgefactprovenance.FieldExtractionMethod:
-		m.ResetExtractionMethod()
-		return nil
-	case knowledgefactprovenance.FieldFirstSeenAt:
-		m.ResetFirstSeenAt()
-		return nil
-	case knowledgefactprovenance.FieldLastSeenAt:
-		m.ResetLastSeenAt()
+	case knowledgefactprovenance.FieldSource:
+		m.ResetSource()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeFactProvenance field %s", name)
@@ -29278,46 +27452,44 @@ func (m *KnowledgeFactProvenanceMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown KnowledgeFactProvenance edge %s", name)
 }
 
-// KnowledgeRelationshipMutation represents an operation that mutates the KnowledgeRelationship nodes in the graph.
-type KnowledgeRelationshipMutation struct {
+// KnowledgeFactRelationshipMutation represents an operation that mutates the KnowledgeFactRelationship nodes in the graph.
+type KnowledgeFactRelationshipMutation struct {
 	config
-	op                   Op
-	typ                  string
-	id                   *uuid.UUID
-	created_at           *time.Time
-	updated_at           *time.Time
-	kind                 *string
-	display_name         *string
-	description          *string
-	properties           *map[string]interface{}
-	first_seen_at        *time.Time
-	last_seen_at         *time.Time
-	clearedFields        map[string]struct{}
-	tenant               *int
-	clearedtenant        bool
-	source_entity        *uuid.UUID
-	clearedsource_entity bool
-	target_entity        *uuid.UUID
-	clearedtarget_entity bool
-	provenance           map[uuid.UUID]struct{}
-	removedprovenance    map[uuid.UUID]struct{}
-	clearedprovenance    bool
-	done                 bool
-	oldValue             func(context.Context) (*KnowledgeRelationship, error)
-	predicates           []predicate.KnowledgeRelationship
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	created_at         *time.Time
+	updated_at         *time.Time
+	kind               *string
+	display_name       *string
+	description        *string
+	properties         *map[string]interface{}
+	clearedFields      map[string]struct{}
+	tenant             *int
+	clearedtenant      bool
+	source_fact        *uuid.UUID
+	clearedsource_fact bool
+	target_fact        *uuid.UUID
+	clearedtarget_fact bool
+	provenance         map[uuid.UUID]struct{}
+	removedprovenance  map[uuid.UUID]struct{}
+	clearedprovenance  bool
+	done               bool
+	oldValue           func(context.Context) (*KnowledgeFactRelationship, error)
+	predicates         []predicate.KnowledgeFactRelationship
 }
 
-var _ ent.Mutation = (*KnowledgeRelationshipMutation)(nil)
+var _ ent.Mutation = (*KnowledgeFactRelationshipMutation)(nil)
 
-// knowledgerelationshipOption allows management of the mutation configuration using functional options.
-type knowledgerelationshipOption func(*KnowledgeRelationshipMutation)
+// knowledgefactrelationshipOption allows management of the mutation configuration using functional options.
+type knowledgefactrelationshipOption func(*KnowledgeFactRelationshipMutation)
 
-// newKnowledgeRelationshipMutation creates new mutation for the KnowledgeRelationship entity.
-func newKnowledgeRelationshipMutation(c config, op Op, opts ...knowledgerelationshipOption) *KnowledgeRelationshipMutation {
-	m := &KnowledgeRelationshipMutation{
+// newKnowledgeFactRelationshipMutation creates new mutation for the KnowledgeFactRelationship entity.
+func newKnowledgeFactRelationshipMutation(c config, op Op, opts ...knowledgefactrelationshipOption) *KnowledgeFactRelationshipMutation {
+	m := &KnowledgeFactRelationshipMutation{
 		config:        c,
 		op:            op,
-		typ:           TypeKnowledgeRelationship,
+		typ:           TypeKnowledgeFactRelationship,
 		clearedFields: make(map[string]struct{}),
 	}
 	for _, opt := range opts {
@@ -29326,20 +27498,20 @@ func newKnowledgeRelationshipMutation(c config, op Op, opts ...knowledgerelation
 	return m
 }
 
-// withKnowledgeRelationshipID sets the ID field of the mutation.
-func withKnowledgeRelationshipID(id uuid.UUID) knowledgerelationshipOption {
-	return func(m *KnowledgeRelationshipMutation) {
+// withKnowledgeFactRelationshipID sets the ID field of the mutation.
+func withKnowledgeFactRelationshipID(id uuid.UUID) knowledgefactrelationshipOption {
+	return func(m *KnowledgeFactRelationshipMutation) {
 		var (
 			err   error
 			once  sync.Once
-			value *KnowledgeRelationship
+			value *KnowledgeFactRelationship
 		)
-		m.oldValue = func(ctx context.Context) (*KnowledgeRelationship, error) {
+		m.oldValue = func(ctx context.Context) (*KnowledgeFactRelationship, error) {
 			once.Do(func() {
 				if m.done {
 					err = errors.New("querying old values post mutation is not allowed")
 				} else {
-					value, err = m.Client().KnowledgeRelationship.Get(ctx, id)
+					value, err = m.Client().KnowledgeFactRelationship.Get(ctx, id)
 				}
 			})
 			return value, err
@@ -29348,10 +27520,10 @@ func withKnowledgeRelationshipID(id uuid.UUID) knowledgerelationshipOption {
 	}
 }
 
-// withKnowledgeRelationship sets the old KnowledgeRelationship of the mutation.
-func withKnowledgeRelationship(node *KnowledgeRelationship) knowledgerelationshipOption {
-	return func(m *KnowledgeRelationshipMutation) {
-		m.oldValue = func(context.Context) (*KnowledgeRelationship, error) {
+// withKnowledgeFactRelationship sets the old KnowledgeFactRelationship of the mutation.
+func withKnowledgeFactRelationship(node *KnowledgeFactRelationship) knowledgefactrelationshipOption {
+	return func(m *KnowledgeFactRelationshipMutation) {
+		m.oldValue = func(context.Context) (*KnowledgeFactRelationship, error) {
 			return node, nil
 		}
 		m.id = &node.ID
@@ -29360,7 +27532,7 @@ func withKnowledgeRelationship(node *KnowledgeRelationship) knowledgerelationshi
 
 // Client returns a new `ent.Client` from the mutation. If the mutation was
 // executed in a transaction (ent.Tx), a transactional client is returned.
-func (m KnowledgeRelationshipMutation) Client() *Client {
+func (m KnowledgeFactRelationshipMutation) Client() *Client {
 	client := &Client{config: m.config}
 	client.init()
 	return client
@@ -29368,7 +27540,7 @@ func (m KnowledgeRelationshipMutation) Client() *Client {
 
 // Tx returns an `ent.Tx` for mutations that were executed in transactions;
 // it returns an error otherwise.
-func (m KnowledgeRelationshipMutation) Tx() (*Tx, error) {
+func (m KnowledgeFactRelationshipMutation) Tx() (*Tx, error) {
 	if _, ok := m.driver.(*txDriver); !ok {
 		return nil, errors.New("ent: mutation is not running in a transaction")
 	}
@@ -29378,14 +27550,14 @@ func (m KnowledgeRelationshipMutation) Tx() (*Tx, error) {
 }
 
 // SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of KnowledgeRelationship entities.
-func (m *KnowledgeRelationshipMutation) SetID(id uuid.UUID) {
+// operation is only accepted on creation of KnowledgeFactRelationship entities.
+func (m *KnowledgeFactRelationshipMutation) SetID(id uuid.UUID) {
 	m.id = &id
 }
 
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *KnowledgeRelationshipMutation) ID() (id uuid.UUID, exists bool) {
+func (m *KnowledgeFactRelationshipMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -29396,7 +27568,7 @@ func (m *KnowledgeRelationshipMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *KnowledgeRelationshipMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *KnowledgeFactRelationshipMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
@@ -29405,19 +27577,19 @@ func (m *KnowledgeRelationshipMutation) IDs(ctx context.Context) ([]uuid.UUID, e
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().KnowledgeRelationship.Query().Where(m.predicates...).IDs(ctx)
+		return m.Client().KnowledgeFactRelationship.Query().Where(m.predicates...).IDs(ctx)
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (m *KnowledgeRelationshipMutation) SetTenantID(i int) {
+func (m *KnowledgeFactRelationshipMutation) SetTenantID(i int) {
 	m.tenant = &i
 }
 
 // TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *KnowledgeRelationshipMutation) TenantID() (r int, exists bool) {
+func (m *KnowledgeFactRelationshipMutation) TenantID() (r int, exists bool) {
 	v := m.tenant
 	if v == nil {
 		return
@@ -29425,10 +27597,10 @@ func (m *KnowledgeRelationshipMutation) TenantID() (r int, exists bool) {
 	return *v, true
 }
 
-// OldTenantID returns the old "tenant_id" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldTenantID returns the old "tenant_id" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldTenantID(ctx context.Context) (v int, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldTenantID(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
 	}
@@ -29443,17 +27615,17 @@ func (m *KnowledgeRelationshipMutation) OldTenantID(ctx context.Context) (v int,
 }
 
 // ResetTenantID resets all changes to the "tenant_id" field.
-func (m *KnowledgeRelationshipMutation) ResetTenantID() {
+func (m *KnowledgeFactRelationshipMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (m *KnowledgeRelationshipMutation) SetCreatedAt(t time.Time) {
+func (m *KnowledgeFactRelationshipMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
 }
 
 // CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *KnowledgeRelationshipMutation) CreatedAt() (r time.Time, exists bool) {
+func (m *KnowledgeFactRelationshipMutation) CreatedAt() (r time.Time, exists bool) {
 	v := m.created_at
 	if v == nil {
 		return
@@ -29461,10 +27633,10 @@ func (m *KnowledgeRelationshipMutation) CreatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldCreatedAt returns the old "created_at" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldCreatedAt returns the old "created_at" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
@@ -29479,17 +27651,17 @@ func (m *KnowledgeRelationshipMutation) OldCreatedAt(ctx context.Context) (v tim
 }
 
 // ResetCreatedAt resets all changes to the "created_at" field.
-func (m *KnowledgeRelationshipMutation) ResetCreatedAt() {
+func (m *KnowledgeFactRelationshipMutation) ResetCreatedAt() {
 	m.created_at = nil
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (m *KnowledgeRelationshipMutation) SetUpdatedAt(t time.Time) {
+func (m *KnowledgeFactRelationshipMutation) SetUpdatedAt(t time.Time) {
 	m.updated_at = &t
 }
 
 // UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *KnowledgeRelationshipMutation) UpdatedAt() (r time.Time, exists bool) {
+func (m *KnowledgeFactRelationshipMutation) UpdatedAt() (r time.Time, exists bool) {
 	v := m.updated_at
 	if v == nil {
 		return
@@ -29497,10 +27669,10 @@ func (m *KnowledgeRelationshipMutation) UpdatedAt() (r time.Time, exists bool) {
 	return *v, true
 }
 
-// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldUpdatedAt returns the old "updated_at" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
 	}
@@ -29515,89 +27687,89 @@ func (m *KnowledgeRelationshipMutation) OldUpdatedAt(ctx context.Context) (v tim
 }
 
 // ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *KnowledgeRelationshipMutation) ResetUpdatedAt() {
+func (m *KnowledgeFactRelationshipMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetSourceEntityID sets the "source_entity_id" field.
-func (m *KnowledgeRelationshipMutation) SetSourceEntityID(u uuid.UUID) {
-	m.source_entity = &u
+// SetSourceFactID sets the "source_fact_id" field.
+func (m *KnowledgeFactRelationshipMutation) SetSourceFactID(u uuid.UUID) {
+	m.source_fact = &u
 }
 
-// SourceEntityID returns the value of the "source_entity_id" field in the mutation.
-func (m *KnowledgeRelationshipMutation) SourceEntityID() (r uuid.UUID, exists bool) {
-	v := m.source_entity
+// SourceFactID returns the value of the "source_fact_id" field in the mutation.
+func (m *KnowledgeFactRelationshipMutation) SourceFactID() (r uuid.UUID, exists bool) {
+	v := m.source_fact
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSourceEntityID returns the old "source_entity_id" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldSourceFactID returns the old "source_fact_id" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldSourceEntityID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldSourceFactID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceEntityID is only allowed on UpdateOne operations")
+		return v, errors.New("OldSourceFactID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceEntityID requires an ID field in the mutation")
+		return v, errors.New("OldSourceFactID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceEntityID: %w", err)
+		return v, fmt.Errorf("querying old value for OldSourceFactID: %w", err)
 	}
-	return oldValue.SourceEntityID, nil
+	return oldValue.SourceFactID, nil
 }
 
-// ResetSourceEntityID resets all changes to the "source_entity_id" field.
-func (m *KnowledgeRelationshipMutation) ResetSourceEntityID() {
-	m.source_entity = nil
+// ResetSourceFactID resets all changes to the "source_fact_id" field.
+func (m *KnowledgeFactRelationshipMutation) ResetSourceFactID() {
+	m.source_fact = nil
 }
 
-// SetTargetEntityID sets the "target_entity_id" field.
-func (m *KnowledgeRelationshipMutation) SetTargetEntityID(u uuid.UUID) {
-	m.target_entity = &u
+// SetTargetFactID sets the "target_fact_id" field.
+func (m *KnowledgeFactRelationshipMutation) SetTargetFactID(u uuid.UUID) {
+	m.target_fact = &u
 }
 
-// TargetEntityID returns the value of the "target_entity_id" field in the mutation.
-func (m *KnowledgeRelationshipMutation) TargetEntityID() (r uuid.UUID, exists bool) {
-	v := m.target_entity
+// TargetFactID returns the value of the "target_fact_id" field in the mutation.
+func (m *KnowledgeFactRelationshipMutation) TargetFactID() (r uuid.UUID, exists bool) {
+	v := m.target_fact
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldTargetEntityID returns the old "target_entity_id" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldTargetFactID returns the old "target_fact_id" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldTargetEntityID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldTargetFactID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTargetEntityID is only allowed on UpdateOne operations")
+		return v, errors.New("OldTargetFactID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTargetEntityID requires an ID field in the mutation")
+		return v, errors.New("OldTargetFactID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTargetEntityID: %w", err)
+		return v, fmt.Errorf("querying old value for OldTargetFactID: %w", err)
 	}
-	return oldValue.TargetEntityID, nil
+	return oldValue.TargetFactID, nil
 }
 
-// ResetTargetEntityID resets all changes to the "target_entity_id" field.
-func (m *KnowledgeRelationshipMutation) ResetTargetEntityID() {
-	m.target_entity = nil
+// ResetTargetFactID resets all changes to the "target_fact_id" field.
+func (m *KnowledgeFactRelationshipMutation) ResetTargetFactID() {
+	m.target_fact = nil
 }
 
 // SetKind sets the "kind" field.
-func (m *KnowledgeRelationshipMutation) SetKind(s string) {
+func (m *KnowledgeFactRelationshipMutation) SetKind(s string) {
 	m.kind = &s
 }
 
 // Kind returns the value of the "kind" field in the mutation.
-func (m *KnowledgeRelationshipMutation) Kind() (r string, exists bool) {
+func (m *KnowledgeFactRelationshipMutation) Kind() (r string, exists bool) {
 	v := m.kind
 	if v == nil {
 		return
@@ -29605,10 +27777,10 @@ func (m *KnowledgeRelationshipMutation) Kind() (r string, exists bool) {
 	return *v, true
 }
 
-// OldKind returns the old "kind" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldKind returns the old "kind" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldKind(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldKind(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldKind is only allowed on UpdateOne operations")
 	}
@@ -29623,17 +27795,17 @@ func (m *KnowledgeRelationshipMutation) OldKind(ctx context.Context) (v string, 
 }
 
 // ResetKind resets all changes to the "kind" field.
-func (m *KnowledgeRelationshipMutation) ResetKind() {
+func (m *KnowledgeFactRelationshipMutation) ResetKind() {
 	m.kind = nil
 }
 
 // SetDisplayName sets the "display_name" field.
-func (m *KnowledgeRelationshipMutation) SetDisplayName(s string) {
+func (m *KnowledgeFactRelationshipMutation) SetDisplayName(s string) {
 	m.display_name = &s
 }
 
 // DisplayName returns the value of the "display_name" field in the mutation.
-func (m *KnowledgeRelationshipMutation) DisplayName() (r string, exists bool) {
+func (m *KnowledgeFactRelationshipMutation) DisplayName() (r string, exists bool) {
 	v := m.display_name
 	if v == nil {
 		return
@@ -29641,10 +27813,10 @@ func (m *KnowledgeRelationshipMutation) DisplayName() (r string, exists bool) {
 	return *v, true
 }
 
-// OldDisplayName returns the old "display_name" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldDisplayName returns the old "display_name" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldDisplayName(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldDisplayName(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
 	}
@@ -29659,30 +27831,30 @@ func (m *KnowledgeRelationshipMutation) OldDisplayName(ctx context.Context) (v s
 }
 
 // ClearDisplayName clears the value of the "display_name" field.
-func (m *KnowledgeRelationshipMutation) ClearDisplayName() {
+func (m *KnowledgeFactRelationshipMutation) ClearDisplayName() {
 	m.display_name = nil
-	m.clearedFields[knowledgerelationship.FieldDisplayName] = struct{}{}
+	m.clearedFields[knowledgefactrelationship.FieldDisplayName] = struct{}{}
 }
 
 // DisplayNameCleared returns if the "display_name" field was cleared in this mutation.
-func (m *KnowledgeRelationshipMutation) DisplayNameCleared() bool {
-	_, ok := m.clearedFields[knowledgerelationship.FieldDisplayName]
+func (m *KnowledgeFactRelationshipMutation) DisplayNameCleared() bool {
+	_, ok := m.clearedFields[knowledgefactrelationship.FieldDisplayName]
 	return ok
 }
 
 // ResetDisplayName resets all changes to the "display_name" field.
-func (m *KnowledgeRelationshipMutation) ResetDisplayName() {
+func (m *KnowledgeFactRelationshipMutation) ResetDisplayName() {
 	m.display_name = nil
-	delete(m.clearedFields, knowledgerelationship.FieldDisplayName)
+	delete(m.clearedFields, knowledgefactrelationship.FieldDisplayName)
 }
 
 // SetDescription sets the "description" field.
-func (m *KnowledgeRelationshipMutation) SetDescription(s string) {
+func (m *KnowledgeFactRelationshipMutation) SetDescription(s string) {
 	m.description = &s
 }
 
 // Description returns the value of the "description" field in the mutation.
-func (m *KnowledgeRelationshipMutation) Description() (r string, exists bool) {
+func (m *KnowledgeFactRelationshipMutation) Description() (r string, exists bool) {
 	v := m.description
 	if v == nil {
 		return
@@ -29690,10 +27862,10 @@ func (m *KnowledgeRelationshipMutation) Description() (r string, exists bool) {
 	return *v, true
 }
 
-// OldDescription returns the old "description" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldDescription returns the old "description" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldDescription(ctx context.Context) (v string, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldDescription(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
 	}
@@ -29708,30 +27880,30 @@ func (m *KnowledgeRelationshipMutation) OldDescription(ctx context.Context) (v s
 }
 
 // ClearDescription clears the value of the "description" field.
-func (m *KnowledgeRelationshipMutation) ClearDescription() {
+func (m *KnowledgeFactRelationshipMutation) ClearDescription() {
 	m.description = nil
-	m.clearedFields[knowledgerelationship.FieldDescription] = struct{}{}
+	m.clearedFields[knowledgefactrelationship.FieldDescription] = struct{}{}
 }
 
 // DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *KnowledgeRelationshipMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[knowledgerelationship.FieldDescription]
+func (m *KnowledgeFactRelationshipMutation) DescriptionCleared() bool {
+	_, ok := m.clearedFields[knowledgefactrelationship.FieldDescription]
 	return ok
 }
 
 // ResetDescription resets all changes to the "description" field.
-func (m *KnowledgeRelationshipMutation) ResetDescription() {
+func (m *KnowledgeFactRelationshipMutation) ResetDescription() {
 	m.description = nil
-	delete(m.clearedFields, knowledgerelationship.FieldDescription)
+	delete(m.clearedFields, knowledgefactrelationship.FieldDescription)
 }
 
 // SetProperties sets the "properties" field.
-func (m *KnowledgeRelationshipMutation) SetProperties(value map[string]interface{}) {
+func (m *KnowledgeFactRelationshipMutation) SetProperties(value map[string]interface{}) {
 	m.properties = &value
 }
 
 // Properties returns the value of the "properties" field in the mutation.
-func (m *KnowledgeRelationshipMutation) Properties() (r map[string]interface{}, exists bool) {
+func (m *KnowledgeFactRelationshipMutation) Properties() (r map[string]interface{}, exists bool) {
 	v := m.properties
 	if v == nil {
 		return
@@ -29739,10 +27911,10 @@ func (m *KnowledgeRelationshipMutation) Properties() (r map[string]interface{}, 
 	return *v, true
 }
 
-// OldProperties returns the old "properties" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
+// OldProperties returns the old "properties" field's value of the KnowledgeFactRelationship entity.
+// If the KnowledgeFactRelationship object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
+func (m *KnowledgeFactRelationshipMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
 		return v, errors.New("OldProperties is only allowed on UpdateOne operations")
 	}
@@ -29757,110 +27929,38 @@ func (m *KnowledgeRelationshipMutation) OldProperties(ctx context.Context) (v ma
 }
 
 // ClearProperties clears the value of the "properties" field.
-func (m *KnowledgeRelationshipMutation) ClearProperties() {
+func (m *KnowledgeFactRelationshipMutation) ClearProperties() {
 	m.properties = nil
-	m.clearedFields[knowledgerelationship.FieldProperties] = struct{}{}
+	m.clearedFields[knowledgefactrelationship.FieldProperties] = struct{}{}
 }
 
 // PropertiesCleared returns if the "properties" field was cleared in this mutation.
-func (m *KnowledgeRelationshipMutation) PropertiesCleared() bool {
-	_, ok := m.clearedFields[knowledgerelationship.FieldProperties]
+func (m *KnowledgeFactRelationshipMutation) PropertiesCleared() bool {
+	_, ok := m.clearedFields[knowledgefactrelationship.FieldProperties]
 	return ok
 }
 
 // ResetProperties resets all changes to the "properties" field.
-func (m *KnowledgeRelationshipMutation) ResetProperties() {
+func (m *KnowledgeFactRelationshipMutation) ResetProperties() {
 	m.properties = nil
-	delete(m.clearedFields, knowledgerelationship.FieldProperties)
-}
-
-// SetFirstSeenAt sets the "first_seen_at" field.
-func (m *KnowledgeRelationshipMutation) SetFirstSeenAt(t time.Time) {
-	m.first_seen_at = &t
-}
-
-// FirstSeenAt returns the value of the "first_seen_at" field in the mutation.
-func (m *KnowledgeRelationshipMutation) FirstSeenAt() (r time.Time, exists bool) {
-	v := m.first_seen_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFirstSeenAt returns the old "first_seen_at" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldFirstSeenAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFirstSeenAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFirstSeenAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFirstSeenAt: %w", err)
-	}
-	return oldValue.FirstSeenAt, nil
-}
-
-// ResetFirstSeenAt resets all changes to the "first_seen_at" field.
-func (m *KnowledgeRelationshipMutation) ResetFirstSeenAt() {
-	m.first_seen_at = nil
-}
-
-// SetLastSeenAt sets the "last_seen_at" field.
-func (m *KnowledgeRelationshipMutation) SetLastSeenAt(t time.Time) {
-	m.last_seen_at = &t
-}
-
-// LastSeenAt returns the value of the "last_seen_at" field in the mutation.
-func (m *KnowledgeRelationshipMutation) LastSeenAt() (r time.Time, exists bool) {
-	v := m.last_seen_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLastSeenAt returns the old "last_seen_at" field's value of the KnowledgeRelationship entity.
-// If the KnowledgeRelationship object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeRelationshipMutation) OldLastSeenAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastSeenAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastSeenAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastSeenAt: %w", err)
-	}
-	return oldValue.LastSeenAt, nil
-}
-
-// ResetLastSeenAt resets all changes to the "last_seen_at" field.
-func (m *KnowledgeRelationshipMutation) ResetLastSeenAt() {
-	m.last_seen_at = nil
+	delete(m.clearedFields, knowledgefactrelationship.FieldProperties)
 }
 
 // ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *KnowledgeRelationshipMutation) ClearTenant() {
+func (m *KnowledgeFactRelationshipMutation) ClearTenant() {
 	m.clearedtenant = true
-	m.clearedFields[knowledgerelationship.FieldTenantID] = struct{}{}
+	m.clearedFields[knowledgefactrelationship.FieldTenantID] = struct{}{}
 }
 
 // TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *KnowledgeRelationshipMutation) TenantCleared() bool {
+func (m *KnowledgeFactRelationshipMutation) TenantCleared() bool {
 	return m.clearedtenant
 }
 
 // TenantIDs returns the "tenant" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
 // TenantID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeRelationshipMutation) TenantIDs() (ids []int) {
+func (m *KnowledgeFactRelationshipMutation) TenantIDs() (ids []int) {
 	if id := m.tenant; id != nil {
 		ids = append(ids, *id)
 	}
@@ -29868,67 +27968,67 @@ func (m *KnowledgeRelationshipMutation) TenantIDs() (ids []int) {
 }
 
 // ResetTenant resets all changes to the "tenant" edge.
-func (m *KnowledgeRelationshipMutation) ResetTenant() {
+func (m *KnowledgeFactRelationshipMutation) ResetTenant() {
 	m.tenant = nil
 	m.clearedtenant = false
 }
 
-// ClearSourceEntity clears the "source_entity" edge to the KnowledgeEntity entity.
-func (m *KnowledgeRelationshipMutation) ClearSourceEntity() {
-	m.clearedsource_entity = true
-	m.clearedFields[knowledgerelationship.FieldSourceEntityID] = struct{}{}
+// ClearSourceFact clears the "source_fact" edge to the KnowledgeFact entity.
+func (m *KnowledgeFactRelationshipMutation) ClearSourceFact() {
+	m.clearedsource_fact = true
+	m.clearedFields[knowledgefactrelationship.FieldSourceFactID] = struct{}{}
 }
 
-// SourceEntityCleared reports if the "source_entity" edge to the KnowledgeEntity entity was cleared.
-func (m *KnowledgeRelationshipMutation) SourceEntityCleared() bool {
-	return m.clearedsource_entity
+// SourceFactCleared reports if the "source_fact" edge to the KnowledgeFact entity was cleared.
+func (m *KnowledgeFactRelationshipMutation) SourceFactCleared() bool {
+	return m.clearedsource_fact
 }
 
-// SourceEntityIDs returns the "source_entity" edge IDs in the mutation.
+// SourceFactIDs returns the "source_fact" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// SourceEntityID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeRelationshipMutation) SourceEntityIDs() (ids []uuid.UUID) {
-	if id := m.source_entity; id != nil {
+// SourceFactID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeFactRelationshipMutation) SourceFactIDs() (ids []uuid.UUID) {
+	if id := m.source_fact; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetSourceEntity resets all changes to the "source_entity" edge.
-func (m *KnowledgeRelationshipMutation) ResetSourceEntity() {
-	m.source_entity = nil
-	m.clearedsource_entity = false
+// ResetSourceFact resets all changes to the "source_fact" edge.
+func (m *KnowledgeFactRelationshipMutation) ResetSourceFact() {
+	m.source_fact = nil
+	m.clearedsource_fact = false
 }
 
-// ClearTargetEntity clears the "target_entity" edge to the KnowledgeEntity entity.
-func (m *KnowledgeRelationshipMutation) ClearTargetEntity() {
-	m.clearedtarget_entity = true
-	m.clearedFields[knowledgerelationship.FieldTargetEntityID] = struct{}{}
+// ClearTargetFact clears the "target_fact" edge to the KnowledgeFact entity.
+func (m *KnowledgeFactRelationshipMutation) ClearTargetFact() {
+	m.clearedtarget_fact = true
+	m.clearedFields[knowledgefactrelationship.FieldTargetFactID] = struct{}{}
 }
 
-// TargetEntityCleared reports if the "target_entity" edge to the KnowledgeEntity entity was cleared.
-func (m *KnowledgeRelationshipMutation) TargetEntityCleared() bool {
-	return m.clearedtarget_entity
+// TargetFactCleared reports if the "target_fact" edge to the KnowledgeFact entity was cleared.
+func (m *KnowledgeFactRelationshipMutation) TargetFactCleared() bool {
+	return m.clearedtarget_fact
 }
 
-// TargetEntityIDs returns the "target_entity" edge IDs in the mutation.
+// TargetFactIDs returns the "target_fact" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TargetEntityID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeRelationshipMutation) TargetEntityIDs() (ids []uuid.UUID) {
-	if id := m.target_entity; id != nil {
+// TargetFactID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeFactRelationshipMutation) TargetFactIDs() (ids []uuid.UUID) {
+	if id := m.target_fact; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetTargetEntity resets all changes to the "target_entity" edge.
-func (m *KnowledgeRelationshipMutation) ResetTargetEntity() {
-	m.target_entity = nil
-	m.clearedtarget_entity = false
+// ResetTargetFact resets all changes to the "target_fact" edge.
+func (m *KnowledgeFactRelationshipMutation) ResetTargetFact() {
+	m.target_fact = nil
+	m.clearedtarget_fact = false
 }
 
 // AddProvenanceIDs adds the "provenance" edge to the KnowledgeFactProvenance entity by ids.
-func (m *KnowledgeRelationshipMutation) AddProvenanceIDs(ids ...uuid.UUID) {
+func (m *KnowledgeFactRelationshipMutation) AddProvenanceIDs(ids ...uuid.UUID) {
 	if m.provenance == nil {
 		m.provenance = make(map[uuid.UUID]struct{})
 	}
@@ -29938,17 +28038,17 @@ func (m *KnowledgeRelationshipMutation) AddProvenanceIDs(ids ...uuid.UUID) {
 }
 
 // ClearProvenance clears the "provenance" edge to the KnowledgeFactProvenance entity.
-func (m *KnowledgeRelationshipMutation) ClearProvenance() {
+func (m *KnowledgeFactRelationshipMutation) ClearProvenance() {
 	m.clearedprovenance = true
 }
 
 // ProvenanceCleared reports if the "provenance" edge to the KnowledgeFactProvenance entity was cleared.
-func (m *KnowledgeRelationshipMutation) ProvenanceCleared() bool {
+func (m *KnowledgeFactRelationshipMutation) ProvenanceCleared() bool {
 	return m.clearedprovenance
 }
 
 // RemoveProvenanceIDs removes the "provenance" edge to the KnowledgeFactProvenance entity by IDs.
-func (m *KnowledgeRelationshipMutation) RemoveProvenanceIDs(ids ...uuid.UUID) {
+func (m *KnowledgeFactRelationshipMutation) RemoveProvenanceIDs(ids ...uuid.UUID) {
 	if m.removedprovenance == nil {
 		m.removedprovenance = make(map[uuid.UUID]struct{})
 	}
@@ -29959,7 +28059,7 @@ func (m *KnowledgeRelationshipMutation) RemoveProvenanceIDs(ids ...uuid.UUID) {
 }
 
 // RemovedProvenance returns the removed IDs of the "provenance" edge to the KnowledgeFactProvenance entity.
-func (m *KnowledgeRelationshipMutation) RemovedProvenanceIDs() (ids []uuid.UUID) {
+func (m *KnowledgeFactRelationshipMutation) RemovedProvenanceIDs() (ids []uuid.UUID) {
 	for id := range m.removedprovenance {
 		ids = append(ids, id)
 	}
@@ -29967,7 +28067,7 @@ func (m *KnowledgeRelationshipMutation) RemovedProvenanceIDs() (ids []uuid.UUID)
 }
 
 // ProvenanceIDs returns the "provenance" edge IDs in the mutation.
-func (m *KnowledgeRelationshipMutation) ProvenanceIDs() (ids []uuid.UUID) {
+func (m *KnowledgeFactRelationshipMutation) ProvenanceIDs() (ids []uuid.UUID) {
 	for id := range m.provenance {
 		ids = append(ids, id)
 	}
@@ -29975,21 +28075,21 @@ func (m *KnowledgeRelationshipMutation) ProvenanceIDs() (ids []uuid.UUID) {
 }
 
 // ResetProvenance resets all changes to the "provenance" edge.
-func (m *KnowledgeRelationshipMutation) ResetProvenance() {
+func (m *KnowledgeFactRelationshipMutation) ResetProvenance() {
 	m.provenance = nil
 	m.clearedprovenance = false
 	m.removedprovenance = nil
 }
 
-// Where appends a list predicates to the KnowledgeRelationshipMutation builder.
-func (m *KnowledgeRelationshipMutation) Where(ps ...predicate.KnowledgeRelationship) {
+// Where appends a list predicates to the KnowledgeFactRelationshipMutation builder.
+func (m *KnowledgeFactRelationshipMutation) Where(ps ...predicate.KnowledgeFactRelationship) {
 	m.predicates = append(m.predicates, ps...)
 }
 
-// WhereP appends storage-level predicates to the KnowledgeRelationshipMutation builder. Using this method,
+// WhereP appends storage-level predicates to the KnowledgeFactRelationshipMutation builder. Using this method,
 // users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *KnowledgeRelationshipMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.KnowledgeRelationship, len(ps))
+func (m *KnowledgeFactRelationshipMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.KnowledgeFactRelationship, len(ps))
 	for i := range ps {
 		p[i] = ps[i]
 	}
@@ -29997,57 +28097,51 @@ func (m *KnowledgeRelationshipMutation) WhereP(ps ...func(*sql.Selector)) {
 }
 
 // Op returns the operation name.
-func (m *KnowledgeRelationshipMutation) Op() Op {
+func (m *KnowledgeFactRelationshipMutation) Op() Op {
 	return m.op
 }
 
 // SetOp allows setting the mutation operation.
-func (m *KnowledgeRelationshipMutation) SetOp(op Op) {
+func (m *KnowledgeFactRelationshipMutation) SetOp(op Op) {
 	m.op = op
 }
 
-// Type returns the node type of this mutation (KnowledgeRelationship).
-func (m *KnowledgeRelationshipMutation) Type() string {
+// Type returns the node type of this mutation (KnowledgeFactRelationship).
+func (m *KnowledgeFactRelationshipMutation) Type() string {
 	return m.typ
 }
 
 // Fields returns all fields that were changed during this mutation. Note that in
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
-func (m *KnowledgeRelationshipMutation) Fields() []string {
-	fields := make([]string, 0, 11)
+func (m *KnowledgeFactRelationshipMutation) Fields() []string {
+	fields := make([]string, 0, 9)
 	if m.tenant != nil {
-		fields = append(fields, knowledgerelationship.FieldTenantID)
+		fields = append(fields, knowledgefactrelationship.FieldTenantID)
 	}
 	if m.created_at != nil {
-		fields = append(fields, knowledgerelationship.FieldCreatedAt)
+		fields = append(fields, knowledgefactrelationship.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
-		fields = append(fields, knowledgerelationship.FieldUpdatedAt)
+		fields = append(fields, knowledgefactrelationship.FieldUpdatedAt)
 	}
-	if m.source_entity != nil {
-		fields = append(fields, knowledgerelationship.FieldSourceEntityID)
+	if m.source_fact != nil {
+		fields = append(fields, knowledgefactrelationship.FieldSourceFactID)
 	}
-	if m.target_entity != nil {
-		fields = append(fields, knowledgerelationship.FieldTargetEntityID)
+	if m.target_fact != nil {
+		fields = append(fields, knowledgefactrelationship.FieldTargetFactID)
 	}
 	if m.kind != nil {
-		fields = append(fields, knowledgerelationship.FieldKind)
+		fields = append(fields, knowledgefactrelationship.FieldKind)
 	}
 	if m.display_name != nil {
-		fields = append(fields, knowledgerelationship.FieldDisplayName)
+		fields = append(fields, knowledgefactrelationship.FieldDisplayName)
 	}
 	if m.description != nil {
-		fields = append(fields, knowledgerelationship.FieldDescription)
+		fields = append(fields, knowledgefactrelationship.FieldDescription)
 	}
 	if m.properties != nil {
-		fields = append(fields, knowledgerelationship.FieldProperties)
-	}
-	if m.first_seen_at != nil {
-		fields = append(fields, knowledgerelationship.FieldFirstSeenAt)
-	}
-	if m.last_seen_at != nil {
-		fields = append(fields, knowledgerelationship.FieldLastSeenAt)
+		fields = append(fields, knowledgefactrelationship.FieldProperties)
 	}
 	return fields
 }
@@ -30055,30 +28149,26 @@ func (m *KnowledgeRelationshipMutation) Fields() []string {
 // Field returns the value of a field with the given name. The second boolean
 // return value indicates that this field was not set, or was not defined in the
 // schema.
-func (m *KnowledgeRelationshipMutation) Field(name string) (ent.Value, bool) {
+func (m *KnowledgeFactRelationshipMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case knowledgerelationship.FieldTenantID:
+	case knowledgefactrelationship.FieldTenantID:
 		return m.TenantID()
-	case knowledgerelationship.FieldCreatedAt:
+	case knowledgefactrelationship.FieldCreatedAt:
 		return m.CreatedAt()
-	case knowledgerelationship.FieldUpdatedAt:
+	case knowledgefactrelationship.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case knowledgerelationship.FieldSourceEntityID:
-		return m.SourceEntityID()
-	case knowledgerelationship.FieldTargetEntityID:
-		return m.TargetEntityID()
-	case knowledgerelationship.FieldKind:
+	case knowledgefactrelationship.FieldSourceFactID:
+		return m.SourceFactID()
+	case knowledgefactrelationship.FieldTargetFactID:
+		return m.TargetFactID()
+	case knowledgefactrelationship.FieldKind:
 		return m.Kind()
-	case knowledgerelationship.FieldDisplayName:
+	case knowledgefactrelationship.FieldDisplayName:
 		return m.DisplayName()
-	case knowledgerelationship.FieldDescription:
+	case knowledgefactrelationship.FieldDescription:
 		return m.Description()
-	case knowledgerelationship.FieldProperties:
+	case knowledgefactrelationship.FieldProperties:
 		return m.Properties()
-	case knowledgerelationship.FieldFirstSeenAt:
-		return m.FirstSeenAt()
-	case knowledgerelationship.FieldLastSeenAt:
-		return m.LastSeenAt()
 	}
 	return nil, false
 }
@@ -30086,123 +28176,105 @@ func (m *KnowledgeRelationshipMutation) Field(name string) (ent.Value, bool) {
 // OldField returns the old value of the field from the database. An error is
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
-func (m *KnowledgeRelationshipMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+func (m *KnowledgeFactRelationshipMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case knowledgerelationship.FieldTenantID:
+	case knowledgefactrelationship.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case knowledgerelationship.FieldCreatedAt:
+	case knowledgefactrelationship.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
-	case knowledgerelationship.FieldUpdatedAt:
+	case knowledgefactrelationship.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case knowledgerelationship.FieldSourceEntityID:
-		return m.OldSourceEntityID(ctx)
-	case knowledgerelationship.FieldTargetEntityID:
-		return m.OldTargetEntityID(ctx)
-	case knowledgerelationship.FieldKind:
+	case knowledgefactrelationship.FieldSourceFactID:
+		return m.OldSourceFactID(ctx)
+	case knowledgefactrelationship.FieldTargetFactID:
+		return m.OldTargetFactID(ctx)
+	case knowledgefactrelationship.FieldKind:
 		return m.OldKind(ctx)
-	case knowledgerelationship.FieldDisplayName:
+	case knowledgefactrelationship.FieldDisplayName:
 		return m.OldDisplayName(ctx)
-	case knowledgerelationship.FieldDescription:
+	case knowledgefactrelationship.FieldDescription:
 		return m.OldDescription(ctx)
-	case knowledgerelationship.FieldProperties:
+	case knowledgefactrelationship.FieldProperties:
 		return m.OldProperties(ctx)
-	case knowledgerelationship.FieldFirstSeenAt:
-		return m.OldFirstSeenAt(ctx)
-	case knowledgerelationship.FieldLastSeenAt:
-		return m.OldLastSeenAt(ctx)
 	}
-	return nil, fmt.Errorf("unknown KnowledgeRelationship field %s", name)
+	return nil, fmt.Errorf("unknown KnowledgeFactRelationship field %s", name)
 }
 
 // SetField sets the value of a field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *KnowledgeRelationshipMutation) SetField(name string, value ent.Value) error {
+func (m *KnowledgeFactRelationshipMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case knowledgerelationship.FieldTenantID:
+	case knowledgefactrelationship.FieldTenantID:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetTenantID(v)
 		return nil
-	case knowledgerelationship.FieldCreatedAt:
+	case knowledgefactrelationship.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCreatedAt(v)
 		return nil
-	case knowledgerelationship.FieldUpdatedAt:
+	case knowledgefactrelationship.FieldUpdatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case knowledgerelationship.FieldSourceEntityID:
+	case knowledgefactrelationship.FieldSourceFactID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSourceEntityID(v)
+		m.SetSourceFactID(v)
 		return nil
-	case knowledgerelationship.FieldTargetEntityID:
+	case knowledgefactrelationship.FieldTargetFactID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetTargetEntityID(v)
+		m.SetTargetFactID(v)
 		return nil
-	case knowledgerelationship.FieldKind:
+	case knowledgefactrelationship.FieldKind:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetKind(v)
 		return nil
-	case knowledgerelationship.FieldDisplayName:
+	case knowledgefactrelationship.FieldDisplayName:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDisplayName(v)
 		return nil
-	case knowledgerelationship.FieldDescription:
+	case knowledgefactrelationship.FieldDescription:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetDescription(v)
 		return nil
-	case knowledgerelationship.FieldProperties:
+	case knowledgefactrelationship.FieldProperties:
 		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProperties(v)
 		return nil
-	case knowledgerelationship.FieldFirstSeenAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFirstSeenAt(v)
-		return nil
-	case knowledgerelationship.FieldLastSeenAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLastSeenAt(v)
-		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeRelationship field %s", name)
+	return fmt.Errorf("unknown KnowledgeFactRelationship field %s", name)
 }
 
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
-func (m *KnowledgeRelationshipMutation) AddedFields() []string {
+func (m *KnowledgeFactRelationshipMutation) AddedFields() []string {
 	var fields []string
 	return fields
 }
@@ -30210,7 +28282,7 @@ func (m *KnowledgeRelationshipMutation) AddedFields() []string {
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
-func (m *KnowledgeRelationshipMutation) AddedField(name string) (ent.Value, bool) {
+func (m *KnowledgeFactRelationshipMutation) AddedField(name string) (ent.Value, bool) {
 	switch name {
 	}
 	return nil, false
@@ -30219,128 +28291,122 @@ func (m *KnowledgeRelationshipMutation) AddedField(name string) (ent.Value, bool
 // AddField adds the value to the field with the given name. It returns an error if
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
-func (m *KnowledgeRelationshipMutation) AddField(name string, value ent.Value) error {
+func (m *KnowledgeFactRelationshipMutation) AddField(name string, value ent.Value) error {
 	switch name {
 	}
-	return fmt.Errorf("unknown KnowledgeRelationship numeric field %s", name)
+	return fmt.Errorf("unknown KnowledgeFactRelationship numeric field %s", name)
 }
 
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
-func (m *KnowledgeRelationshipMutation) ClearedFields() []string {
+func (m *KnowledgeFactRelationshipMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(knowledgerelationship.FieldDisplayName) {
-		fields = append(fields, knowledgerelationship.FieldDisplayName)
+	if m.FieldCleared(knowledgefactrelationship.FieldDisplayName) {
+		fields = append(fields, knowledgefactrelationship.FieldDisplayName)
 	}
-	if m.FieldCleared(knowledgerelationship.FieldDescription) {
-		fields = append(fields, knowledgerelationship.FieldDescription)
+	if m.FieldCleared(knowledgefactrelationship.FieldDescription) {
+		fields = append(fields, knowledgefactrelationship.FieldDescription)
 	}
-	if m.FieldCleared(knowledgerelationship.FieldProperties) {
-		fields = append(fields, knowledgerelationship.FieldProperties)
+	if m.FieldCleared(knowledgefactrelationship.FieldProperties) {
+		fields = append(fields, knowledgefactrelationship.FieldProperties)
 	}
 	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
 // cleared in this mutation.
-func (m *KnowledgeRelationshipMutation) FieldCleared(name string) bool {
+func (m *KnowledgeFactRelationshipMutation) FieldCleared(name string) bool {
 	_, ok := m.clearedFields[name]
 	return ok
 }
 
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
-func (m *KnowledgeRelationshipMutation) ClearField(name string) error {
+func (m *KnowledgeFactRelationshipMutation) ClearField(name string) error {
 	switch name {
-	case knowledgerelationship.FieldDisplayName:
+	case knowledgefactrelationship.FieldDisplayName:
 		m.ClearDisplayName()
 		return nil
-	case knowledgerelationship.FieldDescription:
+	case knowledgefactrelationship.FieldDescription:
 		m.ClearDescription()
 		return nil
-	case knowledgerelationship.FieldProperties:
+	case knowledgefactrelationship.FieldProperties:
 		m.ClearProperties()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeRelationship nullable field %s", name)
+	return fmt.Errorf("unknown KnowledgeFactRelationship nullable field %s", name)
 }
 
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
-func (m *KnowledgeRelationshipMutation) ResetField(name string) error {
+func (m *KnowledgeFactRelationshipMutation) ResetField(name string) error {
 	switch name {
-	case knowledgerelationship.FieldTenantID:
+	case knowledgefactrelationship.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case knowledgerelationship.FieldCreatedAt:
+	case knowledgefactrelationship.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
-	case knowledgerelationship.FieldUpdatedAt:
+	case knowledgefactrelationship.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case knowledgerelationship.FieldSourceEntityID:
-		m.ResetSourceEntityID()
+	case knowledgefactrelationship.FieldSourceFactID:
+		m.ResetSourceFactID()
 		return nil
-	case knowledgerelationship.FieldTargetEntityID:
-		m.ResetTargetEntityID()
+	case knowledgefactrelationship.FieldTargetFactID:
+		m.ResetTargetFactID()
 		return nil
-	case knowledgerelationship.FieldKind:
+	case knowledgefactrelationship.FieldKind:
 		m.ResetKind()
 		return nil
-	case knowledgerelationship.FieldDisplayName:
+	case knowledgefactrelationship.FieldDisplayName:
 		m.ResetDisplayName()
 		return nil
-	case knowledgerelationship.FieldDescription:
+	case knowledgefactrelationship.FieldDescription:
 		m.ResetDescription()
 		return nil
-	case knowledgerelationship.FieldProperties:
+	case knowledgefactrelationship.FieldProperties:
 		m.ResetProperties()
 		return nil
-	case knowledgerelationship.FieldFirstSeenAt:
-		m.ResetFirstSeenAt()
-		return nil
-	case knowledgerelationship.FieldLastSeenAt:
-		m.ResetLastSeenAt()
-		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeRelationship field %s", name)
+	return fmt.Errorf("unknown KnowledgeFactRelationship field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
-func (m *KnowledgeRelationshipMutation) AddedEdges() []string {
+func (m *KnowledgeFactRelationshipMutation) AddedEdges() []string {
 	edges := make([]string, 0, 4)
 	if m.tenant != nil {
-		edges = append(edges, knowledgerelationship.EdgeTenant)
+		edges = append(edges, knowledgefactrelationship.EdgeTenant)
 	}
-	if m.source_entity != nil {
-		edges = append(edges, knowledgerelationship.EdgeSourceEntity)
+	if m.source_fact != nil {
+		edges = append(edges, knowledgefactrelationship.EdgeSourceFact)
 	}
-	if m.target_entity != nil {
-		edges = append(edges, knowledgerelationship.EdgeTargetEntity)
+	if m.target_fact != nil {
+		edges = append(edges, knowledgefactrelationship.EdgeTargetFact)
 	}
 	if m.provenance != nil {
-		edges = append(edges, knowledgerelationship.EdgeProvenance)
+		edges = append(edges, knowledgefactrelationship.EdgeProvenance)
 	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
-func (m *KnowledgeRelationshipMutation) AddedIDs(name string) []ent.Value {
+func (m *KnowledgeFactRelationshipMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case knowledgerelationship.EdgeTenant:
+	case knowledgefactrelationship.EdgeTenant:
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case knowledgerelationship.EdgeSourceEntity:
-		if id := m.source_entity; id != nil {
+	case knowledgefactrelationship.EdgeSourceFact:
+		if id := m.source_fact; id != nil {
 			return []ent.Value{*id}
 		}
-	case knowledgerelationship.EdgeTargetEntity:
-		if id := m.target_entity; id != nil {
+	case knowledgefactrelationship.EdgeTargetFact:
+		if id := m.target_fact; id != nil {
 			return []ent.Value{*id}
 		}
-	case knowledgerelationship.EdgeProvenance:
+	case knowledgefactrelationship.EdgeProvenance:
 		ids := make([]ent.Value, 0, len(m.provenance))
 		for id := range m.provenance {
 			ids = append(ids, id)
@@ -30351,19 +28417,19 @@ func (m *KnowledgeRelationshipMutation) AddedIDs(name string) []ent.Value {
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
-func (m *KnowledgeRelationshipMutation) RemovedEdges() []string {
+func (m *KnowledgeFactRelationshipMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 4)
 	if m.removedprovenance != nil {
-		edges = append(edges, knowledgerelationship.EdgeProvenance)
+		edges = append(edges, knowledgefactrelationship.EdgeProvenance)
 	}
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
-func (m *KnowledgeRelationshipMutation) RemovedIDs(name string) []ent.Value {
+func (m *KnowledgeFactRelationshipMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case knowledgerelationship.EdgeProvenance:
+	case knowledgefactrelationship.EdgeProvenance:
 		ids := make([]ent.Value, 0, len(m.removedprovenance))
 		for id := range m.removedprovenance {
 			ids = append(ids, id)
@@ -30374,34 +28440,34 @@ func (m *KnowledgeRelationshipMutation) RemovedIDs(name string) []ent.Value {
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *KnowledgeRelationshipMutation) ClearedEdges() []string {
+func (m *KnowledgeFactRelationshipMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 4)
 	if m.clearedtenant {
-		edges = append(edges, knowledgerelationship.EdgeTenant)
+		edges = append(edges, knowledgefactrelationship.EdgeTenant)
 	}
-	if m.clearedsource_entity {
-		edges = append(edges, knowledgerelationship.EdgeSourceEntity)
+	if m.clearedsource_fact {
+		edges = append(edges, knowledgefactrelationship.EdgeSourceFact)
 	}
-	if m.clearedtarget_entity {
-		edges = append(edges, knowledgerelationship.EdgeTargetEntity)
+	if m.clearedtarget_fact {
+		edges = append(edges, knowledgefactrelationship.EdgeTargetFact)
 	}
 	if m.clearedprovenance {
-		edges = append(edges, knowledgerelationship.EdgeProvenance)
+		edges = append(edges, knowledgefactrelationship.EdgeProvenance)
 	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
-func (m *KnowledgeRelationshipMutation) EdgeCleared(name string) bool {
+func (m *KnowledgeFactRelationshipMutation) EdgeCleared(name string) bool {
 	switch name {
-	case knowledgerelationship.EdgeTenant:
+	case knowledgefactrelationship.EdgeTenant:
 		return m.clearedtenant
-	case knowledgerelationship.EdgeSourceEntity:
-		return m.clearedsource_entity
-	case knowledgerelationship.EdgeTargetEntity:
-		return m.clearedtarget_entity
-	case knowledgerelationship.EdgeProvenance:
+	case knowledgefactrelationship.EdgeSourceFact:
+		return m.clearedsource_fact
+	case knowledgefactrelationship.EdgeTargetFact:
+		return m.clearedtarget_fact
+	case knowledgefactrelationship.EdgeProvenance:
 		return m.clearedprovenance
 	}
 	return false
@@ -30409,39 +28475,39 @@ func (m *KnowledgeRelationshipMutation) EdgeCleared(name string) bool {
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
-func (m *KnowledgeRelationshipMutation) ClearEdge(name string) error {
+func (m *KnowledgeFactRelationshipMutation) ClearEdge(name string) error {
 	switch name {
-	case knowledgerelationship.EdgeTenant:
+	case knowledgefactrelationship.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case knowledgerelationship.EdgeSourceEntity:
-		m.ClearSourceEntity()
+	case knowledgefactrelationship.EdgeSourceFact:
+		m.ClearSourceFact()
 		return nil
-	case knowledgerelationship.EdgeTargetEntity:
-		m.ClearTargetEntity()
+	case knowledgefactrelationship.EdgeTargetFact:
+		m.ClearTargetFact()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeRelationship unique edge %s", name)
+	return fmt.Errorf("unknown KnowledgeFactRelationship unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
-func (m *KnowledgeRelationshipMutation) ResetEdge(name string) error {
+func (m *KnowledgeFactRelationshipMutation) ResetEdge(name string) error {
 	switch name {
-	case knowledgerelationship.EdgeTenant:
+	case knowledgefactrelationship.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case knowledgerelationship.EdgeSourceEntity:
-		m.ResetSourceEntity()
+	case knowledgefactrelationship.EdgeSourceFact:
+		m.ResetSourceFact()
 		return nil
-	case knowledgerelationship.EdgeTargetEntity:
-		m.ResetTargetEntity()
+	case knowledgefactrelationship.EdgeTargetFact:
+		m.ResetTargetFact()
 		return nil
-	case knowledgerelationship.EdgeProvenance:
+	case knowledgefactrelationship.EdgeProvenance:
 		m.ResetProvenance()
 		return nil
 	}
-	return fmt.Errorf("unknown KnowledgeRelationship edge %s", name)
+	return fmt.Errorf("unknown KnowledgeFactRelationship edge %s", name)
 }
 
 // MeetingScheduleMutation represents an operation that mutates the MeetingSchedule nodes in the graph.
@@ -53874,13 +51940,13 @@ func (m *SystemTopologySnapshotEntityMutation) ResetSnapshot() {
 	m.clearedsnapshot = false
 }
 
-// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeFact entity.
 func (m *SystemTopologySnapshotEntityMutation) ClearKnowledgeEntity() {
 	m.clearedknowledge_entity = true
 	m.clearedFields[systemtopologysnapshotentity.FieldKnowledgeEntityID] = struct{}{}
 }
 
-// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeFact entity was cleared.
 func (m *SystemTopologySnapshotEntityMutation) KnowledgeEntityCleared() bool {
 	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
 }
@@ -54564,10 +52630,10 @@ type SystemTopologySnapshotRelationshipMutation struct {
 	clearedFields                 map[string]struct{}
 	tenant                        *int
 	clearedtenant                 bool
-	snapshot                      *uuid.UUID
-	clearedsnapshot               bool
 	knowledge_relationship        *uuid.UUID
 	clearedknowledge_relationship bool
+	snapshot                      *uuid.UUID
+	clearedsnapshot               bool
 	source_snapshot_entity        *uuid.UUID
 	clearedsource_snapshot_entity bool
 	target_snapshot_entity        *uuid.UUID
@@ -55123,6 +53189,33 @@ func (m *SystemTopologySnapshotRelationshipMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
+// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeFactRelationship entity.
+func (m *SystemTopologySnapshotRelationshipMutation) ClearKnowledgeRelationship() {
+	m.clearedknowledge_relationship = true
+	m.clearedFields[systemtopologysnapshotrelationship.FieldKnowledgeRelationshipID] = struct{}{}
+}
+
+// KnowledgeRelationshipCleared reports if the "knowledge_relationship" edge to the KnowledgeFactRelationship entity was cleared.
+func (m *SystemTopologySnapshotRelationshipMutation) KnowledgeRelationshipCleared() bool {
+	return m.KnowledgeRelationshipIDCleared() || m.clearedknowledge_relationship
+}
+
+// KnowledgeRelationshipIDs returns the "knowledge_relationship" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// KnowledgeRelationshipID instead. It exists only for internal usage by the builders.
+func (m *SystemTopologySnapshotRelationshipMutation) KnowledgeRelationshipIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_relationship; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetKnowledgeRelationship resets all changes to the "knowledge_relationship" edge.
+func (m *SystemTopologySnapshotRelationshipMutation) ResetKnowledgeRelationship() {
+	m.knowledge_relationship = nil
+	m.clearedknowledge_relationship = false
+}
+
 // ClearSnapshot clears the "snapshot" edge to the SystemTopologySnapshot entity.
 func (m *SystemTopologySnapshotRelationshipMutation) ClearSnapshot() {
 	m.clearedsnapshot = true
@@ -55148,33 +53241,6 @@ func (m *SystemTopologySnapshotRelationshipMutation) SnapshotIDs() (ids []uuid.U
 func (m *SystemTopologySnapshotRelationshipMutation) ResetSnapshot() {
 	m.snapshot = nil
 	m.clearedsnapshot = false
-}
-
-// ClearKnowledgeRelationship clears the "knowledge_relationship" edge to the KnowledgeRelationship entity.
-func (m *SystemTopologySnapshotRelationshipMutation) ClearKnowledgeRelationship() {
-	m.clearedknowledge_relationship = true
-	m.clearedFields[systemtopologysnapshotrelationship.FieldKnowledgeRelationshipID] = struct{}{}
-}
-
-// KnowledgeRelationshipCleared reports if the "knowledge_relationship" edge to the KnowledgeRelationship entity was cleared.
-func (m *SystemTopologySnapshotRelationshipMutation) KnowledgeRelationshipCleared() bool {
-	return m.KnowledgeRelationshipIDCleared() || m.clearedknowledge_relationship
-}
-
-// KnowledgeRelationshipIDs returns the "knowledge_relationship" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// KnowledgeRelationshipID instead. It exists only for internal usage by the builders.
-func (m *SystemTopologySnapshotRelationshipMutation) KnowledgeRelationshipIDs() (ids []uuid.UUID) {
-	if id := m.knowledge_relationship; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetKnowledgeRelationship resets all changes to the "knowledge_relationship" edge.
-func (m *SystemTopologySnapshotRelationshipMutation) ResetKnowledgeRelationship() {
-	m.knowledge_relationship = nil
-	m.clearedknowledge_relationship = false
 }
 
 // ClearSourceSnapshotEntity clears the "source_snapshot_entity" edge to the SystemTopologySnapshotEntity entity.
@@ -55605,11 +53671,11 @@ func (m *SystemTopologySnapshotRelationshipMutation) AddedEdges() []string {
 	if m.tenant != nil {
 		edges = append(edges, systemtopologysnapshotrelationship.EdgeTenant)
 	}
-	if m.snapshot != nil {
-		edges = append(edges, systemtopologysnapshotrelationship.EdgeSnapshot)
-	}
 	if m.knowledge_relationship != nil {
 		edges = append(edges, systemtopologysnapshotrelationship.EdgeKnowledgeRelationship)
+	}
+	if m.snapshot != nil {
+		edges = append(edges, systemtopologysnapshotrelationship.EdgeSnapshot)
 	}
 	if m.source_snapshot_entity != nil {
 		edges = append(edges, systemtopologysnapshotrelationship.EdgeSourceSnapshotEntity)
@@ -55631,12 +53697,12 @@ func (m *SystemTopologySnapshotRelationshipMutation) AddedIDs(name string) []ent
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case systemtopologysnapshotrelationship.EdgeSnapshot:
-		if id := m.snapshot; id != nil {
-			return []ent.Value{*id}
-		}
 	case systemtopologysnapshotrelationship.EdgeKnowledgeRelationship:
 		if id := m.knowledge_relationship; id != nil {
+			return []ent.Value{*id}
+		}
+	case systemtopologysnapshotrelationship.EdgeSnapshot:
+		if id := m.snapshot; id != nil {
 			return []ent.Value{*id}
 		}
 	case systemtopologysnapshotrelationship.EdgeSourceSnapshotEntity:
@@ -55686,11 +53752,11 @@ func (m *SystemTopologySnapshotRelationshipMutation) ClearedEdges() []string {
 	if m.clearedtenant {
 		edges = append(edges, systemtopologysnapshotrelationship.EdgeTenant)
 	}
-	if m.clearedsnapshot {
-		edges = append(edges, systemtopologysnapshotrelationship.EdgeSnapshot)
-	}
 	if m.clearedknowledge_relationship {
 		edges = append(edges, systemtopologysnapshotrelationship.EdgeKnowledgeRelationship)
+	}
+	if m.clearedsnapshot {
+		edges = append(edges, systemtopologysnapshotrelationship.EdgeSnapshot)
 	}
 	if m.clearedsource_snapshot_entity {
 		edges = append(edges, systemtopologysnapshotrelationship.EdgeSourceSnapshotEntity)
@@ -55710,10 +53776,10 @@ func (m *SystemTopologySnapshotRelationshipMutation) EdgeCleared(name string) bo
 	switch name {
 	case systemtopologysnapshotrelationship.EdgeTenant:
 		return m.clearedtenant
-	case systemtopologysnapshotrelationship.EdgeSnapshot:
-		return m.clearedsnapshot
 	case systemtopologysnapshotrelationship.EdgeKnowledgeRelationship:
 		return m.clearedknowledge_relationship
+	case systemtopologysnapshotrelationship.EdgeSnapshot:
+		return m.clearedsnapshot
 	case systemtopologysnapshotrelationship.EdgeSourceSnapshotEntity:
 		return m.clearedsource_snapshot_entity
 	case systemtopologysnapshotrelationship.EdgeTargetSnapshotEntity:
@@ -55731,11 +53797,11 @@ func (m *SystemTopologySnapshotRelationshipMutation) ClearEdge(name string) erro
 	case systemtopologysnapshotrelationship.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case systemtopologysnapshotrelationship.EdgeSnapshot:
-		m.ClearSnapshot()
-		return nil
 	case systemtopologysnapshotrelationship.EdgeKnowledgeRelationship:
 		m.ClearKnowledgeRelationship()
+		return nil
+	case systemtopologysnapshotrelationship.EdgeSnapshot:
+		m.ClearSnapshot()
 		return nil
 	case systemtopologysnapshotrelationship.EdgeSourceSnapshotEntity:
 		m.ClearSourceSnapshotEntity()
@@ -55754,11 +53820,11 @@ func (m *SystemTopologySnapshotRelationshipMutation) ResetEdge(name string) erro
 	case systemtopologysnapshotrelationship.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case systemtopologysnapshotrelationship.EdgeSnapshot:
-		m.ResetSnapshot()
-		return nil
 	case systemtopologysnapshotrelationship.EdgeKnowledgeRelationship:
 		m.ResetKnowledgeRelationship()
+		return nil
+	case systemtopologysnapshotrelationship.EdgeSnapshot:
+		m.ResetSnapshot()
 		return nil
 	case systemtopologysnapshotrelationship.EdgeSourceSnapshotEntity:
 		m.ResetSourceSnapshotEntity()

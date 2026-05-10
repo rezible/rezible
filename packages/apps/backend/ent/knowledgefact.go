@@ -11,12 +11,12 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgefact"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// KnowledgeEntity is the model entity for the KnowledgeEntity schema.
-type KnowledgeEntity struct {
+// KnowledgeFact is the model entity for the KnowledgeFact schema.
+type KnowledgeFact struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -35,21 +35,21 @@ type KnowledgeEntity struct {
 	// Properties holds the value of the "properties" field.
 	Properties map[string]interface{} `json:"properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the KnowledgeEntityQuery when eager-loading is set.
-	Edges        KnowledgeEntityEdges `json:"edges"`
+	// The values are being populated by the KnowledgeFactQuery when eager-loading is set.
+	Edges        KnowledgeFactEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// KnowledgeEntityEdges holds the relations/edges for other nodes in the graph.
-type KnowledgeEntityEdges struct {
+// KnowledgeFactEdges holds the relations/edges for other nodes in the graph.
+type KnowledgeFactEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Aliases holds the value of the aliases edge.
-	Aliases []*KnowledgeEntityAlias `json:"aliases,omitempty"`
+	Aliases []*KnowledgeFactAlias `json:"aliases,omitempty"`
 	// SourceRelationships holds the value of the source_relationships edge.
-	SourceRelationships []*KnowledgeRelationship `json:"source_relationships,omitempty"`
+	SourceRelationships []*KnowledgeFactRelationship `json:"source_relationships,omitempty"`
 	// TargetRelationships holds the value of the target_relationships edge.
-	TargetRelationships []*KnowledgeRelationship `json:"target_relationships,omitempty"`
+	TargetRelationships []*KnowledgeFactRelationship `json:"target_relationships,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [4]bool
@@ -57,7 +57,7 @@ type KnowledgeEntityEdges struct {
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e KnowledgeEntityEdges) TenantOrErr() (*Tenant, error) {
+func (e KnowledgeFactEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -68,7 +68,7 @@ func (e KnowledgeEntityEdges) TenantOrErr() (*Tenant, error) {
 
 // AliasesOrErr returns the Aliases value or an error if the edge
 // was not loaded in eager-loading.
-func (e KnowledgeEntityEdges) AliasesOrErr() ([]*KnowledgeEntityAlias, error) {
+func (e KnowledgeFactEdges) AliasesOrErr() ([]*KnowledgeFactAlias, error) {
 	if e.loadedTypes[1] {
 		return e.Aliases, nil
 	}
@@ -77,7 +77,7 @@ func (e KnowledgeEntityEdges) AliasesOrErr() ([]*KnowledgeEntityAlias, error) {
 
 // SourceRelationshipsOrErr returns the SourceRelationships value or an error if the edge
 // was not loaded in eager-loading.
-func (e KnowledgeEntityEdges) SourceRelationshipsOrErr() ([]*KnowledgeRelationship, error) {
+func (e KnowledgeFactEdges) SourceRelationshipsOrErr() ([]*KnowledgeFactRelationship, error) {
 	if e.loadedTypes[2] {
 		return e.SourceRelationships, nil
 	}
@@ -86,7 +86,7 @@ func (e KnowledgeEntityEdges) SourceRelationshipsOrErr() ([]*KnowledgeRelationsh
 
 // TargetRelationshipsOrErr returns the TargetRelationships value or an error if the edge
 // was not loaded in eager-loading.
-func (e KnowledgeEntityEdges) TargetRelationshipsOrErr() ([]*KnowledgeRelationship, error) {
+func (e KnowledgeFactEdges) TargetRelationshipsOrErr() ([]*KnowledgeFactRelationship, error) {
 	if e.loadedTypes[3] {
 		return e.TargetRelationships, nil
 	}
@@ -94,19 +94,19 @@ func (e KnowledgeEntityEdges) TargetRelationshipsOrErr() ([]*KnowledgeRelationsh
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*KnowledgeEntity) scanValues(columns []string) ([]any, error) {
+func (*KnowledgeFact) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case knowledgeentity.FieldProperties:
+		case knowledgefact.FieldProperties:
 			values[i] = new([]byte)
-		case knowledgeentity.FieldTenantID:
+		case knowledgefact.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeentity.FieldKind, knowledgeentity.FieldDisplayName, knowledgeentity.FieldDescription:
+		case knowledgefact.FieldKind, knowledgefact.FieldDisplayName, knowledgefact.FieldDescription:
 			values[i] = new(sql.NullString)
-		case knowledgeentity.FieldCreatedAt, knowledgeentity.FieldUpdatedAt:
+		case knowledgefact.FieldCreatedAt, knowledgefact.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case knowledgeentity.FieldID:
+		case knowledgefact.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -116,56 +116,56 @@ func (*KnowledgeEntity) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the KnowledgeEntity fields.
-func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
+// to the KnowledgeFact fields.
+func (_m *KnowledgeFact) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case knowledgeentity.FieldID:
+		case knowledgefact.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case knowledgeentity.FieldTenantID:
+		case knowledgefact.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case knowledgeentity.FieldCreatedAt:
+		case knowledgefact.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
 			}
-		case knowledgeentity.FieldUpdatedAt:
+		case knowledgefact.FieldUpdatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case knowledgeentity.FieldKind:
+		case knowledgefact.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
 				_m.Kind = value.String
 			}
-		case knowledgeentity.FieldDisplayName:
+		case knowledgefact.FieldDisplayName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field display_name", values[i])
 			} else if value.Valid {
 				_m.DisplayName = value.String
 			}
-		case knowledgeentity.FieldDescription:
+		case knowledgefact.FieldDescription:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field description", values[i])
 			} else if value.Valid {
 				_m.Description = value.String
 			}
-		case knowledgeentity.FieldProperties:
+		case knowledgefact.FieldProperties:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field properties", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -180,54 +180,54 @@ func (_m *KnowledgeEntity) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the KnowledgeEntity.
+// Value returns the ent.Value that was dynamically selected and assigned to the KnowledgeFact.
 // This includes values selected through modifiers, order, etc.
-func (_m *KnowledgeEntity) Value(name string) (ent.Value, error) {
+func (_m *KnowledgeFact) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the KnowledgeEntity entity.
-func (_m *KnowledgeEntity) QueryTenant() *TenantQuery {
-	return NewKnowledgeEntityClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the KnowledgeFact entity.
+func (_m *KnowledgeFact) QueryTenant() *TenantQuery {
+	return NewKnowledgeFactClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAliases queries the "aliases" edge of the KnowledgeEntity entity.
-func (_m *KnowledgeEntity) QueryAliases() *KnowledgeEntityAliasQuery {
-	return NewKnowledgeEntityClient(_m.config).QueryAliases(_m)
+// QueryAliases queries the "aliases" edge of the KnowledgeFact entity.
+func (_m *KnowledgeFact) QueryAliases() *KnowledgeFactAliasQuery {
+	return NewKnowledgeFactClient(_m.config).QueryAliases(_m)
 }
 
-// QuerySourceRelationships queries the "source_relationships" edge of the KnowledgeEntity entity.
-func (_m *KnowledgeEntity) QuerySourceRelationships() *KnowledgeRelationshipQuery {
-	return NewKnowledgeEntityClient(_m.config).QuerySourceRelationships(_m)
+// QuerySourceRelationships queries the "source_relationships" edge of the KnowledgeFact entity.
+func (_m *KnowledgeFact) QuerySourceRelationships() *KnowledgeFactRelationshipQuery {
+	return NewKnowledgeFactClient(_m.config).QuerySourceRelationships(_m)
 }
 
-// QueryTargetRelationships queries the "target_relationships" edge of the KnowledgeEntity entity.
-func (_m *KnowledgeEntity) QueryTargetRelationships() *KnowledgeRelationshipQuery {
-	return NewKnowledgeEntityClient(_m.config).QueryTargetRelationships(_m)
+// QueryTargetRelationships queries the "target_relationships" edge of the KnowledgeFact entity.
+func (_m *KnowledgeFact) QueryTargetRelationships() *KnowledgeFactRelationshipQuery {
+	return NewKnowledgeFactClient(_m.config).QueryTargetRelationships(_m)
 }
 
-// Update returns a builder for updating this KnowledgeEntity.
-// Note that you need to call KnowledgeEntity.Unwrap() before calling this method if this KnowledgeEntity
+// Update returns a builder for updating this KnowledgeFact.
+// Note that you need to call KnowledgeFact.Unwrap() before calling this method if this KnowledgeFact
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *KnowledgeEntity) Update() *KnowledgeEntityUpdateOne {
-	return NewKnowledgeEntityClient(_m.config).UpdateOne(_m)
+func (_m *KnowledgeFact) Update() *KnowledgeFactUpdateOne {
+	return NewKnowledgeFactClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the KnowledgeEntity entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the KnowledgeFact entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *KnowledgeEntity) Unwrap() *KnowledgeEntity {
+func (_m *KnowledgeFact) Unwrap() *KnowledgeFact {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: KnowledgeEntity is not a transactional entity")
+		panic("ent: KnowledgeFact is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *KnowledgeEntity) String() string {
+func (_m *KnowledgeFact) String() string {
 	var builder strings.Builder
-	builder.WriteString("KnowledgeEntity(")
+	builder.WriteString("KnowledgeFact(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
@@ -253,5 +253,5 @@ func (_m *KnowledgeEntity) String() string {
 	return builder.String()
 }
 
-// KnowledgeEntities is a parsable slice of KnowledgeEntity.
-type KnowledgeEntities []*KnowledgeEntity
+// KnowledgeFacts is a parsable slice of KnowledgeFact.
+type KnowledgeFacts []*KnowledgeFact

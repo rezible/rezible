@@ -55,9 +55,9 @@ const (
 	EventColumn = "incident_event_id"
 	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
 	KnowledgeEntityTable = "incident_event_topology_contexts"
-	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
-	KnowledgeEntityInverseTable = "knowledge_entities"
+	// KnowledgeEntityInverseTable is the table name for the KnowledgeFact entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgefact" package.
+	KnowledgeEntityInverseTable = "knowledge_facts"
 	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
 	KnowledgeEntityColumn = "knowledge_entity_id"
 	// SnapshotEntityTable is the table that holds the snapshot_entity relation/edge.

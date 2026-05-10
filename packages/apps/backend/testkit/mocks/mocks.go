@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -847,46 +846,6 @@ func (_c *MockProviderEventService_RegisterEventProcessors_Call) Return() *MockP
 }
 
 func (_c *MockProviderEventService_RegisterEventProcessors_Call) RunAndReturn(run func(provider string, sourceProcessors map[string]rez.ProviderEventProcessor)) *MockProviderEventService_RegisterEventProcessors_Call {
-	_c.Run(run)
-	return _c
-}
-
-// RegisterProjectionHandlers provides a mock function for the type MockProviderEventService
-func (_mock *MockProviderEventService) RegisterEventProjector(kindHandlers map[normalizedevent.Kind]rez.EventProjectionHandler) {
-	_mock.Called(kindHandlers)
-	return
-}
-
-// MockProviderEventService_RegisterProjectionHandlers_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'RegisterProjectionHandlers'
-type MockProviderEventService_RegisterProjectionHandlers_Call struct {
-	*mock.Call
-}
-
-// RegisterProjectionHandlers is a helper method to define mock.On call
-//   - kindHandlers map[normalizedevent.Kind]rez.EventProjectionHandler
-func (_e *MockProviderEventService_Expecter) RegisterProjectionHandlers(kindHandlers interface{}) *MockProviderEventService_RegisterProjectionHandlers_Call {
-	return &MockProviderEventService_RegisterProjectionHandlers_Call{Call: _e.mock.On("RegisterProjectionHandlers", kindHandlers)}
-}
-
-func (_c *MockProviderEventService_RegisterProjectionHandlers_Call) Run(run func(kindHandlers map[normalizedevent.Kind]rez.EventProjectionHandler)) *MockProviderEventService_RegisterProjectionHandlers_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 map[normalizedevent.Kind]rez.EventProjectionHandler
-		if args[0] != nil {
-			arg0 = args[0].(map[normalizedevent.Kind]rez.EventProjectionHandler)
-		}
-		run(
-			arg0,
-		)
-	})
-	return _c
-}
-
-func (_c *MockProviderEventService_RegisterProjectionHandlers_Call) Return() *MockProviderEventService_RegisterProjectionHandlers_Call {
-	_c.Call.Return()
-	return _c
-}
-
-func (_c *MockProviderEventService_RegisterProjectionHandlers_Call) RunAndReturn(run func(kindHandlers map[normalizedevent.Kind]rez.EventProjectionHandler)) *MockProviderEventService_RegisterProjectionHandlers_Call {
 	_c.Run(run)
 	return _c
 }

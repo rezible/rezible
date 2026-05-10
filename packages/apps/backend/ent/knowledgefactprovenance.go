@@ -10,9 +10,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgefactalias"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgefactrelationship"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -21,7 +21,6 @@ import (
 type KnowledgeFactProvenance struct {
 	config `json:"-"`
 	// ID of the ent.
-	// Internal identifier for this knowledge fact provenance record.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
@@ -33,20 +32,10 @@ type KnowledgeFactProvenance struct {
 	AliasID *uuid.UUID `json:"alias_id,omitempty"`
 	// Relationship this provenance supports. Exactly one of alias_id or relationship_id must be set.
 	RelationshipID *uuid.UUID `json:"relationship_id,omitempty"`
-	// Normalized event that produced this provenance record, when available.
-	NormalizedEventID *uuid.UUID `json:"normalized_event_id,omitempty"`
-	// Integration provider that supplied the evidence for this fact.
-	Provider string `json:"provider,omitempty"`
-	// Provider-specific stream, API, or dataset where the evidence was observed.
-	ProviderSource string `json:"provider_source,omitempty"`
-	// Stable provider reference for the event or record that supports this fact.
-	ProviderEventRef string `json:"provider_event_ref,omitempty"`
-	// Projection, sync, or extraction method that created this provenance record.
-	ExtractionMethod string `json:"extraction_method,omitempty"`
-	// First time this fact was observed from this provider evidence.
-	FirstSeenAt time.Time `json:"first_seen_at,omitempty"`
-	// Most recent time this fact was observed from this provider evidence.
-	LastSeenAt time.Time `json:"last_seen_at,omitempty"`
+	// Normalized event that produced this provenance record
+	NormalizedEventID uuid.UUID `json:"normalized_event_id,omitempty"`
+	// Source holds the value of the "source" field.
+	Source string `json:"source,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeFactProvenanceQuery when eager-loading is set.
 	Edges        KnowledgeFactProvenanceEdges `json:"edges"`
@@ -58,9 +47,9 @@ type KnowledgeFactProvenanceEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Alias holds the value of the alias edge.
-	Alias *KnowledgeEntityAlias `json:"alias,omitempty"`
+	Alias *KnowledgeFactAlias `json:"alias,omitempty"`
 	// Relationship holds the value of the relationship edge.
-	Relationship *KnowledgeRelationship `json:"relationship,omitempty"`
+	Relationship *KnowledgeFactRelationship `json:"relationship,omitempty"`
 	// NormalizedEvent holds the value of the normalized_event edge.
 	NormalizedEvent *NormalizedEvent `json:"normalized_event,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -81,22 +70,22 @@ func (e KnowledgeFactProvenanceEdges) TenantOrErr() (*Tenant, error) {
 
 // AliasOrErr returns the Alias value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e KnowledgeFactProvenanceEdges) AliasOrErr() (*KnowledgeEntityAlias, error) {
+func (e KnowledgeFactProvenanceEdges) AliasOrErr() (*KnowledgeFactAlias, error) {
 	if e.Alias != nil {
 		return e.Alias, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: knowledgeentityalias.Label}
+		return nil, &NotFoundError{label: knowledgefactalias.Label}
 	}
 	return nil, &NotLoadedError{edge: "alias"}
 }
 
 // RelationshipOrErr returns the Relationship value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e KnowledgeFactProvenanceEdges) RelationshipOrErr() (*KnowledgeRelationship, error) {
+func (e KnowledgeFactProvenanceEdges) RelationshipOrErr() (*KnowledgeFactRelationship, error) {
 	if e.Relationship != nil {
 		return e.Relationship, nil
 	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: knowledgerelationship.Label}
+		return nil, &NotFoundError{label: knowledgefactrelationship.Label}
 	}
 	return nil, &NotLoadedError{edge: "relationship"}
 }
@@ -117,15 +106,15 @@ func (*KnowledgeFactProvenance) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case knowledgefactprovenance.FieldAliasID, knowledgefactprovenance.FieldRelationshipID, knowledgefactprovenance.FieldNormalizedEventID:
+		case knowledgefactprovenance.FieldAliasID, knowledgefactprovenance.FieldRelationshipID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case knowledgefactprovenance.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgefactprovenance.FieldProvider, knowledgefactprovenance.FieldProviderSource, knowledgefactprovenance.FieldProviderEventRef, knowledgefactprovenance.FieldExtractionMethod:
+		case knowledgefactprovenance.FieldSource:
 			values[i] = new(sql.NullString)
-		case knowledgefactprovenance.FieldCreatedAt, knowledgefactprovenance.FieldUpdatedAt, knowledgefactprovenance.FieldFirstSeenAt, knowledgefactprovenance.FieldLastSeenAt:
+		case knowledgefactprovenance.FieldCreatedAt, knowledgefactprovenance.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case knowledgefactprovenance.FieldID:
+		case knowledgefactprovenance.FieldID, knowledgefactprovenance.FieldNormalizedEventID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -181,47 +170,16 @@ func (_m *KnowledgeFactProvenance) assignValues(columns []string, values []any) 
 				*_m.RelationshipID = *value.S.(*uuid.UUID)
 			}
 		case knowledgefactprovenance.FieldNormalizedEventID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
+			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field normalized_event_id", values[i])
-			} else if value.Valid {
-				_m.NormalizedEventID = new(uuid.UUID)
-				*_m.NormalizedEventID = *value.S.(*uuid.UUID)
+			} else if value != nil {
+				_m.NormalizedEventID = *value
 			}
-		case knowledgefactprovenance.FieldProvider:
+		case knowledgefactprovenance.FieldSource:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider", values[i])
+				return fmt.Errorf("unexpected type %T for field source", values[i])
 			} else if value.Valid {
-				_m.Provider = value.String
-			}
-		case knowledgefactprovenance.FieldProviderSource:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
-			} else if value.Valid {
-				_m.ProviderSource = value.String
-			}
-		case knowledgefactprovenance.FieldProviderEventRef:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_event_ref", values[i])
-			} else if value.Valid {
-				_m.ProviderEventRef = value.String
-			}
-		case knowledgefactprovenance.FieldExtractionMethod:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field extraction_method", values[i])
-			} else if value.Valid {
-				_m.ExtractionMethod = value.String
-			}
-		case knowledgefactprovenance.FieldFirstSeenAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field first_seen_at", values[i])
-			} else if value.Valid {
-				_m.FirstSeenAt = value.Time
-			}
-		case knowledgefactprovenance.FieldLastSeenAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field last_seen_at", values[i])
-			} else if value.Valid {
-				_m.LastSeenAt = value.Time
+				_m.Source = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -242,12 +200,12 @@ func (_m *KnowledgeFactProvenance) QueryTenant() *TenantQuery {
 }
 
 // QueryAlias queries the "alias" edge of the KnowledgeFactProvenance entity.
-func (_m *KnowledgeFactProvenance) QueryAlias() *KnowledgeEntityAliasQuery {
+func (_m *KnowledgeFactProvenance) QueryAlias() *KnowledgeFactAliasQuery {
 	return NewKnowledgeFactProvenanceClient(_m.config).QueryAlias(_m)
 }
 
 // QueryRelationship queries the "relationship" edge of the KnowledgeFactProvenance entity.
-func (_m *KnowledgeFactProvenance) QueryRelationship() *KnowledgeRelationshipQuery {
+func (_m *KnowledgeFactProvenance) QueryRelationship() *KnowledgeFactRelationshipQuery {
 	return NewKnowledgeFactProvenanceClient(_m.config).QueryRelationship(_m)
 }
 
@@ -298,28 +256,11 @@ func (_m *KnowledgeFactProvenance) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	if v := _m.NormalizedEventID; v != nil {
-		builder.WriteString("normalized_event_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("normalized_event_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.NormalizedEventID))
 	builder.WriteString(", ")
-	builder.WriteString("provider=")
-	builder.WriteString(_m.Provider)
-	builder.WriteString(", ")
-	builder.WriteString("provider_source=")
-	builder.WriteString(_m.ProviderSource)
-	builder.WriteString(", ")
-	builder.WriteString("provider_event_ref=")
-	builder.WriteString(_m.ProviderEventRef)
-	builder.WriteString(", ")
-	builder.WriteString("extraction_method=")
-	builder.WriteString(_m.ExtractionMethod)
-	builder.WriteString(", ")
-	builder.WriteString("first_seen_at=")
-	builder.WriteString(_m.FirstSeenAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("last_seen_at=")
-	builder.WriteString(_m.LastSeenAt.Format(time.ANSIC))
+	builder.WriteString("source=")
+	builder.WriteString(_m.Source)
 	builder.WriteByte(')')
 	return builder.String()
 }

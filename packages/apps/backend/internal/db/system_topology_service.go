@@ -3,17 +3,13 @@ package db
 import (
 	"context"
 	"fmt"
-	"time"
 
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	kne "github.com/rezible/rezible/ent/knowledgeentity"
-	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
-	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	"github.com/rezible/rezible/ent/predicate"
+	knf "github.com/rezible/rezible/ent/knowledgefact"
+	knfr "github.com/rezible/rezible/ent/knowledgefactrelationship"
 	ts "github.com/rezible/rezible/ent/systemtopologysnapshot"
 )
 
@@ -25,67 +21,54 @@ func NewSystemTopologyService(db *ent.Client) (*SystemTopologyService, error) {
 	return &SystemTopologyService{db: db}, nil
 }
 
-func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.ListSystemTopologyEntitiesParams) (*ent.ListResult[*ent.KnowledgeEntity], error) {
-	query := s.db.KnowledgeEntity.Query().
+func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.ListSystemTopologyEntitiesParams) (*ent.ListResult[*ent.KnowledgeFact], error) {
+	query := s.db.KnowledgeFact.Query().
 		WithAliases().
-		WithSourceRelationships(func(q *ent.KnowledgeRelationshipQuery) {
-			q.Select(knr.FieldID, knr.FieldSourceEntityID, knr.FieldTargetEntityID, knr.FieldKind)
+		WithSourceRelationships(func(q *ent.KnowledgeFactRelationshipQuery) {
+			q.Select(knfr.FieldID, knfr.FieldKind, knfr.FieldSourceFactID, knfr.FieldTargetFactID)
 		}).
-		WithTargetRelationships(func(q *ent.KnowledgeRelationshipQuery) {
-			q.Select(knr.FieldID, knr.FieldSourceEntityID, knr.FieldTargetEntityID, knr.FieldKind)
+		WithTargetRelationships(func(q *ent.KnowledgeFactRelationshipQuery) {
+			q.Select(knfr.FieldID, knfr.FieldKind, knfr.FieldSourceFactID, knfr.FieldKind)
 		})
 	if params.Search != "" {
-		query.Where(kne.DisplayNameContainsFold(params.Search))
+		query.Where(knf.DisplayNameContainsFold(params.Search))
 	}
 	if len(params.Kinds) > 0 {
-		query.Where(kne.KindIn(params.Kinds...))
+		query.Where(knf.KindIn(params.Kinds...))
 	}
-	aliasPredicates := make([]predicate.KnowledgeEntityAlias, 0, 3)
-	if params.Provider != "" {
-		aliasPredicates = append(aliasPredicates, knea.Provider(params.Provider))
-	}
-	if params.ProviderSource != "" {
-		aliasPredicates = append(aliasPredicates, knea.ProviderSource(params.ProviderSource))
-	}
-	if params.SubjectKind != "" {
-		aliasPredicates = append(aliasPredicates, knea.SubjectKind(params.SubjectKind))
-	}
-	if len(aliasPredicates) > 0 {
-		query.Where(kne.HasAliasesWith(aliasPredicates...))
-	}
-	return ent.DoListQuery[*ent.KnowledgeEntity, *ent.KnowledgeEntityQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[*ent.KnowledgeFact, *ent.KnowledgeFactQuery](ctx, query, params.ListParams)
 }
 
-func (s *SystemTopologyService) GetEntity(ctx context.Context, id uuid.UUID) (*ent.KnowledgeEntity, error) {
-	return s.db.KnowledgeEntity.Query().
-		Where(kne.ID(id)).
+func (s *SystemTopologyService) GetEntity(ctx context.Context, id uuid.UUID) (*ent.KnowledgeFact, error) {
+	return s.db.KnowledgeFact.Query().
+		Where(knf.ID(id)).
 		WithAliases().
-		WithSourceRelationships(func(q *ent.KnowledgeRelationshipQuery) {
-			q.WithTargetEntity()
+		WithSourceRelationships(func(q *ent.KnowledgeFactRelationshipQuery) {
+			q.WithTargetFact()
 		}).
-		WithTargetRelationships(func(q *ent.KnowledgeRelationshipQuery) {
-			q.WithSourceEntity()
+		WithTargetRelationships(func(q *ent.KnowledgeFactRelationshipQuery) {
+			q.WithSourceFact()
 		}).
 		Only(ctx)
 }
 
-func (s *SystemTopologyService) ListRelationships(ctx context.Context, params rez.ListSystemTopologyRelationshipsParams) (*ent.ListResult[*ent.KnowledgeRelationship], error) {
-	query := s.db.KnowledgeRelationship.Query().
-		WithSourceEntity().
-		WithTargetEntity()
+func (s *SystemTopologyService) ListRelationships(ctx context.Context, params rez.ListSystemTopologyRelationshipsParams) (*ent.ListResult[*ent.KnowledgeFactRelationship], error) {
+	query := s.db.KnowledgeFactRelationship.Query().
+		WithSourceFact().
+		WithTargetFact()
 	if len(params.Kinds) > 0 {
-		query.Where(knr.KindIn(params.Kinds...))
+		query.Where(knfr.KindIn(params.Kinds...))
 	}
-	if params.SourceEntityID != uuid.Nil {
-		query.Where(knr.SourceEntityID(params.SourceEntityID))
+	if params.SourceFactID != uuid.Nil {
+		query.Where(knfr.SourceFactID(params.SourceFactID))
 	}
-	if params.TargetEntityID != uuid.Nil {
-		query.Where(knr.TargetEntityID(params.TargetEntityID))
+	if params.TargetFactID != uuid.Nil {
+		query.Where(knfr.TargetFactID(params.TargetFactID))
 	}
-	if params.EntityID != uuid.Nil {
-		query.Where(knr.Or(knr.SourceEntityID(params.EntityID), knr.TargetEntityID(params.EntityID)))
+	if params.FactID != uuid.Nil {
+		query.Where(knfr.Or(knfr.SourceFactID(params.FactID), knfr.TargetFactID(params.FactID)))
 	}
-	return ent.DoListQuery[*ent.KnowledgeRelationship, *ent.KnowledgeRelationshipQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[*ent.KnowledgeFactRelationship, *ent.KnowledgeFactRelationshipQuery](ctx, query, params.ListParams)
 }
 
 func (s *SystemTopologyService) GetNeighborhood(ctx context.Context, id uuid.UUID, params rez.SystemTopologyNeighborhoodParams) (*rez.SystemTopologyGraph, error) {
@@ -99,7 +82,7 @@ func (s *SystemTopologyService) GetNeighborhood(ctx context.Context, id uuid.UUI
 
 	entityIDs := map[uuid.UUID]struct{}{id: {}}
 	frontier := []uuid.UUID{id}
-	relationshipsByID := make(map[uuid.UUID]*ent.KnowledgeRelationship)
+	relationshipsByID := make(map[uuid.UUID]*ent.KnowledgeFactRelationship)
 
 	for range depth {
 		rels, queryErr := s.relationshipsTouching(ctx, frontier, params.RelationshipKinds)
@@ -109,7 +92,7 @@ func (s *SystemTopologyService) GetNeighborhood(ctx context.Context, id uuid.UUI
 		next := make([]uuid.UUID, 0)
 		for _, rel := range rels {
 			relationshipsByID[rel.ID] = rel
-			for _, entityID := range []uuid.UUID{rel.SourceEntityID, rel.TargetEntityID} {
+			for _, entityID := range []uuid.UUID{rel.SourceFactID, rel.TargetFactID} {
 				if _, seen := entityIDs[entityID]; seen {
 					continue
 				}
@@ -127,15 +110,15 @@ func (s *SystemTopologyService) GetNeighborhood(ctx context.Context, id uuid.UUI
 	for entityID := range entityIDs {
 		ids = append(ids, entityID)
 	}
-	entities, entityErr := s.db.KnowledgeEntity.Query().
-		Where(kne.IDIn(ids...)).
+	entities, entityErr := s.db.KnowledgeFact.Query().
+		Where(knf.IDIn(ids...)).
 		WithAliases().
 		All(ctx)
 	if entityErr != nil {
 		return nil, fmt.Errorf("query neighborhood entities: %w", entityErr)
 	}
 
-	relationships := make([]*ent.KnowledgeRelationship, 0, len(relationshipsByID))
+	relationships := make([]*ent.KnowledgeFactRelationship, 0, len(relationshipsByID))
 	for _, rel := range relationshipsByID {
 		relationships = append(relationships, rel)
 	}
@@ -143,110 +126,7 @@ func (s *SystemTopologyService) GetNeighborhood(ctx context.Context, id uuid.UUI
 }
 
 func (s *SystemTopologyService) CreateSnapshot(ctx context.Context, params rez.CreateSystemTopologySnapshotParams) (*ent.SystemTopologySnapshot, error) {
-	graph, graphErr := s.snapshotGraph(ctx, params)
-	if graphErr != nil {
-		return nil, graphErr
-	}
-	asOf := params.AsOf
-	if asOf.IsZero() {
-		asOf = time.Now()
-	}
-	scope := params.Scope
-	if scope == "" {
-		scope = ts.ScopeExplicitEntities.String()
-		if len(params.RootEntityIDs) > 0 {
-			scope = ts.ScopeRootEntities.String()
-		}
-	}
-	scopeProperties := params.ScopeProperties
-	if scopeProperties == nil {
-		entityIds := make([]string, len(params.EntityIDs))
-		for i, id := range params.EntityIDs {
-			entityIds[i] = id.String()
-		}
-		rootIds := make([]string, len(params.RootEntityIDs))
-		for i, id := range params.EntityIDs {
-			rootIds[i] = id.String()
-		}
-		scopeProperties = map[string]any{
-			"entityIds":   entityIds,
-			"rootIds":     rootIds,
-			"depth":       params.Depth,
-			"entityKinds": params.EntityKinds,
-			"relKinds":    params.RelationshipKinds,
-		}
-	}
-
-	var snapshot *ent.SystemTopologySnapshot
-	if txErr := ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {
-		create := tx.SystemTopologySnapshot.Create().
-			SetAsOf(asOf).
-			SetScope(ts.Scope(scope)).
-			SetScopeProperties(scopeProperties)
-		if params.Name != "" {
-			create.SetName(params.Name)
-		}
-		var createErr error
-		snapshot, createErr = create.Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("create snapshot: %w", createErr)
-		}
-
-		snapshotEntities := make(map[uuid.UUID]*ent.SystemTopologySnapshotEntity, len(graph.Entities))
-		for _, entity := range graph.Entities {
-			snapshotAliases := make([]map[string]any, len(entity.Edges.Aliases))
-			for i, alias := range entity.Edges.Aliases {
-				snapshotAliases[i] = map[string]any{
-					"id":             alias.ID.String(),
-					"provider":       alias.Provider,
-					"providerSource": alias.ProviderSource,
-					"subjectKind":    alias.SubjectKind,
-					"subjectRef":     alias.SubjectRef,
-					"firstSeenAt":    alias.FirstSeenAt,
-					"lastSeenAt":     alias.LastSeenAt,
-				}
-			}
-			snapEntity, entityErr := tx.SystemTopologySnapshotEntity.Create().
-				SetSnapshotID(snapshot.ID).
-				SetKnowledgeEntityID(entity.ID).
-				SetEntityKind(entity.Kind).
-				SetDisplayName(entity.DisplayName).
-				SetDescription(entity.Description).
-				SetProperties(entity.Properties).
-				SetAliases(snapshotAliases).
-				Save(ctx)
-			if entityErr != nil {
-				return fmt.Errorf("create snapshot entity: %w", entityErr)
-			}
-			snapshotEntities[entity.ID] = snapEntity
-		}
-
-		for _, rel := range graph.Relationships {
-			source, sourceOK := snapshotEntities[rel.SourceEntityID]
-			target, targetOK := snapshotEntities[rel.TargetEntityID]
-			if !sourceOK || !targetOK {
-				continue
-			}
-			_, relErr := tx.SystemTopologySnapshotRelationship.Create().
-				SetSnapshotID(snapshot.ID).
-				SetKnowledgeRelationshipID(rel.ID).
-				SetSourceSnapshotEntityID(source.ID).
-				SetTargetSnapshotEntityID(target.ID).
-				SetRelationshipKind(rel.Kind).
-				SetDisplayName(rel.DisplayName).
-				SetDescription(rel.Description).
-				SetProperties(rel.Properties).
-				Save(ctx)
-			if relErr != nil {
-				return fmt.Errorf("create snapshot relationship: %w", relErr)
-			}
-		}
-		return nil
-	}); txErr != nil {
-		return nil, txErr
-	}
-
-	return s.GetSnapshot(ctx, snapshot.ID)
+	return nil, nil
 }
 
 func (s *SystemTopologyService) GetSnapshot(ctx context.Context, id uuid.UUID) (*ent.SystemTopologySnapshot, error) {
@@ -260,72 +140,16 @@ func (s *SystemTopologyService) GetSnapshot(ctx context.Context, id uuid.UUID) (
 		Only(ctx)
 }
 
-func (s *SystemTopologyService) snapshotGraph(ctx context.Context, params rez.CreateSystemTopologySnapshotParams) (*rez.SystemTopologyGraph, error) {
-	var entities []*ent.KnowledgeEntity
-	var relationships []*ent.KnowledgeRelationship
-	if len(params.RootEntityIDs) > 0 {
-		seenEntities := make(map[uuid.UUID]*ent.KnowledgeEntity)
-		seenRelationships := make(map[uuid.UUID]*ent.KnowledgeRelationship)
-		for _, rootID := range params.RootEntityIDs {
-			partial, neighborhoodErr := s.GetNeighborhood(ctx, rootID, rez.SystemTopologyNeighborhoodParams{
-				Depth:             params.Depth,
-				RelationshipKinds: params.RelationshipKinds,
-			})
-			if neighborhoodErr != nil {
-				return nil, neighborhoodErr
-			}
-			for _, entity := range partial.Entities {
-				seenEntities[entity.ID] = entity
-			}
-			for _, rel := range partial.Relationships {
-				seenRelationships[rel.ID] = rel
-			}
-		}
-		for _, entity := range seenEntities {
-			entities = append(entities, entity)
-		}
-		for _, rel := range seenRelationships {
-			relationships = append(relationships, rel)
-		}
-	} else if len(params.EntityIDs) > 0 {
-		var queryErr error
-		entities, queryErr = s.db.KnowledgeEntity.Query().
-			Where(kne.IDIn(params.EntityIDs...)).
-			WithAliases().
-			All(ctx)
-		if queryErr != nil {
-			return nil, fmt.Errorf("query knowledge entities: %w", queryErr)
-		}
-		rels, relErr := s.relationshipsTouching(ctx, params.EntityIDs, params.RelationshipKinds)
-		if relErr != nil {
-			return nil, fmt.Errorf("query snapshot relationships: %w", relErr)
-		}
-		entitySet := mapset.NewSet[uuid.UUID]()
-		for _, entity := range entities {
-			entitySet.Add(entity.ID)
-		}
-		relationships = make([]*ent.KnowledgeRelationship, 0, len(rels))
-		for _, rel := range rels {
-			if entitySet.Contains(rel.SourceEntityID, rel.TargetEntityID) {
-				relationships = append(relationships, rel)
-			}
-		}
-	} else {
-		return nil, fmt.Errorf("snapshot requires entity IDs or root entity IDs")
-	}
-	return &rez.SystemTopologyGraph{Entities: entities, Relationships: relationships}, nil
-}
-
-func (s *SystemTopologyService) relationshipsTouching(ctx context.Context, entityIDs []uuid.UUID, kinds []string) ([]*ent.KnowledgeRelationship, error) {
+func (s *SystemTopologyService) relationshipsTouching(ctx context.Context, entityIDs []uuid.UUID, kinds []string) ([]*ent.KnowledgeFactRelationship, error) {
 	if len(entityIDs) == 0 {
 		return nil, nil
 	}
-	query := s.db.KnowledgeRelationship.Query().
-		Where(knr.Or(knr.SourceEntityIDIn(entityIDs...), knr.TargetEntityIDIn(entityIDs...))).
-		WithSourceEntity().
-		WithTargetEntity()
+	query := s.db.KnowledgeFactRelationship.Query().
+		Where(knfr.Or(knfr.SourceFactIDIn(entityIDs...), knfr.TargetFactIDIn(entityIDs...))).
+		WithSourceFact().
+		WithTargetFact()
 	if len(kinds) > 0 {
-		query.Where(knr.KindIn(kinds...))
+		query.Where(knfr.KindIn(kinds...))
 	}
 	return query.All(ctx)
 }

@@ -14,9 +14,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgefactalias"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgefactrelationship"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -30,8 +30,8 @@ type KnowledgeFactProvenanceQuery struct {
 	inters              []Interceptor
 	predicates          []predicate.KnowledgeFactProvenance
 	withTenant          *TenantQuery
-	withAlias           *KnowledgeEntityAliasQuery
-	withRelationship    *KnowledgeRelationshipQuery
+	withAlias           *KnowledgeFactAliasQuery
+	withRelationship    *KnowledgeFactRelationshipQuery
 	withNormalizedEvent *NormalizedEventQuery
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -96,8 +96,8 @@ func (_q *KnowledgeFactProvenanceQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryAlias chains the current query on the "alias" edge.
-func (_q *KnowledgeFactProvenanceQuery) QueryAlias() *KnowledgeEntityAliasQuery {
-	query := (&KnowledgeEntityAliasClient{config: _q.config}).Query()
+func (_q *KnowledgeFactProvenanceQuery) QueryAlias() *KnowledgeFactAliasQuery {
+	query := (&KnowledgeFactAliasClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -108,11 +108,11 @@ func (_q *KnowledgeFactProvenanceQuery) QueryAlias() *KnowledgeEntityAliasQuery 
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(knowledgefactprovenance.Table, knowledgefactprovenance.FieldID, selector),
-			sqlgraph.To(knowledgeentityalias.Table, knowledgeentityalias.FieldID),
+			sqlgraph.To(knowledgefactalias.Table, knowledgefactalias.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefactprovenance.AliasTable, knowledgefactprovenance.AliasColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntityAlias
+		step.To.Schema = schemaConfig.KnowledgeFactAlias
 		step.Edge.Schema = schemaConfig.KnowledgeFactProvenance
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -121,8 +121,8 @@ func (_q *KnowledgeFactProvenanceQuery) QueryAlias() *KnowledgeEntityAliasQuery 
 }
 
 // QueryRelationship chains the current query on the "relationship" edge.
-func (_q *KnowledgeFactProvenanceQuery) QueryRelationship() *KnowledgeRelationshipQuery {
-	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+func (_q *KnowledgeFactProvenanceQuery) QueryRelationship() *KnowledgeFactRelationshipQuery {
+	query := (&KnowledgeFactRelationshipClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -133,11 +133,11 @@ func (_q *KnowledgeFactProvenanceQuery) QueryRelationship() *KnowledgeRelationsh
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(knowledgefactprovenance.Table, knowledgefactprovenance.FieldID, selector),
-			sqlgraph.To(knowledgerelationship.Table, knowledgerelationship.FieldID),
+			sqlgraph.To(knowledgefactrelationship.Table, knowledgefactrelationship.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefactprovenance.RelationshipTable, knowledgefactprovenance.RelationshipColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeRelationship
+		step.To.Schema = schemaConfig.KnowledgeFactRelationship
 		step.Edge.Schema = schemaConfig.KnowledgeFactProvenance
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -386,8 +386,8 @@ func (_q *KnowledgeFactProvenanceQuery) WithTenant(opts ...func(*TenantQuery)) *
 
 // WithAlias tells the query-builder to eager-load the nodes that are connected to
 // the "alias" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeFactProvenanceQuery) WithAlias(opts ...func(*KnowledgeEntityAliasQuery)) *KnowledgeFactProvenanceQuery {
-	query := (&KnowledgeEntityAliasClient{config: _q.config}).Query()
+func (_q *KnowledgeFactProvenanceQuery) WithAlias(opts ...func(*KnowledgeFactAliasQuery)) *KnowledgeFactProvenanceQuery {
+	query := (&KnowledgeFactAliasClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -397,8 +397,8 @@ func (_q *KnowledgeFactProvenanceQuery) WithAlias(opts ...func(*KnowledgeEntityA
 
 // WithRelationship tells the query-builder to eager-load the nodes that are connected to
 // the "relationship" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeFactProvenanceQuery) WithRelationship(opts ...func(*KnowledgeRelationshipQuery)) *KnowledgeFactProvenanceQuery {
-	query := (&KnowledgeRelationshipClient{config: _q.config}).Query()
+func (_q *KnowledgeFactProvenanceQuery) WithRelationship(opts ...func(*KnowledgeFactRelationshipQuery)) *KnowledgeFactProvenanceQuery {
+	query := (&KnowledgeFactRelationshipClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -539,13 +539,13 @@ func (_q *KnowledgeFactProvenanceQuery) sqlAll(ctx context.Context, hooks ...que
 	}
 	if query := _q.withAlias; query != nil {
 		if err := _q.loadAlias(ctx, query, nodes, nil,
-			func(n *KnowledgeFactProvenance, e *KnowledgeEntityAlias) { n.Edges.Alias = e }); err != nil {
+			func(n *KnowledgeFactProvenance, e *KnowledgeFactAlias) { n.Edges.Alias = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withRelationship; query != nil {
 		if err := _q.loadRelationship(ctx, query, nodes, nil,
-			func(n *KnowledgeFactProvenance, e *KnowledgeRelationship) { n.Edges.Relationship = e }); err != nil {
+			func(n *KnowledgeFactProvenance, e *KnowledgeFactRelationship) { n.Edges.Relationship = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -587,7 +587,7 @@ func (_q *KnowledgeFactProvenanceQuery) loadTenant(ctx context.Context, query *T
 	}
 	return nil
 }
-func (_q *KnowledgeFactProvenanceQuery) loadAlias(ctx context.Context, query *KnowledgeEntityAliasQuery, nodes []*KnowledgeFactProvenance, init func(*KnowledgeFactProvenance), assign func(*KnowledgeFactProvenance, *KnowledgeEntityAlias)) error {
+func (_q *KnowledgeFactProvenanceQuery) loadAlias(ctx context.Context, query *KnowledgeFactAliasQuery, nodes []*KnowledgeFactProvenance, init func(*KnowledgeFactProvenance), assign func(*KnowledgeFactProvenance, *KnowledgeFactAlias)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*KnowledgeFactProvenance)
 	for i := range nodes {
@@ -603,7 +603,7 @@ func (_q *KnowledgeFactProvenanceQuery) loadAlias(ctx context.Context, query *Kn
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(knowledgeentityalias.IDIn(ids...))
+	query.Where(knowledgefactalias.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -619,7 +619,7 @@ func (_q *KnowledgeFactProvenanceQuery) loadAlias(ctx context.Context, query *Kn
 	}
 	return nil
 }
-func (_q *KnowledgeFactProvenanceQuery) loadRelationship(ctx context.Context, query *KnowledgeRelationshipQuery, nodes []*KnowledgeFactProvenance, init func(*KnowledgeFactProvenance), assign func(*KnowledgeFactProvenance, *KnowledgeRelationship)) error {
+func (_q *KnowledgeFactProvenanceQuery) loadRelationship(ctx context.Context, query *KnowledgeFactRelationshipQuery, nodes []*KnowledgeFactProvenance, init func(*KnowledgeFactProvenance), assign func(*KnowledgeFactProvenance, *KnowledgeFactRelationship)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*KnowledgeFactProvenance)
 	for i := range nodes {
@@ -635,7 +635,7 @@ func (_q *KnowledgeFactProvenanceQuery) loadRelationship(ctx context.Context, qu
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(knowledgerelationship.IDIn(ids...))
+	query.Where(knowledgefactrelationship.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -655,10 +655,7 @@ func (_q *KnowledgeFactProvenanceQuery) loadNormalizedEvent(ctx context.Context,
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*KnowledgeFactProvenance)
 	for i := range nodes {
-		if nodes[i].NormalizedEventID == nil {
-			continue
-		}
-		fk := *nodes[i].NormalizedEventID
+		fk := nodes[i].NormalizedEventID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}

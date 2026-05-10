@@ -11,7 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgefactrelationship"
 	"github.com/rezible/rezible/ent/systemtopologysnapshot"
 	"github.com/rezible/rezible/ent/systemtopologysnapshotentity"
 	"github.com/rezible/rezible/ent/systemtopologysnapshotrelationship"
@@ -53,10 +53,10 @@ type SystemTopologySnapshotRelationship struct {
 type SystemTopologySnapshotRelationshipEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// KnowledgeRelationship holds the value of the knowledge_relationship edge.
+	KnowledgeRelationship *KnowledgeFactRelationship `json:"knowledge_relationship,omitempty"`
 	// Snapshot holds the value of the snapshot edge.
 	Snapshot *SystemTopologySnapshot `json:"snapshot,omitempty"`
-	// KnowledgeRelationship holds the value of the knowledge_relationship edge.
-	KnowledgeRelationship *KnowledgeRelationship `json:"knowledge_relationship,omitempty"`
 	// SourceSnapshotEntity holds the value of the source_snapshot_entity edge.
 	SourceSnapshotEntity *SystemTopologySnapshotEntity `json:"source_snapshot_entity,omitempty"`
 	// TargetSnapshotEntity holds the value of the target_snapshot_entity edge.
@@ -79,26 +79,26 @@ func (e SystemTopologySnapshotRelationshipEdges) TenantOrErr() (*Tenant, error) 
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// KnowledgeRelationshipOrErr returns the KnowledgeRelationship value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e SystemTopologySnapshotRelationshipEdges) KnowledgeRelationshipOrErr() (*KnowledgeFactRelationship, error) {
+	if e.KnowledgeRelationship != nil {
+		return e.KnowledgeRelationship, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: knowledgefactrelationship.Label}
+	}
+	return nil, &NotLoadedError{edge: "knowledge_relationship"}
+}
+
 // SnapshotOrErr returns the Snapshot value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e SystemTopologySnapshotRelationshipEdges) SnapshotOrErr() (*SystemTopologySnapshot, error) {
 	if e.Snapshot != nil {
 		return e.Snapshot, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: systemtopologysnapshot.Label}
 	}
 	return nil, &NotLoadedError{edge: "snapshot"}
-}
-
-// KnowledgeRelationshipOrErr returns the KnowledgeRelationship value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e SystemTopologySnapshotRelationshipEdges) KnowledgeRelationshipOrErr() (*KnowledgeRelationship, error) {
-	if e.KnowledgeRelationship != nil {
-		return e.KnowledgeRelationship, nil
-	} else if e.loadedTypes[2] {
-		return nil, &NotFoundError{label: knowledgerelationship.Label}
-	}
-	return nil, &NotLoadedError{edge: "knowledge_relationship"}
 }
 
 // SourceSnapshotEntityOrErr returns the SourceSnapshotEntity value or an error if the edge
@@ -251,14 +251,14 @@ func (_m *SystemTopologySnapshotRelationship) QueryTenant() *TenantQuery {
 	return NewSystemTopologySnapshotRelationshipClient(_m.config).QueryTenant(_m)
 }
 
+// QueryKnowledgeRelationship queries the "knowledge_relationship" edge of the SystemTopologySnapshotRelationship entity.
+func (_m *SystemTopologySnapshotRelationship) QueryKnowledgeRelationship() *KnowledgeFactRelationshipQuery {
+	return NewSystemTopologySnapshotRelationshipClient(_m.config).QueryKnowledgeRelationship(_m)
+}
+
 // QuerySnapshot queries the "snapshot" edge of the SystemTopologySnapshotRelationship entity.
 func (_m *SystemTopologySnapshotRelationship) QuerySnapshot() *SystemTopologySnapshotQuery {
 	return NewSystemTopologySnapshotRelationshipClient(_m.config).QuerySnapshot(_m)
-}
-
-// QueryKnowledgeRelationship queries the "knowledge_relationship" edge of the SystemTopologySnapshotRelationship entity.
-func (_m *SystemTopologySnapshotRelationship) QueryKnowledgeRelationship() *KnowledgeRelationshipQuery {
-	return NewSystemTopologySnapshotRelationshipClient(_m.config).QueryKnowledgeRelationship(_m)
 }
 
 // QuerySourceSnapshotEntity queries the "source_snapshot_entity" edge of the SystemTopologySnapshotRelationship entity.

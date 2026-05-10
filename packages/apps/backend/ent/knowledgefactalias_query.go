@@ -15,64 +15,62 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/knowledgefact"
+	"github.com/rezible/rezible/ent/knowledgefactalias"
 	"github.com/rezible/rezible/ent/knowledgefactprovenance"
-	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// KnowledgeEntityAliasQuery is the builder for querying KnowledgeEntityAlias entities.
-type KnowledgeEntityAliasQuery struct {
+// KnowledgeFactAliasQuery is the builder for querying KnowledgeFactAlias entities.
+type KnowledgeFactAliasQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []knowledgeentityalias.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.KnowledgeEntityAlias
-	withTenant          *TenantQuery
-	withEntity          *KnowledgeEntityQuery
-	withNormalizedEvent *NormalizedEventQuery
-	withProvenance      *KnowledgeFactProvenanceQuery
-	modifiers           []func(*sql.Selector)
+	ctx            *QueryContext
+	order          []knowledgefactalias.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.KnowledgeFactAlias
+	withTenant     *TenantQuery
+	withFact       *KnowledgeFactQuery
+	withProvenance *KnowledgeFactProvenanceQuery
+	modifiers      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the KnowledgeEntityAliasQuery builder.
-func (_q *KnowledgeEntityAliasQuery) Where(ps ...predicate.KnowledgeEntityAlias) *KnowledgeEntityAliasQuery {
+// Where adds a new predicate for the KnowledgeFactAliasQuery builder.
+func (_q *KnowledgeFactAliasQuery) Where(ps ...predicate.KnowledgeFactAlias) *KnowledgeFactAliasQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *KnowledgeEntityAliasQuery) Limit(limit int) *KnowledgeEntityAliasQuery {
+func (_q *KnowledgeFactAliasQuery) Limit(limit int) *KnowledgeFactAliasQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *KnowledgeEntityAliasQuery) Offset(offset int) *KnowledgeEntityAliasQuery {
+func (_q *KnowledgeFactAliasQuery) Offset(offset int) *KnowledgeFactAliasQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *KnowledgeEntityAliasQuery) Unique(unique bool) *KnowledgeEntityAliasQuery {
+func (_q *KnowledgeFactAliasQuery) Unique(unique bool) *KnowledgeFactAliasQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *KnowledgeEntityAliasQuery) Order(o ...knowledgeentityalias.OrderOption) *KnowledgeEntityAliasQuery {
+func (_q *KnowledgeFactAliasQuery) Order(o ...knowledgefactalias.OrderOption) *KnowledgeFactAliasQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *KnowledgeEntityAliasQuery) QueryTenant() *TenantQuery {
+func (_q *KnowledgeFactAliasQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -83,22 +81,22 @@ func (_q *KnowledgeEntityAliasQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgeentityalias.Table, knowledgeentityalias.FieldID, selector),
+			sqlgraph.From(knowledgefactalias.Table, knowledgefactalias.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityalias.TenantTable, knowledgeentityalias.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefactalias.TenantTable, knowledgefactalias.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.KnowledgeEntityAlias
+		step.Edge.Schema = schemaConfig.KnowledgeFactAlias
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryEntity chains the current query on the "entity" edge.
-func (_q *KnowledgeEntityAliasQuery) QueryEntity() *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// QueryFact chains the current query on the "fact" edge.
+func (_q *KnowledgeFactAliasQuery) QueryFact() *KnowledgeFactQuery {
+	query := (&KnowledgeFactClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -108,38 +106,13 @@ func (_q *KnowledgeEntityAliasQuery) QueryEntity() *KnowledgeEntityQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgeentityalias.Table, knowledgeentityalias.FieldID, selector),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityalias.EntityTable, knowledgeentityalias.EntityColumn),
+			sqlgraph.From(knowledgefactalias.Table, knowledgefactalias.FieldID, selector),
+			sqlgraph.To(knowledgefact.Table, knowledgefact.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgefactalias.FactTable, knowledgefactalias.FactColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.KnowledgeEntityAlias
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryNormalizedEvent chains the current query on the "normalized_event" edge.
-func (_q *KnowledgeEntityAliasQuery) QueryNormalizedEvent() *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgeentityalias.Table, knowledgeentityalias.FieldID, selector),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeentityalias.NormalizedEventTable, knowledgeentityalias.NormalizedEventColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
-		step.Edge.Schema = schemaConfig.KnowledgeEntityAlias
+		step.To.Schema = schemaConfig.KnowledgeFact
+		step.Edge.Schema = schemaConfig.KnowledgeFactAlias
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -147,7 +120,7 @@ func (_q *KnowledgeEntityAliasQuery) QueryNormalizedEvent() *NormalizedEventQuer
 }
 
 // QueryProvenance chains the current query on the "provenance" edge.
-func (_q *KnowledgeEntityAliasQuery) QueryProvenance() *KnowledgeFactProvenanceQuery {
+func (_q *KnowledgeFactAliasQuery) QueryProvenance() *KnowledgeFactProvenanceQuery {
 	query := (&KnowledgeFactProvenanceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -158,9 +131,9 @@ func (_q *KnowledgeEntityAliasQuery) QueryProvenance() *KnowledgeFactProvenanceQ
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(knowledgeentityalias.Table, knowledgeentityalias.FieldID, selector),
+			sqlgraph.From(knowledgefactalias.Table, knowledgefactalias.FieldID, selector),
 			sqlgraph.To(knowledgefactprovenance.Table, knowledgefactprovenance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, knowledgeentityalias.ProvenanceTable, knowledgeentityalias.ProvenanceColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, knowledgefactalias.ProvenanceTable, knowledgefactalias.ProvenanceColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.KnowledgeFactProvenance
@@ -171,21 +144,21 @@ func (_q *KnowledgeEntityAliasQuery) QueryProvenance() *KnowledgeFactProvenanceQ
 	return query
 }
 
-// First returns the first KnowledgeEntityAlias entity from the query.
-// Returns a *NotFoundError when no KnowledgeEntityAlias was found.
-func (_q *KnowledgeEntityAliasQuery) First(ctx context.Context) (*KnowledgeEntityAlias, error) {
+// First returns the first KnowledgeFactAlias entity from the query.
+// Returns a *NotFoundError when no KnowledgeFactAlias was found.
+func (_q *KnowledgeFactAliasQuery) First(ctx context.Context) (*KnowledgeFactAlias, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{knowledgeentityalias.Label}
+		return nil, &NotFoundError{knowledgefactalias.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *KnowledgeEntityAliasQuery) FirstX(ctx context.Context) *KnowledgeEntityAlias {
+func (_q *KnowledgeFactAliasQuery) FirstX(ctx context.Context) *KnowledgeFactAlias {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -193,22 +166,22 @@ func (_q *KnowledgeEntityAliasQuery) FirstX(ctx context.Context) *KnowledgeEntit
 	return node
 }
 
-// FirstID returns the first KnowledgeEntityAlias ID from the query.
-// Returns a *NotFoundError when no KnowledgeEntityAlias ID was found.
-func (_q *KnowledgeEntityAliasQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first KnowledgeFactAlias ID from the query.
+// Returns a *NotFoundError when no KnowledgeFactAlias ID was found.
+func (_q *KnowledgeFactAliasQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{knowledgeentityalias.Label}
+		err = &NotFoundError{knowledgefactalias.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *KnowledgeEntityAliasQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *KnowledgeFactAliasQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -216,10 +189,10 @@ func (_q *KnowledgeEntityAliasQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single KnowledgeEntityAlias entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one KnowledgeEntityAlias entity is found.
-// Returns a *NotFoundError when no KnowledgeEntityAlias entities are found.
-func (_q *KnowledgeEntityAliasQuery) Only(ctx context.Context) (*KnowledgeEntityAlias, error) {
+// Only returns a single KnowledgeFactAlias entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one KnowledgeFactAlias entity is found.
+// Returns a *NotFoundError when no KnowledgeFactAlias entities are found.
+func (_q *KnowledgeFactAliasQuery) Only(ctx context.Context) (*KnowledgeFactAlias, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -228,14 +201,14 @@ func (_q *KnowledgeEntityAliasQuery) Only(ctx context.Context) (*KnowledgeEntity
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{knowledgeentityalias.Label}
+		return nil, &NotFoundError{knowledgefactalias.Label}
 	default:
-		return nil, &NotSingularError{knowledgeentityalias.Label}
+		return nil, &NotSingularError{knowledgefactalias.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *KnowledgeEntityAliasQuery) OnlyX(ctx context.Context) *KnowledgeEntityAlias {
+func (_q *KnowledgeFactAliasQuery) OnlyX(ctx context.Context) *KnowledgeFactAlias {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -243,10 +216,10 @@ func (_q *KnowledgeEntityAliasQuery) OnlyX(ctx context.Context) *KnowledgeEntity
 	return node
 }
 
-// OnlyID is like Only, but returns the only KnowledgeEntityAlias ID in the query.
-// Returns a *NotSingularError when more than one KnowledgeEntityAlias ID is found.
+// OnlyID is like Only, but returns the only KnowledgeFactAlias ID in the query.
+// Returns a *NotSingularError when more than one KnowledgeFactAlias ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *KnowledgeEntityAliasQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *KnowledgeFactAliasQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -255,15 +228,15 @@ func (_q *KnowledgeEntityAliasQuery) OnlyID(ctx context.Context) (id uuid.UUID, 
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{knowledgeentityalias.Label}
+		err = &NotFoundError{knowledgefactalias.Label}
 	default:
-		err = &NotSingularError{knowledgeentityalias.Label}
+		err = &NotSingularError{knowledgefactalias.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *KnowledgeEntityAliasQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *KnowledgeFactAliasQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -271,18 +244,18 @@ func (_q *KnowledgeEntityAliasQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of KnowledgeEntityAliasSlice.
-func (_q *KnowledgeEntityAliasQuery) All(ctx context.Context) ([]*KnowledgeEntityAlias, error) {
+// All executes the query and returns a list of KnowledgeFactAliasSlice.
+func (_q *KnowledgeFactAliasQuery) All(ctx context.Context) ([]*KnowledgeFactAlias, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*KnowledgeEntityAlias, *KnowledgeEntityAliasQuery]()
-	return withInterceptors[[]*KnowledgeEntityAlias](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*KnowledgeFactAlias, *KnowledgeFactAliasQuery]()
+	return withInterceptors[[]*KnowledgeFactAlias](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *KnowledgeEntityAliasQuery) AllX(ctx context.Context) []*KnowledgeEntityAlias {
+func (_q *KnowledgeFactAliasQuery) AllX(ctx context.Context) []*KnowledgeFactAlias {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -290,20 +263,20 @@ func (_q *KnowledgeEntityAliasQuery) AllX(ctx context.Context) []*KnowledgeEntit
 	return nodes
 }
 
-// IDs executes the query and returns a list of KnowledgeEntityAlias IDs.
-func (_q *KnowledgeEntityAliasQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of KnowledgeFactAlias IDs.
+func (_q *KnowledgeFactAliasQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(knowledgeentityalias.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(knowledgefactalias.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *KnowledgeEntityAliasQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *KnowledgeFactAliasQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -312,16 +285,16 @@ func (_q *KnowledgeEntityAliasQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *KnowledgeEntityAliasQuery) Count(ctx context.Context) (int, error) {
+func (_q *KnowledgeFactAliasQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*KnowledgeEntityAliasQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*KnowledgeFactAliasQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *KnowledgeEntityAliasQuery) CountX(ctx context.Context) int {
+func (_q *KnowledgeFactAliasQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -330,7 +303,7 @@ func (_q *KnowledgeEntityAliasQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *KnowledgeEntityAliasQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *KnowledgeFactAliasQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -343,7 +316,7 @@ func (_q *KnowledgeEntityAliasQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *KnowledgeEntityAliasQuery) ExistX(ctx context.Context) bool {
+func (_q *KnowledgeFactAliasQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -351,22 +324,21 @@ func (_q *KnowledgeEntityAliasQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the KnowledgeEntityAliasQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the KnowledgeFactAliasQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *KnowledgeEntityAliasQuery) Clone() *KnowledgeEntityAliasQuery {
+func (_q *KnowledgeFactAliasQuery) Clone() *KnowledgeFactAliasQuery {
 	if _q == nil {
 		return nil
 	}
-	return &KnowledgeEntityAliasQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]knowledgeentityalias.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.KnowledgeEntityAlias{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withEntity:          _q.withEntity.Clone(),
-		withNormalizedEvent: _q.withNormalizedEvent.Clone(),
-		withProvenance:      _q.withProvenance.Clone(),
+	return &KnowledgeFactAliasQuery{
+		config:         _q.config,
+		ctx:            _q.ctx.Clone(),
+		order:          append([]knowledgefactalias.OrderOption{}, _q.order...),
+		inters:         append([]Interceptor{}, _q.inters...),
+		predicates:     append([]predicate.KnowledgeFactAlias{}, _q.predicates...),
+		withTenant:     _q.withTenant.Clone(),
+		withFact:       _q.withFact.Clone(),
+		withProvenance: _q.withProvenance.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -376,7 +348,7 @@ func (_q *KnowledgeEntityAliasQuery) Clone() *KnowledgeEntityAliasQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeEntityAliasQuery) WithTenant(opts ...func(*TenantQuery)) *KnowledgeEntityAliasQuery {
+func (_q *KnowledgeFactAliasQuery) WithTenant(opts ...func(*TenantQuery)) *KnowledgeFactAliasQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -385,31 +357,20 @@ func (_q *KnowledgeEntityAliasQuery) WithTenant(opts ...func(*TenantQuery)) *Kno
 	return _q
 }
 
-// WithEntity tells the query-builder to eager-load the nodes that are connected to
-// the "entity" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeEntityAliasQuery) WithEntity(opts ...func(*KnowledgeEntityQuery)) *KnowledgeEntityAliasQuery {
-	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+// WithFact tells the query-builder to eager-load the nodes that are connected to
+// the "fact" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeFactAliasQuery) WithFact(opts ...func(*KnowledgeFactQuery)) *KnowledgeFactAliasQuery {
+	query := (&KnowledgeFactClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withEntity = query
-	return _q
-}
-
-// WithNormalizedEvent tells the query-builder to eager-load the nodes that are connected to
-// the "normalized_event" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeEntityAliasQuery) WithNormalizedEvent(opts ...func(*NormalizedEventQuery)) *KnowledgeEntityAliasQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withNormalizedEvent = query
+	_q.withFact = query
 	return _q
 }
 
 // WithProvenance tells the query-builder to eager-load the nodes that are connected to
 // the "provenance" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeEntityAliasQuery) WithProvenance(opts ...func(*KnowledgeFactProvenanceQuery)) *KnowledgeEntityAliasQuery {
+func (_q *KnowledgeFactAliasQuery) WithProvenance(opts ...func(*KnowledgeFactProvenanceQuery)) *KnowledgeFactAliasQuery {
 	query := (&KnowledgeFactProvenanceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -428,15 +389,15 @@ func (_q *KnowledgeEntityAliasQuery) WithProvenance(opts ...func(*KnowledgeFactP
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.KnowledgeEntityAlias.Query().
-//		GroupBy(knowledgeentityalias.FieldTenantID).
+//	client.KnowledgeFactAlias.Query().
+//		GroupBy(knowledgefactalias.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *KnowledgeEntityAliasQuery) GroupBy(field string, fields ...string) *KnowledgeEntityAliasGroupBy {
+func (_q *KnowledgeFactAliasQuery) GroupBy(field string, fields ...string) *KnowledgeFactAliasGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &KnowledgeEntityAliasGroupBy{build: _q}
+	grbuild := &KnowledgeFactAliasGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = knowledgeentityalias.Label
+	grbuild.label = knowledgefactalias.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -450,23 +411,23 @@ func (_q *KnowledgeEntityAliasQuery) GroupBy(field string, fields ...string) *Kn
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.KnowledgeEntityAlias.Query().
-//		Select(knowledgeentityalias.FieldTenantID).
+//	client.KnowledgeFactAlias.Query().
+//		Select(knowledgefactalias.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *KnowledgeEntityAliasQuery) Select(fields ...string) *KnowledgeEntityAliasSelect {
+func (_q *KnowledgeFactAliasQuery) Select(fields ...string) *KnowledgeFactAliasSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &KnowledgeEntityAliasSelect{KnowledgeEntityAliasQuery: _q}
-	sbuild.label = knowledgeentityalias.Label
+	sbuild := &KnowledgeFactAliasSelect{KnowledgeFactAliasQuery: _q}
+	sbuild.label = knowledgefactalias.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a KnowledgeEntityAliasSelect configured with the given aggregations.
-func (_q *KnowledgeEntityAliasQuery) Aggregate(fns ...AggregateFunc) *KnowledgeEntityAliasSelect {
+// Aggregate returns a KnowledgeFactAliasSelect configured with the given aggregations.
+func (_q *KnowledgeFactAliasQuery) Aggregate(fns ...AggregateFunc) *KnowledgeFactAliasSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *KnowledgeEntityAliasQuery) prepareQuery(ctx context.Context) error {
+func (_q *KnowledgeFactAliasQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -478,7 +439,7 @@ func (_q *KnowledgeEntityAliasQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !knowledgeentityalias.ValidColumn(f) {
+		if !knowledgefactalias.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -489,36 +450,35 @@ func (_q *KnowledgeEntityAliasQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if knowledgeentityalias.Policy == nil {
-		return errors.New("ent: uninitialized knowledgeentityalias.Policy (forgotten import ent/runtime?)")
+	if knowledgefactalias.Policy == nil {
+		return errors.New("ent: uninitialized knowledgefactalias.Policy (forgotten import ent/runtime?)")
 	}
-	if err := knowledgeentityalias.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := knowledgefactalias.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *KnowledgeEntityAliasQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*KnowledgeEntityAlias, error) {
+func (_q *KnowledgeFactAliasQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*KnowledgeFactAlias, error) {
 	var (
-		nodes       = []*KnowledgeEntityAlias{}
+		nodes       = []*KnowledgeFactAlias{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [3]bool{
 			_q.withTenant != nil,
-			_q.withEntity != nil,
-			_q.withNormalizedEvent != nil,
+			_q.withFact != nil,
 			_q.withProvenance != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*KnowledgeEntityAlias).scanValues(nil, columns)
+		return (*KnowledgeFactAlias).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &KnowledgeEntityAlias{config: _q.config}
+		node := &KnowledgeFactAlias{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.KnowledgeEntityAlias
+	_spec.Node.Schema = _q.schemaConfig.KnowledgeFactAlias
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -534,26 +494,20 @@ func (_q *KnowledgeEntityAliasQuery) sqlAll(ctx context.Context, hooks ...queryH
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *KnowledgeEntityAlias, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *KnowledgeFactAlias, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withEntity; query != nil {
-		if err := _q.loadEntity(ctx, query, nodes, nil,
-			func(n *KnowledgeEntityAlias, e *KnowledgeEntity) { n.Edges.Entity = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withNormalizedEvent; query != nil {
-		if err := _q.loadNormalizedEvent(ctx, query, nodes, nil,
-			func(n *KnowledgeEntityAlias, e *NormalizedEvent) { n.Edges.NormalizedEvent = e }); err != nil {
+	if query := _q.withFact; query != nil {
+		if err := _q.loadFact(ctx, query, nodes, nil,
+			func(n *KnowledgeFactAlias, e *KnowledgeFact) { n.Edges.Fact = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withProvenance; query != nil {
 		if err := _q.loadProvenance(ctx, query, nodes,
-			func(n *KnowledgeEntityAlias) { n.Edges.Provenance = []*KnowledgeFactProvenance{} },
-			func(n *KnowledgeEntityAlias, e *KnowledgeFactProvenance) {
+			func(n *KnowledgeFactAlias) { n.Edges.Provenance = []*KnowledgeFactProvenance{} },
+			func(n *KnowledgeFactAlias, e *KnowledgeFactProvenance) {
 				n.Edges.Provenance = append(n.Edges.Provenance, e)
 			}); err != nil {
 			return nil, err
@@ -562,9 +516,9 @@ func (_q *KnowledgeEntityAliasQuery) sqlAll(ctx context.Context, hooks ...queryH
 	return nodes, nil
 }
 
-func (_q *KnowledgeEntityAliasQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*KnowledgeEntityAlias, init func(*KnowledgeEntityAlias), assign func(*KnowledgeEntityAlias, *Tenant)) error {
+func (_q *KnowledgeFactAliasQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*KnowledgeFactAlias, init func(*KnowledgeFactAlias), assign func(*KnowledgeFactAlias, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*KnowledgeEntityAlias)
+	nodeids := make(map[int][]*KnowledgeFactAlias)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -591,11 +545,11 @@ func (_q *KnowledgeEntityAliasQuery) loadTenant(ctx context.Context, query *Tena
 	}
 	return nil
 }
-func (_q *KnowledgeEntityAliasQuery) loadEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*KnowledgeEntityAlias, init func(*KnowledgeEntityAlias), assign func(*KnowledgeEntityAlias, *KnowledgeEntity)) error {
+func (_q *KnowledgeFactAliasQuery) loadFact(ctx context.Context, query *KnowledgeFactQuery, nodes []*KnowledgeFactAlias, init func(*KnowledgeFactAlias), assign func(*KnowledgeFactAlias, *KnowledgeFact)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*KnowledgeEntityAlias)
+	nodeids := make(map[uuid.UUID][]*KnowledgeFactAlias)
 	for i := range nodes {
-		fk := nodes[i].EntityID
+		fk := nodes[i].FactID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -604,7 +558,7 @@ func (_q *KnowledgeEntityAliasQuery) loadEntity(ctx context.Context, query *Know
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(knowledgeentity.IDIn(ids...))
+	query.Where(knowledgefact.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -612,7 +566,7 @@ func (_q *KnowledgeEntityAliasQuery) loadEntity(ctx context.Context, query *Know
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "entity_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "fact_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -620,41 +574,9 @@ func (_q *KnowledgeEntityAliasQuery) loadEntity(ctx context.Context, query *Know
 	}
 	return nil
 }
-func (_q *KnowledgeEntityAliasQuery) loadNormalizedEvent(ctx context.Context, query *NormalizedEventQuery, nodes []*KnowledgeEntityAlias, init func(*KnowledgeEntityAlias), assign func(*KnowledgeEntityAlias, *NormalizedEvent)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*KnowledgeEntityAlias)
-	for i := range nodes {
-		if nodes[i].NormalizedEventID == nil {
-			continue
-		}
-		fk := *nodes[i].NormalizedEventID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(normalizedevent.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "normalized_event_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *KnowledgeEntityAliasQuery) loadProvenance(ctx context.Context, query *KnowledgeFactProvenanceQuery, nodes []*KnowledgeEntityAlias, init func(*KnowledgeEntityAlias), assign func(*KnowledgeEntityAlias, *KnowledgeFactProvenance)) error {
+func (_q *KnowledgeFactAliasQuery) loadProvenance(ctx context.Context, query *KnowledgeFactProvenanceQuery, nodes []*KnowledgeFactAlias, init func(*KnowledgeFactAlias), assign func(*KnowledgeFactAlias, *KnowledgeFactProvenance)) error {
 	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*KnowledgeEntityAlias)
+	nodeids := make(map[uuid.UUID]*KnowledgeFactAlias)
 	for i := range nodes {
 		fks = append(fks, nodes[i].ID)
 		nodeids[nodes[i].ID] = nodes[i]
@@ -666,7 +588,7 @@ func (_q *KnowledgeEntityAliasQuery) loadProvenance(ctx context.Context, query *
 		query.ctx.AppendFieldOnce(knowledgefactprovenance.FieldAliasID)
 	}
 	query.Where(predicate.KnowledgeFactProvenance(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(knowledgeentityalias.ProvenanceColumn), fks...))
+		s.Where(sql.InValues(s.C(knowledgefactalias.ProvenanceColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -686,9 +608,9 @@ func (_q *KnowledgeEntityAliasQuery) loadProvenance(ctx context.Context, query *
 	return nil
 }
 
-func (_q *KnowledgeEntityAliasQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *KnowledgeFactAliasQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.KnowledgeEntityAlias
+	_spec.Node.Schema = _q.schemaConfig.KnowledgeFactAlias
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -700,8 +622,8 @@ func (_q *KnowledgeEntityAliasQuery) sqlCount(ctx context.Context) (int, error) 
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *KnowledgeEntityAliasQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(knowledgeentityalias.Table, knowledgeentityalias.Columns, sqlgraph.NewFieldSpec(knowledgeentityalias.FieldID, field.TypeUUID))
+func (_q *KnowledgeFactAliasQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(knowledgefactalias.Table, knowledgefactalias.Columns, sqlgraph.NewFieldSpec(knowledgefactalias.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -710,20 +632,17 @@ func (_q *KnowledgeEntityAliasQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, knowledgeentityalias.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, knowledgefactalias.FieldID)
 		for i := range fields {
-			if fields[i] != knowledgeentityalias.FieldID {
+			if fields[i] != knowledgefactalias.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(knowledgeentityalias.FieldTenantID)
+			_spec.Node.AddColumnOnce(knowledgefactalias.FieldTenantID)
 		}
-		if _q.withEntity != nil {
-			_spec.Node.AddColumnOnce(knowledgeentityalias.FieldEntityID)
-		}
-		if _q.withNormalizedEvent != nil {
-			_spec.Node.AddColumnOnce(knowledgeentityalias.FieldNormalizedEventID)
+		if _q.withFact != nil {
+			_spec.Node.AddColumnOnce(knowledgefactalias.FieldFactID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -749,12 +668,12 @@ func (_q *KnowledgeEntityAliasQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *KnowledgeEntityAliasQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *KnowledgeFactAliasQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(knowledgeentityalias.Table)
+	t1 := builder.Table(knowledgefactalias.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = knowledgeentityalias.Columns
+		columns = knowledgefactalias.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -764,7 +683,7 @@ func (_q *KnowledgeEntityAliasQuery) sqlQuery(ctx context.Context) *sql.Selector
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.KnowledgeEntityAlias)
+	t1.Schema(_q.schemaConfig.KnowledgeFactAlias)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -788,33 +707,33 @@ func (_q *KnowledgeEntityAliasQuery) sqlQuery(ctx context.Context) *sql.Selector
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *KnowledgeEntityAliasQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeEntityAliasSelect {
+func (_q *KnowledgeFactAliasQuery) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeFactAliasSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// KnowledgeEntityAliasGroupBy is the group-by builder for KnowledgeEntityAlias entities.
-type KnowledgeEntityAliasGroupBy struct {
+// KnowledgeFactAliasGroupBy is the group-by builder for KnowledgeFactAlias entities.
+type KnowledgeFactAliasGroupBy struct {
 	selector
-	build *KnowledgeEntityAliasQuery
+	build *KnowledgeFactAliasQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *KnowledgeEntityAliasGroupBy) Aggregate(fns ...AggregateFunc) *KnowledgeEntityAliasGroupBy {
+func (_g *KnowledgeFactAliasGroupBy) Aggregate(fns ...AggregateFunc) *KnowledgeFactAliasGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *KnowledgeEntityAliasGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *KnowledgeFactAliasGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*KnowledgeEntityAliasQuery, *KnowledgeEntityAliasGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*KnowledgeFactAliasQuery, *KnowledgeFactAliasGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *KnowledgeEntityAliasGroupBy) sqlScan(ctx context.Context, root *KnowledgeEntityAliasQuery, v any) error {
+func (_g *KnowledgeFactAliasGroupBy) sqlScan(ctx context.Context, root *KnowledgeFactAliasQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -841,28 +760,28 @@ func (_g *KnowledgeEntityAliasGroupBy) sqlScan(ctx context.Context, root *Knowle
 	return sql.ScanSlice(rows, v)
 }
 
-// KnowledgeEntityAliasSelect is the builder for selecting fields of KnowledgeEntityAlias entities.
-type KnowledgeEntityAliasSelect struct {
-	*KnowledgeEntityAliasQuery
+// KnowledgeFactAliasSelect is the builder for selecting fields of KnowledgeFactAlias entities.
+type KnowledgeFactAliasSelect struct {
+	*KnowledgeFactAliasQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *KnowledgeEntityAliasSelect) Aggregate(fns ...AggregateFunc) *KnowledgeEntityAliasSelect {
+func (_s *KnowledgeFactAliasSelect) Aggregate(fns ...AggregateFunc) *KnowledgeFactAliasSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *KnowledgeEntityAliasSelect) Scan(ctx context.Context, v any) error {
+func (_s *KnowledgeFactAliasSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*KnowledgeEntityAliasQuery, *KnowledgeEntityAliasSelect](ctx, _s.KnowledgeEntityAliasQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*KnowledgeFactAliasQuery, *KnowledgeFactAliasSelect](ctx, _s.KnowledgeFactAliasQuery, _s, _s.inters, v)
 }
 
-func (_s *KnowledgeEntityAliasSelect) sqlScan(ctx context.Context, root *KnowledgeEntityAliasQuery, v any) error {
+func (_s *KnowledgeFactAliasSelect) sqlScan(ctx context.Context, root *KnowledgeFactAliasQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -884,7 +803,7 @@ func (_s *KnowledgeEntityAliasSelect) sqlScan(ctx context.Context, root *Knowled
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *KnowledgeEntityAliasSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeEntityAliasSelect {
+func (_s *KnowledgeFactAliasSelect) Modify(modifiers ...func(s *sql.Selector)) *KnowledgeFactAliasSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

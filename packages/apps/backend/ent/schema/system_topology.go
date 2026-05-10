@@ -28,8 +28,8 @@ func (SystemTopologySnapshot) Fields() []ent.Field {
 		field.Time("as_of").Default(time.Now),
 		field.String("name").Optional(),
 		field.Enum("scope").
-			Values("explicit_entities", "root_entities", "incident", "retrospective", "search", "analysis").
-			Default("explicit_entities"),
+			Values("all", "incident").
+			Default("all"),
 		field.JSON("scope_properties", map[string]any{}).
 			Optional().
 			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
@@ -90,7 +90,7 @@ func (SystemTopologySnapshotEntity) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("snapshot_id"),
-		edge.To("knowledge_entity", KnowledgeEntity.Type).
+		edge.To("knowledge_entity", KnowledgeFact.Type).
 			Unique().
 			Field("knowledge_entity_id"),
 		edge.From("source_relationships", SystemTopologySnapshotRelationship.Type).
@@ -141,13 +141,13 @@ func (SystemTopologySnapshotRelationship) Fields() []ent.Field {
 
 func (SystemTopologySnapshotRelationship) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.To("knowledge_relationship", KnowledgeFactRelationship.Type).
+			Unique().
+			Field("knowledge_relationship_id"),
 		edge.To("snapshot", SystemTopologySnapshot.Type).
 			Required().
 			Unique().
 			Field("snapshot_id"),
-		edge.To("knowledge_relationship", KnowledgeRelationship.Type).
-			Unique().
-			Field("knowledge_relationship_id"),
 		edge.To("source_snapshot_entity", SystemTopologySnapshotEntity.Type).
 			Required().
 			Unique().

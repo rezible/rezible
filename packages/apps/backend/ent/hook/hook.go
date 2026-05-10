@@ -345,40 +345,28 @@ func (f IntegrationOAuthStateFunc) Mutate(ctx context.Context, m ent.Mutation) (
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationOAuthStateMutation", m)
 }
 
-// The KnowledgeEntityFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeEntity mutator.
-type KnowledgeEntityFunc func(context.Context, *ent.KnowledgeEntityMutation) (ent.Value, error)
+// The KnowledgeFactFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeFact mutator.
+type KnowledgeFactFunc func(context.Context, *ent.KnowledgeFactMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f KnowledgeEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeEntityMutation); ok {
+func (f KnowledgeFactFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeFactMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactMutation", m)
 }
 
-// The KnowledgeEntityAliasFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeEntityAlias mutator.
-type KnowledgeEntityAliasFunc func(context.Context, *ent.KnowledgeEntityAliasMutation) (ent.Value, error)
+// The KnowledgeFactAliasFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeFactAlias mutator.
+type KnowledgeFactAliasFunc func(context.Context, *ent.KnowledgeFactAliasMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f KnowledgeEntityAliasFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeEntityAliasMutation); ok {
+func (f KnowledgeFactAliasFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeFactAliasMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeEntityAliasMutation", m)
-}
-
-// The KnowledgeFactHistoryFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeFactHistory mutator.
-type KnowledgeFactHistoryFunc func(context.Context, *ent.KnowledgeFactHistoryMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f KnowledgeFactHistoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeFactHistoryMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactHistoryMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactAliasMutation", m)
 }
 
 // The KnowledgeFactProvenanceFunc type is an adapter to allow the use of ordinary
@@ -393,16 +381,16 @@ func (f KnowledgeFactProvenanceFunc) Mutate(ctx context.Context, m ent.Mutation)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactProvenanceMutation", m)
 }
 
-// The KnowledgeRelationshipFunc type is an adapter to allow the use of ordinary
-// function as KnowledgeRelationship mutator.
-type KnowledgeRelationshipFunc func(context.Context, *ent.KnowledgeRelationshipMutation) (ent.Value, error)
+// The KnowledgeFactRelationshipFunc type is an adapter to allow the use of ordinary
+// function as KnowledgeFactRelationship mutator.
+type KnowledgeFactRelationshipFunc func(context.Context, *ent.KnowledgeFactRelationshipMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f KnowledgeRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.KnowledgeRelationshipMutation); ok {
+func (f KnowledgeFactRelationshipFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.KnowledgeFactRelationshipMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeRelationshipMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.KnowledgeFactRelationshipMutation", m)
 }
 
 // The MeetingScheduleFunc type is an adapter to allow the use of ordinary

@@ -506,6 +506,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.SystemTopologySnapshotRe
 	})
 }
 
+// HasKnowledgeRelationship applies the HasEdge predicate on the "knowledge_relationship" edge.
+func HasKnowledgeRelationship() predicate.SystemTopologySnapshotRelationship {
+	return predicate.SystemTopologySnapshotRelationship(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeRelationshipTable, KnowledgeRelationshipColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeFactRelationship
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKnowledgeRelationshipWith applies the HasEdge predicate on the "knowledge_relationship" edge with a given conditions (other predicates).
+func HasKnowledgeRelationshipWith(preds ...predicate.KnowledgeFactRelationship) predicate.SystemTopologySnapshotRelationship {
+	return predicate.SystemTopologySnapshotRelationship(func(s *sql.Selector) {
+		step := newKnowledgeRelationshipStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeFactRelationship
+		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSnapshot applies the HasEdge predicate on the "snapshot" edge.
 func HasSnapshot() predicate.SystemTopologySnapshotRelationship {
 	return predicate.SystemTopologySnapshotRelationship(func(s *sql.Selector) {
@@ -526,35 +555,6 @@ func HasSnapshotWith(preds ...predicate.SystemTopologySnapshot) predicate.System
 		step := newSnapshotStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.SystemTopologySnapshot
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasKnowledgeRelationship applies the HasEdge predicate on the "knowledge_relationship" edge.
-func HasKnowledgeRelationship() predicate.SystemTopologySnapshotRelationship {
-	return predicate.SystemTopologySnapshotRelationship(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeRelationshipTable, KnowledgeRelationshipColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeRelationship
-		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasKnowledgeRelationshipWith applies the HasEdge predicate on the "knowledge_relationship" edge with a given conditions (other predicates).
-func HasKnowledgeRelationshipWith(preds ...predicate.KnowledgeRelationship) predicate.SystemTopologySnapshotRelationship {
-	return predicate.SystemTopologySnapshotRelationship(func(s *sql.Selector) {
-		step := newKnowledgeRelationshipStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.KnowledgeRelationship
 		step.Edge.Schema = schemaConfig.SystemTopologySnapshotRelationship
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

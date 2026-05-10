@@ -38,10 +38,10 @@ const (
 	FieldCreatedAt = "created_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeSnapshot holds the string denoting the snapshot edge name in mutations.
-	EdgeSnapshot = "snapshot"
 	// EdgeKnowledgeRelationship holds the string denoting the knowledge_relationship edge name in mutations.
 	EdgeKnowledgeRelationship = "knowledge_relationship"
+	// EdgeSnapshot holds the string denoting the snapshot edge name in mutations.
+	EdgeSnapshot = "snapshot"
 	// EdgeSourceSnapshotEntity holds the string denoting the source_snapshot_entity edge name in mutations.
 	EdgeSourceSnapshotEntity = "source_snapshot_entity"
 	// EdgeTargetSnapshotEntity holds the string denoting the target_snapshot_entity edge name in mutations.
@@ -57,6 +57,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// KnowledgeRelationshipTable is the table that holds the knowledge_relationship relation/edge.
+	KnowledgeRelationshipTable = "system_topology_snapshot_relationships"
+	// KnowledgeRelationshipInverseTable is the table name for the KnowledgeFactRelationship entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgefactrelationship" package.
+	KnowledgeRelationshipInverseTable = "knowledge_fact_relationships"
+	// KnowledgeRelationshipColumn is the table column denoting the knowledge_relationship relation/edge.
+	KnowledgeRelationshipColumn = "knowledge_relationship_id"
 	// SnapshotTable is the table that holds the snapshot relation/edge.
 	SnapshotTable = "system_topology_snapshot_relationships"
 	// SnapshotInverseTable is the table name for the SystemTopologySnapshot entity.
@@ -64,13 +71,6 @@ const (
 	SnapshotInverseTable = "system_topology_snapshots"
 	// SnapshotColumn is the table column denoting the snapshot relation/edge.
 	SnapshotColumn = "snapshot_id"
-	// KnowledgeRelationshipTable is the table that holds the knowledge_relationship relation/edge.
-	KnowledgeRelationshipTable = "system_topology_snapshot_relationships"
-	// KnowledgeRelationshipInverseTable is the table name for the KnowledgeRelationship entity.
-	// It exists in this package in order to avoid circular dependency with the "knowledgerelationship" package.
-	KnowledgeRelationshipInverseTable = "knowledge_relationships"
-	// KnowledgeRelationshipColumn is the table column denoting the knowledge_relationship relation/edge.
-	KnowledgeRelationshipColumn = "knowledge_relationship_id"
 	// SourceSnapshotEntityTable is the table that holds the source_snapshot_entity relation/edge.
 	SourceSnapshotEntityTable = "system_topology_snapshot_relationships"
 	// SourceSnapshotEntityInverseTable is the table name for the SystemTopologySnapshotEntity entity.
@@ -195,17 +195,17 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// BySnapshotField orders the results by snapshot field.
-func BySnapshotField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newSnapshotStep(), sql.OrderByField(field, opts...))
-	}
-}
-
 // ByKnowledgeRelationshipField orders the results by knowledge_relationship field.
 func ByKnowledgeRelationshipField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newKnowledgeRelationshipStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// BySnapshotField orders the results by snapshot field.
+func BySnapshotField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSnapshotStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -243,18 +243,18 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newSnapshotStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(SnapshotInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, SnapshotTable, SnapshotColumn),
-	)
-}
 func newKnowledgeRelationshipStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(KnowledgeRelationshipInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeRelationshipTable, KnowledgeRelationshipColumn),
+	)
+}
+func newSnapshotStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SnapshotInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, SnapshotTable, SnapshotColumn),
 	)
 }
 func newSourceSnapshotEntityStep() *sqlgraph.Step {

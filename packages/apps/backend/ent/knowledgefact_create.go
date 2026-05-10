@@ -13,34 +13,34 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/knowledgeentityalias"
-	"github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/ent/knowledgefact"
+	"github.com/rezible/rezible/ent/knowledgefactalias"
+	"github.com/rezible/rezible/ent/knowledgefactrelationship"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// KnowledgeEntityCreate is the builder for creating a KnowledgeEntity entity.
-type KnowledgeEntityCreate struct {
+// KnowledgeFactCreate is the builder for creating a KnowledgeFact entity.
+type KnowledgeFactCreate struct {
 	config
-	mutation *KnowledgeEntityMutation
+	mutation *KnowledgeFactMutation
 	hooks    []Hook
 	conflict []sql.ConflictOption
 }
 
 // SetTenantID sets the "tenant_id" field.
-func (_c *KnowledgeEntityCreate) SetTenantID(v int) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetTenantID(v int) *KnowledgeFactCreate {
 	_c.mutation.SetTenantID(v)
 	return _c
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (_c *KnowledgeEntityCreate) SetCreatedAt(v time.Time) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetCreatedAt(v time.Time) *KnowledgeFactCreate {
 	_c.mutation.SetCreatedAt(v)
 	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeFactCreate {
 	if v != nil {
 		_c.SetCreatedAt(*v)
 	}
@@ -48,13 +48,13 @@ func (_c *KnowledgeEntityCreate) SetNillableCreatedAt(v *time.Time) *KnowledgeEn
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (_c *KnowledgeEntityCreate) SetUpdatedAt(v time.Time) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetUpdatedAt(v time.Time) *KnowledgeFactCreate {
 	_c.mutation.SetUpdatedAt(v)
 	return _c
 }
 
 // SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeFactCreate {
 	if v != nil {
 		_c.SetUpdatedAt(*v)
 	}
@@ -62,25 +62,25 @@ func (_c *KnowledgeEntityCreate) SetNillableUpdatedAt(v *time.Time) *KnowledgeEn
 }
 
 // SetKind sets the "kind" field.
-func (_c *KnowledgeEntityCreate) SetKind(v string) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetKind(v string) *KnowledgeFactCreate {
 	_c.mutation.SetKind(v)
 	return _c
 }
 
 // SetDisplayName sets the "display_name" field.
-func (_c *KnowledgeEntityCreate) SetDisplayName(v string) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetDisplayName(v string) *KnowledgeFactCreate {
 	_c.mutation.SetDisplayName(v)
 	return _c
 }
 
 // SetDescription sets the "description" field.
-func (_c *KnowledgeEntityCreate) SetDescription(v string) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetDescription(v string) *KnowledgeFactCreate {
 	_c.mutation.SetDescription(v)
 	return _c
 }
 
 // SetNillableDescription sets the "description" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableDescription(v *string) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetNillableDescription(v *string) *KnowledgeFactCreate {
 	if v != nil {
 		_c.SetDescription(*v)
 	}
@@ -88,19 +88,19 @@ func (_c *KnowledgeEntityCreate) SetNillableDescription(v *string) *KnowledgeEnt
 }
 
 // SetProperties sets the "properties" field.
-func (_c *KnowledgeEntityCreate) SetProperties(v map[string]interface{}) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetProperties(v map[string]interface{}) *KnowledgeFactCreate {
 	_c.mutation.SetProperties(v)
 	return _c
 }
 
 // SetID sets the "id" field.
-func (_c *KnowledgeEntityCreate) SetID(v uuid.UUID) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetID(v uuid.UUID) *KnowledgeFactCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (_c *KnowledgeEntityCreate) SetNillableID(v *uuid.UUID) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetNillableID(v *uuid.UUID) *KnowledgeFactCreate {
 	if v != nil {
 		_c.SetID(*v)
 	}
@@ -108,18 +108,18 @@ func (_c *KnowledgeEntityCreate) SetNillableID(v *uuid.UUID) *KnowledgeEntityCre
 }
 
 // SetTenant sets the "tenant" edge to the Tenant entity.
-func (_c *KnowledgeEntityCreate) SetTenant(v *Tenant) *KnowledgeEntityCreate {
+func (_c *KnowledgeFactCreate) SetTenant(v *Tenant) *KnowledgeFactCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// AddAliasIDs adds the "aliases" edge to the KnowledgeEntityAlias entity by IDs.
-func (_c *KnowledgeEntityCreate) AddAliasIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
+// AddAliasIDs adds the "aliases" edge to the KnowledgeFactAlias entity by IDs.
+func (_c *KnowledgeFactCreate) AddAliasIDs(ids ...uuid.UUID) *KnowledgeFactCreate {
 	_c.mutation.AddAliasIDs(ids...)
 	return _c
 }
 
-// AddAliases adds the "aliases" edges to the KnowledgeEntityAlias entity.
-func (_c *KnowledgeEntityCreate) AddAliases(v ...*KnowledgeEntityAlias) *KnowledgeEntityCreate {
+// AddAliases adds the "aliases" edges to the KnowledgeFactAlias entity.
+func (_c *KnowledgeFactCreate) AddAliases(v ...*KnowledgeFactAlias) *KnowledgeFactCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -127,14 +127,14 @@ func (_c *KnowledgeEntityCreate) AddAliases(v ...*KnowledgeEntityAlias) *Knowled
 	return _c.AddAliasIDs(ids...)
 }
 
-// AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeRelationship entity by IDs.
-func (_c *KnowledgeEntityCreate) AddSourceRelationshipIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
+// AddSourceRelationshipIDs adds the "source_relationships" edge to the KnowledgeFactRelationship entity by IDs.
+func (_c *KnowledgeFactCreate) AddSourceRelationshipIDs(ids ...uuid.UUID) *KnowledgeFactCreate {
 	_c.mutation.AddSourceRelationshipIDs(ids...)
 	return _c
 }
 
-// AddSourceRelationships adds the "source_relationships" edges to the KnowledgeRelationship entity.
-func (_c *KnowledgeEntityCreate) AddSourceRelationships(v ...*KnowledgeRelationship) *KnowledgeEntityCreate {
+// AddSourceRelationships adds the "source_relationships" edges to the KnowledgeFactRelationship entity.
+func (_c *KnowledgeFactCreate) AddSourceRelationships(v ...*KnowledgeFactRelationship) *KnowledgeFactCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -142,14 +142,14 @@ func (_c *KnowledgeEntityCreate) AddSourceRelationships(v ...*KnowledgeRelations
 	return _c.AddSourceRelationshipIDs(ids...)
 }
 
-// AddTargetRelationshipIDs adds the "target_relationships" edge to the KnowledgeRelationship entity by IDs.
-func (_c *KnowledgeEntityCreate) AddTargetRelationshipIDs(ids ...uuid.UUID) *KnowledgeEntityCreate {
+// AddTargetRelationshipIDs adds the "target_relationships" edge to the KnowledgeFactRelationship entity by IDs.
+func (_c *KnowledgeFactCreate) AddTargetRelationshipIDs(ids ...uuid.UUID) *KnowledgeFactCreate {
 	_c.mutation.AddTargetRelationshipIDs(ids...)
 	return _c
 }
 
-// AddTargetRelationships adds the "target_relationships" edges to the KnowledgeRelationship entity.
-func (_c *KnowledgeEntityCreate) AddTargetRelationships(v ...*KnowledgeRelationship) *KnowledgeEntityCreate {
+// AddTargetRelationships adds the "target_relationships" edges to the KnowledgeFactRelationship entity.
+func (_c *KnowledgeFactCreate) AddTargetRelationships(v ...*KnowledgeFactRelationship) *KnowledgeFactCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -157,13 +157,13 @@ func (_c *KnowledgeEntityCreate) AddTargetRelationships(v ...*KnowledgeRelations
 	return _c.AddTargetRelationshipIDs(ids...)
 }
 
-// Mutation returns the KnowledgeEntityMutation object of the builder.
-func (_c *KnowledgeEntityCreate) Mutation() *KnowledgeEntityMutation {
+// Mutation returns the KnowledgeFactMutation object of the builder.
+func (_c *KnowledgeFactCreate) Mutation() *KnowledgeFactMutation {
 	return _c.mutation
 }
 
-// Save creates the KnowledgeEntity in the database.
-func (_c *KnowledgeEntityCreate) Save(ctx context.Context) (*KnowledgeEntity, error) {
+// Save creates the KnowledgeFact in the database.
+func (_c *KnowledgeFactCreate) Save(ctx context.Context) (*KnowledgeFact, error) {
 	if err := _c.defaults(); err != nil {
 		return nil, err
 	}
@@ -171,7 +171,7 @@ func (_c *KnowledgeEntityCreate) Save(ctx context.Context) (*KnowledgeEntity, er
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *KnowledgeEntityCreate) SaveX(ctx context.Context) *KnowledgeEntity {
+func (_c *KnowledgeFactCreate) SaveX(ctx context.Context) *KnowledgeFact {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -180,78 +180,78 @@ func (_c *KnowledgeEntityCreate) SaveX(ctx context.Context) *KnowledgeEntity {
 }
 
 // Exec executes the query.
-func (_c *KnowledgeEntityCreate) Exec(ctx context.Context) error {
+func (_c *KnowledgeFactCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *KnowledgeEntityCreate) ExecX(ctx context.Context) {
+func (_c *KnowledgeFactCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *KnowledgeEntityCreate) defaults() error {
+func (_c *KnowledgeFactCreate) defaults() error {
 	if _, ok := _c.mutation.CreatedAt(); !ok {
-		if knowledgeentity.DefaultCreatedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgeentity.DefaultCreatedAt (forgotten import ent/runtime?)")
+		if knowledgefact.DefaultCreatedAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgefact.DefaultCreatedAt (forgotten import ent/runtime?)")
 		}
-		v := knowledgeentity.DefaultCreatedAt()
+		v := knowledgefact.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		if knowledgeentity.DefaultUpdatedAt == nil {
-			return fmt.Errorf("ent: uninitialized knowledgeentity.DefaultUpdatedAt (forgotten import ent/runtime?)")
+		if knowledgefact.DefaultUpdatedAt == nil {
+			return fmt.Errorf("ent: uninitialized knowledgefact.DefaultUpdatedAt (forgotten import ent/runtime?)")
 		}
-		v := knowledgeentity.DefaultUpdatedAt()
+		v := knowledgefact.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
-		if knowledgeentity.DefaultID == nil {
-			return fmt.Errorf("ent: uninitialized knowledgeentity.DefaultID (forgotten import ent/runtime?)")
+		if knowledgefact.DefaultID == nil {
+			return fmt.Errorf("ent: uninitialized knowledgefact.DefaultID (forgotten import ent/runtime?)")
 		}
-		v := knowledgeentity.DefaultID()
+		v := knowledgefact.DefaultID()
 		_c.mutation.SetID(v)
 	}
 	return nil
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *KnowledgeEntityCreate) check() error {
+func (_c *KnowledgeFactCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
-		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "KnowledgeEntity.tenant_id"`)}
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "KnowledgeFact.tenant_id"`)}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeEntity.created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "KnowledgeFact.created_at"`)}
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
-		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeEntity.updated_at"`)}
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "KnowledgeFact.updated_at"`)}
 	}
 	if _, ok := _c.mutation.Kind(); !ok {
-		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "KnowledgeEntity.kind"`)}
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "KnowledgeFact.kind"`)}
 	}
 	if v, ok := _c.mutation.Kind(); ok {
-		if err := knowledgeentity.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.kind": %w`, err)}
+		if err := knowledgefact.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFact.kind": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.DisplayName(); !ok {
-		return &ValidationError{Name: "display_name", err: errors.New(`ent: missing required field "KnowledgeEntity.display_name"`)}
+		return &ValidationError{Name: "display_name", err: errors.New(`ent: missing required field "KnowledgeFact.display_name"`)}
 	}
 	if v, ok := _c.mutation.DisplayName(); ok {
-		if err := knowledgeentity.DisplayNameValidator(v); err != nil {
-			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEntity.display_name": %w`, err)}
+		if err := knowledgefact.DisplayNameValidator(v); err != nil {
+			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "KnowledgeFact.display_name": %w`, err)}
 		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
-		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEntity.tenant"`)}
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeFact.tenant"`)}
 	}
 	return nil
 }
 
-func (_c *KnowledgeEntityCreate) sqlSave(ctx context.Context) (*KnowledgeEntity, error) {
+func (_c *KnowledgeFactCreate) sqlSave(ctx context.Context) (*KnowledgeFact, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -274,53 +274,53 @@ func (_c *KnowledgeEntityCreate) sqlSave(ctx context.Context) (*KnowledgeEntity,
 	return _node, nil
 }
 
-func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.CreateSpec) {
+func (_c *KnowledgeFactCreate) createSpec() (*KnowledgeFact, *sqlgraph.CreateSpec) {
 	var (
-		_node = &KnowledgeEntity{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(knowledgeentity.Table, sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID))
+		_node = &KnowledgeFact{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(knowledgefact.Table, sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID))
 	)
-	_spec.Schema = _c.schemaConfig.KnowledgeEntity
+	_spec.Schema = _c.schemaConfig.KnowledgeFact
 	_spec.OnConflict = _c.conflict
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(knowledgeentity.FieldCreatedAt, field.TypeTime, value)
+		_spec.SetField(knowledgefact.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if value, ok := _c.mutation.UpdatedAt(); ok {
-		_spec.SetField(knowledgeentity.FieldUpdatedAt, field.TypeTime, value)
+		_spec.SetField(knowledgefact.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
 	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(knowledgeentity.FieldKind, field.TypeString, value)
+		_spec.SetField(knowledgefact.FieldKind, field.TypeString, value)
 		_node.Kind = value
 	}
 	if value, ok := _c.mutation.DisplayName(); ok {
-		_spec.SetField(knowledgeentity.FieldDisplayName, field.TypeString, value)
+		_spec.SetField(knowledgefact.FieldDisplayName, field.TypeString, value)
 		_node.DisplayName = value
 	}
 	if value, ok := _c.mutation.Description(); ok {
-		_spec.SetField(knowledgeentity.FieldDescription, field.TypeString, value)
+		_spec.SetField(knowledgefact.FieldDescription, field.TypeString, value)
 		_node.Description = value
 	}
 	if value, ok := _c.mutation.Properties(); ok {
-		_spec.SetField(knowledgeentity.FieldProperties, field.TypeJSON, value)
+		_spec.SetField(knowledgefact.FieldProperties, field.TypeJSON, value)
 		_node.Properties = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   knowledgeentity.TenantTable,
-			Columns: []string{knowledgeentity.TenantColumn},
+			Table:   knowledgefact.TenantTable,
+			Columns: []string{knowledgefact.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeInt),
 			},
 		}
-		edge.Schema = _c.schemaConfig.KnowledgeEntity
+		edge.Schema = _c.schemaConfig.KnowledgeFact
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -331,14 +331,14 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   knowledgeentity.AliasesTable,
-			Columns: []string{knowledgeentity.AliasesColumn},
+			Table:   knowledgefact.AliasesTable,
+			Columns: []string{knowledgefact.AliasesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgeentityalias.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgefactalias.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.KnowledgeEntityAlias
+		edge.Schema = _c.schemaConfig.KnowledgeFactAlias
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -348,14 +348,14 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   knowledgeentity.SourceRelationshipsTable,
-			Columns: []string{knowledgeentity.SourceRelationshipsColumn},
+			Table:   knowledgefact.SourceRelationshipsTable,
+			Columns: []string{knowledgefact.SourceRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgefactrelationship.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.KnowledgeRelationship
+		edge.Schema = _c.schemaConfig.KnowledgeFactRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -365,14 +365,14 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   knowledgeentity.TargetRelationshipsTable,
-			Columns: []string{knowledgeentity.TargetRelationshipsColumn},
+			Table:   knowledgefact.TargetRelationshipsTable,
+			Columns: []string{knowledgefact.TargetRelationshipsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(knowledgerelationship.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgefactrelationship.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.KnowledgeRelationship
+		edge.Schema = _c.schemaConfig.KnowledgeFactRelationship
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -384,7 +384,7 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.KnowledgeEntity.Create().
+//	client.KnowledgeFact.Create().
 //		SetTenantID(v).
 //		OnConflict(
 //			// Update the row with the new values
@@ -393,13 +393,13 @@ func (_c *KnowledgeEntityCreate) createSpec() (*KnowledgeEntity, *sqlgraph.Creat
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.KnowledgeEntityUpsert) {
+//		Update(func(u *ent.KnowledgeFactUpsert) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *KnowledgeEntityCreate) OnConflict(opts ...sql.ConflictOption) *KnowledgeEntityUpsertOne {
+func (_c *KnowledgeFactCreate) OnConflict(opts ...sql.ConflictOption) *KnowledgeFactUpsertOne {
 	_c.conflict = opts
-	return &KnowledgeEntityUpsertOne{
+	return &KnowledgeFactUpsertOne{
 		create: _c,
 	}
 }
@@ -407,132 +407,132 @@ func (_c *KnowledgeEntityCreate) OnConflict(opts ...sql.ConflictOption) *Knowled
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.KnowledgeEntity.Create().
+//	client.KnowledgeFact.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *KnowledgeEntityCreate) OnConflictColumns(columns ...string) *KnowledgeEntityUpsertOne {
+func (_c *KnowledgeFactCreate) OnConflictColumns(columns ...string) *KnowledgeFactUpsertOne {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &KnowledgeEntityUpsertOne{
+	return &KnowledgeFactUpsertOne{
 		create: _c,
 	}
 }
 
 type (
-	// KnowledgeEntityUpsertOne is the builder for "upsert"-ing
-	//  one KnowledgeEntity node.
-	KnowledgeEntityUpsertOne struct {
-		create *KnowledgeEntityCreate
+	// KnowledgeFactUpsertOne is the builder for "upsert"-ing
+	//  one KnowledgeFact node.
+	KnowledgeFactUpsertOne struct {
+		create *KnowledgeFactCreate
 	}
 
-	// KnowledgeEntityUpsert is the "OnConflict" setter.
-	KnowledgeEntityUpsert struct {
+	// KnowledgeFactUpsert is the "OnConflict" setter.
+	KnowledgeFactUpsert struct {
 		*sql.UpdateSet
 	}
 )
 
 // SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityUpsert) SetCreatedAt(v time.Time) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldCreatedAt, v)
+func (u *KnowledgeFactUpsert) SetCreatedAt(v time.Time) *KnowledgeFactUpsert {
+	u.Set(knowledgefact.FieldCreatedAt, v)
 	return u
 }
 
 // UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateCreatedAt() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldCreatedAt)
+func (u *KnowledgeFactUpsert) UpdateCreatedAt() *KnowledgeFactUpsert {
+	u.SetExcluded(knowledgefact.FieldCreatedAt)
 	return u
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityUpsert) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldUpdatedAt, v)
+func (u *KnowledgeFactUpsert) SetUpdatedAt(v time.Time) *KnowledgeFactUpsert {
+	u.Set(knowledgefact.FieldUpdatedAt, v)
 	return u
 }
 
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateUpdatedAt() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldUpdatedAt)
+func (u *KnowledgeFactUpsert) UpdateUpdatedAt() *KnowledgeFactUpsert {
+	u.SetExcluded(knowledgefact.FieldUpdatedAt)
 	return u
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsert) SetKind(v string) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldKind, v)
+func (u *KnowledgeFactUpsert) SetKind(v string) *KnowledgeFactUpsert {
+	u.Set(knowledgefact.FieldKind, v)
 	return u
 }
 
 // UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateKind() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldKind)
+func (u *KnowledgeFactUpsert) UpdateKind() *KnowledgeFactUpsert {
+	u.SetExcluded(knowledgefact.FieldKind)
 	return u
 }
 
 // SetDisplayName sets the "display_name" field.
-func (u *KnowledgeEntityUpsert) SetDisplayName(v string) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldDisplayName, v)
+func (u *KnowledgeFactUpsert) SetDisplayName(v string) *KnowledgeFactUpsert {
+	u.Set(knowledgefact.FieldDisplayName, v)
 	return u
 }
 
 // UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateDisplayName() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldDisplayName)
+func (u *KnowledgeFactUpsert) UpdateDisplayName() *KnowledgeFactUpsert {
+	u.SetExcluded(knowledgefact.FieldDisplayName)
 	return u
 }
 
 // SetDescription sets the "description" field.
-func (u *KnowledgeEntityUpsert) SetDescription(v string) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldDescription, v)
+func (u *KnowledgeFactUpsert) SetDescription(v string) *KnowledgeFactUpsert {
+	u.Set(knowledgefact.FieldDescription, v)
 	return u
 }
 
 // UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateDescription() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldDescription)
+func (u *KnowledgeFactUpsert) UpdateDescription() *KnowledgeFactUpsert {
+	u.SetExcluded(knowledgefact.FieldDescription)
 	return u
 }
 
 // ClearDescription clears the value of the "description" field.
-func (u *KnowledgeEntityUpsert) ClearDescription() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldDescription)
+func (u *KnowledgeFactUpsert) ClearDescription() *KnowledgeFactUpsert {
+	u.SetNull(knowledgefact.FieldDescription)
 	return u
 }
 
 // SetProperties sets the "properties" field.
-func (u *KnowledgeEntityUpsert) SetProperties(v map[string]interface{}) *KnowledgeEntityUpsert {
-	u.Set(knowledgeentity.FieldProperties, v)
+func (u *KnowledgeFactUpsert) SetProperties(v map[string]interface{}) *KnowledgeFactUpsert {
+	u.Set(knowledgefact.FieldProperties, v)
 	return u
 }
 
 // UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsert) UpdateProperties() *KnowledgeEntityUpsert {
-	u.SetExcluded(knowledgeentity.FieldProperties)
+func (u *KnowledgeFactUpsert) UpdateProperties() *KnowledgeFactUpsert {
+	u.SetExcluded(knowledgefact.FieldProperties)
 	return u
 }
 
 // ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEntityUpsert) ClearProperties() *KnowledgeEntityUpsert {
-	u.SetNull(knowledgeentity.FieldProperties)
+func (u *KnowledgeFactUpsert) ClearProperties() *KnowledgeFactUpsert {
+	u.SetNull(knowledgefact.FieldProperties)
 	return u
 }
 
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
-//	client.KnowledgeEntity.Create().
+//	client.KnowledgeFact.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(knowledgeentity.FieldID)
+//				u.SetIgnore(knowledgefact.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *KnowledgeEntityUpsertOne) UpdateNewValues() *KnowledgeEntityUpsertOne {
+func (u *KnowledgeFactUpsertOne) UpdateNewValues() *KnowledgeFactUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		if _, exists := u.create.mutation.ID(); exists {
-			s.SetIgnore(knowledgeentity.FieldID)
+			s.SetIgnore(knowledgefact.FieldID)
 		}
 		if _, exists := u.create.mutation.TenantID(); exists {
-			s.SetIgnore(knowledgeentity.FieldTenantID)
+			s.SetIgnore(knowledgefact.FieldTenantID)
 		}
 	}))
 	return u
@@ -541,149 +541,149 @@ func (u *KnowledgeEntityUpsertOne) UpdateNewValues() *KnowledgeEntityUpsertOne {
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.KnowledgeEntity.Create().
+//	client.KnowledgeFact.Create().
 //	    OnConflict(sql.ResolveWithIgnore()).
 //	    Exec(ctx)
-func (u *KnowledgeEntityUpsertOne) Ignore() *KnowledgeEntityUpsertOne {
+func (u *KnowledgeFactUpsertOne) Ignore() *KnowledgeFactUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *KnowledgeEntityUpsertOne) DoNothing() *KnowledgeEntityUpsertOne {
+func (u *KnowledgeFactUpsertOne) DoNothing() *KnowledgeFactUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the KnowledgeEntityCreate.OnConflict
+// Update allows overriding fields `UPDATE` values. See the KnowledgeFactCreate.OnConflict
 // documentation for more info.
-func (u *KnowledgeEntityUpsertOne) Update(set func(*KnowledgeEntityUpsert)) *KnowledgeEntityUpsertOne {
+func (u *KnowledgeFactUpsertOne) Update(set func(*KnowledgeFactUpsert)) *KnowledgeFactUpsertOne {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&KnowledgeEntityUpsert{UpdateSet: update})
+		set(&KnowledgeFactUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityUpsertOne) SetCreatedAt(v time.Time) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) SetCreatedAt(v time.Time) *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetCreatedAt(v)
 	})
 }
 
 // UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateCreatedAt() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) UpdateCreatedAt() *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateCreatedAt()
 	})
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) SetUpdatedAt(v time.Time) *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetUpdatedAt(v)
 	})
 }
 
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateUpdatedAt() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) UpdateUpdatedAt() *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateUpdatedAt()
 	})
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsertOne) SetKind(v string) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) SetKind(v string) *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetKind(v)
 	})
 }
 
 // UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateKind() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) UpdateKind() *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateKind()
 	})
 }
 
 // SetDisplayName sets the "display_name" field.
-func (u *KnowledgeEntityUpsertOne) SetDisplayName(v string) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) SetDisplayName(v string) *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetDisplayName(v)
 	})
 }
 
 // UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateDisplayName() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) UpdateDisplayName() *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateDisplayName()
 	})
 }
 
 // SetDescription sets the "description" field.
-func (u *KnowledgeEntityUpsertOne) SetDescription(v string) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) SetDescription(v string) *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetDescription(v)
 	})
 }
 
 // UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateDescription() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) UpdateDescription() *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateDescription()
 	})
 }
 
 // ClearDescription clears the value of the "description" field.
-func (u *KnowledgeEntityUpsertOne) ClearDescription() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) ClearDescription() *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.ClearDescription()
 	})
 }
 
 // SetProperties sets the "properties" field.
-func (u *KnowledgeEntityUpsertOne) SetProperties(v map[string]interface{}) *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) SetProperties(v map[string]interface{}) *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetProperties(v)
 	})
 }
 
 // UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertOne) UpdateProperties() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) UpdateProperties() *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateProperties()
 	})
 }
 
 // ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEntityUpsertOne) ClearProperties() *KnowledgeEntityUpsertOne {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertOne) ClearProperties() *KnowledgeFactUpsertOne {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.ClearProperties()
 	})
 }
 
 // Exec executes the query.
-func (u *KnowledgeEntityUpsertOne) Exec(ctx context.Context) error {
+func (u *KnowledgeFactUpsertOne) Exec(ctx context.Context) error {
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for KnowledgeEntityCreate.OnConflict")
+		return errors.New("ent: missing options for KnowledgeFactCreate.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *KnowledgeEntityUpsertOne) ExecX(ctx context.Context) {
+func (u *KnowledgeFactUpsertOne) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // Exec executes the UPSERT query and returns the inserted/updated ID.
-func (u *KnowledgeEntityUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+func (u *KnowledgeFactUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
 	if u.create.driver.Dialect() == dialect.MySQL {
 		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
 		// fields from the database since MySQL does not support the RETURNING clause.
-		return id, errors.New("ent: KnowledgeEntityUpsertOne.ID is not supported by MySQL driver. Use KnowledgeEntityUpsertOne.Exec instead")
+		return id, errors.New("ent: KnowledgeFactUpsertOne.ID is not supported by MySQL driver. Use KnowledgeFactUpsertOne.Exec instead")
 	}
 	node, err := u.create.Save(ctx)
 	if err != nil {
@@ -693,7 +693,7 @@ func (u *KnowledgeEntityUpsertOne) ID(ctx context.Context) (id uuid.UUID, err er
 }
 
 // IDX is like ID, but panics if an error occurs.
-func (u *KnowledgeEntityUpsertOne) IDX(ctx context.Context) uuid.UUID {
+func (u *KnowledgeFactUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	id, err := u.ID(ctx)
 	if err != nil {
 		panic(err)
@@ -701,28 +701,28 @@ func (u *KnowledgeEntityUpsertOne) IDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// KnowledgeEntityCreateBulk is the builder for creating many KnowledgeEntity entities in bulk.
-type KnowledgeEntityCreateBulk struct {
+// KnowledgeFactCreateBulk is the builder for creating many KnowledgeFact entities in bulk.
+type KnowledgeFactCreateBulk struct {
 	config
 	err      error
-	builders []*KnowledgeEntityCreate
+	builders []*KnowledgeFactCreate
 	conflict []sql.ConflictOption
 }
 
-// Save creates the KnowledgeEntity entities in the database.
-func (_c *KnowledgeEntityCreateBulk) Save(ctx context.Context) ([]*KnowledgeEntity, error) {
+// Save creates the KnowledgeFact entities in the database.
+func (_c *KnowledgeFactCreateBulk) Save(ctx context.Context) ([]*KnowledgeFact, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*KnowledgeEntity, len(_c.builders))
+	nodes := make([]*KnowledgeFact, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*KnowledgeEntityMutation)
+				mutation, ok := m.(*KnowledgeFactMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -766,7 +766,7 @@ func (_c *KnowledgeEntityCreateBulk) Save(ctx context.Context) ([]*KnowledgeEnti
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *KnowledgeEntityCreateBulk) SaveX(ctx context.Context) []*KnowledgeEntity {
+func (_c *KnowledgeFactCreateBulk) SaveX(ctx context.Context) []*KnowledgeFact {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -775,13 +775,13 @@ func (_c *KnowledgeEntityCreateBulk) SaveX(ctx context.Context) []*KnowledgeEnti
 }
 
 // Exec executes the query.
-func (_c *KnowledgeEntityCreateBulk) Exec(ctx context.Context) error {
+func (_c *KnowledgeFactCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *KnowledgeEntityCreateBulk) ExecX(ctx context.Context) {
+func (_c *KnowledgeFactCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
@@ -790,7 +790,7 @@ func (_c *KnowledgeEntityCreateBulk) ExecX(ctx context.Context) {
 // OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
 // of the `INSERT` statement. For example:
 //
-//	client.KnowledgeEntity.CreateBulk(builders...).
+//	client.KnowledgeFact.CreateBulk(builders...).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -798,13 +798,13 @@ func (_c *KnowledgeEntityCreateBulk) ExecX(ctx context.Context) {
 //		).
 //		// Override some of the fields with custom
 //		// update values.
-//		Update(func(u *ent.KnowledgeEntityUpsert) {
+//		Update(func(u *ent.KnowledgeFactUpsert) {
 //			SetTenantID(v+v).
 //		}).
 //		Exec(ctx)
-func (_c *KnowledgeEntityCreateBulk) OnConflict(opts ...sql.ConflictOption) *KnowledgeEntityUpsertBulk {
+func (_c *KnowledgeFactCreateBulk) OnConflict(opts ...sql.ConflictOption) *KnowledgeFactUpsertBulk {
 	_c.conflict = opts
-	return &KnowledgeEntityUpsertBulk{
+	return &KnowledgeFactUpsertBulk{
 		create: _c,
 	}
 }
@@ -812,42 +812,42 @@ func (_c *KnowledgeEntityCreateBulk) OnConflict(opts ...sql.ConflictOption) *Kno
 // OnConflictColumns calls `OnConflict` and configures the columns
 // as conflict target. Using this option is equivalent to using:
 //
-//	client.KnowledgeEntity.Create().
+//	client.KnowledgeFact.Create().
 //		OnConflict(sql.ConflictColumns(columns...)).
 //		Exec(ctx)
-func (_c *KnowledgeEntityCreateBulk) OnConflictColumns(columns ...string) *KnowledgeEntityUpsertBulk {
+func (_c *KnowledgeFactCreateBulk) OnConflictColumns(columns ...string) *KnowledgeFactUpsertBulk {
 	_c.conflict = append(_c.conflict, sql.ConflictColumns(columns...))
-	return &KnowledgeEntityUpsertBulk{
+	return &KnowledgeFactUpsertBulk{
 		create: _c,
 	}
 }
 
-// KnowledgeEntityUpsertBulk is the builder for "upsert"-ing
-// a bulk of KnowledgeEntity nodes.
-type KnowledgeEntityUpsertBulk struct {
-	create *KnowledgeEntityCreateBulk
+// KnowledgeFactUpsertBulk is the builder for "upsert"-ing
+// a bulk of KnowledgeFact nodes.
+type KnowledgeFactUpsertBulk struct {
+	create *KnowledgeFactCreateBulk
 }
 
 // UpdateNewValues updates the mutable fields using the new values that
 // were set on create. Using this option is equivalent to using:
 //
-//	client.KnowledgeEntity.Create().
+//	client.KnowledgeFact.Create().
 //		OnConflict(
 //			sql.ResolveWithNewValues(),
 //			sql.ResolveWith(func(u *sql.UpdateSet) {
-//				u.SetIgnore(knowledgeentity.FieldID)
+//				u.SetIgnore(knowledgefact.FieldID)
 //			}),
 //		).
 //		Exec(ctx)
-func (u *KnowledgeEntityUpsertBulk) UpdateNewValues() *KnowledgeEntityUpsertBulk {
+func (u *KnowledgeFactUpsertBulk) UpdateNewValues() *KnowledgeFactUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
 		for _, b := range u.create.builders {
 			if _, exists := b.mutation.ID(); exists {
-				s.SetIgnore(knowledgeentity.FieldID)
+				s.SetIgnore(knowledgefact.FieldID)
 			}
 			if _, exists := b.mutation.TenantID(); exists {
-				s.SetIgnore(knowledgeentity.FieldTenantID)
+				s.SetIgnore(knowledgefact.FieldTenantID)
 			}
 		}
 	}))
@@ -857,146 +857,146 @@ func (u *KnowledgeEntityUpsertBulk) UpdateNewValues() *KnowledgeEntityUpsertBulk
 // Ignore sets each column to itself in case of conflict.
 // Using this option is equivalent to using:
 //
-//	client.KnowledgeEntity.Create().
+//	client.KnowledgeFact.Create().
 //		OnConflict(sql.ResolveWithIgnore()).
 //		Exec(ctx)
-func (u *KnowledgeEntityUpsertBulk) Ignore() *KnowledgeEntityUpsertBulk {
+func (u *KnowledgeFactUpsertBulk) Ignore() *KnowledgeFactUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
 	return u
 }
 
 // DoNothing configures the conflict_action to `DO NOTHING`.
 // Supported only by SQLite and PostgreSQL.
-func (u *KnowledgeEntityUpsertBulk) DoNothing() *KnowledgeEntityUpsertBulk {
+func (u *KnowledgeFactUpsertBulk) DoNothing() *KnowledgeFactUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.DoNothing())
 	return u
 }
 
-// Update allows overriding fields `UPDATE` values. See the KnowledgeEntityCreateBulk.OnConflict
+// Update allows overriding fields `UPDATE` values. See the KnowledgeFactCreateBulk.OnConflict
 // documentation for more info.
-func (u *KnowledgeEntityUpsertBulk) Update(set func(*KnowledgeEntityUpsert)) *KnowledgeEntityUpsertBulk {
+func (u *KnowledgeFactUpsertBulk) Update(set func(*KnowledgeFactUpsert)) *KnowledgeFactUpsertBulk {
 	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
-		set(&KnowledgeEntityUpsert{UpdateSet: update})
+		set(&KnowledgeFactUpsert{UpdateSet: update})
 	}))
 	return u
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (u *KnowledgeEntityUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) SetCreatedAt(v time.Time) *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetCreatedAt(v)
 	})
 }
 
 // UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateCreatedAt() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) UpdateCreatedAt() *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateCreatedAt()
 	})
 }
 
 // SetUpdatedAt sets the "updated_at" field.
-func (u *KnowledgeEntityUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) SetUpdatedAt(v time.Time) *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetUpdatedAt(v)
 	})
 }
 
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateUpdatedAt() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) UpdateUpdatedAt() *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateUpdatedAt()
 	})
 }
 
 // SetKind sets the "kind" field.
-func (u *KnowledgeEntityUpsertBulk) SetKind(v string) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) SetKind(v string) *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetKind(v)
 	})
 }
 
 // UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateKind() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) UpdateKind() *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateKind()
 	})
 }
 
 // SetDisplayName sets the "display_name" field.
-func (u *KnowledgeEntityUpsertBulk) SetDisplayName(v string) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) SetDisplayName(v string) *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetDisplayName(v)
 	})
 }
 
 // UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateDisplayName() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) UpdateDisplayName() *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateDisplayName()
 	})
 }
 
 // SetDescription sets the "description" field.
-func (u *KnowledgeEntityUpsertBulk) SetDescription(v string) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) SetDescription(v string) *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetDescription(v)
 	})
 }
 
 // UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateDescription() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) UpdateDescription() *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateDescription()
 	})
 }
 
 // ClearDescription clears the value of the "description" field.
-func (u *KnowledgeEntityUpsertBulk) ClearDescription() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) ClearDescription() *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.ClearDescription()
 	})
 }
 
 // SetProperties sets the "properties" field.
-func (u *KnowledgeEntityUpsertBulk) SetProperties(v map[string]interface{}) *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) SetProperties(v map[string]interface{}) *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.SetProperties(v)
 	})
 }
 
 // UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEntityUpsertBulk) UpdateProperties() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) UpdateProperties() *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.UpdateProperties()
 	})
 }
 
 // ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEntityUpsertBulk) ClearProperties() *KnowledgeEntityUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityUpsert) {
+func (u *KnowledgeFactUpsertBulk) ClearProperties() *KnowledgeFactUpsertBulk {
+	return u.Update(func(s *KnowledgeFactUpsert) {
 		s.ClearProperties()
 	})
 }
 
 // Exec executes the query.
-func (u *KnowledgeEntityUpsertBulk) Exec(ctx context.Context) error {
+func (u *KnowledgeFactUpsertBulk) Exec(ctx context.Context) error {
 	if u.create.err != nil {
 		return u.create.err
 	}
 	for i, b := range u.create.builders {
 		if len(b.conflict) != 0 {
-			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the KnowledgeEntityCreateBulk instead", i)
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the KnowledgeFactCreateBulk instead", i)
 		}
 	}
 	if len(u.create.conflict) == 0 {
-		return errors.New("ent: missing options for KnowledgeEntityCreateBulk.OnConflict")
+		return errors.New("ent: missing options for KnowledgeFactCreateBulk.OnConflict")
 	}
 	return u.create.Exec(ctx)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (u *KnowledgeEntityUpsertBulk) ExecX(ctx context.Context) {
+func (u *KnowledgeFactUpsertBulk) ExecX(ctx context.Context) {
 	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}

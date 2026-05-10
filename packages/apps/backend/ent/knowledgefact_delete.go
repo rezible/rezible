@@ -9,30 +9,30 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/knowledgeentity"
+	"github.com/rezible/rezible/ent/knowledgefact"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-// KnowledgeEntityDelete is the builder for deleting a KnowledgeEntity entity.
-type KnowledgeEntityDelete struct {
+// KnowledgeFactDelete is the builder for deleting a KnowledgeFact entity.
+type KnowledgeFactDelete struct {
 	config
 	hooks    []Hook
-	mutation *KnowledgeEntityMutation
+	mutation *KnowledgeFactMutation
 }
 
-// Where appends a list predicates to the KnowledgeEntityDelete builder.
-func (_d *KnowledgeEntityDelete) Where(ps ...predicate.KnowledgeEntity) *KnowledgeEntityDelete {
+// Where appends a list predicates to the KnowledgeFactDelete builder.
+func (_d *KnowledgeFactDelete) Where(ps ...predicate.KnowledgeFact) *KnowledgeFactDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *KnowledgeEntityDelete) Exec(ctx context.Context) (int, error) {
+func (_d *KnowledgeFactDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *KnowledgeEntityDelete) ExecX(ctx context.Context) int {
+func (_d *KnowledgeFactDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -40,9 +40,9 @@ func (_d *KnowledgeEntityDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *KnowledgeEntityDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(knowledgeentity.Table, sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID))
-	_spec.Node.Schema = _d.schemaConfig.KnowledgeEntity
+func (_d *KnowledgeFactDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(knowledgefact.Table, sqlgraph.NewFieldSpec(knowledgefact.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.KnowledgeFact
 	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -59,32 +59,32 @@ func (_d *KnowledgeEntityDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// KnowledgeEntityDeleteOne is the builder for deleting a single KnowledgeEntity entity.
-type KnowledgeEntityDeleteOne struct {
-	_d *KnowledgeEntityDelete
+// KnowledgeFactDeleteOne is the builder for deleting a single KnowledgeFact entity.
+type KnowledgeFactDeleteOne struct {
+	_d *KnowledgeFactDelete
 }
 
-// Where appends a list predicates to the KnowledgeEntityDelete builder.
-func (_d *KnowledgeEntityDeleteOne) Where(ps ...predicate.KnowledgeEntity) *KnowledgeEntityDeleteOne {
+// Where appends a list predicates to the KnowledgeFactDelete builder.
+func (_d *KnowledgeFactDeleteOne) Where(ps ...predicate.KnowledgeFact) *KnowledgeFactDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *KnowledgeEntityDeleteOne) Exec(ctx context.Context) error {
+func (_d *KnowledgeFactDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{knowledgeentity.Label}
+		return &NotFoundError{knowledgefact.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *KnowledgeEntityDeleteOne) ExecX(ctx context.Context) {
+func (_d *KnowledgeFactDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

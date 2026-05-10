@@ -233,33 +233,22 @@ type (
 
 type (
 	KnowledgeService interface {
-		GetEntity(context.Context, predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error)
-		SetEntity(context.Context, uuid.UUID, func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error)
-
-		SetEntityAlias(context.Context, uuid.UUID, func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error)
-
-		SetRelationship(context.Context, uuid.UUID, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
-
-		SetFactProvenance(context.Context, uuid.UUID, func(*ent.KnowledgeFactProvenanceMutation)) (*ent.KnowledgeFactProvenance, error)
-		SetFactHistory(context.Context, uuid.UUID, func(*ent.KnowledgeFactHistoryMutation)) (*ent.KnowledgeFactHistory, error)
+		GetFact(context.Context, predicate.KnowledgeFact) (*ent.KnowledgeFact, error)
 	}
 )
 
 type (
 	ListSystemTopologyEntitiesParams struct {
 		ent.ListParams
-		Kinds          []string
-		Provider       string
-		ProviderSource string
-		SubjectKind    string
+		Kinds []string
 	}
 
 	ListSystemTopologyRelationshipsParams struct {
 		ent.ListParams
-		Kinds          []string
-		EntityID       uuid.UUID
-		SourceEntityID uuid.UUID
-		TargetEntityID uuid.UUID
+		Kinds        []string
+		FactID       uuid.UUID
+		SourceFactID uuid.UUID
+		TargetFactID uuid.UUID
 	}
 
 	SystemTopologyNeighborhoodParams struct {
@@ -283,15 +272,15 @@ type (
 	}
 
 	SystemTopologyGraph struct {
-		Entities      []*ent.KnowledgeEntity
-		Relationships []*ent.KnowledgeRelationship
+		Entities      []*ent.KnowledgeFact
+		Relationships []*ent.KnowledgeFactRelationship
 	}
 
 	SystemTopologyService interface {
-		ListEntities(context.Context, ListSystemTopologyEntitiesParams) (*ent.ListResult[*ent.KnowledgeEntity], error)
-		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
+		ListEntities(context.Context, ListSystemTopologyEntitiesParams) (*ent.ListResult[*ent.KnowledgeFact], error)
+		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeFact, error)
 		GetNeighborhood(context.Context, uuid.UUID, SystemTopologyNeighborhoodParams) (*SystemTopologyGraph, error)
-		ListRelationships(context.Context, ListSystemTopologyRelationshipsParams) (*ent.ListResult[*ent.KnowledgeRelationship], error)
+		ListRelationships(context.Context, ListSystemTopologyRelationshipsParams) (*ent.ListResult[*ent.KnowledgeFactRelationship], error)
 
 		CreateSnapshot(context.Context, CreateSystemTopologySnapshotParams) (*ent.SystemTopologySnapshot, error)
 		GetSnapshot(context.Context, uuid.UUID) (*ent.SystemTopologySnapshot, error)

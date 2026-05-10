@@ -18,11 +18,8 @@ func newSystemTopologyHandler(topology rez.SystemTopologyService) *systemTopolog
 func (h *systemTopologyHandler) ListSystemTopologyEntities(ctx context.Context, request *oapi.ListSystemTopologyEntitiesRequest) (*oapi.ListSystemTopologyEntitiesResponse, error) {
 	var resp oapi.ListSystemTopologyEntitiesResponse
 	result, queryErr := h.topology.ListEntities(ctx, rez.ListSystemTopologyEntitiesParams{
-		ListParams:     request.ListParams(),
-		Kinds:          request.Kind,
-		Provider:       request.Provider,
-		ProviderSource: request.ProviderSource,
-		SubjectKind:    request.SubjectKind,
+		ListParams: request.ListParams(),
+		Kinds:      request.Kind,
 	})
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to list topology entities", queryErr)
@@ -68,11 +65,8 @@ func (h *systemTopologyHandler) GetSystemTopologyEntityNeighborhood(ctx context.
 func (h *systemTopologyHandler) ListSystemTopologyRelationships(ctx context.Context, request *oapi.ListSystemTopologyRelationshipsRequest) (*oapi.ListSystemTopologyRelationshipsResponse, error) {
 	var resp oapi.ListSystemTopologyRelationshipsResponse
 	result, queryErr := h.topology.ListRelationships(ctx, rez.ListSystemTopologyRelationshipsParams{
-		ListParams:     request.ListParams(),
-		Kinds:          request.Kind,
-		EntityID:       request.EntityId,
-		SourceEntityID: request.SourceEntityId,
-		TargetEntityID: request.TargetEntityId,
+		ListParams: request.ListParams(),
+		Kinds:      request.Kind,
 	})
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to list topology relationships", queryErr)
