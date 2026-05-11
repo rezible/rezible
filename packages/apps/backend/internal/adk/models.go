@@ -2,9 +2,9 @@ package adk
 
 import (
 	"context"
+	"fmt"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rotisserie/eris"
 	"google.golang.org/adk/model"
 )
 
@@ -21,7 +21,7 @@ func getConfigModels(ctx context.Context) ([]model.LLM, error) {
 func newClaudeLanguageModel(ctx context.Context) (model.LLM, error) {
 	var cfg AnthropicConfig
 	if cfgErr := rez.Config.Unmarshal("anthropic", &cfg); cfgErr != nil {
-		return nil, eris.New("anthropic api key not set")
+		return nil, fmt.Errorf("anthropic config: %w", cfgErr)
 	}
 
 	//claudeCfg := &claude.Config{

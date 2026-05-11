@@ -2,6 +2,7 @@ package rez
 
 import (
 	"context"
+	"fmt"
 	"iter"
 	"net/http"
 	"net/url"
@@ -11,7 +12,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
-	"github.com/rotisserie/eris"
 	"github.com/texm/prosemirror-go"
 
 	"github.com/rezible/rezible/ent"
@@ -19,14 +19,14 @@ import (
 )
 
 var (
-	ErrTenantContextMissing     = eris.New("tenant access context not set")
-	ErrInvalidUser              = eris.New("user does not exist")
-	ErrDomainNotAllowed         = eris.New("domain not allowed")
-	ErrInvalidTenant            = eris.New("tenant does not exist")
-	ErrAuthSessionMissing       = eris.New("no auth session")
-	ErrAuthSessionExpired       = eris.New("auth session expired")
-	ErrAuthSessionInvalid       = eris.New("auth session invalid")
-	ErrNoConfiguredIntegrations = eris.New("no configured integrations")
+	ErrTenantContextMissing     = fmt.Errorf("tenant access context not set")
+	ErrInvalidUser              = fmt.Errorf("user does not exist")
+	ErrDomainNotAllowed         = fmt.Errorf("domain not allowed")
+	ErrInvalidTenant            = fmt.Errorf("tenant does not exist")
+	ErrAuthSessionMissing       = fmt.Errorf("no auth session")
+	ErrAuthSessionExpired       = fmt.Errorf("auth session expired")
+	ErrAuthSessionInvalid       = fmt.Errorf("auth session invalid")
+	ErrNoConfiguredIntegrations = fmt.Errorf("no configured integrations")
 )
 
 var Config ConfigLoader
