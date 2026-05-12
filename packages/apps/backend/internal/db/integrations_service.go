@@ -240,8 +240,8 @@ func (s *IntegrationsService) set(ctx context.Context, params rez.ConfigureInteg
 
 	if s.jobs != nil {
 		args := jobs.ProviderEventSyncJob{
-			Provider:   intg.Provider,
-			SyncReason: "configured",
+			ProviderSources: map[string][]string{intg.Provider: {}},
+			SyncReason:      "configured",
 		}
 		if _, jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 			slog.Error("failed to insert sync job", "error", jobErr)
