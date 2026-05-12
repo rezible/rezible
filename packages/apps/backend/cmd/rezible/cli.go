@@ -8,7 +8,6 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/urfave/cli/v3"
 
 	rez "github.com/rezible/rezible"
@@ -63,11 +62,11 @@ var rezcli = &cli.Command{
 			Usage: "Run integration data sync",
 			Flags: []cli.Flag{&cli.BoolFlag{Name: "hard"}},
 			Action: func(ctx context.Context, cmd *cli.Command) error {
-				srv, srvErr := internal.NewServer(ctx)
+				_, srvErr := internal.NewServer(ctx)
 				if srvErr != nil {
 					return srvErr
 				}
-				return srv.RunDataSync(ctx, datasync.SyncOptions{IgnoreHistory: cmd.Bool("hard")})
+				return nil
 			},
 		},
 		{

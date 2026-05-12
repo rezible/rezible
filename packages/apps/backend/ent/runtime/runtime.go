@@ -57,7 +57,6 @@ import (
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/providereventsynccursor"
 	"github.com/rezible/rezible/ent/providereventsyncrun"
-	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -1251,30 +1250,6 @@ func init() {
 	providereventsyncrunDescID := providereventsyncrunFields[0].Descriptor()
 	// providereventsyncrun.DefaultID holds the default value on creation for the id field.
 	providereventsyncrun.DefaultID = providereventsyncrunDescID.Default.(func() uuid.UUID)
-	providersynchistoryMixin := schema.ProviderSyncHistory{}.Mixin()
-	providersynchistory.Policy = privacy.NewPolicies(providersynchistoryMixin[0], providersynchistoryMixin[1], schema.ProviderSyncHistory{})
-	providersynchistory.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := providersynchistory.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	providersynchistoryFields := schema.ProviderSyncHistory{}.Fields()
-	_ = providersynchistoryFields
-	// providersynchistoryDescStartedAt is the schema descriptor for started_at field.
-	providersynchistoryDescStartedAt := providersynchistoryFields[2].Descriptor()
-	// providersynchistory.DefaultStartedAt holds the default value on creation for the started_at field.
-	providersynchistory.DefaultStartedAt = providersynchistoryDescStartedAt.Default.(func() time.Time)
-	// providersynchistoryDescFinishedAt is the schema descriptor for finished_at field.
-	providersynchistoryDescFinishedAt := providersynchistoryFields[3].Descriptor()
-	// providersynchistory.DefaultFinishedAt holds the default value on creation for the finished_at field.
-	providersynchistory.DefaultFinishedAt = providersynchistoryDescFinishedAt.Default.(func() time.Time)
-	// providersynchistoryDescID is the schema descriptor for id field.
-	providersynchistoryDescID := providersynchistoryFields[0].Descriptor()
-	// providersynchistory.DefaultID holds the default value on creation for the id field.
-	providersynchistory.DefaultID = providersynchistoryDescID.Default.(func() uuid.UUID)
 	retrospectiveMixin := schema.Retrospective{}.Mixin()
 	retrospective.Policy = privacy.NewPolicies(retrospectiveMixin[0], retrospectiveMixin[1], schema.Retrospective{})
 	retrospective.Hooks[0] = func(next ent.Mutator) ent.Mutator {

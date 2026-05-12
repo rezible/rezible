@@ -59,7 +59,6 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/providereventsynccursor"
 	"github.com/rezible/rezible/ent/providereventsyncrun"
-	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -1484,33 +1483,6 @@ func (f TraverseProviderEventSyncRun) Traverse(ctx context.Context, q ent.Query)
 	return fmt.Errorf("unexpected query type %T. expect *ent.ProviderEventSyncRunQuery", q)
 }
 
-// The ProviderSyncHistoryFunc type is an adapter to allow the use of ordinary function as a Querier.
-type ProviderSyncHistoryFunc func(context.Context, *ent.ProviderSyncHistoryQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f ProviderSyncHistoryFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.ProviderSyncHistoryQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ProviderSyncHistoryQuery", q)
-}
-
-// The TraverseProviderSyncHistory type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseProviderSyncHistory func(context.Context, *ent.ProviderSyncHistoryQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseProviderSyncHistory) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseProviderSyncHistory) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ProviderSyncHistoryQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.ProviderSyncHistoryQuery", q)
-}
-
 // The RetrospectiveFunc type is an adapter to allow the use of ordinary function as a Querier.
 type RetrospectiveFunc func(context.Context, *ent.RetrospectiveQuery) (ent.Value, error)
 
@@ -2046,8 +2018,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.ProviderEventSyncCursorQuery, predicate.ProviderEventSyncCursor, providereventsynccursor.OrderOption]{typ: ent.TypeProviderEventSyncCursor, tq: q}, nil
 	case *ent.ProviderEventSyncRunQuery:
 		return &query[*ent.ProviderEventSyncRunQuery, predicate.ProviderEventSyncRun, providereventsyncrun.OrderOption]{typ: ent.TypeProviderEventSyncRun, tq: q}, nil
-	case *ent.ProviderSyncHistoryQuery:
-		return &query[*ent.ProviderSyncHistoryQuery, predicate.ProviderSyncHistory, providersynchistory.OrderOption]{typ: ent.TypeProviderSyncHistory, tq: q}, nil
 	case *ent.RetrospectiveQuery:
 		return &query[*ent.RetrospectiveQuery, predicate.Retrospective, retrospective.OrderOption]{typ: ent.TypeRetrospective, tq: q}, nil
 	case *ent.RetrospectiveCommentQuery:

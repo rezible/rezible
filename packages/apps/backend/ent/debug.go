@@ -404,14 +404,6 @@ func (c *ProviderEventSyncRunClient) Debug() *ProviderEventSyncRunClient {
 	return &ProviderEventSyncRunClient{config: cfg}
 }
 
-func (c *ProviderSyncHistoryClient) Debug() *ProviderSyncHistoryClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &ProviderSyncHistoryClient{config: cfg}
-}
-
 func (c *RetrospectiveClient) Debug() *RetrospectiveClient {
 	if c.debug {
 		return c

@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/internal/adk"
 	"github.com/rezible/rezible/internal/apiv1"
 	"github.com/rezible/rezible/internal/db"
-	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/oidc"
 	"github.com/rezible/rezible/internal/postgres"
@@ -47,15 +46,6 @@ func NewServer(ctx context.Context) (*Server, error) {
 		return nil, fmt.Errorf("failed to get server config: %w", cfgErr)
 	}
 	return s, nil
-}
-
-func (s *Server) RunDataSync(ctx context.Context, opts datasync.SyncOptions) error {
-	if setupErr := s.setup(ctx); setupErr != nil {
-		return fmt.Errorf("setup: %s", setupErr)
-	}
-	syncer := datasync.NewSyncerService(s.db.Client())
-	syncCtx := execution.NewContext(ctx, execution.KindSystem, execution.SourceInternal)
-	return syncer.SyncIntegrationsData(syncCtx, opts)
 }
 
 func (s *Server) RunServe(ctx context.Context) error {

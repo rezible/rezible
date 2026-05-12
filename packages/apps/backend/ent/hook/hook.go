@@ -597,18 +597,6 @@ func (f ProviderEventSyncRunFunc) Mutate(ctx context.Context, m ent.Mutation) (e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderEventSyncRunMutation", m)
 }
 
-// The ProviderSyncHistoryFunc type is an adapter to allow the use of ordinary
-// function as ProviderSyncHistory mutator.
-type ProviderSyncHistoryFunc func(context.Context, *ent.ProviderSyncHistoryMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ProviderSyncHistoryFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ProviderSyncHistoryMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderSyncHistoryMutation", m)
-}
-
 // The RetrospectiveFunc type is an adapter to allow the use of ordinary
 // function as Retrospective mutator.
 type RetrospectiveFunc func(context.Context, *ent.RetrospectiveMutation) (ent.Value, error)

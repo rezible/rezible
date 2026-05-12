@@ -69,7 +69,6 @@ type SchemaConfig struct {
 	PlaybookAlerts                            string // Playbook-alerts->Alert table.
 	ProviderEventSyncCursor                   string // ProviderEventSyncCursor table.
 	ProviderEventSyncRun                      string // ProviderEventSyncRun table.
-	ProviderSyncHistory                       string // ProviderSyncHistory table.
 	Retrospective                             string // Retrospective table.
 	RetrospectiveComment                      string // RetrospectiveComment table.
 	RetrospectiveReview                       string // RetrospectiveReview table.

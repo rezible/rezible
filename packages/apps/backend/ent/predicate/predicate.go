@@ -156,9 +156,6 @@ type ProviderEventSyncCursor func(*sql.Selector)
 // ProviderEventSyncRun is the predicate function for providereventsyncrun builders.
 type ProviderEventSyncRun func(*sql.Selector)
 
-// ProviderSyncHistory is the predicate function for providersynchistory builders.
-type ProviderSyncHistory func(*sql.Selector)
-
 // Retrospective is the predicate function for retrospective builders.
 type Retrospective func(*sql.Selector)
 

@@ -2080,36 +2080,6 @@ var (
 			},
 		},
 	}
-	// ProviderSyncHistoriesColumns holds the columns for the "provider_sync_histories" table.
-	ProviderSyncHistoriesColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "data_type", Type: field.TypeString},
-		{Name: "started_at", Type: field.TypeTime},
-		{Name: "finished_at", Type: field.TypeTime},
-		{Name: "num_mutations", Type: field.TypeInt},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// ProviderSyncHistoriesTable holds the schema information for the "provider_sync_histories" table.
-	ProviderSyncHistoriesTable = &schema.Table{
-		Name:       "provider_sync_histories",
-		Columns:    ProviderSyncHistoriesColumns,
-		PrimaryKey: []*schema.Column{ProviderSyncHistoriesColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "provider_sync_histories_tenants_tenant",
-				Columns:    []*schema.Column{ProviderSyncHistoriesColumns[5]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "providersynchistory_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{ProviderSyncHistoriesColumns[5]},
-			},
-		},
-	}
 	// RetrospectivesColumns holds the columns for the "retrospectives" table.
 	RetrospectivesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -3240,7 +3210,6 @@ var (
 		PlaybooksTable,
 		ProviderEventSyncCursorsTable,
 		ProviderEventSyncRunsTable,
-		ProviderSyncHistoriesTable,
 		RetrospectivesTable,
 		RetrospectiveCommentsTable,
 		RetrospectiveReviewsTable,
@@ -3380,7 +3349,6 @@ func init() {
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderEventSyncCursorsTable.ForeignKeys[0].RefTable = TenantsTable
 	ProviderEventSyncRunsTable.ForeignKeys[0].RefTable = TenantsTable
-	ProviderSyncHistoriesTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = DocumentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable
 	RetrospectivesTable.ForeignKeys[2].RefTable = TenantsTable

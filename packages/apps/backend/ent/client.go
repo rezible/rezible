@@ -65,7 +65,6 @@ import (
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/providereventsynccursor"
 	"github.com/rezible/rezible/ent/providereventsyncrun"
-	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -191,8 +190,6 @@ type Client struct {
 	ProviderEventSyncCursor *ProviderEventSyncCursorClient
 	// ProviderEventSyncRun is the client for interacting with the ProviderEventSyncRun builders.
 	ProviderEventSyncRun *ProviderEventSyncRunClient
-	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
-	ProviderSyncHistory *ProviderSyncHistoryClient
 	// Retrospective is the client for interacting with the Retrospective builders.
 	Retrospective *RetrospectiveClient
 	// RetrospectiveComment is the client for interacting with the RetrospectiveComment builders.
@@ -286,7 +283,6 @@ func (c *Client) init() {
 	c.Playbook = NewPlaybookClient(c.config)
 	c.ProviderEventSyncCursor = NewProviderEventSyncCursorClient(c.config)
 	c.ProviderEventSyncRun = NewProviderEventSyncRunClient(c.config)
-	c.ProviderSyncHistory = NewProviderSyncHistoryClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
 	c.RetrospectiveComment = NewRetrospectiveCommentClient(c.config)
 	c.RetrospectiveReview = NewRetrospectiveReviewClient(c.config)
@@ -448,7 +444,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Playbook:                           NewPlaybookClient(cfg),
 		ProviderEventSyncCursor:            NewProviderEventSyncCursorClient(cfg),
 		ProviderEventSyncRun:               NewProviderEventSyncRunClient(cfg),
-		ProviderSyncHistory:                NewProviderSyncHistoryClient(cfg),
 		Retrospective:                      NewRetrospectiveClient(cfg),
 		RetrospectiveComment:               NewRetrospectiveCommentClient(cfg),
 		RetrospectiveReview:                NewRetrospectiveReviewClient(cfg),
@@ -534,7 +529,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Playbook:                           NewPlaybookClient(cfg),
 		ProviderEventSyncCursor:            NewProviderEventSyncCursorClient(cfg),
 		ProviderEventSyncRun:               NewProviderEventSyncRunClient(cfg),
-		ProviderSyncHistory:                NewProviderSyncHistoryClient(cfg),
 		Retrospective:                      NewRetrospectiveClient(cfg),
 		RetrospectiveComment:               NewRetrospectiveCommentClient(cfg),
 		RetrospectiveReview:                NewRetrospectiveReviewClient(cfg),
@@ -595,12 +589,11 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationRole, c.Playbook, c.ProviderEventSyncCursor,
-		c.ProviderEventSyncRun, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
-		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
-		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
-		c.Tenant, c.Ticket, c.User, c.VideoConference,
+		c.ProviderEventSyncRun, c.Retrospective, c.RetrospectiveComment,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisTopologyEdge,
+		c.SystemAnalysisTopologyNode, c.SystemTopologySnapshot,
+		c.SystemTopologySnapshotEntity, c.SystemTopologySnapshotRelationship, c.Task,
+		c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -625,12 +618,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationRole, c.Playbook, c.ProviderEventSyncCursor,
-		c.ProviderEventSyncRun, c.ProviderSyncHistory, c.Retrospective,
-		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
-		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
-		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
-		c.Tenant, c.Ticket, c.User, c.VideoConference,
+		c.ProviderEventSyncRun, c.Retrospective, c.RetrospectiveComment,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisTopologyEdge,
+		c.SystemAnalysisTopologyNode, c.SystemTopologySnapshot,
+		c.SystemTopologySnapshotEntity, c.SystemTopologySnapshotRelationship, c.Task,
+		c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -737,8 +729,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.ProviderEventSyncCursor.mutate(ctx, m)
 	case *ProviderEventSyncRunMutation:
 		return c.ProviderEventSyncRun.mutate(ctx, m)
-	case *ProviderSyncHistoryMutation:
-		return c.ProviderSyncHistory.mutate(ctx, m)
 	case *RetrospectiveMutation:
 		return c.Retrospective.mutate(ctx, m)
 	case *RetrospectiveCommentMutation:
@@ -10649,159 +10639,6 @@ func (c *ProviderEventSyncRunClient) mutate(ctx context.Context, m *ProviderEven
 	}
 }
 
-// ProviderSyncHistoryClient is a client for the ProviderSyncHistory schema.
-type ProviderSyncHistoryClient struct {
-	config
-}
-
-// NewProviderSyncHistoryClient returns a client for the ProviderSyncHistory from the given config.
-func NewProviderSyncHistoryClient(c config) *ProviderSyncHistoryClient {
-	return &ProviderSyncHistoryClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `providersynchistory.Hooks(f(g(h())))`.
-func (c *ProviderSyncHistoryClient) Use(hooks ...Hook) {
-	c.hooks.ProviderSyncHistory = append(c.hooks.ProviderSyncHistory, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `providersynchistory.Intercept(f(g(h())))`.
-func (c *ProviderSyncHistoryClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ProviderSyncHistory = append(c.inters.ProviderSyncHistory, interceptors...)
-}
-
-// Create returns a builder for creating a ProviderSyncHistory entity.
-func (c *ProviderSyncHistoryClient) Create() *ProviderSyncHistoryCreate {
-	mutation := newProviderSyncHistoryMutation(c.config, OpCreate)
-	return &ProviderSyncHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ProviderSyncHistory entities.
-func (c *ProviderSyncHistoryClient) CreateBulk(builders ...*ProviderSyncHistoryCreate) *ProviderSyncHistoryCreateBulk {
-	return &ProviderSyncHistoryCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ProviderSyncHistoryClient) MapCreateBulk(slice any, setFunc func(*ProviderSyncHistoryCreate, int)) *ProviderSyncHistoryCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ProviderSyncHistoryCreateBulk{err: fmt.Errorf("calling to ProviderSyncHistoryClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ProviderSyncHistoryCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ProviderSyncHistoryCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ProviderSyncHistory.
-func (c *ProviderSyncHistoryClient) Update() *ProviderSyncHistoryUpdate {
-	mutation := newProviderSyncHistoryMutation(c.config, OpUpdate)
-	return &ProviderSyncHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ProviderSyncHistoryClient) UpdateOne(_m *ProviderSyncHistory) *ProviderSyncHistoryUpdateOne {
-	mutation := newProviderSyncHistoryMutation(c.config, OpUpdateOne, withProviderSyncHistory(_m))
-	return &ProviderSyncHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ProviderSyncHistoryClient) UpdateOneID(id uuid.UUID) *ProviderSyncHistoryUpdateOne {
-	mutation := newProviderSyncHistoryMutation(c.config, OpUpdateOne, withProviderSyncHistoryID(id))
-	return &ProviderSyncHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ProviderSyncHistory.
-func (c *ProviderSyncHistoryClient) Delete() *ProviderSyncHistoryDelete {
-	mutation := newProviderSyncHistoryMutation(c.config, OpDelete)
-	return &ProviderSyncHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ProviderSyncHistoryClient) DeleteOne(_m *ProviderSyncHistory) *ProviderSyncHistoryDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProviderSyncHistoryClient) DeleteOneID(id uuid.UUID) *ProviderSyncHistoryDeleteOne {
-	builder := c.Delete().Where(providersynchistory.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ProviderSyncHistoryDeleteOne{builder}
-}
-
-// Query returns a query builder for ProviderSyncHistory.
-func (c *ProviderSyncHistoryClient) Query() *ProviderSyncHistoryQuery {
-	return &ProviderSyncHistoryQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeProviderSyncHistory},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ProviderSyncHistory entity by its id.
-func (c *ProviderSyncHistoryClient) Get(ctx context.Context, id uuid.UUID) (*ProviderSyncHistory, error) {
-	return c.Query().Where(providersynchistory.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ProviderSyncHistoryClient) GetX(ctx context.Context, id uuid.UUID) *ProviderSyncHistory {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a ProviderSyncHistory.
-func (c *ProviderSyncHistoryClient) QueryTenant(_m *ProviderSyncHistory) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(providersynchistory.Table, providersynchistory.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, providersynchistory.TenantTable, providersynchistory.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.ProviderSyncHistory
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ProviderSyncHistoryClient) Hooks() []Hook {
-	hooks := c.hooks.ProviderSyncHistory
-	return append(hooks[:len(hooks):len(hooks)], providersynchistory.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *ProviderSyncHistoryClient) Interceptors() []Interceptor {
-	return c.inters.ProviderSyncHistory
-}
-
-func (c *ProviderSyncHistoryClient) mutate(ctx context.Context, m *ProviderSyncHistoryMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ProviderSyncHistoryCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ProviderSyncHistoryUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ProviderSyncHistoryUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ProviderSyncHistoryDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ProviderSyncHistory mutation op: %q", m.Op())
-	}
-}
-
 // RetrospectiveClient is a client for the Retrospective schema.
 type RetrospectiveClient struct {
 	config
@@ -14500,8 +14337,8 @@ type (
 		NormalizedEventProjectionStatus, OncallHandoverTemplate, OncallRoster,
 		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
 		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationRole,
-		Playbook, ProviderEventSyncCursor, ProviderEventSyncRun, ProviderSyncHistory,
-		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		Playbook, ProviderEventSyncCursor, ProviderEventSyncRun, Retrospective,
+		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
@@ -14519,8 +14356,8 @@ type (
 		NormalizedEventProjectionStatus, OncallHandoverTemplate, OncallRoster,
 		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
 		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationRole,
-		Playbook, ProviderEventSyncCursor, ProviderEventSyncRun, ProviderSyncHistory,
-		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		Playbook, ProviderEventSyncCursor, ProviderEventSyncRun, Retrospective,
+		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
@@ -14591,7 +14428,6 @@ var (
 		PlaybookAlerts:                            tableSchemas[0],
 		ProviderEventSyncCursor:                   tableSchemas[0],
 		ProviderEventSyncRun:                      tableSchemas[0],
-		ProviderSyncHistory:                       tableSchemas[0],
 		Retrospective:                             tableSchemas[0],
 		RetrospectiveComment:                      tableSchemas[0],
 		RetrospectiveReview:                       tableSchemas[0],

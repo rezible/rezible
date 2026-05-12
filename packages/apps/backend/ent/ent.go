@@ -62,7 +62,6 @@ import (
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/providereventsynccursor"
 	"github.com/rezible/rezible/ent/providereventsyncrun"
-	"github.com/rezible/rezible/ent/providersynchistory"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -189,7 +188,6 @@ func checkColumn(t, c string) error {
 			playbook.Table:                           playbook.ValidColumn,
 			providereventsynccursor.Table:            providereventsynccursor.ValidColumn,
 			providereventsyncrun.Table:               providereventsyncrun.ValidColumn,
-			providersynchistory.Table:                providersynchistory.ValidColumn,
 			retrospective.Table:                      retrospective.ValidColumn,
 			retrospectivecomment.Table:               retrospectivecomment.ValidColumn,
 			retrospectivereview.Table:                retrospectivereview.ValidColumn,

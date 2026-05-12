@@ -1299,30 +1299,6 @@ func (f ProviderEventSyncRunMutationRuleFunc) EvalMutation(ctx context.Context, 
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProviderEventSyncRunMutation", m)
 }
 
-// The ProviderSyncHistoryQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type ProviderSyncHistoryQueryRuleFunc func(context.Context, *ent.ProviderSyncHistoryQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f ProviderSyncHistoryQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ProviderSyncHistoryQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ProviderSyncHistoryQuery", q)
-}
-
-// The ProviderSyncHistoryMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type ProviderSyncHistoryMutationRuleFunc func(context.Context, *ent.ProviderSyncHistoryMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f ProviderSyncHistoryMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.ProviderSyncHistoryMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProviderSyncHistoryMutation", m)
-}
-
 // The RetrospectiveQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type RetrospectiveQueryRuleFunc func(context.Context, *ent.RetrospectiveQuery) error
@@ -1842,8 +1818,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.ProviderEventSyncRunQuery:
 		return q.Filter(), nil
-	case *ent.ProviderSyncHistoryQuery:
-		return q.Filter(), nil
 	case *ent.RetrospectiveQuery:
 		return q.Filter(), nil
 	case *ent.RetrospectiveCommentQuery:
@@ -1980,8 +1954,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.ProviderEventSyncCursorMutation:
 		return m.Filter(), nil
 	case *ent.ProviderEventSyncRunMutation:
-		return m.Filter(), nil
-	case *ent.ProviderSyncHistoryMutation:
 		return m.Filter(), nil
 	case *ent.RetrospectiveMutation:
 		return m.Filter(), nil

@@ -112,8 +112,6 @@ type Tx struct {
 	ProviderEventSyncCursor *ProviderEventSyncCursorClient
 	// ProviderEventSyncRun is the client for interacting with the ProviderEventSyncRun builders.
 	ProviderEventSyncRun *ProviderEventSyncRunClient
-	// ProviderSyncHistory is the client for interacting with the ProviderSyncHistory builders.
-	ProviderSyncHistory *ProviderSyncHistoryClient
 	// Retrospective is the client for interacting with the Retrospective builders.
 	Retrospective *RetrospectiveClient
 	// RetrospectiveComment is the client for interacting with the RetrospectiveComment builders.
@@ -327,7 +325,6 @@ func (tx *Tx) init() {
 	tx.Playbook = NewPlaybookClient(tx.config)
 	tx.ProviderEventSyncCursor = NewProviderEventSyncCursorClient(tx.config)
 	tx.ProviderEventSyncRun = NewProviderEventSyncRunClient(tx.config)
-	tx.ProviderSyncHistory = NewProviderSyncHistoryClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
 	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)

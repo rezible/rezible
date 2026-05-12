@@ -20,21 +20,18 @@ import (
 	ioas "github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/internal/db/datasync"
 	"github.com/rezible/rezible/jobs"
 )
 
 type IntegrationsService struct {
-	db     *ent.Client
-	jobs   rez.JobsService
-	syncer *datasync.Syncer
+	db   *ent.Client
+	jobs rez.JobsService
 }
 
 func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*IntegrationsService, error) {
 	s := &IntegrationsService{
-		db:     db,
-		jobs:   jobSvc,
-		syncer: datasync.NewSyncerService(db),
+		db:   db,
+		jobs: jobSvc,
 	}
 
 	s.registerJobs()
