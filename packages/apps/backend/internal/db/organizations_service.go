@@ -81,10 +81,8 @@ func (s *OrganizationsService) CompleteSetup(ctx context.Context, org *ent.Organ
 	if updateErr := update.Exec(ctx); updateErr != nil {
 		return fmt.Errorf("update: %w", updateErr)
 	}
-	args := jobs.SyncIntegrationsData{
-		OrganizationId: org.ID,
-		IgnoreHistory:  true,
-		CreateDefaults: true,
+	args := jobs.ProviderEventSyncJob{
+		SyncReason: "inital_setup",
 	}
 	if _, jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 		slog.Error("failed to insert sync job", "error", jobErr)

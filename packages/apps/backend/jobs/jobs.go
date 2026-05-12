@@ -4,17 +4,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type SyncIntegrationsData struct {
-	IgnoreHistory  bool
-	CreateDefaults bool
-	OrganizationId uuid.UUID
-	IntegrationId  uuid.UUID
-}
-
-func (SyncIntegrationsData) Kind() string {
-	return "sync-integrations-data"
-}
-
 type ProjectNormalizedEvent struct {
 	EventId uuid.UUID
 }
@@ -24,10 +13,9 @@ func (ProjectNormalizedEvent) Kind() string {
 }
 
 type ProviderEventSyncJob struct {
-	Provider        string   `json:"provider"`
-	ProviderSources []string `json:"provider_sources,omitempty"`
-	CursorAfter     *string  `json:"cursor_after,omitempty"`
-	SyncReason      string   `json:"sync_reason,omitempty"`
+	ProviderSources map[string][]string `json:"provider_sources,omitempty"`
+	CursorAfter     *string             `json:"cursor_after,omitempty"`
+	SyncReason      string              `json:"sync_reason,omitempty"`
 }
 
 func (ProviderEventSyncJob) Kind() string {

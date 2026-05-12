@@ -268,29 +268,34 @@ func (s *ProviderEventService) saveNormalizedEvents(ctx context.Context, normali
 }
 
 func (s *ProviderEventService) HandleProviderEventSyncJob(ctx context.Context, args jobs.ProviderEventSyncJob) error {
-	queriers, discoverErr := s.integrations.GetProviderEventQueriers(ctx, args.Provider)
-	if discoverErr != nil {
-		return fmt.Errorf("discover provider event queriers: %w", discoverErr)
+	if len(args.ProviderSources) == 0 {
+		slog.WarnContext(ctx, "TODO: support syncing all provider events")
 	}
+	for provider, sources := range args.ProviderSources {
+		queriers, discoverErr := s.integrations.GetProviderEventQueriers(ctx, provider)
+		if discoverErr != nil {
+			return fmt.Errorf("discover provider event queriers: %w", discoverErr)
+		}
 
-	matched := make([]rez.ProviderEventQuerier, 0, len(queriers))
-	for _, querier := range queriers {
-		if args.Provider != "" && querier.Provider() != args.Provider {
-			continue
+		matched := make([]rez.ProviderEventQuerier, 0, len(queriers))
+		for _, querier := range queriers {
+			if provider != "" && querier.Provider() != provider {
+				continue
+			}
+			if len(sources) > 0 && !slices.Contains(sources, querier.ProviderSource()) {
+				continue
+			}
+			matched = append(matched, querier)
 		}
-		if len(args.ProviderSources) > 0 && !slices.Contains(args.ProviderSources, querier.ProviderSource()) {
-			continue
-		}
-		matched = append(matched, querier)
-	}
 
-	for _, querier := range matched {
-		syncOpts := rez.ProviderEventSyncOptions{
-			CursorAfter: args.CursorAfter,
-			SyncReason:  args.SyncReason,
-		}
-		if syncErr := s.SyncEvents(ctx, querier, syncOpts); syncErr != nil {
-			return fmt.Errorf("sync: %w", syncErr)
+		for _, querier := range matched {
+			syncOpts := rez.ProviderEventSyncOptions{
+				CursorAfter: args.CursorAfter,
+				SyncReason:  args.SyncReason,
+			}
+			if syncErr := s.SyncEvents(ctx, querier, syncOpts); syncErr != nil {
+				return fmt.Errorf("sync: %w", syncErr)
+			}
 		}
 	}
 	return nil
