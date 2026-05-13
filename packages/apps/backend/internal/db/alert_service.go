@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
@@ -18,9 +18,9 @@ type AlertService struct {
 	db *ent.Client
 }
 
-func NewAlertService(db *ent.Client) (*AlertService, error) {
+func NewAlertService(svcs *rez.Services) (*AlertService, error) {
 	s := &AlertService{
-		db: db,
+		db: svcs.Database.Client(),
 	}
 
 	return s, nil

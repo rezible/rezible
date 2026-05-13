@@ -18,10 +18,10 @@ type OncallRostersService struct {
 	jobs rez.JobsService
 }
 
-func NewOncallRostersService(db *ent.Client, jobs rez.JobsService) (*OncallRostersService, error) {
+func NewOncallRostersService(svcs *rez.Services) (*OncallRostersService, error) {
 	s := &OncallRostersService{
-		db:   db,
-		jobs: jobs,
+		db:   svcs.Database.Client(),
+		jobs: svcs.Jobs,
 	}
 
 	return s, nil

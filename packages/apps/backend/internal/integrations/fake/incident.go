@@ -112,14 +112,6 @@ func (p *IncidentDataProvider) makeFakeIncidents() {
 	}
 }
 
-func (p *IncidentDataProvider) IncidentDataMapping() *ent.Incident {
-	return &incidentDataMapping
-}
-
-func (p *IncidentDataProvider) IncidentRoleDataMapping() *ent.IncidentRole {
-	return &incidentRoleDataMapping
-}
-
 func (p *IncidentDataProvider) PullIncidents(ctx context.Context) iter.Seq2[*ent.Incident, error] {
 	return func(yield func(i *ent.Incident, err error) bool) {
 		for _, inc := range p.incidents {

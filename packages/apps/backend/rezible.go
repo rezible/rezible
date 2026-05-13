@@ -127,7 +127,7 @@ type (
 		ExternalRef() string
 		GetSanitizedConfig() map[string]any
 		GetUserPreferences() map[string]any
-		GetDataKinds() map[string]bool
+		GetAvailableDataKinds() map[string]bool
 	}
 
 	ListIntegrationsParams struct {
@@ -189,7 +189,6 @@ type (
 		CompleteOAuth2Flow(ctx context.Context, provider string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 
 		GetChatService(ctx context.Context) (ChatService, error)
-		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)
 
 		RequestDataSync(ctx context.Context, providerSources map[string][]string) error
 		GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error)
@@ -240,6 +239,34 @@ type (
 
 	ProviderEventIngestResult struct {
 		Duplicate bool
+	}
+)
+
+type (
+	OrganizationService interface {
+		SyncFromAuthProvider(context.Context, ent.Organization) (*ent.Organization, error)
+		Get(context.Context, predicate.Organization) (*ent.Organization, error)
+		CompleteSetup(context.Context, *ent.Organization) error
+	}
+)
+
+type (
+	ListUsersParams = struct {
+		ent.ListParams
+		TeamID uuid.UUID
+	}
+
+	UserService interface {
+		SyncFromAuthProvider(context.Context, ent.Organization, ent.User) (*ent.User, error)
+
+		Get(context.Context, predicate.User) (*ent.User, error)
+		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)
+		List(context.Context, ListUsersParams) ([]*ent.User, error)
+	}
+
+	UserDataProvider interface {
+		UserDataMapping() *ent.User
+		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
 	}
 )
 
@@ -300,34 +327,6 @@ type (
 )
 
 type (
-	OrganizationService interface {
-		SyncFromAuthProvider(context.Context, ent.Organization) (*ent.Organization, error)
-		Get(context.Context, predicate.Organization) (*ent.Organization, error)
-		CompleteSetup(context.Context, *ent.Organization) error
-	}
-)
-
-type (
-	ListUsersParams = struct {
-		ent.ListParams
-		TeamID uuid.UUID
-	}
-
-	UserService interface {
-		SyncFromAuthProvider(context.Context, ent.Organization, ent.User) (*ent.User, error)
-
-		Get(context.Context, predicate.User) (*ent.User, error)
-		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)
-		List(context.Context, ListUsersParams) ([]*ent.User, error)
-	}
-
-	UserDataProvider interface {
-		UserDataMapping() *ent.User
-		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
-	}
-)
-
-type (
 	ChatService interface {
 		SendMessage(ctx context.Context, id string, msg *ContentNode) (string, error)
 		SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error)
@@ -342,11 +341,6 @@ type (
 )
 
 type (
-	TeamDataProvider interface {
-		TeamDataMapping() *ent.Team
-		PullTeams(context.Context) iter.Seq2[*ent.Team, error]
-	}
-
 	ListTeamsParams struct {
 		ent.ListParams
 		TeamIds []uuid.UUID
@@ -368,24 +362,12 @@ type (
 	}
 )
 
-type (
-	AiAgentService interface {
-		GenerateDebriefResponse(context.Context, *ent.IncidentDebrief) (*ent.IncidentDebriefMessage, error)
-	}
-)
+//type (
+//	AiAgentService interface {
+//	}
+//)
 
 type (
-	TicketDataProvider interface {
-		PullTickets(context.Context) iter.Seq2[*ent.Ticket, error]
-	}
-)
-
-type (
-	AlertDataProvider interface {
-		PullAlerts(context.Context) iter.Seq2[*ent.Alert, error]
-		PullAlertInstancesBetweenDates(ctx context.Context, start, end time.Time) iter.Seq2[*ent.AlertInstance, error]
-	}
-
 	ListAlertsParams struct {
 		ent.ListParams
 	}
@@ -406,10 +388,6 @@ type (
 )
 
 type (
-	PlaybookDataProvider interface {
-		PullPlaybooks(context.Context) iter.Seq2[*ent.Playbook, error]
-	}
-
 	ListPlaybooksParams struct {
 		ent.ListParams
 	}
@@ -422,15 +400,6 @@ type (
 )
 
 type (
-	IncidentDataProvider interface {
-		IncidentDataMapping() *ent.Incident
-		IncidentRoleDataMapping() *ent.IncidentRole
-
-		PullIncidents(context.Context) iter.Seq2[*ent.Incident, error]
-		GetIncidentByID(context.Context, string) (*ent.Incident, error)
-		ListIncidentRoles(context.Context) ([]*ent.IncidentRole, error)
-	}
-
 	IncidentMetadata struct {
 		Roles      ent.IncidentRoles
 		Types      ent.IncidentTypes
@@ -558,15 +527,6 @@ type (
 )
 
 type (
-	OncallDataProvider interface {
-		RosterDataMapping() *ent.OncallRoster
-		UserShiftDataMapping() *ent.OncallShift
-
-		PullRosters(context.Context) iter.Seq2[*ent.OncallRoster, error]
-		PullShiftsForRoster(ctx context.Context, rosterId string, from, to time.Time) iter.Seq2[*ent.OncallShift, error]
-		FetchOncallersForRoster(ctx context.Context, rosterId string) ([]*ent.User, error)
-	}
-
 	ListOncallRostersParams = struct {
 		ent.ListParams
 		UserID uuid.UUID

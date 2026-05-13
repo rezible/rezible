@@ -17,10 +17,10 @@ type EventAnnotationsService struct {
 	events rez.EventsService
 }
 
-func NewEventAnnotationsService(db *ent.Client, events rez.EventsService) (*EventAnnotationsService, error) {
+func NewEventAnnotationsService(svcs *rez.Services) (*EventAnnotationsService, error) {
 	s := &EventAnnotationsService{
-		db:     db,
-		events: events,
+		db:     svcs.Database.Client(),
+		events: svcs.Events,
 	}
 
 	return s, nil

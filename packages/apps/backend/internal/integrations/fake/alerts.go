@@ -3,7 +3,6 @@ package fakeprovider
 import (
 	"context"
 	"iter"
-	"log/slog"
 	"math/rand"
 	"time"
 
@@ -157,10 +156,6 @@ func (p *AlertDataProvider) makeFakeAlertInstances(start, end time.Time) []*ent.
 			instances = append(instances, p.makeFakeDayAlertInstance(start.AddDate(0, 0, day)))
 		}
 	}
-	slog.Debug("created fake oncall events",
-		"days", numDays,
-		"total", len(instances),
-	)
 
 	return instances
 }

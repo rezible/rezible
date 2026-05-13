@@ -38,12 +38,12 @@ type ProviderEventService struct {
 	processors   map[string]rez.ProviderEventProcessor
 }
 
-func NewProviderEventService(ctx context.Context, db *ent.Client, js rez.JobsService, intgs rez.IntegrationsService) *ProviderEventService {
+func NewProviderEventService(ctx context.Context, svcs *rez.Services) *ProviderEventService {
 	pe := &ProviderEventService{
 		logger:       telemetry.NewLogger(ctx, telemetry.WithLogPackage("provider_events")),
-		db:           db,
-		jobService:   js,
-		integrations: intgs,
+		db:           svcs.Database.Client(),
+		jobService:   svcs.Jobs,
+		integrations: svcs.Integrations,
 		metrics:      newProviderEventMetrics(),
 		processorsMu: sync.RWMutex{},
 		processors:   make(map[string]rez.ProviderEventProcessor),

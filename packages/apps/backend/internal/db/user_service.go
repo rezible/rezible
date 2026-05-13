@@ -19,10 +19,10 @@ type UserService struct {
 	orgs rez.OrganizationService
 }
 
-func NewUserService(db *ent.Client, orgs rez.OrganizationService) (*UserService, error) {
+func NewUserService(svcs *rez.Services) (*UserService, error) {
 	s := &UserService{
-		db:   db,
-		orgs: orgs,
+		db:   svcs.Database.Client(),
+		orgs: svcs.Organizations,
 	}
 
 	return s, nil

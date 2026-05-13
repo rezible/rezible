@@ -16,16 +16,16 @@ type DocumentsServiceConfig struct {
 }
 
 type DocumentsService struct {
-	cfg DocumentsServiceConfig
-
 	db    *ent.Client
 	teams rez.TeamService
+
+	cfg DocumentsServiceConfig
 }
 
-func NewDocumentsService(db *ent.Client, teams rez.TeamService) (*DocumentsService, error) {
+func NewDocumentsService(svcs *rez.Services) (*DocumentsService, error) {
 	svc := &DocumentsService{
-		db:    db,
-		teams: teams,
+		db:    svcs.Database.Client(),
+		teams: svcs.Teams,
 		cfg:   DocumentsServiceConfig{},
 	}
 

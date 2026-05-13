@@ -110,7 +110,7 @@ func ConfiguredIntegrationFromConfig(cfg rez.ConfiguredIntegration) ConfiguredIn
 		ExternalRef:     cfg.ExternalRef(),
 		Config:          cfg.GetSanitizedConfig(),
 		UserPreferences: cfg.GetUserPreferences(),
-		DataKinds:       cfg.GetDataKinds(),
+		DataKinds:       cfg.GetAvailableDataKinds(),
 	}
 
 	return ConfiguredIntegration{Id: cfg.ID(), Attributes: attrs}

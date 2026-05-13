@@ -19,11 +19,11 @@ type OncallMetricsService struct {
 	shifts rez.OncallShiftsService
 }
 
-func NewOncallMetricsService(db *ent.Client, jobSvc rez.JobsService, shifts rez.OncallShiftsService) (*OncallMetricsService, error) {
+func NewOncallMetricsService(svcs *rez.Services) (*OncallMetricsService, error) {
 	s := &OncallMetricsService{
-		db:     db,
-		jobs:   jobSvc,
-		shifts: shifts,
+		db:     svcs.Database.Client(),
+		jobs:   svcs.Jobs,
+		shifts: svcs.OncallShifts,
 	}
 
 	jobs.RegisterWorkerFunc(s.handleGenerateShiftMetrics)

@@ -30,11 +30,11 @@ type OncallShiftsService struct {
 	users        rez.UserService
 }
 
-func NewOncallShiftsService(db *ent.Client, jobSvc rez.JobsService, integrations rez.IntegrationsService) (*OncallShiftsService, error) {
+func NewOncallShiftsService(svcs *rez.Services) (*OncallShiftsService, error) {
 	s := &OncallShiftsService{
-		db:           db,
-		jobs:         jobSvc,
-		integrations: integrations,
+		db:           svcs.Database.Client(),
+		jobs:         svcs.Jobs,
+		integrations: svcs.Integrations,
 	}
 
 	s.registerJobs()

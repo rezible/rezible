@@ -11,12 +11,10 @@ import (
 
 	"github.com/rezible/rezible"
 	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/internal/adk"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
-	"github.com/rezible/rezible/internal/prosemirror"
 	"github.com/rezible/rezible/internal/watermill"
 	"github.com/rezible/rezible/telemetry"
 )
@@ -129,141 +127,118 @@ func (s *Server) stop(ctx context.Context) error {
 }
 
 func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
-	pgDb, pgErr := postgres.NewDatabaseClient(ctx)
-	if pgErr != nil {
-		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", pgErr)
-	}
-	s.db = pgDb
+	svcs := &rez.Services{}
+	var svcErr error
 
-	msgs, msgsErr := watermill.NewMessageService(ctx)
-	if msgsErr != nil {
-		return nil, fmt.Errorf("watermill.NewMessageService: %w", msgsErr)
+	svcs.Database, svcErr = postgres.NewDatabaseClient(ctx)
+	if svcErr != nil {
+		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", svcErr)
 	}
-	s.listeners["watermill_message_service"] = msgs
+	pgPool := svcs.Database.(*postgres.DatabaseClient).Pool()
+	s.db = svcs.Database
 
-	jobSvc, jobSvcErr := river.NewJobService(ctx, pgDb.Pool())
-	if jobSvcErr != nil {
-		return nil, fmt.Errorf("river.NewJobService: %w", jobSvcErr)
+	svcs.Jobs, svcErr = river.NewJobService(ctx, pgPool)
+	if svcErr != nil {
+		return nil, fmt.Errorf("river.NewJobService: %w", svcErr)
 	}
-	s.listeners["river_job_service"] = jobSvc
+	s.listeners["river_job_service"] = svcs.Jobs
+
+	svcs.Messages, svcErr = watermill.NewMessageService(ctx)
+	if svcErr != nil {
+		return nil, fmt.Errorf("watermill.NewMessageService: %w", svcErr)
+	}
+	s.listeners["watermill_message_service"] = svcs.Messages.(*watermill.MessageService)
 
 	dbc := s.db.Client()
 
 	eventprojections.RegisterHandler("knowledge", db.KnowledgeEntityEventProjectionHandler)
 
-	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
-	if orgsErr != nil {
-		return nil, fmt.Errorf("db.NewOrganizationsService: %w", orgsErr)
+	svcs.Integrations, svcErr = db.NewIntegrationsService(dbc, svcs.Jobs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewIntegrationsService: %w", svcErr)
 	}
 
-	users, usersErr := db.NewUserService(dbc, orgs)
-	if usersErr != nil {
-		return nil, fmt.Errorf("db.NewUserService: %w", usersErr)
+	svcs.ProviderEvents = db.NewProviderEventService(ctx, svcs)
+
+	svcs.Organizations, svcErr = db.NewOrganizationsService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewOrganizationsService: %w", svcErr)
 	}
 
-	teams, teamsErr := db.NewTeamService(dbc)
-	if teamsErr != nil {
-		return nil, fmt.Errorf("db.NewTeamService: %w", teamsErr)
+	svcs.Users, svcErr = db.NewUserService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewUserService: %w", svcErr)
 	}
 
-	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc)
-	if intgsErr != nil {
-		return nil, fmt.Errorf("db.NewIntegrationsService: %w", intgsErr)
+	svcs.Teams, svcErr = db.NewTeamService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewTeamService: %w", svcErr)
 	}
 
-	provEvents := db.NewProviderEventService(ctx, dbc, jobSvc, intgs)
+	//agents, agentsErr := adk.NewAgentService()
+	//if agentsErr != nil {
+	//	return nil, fmt.Errorf("adk.NewAgentService: %w", agentsErr)
+	//}
 
-	agents, agentsErr := adk.NewAgentService()
-	if agentsErr != nil {
-		return nil, fmt.Errorf("adk.NewAgentService: %w", agentsErr)
+	svcs.Events, svcErr = db.NewEventsService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewEventsService: %w", svcErr)
 	}
 
-	events, eventsErr := db.NewEventsService(dbc, users)
-	if eventsErr != nil {
-		return nil, fmt.Errorf("db.NewEventsService: %w", eventsErr)
+	svcs.EventAnnotations, svcErr = db.NewEventAnnotationsService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewEventAnnotationsService: %w", svcErr)
 	}
 
-	annos, annosErr := db.NewEventAnnotationsService(dbc, events)
-	if annosErr != nil {
-		return nil, fmt.Errorf("db.NewEventAnnotationsService: %w", annosErr)
+	svcs.Incidents, svcErr = db.NewIncidentService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewIncidentService: %w", svcErr)
 	}
 
-	_, nodesErr := prosemirror.NewNodeService()
-	if nodesErr != nil {
-		return nil, fmt.Errorf("prosemirror.NewNodeService: %w", nodesErr)
+	svcs.OncallRosters, svcErr = db.NewOncallRostersService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewOncallRostersService: %w", svcErr)
 	}
 
-	incidents, incidentsErr := db.NewIncidentService(dbc, jobSvc, msgs, users)
-	if incidentsErr != nil {
-		return nil, fmt.Errorf("db.NewIncidentService: %w", incidentsErr)
+	svcs.Topology, svcErr = db.NewSystemTopologyService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewTopologyService: %w", svcErr)
 	}
 
-	rosters, rostersErr := db.NewOncallRostersService(dbc, jobSvc)
-	if rostersErr != nil {
-		return nil, fmt.Errorf("db.NewOncallRostersService: %w", rostersErr)
+	svcs.OncallShifts, svcErr = db.NewOncallShiftsService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewOncallShiftsService: %w", svcErr)
 	}
 
-	topology, topologyErr := db.NewSystemTopologyService(dbc)
-	if topologyErr != nil {
-		return nil, fmt.Errorf("db.NewTopologyService: %w", topologyErr)
+	svcs.OncallMetrics, svcErr = db.NewOncallMetricsService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewOncallMetricsService: %w", svcErr)
 	}
 
-	shifts, shiftsErr := db.NewOncallShiftsService(dbc, jobSvc, intgs)
-	if shiftsErr != nil {
-		return nil, fmt.Errorf("db.NewOncallShiftsService: %w", shiftsErr)
+	svcs.Debriefs, svcErr = db.NewDebriefService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewDebriefService: %w", svcErr)
 	}
 
-	oncallMetrics, oncallMetricsErr := db.NewOncallMetricsService(dbc, jobSvc, shifts)
-	if oncallMetricsErr != nil {
-		return nil, fmt.Errorf("db.NewOncallMetricsService: %w", oncallMetricsErr)
+	svcs.Retros, svcErr = db.NewRetrospectiveService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewRetrospectiveService: %w", svcErr)
 	}
 
-	debriefs, debriefsErr := db.NewDebriefService(dbc, jobSvc, agents)
-	if debriefsErr != nil {
-		return nil, fmt.Errorf("db.NewDebriefService: %w", debriefsErr)
+	svcs.Alerts, svcErr = db.NewAlertService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewAlertService: %w", svcErr)
 	}
 
-	retros, retrosErr := db.NewRetrospectiveService(dbc, msgs, incidents)
-	if retrosErr != nil {
-		return nil, fmt.Errorf("db.NewRetrospectiveService: %w", retrosErr)
+	svcs.Playbooks, svcErr = db.NewPlaybookService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewPlaybookService: %w", svcErr)
 	}
 
-	alerts, alertsErr := db.NewAlertService(dbc)
-	if alertsErr != nil {
-		return nil, fmt.Errorf("db.NewAlertService: %w", alertsErr)
+	svcs.Documents, svcErr = db.NewDocumentsService(svcs)
+	if svcErr != nil {
+		return nil, fmt.Errorf("db.NewDocumentsService: %w", svcErr)
 	}
 
-	playbooks, playbooksErr := db.NewPlaybookService(dbc)
-	if playbooksErr != nil {
-		return nil, fmt.Errorf("db.NewPlaybookService: %w", playbooksErr)
-	}
-
-	docs, docsErr := db.NewDocumentsService(dbc, teams)
-	if docsErr != nil {
-		return nil, fmt.Errorf("db.NewDocumentsService: %w", docsErr)
-	}
-
-	return &rez.Services{
-		Database:       pgDb,
-		Jobs:           jobSvc,
-		ProviderEvents: provEvents,
-		Messages:       msgs,
-		//Knowledge:        knowledge,
-		Topology:         topology,
-		Organizations:    orgs,
-		Integrations:     intgs,
-		Users:            users,
-		Teams:            teams,
-		Incidents:        incidents,
-		Debriefs:         debriefs,
-		OncallRosters:    rosters,
-		OncallShifts:     shifts,
-		OncallMetrics:    oncallMetrics,
-		Events:           events,
-		EventAnnotations: annos,
-		Documents:        docs,
-		Retros:           retros,
-		Alerts:           alerts,
-		Playbooks:        playbooks,
-	}, nil
+	return svcs, nil
 }

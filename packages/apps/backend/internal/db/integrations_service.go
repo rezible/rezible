@@ -464,7 +464,7 @@ func (s *IntegrationsService) getConfiguredIntegrationForDataKind(ctx context.Co
 			return nil, fmt.Errorf("get package %s: %w", intg.Provider, pErr)
 		}
 		ci := p.GetConfiguredIntegration(intg)
-		if ci.GetDataKinds()[dataKind] {
+		if ci.GetAvailableDataKinds()[dataKind] {
 			// TODO: return multiple?
 			return ci, nil
 		}

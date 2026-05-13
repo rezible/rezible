@@ -91,7 +91,7 @@ func (ci *ConfiguredIntegration) GetUserPreferences() map[string]any {
 	return ci.userPreferences()
 }
 
-func (ci *ConfiguredIntegration) GetDataKinds() map[string]bool {
+func (ci *ConfiguredIntegration) GetAvailableDataKinds() map[string]bool {
 	return map[string]bool{
 		"video_conference": ci.isVideoConferenceEnabled(),
 	}

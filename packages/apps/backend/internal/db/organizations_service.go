@@ -19,8 +19,8 @@ type OrganizationsService struct {
 	jobs rez.JobsService
 }
 
-func NewOrganizationsService(db *ent.Client, jobs rez.JobsService) (*OrganizationsService, error) {
-	return &OrganizationsService{db: db, jobs: jobs}, nil
+func NewOrganizationsService(svcs *rez.Services) (*OrganizationsService, error) {
+	return &OrganizationsService{db: svcs.Database.Client(), jobs: svcs.Jobs}, nil
 }
 
 func (s *OrganizationsService) Get(ctx context.Context, p predicate.Organization) (*ent.Organization, error) {

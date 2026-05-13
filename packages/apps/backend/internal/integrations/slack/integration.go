@@ -329,7 +329,7 @@ func (ci *ConfiguredIntegration) getIncidentPreferences() incidentPreferences {
 	}
 }
 
-func (ci *ConfiguredIntegration) GetDataKinds() map[string]bool {
+func (ci *ConfiguredIntegration) GetAvailableDataKinds() map[string]bool {
 	return map[string]bool{
 		"chat":  true,
 		"users": true,
