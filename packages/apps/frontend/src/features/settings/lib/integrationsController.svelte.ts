@@ -25,8 +25,8 @@ export class IntegrationsController {
 	configuredByProvider = $derived.by(() => {
 		const grouped = new SvelteMap<string, ConfiguredIntegration[]>();
 		for (const intg of this.configured) {
-			const curr = grouped.get(intg.provider) ?? [];
-			grouped.set(intg.provider, [...curr, intg]);
+			const curr = grouped.get(intg.attributes.provider) ?? [];
+			grouped.set(intg.attributes.provider, [...curr, intg]);
 		}
 		return grouped;
 	});
@@ -38,25 +38,17 @@ export class IntegrationsController {
 		},
 	}));
 
-	configuringProvider = $derived(this.configureMut.variables?.path?.provider ?? "");
+	configuringProviderName = $derived(this.configureMut.variables?.path?.name ?? "");
 	configuringError = $derived(this.configureMut.error?.detail || this.configureMut.error?.title || "");
 	isConfiguring = $derived(this.configureMut.isPending);
 
-	async configure(provider: string, attributes: ConfigureIntegrationRequestBody["attributes"]) {
-		await this.configureMut.mutateAsync({
-			path: { provider },
-			body: { attributes },
-		});
+	async configure(providerName: string, attributes: ConfigureIntegrationRequestBody["attributes"]) {
+		await this.configureMut.mutateAsync({path: { name: providerName }, body: { attributes }});
 	}
 
 	errorFor(provider: string) {
-		if (this.configuringProvider !== provider) return "";
+		if (this.configuringProviderName !== provider) return "";
 		return this.configuringError;
-	}
-
-	isSaving(provider: string) {
-		if (!this.isConfiguring) return false;
-		return this.configuringProvider === provider;
 	}
 
 	loading = $derived(this.listAvailableQuery.isPending || this.listConfiguredQuery.isPending);

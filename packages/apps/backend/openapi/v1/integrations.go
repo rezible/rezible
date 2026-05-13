@@ -47,9 +47,10 @@ func (o operations) RegisterIntegrations(api huma.API) {
 
 type (
 	AvailableIntegration struct {
-		Name          string   `json:"name"`
-		DataKinds     []string `json:"dataKinds"`
-		OAuthRequired bool     `json:"oauthRequired"`
+		Name                 string   `json:"name"`
+		DataKinds            []string `json:"dataKinds"`
+		MaxConfiguredAllowed int      `json:"maxConfiguredAllowed" default:"1"`
+		OAuthRequired        bool     `json:"oauthRequired"`
 	}
 
 	ConfiguredIntegration struct {
@@ -95,9 +96,10 @@ type (
 
 func AvailableIntegrationFromPackage(p rez.IntegrationPackage) AvailableIntegration {
 	return AvailableIntegration{
-		Name:          p.Name(),
-		DataKinds:     p.SupportedDataKinds(),
-		OAuthRequired: p.OAuthConfigRequired(),
+		Name:                 p.Name(),
+		DataKinds:            p.SupportedDataKinds(),
+		OAuthRequired:        p.OAuthConfigRequired(),
+		MaxConfiguredAllowed: 1,
 	}
 }
 

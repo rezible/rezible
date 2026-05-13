@@ -112,18 +112,17 @@ export class IntegrationConfigController {
 		},
 	}));
 
-	loading = $derived(
-		this.inOAuthFlow ||
-			this.startOAuthFlowMut.isPending ||
+	private oauthMutPending = $derived(this.startOAuthFlowMut.isPending ||
 			this.completeOAuthFlowMut.isPending ||
-			this.selectOAuthFlowMut.isPending ||
-			this.integrations.isSaving(this.name ?? "")
-	);
+			this.selectOAuthFlowMut.isPending);
+	private isConfiguring = $derived(!!this.name && this.integrations.configuringProviderName === this.name);
+	
+	loading = $derived(this.inOAuthFlow || this.oauthMutPending || this.isConfiguring);
 
-	selectionToken = $state("");
+	selectionToken = $state<string>();
 	selectionOptions = $state<ExternalIntegrationOption[]>([]);
 	selectedExternalRefs = new SvelteSet<string>();
-	selectionRequired = $derived(this.selectionToken !== "" && this.selectionOptions.length > 0);
+	selectionRequired = $derived(!!this.selectionToken && this.selectionOptions.length > 0);
 
 	isSelected(ref: string) {
 		return this.selectedExternalRefs.has(ref);
@@ -137,7 +136,7 @@ export class IntegrationConfigController {
 		}
 	}
 
-	private setSelection(token = "", options: ExternalIntegrationOption[] = []) {
+	private setSelection(token?: string, options: ExternalIntegrationOption[] = []) {
 		this.selectionToken = token;
 		this.selectionOptions = options;
 		this.selectedExternalRefs.clear();
@@ -150,10 +149,12 @@ export class IntegrationConfigController {
 		if (this.loading || !this.name) return;
 		const name = this.name;
 		try {
-			const callbackPath = resolve(`/settings/integration-callback/${name}`);
+			const attributes = {
+				callbackPath: resolve(`/settings/integration-callback/${name}`),
+			}
 			const resp = await this.startOAuthFlowMut.mutateAsync({
-				path: { provider: name },
-				body: { attributes: { callbackPath } },
+				path: { name },
+				body: { attributes },
 			});
 			this.inOAuthFlow = true;
 			window.location.assign(new URL(resp.data.flow_url));
@@ -175,12 +176,17 @@ export class IntegrationConfigController {
 		if (!state || !code) return;
 
 		try {
+			const attributes = { state, code };
 			const resp = await this.completeOAuthFlowMut.mutateAsync({
-				path: { provider: name },
-				body: { attributes: { state, code } },
+				path: { name },
+				body: { attributes },
 			});
 			if (resp.data.status === "selection_required") {
-				this.setSelection(resp.data.selectionToken ?? "", resp.data.options);
+				if (!resp.data.selectionToken) {
+					console.error("no selection token returned for oauth response");
+				} else {
+					this.setSelection(resp.data.selectionToken, resp.data.options);
+				}
 			} else {
 				this.setSelection();
 			}
@@ -194,14 +200,13 @@ export class IntegrationConfigController {
 	async selectOAuthOptions() {
 		if (!this.name || !this.selectionToken || this.selectedExternalRefs.size === 0) return;
 		try {
+			const attributes = {
+				selectionToken: this.selectionToken,
+				externalRefs: [...this.selectedExternalRefs],
+			}
 			await this.selectOAuthFlowMut.mutateAsync({
-				path: { provider: this.name },
-				body: {
-					attributes: {
-						selectionToken: this.selectionToken,
-						externalRefs: [...this.selectedExternalRefs],
-					},
-				},
+				path: { name: this.name },
+				body: { attributes },
 			});
 			this.setSelection();
 			this.setConfigError();

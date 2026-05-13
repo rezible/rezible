@@ -263,6 +263,10 @@ components:
           items:
             type: string
           type: array
+        maxConfiguredAllowed:
+          default: 1
+          format: int64
+          type: integer
         name:
           type: string
         oauthRequired:
@@ -270,6 +274,7 @@ components:
       required:
         - name
         - dataKinds
+        - maxConfiguredAllowed
         - oauthRequired
       type: object
     CompleteIntegrationOAuthFlowRequestAttributes:
@@ -366,11 +371,8 @@ components:
           $ref: "#/components/schemas/ConfiguredIntegrationAttributes"
         id:
           type: string
-        provider:
-          type: string
       required:
         - id
-        - provider
         - attributes
       type: object
     ConfiguredIntegrationAttributes:
@@ -390,7 +392,10 @@ components:
         preferences:
           additionalProperties: {}
           type: object
+        provider:
+          type: string
       required:
+        - provider
         - displayName
         - externalRef
         - config
@@ -1817,6 +1822,26 @@ components:
       required:
         - data
       type: object
+    GetIntegrationDataSyncStatusResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetIntegrationDataSyncStatusResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IntegrationProviderDataSyncStatus"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
     GetMeetingScheduleResponseBody:
       additionalProperties: false
       properties:
@@ -2921,6 +2946,30 @@ components:
         - status
         - configured
         - options
+      type: object
+    IntegrationProviderDataSyncStatus:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IntegrationProviderDataSyncStatusAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IntegrationProviderDataSyncStatusAttributes:
+      additionalProperties: false
+      properties:
+        status:
+          enum:
+            - queued
+            - started
+            - complete
+            - error
+          type: string
+      required:
+        - status
       type: object
     ListAlertIncidentLinksResponseBody:
       additionalProperties: false
@@ -4136,6 +4185,29 @@ components:
       required:
         - data
         - pagination
+      type: object
+    RequestIntegrationDataSyncRequestAttributes:
+      additionalProperties: false
+      properties:
+        sources:
+          items:
+            type: string
+          type: array
+      type: object
+    RequestIntegrationDataSyncRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/RequestIntegrationDataSyncRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/RequestIntegrationDataSyncRequestAttributes"
+      required:
+        - attributes
       type: object
     ResponsePagination:
       additionalProperties: false
@@ -10228,12 +10300,12 @@ paths:
       summary: List Available Integrations
       tags:
         - Integrations
-  /integrations/providers/{provider}/configured:
+  /integrations/providers/{name}/configured:
     post:
       operationId: configure-integration
       parameters:
         - in: path
-          name: provider
+          name: name
           required: true
           schema:
             type: string
@@ -10289,12 +10361,12 @@ paths:
       summary: Create an Integration
       tags:
         - Integrations
-  /integrations/providers/{provider}/oauth/complete:
+  /integrations/providers/{name}/oauth/complete:
     post:
       operationId: complete-integration-oauth-flow
       parameters:
         - in: path
-          name: provider
+          name: name
           required: true
           schema:
             type: string
@@ -10350,12 +10422,12 @@ paths:
       summary: Complete OAuth flow for an Integration
       tags:
         - Integrations
-  /integrations/providers/{provider}/oauth/select:
+  /integrations/providers/{name}/oauth/select:
     post:
       operationId: select-integration-oauth-flow
       parameters:
         - in: path
-          name: provider
+          name: name
           required: true
           schema:
             type: string
@@ -10411,12 +10483,12 @@ paths:
       summary: Select OAuth installations for an Integration
       tags:
         - Integrations
-  /integrations/providers/{provider}/oauth/start:
+  /integrations/providers/{name}/oauth/start:
     post:
       operationId: start-integration-oauth-flow
       parameters:
         - in: path
-          name: provider
+          name: name
           required: true
           schema:
             type: string
@@ -10470,6 +10542,117 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Start OAuth flow for an Integration
+      tags:
+        - Integrations
+  /integrations/providers/{name}/sync:
+    get:
+      operationId: get-integration-data-sync-status
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetIntegrationDataSyncStatusResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get data sync status for an integration provider
+      tags:
+        - Integrations
+    post:
+      operationId: request-integration-data-sync
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestIntegrationDataSyncRequestBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Request a manual data sync for an integration provider
       tags:
         - Integrations
   /meeting_schedules:
@@ -14921,7 +15104,7 @@ paths:
         - Team Memberships
   /team_memberships/{id}:
     delete:
-      operationId: archive-team-membership
+      operationId: delete-team-membership
       parameters:
         - in: path
           name: id

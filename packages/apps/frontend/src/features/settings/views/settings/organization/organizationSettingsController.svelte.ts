@@ -1,5 +1,5 @@
 import {
-	archiveTeamMembershipMutation,
+	deleteTeamMembershipMutation,
 	archiveTeamMutation,
 	createTeamMembershipMutation,
 	createTeamMutation,
@@ -64,10 +64,8 @@ export class OrganizationSettingsViewController {
 	isOrgAdmin = $derived(false);
 	selectedTeam = $derived(this.teams.find((team) => team.id === this.selectedTeamId));
 
-	availableUsersForSelectedTeam = $derived.by(() => {
-		const memberUserIds = new Set(this.memberships.map((m) => m.attributes.userId));
-		return this.users.filter((user) => !memberUserIds.has(user.id));
-	});
+	private memberUserIds = $derived(new Set(this.memberships.map((m) => m.attributes.userId)));
+	availableUsersForSelectedTeam = $derived(this.users.filter((user) => !this.memberUserIds.has(user.id)));
 
 	createTeamMut = createMutation(() => ({
 		...createTeamMutation(),
@@ -113,8 +111,8 @@ export class OrganizationSettingsViewController {
 		},
 		onError: (err) => this.sectionErrors.set("memberships", err),
 	}));
-	archiveMembershipMut = createMutation(() => ({
-		...archiveTeamMembershipMutation(),
+	deleteMembershipMut = createMutation(() => ({
+		...deleteTeamMembershipMutation(),
 		onSuccess: async () => {
 			this.sectionErrors.delete("memberships");
 			this.sectionErrors.delete("users");
@@ -198,7 +196,7 @@ export class OrganizationSettingsViewController {
 
 	removeMembership(id: string) {
 		if (!this.isOrgAdmin) return;
-		this.archiveMembershipMut.mutate({ path: { id } });
+		this.deleteMembershipMut.mutate({ path: { id } });
 	}
 
 	teamMembershipForUser(userId: string): TeamMembership | undefined {
