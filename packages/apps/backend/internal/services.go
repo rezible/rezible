@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rezible/rezible/internal/projections"
+	"github.com/rezible/rezible/integrations/eventprojections"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/rezible/rezible"
@@ -149,7 +149,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 
 	dbc := s.db.Client()
 
-	projections.RegisterProjectionHandler("knowledge", db.KnowledgeEntityEventProjectionHandler)
+	eventprojections.RegisterHandler("knowledge", db.KnowledgeEntityEventProjectionHandler)
 
 	orgs, orgsErr := db.NewOrganizationsService(dbc, jobSvc)
 	if orgsErr != nil {

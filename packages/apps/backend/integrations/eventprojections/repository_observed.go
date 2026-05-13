@@ -1,4 +1,4 @@
-package projections
+package eventprojections
 
 import "github.com/rezible/rezible/ent"
 

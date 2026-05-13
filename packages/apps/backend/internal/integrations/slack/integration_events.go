@@ -9,13 +9,13 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/integrations/eventprojections"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/internal/projections"
+	"github.com/rezible/rezible/ent/normalizedevent"
 )
 
 const (
@@ -288,7 +288,7 @@ func (p *callbackEventProcessor) Process(ctx context.Context, prov rez.ProviderE
 		ProcessingVersion:        "slack.chat-message-posted.v1",
 	}
 
-	attrs := projections.ChatMessageAttributes{
+	attrs := eventprojections.ChatMessageAttributes{
 		ConversationExternalRef: "",
 		Body:                    "",
 		SenderExternalRef:       "",

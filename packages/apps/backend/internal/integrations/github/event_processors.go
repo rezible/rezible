@@ -9,12 +9,12 @@ import (
 	"time"
 
 	"github.com/google/go-github/v84/github"
+	"github.com/rezible/rezible/integrations/eventprojections"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/internal/projections"
 )
 
 const zeroSHA = "0000000000000000000000000000000000000000"
@@ -87,7 +87,7 @@ func (p *pushEventProcessor) Process(ctx context.Context, prov rez.ProviderEvent
 		SubjectRef:               subjectRef,
 		OccurredAt:               occurredAt,
 		ProcessingVersion:        "github.change-event-observed.v1",
-		Attributes: projections.ChangeEventObservedAttributes{
+		Attributes: eventprojections.ChangeEventObservedAttributes{
 			RepositoryExternalRef: event.GetRepo().GetFullName(),
 			DisplayName:           event.GetRef(),
 		}.Encode(),
@@ -135,7 +135,7 @@ func (p *pullRequestEventProcessor) Process(ctx context.Context, prov rez.Provid
 		OccurredAt:               pr.GetCreatedAt().Time,
 		ProcessingVersion:        "github.change-event-observed.v1",
 		ProviderEventDeliveryRef: prov.ProviderDeliveryRef,
-		Attributes: projections.ChangeEventObservedAttributes{
+		Attributes: eventprojections.ChangeEventObservedAttributes{
 			RepositoryExternalRef: event.GetRepo().GetFullName(),
 			DisplayName:           pr.GetTitle(),
 		}.Encode(),
@@ -195,7 +195,7 @@ func (p *repositoryObservedProcessor) Process(ctx context.Context, prov rez.Prov
 		OccurredAt:               occurredAt,
 		ReceivedAt:               prov.ReceivedAt,
 		ProcessingVersion:        "github.repository-observed.v1",
-		Attributes: projections.RepositoryObservedAttributes{
+		Attributes: eventprojections.RepositoryObservedAttributes{
 			DisplayName: repositoryRef,
 			URL:         payload.HTMLURL,
 		}.Encode(),

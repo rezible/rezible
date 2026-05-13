@@ -11,7 +11,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	"github.com/rezible/rezible/internal/projections"
+	"github.com/rezible/rezible/integrations/eventprojections"
 )
 
 const (
@@ -27,16 +27,16 @@ const (
 )
 
 func KnowledgeEntityEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	projectionEvent, validationErr := projections.DecodeEvent(event)
+	projectionEvent, validationErr := eventprojections.DecodeEvent(event)
 	if validationErr != nil || projectionEvent == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}
 	proj := newKnowledgeEntityEventProjector(event, newKnowledgeService(client))
 	var result *ProjectionResult
 	switch ev := projectionEvent.(type) {
-	case projections.RepositoryObserved:
+	case eventprojections.RepositoryObserved:
 		result = proj.projectRepositoryObserved(ev)
-	case projections.ChangeEventObserved:
+	case eventprojections.ChangeEventObserved:
 		result = proj.projectCodeChangeEventObserved(ev)
 	}
 	if result != nil {
@@ -346,7 +346,7 @@ type ProjectedRelationship struct {
 	ToAlias       EntityAliasRef
 }
 
-func (kp *knowledgeEntityEventProjector) projectRepositoryObserved(pe projections.RepositoryObserved) *ProjectionResult {
+func (kp *knowledgeEntityEventProjector) projectRepositoryObserved(pe eventprojections.RepositoryObserved) *ProjectionResult {
 	repoEntity := ProjectedEntity{
 		Kind:          knowledgeKindCodeRepository,
 		AssertionKind: assertionCodeRepositoryExists,
@@ -363,7 +363,7 @@ func (kp *knowledgeEntityEventProjector) projectRepositoryObserved(pe projection
 	return &ProjectionResult{Entities: []ProjectedEntity{repoEntity}}
 }
 
-func (kp *knowledgeEntityEventProjector) projectCodeChangeEventObserved(pe projections.ChangeEventObserved) *ProjectionResult {
+func (kp *knowledgeEntityEventProjector) projectCodeChangeEventObserved(pe eventprojections.ChangeEventObserved) *ProjectionResult {
 	ev := pe.Event
 	attrs := pe.Attributes
 	changeEventAlias := EntityAliasRef{

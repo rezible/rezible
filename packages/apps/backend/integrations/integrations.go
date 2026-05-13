@@ -15,10 +15,10 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/internal/fake"
-	"github.com/rezible/rezible/internal/github"
-	"github.com/rezible/rezible/internal/google"
-	"github.com/rezible/rezible/internal/slack"
+	"github.com/rezible/rezible/internal/integrations/fake"
+	"github.com/rezible/rezible/internal/integrations/github"
+	"github.com/rezible/rezible/internal/integrations/google"
+	"github.com/rezible/rezible/internal/integrations/slack"
 )
 
 var (
@@ -146,66 +146,4 @@ func GetProviderSourceEventQueriers(ctx context.Context, intg *ent.Integration) 
 		return nil, nil
 	}
 	return querierPkg.MakeProviderSourceEventQueriers(ctx, intg)
-}
-
-func getDataProviders[DP any, I any](intgs ent.Integrations, fn func(I, *ent.Integration) (DP, error)) (map[string]DP, error) {
-	provs := make(map[string]DP)
-	for _, intg := range intgs {
-		if p, valid := packageNameMap[intg.Provider]; valid {
-			dpProv, hasSupport := p.(I)
-			if hasSupport {
-				prov, provErr := fn(dpProv, intg)
-				if provErr != nil {
-					return nil, fmt.Errorf("loading data provider: %w", provErr)
-				}
-				provs[intg.ID.String()] = prov
-			}
-		}
-	}
-	return provs, nil
-}
-
-func GetUserDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.UserDataProvider, error) {
-	type integrationWithUserDataProvider interface {
-		MakeUserDataProvider(context.Context, *ent.Integration) (rez.UserDataProvider, error)
-	}
-	return getDataProviders(intgs, func(dpi integrationWithUserDataProvider, i *ent.Integration) (rez.UserDataProvider, error) {
-		return dpi.MakeUserDataProvider(ctx, i)
-	})
-}
-
-func GetTeamDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.TeamDataProvider, error) {
-	type integrationWithTeamDataProvider interface {
-		MakeTeamDataProvider(context.Context, *ent.Integration) (rez.TeamDataProvider, error)
-	}
-	return getDataProviders(intgs, func(dpi integrationWithTeamDataProvider, i *ent.Integration) (rez.TeamDataProvider, error) {
-		return dpi.MakeTeamDataProvider(ctx, i)
-	})
-}
-
-func GetOncallDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.OncallDataProvider, error) {
-	type integrationWithOncallDataProvider interface {
-		MakeOncallDataProvider(context.Context, *ent.Integration) (rez.OncallDataProvider, error)
-	}
-	return getDataProviders(intgs, func(dpi integrationWithOncallDataProvider, i *ent.Integration) (rez.OncallDataProvider, error) {
-		return dpi.MakeOncallDataProvider(ctx, i)
-	})
-}
-
-func GetAlertDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.AlertDataProvider, error) {
-	type integrationWithAlertDataProvider interface {
-		MakeAlertDataProvider(context.Context, *ent.Integration) (rez.AlertDataProvider, error)
-	}
-	return getDataProviders(intgs, func(dpi integrationWithAlertDataProvider, i *ent.Integration) (rez.AlertDataProvider, error) {
-		return dpi.MakeAlertDataProvider(ctx, i)
-	})
-}
-
-func GetIncidentDataProviders(ctx context.Context, intgs ent.Integrations) (map[string]rez.IncidentDataProvider, error) {
-	type integrationWithIncidentDataProvider interface {
-		MakeIncidentDataProvider(context.Context, *ent.Integration) (rez.IncidentDataProvider, error)
-	}
-	return getDataProviders(intgs, func(dpi integrationWithIncidentDataProvider, i *ent.Integration) (rez.IncidentDataProvider, error) {
-		return dpi.MakeIncidentDataProvider(ctx, i)
-	})
 }

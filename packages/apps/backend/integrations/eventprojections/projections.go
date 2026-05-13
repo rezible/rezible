@@ -1,4 +1,4 @@
-package projections
+package eventprojections
 
 import (
 	"context"
@@ -21,13 +21,13 @@ type EventProjectionHandlerFunc = func(context.Context, *ent.Client, *ent.Normal
 var projectionFuncsMu sync.RWMutex
 var projectionFuncs = make(map[string]EventProjectionHandlerFunc)
 
-func RegisterProjectionHandler(name string, handler EventProjectionHandlerFunc) {
+func RegisterHandler(name string, handler EventProjectionHandlerFunc) {
 	projectionFuncsMu.Lock()
 	defer projectionFuncsMu.Unlock()
 	projectionFuncs[name] = handler
 }
 
-func GetEventProjectionHandlers(kind ne.Kind) map[string]EventProjectionHandlerFunc {
+func GetHandlers(kind ne.Kind) map[string]EventProjectionHandlerFunc {
 	return projectionFuncs
 }
 

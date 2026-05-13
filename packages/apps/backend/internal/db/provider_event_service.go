@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/rezible/rezible/internal/projections"
+	"github.com/rezible/rezible/integrations/eventprojections"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
@@ -457,7 +457,7 @@ func (s *ProviderEventService) ProjectNormalizedEvent(ctx context.Context, args 
 	}
 
 	var failed []error
-	for name, handlerFn := range projections.GetEventProjectionHandlers(ev.Kind) {
+	for name, handlerFn := range eventprojections.GetHandlers(ev.Kind) {
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
 		status, statusErr := queryStatus.Only(ctx)
