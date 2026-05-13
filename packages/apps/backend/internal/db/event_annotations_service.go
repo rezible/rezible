@@ -26,7 +26,7 @@ func NewEventAnnotationsService(db *ent.Client, events rez.EventsService) (*Even
 	return s, nil
 }
 
-func (s *EventAnnotationsService) ListAnnotations(ctx context.Context, params rez.ListAnnotationsParams) (*ent.ListResult[*ent.EventAnnotation], error) {
+func (s *EventAnnotationsService) ListAnnotations(ctx context.Context, params rez.ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error) {
 	query := s.db.EventAnnotation.Query()
 
 	if !params.From.IsZero() {
@@ -43,7 +43,7 @@ func (s *EventAnnotationsService) ListAnnotations(ctx context.Context, params re
 		query.WithEvent()
 	}
 
-	return ent.DoListQuery[*ent.EventAnnotation, *ent.EventAnnotationQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.EventAnnotation, *ent.EventAnnotationQuery](ctx, query, params.ListParams)
 }
 
 func (s *EventAnnotationsService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.EventAnnotation, error) {

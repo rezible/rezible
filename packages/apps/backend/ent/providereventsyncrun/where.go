@@ -247,6 +247,16 @@ func ProviderSourceHasSuffix(v string) predicate.ProviderEventSyncRun {
 	return predicate.ProviderEventSyncRun(sql.FieldHasSuffix(FieldProviderSource, v))
 }
 
+// ProviderSourceIsNil applies the IsNil predicate on the "provider_source" field.
+func ProviderSourceIsNil() predicate.ProviderEventSyncRun {
+	return predicate.ProviderEventSyncRun(sql.FieldIsNull(FieldProviderSource))
+}
+
+// ProviderSourceNotNil applies the NotNil predicate on the "provider_source" field.
+func ProviderSourceNotNil() predicate.ProviderEventSyncRun {
+	return predicate.ProviderEventSyncRun(sql.FieldNotNull(FieldProviderSource))
+}
+
 // ProviderSourceEqualFold applies the EqualFold predicate on the "provider_source" field.
 func ProviderSourceEqualFold(v string) predicate.ProviderEventSyncRun {
 	return predicate.ProviderEventSyncRun(sql.FieldEqualFold(FieldProviderSource, v))

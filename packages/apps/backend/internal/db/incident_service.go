@@ -69,7 +69,7 @@ func (s *IncidentService) incidentQuery(pred predicate.Incident, edgesFn func(*e
 	return q
 }
 
-func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[*ent.Incident], error) {
+func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[ent.Incident], error) {
 	query := s.db.Incident.Query()
 	query.Order(incident.ByOpenedAt(params.GetOrder()))
 	if !params.OpenedAfter.IsZero() {
@@ -87,7 +87,7 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 	}
 	s.allQueryEdges(query)
 
-	return ent.DoListQuery[*ent.Incident, *ent.IncidentQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.Incident, *ent.IncidentQuery](ctx, query, params.ListParams)
 }
 
 func (s *IncidentService) Query(ctx context.Context, p predicate.Incident, withFn func(*ent.IncidentQuery)) (*ent.Incident, error) {

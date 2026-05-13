@@ -145,12 +145,6 @@ type (
 		Preferences map[string]any
 	}
 
-	CompleteIntegrationOAuth2Params struct {
-		Code           string
-		State          *string
-		ClientVerifier *string
-	}
-
 	CompleteIntegrationOAuth2Result struct {
 		Status         string
 		Configured     []ConfiguredIntegration
@@ -169,19 +163,36 @@ type (
 		ExternalRefs   []string
 	}
 
+	CompleteIntegrationOAuth2Params struct {
+		Code           string
+		State          *string
+		ClientVerifier *string
+	}
+
+	ListProviderDataSyncStatusParams struct {
+		Provider string
+	}
+
 	IntegrationsService interface {
+		GetAvailable() []IntegrationPackage
+
 		Configure(ctx context.Context, params ConfigureIntegrationParams) (ConfiguredIntegration, error)
 		ListConfigured(ctx context.Context, params ListIntegrationsParams) ([]ConfiguredIntegration, error)
 		GetConfigured(ctx context.Context, id uuid.UUID) (ConfiguredIntegration, error)
 		UpdateConfiguredPreferences(ctx context.Context, id uuid.UUID, prefs map[string]any) (ConfiguredIntegration, error)
 		DeleteConfigured(ctx context.Context, id uuid.UUID) error
+
 		GetProviderEventQueriers(ctx context.Context, provider string) ([]ProviderEventQuerier, error)
+
 		StartOAuth2Flow(ctx context.Context, provider string, redirect *url.URL) (string, error)
 		SelectOAuth2Flow(ctx context.Context, provider string, params SelectIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 		CompleteOAuth2Flow(ctx context.Context, provider string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 
 		GetChatService(ctx context.Context) (ChatService, error)
 		GetVideoConferenceService(ctx context.Context) (VideoConferenceService, error)
+
+		RequestDataSync(ctx context.Context, providerSources map[string][]string) error
+		GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error)
 	}
 )
 
@@ -278,10 +289,10 @@ type (
 	}
 
 	SystemTopologyService interface {
-		ListEntities(context.Context, ListSystemTopologyEntitiesParams) (*ent.ListResult[*ent.KnowledgeEntity], error)
+		ListEntities(context.Context, ListSystemTopologyEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error)
 		GetEntity(context.Context, uuid.UUID) (*ent.KnowledgeEntity, error)
 		GetNeighborhood(context.Context, uuid.UUID, SystemTopologyNeighborhoodParams) (*SystemTopologyGraph, error)
-		ListRelationships(context.Context, ListSystemTopologyRelationshipsParams) (*ent.ListResult[*ent.KnowledgeRelationship], error)
+		ListRelationships(context.Context, ListSystemTopologyRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error)
 
 		CreateSnapshot(context.Context, CreateSystemTopologySnapshotParams) (*ent.SystemTopologySnapshot, error)
 		GetSnapshot(context.Context, uuid.UUID) (*ent.SystemTopologySnapshot, error)
@@ -436,7 +447,7 @@ type (
 	}
 
 	IncidentService interface {
-		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[*ent.Incident], error)
+		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[ent.Incident], error)
 		Query(context.Context, predicate.Incident, func(*ent.IncidentQuery)) (*ent.Incident, error)
 		Get(context.Context, predicate.Incident) (*ent.Incident, error)
 		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error)
@@ -516,7 +527,7 @@ type (
 
 	EventsService interface {
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.Event, error)
-		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[*ent.Event], error)
+		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.Event], error)
 	}
 
 	ExpandAnnotationsParams struct {
@@ -536,7 +547,7 @@ type (
 	}
 
 	EventAnnotationsService interface {
-		ListAnnotations(ctx context.Context, params ListAnnotationsParams) (*ent.ListResult[*ent.EventAnnotation], error)
+		ListAnnotations(ctx context.Context, params ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error)
 
 		LookupByUserEvent(ctx context.Context, userId uuid.UUID, event *ent.Event) (*ent.EventAnnotation, error)
 
@@ -567,12 +578,12 @@ type (
 	}
 
 	OncallRostersService interface {
-		ListRosters(context.Context, ListOncallRostersParams) (*ent.ListResult[*ent.OncallRoster], error)
+		ListRosters(context.Context, ListOncallRostersParams) (*ent.ListResult[ent.OncallRoster], error)
 		GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error)
 		GetRosterBySlug(ctx context.Context, slug string) (*ent.OncallRoster, error)
 		GetRosterByScheduleId(ctx context.Context, scheduleId uuid.UUID) (*ent.OncallRoster, error)
 
-		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) (*ent.ListResult[*ent.OncallSchedule], error)
+		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) (*ent.ListResult[ent.OncallSchedule], error)
 
 		GetCurrentOncallForComponent(context.Context, uuid.UUID) ([]*ent.User, error)
 	}
@@ -591,7 +602,7 @@ type (
 	}
 
 	OncallShiftsService interface {
-		ListShifts(ctx context.Context, params ListOncallShiftsParams) (*ent.ListResult[*ent.OncallShift], error)
+		ListShifts(ctx context.Context, params ListOncallShiftsParams) (*ent.ListResult[ent.OncallShift], error)
 		GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error)
 		GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallShift, *ent.OncallShift, error)
 

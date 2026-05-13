@@ -2038,7 +2038,7 @@ var (
 	ProviderEventSyncRunsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "provider", Type: field.TypeString},
-		{Name: "provider_source", Type: field.TypeString},
+		{Name: "provider_source", Type: field.TypeString, Nullable: true},
 		{Name: "sync_reason", Type: field.TypeString, Default: "manual"},
 		{Name: "started_at", Type: field.TypeTime},
 		{Name: "finished_at", Type: field.TypeTime, Nullable: true},

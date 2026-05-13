@@ -135,7 +135,7 @@ type ListAlertsRequest struct {
 	ListRequest
 	RosterId uuid.UUID `query:"rosterId" required:"false"`
 }
-type ListAlertsResponse ListResponse[Alert]
+type ListAlertsResponse PaginatedResponse[Alert]
 
 var GetAlert = openapi.Operation{
 	OperationID: "get-alert",
@@ -147,7 +147,7 @@ var GetAlert = openapi.Operation{
 }
 
 type GetAlertRequest struct {
-	GetIdRequest
+	EmptyIdRequest
 }
 type GetAlertResponse ItemResponse[Alert]
 
@@ -161,7 +161,7 @@ var GetAlertMetrics = openapi.Operation{
 }
 
 type GetAlertMetricsRequest struct {
-	GetIdRequest
+	EmptyIdRequest
 	RosterId uuid.UUID    `query:"rosterId"`
 	From     CalendarDate `query:"from" format:"date" required:"true"`
 	To       CalendarDate `query:"to" format:"date" required:"true"`
@@ -180,4 +180,4 @@ var ListAlertIncidentLinks = openapi.Operation{
 type ListAlertIncidentLinksRequest struct {
 	ListIdRequest
 }
-type ListAlertIncidentLinksResponse ListResponse[AlertIncidentLink]
+type ListAlertIncidentLinksResponse PaginatedResponse[AlertIncidentLink]

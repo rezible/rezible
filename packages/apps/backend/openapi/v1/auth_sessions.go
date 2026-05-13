@@ -66,7 +66,7 @@ var ListNotifications = huma.Operation{
 }
 
 type ListNotificationsRequest ListRequest
-type ListNotificationsResponse ListResponse[UserNotification]
+type ListNotificationsResponse PaginatedResponse[UserNotification]
 
 var DeleteNotification = huma.Operation{
 	OperationID: "delete-user-notification",
@@ -77,5 +77,5 @@ var DeleteNotification = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteNotificationRequest DeleteIdRequest
+type DeleteNotificationRequest EmptyIdRequest
 type DeleteNotificationResponse EmptyResponse

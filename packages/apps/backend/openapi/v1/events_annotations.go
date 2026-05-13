@@ -99,7 +99,7 @@ type ListEventAnnotationsRequest struct {
 	ShiftIds   uuid.UUID `query:"shiftIds"`
 	WithEvents bool      `query:"withEvents"`
 }
-type ListEventAnnotationsResponse ListResponse[EventAnnotation]
+type ListEventAnnotationsResponse PaginatedResponse[EventAnnotation]
 
 var CreateEventAnnotation = huma.Operation{
 	OperationID: "create-event-annotation",
@@ -133,7 +133,7 @@ type UpdateEventAnnotationRequestAttributes struct {
 	MinutesOccupied *int      `json:"minutesOccupied,omitempty"`
 	Tags            *[]string `json:"tags,omitempty"`
 }
-type UpdateEventAnnotationRequest UpdateIdRequest[UpdateEventAnnotationRequestAttributes]
+type UpdateEventAnnotationRequest IdRequest[UpdateEventAnnotationRequestAttributes]
 type UpdateEventAnnotationResponse ItemResponse[EventAnnotation]
 
 var DeleteEventAnnotation = huma.Operation{
@@ -145,5 +145,5 @@ var DeleteEventAnnotation = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteEventAnnotationRequest DeleteIdRequest
+type DeleteEventAnnotationRequest EmptyIdRequest
 type DeleteEventAnnotationResponse EmptyResponse

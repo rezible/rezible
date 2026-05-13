@@ -71,7 +71,7 @@ type ListTasksRequest struct {
 	ListRequest
 	TeamId uuid.UUID `query:"teamId" required:"false"`
 }
-type ListTasksResponse ListResponse[Task]
+type ListTasksResponse PaginatedResponse[Task]
 
 var GetTask = huma.Operation{
 	OperationID: "get-task",
@@ -82,7 +82,7 @@ var GetTask = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetTaskRequest GetIdRequest
+type GetTaskRequest EmptyIdRequest
 type GetTaskResponse ItemResponse[Task]
 
 var CreateTask = huma.Operation{
@@ -112,7 +112,7 @@ var UpdateTask = huma.Operation{
 type UpdateTaskAttributes struct {
 	Name OmittableNullable[string] `json:"name,omitempty"`
 }
-type UpdateTaskRequest UpdateIdRequest[UpdateTaskAttributes]
+type UpdateTaskRequest IdRequest[UpdateTaskAttributes]
 type UpdateTaskResponse ItemResponse[Task]
 
 var ArchiveTask = huma.Operation{
@@ -124,5 +124,5 @@ var ArchiveTask = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveTaskRequest ArchiveIdRequest
+type ArchiveTaskRequest EmptyIdRequest
 type ArchiveTaskResponse EmptyResponse

@@ -52,7 +52,7 @@ func (ProviderEventSyncRun) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.String("provider").NotEmpty(),
-		field.String("provider_source").NotEmpty(),
+		field.String("provider_source").Optional(),
 		field.String("sync_reason").Default("manual"),
 		field.Time("started_at").Default(time.Now),
 		field.Time("finished_at").Optional().Nillable(),

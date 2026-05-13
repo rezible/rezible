@@ -273,7 +273,7 @@ var ListIncidentSeverities = huma.Operation{
 }
 
 type ListIncidentSeveritiesRequest ListRequest
-type ListIncidentSeveritiesResponse ListResponse[IncidentSeverity]
+type ListIncidentSeveritiesResponse PaginatedResponse[IncidentSeverity]
 
 var GetIncidentSeverity = huma.Operation{
 	OperationID: "get-incident-severity",
@@ -284,7 +284,7 @@ var GetIncidentSeverity = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentSeverityRequest GetIdRequest
+type GetIncidentSeverityRequest EmptyIdRequest
 type GetIncidentSeverityResponse ItemResponse[IncidentSeverity]
 
 var CreateIncidentSeverity = huma.Operation{
@@ -317,7 +317,7 @@ type UpdateIncidentSeverityAttributes struct {
 	Rank     *int    `json:"rank,omitempty"`
 	Archived *bool   `json:"archived,omitempty"`
 }
-type UpdateIncidentSeverityRequest UpdateIdRequest[UpdateIncidentSeverityAttributes]
+type UpdateIncidentSeverityRequest IdRequest[UpdateIncidentSeverityAttributes]
 type UpdateIncidentSeverityResponse ItemResponse[IncidentSeverity]
 
 var ArchiveIncidentSeverity = huma.Operation{
@@ -329,7 +329,7 @@ var ArchiveIncidentSeverity = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentSeverityRequest ArchiveIdRequest
+type ArchiveIncidentSeverityRequest EmptyIdRequest
 type ArchiveIncidentSeverityResponse EmptyResponse
 
 // Incident Types
@@ -346,7 +346,7 @@ var ListIncidentTypes = huma.Operation{
 }
 
 type ListIncidentTypesRequest ListRequest
-type ListIncidentTypesResponse ListResponse[IncidentType]
+type ListIncidentTypesResponse PaginatedResponse[IncidentType]
 
 var GetIncidentType = huma.Operation{
 	OperationID: "get-incident-type",
@@ -357,7 +357,7 @@ var GetIncidentType = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentTypeRequest GetIdRequest
+type GetIncidentTypeRequest EmptyIdRequest
 type GetIncidentTypeResponse ItemResponse[IncidentType]
 
 var CreateIncidentType = huma.Operation{
@@ -388,7 +388,7 @@ type UpdateIncidentTypeAttributes struct {
 	Name     *string `json:"name,omitempty"`
 	Archived *bool   `json:"archived,omitempty"`
 }
-type UpdateIncidentTypeRequest UpdateIdRequest[UpdateIncidentTypeAttributes]
+type UpdateIncidentTypeRequest IdRequest[UpdateIncidentTypeAttributes]
 type UpdateIncidentTypeResponse ItemResponse[IncidentType]
 
 var ArchiveIncidentType = huma.Operation{
@@ -400,7 +400,7 @@ var ArchiveIncidentType = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentTypeRequest ArchiveIdRequest
+type ArchiveIncidentTypeRequest EmptyIdRequest
 type ArchiveIncidentTypeResponse EmptyResponse
 
 // Incident Roles
@@ -416,7 +416,7 @@ var ListIncidentRoles = huma.Operation{
 }
 
 type ListIncidentRolesRequest ListRequest
-type ListIncidentRolesResponse ListResponse[IncidentRole]
+type ListIncidentRolesResponse PaginatedResponse[IncidentRole]
 
 var GetIncidentRole = huma.Operation{
 	OperationID: "get-incident-role",
@@ -427,7 +427,7 @@ var GetIncidentRole = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentRoleRequest GetIdRequest
+type GetIncidentRoleRequest EmptyIdRequest
 type GetIncidentRoleResponse ItemResponse[IncidentRole]
 
 var CreateIncidentRole = huma.Operation{
@@ -461,7 +461,7 @@ type UpdateIncidentRoleAttributes struct {
 	Required    *bool   `json:"required,omitempty"`
 	Archived    *bool   `json:"archived,omitempty"`
 }
-type UpdateIncidentRoleRequest UpdateIdRequest[UpdateIncidentRoleAttributes]
+type UpdateIncidentRoleRequest IdRequest[UpdateIncidentRoleAttributes]
 type UpdateIncidentRoleResponse ItemResponse[IncidentRole]
 
 var ArchiveIncidentRole = huma.Operation{
@@ -473,7 +473,7 @@ var ArchiveIncidentRole = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentRoleRequest ArchiveIdRequest
+type ArchiveIncidentRoleRequest EmptyIdRequest
 type ArchiveIncidentRoleResponse EmptyResponse
 
 // Incident Tags
@@ -490,7 +490,7 @@ var ListIncidentTags = huma.Operation{
 }
 
 type ListIncidentTagsRequest ListRequest
-type ListIncidentTagsResponse ListResponse[IncidentTag]
+type ListIncidentTagsResponse PaginatedResponse[IncidentTag]
 
 var GetIncidentTag = huma.Operation{
 	OperationID: "get-incident-tag",
@@ -501,7 +501,7 @@ var GetIncidentTag = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentTagRequest GetIdRequest
+type GetIncidentTagRequest EmptyIdRequest
 type GetIncidentTagResponse ItemResponse[IncidentTag]
 
 var CreateIncidentTag = huma.Operation{
@@ -532,7 +532,7 @@ type UpdateIncidentTagAttributes struct {
 	Value    *string `json:"value,omitempty"`
 	Archived *bool   `json:"archived,omitempty"`
 }
-type UpdateIncidentTagRequest UpdateIdRequest[UpdateIncidentTagAttributes]
+type UpdateIncidentTagRequest IdRequest[UpdateIncidentTagAttributes]
 type UpdateIncidentTagResponse ItemResponse[IncidentTag]
 
 var ArchiveIncidentTag = huma.Operation{
@@ -544,7 +544,7 @@ var ArchiveIncidentTag = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentTagRequest ArchiveIdRequest
+type ArchiveIncidentTagRequest EmptyIdRequest
 type ArchiveIncidentTagResponse EmptyResponse
 
 // Incident Fields
@@ -561,7 +561,7 @@ var ListIncidentFields = huma.Operation{
 }
 
 type ListIncidentFieldsRequest ListRequest
-type ListIncidentFieldsResponse ListResponse[IncidentField]
+type ListIncidentFieldsResponse PaginatedResponse[IncidentField]
 
 var GetIncidentField = huma.Operation{
 	OperationID: "get-incident-field",
@@ -572,7 +572,7 @@ var GetIncidentField = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentFieldRequest GetIdRequest
+type GetIncidentFieldRequest EmptyIdRequest
 type GetIncidentFieldResponse ItemResponse[IncidentField]
 
 var CreateIncidentField = huma.Operation{
@@ -619,7 +619,7 @@ type UpdateIncidentFieldOptionAttributes struct {
 	Value           string  `json:"value"`
 	Archived        bool    `json:"archived"`
 }
-type UpdateIncidentFieldRequest UpdateIdRequest[UpdateIncidentFieldAttributes]
+type UpdateIncidentFieldRequest IdRequest[UpdateIncidentFieldAttributes]
 type UpdateIncidentFieldResponse ItemResponse[IncidentField]
 
 var ArchiveIncidentField = huma.Operation{
@@ -631,5 +631,5 @@ var ArchiveIncidentField = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentFieldRequest ArchiveIdRequest
+type ArchiveIncidentFieldRequest EmptyIdRequest
 type ArchiveIncidentFieldResponse EmptyResponse

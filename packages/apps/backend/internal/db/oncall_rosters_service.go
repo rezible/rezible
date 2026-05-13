@@ -53,7 +53,7 @@ func (s *OncallRostersService) GetRosterBySlug(ctx context.Context, slug string)
 	return roster, nil
 }
 
-func (s *OncallRostersService) ListRosters(ctx context.Context, params rez.ListOncallRostersParams) (*ent.ListResult[*ent.OncallRoster], error) {
+func (s *OncallRostersService) ListRosters(ctx context.Context, params rez.ListOncallRostersParams) (*ent.ListResult[ent.OncallRoster], error) {
 	query := s.db.OncallRoster.Query()
 
 	if params.UserID != uuid.Nil {
@@ -70,10 +70,10 @@ func (s *OncallRostersService) ListRosters(ctx context.Context, params rez.ListO
 		query = query.Where(oncallroster.IDIn(rosterIds...))
 	}
 
-	return ent.DoListQuery[*ent.OncallRoster, *ent.OncallRosterQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.OncallRoster, *ent.OncallRosterQuery](ctx, query, params.ListParams)
 }
 
-func (s *OncallRostersService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) (*ent.ListResult[*ent.OncallSchedule], error) {
+func (s *OncallRostersService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) (*ent.ListResult[ent.OncallSchedule], error) {
 	var query *ent.OncallScheduleQuery
 	if params.UserID != uuid.Nil {
 		query = s.db.OncallScheduleParticipant.Query().
@@ -83,7 +83,7 @@ func (s *OncallRostersService) ListSchedules(ctx context.Context, params rez.Lis
 		query = s.db.OncallSchedule.Query()
 	}
 
-	return ent.DoListQuery[*ent.OncallSchedule, *ent.OncallScheduleQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.OncallSchedule, *ent.OncallScheduleQuery](ctx, query, params.ListParams)
 }
 
 func (s *OncallRostersService) GetCurrentOncallForComponent(ctx context.Context, componentID uuid.UUID) ([]*ent.User, error) {

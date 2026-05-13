@@ -119,7 +119,7 @@ func (s *OncallShiftsService) GetAdjacentShifts(ctx context.Context, id uuid.UUI
 	return prevShift, nextShift, nil
 }
 
-func (s *OncallShiftsService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) (*ent.ListResult[*ent.OncallShift], error) {
+func (s *OncallShiftsService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) (*ent.ListResult[ent.OncallShift], error) {
 	query := s.db.OncallShift.Query().
 		Order(ocs.ByEndAt(sql.OrderDesc())).
 		WithRoster().
@@ -139,7 +139,7 @@ func (s *OncallShiftsService) ListShifts(ctx context.Context, params rez.ListOnc
 		query = query.Where(predicates...)
 	}
 
-	return ent.DoListQuery[*ent.OncallShift, *ent.OncallShiftQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.OncallShift, *ent.OncallShiftQuery](ctx, query, params.ListParams)
 }
 
 func (s *OncallShiftsService) queryShiftsEndingWithinWindow(ctx context.Context, window time.Duration) ([]*ent.OncallShift, error) {

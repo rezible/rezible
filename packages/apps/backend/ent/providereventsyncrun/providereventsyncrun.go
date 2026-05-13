@@ -88,8 +88,6 @@ var (
 	Policy ent.Policy
 	// ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	ProviderValidator func(string) error
-	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	ProviderSourceValidator func(string) error
 	// DefaultSyncReason holds the default value on creation for the "sync_reason" field.
 	DefaultSyncReason string
 	// DefaultStartedAt holds the default value on creation for the "started_at" field.

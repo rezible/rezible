@@ -143,7 +143,7 @@ var GetIncidentUserDebrief = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentUserDebriefRequest = GetIdRequest
+type GetIncidentUserDebriefRequest = EmptyIdRequest
 type GetIncidentUserDebriefResponse ItemResponse[IncidentDebrief]
 
 var GetIncidentDebrief = huma.Operation{
@@ -155,7 +155,7 @@ var GetIncidentDebrief = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentDebriefRequest = GetIdRequest
+type GetIncidentDebriefRequest = EmptyIdRequest
 type GetIncidentDebriefResponse ItemResponse[IncidentDebrief]
 
 var UpdateIncidentDebrief = huma.Operation{
@@ -170,7 +170,7 @@ var UpdateIncidentDebrief = huma.Operation{
 type UpdateIncidentDebriefAttributes struct {
 	Status string `json:"status" enum:"started,completed"`
 }
-type UpdateIncidentDebriefRequest UpdateIdRequest[UpdateIncidentDebriefAttributes]
+type UpdateIncidentDebriefRequest IdRequest[UpdateIncidentDebriefAttributes]
 type UpdateIncidentDebriefResponse ItemResponse[IncidentDebrief]
 
 var ListIncidentDebriefMessages = huma.Operation{
@@ -183,7 +183,7 @@ var ListIncidentDebriefMessages = huma.Operation{
 }
 
 type ListIncidentDebriefMessagesRequest ListIdRequest
-type ListIncidentDebriefMessagesResponse ListResponse[IncidentDebriefMessage]
+type ListIncidentDebriefMessagesResponse PaginatedResponse[IncidentDebriefMessage]
 
 var AddIncidentDebriefUserMessage = huma.Operation{
 	OperationID: "add-incident-debrief-user-message",
@@ -197,7 +197,7 @@ var AddIncidentDebriefUserMessage = huma.Operation{
 type AddIncidentDebriefUserMessageAttributes struct {
 	MessageContent string `json:"messageContent"`
 }
-type AddIncidentDebriefUserMessageRequest CreateIdRequest[AddIncidentDebriefUserMessageAttributes]
+type AddIncidentDebriefUserMessageRequest IdRequest[AddIncidentDebriefUserMessageAttributes]
 type AddIncidentDebriefUserMessageResponse ItemResponse[IncidentDebriefMessage]
 
 var ListIncidentDebriefSuggestions = huma.Operation{
@@ -210,7 +210,7 @@ var ListIncidentDebriefSuggestions = huma.Operation{
 }
 
 type ListIncidentDebriefSuggestionsRequest ListIdRequest
-type ListIncidentDebriefSuggestionsResponse ListResponse[IncidentDebriefSuggestion]
+type ListIncidentDebriefSuggestionsResponse PaginatedResponse[IncidentDebriefSuggestion]
 
 var ListIncidentDebriefQuestions = huma.Operation{
 	OperationID: "list-debrief-questions",
@@ -222,7 +222,7 @@ var ListIncidentDebriefQuestions = huma.Operation{
 }
 
 type ListIncidentDebriefQuestionsRequest ListRequest
-type ListIncidentDebriefQuestionsResponse ListResponse[IncidentDebriefQuestion]
+type ListIncidentDebriefQuestionsResponse PaginatedResponse[IncidentDebriefQuestion]
 
 var GetIncidentDebriefQuestion = huma.Operation{
 	OperationID: "get-debrief-question",
@@ -233,7 +233,7 @@ var GetIncidentDebriefQuestion = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentDebriefQuestionRequest GetIdRequest
+type GetIncidentDebriefQuestionRequest EmptyIdRequest
 type GetIncidentDebriefQuestionResponse ItemResponse[IncidentDebriefQuestion]
 
 var CreateIncidentDebriefQuestion = huma.Operation{
@@ -263,7 +263,7 @@ var UpdateIncidentDebriefQuestion = huma.Operation{
 type UpdateIncidentDebriefQuestionAttributes struct {
 	Content *string `json:"content,omitempty"`
 }
-type UpdateIncidentDebriefQuestionRequest UpdateIdRequest[UpdateIncidentDebriefQuestionAttributes]
+type UpdateIncidentDebriefQuestionRequest IdRequest[UpdateIncidentDebriefQuestionAttributes]
 type UpdateIncidentDebriefQuestionResponse ItemResponse[IncidentDebriefQuestion]
 
 var ArchiveIncidentDebriefQuestion = huma.Operation{
@@ -275,5 +275,5 @@ var ArchiveIncidentDebriefQuestion = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentDebriefQuestionRequest ArchiveIdRequest
+type ArchiveIncidentDebriefQuestionRequest EmptyIdRequest
 type ArchiveIncidentDebriefQuestionResponse EmptyResponse

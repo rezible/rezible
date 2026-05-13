@@ -54,7 +54,7 @@ var GetOrganization = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetOrganizationRequest GetIdRequest
+type GetOrganizationRequest EmptyIdRequest
 type GetOrganizationResponse ItemResponse[Organization]
 
 var FinishOrganizationSetup = huma.Operation{
@@ -66,5 +66,5 @@ var FinishOrganizationSetup = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type FinishOrganizationSetupRequest PostIdEmptyRequest
+type FinishOrganizationSetupRequest EmptyIdRequest
 type FinishOrganizationSetupResponse EmptyResponse

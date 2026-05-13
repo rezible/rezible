@@ -4,11 +4,19 @@ import (
 	"context"
 
 	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/rivertype"
 )
 
 var (
 	workers      = river.NewWorkers()
 	periodicJobs []*river.PeriodicJob
+
+	UniqueStateNonCompleted = []rivertype.JobState{
+		rivertype.JobStatePending,
+		rivertype.JobStateAvailable,
+		rivertype.JobStateRunning,
+		rivertype.JobStateRetryable,
+	}
 )
 
 func GetWorkers() *river.Workers {

@@ -147,7 +147,7 @@ type ListOncallRostersRequest struct {
 	UserId uuid.UUID `query:"userId" required:"false" nullable:"false"`
 	Pinned bool      `query:"pinned" required:"false" nullable:"false"`
 }
-type ListOncallRostersResponse ListResponse[OncallRoster]
+type ListOncallRostersResponse PaginatedResponse[OncallRoster]
 
 var GetOncallRoster = huma.Operation{
 	OperationID: "get-oncall-roster",
@@ -158,7 +158,7 @@ var GetOncallRoster = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetOncallRosterRequest = GetFlexibleIdRequest
+type GetOncallRosterRequest = FlexibleIdRequest
 type GetOncallRosterResponse ItemResponse[OncallRoster]
 
 var AddWatchedOncallRoster = huma.Operation{
@@ -170,8 +170,8 @@ var AddWatchedOncallRoster = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type AddWatchedOncallRosterRequest PostIdEmptyRequest
-type AddWatchedOncallRosterResponse ListResponse[OncallRoster]
+type AddWatchedOncallRosterRequest EmptyIdRequest
+type AddWatchedOncallRosterResponse PaginatedResponse[OncallRoster]
 
 var ListWatchedOncallRosters = huma.Operation{
 	OperationID: "list-watched-oncall-rosters",
@@ -183,7 +183,7 @@ var ListWatchedOncallRosters = huma.Operation{
 }
 
 type ListWatchedOncallRostersRequest EmptyRequest
-type ListWatchedOncallRostersResponse ListResponse[OncallRoster]
+type ListWatchedOncallRostersResponse PaginatedResponse[OncallRoster]
 
 var RemoveWatchedOncallRoster = huma.Operation{
 	OperationID: "remove-watched-oncall-roster",
@@ -194,5 +194,5 @@ var RemoveWatchedOncallRoster = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type RemoveWatchedOncallRosterRequest DeleteIdRequest
-type RemoveWatchedOncallRosterResponse ListResponse[OncallRoster]
+type RemoveWatchedOncallRosterRequest EmptyIdRequest
+type RemoveWatchedOncallRosterResponse PaginatedResponse[OncallRoster]

@@ -149,7 +149,7 @@ var ListMeetingSchedules = huma.Operation{
 type ListMeetingSchedulesRequest struct {
 	ListRequest
 }
-type ListMeetingSchedulesResponse ListResponse[MeetingSchedule]
+type ListMeetingSchedulesResponse PaginatedResponse[MeetingSchedule]
 
 var GetMeetingSchedule = huma.Operation{
 	OperationID: "get-meeting-schedule",
@@ -160,7 +160,7 @@ var GetMeetingSchedule = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetMeetingScheduleRequest GetIdRequest
+type GetMeetingScheduleRequest EmptyIdRequest
 type GetMeetingScheduleResponse ItemResponse[MeetingSchedule]
 
 var CreateMeetingSchedule = huma.Operation{
@@ -200,7 +200,7 @@ var UpdateMeetingSchedule = huma.Operation{
 
 type UpdateMeetingScheduleAttributes struct {
 }
-type UpdateMeetingScheduleRequest UpdateIdRequest[UpdateMeetingScheduleAttributes]
+type UpdateMeetingScheduleRequest IdRequest[UpdateMeetingScheduleAttributes]
 type UpdateMeetingScheduleResponse ItemResponse[MeetingSchedule]
 
 var ArchiveMeetingSchedule = huma.Operation{
@@ -212,7 +212,7 @@ var ArchiveMeetingSchedule = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveMeetingScheduleRequest ArchiveIdRequest
+type ArchiveMeetingScheduleRequest EmptyIdRequest
 type ArchiveMeetingScheduleResponse EmptyResponse
 
 var ListMeetingSessions = huma.Operation{
@@ -232,7 +232,7 @@ type ListMeetingSessionsRequest struct {
 	From              string    `query:"from" required:"false"`
 	To                string    `query:"to" required:"false"`
 }
-type ListMeetingSessionsResponse ListResponse[MeetingSession]
+type ListMeetingSessionsResponse PaginatedResponse[MeetingSession]
 
 var GetMeetingSession = huma.Operation{
 	OperationID: "get-meeting-session",
@@ -243,7 +243,7 @@ var GetMeetingSession = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetMeetingSessionRequest GetIdRequest
+type GetMeetingSessionRequest EmptyIdRequest
 type GetMeetingSessionResponse ItemResponse[MeetingSession]
 
 var CreateMeetingSession = huma.Operation{
@@ -277,7 +277,7 @@ var UpdateMeetingSession = huma.Operation{
 
 type UpdateMeetingSessionAttributes struct {
 }
-type UpdateMeetingSessionRequest UpdateIdRequest[UpdateMeetingSessionAttributes]
+type UpdateMeetingSessionRequest IdRequest[UpdateMeetingSessionAttributes]
 type UpdateMeetingSessionResponse ItemResponse[MeetingSession]
 
 var ArchiveMeetingSession = huma.Operation{
@@ -289,5 +289,5 @@ var ArchiveMeetingSession = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveMeetingSessionRequest ArchiveIdRequest
+type ArchiveMeetingSessionRequest EmptyIdRequest
 type ArchiveMeetingSessionResponse EmptyResponse

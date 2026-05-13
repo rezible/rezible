@@ -19,7 +19,7 @@ type TeamsHandler interface {
 	ListTeamMemberships(context.Context, *ListTeamMembershipsRequest) (*ListTeamMembershipsResponse, error)
 	CreateTeamMembership(context.Context, *CreateTeamMembershipRequest) (*CreateTeamMembershipResponse, error)
 	UpdateTeamMembership(context.Context, *UpdateTeamMembershipRequest) (*UpdateTeamMembershipResponse, error)
-	ArchiveTeamMembership(context.Context, *ArchiveTeamMembershipRequest) (*ArchiveTeamMembershipResponse, error)
+	DeleteTeamMembership(context.Context, *DeleteTeamMembershipRequest) (*DeleteTeamMembershipResponse, error)
 }
 
 func (o operations) RegisterTeams(api huma.API) {
@@ -32,7 +32,7 @@ func (o operations) RegisterTeams(api huma.API) {
 	huma.Register(api, ListTeamMemberships, o.ListTeamMemberships)
 	huma.Register(api, CreateTeamMembership, o.CreateTeamMembership)
 	huma.Register(api, UpdateTeamMembership, o.UpdateTeamMembership)
-	huma.Register(api, ArchiveTeamMembership, o.ArchiveTeamMembership)
+	huma.Register(api, DeleteTeamMembership, o.DeleteTeamMembership)
 }
 
 type (
@@ -105,7 +105,7 @@ var ListTeams = huma.Operation{
 }
 
 type ListTeamsRequest ListRequest
-type ListTeamsResponse ListResponse[Team]
+type ListTeamsResponse PaginatedResponse[Team]
 
 var CreateTeam = huma.Operation{
 	OperationID: "create-team",
@@ -131,7 +131,7 @@ var GetTeam = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetTeamRequest = GetFlexibleIdRequest
+type GetTeamRequest = FlexibleIdRequest
 type GetTeamResponse ItemResponse[Team]
 
 var UpdateTeam = huma.Operation{
@@ -146,7 +146,7 @@ var UpdateTeam = huma.Operation{
 type UpdateTeamAttributes struct {
 	Name OmittableNullable[string] `json:"name"`
 }
-type UpdateTeamRequest UpdateIdRequest[UpdateTeamAttributes]
+type UpdateTeamRequest IdRequest[UpdateTeamAttributes]
 type UpdateTeamResponse ItemResponse[Team]
 
 var ArchiveTeam = huma.Operation{
@@ -158,7 +158,7 @@ var ArchiveTeam = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveTeamRequest ArchiveIdRequest
+type ArchiveTeamRequest EmptyIdRequest
 type ArchiveTeamResponse EmptyResponse
 
 var ListTeamMemberships = huma.Operation{
@@ -175,7 +175,7 @@ type ListTeamMembershipsRequest struct {
 	TeamId uuid.UUID `query:"teamId" required:"false"`
 	UserId uuid.UUID `query:"userId" required:"false"`
 }
-type ListTeamMembershipsResponse ListResponse[TeamMembership]
+type ListTeamMembershipsResponse PaginatedResponse[TeamMembership]
 
 var CreateTeamMembership = huma.Operation{
 	OperationID: "create-team-membership",
@@ -206,11 +206,11 @@ var UpdateTeamMembership = huma.Operation{
 type UpdateTeamMembershipAttributes struct {
 	Role *string `json:"role,omitempty" enum:"admin,member"`
 }
-type UpdateTeamMembershipRequest UpdateIdRequest[UpdateTeamMembershipAttributes]
+type UpdateTeamMembershipRequest IdRequest[UpdateTeamMembershipAttributes]
 type UpdateTeamMembershipResponse ItemResponse[TeamMembership]
 
-var ArchiveTeamMembership = huma.Operation{
-	OperationID: "archive-team-membership",
+var DeleteTeamMembership = huma.Operation{
+	OperationID: "delete-team-membership",
 	Method:      http.MethodDelete,
 	Path:        "/team_memberships/{id}",
 	Summary:     "Archive Team Membership",
@@ -218,5 +218,5 @@ var ArchiveTeamMembership = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveTeamMembershipRequest ArchiveIdRequest
-type ArchiveTeamMembershipResponse EmptyResponse
+type DeleteTeamMembershipRequest EmptyIdRequest
+type DeleteTeamMembershipResponse EmptyResponse

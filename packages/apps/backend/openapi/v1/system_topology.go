@@ -244,7 +244,7 @@ type ListSystemTopologyEntitiesRequest struct {
 	ProviderSource string   `query:"providerSource" required:"false"`
 	SubjectKind    string   `query:"subjectKind" required:"false"`
 }
-type ListSystemTopologyEntitiesResponse ListResponse[SystemTopologyEntity]
+type ListSystemTopologyEntitiesResponse PaginatedResponse[SystemTopologyEntity]
 
 var GetSystemTopologyEntity = huma.Operation{
 	OperationID: "get-system-topology-entity",
@@ -255,7 +255,7 @@ var GetSystemTopologyEntity = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemTopologyEntityRequest GetIdRequest
+type GetSystemTopologyEntityRequest EmptyIdRequest
 type GetSystemTopologyEntityResponse ItemResponse[SystemTopologyEntity]
 
 var GetSystemTopologyEntityNeighborhood = huma.Operation{
@@ -290,7 +290,7 @@ type ListSystemTopologyRelationshipsRequest struct {
 	SourceEntityId uuid.UUID `query:"sourceEntityId" required:"false"`
 	TargetEntityId uuid.UUID `query:"targetEntityId" required:"false"`
 }
-type ListSystemTopologyRelationshipsResponse ListResponse[SystemTopologyRelationship]
+type ListSystemTopologyRelationshipsResponse PaginatedResponse[SystemTopologyRelationship]
 
 var CreateSystemTopologySnapshot = huma.Operation{
 	OperationID: "create-system-topology-snapshot",
@@ -327,7 +327,7 @@ var GetSystemTopologySnapshot = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemTopologySnapshotRequest GetIdRequest
+type GetSystemTopologySnapshotRequest EmptyIdRequest
 type GetSystemTopologySnapshotResponse ItemResponse[SystemTopologySnapshot]
 
 func CreateSystemTopologySnapshotParamsFromAttributes(attr CreateSystemTopologySnapshotAttributes) rez.CreateSystemTopologySnapshotParams {

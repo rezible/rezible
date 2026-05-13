@@ -58,6 +58,12 @@ func (_u *ProviderEventSyncRunUpdate) SetNillableProviderSource(v *string) *Prov
 	return _u
 }
 
+// ClearProviderSource clears the value of the "provider_source" field.
+func (_u *ProviderEventSyncRunUpdate) ClearProviderSource() *ProviderEventSyncRunUpdate {
+	_u.mutation.ClearProviderSource()
+	return _u
+}
+
 // SetSyncReason sets the "sync_reason" field.
 func (_u *ProviderEventSyncRunUpdate) SetSyncReason(v string) *ProviderEventSyncRunUpdate {
 	_u.mutation.SetSyncReason(v)
@@ -242,11 +248,6 @@ func (_u *ProviderEventSyncRunUpdate) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "ProviderEventSyncRun.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.ProviderSource(); ok {
-		if err := providereventsyncrun.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "ProviderEventSyncRun.provider_source": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := providereventsyncrun.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "ProviderEventSyncRun.status": %w`, err)}
@@ -281,6 +282,9 @@ func (_u *ProviderEventSyncRunUpdate) sqlSave(ctx context.Context) (_node int, e
 	}
 	if value, ok := _u.mutation.ProviderSource(); ok {
 		_spec.SetField(providereventsyncrun.FieldProviderSource, field.TypeString, value)
+	}
+	if _u.mutation.ProviderSourceCleared() {
+		_spec.ClearField(providereventsyncrun.FieldProviderSource, field.TypeString)
 	}
 	if value, ok := _u.mutation.SyncReason(); ok {
 		_spec.SetField(providereventsyncrun.FieldSyncReason, field.TypeString, value)
@@ -370,6 +374,12 @@ func (_u *ProviderEventSyncRunUpdateOne) SetNillableProviderSource(v *string) *P
 	if v != nil {
 		_u.SetProviderSource(*v)
 	}
+	return _u
+}
+
+// ClearProviderSource clears the value of the "provider_source" field.
+func (_u *ProviderEventSyncRunUpdateOne) ClearProviderSource() *ProviderEventSyncRunUpdateOne {
+	_u.mutation.ClearProviderSource()
 	return _u
 }
 
@@ -570,11 +580,6 @@ func (_u *ProviderEventSyncRunUpdateOne) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "ProviderEventSyncRun.provider": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.ProviderSource(); ok {
-		if err := providereventsyncrun.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "ProviderEventSyncRun.provider_source": %w`, err)}
-		}
-	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := providereventsyncrun.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "ProviderEventSyncRun.status": %w`, err)}
@@ -626,6 +631,9 @@ func (_u *ProviderEventSyncRunUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 	}
 	if value, ok := _u.mutation.ProviderSource(); ok {
 		_spec.SetField(providereventsyncrun.FieldProviderSource, field.TypeString, value)
+	}
+	if _u.mutation.ProviderSourceCleared() {
+		_spec.ClearField(providereventsyncrun.FieldProviderSource, field.TypeString)
 	}
 	if value, ok := _u.mutation.SyncReason(); ok {
 		_spec.SetField(providereventsyncrun.FieldSyncReason, field.TypeString, value)

@@ -137,7 +137,7 @@ var GetSystemAnalysis = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemAnalysisRequest GetIdRequest
+type GetSystemAnalysisRequest EmptyIdRequest
 type GetSystemAnalysisResponse ItemResponse[SystemAnalysis]
 
 var AddSystemAnalysisNode = huma.Operation{
@@ -155,7 +155,7 @@ type AddSystemAnalysisNodeAttributes struct {
 	Position          SystemAnalysisDiagramPosition `json:"position"`
 	Description       string                        `json:"description"`
 }
-type AddSystemAnalysisNodeRequest CreateIdRequest[AddSystemAnalysisNodeAttributes]
+type AddSystemAnalysisNodeRequest IdRequest[AddSystemAnalysisNodeAttributes]
 type AddSystemAnalysisNodeResponse ItemResponse[SystemAnalysisNode]
 
 var ListSystemAnalysisNodes = huma.Operation{
@@ -168,7 +168,7 @@ var ListSystemAnalysisNodes = huma.Operation{
 }
 
 type ListSystemAnalysisNodesRequest ListIdRequest
-type ListSystemAnalysisNodesResponse ListResponse[SystemAnalysisNode]
+type ListSystemAnalysisNodesResponse PaginatedResponse[SystemAnalysisNode]
 
 var GetSystemAnalysisNode = huma.Operation{
 	OperationID: "get-system-analysis-node",
@@ -179,7 +179,7 @@ var GetSystemAnalysisNode = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemAnalysisNodeRequest GetIdRequest
+type GetSystemAnalysisNodeRequest EmptyIdRequest
 type GetSystemAnalysisNodeResponse ItemResponse[SystemAnalysisNode]
 
 var UpdateSystemAnalysisNode = huma.Operation{
@@ -195,7 +195,7 @@ type UpdateSystemAnalysisNodeAttributes struct {
 	Position    *SystemAnalysisDiagramPosition `json:"position,omitempty"`
 	Description *string                        `json:"description,omitempty"`
 }
-type UpdateSystemAnalysisNodeRequest UpdateIdRequest[UpdateSystemAnalysisNodeAttributes]
+type UpdateSystemAnalysisNodeRequest IdRequest[UpdateSystemAnalysisNodeAttributes]
 type UpdateSystemAnalysisNodeResponse ItemResponse[SystemAnalysisNode]
 
 var DeleteSystemAnalysisNode = huma.Operation{
@@ -207,7 +207,7 @@ var DeleteSystemAnalysisNode = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteSystemAnalysisNodeRequest DeleteIdRequest
+type DeleteSystemAnalysisNodeRequest EmptyIdRequest
 type DeleteSystemAnalysisNodeResponse EmptyResponse
 
 var ListSystemAnalysisEdges = huma.Operation{
@@ -220,7 +220,7 @@ var ListSystemAnalysisEdges = huma.Operation{
 }
 
 type ListSystemAnalysisEdgesRequest ListIdRequest
-type ListSystemAnalysisEdgesResponse ListResponse[SystemAnalysisEdge]
+type ListSystemAnalysisEdgesResponse PaginatedResponse[SystemAnalysisEdge]
 
 var AddSystemAnalysisEdge = huma.Operation{
 	OperationID: "add-system-analysis-edge",
@@ -235,7 +235,7 @@ type AddSystemAnalysisEdgeAttributes struct {
 	SnapshotRelationshipId uuid.UUID `json:"snapshotRelationshipId"`
 	Description            string    `json:"description"`
 }
-type AddSystemAnalysisEdgeRequest CreateIdRequest[AddSystemAnalysisEdgeAttributes]
+type AddSystemAnalysisEdgeRequest IdRequest[AddSystemAnalysisEdgeAttributes]
 type AddSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
 
 var GetSystemAnalysisEdge = huma.Operation{
@@ -247,7 +247,7 @@ var GetSystemAnalysisEdge = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetSystemAnalysisEdgeRequest GetIdRequest
+type GetSystemAnalysisEdgeRequest EmptyIdRequest
 type GetSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
 
 var UpdateSystemAnalysisEdge = huma.Operation{
@@ -262,7 +262,7 @@ var UpdateSystemAnalysisEdge = huma.Operation{
 type UpdateSystemAnalysisEdgeAttributes struct {
 	Description *string `json:"description,omitempty"`
 }
-type UpdateSystemAnalysisEdgeRequest UpdateIdRequest[UpdateSystemAnalysisEdgeAttributes]
+type UpdateSystemAnalysisEdgeRequest IdRequest[UpdateSystemAnalysisEdgeAttributes]
 type UpdateSystemAnalysisEdgeResponse ItemResponse[SystemAnalysisEdge]
 
 var DeleteSystemAnalysisEdge = huma.Operation{
@@ -274,5 +274,5 @@ var DeleteSystemAnalysisEdge = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteSystemAnalysisEdgeRequest DeleteIdRequest
+type DeleteSystemAnalysisEdgeRequest EmptyIdRequest
 type DeleteSystemAnalysisEdgeResponse EmptyResponse

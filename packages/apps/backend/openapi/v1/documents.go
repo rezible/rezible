@@ -66,7 +66,7 @@ var GetDocumentAccess = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetDocumentAccessRequest GetIdRequest
+type GetDocumentAccessRequest EmptyIdRequest
 type GetDocumentAccessResponse ItemResponse[DocumentAccess]
 
 var LoadDocument = huma.Operation{
@@ -78,7 +78,7 @@ var LoadDocument = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type LoadDocumentRequest GetIdRequest
+type LoadDocumentRequest EmptyIdRequest
 type LoadDocumentResponse ItemResponse[Document]
 
 var UpdateDocument = huma.Operation{
@@ -93,5 +93,5 @@ var UpdateDocument = huma.Operation{
 type UpdateDocumentRequestAttributes struct {
 	Content json.RawMessage `json:"content"`
 }
-type UpdateDocumentRequest PostIdRequest[UpdateDocumentRequestAttributes]
+type UpdateDocumentRequest IdRequest[UpdateDocumentRequestAttributes]
 type UpdateDocumentResponse ItemResponse[Document]

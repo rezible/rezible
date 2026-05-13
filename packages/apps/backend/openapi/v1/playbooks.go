@@ -67,7 +67,7 @@ type ListPlaybooksRequest struct {
 	TeamId  uuid.UUID `query:"teamId" required:"false"`
 	AlertId uuid.UUID `query:"alertId" required:"false"`
 }
-type ListPlaybooksResponse ListResponse[Playbook]
+type ListPlaybooksResponse PaginatedResponse[Playbook]
 
 var GetPlaybook = huma.Operation{
 	OperationID: "get-playbook",
@@ -78,7 +78,7 @@ var GetPlaybook = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetPlaybookRequest GetIdRequest
+type GetPlaybookRequest EmptyIdRequest
 type GetPlaybookResponse ItemResponse[Playbook]
 
 var CreatePlaybook = huma.Operation{
@@ -110,7 +110,7 @@ type UpdatePlaybookAttributes struct {
 	Title   *string `json:"title,omitempty"`
 	Content *string `json:"content,omitempty"`
 }
-type UpdatePlaybookRequest UpdateIdRequest[UpdatePlaybookAttributes]
+type UpdatePlaybookRequest IdRequest[UpdatePlaybookAttributes]
 type UpdatePlaybookResponse ItemResponse[Playbook]
 
 var ArchivePlaybook = huma.Operation{
@@ -122,5 +122,5 @@ var ArchivePlaybook = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchivePlaybookRequest ArchiveIdRequest
+type ArchivePlaybookRequest EmptyIdRequest
 type ArchivePlaybookResponse EmptyResponse

@@ -199,7 +199,7 @@ var ListIncidentEvents = huma.Operation{
 }
 
 type ListIncidentEventsRequest ListIdRequest
-type ListIncidentEventsResponse ListResponse[IncidentEvent]
+type ListIncidentEventsResponse PaginatedResponse[IncidentEvent]
 
 var CreateIncidentEvent = huma.Operation{
 	OperationID: "create-incident-event",
@@ -216,7 +216,7 @@ type CreateIncidentEventAttributes struct {
 	IsKey     bool      `json:"isKey" required:"false"`
 	Timestamp time.Time `json:"timestamp"`
 }
-type CreateIncidentEventRequest CreateIdRequest[CreateIncidentEventAttributes]
+type CreateIncidentEventRequest IdRequest[CreateIncidentEventAttributes]
 type CreateIncidentEventResponse ItemResponse[IncidentEvent]
 
 var UpdateIncidentEvent = huma.Operation{
@@ -233,7 +233,7 @@ type UpdateIncidentEventAttributes struct {
 	Kind      *string    `json:"kind,omitempty" enum:"observation,action,decision,context"`
 	Timestamp *time.Time `json:"timestamp,omitempty"`
 }
-type UpdateIncidentEventRequest UpdateIdRequest[UpdateIncidentEventAttributes]
+type UpdateIncidentEventRequest IdRequest[UpdateIncidentEventAttributes]
 type UpdateIncidentEventResponse ItemResponse[IncidentEvent]
 
 var DeleteIncidentEvent = huma.Operation{
@@ -245,7 +245,7 @@ var DeleteIncidentEvent = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteIncidentEventRequest DeleteIdRequest
+type DeleteIncidentEventRequest EmptyIdRequest
 type DeleteIncidentEventResponse EmptyResponse
 
 var ListIncidentEventContributingFactors = huma.Operation{
@@ -258,4 +258,4 @@ var ListIncidentEventContributingFactors = huma.Operation{
 }
 
 type ListIncidentEventContributingFactorsRequest ListRequest
-type ListIncidentEventContributingFactorsResponse ListResponse[IncidentEventContributingFactorCategory]
+type ListIncidentEventContributingFactorsResponse PaginatedResponse[IncidentEventContributingFactorCategory]

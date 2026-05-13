@@ -28,7 +28,7 @@ func (s *EventsService) GetEvent(ctx context.Context, id uuid.UUID) (*ent.Event,
 	return s.db.Event.Get(ctx, id)
 }
 
-func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[*ent.Event], error) {
+func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[ent.Event], error) {
 	query := s.db.Event.Query()
 
 	query.Order(oe.ByTimestamp(params.GetOrder()))
@@ -42,5 +42,5 @@ func (s *EventsService) ListEvents(ctx context.Context, params rez.ListEventsPar
 		})
 	}
 
-	return ent.DoListQuery[*ent.Event, *ent.EventQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.Event, *ent.EventQuery](ctx, query, params.ListParams)
 }

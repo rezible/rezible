@@ -5,6 +5,9 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent"
+
 	rez "github.com/rezible/rezible"
 )
 
@@ -20,33 +23,54 @@ type IntegrationsHandler interface {
 	StartIntegrationOAuthFlow(context.Context, *StartIntegrationOAuthFlowRequest) (*StartIntegrationOAuthFlowResponse, error)
 	CompleteIntegrationOAuthFlow(context.Context, *CompleteIntegrationOAuthFlowRequest) (*CompleteIntegrationOAuthFlowResponse, error)
 	SelectIntegrationOAuthFlow(context.Context, *SelectIntegrationOAuthFlowRequest) (*SelectIntegrationOAuthFlowResponse, error)
+
+	RequestIntegrationDataSync(context.Context, *RequestIntegrationDataSyncRequest) (*RequestIntegrationDataSyncResponse, error)
+	GetIntegrationDataSyncStatus(context.Context, *GetIntegrationDataSyncStatusRequest) (*GetIntegrationDataSyncStatusResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
 	huma.Register(api, ListAvailableIntegrations, o.ListAvailableIntegrations)
 
-	huma.Register(api, ListConfiguredIntegrations, o.ListConfiguredIntegrations)
 	huma.Register(api, ConfigureIntegration, o.ConfigureIntegration)
+	huma.Register(api, StartIntegrationOAuthFlow, o.StartIntegrationOAuthFlow)
+	huma.Register(api, CompleteIntegrationOAuthFlow, o.CompleteIntegrationOAuthFlow)
+	huma.Register(api, SelectIntegrationOAuthFlow, o.SelectIntegrationOAuthFlow)
+
+	huma.Register(api, ListConfiguredIntegrations, o.ListConfiguredIntegrations)
 	huma.Register(api, UpdateConfiguredIntegrationPreferences, o.UpdateConfiguredIntegrationPreferences)
 	huma.Register(api, GetConfiguredIntegration, o.GetConfiguredIntegration)
 	huma.Register(api, DeleteConfiguredIntegration, o.DeleteConfiguredIntegration)
 
-	huma.Register(api, StartIntegrationOAuthFlow, o.StartIntegrationOAuthFlow)
-	huma.Register(api, CompleteIntegrationOAuthFlow, o.CompleteIntegrationOAuthFlow)
-	huma.Register(api, SelectIntegrationOAuthFlow, o.SelectIntegrationOAuthFlow)
+	huma.Register(api, RequestIntegrationDataSync, o.RequestIntegrationDataSync)
+	huma.Register(api, GetIntegrationDataSyncStatus, o.GetIntegrationDataSyncStatus)
 }
 
 type (
 	AvailableIntegration struct {
 		Name          string   `json:"name"`
-		DataKinds     []string `json:"dataKinds" nullable:"false"`
+		DataKinds     []string `json:"dataKinds"`
 		OAuthRequired bool     `json:"oauthRequired"`
 	}
 
 	ConfiguredIntegration struct {
-		Id         string                          `json:"id"`
-		Provider   string                          `json:"provider"`
+		Id         uuid.UUID                       `json:"id"`
 		Attributes ConfiguredIntegrationAttributes `json:"attributes"`
+	}
+
+	ConfiguredIntegrationAttributes struct {
+		Provider        string          `json:"provider"`
+		DisplayName     string          `json:"displayName"`
+		ExternalRef     string          `json:"externalRef"`
+		Config          map[string]any  `json:"config"`
+		UserPreferences map[string]any  `json:"preferences"`
+		DataKinds       map[string]bool `json:"dataKinds"`
+	}
+
+	IntegrationOAuthFlowResult struct {
+		Status         string                      `json:"status"`
+		Configured     []ConfiguredIntegration     `json:"configured"`
+		SelectionToken string                      `json:"selectionToken,omitempty"`
+		Options        []ExternalIntegrationOption `json:"options"`
 	}
 
 	ExternalIntegrationOption struct {
@@ -55,33 +79,17 @@ type (
 		Config      map[string]any `json:"config"`
 	}
 
-	IntegrationOAuthFlowResult struct {
-		Status         string                      `json:"status"`
-		Configured     []ConfiguredIntegration     `json:"configured" nullable:"false"`
-		SelectionToken string                      `json:"selectionToken,omitempty"`
-		Options        []ExternalIntegrationOption `json:"options" nullable:"false"`
-	}
-
-	ConfiguredIntegrationAttributes struct {
-		DisplayName     string          `json:"displayName"`
-		ExternalRef     string          `json:"externalRef"`
-		Config          map[string]any  `json:"config"`
-		UserPreferences map[string]any  `json:"preferences"`
-		DataKinds       map[string]bool `json:"dataKinds"`
-	}
-
 	IntegrationOAuthFlow struct {
 		FlowUrl string `json:"flow_url"`
 	}
-)
 
-type (
-	IntegrationProviderRequest struct {
-		Provider string `path:"provider"`
+	IntegrationProviderDataSyncStatus struct {
+		Id         uuid.UUID                                   `json:"id"`
+		Attributes IntegrationProviderDataSyncStatusAttributes `json:"attributes"`
 	}
-	IntegrationProviderRequestWithAttributes[A any] struct {
-		IntegrationProviderRequest
-		RequestWithBodyAttributes[A]
+
+	IntegrationProviderDataSyncStatusAttributes struct {
+		Status string `json:"status" enum:"queued,started,complete,error"`
 	}
 )
 
@@ -95,6 +103,7 @@ func AvailableIntegrationFromPackage(p rez.IntegrationPackage) AvailableIntegrat
 
 func ConfiguredIntegrationFromConfig(cfg rez.ConfiguredIntegration) ConfiguredIntegration {
 	attrs := ConfiguredIntegrationAttributes{
+		Provider:        cfg.Provider(),
 		DisplayName:     cfg.DisplayName(),
 		ExternalRef:     cfg.ExternalRef(),
 		Config:          cfg.GetSanitizedConfig(),
@@ -102,7 +111,7 @@ func ConfiguredIntegrationFromConfig(cfg rez.ConfiguredIntegration) ConfiguredIn
 		DataKinds:       cfg.GetDataKinds(),
 	}
 
-	return ConfiguredIntegration{Id: cfg.ID().String(), Provider: cfg.Provider(), Attributes: attrs}
+	return ConfiguredIntegration{Id: cfg.ID(), Attributes: attrs}
 }
 
 func ExternalIntegrationOptionFromCore(opt rez.ExternalIntegrationOption) ExternalIntegrationOption {
@@ -130,6 +139,13 @@ func IntegrationOAuthFlowResultFromCore(result *rez.CompleteIntegrationOAuth2Res
 	}
 }
 
+func IntegrationProviderDataSyncStatusFromEnt(res *ent.ProviderEventSyncRun) IntegrationProviderDataSyncStatus {
+	attrs := IntegrationProviderDataSyncStatusAttributes{
+		Status: res.Status.String(),
+	}
+	return IntegrationProviderDataSyncStatus{Id: res.ID, Attributes: attrs}
+}
+
 var integrationsTags = []string{"Integrations"}
 
 var ListAvailableIntegrations = huma.Operation{
@@ -142,7 +158,72 @@ var ListAvailableIntegrations = huma.Operation{
 }
 
 type ListAvailableIntegrationsRequest ListRequest
-type ListAvailableIntegrationsResponse ListResponse[AvailableIntegration]
+type ListAvailableIntegrationsResponse PaginatedResponse[AvailableIntegration]
+
+var ConfigureIntegration = huma.Operation{
+	OperationID: "configure-integration",
+	Method:      http.MethodPost,
+	Path:        "/integrations/providers/{name}/configured",
+	Summary:     "Create an Integration",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type ConfigureIntegrationRequestAttributes struct {
+	DisplayName string         `json:"displayName"`
+	ExternalRef string         `json:"externalRef"`
+	Config      map[string]any `json:"config"`
+}
+type ConfigureIntegrationRequest NameRequest[ConfigureIntegrationRequestAttributes]
+type ConfigureIntegrationResponse ItemResponse[ConfiguredIntegration]
+
+var StartIntegrationOAuthFlow = huma.Operation{
+	OperationID: "start-integration-oauth-flow",
+	Method:      http.MethodPost,
+	Path:        "/integrations/providers/{name}/oauth/start",
+	Summary:     "Start OAuth flow for an Integration",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type StartOAuthFlowRequestAttributes struct {
+	CallbackPath string `json:"callbackPath"`
+}
+type StartIntegrationOAuthFlowRequest NameRequest[StartOAuthFlowRequestAttributes]
+type StartIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlow]
+
+var CompleteIntegrationOAuthFlow = huma.Operation{
+	OperationID: "complete-integration-oauth-flow",
+	Method:      http.MethodPost,
+	Path:        "/integrations/providers/{name}/oauth/complete",
+	Summary:     "Complete OAuth flow for an Integration",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type CompleteIntegrationOAuthFlowRequestAttributes struct {
+	Code           string  `json:"code"`
+	State          *string `json:"state,omitempty"`
+	ClientVerifier *string `json:"client_verifier,omitempty"`
+}
+type CompleteIntegrationOAuthFlowRequest NameRequest[CompleteIntegrationOAuthFlowRequestAttributes]
+type CompleteIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlowResult]
+
+var SelectIntegrationOAuthFlow = huma.Operation{
+	OperationID: "select-integration-oauth-flow",
+	Method:      http.MethodPost,
+	Path:        "/integrations/providers/{name}/oauth/select",
+	Summary:     "Select OAuth installations for an Integration",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type SelectIntegrationOAuthFlowRequestAttributes struct {
+	SelectionToken string   `json:"selectionToken"`
+	ExternalRefs   []string `json:"externalRefs"`
+}
+type SelectIntegrationOAuthFlowRequest NameRequest[SelectIntegrationOAuthFlowRequestAttributes]
+type SelectIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlowResult]
 
 var ListConfiguredIntegrations = huma.Operation{
 	OperationID: "list-configured-integrations",
@@ -154,24 +235,7 @@ var ListConfiguredIntegrations = huma.Operation{
 }
 
 type ListConfiguredIntegrationsRequest ListRequest
-type ListConfiguredIntegrationsResponse ListResponse[ConfiguredIntegration]
-
-var ConfigureIntegration = huma.Operation{
-	OperationID: "configure-integration",
-	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{provider}/configured",
-	Summary:     "Create an Integration",
-	Tags:        integrationsTags,
-	Errors:      ErrorCodes(),
-}
-
-type ConfigureIntegrationRequestAttributes struct {
-	DisplayName string         `json:"displayName"`
-	ExternalRef string         `json:"externalRef"`
-	Config      map[string]any `json:"config"`
-}
-type ConfigureIntegrationRequest IntegrationProviderRequestWithAttributes[ConfigureIntegrationRequestAttributes]
-type ConfigureIntegrationResponse ItemResponse[ConfiguredIntegration]
+type ListConfiguredIntegrationsResponse PaginatedResponse[ConfiguredIntegration]
 
 var GetConfiguredIntegration = huma.Operation{
 	OperationID: "get-configured-integration",
@@ -182,7 +246,7 @@ var GetConfiguredIntegration = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetConfiguredIntegrationRequest GetIdRequest
+type GetConfiguredIntegrationRequest EmptyIdRequest
 type GetConfiguredIntegrationResponse ItemResponse[ConfiguredIntegration]
 
 var UpdateConfiguredIntegrationPreferences = huma.Operation{
@@ -197,7 +261,7 @@ var UpdateConfiguredIntegrationPreferences = huma.Operation{
 type UpdateConfiguredIntegrationPreferencesRequestAttributes struct {
 	Preferences map[string]any `json:"preferences"`
 }
-type UpdateConfiguredIntegrationPreferencesRequest UpdateIdRequest[UpdateConfiguredIntegrationPreferencesRequestAttributes]
+type UpdateConfiguredIntegrationPreferencesRequest IdRequest[UpdateConfiguredIntegrationPreferencesRequestAttributes]
 type UpdateConfiguredIntegrationPreferencesResponse ItemResponse[ConfiguredIntegration]
 
 var DeleteConfiguredIntegration = huma.Operation{
@@ -209,53 +273,32 @@ var DeleteConfiguredIntegration = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type DeleteConfiguredIntegrationRequest DeleteIdRequest
+type DeleteConfiguredIntegrationRequest EmptyIdRequest
 type DeleteConfiguredIntegrationResponse EmptyResponse
 
-var StartIntegrationOAuthFlow = huma.Operation{
-	OperationID: "start-integration-oauth-flow",
+var RequestIntegrationDataSync = huma.Operation{
+	OperationID: "request-integration-data-sync",
 	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{provider}/oauth/start",
-	Summary:     "Start OAuth flow for an Integration",
+	Path:        "/integrations/providers/{name}/sync",
+	Summary:     "Request a manual data sync for an integration provider",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type StartOAuthFlowRequestAttributes struct {
-	CallbackPath string `json:"callbackPath"`
+type RequestIntegrationDataSyncRequestAttributes struct {
+	Sources []string `json:"sources,omitempty"`
 }
-type StartIntegrationOAuthFlowRequest IntegrationProviderRequestWithAttributes[StartOAuthFlowRequestAttributes]
-type StartIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlow]
+type RequestIntegrationDataSyncRequest NameRequest[RequestIntegrationDataSyncRequestAttributes]
+type RequestIntegrationDataSyncResponse EmptyResponse
 
-var CompleteIntegrationOAuthFlow = huma.Operation{
-	OperationID: "complete-integration-oauth-flow",
-	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{provider}/oauth/complete",
-	Summary:     "Complete OAuth flow for an Integration",
+var GetIntegrationDataSyncStatus = huma.Operation{
+	OperationID: "get-integration-data-sync-status",
+	Method:      http.MethodGet,
+	Path:        "/integrations/providers/{name}/sync",
+	Summary:     "Get data sync status for an integration provider",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type CompleteIntegrationOAuthFlowRequestAttributes struct {
-	Code           string  `json:"code"`
-	State          *string `json:"state,omitempty"`
-	ClientVerifier *string `json:"client_verifier,omitempty"`
-}
-type CompleteIntegrationOAuthFlowRequest IntegrationProviderRequestWithAttributes[CompleteIntegrationOAuthFlowRequestAttributes]
-type CompleteIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlowResult]
-
-var SelectIntegrationOAuthFlow = huma.Operation{
-	OperationID: "select-integration-oauth-flow",
-	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{provider}/oauth/select",
-	Summary:     "Select OAuth installations for an Integration",
-	Tags:        integrationsTags,
-	Errors:      ErrorCodes(),
-}
-
-type SelectIntegrationOAuthFlowRequestAttributes struct {
-	SelectionToken string   `json:"selectionToken"`
-	ExternalRefs   []string `json:"externalRefs" nullable:"false"`
-}
-type SelectIntegrationOAuthFlowRequest IntegrationProviderRequestWithAttributes[SelectIntegrationOAuthFlowRequestAttributes]
-type SelectIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlowResult]
+type GetIntegrationDataSyncStatusRequest EmptyNameRequest
+type GetIntegrationDataSyncStatusResponse PaginatedResponse[IntegrationProviderDataSyncStatus]

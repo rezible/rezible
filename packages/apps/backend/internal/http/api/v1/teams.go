@@ -203,8 +203,8 @@ func (h *teamsHandler) UpdateTeamMembership(ctx context.Context, request *oapi.U
 	return &resp, nil
 }
 
-func (h *teamsHandler) ArchiveTeamMembership(ctx context.Context, request *oapi.ArchiveTeamMembershipRequest) (*oapi.ArchiveTeamMembershipResponse, error) {
-	var resp oapi.ArchiveTeamMembershipResponse
+func (h *teamsHandler) DeleteTeamMembership(ctx context.Context, request *oapi.DeleteTeamMembershipRequest) (*oapi.DeleteTeamMembershipResponse, error) {
+	var resp oapi.DeleteTeamMembershipResponse
 
 	if delErr := h.memberships.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
 		return nil, oapi.Error(ctx, "failed to archive team membership", delErr)

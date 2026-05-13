@@ -33,49 +33,34 @@ type (
 		IncludeArchived bool   `query:"archived" required:"false" nullable:"false" default:"false"`
 		// Sort   string  `query:"sort" enum:"asc,desc" default:"asc" required:"false" nullable:"false"`
 	}
-	ListIdRequest struct {
-		Id uuid.UUID `path:"id"`
-		ListRequest
-	}
 	RequestWithBodyAttributes[T any] struct {
 		Body struct {
 			Attributes T `json:"attributes"`
 		}
 	}
-	PostIdEmptyRequest struct {
+
+	EmptyIdRequest struct {
 		Id uuid.UUID `path:"id"`
 	}
-	PostIdRequest[T any] struct {
-		Id uuid.UUID `path:"id"`
-		RequestWithBodyAttributes[T]
-	}
-	CreateIdRequest[T any] struct {
+	IdRequest[T any] struct {
 		Id uuid.UUID `path:"id"`
 		RequestWithBodyAttributes[T]
 	}
-	GetIdRequest struct {
+	ListIdRequest struct {
 		Id uuid.UUID `path:"id"`
+		ListRequest
 	}
-	GetFlexibleIdRequest struct {
+
+	FlexibleIdRequest struct {
 		PathId string `path:"id"`
 		Id     FlexibleId
 	}
-	UpdateIdRequest[T any] struct {
-		Id uuid.UUID `path:"id"`
-		RequestWithBodyAttributes[T]
-	}
-	DeleteIdRequest struct {
-		Id uuid.UUID `path:"id"`
-	}
-	ArchiveIdRequest struct {
-		Id uuid.UUID `path:"id"`
-	}
 
-	NameRequest struct {
+	EmptyNameRequest struct {
 		Name string `path:"name"`
 	}
-	NameRequestWithAttributes[A any] struct {
-		NameRequest
+	NameRequest[A any] struct {
+		EmptyNameRequest
 		RequestWithBodyAttributes[A]
 	}
 )
@@ -101,7 +86,7 @@ type (
 			Data T `json:"data"`
 		}
 	}
-	ListResponse[T any] struct {
+	PaginatedResponse[T any] struct {
 		Body struct {
 			Data       []T                `json:"data" nullable:"false"`
 			Pagination ResponsePagination `json:"pagination"`
@@ -113,6 +98,15 @@ type (
 		Total    int     `json:"total"`
 	}
 )
+
+func ConvertListResult[T any, R any](result ent.ListResult[R], fn func(*R) T) PaginatedResponse[T] {
+	var resp PaginatedResponse[T]
+	resp.Body.Data = make([]T, len(result.Data))
+	for i, r := range result.Data {
+		resp.Body.Data[i] = fn(r)
+	}
+	return resp
+}
 
 type CalendarDate string
 
@@ -132,12 +126,6 @@ func GetCalendarDateWindow(from, to CalendarDate) (time.Time, time.Time, error) 
 	return parsedFrom, parsedTo, errors.Join(fromErr, toErr)
 }
 
-func GetCalendarDateTimeWindow(from, to CalendarDateTime) (time.Time, time.Time, error) {
-	parsedFrom, fromErr := from.Parse()
-	parsedTo, toErr := to.Parse()
-	return parsedFrom, parsedTo, errors.Join(fromErr, toErr)
-}
-
 // FlexibleId is a field which can be either a uuid or a slug
 type FlexibleId struct {
 	IsUUID bool
@@ -146,7 +134,7 @@ type FlexibleId struct {
 	Slug   string
 }
 
-func (i *GetFlexibleIdRequest) Resolve(ctx huma.Context) []error {
+func (i *FlexibleIdRequest) Resolve(ctx huma.Context) []error {
 	idParam := ctx.Param("id")
 	uid, parseErr := uuid.Parse(idParam)
 	if parseErr == nil {

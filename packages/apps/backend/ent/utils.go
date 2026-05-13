@@ -94,12 +94,12 @@ func ExtractPgxTx(txClient *Tx) (pgx.Tx, error) {
 }
 
 type ListResult[T any] struct {
-	Data  []T
+	Data  []*T
 	Count int
 }
 
 type listQuery[T any, Q any] interface {
-	All(ctx context.Context) ([]T, error)
+	All(ctx context.Context) ([]*T, error)
 	Count(ctx context.Context) (int, error)
 	Limit(limit int) Q
 	Offset(offset int) Q
@@ -107,7 +107,7 @@ type listQuery[T any, Q any] interface {
 
 func DoListQuery[T any, Q any](ctx context.Context, query listQuery[T, Q], p ListParams) (*ListResult[T], error) {
 	res := &ListResult[T]{
-		Data:  make([]T, 0),
+		Data:  make([]*T, 0),
 		Count: 0,
 	}
 	ctx = p.GetQueryContext(ctx)

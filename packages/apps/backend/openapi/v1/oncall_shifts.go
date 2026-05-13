@@ -188,7 +188,7 @@ type ListOncallShiftsRequest struct {
 	UserId uuid.UUID `query:"userId" required:"false" nullable:"false"`
 	Active bool      `query:"active" required:"false" nullable:"false"`
 }
-type ListOncallShiftsResponse ListResponse[OncallShift]
+type ListOncallShiftsResponse PaginatedResponse[OncallShift]
 
 var GetOncallShift = huma.Operation{
 	OperationID: "get-oncall-shift",
@@ -199,7 +199,7 @@ var GetOncallShift = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetOncallShiftRequest GetIdRequest
+type GetOncallShiftRequest EmptyIdRequest
 type GetOncallShiftResponse ItemResponse[OncallShift]
 
 var GetAdjacentOncallShifts = huma.Operation{
@@ -211,7 +211,7 @@ var GetAdjacentOncallShifts = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetAdjacentOncallShiftsRequest GetIdRequest
+type GetAdjacentOncallShiftsRequest EmptyIdRequest
 type GetAdjacentOncallShiftsResponse ItemResponse[OncallShiftsAdjacent]
 
 var CreateOncallShiftHandoverTemplate = huma.Operation{
@@ -238,7 +238,7 @@ var GetOncallShiftHandoverTemplate = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetOncallShiftHandoverTemplateRequest GetIdRequest
+type GetOncallShiftHandoverTemplateRequest EmptyIdRequest
 type GetOncallShiftHandoverTemplateResponse ItemResponse[OncallShiftHandoverTemplate]
 
 var UpdateOncallShiftHandoverTemplate = huma.Operation{
@@ -253,7 +253,7 @@ var UpdateOncallShiftHandoverTemplate = huma.Operation{
 type UpdateOncallShiftHandoverTemplateRequestAttributes struct {
 	Sections []OncallShiftHandoverSection `json:"sections"`
 }
-type UpdateOncallShiftHandoverTemplateRequest UpdateIdRequest[UpdateOncallShiftHandoverTemplateRequestAttributes]
+type UpdateOncallShiftHandoverTemplateRequest IdRequest[UpdateOncallShiftHandoverTemplateRequestAttributes]
 type UpdateOncallShiftHandoverTemplateResponse ItemResponse[OncallShiftHandoverTemplate]
 
 var ArchiveOncallShiftHandoverTemplate = huma.Operation{
@@ -265,7 +265,7 @@ var ArchiveOncallShiftHandoverTemplate = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveOncallShiftHandoverTemplateRequest ArchiveIdRequest
+type ArchiveOncallShiftHandoverTemplateRequest EmptyIdRequest
 type ArchiveOncallShiftHandoverTemplateResponse EmptyResponse
 
 var GetOncallShiftHandover = huma.Operation{
@@ -277,7 +277,7 @@ var GetOncallShiftHandover = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetOncallShiftHandoverRequest GetIdRequest
+type GetOncallShiftHandoverRequest EmptyIdRequest
 type GetOncallShiftHandoverResponse ItemResponse[OncallShiftHandover]
 
 var UpdateOncallShiftHandover = huma.Operation{
@@ -293,7 +293,7 @@ type UpdateOncallShiftHandoverAttributes struct {
 	Content             *[]OncallShiftHandoverSection `json:"content,omitempty"`
 	PinnedAnnotationIds *[]uuid.UUID                  `json:"pinnedAnnotationIds,omitempty"`
 }
-type UpdateOncallShiftHandoverRequest UpdateIdRequest[UpdateOncallShiftHandoverAttributes]
+type UpdateOncallShiftHandoverRequest IdRequest[UpdateOncallShiftHandoverAttributes]
 type UpdateOncallShiftHandoverResponse ItemResponse[OncallShiftHandover]
 
 var SendOncallShiftHandover = huma.Operation{
@@ -307,5 +307,5 @@ var SendOncallShiftHandover = huma.Operation{
 
 type SendOncallShiftHandoverAttributes struct {
 }
-type SendOncallShiftHandoverRequest CreateIdRequest[SendOncallShiftHandoverAttributes]
+type SendOncallShiftHandoverRequest IdRequest[SendOncallShiftHandoverAttributes]
 type SendOncallShiftHandoverResponse ItemResponse[OncallShiftHandover]

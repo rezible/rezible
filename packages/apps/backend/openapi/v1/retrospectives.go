@@ -144,7 +144,7 @@ var ListRetrospectives = huma.Operation{
 }
 
 type ListRetrospectivesRequest ListRequest
-type ListRetrospectivesResponse ListResponse[Retrospective]
+type ListRetrospectivesResponse PaginatedResponse[Retrospective]
 
 var GetRetrospective = huma.Operation{
 	OperationID: "get-retrospective",
@@ -155,7 +155,7 @@ var GetRetrospective = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetRetrospectiveRequest GetIdRequest
+type GetRetrospectiveRequest EmptyIdRequest
 type GetRetrospectiveResponse ItemResponse[Retrospective]
 
 var UpdateRetrospective = huma.Operation{
@@ -169,7 +169,7 @@ var UpdateRetrospective = huma.Operation{
 
 type UpdateRetrospectiveAttributes struct {
 }
-type UpdateRetrospectiveRequest UpdateIdRequest[UpdateRetrospectiveAttributes]
+type UpdateRetrospectiveRequest IdRequest[UpdateRetrospectiveAttributes]
 type UpdateRetrospectiveResponse ItemResponse[Retrospective]
 
 // Reviews
@@ -184,7 +184,7 @@ var ListRetrospectiveReviews = huma.Operation{
 }
 
 type ListRetrospectiveReviewsRequest ListRequest
-type ListRetrospectiveReviewsResponse ListResponse[RetrospectiveReview]
+type ListRetrospectiveReviewsResponse PaginatedResponse[RetrospectiveReview]
 
 var CreateRetrospectiveReview = huma.Operation{
 	OperationID: "create-retrospective-review",
@@ -195,7 +195,7 @@ var CreateRetrospectiveReview = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type CreateRetrospectiveReviewRequest CreateIdRequest[RetrospectiveReviewAttributes]
+type CreateRetrospectiveReviewRequest IdRequest[RetrospectiveReviewAttributes]
 type CreateRetrospectiveReviewResponse ItemResponse[RetrospectiveReview]
 
 var UpdateRetrospectiveReview = huma.Operation{
@@ -209,7 +209,7 @@ var UpdateRetrospectiveReview = huma.Operation{
 
 type UpdateRetrospectiveReviewRequestAttributes struct {
 }
-type UpdateRetrospectiveReviewRequest UpdateIdRequest[UpdateRetrospectiveReviewRequestAttributes]
+type UpdateRetrospectiveReviewRequest IdRequest[UpdateRetrospectiveReviewRequestAttributes]
 type UpdateRetrospectiveReviewResponse ItemResponse[RetrospectiveReview]
 
 var ArchiveRetrospectiveReview = huma.Operation{
@@ -221,7 +221,7 @@ var ArchiveRetrospectiveReview = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveRetrospectiveReviewRequest ArchiveIdRequest
+type ArchiveRetrospectiveReviewRequest EmptyIdRequest
 type ArchiveRetrospectiveReviewResponse EmptyResponse
 
 var ListRetrospectiveComments = huma.Operation{
@@ -234,7 +234,7 @@ var ListRetrospectiveComments = huma.Operation{
 }
 
 type ListRetrospectiveCommentsRequest ListIdRequest
-type ListRetrospectiveCommentsResponse ListResponse[RetrospectiveComment]
+type ListRetrospectiveCommentsResponse PaginatedResponse[RetrospectiveComment]
 
 var CreateRetrospectiveComment = huma.Operation{
 	OperationID: "create-retrospective-comment",
@@ -248,7 +248,7 @@ var CreateRetrospectiveComment = huma.Operation{
 type CreateRetrospectiveCommentAttributes struct {
 	Content json.RawMessage `json:"content"`
 }
-type CreateRetrospectiveCommentRequest CreateIdRequest[CreateRetrospectiveCommentAttributes]
+type CreateRetrospectiveCommentRequest IdRequest[CreateRetrospectiveCommentAttributes]
 type CreateRetrospectiveCommentResponse ItemResponse[RetrospectiveComment]
 
 var GetRetrospectiveComment = huma.Operation{
@@ -276,5 +276,5 @@ type UpdateRetrospectiveCommentAttributes struct {
 	Resolved *bool   `json:"resolved,omitempty"`
 	Content  *string `json:"content,omitempty"`
 }
-type UpdateRetrospectiveCommentRequest UpdateIdRequest[UpdateRetrospectiveCommentAttributes]
+type UpdateRetrospectiveCommentRequest IdRequest[UpdateRetrospectiveCommentAttributes]
 type UpdateRetrospectiveCommentResponse ItemResponse[RetrospectiveComment]

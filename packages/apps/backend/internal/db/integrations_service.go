@@ -10,6 +10,8 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
+	pesr "github.com/rezible/rezible/ent/providereventsyncrun"
+	"github.com/riverqueue/river"
 
 	"github.com/google/uuid"
 	"golang.org/x/oauth2"
@@ -55,6 +57,10 @@ func (s *IntegrationsService) registerJobs() {
 		jobs.RegisterPeriodicJob(syncAllTenantIntegrationsDataPeriodicJob)
 		jobs.RegisterWorkerFunc(s.syncer.SyncIntegrationsData)
 	*/
+}
+
+func (s *IntegrationsService) GetAvailable() []rez.IntegrationPackage {
+	return integrations.GetAvailable()
 }
 
 func (s *IntegrationsService) ListConfigured(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {
@@ -218,10 +224,7 @@ func (s *IntegrationsService) set(ctx context.Context, params rez.ConfigureInteg
 		return nil, fmt.Errorf("failed to get integration %s/%s: %w", params.Provider, params.ExternalRef, getCurrErr)
 	}
 
-	var upsert interface {
-		Save(context.Context) (*ent.Integration, error)
-		Mutation() *ent.IntegrationMutation
-	}
+	var upsert ent.EntityMutator[*ent.Integration, *ent.IntegrationMutation]
 	if curr == nil {
 		upsert = s.db.Integration.Create().
 			SetProvider(params.Provider).
@@ -497,4 +500,30 @@ func (s *IntegrationsService) GetVideoConferenceService(ctx context.Context) (re
 		return vci.MakeVideoConferenceService(ctx)
 	}
 	return nil, rez.ErrNoConfiguredIntegrations
+}
+
+func (s *IntegrationsService) RequestDataSync(ctx context.Context, providerSources map[string][]string) error {
+	args := jobs.ProviderEventSyncJob{
+		ProviderSources: providerSources,
+		SyncReason:      "manual",
+	}
+	opts := &river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{
+			ByArgs:  true,
+			ByState: jobs.UniqueStateNonCompleted,
+		},
+	}
+	_, insertErr := s.jobs.Insert(ctx, args, opts)
+	if insertErr != nil {
+		return fmt.Errorf("insert job: %w", insertErr)
+	}
+	return nil
+}
+
+func (s *IntegrationsService) GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error) {
+	query := s.db.ProviderEventSyncRun.Query().
+		Where(pesr.Provider(provider)).
+		Order(pesr.ByStartedAt(sql.OrderDesc())).
+		Limit(5)
+	return ent.DoListQuery[ent.ProviderEventSyncRun, *ent.ProviderEventSyncRunQuery](ctx, query, ent.ListParams{Limit: 5})
 }

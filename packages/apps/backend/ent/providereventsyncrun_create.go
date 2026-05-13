@@ -43,6 +43,14 @@ func (_c *ProviderEventSyncRunCreate) SetProviderSource(v string) *ProviderEvent
 	return _c
 }
 
+// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
+func (_c *ProviderEventSyncRunCreate) SetNillableProviderSource(v *string) *ProviderEventSyncRunCreate {
+	if v != nil {
+		_c.SetProviderSource(*v)
+	}
+	return _c
+}
+
 // SetSyncReason sets the "sync_reason" field.
 func (_c *ProviderEventSyncRunCreate) SetSyncReason(v string) *ProviderEventSyncRunCreate {
 	_c.mutation.SetSyncReason(v)
@@ -249,14 +257,6 @@ func (_c *ProviderEventSyncRunCreate) check() error {
 			return &ValidationError{Name: "provider", err: fmt.Errorf(`ent: validator failed for field "ProviderEventSyncRun.provider": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ProviderSource(); !ok {
-		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "ProviderEventSyncRun.provider_source"`)}
-	}
-	if v, ok := _c.mutation.ProviderSource(); ok {
-		if err := providereventsyncrun.ProviderSourceValidator(v); err != nil {
-			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "ProviderEventSyncRun.provider_source": %w`, err)}
-		}
-	}
 	if _, ok := _c.mutation.SyncReason(); !ok {
 		return &ValidationError{Name: "sync_reason", err: errors.New(`ent: missing required field "ProviderEventSyncRun.sync_reason"`)}
 	}
@@ -451,6 +451,12 @@ func (u *ProviderEventSyncRunUpsert) SetProviderSource(v string) *ProviderEventS
 // UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
 func (u *ProviderEventSyncRunUpsert) UpdateProviderSource() *ProviderEventSyncRunUpsert {
 	u.SetExcluded(providereventsyncrun.FieldProviderSource)
+	return u
+}
+
+// ClearProviderSource clears the value of the "provider_source" field.
+func (u *ProviderEventSyncRunUpsert) ClearProviderSource() *ProviderEventSyncRunUpsert {
+	u.SetNull(providereventsyncrun.FieldProviderSource)
 	return u
 }
 
@@ -656,6 +662,13 @@ func (u *ProviderEventSyncRunUpsertOne) SetProviderSource(v string) *ProviderEve
 func (u *ProviderEventSyncRunUpsertOne) UpdateProviderSource() *ProviderEventSyncRunUpsertOne {
 	return u.Update(func(s *ProviderEventSyncRunUpsert) {
 		s.UpdateProviderSource()
+	})
+}
+
+// ClearProviderSource clears the value of the "provider_source" field.
+func (u *ProviderEventSyncRunUpsertOne) ClearProviderSource() *ProviderEventSyncRunUpsertOne {
+	return u.Update(func(s *ProviderEventSyncRunUpsert) {
+		s.ClearProviderSource()
 	})
 }
 
@@ -1049,6 +1062,13 @@ func (u *ProviderEventSyncRunUpsertBulk) SetProviderSource(v string) *ProviderEv
 func (u *ProviderEventSyncRunUpsertBulk) UpdateProviderSource() *ProviderEventSyncRunUpsertBulk {
 	return u.Update(func(s *ProviderEventSyncRunUpsert) {
 		s.UpdateProviderSource()
+	})
+}
+
+// ClearProviderSource clears the value of the "provider_source" field.
+func (u *ProviderEventSyncRunUpsertBulk) ClearProviderSource() *ProviderEventSyncRunUpsertBulk {
+	return u.Update(func(s *ProviderEventSyncRunUpsert) {
+		s.ClearProviderSource()
 	})
 }
 

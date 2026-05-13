@@ -21,7 +21,7 @@ func NewSystemTopologyService(db *ent.Client) (*SystemTopologyService, error) {
 	return &SystemTopologyService{db: db}, nil
 }
 
-func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.ListSystemTopologyEntitiesParams) (*ent.ListResult[*ent.KnowledgeEntity], error) {
+func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.ListSystemTopologyEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {
 	query := s.db.KnowledgeEntity.Query().
 		WithAliases().
 		WithSourceRelationships(func(q *ent.KnowledgeRelationshipQuery) {
@@ -36,7 +36,7 @@ func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.Lis
 	if len(params.Kinds) > 0 {
 		query.Where(kne.KindIn(params.Kinds...))
 	}
-	return ent.DoListQuery[*ent.KnowledgeEntity, *ent.KnowledgeEntityQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.KnowledgeEntity, *ent.KnowledgeEntityQuery](ctx, query, params.ListParams)
 }
 
 func (s *SystemTopologyService) GetEntity(ctx context.Context, id uuid.UUID) (*ent.KnowledgeEntity, error) {
@@ -52,7 +52,7 @@ func (s *SystemTopologyService) GetEntity(ctx context.Context, id uuid.UUID) (*e
 		Only(ctx)
 }
 
-func (s *SystemTopologyService) ListRelationships(ctx context.Context, params rez.ListSystemTopologyRelationshipsParams) (*ent.ListResult[*ent.KnowledgeRelationship], error) {
+func (s *SystemTopologyService) ListRelationships(ctx context.Context, params rez.ListSystemTopologyRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
 	query := s.db.KnowledgeRelationship.Query().
 		WithSourceEntity().
 		WithTargetEntity()
@@ -68,7 +68,7 @@ func (s *SystemTopologyService) ListRelationships(ctx context.Context, params re
 	if params.EntityID != uuid.Nil {
 		query.Where(knr.Or(knr.SourceEntityID(params.EntityID), knr.TargetEntityID(params.EntityID)))
 	}
-	return ent.DoListQuery[*ent.KnowledgeRelationship, *ent.KnowledgeRelationshipQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.KnowledgeRelationship, *ent.KnowledgeRelationshipQuery](ctx, query, params.ListParams)
 }
 
 func (s *SystemTopologyService) GetNeighborhood(ctx context.Context, id uuid.UUID, params rez.SystemTopologyNeighborhoodParams) (*rez.SystemTopologyGraph, error) {

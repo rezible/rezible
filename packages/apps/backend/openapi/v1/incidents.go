@@ -203,7 +203,7 @@ type ListIncidentsRequest struct {
 	ListRequest
 	TeamId uuid.UUID `query:"teamId" required:"false"`
 }
-type ListIncidentsResponse ListResponse[Incident]
+type ListIncidentsResponse PaginatedResponse[Incident]
 
 var CreateIncident = huma.Operation{
 	OperationID: "create-incident",
@@ -234,7 +234,7 @@ var GetIncident = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetIncidentRequest = GetFlexibleIdRequest
+type GetIncidentRequest = FlexibleIdRequest
 type GetIncidentResponse ItemResponse[Incident]
 
 var UpdateIncident = huma.Operation{
@@ -252,7 +252,7 @@ type UpdateIncidentAttributes struct {
 	SeverityId uuid.UUID `json:"severityId,omitempty" required:"false"`
 	TypeId     uuid.UUID `json:"typeId,omitempty" required:"false"`
 }
-type UpdateIncidentRequest UpdateIdRequest[UpdateIncidentAttributes]
+type UpdateIncidentRequest IdRequest[UpdateIncidentAttributes]
 type UpdateIncidentResponse ItemResponse[Incident]
 
 var ArchiveIncident = huma.Operation{
@@ -264,5 +264,5 @@ var ArchiveIncident = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type ArchiveIncidentRequest ArchiveIdRequest
+type ArchiveIncidentRequest EmptyIdRequest
 type ArchiveIncidentResponse EmptyResponse

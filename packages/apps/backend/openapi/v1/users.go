@@ -60,7 +60,7 @@ type ListUsersRequest struct {
 	ListRequest
 	TeamId uuid.UUID `query:"teamId" required:"false"`
 }
-type ListUsersResponse ListResponse[User]
+type ListUsersResponse PaginatedResponse[User]
 
 var GetUser = huma.Operation{
 	OperationID: "get-user",
@@ -71,5 +71,5 @@ var GetUser = huma.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type GetUserRequest GetIdRequest
+type GetUserRequest EmptyIdRequest
 type GetUserResponse ItemResponse[User]

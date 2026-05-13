@@ -44624,9 +44624,22 @@ func (m *ProviderEventSyncRunMutation) OldProviderSource(ctx context.Context) (v
 	return oldValue.ProviderSource, nil
 }
 
+// ClearProviderSource clears the value of the "provider_source" field.
+func (m *ProviderEventSyncRunMutation) ClearProviderSource() {
+	m.provider_source = nil
+	m.clearedFields[providereventsyncrun.FieldProviderSource] = struct{}{}
+}
+
+// ProviderSourceCleared returns if the "provider_source" field was cleared in this mutation.
+func (m *ProviderEventSyncRunMutation) ProviderSourceCleared() bool {
+	_, ok := m.clearedFields[providereventsyncrun.FieldProviderSource]
+	return ok
+}
+
 // ResetProviderSource resets all changes to the "provider_source" field.
 func (m *ProviderEventSyncRunMutation) ResetProviderSource() {
 	m.provider_source = nil
+	delete(m.clearedFields, providereventsyncrun.FieldProviderSource)
 }
 
 // SetSyncReason sets the "sync_reason" field.
@@ -45314,6 +45327,9 @@ func (m *ProviderEventSyncRunMutation) AddField(name string, value ent.Value) er
 // mutation.
 func (m *ProviderEventSyncRunMutation) ClearedFields() []string {
 	var fields []string
+	if m.FieldCleared(providereventsyncrun.FieldProviderSource) {
+		fields = append(fields, providereventsyncrun.FieldProviderSource)
+	}
 	if m.FieldCleared(providereventsyncrun.FieldFinishedAt) {
 		fields = append(fields, providereventsyncrun.FieldFinishedAt)
 	}
@@ -45334,6 +45350,9 @@ func (m *ProviderEventSyncRunMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ProviderEventSyncRunMutation) ClearField(name string) error {
 	switch name {
+	case providereventsyncrun.FieldProviderSource:
+		m.ClearProviderSource()
+		return nil
 	case providereventsyncrun.FieldFinishedAt:
 		m.ClearFinishedAt()
 		return nil

@@ -1222,10 +1222,6 @@ func init() {
 	providereventsyncrunDescProvider := providereventsyncrunFields[1].Descriptor()
 	// providereventsyncrun.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
 	providereventsyncrun.ProviderValidator = providereventsyncrunDescProvider.Validators[0].(func(string) error)
-	// providereventsyncrunDescProviderSource is the schema descriptor for provider_source field.
-	providereventsyncrunDescProviderSource := providereventsyncrunFields[2].Descriptor()
-	// providereventsyncrun.ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	providereventsyncrun.ProviderSourceValidator = providereventsyncrunDescProviderSource.Validators[0].(func(string) error)
 	// providereventsyncrunDescSyncReason is the schema descriptor for sync_reason field.
 	providereventsyncrunDescSyncReason := providereventsyncrunFields[3].Descriptor()
 	// providereventsyncrun.DefaultSyncReason holds the default value on creation for the sync_reason field.

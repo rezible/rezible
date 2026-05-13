@@ -6,7 +6,6 @@ import (
 	"net/url"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/integrations"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -21,7 +20,7 @@ func newIntegrationsHandler(integrations rez.IntegrationsService) *integrationsH
 func (h *integrationsHandler) ListAvailableIntegrations(ctx context.Context, req *oapi.ListAvailableIntegrationsRequest) (*oapi.ListAvailableIntegrationsResponse, error) {
 	var resp oapi.ListAvailableIntegrationsResponse
 
-	available := integrations.GetAvailable()
+	available := h.integrations.GetAvailable()
 	resp.Body.Data = make([]oapi.AvailableIntegration, len(available))
 	for i, intg := range available {
 		resp.Body.Data[i] = oapi.AvailableIntegrationFromPackage(intg)
@@ -67,7 +66,7 @@ func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oap
 
 	attr := req.Body.Attributes
 	ci, setErr := h.integrations.Configure(ctx, rez.ConfigureIntegrationParams{
-		Provider:    req.Provider,
+		Provider:    req.Name,
 		DisplayName: attr.DisplayName,
 		ExternalRef: attr.ExternalRef,
 		Config:      attr.Config,
@@ -114,11 +113,27 @@ func (h *integrationsHandler) StartIntegrationOAuthFlow(ctx context.Context, req
 		return nil, oapi.Error(ctx, "invalid callback url", urlErr)
 	}
 
-	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Provider, redirectUrl)
+	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name, redirectUrl)
 	if flowErr != nil {
 		return nil, oapi.Error(ctx, "failed to start flow", flowErr)
 	}
 	resp.Body.Data = oapi.IntegrationOAuthFlow{FlowUrl: startFlowUrl}
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) SelectIntegrationOAuthFlow(ctx context.Context, req *oapi.SelectIntegrationOAuthFlowRequest) (*oapi.SelectIntegrationOAuthFlowResponse, error) {
+	var resp oapi.SelectIntegrationOAuthFlowResponse
+
+	attr := req.Body.Attributes
+	result, selectErr := h.integrations.SelectOAuth2Flow(ctx, req.Name, rez.SelectIntegrationOAuth2Params{
+		SelectionToken: attr.SelectionToken,
+		ExternalRefs:   attr.ExternalRefs,
+	})
+	if selectErr != nil {
+		return nil, oapi.Error(ctx, "failed to select integration", selectErr)
+	}
+	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromCore(result)
 
 	return &resp, nil
 }
@@ -136,7 +151,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 		State:          attr.State,
 		ClientVerifier: attr.ClientVerifier,
 	}
-	result, completeErr := h.integrations.CompleteOAuth2Flow(ctx, req.Provider, params)
+	result, completeErr := h.integrations.CompleteOAuth2Flow(ctx, req.Name, params)
 	if completeErr != nil {
 		return nil, oapi.Error(ctx, "failed to complete integration", completeErr)
 	}
@@ -145,18 +160,28 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) SelectIntegrationOAuthFlow(ctx context.Context, req *oapi.SelectIntegrationOAuthFlowRequest) (*oapi.SelectIntegrationOAuthFlowResponse, error) {
-	var resp oapi.SelectIntegrationOAuthFlowResponse
+func (h *integrationsHandler) RequestIntegrationDataSync(ctx context.Context, req *oapi.RequestIntegrationDataSyncRequest) (*oapi.RequestIntegrationDataSyncResponse, error) {
+	var resp oapi.RequestIntegrationDataSyncResponse
 
-	attr := req.Body.Attributes
-	result, selectErr := h.integrations.SelectOAuth2Flow(ctx, req.Provider, rez.SelectIntegrationOAuth2Params{
-		SelectionToken: attr.SelectionToken,
-		ExternalRefs:   attr.ExternalRefs,
-	})
-	if selectErr != nil {
-		return nil, oapi.Error(ctx, "failed to select integration", selectErr)
+	provSrc := map[string][]string{req.Name: req.Body.Attributes.Sources}
+	if requestErr := h.integrations.RequestDataSync(ctx, provSrc); requestErr != nil {
+		return nil, oapi.Error(ctx, "failed to request integration data sync", requestErr)
 	}
-	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromCore(result)
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) GetIntegrationDataSyncStatus(ctx context.Context, req *oapi.GetIntegrationDataSyncStatusRequest) (*oapi.GetIntegrationDataSyncStatusResponse, error) {
+	var resp oapi.GetIntegrationDataSyncStatusResponse
+
+	result, completeErr := h.integrations.GetDataSyncStatus(ctx, req.Name)
+	if completeErr != nil {
+		return nil, oapi.Error(ctx, "failed to complete integration", completeErr)
+	}
+	resp.Body.Data = make([]oapi.IntegrationProviderDataSyncStatus, len(result.Data))
+	for i, r := range result.Data {
+		resp.Body.Data[i] = oapi.IntegrationProviderDataSyncStatusFromEnt(r)
+	}
 
 	return &resp, nil
 }
