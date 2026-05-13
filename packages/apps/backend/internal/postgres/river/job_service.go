@@ -70,9 +70,9 @@ func (s *JobService) Start(ctx context.Context) error {
 	if pjErr != nil {
 		return fmt.Errorf("failed to add periodic jobs: %w", pjErr)
 	}
-	jobsCtx := execution.NewContext(ctx, execution.KindSystem, execution.SourceJob)
-	jobsCtx = telemetry.ContextWithLoggerOptions(jobsCtx, telemetry.WithLogValues("source", string(execution.SourceJob)))
-	return s.client.Start(jobsCtx)
+	ctx = execution.NewRootContext(ctx, execution.KindSystem, execution.SourceJob)
+	ctx = telemetry.ContextWithLoggerOptions(ctx, telemetry.WithLogValues("source", string(execution.SourceJob)))
+	return s.client.Start(ctx)
 }
 
 func (s *JobService) Stop(ctx context.Context) error {

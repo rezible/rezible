@@ -33,7 +33,7 @@ func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organizat
 	if orgErr != nil {
 		return nil, fmt.Errorf("sync organization: %w", orgErr)
 	}
-	ctx = execution.SystemTenantContext(ctx, org.TenantID)
+	ctx = execution.NewTenantContext(ctx, org.TenantID)
 
 	existing, getErr := s.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
 	if getErr != nil && !ent.IsNotFound(getErr) {

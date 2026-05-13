@@ -18,7 +18,7 @@ var respondCallbackInnerEvents = mapset.NewSet(
 )
 
 func (s *ChatService) handleCallbackEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) error {
-	ctx = execution.AnonymousTenantContext(ctx, s.ci.intg.TenantID)
+	ctx = execution.NewTenantContext(ctx, s.ci.intg.TenantID)
 
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.AppHomeOpenedEvent:

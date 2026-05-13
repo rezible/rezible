@@ -2,47 +2,37 @@ package execution
 
 import (
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
-	rez "github.com/rezible/rezible"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEncodeDecodeRoundTrip(t *testing.T) {
-	userID := uuid.New()
-	tenantID := 42
 	exec := Context{
-		Actor: Actor{
-			Kind:     KindUser,
-			TenantID: &tenantID,
-			UserID:   &userID,
-		},
-		Auth: &rez.AuthSession{
-			Scopes:    []string{"document:read"},
-			ExpiresAt: time.Unix(100, 0).UTC(),
+		ActorKind: KindUser,
+		Auth: Auth{
+			TenantID: new(42),
+			UserID:   new(uuid.New()),
 		},
 		Provenance: Provenance{
-			Source:        SourceHTTP,
-			RequestID:     "req-1",
-			CorrelationID: "corr-1",
-			ParentKind:    "job",
-			ParentID:      "123",
+			ID:       "456",
+			Source:   SourceHTTP,
+			ParentID: new("123"),
 		},
 	}
 
-	encoded, err := exec.Encode()
-	require.NoError(t, err)
+	encoded, encErr := exec.Encode()
+	require.NoError(t, encErr)
 
-	decoded, err := Decode(encoded)
-	require.NoError(t, err)
+	decoded, restErr := RestoreFrom(encoded)
+	require.NoError(t, restErr)
 	require.Equal(t, exec, decoded)
 }
 
 func TestAnonymousValidateRejectsAuth(t *testing.T) {
 	exec := Context{
-		Actor: Actor{Kind: KindAnonymous},
-		Auth:  &rez.AuthSession{},
+		ActorKind: KindAnonymous,
+		Auth:      Auth{UserID: new(uuid.New())},
 	}
 	require.Error(t, exec.validate())
 }

@@ -204,7 +204,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, args pr
 				return res, fmt.Errorf("multiple tenant ids in events")
 			}
 		}
-		projErr := s.saveNormalizedEvents(execution.SystemTenantContext(ctx, tenantID), normalizedEvents)
+		projErr := s.saveNormalizedEvents(execution.NewTenantContext(ctx, tenantID), normalizedEvents)
 		res.projectionTime = time.Since(projectionStart)
 		if projErr != nil {
 			return res, fmt.Errorf("saving normalized events: %w", projErr)

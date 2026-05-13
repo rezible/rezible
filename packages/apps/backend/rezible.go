@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"iter"
-	"net/http"
 	"net/url"
 	"time"
 
@@ -54,11 +53,13 @@ type DatabaseClient interface {
 }
 
 type Services struct {
+	// TODO: don't expose this
+	Database DatabaseClient
+
 	Jobs             JobsService
 	ProviderEvents   ProviderEventService
 	Messages         MessageService
 	Topology         SystemTopologyService
-	Auth             AuthSessionService
 	Organizations    OrganizationService
 	Integrations     IntegrationsService
 	Users            UserService
@@ -312,19 +313,6 @@ type (
 	UserDataProvider interface {
 		UserDataMapping() *ent.User
 		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
-	}
-)
-
-type (
-	AuthSession struct {
-		UserId    uuid.UUID `json:"uid"`
-		Scopes    []string  `json:"sc"`
-		ExpiresAt time.Time `json:"exp"`
-	}
-
-	AuthSessionService interface {
-		AuthHandler() http.Handler
-		Authenticate(ctx context.Context, authToken string) (context.Context, error)
 	}
 )
 

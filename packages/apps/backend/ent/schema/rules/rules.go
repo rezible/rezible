@@ -20,7 +20,7 @@ func DenyIfNoAccessScope() privacy.QueryMutationRule {
 
 func DenyIfAnonymous() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		if execution.GetActor(ctx).Kind == execution.KindAnonymous {
+		if execution.GetContext(ctx).IsAnonymous() {
 			return privacy.Deny
 		}
 		return privacy.Skip
@@ -29,7 +29,7 @@ func DenyIfAnonymous() privacy.QueryMutationRule {
 
 func AllowIfSystemRole() privacy.QueryMutationRule {
 	return privacy.ContextQueryMutationRule(func(ctx context.Context) error {
-		if execution.GetActor(ctx).Kind == execution.KindSystem {
+		if execution.GetContext(ctx).IsSystem() {
 			return privacy.Allow
 		}
 		return privacy.Skip
@@ -46,7 +46,7 @@ func FilterTenantRule() privacy.QueryMutationRule {
 			return privacy.Denyf("unexpected filter type %T", f)
 		}
 
-		tenantId, tenantSet := execution.TenantID(ctx)
+		tenantId, tenantSet := execution.GetContext(ctx).TenantID()
 		if !tenantSet {
 			return privacy.Denyf("missing tenant in access context")
 		}

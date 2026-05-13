@@ -10,13 +10,10 @@ import (
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/rezible/rezible"
-	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/internal/adk"
-	"github.com/rezible/rezible/internal/apiv1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
-	"github.com/rezible/rezible/internal/oidc"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/prosemirror"
@@ -58,7 +55,7 @@ func (s *Server) RunServe(ctx context.Context) error {
 	if startErr := s.start(ctx); startErr != nil && !errors.Is(startErr, context.Canceled) {
 		serveErr = fmt.Errorf("start: %w", startErr)
 	}
-	if stopErr := s.stop(); stopErr != nil {
+	if stopErr := s.stop(ctx); stopErr != nil {
 		serveErr = errors.Join(fmt.Errorf("failed to stop server: %w", stopErr), serveErr)
 	}
 
@@ -82,7 +79,7 @@ func (s *Server) setup(ctx context.Context) error {
 		s.listeners[name] = el
 	}
 
-	srv, srvErr := http.NewServer(services.Auth, apiv1.NewHandler(services, s.db.Client()))
+	srv, srvErr := http.NewServer(ctx, services)
 	if srvErr != nil {
 		return fmt.Errorf("http.NewServer: %w", srvErr)
 	}
@@ -94,9 +91,7 @@ func (s *Server) setup(ctx context.Context) error {
 func (s *Server) start(ctx context.Context) error {
 	errChan := make(chan error)
 	go func() {
-		p := pool.New().
-			WithErrors().
-			WithContext(execution.AnonymousContext(ctx))
+		p := pool.New().WithErrors().WithContext(ctx)
 		for _, l := range s.listeners {
 			p.Go(l.Start)
 		}
@@ -111,8 +106,8 @@ func (s *Server) start(ctx context.Context) error {
 	}
 }
 
-func (s *Server) stop() error {
-	timeoutCtx, cancelStopCtx := context.WithTimeout(context.Background(), s.cfg.StopTimeout)
+func (s *Server) stop(ctx context.Context) error {
+	timeoutCtx, cancelStopCtx := context.WithTimeout(ctx, s.cfg.StopTimeout)
 	defer cancelStopCtx()
 
 	var err error
@@ -169,11 +164,6 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	teams, teamsErr := db.NewTeamService(dbc)
 	if teamsErr != nil {
 		return nil, fmt.Errorf("db.NewTeamService: %w", teamsErr)
-	}
-
-	auth, authErr := oidc.NewAuthSessionService(ctx, orgs, users)
-	if authErr != nil {
-		return nil, fmt.Errorf("oidc.NewAuthSessionService: %w", authErr)
 	}
 
 	intgs, intgsErr := db.NewIntegrationsService(dbc, jobSvc)
@@ -254,12 +244,12 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	}
 
 	return &rez.Services{
+		Database:       pgDb,
 		Jobs:           jobSvc,
 		ProviderEvents: provEvents,
 		Messages:       msgs,
 		//Knowledge:        knowledge,
 		Topology:         topology,
-		Auth:             auth,
 		Organizations:    orgs,
 		Integrations:     intgs,
 		Users:            users,

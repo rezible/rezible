@@ -25,17 +25,17 @@ func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, us
 func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, request *oapi.GetIncidentUserDebriefRequest) (*oapi.GetIncidentUserDebriefResponse, error) {
 	var resp oapi.GetIncidentUserDebriefResponse
 
-	sess := execution.AuthSession(ctx)
-	if sess == nil {
+	userId, userOk := execution.GetContext(ctx).UserID()
+	if !userOk {
 		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
 
-	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, sess.UserId)
+	debrief, debriefErr := h.debriefs.GetUserDebrief(ctx, request.Id, userId)
 	if debriefErr != nil {
 		if !ent.IsNotFound(debriefErr) {
 			return nil, oapi.Error(ctx, "failed to get incident debrief", debriefErr)
 		}
-		created, createErr := h.debriefs.CreateDebrief(ctx, request.Id, sess.UserId)
+		created, createErr := h.debriefs.CreateDebrief(ctx, request.Id, userId)
 		if createErr != nil {
 			return nil, oapi.Error(ctx, "failed to create debrief", createErr)
 		}

@@ -27,7 +27,7 @@ func lookupTenantIntegration(ctx context.Context, integrations rez.IntegrationsS
 		Providers:    []string{integrationName},
 		ExternalRefs: []string{strconv.FormatInt(installationID, 10)},
 	}
-	intgs, listErr := integrations.ListConfigured(execution.SystemContext(ctx), params)
+	intgs, listErr := integrations.ListConfigured(execution.NewSystemContext(ctx), params)
 	if listErr != nil {
 		if ent.IsNotFound(listErr) {
 			return nil, nil

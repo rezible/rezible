@@ -21,33 +21,24 @@ export enum AuthSessionErrorCategory {
 	ServerError = "server_error",
 	Unknown = "unknown",
 };
+const authErrCategories = Object.values(AuthSessionErrorCategory);
+
+const parseAuthSessionQueryResponseError = (err: ErrorModel): AuthSessionErrorCategory => {
+	if (err.status === 401) {
+		const mappedCategory = err.detail as AuthSessionErrorCategory;
+		if (authErrCategories.includes(mappedCategory)) {
+			return mappedCategory;
+		}
+	} else if (!err.status || err.status >= 500) {
+		return AuthSessionErrorCategory.ServerError;
+	}
+	return AuthSessionErrorCategory.Unknown;
+};
 
 type AuthSession = {
 	expiresAt: Date;
 	user: User;
 	organization: Organization;
-};
-
-const parseAuthSessionQueryResponseError = (err: ErrorModel): AuthSessionErrorCategory => {
-	const status = err.status ?? 503;
-	let category: AuthSessionErrorCategory = AuthSessionErrorCategory.Unknown;
-	if (status === 401) {
-		const mappedCategory = err.detail as AuthSessionErrorCategory;
-		if (Object.values(AuthSessionErrorCategory).includes(mappedCategory)) {
-			category = mappedCategory;
-		}
-	} else if (status >= 500) {
-		category = AuthSessionErrorCategory.ServerError;
-	}
-	return category;
-};
-
-const parseAuthSessionQueryResponseData = ({data}: GetCurrentAuthSessionResponseBody): AuthSession => {
-	return {
-		user: data.user,
-		organization: data.organization,
-		expiresAt: parseAbsoluteToLocal(data.expiresAt).toDate(),
-	};
 };
 
 type AuthSessionQueryResult = CreateQueryResult<GetCurrentAuthSessionResponseBody, ErrorModel>;
@@ -59,7 +50,12 @@ const parseUserAuthSessionQueryResponse = ({data: body, error}: AuthSessionQuery
 	if (!!error) {
 		return {error: parseAuthSessionQueryResponseError(error)};
 	} else if (!!body) {
-		return {session: parseAuthSessionQueryResponseData(body)};
+		const session: AuthSession = {
+			user: body.data.user,
+			organization: body.data.organization,
+			expiresAt: parseAbsoluteToLocal(body.data.expiresAt).toDate(),
+		}
+		return {session};
 	}
 	return {};
 };

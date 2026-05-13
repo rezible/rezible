@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/koding/websocketproxy"
+	"github.com/rezible/rezible/internal/http/api/v1"
+	"github.com/rezible/rezible/internal/http/oidc"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httplog/v3"
@@ -19,8 +21,6 @@ import (
 	"github.com/rezible/rezible/integrations"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
-
-const healthCheckPath = "/health"
 
 type Server struct {
 	cfg        Config
@@ -35,7 +35,7 @@ func ensureSlashPrefix(s string) string {
 	return s
 }
 
-func NewServer(auth rez.AuthSessionService, v1h oapiv1.Handler) (*Server, error) {
+func NewServer(ctx context.Context, svcs *rez.Services) (*Server, error) {
 	cfg, cfgErr := loadConfig()
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
@@ -46,8 +46,12 @@ func NewServer(auth rez.AuthSessionService, v1h oapiv1.Handler) (*Server, error)
 	s.router.Use(s.makeExecutionContextMiddleware())
 	s.router.Use(s.makeLoggerMiddleware())
 
-	basePath := cfg.BasePath
-	s.router.Mount(ensureSlashPrefix(basePath), http.StripPrefix(basePath, s.makeApiHandler(auth, v1h)))
+	handler, handlerErr := s.makeRequestHandler(ctx, svcs)
+	if handlerErr != nil {
+		return nil, fmt.Errorf("http request handler: %w", handlerErr)
+	}
+	base := ensureSlashPrefix(cfg.BasePath)
+	s.router.Mount(base, http.StripPrefix(cfg.BasePath, handler))
 
 	return &s, nil
 }
@@ -55,7 +59,7 @@ func NewServer(auth rez.AuthSessionService, v1h oapiv1.Handler) (*Server, error)
 func (s *Server) makeExecutionContextMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			execCtx := execution.NewContext(r.Context(), execution.KindAnonymous, execution.SourceHTTP)
+			execCtx := execution.NewRootContext(r.Context(), execution.KindAnonymous, execution.SourceHTTP)
 			next.ServeHTTP(w, r.WithContext(execCtx))
 		})
 	}
@@ -67,40 +71,56 @@ func (s *Server) makeLoggerMiddleware() func(http.Handler) http.Handler {
 		Schema:        httplog.SchemaOTEL,
 		RecoverPanics: true,
 		Skip: func(r *http.Request, respStatus int) bool {
-			return r.URL.Path == healthCheckPath && respStatus == http.StatusOK
+			return r.URL.Path == "/health" && respStatus == http.StatusOK
 		},
 	})
 }
 
-func (s *Server) makeApiHandler(auth rez.AuthSessionService, v1h oapiv1.Handler) http.Handler {
-	r := chi.NewRouter()
-	r.Get(healthCheckPath, s.makeHealthCheckHandler())
-	api := oapiv1.MakeApi(v1h, oapiv1.MakeSecurityMiddleware(auth), oapiv1.MakeAPITelemetryMiddleware())
-	r.Mount(oapiv1.VersionPrefix, api.Adapter())
-	r.Mount("/auth", auth.AuthHandler())
-	r.Mount("/webhooks", s.makeWebhooksHandler())
-	if s.cfg.DocumentsProxy.Enabled {
-		r.Handle("/documents", s.makeDocumentsProxyHandler(auth))
+func (s *Server) makeRequestHandler(ctx context.Context, svcs *rez.Services) (http.Handler, error) {
+	auth, authErr := oidc.NewAuthSessionService(ctx, svcs.Organizations, svcs.Users)
+	if authErr != nil {
+		return nil, fmt.Errorf("oidc.NewAuthSessionService: %w", authErr)
 	}
-	return r
+
+	r := chi.NewRouter()
+
+	r.Get("/health", s.makeHealthCheckHandler())
+
+	webhooks := chi.NewMux()
+	for route, wh := range integrations.GetWebhookHandlers() {
+		webhooks.Mount(ensureSlashPrefix(route), wh)
+	}
+	r.Mount("/webhooks", webhooks)
+
+	r.Mount("/auth", auth.Handler())
+
+	// routes requiring auth context
+	r.Group(func(ar chi.Router) {
+		ar.Use(auth.ExecutionContextMiddleware())
+
+		if s.cfg.DocumentsProxy.Enabled {
+			ar.Handle("/documents", s.makeDocumentsProxyHandler())
+		}
+
+		api := oapiv1.MakeApi(apiv1.NewHandler(svcs), oapiv1.MakeSecurityMiddleware(), oapiv1.MakeAPITelemetryMiddleware())
+		ar.Mount(oapiv1.VersionPrefix, api.Adapter())
+	})
+
+	return r, nil
 }
 
-func (s *Server) makeDocumentsProxyHandler(auth rez.AuthSessionService) http.Handler {
+func (s *Server) makeDocumentsProxyHandler() http.Handler {
 	headerKey := "X-Rez-Tenant-ID"
 	setAuthHeaders := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authCtx, authErr := auth.Authenticate(r.Context(), oapiv1.GetRequestAppCookieValue(r))
-			if authErr != nil {
+			exec := execution.GetContext(r.Context())
+			tenantId, tenantOk := exec.TenantID()
+			if exec.IsAnonymous() || exec.Auth.TokenID != nil || !tenantOk {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
-			tenantId, tenantOk := execution.TenantID(authCtx)
-			if !tenantOk {
-				http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
-				return
-			}
 			r.Header.Set(headerKey, fmt.Sprintf("%d", tenantId))
-			next.ServeHTTP(w, r.WithContext(authCtx))
+			next.ServeHTTP(w, r)
 		})
 	}
 	proxy := websocketproxy.NewProxy(s.cfg.DocumentsProxy.serverUrl)
@@ -114,14 +134,6 @@ func (s *Server) makeHealthCheckHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
-}
-
-func (s *Server) makeWebhooksHandler() http.Handler {
-	r := chi.NewMux()
-	for route, wh := range integrations.GetWebhookHandlers() {
-		r.Mount(ensureSlashPrefix(route), wh)
-	}
-	return r
 }
 
 func (s *Server) Start(baseCtx context.Context) error {

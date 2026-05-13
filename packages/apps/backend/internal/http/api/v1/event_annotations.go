@@ -55,15 +55,15 @@ func (h *eventAnnotationsHandler) ListEventAnnotations(ctx context.Context, req 
 func (h *eventAnnotationsHandler) CreateEventAnnotation(ctx context.Context, request *oapi.CreateEventAnnotationRequest) (*oapi.CreateEventAnnotationResponse, error) {
 	var resp oapi.CreateEventAnnotationResponse
 
-	sess := execution.AuthSession(ctx)
-	if sess == nil {
+	userId, userOk := execution.GetContext(ctx).UserID()
+	if !userOk {
 		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
 
 	attr := request.Body.Attributes
 
 	anno := &ent.EventAnnotation{
-		CreatorID:       sess.UserId,
+		CreatorID:       userId,
 		EventID:         attr.EventId,
 		MinutesOccupied: attr.MinutesOccupied,
 		Notes:           attr.Notes,

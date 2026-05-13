@@ -73,11 +73,11 @@ func (s *Suite) SetConfigOverrides(overrides map[string]any) {
 func (s *Suite) Client() *ent.Client { return s.dbClient }
 
 func (s *Suite) SystemContext() context.Context {
-	return execution.SystemContext(s.T().Context())
+	return execution.NewSystemContext(s.T().Context())
 }
 
 func (s *Suite) SeedTenantContext() context.Context {
-	return execution.SystemTenantContext(s.T().Context(), s.SeedTenant.ID)
+	return execution.NewTenantContext(s.T().Context(), s.SeedTenant.ID)
 }
 
 func (s *Suite) setupTestDatabase() {

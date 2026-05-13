@@ -77,7 +77,7 @@ func (dbc *DatabaseClient) Close() {
 func setTenantContextInterceptor() ent.Interceptor {
 	return ent.InterceptFunc(func(q ent.Querier) ent.Querier {
 		return ent.QuerierFunc(func(ctx context.Context, query ent.Query) (ent.Value, error) {
-			if tenantId, tenantIdSet := execution.TenantID(ctx); tenantIdSet {
+			if tenantId, tenantIdSet := execution.GetContext(ctx).TenantID(); tenantIdSet {
 				ctx = entsql.WithIntVar(ctx, "app.current_tenant", tenantId)
 			}
 			return q.Query(ctx, query)
@@ -92,7 +92,7 @@ func ensureTenantIdSetHook(next ent.Mutator) ent.Mutator {
 	return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
 		if tm, ok := m.(tenantedMutation); ok {
 			if _, alreadySet := m.Field("tenant_id"); !alreadySet {
-				tenantId, tenantIdSet := execution.TenantID(ctx)
+				tenantId, tenantIdSet := execution.GetContext(ctx).TenantID()
 				if !tenantIdSet {
 					return nil, rez.ErrTenantContextMissing
 				}

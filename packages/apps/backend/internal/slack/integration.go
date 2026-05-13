@@ -249,7 +249,7 @@ func newConfiguredIntegration(svcs *rez.Services, intg *ent.Integration) *Config
 }
 
 func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Context {
-	return execution.AnonymousTenantContext(ctx, ci.intg.TenantID)
+	return execution.NewTenantContext(ctx, ci.intg.TenantID)
 }
 
 func (ci *ConfiguredIntegration) config() objx.Map {
@@ -364,7 +364,7 @@ func lookupTenantIntegration(ctx context.Context, integrations rez.IntegrationsS
 	if ids.TeamId != "" {
 		params.ExternalRefs = []string{ids.TeamId}
 	}
-	intgs, listErr := integrations.ListConfigured(execution.SystemContext(ctx), params)
+	intgs, listErr := integrations.ListConfigured(execution.NewSystemContext(ctx), params)
 	if listErr != nil {
 		if ent.IsNotFound(listErr) {
 			return nil, nil

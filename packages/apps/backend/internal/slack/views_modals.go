@@ -22,7 +22,7 @@ const (
 func makeUserHomeView(ctx context.Context) (*slack.HomeTabViewRequest, error) {
 	var blocks []slack.Block
 	blocks = append(blocks, slack.NewSectionBlock(plainText("Home Tab"), nil, nil))
-	userId, userOk := execution.UserID(ctx)
+	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, fmt.Errorf("no user context")
 	}
@@ -48,7 +48,7 @@ func (s *ChatService) makeAnnotationModalView(baseCtx context.Context, meta *ann
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
 	}
-	userId, userOk := execution.UserID(ctx)
+	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, fmt.Errorf("no user context")
 	}
@@ -100,7 +100,7 @@ func (s *ChatService) getAnnotationModalAnnotation(baseCtx context.Context, view
 	if userErr != nil {
 		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
 	}
-	userId, userOk := execution.UserID(ctx)
+	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, fmt.Errorf("no user context")
 	}

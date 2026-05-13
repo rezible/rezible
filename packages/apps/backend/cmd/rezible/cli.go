@@ -30,7 +30,7 @@ var rezcli = &cli.Command{
 		if cfgErr != nil {
 			return nil, fmt.Errorf("failed to load configuration: %w", cfgErr)
 		}
-		return execution.NewContext(ctx, execution.KindAnonymous, execution.SourceCLI), nil
+		return execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI), nil
 	},
 	Commands: []*cli.Command{
 		{

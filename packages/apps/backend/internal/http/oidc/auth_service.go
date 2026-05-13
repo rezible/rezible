@@ -2,6 +2,7 @@ package oidc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
@@ -37,8 +39,6 @@ type AuthSessionService struct {
 	codec      *cookieCodec
 	oauth      *oauthHandler
 }
-
-var _ rez.AuthSessionService = (*AuthSessionService)(nil)
 
 func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
 	oauthRedirectUrl, redirectErr := url.JoinPath(rez.Config.AppUrl(), "/api/auth/callback")
@@ -78,7 +78,7 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 	return s, nil
 }
 
-func (s *AuthSessionService) AuthHandler() http.Handler {
+func (s *AuthSessionService) Handler() http.Handler {
 	r := chi.NewRouter()
 	r.Get("/login", handleAndRedirect(s.handleLogin))
 	r.Get("/callback", handleAndRedirect(s.handleCallback))
@@ -123,6 +123,12 @@ func (s *AuthSessionService) handleLogin(w http.ResponseWriter, r *http.Request)
 	return authUrl, nil
 }
 
+type AppAuthCookie struct {
+	TenantId  int       `json:"tenant_id"`
+	UserId    uuid.UUID `json:"uid"`
+	ExpiresAt time.Time `json:"exp"`
+}
+
 func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Request) (string, error) {
 	var as AuthFlowState
 	stateCookie, readCookieErr := r.Cookie(authStateCookieName)
@@ -146,10 +152,9 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 		return "", errIdentitySync
 	}
 
-	sess := rez.AuthSession{
+	sess := AppAuthCookie{
 		UserId:    usr.ID,
 		ExpiresAt: info.expiresAt,
-		Scopes:    []string{},
 	}
 
 	if cookieErr := s.writeCookie(w, oapiv1.AppCookieName, sess, time.Until(sess.ExpiresAt)); cookieErr != nil {
@@ -157,6 +162,58 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 	}
 
 	return as.ReturnTo, nil
+}
+
+func (s *AuthSessionService) ExecutionContextMiddleware() func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			authedReq, authErr := s.setRequestExecutionContext(r)
+			if authErr == nil {
+				next.ServeHTTP(w, authedReq)
+				return
+			}
+			apiErr := oapiv1.ConvertAuthStatusError(authErr)
+			w.WriteHeader(apiErr.GetStatus())
+			if respErr := json.NewEncoder(w).Encode(apiErr); respErr != nil {
+				slog.Warn("failed to write api error response", "error", respErr)
+			}
+		})
+	}
+}
+
+func (s *AuthSessionService) setRequestExecutionContext(r *http.Request) (*http.Request, error) {
+	if apiToken := oapiv1.GetRequestApiTokenValue(r); apiToken != "" {
+		return nil, rez.ErrAuthSessionInvalid
+	}
+	if appCookie := oapiv1.GetRequestAppCookieValue(r); appCookie != "" {
+		execCtx, authErr := s.authenticateAppCookie(r.Context(), appCookie)
+		if authErr != nil {
+			return nil, authErr
+		}
+		return r.WithContext(execCtx), nil
+	}
+	return nil, rez.ErrAuthSessionMissing
+}
+
+func (s *AuthSessionService) authenticateAppCookie(ctx context.Context, appCookie string) (context.Context, error) {
+	var sess AppAuthCookie
+	if decodeErr := s.codec.decode(appCookie, &sess); decodeErr != nil {
+		slog.Debug("decoding auth session cookie token", "error", decodeErr)
+		return nil, rez.ErrAuthSessionInvalid
+	}
+
+	if sess.ExpiresAt.Before(time.Now()) {
+		return nil, rez.ErrAuthSessionExpired
+	}
+
+	lookupCtx := execution.NewTenantContext(ctx, sess.TenantId)
+	usr, lookupErr := s.users.Get(lookupCtx, user.ID(sess.UserId))
+	if lookupErr != nil {
+		slog.Debug("get user", "error", lookupErr, "sess", sess)
+		return nil, rez.ErrAuthSessionInvalid
+	}
+
+	return execution.NewUserAuthContext(ctx, *usr, sess.ExpiresAt), nil
 }
 
 func (s *AuthSessionService) handleLogout(w http.ResponseWriter, r *http.Request) (string, error) {
@@ -191,28 +248,4 @@ func (s *AuthSessionService) clearCookie(w http.ResponseWriter, name string) {
 		Secure:   true,
 		SameSite: http.SameSiteLaxMode,
 	})
-}
-
-func (s *AuthSessionService) Authenticate(ctx context.Context, token string) (context.Context, error) {
-	if token == "" {
-		return nil, rez.ErrAuthSessionMissing
-	}
-
-	var sess rez.AuthSession
-	if decodeErr := s.codec.decode(token, &sess); decodeErr != nil {
-		slog.Debug("decoding auth session cookie token", "error", decodeErr)
-		return nil, rez.ErrAuthSessionInvalid
-	}
-
-	if sess.ExpiresAt.Before(time.Now()) {
-		return nil, rez.ErrAuthSessionExpired
-	}
-
-	usr, lookupErr := s.users.Get(execution.SystemContext(ctx), user.ID(sess.UserId))
-	if lookupErr != nil {
-		slog.Debug("get user", "error", lookupErr, "sess", sess)
-		return nil, rez.ErrAuthSessionInvalid
-	}
-
-	return execution.UserContext(ctx, *usr, &sess), nil
 }

@@ -3,8 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"strings"
-
 	"log/slog"
 
 	"github.com/google/uuid"
@@ -39,11 +37,7 @@ func NewDocumentsService(db *ent.Client, teams rez.TeamService) (*DocumentsServi
 }
 
 func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUID) (*ent.DocumentAccess, error) {
-	execAuth := execution.AuthSession(ctx)
-	if execAuth == nil {
-		return nil, rez.ErrAuthSessionMissing
-	}
-	userID, userOK := execution.UserID(ctx)
+	userID, userOK := execution.GetContext(ctx).UserID()
 	if !userOK {
 		return nil, rez.ErrAuthSessionMissing
 	}
@@ -61,21 +55,23 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 		}
 		return defaultAccess, nil
 	}
-	for _, scope := range execAuth.Scopes {
-		parts := strings.Split(scope, ":")
-		if parts[0] != "document" || parts[1] != docId.String() {
-			continue
+	/*
+		for _, scope := range execAuth.Scopes {
+			parts := strings.Split(scope, ":")
+			if parts[0] != "document" || parts[1] != docId.String() {
+				continue
+			}
+			id, idErr := uuid.Parse(parts[2])
+			if idErr != nil {
+				return nil, fmt.Errorf("invalid document access id: %w", idErr)
+			}
+			acc, getErr := s.db.DocumentAccess.Get(ctx, id)
+			if getErr != nil {
+				return nil, fmt.Errorf("document access: %w", getErr)
+			}
+			return acc, nil
 		}
-		id, idErr := uuid.Parse(parts[2])
-		if idErr != nil {
-			return nil, fmt.Errorf("invalid document access id: %w", idErr)
-		}
-		acc, getErr := s.db.DocumentAccess.Get(ctx, id)
-		if getErr != nil {
-			return nil, fmt.Errorf("document access: %w", getErr)
-		}
-		return acc, nil
-	}
+	*/
 	bestAccess, accessesErr := s.getBestDocumentAccess(ctx, docId, userID)
 	if accessesErr != nil {
 		return nil, fmt.Errorf("failed to get document accesses: %w", accessesErr)

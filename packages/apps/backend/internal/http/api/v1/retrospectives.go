@@ -105,14 +105,14 @@ func (h *retrospectivesHandler) ListRetrospectiveComments(ctx context.Context, r
 func (h *retrospectivesHandler) CreateRetrospectiveComment(ctx context.Context, request *oapi.CreateRetrospectiveCommentRequest) (*oapi.CreateRetrospectiveCommentResponse, error) {
 	var resp oapi.CreateRetrospectiveCommentResponse
 
-	sess := execution.AuthSession(ctx)
-	if sess == nil {
+	userId, userOk := execution.GetContext(ctx).UserID()
+	if !userOk {
 		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
 
 	comment, createErr := h.retros.SetComment(ctx, &ent.RetrospectiveComment{
 		RetrospectiveID: request.Id,
-		UserID:          sess.UserId,
+		UserID:          userId,
 		Content:         request.Body.Attributes.Content,
 	})
 	if createErr != nil {

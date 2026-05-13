@@ -19,7 +19,7 @@ type accessContextMiddleware struct {
 }
 
 func (m *accessContextMiddleware) InsertMany(ctx context.Context, params []*rivertype.JobInsertParams, doInner func(context.Context) ([]*rivertype.JobInsertResult, error)) ([]*rivertype.JobInsertResult, error) {
-	encodedExec, encodeErr := execution.FromContext(ctx).Encode()
+	encodedExec, encodeErr := execution.GetContext(ctx).Encode()
 	if encodeErr != nil {
 		return nil, fmt.Errorf("failed to encode execution context: %w", encodeErr)
 	}
@@ -47,13 +47,13 @@ func (m *accessContextMiddleware) Work(ctx context.Context, job *rivertype.JobRo
 		return fmt.Errorf("failed to unmarshal job metadata: %w", jsonErr)
 	}
 	if len(meta.EncodedExecutionContext) > 0 {
-		exec, decodeErr := execution.Decode(meta.EncodedExecutionContext)
+		exec, decodeErr := execution.RestoreFrom(meta.EncodedExecutionContext)
 		if decodeErr != nil {
 			return fmt.Errorf("invalid execution context for job: %w", decodeErr)
 		}
-		exec.Provenance.ParentKind = "job"
-		exec.Provenance.ParentID = fmt.Sprintf("%d", job.ID)
-		ctx = execution.StoreInContext(ctx, exec)
+		//exec.Provenance.ParentKind = "job"
+		//exec.Provenance.ParentID = fmt.Sprintf("%d", job.ID)
+		ctx = execution.SetContext(ctx, exec)
 	}
 	return doInner(ctx)
 }

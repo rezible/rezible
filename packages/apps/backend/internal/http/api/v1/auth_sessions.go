@@ -23,12 +23,13 @@ func newAuthSessionsHandler(orgs rez.OrganizationService, users rez.UserService)
 func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *oapi.GetCurrentAuthSessionRequest) (*oapi.GetCurrentAuthSessionResponse, error) {
 	var resp oapi.GetCurrentAuthSessionResponse
 
-	sess := execution.AuthSession(ctx)
-	if sess == nil {
-		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
+	exec := execution.GetContext(ctx)
+	userId, userOk := exec.UserID()
+	if !userOk {
+		return nil, rez.ErrAuthSessionMissing
 	}
 
-	u, userErr := h.users.Get(ctx, user.ID(sess.UserId))
+	u, userErr := h.users.Get(ctx, user.ID(userId))
 	if userErr != nil {
 		return nil, oapi.Error(ctx, "failed to get user", userErr)
 	}
@@ -39,7 +40,7 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 	}
 
 	resp.Body.Data = oapi.AuthSession{
-		ExpiresAt:    sess.ExpiresAt,
+		ExpiresAt:    exec.Auth.ExpiresAt,
 		User:         oapi.UserFromEnt(u),
 		Organization: oapi.OrganizationFromEnt(org),
 	}

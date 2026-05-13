@@ -7,8 +7,9 @@ import (
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/danielgtaylor/huma/v2/adapters/humago"
+	mapset "github.com/deckarep/golang-set/v2"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/openapi"
 )
 
@@ -62,67 +63,83 @@ func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
 	}
 }
 
-func MakeSecurityMiddleware(auth rez.AuthSessionService) openapi.Middleware {
+func MakeSecurityMiddleware() openapi.Middleware {
 	api := makeNilApi()
 	return func(c openapi.Context, next func(openapi.Context)) {
-		authCtx, authCtxErr := createRequestAuthContext(c, auth)
-		if authCtxErr != nil {
-			authErr := convertAuthStatusError(authCtxErr)
-			if writeErr := huma.WriteErr(api, c, authErr.GetStatus(), authErr.Error()); writeErr != nil {
+		if authErr := verifyRequestAuthContext(c); authErr != nil {
+			statusErr := ConvertAuthStatusError(authErr)
+			if writeErr := huma.WriteErr(api, c, statusErr.GetStatus(), statusErr.Error()); writeErr != nil {
 				slog.Error("failed to write api error response", "error", writeErr)
 			}
 			return
 		}
-		next(authCtx)
+		next(c)
 	}
 }
 
-func createRequestAuthContext(c huma.Context, auth rez.AuthSessionService) (huma.Context, error) {
+func verifyRequestAuthContext(c huma.Context) error {
 	opSecurity := c.Operation().Security
-	isExplicitNoSecurity := opSecurity != nil && len(opSecurity) == 0
-	if isExplicitNoSecurity {
-		return c, nil
-	}
-	token, scopes := extractRequestAuth(c, opSecurity)
-	if token == "" {
-		return nil, rez.ErrAuthSessionMissing
-	}
 
-	if len(scopes) > 0 {
-		slog.Debug("TODO: verify scopes", "scopes", scopes)
+	if opSecurity != nil && len(opSecurity) == 0 {
+		// explicitly no security required
+		return nil
+	} else if opSecurity == nil {
+		// default security methods
+		opSecurity = ApiSecurityMethods
 	}
 
-	authCtx, ctxErr := auth.Authenticate(c.Context(), token)
-	if ctxErr != nil {
-		return nil, ctxErr
-	}
-	return huma.WithContext(c, authCtx), nil
-}
+	apiTokenAllowed := false
+	apiTokenScopes := mapset.NewSet[string]()
 
-func extractRequestAuth(c huma.Context, opSec SecurityMethods) (string, []string) {
-	if opSec == nil {
-		opSec = ApiSecurityMethods
-	}
-
-	r, _ := humago.Unwrap(c)
-	appCookie := GetRequestAppCookieValue(r)
-	apiToken := GetRequestApiTokenValue(r)
-
-	isApiRequest := strings.HasPrefix(r.Host, "api")
-	for _, methodScopes := range opSec {
-		if isApiRequest {
-			scopes, allowed := methodScopes[SecurityMethodApiToken]
-			if allowed && apiToken != "" {
-				return apiToken, scopes
-			}
-		} else {
-			scopes, allowed := methodScopes[SecurityMethodAppCookie]
-			if allowed && appCookie != "" {
-				return appCookie, scopes
-			}
+	appCookieAllowed := false
+	appCookieScopes := mapset.NewSet[string]()
+	for _, methodScopes := range opSecurity {
+		if scopes, allowed := methodScopes[SecurityMethodApiToken]; allowed {
+			apiTokenAllowed = true
+			apiTokenScopes.Append(scopes...)
+		}
+		if scopes, allowed := methodScopes[SecurityMethodAppCookie]; allowed {
+			appCookieAllowed = true
+			appCookieScopes.Append(scopes...)
 		}
 	}
-	return "", nil
+
+	ctx := c.Context()
+	exec := execution.GetContext(ctx)
+	if exec.IsAnonymous() {
+		return rez.ErrAuthSessionMissing
+	}
+
+	var requiredScopes mapset.Set[string]
+	if exec.Auth.TokenID != nil { // authed from token
+		if !apiTokenAllowed {
+			return rez.ErrAuthSessionInvalid
+		}
+		if exec.Auth.UserID == nil {
+			slog.WarnContext(ctx, "request auth token id set, no user set?")
+			return rez.ErrAuthSessionInvalid
+		}
+		if !strings.HasPrefix(c.URL().Host, "api") {
+			// api tokens only allowed for api host
+			return rez.ErrAuthSessionInvalid
+		}
+		requiredScopes = apiTokenScopes
+	} else if exec.Auth.UserID != nil { // user exists, authed by cookie
+		if !appCookieAllowed {
+			return rez.ErrAuthSessionInvalid
+		}
+		requiredScopes = appCookieScopes
+	} else { // no auth context
+		slog.WarnContext(ctx, "request missing execution auth ctx?")
+		return rez.ErrAuthSessionMissing
+	}
+
+	if requiredScopes.Cardinality() > 0 {
+		slog.DebugContext(ctx, "TODO: verify scopes",
+			"scopes", requiredScopes.ToSlice())
+	}
+
+	return nil
 }
 
 func GetRequestAppCookieValue(r *http.Request) string {
@@ -139,7 +156,7 @@ func GetRequestApiTokenValue(r *http.Request) string {
 	return ""
 }
 
-func convertAuthStatusError(err error) huma.StatusError {
+func ConvertAuthStatusError(err error) huma.StatusError {
 	if errors.Is(err, rez.ErrAuthSessionMissing) {
 		return ErrAuthSessionMissing
 	} else if errors.Is(err, rez.ErrAuthSessionExpired) {

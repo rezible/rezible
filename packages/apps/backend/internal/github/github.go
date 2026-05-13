@@ -206,7 +206,7 @@ func newConfiguredIntegration(svcs *rez.Services, intg *ent.Integration) *Config
 }
 
 func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Context {
-	return execution.AnonymousTenantContext(ctx, ci.intg.TenantID)
+	return execution.NewTenantContext(ctx, ci.intg.TenantID)
 }
 
 func (ci *ConfiguredIntegration) config() objx.Map {

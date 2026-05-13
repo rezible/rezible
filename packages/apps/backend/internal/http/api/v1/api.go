@@ -2,7 +2,6 @@ package apiv1
 
 import (
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -34,16 +33,18 @@ type Handler struct {
 
 var _ oapi.Handler = (*Handler)(nil)
 
-func NewHandler(svcs *rez.Services, db *ent.Client) *Handler {
+func NewHandler(svcs *rez.Services) *Handler {
+	dbc := svcs.Database.Client()
+
 	return &Handler{
 		alertsHandler:             newAlertsHandler(svcs.Alerts),
 		authSessionsHandler:       newAuthSessionsHandler(svcs.Organizations, svcs.Users),
 		documentsHandler:          newDocumentsHandler(svcs.Documents),
-		incidentDebriefsHandler:   newIncidentDebriefsHandler(db.IncidentDebriefQuestion, svcs.Users, svcs.Debriefs),
-		incidentEventsHandler:     newIncidentEventsHandler(db),
-		incidentMetadataHandler:   newIncidentMetadataHandler(db, svcs.Incidents),
-		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
-		tasksHandler:              newTasksHandler(db),
+		incidentDebriefsHandler:   newIncidentDebriefsHandler(dbc.IncidentDebriefQuestion, svcs.Users, svcs.Debriefs),
+		incidentEventsHandler:     newIncidentEventsHandler(dbc),
+		incidentMetadataHandler:   newIncidentMetadataHandler(dbc, svcs.Incidents),
+		incidentMilestonesHandler: newIncidentMilestonesHandler(dbc),
+		tasksHandler:              newTasksHandler(dbc),
 		incidentsHandler:          newIncidentsHandler(svcs.Incidents),
 		integrationsHandler:       newIntegrationsHandler(svcs.Integrations),
 		meetingsHandler:           newMeetingsHandler(),
@@ -55,9 +56,9 @@ func NewHandler(svcs *rez.Services, db *ent.Client) *Handler {
 		organizationsHandler:      newOrganizationsHandler(svcs.Organizations),
 		playbooksHandler:          newPlaybooksHandler(svcs.Playbooks),
 		retrospectivesHandler:     newRetrospectivesHandler(svcs.Users, svcs.Incidents, svcs.Retros, svcs.Documents),
-		systemAnalysisHandler:     newSystemAnalysisHandler(db),
+		systemAnalysisHandler:     newSystemAnalysisHandler(dbc),
 		systemTopologyHandler:     newSystemTopologyHandler(svcs.Topology),
-		teamsHandler:              newTeamsHandler(db.User, db.Team, db.TeamMembership),
+		teamsHandler:              newTeamsHandler(dbc.User, dbc.Team, dbc.TeamMembership),
 		usersHandler:              newUsersHandler(svcs.Users),
 	}
 }

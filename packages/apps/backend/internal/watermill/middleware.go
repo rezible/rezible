@@ -84,7 +84,7 @@ func (ms *MessageService) setupPoisonQueue(router *message.Router, pub message.P
 }
 
 func (ms *MessageService) setMessageExecutionContext(msg *message.Message) {
-	encodedExec, encodeErr := execution.FromContext(msg.Context()).Encode()
+	encodedExec, encodeErr := execution.GetContext(msg.Context()).Encode()
 	if encodeErr != nil {
 		ms.logger.Error("failed to marshal execution context", encodeErr, nil)
 		return
@@ -99,13 +99,11 @@ func (ms *MessageService) restoreMessageAccessScope(fn message.HandlerFunc) mess
 			return fn(msg)
 		}
 
-		exec, decodeErr := execution.Decode([]byte(encodedExec))
+		exec, decodeErr := execution.RestoreFrom([]byte(encodedExec))
 		if decodeErr != nil {
 			return nil, fmt.Errorf("restoring execution context: %w", decodeErr)
 		}
-		exec.Provenance.ParentKind = "message"
-		exec.Provenance.ParentID = msg.UUID
-		msg.SetContext(execution.StoreInContext(msg.Context(), exec))
+		msg.SetContext(execution.SetContext(msg.Context(), exec))
 		return fn(msg)
 	}
 }

@@ -252,7 +252,7 @@ func (s *IntegrationsService) set(ctx context.Context, params rez.ConfigureInteg
 }
 
 func (s *IntegrationsService) makeOAuthState(ctx context.Context, provider string) (string, error) {
-	userId, ok := execution.UserID(ctx)
+	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
 		return "", rez.ErrAuthSessionMissing
 	}
@@ -266,7 +266,7 @@ func (s *IntegrationsService) makeOAuthState(ctx context.Context, provider strin
 }
 
 func (s *IntegrationsService) getOAuthState(ctx context.Context, provider string, state string) (*ent.IntegrationOAuthState, error) {
-	userId, ok := execution.UserID(ctx)
+	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
 		return nil, rez.ErrAuthSessionMissing
 	}

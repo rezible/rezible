@@ -86,7 +86,7 @@ func (h *oncallRostersHandler) getUserWatchedOncallRosters(ctx context.Context, 
 func (h *oncallRostersHandler) AddWatchedOncallRoster(ctx context.Context, request *oapi.AddWatchedOncallRosterRequest) (*oapi.AddWatchedOncallRosterResponse, error) {
 	var resp oapi.AddWatchedOncallRosterResponse
 
-	userId, userOk := execution.UserID(ctx)
+	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
@@ -112,7 +112,7 @@ func (h *oncallRostersHandler) AddWatchedOncallRoster(ctx context.Context, reque
 func (h *oncallRostersHandler) ListWatchedOncallRosters(ctx context.Context, request *oapi.ListWatchedOncallRostersRequest) (*oapi.ListWatchedOncallRostersResponse, error) {
 	var resp oapi.ListWatchedOncallRostersResponse
 
-	userId, userOk := execution.UserID(ctx)
+	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
@@ -132,7 +132,7 @@ func (h *oncallRostersHandler) ListWatchedOncallRosters(ctx context.Context, req
 func (h *oncallRostersHandler) RemoveWatchedOncallRoster(ctx context.Context, request *oapi.RemoveWatchedOncallRosterRequest) (*oapi.RemoveWatchedOncallRosterResponse, error) {
 	var resp oapi.RemoveWatchedOncallRosterResponse
 
-	userId, userOk := execution.UserID(ctx)
+	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}
@@ -156,7 +156,7 @@ func (h *oncallRostersHandler) RemoveWatchedOncallRoster(ctx context.Context, re
 func (h *oncallRostersHandler) GetUserOncallInformation(ctx context.Context, request *oapi.GetUserOncallInformationRequest) (*oapi.GetUserOncallInformationResponse, error) {
 	var resp oapi.GetUserOncallInformationResponse
 
-	userId, userOk := execution.UserID(ctx)
+	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, oapi.Error(ctx, "failed to get auth session", rez.ErrAuthSessionMissing)
 	}

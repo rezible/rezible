@@ -31,7 +31,7 @@ func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.
 	if po.AuthProviderID == "" {
 		return nil, fmt.Errorf("no auth provider id set")
 	}
-	ctx = execution.SystemContext(ctx)
+	ctx = execution.NewSystemContext(ctx)
 	existing, getErr := s.Get(ctx, organization.AuthProviderID(po.AuthProviderID))
 	if getErr != nil && !ent.IsNotFound(getErr) {
 		return nil, fmt.Errorf("fetch existing: %w", getErr)
@@ -39,7 +39,7 @@ func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.
 	if existing != nil {
 		// TODO: check if should sync every time
 		// if !AlwaysSyncAuthDetails { return existing, nil }
-		ctx = execution.SystemTenantContext(ctx, existing.TenantID)
+		ctx = execution.NewTenantContext(ctx, existing.TenantID)
 	}
 
 	var updated *ent.Organization
@@ -55,7 +55,7 @@ func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.
 			mutator = tx.Organization.Create().
 				SetTenantID(tnt.ID).
 				SetAuthProviderID(po.AuthProviderID)
-			ctx = execution.SystemTenantContext(ctx, tnt.ID)
+			ctx = execution.NewTenantContext(ctx, tnt.ID)
 		}
 
 		m := mutator.Mutation()
