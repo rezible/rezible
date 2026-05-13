@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/rezible/rezible/integrations/eventprojections"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/rezible/rezible"
@@ -22,12 +21,13 @@ import (
 type Server struct {
 	cfg ServerConfig
 
+	services  *rez.Services
 	listeners map[string]rez.EventListener
 	db        rez.DatabaseClient
 }
 
 type ServerConfig struct {
-	StopTimeout time.Duration `koanf:"stop_timeout"`
+	StopTimeout time.Duration `cfg:"stop_timeout"`
 }
 
 func NewServer(ctx context.Context) (*Server, error) {
@@ -44,8 +44,7 @@ func NewServer(ctx context.Context) (*Server, error) {
 }
 
 func (s *Server) RunServe(ctx context.Context) error {
-	setupErr := s.setup(ctx)
-	if setupErr != nil {
+	if setupErr := s.setup(ctx); setupErr != nil {
 		return fmt.Errorf("setup: %s", setupErr)
 	}
 
@@ -69,6 +68,7 @@ func (s *Server) setup(ctx context.Context) error {
 	if servicesErr != nil {
 		return fmt.Errorf("setup services: %w", servicesErr)
 	}
+	s.services = services
 
 	if integrationsErr := integrations.Setup(ctx, services); integrationsErr != nil {
 		return fmt.Errorf("integrations.Setup: %w", integrationsErr)
@@ -76,6 +76,8 @@ func (s *Server) setup(ctx context.Context) error {
 	for name, el := range integrations.GetEventListeners() {
 		s.listeners[name] = el
 	}
+
+	db.RegisterEventProcessors()
 
 	srv, srvErr := http.NewServer(ctx, services)
 	if srvErr != nil {
@@ -134,10 +136,9 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	if svcErr != nil {
 		return nil, fmt.Errorf("postgres.NewDatabaseClient: %w", svcErr)
 	}
-	pgPool := svcs.Database.(*postgres.DatabaseClient).Pool()
 	s.db = svcs.Database
 
-	svcs.Jobs, svcErr = river.NewJobService(ctx, pgPool)
+	svcs.Jobs, svcErr = river.NewJobService(ctx, svcs.Database.(*postgres.DatabaseClient).Pool())
 	if svcErr != nil {
 		return nil, fmt.Errorf("river.NewJobService: %w", svcErr)
 	}
@@ -149,11 +150,7 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	}
 	s.listeners["watermill_message_service"] = svcs.Messages.(*watermill.MessageService)
 
-	dbc := s.db.Client()
-
-	eventprojections.RegisterHandler("knowledge", db.KnowledgeEntityEventProjectionHandler)
-
-	svcs.Integrations, svcErr = db.NewIntegrationsService(dbc, svcs.Jobs)
+	svcs.Integrations, svcErr = db.NewIntegrationsService(svcs)
 	if svcErr != nil {
 		return nil, fmt.Errorf("db.NewIntegrationsService: %w", svcErr)
 	}
@@ -174,11 +171,6 @@ func (s *Server) setupServices(ctx context.Context) (*rez.Services, error) {
 	if svcErr != nil {
 		return nil, fmt.Errorf("db.NewTeamService: %w", svcErr)
 	}
-
-	//agents, agentsErr := adk.NewAgentService()
-	//if agentsErr != nil {
-	//	return nil, fmt.Errorf("adk.NewAgentService: %w", agentsErr)
-	//}
 
 	svcs.Events, svcErr = db.NewEventsService(svcs)
 	if svcErr != nil {

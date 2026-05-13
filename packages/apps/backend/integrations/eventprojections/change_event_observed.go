@@ -21,28 +21,21 @@ func (a ChangeEventObservedAttributes) Encode() map[string]any {
 	}
 }
 
-func decodeChangeEventObservedEvent(ev *ent.NormalizedEvent) (any, error) {
-	attrs, err := decodeChangeEventObserved(ev)
-	if err != nil {
-		return nil, err
+func DecodeChangeEventObservedEvent(ev *ent.NormalizedEvent) (any, error) {
+	if attrsErr := rejectUnsupportedAttributes(ev, attrRepositoryExternalRef, attrDisplayName); attrsErr != nil {
+		return nil, attrsErr
 	}
-	return ChangeEventObserved{Event: ev, Attributes: attrs}, nil
-}
-
-func decodeChangeEventObserved(ev *ent.NormalizedEvent) (ChangeEventObservedAttributes, error) {
-	if err := rejectUnsupportedAttributes(ev, attrRepositoryExternalRef, attrDisplayName); err != nil {
-		return ChangeEventObservedAttributes{}, err
+	repoRef, repoRefErr := requiredString(ev, attrRepositoryExternalRef)
+	if repoRefErr != nil {
+		return nil, repoRefErr
 	}
-	repoRef, err := requiredString(ev, attrRepositoryExternalRef)
-	if err != nil {
-		return ChangeEventObservedAttributes{}, err
+	displayName, displayNameErr := requiredString(ev, attrDisplayName)
+	if displayNameErr != nil {
+		return nil, displayNameErr
 	}
-	displayName, err := requiredString(ev, attrDisplayName)
-	if err != nil {
-		return ChangeEventObservedAttributes{}, err
-	}
-	return ChangeEventObservedAttributes{
+	attrs := ChangeEventObservedAttributes{
 		RepositoryExternalRef: repoRef,
 		DisplayName:           displayName,
-	}, nil
+	}
+	return ChangeEventObserved{Event: ev, Attributes: attrs}, nil
 }

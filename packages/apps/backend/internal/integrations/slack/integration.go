@@ -49,33 +49,28 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 	}
 	intg.oauth2Config = oauthCfg
 
-	if handlersErr := intg.makeEventHandlers(ctx); handlersErr != nil {
-		return nil, fmt.Errorf("event handlers: %w", handlersErr)
+	eh, ehErr := intg.makeMessageHandler()
+	if ehErr != nil {
+		return nil, fmt.Errorf("event handler: %w", ehErr)
 	}
+
+	if intg.cfg.SocketMode.Enabled {
+		sml, smlErr := intg.newSocketModeEventListener(eh)
+		if smlErr != nil {
+			return nil, fmt.Errorf("socketmode listener: %w", smlErr)
+		}
+		intg.eventListeners["slack_socketmode"] = sml
+	} else {
+		wh, whErr := intg.newWebhookListener(eh)
+		if whErr != nil {
+			return nil, fmt.Errorf("webhook listener: %w", whErr)
+		}
+		intg.webhookHandlers["/"] = wh.Handler()
+	}
+
+	svcs.ProviderEvents.RegisterEventProcessor(integrationName, &eventProcessor{services: svcs})
 
 	return intg, nil
-}
-
-func (i *integration) makeEventHandlers(ctx context.Context) error {
-	eh, ehErr := i.makeEventHandler()
-	if ehErr != nil {
-		return fmt.Errorf("event handler: %w", ehErr)
-	}
-
-	if i.cfg.SocketMode.Enabled {
-		sml, smlErr := i.newSocketModeEventListener(eh)
-		if smlErr != nil {
-			return fmt.Errorf("socketmode listener: %w", smlErr)
-		}
-		i.eventListeners["slack_socketmode"] = sml
-	} else {
-		wh, whErr := i.newWebhookListener(eh)
-		if whErr != nil {
-			return fmt.Errorf("webhook event handler: %w", whErr)
-		}
-		i.webhookHandlers["/"] = wh.Handler()
-	}
-	return nil
 }
 
 func (i *integration) Name() string {
@@ -99,6 +94,11 @@ func (i *integration) WebhookHandlers() map[string]http.Handler {
 
 func (i *integration) SupportedDataKinds() []string {
 	return supportedDataKinds
+}
+
+func (i *integration) MakeProviderSourceEventQueriers(ctx context.Context, intg *ent.Integration) ([]rez.ProviderEventQuerier, error) {
+	uq := newUserEventQuerier(newConfiguredIntegration(i.services, intg))
+	return []rez.ProviderEventQuerier{uq}, nil
 }
 
 func (i *integration) OAuthConfigRequired() bool {
@@ -341,8 +341,8 @@ func (ci *ConfiguredIntegration) MakeChatService(ctx context.Context) (rez.ChatS
 }
 
 type installIds struct {
-	TeamId       string
-	EnterpriseId string
+	TeamId       string `json:"teamId"`
+	EnterpriseId string `json:"enterpriseId,omitempty"`
 }
 
 func (i installIds) configValues() map[string]any {

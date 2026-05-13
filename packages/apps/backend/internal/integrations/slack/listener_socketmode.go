@@ -17,11 +17,11 @@ import (
 
 type SocketModeListener struct {
 	client  *socketmode.Client
-	handler *eventHandler
+	handler *messageHandler
 	stopFn  func() error
 }
 
-func (i *integration) newSocketModeEventListener(handler *eventHandler) (*SocketModeListener, error) {
+func (i *integration) newSocketModeEventListener(handler *messageHandler) (*SocketModeListener, error) {
 	if !rez.Config.SingleTenantMode() {
 		return nil, errors.New("can't use socket mode in multi-tenant mode")
 	}

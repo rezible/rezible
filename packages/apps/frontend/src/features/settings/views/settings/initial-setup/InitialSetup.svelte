@@ -4,8 +4,15 @@
 	import Button from "$components/ui/button/button.svelte";
 	import { initInitialSetupViewController } from "./controller.svelte";
 	import RequiredIntegrations from "./RequiredIntegrations.svelte";
+	import { onMount } from "svelte";
 
 	const ctrl = initInitialSetupViewController();
+
+	onMount(() => {
+		return () => {
+			console.log("unmount initial setup");
+		}
+	});
 </script>
 
 <div class="grid h-full w-full place-items-center">

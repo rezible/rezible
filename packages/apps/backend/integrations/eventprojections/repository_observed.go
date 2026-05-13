@@ -22,28 +22,21 @@ func (a RepositoryObservedAttributes) Encode() map[string]any {
 	}
 }
 
-func decodeRepositoryObservedEvent(ev *ent.NormalizedEvent) (any, error) {
-	attrs, err := decodeRepositoryObserved(ev)
-	if err != nil {
-		return nil, err
+func DecodeRepositoryObservedEvent(ev *ent.NormalizedEvent) (any, error) {
+	if attrsErr := rejectUnsupportedAttributes(ev, attrDisplayName, attrURL); attrsErr != nil {
+		return nil, attrsErr
 	}
-	return RepositoryObserved{Event: ev, Attributes: attrs}, nil
-}
-
-func decodeRepositoryObserved(ev *ent.NormalizedEvent) (RepositoryObservedAttributes, error) {
-	if err := rejectUnsupportedAttributes(ev, attrDisplayName, attrURL); err != nil {
-		return RepositoryObservedAttributes{}, err
+	displayName, nameErr := requiredString(ev, attrDisplayName)
+	if nameErr != nil {
+		return nil, nameErr
 	}
-	displayName, err := requiredString(ev, attrDisplayName)
-	if err != nil {
-		return RepositoryObservedAttributes{}, err
+	url, urlErr := optionalString(ev, attrURL)
+	if urlErr != nil {
+		return nil, urlErr
 	}
-	url, err := optionalString(ev, attrURL)
-	if err != nil {
-		return RepositoryObservedAttributes{}, err
-	}
-	return RepositoryObservedAttributes{
+	attrs := RepositoryObservedAttributes{
 		DisplayName: displayName,
 		URL:         url,
-	}, nil
+	}
+	return RepositoryObserved{Event: ev, Attributes: attrs}, nil
 }

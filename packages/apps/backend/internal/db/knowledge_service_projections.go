@@ -26,7 +26,7 @@ const (
 	relationshipKindTouched     = "touched_repository"
 )
 
-func KnowledgeEntityEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
+func knowledgeEntityEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
 	projectionEvent, validationErr := eventprojections.DecodeEvent(event)
 	if validationErr != nil || projectionEvent == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)

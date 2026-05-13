@@ -10,10 +10,10 @@ import (
 )
 
 type BaseConfig struct {
-	DebugMode        bool   `koanf:"debug_mode"`
-	SingleTenantMode bool   `koanf:"single_tenant_mode"`
-	AppUrl           string `koanf:"app_url"`
-	ApiUrl           string `koanf:"api_url"`
+	DebugMode        bool   `cfg:"debug_mode"`
+	SingleTenantMode bool   `cfg:"single_tenant_mode"`
+	AppUrl           string `cfg:"app_url"`
+	ApiUrl           string `cfg:"api_url"`
 }
 
 type Config struct {
@@ -48,8 +48,9 @@ func NewConfigLoader(ctx context.Context, opts ConfigLoaderOptions) (*Config, er
 		}
 	}
 
-	var baseCfg BaseConfig
-	if cfgErr := k.Unmarshal("", &baseCfg); cfgErr != nil {
+	cfg := &Config{k: k}
+
+	if cfgErr := cfg.Unmarshal("", &cfg.baseCfg); cfgErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal app config: %w", cfgErr)
 	}
 
@@ -57,7 +58,7 @@ func NewConfigLoader(ctx context.Context, opts ConfigLoaderOptions) (*Config, er
 	//	v.Set(key, val)
 	//}
 
-	return &Config{k: k, baseCfg: baseCfg}, nil
+	return cfg, nil
 }
 
 func (c *Config) Exists(key string) bool {
@@ -65,7 +66,7 @@ func (c *Config) Exists(key string) bool {
 }
 
 func (c *Config) Unmarshal(key string, v any) error {
-	return c.k.Unmarshal(key, v)
+	return c.k.UnmarshalWithConf(key, v, koanf.UnmarshalConf{Tag: "cfg"})
 }
 
 func (c *Config) GetString(key string, fallback string) string {

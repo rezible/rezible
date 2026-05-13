@@ -1,10 +1,8 @@
 <script lang="ts">
-	import Header from "$components/header/Header.svelte";
-	import Spinner from "$components/ui/spinner/spinner.svelte";
-	import { initInitialSetupViewController } from "./controller.svelte";
-	import IntegrationConfigCard from "$features/settings/components/integration-config-card/IntegrationConfigCard.svelte";
+	import { useInitialSetupViewController } from "./controller.svelte";
+	import IntegrationCard from "$features/settings/components/integration-card/IntegrationCard.svelte";
 
-	const ctrl = initInitialSetupViewController();
+	const ctrl = useInitialSetupViewController();
 </script>
 
 <div class="flex gap-2">
@@ -12,7 +10,7 @@
         {#each ctrl.availableDataKindIntegrations as integration}
             {@const name = integration.name}
             {#key name}
-                <IntegrationConfigCard {integration} />
+                <IntegrationCard {integration} />
             {/key}
         {:else}
             <div class="p-2 border-error-300 border-2">

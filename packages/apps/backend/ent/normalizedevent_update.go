@@ -58,6 +58,20 @@ func (_u *NormalizedEventUpdate) SetNillableProviderSource(v *string) *Normalize
 	return _u
 }
 
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_u *NormalizedEventUpdate) SetProviderEventRef(v string) *NormalizedEventUpdate {
+	_u.mutation.SetProviderEventRef(v)
+	return _u
+}
+
+// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableProviderEventRef(v *string) *NormalizedEventUpdate {
+	if v != nil {
+		_u.SetProviderEventRef(*v)
+	}
+	return _u
+}
+
 // SetKind sets the "kind" field.
 func (_u *NormalizedEventUpdate) SetKind(v normalizedevent.Kind) *NormalizedEventUpdate {
 	_u.mutation.SetKind(v)
@@ -100,37 +114,23 @@ func (_u *NormalizedEventUpdate) SetNillableSubjectRef(v *string) *NormalizedEve
 	return _u
 }
 
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (_u *NormalizedEventUpdate) SetProviderEventRef(v string) *NormalizedEventUpdate {
-	_u.mutation.SetProviderEventRef(v)
+// SetAttributes sets the "attributes" field.
+func (_u *NormalizedEventUpdate) SetAttributes(v map[string]interface{}) *NormalizedEventUpdate {
+	_u.mutation.SetAttributes(v)
 	return _u
 }
 
-// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableProviderEventRef(v *string) *NormalizedEventUpdate {
+// SetCreatedAt sets the "created_at" field.
+func (_u *NormalizedEventUpdate) SetCreatedAt(v time.Time) *NormalizedEventUpdate {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableCreatedAt(v *time.Time) *NormalizedEventUpdate {
 	if v != nil {
-		_u.SetProviderEventRef(*v)
+		_u.SetCreatedAt(*v)
 	}
-	return _u
-}
-
-// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
-func (_u *NormalizedEventUpdate) SetProviderEventDeliveryRef(v string) *NormalizedEventUpdate {
-	_u.mutation.SetProviderEventDeliveryRef(v)
-	return _u
-}
-
-// SetNillableProviderEventDeliveryRef sets the "provider_event_delivery_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableProviderEventDeliveryRef(v *string) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetProviderEventDeliveryRef(*v)
-	}
-	return _u
-}
-
-// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
-func (_u *NormalizedEventUpdate) ClearProviderEventDeliveryRef() *NormalizedEventUpdate {
-	_u.mutation.ClearProviderEventDeliveryRef()
 	return _u
 }
 
@@ -158,40 +158,6 @@ func (_u *NormalizedEventUpdate) SetReceivedAt(v time.Time) *NormalizedEventUpda
 func (_u *NormalizedEventUpdate) SetNillableReceivedAt(v *time.Time) *NormalizedEventUpdate {
 	if v != nil {
 		_u.SetReceivedAt(*v)
-	}
-	return _u
-}
-
-// SetProcessingVersion sets the "processing_version" field.
-func (_u *NormalizedEventUpdate) SetProcessingVersion(v string) *NormalizedEventUpdate {
-	_u.mutation.SetProcessingVersion(v)
-	return _u
-}
-
-// SetNillableProcessingVersion sets the "processing_version" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableProcessingVersion(v *string) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetProcessingVersion(*v)
-	}
-	return _u
-}
-
-// SetAttributes sets the "attributes" field.
-func (_u *NormalizedEventUpdate) SetAttributes(v map[string]interface{}) *NormalizedEventUpdate {
-	_u.mutation.SetAttributes(v)
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *NormalizedEventUpdate) SetCreatedAt(v time.Time) *NormalizedEventUpdate {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableCreatedAt(v *time.Time) *NormalizedEventUpdate {
-	if v != nil {
-		_u.SetCreatedAt(*v)
 	}
 	return _u
 }
@@ -240,6 +206,11 @@ func (_u *NormalizedEventUpdate) check() error {
 			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ProviderEventRef(); ok {
+		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Kind(); ok {
 		if err := normalizedevent.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
@@ -253,16 +224,6 @@ func (_u *NormalizedEventUpdate) check() error {
 	if v, ok := _u.mutation.SubjectRef(); ok {
 		if err := normalizedevent.SubjectRefValidator(v); err != nil {
 			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProviderEventRef(); ok {
-		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProcessingVersion(); ok {
-		if err := normalizedevent.ProcessingVersionValidator(v); err != nil {
-			return &ValidationError{Name: "processing_version", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.processing_version": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -295,6 +256,9 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.ProviderSource(); ok {
 		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.ProviderEventRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
 	}
@@ -304,29 +268,17 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.SubjectRef(); ok {
 		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ProviderEventRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
+	if value, ok := _u.mutation.Attributes(); ok {
+		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.ProviderEventDeliveryRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString, value)
-	}
-	if _u.mutation.ProviderEventDeliveryRefCleared() {
-		_spec.ClearField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString)
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.OccurredAt(); ok {
 		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.ReceivedAt(); ok {
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.ProcessingVersion(); ok {
-		_spec.SetField(normalizedevent.FieldProcessingVersion, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Attributes(); ok {
-		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
@@ -380,6 +332,20 @@ func (_u *NormalizedEventUpdateOne) SetNillableProviderSource(v *string) *Normal
 	return _u
 }
 
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_u *NormalizedEventUpdateOne) SetProviderEventRef(v string) *NormalizedEventUpdateOne {
+	_u.mutation.SetProviderEventRef(v)
+	return _u
+}
+
+// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableProviderEventRef(v *string) *NormalizedEventUpdateOne {
+	if v != nil {
+		_u.SetProviderEventRef(*v)
+	}
+	return _u
+}
+
 // SetKind sets the "kind" field.
 func (_u *NormalizedEventUpdateOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpdateOne {
 	_u.mutation.SetKind(v)
@@ -422,37 +388,23 @@ func (_u *NormalizedEventUpdateOne) SetNillableSubjectRef(v *string) *Normalized
 	return _u
 }
 
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (_u *NormalizedEventUpdateOne) SetProviderEventRef(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetProviderEventRef(v)
+// SetAttributes sets the "attributes" field.
+func (_u *NormalizedEventUpdateOne) SetAttributes(v map[string]interface{}) *NormalizedEventUpdateOne {
+	_u.mutation.SetAttributes(v)
 	return _u
 }
 
-// SetNillableProviderEventRef sets the "provider_event_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableProviderEventRef(v *string) *NormalizedEventUpdateOne {
+// SetCreatedAt sets the "created_at" field.
+func (_u *NormalizedEventUpdateOne) SetCreatedAt(v time.Time) *NormalizedEventUpdateOne {
+	_u.mutation.SetCreatedAt(v)
+	return _u
+}
+
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableCreatedAt(v *time.Time) *NormalizedEventUpdateOne {
 	if v != nil {
-		_u.SetProviderEventRef(*v)
+		_u.SetCreatedAt(*v)
 	}
-	return _u
-}
-
-// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
-func (_u *NormalizedEventUpdateOne) SetProviderEventDeliveryRef(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetProviderEventDeliveryRef(v)
-	return _u
-}
-
-// SetNillableProviderEventDeliveryRef sets the "provider_event_delivery_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableProviderEventDeliveryRef(v *string) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetProviderEventDeliveryRef(*v)
-	}
-	return _u
-}
-
-// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
-func (_u *NormalizedEventUpdateOne) ClearProviderEventDeliveryRef() *NormalizedEventUpdateOne {
-	_u.mutation.ClearProviderEventDeliveryRef()
 	return _u
 }
 
@@ -480,40 +432,6 @@ func (_u *NormalizedEventUpdateOne) SetReceivedAt(v time.Time) *NormalizedEventU
 func (_u *NormalizedEventUpdateOne) SetNillableReceivedAt(v *time.Time) *NormalizedEventUpdateOne {
 	if v != nil {
 		_u.SetReceivedAt(*v)
-	}
-	return _u
-}
-
-// SetProcessingVersion sets the "processing_version" field.
-func (_u *NormalizedEventUpdateOne) SetProcessingVersion(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetProcessingVersion(v)
-	return _u
-}
-
-// SetNillableProcessingVersion sets the "processing_version" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableProcessingVersion(v *string) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetProcessingVersion(*v)
-	}
-	return _u
-}
-
-// SetAttributes sets the "attributes" field.
-func (_u *NormalizedEventUpdateOne) SetAttributes(v map[string]interface{}) *NormalizedEventUpdateOne {
-	_u.mutation.SetAttributes(v)
-	return _u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (_u *NormalizedEventUpdateOne) SetCreatedAt(v time.Time) *NormalizedEventUpdateOne {
-	_u.mutation.SetCreatedAt(v)
-	return _u
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableCreatedAt(v *time.Time) *NormalizedEventUpdateOne {
-	if v != nil {
-		_u.SetCreatedAt(*v)
 	}
 	return _u
 }
@@ -575,6 +493,11 @@ func (_u *NormalizedEventUpdateOne) check() error {
 			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.ProviderEventRef(); ok {
+		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Kind(); ok {
 		if err := normalizedevent.KindValidator(v); err != nil {
 			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
@@ -588,16 +511,6 @@ func (_u *NormalizedEventUpdateOne) check() error {
 	if v, ok := _u.mutation.SubjectRef(); ok {
 		if err := normalizedevent.SubjectRefValidator(v); err != nil {
 			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProviderEventRef(); ok {
-		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.ProcessingVersion(); ok {
-		if err := normalizedevent.ProcessingVersionValidator(v); err != nil {
-			return &ValidationError{Name: "processing_version", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.processing_version": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -647,6 +560,9 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	if value, ok := _u.mutation.ProviderSource(); ok {
 		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.ProviderEventRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.Kind(); ok {
 		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
 	}
@@ -656,29 +572,17 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	if value, ok := _u.mutation.SubjectRef(); ok {
 		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ProviderEventRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
+	if value, ok := _u.mutation.Attributes(); ok {
+		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.ProviderEventDeliveryRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString, value)
-	}
-	if _u.mutation.ProviderEventDeliveryRefCleared() {
-		_spec.ClearField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString)
+	if value, ok := _u.mutation.CreatedAt(); ok {
+		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.OccurredAt(); ok {
 		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)
 	}
 	if value, ok := _u.mutation.ReceivedAt(); ok {
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
-	}
-	if value, ok := _u.mutation.ProcessingVersion(); ok {
-		_spec.SetField(normalizedevent.FieldProcessingVersion, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Attributes(); ok {
-		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
-	}
-	if value, ok := _u.mutation.CreatedAt(); ok {
-		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

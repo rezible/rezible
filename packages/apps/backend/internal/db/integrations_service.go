@@ -30,10 +30,10 @@ type IntegrationsService struct {
 	jobs rez.JobsService
 }
 
-func NewIntegrationsService(db *ent.Client, jobSvc rez.JobsService) (*IntegrationsService, error) {
+func NewIntegrationsService(svcs *rez.Services) (*IntegrationsService, error) {
 	s := &IntegrationsService{
-		db:   db,
-		jobs: jobSvc,
+		db:   svcs.Database.Client(),
+		jobs: svcs.Jobs,
 	}
 
 	s.registerJobs()
@@ -121,10 +121,12 @@ func (s *IntegrationsService) UpdateConfiguredPreferences(ctx context.Context, i
 	if currErr != nil {
 		return nil, fmt.Errorf("failed to get integration: %w", currErr)
 	}
+
 	p, pErr := integrations.GetPackage(curr.Provider)
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", curr.Provider, pErr)
 	}
+
 	if prefsErr := p.ValidateUserPreferences(prefs); prefsErr != nil {
 		return nil, fmt.Errorf("invalid user preferences: %w", prefsErr)
 	}
@@ -514,10 +516,7 @@ func (s *IntegrationsService) RequestDataSync(ctx context.Context, providerSourc
 		},
 	}
 	_, insertErr := s.jobs.Insert(ctx, args, opts)
-	if insertErr != nil {
-		return fmt.Errorf("insert job: %w", insertErr)
-	}
-	return nil
+	return insertErr
 }
 
 func (s *IntegrationsService) GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error) {

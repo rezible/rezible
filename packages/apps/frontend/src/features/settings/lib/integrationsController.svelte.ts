@@ -6,7 +6,7 @@ import {
 	listConfiguredIntegrationsOptions,
 	listAvailableIntegrationsOptions,
 } from "$lib/api";
-import { useAuthSessionState } from "$src/lib/auth-session.svelte";
+import { useAuthSessionState } from "$lib/auth-session.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { SvelteMap } from "svelte/reactivity";
@@ -34,9 +34,13 @@ export class IntegrationsController {
 	private configureMut = createMutation(() => ({
 		...configureIntegrationMutation({}),
 		onSuccess: () => {
-			void this.listConfiguredQuery.refetch();
+			this.listConfiguredQuery.refetch();
 		},
 	}));
+
+	refetchConfigured() {
+		this.listConfiguredQuery.refetch();
+	}
 
 	configuringProviderName = $derived(this.configureMut.variables?.path?.name ?? "");
 	configuringError = $derived(this.configureMut.error?.detail || this.configureMut.error?.title || "");

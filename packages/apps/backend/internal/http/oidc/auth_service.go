@@ -18,16 +18,16 @@ import (
 )
 
 type Config struct {
-	SessionSecret       []byte     `koanf:"session_secret"`
-	Oidc                oidcConfig `koanf:"oidc"`
-	SingleTenantOrgName string     `koanf:"single_tenant_org_name"`
+	SessionSecret       []byte     `cfg:"session_secret"`
+	Oidc                oidcConfig `cfg:"oidc"`
+	SingleTenantOrgName string     `cfg:"single_tenant_org_name"`
 }
 
 type oidcConfig struct {
-	Issuer       string `koanf:"issuer"`
-	ClientID     string `koanf:"client_id"`
-	ClientSecret string `koanf:"client_secret"`
-	RedirectUrl  string `koanf:"redirect_url"`
+	Issuer       string `cfg:"issuer"`
+	ClientID     string `cfg:"client_id"`
+	ClientSecret string `cfg:"client_secret"`
+	RedirectUrl  string `cfg:"redirect_url"`
 }
 
 type AuthSessionService struct {

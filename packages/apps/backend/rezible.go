@@ -197,14 +197,14 @@ type (
 
 type (
 	ProviderEvent struct {
-		Provider            string
-		ProviderSource      string
-		ProviderDeliveryRef string
-		SubjectRef          string
-		ReceivedAt          time.Time
-		Payload             []byte
-		ContentType         string
-		RequestMetadata     map[string]string
+		Provider         string
+		ProviderSource   string
+		ProviderEventRef string
+		SubjectRef       string
+		ReceivedAt       time.Time
+		Payload          []byte
+		ContentType      string
+		RequestMetadata  map[string]string
 	}
 
 	ProviderEventProcessor interface {
@@ -214,7 +214,7 @@ type (
 	ProviderEventQuerier interface {
 		Provider() string
 		ProviderSource() string
-		PullEvents(context.Context, ProviderEventQueryRequest) iter.Seq2[ProviderEventQueryResult, error]
+		PullEvents(context.Context, ProviderEventQueryRequest) iter.Seq2[*ProviderEventQueryResult, error]
 	}
 
 	ProviderEventQueryRequest struct {
@@ -232,9 +232,8 @@ type (
 	}
 
 	ProviderEventService interface {
-		RegisterEventProcessors(provider string, sourceProcessors map[string]ProviderEventProcessor)
+		RegisterEventProcessor(provider string, processor ProviderEventProcessor)
 		Ingest(context.Context, ProviderEvent) (*ProviderEventIngestResult, error)
-		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
 	}
 
 	ProviderEventIngestResult struct {
@@ -262,11 +261,6 @@ type (
 		Get(context.Context, predicate.User) (*ent.User, error)
 		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)
 		List(context.Context, ListUsersParams) ([]*ent.User, error)
-	}
-
-	UserDataProvider interface {
-		UserDataMapping() *ent.User
-		PullUsers(ctx context.Context) iter.Seq2[*ent.User, error]
 	}
 )
 

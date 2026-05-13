@@ -5,8 +5,10 @@
 	import General from "./general/General.svelte";
 	import Integrations from "./integrations/Integrations.svelte";
 	import InitialSetup from "./initial-setup/InitialSetup.svelte";
+	import { initIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 
     const controller = initSettingsViewController();
+	initIntegrationOAuthController();
 </script>
 
 {#if controller.showInitialSetup}

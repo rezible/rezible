@@ -23,26 +23,22 @@ const (
 	FieldProvider = "provider"
 	// FieldProviderSource holds the string denoting the provider_source field in the database.
 	FieldProviderSource = "provider_source"
+	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
+	FieldProviderEventRef = "provider_event_ref"
 	// FieldKind holds the string denoting the kind field in the database.
 	FieldKind = "kind"
 	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
 	FieldSubjectKind = "subject_kind"
 	// FieldSubjectRef holds the string denoting the subject_ref field in the database.
 	FieldSubjectRef = "subject_ref"
-	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
-	FieldProviderEventRef = "provider_event_ref"
-	// FieldProviderEventDeliveryRef holds the string denoting the provider_event_delivery_ref field in the database.
-	FieldProviderEventDeliveryRef = "provider_event_delivery_ref"
-	// FieldOccurredAt holds the string denoting the occurred_at field in the database.
-	FieldOccurredAt = "occurred_at"
-	// FieldReceivedAt holds the string denoting the received_at field in the database.
-	FieldReceivedAt = "received_at"
-	// FieldProcessingVersion holds the string denoting the processing_version field in the database.
-	FieldProcessingVersion = "processing_version"
 	// FieldAttributes holds the string denoting the attributes field in the database.
 	FieldAttributes = "attributes"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// FieldOccurredAt holds the string denoting the occurred_at field in the database.
+	FieldOccurredAt = "occurred_at"
+	// FieldReceivedAt holds the string denoting the received_at field in the database.
+	FieldReceivedAt = "received_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// Table holds the table name of the normalizedevent in the database.
@@ -62,16 +58,14 @@ var Columns = []string{
 	FieldTenantID,
 	FieldProvider,
 	FieldProviderSource,
+	FieldProviderEventRef,
 	FieldKind,
 	FieldSubjectKind,
 	FieldSubjectRef,
-	FieldProviderEventRef,
-	FieldProviderEventDeliveryRef,
-	FieldOccurredAt,
-	FieldReceivedAt,
-	FieldProcessingVersion,
 	FieldAttributes,
 	FieldCreatedAt,
+	FieldOccurredAt,
+	FieldReceivedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -96,14 +90,12 @@ var (
 	ProviderValidator func(string) error
 	// ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
 	ProviderSourceValidator func(string) error
+	// ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
+	ProviderEventRefValidator func(string) error
 	// SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
 	SubjectKindValidator func(string) error
 	// SubjectRefValidator is a validator for the "subject_ref" field. It is called by the builders before save.
 	SubjectRefValidator func(string) error
-	// ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
-	ProviderEventRefValidator func(string) error
-	// ProcessingVersionValidator is a validator for the "processing_version" field. It is called by the builders before save.
-	ProcessingVersionValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -117,6 +109,7 @@ type Kind string
 const (
 	KindChatMessage         Kind = "chat_message"
 	KindRepositoryObserved  Kind = "repository_observed"
+	KindUserObserved        Kind = "user_observed"
 	KindChangeEventObserved Kind = "change_event_observed"
 )
 
@@ -127,7 +120,7 @@ func (k Kind) String() string {
 // KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
 func KindValidator(k Kind) error {
 	switch k {
-	case KindChatMessage, KindRepositoryObserved, KindChangeEventObserved:
+	case KindChatMessage, KindRepositoryObserved, KindUserObserved, KindChangeEventObserved:
 		return nil
 	default:
 		return fmt.Errorf("normalizedevent: invalid enum value for kind field: %q", k)
@@ -157,6 +150,11 @@ func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
 }
 
+// ByProviderEventRef orders the results by the provider_event_ref field.
+func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
+}
+
 // ByKind orders the results by the kind field.
 func ByKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldKind, opts...).ToFunc()
@@ -172,14 +170,9 @@ func BySubjectRef(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSubjectRef, opts...).ToFunc()
 }
 
-// ByProviderEventRef orders the results by the provider_event_ref field.
-func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
-}
-
-// ByProviderEventDeliveryRef orders the results by the provider_event_delivery_ref field.
-func ByProviderEventDeliveryRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderEventDeliveryRef, opts...).ToFunc()
+// ByCreatedAt orders the results by the created_at field.
+func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByOccurredAt orders the results by the occurred_at field.
@@ -190,16 +183,6 @@ func ByOccurredAt(opts ...sql.OrderTermOption) OrderOption {
 // ByReceivedAt orders the results by the received_at field.
 func ByReceivedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldReceivedAt, opts...).ToFunc()
-}
-
-// ByProcessingVersion orders the results by the processing_version field.
-func ByProcessingVersion(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProcessingVersion, opts...).ToFunc()
-}
-
-// ByCreatedAt orders the results by the created_at field.
-func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

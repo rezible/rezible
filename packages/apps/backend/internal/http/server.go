@@ -14,8 +14,6 @@ import (
 	"github.com/rezible/rezible/internal/http/oidc"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/httplog/v3"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
@@ -44,7 +42,7 @@ func NewServer(ctx context.Context, svcs *rez.Services) (*Server, error) {
 
 	s.router = chi.NewRouter()
 	s.router.Use(s.makeExecutionContextMiddleware())
-	s.router.Use(s.makeLoggerMiddleware())
+	s.router.Use(RequestLoggerMiddleware(slog.Default()))
 
 	handler, handlerErr := s.makeRequestHandler(ctx, svcs)
 	if handlerErr != nil {
@@ -63,17 +61,6 @@ func (s *Server) makeExecutionContextMiddleware() func(http.Handler) http.Handle
 			next.ServeHTTP(w, r.WithContext(execCtx))
 		})
 	}
-}
-
-func (s *Server) makeLoggerMiddleware() func(http.Handler) http.Handler {
-	return httplog.RequestLogger(slog.Default(), &httplog.Options{
-		Level:         slog.LevelInfo,
-		Schema:        httplog.SchemaOTEL,
-		RecoverPanics: true,
-		Skip: func(r *http.Request, respStatus int) bool {
-			return r.URL.Path == "/health" && respStatus == http.StatusOK
-		},
-	})
 }
 
 func (s *Server) makeRequestHandler(ctx context.Context, svcs *rez.Services) (http.Handler, error) {

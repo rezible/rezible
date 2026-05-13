@@ -6,14 +6,14 @@ import (
 )
 
 type Config struct {
-	Enabled       bool   `koanf:"enabled"`
-	WebhookSecret string `koanf:"webhook_secret"`
+	Enabled       bool   `cfg:"enabled"`
+	WebhookSecret string `cfg:"webhook_secret"`
 	App           struct {
-		AppID         int64  `koanf:"app_id"`
-		ClientID      string `koanf:"client_id"`
-		ClientSecret  string `koanf:"client_secret"`
-		PrivateKeyPEM string `koanf:"private_key_pem"`
-	} `koanf:"app"`
+		AppID         int64  `cfg:"app_id"`
+		ClientID      string `cfg:"client_id"`
+		ClientSecret  string `cfg:"client_secret"`
+		PrivateKeyPEM string `cfg:"private_key_pem"`
+	} `cfg:"app"`
 }
 
 func (c Config) validate() error {

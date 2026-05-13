@@ -1,9 +1,9 @@
 <script lang="ts">
 	import * as Alert from "$components/ui/alert";
 	import { Badge } from "$components/ui/badge";
-	import { useIntegrationConfigController } from "../controller.svelte";
+	import { useIntegrationCardController } from "../controller.svelte";
 
-	const ctrl = useIntegrationConfigController();
+	const ctrl = useIntegrationCardController();
 
 	const installations = $derived(
 		ctrl.configured.map((configured) => {

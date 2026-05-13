@@ -27,16 +27,17 @@ func RegisterHandler(name string, handler EventProjectionHandlerFunc) {
 	projectionFuncs[name] = handler
 }
 
-func GetHandlers(kind ne.Kind) map[string]EventProjectionHandlerFunc {
+func GetHandlers() map[string]EventProjectionHandlerFunc {
 	return projectionFuncs
 }
 
 type decoder func(*ent.NormalizedEvent) (any, error)
 
 var decoders = map[ne.Kind]decoder{
-	ne.KindChatMessage:         decodeChatMessageEvent,
-	ne.KindRepositoryObserved:  decodeRepositoryObservedEvent,
-	ne.KindChangeEventObserved: decodeChangeEventObservedEvent,
+	ne.KindChatMessage:         DecodeChatMessageEvent,
+	ne.KindRepositoryObserved:  DecodeRepositoryObservedEvent,
+	ne.KindChangeEventObserved: DecodeChangeEventObservedEvent,
+	ne.KindUserObserved:        DecodeUserObservedEvent,
 }
 
 func DecodeEvent(ev *ent.NormalizedEvent) (any, error) {

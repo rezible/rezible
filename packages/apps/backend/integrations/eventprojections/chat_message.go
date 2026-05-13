@@ -28,38 +28,31 @@ func (a ChatMessageAttributes) Encode() map[string]any {
 	}
 }
 
-func decodeChatMessageEvent(ev *ent.NormalizedEvent) (any, error) {
-	attrs, err := decodeChatMessage(ev)
-	if err != nil {
-		return nil, err
+func DecodeChatMessageEvent(ev *ent.NormalizedEvent) (any, error) {
+	if attrsErr := rejectUnsupportedAttributes(ev, attrConversationExternalRef, attrBody, attrSenderExternalRef, attrThreadExternalRef); attrsErr != nil {
+		return nil, attrsErr
 	}
-	return ChatMessage{Event: ev, Attributes: attrs}, nil
-}
-
-func decodeChatMessage(ev *ent.NormalizedEvent) (ChatMessageAttributes, error) {
-	if err := rejectUnsupportedAttributes(ev, attrConversationExternalRef, attrBody, attrSenderExternalRef, attrThreadExternalRef); err != nil {
-		return ChatMessageAttributes{}, err
+	conversationRef, conversationRefErr := requiredString(ev, attrConversationExternalRef)
+	if conversationRefErr != nil {
+		return nil, conversationRefErr
 	}
-	conversationRef, err := requiredString(ev, attrConversationExternalRef)
-	if err != nil {
-		return ChatMessageAttributes{}, err
+	body, bodyErr := requiredString(ev, attrBody)
+	if bodyErr != nil {
+		return nil, bodyErr
 	}
-	body, err := requiredString(ev, attrBody)
-	if err != nil {
-		return ChatMessageAttributes{}, err
+	senderRef, senderRefErr := optionalString(ev, attrSenderExternalRef)
+	if senderRefErr != nil {
+		return nil, senderRefErr
 	}
-	senderRef, err := optionalString(ev, attrSenderExternalRef)
-	if err != nil {
-		return ChatMessageAttributes{}, err
+	threadRef, threadRefErr := optionalString(ev, attrThreadExternalRef)
+	if threadRefErr != nil {
+		return nil, threadRefErr
 	}
-	threadRef, err := optionalString(ev, attrThreadExternalRef)
-	if err != nil {
-		return ChatMessageAttributes{}, err
-	}
-	return ChatMessageAttributes{
+	attrs := ChatMessageAttributes{
 		ConversationExternalRef: conversationRef,
 		Body:                    body,
 		SenderExternalRef:       senderRef,
 		ThreadExternalRef:       threadRef,
-	}, nil
+	}
+	return ChatMessage{Event: ev, Attributes: attrs}, nil
 }

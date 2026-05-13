@@ -23,22 +23,22 @@ func LoadConfig() (Config, error) {
 }
 
 type Config struct {
-	Host      string      `koanf:"host"`
-	Port      uint16      `koanf:"port"`
-	Database  string      `koanf:"database"`
-	AppRole   RoleConfig  `koanf:"role_app"`
-	AdminRole RoleConfig  `koanf:"role_admin"`
-	SSLMode   string      `koanf:"sslmode"`
-	Pool      *PoolConfig `koanf:"pool"`
+	Host      string      `cfg:"host"`
+	Port      uint16      `cfg:"port"`
+	Database  string      `cfg:"database"`
+	AppRole   RoleConfig  `cfg:"role_app"`
+	AdminRole RoleConfig  `cfg:"role_admin"`
+	SSLMode   string      `cfg:"sslmode"`
+	Pool      *PoolConfig `cfg:"pool"`
 }
 
 type PoolConfig struct {
-	MaxConns int32 `koanf:"pool_max_conns"`
+	MaxConns int32 `cfg:"pool_max_conns"`
 }
 
 type RoleConfig struct {
-	Name     string `koanf:"name"`
-	Password string `koanf:"password"`
+	Name     string `cfg:"name"`
+	Password string `cfg:"password"`
 }
 
 func (cfg *Config) getDsn(role RoleConfig) string {

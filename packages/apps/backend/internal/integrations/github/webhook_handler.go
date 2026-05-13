@@ -15,8 +15,8 @@ import (
 )
 
 type webhookHandler struct {
-	secret   string
 	services *rez.Services
+	secret   string
 }
 
 func newWebhookHandler(secret string, svcs *rez.Services) http.Handler {
@@ -34,22 +34,50 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if h.secret != "" {
-		sig := r.Header.Get("X-Hub-Signature-256")
-		if sig != "" {
-			if !validateHMAC(body, sig, h.secret) {
-				http.Error(w, "invalid signature", http.StatusUnauthorized)
-				return
-			}
-		}
+	if !h.validateHMAC(body, r.Header.Get("X-Hub-Signature-256")) {
+		http.Error(w, "invalid signature", http.StatusUnauthorized)
+		return
 	}
 
+	eventType := r.Header.Get("X-GitHub-Event")
+	if eventType == "" {
+		http.Error(w, "missing X-GitHub-Event header", http.StatusBadRequest)
+		return
+	}
+
+	deliveryRef := r.Header.Get("X-GitHub-Delivery")
+
+	subjectRef := fmt.Sprintf("github:%s", eventType)
+	if eventType == sourcePushEvent {
+		var payload pushEventPayload
+		if jsonErr := json.Unmarshal(body, &payload); jsonErr != nil {
+			slog.Error("failed to unmarshal payload", "error", jsonErr.Error())
+		}
+		if payload.Repository.FullName != "" && payload.After != "" {
+			subjectRef = fmt.Sprintf("github:%s:%s", payload.Repository.FullName, payload.After)
+		}
+	} else if eventType == sourcePullEvent {
+		var payload pullRequestPayload
+		if jsonErr := json.Unmarshal(body, &payload); jsonErr != nil {
+			slog.Error("failed to unmarshal payload", "error", jsonErr.Error())
+		}
+		if payload.Repository.FullName != "" && payload.Number != 0 {
+			subjectRef = fmt.Sprintf("github:%s:pr:%d", payload.Repository.FullName, payload.Number)
+		}
+	} else {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	//} else if deliveryRef != "" {
+	//	subjectRef = fmt.Sprintf("github:%s:%s", eventType, deliveryRef)
+	//}
+
 	pe := rez.ProviderEvent{
-		Provider:            integrationName,
-		ProviderSource:      r.Header.Get("X-GitHub-Event"),
-		SubjectRef:          githubWebhookSubjectRef(r.Header.Get("X-GitHub-Event"), r.Header.Get("X-GitHub-Delivery"), body),
-		Payload:             body,
-		ProviderDeliveryRef: r.Header.Get("X-GitHub-Delivery"),
+		Provider:         integrationName,
+		ProviderSource:   eventType,
+		ProviderEventRef: deliveryRef,
+		SubjectRef:       subjectRef,
+		Payload:          body,
 	}
 
 	if _, ingestErr := h.services.ProviderEvents.Ingest(r.Context(), pe); ingestErr != nil {
@@ -61,42 +89,30 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func githubWebhookSubjectRef(event, delivery string, body []byte) string {
-	switch event {
-	case "push":
-		var payload struct {
-			After      string `json:"after"`
-			Repository struct {
-				FullName string `json:"full_name"`
-			} `json:"repository"`
-		}
-		if err := json.Unmarshal(body, &payload); err == nil && payload.Repository.FullName != "" && payload.After != "" {
-			return fmt.Sprintf("github:%s:%s", payload.Repository.FullName, payload.After)
-		}
-	case "pull_request":
-		var payload struct {
-			Number     int `json:"number"`
-			Repository struct {
-				FullName string `json:"full_name"`
-			} `json:"repository"`
-		}
-		if err := json.Unmarshal(body, &payload); err == nil && payload.Repository.FullName != "" && payload.Number != 0 {
-			return fmt.Sprintf("github:%s:pr:%d", payload.Repository.FullName, payload.Number)
-		}
-	}
-	if delivery != "" {
-		return fmt.Sprintf("github:%s:%s", event, delivery)
-	}
-	return fmt.Sprintf("github:%s", event)
+type pushEventPayload struct {
+	After      string `json:"after"`
+	Repository struct {
+		FullName string `json:"full_name"`
+	} `json:"repository"`
 }
 
-func validateHMAC(body []byte, signature, secret string) bool {
+type pullRequestPayload struct {
+	Number     int `json:"number"`
+	Repository struct {
+		FullName string `json:"full_name"`
+	} `json:"repository"`
+}
+
+func (h *webhookHandler) validateHMAC(body []byte, signature string) bool {
 	sig := strings.TrimPrefix(signature, "sha256=")
+	if len(sig) == 0 || len(h.secret) == 0 {
+		return false
+	}
 	sigBytes, err := hex.DecodeString(sig)
 	if err != nil {
 		return false
 	}
-	mac := hmac.New(sha256.New, []byte(secret))
+	mac := hmac.New(sha256.New, []byte(h.secret))
 	mac.Write(body)
 	expected := mac.Sum(nil)
 	if !hmac.Equal(sigBytes, expected) {

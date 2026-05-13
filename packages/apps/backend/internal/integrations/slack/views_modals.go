@@ -43,11 +43,7 @@ type annotationModalMetadata struct {
 	AnnotationId uuid.UUID `json:"aid,omitempty"`
 }
 
-func (s *ChatService) makeAnnotationModalView(baseCtx context.Context, meta *annotationModalMetadata) (*slack.ModalViewRequest, error) {
-	ctx, userErr := s.createUserContext(baseCtx, meta.UserId)
-	if userErr != nil {
-		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
-	}
+func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotationModalMetadata) (*slack.ModalViewRequest, error) {
 	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, fmt.Errorf("no user context")
@@ -90,16 +86,12 @@ func (s *ChatService) makeAnnotationModalView(baseCtx context.Context, meta *ann
 	}, nil
 }
 
-func (s *ChatService) getAnnotationModalAnnotation(baseCtx context.Context, view slack.View) (*ent.EventAnnotation, error) {
+func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view slack.View) (*ent.EventAnnotation, error) {
 	var meta annotationModalMetadata
 	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)
 	}
 
-	ctx, userErr := s.createUserContext(baseCtx, meta.UserId)
-	if userErr != nil {
-		return nil, fmt.Errorf("failed to lookup user: %w", userErr)
-	}
 	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, fmt.Errorf("no user context")

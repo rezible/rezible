@@ -57,12 +57,6 @@ func (s *ChatService) handleBlockActionsInteraction(ctx context.Context, ic *sla
 			return fmt.Errorf("unknown block action id: %s", action.ActionID)
 		}
 	}
-	//switch ic.View.CallbackID {
-	//case viewCallbackIdAnnotationModal:
-	//	return s.handleAnnotationModalInteraction(ctx, ic)
-	//case viewCallbackIdIncidentDetailsModal:
-	//	return s.handleIncidentDetailsModalInteraction(ctx, ic)
-	//}
 	s.logger.Debug("interaction callback", "ic", ic)
 
 	return fmt.Errorf("unknown block actions: %s", ic.CallbackID)
@@ -80,25 +74,16 @@ func (s *ChatService) handleViewSubmissionInteraction(ctx context.Context, ic *s
 	return fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
 }
 
-func getInteractionAnnotationModalViewMetadata(ic *slack.InteractionCallback) (*annotationModalMetadata, error) {
-	if ic.View.PrivateMetadata != "" {
-		var meta annotationModalMetadata
-		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
-			return nil, jsonErr
-		}
-		return &meta, nil
-	}
-	return &annotationModalMetadata{
+func (s *ChatService) handleAnnotationModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
+	meta := &annotationModalMetadata{
 		UserId:  ic.User.ID,
 		MsgId:   messageId(fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)),
 		MsgText: ic.Message.Text,
-	}, nil
-}
-
-func (s *ChatService) handleAnnotationModalInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
-	meta, metaErr := getInteractionAnnotationModalViewMetadata(ic)
-	if metaErr != nil {
-		return fmt.Errorf("failed to get interaction metadata: %w", metaErr)
+	}
+	if ic.View.PrivateMetadata != "" {
+		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
+			return fmt.Errorf("failed to unmarshal annotation metadata: %w", jsonErr)
+		}
 	}
 	view, viewErr := s.makeAnnotationModalView(ctx, meta)
 	if viewErr != nil || view == nil {

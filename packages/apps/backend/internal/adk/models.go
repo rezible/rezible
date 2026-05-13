@@ -9,7 +9,7 @@ import (
 )
 
 type AnthropicConfig struct {
-	ApiKey string `koanf:"api_key"`
+	ApiKey string `cfg:"api_key"`
 }
 
 func getConfigModels(ctx context.Context) ([]model.LLM, error) {

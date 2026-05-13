@@ -1,6 +1,6 @@
 <script lang="ts">
 	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
-	import IntegrationConfigCard from "$features/settings/components/integration-config-card/IntegrationConfigCard.svelte";
+	import IntegrationCard from "$src/features/settings/components/integration-card/IntegrationCard.svelte";
 	import { initIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
 
@@ -25,7 +25,7 @@
 			{#each controller.available as integration}
 				{@const name = integration.name}
 				{#key name}
-					<IntegrationConfigCard {integration} />
+					<IntegrationCard {integration} />
 				{/key}
 			{/each}
 		</div>

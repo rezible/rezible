@@ -4,18 +4,20 @@
 	import * as Card from "$components/ui/card";
 	import { Badge } from "$components/ui/badge";
 	import { Button } from "$components/ui/button";
-	import { initIntegrationConfigController } from "./controller.svelte";
+	import { initIntegrationCardController } from "./controller.svelte";
 	import InlineAlert from "$src/components/inline-alert/InlineAlert.svelte";
 	import Spinner from "$src/components/ui/spinner/spinner.svelte";
 	import RiGithubFill from "remixicon-svelte/icons/github-fill";
 	import { Checkbox } from "$components/ui/checkbox";
+	import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 
 	type Props = {
 		integration: AvailableIntegration;
 	};
 	const { integration }: Props = $props();
 
-	const ctrl = initIntegrationConfigController(() => integration);
+	const ctrl = initIntegrationCardController(() => integration);
+	const oauth = useIntegrationOAuthController();
 </script>
 
 {#snippet oauthFlowButtonContent()}
@@ -66,18 +68,18 @@
 			<InlineAlert bind:error={ctrl.configError} />
 		{/if}
 
-		{#if ctrl.selectionRequired}
+		{#if ctrl.oauthSelectionRequired}
 			<div class="flex flex-col gap-3 rounded-md border p-3">
 				<div class="flex flex-col gap-1">
 					<span class="text-sm font-medium">Select installations</span>
 					<span class="text-sm text-muted-foreground">Choose which accounts to connect.</span>
 				</div>
 				<div class="flex flex-col gap-2">
-					{#each ctrl.selectionOptions as option (option.externalRef)}
+					{#each oauth.selectionOptions as option (option.externalRef)}
 						<label class="flex items-center gap-3 rounded-md border p-3 text-sm">
 							<Checkbox
-								checked={ctrl.isSelected(option.externalRef)}
-								onCheckedChange={(checked) => ctrl.toggleSelection(option.externalRef, checked === true)}
+								checked={oauth.selectedExternalRefs.has(option.externalRef)}
+								onCheckedChange={(checked) => oauth.toggleSelection(option.externalRef, !!checked)}
 							/>
 							<span class="flex flex-col">
 								<span class="font-medium">{option.displayName}</span>
@@ -87,8 +89,8 @@
 					{/each}
 				</div>
 				<Button
-					disabled={ctrl.loading || ctrl.selectedExternalRefs.size === 0}
-					onclick={() => ctrl.selectOAuthOptions()}
+					disabled={ctrl.loading || oauth.selectedExternalRefs.size === 0}
+					onclick={() => oauth.selectOAuthOptions()}
 				>
 					{#if ctrl.loading}
 						<Spinner />
@@ -148,6 +150,13 @@
 					{:else}
 						Save
 					{/if}
+				</Button>
+				<Button
+					onclick={() => {ctrl.requestDataSync();}}
+					variant="outline"
+					disabled={ctrl.loading}
+				>
+					Request Data Sync
 				</Button>
 			</div>
 		{/if}

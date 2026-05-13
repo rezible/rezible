@@ -58,18 +58,6 @@ var rezcli = &cli.Command{
 			},
 		},
 		{
-			Name:  "sync-integrations",
-			Usage: "Run integration data sync",
-			Flags: []cli.Flag{&cli.BoolFlag{Name: "hard"}},
-			Action: func(ctx context.Context, cmd *cli.Command) error {
-				_, srvErr := internal.NewServer(ctx)
-				if srvErr != nil {
-					return srvErr
-				}
-				return nil
-			},
-		},
-		{
 			Name:  "migrations",
 			Usage: "database migrations control",
 			Commands: []*cli.Command{

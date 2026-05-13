@@ -34,7 +34,7 @@ func NewJobService(ctx context.Context, pool *pgxpool.Pool) (*JobService, error)
 	}
 
 	s := &JobService{
-		logger: telemetry.NewLogger(ctx, telemetry.WithLogPackage("river"), telemetry.WithMinLogLevel(slog.LevelWarn)),
+		logger: telemetry.NewLogger(ctx, telemetry.WithLogPackage("river"), telemetry.WithMinLogLevel(slog.LevelInfo)),
 	}
 
 	tel := telemetry.Default()

@@ -54,29 +54,22 @@ func NewProviderEventService(ctx context.Context, svcs *rez.Services) *ProviderE
 	return pe
 }
 
-func (s *ProviderEventService) makeEventProcessorKey(provider, providerSource string) string {
-	return fmt.Sprintf("%s:%s", strings.ToLower(strings.TrimSpace(provider)), strings.TrimSpace(providerSource))
-}
-
-func (s *ProviderEventService) RegisterEventProcessors(provider string, procs map[string]rez.ProviderEventProcessor) {
+func (s *ProviderEventService) RegisterEventProcessor(provider string, proc rez.ProviderEventProcessor) {
 	s.processorsMu.Lock()
 	defer s.processorsMu.Unlock()
-	for source, processor := range procs {
-		key := s.makeEventProcessorKey(provider, source)
-		s.processors[key] = processor
-	}
+	s.processors[provider] = proc
 }
 
-func (s *ProviderEventService) lookupEventProcessor(provider, providerSource string) (rez.ProviderEventProcessor, bool) {
+func (s *ProviderEventService) lookupEventProcessor(provider string) (rez.ProviderEventProcessor, bool) {
 	s.processorsMu.RLock()
 	defer s.processorsMu.RUnlock()
-	proc, ok := s.processors[s.makeEventProcessorKey(provider, providerSource)]
+	proc, ok := s.processors[provider]
 	return proc, ok
 }
 
 func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) (*rez.ProviderEventIngestResult, error) {
 	res, ingestErr := s.ingest(ctx, ev)
-	s.metrics.recordIngested(ctx, ev.Provider, ev.ProviderSource, res, ingestErr)
+	s.metrics.recordIngested(ctx, ev, res, ingestErr)
 	return res, ingestErr
 }
 
@@ -86,9 +79,10 @@ func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent)
 		return nil, fmt.Errorf("invalid event: %w", validationErr)
 	}
 
-	insertRes, insertErr := s.jobService.Insert(ctx, *processEvent, &river.InsertOpts{
+	insertOpts := &river.InsertOpts{
 		UniqueOpts: river.UniqueOpts{ByArgs: true},
-	})
+	}
+	insertRes, insertErr := s.jobService.Insert(ctx, *processEvent, insertOpts)
 	if insertErr != nil {
 		return nil, fmt.Errorf("could not insert provider event job: %w", insertErr)
 	}
@@ -106,14 +100,7 @@ func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent)
 }
 
 type processProviderEventArgs struct {
-	Provider            string            `json:"provider"`
-	ProviderSource      string            `json:"provider_source"`
-	SubjectRef          string            `json:"subject_ref"`
-	ReceivedAt          time.Time         `json:"received_at"`
-	Payload             []byte            `json:"payload"`
-	ContentType         string            `json:"content_type,omitempty"`
-	RequestMetadata     map[string]string `json:"request_metadata,omitempty"`
-	ProviderDeliveryRef string            `json:"provider_delivery_ref,omitempty" river:"unique"`
+	Event rez.ProviderEvent
 }
 
 func (processProviderEventArgs) Kind() string {
@@ -121,53 +108,34 @@ func (processProviderEventArgs) Kind() string {
 }
 
 func (s *ProviderEventService) makeProcessEventArgs(ev rez.ProviderEvent) (*processProviderEventArgs, error) {
-	args := processProviderEventArgs{
-		Provider:            strings.TrimSpace(ev.Provider),
-		ProviderSource:      strings.TrimSpace(ev.ProviderSource),
-		ProviderDeliveryRef: strings.TrimSpace(ev.ProviderDeliveryRef),
-		SubjectRef:          strings.TrimSpace(ev.SubjectRef),
-		ContentType:         strings.TrimSpace(ev.ContentType),
-		ReceivedAt:          ev.ReceivedAt,
-		RequestMetadata:     ev.RequestMetadata,
-		Payload:             ev.Payload,
-	}
+	args := processProviderEventArgs{Event: ev}
 	if ev.ReceivedAt.IsZero() {
-		args.ReceivedAt = time.Now().UTC()
+		args.Event.ReceivedAt = time.Now().UTC()
 	}
-	if args.Provider == "" {
+	if ev.Provider == "" {
 		return nil, fmt.Errorf("provider event provider is required")
 	}
-	if args.ProviderSource == "" {
+	if ev.ProviderSource == "" {
 		return nil, fmt.Errorf("provider event provider_source is required")
 	}
-	if args.SubjectRef == "" {
+	if ev.SubjectRef == "" {
 		return nil, fmt.Errorf("provider event subject_ref is required")
 	}
-	if len(args.Payload) == 0 {
+	if len(ev.Payload) == 0 {
 		return nil, fmt.Errorf("provider event payload is required")
 	}
-	if args.ProviderDeliveryRef == "" {
+	if ev.ProviderEventRef == "" {
 		return nil, fmt.Errorf("provider event provider_delivery_ref is required")
 	}
 	return &args, nil
 }
 
-func (args processProviderEventArgs) toProviderEvent() rez.ProviderEvent {
-	return rez.ProviderEvent{
-		Provider:            args.Provider,
-		ProviderSource:      args.ProviderSource,
-		SubjectRef:          args.SubjectRef,
-		ReceivedAt:          args.ReceivedAt,
-		Payload:             args.Payload,
-		ContentType:         args.ContentType,
-		RequestMetadata:     args.RequestMetadata,
-		ProviderDeliveryRef: args.ProviderDeliveryRef,
-	}
-}
-
 func (s *ProviderEventService) ProcessProviderEvent(ctx context.Context, args processProviderEventArgs) error {
+	if _, tenantOk := execution.GetContext(ctx).TenantID(); !tenantOk {
+		return fmt.Errorf("tenant not found in context")
+	}
 	res, err := s.processProviderEvent(ctx, args)
-	s.metrics.recordProcessed(ctx, args.Provider, args.ProviderSource, res, err)
+	s.metrics.recordProcessed(ctx, args.Event, res, err)
 	return err
 }
 
@@ -181,14 +149,15 @@ type processProviderEventResult struct {
 }
 
 func (s *ProviderEventService) processProviderEvent(ctx context.Context, args processProviderEventArgs) (*processProviderEventResult, error) {
+	processStart := time.Now()
+	proc, procExists := s.lookupEventProcessor(args.Event.Provider)
+	if !procExists {
+		return nil, fmt.Errorf("no provider event processor registered for provider %s", args.Event.Provider)
+	}
+
 	res := &processProviderEventResult{}
 
-	processStart := time.Now()
-	proc, procExists := s.lookupEventProcessor(args.Provider, args.ProviderSource)
-	if !procExists {
-		return nil, fmt.Errorf("no provider event processor registered for %s %s", args.Provider, args.ProviderSource)
-	}
-	normalizedEvents, procErr := proc.Process(ctx, args.toProviderEvent())
+	normalizedEvents, procErr := proc.Process(ctx, args.Event)
 	res.processTime = time.Since(processStart)
 	res.normalizeCount = len(normalizedEvents)
 	if procErr != nil {
@@ -198,13 +167,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, args pr
 
 	if res.normalizeCount > 0 {
 		projectionStart := time.Now()
-		tenantID := normalizedEvents[0].TenantID
-		for i := 1; i < res.normalizeCount; i++ {
-			if normalizedEvents[i].TenantID != tenantID {
-				return res, fmt.Errorf("multiple tenant ids in events")
-			}
-		}
-		projErr := s.saveNormalizedEvents(execution.NewTenantContext(ctx, tenantID), normalizedEvents)
+		projErr := s.saveNormalizedEvents(ctx, normalizedEvents)
 		res.projectionTime = time.Since(projectionStart)
 		if projErr != nil {
 			return res, fmt.Errorf("saving normalized events: %w", projErr)
@@ -216,36 +179,30 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, args pr
 }
 
 func (s *ProviderEventService) saveNormalizedEvents(ctx context.Context, normalizedEvents ent.NormalizedEvents) error {
-	upsertCols := sql.ConflictColumns(
-		ne.FieldTenantID,
+	conflictCols := sql.ConflictColumns(
 		ne.FieldProvider,
 		ne.FieldProviderSource,
-		ne.FieldProcessingVersion,
 		ne.FieldProviderEventRef,
 		ne.FieldKind,
 		ne.FieldSubjectRef,
 	)
-
-	mapEvent := func(c *ent.NormalizedEventCreate, i int) {
-		ev := normalizedEvents[i]
-		c.SetTenantID(ev.TenantID).
-			SetProvider(ev.Provider).
-			SetProviderSource(ev.ProviderSource).
-			SetKind(ev.Kind).
-			SetSubjectKind(ev.SubjectKind).
-			SetSubjectRef(ev.SubjectRef).
-			SetProviderEventRef(ev.ProviderEventRef).
-			SetProviderEventDeliveryRef(ev.ProviderEventDeliveryRef).
-			SetOccurredAt(ev.OccurredAt).
-			SetReceivedAt(ev.ReceivedAt).
-			SetProcessingVersion(ev.ProcessingVersion).
-			SetAttributes(ev.Attributes)
-
-		c.OnConflict(upsertCols).UpdateNewValues()
-	}
-
 	return ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {
-		evs, upsertErr := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, mapEvent).Save(ctx)
+		createBulk := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, func(c *ent.NormalizedEventCreate, i int) {
+			ev := normalizedEvents[i]
+			c.SetProvider(ev.Provider).
+				SetProviderSource(ev.ProviderSource).
+				SetProviderEventRef(ev.ProviderEventRef).
+				SetKind(ev.Kind).
+				SetSubjectKind(ev.SubjectKind).
+				SetSubjectRef(ev.SubjectRef).
+				SetOccurredAt(ev.OccurredAt).
+				SetReceivedAt(ev.ReceivedAt).
+				SetAttributes(ev.Attributes).
+				OnConflict(conflictCols).
+				UpdateNewValues()
+		})
+
+		evs, upsertErr := createBulk.Save(ctx)
 		if upsertErr != nil {
 			return fmt.Errorf("upsert normalized events: %w", upsertErr)
 		}
@@ -261,7 +218,8 @@ func (s *ProviderEventService) saveNormalizedEvents(ctx context.Context, normali
 		if jobErr != nil {
 			return fmt.Errorf("inserting project events: %w", jobErr)
 		}
-		slog.DebugContext(ctx, "requested projection for normalized events", "count", len(res))
+		slog.DebugContext(ctx, "requested projection for normalized events",
+			"count", len(res))
 
 		return nil
 	})
@@ -269,8 +227,9 @@ func (s *ProviderEventService) saveNormalizedEvents(ctx context.Context, normali
 
 func (s *ProviderEventService) HandleProviderEventSyncJob(ctx context.Context, args jobs.ProviderEventSyncJob) error {
 	if len(args.ProviderSources) == 0 {
-		slog.WarnContext(ctx, "TODO: support syncing all provider events")
+		slog.WarnContext(ctx, "TODO: support syncing all providers")
 	}
+
 	for provider, sources := range args.ProviderSources {
 		queriers, discoverErr := s.integrations.GetProviderEventQueriers(ctx, provider)
 		if discoverErr != nil {
@@ -336,7 +295,7 @@ func (s *ProviderEventService) SyncEvents(ctx context.Context, querier rez.Provi
 		createRun.SetFailureMessage(errMsg)
 	}
 	if _, updateErr := createRun.Save(ctx); updateErr != nil {
-		return fmt.Errorf("finish provider event sync run: %w", updateErr)
+		return fmt.Errorf("save provider event sync run status: %w", updateErr)
 	}
 
 	return syncErr
@@ -436,16 +395,15 @@ func (s *ProviderEventService) saveSyncCursor(ctx context.Context, querier rez.P
 		SetCursor(cursor).
 		SetLastSyncedAt(time.Now().UTC())
 
-	conflictCols := sql.ConflictColumns(
-		pesc.FieldTenantID,
+	create.OnConflict(sql.ConflictColumns(
 		pesc.FieldProvider,
 		pesc.FieldProviderSource,
-	)
-	create.OnConflict(conflictCols).Update(func(u *ent.ProviderEventSyncCursorUpsert) {
-		u.UpdateCursor()
-		u.UpdateLastSyncedAt()
-		u.UpdateUpdatedAt()
-	})
+	)).
+		Update(func(u *ent.ProviderEventSyncCursorUpsert) {
+			u.UpdateCursor()
+			u.UpdateLastSyncedAt()
+			u.UpdateUpdatedAt()
+		})
 
 	return create.Exec(ctx)
 }
@@ -457,7 +415,7 @@ func (s *ProviderEventService) ProjectNormalizedEvent(ctx context.Context, args 
 	}
 
 	var failed []error
-	for name, handlerFn := range eventprojections.GetHandlers(ev.Kind) {
+	for name, handlerFn := range eventprojections.GetHandlers() {
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
 		status, statusErr := queryStatus.Only(ctx)
@@ -508,4 +466,56 @@ func (s *ProviderEventService) ProjectNormalizedEvent(ctx context.Context, args 
 		return fmt.Errorf("project normalized event: %v", failed)
 	}
 	return nil
+}
+
+type providerEventMetrics struct {
+	ingested          telemetry.Int64Counter
+	processed         telemetry.Int64Counter
+	processSeconds    telemetry.Float64Histogram
+	projectionSeconds telemetry.Float64Histogram
+	normalizedEvents  telemetry.Int64Counter
+}
+
+func newProviderEventMetrics() *providerEventMetrics {
+	meter := telemetry.DefaultMeter()
+	return &providerEventMetrics{
+		ingested:          telemetry.Int64CounterInstrument(meter, "rezible.backend.provider_events.ingested", "Provider events ingested"),
+		processed:         telemetry.Int64CounterInstrument(meter, "rezible.backend.provider_events.processed", "Provider events processed"),
+		processSeconds:    telemetry.Float64HistogramInstrument(meter, "rezible.backend.provider_events.normalize_duration", "Provider event normalization processing duration", "s"),
+		normalizedEvents:  telemetry.Int64CounterInstrument(meter, "rezible.backend.provider_events.normalized_events", "Normalized provider events saved"),
+		projectionSeconds: telemetry.Float64HistogramInstrument(meter, "rezible.backend.provider_events.projection_duration", "Normalized event projection duration", "s"),
+	}
+}
+
+func (m *providerEventMetrics) recordIngested(ctx context.Context, ev rez.ProviderEvent, res *rez.ProviderEventIngestResult, err error) {
+	if m != nil {
+		m.ingested.Add(ctx, 1, telemetry.WithMetricAttributes(
+			telemetry.StringAttr("provider", telemetry.NormalizeLabel(ev.Provider)),
+			telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(ev.ProviderSource)),
+			telemetry.ResultAttr(err),
+			telemetry.BoolAttr("duplicate", res != nil && res.Duplicate),
+		))
+	}
+}
+
+func (m *providerEventMetrics) recordProcessed(ctx context.Context, ev rez.ProviderEvent, res *processProviderEventResult, err error) {
+	if m != nil {
+		processSuccess := res != nil && res.processSuccess
+		projectionSuccess := res != nil && res.projectionSuccess
+		attrs := []telemetry.KeyValue{
+			telemetry.StringAttr("provider", telemetry.NormalizeLabel(ev.Provider)),
+			telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(ev.ProviderSource)),
+			telemetry.ResultAttr(err),
+			telemetry.BoolAttr("process_success", processSuccess),
+			telemetry.BoolAttr("projection_success", projectionSuccess),
+		}
+		m.processed.Add(ctx, 1, telemetry.WithMetricAttributes(attrs...))
+		if res != nil {
+			m.processSeconds.Record(ctx, res.processTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
+			if res.normalizeCount > 0 {
+				m.normalizedEvents.Add(ctx, int64(res.normalizeCount), telemetry.WithMetricAttributes(attrs...))
+				m.projectionSeconds.Record(ctx, res.projectionTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
+			}
+		}
+	}
 }

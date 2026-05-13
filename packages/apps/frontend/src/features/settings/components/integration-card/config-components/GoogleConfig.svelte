@@ -3,9 +3,9 @@
 	import { Input } from "$components/ui/input";
 	import { Label } from "$components/ui/label";
 	import { Switch } from "$components/ui/switch";
-	import { useIntegrationConfigController } from "../controller.svelte";
+	import { useIntegrationCardController } from "../controller.svelte";
 
-	const ctrl = useIntegrationConfigController();
+	const ctrl = useIntegrationCardController();
 
 	let videoConferenceEnabled = $state(true);
 	const onVideoConferenceChange = (checked: boolean) => {

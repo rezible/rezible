@@ -7,41 +7,30 @@ import (
 	"fmt"
 	"log/slog"
 
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/integrations/eventprojections"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/normalizedevent"
 )
 
-const (
-	callbackEventsSource = "events_api/callback"
-)
-
-type eventHandler struct {
+type messageHandler struct {
 	services *rez.Services
 }
 
-func (i *integration) makeEventHandler() (*eventHandler, error) {
+func (i *integration) makeMessageHandler() (*messageHandler, error) {
 	svcs := i.services
-	h := &eventHandler{services: svcs}
+	h := &messageHandler{services: svcs}
 
-	svcs.ProviderEvents.RegisterEventProcessors(integrationName, map[string]rez.ProviderEventProcessor{
-		callbackEventsSource: &callbackEventProcessor{handler: h},
-	})
-
-	if msgsErr := h.registerMessageHandlers(svcs.Messages); msgsErr != nil {
+	if msgsErr := h.registerHandlers(svcs.Messages); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
 	}
 
 	return h, nil
 }
 
-func (h *eventHandler) registerMessageHandlers(msgs rez.MessageService) error {
+func (h *messageHandler) registerHandlers(msgs rez.MessageService) error {
 	return errors.Join(
 		msgs.AddEventHandlers(
 			rez.NewEventHandler("slack.events.callback_event", h.handleCallbackEvent),
@@ -57,15 +46,15 @@ func (h *eventHandler) registerMessageHandlers(msgs rez.MessageService) error {
 	)
 }
 
-func (h *eventHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
+func (h *messageHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
 	return h.services.Messages.SendCommand(ctx, handleSlashCommand{Command: sc})
 }
 
-func (h *eventHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
+func (h *messageHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
 	return h.services.Messages.SendCommand(ctx, handleInteraction{Data: data})
 }
 
-func (h *eventHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.EventsAPICallbackEvent, data []byte) error {
+func (h *messageHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.EventsAPICallbackEvent, data []byte) error {
 	if ev.InnerEvent == nil {
 		return nil
 	}
@@ -76,12 +65,11 @@ func (h *eventHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Even
 	innerType := slackevents.EventsAPIType(inner.Type)
 	if processCallbackEventTypes.Contains(innerType) {
 		pe := rez.ProviderEvent{
-			Provider:            integrationName,
-			ProviderSource:      callbackEventsSource,
-			SubjectRef:          callbackEventSubjectRef(ev, data),
-			ProviderDeliveryRef: ev.EventID,
-			Payload:             data,
-			RequestMetadata:     map[string]string{},
+			Provider:         integrationName,
+			ProviderSource:   sourceEventsApiCallback,
+			SubjectRef:       h.callbackEventSubjectRef(ev, data),
+			ProviderEventRef: ev.EventID,
+			Payload:          data,
 		}
 		if _, ingestErr := h.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
 			return fmt.Errorf("ingest event: %w", ingestErr)
@@ -95,8 +83,8 @@ func (h *eventHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Even
 	return nil
 }
 
-func callbackEventSubjectRef(ev *slackevents.EventsAPICallbackEvent, data []byte) string {
-	var payload struct {
+func (h *messageHandler) callbackEventSubjectRef(ev *slackevents.EventsAPICallbackEvent, data []byte) string {
+	type callbackEventPayload struct {
 		TeamID       string `json:"team_id"`
 		EnterpriseID string `json:"enterprise_id"`
 		Event        struct {
@@ -105,6 +93,7 @@ func callbackEventSubjectRef(ev *slackevents.EventsAPICallbackEvent, data []byte
 			EventTs string `json:"event_ts"`
 		} `json:"event"`
 	}
+	var payload callbackEventPayload
 	if err := json.Unmarshal(data, &payload); err == nil {
 		workspaceID := payload.TeamID
 		if workspaceID == "" {
@@ -129,17 +118,17 @@ func callbackEventSubjectRef(ev *slackevents.EventsAPICallbackEvent, data []byte
 	return "slack:event_callback"
 }
 
-func (h *eventHandler) OnAppRateLimitedEvent(ctx context.Context) error {
+func (h *messageHandler) OnAppRateLimitedEvent(ctx context.Context) error {
 	slog.Warn("slack app rate limited")
 	return nil
 }
 
-func (h *eventHandler) OnOptions(ctx context.Context, data []byte) error {
+func (h *messageHandler) OnOptions(ctx context.Context, data []byte) error {
 	slog.Warn("not handling slack options event")
 	return nil
 }
 
-func (h *eventHandler) withChatService(ctx context.Context, ids installIds, fn func(*ChatService) error) error {
+func (h *messageHandler) withChatService(ctx context.Context, ids installIds, fn func(*ChatService) error) error {
 	ci, lookupErr := lookupTenantIntegration(ctx, h.services.Integrations, ids)
 	if lookupErr != nil {
 		return lookupErr
@@ -154,7 +143,7 @@ func (h *eventHandler) withChatService(ctx context.Context, ids installIds, fn f
 	return fn(newChatService(ctx, ci))
 }
 
-func (h *eventHandler) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
+func (h *messageHandler) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
 	intgs, lookupErr := h.services.Integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
@@ -177,13 +166,13 @@ func (h *eventHandler) withIncidentUpdateProcessor(ctx context.Context, id uuid.
 	return fn(p)
 }
 
-func (h *eventHandler) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
+func (h *messageHandler) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
 	return h.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.processIncidentUpdate(ctx)
 	})
 }
 
-func (h *eventHandler) onIncidentMilestoneUpdated(ctx context.Context, ev *rez.EventOnIncidentMilestoneUpdated) error {
+func (h *messageHandler) onIncidentMilestoneUpdated(ctx context.Context, ev *rez.EventOnIncidentMilestoneUpdated) error {
 	return h.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.processIncidentMilestoneUpdate(ctx, ev.MilestoneId)
 	})
@@ -193,7 +182,7 @@ type cmdCreateIncidentChannel struct {
 	IncidentId uuid.UUID
 }
 
-func (h *eventHandler) createIncidentChannel(ctx context.Context, ev *cmdCreateIncidentChannel) error {
+func (h *messageHandler) createIncidentChannel(ctx context.Context, ev *cmdCreateIncidentChannel) error {
 	return h.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.createIncidentChannel(ctx)
 	})
@@ -204,7 +193,7 @@ type cmdSendIncidentMilestoneMessage struct {
 	MilestoneId uuid.UUID
 }
 
-func (h *eventHandler) sendIncidentMilestoneMessage(ctx context.Context, ev *cmdSendIncidentMilestoneMessage) error {
+func (h *messageHandler) sendIncidentMilestoneMessage(ctx context.Context, ev *cmdSendIncidentMilestoneMessage) error {
 	return h.withIncidentUpdateProcessor(ctx, ev.IncidentId, func(p *incidentUpdateProcessor) error {
 		return p.sendIncidentMilestoneMessage(ctx, ev.MilestoneId)
 	})
@@ -214,7 +203,7 @@ type handleSlashCommand struct {
 	Command slack.SlashCommand
 }
 
-func (h *eventHandler) handleSlashCommand(ctx context.Context, cmd *handleSlashCommand) error {
+func (h *messageHandler) handleSlashCommand(ctx context.Context, cmd *handleSlashCommand) error {
 	ids := installIds{TeamId: cmd.Command.TeamID, EnterpriseId: cmd.Command.EnterpriseID}
 	return h.withChatService(ctx, ids, func(chat *ChatService) error {
 		return chat.handleSlashCommand(ctx, &cmd.Command)
@@ -225,7 +214,7 @@ type handleInteraction struct {
 	Data []byte
 }
 
-func (h *eventHandler) handleInteraction(ctx context.Context, ev *handleInteraction) error {
+func (h *messageHandler) handleInteraction(ctx context.Context, ev *handleInteraction) error {
 	var ic slack.InteractionCallback
 	if err := ic.UnmarshalJSON(ev.Data); err != nil {
 		return fmt.Errorf("invalid interaction payload: %w", err)
@@ -240,7 +229,7 @@ type callbackEvent struct {
 	Data []byte
 }
 
-func (h *eventHandler) handleCallbackEvent(ctx context.Context, ev *callbackEvent) error {
+func (h *messageHandler) handleCallbackEvent(ctx context.Context, ev *callbackEvent) error {
 	cb, parseErr := slackevents.ParseEvent(ev.Data, slackevents.OptionNoVerifyToken())
 	if parseErr != nil {
 		return fmt.Errorf("parse event: %w", parseErr)
@@ -249,112 +238,4 @@ func (h *eventHandler) handleCallbackEvent(ctx context.Context, ev *callbackEven
 	return h.withChatService(ctx, ids, func(chat *ChatService) error {
 		return chat.handleCallbackEvent(ctx, &cb)
 	})
-}
-
-type callbackEventProcessor struct {
-	handler *eventHandler
-}
-
-var processCallbackEventTypes = mapset.NewSet(
-	slackevents.AppMention,
-	slackevents.Message,
-)
-
-func (p *callbackEventProcessor) Process(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	ev, parseErr := slackevents.ParseEvent(prov.Payload, slackevents.OptionNoVerifyToken())
-	if parseErr != nil {
-		return nil, fmt.Errorf("parse event: %w", parseErr)
-	}
-
-	ids := installIds{TeamId: ev.TeamID, EnterpriseId: ev.EnterpriseID}
-	ci, lookupErr := lookupTenantIntegration(ctx, p.handler.services.Integrations, ids)
-	if lookupErr != nil {
-		return nil, lookupErr
-	}
-	if ci == nil {
-		slog.WarnContext(ctx, "received slack event with no configured integration found!",
-			"teamId", ids.TeamId,
-			"enterpriseId", ids.EnterpriseId,
-		)
-		return nil, nil
-	}
-
-	result := &ent.NormalizedEvent{
-		Provider:                 integrationName,
-		ProviderSource:           callbackEventsSource,
-		Kind:                     normalizedevent.KindChatMessage,
-		SubjectKind:              "message",
-		ProviderEventDeliveryRef: prov.ProviderDeliveryRef,
-		ProcessingVersion:        "slack.chat-message-posted.v1",
-	}
-
-	attrs := eventprojections.ChatMessageAttributes{
-		ConversationExternalRef: "",
-		Body:                    "",
-		SenderExternalRef:       "",
-		ThreadExternalRef:       "",
-	}
-
-	if cb, ok := ev.Data.(*slackevents.EventsAPICallbackEvent); ok {
-		result.ProviderEventRef = cb.EventID
-		if result.ProviderEventDeliveryRef == "" {
-			result.ProviderEventDeliveryRef = cb.EventID
-		}
-	}
-
-	var (
-		ts      string
-		eventTS string
-	)
-
-	switch data := ev.InnerEvent.Data.(type) {
-	case *slackevents.MessageEvent:
-		attrs.ConversationExternalRef = data.Channel
-		attrs.SenderExternalRef = data.User
-		attrs.Body = data.Text
-		attrs.ThreadExternalRef = data.ThreadTimeStamp
-
-		ts = data.TimeStamp
-		eventTS = data.EventTimeStamp
-	case *slackevents.AppMentionEvent:
-		attrs.ConversationExternalRef = data.Channel
-		attrs.SenderExternalRef = data.User
-		attrs.Body = data.Text
-		attrs.ThreadExternalRef = data.ThreadTimeStamp
-
-		ts = data.TimeStamp
-		eventTS = data.EventTimeStamp
-	default:
-		return nil, nil
-	}
-
-	if attrs.ConversationExternalRef == "" || ts == "" {
-		return nil, nil
-	}
-
-	occurredAt := tryConvertTs(ts, tryConvertTs(eventTS, prov.ReceivedAt))
-	receivedAt := prov.ReceivedAt
-	if receivedAt.IsZero() {
-		receivedAt = occurredAt
-	}
-	result.OccurredAt = occurredAt
-	result.ReceivedAt = receivedAt
-
-	// TODO: this may be ambiguous?
-	workspaceID := ev.TeamID
-	if workspaceID == "" {
-		workspaceID = ci.teamId()
-	}
-
-	result.SubjectRef = prov.SubjectRef
-	if result.SubjectRef == "" {
-		result.SubjectRef = fmt.Sprintf("slack:%s:%s:%s", workspaceID, attrs.ConversationExternalRef, ts)
-	}
-	if result.ProviderEventRef == "" {
-		result.ProviderEventRef = result.SubjectRef
-	}
-
-	result.Attributes = attrs.Encode()
-
-	return ent.NormalizedEvents{result}, nil
 }

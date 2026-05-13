@@ -1477,16 +1477,14 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "provider", Type: field.TypeString},
 		{Name: "provider_source", Type: field.TypeString},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message", "repository_observed", "change_event_observed"}},
+		{Name: "provider_event_ref", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message", "repository_observed", "user_observed", "change_event_observed"}},
 		{Name: "subject_kind", Type: field.TypeString},
 		{Name: "subject_ref", Type: field.TypeString},
-		{Name: "provider_event_ref", Type: field.TypeString},
-		{Name: "provider_event_delivery_ref", Type: field.TypeString, Nullable: true},
-		{Name: "occurred_at", Type: field.TypeTime},
-		{Name: "received_at", Type: field.TypeTime},
-		{Name: "processing_version", Type: field.TypeString},
 		{Name: "attributes", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "created_at", Type: field.TypeTime},
+		{Name: "occurred_at", Type: field.TypeTime},
+		{Name: "received_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// NormalizedEventsTable holds the schema information for the "normalized_events" table.
@@ -1497,7 +1495,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "normalized_events_tenants_tenant",
-				Columns:    []*schema.Column{NormalizedEventsColumns[13]},
+				Columns:    []*schema.Column{NormalizedEventsColumns[11]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1506,17 +1504,17 @@ var (
 			{
 				Name:    "normalizedevent_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventsColumns[13]},
+				Columns: []*schema.Column{NormalizedEventsColumns[11]},
 			},
 			{
-				Name:    "normalizedevent_tenant_id_provider_provider_source_processing_version_provider_event_ref_kind_subject_ref",
+				Name:    "normalizedevent_tenant_id_provider_provider_source_provider_event_ref_kind_subject_ref",
 				Unique:  true,
-				Columns: []*schema.Column{NormalizedEventsColumns[13], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[10], NormalizedEventsColumns[6], NormalizedEventsColumns[3], NormalizedEventsColumns[5]},
+				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[1], NormalizedEventsColumns[2], NormalizedEventsColumns[3], NormalizedEventsColumns[4], NormalizedEventsColumns[6]},
 			},
 			{
 				Name:    "normalizedevent_tenant_id_kind_occurred_at",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventsColumns[13], NormalizedEventsColumns[3], NormalizedEventsColumns[8]},
+				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[4], NormalizedEventsColumns[9]},
 			},
 		},
 	}

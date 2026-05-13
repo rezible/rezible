@@ -7,19 +7,19 @@ import (
 )
 
 type Config struct {
-	Enabled    bool   `koanf:"enabled"`
-	AppToken   string `koanf:"app_token"`
-	BotToken   string `koanf:"bot_token"`
+	Enabled    bool   `cfg:"enabled"`
+	AppToken   string `cfg:"app_token"`
+	BotToken   string `cfg:"bot_token"`
 	SocketMode struct {
-		Enabled bool `koanf:"enabled"`
-	} `koanf:"socketmode"`
+		Enabled bool `cfg:"enabled"`
+	} `cfg:"socketmode"`
 	Webhooks struct {
-		SigningSecret string `koanf:"signing_secret"`
-	} `koanf:"webhooks"`
+		SigningSecret string `cfg:"signing_secret"`
+	} `cfg:"webhooks"`
 	OAuth struct {
-		ClientId     string `koanf:"client_id"`
-		ClientSecret string `koanf:"client_secret"`
-	} `koanf:"oauth"`
+		ClientId     string `cfg:"client_id"`
+		ClientSecret string `cfg:"client_secret"`
+	} `cfg:"oauth"`
 }
 
 func (c Config) validate() error {

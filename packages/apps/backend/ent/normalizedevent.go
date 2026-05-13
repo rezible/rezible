@@ -19,7 +19,6 @@ import (
 type NormalizedEvent struct {
 	config `json:"-"`
 	// ID of the ent.
-	// Internal identifier for this normalized event record.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
@@ -27,26 +26,22 @@ type NormalizedEvent struct {
 	Provider string `json:"provider,omitempty"`
 	// Provider-specific event stream or webhook source the event came from.
 	ProviderSource string `json:"provider_source,omitempty"`
+	// Stable provider reference for the source event, used with the provider fields for idempotency.
+	ProviderEventRef string `json:"provider_event_ref,omitempty"`
 	// Normalized event type used to select validation and projection behavior.
 	Kind normalizedevent.Kind `json:"kind,omitempty"`
 	// Provider-neutral type of the primary subject this event is about.
 	SubjectKind string `json:"subject_kind,omitempty"`
 	// Stable external reference for the primary subject this event is about.
 	SubjectRef string `json:"subject_ref,omitempty"`
-	// Stable provider reference for the source event, used with the provider fields for idempotency.
-	ProviderEventRef string `json:"provider_event_ref,omitempty"`
-	// Optional ingestion reference from the upstream provider event pipeline.
-	ProviderEventDeliveryRef string `json:"provider_event_delivery_ref,omitempty"`
-	// Time the event occurred according to the provider or normalized payload.
-	OccurredAt time.Time `json:"occurred_at,omitempty"`
-	// Time the raw provider event was received by Rezible.
-	ReceivedAt time.Time `json:"received_at,omitempty"`
-	// Normalizer version used to produce this event shape and attributes.
-	ProcessingVersion string `json:"processing_version,omitempty"`
 	// Validated normalized attributes for this event kind.
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
-	// Time this normalized event record was persisted.
+	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// OccurredAt holds the value of the "occurred_at" field.
+	OccurredAt time.Time `json:"occurred_at,omitempty"`
+	// ReceivedAt holds the value of the "received_at" field.
+	ReceivedAt time.Time `json:"received_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the NormalizedEventQuery when eager-loading is set.
 	Edges        NormalizedEventEdges `json:"edges"`
@@ -82,9 +77,9 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case normalizedevent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldKind, normalizedevent.FieldSubjectKind, normalizedevent.FieldSubjectRef, normalizedevent.FieldProviderEventRef, normalizedevent.FieldProviderEventDeliveryRef, normalizedevent.FieldProcessingVersion:
+		case normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldKind, normalizedevent.FieldSubjectKind, normalizedevent.FieldSubjectRef:
 			values[i] = new(sql.NullString)
-		case normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt, normalizedevent.FieldCreatedAt:
+		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt:
 			values[i] = new(sql.NullTime)
 		case normalizedevent.FieldID:
 			values[i] = new(uuid.UUID)
@@ -127,6 +122,12 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ProviderSource = value.String
 			}
+		case normalizedevent.FieldProviderEventRef:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field provider_event_ref", values[i])
+			} else if value.Valid {
+				_m.ProviderEventRef = value.String
+			}
 		case normalizedevent.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field kind", values[i])
@@ -145,36 +146,6 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.SubjectRef = value.String
 			}
-		case normalizedevent.FieldProviderEventRef:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_event_ref", values[i])
-			} else if value.Valid {
-				_m.ProviderEventRef = value.String
-			}
-		case normalizedevent.FieldProviderEventDeliveryRef:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_event_delivery_ref", values[i])
-			} else if value.Valid {
-				_m.ProviderEventDeliveryRef = value.String
-			}
-		case normalizedevent.FieldOccurredAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field occurred_at", values[i])
-			} else if value.Valid {
-				_m.OccurredAt = value.Time
-			}
-		case normalizedevent.FieldReceivedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field received_at", values[i])
-			} else if value.Valid {
-				_m.ReceivedAt = value.Time
-			}
-		case normalizedevent.FieldProcessingVersion:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field processing_version", values[i])
-			} else if value.Valid {
-				_m.ProcessingVersion = value.String
-			}
 		case normalizedevent.FieldAttributes:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field attributes", values[i])
@@ -188,6 +159,18 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
 				_m.CreatedAt = value.Time
+			}
+		case normalizedevent.FieldOccurredAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field occurred_at", values[i])
+			} else if value.Valid {
+				_m.OccurredAt = value.Time
+			}
+		case normalizedevent.FieldReceivedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field received_at", values[i])
+			} else if value.Valid {
+				_m.ReceivedAt = value.Time
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -239,6 +222,9 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("provider_source=")
 	builder.WriteString(_m.ProviderSource)
 	builder.WriteString(", ")
+	builder.WriteString("provider_event_ref=")
+	builder.WriteString(_m.ProviderEventRef)
+	builder.WriteString(", ")
 	builder.WriteString("kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
@@ -248,26 +234,17 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("subject_ref=")
 	builder.WriteString(_m.SubjectRef)
 	builder.WriteString(", ")
-	builder.WriteString("provider_event_ref=")
-	builder.WriteString(_m.ProviderEventRef)
+	builder.WriteString("attributes=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Attributes))
 	builder.WriteString(", ")
-	builder.WriteString("provider_event_delivery_ref=")
-	builder.WriteString(_m.ProviderEventDeliveryRef)
+	builder.WriteString("created_at=")
+	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("occurred_at=")
 	builder.WriteString(_m.OccurredAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("received_at=")
 	builder.WriteString(_m.ReceivedAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("processing_version=")
-	builder.WriteString(_m.ProcessingVersion)
-	builder.WriteString(", ")
-	builder.WriteString("attributes=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Attributes))
-	builder.WriteString(", ")
-	builder.WriteString("created_at=")
-	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -43,6 +43,12 @@ func (_c *NormalizedEventCreate) SetProviderSource(v string) *NormalizedEventCre
 	return _c
 }
 
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (_c *NormalizedEventCreate) SetProviderEventRef(v string) *NormalizedEventCreate {
+	_c.mutation.SetProviderEventRef(v)
+	return _c
+}
+
 // SetKind sets the "kind" field.
 func (_c *NormalizedEventCreate) SetKind(v normalizedevent.Kind) *NormalizedEventCreate {
 	_c.mutation.SetKind(v)
@@ -58,44 +64,6 @@ func (_c *NormalizedEventCreate) SetSubjectKind(v string) *NormalizedEventCreate
 // SetSubjectRef sets the "subject_ref" field.
 func (_c *NormalizedEventCreate) SetSubjectRef(v string) *NormalizedEventCreate {
 	_c.mutation.SetSubjectRef(v)
-	return _c
-}
-
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (_c *NormalizedEventCreate) SetProviderEventRef(v string) *NormalizedEventCreate {
-	_c.mutation.SetProviderEventRef(v)
-	return _c
-}
-
-// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
-func (_c *NormalizedEventCreate) SetProviderEventDeliveryRef(v string) *NormalizedEventCreate {
-	_c.mutation.SetProviderEventDeliveryRef(v)
-	return _c
-}
-
-// SetNillableProviderEventDeliveryRef sets the "provider_event_delivery_ref" field if the given value is not nil.
-func (_c *NormalizedEventCreate) SetNillableProviderEventDeliveryRef(v *string) *NormalizedEventCreate {
-	if v != nil {
-		_c.SetProviderEventDeliveryRef(*v)
-	}
-	return _c
-}
-
-// SetOccurredAt sets the "occurred_at" field.
-func (_c *NormalizedEventCreate) SetOccurredAt(v time.Time) *NormalizedEventCreate {
-	_c.mutation.SetOccurredAt(v)
-	return _c
-}
-
-// SetReceivedAt sets the "received_at" field.
-func (_c *NormalizedEventCreate) SetReceivedAt(v time.Time) *NormalizedEventCreate {
-	_c.mutation.SetReceivedAt(v)
-	return _c
-}
-
-// SetProcessingVersion sets the "processing_version" field.
-func (_c *NormalizedEventCreate) SetProcessingVersion(v string) *NormalizedEventCreate {
-	_c.mutation.SetProcessingVersion(v)
 	return _c
 }
 
@@ -116,6 +84,18 @@ func (_c *NormalizedEventCreate) SetNillableCreatedAt(v *time.Time) *NormalizedE
 	if v != nil {
 		_c.SetCreatedAt(*v)
 	}
+	return _c
+}
+
+// SetOccurredAt sets the "occurred_at" field.
+func (_c *NormalizedEventCreate) SetOccurredAt(v time.Time) *NormalizedEventCreate {
+	_c.mutation.SetOccurredAt(v)
+	return _c
+}
+
+// SetReceivedAt sets the "received_at" field.
+func (_c *NormalizedEventCreate) SetReceivedAt(v time.Time) *NormalizedEventCreate {
+	_c.mutation.SetReceivedAt(v)
 	return _c
 }
 
@@ -213,6 +193,14 @@ func (_c *NormalizedEventCreate) check() error {
 			return &ValidationError{Name: "provider_source", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_source": %w`, err)}
 		}
 	}
+	if _, ok := _c.mutation.ProviderEventRef(); !ok {
+		return &ValidationError{Name: "provider_event_ref", err: errors.New(`ent: missing required field "NormalizedEvent.provider_event_ref"`)}
+	}
+	if v, ok := _c.mutation.ProviderEventRef(); ok {
+		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Kind(); !ok {
 		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "NormalizedEvent.kind"`)}
 	}
@@ -237,33 +225,17 @@ func (_c *NormalizedEventCreate) check() error {
 			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.ProviderEventRef(); !ok {
-		return &ValidationError{Name: "provider_event_ref", err: errors.New(`ent: missing required field "NormalizedEvent.provider_event_ref"`)}
+	if _, ok := _c.mutation.Attributes(); !ok {
+		return &ValidationError{Name: "attributes", err: errors.New(`ent: missing required field "NormalizedEvent.attributes"`)}
 	}
-	if v, ok := _c.mutation.ProviderEventRef(); ok {
-		if err := normalizedevent.ProviderEventRefValidator(v); err != nil {
-			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
-		}
+	if _, ok := _c.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "NormalizedEvent.created_at"`)}
 	}
 	if _, ok := _c.mutation.OccurredAt(); !ok {
 		return &ValidationError{Name: "occurred_at", err: errors.New(`ent: missing required field "NormalizedEvent.occurred_at"`)}
 	}
 	if _, ok := _c.mutation.ReceivedAt(); !ok {
 		return &ValidationError{Name: "received_at", err: errors.New(`ent: missing required field "NormalizedEvent.received_at"`)}
-	}
-	if _, ok := _c.mutation.ProcessingVersion(); !ok {
-		return &ValidationError{Name: "processing_version", err: errors.New(`ent: missing required field "NormalizedEvent.processing_version"`)}
-	}
-	if v, ok := _c.mutation.ProcessingVersion(); ok {
-		if err := normalizedevent.ProcessingVersionValidator(v); err != nil {
-			return &ValidationError{Name: "processing_version", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.processing_version": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.Attributes(); !ok {
-		return &ValidationError{Name: "attributes", err: errors.New(`ent: missing required field "NormalizedEvent.attributes"`)}
-	}
-	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "NormalizedEvent.created_at"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "NormalizedEvent.tenant"`)}
@@ -313,6 +285,10 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_spec.SetField(normalizedevent.FieldProviderSource, field.TypeString, value)
 		_node.ProviderSource = value
 	}
+	if value, ok := _c.mutation.ProviderEventRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
+		_node.ProviderEventRef = value
+	}
 	if value, ok := _c.mutation.Kind(); ok {
 		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
 		_node.Kind = value
@@ -325,13 +301,13 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
 		_node.SubjectRef = value
 	}
-	if value, ok := _c.mutation.ProviderEventRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
-		_node.ProviderEventRef = value
+	if value, ok := _c.mutation.Attributes(); ok {
+		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
+		_node.Attributes = value
 	}
-	if value, ok := _c.mutation.ProviderEventDeliveryRef(); ok {
-		_spec.SetField(normalizedevent.FieldProviderEventDeliveryRef, field.TypeString, value)
-		_node.ProviderEventDeliveryRef = value
+	if value, ok := _c.mutation.CreatedAt(); ok {
+		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
+		_node.CreatedAt = value
 	}
 	if value, ok := _c.mutation.OccurredAt(); ok {
 		_spec.SetField(normalizedevent.FieldOccurredAt, field.TypeTime, value)
@@ -340,18 +316,6 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 	if value, ok := _c.mutation.ReceivedAt(); ok {
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
 		_node.ReceivedAt = value
-	}
-	if value, ok := _c.mutation.ProcessingVersion(); ok {
-		_spec.SetField(normalizedevent.FieldProcessingVersion, field.TypeString, value)
-		_node.ProcessingVersion = value
-	}
-	if value, ok := _c.mutation.Attributes(); ok {
-		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
-		_node.Attributes = value
-	}
-	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(normalizedevent.FieldCreatedAt, field.TypeTime, value)
-		_node.CreatedAt = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -447,6 +411,18 @@ func (u *NormalizedEventUpsert) UpdateProviderSource() *NormalizedEventUpsert {
 	return u
 }
 
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *NormalizedEventUpsert) SetProviderEventRef(v string) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldProviderEventRef, v)
+	return u
+}
+
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateProviderEventRef() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldProviderEventRef)
+	return u
+}
+
 // SetKind sets the "kind" field.
 func (u *NormalizedEventUpsert) SetKind(v normalizedevent.Kind) *NormalizedEventUpsert {
 	u.Set(normalizedevent.FieldKind, v)
@@ -483,33 +459,27 @@ func (u *NormalizedEventUpsert) UpdateSubjectRef() *NormalizedEventUpsert {
 	return u
 }
 
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (u *NormalizedEventUpsert) SetProviderEventRef(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldProviderEventRef, v)
+// SetAttributes sets the "attributes" field.
+func (u *NormalizedEventUpsert) SetAttributes(v map[string]interface{}) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldAttributes, v)
 	return u
 }
 
-// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateProviderEventRef() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldProviderEventRef)
+// UpdateAttributes sets the "attributes" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateAttributes() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldAttributes)
 	return u
 }
 
-// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
-func (u *NormalizedEventUpsert) SetProviderEventDeliveryRef(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldProviderEventDeliveryRef, v)
+// SetCreatedAt sets the "created_at" field.
+func (u *NormalizedEventUpsert) SetCreatedAt(v time.Time) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldCreatedAt, v)
 	return u
 }
 
-// UpdateProviderEventDeliveryRef sets the "provider_event_delivery_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateProviderEventDeliveryRef() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldProviderEventDeliveryRef)
-	return u
-}
-
-// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
-func (u *NormalizedEventUpsert) ClearProviderEventDeliveryRef() *NormalizedEventUpsert {
-	u.SetNull(normalizedevent.FieldProviderEventDeliveryRef)
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateCreatedAt() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldCreatedAt)
 	return u
 }
 
@@ -534,42 +504,6 @@ func (u *NormalizedEventUpsert) SetReceivedAt(v time.Time) *NormalizedEventUpser
 // UpdateReceivedAt sets the "received_at" field to the value that was provided on create.
 func (u *NormalizedEventUpsert) UpdateReceivedAt() *NormalizedEventUpsert {
 	u.SetExcluded(normalizedevent.FieldReceivedAt)
-	return u
-}
-
-// SetProcessingVersion sets the "processing_version" field.
-func (u *NormalizedEventUpsert) SetProcessingVersion(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldProcessingVersion, v)
-	return u
-}
-
-// UpdateProcessingVersion sets the "processing_version" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateProcessingVersion() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldProcessingVersion)
-	return u
-}
-
-// SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsert) SetAttributes(v map[string]interface{}) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldAttributes, v)
-	return u
-}
-
-// UpdateAttributes sets the "attributes" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateAttributes() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldAttributes)
-	return u
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *NormalizedEventUpsert) SetCreatedAt(v time.Time) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldCreatedAt, v)
-	return u
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateCreatedAt() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldCreatedAt)
 	return u
 }
 
@@ -652,6 +586,20 @@ func (u *NormalizedEventUpsertOne) UpdateProviderSource() *NormalizedEventUpsert
 	})
 }
 
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *NormalizedEventUpsertOne) SetProviderEventRef(v string) *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetProviderEventRef(v)
+	})
+}
+
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateProviderEventRef() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateProviderEventRef()
+	})
+}
+
 // SetKind sets the "kind" field.
 func (u *NormalizedEventUpsertOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
@@ -694,38 +642,31 @@ func (u *NormalizedEventUpsertOne) UpdateSubjectRef() *NormalizedEventUpsertOne 
 	})
 }
 
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (u *NormalizedEventUpsertOne) SetProviderEventRef(v string) *NormalizedEventUpsertOne {
+// SetAttributes sets the "attributes" field.
+func (u *NormalizedEventUpsertOne) SetAttributes(v map[string]interface{}) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderEventRef(v)
+		s.SetAttributes(v)
 	})
 }
 
-// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateProviderEventRef() *NormalizedEventUpsertOne {
+// UpdateAttributes sets the "attributes" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateAttributes() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderEventRef()
+		s.UpdateAttributes()
 	})
 }
 
-// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
-func (u *NormalizedEventUpsertOne) SetProviderEventDeliveryRef(v string) *NormalizedEventUpsertOne {
+// SetCreatedAt sets the "created_at" field.
+func (u *NormalizedEventUpsertOne) SetCreatedAt(v time.Time) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderEventDeliveryRef(v)
+		s.SetCreatedAt(v)
 	})
 }
 
-// UpdateProviderEventDeliveryRef sets the "provider_event_delivery_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateProviderEventDeliveryRef() *NormalizedEventUpsertOne {
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateCreatedAt() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderEventDeliveryRef()
-	})
-}
-
-// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
-func (u *NormalizedEventUpsertOne) ClearProviderEventDeliveryRef() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.ClearProviderEventDeliveryRef()
+		s.UpdateCreatedAt()
 	})
 }
 
@@ -754,48 +695,6 @@ func (u *NormalizedEventUpsertOne) SetReceivedAt(v time.Time) *NormalizedEventUp
 func (u *NormalizedEventUpsertOne) UpdateReceivedAt() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.UpdateReceivedAt()
-	})
-}
-
-// SetProcessingVersion sets the "processing_version" field.
-func (u *NormalizedEventUpsertOne) SetProcessingVersion(v string) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProcessingVersion(v)
-	})
-}
-
-// UpdateProcessingVersion sets the "processing_version" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateProcessingVersion() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProcessingVersion()
-	})
-}
-
-// SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsertOne) SetAttributes(v map[string]interface{}) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetAttributes(v)
-	})
-}
-
-// UpdateAttributes sets the "attributes" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateAttributes() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateAttributes()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *NormalizedEventUpsertOne) SetCreatedAt(v time.Time) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateCreatedAt() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateCreatedAt()
 	})
 }
 
@@ -1045,6 +944,20 @@ func (u *NormalizedEventUpsertBulk) UpdateProviderSource() *NormalizedEventUpser
 	})
 }
 
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (u *NormalizedEventUpsertBulk) SetProviderEventRef(v string) *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetProviderEventRef(v)
+	})
+}
+
+// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateProviderEventRef() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateProviderEventRef()
+	})
+}
+
 // SetKind sets the "kind" field.
 func (u *NormalizedEventUpsertBulk) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
@@ -1087,38 +1000,31 @@ func (u *NormalizedEventUpsertBulk) UpdateSubjectRef() *NormalizedEventUpsertBul
 	})
 }
 
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (u *NormalizedEventUpsertBulk) SetProviderEventRef(v string) *NormalizedEventUpsertBulk {
+// SetAttributes sets the "attributes" field.
+func (u *NormalizedEventUpsertBulk) SetAttributes(v map[string]interface{}) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderEventRef(v)
+		s.SetAttributes(v)
 	})
 }
 
-// UpdateProviderEventRef sets the "provider_event_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateProviderEventRef() *NormalizedEventUpsertBulk {
+// UpdateAttributes sets the "attributes" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateAttributes() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderEventRef()
+		s.UpdateAttributes()
 	})
 }
 
-// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
-func (u *NormalizedEventUpsertBulk) SetProviderEventDeliveryRef(v string) *NormalizedEventUpsertBulk {
+// SetCreatedAt sets the "created_at" field.
+func (u *NormalizedEventUpsertBulk) SetCreatedAt(v time.Time) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProviderEventDeliveryRef(v)
+		s.SetCreatedAt(v)
 	})
 }
 
-// UpdateProviderEventDeliveryRef sets the "provider_event_delivery_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateProviderEventDeliveryRef() *NormalizedEventUpsertBulk {
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateCreatedAt() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProviderEventDeliveryRef()
-	})
-}
-
-// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
-func (u *NormalizedEventUpsertBulk) ClearProviderEventDeliveryRef() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.ClearProviderEventDeliveryRef()
+		s.UpdateCreatedAt()
 	})
 }
 
@@ -1147,48 +1053,6 @@ func (u *NormalizedEventUpsertBulk) SetReceivedAt(v time.Time) *NormalizedEventU
 func (u *NormalizedEventUpsertBulk) UpdateReceivedAt() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.UpdateReceivedAt()
-	})
-}
-
-// SetProcessingVersion sets the "processing_version" field.
-func (u *NormalizedEventUpsertBulk) SetProcessingVersion(v string) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetProcessingVersion(v)
-	})
-}
-
-// UpdateProcessingVersion sets the "processing_version" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateProcessingVersion() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateProcessingVersion()
-	})
-}
-
-// SetAttributes sets the "attributes" field.
-func (u *NormalizedEventUpsertBulk) SetAttributes(v map[string]interface{}) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetAttributes(v)
-	})
-}
-
-// UpdateAttributes sets the "attributes" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateAttributes() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateAttributes()
-	})
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (u *NormalizedEventUpsertBulk) SetCreatedAt(v time.Time) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetCreatedAt(v)
-	})
-}
-
-// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateCreatedAt() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateCreatedAt()
 	})
 }
 

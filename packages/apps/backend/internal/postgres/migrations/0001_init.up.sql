@@ -125,49 +125,45 @@ CREATE TABLE "integration_oauth_states" ("id" uuid NOT NULL, "state" character v
 -- create index "integrationoauthstate_tenant_id" to table: "integration_oauth_states"
 CREATE INDEX "integrationoauthstate_tenant_id" ON "integration_oauth_states" ("tenant_id");
 -- create "knowledge_entities" table
-CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "display_name" character varying NOT NULL, "description" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "display_name" character varying NOT NULL, "description" text NULL, "first_observed_at" timestamptz NULL, "last_observed_at" timestamptz NULL, "deleted_at" timestamptz NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id" ON "knowledge_entities" ("tenant_id");
 -- create index "knowledgeentity_tenant_id_kind" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id_kind" ON "knowledge_entities" ("tenant_id", "kind");
 -- create index "knowledgeentity_tenant_id_updated_at" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id_updated_at" ON "knowledge_entities" ("tenant_id", "updated_at");
+-- create index "knowledgeentity_tenant_id_kind_last_observed_at" to table: "knowledge_entities"
+CREATE INDEX "knowledgeentity_tenant_id_kind_last_observed_at" ON "knowledge_entities" ("tenant_id", "kind", "last_observed_at");
+-- create index "knowledgeentity_tenant_id_kind_deleted_at" to table: "knowledge_entities"
+CREATE INDEX "knowledgeentity_tenant_id_kind_deleted_at" ON "knowledge_entities" ("tenant_id", "kind", "deleted_at");
 -- create "knowledge_entity_alias" table
-CREATE TABLE "knowledge_entity_alias" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_ref" character varying NOT NULL, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_entity_alias" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "display_name" character varying NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentityalias_tenant_id" to table: "knowledge_entity_alias"
 CREATE INDEX "knowledgeentityalias_tenant_id" ON "knowledge_entity_alias" ("tenant_id");
--- create index "knowledgeentityalias_tenant_id_0cd6124182b4672d8182a7dabfd3c941" to table: "knowledge_entity_alias"
-CREATE UNIQUE INDEX "knowledgeentityalias_tenant_id_0cd6124182b4672d8182a7dabfd3c941" ON "knowledge_entity_alias" ("tenant_id", "provider", "provider_source", "subject_kind", "subject_ref");
 -- create index "knowledgeentityalias_tenant_id_entity_id" to table: "knowledge_entity_alias"
 CREATE INDEX "knowledgeentityalias_tenant_id_entity_id" ON "knowledge_entity_alias" ("tenant_id", "entity_id");
--- create "knowledge_fact_histories" table
-CREATE TABLE "knowledge_fact_histories" ("id" uuid NOT NULL, "fact_kind" character varying NULL, "event_kind" character varying NOT NULL, "history_key" character varying NOT NULL, "occurred_at" timestamptz NOT NULL, "recorded_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "extraction_method" character varying NOT NULL, "attributes" jsonb NULL, "tenant_id" bigint NOT NULL, "alias_id" uuid NULL, "relationship_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "knowledgefacthistory_tenant_id" to table: "knowledge_fact_histories"
-CREATE INDEX "knowledgefacthistory_tenant_id" ON "knowledge_fact_histories" ("tenant_id");
--- create index "knowledgefacthistory_tenant_id_history_key" to table: "knowledge_fact_histories"
-CREATE UNIQUE INDEX "knowledgefacthistory_tenant_id_history_key" ON "knowledge_fact_histories" ("tenant_id", "history_key");
--- create index "knowledgefacthistory_tenant_id_alias_id_occurred_at" to table: "knowledge_fact_histories"
-CREATE INDEX "knowledgefacthistory_tenant_id_alias_id_occurred_at" ON "knowledge_fact_histories" ("tenant_id", "alias_id", "occurred_at");
--- create index "knowledgefacthistory_tenant_id_relationship_id_occurred_at" to table: "knowledge_fact_histories"
-CREATE INDEX "knowledgefacthistory_tenant_id_relationship_id_occurred_at" ON "knowledge_fact_histories" ("tenant_id", "relationship_id", "occurred_at");
--- create index "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at" to table: "knowledge_fact_histories"
-CREATE INDEX "knowledgefacthistory_tenant_id_fact_kind_event_kind_occurred_at" ON "knowledge_fact_histories" ("tenant_id", "fact_kind", "event_kind", "occurred_at");
--- create "knowledge_fact_provenances" table
-CREATE TABLE "knowledge_fact_provenances" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "extraction_method" character varying NOT NULL, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "alias_id" uuid NULL, "relationship_id" uuid NULL, "normalized_event_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "knowledgefactprovenance_tenant_id" to table: "knowledge_fact_provenances"
-CREATE INDEX "knowledgefactprovenance_tenant_id" ON "knowledge_fact_provenances" ("tenant_id");
--- create index "knowledgefactprovenance_tenant_id_alias_id" to table: "knowledge_fact_provenances"
-CREATE INDEX "knowledgefactprovenance_tenant_id_alias_id" ON "knowledge_fact_provenances" ("tenant_id", "alias_id");
--- create index "knowledgefactprovenance_tenant_id_relationship_id" to table: "knowledge_fact_provenances"
-CREATE INDEX "knowledgefactprovenance_tenant_id_relationship_id" ON "knowledge_fact_provenances" ("tenant_id", "relationship_id");
--- create index "knowledgefactprovenance_tenant_eecb6cf88f188a01f21e94797164bf33" to table: "knowledge_fact_provenances"
-CREATE INDEX "knowledgefactprovenance_tenant_eecb6cf88f188a01f21e94797164bf33" ON "knowledge_fact_provenances" ("tenant_id", "provider", "provider_source", "provider_event_ref");
--- create index "knowledgefactprovenance_alias_source_unique" to table: "knowledge_fact_provenances"
-CREATE UNIQUE INDEX "knowledgefactprovenance_alias_source_unique" ON "knowledge_fact_provenances" ("tenant_id", "alias_id", "provider", "provider_source", "provider_event_ref", "extraction_method");
--- create index "knowledgefactprovenance_relationship_source_unique" to table: "knowledge_fact_provenances"
-CREATE UNIQUE INDEX "knowledgefactprovenance_relationship_source_unique" ON "knowledge_fact_provenances" ("tenant_id", "relationship_id", "provider", "provider_source", "provider_event_ref", "extraction_method");
+-- create index "knowledgeentityalias_tenant_id_bedde5b02dd708153cce4f6b86ce1c2c" to table: "knowledge_entity_alias"
+CREATE UNIQUE INDEX "knowledgeentityalias_tenant_id_bedde5b02dd708153cce4f6b86ce1c2c" ON "knowledge_entity_alias" ("tenant_id", "provider", "provider_source", "provider_subject_ref");
+-- create "knowledge_evidences" table
+CREATE TABLE "knowledge_evidences" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "subject_type" character varying NOT NULL, "assertion_kind" character varying NOT NULL, "evidence_kind" character varying NOT NULL, "observed_at" timestamptz NOT NULL, "effective_at" timestamptz NULL, "source" character varying NOT NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NULL, "relationship_id" uuid NULL, "alias_id" uuid NULL, "normalized_event_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "knowledgeevidence_tenant_id" to table: "knowledge_evidences"
+CREATE INDEX "knowledgeevidence_tenant_id" ON "knowledge_evidences" ("tenant_id");
+-- create index "knowledgeevidence_tenant_id_entity_id" to table: "knowledge_evidences"
+CREATE INDEX "knowledgeevidence_tenant_id_entity_id" ON "knowledge_evidences" ("tenant_id", "entity_id");
+-- create index "knowledgeevidence_tenant_id_relationship_id" to table: "knowledge_evidences"
+CREATE INDEX "knowledgeevidence_tenant_id_relationship_id" ON "knowledge_evidences" ("tenant_id", "relationship_id");
+-- create index "knowledgeevidence_tenant_id_alias_id" to table: "knowledge_evidences"
+CREATE INDEX "knowledgeevidence_tenant_id_alias_id" ON "knowledge_evidences" ("tenant_id", "alias_id");
+-- create index "knowledgeevidence_tenant_id_normalized_event_id" to table: "knowledge_evidences"
+CREATE INDEX "knowledgeevidence_tenant_id_normalized_event_id" ON "knowledge_evidences" ("tenant_id", "normalized_event_id");
+-- create index "knowledgeevidence_tenant_id_as_facfb4a424d2bd618ffae3bf7d544693" to table: "knowledge_evidences"
+CREATE INDEX "knowledgeevidence_tenant_id_as_facfb4a424d2bd618ffae3bf7d544693" ON "knowledge_evidences" ("tenant_id", "assertion_kind", "evidence_kind", "observed_at");
+-- create index "knowledgeevidence_tenant_id_no_be29c0c818fd60bfb834f7c44768c470" to table: "knowledge_evidences"
+CREATE UNIQUE INDEX "knowledgeevidence_tenant_id_no_be29c0c818fd60bfb834f7c44768c470" ON "knowledge_evidences" ("tenant_id", "normalized_event_id", "assertion_kind", "subject_type", "entity_id");
+-- create index "knowledgeevidence_tenant_id_no_87f9cb1d0d06fba01667644def3b8e9c" to table: "knowledge_evidences"
+CREATE UNIQUE INDEX "knowledgeevidence_tenant_id_no_87f9cb1d0d06fba01667644def3b8e9c" ON "knowledge_evidences" ("tenant_id", "normalized_event_id", "assertion_kind", "subject_type", "relationship_id");
 -- create "knowledge_relationships" table
-CREATE TABLE "knowledge_relationships" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "display_name" character varying NULL, "description" text NULL, "properties" jsonb NULL, "first_seen_at" timestamptz NOT NULL, "last_seen_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "source_entity_id" uuid NOT NULL, "target_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_relationships" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "display_name" character varying NULL, "description" text NULL, "first_observed_at" timestamptz NULL, "last_observed_at" timestamptz NULL, "deleted_at" timestamptz NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "source_entity_id" uuid NOT NULL, "target_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgerelationship_tenant_id" to table: "knowledge_relationships"
 CREATE INDEX "knowledgerelationship_tenant_id" ON "knowledge_relationships" ("tenant_id");
 -- create index "knowledgerelationship_tenant_i_c2e180b6bf727a089ab234a0504ce8ba" to table: "knowledge_relationships"
@@ -180,6 +176,10 @@ CREATE INDEX "knowledgerelationship_tenant_id_source_entity_id" ON "knowledge_re
 CREATE INDEX "knowledgerelationship_tenant_id_target_entity_id" ON "knowledge_relationships" ("tenant_id", "target_entity_id");
 -- create index "knowledgerelationship_tenant_id_updated_at" to table: "knowledge_relationships"
 CREATE INDEX "knowledgerelationship_tenant_id_updated_at" ON "knowledge_relationships" ("tenant_id", "updated_at");
+-- create index "knowledgerelationship_tenant_id_kind_last_observed_at" to table: "knowledge_relationships"
+CREATE INDEX "knowledgerelationship_tenant_id_kind_last_observed_at" ON "knowledge_relationships" ("tenant_id", "kind", "last_observed_at");
+-- create index "knowledgerelationship_tenant_id_kind_deleted_at" to table: "knowledge_relationships"
+CREATE INDEX "knowledgerelationship_tenant_id_kind_deleted_at" ON "knowledge_relationships" ("tenant_id", "kind", "deleted_at");
 -- create "meeting_schedules" table
 CREATE TABLE "meeting_schedules" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "description" character varying NULL, "begin_minute" bigint NOT NULL, "duration_minutes" bigint NOT NULL, "start_date" timestamptz NOT NULL, "repeats" character varying NOT NULL, "repetition_step" bigint NOT NULL DEFAULT 1, "week_days" jsonb NULL, "monthly_on" character varying NULL, "until_date" timestamptz NULL, "num_repetitions" bigint NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "meetingschedule_tenant_id" to table: "meeting_schedules"
@@ -189,11 +189,11 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "kind" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_ref" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "provider_event_delivery_ref" character varying NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "processing_version" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "kind" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_ref" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
--- create index "normalizedevent_tenant_id_prov_c0af9de518dc8d99688159f28d11be68" to table: "normalized_events"
-CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_c0af9de518dc8d99688159f28d11be68" ON "normalized_events" ("tenant_id", "provider", "provider_source", "processing_version", "provider_event_ref", "kind", "subject_ref");
+-- create index "normalizedevent_tenant_id_prov_089950886f426b5eaeeba9e4f3d2645c" to table: "normalized_events"
+CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_089950886f426b5eaeeba9e4f3d2645c" ON "normalized_events" ("tenant_id", "provider", "provider_source", "provider_event_ref", "kind", "subject_ref");
 -- create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id_kind_occurred_at" ON "normalized_events" ("tenant_id", "kind", "occurred_at");
 -- create "normalized_event_projection_status" table
@@ -263,23 +263,19 @@ CREATE TABLE "playbooks" ("id" uuid NOT NULL, "external_id" character varying NU
 -- create index "playbook_tenant_id" to table: "playbooks"
 CREATE INDEX "playbook_tenant_id" ON "playbooks" ("tenant_id");
 -- create "provider_event_sync_cursors" table
-CREATE TABLE "provider_event_sync_cursors" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "cursor" character varying NULL, "last_synced_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "provider_event_sync_cursors" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "cursor" character varying NULL, "last_synced_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "providereventsynccursor_tenant_id" to table: "provider_event_sync_cursors"
 CREATE INDEX "providereventsynccursor_tenant_id" ON "provider_event_sync_cursors" ("tenant_id");
--- create index "providereventsynccursor_tenant_5fac8d239f3bb203d415d214d787550c" to table: "provider_event_sync_cursors"
-CREATE UNIQUE INDEX "providereventsynccursor_tenant_5fac8d239f3bb203d415d214d787550c" ON "provider_event_sync_cursors" ("tenant_id", "integration_id", "provider", "provider_source");
+-- create index "providereventsynccursor_tenant_id_provider_provider_source" to table: "provider_event_sync_cursors"
+CREATE UNIQUE INDEX "providereventsynccursor_tenant_id_provider_provider_source" ON "provider_event_sync_cursors" ("tenant_id", "provider", "provider_source");
 -- create "provider_event_sync_runs" table
-CREATE TABLE "provider_event_sync_runs" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "provider_event_sync_runs" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "providereventsyncrun_tenant_id" to table: "provider_event_sync_runs"
 CREATE INDEX "providereventsyncrun_tenant_id" ON "provider_event_sync_runs" ("tenant_id");
--- create index "providereventsyncrun_tenant_id_0e4bcaeb602704b5084ecaa9022d5964" to table: "provider_event_sync_runs"
-CREATE INDEX "providereventsyncrun_tenant_id_0e4bcaeb602704b5084ecaa9022d5964" ON "provider_event_sync_runs" ("tenant_id", "integration_id", "provider", "provider_source", "started_at");
+-- create index "providereventsyncrun_tenant_id_40a84cd4e2a28c8508538a845519d553" to table: "provider_event_sync_runs"
+CREATE INDEX "providereventsyncrun_tenant_id_40a84cd4e2a28c8508538a845519d553" ON "provider_event_sync_runs" ("tenant_id", "provider", "provider_source", "started_at");
 -- create index "providereventsyncrun_tenant_id_status_started_at" to table: "provider_event_sync_runs"
 CREATE INDEX "providereventsyncrun_tenant_id_status_started_at" ON "provider_event_sync_runs" ("tenant_id", "status", "started_at");
--- create "provider_sync_histories" table
-CREATE TABLE "provider_sync_histories" ("id" uuid NOT NULL, "data_type" character varying NOT NULL, "started_at" timestamptz NOT NULL, "finished_at" timestamptz NOT NULL, "num_mutations" bigint NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "providersynchistory_tenant_id" to table: "provider_sync_histories"
-CREATE INDEX "providersynchistory_tenant_id" ON "provider_sync_histories" ("tenant_id");
 -- create "retrospectives" table
 CREATE TABLE "retrospectives" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "state" character varying NOT NULL, "document_id" uuid NOT NULL, "incident_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "system_analysis_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "retrospectives_document_id_key" to table: "retrospectives"
@@ -311,7 +307,7 @@ CREATE TABLE "system_analysis_topology_nodes" ("id" uuid NOT NULL, "created_at" 
 -- create index "systemanalysistopologynode_tenant_id" to table: "system_analysis_topology_nodes"
 CREATE INDEX "systemanalysistopologynode_tenant_id" ON "system_analysis_topology_nodes" ("tenant_id");
 -- create "system_topology_snapshots" table
-CREATE TABLE "system_topology_snapshots" ("id" uuid NOT NULL, "as_of" timestamptz NOT NULL, "name" character varying NULL, "scope" character varying NOT NULL DEFAULT 'explicit_entities', "scope_properties" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "system_topology_snapshots" ("id" uuid NOT NULL, "as_of" timestamptz NOT NULL, "name" character varying NULL, "scope" character varying NOT NULL DEFAULT 'all', "scope_properties" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "systemtopologysnapshot_tenant_id" to table: "system_topology_snapshots"
 CREATE INDEX "systemtopologysnapshot_tenant_id" ON "system_topology_snapshots" ("tenant_id");
 -- create index "systemtopologysnapshot_tenant_id_as_of" to table: "system_topology_snapshots"
@@ -329,7 +325,7 @@ CREATE INDEX "systemtopologysnapshotentity_tenant_id_knowledge_entity_id" ON "sy
 -- create index "systemtopologysnapshotentity_t_f5c4f8cfa84671bf6a92d9f49c2f214d" to table: "system_topology_snapshot_entities"
 CREATE UNIQUE INDEX "systemtopologysnapshotentity_t_f5c4f8cfa84671bf6a92d9f49c2f214d" ON "system_topology_snapshot_entities" ("tenant_id", "snapshot_id", "knowledge_entity_id");
 -- create "system_topology_snapshot_relationships" table
-CREATE TABLE "system_topology_snapshot_relationships" ("id" uuid NOT NULL, "relationship_kind" character varying NOT NULL, "display_name" character varying NULL, "description" text NULL, "properties" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "snapshot_id" uuid NOT NULL, "knowledge_relationship_id" uuid NULL, "source_snapshot_entity_id" uuid NOT NULL, "target_snapshot_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "system_topology_snapshot_relationships" ("id" uuid NOT NULL, "relationship_kind" character varying NOT NULL, "display_name" character varying NULL, "description" text NULL, "properties" jsonb NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "knowledge_relationship_id" uuid NULL, "snapshot_id" uuid NOT NULL, "source_snapshot_entity_id" uuid NOT NULL, "target_snapshot_entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "systemtopologysnapshotrelationship_tenant_id" to table: "system_topology_snapshot_relationships"
 CREATE INDEX "systemtopologysnapshotrelationship_tenant_id" ON "system_topology_snapshot_relationships" ("tenant_id");
 -- create index "systemtopologysnapshotrelationship_tenant_id_snapshot_id" to table: "system_topology_snapshot_relationships"
@@ -467,11 +463,9 @@ ALTER TABLE "integration_oauth_states" ADD CONSTRAINT "integration_oauth_states_
 -- modify "knowledge_entities" table
 ALTER TABLE "knowledge_entities" ADD CONSTRAINT "knowledge_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_entity_alias" table
-ALTER TABLE "knowledge_entity_alias" ADD CONSTRAINT "knowledge_entity_alias_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_entity_alias_knowledge_entities_entity" FOREIGN KEY ("entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_entity_alias_normalized_events_normalized_event" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
--- modify "knowledge_fact_histories" table
-ALTER TABLE "knowledge_fact_histories" ADD CONSTRAINT "knowledge_fact_histories_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_fact_histories_knowledge_entity_alias_alias" FOREIGN KEY ("alias_id") REFERENCES "knowledge_entity_alias" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_fact_histories_knowledge_relationships_relationship" FOREIGN KEY ("relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_fact_histories_normalized_events_normalized_event" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
--- modify "knowledge_fact_provenances" table
-ALTER TABLE "knowledge_fact_provenances" ADD CONSTRAINT "knowledge_fact_provenances_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_fact_provenances_knowledge_entity_alias_alias" FOREIGN KEY ("alias_id") REFERENCES "knowledge_entity_alias" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_fact_provenances_knowledge_relationships_relationship" FOREIGN KEY ("relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_fact_provenances_normalized_events_normalized_event" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
+ALTER TABLE "knowledge_entity_alias" ADD CONSTRAINT "knowledge_entity_alias_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_entity_alias_knowledge_entities_entity" FOREIGN KEY ("entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION;
+-- modify "knowledge_evidences" table
+ALTER TABLE "knowledge_evidences" ADD CONSTRAINT "knowledge_evidences_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_evidences_knowledge_entities_entity" FOREIGN KEY ("entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_evidences_knowledge_relationships_relationship" FOREIGN KEY ("relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_evidences_knowledge_entity_alias_alias" FOREIGN KEY ("alias_id") REFERENCES "knowledge_entity_alias" ("id") ON DELETE SET NULL, ADD CONSTRAINT "knowledge_evidences_normalized_events_normalized_event" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_relationships" table
 ALTER TABLE "knowledge_relationships" ADD CONSTRAINT "knowledge_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_relationships_knowledge_entities_source_entity" FOREIGN KEY ("source_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "knowledge_relationships_knowledge_entities_target_entity" FOREIGN KEY ("target_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE NO ACTION;
 -- modify "meeting_schedules" table
@@ -505,11 +499,9 @@ ALTER TABLE "organization_roles" ADD CONSTRAINT "organization_roles_tenants_tena
 -- modify "playbooks" table
 ALTER TABLE "playbooks" ADD CONSTRAINT "playbooks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "provider_event_sync_cursors" table
-ALTER TABLE "provider_event_sync_cursors" ADD CONSTRAINT "provider_event_sync_cursors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "provider_event_sync_cursors_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE NO ACTION;
+ALTER TABLE "provider_event_sync_cursors" ADD CONSTRAINT "provider_event_sync_cursors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "provider_event_sync_runs" table
-ALTER TABLE "provider_event_sync_runs" ADD CONSTRAINT "provider_event_sync_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "provider_event_sync_runs_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE NO ACTION;
--- modify "provider_sync_histories" table
-ALTER TABLE "provider_sync_histories" ADD CONSTRAINT "provider_sync_histories_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+ALTER TABLE "provider_event_sync_runs" ADD CONSTRAINT "provider_event_sync_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "retrospectives" table
 ALTER TABLE "retrospectives" ADD CONSTRAINT "retrospectives_documents_retrospective" FOREIGN KEY ("document_id") REFERENCES "documents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospectives_incidents_retrospective" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospectives_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospectives_system_analyses_retrospective" FOREIGN KEY ("system_analysis_id") REFERENCES "system_analyses" ("id") ON DELETE SET NULL;
 -- modify "retrospective_comments" table
@@ -527,7 +519,7 @@ ALTER TABLE "system_topology_snapshots" ADD CONSTRAINT "system_topology_snapshot
 -- modify "system_topology_snapshot_entities" table
 ALTER TABLE "system_topology_snapshot_entities" ADD CONSTRAINT "system_topology_snapshot_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_entit_624ed73670c571ebba5995e15ccf51fd" FOREIGN KEY ("snapshot_id") REFERENCES "system_topology_snapshots" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_entit_6acf350be9828a2b8ba4f3166002a8fd" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "system_topology_snapshot_relationships" table
-ALTER TABLE "system_topology_snapshot_relationships" ADD CONSTRAINT "system_topology_snapshot_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_8618d8e705fc800d4b45f7ba21b7151f" FOREIGN KEY ("snapshot_id") REFERENCES "system_topology_snapshots" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_5f2c55c7b6ad86bc36bd1003d1e2579f" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_topology_snapshot_relat_020fdabf27aca33de3b8244fcbb40d4d" FOREIGN KEY ("source_snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_49bd6a99a61ed2571218b82bfd309a9d" FOREIGN KEY ("target_snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE NO ACTION;
+ALTER TABLE "system_topology_snapshot_relationships" ADD CONSTRAINT "system_topology_snapshot_relationships_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_5f2c55c7b6ad86bc36bd1003d1e2579f" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "system_topology_snapshot_relat_8618d8e705fc800d4b45f7ba21b7151f" FOREIGN KEY ("snapshot_id") REFERENCES "system_topology_snapshots" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_020fdabf27aca33de3b8244fcbb40d4d" FOREIGN KEY ("source_snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "system_topology_snapshot_relat_49bd6a99a61ed2571218b82bfd309a9d" FOREIGN KEY ("target_snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE NO ACTION;
 -- modify "tasks" table
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_incidents_tasks" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE SET NULL, ADD CONSTRAINT "tasks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "tasks_users_assigned_tasks" FOREIGN KEY ("assignee_id") REFERENCES "users" ("id") ON DELETE SET NULL, ADD CONSTRAINT "tasks_users_created_tasks" FOREIGN KEY ("creator_id") REFERENCES "users" ("id") ON DELETE SET NULL;
 -- modify "teams" table

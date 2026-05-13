@@ -43,10 +43,10 @@ func TestValidateConfig_ValidAppCredentials(t *testing.T) {
 func TestOAuth2Config(t *testing.T) {
 	intg := &integration{cfg: Config{
 		App: struct {
-			AppID         int64  `koanf:"app_id"`
-			ClientID      string `koanf:"client_id"`
-			ClientSecret  string `koanf:"client_secret"`
-			PrivateKeyPEM string `koanf:"private_key_pem"`
+			AppID         int64  `cfg:"app_id"`
+			ClientID      string `cfg:"client_id"`
+			ClientSecret  string `cfg:"client_secret"`
+			PrivateKeyPEM string `cfg:"private_key_pem"`
 		}{
 			ClientID:     "client-id",
 			ClientSecret: "client-secret",
@@ -70,10 +70,10 @@ func TestExtractIntegrationOptionsFromToken(t *testing.T) {
 	intg := &integration{
 		cfg: Config{
 			App: struct {
-				AppID         int64  `koanf:"app_id"`
-				ClientID      string `koanf:"client_id"`
-				ClientSecret  string `koanf:"client_secret"`
-				PrivateKeyPEM string `koanf:"private_key_pem"`
+				AppID         int64  `cfg:"app_id"`
+				ClientID      string `cfg:"client_id"`
+				ClientSecret  string `cfg:"client_secret"`
+				PrivateKeyPEM string `cfg:"private_key_pem"`
 			}{AppID: 123},
 		},
 		listUserInstallations: func(_ context.Context, token string) ([]*github.Installation, error) {
@@ -371,10 +371,10 @@ func TestIsAvailable_Enabled(t *testing.T) {
 	i := &integration{cfg: Config{
 		Enabled: true,
 		App: struct {
-			AppID         int64  `koanf:"app_id"`
-			ClientID      string `koanf:"client_id"`
-			ClientSecret  string `koanf:"client_secret"`
-			PrivateKeyPEM string `koanf:"private_key_pem"`
+			AppID         int64  `cfg:"app_id"`
+			ClientID      string `cfg:"client_id"`
+			ClientSecret  string `cfg:"client_secret"`
+			PrivateKeyPEM string `cfg:"private_key_pem"`
 		}{
 			AppID:         123,
 			ClientID:      "cid",

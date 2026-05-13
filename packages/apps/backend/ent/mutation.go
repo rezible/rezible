@@ -31815,27 +31815,25 @@ func (m *MeetingSessionMutation) ResetEdge(name string) error {
 // NormalizedEventMutation represents an operation that mutates the NormalizedEvent nodes in the graph.
 type NormalizedEventMutation struct {
 	config
-	op                          Op
-	typ                         string
-	id                          *uuid.UUID
-	provider                    *string
-	provider_source             *string
-	kind                        *normalizedevent.Kind
-	subject_kind                *string
-	subject_ref                 *string
-	provider_event_ref          *string
-	provider_event_delivery_ref *string
-	occurred_at                 *time.Time
-	received_at                 *time.Time
-	processing_version          *string
-	attributes                  *map[string]interface{}
-	created_at                  *time.Time
-	clearedFields               map[string]struct{}
-	tenant                      *int
-	clearedtenant               bool
-	done                        bool
-	oldValue                    func(context.Context) (*NormalizedEvent, error)
-	predicates                  []predicate.NormalizedEvent
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	provider           *string
+	provider_source    *string
+	provider_event_ref *string
+	kind               *normalizedevent.Kind
+	subject_kind       *string
+	subject_ref        *string
+	attributes         *map[string]interface{}
+	created_at         *time.Time
+	occurred_at        *time.Time
+	received_at        *time.Time
+	clearedFields      map[string]struct{}
+	tenant             *int
+	clearedtenant      bool
+	done               bool
+	oldValue           func(context.Context) (*NormalizedEvent, error)
+	predicates         []predicate.NormalizedEvent
 }
 
 var _ ent.Mutation = (*NormalizedEventMutation)(nil)
@@ -32050,6 +32048,42 @@ func (m *NormalizedEventMutation) ResetProviderSource() {
 	m.provider_source = nil
 }
 
+// SetProviderEventRef sets the "provider_event_ref" field.
+func (m *NormalizedEventMutation) SetProviderEventRef(s string) {
+	m.provider_event_ref = &s
+}
+
+// ProviderEventRef returns the value of the "provider_event_ref" field in the mutation.
+func (m *NormalizedEventMutation) ProviderEventRef() (r string, exists bool) {
+	v := m.provider_event_ref
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderEventRef returns the old "provider_event_ref" field's value of the NormalizedEvent entity.
+// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *NormalizedEventMutation) OldProviderEventRef(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderEventRef is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderEventRef requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderEventRef: %w", err)
+	}
+	return oldValue.ProviderEventRef, nil
+}
+
+// ResetProviderEventRef resets all changes to the "provider_event_ref" field.
+func (m *NormalizedEventMutation) ResetProviderEventRef() {
+	m.provider_event_ref = nil
+}
+
 // SetKind sets the "kind" field.
 func (m *NormalizedEventMutation) SetKind(n normalizedevent.Kind) {
 	m.kind = &n
@@ -32158,89 +32192,76 @@ func (m *NormalizedEventMutation) ResetSubjectRef() {
 	m.subject_ref = nil
 }
 
-// SetProviderEventRef sets the "provider_event_ref" field.
-func (m *NormalizedEventMutation) SetProviderEventRef(s string) {
-	m.provider_event_ref = &s
+// SetAttributes sets the "attributes" field.
+func (m *NormalizedEventMutation) SetAttributes(value map[string]interface{}) {
+	m.attributes = &value
 }
 
-// ProviderEventRef returns the value of the "provider_event_ref" field in the mutation.
-func (m *NormalizedEventMutation) ProviderEventRef() (r string, exists bool) {
-	v := m.provider_event_ref
+// Attributes returns the value of the "attributes" field in the mutation.
+func (m *NormalizedEventMutation) Attributes() (r map[string]interface{}, exists bool) {
+	v := m.attributes
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderEventRef returns the old "provider_event_ref" field's value of the NormalizedEvent entity.
+// OldAttributes returns the old "attributes" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldProviderEventRef(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventMutation) OldAttributes(ctx context.Context) (v map[string]interface{}, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderEventRef is only allowed on UpdateOne operations")
+		return v, errors.New("OldAttributes is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderEventRef requires an ID field in the mutation")
+		return v, errors.New("OldAttributes requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderEventRef: %w", err)
+		return v, fmt.Errorf("querying old value for OldAttributes: %w", err)
 	}
-	return oldValue.ProviderEventRef, nil
+	return oldValue.Attributes, nil
 }
 
-// ResetProviderEventRef resets all changes to the "provider_event_ref" field.
-func (m *NormalizedEventMutation) ResetProviderEventRef() {
-	m.provider_event_ref = nil
+// ResetAttributes resets all changes to the "attributes" field.
+func (m *NormalizedEventMutation) ResetAttributes() {
+	m.attributes = nil
 }
 
-// SetProviderEventDeliveryRef sets the "provider_event_delivery_ref" field.
-func (m *NormalizedEventMutation) SetProviderEventDeliveryRef(s string) {
-	m.provider_event_delivery_ref = &s
+// SetCreatedAt sets the "created_at" field.
+func (m *NormalizedEventMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
 }
 
-// ProviderEventDeliveryRef returns the value of the "provider_event_delivery_ref" field in the mutation.
-func (m *NormalizedEventMutation) ProviderEventDeliveryRef() (r string, exists bool) {
-	v := m.provider_event_delivery_ref
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *NormalizedEventMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderEventDeliveryRef returns the old "provider_event_delivery_ref" field's value of the NormalizedEvent entity.
+// OldCreatedAt returns the old "created_at" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldProviderEventDeliveryRef(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderEventDeliveryRef is only allowed on UpdateOne operations")
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderEventDeliveryRef requires an ID field in the mutation")
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderEventDeliveryRef: %w", err)
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
 	}
-	return oldValue.ProviderEventDeliveryRef, nil
+	return oldValue.CreatedAt, nil
 }
 
-// ClearProviderEventDeliveryRef clears the value of the "provider_event_delivery_ref" field.
-func (m *NormalizedEventMutation) ClearProviderEventDeliveryRef() {
-	m.provider_event_delivery_ref = nil
-	m.clearedFields[normalizedevent.FieldProviderEventDeliveryRef] = struct{}{}
-}
-
-// ProviderEventDeliveryRefCleared returns if the "provider_event_delivery_ref" field was cleared in this mutation.
-func (m *NormalizedEventMutation) ProviderEventDeliveryRefCleared() bool {
-	_, ok := m.clearedFields[normalizedevent.FieldProviderEventDeliveryRef]
-	return ok
-}
-
-// ResetProviderEventDeliveryRef resets all changes to the "provider_event_delivery_ref" field.
-func (m *NormalizedEventMutation) ResetProviderEventDeliveryRef() {
-	m.provider_event_delivery_ref = nil
-	delete(m.clearedFields, normalizedevent.FieldProviderEventDeliveryRef)
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *NormalizedEventMutation) ResetCreatedAt() {
+	m.created_at = nil
 }
 
 // SetOccurredAt sets the "occurred_at" field.
@@ -32315,114 +32336,6 @@ func (m *NormalizedEventMutation) ResetReceivedAt() {
 	m.received_at = nil
 }
 
-// SetProcessingVersion sets the "processing_version" field.
-func (m *NormalizedEventMutation) SetProcessingVersion(s string) {
-	m.processing_version = &s
-}
-
-// ProcessingVersion returns the value of the "processing_version" field in the mutation.
-func (m *NormalizedEventMutation) ProcessingVersion() (r string, exists bool) {
-	v := m.processing_version
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProcessingVersion returns the old "processing_version" field's value of the NormalizedEvent entity.
-// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldProcessingVersion(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProcessingVersion is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProcessingVersion requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProcessingVersion: %w", err)
-	}
-	return oldValue.ProcessingVersion, nil
-}
-
-// ResetProcessingVersion resets all changes to the "processing_version" field.
-func (m *NormalizedEventMutation) ResetProcessingVersion() {
-	m.processing_version = nil
-}
-
-// SetAttributes sets the "attributes" field.
-func (m *NormalizedEventMutation) SetAttributes(value map[string]interface{}) {
-	m.attributes = &value
-}
-
-// Attributes returns the value of the "attributes" field in the mutation.
-func (m *NormalizedEventMutation) Attributes() (r map[string]interface{}, exists bool) {
-	v := m.attributes
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldAttributes returns the old "attributes" field's value of the NormalizedEvent entity.
-// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldAttributes(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAttributes is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAttributes requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAttributes: %w", err)
-	}
-	return oldValue.Attributes, nil
-}
-
-// ResetAttributes resets all changes to the "attributes" field.
-func (m *NormalizedEventMutation) ResetAttributes() {
-	m.attributes = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *NormalizedEventMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *NormalizedEventMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the NormalizedEvent entity.
-// If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *NormalizedEventMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *NormalizedEventMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -32484,7 +32397,7 @@ func (m *NormalizedEventMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *NormalizedEventMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 11)
 	if m.tenant != nil {
 		fields = append(fields, normalizedevent.FieldTenantID)
 	}
@@ -32493,6 +32406,9 @@ func (m *NormalizedEventMutation) Fields() []string {
 	}
 	if m.provider_source != nil {
 		fields = append(fields, normalizedevent.FieldProviderSource)
+	}
+	if m.provider_event_ref != nil {
+		fields = append(fields, normalizedevent.FieldProviderEventRef)
 	}
 	if m.kind != nil {
 		fields = append(fields, normalizedevent.FieldKind)
@@ -32503,26 +32419,17 @@ func (m *NormalizedEventMutation) Fields() []string {
 	if m.subject_ref != nil {
 		fields = append(fields, normalizedevent.FieldSubjectRef)
 	}
-	if m.provider_event_ref != nil {
-		fields = append(fields, normalizedevent.FieldProviderEventRef)
+	if m.attributes != nil {
+		fields = append(fields, normalizedevent.FieldAttributes)
 	}
-	if m.provider_event_delivery_ref != nil {
-		fields = append(fields, normalizedevent.FieldProviderEventDeliveryRef)
+	if m.created_at != nil {
+		fields = append(fields, normalizedevent.FieldCreatedAt)
 	}
 	if m.occurred_at != nil {
 		fields = append(fields, normalizedevent.FieldOccurredAt)
 	}
 	if m.received_at != nil {
 		fields = append(fields, normalizedevent.FieldReceivedAt)
-	}
-	if m.processing_version != nil {
-		fields = append(fields, normalizedevent.FieldProcessingVersion)
-	}
-	if m.attributes != nil {
-		fields = append(fields, normalizedevent.FieldAttributes)
-	}
-	if m.created_at != nil {
-		fields = append(fields, normalizedevent.FieldCreatedAt)
 	}
 	return fields
 }
@@ -32538,26 +32445,22 @@ func (m *NormalizedEventMutation) Field(name string) (ent.Value, bool) {
 		return m.Provider()
 	case normalizedevent.FieldProviderSource:
 		return m.ProviderSource()
+	case normalizedevent.FieldProviderEventRef:
+		return m.ProviderEventRef()
 	case normalizedevent.FieldKind:
 		return m.Kind()
 	case normalizedevent.FieldSubjectKind:
 		return m.SubjectKind()
 	case normalizedevent.FieldSubjectRef:
 		return m.SubjectRef()
-	case normalizedevent.FieldProviderEventRef:
-		return m.ProviderEventRef()
-	case normalizedevent.FieldProviderEventDeliveryRef:
-		return m.ProviderEventDeliveryRef()
-	case normalizedevent.FieldOccurredAt:
-		return m.OccurredAt()
-	case normalizedevent.FieldReceivedAt:
-		return m.ReceivedAt()
-	case normalizedevent.FieldProcessingVersion:
-		return m.ProcessingVersion()
 	case normalizedevent.FieldAttributes:
 		return m.Attributes()
 	case normalizedevent.FieldCreatedAt:
 		return m.CreatedAt()
+	case normalizedevent.FieldOccurredAt:
+		return m.OccurredAt()
+	case normalizedevent.FieldReceivedAt:
+		return m.ReceivedAt()
 	}
 	return nil, false
 }
@@ -32573,26 +32476,22 @@ func (m *NormalizedEventMutation) OldField(ctx context.Context, name string) (en
 		return m.OldProvider(ctx)
 	case normalizedevent.FieldProviderSource:
 		return m.OldProviderSource(ctx)
+	case normalizedevent.FieldProviderEventRef:
+		return m.OldProviderEventRef(ctx)
 	case normalizedevent.FieldKind:
 		return m.OldKind(ctx)
 	case normalizedevent.FieldSubjectKind:
 		return m.OldSubjectKind(ctx)
 	case normalizedevent.FieldSubjectRef:
 		return m.OldSubjectRef(ctx)
-	case normalizedevent.FieldProviderEventRef:
-		return m.OldProviderEventRef(ctx)
-	case normalizedevent.FieldProviderEventDeliveryRef:
-		return m.OldProviderEventDeliveryRef(ctx)
-	case normalizedevent.FieldOccurredAt:
-		return m.OldOccurredAt(ctx)
-	case normalizedevent.FieldReceivedAt:
-		return m.OldReceivedAt(ctx)
-	case normalizedevent.FieldProcessingVersion:
-		return m.OldProcessingVersion(ctx)
 	case normalizedevent.FieldAttributes:
 		return m.OldAttributes(ctx)
 	case normalizedevent.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
+	case normalizedevent.FieldOccurredAt:
+		return m.OldOccurredAt(ctx)
+	case normalizedevent.FieldReceivedAt:
+		return m.OldReceivedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown NormalizedEvent field %s", name)
 }
@@ -32623,6 +32522,13 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProviderSource(v)
 		return nil
+	case normalizedevent.FieldProviderEventRef:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderEventRef(v)
+		return nil
 	case normalizedevent.FieldKind:
 		v, ok := value.(normalizedevent.Kind)
 		if !ok {
@@ -32644,19 +32550,19 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetSubjectRef(v)
 		return nil
-	case normalizedevent.FieldProviderEventRef:
-		v, ok := value.(string)
+	case normalizedevent.FieldAttributes:
+		v, ok := value.(map[string]interface{})
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderEventRef(v)
+		m.SetAttributes(v)
 		return nil
-	case normalizedevent.FieldProviderEventDeliveryRef:
-		v, ok := value.(string)
+	case normalizedevent.FieldCreatedAt:
+		v, ok := value.(time.Time)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderEventDeliveryRef(v)
+		m.SetCreatedAt(v)
 		return nil
 	case normalizedevent.FieldOccurredAt:
 		v, ok := value.(time.Time)
@@ -32671,27 +32577,6 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetReceivedAt(v)
-		return nil
-	case normalizedevent.FieldProcessingVersion:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProcessingVersion(v)
-		return nil
-	case normalizedevent.FieldAttributes:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAttributes(v)
-		return nil
-	case normalizedevent.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent field %s", name)
@@ -32725,11 +32610,7 @@ func (m *NormalizedEventMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *NormalizedEventMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(normalizedevent.FieldProviderEventDeliveryRef) {
-		fields = append(fields, normalizedevent.FieldProviderEventDeliveryRef)
-	}
-	return fields
+	return nil
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -32742,11 +32623,6 @@ func (m *NormalizedEventMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *NormalizedEventMutation) ClearField(name string) error {
-	switch name {
-	case normalizedevent.FieldProviderEventDeliveryRef:
-		m.ClearProviderEventDeliveryRef()
-		return nil
-	}
 	return fmt.Errorf("unknown NormalizedEvent nullable field %s", name)
 }
 
@@ -32763,6 +32639,9 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 	case normalizedevent.FieldProviderSource:
 		m.ResetProviderSource()
 		return nil
+	case normalizedevent.FieldProviderEventRef:
+		m.ResetProviderEventRef()
+		return nil
 	case normalizedevent.FieldKind:
 		m.ResetKind()
 		return nil
@@ -32772,26 +32651,17 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 	case normalizedevent.FieldSubjectRef:
 		m.ResetSubjectRef()
 		return nil
-	case normalizedevent.FieldProviderEventRef:
-		m.ResetProviderEventRef()
+	case normalizedevent.FieldAttributes:
+		m.ResetAttributes()
 		return nil
-	case normalizedevent.FieldProviderEventDeliveryRef:
-		m.ResetProviderEventDeliveryRef()
+	case normalizedevent.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	case normalizedevent.FieldOccurredAt:
 		m.ResetOccurredAt()
 		return nil
 	case normalizedevent.FieldReceivedAt:
 		m.ResetReceivedAt()
-		return nil
-	case normalizedevent.FieldProcessingVersion:
-		m.ResetProcessingVersion()
-		return nil
-	case normalizedevent.FieldAttributes:
-		m.ResetAttributes()
-		return nil
-	case normalizedevent.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown NormalizedEvent field %s", name)

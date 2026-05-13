@@ -24,11 +24,11 @@ func (q *repositoryEventQuerier) ProviderSource() string {
 	return "repositories"
 }
 
-func (q *repositoryEventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[rez.ProviderEventQueryResult, error] {
-	return func(yield func(rez.ProviderEventQueryResult, error) bool) {
+func (q *repositoryEventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		repos, listErr := q.client.ListRepositories(ctx)
 		if listErr != nil {
-			yield(rez.ProviderEventQueryResult{}, listErr)
+			yield(nil, listErr)
 			return
 		}
 		sort.Slice(repos, func(i, j int) bool {
@@ -54,7 +54,7 @@ func (q *repositoryEventQuerier) PullEvents(ctx context.Context, req rez.Provide
 			}
 			body, marshalErr := json.Marshal(payload)
 			if marshalErr != nil {
-				if !yield(rez.ProviderEventQueryResult{}, fmt.Errorf("marshal repository observation: %w", marshalErr)) {
+				if !yield(nil, fmt.Errorf("marshal repository observation: %w", marshalErr)) {
 					return
 				}
 				continue
@@ -72,21 +72,21 @@ func (q *repositoryEventQuerier) PullEvents(ctx context.Context, req rez.Provide
 			if payload.ID != 0 {
 				deliveryRefID = fmt.Sprintf("%d", payload.ID)
 			}
-			if !yield(rez.ProviderEventQueryResult{
+
+			res := &rez.ProviderEventQueryResult{
 				Event: rez.ProviderEvent{
-					Provider:            integrationName,
-					ProviderSource:      "repositories",
-					SubjectRef:          "github:" + payload.FullName,
-					ProviderDeliveryRef: fmt.Sprintf("github:repositories:%s:%s", deliveryRefID, receivedAt.Format(time.RFC3339Nano)),
-					ReceivedAt:          receivedAt,
-					Payload:             body,
-					ContentType:         "application/json",
-					RequestMetadata: map[string]string{
-						"integration_id": q.ci.ID().String(),
-					},
+					Provider:         integrationName,
+					ProviderSource:   sourceRepositories,
+					SubjectRef:       "github:" + payload.FullName,
+					ProviderEventRef: fmt.Sprintf("github:repositories:%s:%s", deliveryRefID, receivedAt.Format(time.RFC3339Nano)),
+					ReceivedAt:       receivedAt,
+					Payload:          body,
+					ContentType:      "application/json",
 				},
 				CursorAfter: new(cursor),
-			}, nil) {
+			}
+
+			if !yield(res, nil) {
 				return
 			}
 		}

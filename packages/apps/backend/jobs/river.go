@@ -14,6 +14,7 @@ var (
 	UniqueStateNonCompleted = []rivertype.JobState{
 		rivertype.JobStatePending,
 		rivertype.JobStateAvailable,
+		rivertype.JobStateScheduled,
 		rivertype.JobStateRunning,
 		rivertype.JobStateRetryable,
 	}

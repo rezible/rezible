@@ -1,13 +1,15 @@
-import { goto } from "$app/navigation";
+import { replaceState } from "$app/navigation";
 import { page } from "$app/state";
 import { clsx, type ClassValue } from "clsx";
+import { tick } from "svelte";
 import { twMerge } from "tailwind-merge";
 
 export const clearQueryParams = async () => {
 	const empty = new URL(page.url);
 	empty.search = "";
-	console.log("clear?", empty);
-	await goto(empty, { replaceState: true, noScroll: true });
+	replaceState(empty, page.state);
+	console.log("clear query params", empty);
+	await tick();
 }
 
 export function cn(...inputs: ClassValue[]) {

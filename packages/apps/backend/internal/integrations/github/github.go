@@ -41,11 +41,7 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 	i.oauth2Config = i.loadOAuthConfig()
 
 	if i.cfg.Enabled {
-		svcs.ProviderEvents.RegisterEventProcessors(integrationName, map[string]rez.ProviderEventProcessor{
-			"push":         &pushEventProcessor{services: svcs},
-			"pull_request": &pullRequestEventProcessor{services: svcs},
-			"repositories": &repositoryObservedProcessor{services: svcs},
-		})
+		svcs.ProviderEvents.RegisterEventProcessor(integrationName, &eventProcessor{services: svcs})
 		i.webhookHandlers["/"] = newWebhookHandler(i.cfg.WebhookSecret, svcs)
 	}
 
@@ -228,21 +224,6 @@ func (ci *ConfiguredIntegration) installationID() int64 {
 		return int64(v.Float64())
 	}
 	return 0
-}
-
-type appConfig struct {
-	AppID         int64
-	PrivateKeyPEM string
-}
-
-func (ci *ConfiguredIntegration) appConfig() appConfig {
-	// App credentials come from the global config, not per-tenant config
-	var cfg Config
-	_ = rez.Config.Unmarshal("github", &cfg)
-	return appConfig{
-		AppID:         cfg.App.AppID,
-		PrivateKeyPEM: cfg.App.PrivateKeyPEM,
-	}
 }
 
 func (ci *ConfiguredIntegration) ID() uuid.UUID {

@@ -8,15 +8,15 @@ import (
 )
 
 type Config struct {
-	Host           string               `koanf:"host"`
-	Port           string               `koanf:"port"`
-	BasePath       string               `koanf:"base_path"`
-	DocumentsProxy DocumentsProxyConfig `koanf:"documents_proxy"`
+	Host           string               `cfg:"host"`
+	Port           string               `cfg:"port"`
+	BasePath       string               `cfg:"base_path"`
+	DocumentsProxy DocumentsProxyConfig `cfg:"documents_proxy"`
 }
 
 type DocumentsProxyConfig struct {
-	Enabled   bool   `koanf:"enabled"`
-	ProxyHost string `koanf:"proxy_host"`
+	Enabled   bool   `cfg:"enabled"`
+	ProxyHost string `cfg:"proxy_host"`
 	serverUrl *url.URL
 }
 

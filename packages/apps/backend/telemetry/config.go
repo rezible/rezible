@@ -11,37 +11,37 @@ import (
 )
 
 type Config struct {
-	ServiceName string        `koanf:"service_name"`
-	Logging     loggingConfig `koanf:"logging"`
-	Tracing     tracingConfig `koanf:"tracing"`
-	Metrics     metricsConfig `koanf:"metrics"`
+	ServiceName string        `cfg:"service_name"`
+	Logging     loggingConfig `cfg:"logging"`
+	Tracing     tracingConfig `cfg:"tracing"`
+	Metrics     metricsConfig `cfg:"metrics"`
 }
 
 type loggingConfig struct {
-	Console   loggingConsoleConfig `koanf:"console"`
-	OTel      loggingOtelConfig    `koanf:"otel"`
-	AddSource bool                 `koanf:"add_source"`
+	Console   loggingConsoleConfig `cfg:"console"`
+	OTel      loggingOtelConfig    `cfg:"otel"`
+	AddSource bool                 `cfg:"add_source"`
 }
 
 type loggingConsoleConfig struct {
-	Enabled bool   `koanf:"enabled"`
-	Level   string `koanf:"level"`
-	Json    bool   `koanf:"json"`
-	Color   bool   `koanf:"color"`
+	Enabled bool   `cfg:"enabled"`
+	Level   string `cfg:"level"`
+	Json    bool   `cfg:"json"`
+	Color   bool   `cfg:"color"`
 }
 
 type loggingOtelConfig struct {
-	Enabled bool `koanf:"enabled"`
+	Enabled bool `cfg:"enabled"`
 }
 
 type tracingConfig struct {
-	Enabled bool   `koanf:"enabled"`
-	Level   string `koanf:"level"`
+	Enabled bool   `cfg:"enabled"`
+	Level   string `cfg:"level"`
 }
 
 type metricsConfig struct {
-	Enabled  bool          `koanf:"enabled"`
-	Interval time.Duration `koanf:"interval"`
+	Enabled  bool          `cfg:"enabled"`
+	Interval time.Duration `cfg:"interval"`
 }
 
 func loadConfig() (Config, error) {
