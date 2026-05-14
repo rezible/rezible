@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -25,6 +26,15 @@ func NewAlertService(svcs *rez.Services) (*AlertService, error) {
 
 	return s, nil
 }
+
+func alertEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
+	if event.Kind != ne.KindAlertObserved {
+		return nil
+	}
+
+	return nil
+}
+
 func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsParams) ([]*ent.Alert, int, error) {
 	query := s.db.Alert.Query().
 		Where()

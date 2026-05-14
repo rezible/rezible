@@ -9,13 +9,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	imodel "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 )
@@ -40,6 +40,14 @@ func NewIncidentService(svcs *rez.Services) (*IncidentService, error) {
 	}
 
 	return svc, nil
+}
+
+func incidentEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
+	if event.Kind != ne.KindIncidentObserved {
+		return nil
+	}
+
+	return nil
 }
 
 func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {

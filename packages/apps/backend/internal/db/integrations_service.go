@@ -142,6 +142,15 @@ func (s *IntegrationsService) DeleteConfigured(ctx context.Context, id uuid.UUID
 	return deleteErr
 }
 
+func (s *IntegrationsService) GetProviderEventProcessor(provider string) (rez.ProviderEventProcessor, error) {
+	procs := integrations.GetProviderEventProcessors()
+	proc, ok := procs[provider]
+	if !ok {
+		return nil, fmt.Errorf("provider %s not found", provider)
+	}
+	return proc, nil
+}
+
 func (s *IntegrationsService) GetProviderEventQueriers(ctx context.Context, provider string) ([]rez.ProviderEventQuerier, error) {
 	intgs, queryErr := s.db.Integration.Query().Where(integration.ProviderEQ(provider)).All(ctx)
 	if queryErr != nil {

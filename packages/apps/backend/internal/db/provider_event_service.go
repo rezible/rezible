@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"strings"
-	"sync"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -31,9 +30,6 @@ type ProviderEventService struct {
 	jobService   rez.JobsService
 	integrations rez.IntegrationsService
 	metrics      *providerEventMetrics
-
-	processorsMu sync.RWMutex
-	processors   map[string]rez.ProviderEventProcessor
 }
 
 func NewProviderEventService(ctx context.Context, svcs *rez.Services) *ProviderEventService {
@@ -43,26 +39,11 @@ func NewProviderEventService(ctx context.Context, svcs *rez.Services) *ProviderE
 		jobService:   svcs.Jobs,
 		integrations: svcs.Integrations,
 		metrics:      newProviderEventMetrics(),
-		processorsMu: sync.RWMutex{},
-		processors:   make(map[string]rez.ProviderEventProcessor),
 	}
 	jobs.RegisterWorkerFunc(pe.HandleProviderEventSyncJob)
 	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
 	jobs.RegisterWorkerFunc(pe.HandleEventProjectionJob)
 	return pe
-}
-
-func (s *ProviderEventService) RegisterEventProcessor(provider string, proc rez.ProviderEventProcessor) {
-	s.processorsMu.Lock()
-	defer s.processorsMu.Unlock()
-	s.processors[provider] = proc
-}
-
-func (s *ProviderEventService) lookupEventProcessor(provider string) (rez.ProviderEventProcessor, bool) {
-	s.processorsMu.RLock()
-	defer s.processorsMu.RUnlock()
-	proc, ok := s.processors[provider]
-	return proc, ok
 }
 
 func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) (*rez.ProviderEventIngestResult, error) {
@@ -284,9 +265,9 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 	}
 
 	processStart := time.Now()
-	proc, procExists := s.lookupEventProcessor(prov.Provider)
-	if !procExists {
-		return nil, fmt.Errorf("no provider event processor registered for provider %s", prov.Provider)
+	proc, procErr := s.integrations.GetProviderEventProcessor(prov.Provider)
+	if procErr != nil {
+		return nil, fmt.Errorf("event processor %s", procErr)
 	}
 
 	normalizedEvents, procErr := proc.Process(ctx, prov)

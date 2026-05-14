@@ -182,6 +182,7 @@ type (
 		UpdateConfiguredPreferences(ctx context.Context, id uuid.UUID, prefs map[string]any) (ConfiguredIntegration, error)
 		DeleteConfigured(ctx context.Context, id uuid.UUID) error
 
+		GetProviderEventProcessor(provider string) (ProviderEventProcessor, error)
 		GetProviderEventQueriers(ctx context.Context, provider string) ([]ProviderEventQuerier, error)
 
 		StartOAuth2Flow(ctx context.Context, provider string, redirect *url.URL) (string, error)
