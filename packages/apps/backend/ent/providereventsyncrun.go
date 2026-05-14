@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -23,8 +24,8 @@ type ProviderEventSyncRun struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// Provider holds the value of the "provider" field.
 	Provider string `json:"provider,omitempty"`
-	// ProviderSource holds the value of the "provider_source" field.
-	ProviderSource string `json:"provider_source,omitempty"`
+	// SourceCursors holds the value of the "source_cursors" field.
+	SourceCursors map[string]string `json:"source_cursors,omitempty"`
 	// SyncReason holds the value of the "sync_reason" field.
 	SyncReason string `json:"sync_reason,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
@@ -72,9 +73,11 @@ func (*ProviderEventSyncRun) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case providereventsyncrun.FieldSourceCursors:
+			values[i] = new([]byte)
 		case providereventsyncrun.FieldTenantID, providereventsyncrun.FieldEventsPulled, providereventsyncrun.FieldEventsIngested, providereventsyncrun.FieldDuplicates:
 			values[i] = new(sql.NullInt64)
-		case providereventsyncrun.FieldProvider, providereventsyncrun.FieldProviderSource, providereventsyncrun.FieldSyncReason, providereventsyncrun.FieldStatus, providereventsyncrun.FieldFailureMessage:
+		case providereventsyncrun.FieldProvider, providereventsyncrun.FieldSyncReason, providereventsyncrun.FieldStatus, providereventsyncrun.FieldFailureMessage:
 			values[i] = new(sql.NullString)
 		case providereventsyncrun.FieldStartedAt, providereventsyncrun.FieldFinishedAt:
 			values[i] = new(sql.NullTime)
@@ -113,11 +116,13 @@ func (_m *ProviderEventSyncRun) assignValues(columns []string, values []any) err
 			} else if value.Valid {
 				_m.Provider = value.String
 			}
-		case providereventsyncrun.FieldProviderSource:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
-			} else if value.Valid {
-				_m.ProviderSource = value.String
+		case providereventsyncrun.FieldSourceCursors:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field source_cursors", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.SourceCursors); err != nil {
+					return fmt.Errorf("unmarshal field source_cursors: %w", err)
+				}
 			}
 		case providereventsyncrun.FieldSyncReason:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -215,8 +220,8 @@ func (_m *ProviderEventSyncRun) String() string {
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
-	builder.WriteString("provider_source=")
-	builder.WriteString(_m.ProviderSource)
+	builder.WriteString("source_cursors=")
+	builder.WriteString(fmt.Sprintf("%v", _m.SourceCursors))
 	builder.WriteString(", ")
 	builder.WriteString("sync_reason=")
 	builder.WriteString(_m.SyncReason)

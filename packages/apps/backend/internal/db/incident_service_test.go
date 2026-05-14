@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	ifo "github.com/rezible/rezible/ent/incidentfieldoption"
@@ -29,7 +30,14 @@ func (s *IncidentServiceSuite) newService() *IncidentService {
 	jobs := mocks.NewMockJobsService(s.T())
 	users := mocks.NewMockUserService(s.T())
 
-	svc, err := NewIncidentService(s.Client(), jobs, msgs, users)
+	svcs := &rez.Services{
+		Database: s.DatabaseClient(),
+		Messages: msgs,
+		Jobs:     jobs,
+		Users:    users,
+	}
+
+	svc, err := NewIncidentService(svcs)
 	s.Require().NoError(err)
 	return svc
 }

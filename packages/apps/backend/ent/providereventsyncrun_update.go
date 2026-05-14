@@ -44,23 +44,15 @@ func (_u *ProviderEventSyncRunUpdate) SetNillableProvider(v *string) *ProviderEv
 	return _u
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_u *ProviderEventSyncRunUpdate) SetProviderSource(v string) *ProviderEventSyncRunUpdate {
-	_u.mutation.SetProviderSource(v)
+// SetSourceCursors sets the "source_cursors" field.
+func (_u *ProviderEventSyncRunUpdate) SetSourceCursors(v map[string]string) *ProviderEventSyncRunUpdate {
+	_u.mutation.SetSourceCursors(v)
 	return _u
 }
 
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_u *ProviderEventSyncRunUpdate) SetNillableProviderSource(v *string) *ProviderEventSyncRunUpdate {
-	if v != nil {
-		_u.SetProviderSource(*v)
-	}
-	return _u
-}
-
-// ClearProviderSource clears the value of the "provider_source" field.
-func (_u *ProviderEventSyncRunUpdate) ClearProviderSource() *ProviderEventSyncRunUpdate {
-	_u.mutation.ClearProviderSource()
+// ClearSourceCursors clears the value of the "source_cursors" field.
+func (_u *ProviderEventSyncRunUpdate) ClearSourceCursors() *ProviderEventSyncRunUpdate {
+	_u.mutation.ClearSourceCursors()
 	return _u
 }
 
@@ -280,11 +272,11 @@ func (_u *ProviderEventSyncRunUpdate) sqlSave(ctx context.Context) (_node int, e
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(providereventsyncrun.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ProviderSource(); ok {
-		_spec.SetField(providereventsyncrun.FieldProviderSource, field.TypeString, value)
+	if value, ok := _u.mutation.SourceCursors(); ok {
+		_spec.SetField(providereventsyncrun.FieldSourceCursors, field.TypeJSON, value)
 	}
-	if _u.mutation.ProviderSourceCleared() {
-		_spec.ClearField(providereventsyncrun.FieldProviderSource, field.TypeString)
+	if _u.mutation.SourceCursorsCleared() {
+		_spec.ClearField(providereventsyncrun.FieldSourceCursors, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.SyncReason(); ok {
 		_spec.SetField(providereventsyncrun.FieldSyncReason, field.TypeString, value)
@@ -363,23 +355,15 @@ func (_u *ProviderEventSyncRunUpdateOne) SetNillableProvider(v *string) *Provide
 	return _u
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_u *ProviderEventSyncRunUpdateOne) SetProviderSource(v string) *ProviderEventSyncRunUpdateOne {
-	_u.mutation.SetProviderSource(v)
+// SetSourceCursors sets the "source_cursors" field.
+func (_u *ProviderEventSyncRunUpdateOne) SetSourceCursors(v map[string]string) *ProviderEventSyncRunUpdateOne {
+	_u.mutation.SetSourceCursors(v)
 	return _u
 }
 
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_u *ProviderEventSyncRunUpdateOne) SetNillableProviderSource(v *string) *ProviderEventSyncRunUpdateOne {
-	if v != nil {
-		_u.SetProviderSource(*v)
-	}
-	return _u
-}
-
-// ClearProviderSource clears the value of the "provider_source" field.
-func (_u *ProviderEventSyncRunUpdateOne) ClearProviderSource() *ProviderEventSyncRunUpdateOne {
-	_u.mutation.ClearProviderSource()
+// ClearSourceCursors clears the value of the "source_cursors" field.
+func (_u *ProviderEventSyncRunUpdateOne) ClearSourceCursors() *ProviderEventSyncRunUpdateOne {
+	_u.mutation.ClearSourceCursors()
 	return _u
 }
 
@@ -629,11 +613,11 @@ func (_u *ProviderEventSyncRunUpdateOne) sqlSave(ctx context.Context) (_node *Pr
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(providereventsyncrun.FieldProvider, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.ProviderSource(); ok {
-		_spec.SetField(providereventsyncrun.FieldProviderSource, field.TypeString, value)
+	if value, ok := _u.mutation.SourceCursors(); ok {
+		_spec.SetField(providereventsyncrun.FieldSourceCursors, field.TypeJSON, value)
 	}
-	if _u.mutation.ProviderSourceCleared() {
-		_spec.ClearField(providereventsyncrun.FieldProviderSource, field.TypeString)
+	if _u.mutation.SourceCursorsCleared() {
+		_spec.ClearField(providereventsyncrun.FieldSourceCursors, field.TypeJSON)
 	}
 	if value, ok := _u.mutation.SyncReason(); ok {
 		_spec.SetField(providereventsyncrun.FieldSyncReason, field.TypeString, value)

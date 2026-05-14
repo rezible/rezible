@@ -37,17 +37,9 @@ func (_c *ProviderEventSyncRunCreate) SetProvider(v string) *ProviderEventSyncRu
 	return _c
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_c *ProviderEventSyncRunCreate) SetProviderSource(v string) *ProviderEventSyncRunCreate {
-	_c.mutation.SetProviderSource(v)
-	return _c
-}
-
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_c *ProviderEventSyncRunCreate) SetNillableProviderSource(v *string) *ProviderEventSyncRunCreate {
-	if v != nil {
-		_c.SetProviderSource(*v)
-	}
+// SetSourceCursors sets the "source_cursors" field.
+func (_c *ProviderEventSyncRunCreate) SetSourceCursors(v map[string]string) *ProviderEventSyncRunCreate {
+	_c.mutation.SetSourceCursors(v)
 	return _c
 }
 
@@ -324,9 +316,9 @@ func (_c *ProviderEventSyncRunCreate) createSpec() (*ProviderEventSyncRun, *sqlg
 		_spec.SetField(providereventsyncrun.FieldProvider, field.TypeString, value)
 		_node.Provider = value
 	}
-	if value, ok := _c.mutation.ProviderSource(); ok {
-		_spec.SetField(providereventsyncrun.FieldProviderSource, field.TypeString, value)
-		_node.ProviderSource = value
+	if value, ok := _c.mutation.SourceCursors(); ok {
+		_spec.SetField(providereventsyncrun.FieldSourceCursors, field.TypeJSON, value)
+		_node.SourceCursors = value
 	}
 	if value, ok := _c.mutation.SyncReason(); ok {
 		_spec.SetField(providereventsyncrun.FieldSyncReason, field.TypeString, value)
@@ -442,21 +434,21 @@ func (u *ProviderEventSyncRunUpsert) UpdateProvider() *ProviderEventSyncRunUpser
 	return u
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (u *ProviderEventSyncRunUpsert) SetProviderSource(v string) *ProviderEventSyncRunUpsert {
-	u.Set(providereventsyncrun.FieldProviderSource, v)
+// SetSourceCursors sets the "source_cursors" field.
+func (u *ProviderEventSyncRunUpsert) SetSourceCursors(v map[string]string) *ProviderEventSyncRunUpsert {
+	u.Set(providereventsyncrun.FieldSourceCursors, v)
 	return u
 }
 
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *ProviderEventSyncRunUpsert) UpdateProviderSource() *ProviderEventSyncRunUpsert {
-	u.SetExcluded(providereventsyncrun.FieldProviderSource)
+// UpdateSourceCursors sets the "source_cursors" field to the value that was provided on create.
+func (u *ProviderEventSyncRunUpsert) UpdateSourceCursors() *ProviderEventSyncRunUpsert {
+	u.SetExcluded(providereventsyncrun.FieldSourceCursors)
 	return u
 }
 
-// ClearProviderSource clears the value of the "provider_source" field.
-func (u *ProviderEventSyncRunUpsert) ClearProviderSource() *ProviderEventSyncRunUpsert {
-	u.SetNull(providereventsyncrun.FieldProviderSource)
+// ClearSourceCursors clears the value of the "source_cursors" field.
+func (u *ProviderEventSyncRunUpsert) ClearSourceCursors() *ProviderEventSyncRunUpsert {
+	u.SetNull(providereventsyncrun.FieldSourceCursors)
 	return u
 }
 
@@ -651,24 +643,24 @@ func (u *ProviderEventSyncRunUpsertOne) UpdateProvider() *ProviderEventSyncRunUp
 	})
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (u *ProviderEventSyncRunUpsertOne) SetProviderSource(v string) *ProviderEventSyncRunUpsertOne {
+// SetSourceCursors sets the "source_cursors" field.
+func (u *ProviderEventSyncRunUpsertOne) SetSourceCursors(v map[string]string) *ProviderEventSyncRunUpsertOne {
 	return u.Update(func(s *ProviderEventSyncRunUpsert) {
-		s.SetProviderSource(v)
+		s.SetSourceCursors(v)
 	})
 }
 
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *ProviderEventSyncRunUpsertOne) UpdateProviderSource() *ProviderEventSyncRunUpsertOne {
+// UpdateSourceCursors sets the "source_cursors" field to the value that was provided on create.
+func (u *ProviderEventSyncRunUpsertOne) UpdateSourceCursors() *ProviderEventSyncRunUpsertOne {
 	return u.Update(func(s *ProviderEventSyncRunUpsert) {
-		s.UpdateProviderSource()
+		s.UpdateSourceCursors()
 	})
 }
 
-// ClearProviderSource clears the value of the "provider_source" field.
-func (u *ProviderEventSyncRunUpsertOne) ClearProviderSource() *ProviderEventSyncRunUpsertOne {
+// ClearSourceCursors clears the value of the "source_cursors" field.
+func (u *ProviderEventSyncRunUpsertOne) ClearSourceCursors() *ProviderEventSyncRunUpsertOne {
 	return u.Update(func(s *ProviderEventSyncRunUpsert) {
-		s.ClearProviderSource()
+		s.ClearSourceCursors()
 	})
 }
 
@@ -1051,24 +1043,24 @@ func (u *ProviderEventSyncRunUpsertBulk) UpdateProvider() *ProviderEventSyncRunU
 	})
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (u *ProviderEventSyncRunUpsertBulk) SetProviderSource(v string) *ProviderEventSyncRunUpsertBulk {
+// SetSourceCursors sets the "source_cursors" field.
+func (u *ProviderEventSyncRunUpsertBulk) SetSourceCursors(v map[string]string) *ProviderEventSyncRunUpsertBulk {
 	return u.Update(func(s *ProviderEventSyncRunUpsert) {
-		s.SetProviderSource(v)
+		s.SetSourceCursors(v)
 	})
 }
 
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *ProviderEventSyncRunUpsertBulk) UpdateProviderSource() *ProviderEventSyncRunUpsertBulk {
+// UpdateSourceCursors sets the "source_cursors" field to the value that was provided on create.
+func (u *ProviderEventSyncRunUpsertBulk) UpdateSourceCursors() *ProviderEventSyncRunUpsertBulk {
 	return u.Update(func(s *ProviderEventSyncRunUpsert) {
-		s.UpdateProviderSource()
+		s.UpdateSourceCursors()
 	})
 }
 
-// ClearProviderSource clears the value of the "provider_source" field.
-func (u *ProviderEventSyncRunUpsertBulk) ClearProviderSource() *ProviderEventSyncRunUpsertBulk {
+// ClearSourceCursors clears the value of the "source_cursors" field.
+func (u *ProviderEventSyncRunUpsertBulk) ClearSourceCursors() *ProviderEventSyncRunUpsertBulk {
 	return u.Update(func(s *ProviderEventSyncRunUpsert) {
-		s.ClearProviderSource()
+		s.ClearSourceCursors()
 	})
 }
 

@@ -44267,7 +44267,7 @@ type ProviderEventSyncRunMutation struct {
 	typ                string
 	id                 *uuid.UUID
 	provider           *string
-	provider_source    *string
+	source_cursors     *map[string]string
 	sync_reason        *string
 	started_at         *time.Time
 	finished_at        *time.Time
@@ -44463,53 +44463,53 @@ func (m *ProviderEventSyncRunMutation) ResetProvider() {
 	m.provider = nil
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (m *ProviderEventSyncRunMutation) SetProviderSource(s string) {
-	m.provider_source = &s
+// SetSourceCursors sets the "source_cursors" field.
+func (m *ProviderEventSyncRunMutation) SetSourceCursors(value map[string]string) {
+	m.source_cursors = &value
 }
 
-// ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *ProviderEventSyncRunMutation) ProviderSource() (r string, exists bool) {
-	v := m.provider_source
+// SourceCursors returns the value of the "source_cursors" field in the mutation.
+func (m *ProviderEventSyncRunMutation) SourceCursors() (r map[string]string, exists bool) {
+	v := m.source_cursors
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProviderSource returns the old "provider_source" field's value of the ProviderEventSyncRun entity.
+// OldSourceCursors returns the old "source_cursors" field's value of the ProviderEventSyncRun entity.
 // If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldProviderSource(ctx context.Context) (v string, err error) {
+func (m *ProviderEventSyncRunMutation) OldSourceCursors(ctx context.Context) (v map[string]string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
+		return v, errors.New("OldSourceCursors is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSource requires an ID field in the mutation")
+		return v, errors.New("OldSourceCursors requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
+		return v, fmt.Errorf("querying old value for OldSourceCursors: %w", err)
 	}
-	return oldValue.ProviderSource, nil
+	return oldValue.SourceCursors, nil
 }
 
-// ClearProviderSource clears the value of the "provider_source" field.
-func (m *ProviderEventSyncRunMutation) ClearProviderSource() {
-	m.provider_source = nil
-	m.clearedFields[providereventsyncrun.FieldProviderSource] = struct{}{}
+// ClearSourceCursors clears the value of the "source_cursors" field.
+func (m *ProviderEventSyncRunMutation) ClearSourceCursors() {
+	m.source_cursors = nil
+	m.clearedFields[providereventsyncrun.FieldSourceCursors] = struct{}{}
 }
 
-// ProviderSourceCleared returns if the "provider_source" field was cleared in this mutation.
-func (m *ProviderEventSyncRunMutation) ProviderSourceCleared() bool {
-	_, ok := m.clearedFields[providereventsyncrun.FieldProviderSource]
+// SourceCursorsCleared returns if the "source_cursors" field was cleared in this mutation.
+func (m *ProviderEventSyncRunMutation) SourceCursorsCleared() bool {
+	_, ok := m.clearedFields[providereventsyncrun.FieldSourceCursors]
 	return ok
 }
 
-// ResetProviderSource resets all changes to the "provider_source" field.
-func (m *ProviderEventSyncRunMutation) ResetProviderSource() {
-	m.provider_source = nil
-	delete(m.clearedFields, providereventsyncrun.FieldProviderSource)
+// ResetSourceCursors resets all changes to the "source_cursors" field.
+func (m *ProviderEventSyncRunMutation) ResetSourceCursors() {
+	m.source_cursors = nil
+	delete(m.clearedFields, providereventsyncrun.FieldSourceCursors)
 }
 
 // SetSyncReason sets the "sync_reason" field.
@@ -44954,8 +44954,8 @@ func (m *ProviderEventSyncRunMutation) Fields() []string {
 	if m.provider != nil {
 		fields = append(fields, providereventsyncrun.FieldProvider)
 	}
-	if m.provider_source != nil {
-		fields = append(fields, providereventsyncrun.FieldProviderSource)
+	if m.source_cursors != nil {
+		fields = append(fields, providereventsyncrun.FieldSourceCursors)
 	}
 	if m.sync_reason != nil {
 		fields = append(fields, providereventsyncrun.FieldSyncReason)
@@ -44993,8 +44993,8 @@ func (m *ProviderEventSyncRunMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case providereventsyncrun.FieldProvider:
 		return m.Provider()
-	case providereventsyncrun.FieldProviderSource:
-		return m.ProviderSource()
+	case providereventsyncrun.FieldSourceCursors:
+		return m.SourceCursors()
 	case providereventsyncrun.FieldSyncReason:
 		return m.SyncReason()
 	case providereventsyncrun.FieldStartedAt:
@@ -45024,8 +45024,8 @@ func (m *ProviderEventSyncRunMutation) OldField(ctx context.Context, name string
 		return m.OldTenantID(ctx)
 	case providereventsyncrun.FieldProvider:
 		return m.OldProvider(ctx)
-	case providereventsyncrun.FieldProviderSource:
-		return m.OldProviderSource(ctx)
+	case providereventsyncrun.FieldSourceCursors:
+		return m.OldSourceCursors(ctx)
 	case providereventsyncrun.FieldSyncReason:
 		return m.OldSyncReason(ctx)
 	case providereventsyncrun.FieldStartedAt:
@@ -45065,12 +45065,12 @@ func (m *ProviderEventSyncRunMutation) SetField(name string, value ent.Value) er
 		}
 		m.SetProvider(v)
 		return nil
-	case providereventsyncrun.FieldProviderSource:
-		v, ok := value.(string)
+	case providereventsyncrun.FieldSourceCursors:
+		v, ok := value.(map[string]string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProviderSource(v)
+		m.SetSourceCursors(v)
 		return nil
 	case providereventsyncrun.FieldSyncReason:
 		v, ok := value.(string)
@@ -45197,8 +45197,8 @@ func (m *ProviderEventSyncRunMutation) AddField(name string, value ent.Value) er
 // mutation.
 func (m *ProviderEventSyncRunMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(providereventsyncrun.FieldProviderSource) {
-		fields = append(fields, providereventsyncrun.FieldProviderSource)
+	if m.FieldCleared(providereventsyncrun.FieldSourceCursors) {
+		fields = append(fields, providereventsyncrun.FieldSourceCursors)
 	}
 	if m.FieldCleared(providereventsyncrun.FieldFinishedAt) {
 		fields = append(fields, providereventsyncrun.FieldFinishedAt)
@@ -45220,8 +45220,8 @@ func (m *ProviderEventSyncRunMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ProviderEventSyncRunMutation) ClearField(name string) error {
 	switch name {
-	case providereventsyncrun.FieldProviderSource:
-		m.ClearProviderSource()
+	case providereventsyncrun.FieldSourceCursors:
+		m.ClearSourceCursors()
 		return nil
 	case providereventsyncrun.FieldFinishedAt:
 		m.ClearFinishedAt()
@@ -45243,8 +45243,8 @@ func (m *ProviderEventSyncRunMutation) ResetField(name string) error {
 	case providereventsyncrun.FieldProvider:
 		m.ResetProvider()
 		return nil
-	case providereventsyncrun.FieldProviderSource:
-		m.ResetProviderSource()
+	case providereventsyncrun.FieldSourceCursors:
+		m.ResetSourceCursors()
 		return nil
 	case providereventsyncrun.FieldSyncReason:
 		m.ResetSyncReason()

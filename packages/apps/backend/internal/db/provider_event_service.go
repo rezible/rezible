@@ -128,7 +128,7 @@ func (s *ProviderEventService) SyncEvents(ctx context.Context, querier rez.Provi
 
 	saveRunResult := s.db.ProviderEventSyncRun.Create().
 		SetProvider(querier.Provider()).
-		SetProviderSource("").
+		SetSourceCursors(res.sourceCursors).
 		SetSyncReason(opts.SyncReason).
 		SetStartedAt(startedAt).
 		SetFinishedAt(time.Now().UTC()).

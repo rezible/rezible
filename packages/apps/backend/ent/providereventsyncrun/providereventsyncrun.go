@@ -21,8 +21,8 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
-	// FieldProviderSource holds the string denoting the provider_source field in the database.
-	FieldProviderSource = "provider_source"
+	// FieldSourceCursors holds the string denoting the source_cursors field in the database.
+	FieldSourceCursors = "source_cursors"
 	// FieldSyncReason holds the string denoting the sync_reason field in the database.
 	FieldSyncReason = "sync_reason"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
@@ -57,7 +57,7 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldProvider,
-	FieldProviderSource,
+	FieldSourceCursors,
 	FieldSyncReason,
 	FieldStartedAt,
 	FieldFinishedAt,
@@ -142,11 +142,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 // ByProvider orders the results by the provider field.
 func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
-}
-
-// ByProviderSource orders the results by the provider_source field.
-func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
 }
 
 // BySyncReason orders the results by the sync_reason field.

@@ -1058,7 +1058,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 		Fields: map[string]*sqlgraph.FieldSpec{
 			providereventsyncrun.FieldTenantID:       {Type: field.TypeInt, Column: providereventsyncrun.FieldTenantID},
 			providereventsyncrun.FieldProvider:       {Type: field.TypeString, Column: providereventsyncrun.FieldProvider},
-			providereventsyncrun.FieldProviderSource: {Type: field.TypeString, Column: providereventsyncrun.FieldProviderSource},
+			providereventsyncrun.FieldSourceCursors:  {Type: field.TypeJSON, Column: providereventsyncrun.FieldSourceCursors},
 			providereventsyncrun.FieldSyncReason:     {Type: field.TypeString, Column: providereventsyncrun.FieldSyncReason},
 			providereventsyncrun.FieldStartedAt:      {Type: field.TypeTime, Column: providereventsyncrun.FieldStartedAt},
 			providereventsyncrun.FieldFinishedAt:     {Type: field.TypeTime, Column: providereventsyncrun.FieldFinishedAt},
@@ -10465,9 +10465,9 @@ func (f *ProviderEventSyncRunFilter) WhereProvider(p entql.StringP) {
 	f.Where(p.Field(providereventsyncrun.FieldProvider))
 }
 
-// WhereProviderSource applies the entql string predicate on the provider_source field.
-func (f *ProviderEventSyncRunFilter) WhereProviderSource(p entql.StringP) {
-	f.Where(p.Field(providereventsyncrun.FieldProviderSource))
+// WhereSourceCursors applies the entql json.RawMessage predicate on the source_cursors field.
+func (f *ProviderEventSyncRunFilter) WhereSourceCursors(p entql.BytesP) {
+	f.Where(p.Field(providereventsyncrun.FieldSourceCursors))
 }
 
 // WhereSyncReason applies the entql string predicate on the sync_reason field.

@@ -2036,7 +2036,7 @@ var (
 	ProviderEventSyncRunsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "provider", Type: field.TypeString},
-		{Name: "provider_source", Type: field.TypeString, Nullable: true},
+		{Name: "source_cursors", Type: field.TypeJSON, Nullable: true},
 		{Name: "sync_reason", Type: field.TypeString, Default: "manual"},
 		{Name: "started_at", Type: field.TypeTime},
 		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
@@ -2067,9 +2067,9 @@ var (
 				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11]},
 			},
 			{
-				Name:    "providereventsyncrun_tenant_id_provider_provider_source_started_at",
+				Name:    "providereventsyncrun_tenant_id_provider_started_at",
 				Unique:  false,
-				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11], ProviderEventSyncRunsColumns[1], ProviderEventSyncRunsColumns[2], ProviderEventSyncRunsColumns[4]},
+				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11], ProviderEventSyncRunsColumns[1], ProviderEventSyncRunsColumns[4]},
 			},
 			{
 				Name:    "providereventsyncrun_tenant_id_status_started_at",

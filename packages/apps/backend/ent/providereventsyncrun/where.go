@@ -67,11 +67,6 @@ func Provider(v string) predicate.ProviderEventSyncRun {
 	return predicate.ProviderEventSyncRun(sql.FieldEQ(FieldProvider, v))
 }
 
-// ProviderSource applies equality check predicate on the "provider_source" field. It's identical to ProviderSourceEQ.
-func ProviderSource(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldEQ(FieldProviderSource, v))
-}
-
 // SyncReason applies equality check predicate on the "sync_reason" field. It's identical to SyncReasonEQ.
 func SyncReason(v string) predicate.ProviderEventSyncRun {
 	return predicate.ProviderEventSyncRun(sql.FieldEQ(FieldSyncReason, v))
@@ -192,79 +187,14 @@ func ProviderContainsFold(v string) predicate.ProviderEventSyncRun {
 	return predicate.ProviderEventSyncRun(sql.FieldContainsFold(FieldProvider, v))
 }
 
-// ProviderSourceEQ applies the EQ predicate on the "provider_source" field.
-func ProviderSourceEQ(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldEQ(FieldProviderSource, v))
+// SourceCursorsIsNil applies the IsNil predicate on the "source_cursors" field.
+func SourceCursorsIsNil() predicate.ProviderEventSyncRun {
+	return predicate.ProviderEventSyncRun(sql.FieldIsNull(FieldSourceCursors))
 }
 
-// ProviderSourceNEQ applies the NEQ predicate on the "provider_source" field.
-func ProviderSourceNEQ(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldNEQ(FieldProviderSource, v))
-}
-
-// ProviderSourceIn applies the In predicate on the "provider_source" field.
-func ProviderSourceIn(vs ...string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldIn(FieldProviderSource, vs...))
-}
-
-// ProviderSourceNotIn applies the NotIn predicate on the "provider_source" field.
-func ProviderSourceNotIn(vs ...string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldNotIn(FieldProviderSource, vs...))
-}
-
-// ProviderSourceGT applies the GT predicate on the "provider_source" field.
-func ProviderSourceGT(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldGT(FieldProviderSource, v))
-}
-
-// ProviderSourceGTE applies the GTE predicate on the "provider_source" field.
-func ProviderSourceGTE(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldGTE(FieldProviderSource, v))
-}
-
-// ProviderSourceLT applies the LT predicate on the "provider_source" field.
-func ProviderSourceLT(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldLT(FieldProviderSource, v))
-}
-
-// ProviderSourceLTE applies the LTE predicate on the "provider_source" field.
-func ProviderSourceLTE(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldLTE(FieldProviderSource, v))
-}
-
-// ProviderSourceContains applies the Contains predicate on the "provider_source" field.
-func ProviderSourceContains(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldContains(FieldProviderSource, v))
-}
-
-// ProviderSourceHasPrefix applies the HasPrefix predicate on the "provider_source" field.
-func ProviderSourceHasPrefix(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldHasPrefix(FieldProviderSource, v))
-}
-
-// ProviderSourceHasSuffix applies the HasSuffix predicate on the "provider_source" field.
-func ProviderSourceHasSuffix(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldHasSuffix(FieldProviderSource, v))
-}
-
-// ProviderSourceIsNil applies the IsNil predicate on the "provider_source" field.
-func ProviderSourceIsNil() predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldIsNull(FieldProviderSource))
-}
-
-// ProviderSourceNotNil applies the NotNil predicate on the "provider_source" field.
-func ProviderSourceNotNil() predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldNotNull(FieldProviderSource))
-}
-
-// ProviderSourceEqualFold applies the EqualFold predicate on the "provider_source" field.
-func ProviderSourceEqualFold(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldEqualFold(FieldProviderSource, v))
-}
-
-// ProviderSourceContainsFold applies the ContainsFold predicate on the "provider_source" field.
-func ProviderSourceContainsFold(v string) predicate.ProviderEventSyncRun {
-	return predicate.ProviderEventSyncRun(sql.FieldContainsFold(FieldProviderSource, v))
+// SourceCursorsNotNil applies the NotNil predicate on the "source_cursors" field.
+func SourceCursorsNotNil() predicate.ProviderEventSyncRun {
+	return predicate.ProviderEventSyncRun(sql.FieldNotNull(FieldSourceCursors))
 }
 
 // SyncReasonEQ applies the EQ predicate on the "sync_reason" field.

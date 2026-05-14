@@ -70,6 +70,18 @@ func (s *Suite) SetConfigOverrides(overrides map[string]any) {
 	rez.Config = cfg
 }
 
+type suiteDbClient struct {
+	client *ent.Client
+}
+
+func (s *suiteDbClient) Client() *ent.Client {
+	return s.client
+}
+
+func (s *suiteDbClient) Close() {}
+
+func (s *Suite) DatabaseClient() rez.DatabaseClient { return &suiteDbClient{client: s.dbClient} }
+
 func (s *Suite) Client() *ent.Client { return s.dbClient }
 
 func (s *Suite) SystemContext() context.Context {
