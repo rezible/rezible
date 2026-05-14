@@ -28,21 +28,21 @@ func (p *eventProcessor) Process(ctx context.Context, prov rez.ProviderEvent) (e
 		return p.processUserObserved(prov)
 	case sourceEventsApiCallback:
 		return p.processEventsApiCallback(prov)
+	default:
+		return nil, fmt.Errorf("unknown provider source: %s", prov.ProviderSource)
 	}
-	return nil, fmt.Errorf("unknown provider source: %s", prov.ProviderSource)
 }
 
 func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
 	var payload userObservedPayload
-	if err := json.Unmarshal(prov.Payload, &payload); err != nil {
-		return nil, fmt.Errorf("unmarshal repository observed event: %w", err)
+	if jsonErr := json.Unmarshal(prov.Payload, &payload); jsonErr != nil {
+		return nil, fmt.Errorf("unmarshal userObservedPayload: %w", jsonErr)
 	}
 
-	attrs := eventprojections.ChatMessageAttributes{
-		ConversationExternalRef: "",
-		Body:                    "",
-		SenderExternalRef:       "",
-		ThreadExternalRef:       "",
+	attrs := eventprojections.UserObservedAttributes{
+		Email:    payload.Email,
+		ChatId:   payload.SlackID,
+		Timezone: payload.Timezone,
 	}
 
 	result := &ent.NormalizedEvent{
@@ -71,26 +71,14 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 		return nil, fmt.Errorf("parse event: %w", parseErr)
 	}
 
-	result := &ent.NormalizedEvent{
-		Provider:       integrationName,
-		ProviderSource: sourceEventsApiCallback,
-		Kind:           ne.KindChatMessage,
-		SubjectKind:    "message",
-	}
+	providerEventRef := prov.ProviderEventRef
 	if cb, ok := ev.Data.(*slackevents.EventsAPICallbackEvent); ok {
-		result.ProviderEventRef = cb.EventID
+		providerEventRef = cb.EventID
 	}
 
-	attrs := eventprojections.ChatMessageAttributes{
-		ConversationExternalRef: "",
-		Body:                    "",
-		SenderExternalRef:       "",
-		ThreadExternalRef:       "",
-	}
-
+	var attrs eventprojections.ChatMessageAttributes
 	var ts string
 	var eventTS string
-
 	switch data := ev.InnerEvent.Data.(type) {
 	case *slackevents.MessageEvent:
 		attrs.ConversationExternalRef = data.Channel
@@ -117,22 +105,31 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 	}
 
 	occurredAt := tryConvertTs(ts, tryConvertTs(eventTS, prov.ReceivedAt))
+
 	receivedAt := prov.ReceivedAt
 	if receivedAt.IsZero() {
 		receivedAt = occurredAt
 	}
-	result.OccurredAt = occurredAt
-	result.ReceivedAt = receivedAt
 
-	result.SubjectRef = prov.SubjectRef
-	if result.SubjectRef == "" {
-		result.SubjectRef = fmt.Sprintf("slack:%s:%s:%s", ev.TeamID, attrs.ConversationExternalRef, ts)
+	subjectRef := prov.SubjectRef
+	if subjectRef == "" {
+		subjectRef = fmt.Sprintf("slack:%s:%s:%s", ev.TeamID, attrs.ConversationExternalRef, ts)
 	}
-	if result.ProviderEventRef == "" {
-		result.ProviderEventRef = result.SubjectRef
+	if providerEventRef == "" {
+		providerEventRef = subjectRef
 	}
 
-	result.Attributes = attrs.Encode()
+	result := &ent.NormalizedEvent{
+		Provider:         integrationName,
+		ProviderSource:   sourceEventsApiCallback,
+		ProviderEventRef: providerEventRef,
+		Kind:             ne.KindChatMessage,
+		SubjectKind:      "message",
+		SubjectRef:       subjectRef,
+		OccurredAt:       occurredAt,
+		ReceivedAt:       receivedAt,
+		Attributes:       attrs.Encode(),
+	}
 
 	return ent.NormalizedEvents{result}, nil
 }

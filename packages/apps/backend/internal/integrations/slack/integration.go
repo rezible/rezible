@@ -97,8 +97,10 @@ func (i *integration) SupportedDataKinds() []string {
 }
 
 func (i *integration) MakeProviderSourceEventQueriers(ctx context.Context, intg *ent.Integration) ([]rez.ProviderEventQuerier, error) {
-	uq := newUserEventQuerier(newConfiguredIntegration(i.services, intg))
-	return []rez.ProviderEventQuerier{uq}, nil
+	queriers := []rez.ProviderEventQuerier{
+		newUserEventQuerier(newConfiguredIntegration(i.services, intg)),
+	}
+	return queriers, nil
 }
 
 func (i *integration) OAuthConfigRequired() bool {

@@ -211,14 +211,14 @@ type (
 		Process(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
 	}
 
+	ProviderEventQueryRequest struct {
+		CursorAfter string
+	}
+
 	ProviderEventQuerier interface {
 		Provider() string
 		ProviderSource() string
 		PullEvents(context.Context, ProviderEventQueryRequest) iter.Seq2[*ProviderEventQueryResult, error]
-	}
-
-	ProviderEventQueryRequest struct {
-		CursorAfter string
 	}
 
 	ProviderEventQueryResult struct {
@@ -234,6 +234,7 @@ type (
 	ProviderEventService interface {
 		RegisterEventProcessor(provider string, processor ProviderEventProcessor)
 		Ingest(context.Context, ProviderEvent) (*ProviderEventIngestResult, error)
+		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
 	}
 
 	ProviderEventIngestResult struct {

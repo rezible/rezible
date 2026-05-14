@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations/eventprojections"
 	"github.com/riverqueue/river"
 
@@ -19,7 +20,6 @@ import (
 	neps "github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
 	pesc "github.com/rezible/rezible/ent/providereventsynccursor"
 	pesr "github.com/rezible/rezible/ent/providereventsyncrun"
-	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/jobs"
 	"github.com/rezible/rezible/telemetry"
 )
@@ -49,8 +49,8 @@ func NewProviderEventService(ctx context.Context, svcs *rez.Services) *ProviderE
 		processors:   make(map[string]rez.ProviderEventProcessor),
 	}
 	jobs.RegisterWorkerFunc(pe.HandleProviderEventSyncJob)
-	jobs.RegisterWorkerFunc(pe.ProcessProviderEvent)
-	jobs.RegisterWorkerFunc(pe.ProjectNormalizedEvent)
+	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
+	jobs.RegisterWorkerFunc(pe.HandleEventProjectionJob)
 	return pe
 }
 
@@ -74,15 +74,13 @@ func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent)
 }
 
 func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent) (*rez.ProviderEventIngestResult, error) {
-	processEvent, validationErr := s.makeProcessEventArgs(ev)
-	if validationErr != nil {
+	processEvent := processProviderEventArgs{Event: ev}
+	if validationErr := processEvent.validate(); validationErr != nil {
 		return nil, fmt.Errorf("invalid event: %w", validationErr)
 	}
 
-	insertOpts := &river.InsertOpts{
-		UniqueOpts: river.UniqueOpts{ByArgs: true},
-	}
-	insertRes, insertErr := s.jobService.Insert(ctx, *processEvent, insertOpts)
+	insertOpts := &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
+	insertRes, insertErr := s.jobService.Insert(ctx, processEvent, insertOpts)
 	if insertErr != nil {
 		return nil, fmt.Errorf("could not insert provider event job: %w", insertErr)
 	}
@@ -99,6 +97,193 @@ func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent)
 	return res, nil
 }
 
+func (s *ProviderEventService) HandleProviderEventSyncJob(ctx context.Context, args jobs.ProviderEventSyncJob) error {
+	if len(args.ProviderSources) == 0 {
+		slog.WarnContext(ctx, "TODO: support syncing all providers")
+		return nil
+	}
+
+	var matchedQueriers []rez.ProviderEventQuerier
+	for provider, sources := range args.ProviderSources {
+		queriers, discoverErr := s.integrations.GetProviderEventQueriers(ctx, provider)
+		if discoverErr != nil {
+			return fmt.Errorf("discover provider event queriers: %w", discoverErr)
+		}
+
+		sourceMap := mapset.NewSet(sources...)
+		for _, querier := range queriers {
+			providerMatches := querier.Provider() == provider
+			sourceMatches := sourceMap.Contains(querier.ProviderSource()) || len(sources) == 0
+			if providerMatches && sourceMatches {
+				matchedQueriers = append(matchedQueriers, querier)
+			}
+		}
+	}
+
+	syncOpts := rez.ProviderEventSyncOptions{
+		CursorAfter: args.CursorAfter,
+		SyncReason:  args.SyncReason,
+	}
+	for _, querier := range matchedQueriers {
+		if syncErr := s.SyncEvents(ctx, querier, syncOpts); syncErr != nil {
+			return fmt.Errorf("sync: %w", syncErr)
+		}
+	}
+
+	return nil
+}
+
+func (s *ProviderEventService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, opts rez.ProviderEventSyncOptions) error {
+	var cursorAfter string
+	if opts.CursorAfter != nil {
+		cursorAfter = *opts.CursorAfter
+	}
+
+	startedAt := time.Now()
+	stats, syncErr := s.syncEvents(ctx, querier, cursorAfter)
+
+	createRun := s.db.ProviderEventSyncRun.Create().
+		SetProvider(querier.Provider()).
+		SetProviderSource(querier.ProviderSource()).
+		SetSyncReason(opts.SyncReason).
+		SetStartedAt(startedAt).
+		SetFinishedAt(time.Now().UTC()).
+		SetEventsPulled(stats.pulled).
+		SetEventsIngested(stats.ingested).
+		SetDuplicates(stats.duplicates).
+		SetStatus(pesr.StatusSuccess)
+	if syncErr != nil {
+		createRun.SetStatus(pesr.StatusFailed)
+		errMsg := strings.TrimSpace(syncErr.Error())
+		if len(errMsg) > 100 {
+			errMsg = errMsg[:100] + "..."
+		}
+		createRun.SetFailureMessage(errMsg)
+	}
+	if _, updateErr := createRun.Save(ctx); updateErr != nil {
+		return fmt.Errorf("save provider event sync run status: %w", updateErr)
+	}
+
+	return syncErr
+}
+
+func (s *ProviderEventService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
+	res, err := s.processProviderEvent(ctx, args.Event)
+	s.metrics.recordProcessed(ctx, args.Event, res, err)
+	return err
+}
+
+func (s *ProviderEventService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
+	ev, queryErr := s.db.NormalizedEvent.Get(ctx, args.EventId)
+	if queryErr != nil {
+		return fmt.Errorf("query normalized event: %w", queryErr)
+	}
+	return s.projectNormalizedEvent(ctx, ev)
+}
+
+type providerEventSyncStats struct {
+	pulled       int
+	ingested     int
+	duplicates   int
+	latestCursor *string
+}
+
+func (s *ProviderEventService) syncEvents(ctx context.Context, querier rez.ProviderEventQuerier, cursorAfter string) (providerEventSyncStats, error) {
+	var stats providerEventSyncStats
+
+	if cursorAfter == "" {
+		query := s.db.ProviderEventSyncCursor.Query().
+			Where(pesc.Provider(querier.Provider()), pesc.ProviderSource(querier.ProviderSource()))
+		cursorRes, queryErr := query.Only(ctx)
+		if queryErr != nil && !ent.IsNotFound(queryErr) {
+			return stats, fmt.Errorf("query provider event sync cursor: %w", queryErr)
+		} else if cursorRes != nil {
+			cursorAfter = cursorRes.Cursor
+		}
+	}
+
+	type syncBatchItem struct {
+		args        processProviderEventArgs
+		cursorAfter *string
+	}
+	batch := make([]syncBatchItem, 0, providerEventSyncBatchSize)
+
+	flushBatch := func() error {
+		if len(batch) == 0 {
+			return nil
+		}
+		slog.DebugContext(ctx, "flushing batch", "len", len(batch))
+		params := make([]river.InsertManyParams, len(batch))
+		for i, item := range batch {
+			params[i] = river.InsertManyParams{
+				Args:       item.args,
+				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
+			}
+		}
+		results, insertErr := s.jobService.InsertMany(ctx, params)
+		if insertErr != nil {
+			return fmt.Errorf("could not insert provider event jobs: %w", insertErr)
+		}
+		for i, result := range results {
+			if result != nil && result.UniqueSkippedAsDuplicate {
+				stats.duplicates++
+			} else {
+				stats.ingested++
+			}
+			if i < len(batch) {
+				fmt.Printf("sync cursor %d %d\n", i, len(batch))
+				if cursor := *batch[i].cursorAfter; cursor != "" {
+					stats.latestCursor = &cursor
+				}
+			}
+		}
+		if stats.latestCursor != nil {
+			saveCursor := s.db.ProviderEventSyncCursor.Create().
+				SetProvider(querier.Provider()).
+				SetProviderSource(querier.ProviderSource()).
+				SetCursor(*stats.latestCursor).
+				SetLastSyncedAt(time.Now().UTC()).
+				OnConflict(sql.ConflictColumns(pesc.FieldProvider, pesc.FieldProviderSource)).
+				Update(func(u *ent.ProviderEventSyncCursorUpsert) {
+					u.UpdateCursor()
+					u.UpdateLastSyncedAt()
+					u.UpdateUpdatedAt()
+				})
+			if cursorErr := saveCursor.Exec(ctx); cursorErr != nil {
+				return fmt.Errorf("failed to save cursor: %w", cursorErr)
+			}
+		}
+		return nil
+	}
+
+	req := rez.ProviderEventQueryRequest{CursorAfter: cursorAfter}
+	for result, pullErr := range querier.PullEvents(ctx, req) {
+		if pullErr != nil {
+			return stats, fmt.Errorf("pull provider events: %w", pullErr)
+		}
+		stats.pulled++
+
+		syncItem := syncBatchItem{
+			args:        processProviderEventArgs{Event: result.Event},
+			cursorAfter: result.CursorAfter,
+		}
+		if validErr := syncItem.args.validate(); validErr != nil {
+			return stats, fmt.Errorf("invalid event args: %w", validErr)
+		}
+		batch = append(batch)
+		if len(batch) >= providerEventSyncBatchSize {
+			if flushErr := flushBatch(); flushErr != nil {
+				return stats, flushErr
+			}
+			batch = make([]syncBatchItem, 0, providerEventSyncBatchSize)
+		}
+		if result.CursorAfter == nil {
+			break
+		}
+	}
+	return stats, flushBatch()
+}
+
 type processProviderEventArgs struct {
 	Event rez.ProviderEvent
 }
@@ -107,36 +292,23 @@ func (processProviderEventArgs) Kind() string {
 	return "process-provider-event"
 }
 
-func (s *ProviderEventService) makeProcessEventArgs(ev rez.ProviderEvent) (*processProviderEventArgs, error) {
-	args := processProviderEventArgs{Event: ev}
-	if ev.ReceivedAt.IsZero() {
-		args.Event.ReceivedAt = time.Now().UTC()
+func (a processProviderEventArgs) validate() error {
+	if a.Event.Provider == "" {
+		return fmt.Errorf("event provider is required")
 	}
-	if ev.Provider == "" {
-		return nil, fmt.Errorf("provider event provider is required")
+	if a.Event.ProviderSource == "" {
+		return fmt.Errorf("event provider_source is required")
 	}
-	if ev.ProviderSource == "" {
-		return nil, fmt.Errorf("provider event provider_source is required")
+	if a.Event.SubjectRef == "" {
+		return fmt.Errorf("event subject_ref is required")
 	}
-	if ev.SubjectRef == "" {
-		return nil, fmt.Errorf("provider event subject_ref is required")
+	if len(a.Event.Payload) == 0 {
+		return fmt.Errorf("event payload is required")
 	}
-	if len(ev.Payload) == 0 {
-		return nil, fmt.Errorf("provider event payload is required")
+	if a.Event.ProviderEventRef == "" {
+		return fmt.Errorf("event provider_delivery_ref is required")
 	}
-	if ev.ProviderEventRef == "" {
-		return nil, fmt.Errorf("provider event provider_delivery_ref is required")
-	}
-	return &args, nil
-}
-
-func (s *ProviderEventService) ProcessProviderEvent(ctx context.Context, args processProviderEventArgs) error {
-	if _, tenantOk := execution.GetContext(ctx).TenantID(); !tenantOk {
-		return fmt.Errorf("tenant not found in context")
-	}
-	res, err := s.processProviderEvent(ctx, args)
-	s.metrics.recordProcessed(ctx, args.Event, res, err)
-	return err
+	return nil
 }
 
 type processProviderEventResult struct {
@@ -148,16 +320,28 @@ type processProviderEventResult struct {
 	projectionTime    time.Duration
 }
 
-func (s *ProviderEventService) processProviderEvent(ctx context.Context, args processProviderEventArgs) (*processProviderEventResult, error) {
-	processStart := time.Now()
-	proc, procExists := s.lookupEventProcessor(args.Event.Provider)
-	if !procExists {
-		return nil, fmt.Errorf("no provider event processor registered for provider %s", args.Event.Provider)
+func (s *ProviderEventService) processProviderEvent(ctx context.Context, ev rez.ProviderEvent) (*processProviderEventResult, error) {
+	if _, tenantOk := execution.GetContext(ctx).TenantID(); !tenantOk {
+		return nil, fmt.Errorf("tenant not found in context")
 	}
 
-	res := &processProviderEventResult{}
+	processStart := time.Now()
+	proc, procExists := s.lookupEventProcessor(ev.Provider)
+	if !procExists {
+		return nil, fmt.Errorf("no provider event processor registered for provider %s", ev.Provider)
+	}
 
-	normalizedEvents, procErr := proc.Process(ctx, args.Event)
+	normalizedEvents, procErr := proc.Process(ctx, ev)
+
+	slog.DebugContext(ctx, "processed provider event",
+		"provider", ev.Provider,
+		"source", ev.ProviderSource,
+		"subject_ref", ev.SubjectRef,
+		"error", procErr,
+		"normalized_count", len(normalizedEvents),
+	)
+
+	res := &processProviderEventResult{}
 	res.processTime = time.Since(processStart)
 	res.normalizeCount = len(normalizedEvents)
 	if procErr != nil {
@@ -165,28 +349,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, args pr
 	}
 	res.processSuccess = true
 
-	if res.normalizeCount > 0 {
-		projectionStart := time.Now()
-		projErr := s.saveNormalizedEvents(ctx, normalizedEvents)
-		res.projectionTime = time.Since(projectionStart)
-		if projErr != nil {
-			return res, fmt.Errorf("saving normalized events: %w", projErr)
-		}
-		res.projectionSuccess = true
-	}
-
-	return res, nil
-}
-
-func (s *ProviderEventService) saveNormalizedEvents(ctx context.Context, normalizedEvents ent.NormalizedEvents) error {
-	conflictCols := sql.ConflictColumns(
-		ne.FieldProvider,
-		ne.FieldProviderSource,
-		ne.FieldProviderEventRef,
-		ne.FieldKind,
-		ne.FieldSubjectRef,
-	)
-	return ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {
+	saveNormalizedEventsFn := func(tx *ent.Tx) error {
 		createBulk := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, func(c *ent.NormalizedEventCreate, i int) {
 			ev := normalizedEvents[i]
 			c.SetProvider(ev.Provider).
@@ -197,9 +360,15 @@ func (s *ProviderEventService) saveNormalizedEvents(ctx context.Context, normali
 				SetSubjectRef(ev.SubjectRef).
 				SetOccurredAt(ev.OccurredAt).
 				SetReceivedAt(ev.ReceivedAt).
-				SetAttributes(ev.Attributes).
-				OnConflict(conflictCols).
-				UpdateNewValues()
+				SetAttributes(ev.Attributes)
+
+			c.OnConflict(sql.ConflictColumns(
+				ne.FieldProvider,
+				ne.FieldProviderSource,
+				ne.FieldProviderEventRef,
+				ne.FieldKind,
+				ne.FieldSubjectRef,
+			)).UpdateNewValues()
 		})
 
 		evs, upsertErr := createBulk.Save(ctx)
@@ -218,225 +387,54 @@ func (s *ProviderEventService) saveNormalizedEvents(ctx context.Context, normali
 		if jobErr != nil {
 			return fmt.Errorf("inserting project events: %w", jobErr)
 		}
-		slog.DebugContext(ctx, "requested projection for normalized events",
-			"count", len(res))
 
-		return nil
-	})
-}
-
-func (s *ProviderEventService) HandleProviderEventSyncJob(ctx context.Context, args jobs.ProviderEventSyncJob) error {
-	if len(args.ProviderSources) == 0 {
-		slog.WarnContext(ctx, "TODO: support syncing all providers")
-	}
-
-	for provider, sources := range args.ProviderSources {
-		queriers, discoverErr := s.integrations.GetProviderEventQueriers(ctx, provider)
-		if discoverErr != nil {
-			return fmt.Errorf("discover provider event queriers: %w", discoverErr)
-		}
-
-		matched := make([]rez.ProviderEventQuerier, 0, len(queriers))
-		for _, querier := range queriers {
-			if provider != "" && querier.Provider() != provider {
-				continue
-			}
-			if len(sources) > 0 && !slices.Contains(sources, querier.ProviderSource()) {
-				continue
-			}
-			matched = append(matched, querier)
-		}
-
-		for _, querier := range matched {
-			syncOpts := rez.ProviderEventSyncOptions{
-				CursorAfter: args.CursorAfter,
-				SyncReason:  args.SyncReason,
-			}
-			if syncErr := s.SyncEvents(ctx, querier, syncOpts); syncErr != nil {
-				return fmt.Errorf("sync: %w", syncErr)
+		numDuplicate := 0
+		for _, r := range res {
+			if r.UniqueSkippedAsDuplicate {
+				numDuplicate++
 			}
 		}
-	}
-	return nil
-}
+		slog.DebugContext(ctx, "inserted projection job for normalized events",
+			"count", len(res),
+			"numDuplicate", numDuplicate,
+		)
 
-type providerEventSyncStats struct {
-	eventsPulled   int
-	eventsIngested int
-	duplicates     int
-	latestCursor   *string
-}
-
-func (s *ProviderEventService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, opts rez.ProviderEventSyncOptions) error {
-	var cursorAfter string
-	if opts.CursorAfter != nil {
-		cursorAfter = *opts.CursorAfter
-	}
-
-	startedAt := time.Now()
-	stats, syncErr := s.syncEvents(ctx, querier, cursorAfter)
-
-	createRun := s.db.ProviderEventSyncRun.Create().
-		SetProvider(querier.Provider()).
-		SetProviderSource(querier.ProviderSource()).
-		SetSyncReason(opts.SyncReason).
-		SetStartedAt(startedAt).
-		SetFinishedAt(time.Now().UTC()).
-		SetEventsPulled(stats.eventsPulled).
-		SetEventsIngested(stats.eventsIngested).
-		SetDuplicates(stats.duplicates).
-		SetStatus(pesr.StatusSuccess)
-	if syncErr != nil {
-		createRun.SetStatus(pesr.StatusFailed)
-		errMsg := strings.TrimSpace(syncErr.Error())
-		if len(errMsg) > 100 {
-			errMsg = errMsg[:100] + "..."
-		}
-		createRun.SetFailureMessage(errMsg)
-	}
-	if _, updateErr := createRun.Save(ctx); updateErr != nil {
-		return fmt.Errorf("save provider event sync run status: %w", updateErr)
-	}
-
-	return syncErr
-}
-
-func (s *ProviderEventService) syncEvents(ctx context.Context, querier rez.ProviderEventQuerier, cursorAfter string) (providerEventSyncStats, error) {
-	var stats providerEventSyncStats
-	if cursorAfter == "" {
-		cursor, cursorErr := s.loadSyncCursor(ctx, querier)
-		if cursorErr != nil {
-			return stats, fmt.Errorf("load cursor: %w", cursorErr)
-		} else if cursor != nil {
-			cursorAfter = cursor.Cursor
-		}
-	}
-
-	type syncBatchItem struct {
-		args        processProviderEventArgs
-		cursorAfter *string
-	}
-
-	batch := make([]syncBatchItem, 0, providerEventSyncBatchSize)
-
-	flushBatch := func() error {
-		if len(batch) == 0 {
-			return nil
-		}
-		params := make([]river.InsertManyParams, len(batch))
-		for i, item := range batch {
-			params[i] = river.InsertManyParams{
-				Args:       item.args,
-				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
-			}
-		}
-		results, insertErr := s.jobService.InsertMany(ctx, params)
-		if insertErr != nil {
-			return fmt.Errorf("could not insert provider event jobs: %w", insertErr)
-		}
-		for i, result := range results {
-			if result != nil && result.UniqueSkippedAsDuplicate {
-				stats.duplicates++
-			} else {
-				stats.eventsIngested++
-			}
-			if i < len(batch) {
-				if cursor := *batch[i].cursorAfter; cursor != "" {
-					stats.latestCursor = &cursor
-				}
-			}
-		}
-		if stats.latestCursor != nil {
-			if cursorErr := s.saveSyncCursor(ctx, querier, *stats.latestCursor); cursorErr != nil {
-				return cursorErr
-			}
-		}
 		return nil
 	}
 
-	req := rez.ProviderEventQueryRequest{CursorAfter: cursorAfter}
-	for result, pullErr := range querier.PullEvents(ctx, req) {
-		if pullErr != nil {
-			return stats, fmt.Errorf("pull provider events: %w", pullErr)
-		}
-		stats.eventsPulled++
-		args, validErr := s.makeProcessEventArgs(result.Event)
-		if validErr != nil {
-			return stats, fmt.Errorf("invalid event args: %w", validErr)
-		}
-		batch = append(batch, syncBatchItem{args: *args, cursorAfter: result.CursorAfter})
-		if len(batch) >= providerEventSyncBatchSize {
-			if flushErr := flushBatch(); flushErr != nil {
-				return stats, flushErr
-			}
-			batch = make([]syncBatchItem, 0, providerEventSyncBatchSize)
-		}
-		if result.CursorAfter == nil {
-			break
+	if len(normalizedEvents) == 0 {
+		if saveErr := ent.WithTx(ctx, s.db, saveNormalizedEventsFn); saveErr != nil {
+			return res, fmt.Errorf("saving normalized events: %w", saveErr)
 		}
 	}
-	return stats, flushBatch()
+	return res, nil
 }
 
-func (s *ProviderEventService) loadSyncCursor(ctx context.Context, q rez.ProviderEventQuerier) (*ent.ProviderEventSyncCursor, error) {
-	query := s.db.ProviderEventSyncCursor.Query().
-		Where(pesc.Provider(q.Provider()), pesc.ProviderSource(q.ProviderSource()))
-	cursor, queryErr := query.Only(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("query provider event sync cursor: %w", queryErr)
-	}
-	return cursor, nil
-}
-
-func (s *ProviderEventService) saveSyncCursor(ctx context.Context, querier rez.ProviderEventQuerier, cursor string) error {
-	create := s.db.ProviderEventSyncCursor.Create().
-		SetProvider(querier.Provider()).
-		SetProviderSource(querier.ProviderSource()).
-		SetCursor(cursor).
-		SetLastSyncedAt(time.Now().UTC())
-
-	create.OnConflict(sql.ConflictColumns(
-		pesc.FieldProvider,
-		pesc.FieldProviderSource,
-	)).
-		Update(func(u *ent.ProviderEventSyncCursorUpsert) {
-			u.UpdateCursor()
-			u.UpdateLastSyncedAt()
-			u.UpdateUpdatedAt()
-		})
-
-	return create.Exec(ctx)
-}
-
-func (s *ProviderEventService) ProjectNormalizedEvent(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
-	ev, queryErr := s.db.NormalizedEvent.Get(ctx, args.EventId)
-	if queryErr != nil {
-		return fmt.Errorf("query normalized event: %w", queryErr)
-	}
-
-	var failed []error
+func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) error {
+	failed := map[string]error{}
 	for name, handlerFn := range eventprojections.GetHandlers() {
+		// query for existing projection status
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
 		status, statusErr := queryStatus.Only(ctx)
 		if statusErr != nil && !ent.IsNotFound(statusErr) {
-			failed = append(failed, fmt.Errorf("query projection status: %w", statusErr))
+			failed[name] = fmt.Errorf("query projection status: %w", statusErr)
 			continue
 		}
-
 		if status != nil {
+			// don't project if this is in progress or already succeeded
 			if status.Status == neps.StatusSucceeded || status.Status == neps.StatusPending {
 				continue
 			}
 		} else {
-			status, statusErr = s.db.NormalizedEventProjectionStatus.Create().
+			setPendingStatus := s.db.NormalizedEventProjectionStatus.Create().
 				SetStatus(neps.StatusPending).
-				SetNormalizedEventID(args.EventId).
+				SetNormalizedEventID(ev.ID).
 				SetHandlerName(name).
-				SetLastAttemptedAt(time.Now().UTC()).
-				Save(ctx)
+				SetLastAttemptedAt(time.Now().UTC())
+			status, statusErr = setPendingStatus.Save(ctx)
 			if statusErr != nil {
-				failed = append(failed, fmt.Errorf("mark projection pending: %w", statusErr))
+				failed[name] = fmt.Errorf("mark projection pending: %w", statusErr)
 				continue
 			}
 		}
@@ -457,13 +455,16 @@ func (s *ProviderEventService) ProjectNormalizedEvent(ctx context.Context, args 
 				SetLastError(projectErr.Error())
 		}
 		if statusErr = update.Exec(ctx); statusErr != nil {
-			failed = append(failed, fmt.Errorf("update projection status: %w", statusErr))
+			failed[name] = fmt.Errorf("update projection status: %w", statusErr)
 			continue
 		}
 	}
 
-	if len(failed) > 0 {
-		return fmt.Errorf("project normalized event: %v", failed)
+	for name, err := range failed {
+		slog.WarnContext(ctx, "failed to update projection status",
+			"name", name,
+			"err", err,
+		)
 	}
 	return nil
 }
