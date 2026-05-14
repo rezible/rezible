@@ -149,11 +149,11 @@ func (s *IntegrationsService) GetProviderEventQueriers(ctx context.Context, prov
 	}
 	var queriers []rez.ProviderEventQuerier
 	for _, intg := range intgs {
-		q, qErr := integrations.GetProviderSourceEventQueriers(ctx, intg)
+		q, qErr := integrations.GetProviderEventQuerier(intg)
 		if qErr != nil {
 			return nil, fmt.Errorf("failed to get integration event queriers: %w", qErr)
 		}
-		queriers = append(queriers, q...)
+		queriers = append(queriers, q)
 	}
 	return queriers, nil
 }
@@ -245,8 +245,8 @@ func (s *IntegrationsService) set(ctx context.Context, params rez.ConfigureInteg
 
 	if s.jobs != nil {
 		args := jobs.ProviderEventSyncJob{
-			ProviderSources: map[string][]string{intg.Provider: {}},
-			SyncReason:      "configured",
+			Provider:   params.Provider,
+			SyncReason: "configured",
 		}
 		if _, jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 			slog.Error("failed to insert sync job", "error", jobErr)
@@ -504,10 +504,11 @@ func (s *IntegrationsService) GetVideoConferenceService(ctx context.Context) (re
 	return nil, rez.ErrNoConfiguredIntegrations
 }
 
-func (s *IntegrationsService) RequestDataSync(ctx context.Context, providerSources map[string][]string) error {
+func (s *IntegrationsService) RequestDataSync(ctx context.Context, provider string, sources []string) error {
 	args := jobs.ProviderEventSyncJob{
-		ProviderSources: providerSources,
-		SyncReason:      "manual",
+		SyncReason: "manual",
+		Provider:   provider,
+		Sources:    sources,
 	}
 	opts := &river.InsertOpts{
 		UniqueOpts: river.UniqueOpts{

@@ -190,7 +190,7 @@ type (
 
 		GetChatService(ctx context.Context) (ChatService, error)
 
-		RequestDataSync(ctx context.Context, providerSources map[string][]string) error
+		RequestDataSync(ctx context.Context, provider string, sources []string) error
 		GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error)
 	}
 )
@@ -212,27 +212,25 @@ type (
 	}
 
 	ProviderEventQueryRequest struct {
-		CursorAfter string
+		SourceCursors map[string]string
 	}
 
 	ProviderEventQuerier interface {
 		Provider() string
-		ProviderSource() string
 		PullEvents(context.Context, ProviderEventQueryRequest) iter.Seq2[*ProviderEventQueryResult, error]
 	}
 
 	ProviderEventQueryResult struct {
-		Event       ProviderEvent
-		CursorAfter *string
+		Event             ProviderEvent
+		SourceCursorAfter *string
 	}
 
 	ProviderEventSyncOptions struct {
-		CursorAfter *string
-		SyncReason  string
+		SyncReason   string
+		QueryRequest ProviderEventQueryRequest
 	}
 
 	ProviderEventService interface {
-		RegisterEventProcessor(provider string, processor ProviderEventProcessor)
 		Ingest(context.Context, ProviderEvent) (*ProviderEventIngestResult, error)
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
 	}

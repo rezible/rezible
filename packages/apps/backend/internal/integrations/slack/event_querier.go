@@ -8,28 +8,35 @@ import (
 	"time"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/slack-go/slack"
 )
 
-type userEventQuerier struct {
+func (i *integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+	return newEventQuerier(newConfiguredIntegration(i.services, intg)), nil
+}
+
+type eventQuerier struct {
 	ci     *ConfiguredIntegration
 	client *slack.Client
 }
 
-func newUserEventQuerier(ci *ConfiguredIntegration) *userEventQuerier {
-	return &userEventQuerier{ci: ci, client: slack.New(ci.accessToken())}
+func newEventQuerier(ci *ConfiguredIntegration) *eventQuerier {
+	return &eventQuerier{ci: ci, client: slack.New(ci.accessToken())}
 }
 
-func (q *userEventQuerier) Provider() string {
+func (q *eventQuerier) Provider() string {
 	return integrationName
 }
 
-func (q *userEventQuerier) ProviderSource() string {
-	return "users"
-}
-
-func (q *userEventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return q.pullUserObservedEvents(ctx, req.CursorAfter)
+func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+		if usersCursor, ok := req.SourceCursors[sourceUsers]; ok || len(req.SourceCursors) == 0 {
+			for ev, evErr := range q.pullUserObservedEvents(ctx, usersCursor) {
+				yield(ev, evErr)
+			}
+		}
+	}
 }
 
 type userObservedPayload struct {
@@ -39,7 +46,7 @@ type userObservedPayload struct {
 	UpdatedAt slack.JSONTime `json:"updated_at"`
 }
 
-func (q *userEventQuerier) makeUserObservedPayload(u slack.User) ([]byte, error) {
+func (q *eventQuerier) makeUserObservedPayload(u slack.User) ([]byte, error) {
 	payload := userObservedPayload{
 		Email:     u.Profile.Email,
 		SlackID:   u.ID,
@@ -49,7 +56,7 @@ func (q *userEventQuerier) makeUserObservedPayload(u slack.User) ([]byte, error)
 	return json.Marshal(payload)
 }
 
-func (q *userEventQuerier) pullUserObservedEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		slackUsers, getErr := q.client.GetUsersContext(ctx,
 			slack.GetUsersOptionPresence(false),

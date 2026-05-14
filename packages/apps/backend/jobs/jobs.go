@@ -13,9 +13,9 @@ func (ProjectNormalizedEvent) Kind() string {
 }
 
 type ProviderEventSyncJob struct {
-	ProviderSources map[string][]string `json:"provider_sources,omitempty"`
-	CursorAfter     *string             `json:"cursor_after,omitempty"`
-	SyncReason      string              `json:"sync_reason,omitempty"`
+	SyncReason string   `json:"sync_reason,omitempty"`
+	Provider   string   `json:"provider"`
+	Sources    []string `json:"sources,omitempty"`
 }
 
 func (ProviderEventSyncJob) Kind() string {

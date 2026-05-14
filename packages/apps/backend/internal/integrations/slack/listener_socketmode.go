@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"log/slog"
 
+	rez "github.com/rezible/rezible"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"github.com/slack-go/slack/socketmode"
-
-	rez "github.com/rezible/rezible"
 )
 
 type SocketModeListener struct {
@@ -22,9 +21,6 @@ type SocketModeListener struct {
 }
 
 func (i *integration) newSocketModeEventListener(handler *messageHandler) (*SocketModeListener, error) {
-	if !rez.Config.SingleTenantMode() {
-		return nil, errors.New("can't use socket mode in multi-tenant mode")
-	}
 	return &SocketModeListener{
 		client:  socketmode.New(slack.New(i.cfg.BotToken, slack.OptionAppLevelToken(i.cfg.AppToken))),
 		handler: handler,
@@ -33,17 +29,22 @@ func (i *integration) newSocketModeEventListener(handler *messageHandler) (*Sock
 }
 
 func (l *SocketModeListener) Start(baseCtx context.Context) error {
+	if !rez.Config.SingleTenantMode() {
+		return fmt.Errorf("can't use socket mode in multi-tenant mode")
+	}
+
 	cancelCtx, cancel := context.WithCancel(baseCtx)
 
-	p := pool.New().WithErrors().WithContext(cancelCtx)
+	p := pool.New().
+		WithErrors().
+		WithContext(cancelCtx)
 
 	l.stopFn = func() error {
 		cancel()
-		if p == nil {
-			return nil
-		}
-		if poolErr := p.Wait(); poolErr != nil && !errors.Is(poolErr, context.Canceled) {
-			return fmt.Errorf("slack socket mode handler: %w", poolErr)
+		if p != nil {
+			if poolErr := p.Wait(); poolErr != nil && !errors.Is(poolErr, context.Canceled) {
+				return fmt.Errorf("slack socket mode handler: %w", poolErr)
+			}
 		}
 		return nil
 	}

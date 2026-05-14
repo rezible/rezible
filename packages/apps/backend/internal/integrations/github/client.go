@@ -15,7 +15,7 @@ type githubClient struct {
 	client *github.Client
 }
 
-func newClient(ctx context.Context, ci *ConfiguredIntegration) (*githubClient, error) {
+func newClient(ci *ConfiguredIntegration) (*githubClient, error) {
 	var cfg Config
 	if cfgErr := rez.Config.Unmarshal("github", &cfg); cfgErr != nil {
 		return nil, cfgErr

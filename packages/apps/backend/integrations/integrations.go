@@ -132,18 +132,33 @@ func GetOAuthIntegration(name string) (IntegrationWithOAuth2Flow, error) {
 	return oauth2Intg, nil
 }
 
-type IntegrationWithProviderSourceEventQueriers interface {
-	MakeProviderSourceEventQueriers(context.Context, *ent.Integration) ([]rez.ProviderEventQuerier, error)
+type IntegrationPackageWithProviderEventProcessor interface {
+	MakeProviderEventProcessor() rez.ProviderEventProcessor
 }
 
-func GetProviderSourceEventQueriers(ctx context.Context, intg *ent.Integration) ([]rez.ProviderEventQuerier, error) {
+func GetProviderEventProcessors() map[string]rez.ProviderEventProcessor {
+	els := make(map[string]rez.ProviderEventProcessor)
+	for _, pkg := range availablePackages {
+		procPkg, ok := pkg.(IntegrationPackageWithProviderEventProcessor)
+		if ok {
+			els[pkg.Name()] = procPkg.MakeProviderEventProcessor()
+		}
+	}
+	return els
+}
+
+type IntegrationPackageWithProviderEventQuerier interface {
+	MakeProviderEventQuerier(*ent.Integration) (rez.ProviderEventQuerier, error)
+}
+
+func GetProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
 	pkg, valid := packageNameMap[intg.Provider]
 	if !valid {
 		return nil, fmt.Errorf("unknown integration package: %s", intg.Provider)
 	}
-	querierPkg, ok := pkg.(IntegrationWithProviderSourceEventQueriers)
+	querierPkg, ok := pkg.(IntegrationPackageWithProviderEventQuerier)
 	if !ok {
 		return nil, nil
 	}
-	return querierPkg.MakeProviderSourceEventQueriers(ctx, intg)
+	return querierPkg.MakeProviderEventQuerier(intg)
 }

@@ -9,22 +9,38 @@ import (
 	"time"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 )
 
-type repositoryEventQuerier struct {
+func (i *integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+	ci := newConfiguredIntegration(i.services, intg)
+	client, clientErr := newClient(ci)
+	if clientErr != nil {
+		return nil, clientErr
+	}
+	return &eventQuerier{ci: ci, client: client}, nil
+}
+
+type eventQuerier struct {
 	ci     *ConfiguredIntegration
 	client *githubClient
 }
 
-func (q *repositoryEventQuerier) Provider() string {
+func (q *eventQuerier) Provider() string {
 	return integrationName
 }
 
-func (q *repositoryEventQuerier) ProviderSource() string {
-	return "repositories"
+func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+		if reposCursor, ok := req.SourceCursors[sourceRepositories]; ok || len(req.SourceCursors) == 0 {
+			for ev, evErr := range q.pullRepositoryEvents(ctx, reposCursor) {
+				yield(ev, evErr)
+			}
+		}
+	}
 }
 
-func (q *repositoryEventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		repos, listErr := q.client.ListRepositories(ctx)
 		if listErr != nil {
@@ -40,7 +56,7 @@ func (q *repositoryEventQuerier) PullEvents(ctx context.Context, req rez.Provide
 				continue
 			}
 			cursor := repo.GetFullName()
-			if req.CursorAfter != "" && cursor <= req.CursorAfter {
+			if cursorAfter != "" && cursor <= cursorAfter {
 				continue
 			}
 
@@ -83,7 +99,7 @@ func (q *repositoryEventQuerier) PullEvents(ctx context.Context, req rez.Provide
 					Payload:          body,
 					ContentType:      "application/json",
 				},
-				CursorAfter: new(cursor),
+				SourceCursorAfter: new(cursor),
 			}
 
 			if !yield(res, nil) {

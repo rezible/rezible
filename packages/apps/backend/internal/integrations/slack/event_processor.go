@@ -13,6 +13,10 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
+func (i *integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
+	return &eventProcessor{services: i.services}
+}
+
 type eventProcessor struct {
 	services *rez.Services
 }

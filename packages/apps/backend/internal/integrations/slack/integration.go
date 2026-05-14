@@ -68,8 +68,6 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 		intg.webhookHandlers["/"] = wh.Handler()
 	}
 
-	svcs.ProviderEvents.RegisterEventProcessor(integrationName, &eventProcessor{services: svcs})
-
 	return intg, nil
 }
 
@@ -94,13 +92,6 @@ func (i *integration) WebhookHandlers() map[string]http.Handler {
 
 func (i *integration) SupportedDataKinds() []string {
 	return supportedDataKinds
-}
-
-func (i *integration) MakeProviderSourceEventQueriers(ctx context.Context, intg *ent.Integration) ([]rez.ProviderEventQuerier, error) {
-	queriers := []rez.ProviderEventQuerier{
-		newUserEventQuerier(newConfiguredIntegration(i.services, intg)),
-	}
-	return queriers, nil
 }
 
 func (i *integration) OAuthConfigRequired() bool {

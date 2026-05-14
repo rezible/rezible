@@ -163,8 +163,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 func (h *integrationsHandler) RequestIntegrationDataSync(ctx context.Context, req *oapi.RequestIntegrationDataSyncRequest) (*oapi.RequestIntegrationDataSyncResponse, error) {
 	var resp oapi.RequestIntegrationDataSyncResponse
 
-	provSrc := map[string][]string{req.Name: req.Body.Attributes.Sources}
-	if requestErr := h.integrations.RequestDataSync(ctx, provSrc); requestErr != nil {
+	if requestErr := h.integrations.RequestDataSync(ctx, req.Name, req.Body.Attributes.Sources); requestErr != nil {
 		return nil, oapi.Error(ctx, "failed to request integration data sync", requestErr)
 	}
 
