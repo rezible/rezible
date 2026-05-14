@@ -26,6 +26,8 @@ var normalizedEventKinds = []string{
 	"chat_message",
 	"repository_observed",
 	"user_observed",
+	"incident_observed",
+	"alert_observed",
 	"change_event_observed",
 }
 

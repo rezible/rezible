@@ -1478,7 +1478,7 @@ var (
 		{Name: "provider", Type: field.TypeString},
 		{Name: "provider_source", Type: field.TypeString},
 		{Name: "provider_event_ref", Type: field.TypeString},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message", "repository_observed", "user_observed", "change_event_observed"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message", "repository_observed", "user_observed", "incident_observed", "alert_observed", "change_event_observed"}},
 		{Name: "subject_kind", Type: field.TypeString},
 		{Name: "subject_ref", Type: field.TypeString},
 		{Name: "attributes", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
