@@ -1,7 +1,7 @@
 <script lang="ts" module>
-	import type { IncidentEvent } from "$lib/api";
+	import type { IncidentTimelineEvent } from "$lib/api";
 	export type Props = {
-		event?: IncidentEvent;
+		event?: IncidentTimelineEvent;
 		selected: boolean;
 	};
 </script>

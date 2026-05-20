@@ -2680,6 +2680,11 @@ var (
 				Unique:  true,
 				Columns: []*schema.Column{UsersColumns[5]},
 			},
+			{
+				Name:    "user_tenant_id_email",
+				Unique:  true,
+				Columns: []*schema.Column{UsersColumns[6], UsersColumns[1]},
+			},
 		},
 	}
 	// VideoConferencesColumns holds the columns for the "video_conferences" table.

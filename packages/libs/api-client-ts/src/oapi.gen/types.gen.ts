@@ -244,29 +244,6 @@ export type CreateIncidentDebriefQuestionResponseBody = {
     data: IncidentDebriefQuestion;
 };
 
-export type CreateIncidentEventAttributes = {
-    isKey?: boolean;
-    kind: 'observation' | 'action' | 'decision' | 'context';
-    timestamp: string;
-    title: string;
-};
-
-export type CreateIncidentEventRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateIncidentEventAttributes;
-};
-
-export type CreateIncidentEventResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: IncidentEvent;
-};
-
 export type CreateIncidentFieldAttributes = {
     incidentType?: string;
     name: string;
@@ -393,6 +370,29 @@ export type CreateIncidentTagResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentTag;
+};
+
+export type CreateIncidentTimelineEventAttributes = {
+    isKey?: boolean;
+    kind: 'observation' | 'action' | 'decision' | 'context';
+    timestamp: string;
+    title: string;
+};
+
+export type CreateIncidentTimelineEventRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: CreateIncidentTimelineEventAttributes;
+};
+
+export type CreateIncidentTimelineEventResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentTimelineEvent;
 };
 
 export type CreateIncidentTypeAttributes = {
@@ -878,6 +878,14 @@ export type GetIncidentTagResponseBody = {
     data: IncidentTag;
 };
 
+export type GetIncidentTimelineEventMetadataResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentTimelineEventMetadata;
+};
+
 export type GetIncidentTypeResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1163,88 +1171,6 @@ export type IncidentDebriefSuggestionAttributes = {
     ignored: boolean;
 };
 
-export type IncidentEvent = {
-    attributes: IncidentEventAttributes;
-    id: string;
-};
-
-export type IncidentEventAttributes = {
-    contributingFactors: Array<IncidentEventContributingFactor>;
-    decisionContext?: IncidentEventDecisionContext;
-    description?: string;
-    evidence: Array<IncidentEventEvidence>;
-    incidentId: string;
-    isKey: boolean;
-    kind: 'observation' | 'action' | 'decision' | 'context';
-    sequence: number;
-    systemContext: Array<IncidentEventTopologyContext>;
-    timestamp: string;
-    title: string;
-};
-
-export type IncidentEventContributingFactor = {
-    attributes: IncidentEventContributingFactorAttributes;
-    id: string;
-};
-
-export type IncidentEventContributingFactorAttributes = {
-    description: string;
-    factorTypeId: string;
-    links: Array<string>;
-};
-
-export type IncidentEventContributingFactorCategory = {
-    attributes: IncidentEventContributingFactorCategoryAttributes;
-    id: string;
-};
-
-export type IncidentEventContributingFactorCategoryAttributes = {
-    description: string;
-    factorTypes: Array<IncidentEventContributingFactorType>;
-    name: string;
-};
-
-export type IncidentEventContributingFactorType = {
-    attributes: IncidentEventContributingFactorTypeAttributes;
-    id: string;
-};
-
-export type IncidentEventContributingFactorTypeAttributes = {
-    description: string;
-    examples: Array<string>;
-    name: string;
-};
-
-export type IncidentEventDecisionContext = {
-    constraints: Array<string>;
-    decisionRationale: string;
-    optionsConsidered: Array<string>;
-};
-
-export type IncidentEventEvidence = {
-    attributes: IncidentEventEvidenceAttributes;
-    id: string;
-};
-
-export type IncidentEventEvidenceAttributes = {
-    properties?: {
-        [key: string]: string;
-    };
-    source: string;
-    value: string;
-};
-
-export type IncidentEventTopologyContext = {
-    attributes: IncidentEventTopologyContextAttributes;
-    id: string;
-};
-
-export type IncidentEventTopologyContextAttributes = {
-    knowledgeEntityId?: string;
-    relationship: string;
-    snapshotEntityId?: string;
-};
-
 export type IncidentField = {
     attributes: IncidentFieldAttributes;
     id: string;
@@ -1352,6 +1278,92 @@ export type IncidentTeamAssignment = {
     endedAt: string;
     startedAt: string;
     team: Team;
+};
+
+export type IncidentTimelineEvent = {
+    attributes: IncidentTimelineEventAttributes;
+    id: string;
+};
+
+export type IncidentTimelineEventAttributes = {
+    contributingFactors: Array<IncidentTimelineEventContributingFactor>;
+    decisionContext?: IncidentTimelineEventDecisionContext;
+    description?: string;
+    evidence: Array<IncidentTimelineEventEvidence>;
+    incidentId: string;
+    isKey: boolean;
+    kind: 'observation' | 'action' | 'decision' | 'context';
+    sequence: number;
+    systemContext: Array<IncidentTimelineEventTopologyContext>;
+    timestamp: string;
+    title: string;
+};
+
+export type IncidentTimelineEventContributingFactor = {
+    attributes: IncidentTimelineEventContributingFactorAttributes;
+    id: string;
+};
+
+export type IncidentTimelineEventContributingFactorAttributes = {
+    description: string;
+    factorTypeId: string;
+    links: Array<string>;
+};
+
+export type IncidentTimelineEventContributingFactorCategory = {
+    attributes: IncidentTimelineEventContributingFactorCategoryAttributes;
+    id: string;
+};
+
+export type IncidentTimelineEventContributingFactorCategoryAttributes = {
+    description: string;
+    factorTypes: Array<IncidentTimelineEventContributingFactorType>;
+    name: string;
+};
+
+export type IncidentTimelineEventContributingFactorType = {
+    attributes: IncidentTimelineEventContributingFactorTypeAttributes;
+    id: string;
+};
+
+export type IncidentTimelineEventContributingFactorTypeAttributes = {
+    description: string;
+    examples: Array<string>;
+    name: string;
+};
+
+export type IncidentTimelineEventDecisionContext = {
+    constraints: Array<string>;
+    decisionRationale: string;
+    optionsConsidered: Array<string>;
+};
+
+export type IncidentTimelineEventEvidence = {
+    attributes: IncidentTimelineEventEvidenceAttributes;
+    id: string;
+};
+
+export type IncidentTimelineEventEvidenceAttributes = {
+    properties?: {
+        [key: string]: string;
+    };
+    source: string;
+    value: string;
+};
+
+export type IncidentTimelineEventMetadata = {
+    contributingFactorCategories: Array<IncidentTimelineEventContributingFactorCategory>;
+};
+
+export type IncidentTimelineEventTopologyContext = {
+    attributes: IncidentTimelineEventTopologyContextAttributes;
+    id: string;
+};
+
+export type IncidentTimelineEventTopologyContextAttributes = {
+    knowledgeEntityId?: string;
+    relationship: string;
+    snapshotEntityId?: string;
 };
 
 export type IncidentType = {
@@ -1466,24 +1478,6 @@ export type ListIncidentDebriefSuggestionsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListIncidentEventContributingFactorsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentEventContributingFactorCategory>;
-    pagination: ResponsePagination;
-};
-
-export type ListIncidentEventsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<IncidentEvent>;
-    pagination: ResponsePagination;
-};
-
 export type ListIncidentFieldsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1526,6 +1520,15 @@ export type ListIncidentTagsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IncidentTag>;
+    pagination: ResponsePagination;
+};
+
+export type ListIncidentTimelineEventsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentTimelineEvent>;
     pagination: ResponsePagination;
 };
 
@@ -2288,28 +2291,6 @@ export type UpdateIncidentDebriefResponseBody = {
     data: IncidentDebrief;
 };
 
-export type UpdateIncidentEventAttributes = {
-    kind?: 'observation' | 'action' | 'decision' | 'context';
-    timestamp?: string;
-    title?: string;
-};
-
-export type UpdateIncidentEventRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: UpdateIncidentEventAttributes;
-};
-
-export type UpdateIncidentEventResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: IncidentEvent;
-};
-
 export type UpdateIncidentFieldAttributes = {
     archived?: boolean;
     incidentType?: string;
@@ -2443,6 +2424,28 @@ export type UpdateIncidentTagResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentTag;
+};
+
+export type UpdateIncidentTimelineEventAttributes = {
+    kind?: 'observation' | 'action' | 'decision' | 'context';
+    timestamp?: string;
+    title?: string;
+};
+
+export type UpdateIncidentTimelineEventRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateIncidentTimelineEventAttributes;
+};
+
+export type UpdateIncidentTimelineEventResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentTimelineEvent;
 };
 
 export type UpdateIncidentTypeAttributes = {
@@ -3893,150 +3896,6 @@ export type ListDebriefSuggestionsResponses = {
 
 export type ListDebriefSuggestionsResponse = ListDebriefSuggestionsResponses[keyof ListDebriefSuggestionsResponses];
 
-export type ListIncidentEventContributingFactorCategoriesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/incident_event_contributing_factor_categories';
-};
-
-export type ListIncidentEventContributingFactorCategoriesErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentEventContributingFactorCategoriesError = ListIncidentEventContributingFactorCategoriesErrors[keyof ListIncidentEventContributingFactorCategoriesErrors];
-
-export type ListIncidentEventContributingFactorCategoriesResponses = {
-    /**
-     * OK
-     */
-    200: ListIncidentEventContributingFactorsResponseBody;
-};
-
-export type ListIncidentEventContributingFactorCategoriesResponse = ListIncidentEventContributingFactorCategoriesResponses[keyof ListIncidentEventContributingFactorCategoriesResponses];
-
-export type DeleteIncidentEventData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_events/{id}';
-};
-
-export type DeleteIncidentEventErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type DeleteIncidentEventError = DeleteIncidentEventErrors[keyof DeleteIncidentEventErrors];
-
-export type DeleteIncidentEventResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteIncidentEventResponse = DeleteIncidentEventResponses[keyof DeleteIncidentEventResponses];
-
-export type UpdateIncidentEventData = {
-    body: UpdateIncidentEventRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incident_events/{id}';
-};
-
-export type UpdateIncidentEventErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateIncidentEventError = UpdateIncidentEventErrors[keyof UpdateIncidentEventErrors];
-
-export type UpdateIncidentEventResponses = {
-    /**
-     * OK
-     */
-    200: UpdateIncidentEventResponseBody;
-};
-
-export type UpdateIncidentEventResponse = UpdateIncidentEventResponses[keyof UpdateIncidentEventResponses];
-
 export type GetIncidentMetadataData = {
     body?: never;
     path?: never;
@@ -5356,6 +5215,145 @@ export type UpdateIncidentMilestoneResponses = {
 
 export type UpdateIncidentMilestoneResponse = UpdateIncidentMilestoneResponses[keyof UpdateIncidentMilestoneResponses];
 
+export type ListIncidentTimelineEventMetadataData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/incident_timeline/event_metadata';
+};
+
+export type ListIncidentTimelineEventMetadataErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIncidentTimelineEventMetadataError = ListIncidentTimelineEventMetadataErrors[keyof ListIncidentTimelineEventMetadataErrors];
+
+export type ListIncidentTimelineEventMetadataResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentTimelineEventMetadataResponseBody;
+};
+
+export type ListIncidentTimelineEventMetadataResponse = ListIncidentTimelineEventMetadataResponses[keyof ListIncidentTimelineEventMetadataResponses];
+
+export type DeleteIncidentTimelineEventData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_timeline/events/{id}';
+};
+
+export type DeleteIncidentTimelineEventErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type DeleteIncidentTimelineEventError = DeleteIncidentTimelineEventErrors[keyof DeleteIncidentTimelineEventErrors];
+
+export type DeleteIncidentTimelineEventResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteIncidentTimelineEventResponse = DeleteIncidentTimelineEventResponses[keyof DeleteIncidentTimelineEventResponses];
+
+export type UpdateIncidentTimelineEventData = {
+    body: UpdateIncidentTimelineEventRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incident_timeline/events/{id}';
+};
+
+export type UpdateIncidentTimelineEventErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateIncidentTimelineEventError = UpdateIncidentTimelineEventErrors[keyof UpdateIncidentTimelineEventErrors];
+
+export type UpdateIncidentTimelineEventResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIncidentTimelineEventResponseBody;
+};
+
+export type UpdateIncidentTimelineEventResponse = UpdateIncidentTimelineEventResponses[keyof UpdateIncidentTimelineEventResponses];
+
 export type ListIncidentsData = {
     body?: never;
     path?: never;
@@ -5640,105 +5638,6 @@ export type GetIncidentUserDebriefResponses = {
 
 export type GetIncidentUserDebriefResponse = GetIncidentUserDebriefResponses[keyof GetIncidentUserDebriefResponses];
 
-export type ListIncidentEventsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/incidents/{id}/events';
-};
-
-export type ListIncidentEventsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIncidentEventsError = ListIncidentEventsErrors[keyof ListIncidentEventsErrors];
-
-export type ListIncidentEventsResponses = {
-    /**
-     * OK
-     */
-    200: ListIncidentEventsResponseBody;
-};
-
-export type ListIncidentEventsResponse = ListIncidentEventsResponses[keyof ListIncidentEventsResponses];
-
-export type CreateIncidentEventData = {
-    body: CreateIncidentEventRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/incidents/{id}/events';
-};
-
-export type CreateIncidentEventErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateIncidentEventError = CreateIncidentEventErrors[keyof CreateIncidentEventErrors];
-
-export type CreateIncidentEventResponses = {
-    /**
-     * OK
-     */
-    200: CreateIncidentEventResponseBody;
-};
-
-export type CreateIncidentEventResponse = CreateIncidentEventResponses[keyof CreateIncidentEventResponses];
-
 export type ListIncidentMilestonesData = {
     body?: never;
     path: {
@@ -5832,6 +5731,105 @@ export type CreateIncidentMilestoneResponses = {
 };
 
 export type CreateIncidentMilestoneResponse = CreateIncidentMilestoneResponses[keyof CreateIncidentMilestoneResponses];
+
+export type ListIncidentTimelineEventsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/incidents/{id}/timeline_events';
+};
+
+export type ListIncidentTimelineEventsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIncidentTimelineEventsError = ListIncidentTimelineEventsErrors[keyof ListIncidentTimelineEventsErrors];
+
+export type ListIncidentTimelineEventsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentTimelineEventsResponseBody;
+};
+
+export type ListIncidentTimelineEventsResponse = ListIncidentTimelineEventsResponses[keyof ListIncidentTimelineEventsResponses];
+
+export type CreateIncidentTimelineEventData = {
+    body: CreateIncidentTimelineEventRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}/timeline_events';
+};
+
+export type CreateIncidentTimelineEventErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateIncidentTimelineEventError = CreateIncidentTimelineEventErrors[keyof CreateIncidentTimelineEventErrors];
+
+export type CreateIncidentTimelineEventResponses = {
+    /**
+     * OK
+     */
+    200: CreateIncidentTimelineEventResponseBody;
+};
+
+export type CreateIncidentTimelineEventResponse = CreateIncidentTimelineEventResponses[keyof CreateIncidentTimelineEventResponses];
 
 export type ListConfiguredIntegrationsData = {
     body?: never;

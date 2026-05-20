@@ -1,4 +1,4 @@
-import type { IncidentEventDecisionContext, IncidentEventAttributes, IncidentEventContributingFactor, IncidentEventEvidence, IncidentEventTopologyContext, Incident } from "$lib/api";
+import type { IncidentTimelineEventDecisionContext, IncidentTimelineEventAttributes, IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext, Incident } from "$lib/api";
 import { createMentionEditor } from "$components/tiptap-editor/editors";
 import type { Content } from "@tiptap/core";
 import {now, getLocalTimeZone, type ZonedDateTime, parseAbsoluteToLocal} from '@internationalized/date';
@@ -16,7 +16,7 @@ const makeDefaultDecisionContext = () => ({
 });
 
 type DescriptionEditor = ReturnType<typeof createMentionEditor> | null;
-type EventKind = IncidentEventAttributes["kind"];
+type EventKind = IncidentTimelineEventAttributes["kind"];
 
 export class TimelineEventDialogAttributes {
 	kind = $state<EventKind>("observation");
@@ -25,12 +25,12 @@ export class TimelineEventDialogAttributes {
 	descriptionEditor = $state<DescriptionEditor>(null);
 	timestamp = $state<ZonedDateTime>(makeTimeAnchor());
 	isKey = $state(false);
-	decisionContext = $state<IncidentEventDecisionContext>(makeDefaultDecisionContext());
-	contributingFactors = $state<IncidentEventContributingFactor[]>([]);
-	evidence = $state<IncidentEventEvidence[]>([]);
-	systemContext = $state<IncidentEventTopologyContext[]>([]);
+	decisionContext = $state<IncidentTimelineEventDecisionContext>(makeDefaultDecisionContext());
+	contributingFactors = $state<IncidentTimelineEventContributingFactor[]>([]);
+	evidence = $state<IncidentTimelineEventEvidence[]>([]);
+	systemContext = $state<IncidentTimelineEventTopologyContext[]>([]);
 
-	init(inc?: Incident, e?: Partial<IncidentEventAttributes>) {
+	init(inc?: Incident, e?: Partial<IncidentTimelineEventAttributes>) {
 		this.kind = $state.snapshot(e?.kind) ?? "observation";
 		this.title = $state.snapshot(e?.title) ?? "";
 		this.descriptionContent = (!!e?.description) ? JSON.parse(e.description) as Content : undefined;

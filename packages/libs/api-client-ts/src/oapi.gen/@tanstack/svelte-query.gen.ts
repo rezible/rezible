@@ -3,8 +3,8 @@
 import { type InfiniteData, infiniteQueryOptions, type MutationOptions, queryOptions } from '@tanstack/svelte-query';
 
 import { client } from '../client.gen';
-import { addIncidentDebriefUserMessage, addSystemAnalysisEdge, addSystemAnalysisNode, addWatchedOncallRoster, archiveDebriefQuestion, archiveIncident, archiveIncidentField, archiveIncidentRole, archiveIncidentSeverity, archiveIncidentTag, archiveIncidentType, archiveMeetingSchedule, archiveMeetingSession, archiveOncallHandoverTemplate, archivePlaybook, archiveRetrospectiveReview, archiveTask, archiveTeam, completeIntegrationOauthFlow, configureIntegration, createDebriefQuestion, createEventAnnotation, createIncident, createIncidentEvent, createIncidentField, createIncidentMilestone, createIncidentRole, createIncidentSeverity, createIncidentTag, createIncidentType, createMeetingSchedule, createMeetingSession, createOncallHandoverTemplate, createPlaybook, createRetrospectiveComment, createRetrospectiveReview, createSystemTopologySnapshot, createTask, createTeam, createTeamMembership, deleteEventAnnotation, deleteIncidentEvent, deleteIncidentMilestone, deleteIntegration, deleteSystemAnalysisEdge, deleteSystemAnalysisNode, deleteTeamMembership, deleteUserNotification, finishOrganizationSetup, getAdjacentOncallShifts, getAlert, getAlertMetrics, getConfiguredIntegration, getCurrentAuthSession, getDebriefQuestion, getDocumentAccess, getEvent, getIncident, getIncidentDebrief, getIncidentField, getIncidentMetadata, getIncidentRole, getIncidentSeverity, getIncidentTag, getIncidentType, getIncidentUserDebrief, getIntegrationDataSyncStatus, getMeetingSchedule, getMeetingSession, getOncallRoster, getOncallRosterMetrics, getOncallShift, getOncallShiftBurdenMetricWeights, getOncallShiftHandover, getOncallShiftHandoverTemplate, getOncallShiftMetrics, getOrganization, getPlaybook, getRetrospective, getRetrospectiveComment, getSystemAnalysis, getSystemAnalysisEdge, getSystemAnalysisNode, getSystemTopologyEntity, getSystemTopologyEntityNeighborhood, getSystemTopologySnapshot, getTask, getTeam, getUser, getUserOncallInformation, listAlertIncidentLinks, listAlerts, listAvailableIntegrations, listConfiguredIntegrations, listDebriefMessages, listDebriefQuestions, listDebriefSuggestions, listEventAnnotations, listEvents, listIncidentEventContributingFactorCategories, listIncidentEvents, listIncidentFields, listIncidentMilestones, listIncidentRoles, listIncidents, listIncidentSeverities, listIncidentTags, listIncidentTypes, listMeetingSchedules, listMeetingSessions, listOncallRosters, listOncallShifts, listPlaybooks, listRetrospectiveComments, listRetrospectiveReviews, listRetrospectives, listSystemAnalysisEdges, listSystemAnalysisNodes, listSystemTopologyEntities, listSystemTopologyRelationships, listTasks, listTeamMemberships, listTeams, listUserNotifications, listUsers, listWatchedOncallRosters, type Options, removeWatchedOncallRoster, requestIntegrationDataSync, selectIntegrationOauthFlow, sendOncallShiftHandover, startIntegrationOauthFlow, updateConfiguredIntegrationPreferences, updateDebriefQuestion, updateEventAnnotation, updateIncident, updateIncidentDebrief, updateIncidentEvent, updateIncidentField, updateIncidentMilestone, updateIncidentRole, updateIncidentSeverity, updateIncidentTag, updateIncidentType, updateMeetingSchedule, updateMeetingSession, updateOncallHandoverTemplate, updateOncallShiftHandover, updatePlaybook, updateRetrospective, updateRetrospectiveComment, updateRetrospectiveReview, updateSystemAnalysisEdge, updateSystemAnalysisNode, updateTask, updateTeamMembership, updateTeams } from '../sdk.gen';
-import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, AddSystemAnalysisEdgeData, AddSystemAnalysisEdgeError, AddSystemAnalysisEdgeResponse, AddSystemAnalysisNodeData, AddSystemAnalysisNodeError, AddSystemAnalysisNodeResponse, AddWatchedOncallRosterData, AddWatchedOncallRosterError, AddWatchedOncallRosterResponse, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, ArchiveIncidentResponse, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, ArchivePlaybookData, ArchivePlaybookError, ArchivePlaybookResponse, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowError, CompleteIntegrationOauthFlowResponse, ConfigureIntegrationData, ConfigureIntegrationError, ConfigureIntegrationResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, CreateEventAnnotationData, CreateEventAnnotationError, CreateEventAnnotationResponse, CreateIncidentData, CreateIncidentError, CreateIncidentEventData, CreateIncidentEventError, CreateIncidentEventResponse, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, CreateIncidentResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, CreatePlaybookData, CreatePlaybookError, CreatePlaybookResponse, CreateRetrospectiveCommentData, CreateRetrospectiveCommentError, CreateRetrospectiveCommentResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, CreateSystemTopologySnapshotData, CreateSystemTopologySnapshotError, CreateSystemTopologySnapshotResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateTeamData, CreateTeamError, CreateTeamMembershipData, CreateTeamMembershipError, CreateTeamMembershipResponse, CreateTeamResponse, DeleteEventAnnotationData, DeleteEventAnnotationError, DeleteEventAnnotationResponse, DeleteIncidentEventData, DeleteIncidentEventError, DeleteIncidentEventResponse, DeleteIncidentMilestoneData, DeleteIncidentMilestoneError, DeleteIncidentMilestoneResponse, DeleteIntegrationData, DeleteIntegrationError, DeleteIntegrationResponse, DeleteSystemAnalysisEdgeData, DeleteSystemAnalysisEdgeError, DeleteSystemAnalysisEdgeResponse, DeleteSystemAnalysisNodeData, DeleteSystemAnalysisNodeError, DeleteSystemAnalysisNodeResponse, DeleteTeamMembershipData, DeleteTeamMembershipError, DeleteTeamMembershipResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, FinishOrganizationSetupData, FinishOrganizationSetupError, FinishOrganizationSetupResponse, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsError, GetAdjacentOncallShiftsResponse, GetAlertData, GetAlertError, GetAlertMetricsData, GetAlertMetricsError, GetAlertMetricsResponse, GetAlertResponse, GetConfiguredIntegrationData, GetConfiguredIntegrationError, GetConfiguredIntegrationResponse, GetCurrentAuthSessionData, GetCurrentAuthSessionError, GetCurrentAuthSessionResponse, GetDebriefQuestionData, GetDebriefQuestionError, GetDebriefQuestionResponse, GetDocumentAccessData, GetDocumentAccessError, GetDocumentAccessResponse, GetEventData, GetEventError, GetEventResponse, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefError, GetIncidentDebriefResponse, GetIncidentError, GetIncidentFieldData, GetIncidentFieldError, GetIncidentFieldResponse, GetIncidentMetadataData, GetIncidentMetadataError, GetIncidentMetadataResponse, GetIncidentResponse, GetIncidentRoleData, GetIncidentRoleError, GetIncidentRoleResponse, GetIncidentSeverityData, GetIncidentSeverityError, GetIncidentSeverityResponse, GetIncidentTagData, GetIncidentTagError, GetIncidentTagResponse, GetIncidentTypeData, GetIncidentTypeError, GetIncidentTypeResponse, GetIncidentUserDebriefData, GetIncidentUserDebriefError, GetIncidentUserDebriefResponse, GetIntegrationDataSyncStatusData, GetIntegrationDataSyncStatusError, GetIntegrationDataSyncStatusResponse, GetMeetingScheduleData, GetMeetingScheduleError, GetMeetingScheduleResponse, GetMeetingSessionData, GetMeetingSessionError, GetMeetingSessionResponse, GetOncallRosterData, GetOncallRosterError, GetOncallRosterMetricsData, GetOncallRosterMetricsError, GetOncallRosterMetricsResponse, GetOncallRosterResponse, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsError, GetOncallShiftBurdenMetricWeightsResponse, GetOncallShiftData, GetOncallShiftError, GetOncallShiftHandoverData, GetOncallShiftHandoverError, GetOncallShiftHandoverResponse, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateError, GetOncallShiftHandoverTemplateResponse, GetOncallShiftMetricsData, GetOncallShiftMetricsError, GetOncallShiftMetricsResponse, GetOncallShiftResponse, GetOrganizationData, GetOrganizationError, GetOrganizationResponse, GetPlaybookData, GetPlaybookError, GetPlaybookResponse, GetRetrospectiveCommentData, GetRetrospectiveCommentError, GetRetrospectiveCommentResponse, GetRetrospectiveData, GetRetrospectiveError, GetRetrospectiveResponse, GetSystemAnalysisData, GetSystemAnalysisEdgeData, GetSystemAnalysisEdgeError, GetSystemAnalysisEdgeResponse, GetSystemAnalysisError, GetSystemAnalysisNodeData, GetSystemAnalysisNodeError, GetSystemAnalysisNodeResponse, GetSystemAnalysisResponse, GetSystemTopologyEntityData, GetSystemTopologyEntityError, GetSystemTopologyEntityNeighborhoodData, GetSystemTopologyEntityNeighborhoodError, GetSystemTopologyEntityNeighborhoodResponse, GetSystemTopologyEntityResponse, GetSystemTopologySnapshotData, GetSystemTopologySnapshotError, GetSystemTopologySnapshotResponse, GetTaskData, GetTaskError, GetTaskResponse, GetTeamData, GetTeamError, GetTeamResponse, GetUserData, GetUserError, GetUserOncallInformationData, GetUserOncallInformationError, GetUserOncallInformationResponse, GetUserResponse, ListAlertIncidentLinksData, ListAlertIncidentLinksError, ListAlertIncidentLinksResponse, ListAlertsData, ListAlertsError, ListAlertsResponse, ListAvailableIntegrationsData, ListAvailableIntegrationsError, ListAvailableIntegrationsResponse, ListConfiguredIntegrationsData, ListConfiguredIntegrationsError, ListConfiguredIntegrationsResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListEventAnnotationsData, ListEventAnnotationsError, ListEventAnnotationsResponse, ListEventsData, ListEventsError, ListEventsResponse, ListIncidentEventContributingFactorCategoriesData, ListIncidentEventContributingFactorCategoriesError, ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventsData, ListIncidentEventsError, ListIncidentEventsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, ListIncidentMilestonesData, ListIncidentMilestonesError, ListIncidentMilestonesResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, ListIncidentsData, ListIncidentsError, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, ListIncidentsResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, ListPlaybooksData, ListPlaybooksError, ListPlaybooksResponse, ListRetrospectiveCommentsData, ListRetrospectiveCommentsError, ListRetrospectiveCommentsResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, ListSystemAnalysisEdgesData, ListSystemAnalysisEdgesError, ListSystemAnalysisEdgesResponse, ListSystemAnalysisNodesData, ListSystemAnalysisNodesError, ListSystemAnalysisNodesResponse, ListSystemTopologyEntitiesData, ListSystemTopologyEntitiesError, ListSystemTopologyEntitiesResponse, ListSystemTopologyRelationshipsData, ListSystemTopologyRelationshipsError, ListSystemTopologyRelationshipsResponse, ListTasksData, ListTasksError, ListTasksResponse, ListTeamMembershipsData, ListTeamMembershipsError, ListTeamMembershipsResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, ListUsersData, ListUsersError, ListUsersResponse, ListWatchedOncallRostersData, ListWatchedOncallRostersError, ListWatchedOncallRostersResponse, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterError, RemoveWatchedOncallRosterResponse, RequestIntegrationDataSyncData, RequestIntegrationDataSyncError, RequestIntegrationDataSyncResponse, SelectIntegrationOauthFlowData, SelectIntegrationOauthFlowError, SelectIntegrationOauthFlowResponse, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, StartIntegrationOauthFlowData, StartIntegrationOauthFlowError, StartIntegrationOauthFlowResponse, UpdateConfiguredIntegrationPreferencesData, UpdateConfiguredIntegrationPreferencesError, UpdateConfiguredIntegrationPreferencesResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, UpdateEventAnnotationData, UpdateEventAnnotationError, UpdateEventAnnotationResponse, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, UpdateIncidentError, UpdateIncidentEventData, UpdateIncidentEventError, UpdateIncidentEventResponse, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, UpdateIncidentResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverError, UpdateOncallShiftHandoverResponse, UpdatePlaybookData, UpdatePlaybookError, UpdatePlaybookResponse, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentError, UpdateRetrospectiveCommentResponse, UpdateRetrospectiveData, UpdateRetrospectiveError, UpdateRetrospectiveResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, UpdateSystemAnalysisEdgeData, UpdateSystemAnalysisEdgeError, UpdateSystemAnalysisEdgeResponse, UpdateSystemAnalysisNodeData, UpdateSystemAnalysisNodeError, UpdateSystemAnalysisNodeResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateTeamMembershipData, UpdateTeamMembershipError, UpdateTeamMembershipResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse } from '../types.gen';
+import { addIncidentDebriefUserMessage, addSystemAnalysisEdge, addSystemAnalysisNode, addWatchedOncallRoster, archiveDebriefQuestion, archiveIncident, archiveIncidentField, archiveIncidentRole, archiveIncidentSeverity, archiveIncidentTag, archiveIncidentType, archiveMeetingSchedule, archiveMeetingSession, archiveOncallHandoverTemplate, archivePlaybook, archiveRetrospectiveReview, archiveTask, archiveTeam, completeIntegrationOauthFlow, configureIntegration, createDebriefQuestion, createEventAnnotation, createIncident, createIncidentField, createIncidentMilestone, createIncidentRole, createIncidentSeverity, createIncidentTag, createIncidentTimelineEvent, createIncidentType, createMeetingSchedule, createMeetingSession, createOncallHandoverTemplate, createPlaybook, createRetrospectiveComment, createRetrospectiveReview, createSystemTopologySnapshot, createTask, createTeam, createTeamMembership, deleteEventAnnotation, deleteIncidentMilestone, deleteIncidentTimelineEvent, deleteIntegration, deleteSystemAnalysisEdge, deleteSystemAnalysisNode, deleteTeamMembership, deleteUserNotification, finishOrganizationSetup, getAdjacentOncallShifts, getAlert, getAlertMetrics, getConfiguredIntegration, getCurrentAuthSession, getDebriefQuestion, getDocumentAccess, getEvent, getIncident, getIncidentDebrief, getIncidentField, getIncidentMetadata, getIncidentRole, getIncidentSeverity, getIncidentTag, getIncidentType, getIncidentUserDebrief, getIntegrationDataSyncStatus, getMeetingSchedule, getMeetingSession, getOncallRoster, getOncallRosterMetrics, getOncallShift, getOncallShiftBurdenMetricWeights, getOncallShiftHandover, getOncallShiftHandoverTemplate, getOncallShiftMetrics, getOrganization, getPlaybook, getRetrospective, getRetrospectiveComment, getSystemAnalysis, getSystemAnalysisEdge, getSystemAnalysisNode, getSystemTopologyEntity, getSystemTopologyEntityNeighborhood, getSystemTopologySnapshot, getTask, getTeam, getUser, getUserOncallInformation, listAlertIncidentLinks, listAlerts, listAvailableIntegrations, listConfiguredIntegrations, listDebriefMessages, listDebriefQuestions, listDebriefSuggestions, listEventAnnotations, listEvents, listIncidentFields, listIncidentMilestones, listIncidentRoles, listIncidents, listIncidentSeverities, listIncidentTags, listIncidentTimelineEventMetadata, listIncidentTimelineEvents, listIncidentTypes, listMeetingSchedules, listMeetingSessions, listOncallRosters, listOncallShifts, listPlaybooks, listRetrospectiveComments, listRetrospectiveReviews, listRetrospectives, listSystemAnalysisEdges, listSystemAnalysisNodes, listSystemTopologyEntities, listSystemTopologyRelationships, listTasks, listTeamMemberships, listTeams, listUserNotifications, listUsers, listWatchedOncallRosters, type Options, removeWatchedOncallRoster, requestIntegrationDataSync, selectIntegrationOauthFlow, sendOncallShiftHandover, startIntegrationOauthFlow, updateConfiguredIntegrationPreferences, updateDebriefQuestion, updateEventAnnotation, updateIncident, updateIncidentDebrief, updateIncidentField, updateIncidentMilestone, updateIncidentRole, updateIncidentSeverity, updateIncidentTag, updateIncidentTimelineEvent, updateIncidentType, updateMeetingSchedule, updateMeetingSession, updateOncallHandoverTemplate, updateOncallShiftHandover, updatePlaybook, updateRetrospective, updateRetrospectiveComment, updateRetrospectiveReview, updateSystemAnalysisEdge, updateSystemAnalysisNode, updateTask, updateTeamMembership, updateTeams } from '../sdk.gen';
+import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageError, AddIncidentDebriefUserMessageResponse, AddSystemAnalysisEdgeData, AddSystemAnalysisEdgeError, AddSystemAnalysisEdgeResponse, AddSystemAnalysisNodeData, AddSystemAnalysisNodeError, AddSystemAnalysisNodeResponse, AddWatchedOncallRosterData, AddWatchedOncallRosterError, AddWatchedOncallRosterResponse, ArchiveDebriefQuestionData, ArchiveDebriefQuestionError, ArchiveDebriefQuestionResponse, ArchiveIncidentData, ArchiveIncidentError, ArchiveIncidentFieldData, ArchiveIncidentFieldError, ArchiveIncidentFieldResponse, ArchiveIncidentResponse, ArchiveIncidentRoleData, ArchiveIncidentRoleError, ArchiveIncidentRoleResponse, ArchiveIncidentSeverityData, ArchiveIncidentSeverityError, ArchiveIncidentSeverityResponse, ArchiveIncidentTagData, ArchiveIncidentTagError, ArchiveIncidentTagResponse, ArchiveIncidentTypeData, ArchiveIncidentTypeError, ArchiveIncidentTypeResponse, ArchiveMeetingScheduleData, ArchiveMeetingScheduleError, ArchiveMeetingScheduleResponse, ArchiveMeetingSessionData, ArchiveMeetingSessionError, ArchiveMeetingSessionResponse, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateError, ArchiveOncallHandoverTemplateResponse, ArchivePlaybookData, ArchivePlaybookError, ArchivePlaybookResponse, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewError, ArchiveRetrospectiveReviewResponse, ArchiveTaskData, ArchiveTaskError, ArchiveTaskResponse, ArchiveTeamData, ArchiveTeamError, ArchiveTeamResponse, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowError, CompleteIntegrationOauthFlowResponse, ConfigureIntegrationData, ConfigureIntegrationError, ConfigureIntegrationResponse, CreateDebriefQuestionData, CreateDebriefQuestionError, CreateDebriefQuestionResponse, CreateEventAnnotationData, CreateEventAnnotationError, CreateEventAnnotationResponse, CreateIncidentData, CreateIncidentError, CreateIncidentFieldData, CreateIncidentFieldError, CreateIncidentFieldResponse, CreateIncidentMilestoneData, CreateIncidentMilestoneError, CreateIncidentMilestoneResponse, CreateIncidentResponse, CreateIncidentRoleData, CreateIncidentRoleError, CreateIncidentRoleResponse, CreateIncidentSeverityData, CreateIncidentSeverityError, CreateIncidentSeverityResponse, CreateIncidentTagData, CreateIncidentTagError, CreateIncidentTagResponse, CreateIncidentTimelineEventData, CreateIncidentTimelineEventError, CreateIncidentTimelineEventResponse, CreateIncidentTypeData, CreateIncidentTypeError, CreateIncidentTypeResponse, CreateMeetingScheduleData, CreateMeetingScheduleError, CreateMeetingScheduleResponse, CreateMeetingSessionData, CreateMeetingSessionError, CreateMeetingSessionResponse, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateError, CreateOncallHandoverTemplateResponse, CreatePlaybookData, CreatePlaybookError, CreatePlaybookResponse, CreateRetrospectiveCommentData, CreateRetrospectiveCommentError, CreateRetrospectiveCommentResponse, CreateRetrospectiveReviewData, CreateRetrospectiveReviewError, CreateRetrospectiveReviewResponse, CreateSystemTopologySnapshotData, CreateSystemTopologySnapshotError, CreateSystemTopologySnapshotResponse, CreateTaskData, CreateTaskError, CreateTaskResponse, CreateTeamData, CreateTeamError, CreateTeamMembershipData, CreateTeamMembershipError, CreateTeamMembershipResponse, CreateTeamResponse, DeleteEventAnnotationData, DeleteEventAnnotationError, DeleteEventAnnotationResponse, DeleteIncidentMilestoneData, DeleteIncidentMilestoneError, DeleteIncidentMilestoneResponse, DeleteIncidentTimelineEventData, DeleteIncidentTimelineEventError, DeleteIncidentTimelineEventResponse, DeleteIntegrationData, DeleteIntegrationError, DeleteIntegrationResponse, DeleteSystemAnalysisEdgeData, DeleteSystemAnalysisEdgeError, DeleteSystemAnalysisEdgeResponse, DeleteSystemAnalysisNodeData, DeleteSystemAnalysisNodeError, DeleteSystemAnalysisNodeResponse, DeleteTeamMembershipData, DeleteTeamMembershipError, DeleteTeamMembershipResponse, DeleteUserNotificationData, DeleteUserNotificationError, DeleteUserNotificationResponse, FinishOrganizationSetupData, FinishOrganizationSetupError, FinishOrganizationSetupResponse, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsError, GetAdjacentOncallShiftsResponse, GetAlertData, GetAlertError, GetAlertMetricsData, GetAlertMetricsError, GetAlertMetricsResponse, GetAlertResponse, GetConfiguredIntegrationData, GetConfiguredIntegrationError, GetConfiguredIntegrationResponse, GetCurrentAuthSessionData, GetCurrentAuthSessionError, GetCurrentAuthSessionResponse, GetDebriefQuestionData, GetDebriefQuestionError, GetDebriefQuestionResponse, GetDocumentAccessData, GetDocumentAccessError, GetDocumentAccessResponse, GetEventData, GetEventError, GetEventResponse, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefError, GetIncidentDebriefResponse, GetIncidentError, GetIncidentFieldData, GetIncidentFieldError, GetIncidentFieldResponse, GetIncidentMetadataData, GetIncidentMetadataError, GetIncidentMetadataResponse, GetIncidentResponse, GetIncidentRoleData, GetIncidentRoleError, GetIncidentRoleResponse, GetIncidentSeverityData, GetIncidentSeverityError, GetIncidentSeverityResponse, GetIncidentTagData, GetIncidentTagError, GetIncidentTagResponse, GetIncidentTypeData, GetIncidentTypeError, GetIncidentTypeResponse, GetIncidentUserDebriefData, GetIncidentUserDebriefError, GetIncidentUserDebriefResponse, GetIntegrationDataSyncStatusData, GetIntegrationDataSyncStatusError, GetIntegrationDataSyncStatusResponse, GetMeetingScheduleData, GetMeetingScheduleError, GetMeetingScheduleResponse, GetMeetingSessionData, GetMeetingSessionError, GetMeetingSessionResponse, GetOncallRosterData, GetOncallRosterError, GetOncallRosterMetricsData, GetOncallRosterMetricsError, GetOncallRosterMetricsResponse, GetOncallRosterResponse, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsError, GetOncallShiftBurdenMetricWeightsResponse, GetOncallShiftData, GetOncallShiftError, GetOncallShiftHandoverData, GetOncallShiftHandoverError, GetOncallShiftHandoverResponse, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateError, GetOncallShiftHandoverTemplateResponse, GetOncallShiftMetricsData, GetOncallShiftMetricsError, GetOncallShiftMetricsResponse, GetOncallShiftResponse, GetOrganizationData, GetOrganizationError, GetOrganizationResponse, GetPlaybookData, GetPlaybookError, GetPlaybookResponse, GetRetrospectiveCommentData, GetRetrospectiveCommentError, GetRetrospectiveCommentResponse, GetRetrospectiveData, GetRetrospectiveError, GetRetrospectiveResponse, GetSystemAnalysisData, GetSystemAnalysisEdgeData, GetSystemAnalysisEdgeError, GetSystemAnalysisEdgeResponse, GetSystemAnalysisError, GetSystemAnalysisNodeData, GetSystemAnalysisNodeError, GetSystemAnalysisNodeResponse, GetSystemAnalysisResponse, GetSystemTopologyEntityData, GetSystemTopologyEntityError, GetSystemTopologyEntityNeighborhoodData, GetSystemTopologyEntityNeighborhoodError, GetSystemTopologyEntityNeighborhoodResponse, GetSystemTopologyEntityResponse, GetSystemTopologySnapshotData, GetSystemTopologySnapshotError, GetSystemTopologySnapshotResponse, GetTaskData, GetTaskError, GetTaskResponse, GetTeamData, GetTeamError, GetTeamResponse, GetUserData, GetUserError, GetUserOncallInformationData, GetUserOncallInformationError, GetUserOncallInformationResponse, GetUserResponse, ListAlertIncidentLinksData, ListAlertIncidentLinksError, ListAlertIncidentLinksResponse, ListAlertsData, ListAlertsError, ListAlertsResponse, ListAvailableIntegrationsData, ListAvailableIntegrationsError, ListAvailableIntegrationsResponse, ListConfiguredIntegrationsData, ListConfiguredIntegrationsError, ListConfiguredIntegrationsResponse, ListDebriefMessagesData, ListDebriefMessagesError, ListDebriefMessagesResponse, ListDebriefQuestionsData, ListDebriefQuestionsError, ListDebriefQuestionsResponse, ListDebriefSuggestionsData, ListDebriefSuggestionsError, ListDebriefSuggestionsResponse, ListEventAnnotationsData, ListEventAnnotationsError, ListEventAnnotationsResponse, ListEventsData, ListEventsError, ListEventsResponse, ListIncidentFieldsData, ListIncidentFieldsError, ListIncidentFieldsResponse, ListIncidentMilestonesData, ListIncidentMilestonesError, ListIncidentMilestonesResponse, ListIncidentRolesData, ListIncidentRolesError, ListIncidentRolesResponse, ListIncidentsData, ListIncidentsError, ListIncidentSeveritiesData, ListIncidentSeveritiesError, ListIncidentSeveritiesResponse, ListIncidentsResponse, ListIncidentTagsData, ListIncidentTagsError, ListIncidentTagsResponse, ListIncidentTimelineEventMetadataData, ListIncidentTimelineEventMetadataError, ListIncidentTimelineEventMetadataResponse, ListIncidentTimelineEventsData, ListIncidentTimelineEventsError, ListIncidentTimelineEventsResponse, ListIncidentTypesData, ListIncidentTypesError, ListIncidentTypesResponse, ListMeetingSchedulesData, ListMeetingSchedulesError, ListMeetingSchedulesResponse, ListMeetingSessionsData, ListMeetingSessionsError, ListMeetingSessionsResponse, ListOncallRostersData, ListOncallRostersError, ListOncallRostersResponse, ListOncallShiftsData, ListOncallShiftsError, ListOncallShiftsResponse, ListPlaybooksData, ListPlaybooksError, ListPlaybooksResponse, ListRetrospectiveCommentsData, ListRetrospectiveCommentsError, ListRetrospectiveCommentsResponse, ListRetrospectiveReviewsData, ListRetrospectiveReviewsError, ListRetrospectiveReviewsResponse, ListRetrospectivesData, ListRetrospectivesError, ListRetrospectivesResponse, ListSystemAnalysisEdgesData, ListSystemAnalysisEdgesError, ListSystemAnalysisEdgesResponse, ListSystemAnalysisNodesData, ListSystemAnalysisNodesError, ListSystemAnalysisNodesResponse, ListSystemTopologyEntitiesData, ListSystemTopologyEntitiesError, ListSystemTopologyEntitiesResponse, ListSystemTopologyRelationshipsData, ListSystemTopologyRelationshipsError, ListSystemTopologyRelationshipsResponse, ListTasksData, ListTasksError, ListTasksResponse, ListTeamMembershipsData, ListTeamMembershipsError, ListTeamMembershipsResponse, ListTeamsData, ListTeamsError, ListTeamsResponse, ListUserNotificationsData, ListUserNotificationsError, ListUserNotificationsResponse, ListUsersData, ListUsersError, ListUsersResponse, ListWatchedOncallRostersData, ListWatchedOncallRostersError, ListWatchedOncallRostersResponse, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterError, RemoveWatchedOncallRosterResponse, RequestIntegrationDataSyncData, RequestIntegrationDataSyncError, RequestIntegrationDataSyncResponse, SelectIntegrationOauthFlowData, SelectIntegrationOauthFlowError, SelectIntegrationOauthFlowResponse, SendOncallShiftHandoverData, SendOncallShiftHandoverError, SendOncallShiftHandoverResponse, StartIntegrationOauthFlowData, StartIntegrationOauthFlowError, StartIntegrationOauthFlowResponse, UpdateConfiguredIntegrationPreferencesData, UpdateConfiguredIntegrationPreferencesError, UpdateConfiguredIntegrationPreferencesResponse, UpdateDebriefQuestionData, UpdateDebriefQuestionError, UpdateDebriefQuestionResponse, UpdateEventAnnotationData, UpdateEventAnnotationError, UpdateEventAnnotationResponse, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefError, UpdateIncidentDebriefResponse, UpdateIncidentError, UpdateIncidentFieldData, UpdateIncidentFieldError, UpdateIncidentFieldResponse, UpdateIncidentMilestoneData, UpdateIncidentMilestoneError, UpdateIncidentMilestoneResponse, UpdateIncidentResponse, UpdateIncidentRoleData, UpdateIncidentRoleError, UpdateIncidentRoleResponse, UpdateIncidentSeverityData, UpdateIncidentSeverityError, UpdateIncidentSeverityResponse, UpdateIncidentTagData, UpdateIncidentTagError, UpdateIncidentTagResponse, UpdateIncidentTimelineEventData, UpdateIncidentTimelineEventError, UpdateIncidentTimelineEventResponse, UpdateIncidentTypeData, UpdateIncidentTypeError, UpdateIncidentTypeResponse, UpdateMeetingScheduleData, UpdateMeetingScheduleError, UpdateMeetingScheduleResponse, UpdateMeetingSessionData, UpdateMeetingSessionError, UpdateMeetingSessionResponse, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateError, UpdateOncallHandoverTemplateResponse, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverError, UpdateOncallShiftHandoverResponse, UpdatePlaybookData, UpdatePlaybookError, UpdatePlaybookResponse, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentError, UpdateRetrospectiveCommentResponse, UpdateRetrospectiveData, UpdateRetrospectiveError, UpdateRetrospectiveResponse, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewError, UpdateRetrospectiveReviewResponse, UpdateSystemAnalysisEdgeData, UpdateSystemAnalysisEdgeError, UpdateSystemAnalysisEdgeResponse, UpdateSystemAnalysisNodeData, UpdateSystemAnalysisNodeError, UpdateSystemAnalysisNodeResponse, UpdateTaskData, UpdateTaskError, UpdateTaskResponse, UpdateTeamMembershipData, UpdateTeamMembershipError, UpdateTeamMembershipResponse, UpdateTeamsData, UpdateTeamsError, UpdateTeamsResponse } from '../types.gen';
 
 export type QueryKey<TOptions extends Options> = [
     Pick<TOptions, 'baseUrl' | 'body' | 'headers' | 'path' | 'query'> & {
@@ -689,85 +689,6 @@ export const listDebriefSuggestionsInfiniteOptions = (options: Options<ListDebri
     queryKey: listDebriefSuggestionsInfiniteQueryKey(options)
 });
 
-export const listIncidentEventContributingFactorCategoriesQueryKey = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => createQueryKey('listIncidentEventContributingFactorCategories', options);
-
-/**
- * List Categories of Contributing Factors used in Incident Events
- */
-export const listIncidentEventContributingFactorCategoriesOptions = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => queryOptions<ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventContributingFactorCategoriesError, ListIncidentEventContributingFactorCategoriesResponse, ReturnType<typeof listIncidentEventContributingFactorCategoriesQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await listIncidentEventContributingFactorCategories({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentEventContributingFactorCategoriesQueryKey(options)
-});
-
-export const listIncidentEventContributingFactorCategoriesInfiniteQueryKey = (options?: Options<ListIncidentEventContributingFactorCategoriesData>): QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>> => createQueryKey('listIncidentEventContributingFactorCategories', options, true);
-
-/**
- * List Categories of Contributing Factors used in Incident Events
- */
-export const listIncidentEventContributingFactorCategoriesInfiniteOptions = (options?: Options<ListIncidentEventContributingFactorCategoriesData>) => infiniteQueryOptions<ListIncidentEventContributingFactorCategoriesResponse, ListIncidentEventContributingFactorCategoriesError, InfiniteData<ListIncidentEventContributingFactorCategoriesResponse>, QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>, number | Pick<QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentEventContributingFactorCategoriesData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentEventContributingFactorCategories({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentEventContributingFactorCategoriesInfiniteQueryKey(options)
-});
-
-/**
- * Delete an Incident Event
- */
-export const deleteIncidentEventMutation = (options?: Partial<Options<DeleteIncidentEventData>>): MutationOptions<DeleteIncidentEventResponse, DeleteIncidentEventError, Options<DeleteIncidentEventData>> => {
-    const mutationOptions: MutationOptions<DeleteIncidentEventResponse, DeleteIncidentEventError, Options<DeleteIncidentEventData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await deleteIncidentEvent({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
-/**
- * Update an Incident Event
- */
-export const updateIncidentEventMutation = (options?: Partial<Options<UpdateIncidentEventData>>): MutationOptions<UpdateIncidentEventResponse, UpdateIncidentEventError, Options<UpdateIncidentEventData>> => {
-    const mutationOptions: MutationOptions<UpdateIncidentEventResponse, UpdateIncidentEventError, Options<UpdateIncidentEventData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await updateIncidentEvent({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const getIncidentMetadataQueryKey = (options?: Options<GetIncidentMetadataData>) => createQueryKey('getIncidentMetadata', options);
 
 /**
@@ -1390,6 +1311,58 @@ export const updateIncidentMilestoneMutation = (options?: Partial<Options<Update
     return mutationOptions;
 };
 
+export const listIncidentTimelineEventMetadataQueryKey = (options?: Options<ListIncidentTimelineEventMetadataData>) => createQueryKey('listIncidentTimelineEventMetadata', options);
+
+/**
+ * Get metadata available for incident timeline events
+ */
+export const listIncidentTimelineEventMetadataOptions = (options?: Options<ListIncidentTimelineEventMetadataData>) => queryOptions<ListIncidentTimelineEventMetadataResponse, ListIncidentTimelineEventMetadataError, ListIncidentTimelineEventMetadataResponse, ReturnType<typeof listIncidentTimelineEventMetadataQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentTimelineEventMetadata({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentTimelineEventMetadataQueryKey(options)
+});
+
+/**
+ * Delete an Incident Event
+ */
+export const deleteIncidentTimelineEventMutation = (options?: Partial<Options<DeleteIncidentTimelineEventData>>): MutationOptions<DeleteIncidentTimelineEventResponse, DeleteIncidentTimelineEventError, Options<DeleteIncidentTimelineEventData>> => {
+    const mutationOptions: MutationOptions<DeleteIncidentTimelineEventResponse, DeleteIncidentTimelineEventError, Options<DeleteIncidentTimelineEventData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await deleteIncidentTimelineEvent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+/**
+ * Update an Incident Event
+ */
+export const updateIncidentTimelineEventMutation = (options?: Partial<Options<UpdateIncidentTimelineEventData>>): MutationOptions<UpdateIncidentTimelineEventResponse, UpdateIncidentTimelineEventError, Options<UpdateIncidentTimelineEventData>> => {
+    const mutationOptions: MutationOptions<UpdateIncidentTimelineEventResponse, UpdateIncidentTimelineEventError, Options<UpdateIncidentTimelineEventData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await updateIncidentTimelineEvent({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
 export const listIncidentsQueryKey = (options?: Options<ListIncidentsData>) => createQueryKey('listIncidents', options);
 
 /**
@@ -1522,68 +1495,6 @@ export const getIncidentUserDebriefOptions = (options: Options<GetIncidentUserDe
     queryKey: getIncidentUserDebriefQueryKey(options)
 });
 
-export const listIncidentEventsQueryKey = (options: Options<ListIncidentEventsData>) => createQueryKey('listIncidentEvents', options);
-
-/**
- * List Events for Incident
- */
-export const listIncidentEventsOptions = (options: Options<ListIncidentEventsData>) => queryOptions<ListIncidentEventsResponse, ListIncidentEventsError, ListIncidentEventsResponse, ReturnType<typeof listIncidentEventsQueryKey>>({
-    queryFn: async ({ queryKey, signal }) => {
-        const { data } = await listIncidentEvents({
-            ...options,
-            ...queryKey[0],
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentEventsQueryKey(options)
-});
-
-export const listIncidentEventsInfiniteQueryKey = (options: Options<ListIncidentEventsData>): QueryKey<Options<ListIncidentEventsData>> => createQueryKey('listIncidentEvents', options, true);
-
-/**
- * List Events for Incident
- */
-export const listIncidentEventsInfiniteOptions = (options: Options<ListIncidentEventsData>) => infiniteQueryOptions<ListIncidentEventsResponse, ListIncidentEventsError, InfiniteData<ListIncidentEventsResponse>, QueryKey<Options<ListIncidentEventsData>>, number | Pick<QueryKey<Options<ListIncidentEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
-// @ts-ignore
-{
-    queryFn: async ({ pageParam, queryKey, signal }) => {
-        // @ts-ignore
-        const page: Pick<QueryKey<Options<ListIncidentEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
-            query: {
-                offset: pageParam
-            }
-        };
-        const params = createInfiniteParams(queryKey, page);
-        const { data } = await listIncidentEvents({
-            ...options,
-            ...params,
-            signal,
-            throwOnError: true
-        });
-        return data;
-    },
-    queryKey: listIncidentEventsInfiniteQueryKey(options)
-});
-
-/**
- * Create an Incident Event
- */
-export const createIncidentEventMutation = (options?: Partial<Options<CreateIncidentEventData>>): MutationOptions<CreateIncidentEventResponse, CreateIncidentEventError, Options<CreateIncidentEventData>> => {
-    const mutationOptions: MutationOptions<CreateIncidentEventResponse, CreateIncidentEventError, Options<CreateIncidentEventData>> = {
-        mutationFn: async (fnOptions) => {
-            const { data } = await createIncidentEvent({
-                ...options,
-                ...fnOptions,
-                throwOnError: true
-            });
-            return data;
-        }
-    };
-    return mutationOptions;
-};
-
 export const listIncidentMilestonesQueryKey = (options: Options<ListIncidentMilestonesData>) => createQueryKey('listIncidentMilestones', options);
 
 /**
@@ -1609,6 +1520,68 @@ export const createIncidentMilestoneMutation = (options?: Partial<Options<Create
     const mutationOptions: MutationOptions<CreateIncidentMilestoneResponse, CreateIncidentMilestoneError, Options<CreateIncidentMilestoneData>> = {
         mutationFn: async (fnOptions) => {
             const { data } = await createIncidentMilestone({
+                ...options,
+                ...fnOptions,
+                throwOnError: true
+            });
+            return data;
+        }
+    };
+    return mutationOptions;
+};
+
+export const listIncidentTimelineEventsQueryKey = (options: Options<ListIncidentTimelineEventsData>) => createQueryKey('listIncidentTimelineEvents', options);
+
+/**
+ * List Events for Incident
+ */
+export const listIncidentTimelineEventsOptions = (options: Options<ListIncidentTimelineEventsData>) => queryOptions<ListIncidentTimelineEventsResponse, ListIncidentTimelineEventsError, ListIncidentTimelineEventsResponse, ReturnType<typeof listIncidentTimelineEventsQueryKey>>({
+    queryFn: async ({ queryKey, signal }) => {
+        const { data } = await listIncidentTimelineEvents({
+            ...options,
+            ...queryKey[0],
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentTimelineEventsQueryKey(options)
+});
+
+export const listIncidentTimelineEventsInfiniteQueryKey = (options: Options<ListIncidentTimelineEventsData>): QueryKey<Options<ListIncidentTimelineEventsData>> => createQueryKey('listIncidentTimelineEvents', options, true);
+
+/**
+ * List Events for Incident
+ */
+export const listIncidentTimelineEventsInfiniteOptions = (options: Options<ListIncidentTimelineEventsData>) => infiniteQueryOptions<ListIncidentTimelineEventsResponse, ListIncidentTimelineEventsError, InfiniteData<ListIncidentTimelineEventsResponse>, QueryKey<Options<ListIncidentTimelineEventsData>>, number | Pick<QueryKey<Options<ListIncidentTimelineEventsData>>[0], 'body' | 'headers' | 'path' | 'query'>>(
+// @ts-ignore
+{
+    queryFn: async ({ pageParam, queryKey, signal }) => {
+        // @ts-ignore
+        const page: Pick<QueryKey<Options<ListIncidentTimelineEventsData>>[0], 'body' | 'headers' | 'path' | 'query'> = typeof pageParam === 'object' ? pageParam : {
+            query: {
+                offset: pageParam
+            }
+        };
+        const params = createInfiniteParams(queryKey, page);
+        const { data } = await listIncidentTimelineEvents({
+            ...options,
+            ...params,
+            signal,
+            throwOnError: true
+        });
+        return data;
+    },
+    queryKey: listIncidentTimelineEventsInfiniteQueryKey(options)
+});
+
+/**
+ * Create an Incident Event
+ */
+export const createIncidentTimelineEventMutation = (options?: Partial<Options<CreateIncidentTimelineEventData>>): MutationOptions<CreateIncidentTimelineEventResponse, CreateIncidentTimelineEventError, Options<CreateIncidentTimelineEventData>> => {
+    const mutationOptions: MutationOptions<CreateIncidentTimelineEventResponse, CreateIncidentTimelineEventError, Options<CreateIncidentTimelineEventData>> = {
+        mutationFn: async (fnOptions) => {
+            const { data } = await createIncidentTimelineEvent({
                 ...options,
                 ...fnOptions,
                 throwOnError: true

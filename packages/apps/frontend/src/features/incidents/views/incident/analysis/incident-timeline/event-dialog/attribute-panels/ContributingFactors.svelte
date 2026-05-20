@@ -5,8 +5,8 @@
 	import { v4 as uuidv4 } from "uuid";
 	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
 	import {
-		listIncidentEventContributingFactorCategoriesOptions,
-		type IncidentEventContributingFactor,
+		listIncidentTimelineEventMetadataOptions,
+		type IncidentTimelineEventContributingFactor,
 	} from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { SvelteMap } from "svelte/reactivity";
@@ -14,8 +14,8 @@
 
 	const attributes = useEventDialogAttributes();
 
-	const categoriesQuery = createQuery(() => listIncidentEventContributingFactorCategoriesOptions());
-	const categories = $derived(categoriesQuery.data?.data ?? []);
+	const metadataQuery = createQuery(() => listIncidentTimelineEventMetadataOptions());
+	const categories = $derived(metadataQuery.data?.data.contributingFactorCategories ?? []);
 
 	type FactorMenuOption = {
 		label: string;
@@ -44,7 +44,7 @@
 		new SvelteMap(factorTypeOptions.map((opt) => [opt.value, opt.group ?? "Unknown Category"]))
 	);
 
-	let editFactor = $state<IncidentEventContributingFactor>();
+	let editFactor = $state<IncidentTimelineEventContributingFactor>();
 	const selectedFactorType = $derived(
 		editFactor
 			? factorTypeOptions.find((opt) => opt.value === editFactor?.attributes.factorTypeId)
@@ -56,11 +56,11 @@
 		attributes: { factorTypeId: "", description: "", links: [] },
 	});
 
-	const setEditing = (f?: IncidentEventContributingFactor) => {
+	const setEditing = (f?: IncidentTimelineEventContributingFactor) => {
 		editFactor = f ? $state.snapshot(f) : makeEmptyFactor();
 	};
 
-	const confirmRemoveFactor = (f: IncidentEventContributingFactor) => {
+	const confirmRemoveFactor = (f: IncidentTimelineEventContributingFactor) => {
 		if (!confirm("Are you sure you want to remove this factor?")) return;
 		const newFactors = attributes.contributingFactors.filter(v => v.id !== f.id);
 		attributes.contributingFactors = newFactors;
@@ -83,7 +83,7 @@
 			<!-- <SelectField
 				bind:value={editFactor.attributes.factorTypeId}
 				options={factorTypeOptions}
-				loading={categoriesQuery.isLoading}
+				loading={metadataQuery.isLoading}
 				label="Factor Type"
 			>
 				<svelte:fragment slot="option" let:option let:index let:selected let:highlightIndex>
@@ -127,7 +127,7 @@
 			</div>
 		</div>
 	{:else}
-		{#each attributes.contributingFactors as f}
+		{#each attributes.contributingFactors as f (f.id)}
 			{@const categoryName = factorCategoryNames.get(f.attributes.factorTypeId) ?? "Unknown Category"}
 			<span>factor: {categoryName}</span>
 			<!-- <ListItem

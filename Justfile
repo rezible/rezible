@@ -18,3 +18,8 @@ mod packages 'packages'
 @codegen:
     just backend::codegen
     just packages::generate-api-client
+
+@generate-initial-migration:
+    just backend::gen-schema
+    just dev setup-workspace --force
+    just backend::create-initial-migration

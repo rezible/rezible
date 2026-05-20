@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
@@ -265,9 +266,9 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 	}
 
 	processStart := time.Now()
-	proc, procErr := s.integrations.GetProviderEventProcessor(prov.Provider)
-	if procErr != nil {
-		return nil, fmt.Errorf("event processor %s", procErr)
+	proc, getProcErr := s.integrations.GetProviderEventProcessor(prov.Provider)
+	if getProcErr != nil {
+		return nil, fmt.Errorf("event processor %s", getProcErr)
 	}
 
 	normalizedEvents, procErr := proc.Process(ctx, prov)
@@ -288,38 +289,54 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 	}
 	res.processSuccess = true
 
+	mapCreateEventFn := func(c *ent.NormalizedEventCreate, i int) {
+		ev := normalizedEvents[i]
+		c.SetProvider(ev.Provider).
+			SetProviderSource(ev.ProviderSource).
+			SetProviderEventRef(ev.ProviderEventRef).
+			SetKind(ev.Kind).
+			SetSubjectKind(ev.SubjectKind).
+			SetSubjectRef(ev.SubjectRef).
+			SetOccurredAt(ev.OccurredAt).
+			SetReceivedAt(ev.ReceivedAt).
+			SetAttributes(ev.Attributes)
+	}
+	upsertConflictColumns := sql.ConflictColumns(
+		ne.FieldTenantID,
+		ne.FieldProvider,
+		ne.FieldProviderSource,
+		ne.FieldProviderEventRef,
+		ne.FieldKind,
+		ne.FieldSubjectRef,
+	)
+	eventRefs := mapset.NewSet[string]()
+	for _, ev := range normalizedEvents {
+		eventRefs.Add(ev.ProviderEventRef)
+	}
+
 	saveNormalizedEventsFn := func(tx *ent.Tx) error {
-		createBulk := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, func(c *ent.NormalizedEventCreate, i int) {
-			ev := normalizedEvents[i]
-			c.SetProvider(ev.Provider).
-				SetProviderSource(ev.ProviderSource).
-				SetProviderEventRef(ev.ProviderEventRef).
-				SetKind(ev.Kind).
-				SetSubjectKind(ev.SubjectKind).
-				SetSubjectRef(ev.SubjectRef).
-				SetOccurredAt(ev.OccurredAt).
-				SetReceivedAt(ev.ReceivedAt).
-				SetAttributes(ev.Attributes)
-
-			c.OnConflict(sql.ConflictColumns(
-				ne.FieldProvider,
-				ne.FieldProviderSource,
-				ne.FieldProviderEventRef,
-				ne.FieldKind,
-				ne.FieldSubjectRef,
-			)).UpdateNewValues()
-		})
-
-		evs, upsertErr := createBulk.Save(ctx)
-		if upsertErr != nil {
+		upsertBulk := tx.NormalizedEvent.
+			MapCreateBulk(normalizedEvents, mapCreateEventFn).
+			OnConflict(upsertConflictColumns).
+			UpdateNewValues()
+		if upsertErr := upsertBulk.Exec(ctx); upsertErr != nil {
 			return fmt.Errorf("upsert normalized events: %w", upsertErr)
+		}
+		evs, evsErr := tx.NormalizedEvent.Query().Where(ne.ProviderEventRefIn(eventRefs.ToSlice()...)).All(ctx)
+		if evsErr != nil {
+			return fmt.Errorf("query normalized events: %w", evsErr)
 		}
 
 		params := make([]river.InsertManyParams, len(evs))
 		for i, ev := range evs {
+			projectEventArgs := jobs.ProjectNormalizedEvent{
+				EventId: ev.ID,
+			}
 			params[i] = river.InsertManyParams{
-				Args:       jobs.ProjectNormalizedEvent{EventId: ev.ID},
-				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
+				Args:       projectEventArgs,
+				InsertOpts: &river.InsertOpts{
+					//UniqueOpts: river.UniqueOpts{ByArgs: true},
+				},
 			}
 		}
 		insertRes, jobErr := s.jobService.InsertManyTx(ctx, tx, params)
@@ -352,6 +369,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) error {
 	failed := map[string]error{}
 	for name, handlerFn := range projections.GetHandlers() {
+		slog.Debug("projecting event", "handler", name)
 		// query for existing projection status
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
@@ -389,6 +407,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 				ClearFailedAt().
 				ClearLastError()
 		} else {
+			failed[name] = projectErr
 			update.SetStatus(neps.StatusFailed).
 				SetFailedAt(time.Now().UTC()).
 				SetLastError(projectErr.Error())
@@ -401,7 +420,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 
 	for name, err := range failed {
 		slog.WarnContext(ctx, "failed to update projection status",
-			"name", name,
+			"handler", name,
 			"err", err,
 		)
 	}

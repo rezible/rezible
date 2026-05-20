@@ -358,6 +358,8 @@ CREATE TABLE "users" ("id" uuid NOT NULL, "email" character varying NOT NULL, "n
 CREATE INDEX "user_tenant_id" ON "users" ("tenant_id");
 -- create index "user_auth_provider_id" to table: "users"
 CREATE UNIQUE INDEX "user_auth_provider_id" ON "users" ("auth_provider_id");
+-- create index "user_tenant_id_email" to table: "users"
+CREATE UNIQUE INDEX "user_tenant_id_email" ON "users" ("tenant_id", "email");
 -- create "video_conferences" table
 CREATE TABLE "video_conferences" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "external_id" character varying NULL, "join_url" character varying NOT NULL, "host_url" character varying NULL, "dial_in" character varying NULL, "passcode" character varying NULL, "status" character varying NOT NULL DEFAULT 'creating', "metadata" jsonb NULL, "created_by_integration" character varying NULL, "incident_id" uuid NULL, "meeting_session_id" uuid NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "video_conferences_meeting_session_id_key" to table: "video_conferences"

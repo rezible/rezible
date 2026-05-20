@@ -514,58 +514,6 @@ components:
       required:
         - data
       type: object
-    CreateIncidentEventAttributes:
-      additionalProperties: false
-      properties:
-        isKey:
-          type: boolean
-        kind:
-          enum:
-            - observation
-            - action
-            - decision
-            - context
-          type: string
-        timestamp:
-          format: date-time
-          type: string
-        title:
-          type: string
-      required:
-        - title
-        - kind
-        - timestamp
-      type: object
-    CreateIncidentEventRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateIncidentEventRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/CreateIncidentEventAttributes"
-      required:
-        - attributes
-      type: object
-    CreateIncidentEventResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/CreateIncidentEventResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/IncidentEvent"
-      required:
-        - data
-      type: object
     CreateIncidentFieldAttributes:
       additionalProperties: false
       properties:
@@ -827,6 +775,58 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IncidentTag"
+      required:
+        - data
+      type: object
+    CreateIncidentTimelineEventAttributes:
+      additionalProperties: false
+      properties:
+        isKey:
+          type: boolean
+        kind:
+          enum:
+            - observation
+            - action
+            - decision
+            - context
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+        title:
+          type: string
+      required:
+        - title
+        - kind
+        - timestamp
+      type: object
+    CreateIncidentTimelineEventRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateIncidentTimelineEventRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreateIncidentTimelineEventAttributes"
+      required:
+        - attributes
+      type: object
+    CreateIncidentTimelineEventResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateIncidentTimelineEventResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IncidentTimelineEvent"
       required:
         - data
       type: object
@@ -1792,6 +1792,21 @@ components:
       required:
         - data
       type: object
+    GetIncidentTimelineEventMetadataResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetIncidentTimelineEventMetadataResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IncidentTimelineEventMetadata"
+      required:
+        - data
+      type: object
     GetIncidentTypeResponseBody:
       additionalProperties: false
       properties:
@@ -2395,214 +2410,6 @@ components:
         - ignored
         - content
       type: object
-    IncidentEvent:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentEventAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentEventAttributes:
-      additionalProperties: false
-      properties:
-        contributingFactors:
-          items:
-            $ref: "#/components/schemas/IncidentEventContributingFactor"
-          type: array
-        decisionContext:
-          $ref: "#/components/schemas/IncidentEventDecisionContext"
-        description:
-          type: string
-        evidence:
-          items:
-            $ref: "#/components/schemas/IncidentEventEvidence"
-          type: array
-        incidentId:
-          type: string
-        isKey:
-          type: boolean
-        kind:
-          enum:
-            - observation
-            - action
-            - decision
-            - context
-          type: string
-        sequence:
-          format: int64
-          type: integer
-        systemContext:
-          items:
-            $ref: "#/components/schemas/IncidentEventTopologyContext"
-          type: array
-        timestamp:
-          format: date-time
-          type: string
-        title:
-          type: string
-      required:
-        - incidentId
-        - kind
-        - timestamp
-        - isKey
-        - title
-        - sequence
-        - contributingFactors
-        - evidence
-        - systemContext
-      type: object
-    IncidentEventContributingFactor:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentEventContributingFactorAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentEventContributingFactorAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        factorTypeId:
-          type: string
-        links:
-          items:
-            type: string
-          type: array
-      required:
-        - factorTypeId
-        - description
-        - links
-      type: object
-    IncidentEventContributingFactorCategory:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentEventContributingFactorCategoryAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentEventContributingFactorCategoryAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        factorTypes:
-          items:
-            $ref: "#/components/schemas/IncidentEventContributingFactorType"
-          type: array
-        name:
-          type: string
-      required:
-        - name
-        - description
-        - factorTypes
-      type: object
-    IncidentEventContributingFactorType:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentEventContributingFactorTypeAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentEventContributingFactorTypeAttributes:
-      additionalProperties: false
-      properties:
-        description:
-          type: string
-        examples:
-          items:
-            type: string
-          type: array
-        name:
-          type: string
-      required:
-        - name
-        - description
-        - examples
-      type: object
-    IncidentEventDecisionContext:
-      additionalProperties: false
-      properties:
-        constraints:
-          items:
-            type: string
-          type: array
-        decisionRationale:
-          type: string
-        optionsConsidered:
-          items:
-            type: string
-          type: array
-      required:
-        - optionsConsidered
-        - constraints
-        - decisionRationale
-      type: object
-    IncidentEventEvidence:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentEventEvidenceAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentEventEvidenceAttributes:
-      additionalProperties: false
-      properties:
-        properties:
-          additionalProperties:
-            type: string
-          type: object
-        source:
-          type: string
-        value:
-          type: string
-      required:
-        - source
-        - value
-      type: object
-    IncidentEventTopologyContext:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/IncidentEventTopologyContextAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    IncidentEventTopologyContextAttributes:
-      additionalProperties: false
-      properties:
-        knowledgeEntityId:
-          type: string
-        relationship:
-          type: string
-        snapshotEntityId:
-          type: string
-      required:
-        - relationship
-      type: object
     IncidentField:
       additionalProperties: false
       properties:
@@ -2894,6 +2701,224 @@ components:
         - startedAt
         - endedAt
       type: object
+    IncidentTimelineEvent:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IncidentTimelineEventAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IncidentTimelineEventAttributes:
+      additionalProperties: false
+      properties:
+        contributingFactors:
+          items:
+            $ref: "#/components/schemas/IncidentTimelineEventContributingFactor"
+          type: array
+        decisionContext:
+          $ref: "#/components/schemas/IncidentTimelineEventDecisionContext"
+        description:
+          type: string
+        evidence:
+          items:
+            $ref: "#/components/schemas/IncidentTimelineEventEvidence"
+          type: array
+        incidentId:
+          type: string
+        isKey:
+          type: boolean
+        kind:
+          enum:
+            - observation
+            - action
+            - decision
+            - context
+          type: string
+        sequence:
+          format: int64
+          type: integer
+        systemContext:
+          items:
+            $ref: "#/components/schemas/IncidentTimelineEventTopologyContext"
+          type: array
+        timestamp:
+          format: date-time
+          type: string
+        title:
+          type: string
+      required:
+        - incidentId
+        - kind
+        - timestamp
+        - isKey
+        - title
+        - sequence
+        - contributingFactors
+        - evidence
+        - systemContext
+      type: object
+    IncidentTimelineEventContributingFactor:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IncidentTimelineEventContributingFactorAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IncidentTimelineEventContributingFactorAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        factorTypeId:
+          type: string
+        links:
+          items:
+            type: string
+          type: array
+      required:
+        - factorTypeId
+        - description
+        - links
+      type: object
+    IncidentTimelineEventContributingFactorCategory:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IncidentTimelineEventContributingFactorCategoryAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IncidentTimelineEventContributingFactorCategoryAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        factorTypes:
+          items:
+            $ref: "#/components/schemas/IncidentTimelineEventContributingFactorType"
+          type: array
+        name:
+          type: string
+      required:
+        - name
+        - description
+        - factorTypes
+      type: object
+    IncidentTimelineEventContributingFactorType:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IncidentTimelineEventContributingFactorTypeAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IncidentTimelineEventContributingFactorTypeAttributes:
+      additionalProperties: false
+      properties:
+        description:
+          type: string
+        examples:
+          items:
+            type: string
+          type: array
+        name:
+          type: string
+      required:
+        - name
+        - description
+        - examples
+      type: object
+    IncidentTimelineEventDecisionContext:
+      additionalProperties: false
+      properties:
+        constraints:
+          items:
+            type: string
+          type: array
+        decisionRationale:
+          type: string
+        optionsConsidered:
+          items:
+            type: string
+          type: array
+      required:
+        - optionsConsidered
+        - constraints
+        - decisionRationale
+      type: object
+    IncidentTimelineEventEvidence:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IncidentTimelineEventEvidenceAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IncidentTimelineEventEvidenceAttributes:
+      additionalProperties: false
+      properties:
+        properties:
+          additionalProperties:
+            type: string
+          type: object
+        source:
+          type: string
+        value:
+          type: string
+      required:
+        - source
+        - value
+      type: object
+    IncidentTimelineEventMetadata:
+      additionalProperties: false
+      properties:
+        contributingFactorCategories:
+          items:
+            $ref: "#/components/schemas/IncidentTimelineEventContributingFactorCategory"
+          type: array
+      required:
+        - contributingFactorCategories
+      type: object
+    IncidentTimelineEventTopologyContext:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IncidentTimelineEventTopologyContextAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IncidentTimelineEventTopologyContextAttributes:
+      additionalProperties: false
+      properties:
+        knowledgeEntityId:
+          type: string
+        relationship:
+          type: string
+        snapshotEntityId:
+          type: string
+      required:
+        - relationship
+      type: object
     IncidentType:
       additionalProperties: false
       properties:
@@ -3151,46 +3176,6 @@ components:
         - data
         - pagination
       type: object
-    ListIncidentEventContributingFactorsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentEventContributingFactorsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentEventContributingFactorCategory"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListIncidentEventsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListIncidentEventsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/IncidentEvent"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
     ListIncidentFieldsResponseBody:
       additionalProperties: false
       properties:
@@ -3284,6 +3269,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/IncidentTag"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListIncidentTimelineEventsResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListIncidentTimelineEventsResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IncidentTimelineEvent"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -5047,52 +5052,6 @@ components:
       required:
         - data
       type: object
-    UpdateIncidentEventAttributes:
-      additionalProperties: false
-      properties:
-        kind:
-          enum:
-            - observation
-            - action
-            - decision
-            - context
-          type: string
-        timestamp:
-          format: date-time
-          type: string
-        title:
-          type: string
-      type: object
-    UpdateIncidentEventRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateIncidentEventRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateIncidentEventAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateIncidentEventResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateIncidentEventResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/IncidentEvent"
-      required:
-        - data
-      type: object
     UpdateIncidentFieldAttributes:
       additionalProperties: false
       properties:
@@ -5353,6 +5312,52 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IncidentTag"
+      required:
+        - data
+      type: object
+    UpdateIncidentTimelineEventAttributes:
+      additionalProperties: false
+      properties:
+        kind:
+          enum:
+            - observation
+            - action
+            - decision
+            - context
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+        title:
+          type: string
+      type: object
+    UpdateIncidentTimelineEventRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateIncidentTimelineEventRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateIncidentTimelineEventAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateIncidentTimelineEventResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateIncidentTimelineEventResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/IncidentTimelineEvent"
       required:
         - data
       type: object
@@ -7527,195 +7532,6 @@ paths:
       summary: List Incident Debrief Suggestions
       tags:
         - Incident Debriefs
-  /incident_event_contributing_factor_categories:
-    get:
-      operationId: list-incident-event-contributing-factor-categories
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListIncidentEventContributingFactorsResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Categories of Contributing Factors used in Incident Events
-      tags:
-        - Incident Events
-  /incident_events/{id}:
-    delete:
-      operationId: delete-incident-event
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Delete an Incident Event
-      tags:
-        - Incident Events
-    patch:
-      operationId: update-incident-event
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UpdateIncidentEventRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UpdateIncidentEventResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Update an Incident Event
-      tags:
-        - Incident Events
   /incident_metadata:
     get:
       operationId: get-incident-metadata
@@ -9361,6 +9177,166 @@ paths:
       summary: Update an Incident Milestone
       tags:
         - Incident Milestones
+  /incident_timeline/event_metadata:
+    get:
+      operationId: list-incident-timeline-event-metadata
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetIncidentTimelineEventMetadataResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get metadata available for incident timeline events
+      tags:
+        - Incident Timeline
+  /incident_timeline/events/{id}:
+    delete:
+      operationId: delete-incident-timeline-event
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Delete an Incident Event
+      tags:
+        - Incident Timeline
+    patch:
+      operationId: update-incident-timeline-event
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIncidentTimelineEventRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UpdateIncidentTimelineEventResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Update an Incident Event
+      tags:
+        - Incident Timeline
   /incidents:
     get:
       operationId: list-incidents
@@ -9718,150 +9694,6 @@ paths:
       summary: Get Debrief For Incident
       tags:
         - Incident Debriefs
-  /incidents/{id}/events:
-    get:
-      operationId: list-incident-events
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListIncidentEventsResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Events for Incident
-      tags:
-        - Incidents
-        - Incident Events
-    post:
-      operationId: create-incident-event
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateIncidentEventRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateIncidentEventResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create an Incident Event
-      tags:
-        - Incident Events
   /incidents/{id}/milestones:
     get:
       operationId: list-incident-milestones
@@ -9978,6 +9810,150 @@ paths:
       summary: Create an Incident Milestone
       tags:
         - Incident Milestones
+  /incidents/{id}/timeline_events:
+    get:
+      operationId: list-incident-timeline-events
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 10
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListIncidentTimelineEventsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Events for Incident
+      tags:
+        - Incidents
+        - Incident Timeline
+    post:
+      operationId: create-incident-timeline-event
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIncidentTimelineEventRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateIncidentTimelineEventResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Create an Incident Event
+      tags:
+        - Incident Timeline
   /integrations/configured:
     get:
       operationId: list-configured-integrations

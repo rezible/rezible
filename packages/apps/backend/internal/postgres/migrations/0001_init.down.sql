@@ -188,6 +188,8 @@ DROP INDEX "videoconference_tenant_id";
 DROP INDEX "video_conferences_meeting_session_id_key";
 -- reverse: create "video_conferences" table
 DROP TABLE "video_conferences";
+-- reverse: create index "user_tenant_id_email" to table: "users"
+DROP INDEX "user_tenant_id_email";
 -- reverse: create index "user_auth_provider_id" to table: "users"
 DROP INDEX "user_auth_provider_id";
 -- reverse: create index "user_tenant_id" to table: "users"

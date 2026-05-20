@@ -44,6 +44,7 @@ func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.Normal
 	}
 
 	attrs := projections.UserObservedAttributes{
+		Name:     payload.Name,
 		Email:    payload.Email,
 		ChatId:   payload.SlackID,
 		Timezone: payload.Timezone,

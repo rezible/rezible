@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Component } from "svelte";
 	import { v4 as uuidv4 } from "uuid";
-	import type { IncidentEventEvidence, IncidentEventEvidenceAttributes } from "$lib/api";
+	import type { IncidentTimelineEventEvidence, IncidentTimelineEventEvidenceAttributes } from "$lib/api";
 	import { mdiPencil, mdiPlus, mdiSlack, mdiTrashCan, mdiWeb } from "@mdi/js";
 	import Icon from "$components/icon/Icon.svelte";
 	import { Button } from "$components/ui/button";
@@ -24,11 +24,11 @@
 		{ value: "url", label: "Web URL", icon: mdiWeb, component: Url },
 	];
 
-	let editing = $state<IncidentEventEvidence>();
+	let editing = $state<IncidentTimelineEventEvidence>();
 	const editOption = $derived(
 		editing ? dataSourceOptions.find((o) => o.value === editing?.attributes.source) : undefined
 	);
-	const setEditing = (ev: IncidentEventEvidence) => (editing = $state.snapshot(ev));
+	const setEditing = (ev: IncidentTimelineEventEvidence) => (editing = $state.snapshot(ev));
 	const cancelEditing = () => (editing = undefined);
 	const confirmEdit = () => {
 		if (!editing) return;
@@ -38,7 +38,7 @@
 		editing = undefined;
 	};
 
-	let adding = $state<IncidentEventEvidenceAttributes>();
+	let adding = $state<IncidentTimelineEventEvidenceAttributes>();
 	const addOption = $derived(
 		adding ? dataSourceOptions.find((o) => o.value === adding?.source) : undefined
 	);
@@ -51,7 +51,7 @@
 		adding = undefined;
 	};
 
-	const confirmDelete = (ev: IncidentEventEvidence) => {
+	const confirmDelete = (ev: IncidentTimelineEventEvidence) => {
 		if (!confirm("Are you sure you want to delete this evidence?")) return;
 		const idx = attributes.evidence.findIndex((e) => e.id === ev.id);
 		if (idx === -1) return;
@@ -92,7 +92,7 @@
 			/>
 		</div>
 	{:else}
-		{#each attributes.evidence as ev, i}
+		{#each attributes.evidence as ev (ev.id)}
 			<span>evidence: {ev.attributes.source}</span>
 			<!-- <ListItem
 				title={ev.attributes.source}

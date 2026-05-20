@@ -5,7 +5,7 @@ import { DataSet } from "vis-data";
 import { createQuery, QueryClient, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
-import { listIncidentEventsOptions, listIncidentMilestonesOptions, type Incident, type IncidentEvent, type IncidentMilestone } from "$lib/api";
+import { listIncidentTimelineEventsOptions, listIncidentMilestonesOptions, type Incident, type IncidentTimelineEvent, type IncidentMilestone } from "$lib/api";
 import { useIncidentView } from "$features/incidents/views/incident";
 
 import IncidentTimelineEventItemContent, { type Props as TimelineEventComponentProps } from "./IncidentTimelineEventItemContent.svelte";
@@ -34,7 +34,7 @@ class TimelineEventElement {
 	ref = document.createElement("div");
 	component: ReturnType<typeof mount> | undefined;
 
-	constructor(event: IncidentEvent) {
+	constructor(event: IncidentTimelineEvent) {
 		this.ref.setAttribute("event-id", $state.snapshot(event.id));
 		this.props.event = event;
 		tick().then(() => {
@@ -48,7 +48,7 @@ class TimelineEventElement {
 	}
 }
 
-const createTimelineEventItem = (e: IncidentEvent, ref: HTMLElement): TimelineItem => {
+const createTimelineEventItem = (e: IncidentTimelineEvent, ref: HTMLElement): TimelineItem => {
 	return { 
 		id: e.id, 
 		start: new Date(e.attributes.timestamp),
@@ -151,7 +151,7 @@ class TimelineEventsState {
 
 	queryClient = $state<QueryClient>();
 	eventsQuery = createQuery(() => ({
-		...listIncidentEventsOptions({ path: { id: this.incidentId } }),
+		...listIncidentTimelineEventsOptions({ path: { id: this.incidentId } }),
 		enabled: !!this.incidentId,
 	}));
 	events = $derived(this.eventsQuery.data?.data || []);
@@ -175,7 +175,7 @@ class TimelineEventsState {
 		this.timelineElements.clear();
 	}
 
-	onEventsDataUpdated(events: IncidentEvent[]) {
+	onEventsDataUpdated(events: IncidentTimelineEvent[]) {
 		const eventsMap = new Map(events.map(ev => [ev.id, ev]));
 		const removeIds: string[] = [];
 
@@ -191,7 +191,7 @@ class TimelineEventsState {
 		flushItemsAndRedrawTimeline(this.items, this.timeline);
 	}
 
-	updateEvent(event: IncidentEvent) {
+	updateEvent(event: IncidentTimelineEvent) {
 		let el = this.timelineElements.get(event.id);
 		if (!el) {
 			el = new TimelineEventElement(event);
@@ -210,7 +210,7 @@ class TimelineEventsState {
 		})
 	}
 
-	onEventAdded(event: IncidentEvent) {
+	onEventAdded(event: IncidentTimelineEvent) {
 		this.eventsQuery.refetch();
 	}
 
@@ -454,7 +454,7 @@ export class IncidentTimelineController {
 		this.viewWindow = {start, end};
 	}
 
-	onEventAdded(event: IncidentEvent) {
+	onEventAdded(event: IncidentTimelineEvent) {
 		this.events.onEventAdded(event);
 	}
 

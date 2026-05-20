@@ -1,11 +1,11 @@
 import {
-	createIncidentEventMutation,
-	updateIncidentEventMutation,
-	type CreateIncidentEventAttributes,
+	createIncidentTimelineEventMutation,
+	updateIncidentTimelineEventMutation,
+	type CreateIncidentTimelineEventAttributes,
 	type Incident,
-	type IncidentEvent,
-	type IncidentEventAttributes,
-	type UpdateIncidentEventAttributes,
+	type IncidentTimelineEvent,
+	type IncidentTimelineEventAttributes,
+	type UpdateIncidentTimelineEventAttributes,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
 import { Context } from "runed";
@@ -14,13 +14,13 @@ import { useIncidentView } from "$features/incidents/views/incident";
 import { initEventDialogAttributes, type TimelineEventDialogAttributes } from "./attribute-panels/attributes.svelte";
 
 type EditorDialogView = "closed" | "create" | "edit";
-export type OnEventAddedCallbackFn = (e: IncidentEvent) => void;
+export type OnEventAddedCallbackFn = (e: IncidentTimelineEvent) => void;
 
 export class IncidentEventDialogController {
 	incidentViewController = useIncidentView();
 	incident = $derived(this.incidentViewController.incident);
 	
-	editingEvent = $state<IncidentEvent>();
+	editingEvent = $state<IncidentTimelineEvent>();
 	onEventAddedCallback: OnEventAddedCallbackFn;
 
 	view = $state<EditorDialogView>("closed");
@@ -45,13 +45,13 @@ export class IncidentEventDialogController {
 		this.editingEvent = undefined;
 	};
 
-	onSuccess({ data: event }: { data: IncidentEvent }) {
+	onSuccess({ data: event }: { data: IncidentTimelineEvent }) {
 		this.onEventAddedCallback(event);
 		this.clear();
 	}
 
-	createEventMut = createMutation(() => ({ ...createIncidentEventMutation(), onSuccess: e => {this.onSuccess(e)} }));
-	updateEventMut = createMutation(() => ({ ...updateIncidentEventMutation(), onSuccess: e => {this.onSuccess(e)} }));
+	createEventMut = createMutation(() => ({ ...createIncidentTimelineEventMutation(), onSuccess: e => {this.onSuccess(e)} }));
+	updateEventMut = createMutation(() => ({ ...updateIncidentTimelineEventMutation(), onSuccess: e => {this.onSuccess(e)} }));
 	
 	loading = $derived(this.createEventMut.isPending || this.updateEventMut.isPending);
 
@@ -59,7 +59,7 @@ export class IncidentEventDialogController {
 		if (!this.incident) return;
 		const attrs = this.attributes.snapshot();
 		const path = { id: $state.snapshot(this.incident.id) };
-		const attributes: CreateIncidentEventAttributes = {
+		const attributes: CreateIncidentTimelineEventAttributes = {
 			kind: attrs.kind,
 			timestamp: attrs.timestamp,
 			isKey: attrs.isKey,
@@ -72,7 +72,7 @@ export class IncidentEventDialogController {
 		if (!this.editingEvent) return;
 		const attrs = this.attributes.snapshot();
 		const path = { id: $state.snapshot(this.editingEvent.id) };
-		const attributes: UpdateIncidentEventAttributes = {
+		const attributes: UpdateIncidentTimelineEventAttributes = {
 			kind: attrs.kind,
 			timestamp: attrs.timestamp,
 			title: attrs.title,
@@ -80,12 +80,12 @@ export class IncidentEventDialogController {
 		this.updateEventMut.mutate({ path, body: { attributes } });
 	}
 
-	setCreating(attrs?: Partial<IncidentEventAttributes>) {
+	setCreating(attrs?: Partial<IncidentTimelineEventAttributes>) {
 		this.setView("create");
 		this.attributes.init(this.incident, attrs);
 	}
 
-	setEditing(ev: IncidentEvent) {
+	setEditing(ev: IncidentTimelineEvent) {
 		this.setView("edit");
 		this.editingEvent = $state.snapshot(ev);
 		this.attributes.init(this.incident, ev.attributes);

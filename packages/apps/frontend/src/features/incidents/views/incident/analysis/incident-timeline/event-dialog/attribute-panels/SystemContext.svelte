@@ -2,8 +2,8 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import {
 		listSystemAnalysisNodesOptions,
-		type IncidentEventTopologyContext,
-		type IncidentEventTopologyContextAttributes,
+		type IncidentTimelineEventTopologyContext,
+		type IncidentTimelineEventTopologyContextAttributes,
 		type SystemAnalysisNode,
 	} from "$lib/api";
 	import { v4 as uuidv4 } from "uuid";
@@ -31,24 +31,24 @@
 
 	let relationship = $state("affected");
 
-	const getAttributes = (node: SystemAnalysisNode): IncidentEventTopologyContextAttributes => ({
+	const getAttributes = (node: SystemAnalysisNode): IncidentTimelineEventTopologyContextAttributes => ({
 		snapshotEntityId: $state.snapshot(node.attributes.snapshotEntity.id),
 		relationship: $state.snapshot(relationship),
 	});
 
 	let selecting = $state(false);
 	let selectedNode = $state<SystemAnalysisNode>();
-	let editing = $state<IncidentEventTopologyContext>();
+	let editing = $state<IncidentTimelineEventTopologyContext>();
 	const editNode = $derived(
 		editing?.attributes.snapshotEntityId ? analysisNodeMap.get(editing.attributes.snapshotEntityId) : undefined
 	);
 
-	const setEditing = (cx: IncidentEventTopologyContext) => {
+	const setEditing = (cx: IncidentTimelineEventTopologyContext) => {
 		editing = $state.snapshot(cx);
 		relationship = $state.snapshot(cx.attributes.relationship);
 	};
 
-	const confirmDelete = (cx: IncidentEventTopologyContext) => {
+	const confirmDelete = (cx: IncidentTimelineEventTopologyContext) => {
 		const node = cx.attributes.snapshotEntityId ? analysisNodeMap.get(cx.attributes.snapshotEntityId) : undefined;
 		editing = undefined;
 		if (!node || !confirm(`Are you sure you want to remove ${node.attributes.snapshotEntity.attributes.displayName}?`)) return;

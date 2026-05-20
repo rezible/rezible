@@ -33,13 +33,16 @@ func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQuer
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		if usersCursor, ok := req.SourceCursors[sourceUsers]; ok || len(req.SourceCursors) == 0 {
 			for ev, evErr := range q.pullUserObservedEvents(ctx, usersCursor) {
-				yield(ev, evErr)
+				if !yield(ev, evErr) {
+					return
+				}
 			}
 		}
 	}
 }
 
 type userObservedPayload struct {
+	Name      string         `json:"name"`
 	SlackID   string         `json:"slack_id"`
 	Email     string         `json:"email"`
 	Timezone  string         `json:"timezone,omitempty"`
@@ -48,6 +51,7 @@ type userObservedPayload struct {
 
 func (q *eventQuerier) makeUserObservedPayload(u slack.User) ([]byte, error) {
 	payload := userObservedPayload{
+		Name:      u.Name,
 		Email:     u.Profile.Email,
 		SlackID:   u.ID,
 		Timezone:  u.TZ,

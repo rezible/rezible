@@ -3,18 +3,14 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/integrations/projections"
 )
 
 type UserService struct {
@@ -29,31 +25,6 @@ func NewUserService(svcs *rez.Services) (*UserService, error) {
 	}
 
 	return s, nil
-}
-
-func userEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	if event.Kind != ne.KindUserObserved {
-		return nil
-	}
-	slog.Debug("user event projection handler")
-	decoded, validationErr := projections.DecodeEvent[projections.UserObservedAttributes](event)
-	if validationErr != nil || decoded == nil {
-		return fmt.Errorf("invalid event: %w", validationErr)
-	}
-
-	attrs := decoded.Attributes
-	upsert := client.User.Create().
-		SetEmail(attrs.Email).
-		SetChatID(attrs.ChatId).
-		SetTimezone(attrs.Timezone).
-		OnConflict(sql.ConflictColumns(user.FieldEmail, user.FieldChatID)).
-		UpdateTimezone()
-
-	if saveErr := upsert.Exec(ctx); saveErr != nil {
-		return fmt.Errorf("failed to update user: %w", saveErr)
-	}
-
-	return nil
 }
 
 func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organization, pu ent.User) (*ent.User, error) {
