@@ -58,26 +58,6 @@ func (_u *OncallRosterUpdate) ClearArchiveTime() *OncallRosterUpdate {
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *OncallRosterUpdate) SetExternalID(v string) *OncallRosterUpdate {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *OncallRosterUpdate) SetNillableExternalID(v *string) *OncallRosterUpdate {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *OncallRosterUpdate) ClearExternalID() *OncallRosterUpdate {
-	_u.mutation.ClearExternalID()
-	return _u
-}
-
 // SetName sets the "name" field.
 func (_u *OncallRosterUpdate) SetName(v string) *OncallRosterUpdate {
 	_u.mutation.SetName(v)
@@ -477,12 +457,6 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(oncallroster.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(oncallroster.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(oncallroster.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)
 	}
@@ -867,26 +841,6 @@ func (_u *OncallRosterUpdateOne) SetNillableArchiveTime(v *time.Time) *OncallRos
 // ClearArchiveTime clears the value of the "archive_time" field.
 func (_u *OncallRosterUpdateOne) ClearArchiveTime() *OncallRosterUpdateOne {
 	_u.mutation.ClearArchiveTime()
-	return _u
-}
-
-// SetExternalID sets the "external_id" field.
-func (_u *OncallRosterUpdateOne) SetExternalID(v string) *OncallRosterUpdateOne {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *OncallRosterUpdateOne) SetNillableExternalID(v *string) *OncallRosterUpdateOne {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *OncallRosterUpdateOne) ClearExternalID() *OncallRosterUpdateOne {
-	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -1318,12 +1272,6 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 	}
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(oncallroster.FieldArchiveTime, field.TypeTime)
-	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(oncallroster.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(oncallroster.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(oncallroster.FieldName, field.TypeString, value)

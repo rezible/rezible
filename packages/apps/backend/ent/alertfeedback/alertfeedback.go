@@ -18,6 +18,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldAlertID holds the string denoting the alert_id field in the database.
+	FieldAlertID = "alert_id"
 	// FieldAlertInstanceID holds the string denoting the alert_instance_id field in the database.
 	FieldAlertInstanceID = "alert_instance_id"
 	// FieldActionable holds the string denoting the actionable field in the database.
@@ -30,6 +32,8 @@ const (
 	FieldDocumentationNeedsUpdate = "documentation_needs_update"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeAlert holds the string denoting the alert edge name in mutations.
+	EdgeAlert = "alert"
 	// EdgeAlertInstance holds the string denoting the alert_instance edge name in mutations.
 	EdgeAlertInstance = "alert_instance"
 	// Table holds the table name of the alertfeedback in the database.
@@ -41,11 +45,18 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// AlertTable is the table that holds the alert relation/edge.
+	AlertTable = "alert_feedbacks"
+	// AlertInverseTable is the table name for the Alert entity.
+	// It exists in this package in order to avoid circular dependency with the "alert" package.
+	AlertInverseTable = "alerts"
+	// AlertColumn is the table column denoting the alert relation/edge.
+	AlertColumn = "alert_id"
 	// AlertInstanceTable is the table that holds the alert_instance relation/edge.
 	AlertInstanceTable = "alert_feedbacks"
-	// AlertInstanceInverseTable is the table name for the AlertInstance entity.
-	// It exists in this package in order to avoid circular dependency with the "alertinstance" package.
-	AlertInstanceInverseTable = "alert_instances"
+	// AlertInstanceInverseTable is the table name for the NormalizedEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
+	AlertInstanceInverseTable = "normalized_events"
 	// AlertInstanceColumn is the table column denoting the alert_instance relation/edge.
 	AlertInstanceColumn = "alert_instance_id"
 )
@@ -54,6 +65,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldAlertID,
 	FieldAlertInstanceID,
 	FieldActionable,
 	FieldAccurate,
@@ -61,10 +73,21 @@ var Columns = []string{
 	FieldDocumentationNeedsUpdate,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "alert_feedbacks"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"normalized_event_alert_feedback",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
@@ -120,6 +143,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByAlertID orders the results by the alert_id field.
+func ByAlertID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAlertID, opts...).ToFunc()
+}
+
 // ByAlertInstanceID orders the results by the alert_instance_id field.
 func ByAlertInstanceID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAlertInstanceID, opts...).ToFunc()
@@ -152,6 +180,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByAlertField orders the results by alert field.
+func ByAlertField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlertStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByAlertInstanceField orders the results by alert_instance field.
 func ByAlertInstanceField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -163,6 +198,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newAlertStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlertInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AlertTable, AlertColumn),
 	)
 }
 func newAlertInstanceStep() *sqlgraph.Step {

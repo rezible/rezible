@@ -17,7 +17,6 @@ func (OncallShift) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationDataMixin{},
 	}
 }
 

@@ -13,8 +13,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
@@ -97,8 +97,8 @@ func (_c *EventAnnotationCreate) SetTenant(v *Tenant) *EventAnnotationCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetEvent sets the "event" edge to the Event entity.
-func (_c *EventAnnotationCreate) SetEvent(v *Event) *EventAnnotationCreate {
+// SetEvent sets the "event" edge to the NormalizedEvent entity.
+func (_c *EventAnnotationCreate) SetEvent(v *NormalizedEvent) *EventAnnotationCreate {
 	return _c.SetEventID(v.ID)
 }
 
@@ -287,7 +287,7 @@ func (_c *EventAnnotationCreate) createSpec() (*EventAnnotation, *sqlgraph.Creat
 			Columns: []string{eventannotation.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.EventAnnotation

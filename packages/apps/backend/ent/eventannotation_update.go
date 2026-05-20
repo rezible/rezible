@@ -13,9 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
@@ -124,8 +124,8 @@ func (_u *EventAnnotationUpdate) AppendTags(v []string) *EventAnnotationUpdate {
 	return _u
 }
 
-// SetEvent sets the "event" edge to the Event entity.
-func (_u *EventAnnotationUpdate) SetEvent(v *Event) *EventAnnotationUpdate {
+// SetEvent sets the "event" edge to the NormalizedEvent entity.
+func (_u *EventAnnotationUpdate) SetEvent(v *NormalizedEvent) *EventAnnotationUpdate {
 	return _u.SetEventID(v.ID)
 }
 
@@ -154,7 +154,7 @@ func (_u *EventAnnotationUpdate) Mutation() *EventAnnotationMutation {
 	return _u.mutation
 }
 
-// ClearEvent clears the "event" edge to the Event entity.
+// ClearEvent clears the "event" edge to the NormalizedEvent entity.
 func (_u *EventAnnotationUpdate) ClearEvent() *EventAnnotationUpdate {
 	_u.mutation.ClearEvent()
 	return _u
@@ -274,7 +274,7 @@ func (_u *EventAnnotationUpdate) sqlSave(ctx context.Context) (_node int, err er
 			Columns: []string{eventannotation.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.EventAnnotation
@@ -288,7 +288,7 @@ func (_u *EventAnnotationUpdate) sqlSave(ctx context.Context) (_node int, err er
 			Columns: []string{eventannotation.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.EventAnnotation
@@ -489,8 +489,8 @@ func (_u *EventAnnotationUpdateOne) AppendTags(v []string) *EventAnnotationUpdat
 	return _u
 }
 
-// SetEvent sets the "event" edge to the Event entity.
-func (_u *EventAnnotationUpdateOne) SetEvent(v *Event) *EventAnnotationUpdateOne {
+// SetEvent sets the "event" edge to the NormalizedEvent entity.
+func (_u *EventAnnotationUpdateOne) SetEvent(v *NormalizedEvent) *EventAnnotationUpdateOne {
 	return _u.SetEventID(v.ID)
 }
 
@@ -519,7 +519,7 @@ func (_u *EventAnnotationUpdateOne) Mutation() *EventAnnotationMutation {
 	return _u.mutation
 }
 
-// ClearEvent clears the "event" edge to the Event entity.
+// ClearEvent clears the "event" edge to the NormalizedEvent entity.
 func (_u *EventAnnotationUpdateOne) ClearEvent() *EventAnnotationUpdateOne {
 	_u.mutation.ClearEvent()
 	return _u
@@ -669,7 +669,7 @@ func (_u *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *EventAn
 			Columns: []string{eventannotation.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.EventAnnotation
@@ -683,7 +683,7 @@ func (_u *EventAnnotationUpdateOne) sqlSave(ctx context.Context) (_node *EventAn
 			Columns: []string{eventannotation.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(event.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.EventAnnotation

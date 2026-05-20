@@ -13,7 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/tenant"
@@ -33,16 +34,16 @@ func (_c *AlertCreate) SetTenantID(v int) *AlertCreate {
 	return _c
 }
 
-// SetExternalID sets the "external_id" field.
-func (_c *AlertCreate) SetExternalID(v string) *AlertCreate {
-	_c.mutation.SetExternalID(v)
+// SetProjectedEventID sets the "projected_event_id" field.
+func (_c *AlertCreate) SetProjectedEventID(v uuid.UUID) *AlertCreate {
+	_c.mutation.SetProjectedEventID(v)
 	return _c
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_c *AlertCreate) SetNillableExternalID(v *string) *AlertCreate {
+// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
+func (_c *AlertCreate) SetNillableProjectedEventID(v *uuid.UUID) *AlertCreate {
 	if v != nil {
-		_c.SetExternalID(*v)
+		_c.SetProjectedEventID(*v)
 	}
 	return _c
 }
@@ -114,6 +115,25 @@ func (_c *AlertCreate) SetTenant(v *Tenant) *AlertCreate {
 	return _c.SetTenantID(v.ID)
 }
 
+// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
+func (_c *AlertCreate) SetProjectedFromID(id uuid.UUID) *AlertCreate {
+	_c.mutation.SetProjectedFromID(id)
+	return _c
+}
+
+// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
+func (_c *AlertCreate) SetNillableProjectedFromID(id *uuid.UUID) *AlertCreate {
+	if id != nil {
+		_c = _c.SetProjectedFromID(*id)
+	}
+	return _c
+}
+
+// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
+func (_c *AlertCreate) SetProjectedFrom(v *NormalizedEvent) *AlertCreate {
+	return _c.SetProjectedFromID(v.ID)
+}
+
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
 func (_c *AlertCreate) AddPlaybookIDs(ids ...uuid.UUID) *AlertCreate {
 	_c.mutation.AddPlaybookIDs(ids...)
@@ -134,19 +154,19 @@ func (_c *AlertCreate) SetRoster(v *OncallRoster) *AlertCreate {
 	return _c.SetRosterID(v.ID)
 }
 
-// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
-func (_c *AlertCreate) AddInstanceIDs(ids ...uuid.UUID) *AlertCreate {
-	_c.mutation.AddInstanceIDs(ids...)
+// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
+func (_c *AlertCreate) AddFeedbackIDs(ids ...uuid.UUID) *AlertCreate {
+	_c.mutation.AddFeedbackIDs(ids...)
 	return _c
 }
 
-// AddInstances adds the "instances" edges to the AlertInstance entity.
-func (_c *AlertCreate) AddInstances(v ...*AlertInstance) *AlertCreate {
+// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
+func (_c *AlertCreate) AddFeedback(v ...*AlertFeedback) *AlertCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddInstanceIDs(ids...)
+	return _c.AddFeedbackIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
@@ -244,10 +264,6 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(alert.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
-	}
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
 		_node.Title = value
@@ -276,6 +292,24 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alert.ProjectedFromTable,
+			Columns: []string{alert.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Alert
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ProjectedEventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.PlaybooksIDs(); len(nodes) > 0 {
@@ -313,18 +347,18 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		_node.RosterID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.InstancesIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Inverse: true,
+			Table:   alert.FeedbackTable,
+			Columns: []string{alert.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AlertInstance
+		edge.Schema = _c.schemaConfig.AlertFeedback
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -382,21 +416,21 @@ type (
 	}
 )
 
-// SetExternalID sets the "external_id" field.
-func (u *AlertUpsert) SetExternalID(v string) *AlertUpsert {
-	u.Set(alert.FieldExternalID, v)
+// SetProjectedEventID sets the "projected_event_id" field.
+func (u *AlertUpsert) SetProjectedEventID(v uuid.UUID) *AlertUpsert {
+	u.Set(alert.FieldProjectedEventID, v)
 	return u
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateExternalID() *AlertUpsert {
-	u.SetExcluded(alert.FieldExternalID)
+// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
+func (u *AlertUpsert) UpdateProjectedEventID() *AlertUpsert {
+	u.SetExcluded(alert.FieldProjectedEventID)
 	return u
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (u *AlertUpsert) ClearExternalID() *AlertUpsert {
-	u.SetNull(alert.FieldExternalID)
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (u *AlertUpsert) ClearProjectedEventID() *AlertUpsert {
+	u.SetNull(alert.FieldProjectedEventID)
 	return u
 }
 
@@ -517,24 +551,24 @@ func (u *AlertUpsertOne) Update(set func(*AlertUpsert)) *AlertUpsertOne {
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *AlertUpsertOne) SetExternalID(v string) *AlertUpsertOne {
+// SetProjectedEventID sets the "projected_event_id" field.
+func (u *AlertUpsertOne) SetProjectedEventID(v uuid.UUID) *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.SetExternalID(v)
+		s.SetProjectedEventID(v)
 	})
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateExternalID() *AlertUpsertOne {
+// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
+func (u *AlertUpsertOne) UpdateProjectedEventID() *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.UpdateExternalID()
+		s.UpdateProjectedEventID()
 	})
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (u *AlertUpsertOne) ClearExternalID() *AlertUpsertOne {
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (u *AlertUpsertOne) ClearProjectedEventID() *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.ClearExternalID()
+		s.ClearProjectedEventID()
 	})
 }
 
@@ -833,24 +867,24 @@ func (u *AlertUpsertBulk) Update(set func(*AlertUpsert)) *AlertUpsertBulk {
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *AlertUpsertBulk) SetExternalID(v string) *AlertUpsertBulk {
+// SetProjectedEventID sets the "projected_event_id" field.
+func (u *AlertUpsertBulk) SetProjectedEventID(v uuid.UUID) *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.SetExternalID(v)
+		s.SetProjectedEventID(v)
 	})
 }
 
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateExternalID() *AlertUpsertBulk {
+// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
+func (u *AlertUpsertBulk) UpdateProjectedEventID() *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.UpdateExternalID()
+		s.UpdateProjectedEventID()
 	})
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (u *AlertUpsertBulk) ClearExternalID() *AlertUpsertBulk {
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (u *AlertUpsertBulk) ClearProjectedEventID() *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.ClearExternalID()
+		s.ClearProjectedEventID()
 	})
 }
 

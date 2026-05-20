@@ -14,16 +14,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
-	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/task"
@@ -45,26 +46,6 @@ func (_u *IncidentUpdate) Where(ps ...predicate.Incident) *IncidentUpdate {
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *IncidentUpdate) SetExternalID(v string) *IncidentUpdate {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableExternalID(v *string) *IncidentUpdate {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *IncidentUpdate) ClearExternalID() *IncidentUpdate {
-	_u.mutation.ClearExternalID()
-	return _u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (_u *IncidentUpdate) SetCreatedAt(v time.Time) *IncidentUpdate {
 	_u.mutation.SetCreatedAt(v)
@@ -82,6 +63,26 @@ func (_u *IncidentUpdate) SetNillableCreatedAt(v *time.Time) *IncidentUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *IncidentUpdate) SetUpdatedAt(v time.Time) *IncidentUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetProjectedEventID sets the "projected_event_id" field.
+func (_u *IncidentUpdate) SetProjectedEventID(v uuid.UUID) *IncidentUpdate {
+	_u.mutation.SetProjectedEventID(v)
+	return _u
+}
+
+// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableProjectedEventID(v *uuid.UUID) *IncidentUpdate {
+	if v != nil {
+		_u.SetProjectedEventID(*v)
+	}
+	return _u
+}
+
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (_u *IncidentUpdate) ClearProjectedEventID() *IncidentUpdate {
+	_u.mutation.ClearProjectedEventID()
 	return _u
 }
 
@@ -110,26 +111,6 @@ func (_u *IncidentUpdate) SetNillableTitle(v *string) *IncidentUpdate {
 	if v != nil {
 		_u.SetTitle(*v)
 	}
-	return _u
-}
-
-// SetTitle2 sets the "title2" field.
-func (_u *IncidentUpdate) SetTitle2(v string) *IncidentUpdate {
-	_u.mutation.SetTitle2(v)
-	return _u
-}
-
-// SetNillableTitle2 sets the "title2" field if the given value is not nil.
-func (_u *IncidentUpdate) SetNillableTitle2(v *string) *IncidentUpdate {
-	if v != nil {
-		_u.SetTitle2(*v)
-	}
-	return _u
-}
-
-// ClearTitle2 clears the value of the "title2" field.
-func (_u *IncidentUpdate) ClearTitle2() *IncidentUpdate {
-	_u.mutation.ClearTitle2()
 	return _u
 }
 
@@ -215,6 +196,25 @@ func (_u *IncidentUpdate) SetNillableOpenedAt(v *time.Time) *IncidentUpdate {
 	return _u
 }
 
+// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
+func (_u *IncidentUpdate) SetProjectedFromID(id uuid.UUID) *IncidentUpdate {
+	_u.mutation.SetProjectedFromID(id)
+	return _u
+}
+
+// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
+func (_u *IncidentUpdate) SetNillableProjectedFromID(id *uuid.UUID) *IncidentUpdate {
+	if id != nil {
+		_u = _u.SetProjectedFromID(*id)
+	}
+	return _u
+}
+
+// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
+func (_u *IncidentUpdate) SetProjectedFrom(v *NormalizedEvent) *IncidentUpdate {
+	return _u.SetProjectedFromID(v.ID)
+}
+
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
 func (_u *IncidentUpdate) SetSeverity(v *IncidentSeverity) *IncidentUpdate {
 	return _u.SetSeverityID(v.ID)
@@ -240,19 +240,19 @@ func (_u *IncidentUpdate) AddMilestones(v ...*IncidentMilestone) *IncidentUpdate
 	return _u.AddMilestoneIDs(ids...)
 }
 
-// AddEventIDs adds the "events" edge to the IncidentEvent entity by IDs.
-func (_u *IncidentUpdate) AddEventIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.AddEventIDs(ids...)
+// AddTimelineEventIDs adds the "timeline_events" edge to the IncidentTimelineEvent entity by IDs.
+func (_u *IncidentUpdate) AddTimelineEventIDs(ids ...uuid.UUID) *IncidentUpdate {
+	_u.mutation.AddTimelineEventIDs(ids...)
 	return _u
 }
 
-// AddEvents adds the "events" edges to the IncidentEvent entity.
-func (_u *IncidentUpdate) AddEvents(v ...*IncidentEvent) *IncidentUpdate {
+// AddTimelineEvents adds the "timeline_events" edges to the IncidentTimelineEvent entity.
+func (_u *IncidentUpdate) AddTimelineEvents(v ...*IncidentTimelineEvent) *IncidentUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddEventIDs(ids...)
+	return _u.AddTimelineEventIDs(ids...)
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
@@ -444,6 +444,12 @@ func (_u *IncidentUpdate) Mutation() *IncidentMutation {
 	return _u.mutation
 }
 
+// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
+func (_u *IncidentUpdate) ClearProjectedFrom() *IncidentUpdate {
+	_u.mutation.ClearProjectedFrom()
+	return _u
+}
+
 // ClearSeverity clears the "severity" edge to the IncidentSeverity entity.
 func (_u *IncidentUpdate) ClearSeverity() *IncidentUpdate {
 	_u.mutation.ClearSeverity()
@@ -477,25 +483,25 @@ func (_u *IncidentUpdate) RemoveMilestones(v ...*IncidentMilestone) *IncidentUpd
 	return _u.RemoveMilestoneIDs(ids...)
 }
 
-// ClearEvents clears all "events" edges to the IncidentEvent entity.
-func (_u *IncidentUpdate) ClearEvents() *IncidentUpdate {
-	_u.mutation.ClearEvents()
+// ClearTimelineEvents clears all "timeline_events" edges to the IncidentTimelineEvent entity.
+func (_u *IncidentUpdate) ClearTimelineEvents() *IncidentUpdate {
+	_u.mutation.ClearTimelineEvents()
 	return _u
 }
 
-// RemoveEventIDs removes the "events" edge to IncidentEvent entities by IDs.
-func (_u *IncidentUpdate) RemoveEventIDs(ids ...uuid.UUID) *IncidentUpdate {
-	_u.mutation.RemoveEventIDs(ids...)
+// RemoveTimelineEventIDs removes the "timeline_events" edge to IncidentTimelineEvent entities by IDs.
+func (_u *IncidentUpdate) RemoveTimelineEventIDs(ids ...uuid.UUID) *IncidentUpdate {
+	_u.mutation.RemoveTimelineEventIDs(ids...)
 	return _u
 }
 
-// RemoveEvents removes "events" edges to IncidentEvent entities.
-func (_u *IncidentUpdate) RemoveEvents(v ...*IncidentEvent) *IncidentUpdate {
+// RemoveTimelineEvents removes "timeline_events" edges to IncidentTimelineEvent entities.
+func (_u *IncidentUpdate) RemoveTimelineEvents(v ...*IncidentTimelineEvent) *IncidentUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveEventIDs(ids...)
+	return _u.RemoveTimelineEventIDs(ids...)
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
@@ -809,12 +815,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(incident.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(incident.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incident.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -826,12 +826,6 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Title2(); ok {
-		_spec.SetField(incident.FieldTitle2, field.TypeString, value)
-	}
-	if _u.mutation.Title2Cleared() {
-		_spec.ClearField(incident.FieldTitle2, field.TypeString)
 	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
@@ -847,6 +841,37 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ProjectedFromCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.ProjectedFromTable,
+			Columns: []string{incident.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Incident
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.ProjectedFromTable,
+			Columns: []string{incident.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Incident
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.SeverityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -958,49 +983,49 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.EventsCleared() {
+	if _u.mutation.TimelineEventsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   incident.EventsTable,
-			Columns: []string{incident.EventsColumn},
+			Table:   incident.TimelineEventsTable,
+			Columns: []string{incident.TimelineEventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEvent
+		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedEventsIDs(); len(nodes) > 0 && !_u.mutation.EventsCleared() {
+	if nodes := _u.mutation.RemovedTimelineEventsIDs(); len(nodes) > 0 && !_u.mutation.TimelineEventsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   incident.EventsTable,
-			Columns: []string{incident.EventsColumn},
+			Table:   incident.TimelineEventsTable,
+			Columns: []string{incident.TimelineEventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEvent
+		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.EventsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TimelineEventsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   incident.EventsTable,
-			Columns: []string{incident.EventsColumn},
+			Table:   incident.TimelineEventsTable,
+			Columns: []string{incident.TimelineEventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEvent
+		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1610,26 +1635,6 @@ type IncidentUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *IncidentUpdateOne) SetExternalID(v string) *IncidentUpdateOne {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableExternalID(v *string) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *IncidentUpdateOne) ClearExternalID() *IncidentUpdateOne {
-	_u.mutation.ClearExternalID()
-	return _u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (_u *IncidentUpdateOne) SetCreatedAt(v time.Time) *IncidentUpdateOne {
 	_u.mutation.SetCreatedAt(v)
@@ -1647,6 +1652,26 @@ func (_u *IncidentUpdateOne) SetNillableCreatedAt(v *time.Time) *IncidentUpdateO
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *IncidentUpdateOne) SetUpdatedAt(v time.Time) *IncidentUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetProjectedEventID sets the "projected_event_id" field.
+func (_u *IncidentUpdateOne) SetProjectedEventID(v uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.SetProjectedEventID(v)
+	return _u
+}
+
+// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableProjectedEventID(v *uuid.UUID) *IncidentUpdateOne {
+	if v != nil {
+		_u.SetProjectedEventID(*v)
+	}
+	return _u
+}
+
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (_u *IncidentUpdateOne) ClearProjectedEventID() *IncidentUpdateOne {
+	_u.mutation.ClearProjectedEventID()
 	return _u
 }
 
@@ -1675,26 +1700,6 @@ func (_u *IncidentUpdateOne) SetNillableTitle(v *string) *IncidentUpdateOne {
 	if v != nil {
 		_u.SetTitle(*v)
 	}
-	return _u
-}
-
-// SetTitle2 sets the "title2" field.
-func (_u *IncidentUpdateOne) SetTitle2(v string) *IncidentUpdateOne {
-	_u.mutation.SetTitle2(v)
-	return _u
-}
-
-// SetNillableTitle2 sets the "title2" field if the given value is not nil.
-func (_u *IncidentUpdateOne) SetNillableTitle2(v *string) *IncidentUpdateOne {
-	if v != nil {
-		_u.SetTitle2(*v)
-	}
-	return _u
-}
-
-// ClearTitle2 clears the value of the "title2" field.
-func (_u *IncidentUpdateOne) ClearTitle2() *IncidentUpdateOne {
-	_u.mutation.ClearTitle2()
 	return _u
 }
 
@@ -1780,6 +1785,25 @@ func (_u *IncidentUpdateOne) SetNillableOpenedAt(v *time.Time) *IncidentUpdateOn
 	return _u
 }
 
+// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
+func (_u *IncidentUpdateOne) SetProjectedFromID(id uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.SetProjectedFromID(id)
+	return _u
+}
+
+// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
+func (_u *IncidentUpdateOne) SetNillableProjectedFromID(id *uuid.UUID) *IncidentUpdateOne {
+	if id != nil {
+		_u = _u.SetProjectedFromID(*id)
+	}
+	return _u
+}
+
+// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
+func (_u *IncidentUpdateOne) SetProjectedFrom(v *NormalizedEvent) *IncidentUpdateOne {
+	return _u.SetProjectedFromID(v.ID)
+}
+
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
 func (_u *IncidentUpdateOne) SetSeverity(v *IncidentSeverity) *IncidentUpdateOne {
 	return _u.SetSeverityID(v.ID)
@@ -1805,19 +1829,19 @@ func (_u *IncidentUpdateOne) AddMilestones(v ...*IncidentMilestone) *IncidentUpd
 	return _u.AddMilestoneIDs(ids...)
 }
 
-// AddEventIDs adds the "events" edge to the IncidentEvent entity by IDs.
-func (_u *IncidentUpdateOne) AddEventIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.AddEventIDs(ids...)
+// AddTimelineEventIDs adds the "timeline_events" edge to the IncidentTimelineEvent entity by IDs.
+func (_u *IncidentUpdateOne) AddTimelineEventIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.AddTimelineEventIDs(ids...)
 	return _u
 }
 
-// AddEvents adds the "events" edges to the IncidentEvent entity.
-func (_u *IncidentUpdateOne) AddEvents(v ...*IncidentEvent) *IncidentUpdateOne {
+// AddTimelineEvents adds the "timeline_events" edges to the IncidentTimelineEvent entity.
+func (_u *IncidentUpdateOne) AddTimelineEvents(v ...*IncidentTimelineEvent) *IncidentUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddEventIDs(ids...)
+	return _u.AddTimelineEventIDs(ids...)
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
@@ -2009,6 +2033,12 @@ func (_u *IncidentUpdateOne) Mutation() *IncidentMutation {
 	return _u.mutation
 }
 
+// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
+func (_u *IncidentUpdateOne) ClearProjectedFrom() *IncidentUpdateOne {
+	_u.mutation.ClearProjectedFrom()
+	return _u
+}
+
 // ClearSeverity clears the "severity" edge to the IncidentSeverity entity.
 func (_u *IncidentUpdateOne) ClearSeverity() *IncidentUpdateOne {
 	_u.mutation.ClearSeverity()
@@ -2042,25 +2072,25 @@ func (_u *IncidentUpdateOne) RemoveMilestones(v ...*IncidentMilestone) *Incident
 	return _u.RemoveMilestoneIDs(ids...)
 }
 
-// ClearEvents clears all "events" edges to the IncidentEvent entity.
-func (_u *IncidentUpdateOne) ClearEvents() *IncidentUpdateOne {
-	_u.mutation.ClearEvents()
+// ClearTimelineEvents clears all "timeline_events" edges to the IncidentTimelineEvent entity.
+func (_u *IncidentUpdateOne) ClearTimelineEvents() *IncidentUpdateOne {
+	_u.mutation.ClearTimelineEvents()
 	return _u
 }
 
-// RemoveEventIDs removes the "events" edge to IncidentEvent entities by IDs.
-func (_u *IncidentUpdateOne) RemoveEventIDs(ids ...uuid.UUID) *IncidentUpdateOne {
-	_u.mutation.RemoveEventIDs(ids...)
+// RemoveTimelineEventIDs removes the "timeline_events" edge to IncidentTimelineEvent entities by IDs.
+func (_u *IncidentUpdateOne) RemoveTimelineEventIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.RemoveTimelineEventIDs(ids...)
 	return _u
 }
 
-// RemoveEvents removes "events" edges to IncidentEvent entities.
-func (_u *IncidentUpdateOne) RemoveEvents(v ...*IncidentEvent) *IncidentUpdateOne {
+// RemoveTimelineEvents removes "timeline_events" edges to IncidentTimelineEvent entities.
+func (_u *IncidentUpdateOne) RemoveTimelineEvents(v ...*IncidentTimelineEvent) *IncidentUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveEventIDs(ids...)
+	return _u.RemoveTimelineEventIDs(ids...)
 }
 
 // ClearRetrospective clears the "retrospective" edge to the Retrospective entity.
@@ -2404,12 +2434,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(incident.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(incident.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.CreatedAt(); ok {
 		_spec.SetField(incident.FieldCreatedAt, field.TypeTime, value)
 	}
@@ -2421,12 +2445,6 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.Title2(); ok {
-		_spec.SetField(incident.FieldTitle2, field.TypeString, value)
-	}
-	if _u.mutation.Title2Cleared() {
-		_spec.ClearField(incident.FieldTitle2, field.TypeString)
 	}
 	if value, ok := _u.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
@@ -2442,6 +2460,37 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 	}
 	if value, ok := _u.mutation.OpenedAt(); ok {
 		_spec.SetField(incident.FieldOpenedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ProjectedFromCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.ProjectedFromTable,
+			Columns: []string{incident.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Incident
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.ProjectedFromTable,
+			Columns: []string{incident.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Incident
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.SeverityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -2553,49 +2602,49 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.EventsCleared() {
+	if _u.mutation.TimelineEventsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   incident.EventsTable,
-			Columns: []string{incident.EventsColumn},
+			Table:   incident.TimelineEventsTable,
+			Columns: []string{incident.TimelineEventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEvent
+		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedEventsIDs(); len(nodes) > 0 && !_u.mutation.EventsCleared() {
+	if nodes := _u.mutation.RemovedTimelineEventsIDs(); len(nodes) > 0 && !_u.mutation.TimelineEventsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   incident.EventsTable,
-			Columns: []string{incident.EventsColumn},
+			Table:   incident.TimelineEventsTable,
+			Columns: []string{incident.TimelineEventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEvent
+		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.EventsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TimelineEventsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   incident.EventsTable,
-			Columns: []string{incident.EventsColumn},
+			Table:   incident.TimelineEventsTable,
+			Columns: []string{incident.TimelineEventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IncidentEvent
+		edge.Schema = _u.schemaConfig.IncidentTimelineEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

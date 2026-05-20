@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -28,6 +29,12 @@ type NormalizedEventCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (_c *NormalizedEventCreate) SetTenantID(v int) *NormalizedEventCreate {
 	_c.mutation.SetTenantID(v)
+	return _c
+}
+
+// SetKind sets the "kind" field.
+func (_c *NormalizedEventCreate) SetKind(v normalizedevent.Kind) *NormalizedEventCreate {
+	_c.mutation.SetKind(v)
 	return _c
 }
 
@@ -49,21 +56,15 @@ func (_c *NormalizedEventCreate) SetProviderEventRef(v string) *NormalizedEventC
 	return _c
 }
 
-// SetKind sets the "kind" field.
-func (_c *NormalizedEventCreate) SetKind(v normalizedevent.Kind) *NormalizedEventCreate {
-	_c.mutation.SetKind(v)
+// SetSubjectRef sets the "subject_ref" field.
+func (_c *NormalizedEventCreate) SetSubjectRef(v string) *NormalizedEventCreate {
+	_c.mutation.SetSubjectRef(v)
 	return _c
 }
 
 // SetSubjectKind sets the "subject_kind" field.
 func (_c *NormalizedEventCreate) SetSubjectKind(v string) *NormalizedEventCreate {
 	_c.mutation.SetSubjectKind(v)
-	return _c
-}
-
-// SetSubjectRef sets the "subject_ref" field.
-func (_c *NormalizedEventCreate) SetSubjectRef(v string) *NormalizedEventCreate {
-	_c.mutation.SetSubjectRef(v)
 	return _c
 }
 
@@ -116,6 +117,21 @@ func (_c *NormalizedEventCreate) SetNillableID(v *uuid.UUID) *NormalizedEventCre
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *NormalizedEventCreate) SetTenant(v *Tenant) *NormalizedEventCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// AddAlertFeedbackIDs adds the "alert_feedback" edge to the AlertFeedback entity by IDs.
+func (_c *NormalizedEventCreate) AddAlertFeedbackIDs(ids ...uuid.UUID) *NormalizedEventCreate {
+	_c.mutation.AddAlertFeedbackIDs(ids...)
+	return _c
+}
+
+// AddAlertFeedback adds the "alert_feedback" edges to the AlertFeedback entity.
+func (_c *NormalizedEventCreate) AddAlertFeedback(v ...*AlertFeedback) *NormalizedEventCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddAlertFeedbackIDs(ids...)
 }
 
 // Mutation returns the NormalizedEventMutation object of the builder.
@@ -177,6 +193,14 @@ func (_c *NormalizedEventCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "NormalizedEvent.tenant_id"`)}
 	}
+	if _, ok := _c.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "NormalizedEvent.kind"`)}
+	}
+	if v, ok := _c.mutation.Kind(); ok {
+		if err := normalizedevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Provider(); !ok {
 		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "NormalizedEvent.provider"`)}
 	}
@@ -201,12 +225,12 @@ func (_c *NormalizedEventCreate) check() error {
 			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Kind(); !ok {
-		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "NormalizedEvent.kind"`)}
+	if _, ok := _c.mutation.SubjectRef(); !ok {
+		return &ValidationError{Name: "subject_ref", err: errors.New(`ent: missing required field "NormalizedEvent.subject_ref"`)}
 	}
-	if v, ok := _c.mutation.Kind(); ok {
-		if err := normalizedevent.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
+	if v, ok := _c.mutation.SubjectRef(); ok {
+		if err := normalizedevent.SubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.SubjectKind(); !ok {
@@ -215,14 +239,6 @@ func (_c *NormalizedEventCreate) check() error {
 	if v, ok := _c.mutation.SubjectKind(); ok {
 		if err := normalizedevent.SubjectKindValidator(v); err != nil {
 			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_kind": %w`, err)}
-		}
-	}
-	if _, ok := _c.mutation.SubjectRef(); !ok {
-		return &ValidationError{Name: "subject_ref", err: errors.New(`ent: missing required field "NormalizedEvent.subject_ref"`)}
-	}
-	if v, ok := _c.mutation.SubjectRef(); ok {
-		if err := normalizedevent.SubjectRefValidator(v); err != nil {
-			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Attributes(); !ok {
@@ -277,6 +293,10 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
+	if value, ok := _c.mutation.Kind(); ok {
+		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
+		_node.Kind = value
+	}
 	if value, ok := _c.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
 		_node.Provider = value
@@ -289,17 +309,13 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 		_node.ProviderEventRef = value
 	}
-	if value, ok := _c.mutation.Kind(); ok {
-		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
-		_node.Kind = value
+	if value, ok := _c.mutation.SubjectRef(); ok {
+		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
+		_node.SubjectRef = value
 	}
 	if value, ok := _c.mutation.SubjectKind(); ok {
 		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
 		_node.SubjectKind = value
-	}
-	if value, ok := _c.mutation.SubjectRef(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
-		_node.SubjectRef = value
 	}
 	if value, ok := _c.mutation.Attributes(); ok {
 		_spec.SetField(normalizedevent.FieldAttributes, field.TypeJSON, value)
@@ -333,6 +349,23 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.AlertFeedbackIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   normalizedevent.AlertFeedbackTable,
+			Columns: []string{normalizedevent.AlertFeedbackColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AlertFeedback
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -387,6 +420,18 @@ type (
 	}
 )
 
+// SetKind sets the "kind" field.
+func (u *NormalizedEventUpsert) SetKind(v normalizedevent.Kind) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldKind, v)
+	return u
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateKind() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldKind)
+	return u
+}
+
 // SetProvider sets the "provider" field.
 func (u *NormalizedEventUpsert) SetProvider(v string) *NormalizedEventUpsert {
 	u.Set(normalizedevent.FieldProvider, v)
@@ -423,15 +468,15 @@ func (u *NormalizedEventUpsert) UpdateProviderEventRef() *NormalizedEventUpsert 
 	return u
 }
 
-// SetKind sets the "kind" field.
-func (u *NormalizedEventUpsert) SetKind(v normalizedevent.Kind) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldKind, v)
+// SetSubjectRef sets the "subject_ref" field.
+func (u *NormalizedEventUpsert) SetSubjectRef(v string) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldSubjectRef, v)
 	return u
 }
 
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateKind() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldKind)
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateSubjectRef() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldSubjectRef)
 	return u
 }
 
@@ -444,18 +489,6 @@ func (u *NormalizedEventUpsert) SetSubjectKind(v string) *NormalizedEventUpsert 
 // UpdateSubjectKind sets the "subject_kind" field to the value that was provided on create.
 func (u *NormalizedEventUpsert) UpdateSubjectKind() *NormalizedEventUpsert {
 	u.SetExcluded(normalizedevent.FieldSubjectKind)
-	return u
-}
-
-// SetSubjectRef sets the "subject_ref" field.
-func (u *NormalizedEventUpsert) SetSubjectRef(v string) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldSubjectRef, v)
-	return u
-}
-
-// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateSubjectRef() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldSubjectRef)
 	return u
 }
 
@@ -558,6 +591,20 @@ func (u *NormalizedEventUpsertOne) Update(set func(*NormalizedEventUpsert)) *Nor
 	return u
 }
 
+// SetKind sets the "kind" field.
+func (u *NormalizedEventUpsertOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetKind(v)
+	})
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateKind() *NormalizedEventUpsertOne {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateKind()
+	})
+}
+
 // SetProvider sets the "provider" field.
 func (u *NormalizedEventUpsertOne) SetProvider(v string) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
@@ -600,17 +647,17 @@ func (u *NormalizedEventUpsertOne) UpdateProviderEventRef() *NormalizedEventUpse
 	})
 }
 
-// SetKind sets the "kind" field.
-func (u *NormalizedEventUpsertOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertOne {
+// SetSubjectRef sets the "subject_ref" field.
+func (u *NormalizedEventUpsertOne) SetSubjectRef(v string) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetKind(v)
+		s.SetSubjectRef(v)
 	})
 }
 
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateKind() *NormalizedEventUpsertOne {
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateSubjectRef() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateKind()
+		s.UpdateSubjectRef()
 	})
 }
 
@@ -625,20 +672,6 @@ func (u *NormalizedEventUpsertOne) SetSubjectKind(v string) *NormalizedEventUpse
 func (u *NormalizedEventUpsertOne) UpdateSubjectKind() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.UpdateSubjectKind()
-	})
-}
-
-// SetSubjectRef sets the "subject_ref" field.
-func (u *NormalizedEventUpsertOne) SetSubjectRef(v string) *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSubjectRef(v)
-	})
-}
-
-// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateSubjectRef() *NormalizedEventUpsertOne {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSubjectRef()
 	})
 }
 
@@ -916,6 +949,20 @@ func (u *NormalizedEventUpsertBulk) Update(set func(*NormalizedEventUpsert)) *No
 	return u
 }
 
+// SetKind sets the "kind" field.
+func (u *NormalizedEventUpsertBulk) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.SetKind(v)
+	})
+}
+
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateKind() *NormalizedEventUpsertBulk {
+	return u.Update(func(s *NormalizedEventUpsert) {
+		s.UpdateKind()
+	})
+}
+
 // SetProvider sets the "provider" field.
 func (u *NormalizedEventUpsertBulk) SetProvider(v string) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
@@ -958,17 +1005,17 @@ func (u *NormalizedEventUpsertBulk) UpdateProviderEventRef() *NormalizedEventUps
 	})
 }
 
-// SetKind sets the "kind" field.
-func (u *NormalizedEventUpsertBulk) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertBulk {
+// SetSubjectRef sets the "subject_ref" field.
+func (u *NormalizedEventUpsertBulk) SetSubjectRef(v string) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetKind(v)
+		s.SetSubjectRef(v)
 	})
 }
 
-// UpdateKind sets the "kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateKind() *NormalizedEventUpsertBulk {
+// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateSubjectRef() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateKind()
+		s.UpdateSubjectRef()
 	})
 }
 
@@ -983,20 +1030,6 @@ func (u *NormalizedEventUpsertBulk) SetSubjectKind(v string) *NormalizedEventUps
 func (u *NormalizedEventUpsertBulk) UpdateSubjectKind() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
 		s.UpdateSubjectKind()
-	})
-}
-
-// SetSubjectRef sets the "subject_ref" field.
-func (u *NormalizedEventUpsertBulk) SetSubjectRef(v string) *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetSubjectRef(v)
-	})
-}
-
-// UpdateSubjectRef sets the "subject_ref" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateSubjectRef() *NormalizedEventUpsertBulk {
-	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateSubjectRef()
 	})
 }
 

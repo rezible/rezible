@@ -35,26 +35,6 @@ func (_u *TeamUpdate) Where(ps ...predicate.Team) *TeamUpdate {
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *TeamUpdate) SetExternalID(v string) *TeamUpdate {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *TeamUpdate) SetNillableExternalID(v *string) *TeamUpdate {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *TeamUpdate) ClearExternalID() *TeamUpdate {
-	_u.mutation.ClearExternalID()
-	return _u
-}
-
 // SetSlug sets the "slug" field.
 func (_u *TeamUpdate) SetSlug(v string) *TeamUpdate {
 	_u.mutation.SetSlug(v)
@@ -361,12 +341,6 @@ func (_u *TeamUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(team.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(team.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 	}
@@ -668,26 +642,6 @@ type TeamUpdateOne struct {
 	hooks     []Hook
 	mutation  *TeamMutation
 	modifiers []func(*sql.UpdateBuilder)
-}
-
-// SetExternalID sets the "external_id" field.
-func (_u *TeamUpdateOne) SetExternalID(v string) *TeamUpdateOne {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *TeamUpdateOne) SetNillableExternalID(v *string) *TeamUpdateOne {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *TeamUpdateOne) ClearExternalID() *TeamUpdateOne {
-	_u.mutation.ClearExternalID()
-	return _u
 }
 
 // SetSlug sets the "slug" field.
@@ -1025,12 +979,6 @@ func (_u *TeamUpdateOne) sqlSave(ctx context.Context) (_node *Team, err error) {
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(team.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(team.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)

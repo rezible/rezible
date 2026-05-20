@@ -7,7 +7,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
+	ea "github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/execution"
 	"github.com/slack-go/slack"
 )
@@ -49,9 +51,11 @@ func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotat
 		return nil, fmt.Errorf("no user context")
 	}
 
-	ev := &ent.Event{ExternalID: meta.MsgId.String()}
+	lookupAnno := ea.And(
+		ea.HasEventWith(ne.SubjectRef(meta.MsgId.String())),
+		ea.CreatorID(userId))
 
-	curr, currErr := s.annos.LookupByUserEvent(ctx, userId, ev)
+	curr, currErr := s.annos.Lookup(ctx, lookupAnno)
 	if currErr != nil && !ent.IsNotFound(currErr) {
 		return nil, fmt.Errorf("failed to lookup existing event annotation: %w", currErr)
 	}
@@ -106,13 +110,14 @@ func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view sla
 		}
 	}
 
-	ev := &ent.Event{
-		ExternalID:  meta.MsgId.String(),
-		Kind:        "message",
-		Timestamp:   meta.MsgId.getTimestamp(),
-		Source:      "slack",
-		Title:       "Slack Message",
-		Description: meta.MsgText,
+	// TODO: convert this from event processor?
+	ev := &ent.NormalizedEvent{
+		SubjectRef: meta.MsgId.String(),
+		//Kind:        "message",
+		//Timestamp:   meta.MsgId.getTimestamp(),
+		//Source:      "slack",
+		//Title:       "Slack Message",
+		//Description: meta.MsgText,
 	}
 
 	anno := &ent.EventAnnotation{

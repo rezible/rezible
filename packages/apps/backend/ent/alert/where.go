@@ -60,9 +60,9 @@ func TenantID(v int) predicate.Alert {
 	return predicate.Alert(sql.FieldEQ(FieldTenantID, v))
 }
 
-// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
-func ExternalID(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldExternalID, v))
+// ProjectedEventID applies equality check predicate on the "projected_event_id" field. It's identical to ProjectedEventIDEQ.
+func ProjectedEventID(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldProjectedEventID, v))
 }
 
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
@@ -105,79 +105,34 @@ func TenantIDNotIn(vs ...int) predicate.Alert {
 	return predicate.Alert(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// ExternalIDEQ applies the EQ predicate on the "external_id" field.
-func ExternalIDEQ(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldExternalID, v))
+// ProjectedEventIDEQ applies the EQ predicate on the "projected_event_id" field.
+func ProjectedEventIDEQ(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldProjectedEventID, v))
 }
 
-// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
-func ExternalIDNEQ(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldNEQ(FieldExternalID, v))
+// ProjectedEventIDNEQ applies the NEQ predicate on the "projected_event_id" field.
+func ProjectedEventIDNEQ(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldNEQ(FieldProjectedEventID, v))
 }
 
-// ExternalIDIn applies the In predicate on the "external_id" field.
-func ExternalIDIn(vs ...string) predicate.Alert {
-	return predicate.Alert(sql.FieldIn(FieldExternalID, vs...))
+// ProjectedEventIDIn applies the In predicate on the "projected_event_id" field.
+func ProjectedEventIDIn(vs ...uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldIn(FieldProjectedEventID, vs...))
 }
 
-// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
-func ExternalIDNotIn(vs ...string) predicate.Alert {
-	return predicate.Alert(sql.FieldNotIn(FieldExternalID, vs...))
+// ProjectedEventIDNotIn applies the NotIn predicate on the "projected_event_id" field.
+func ProjectedEventIDNotIn(vs ...uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldNotIn(FieldProjectedEventID, vs...))
 }
 
-// ExternalIDGT applies the GT predicate on the "external_id" field.
-func ExternalIDGT(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldGT(FieldExternalID, v))
+// ProjectedEventIDIsNil applies the IsNil predicate on the "projected_event_id" field.
+func ProjectedEventIDIsNil() predicate.Alert {
+	return predicate.Alert(sql.FieldIsNull(FieldProjectedEventID))
 }
 
-// ExternalIDGTE applies the GTE predicate on the "external_id" field.
-func ExternalIDGTE(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldGTE(FieldExternalID, v))
-}
-
-// ExternalIDLT applies the LT predicate on the "external_id" field.
-func ExternalIDLT(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldLT(FieldExternalID, v))
-}
-
-// ExternalIDLTE applies the LTE predicate on the "external_id" field.
-func ExternalIDLTE(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldLTE(FieldExternalID, v))
-}
-
-// ExternalIDContains applies the Contains predicate on the "external_id" field.
-func ExternalIDContains(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldContains(FieldExternalID, v))
-}
-
-// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
-func ExternalIDHasPrefix(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldHasPrefix(FieldExternalID, v))
-}
-
-// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
-func ExternalIDHasSuffix(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldHasSuffix(FieldExternalID, v))
-}
-
-// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
-func ExternalIDIsNil() predicate.Alert {
-	return predicate.Alert(sql.FieldIsNull(FieldExternalID))
-}
-
-// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
-func ExternalIDNotNil() predicate.Alert {
-	return predicate.Alert(sql.FieldNotNull(FieldExternalID))
-}
-
-// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
-func ExternalIDEqualFold(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldEqualFold(FieldExternalID, v))
-}
-
-// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
-func ExternalIDContainsFold(v string) predicate.Alert {
-	return predicate.Alert(sql.FieldContainsFold(FieldExternalID, v))
+// ProjectedEventIDNotNil applies the NotNil predicate on the "projected_event_id" field.
+func ProjectedEventIDNotNil() predicate.Alert {
+	return predicate.Alert(sql.FieldNotNull(FieldProjectedEventID))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -454,6 +409,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Alert {
 	})
 }
 
+// HasProjectedFrom applies the HasEdge predicate on the "projected_from" edge.
+func HasProjectedFrom() predicate.Alert {
+	return predicate.Alert(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProjectedFromTable, ProjectedFromColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.Alert
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectedFromWith applies the HasEdge predicate on the "projected_from" edge with a given conditions (other predicates).
+func HasProjectedFromWith(preds ...predicate.NormalizedEvent) predicate.Alert {
+	return predicate.Alert(func(s *sql.Selector) {
+		step := newProjectedFromStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.Alert
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasPlaybooks applies the HasEdge predicate on the "playbooks" edge.
 func HasPlaybooks() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
@@ -512,27 +496,27 @@ func HasRosterWith(preds ...predicate.OncallRoster) predicate.Alert {
 	})
 }
 
-// HasInstances applies the HasEdge predicate on the "instances" edge.
-func HasInstances() predicate.Alert {
+// HasFeedback applies the HasEdge predicate on the "feedback" edge.
+func HasFeedback() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
+			sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertInstance
-		step.Edge.Schema = schemaConfig.AlertInstance
+		step.To.Schema = schemaConfig.AlertFeedback
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasInstancesWith applies the HasEdge predicate on the "instances" edge with a given conditions (other predicates).
-func HasInstancesWith(preds ...predicate.AlertInstance) predicate.Alert {
+// HasFeedbackWith applies the HasEdge predicate on the "feedback" edge with a given conditions (other predicates).
+func HasFeedbackWith(preds ...predicate.AlertFeedback) predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
-		step := newInstancesStep()
+		step := newFeedbackStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertInstance
-		step.Edge.Schema = schemaConfig.AlertInstance
+		step.To.Schema = schemaConfig.AlertFeedback
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

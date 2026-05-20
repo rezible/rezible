@@ -16,16 +16,17 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
-	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/task"
@@ -42,10 +43,11 @@ type IncidentQuery struct {
 	inters               []Interceptor
 	predicates           []predicate.Incident
 	withTenant           *TenantQuery
+	withProjectedFrom    *NormalizedEventQuery
 	withSeverity         *IncidentSeverityQuery
 	withType             *IncidentTypeQuery
 	withMilestones       *IncidentMilestoneQuery
-	withEvents           *IncidentEventQuery
+	withTimelineEvents   *IncidentTimelineEventQuery
 	withRetrospective    *RetrospectiveQuery
 	withUsers            *UserQuery
 	withRoleAssignments  *IncidentRoleAssignmentQuery
@@ -113,6 +115,31 @@ func (_q *IncidentQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.Incident
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjectedFrom chains the current query on the "projected_from" edge.
+func (_q *IncidentQuery) QueryProjectedFrom() *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.ProjectedFromTable, incident.ProjectedFromColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.Incident
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -195,9 +222,9 @@ func (_q *IncidentQuery) QueryMilestones() *IncidentMilestoneQuery {
 	return query
 }
 
-// QueryEvents chains the current query on the "events" edge.
-func (_q *IncidentQuery) QueryEvents() *IncidentEventQuery {
-	query := (&IncidentEventClient{config: _q.config}).Query()
+// QueryTimelineEvents chains the current query on the "timeline_events" edge.
+func (_q *IncidentQuery) QueryTimelineEvents() *IncidentTimelineEventQuery {
+	query := (&IncidentTimelineEventClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -208,12 +235,12 @@ func (_q *IncidentQuery) QueryEvents() *IncidentEventQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, selector),
-			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.EventsTable, incident.EventsColumn),
+			sqlgraph.To(incidenttimelineevent.Table, incidenttimelineevent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incident.TimelineEventsTable, incident.TimelineEventsColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEvent
+		step.To.Schema = schemaConfig.IncidentTimelineEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -713,10 +740,11 @@ func (_q *IncidentQuery) Clone() *IncidentQuery {
 		inters:               append([]Interceptor{}, _q.inters...),
 		predicates:           append([]predicate.Incident{}, _q.predicates...),
 		withTenant:           _q.withTenant.Clone(),
+		withProjectedFrom:    _q.withProjectedFrom.Clone(),
 		withSeverity:         _q.withSeverity.Clone(),
 		withType:             _q.withType.Clone(),
 		withMilestones:       _q.withMilestones.Clone(),
-		withEvents:           _q.withEvents.Clone(),
+		withTimelineEvents:   _q.withTimelineEvents.Clone(),
 		withRetrospective:    _q.withRetrospective.Clone(),
 		withUsers:            _q.withUsers.Clone(),
 		withRoleAssignments:  _q.withRoleAssignments.Clone(),
@@ -744,6 +772,17 @@ func (_q *IncidentQuery) WithTenant(opts ...func(*TenantQuery)) *IncidentQuery {
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithProjectedFrom tells the query-builder to eager-load the nodes that are connected to
+// the "projected_from" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IncidentQuery) WithProjectedFrom(opts ...func(*NormalizedEventQuery)) *IncidentQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProjectedFrom = query
 	return _q
 }
 
@@ -780,14 +819,14 @@ func (_q *IncidentQuery) WithMilestones(opts ...func(*IncidentMilestoneQuery)) *
 	return _q
 }
 
-// WithEvents tells the query-builder to eager-load the nodes that are connected to
-// the "events" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IncidentQuery) WithEvents(opts ...func(*IncidentEventQuery)) *IncidentQuery {
-	query := (&IncidentEventClient{config: _q.config}).Query()
+// WithTimelineEvents tells the query-builder to eager-load the nodes that are connected to
+// the "timeline_events" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IncidentQuery) WithTimelineEvents(opts ...func(*IncidentTimelineEventQuery)) *IncidentQuery {
+	query := (&IncidentTimelineEventClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withEvents = query
+	_q.withTimelineEvents = query
 	return _q
 }
 
@@ -1007,12 +1046,13 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = _q.querySpec()
-		loadedTypes = [17]bool{
+		loadedTypes = [18]bool{
 			_q.withTenant != nil,
+			_q.withProjectedFrom != nil,
 			_q.withSeverity != nil,
 			_q.withType != nil,
 			_q.withMilestones != nil,
-			_q.withEvents != nil,
+			_q.withTimelineEvents != nil,
 			_q.withRetrospective != nil,
 			_q.withUsers != nil,
 			_q.withRoleAssignments != nil,
@@ -1056,6 +1096,12 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
+	if query := _q.withProjectedFrom; query != nil {
+		if err := _q.loadProjectedFrom(ctx, query, nodes, nil,
+			func(n *Incident, e *NormalizedEvent) { n.Edges.ProjectedFrom = e }); err != nil {
+			return nil, err
+		}
+	}
 	if query := _q.withSeverity; query != nil {
 		if err := _q.loadSeverity(ctx, query, nodes, nil,
 			func(n *Incident, e *IncidentSeverity) { n.Edges.Severity = e }); err != nil {
@@ -1075,10 +1121,12 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			return nil, err
 		}
 	}
-	if query := _q.withEvents; query != nil {
-		if err := _q.loadEvents(ctx, query, nodes,
-			func(n *Incident) { n.Edges.Events = []*IncidentEvent{} },
-			func(n *Incident, e *IncidentEvent) { n.Edges.Events = append(n.Edges.Events, e) }); err != nil {
+	if query := _q.withTimelineEvents; query != nil {
+		if err := _q.loadTimelineEvents(ctx, query, nodes,
+			func(n *Incident) { n.Edges.TimelineEvents = []*IncidentTimelineEvent{} },
+			func(n *Incident, e *IncidentTimelineEvent) {
+				n.Edges.TimelineEvents = append(n.Edges.TimelineEvents, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -1201,6 +1249,35 @@ func (_q *IncidentQuery) loadTenant(ctx context.Context, query *TenantQuery, nod
 	}
 	return nil
 }
+func (_q *IncidentQuery) loadProjectedFrom(ctx context.Context, query *NormalizedEventQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *NormalizedEvent)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Incident)
+	for i := range nodes {
+		fk := nodes[i].ProjectedEventID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(normalizedevent.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "projected_event_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
 func (_q *IncidentQuery) loadSeverity(ctx context.Context, query *IncidentSeverityQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentSeverity)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Incident)
@@ -1289,7 +1366,7 @@ func (_q *IncidentQuery) loadMilestones(ctx context.Context, query *IncidentMile
 	}
 	return nil
 }
-func (_q *IncidentQuery) loadEvents(ctx context.Context, query *IncidentEventQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentEvent)) error {
+func (_q *IncidentQuery) loadTimelineEvents(ctx context.Context, query *IncidentTimelineEventQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentTimelineEvent)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Incident)
 	for i := range nodes {
@@ -1300,10 +1377,10 @@ func (_q *IncidentQuery) loadEvents(ctx context.Context, query *IncidentEventQue
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(incidentevent.FieldIncidentID)
+		query.ctx.AppendFieldOnce(incidenttimelineevent.FieldIncidentID)
 	}
-	query.Where(predicate.IncidentEvent(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(incident.EventsColumn), fks...))
+	query.Where(predicate.IncidentTimelineEvent(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incident.TimelineEventsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -1872,6 +1949,9 @@ func (_q *IncidentQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incident.FieldTenantID)
+		}
+		if _q.withProjectedFrom != nil {
+			_spec.Node.AddColumnOnce(incident.FieldProjectedEventID)
 		}
 		if _q.withSeverity != nil {
 			_spec.Node.AddColumnOnce(incident.FieldSeverityID)

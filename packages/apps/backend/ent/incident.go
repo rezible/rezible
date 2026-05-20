@@ -13,6 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -24,18 +25,16 @@ type Incident struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// ExternalID holds the value of the "external_id" field.
-	ExternalID string `json:"external_id,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// ProjectedEventID holds the value of the "projected_event_id" field.
+	ProjectedEventID uuid.UUID `json:"projected_event_id,omitempty"`
 	// Slug holds the value of the "slug" field.
 	Slug string `json:"slug,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
-	// Title2 holds the value of the "title2" field.
-	Title2 string `json:"title2,omitempty"`
 	// SeverityID holds the value of the "severity_id" field.
 	SeverityID uuid.UUID `json:"severity_id,omitempty"`
 	// TypeID holds the value of the "type_id" field.
@@ -56,14 +55,16 @@ type Incident struct {
 type IncidentEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// ProjectedFrom holds the value of the projected_from edge.
+	ProjectedFrom *NormalizedEvent `json:"projected_from,omitempty"`
 	// Severity holds the value of the severity edge.
 	Severity *IncidentSeverity `json:"severity,omitempty"`
 	// Type holds the value of the type edge.
 	Type *IncidentType `json:"type,omitempty"`
 	// Milestones holds the value of the milestones edge.
 	Milestones []*IncidentMilestone `json:"milestones,omitempty"`
-	// Events holds the value of the events edge.
-	Events []*IncidentEvent `json:"events,omitempty"`
+	// TimelineEvents holds the value of the timeline_events edge.
+	TimelineEvents []*IncidentTimelineEvent `json:"timeline_events,omitempty"`
 	// Retrospective holds the value of the retrospective edge.
 	Retrospective *Retrospective `json:"retrospective,omitempty"`
 	// Users holds the value of the users edge.
@@ -90,7 +91,7 @@ type IncidentEdges struct {
 	IncidentLinks []*IncidentLink `json:"incident_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [17]bool
+	loadedTypes [18]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -104,12 +105,23 @@ func (e IncidentEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// ProjectedFromOrErr returns the ProjectedFrom value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentEdges) ProjectedFromOrErr() (*NormalizedEvent, error) {
+	if e.ProjectedFrom != nil {
+		return e.ProjectedFrom, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: normalizedevent.Label}
+	}
+	return nil, &NotLoadedError{edge: "projected_from"}
+}
+
 // SeverityOrErr returns the Severity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
 func (e IncidentEdges) SeverityOrErr() (*IncidentSeverity, error) {
 	if e.Severity != nil {
 		return e.Severity, nil
-	} else if e.loadedTypes[1] {
+	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: incidentseverity.Label}
 	}
 	return nil, &NotLoadedError{edge: "severity"}
@@ -120,7 +132,7 @@ func (e IncidentEdges) SeverityOrErr() (*IncidentSeverity, error) {
 func (e IncidentEdges) TypeOrErr() (*IncidentType, error) {
 	if e.Type != nil {
 		return e.Type, nil
-	} else if e.loadedTypes[2] {
+	} else if e.loadedTypes[3] {
 		return nil, &NotFoundError{label: incidenttype.Label}
 	}
 	return nil, &NotLoadedError{edge: "type"}
@@ -129,19 +141,19 @@ func (e IncidentEdges) TypeOrErr() (*IncidentType, error) {
 // MilestonesOrErr returns the Milestones value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) MilestonesOrErr() ([]*IncidentMilestone, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Milestones, nil
 	}
 	return nil, &NotLoadedError{edge: "milestones"}
 }
 
-// EventsOrErr returns the Events value or an error if the edge
+// TimelineEventsOrErr returns the TimelineEvents value or an error if the edge
 // was not loaded in eager-loading.
-func (e IncidentEdges) EventsOrErr() ([]*IncidentEvent, error) {
-	if e.loadedTypes[4] {
-		return e.Events, nil
+func (e IncidentEdges) TimelineEventsOrErr() ([]*IncidentTimelineEvent, error) {
+	if e.loadedTypes[5] {
+		return e.TimelineEvents, nil
 	}
-	return nil, &NotLoadedError{edge: "events"}
+	return nil, &NotLoadedError{edge: "timeline_events"}
 }
 
 // RetrospectiveOrErr returns the Retrospective value or an error if the edge
@@ -149,7 +161,7 @@ func (e IncidentEdges) EventsOrErr() ([]*IncidentEvent, error) {
 func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 	if e.Retrospective != nil {
 		return e.Retrospective, nil
-	} else if e.loadedTypes[5] {
+	} else if e.loadedTypes[6] {
 		return nil, &NotFoundError{label: retrospective.Label}
 	}
 	return nil, &NotLoadedError{edge: "retrospective"}
@@ -158,7 +170,7 @@ func (e IncidentEdges) RetrospectiveOrErr() (*Retrospective, error) {
 // UsersOrErr returns the Users value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) UsersOrErr() ([]*User, error) {
-	if e.loadedTypes[6] {
+	if e.loadedTypes[7] {
 		return e.Users, nil
 	}
 	return nil, &NotLoadedError{edge: "users"}
@@ -167,7 +179,7 @@ func (e IncidentEdges) UsersOrErr() ([]*User, error) {
 // RoleAssignmentsOrErr returns the RoleAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.RoleAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "role_assignments"}
@@ -176,7 +188,7 @@ func (e IncidentEdges) RoleAssignmentsOrErr() ([]*IncidentRoleAssignment, error)
 // LinkedIncidentsOrErr returns the LinkedIncidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[8] {
+	if e.loadedTypes[9] {
 		return e.LinkedIncidents, nil
 	}
 	return nil, &NotLoadedError{edge: "linked_incidents"}
@@ -185,7 +197,7 @@ func (e IncidentEdges) LinkedIncidentsOrErr() ([]*Incident, error) {
 // FieldSelectionsOrErr returns the FieldSelections value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
-	if e.loadedTypes[9] {
+	if e.loadedTypes[10] {
 		return e.FieldSelections, nil
 	}
 	return nil, &NotLoadedError{edge: "field_selections"}
@@ -194,7 +206,7 @@ func (e IncidentEdges) FieldSelectionsOrErr() ([]*IncidentFieldOption, error) {
 // TasksOrErr returns the Tasks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TasksOrErr() ([]*Task, error) {
-	if e.loadedTypes[10] {
+	if e.loadedTypes[11] {
 		return e.Tasks, nil
 	}
 	return nil, &NotLoadedError{edge: "tasks"}
@@ -203,7 +215,7 @@ func (e IncidentEdges) TasksOrErr() ([]*Task, error) {
 // TagAssignmentsOrErr returns the TagAssignments value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
-	if e.loadedTypes[11] {
+	if e.loadedTypes[12] {
 		return e.TagAssignments, nil
 	}
 	return nil, &NotLoadedError{edge: "tag_assignments"}
@@ -212,7 +224,7 @@ func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
 // DebriefsOrErr returns the Debriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[12] {
+	if e.loadedTypes[13] {
 		return e.Debriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "debriefs"}
@@ -221,7 +233,7 @@ func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
 // ReviewSessionsOrErr returns the ReviewSessions value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) ReviewSessionsOrErr() ([]*MeetingSession, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[14] {
 		return e.ReviewSessions, nil
 	}
 	return nil, &NotLoadedError{edge: "review_sessions"}
@@ -230,7 +242,7 @@ func (e IncidentEdges) ReviewSessionsOrErr() ([]*MeetingSession, error) {
 // VideoConferencesOrErr returns the VideoConferences value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.VideoConferences, nil
 	}
 	return nil, &NotLoadedError{edge: "video_conferences"}
@@ -239,7 +251,7 @@ func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
 // UserRolesOrErr returns the UserRoles value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) UserRolesOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[16] {
 		return e.UserRoles, nil
 	}
 	return nil, &NotLoadedError{edge: "user_roles"}
@@ -248,7 +260,7 @@ func (e IncidentEdges) UserRolesOrErr() ([]*IncidentRoleAssignment, error) {
 // IncidentLinksOrErr returns the IncidentLinks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) IncidentLinksOrErr() ([]*IncidentLink, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[17] {
 		return e.IncidentLinks, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_links"}
@@ -261,11 +273,11 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incident.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case incident.FieldExternalID, incident.FieldSlug, incident.FieldTitle, incident.FieldTitle2, incident.FieldSummary, incident.FieldChatChannelID:
+		case incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID:
 			values[i] = new(sql.NullString)
 		case incident.FieldCreatedAt, incident.FieldUpdatedAt, incident.FieldOpenedAt:
 			values[i] = new(sql.NullTime)
-		case incident.FieldID, incident.FieldSeverityID, incident.FieldTypeID:
+		case incident.FieldID, incident.FieldProjectedEventID, incident.FieldSeverityID, incident.FieldTypeID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -294,12 +306,6 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case incident.FieldExternalID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_id", values[i])
-			} else if value.Valid {
-				_m.ExternalID = value.String
-			}
 		case incident.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -312,6 +318,12 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
+		case incident.FieldProjectedEventID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field projected_event_id", values[i])
+			} else if value != nil {
+				_m.ProjectedEventID = *value
+			}
 		case incident.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field slug", values[i])
@@ -323,12 +335,6 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field title", values[i])
 			} else if value.Valid {
 				_m.Title = value.String
-			}
-		case incident.FieldTitle2:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field title2", values[i])
-			} else if value.Valid {
-				_m.Title2 = value.String
 			}
 		case incident.FieldSeverityID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -378,6 +384,11 @@ func (_m *Incident) QueryTenant() *TenantQuery {
 	return NewIncidentClient(_m.config).QueryTenant(_m)
 }
 
+// QueryProjectedFrom queries the "projected_from" edge of the Incident entity.
+func (_m *Incident) QueryProjectedFrom() *NormalizedEventQuery {
+	return NewIncidentClient(_m.config).QueryProjectedFrom(_m)
+}
+
 // QuerySeverity queries the "severity" edge of the Incident entity.
 func (_m *Incident) QuerySeverity() *IncidentSeverityQuery {
 	return NewIncidentClient(_m.config).QuerySeverity(_m)
@@ -393,9 +404,9 @@ func (_m *Incident) QueryMilestones() *IncidentMilestoneQuery {
 	return NewIncidentClient(_m.config).QueryMilestones(_m)
 }
 
-// QueryEvents queries the "events" edge of the Incident entity.
-func (_m *Incident) QueryEvents() *IncidentEventQuery {
-	return NewIncidentClient(_m.config).QueryEvents(_m)
+// QueryTimelineEvents queries the "timeline_events" edge of the Incident entity.
+func (_m *Incident) QueryTimelineEvents() *IncidentTimelineEventQuery {
+	return NewIncidentClient(_m.config).QueryTimelineEvents(_m)
 }
 
 // QueryRetrospective queries the "retrospective" edge of the Incident entity.
@@ -484,23 +495,20 @@ func (_m *Incident) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("external_id=")
-	builder.WriteString(_m.ExternalID)
-	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
+	builder.WriteString("projected_event_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ProjectedEventID))
+	builder.WriteString(", ")
 	builder.WriteString("slug=")
 	builder.WriteString(_m.Slug)
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)
-	builder.WriteString(", ")
-	builder.WriteString("title2=")
-	builder.WriteString(_m.Title2)
 	builder.WriteString(", ")
 	builder.WriteString("severity_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SeverityID))

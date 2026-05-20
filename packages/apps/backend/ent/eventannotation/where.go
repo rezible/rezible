@@ -329,18 +329,18 @@ func HasEvent() predicate.EventAnnotation {
 			sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Event
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.EventAnnotation
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasEventWith applies the HasEdge predicate on the "event" edge with a given conditions (other predicates).
-func HasEventWith(preds ...predicate.Event) predicate.EventAnnotation {
+func HasEventWith(preds ...predicate.NormalizedEvent) predicate.EventAnnotation {
 	return predicate.EventAnnotation(func(s *sql.Selector) {
 		step := newEventStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Event
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.EventAnnotation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

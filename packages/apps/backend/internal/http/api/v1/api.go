@@ -13,7 +13,7 @@ type Handler struct {
 	*incidentsHandler
 	*incidentMetadataHandler
 	*incidentDebriefsHandler
-	*incidentEventsHandler
+	*incidentTimelineHandler
 	*incidentMilestonesHandler
 	*integrationsHandler
 	*meetingsHandler
@@ -41,7 +41,7 @@ func NewHandler(svcs *rez.Services) *Handler {
 		authSessionsHandler:       newAuthSessionsHandler(svcs.Organizations, svcs.Users),
 		documentsHandler:          newDocumentsHandler(svcs.Documents),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(dbc.IncidentDebriefQuestion, svcs.Users, svcs.Debriefs),
-		incidentEventsHandler:     newIncidentEventsHandler(dbc),
+		incidentTimelineHandler:   newIncidentTimelineHandler(dbc),
 		incidentMetadataHandler:   newIncidentMetadataHandler(dbc, svcs.Incidents),
 		incidentMilestonesHandler: newIncidentMilestonesHandler(dbc),
 		tasksHandler:              newTasksHandler(dbc),

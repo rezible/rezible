@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"entgo.io/ent/schema/mixin"
+	"github.com/google/uuid"
 
 	gen "github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/hook"
@@ -151,12 +152,21 @@ func (d ArchiveMixin) P(w interface{ WhereP(...func(*sql.Selector)) }) {
 	)
 }
 
-type IntegrationDataMixin struct {
+type EventEntityLinkMixin struct {
 	mixin.Schema
 }
 
-func (i IntegrationDataMixin) Fields() []ent.Field {
-	idField := field.String("external_id")
-	idField.Optional()
-	return []ent.Field{idField}
+func (i EventEntityLinkMixin) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("projected_event_id", uuid.New()).
+			Optional(),
+	}
+}
+
+func (i EventEntityLinkMixin) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("projected_from", NormalizedEvent.Type).
+			Unique().
+			Field("projected_event_id"),
+	}
 }

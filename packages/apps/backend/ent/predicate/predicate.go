@@ -12,9 +12,6 @@ type Alert func(*sql.Selector)
 // AlertFeedback is the predicate function for alertfeedback builders.
 type AlertFeedback func(*sql.Selector)
 
-// AlertInstance is the predicate function for alertinstance builders.
-type AlertInstance func(*sql.Selector)
-
 // AlertMetrics is the predicate function for alertmetrics builders.
 type AlertMetrics func(*sql.Selector)
 
@@ -23,9 +20,6 @@ type Document func(*sql.Selector)
 
 // DocumentAccess is the predicate function for documentaccess builders.
 type DocumentAccess func(*sql.Selector)
-
-// Event is the predicate function for event builders.
-type Event func(*sql.Selector)
 
 // EventAnnotation is the predicate function for eventannotation builders.
 type EventAnnotation func(*sql.Selector)
@@ -44,21 +38,6 @@ type IncidentDebriefQuestion func(*sql.Selector)
 
 // IncidentDebriefSuggestion is the predicate function for incidentdebriefsuggestion builders.
 type IncidentDebriefSuggestion func(*sql.Selector)
-
-// IncidentEvent is the predicate function for incidentevent builders.
-type IncidentEvent func(*sql.Selector)
-
-// IncidentEventContext is the predicate function for incidenteventcontext builders.
-type IncidentEventContext func(*sql.Selector)
-
-// IncidentEventContributingFactor is the predicate function for incidenteventcontributingfactor builders.
-type IncidentEventContributingFactor func(*sql.Selector)
-
-// IncidentEventEvidence is the predicate function for incidenteventevidence builders.
-type IncidentEventEvidence func(*sql.Selector)
-
-// IncidentEventTopologyContext is the predicate function for incidenteventtopologycontext builders.
-type IncidentEventTopologyContext func(*sql.Selector)
 
 // IncidentField is the predicate function for incidentfield builders.
 type IncidentField func(*sql.Selector)
@@ -83,6 +62,21 @@ type IncidentSeverity func(*sql.Selector)
 
 // IncidentTag is the predicate function for incidenttag builders.
 type IncidentTag func(*sql.Selector)
+
+// IncidentTimelineEvent is the predicate function for incidenttimelineevent builders.
+type IncidentTimelineEvent func(*sql.Selector)
+
+// IncidentTimelineEventContext is the predicate function for incidenttimelineeventcontext builders.
+type IncidentTimelineEventContext func(*sql.Selector)
+
+// IncidentTimelineEventContributingFactor is the predicate function for incidenttimelineeventcontributingfactor builders.
+type IncidentTimelineEventContributingFactor func(*sql.Selector)
+
+// IncidentTimelineEventEvidence is the predicate function for incidenttimelineeventevidence builders.
+type IncidentTimelineEventEvidence func(*sql.Selector)
+
+// IncidentTimelineEventTopologyContext is the predicate function for incidenttimelineeventtopologycontext builders.
+type IncidentTimelineEventTopologyContext func(*sql.Selector)
 
 // IncidentType is the predicate function for incidenttype builders.
 type IncidentType func(*sql.Selector)

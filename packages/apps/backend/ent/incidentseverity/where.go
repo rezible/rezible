@@ -67,9 +67,9 @@ func ArchiveTime(v time.Time) predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldEQ(FieldArchiveTime, v))
 }
 
-// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
-func ExternalID(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldEQ(FieldExternalID, v))
+// ProjectedEventID applies equality check predicate on the "projected_event_id" field. It's identical to ProjectedEventIDEQ.
+func ProjectedEventID(v uuid.UUID) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEQ(FieldProjectedEventID, v))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
@@ -162,79 +162,34 @@ func ArchiveTimeNotNil() predicate.IncidentSeverity {
 	return predicate.IncidentSeverity(sql.FieldNotNull(FieldArchiveTime))
 }
 
-// ExternalIDEQ applies the EQ predicate on the "external_id" field.
-func ExternalIDEQ(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldEQ(FieldExternalID, v))
+// ProjectedEventIDEQ applies the EQ predicate on the "projected_event_id" field.
+func ProjectedEventIDEQ(v uuid.UUID) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldEQ(FieldProjectedEventID, v))
 }
 
-// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
-func ExternalIDNEQ(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldNEQ(FieldExternalID, v))
+// ProjectedEventIDNEQ applies the NEQ predicate on the "projected_event_id" field.
+func ProjectedEventIDNEQ(v uuid.UUID) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNEQ(FieldProjectedEventID, v))
 }
 
-// ExternalIDIn applies the In predicate on the "external_id" field.
-func ExternalIDIn(vs ...string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldIn(FieldExternalID, vs...))
+// ProjectedEventIDIn applies the In predicate on the "projected_event_id" field.
+func ProjectedEventIDIn(vs ...uuid.UUID) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldIn(FieldProjectedEventID, vs...))
 }
 
-// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
-func ExternalIDNotIn(vs ...string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldNotIn(FieldExternalID, vs...))
+// ProjectedEventIDNotIn applies the NotIn predicate on the "projected_event_id" field.
+func ProjectedEventIDNotIn(vs ...uuid.UUID) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNotIn(FieldProjectedEventID, vs...))
 }
 
-// ExternalIDGT applies the GT predicate on the "external_id" field.
-func ExternalIDGT(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldGT(FieldExternalID, v))
+// ProjectedEventIDIsNil applies the IsNil predicate on the "projected_event_id" field.
+func ProjectedEventIDIsNil() predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldIsNull(FieldProjectedEventID))
 }
 
-// ExternalIDGTE applies the GTE predicate on the "external_id" field.
-func ExternalIDGTE(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldGTE(FieldExternalID, v))
-}
-
-// ExternalIDLT applies the LT predicate on the "external_id" field.
-func ExternalIDLT(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldLT(FieldExternalID, v))
-}
-
-// ExternalIDLTE applies the LTE predicate on the "external_id" field.
-func ExternalIDLTE(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldLTE(FieldExternalID, v))
-}
-
-// ExternalIDContains applies the Contains predicate on the "external_id" field.
-func ExternalIDContains(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldContains(FieldExternalID, v))
-}
-
-// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
-func ExternalIDHasPrefix(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldHasPrefix(FieldExternalID, v))
-}
-
-// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
-func ExternalIDHasSuffix(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldHasSuffix(FieldExternalID, v))
-}
-
-// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
-func ExternalIDIsNil() predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldIsNull(FieldExternalID))
-}
-
-// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
-func ExternalIDNotNil() predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldNotNull(FieldExternalID))
-}
-
-// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
-func ExternalIDEqualFold(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldEqualFold(FieldExternalID, v))
-}
-
-// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
-func ExternalIDContainsFold(v string) predicate.IncidentSeverity {
-	return predicate.IncidentSeverity(sql.FieldContainsFold(FieldExternalID, v))
+// ProjectedEventIDNotNil applies the NotNil predicate on the "projected_event_id" field.
+func ProjectedEventIDNotNil() predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(sql.FieldNotNull(FieldProjectedEventID))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -512,6 +467,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.IncidentSeverity {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentSeverity
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProjectedFrom applies the HasEdge predicate on the "projected_from" edge.
+func HasProjectedFrom() predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProjectedFromTable, ProjectedFromColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.IncidentSeverity
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectedFromWith applies the HasEdge predicate on the "projected_from" edge with a given conditions (other predicates).
+func HasProjectedFromWith(preds ...predicate.NormalizedEvent) predicate.IncidentSeverity {
+	return predicate.IncidentSeverity(func(s *sql.Selector) {
+		step := newProjectedFromStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.IncidentSeverity
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

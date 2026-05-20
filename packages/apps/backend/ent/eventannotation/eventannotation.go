@@ -49,9 +49,9 @@ const (
 	TenantColumn = "tenant_id"
 	// EventTable is the table that holds the event relation/edge.
 	EventTable = "event_annotations"
-	// EventInverseTable is the table name for the Event entity.
-	// It exists in this package in order to avoid circular dependency with the "event" package.
-	EventInverseTable = "events"
+	// EventInverseTable is the table name for the NormalizedEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
+	EventInverseTable = "normalized_events"
 	// EventColumn is the table column denoting the event relation/edge.
 	EventColumn = "event_id"
 	// CreatorTable is the table that holds the creator relation/edge.

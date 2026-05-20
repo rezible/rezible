@@ -24,8 +24,6 @@ type OncallRoster struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
-	// ExternalID holds the value of the "external_id" field.
-	ExternalID string `json:"external_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Slug holds the value of the "slug" field.
@@ -150,7 +148,7 @@ func (*OncallRoster) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case oncallroster.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case oncallroster.FieldExternalID, oncallroster.FieldName, oncallroster.FieldSlug, oncallroster.FieldTimezone, oncallroster.FieldChatHandle, oncallroster.FieldChatChannelID:
+		case oncallroster.FieldName, oncallroster.FieldSlug, oncallroster.FieldTimezone, oncallroster.FieldChatHandle, oncallroster.FieldChatChannelID:
 			values[i] = new(sql.NullString)
 		case oncallroster.FieldArchiveTime:
 			values[i] = new(sql.NullTime)
@@ -188,12 +186,6 @@ func (_m *OncallRoster) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field archive_time", values[i])
 			} else if value.Valid {
 				_m.ArchiveTime = value.Time
-			}
-		case oncallroster.FieldExternalID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_id", values[i])
-			} else if value.Valid {
-				_m.ExternalID = value.String
 			}
 		case oncallroster.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -312,9 +304,6 @@ func (_m *OncallRoster) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("archive_time=")
 	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("external_id=")
-	builder.WriteString(_m.ExternalID)
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)

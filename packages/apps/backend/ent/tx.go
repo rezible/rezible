@@ -16,16 +16,12 @@ type Tx struct {
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
-	// AlertInstance is the client for interacting with the AlertInstance builders.
-	AlertInstance *AlertInstanceClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DocumentAccess is the client for interacting with the DocumentAccess builders.
 	DocumentAccess *DocumentAccessClient
-	// Event is the client for interacting with the Event builders.
-	Event *EventClient
 	// EventAnnotation is the client for interacting with the EventAnnotation builders.
 	EventAnnotation *EventAnnotationClient
 	// Incident is the client for interacting with the Incident builders.
@@ -38,16 +34,6 @@ type Tx struct {
 	IncidentDebriefQuestion *IncidentDebriefQuestionClient
 	// IncidentDebriefSuggestion is the client for interacting with the IncidentDebriefSuggestion builders.
 	IncidentDebriefSuggestion *IncidentDebriefSuggestionClient
-	// IncidentEvent is the client for interacting with the IncidentEvent builders.
-	IncidentEvent *IncidentEventClient
-	// IncidentEventContext is the client for interacting with the IncidentEventContext builders.
-	IncidentEventContext *IncidentEventContextClient
-	// IncidentEventContributingFactor is the client for interacting with the IncidentEventContributingFactor builders.
-	IncidentEventContributingFactor *IncidentEventContributingFactorClient
-	// IncidentEventEvidence is the client for interacting with the IncidentEventEvidence builders.
-	IncidentEventEvidence *IncidentEventEvidenceClient
-	// IncidentEventTopologyContext is the client for interacting with the IncidentEventTopologyContext builders.
-	IncidentEventTopologyContext *IncidentEventTopologyContextClient
 	// IncidentField is the client for interacting with the IncidentField builders.
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
@@ -64,6 +50,16 @@ type Tx struct {
 	IncidentSeverity *IncidentSeverityClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
+	// IncidentTimelineEvent is the client for interacting with the IncidentTimelineEvent builders.
+	IncidentTimelineEvent *IncidentTimelineEventClient
+	// IncidentTimelineEventContext is the client for interacting with the IncidentTimelineEventContext builders.
+	IncidentTimelineEventContext *IncidentTimelineEventContextClient
+	// IncidentTimelineEventContributingFactor is the client for interacting with the IncidentTimelineEventContributingFactor builders.
+	IncidentTimelineEventContributingFactor *IncidentTimelineEventContributingFactorClient
+	// IncidentTimelineEventEvidence is the client for interacting with the IncidentTimelineEventEvidence builders.
+	IncidentTimelineEventEvidence *IncidentTimelineEventEvidenceClient
+	// IncidentTimelineEventTopologyContext is the client for interacting with the IncidentTimelineEventTopologyContext builders.
+	IncidentTimelineEventTopologyContext *IncidentTimelineEventTopologyContextClient
 	// IncidentType is the client for interacting with the IncidentType builders.
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
@@ -277,22 +273,15 @@ func (tx *Tx) Client() *Client {
 func (tx *Tx) init() {
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
-	tx.AlertInstance = NewAlertInstanceClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.DocumentAccess = NewDocumentAccessClient(tx.config)
-	tx.Event = NewEventClient(tx.config)
 	tx.EventAnnotation = NewEventAnnotationClient(tx.config)
 	tx.Incident = NewIncidentClient(tx.config)
 	tx.IncidentDebrief = NewIncidentDebriefClient(tx.config)
 	tx.IncidentDebriefMessage = NewIncidentDebriefMessageClient(tx.config)
 	tx.IncidentDebriefQuestion = NewIncidentDebriefQuestionClient(tx.config)
 	tx.IncidentDebriefSuggestion = NewIncidentDebriefSuggestionClient(tx.config)
-	tx.IncidentEvent = NewIncidentEventClient(tx.config)
-	tx.IncidentEventContext = NewIncidentEventContextClient(tx.config)
-	tx.IncidentEventContributingFactor = NewIncidentEventContributingFactorClient(tx.config)
-	tx.IncidentEventEvidence = NewIncidentEventEvidenceClient(tx.config)
-	tx.IncidentEventTopologyContext = NewIncidentEventTopologyContextClient(tx.config)
 	tx.IncidentField = NewIncidentFieldClient(tx.config)
 	tx.IncidentFieldOption = NewIncidentFieldOptionClient(tx.config)
 	tx.IncidentLink = NewIncidentLinkClient(tx.config)
@@ -301,6 +290,11 @@ func (tx *Tx) init() {
 	tx.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(tx.config)
 	tx.IncidentSeverity = NewIncidentSeverityClient(tx.config)
 	tx.IncidentTag = NewIncidentTagClient(tx.config)
+	tx.IncidentTimelineEvent = NewIncidentTimelineEventClient(tx.config)
+	tx.IncidentTimelineEventContext = NewIncidentTimelineEventContextClient(tx.config)
+	tx.IncidentTimelineEventContributingFactor = NewIncidentTimelineEventContributingFactorClient(tx.config)
+	tx.IncidentTimelineEventEvidence = NewIncidentTimelineEventEvidenceClient(tx.config)
+	tx.IncidentTimelineEventTopologyContext = NewIncidentTimelineEventTopologyContextClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.Integration = NewIntegrationClient(tx.config)
 	tx.IntegrationOAuthState = NewIntegrationOAuthStateClient(tx.config)

@@ -62,11 +62,6 @@ func TenantID(v int) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTenantID, v))
 }
 
-// ExternalID applies equality check predicate on the "external_id" field. It's identical to ExternalIDEQ.
-func ExternalID(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldExternalID, v))
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldCreatedAt, v))
@@ -77,6 +72,11 @@ func UpdatedAt(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// ProjectedEventID applies equality check predicate on the "projected_event_id" field. It's identical to ProjectedEventIDEQ.
+func ProjectedEventID(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldProjectedEventID, v))
+}
+
 // Slug applies equality check predicate on the "slug" field. It's identical to SlugEQ.
 func Slug(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldSlug, v))
@@ -85,11 +85,6 @@ func Slug(v string) predicate.Incident {
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
 func Title(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldEQ(FieldTitle, v))
-}
-
-// Title2 applies equality check predicate on the "title2" field. It's identical to Title2EQ.
-func Title2(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldTitle2, v))
 }
 
 // SeverityID applies equality check predicate on the "severity_id" field. It's identical to SeverityIDEQ.
@@ -135,81 +130,6 @@ func TenantIDIn(vs ...int) predicate.Incident {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.Incident {
 	return predicate.Incident(sql.FieldNotIn(FieldTenantID, vs...))
-}
-
-// ExternalIDEQ applies the EQ predicate on the "external_id" field.
-func ExternalIDEQ(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldExternalID, v))
-}
-
-// ExternalIDNEQ applies the NEQ predicate on the "external_id" field.
-func ExternalIDNEQ(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldExternalID, v))
-}
-
-// ExternalIDIn applies the In predicate on the "external_id" field.
-func ExternalIDIn(vs ...string) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldExternalID, vs...))
-}
-
-// ExternalIDNotIn applies the NotIn predicate on the "external_id" field.
-func ExternalIDNotIn(vs ...string) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldExternalID, vs...))
-}
-
-// ExternalIDGT applies the GT predicate on the "external_id" field.
-func ExternalIDGT(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldGT(FieldExternalID, v))
-}
-
-// ExternalIDGTE applies the GTE predicate on the "external_id" field.
-func ExternalIDGTE(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldGTE(FieldExternalID, v))
-}
-
-// ExternalIDLT applies the LT predicate on the "external_id" field.
-func ExternalIDLT(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldLT(FieldExternalID, v))
-}
-
-// ExternalIDLTE applies the LTE predicate on the "external_id" field.
-func ExternalIDLTE(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldLTE(FieldExternalID, v))
-}
-
-// ExternalIDContains applies the Contains predicate on the "external_id" field.
-func ExternalIDContains(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldContains(FieldExternalID, v))
-}
-
-// ExternalIDHasPrefix applies the HasPrefix predicate on the "external_id" field.
-func ExternalIDHasPrefix(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldHasPrefix(FieldExternalID, v))
-}
-
-// ExternalIDHasSuffix applies the HasSuffix predicate on the "external_id" field.
-func ExternalIDHasSuffix(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldHasSuffix(FieldExternalID, v))
-}
-
-// ExternalIDIsNil applies the IsNil predicate on the "external_id" field.
-func ExternalIDIsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldExternalID))
-}
-
-// ExternalIDNotNil applies the NotNil predicate on the "external_id" field.
-func ExternalIDNotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldExternalID))
-}
-
-// ExternalIDEqualFold applies the EqualFold predicate on the "external_id" field.
-func ExternalIDEqualFold(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEqualFold(FieldExternalID, v))
-}
-
-// ExternalIDContainsFold applies the ContainsFold predicate on the "external_id" field.
-func ExternalIDContainsFold(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldContainsFold(FieldExternalID, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -290,6 +210,36 @@ func UpdatedAtLT(v time.Time) predicate.Incident {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Incident {
 	return predicate.Incident(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// ProjectedEventIDEQ applies the EQ predicate on the "projected_event_id" field.
+func ProjectedEventIDEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldEQ(FieldProjectedEventID, v))
+}
+
+// ProjectedEventIDNEQ applies the NEQ predicate on the "projected_event_id" field.
+func ProjectedEventIDNEQ(v uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNEQ(FieldProjectedEventID, v))
+}
+
+// ProjectedEventIDIn applies the In predicate on the "projected_event_id" field.
+func ProjectedEventIDIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldIn(FieldProjectedEventID, vs...))
+}
+
+// ProjectedEventIDNotIn applies the NotIn predicate on the "projected_event_id" field.
+func ProjectedEventIDNotIn(vs ...uuid.UUID) predicate.Incident {
+	return predicate.Incident(sql.FieldNotIn(FieldProjectedEventID, vs...))
+}
+
+// ProjectedEventIDIsNil applies the IsNil predicate on the "projected_event_id" field.
+func ProjectedEventIDIsNil() predicate.Incident {
+	return predicate.Incident(sql.FieldIsNull(FieldProjectedEventID))
+}
+
+// ProjectedEventIDNotNil applies the NotNil predicate on the "projected_event_id" field.
+func ProjectedEventIDNotNil() predicate.Incident {
+	return predicate.Incident(sql.FieldNotNull(FieldProjectedEventID))
 }
 
 // SlugEQ applies the EQ predicate on the "slug" field.
@@ -420,81 +370,6 @@ func TitleEqualFold(v string) predicate.Incident {
 // TitleContainsFold applies the ContainsFold predicate on the "title" field.
 func TitleContainsFold(v string) predicate.Incident {
 	return predicate.Incident(sql.FieldContainsFold(FieldTitle, v))
-}
-
-// Title2EQ applies the EQ predicate on the "title2" field.
-func Title2EQ(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEQ(FieldTitle2, v))
-}
-
-// Title2NEQ applies the NEQ predicate on the "title2" field.
-func Title2NEQ(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldNEQ(FieldTitle2, v))
-}
-
-// Title2In applies the In predicate on the "title2" field.
-func Title2In(vs ...string) predicate.Incident {
-	return predicate.Incident(sql.FieldIn(FieldTitle2, vs...))
-}
-
-// Title2NotIn applies the NotIn predicate on the "title2" field.
-func Title2NotIn(vs ...string) predicate.Incident {
-	return predicate.Incident(sql.FieldNotIn(FieldTitle2, vs...))
-}
-
-// Title2GT applies the GT predicate on the "title2" field.
-func Title2GT(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldGT(FieldTitle2, v))
-}
-
-// Title2GTE applies the GTE predicate on the "title2" field.
-func Title2GTE(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldGTE(FieldTitle2, v))
-}
-
-// Title2LT applies the LT predicate on the "title2" field.
-func Title2LT(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldLT(FieldTitle2, v))
-}
-
-// Title2LTE applies the LTE predicate on the "title2" field.
-func Title2LTE(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldLTE(FieldTitle2, v))
-}
-
-// Title2Contains applies the Contains predicate on the "title2" field.
-func Title2Contains(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldContains(FieldTitle2, v))
-}
-
-// Title2HasPrefix applies the HasPrefix predicate on the "title2" field.
-func Title2HasPrefix(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldHasPrefix(FieldTitle2, v))
-}
-
-// Title2HasSuffix applies the HasSuffix predicate on the "title2" field.
-func Title2HasSuffix(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldHasSuffix(FieldTitle2, v))
-}
-
-// Title2IsNil applies the IsNil predicate on the "title2" field.
-func Title2IsNil() predicate.Incident {
-	return predicate.Incident(sql.FieldIsNull(FieldTitle2))
-}
-
-// Title2NotNil applies the NotNil predicate on the "title2" field.
-func Title2NotNil() predicate.Incident {
-	return predicate.Incident(sql.FieldNotNull(FieldTitle2))
-}
-
-// Title2EqualFold applies the EqualFold predicate on the "title2" field.
-func Title2EqualFold(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldEqualFold(FieldTitle2, v))
-}
-
-// Title2ContainsFold applies the ContainsFold predicate on the "title2" field.
-func Title2ContainsFold(v string) predicate.Incident {
-	return predicate.Incident(sql.FieldContainsFold(FieldTitle2, v))
 }
 
 // SeverityIDEQ applies the EQ predicate on the "severity_id" field.
@@ -756,6 +631,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Incident {
 	})
 }
 
+// HasProjectedFrom applies the HasEdge predicate on the "projected_from" edge.
+func HasProjectedFrom() predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ProjectedFromTable, ProjectedFromColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.Incident
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectedFromWith applies the HasEdge predicate on the "projected_from" edge with a given conditions (other predicates).
+func HasProjectedFromWith(preds ...predicate.NormalizedEvent) predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := newProjectedFromStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.Incident
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasSeverity applies the HasEdge predicate on the "severity" edge.
 func HasSeverity() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
@@ -843,27 +747,27 @@ func HasMilestonesWith(preds ...predicate.IncidentMilestone) predicate.Incident 
 	})
 }
 
-// HasEvents applies the HasEdge predicate on the "events" edge.
-func HasEvents() predicate.Incident {
+// HasTimelineEvents applies the HasEdge predicate on the "timeline_events" edge.
+func HasTimelineEvents() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, EventsTable, EventsColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, TimelineEventsTable, TimelineEventsColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEvent
+		step.To.Schema = schemaConfig.IncidentTimelineEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasEventsWith applies the HasEdge predicate on the "events" edge with a given conditions (other predicates).
-func HasEventsWith(preds ...predicate.IncidentEvent) predicate.Incident {
+// HasTimelineEventsWith applies the HasEdge predicate on the "timeline_events" edge with a given conditions (other predicates).
+func HasTimelineEventsWith(preds ...predicate.IncidentTimelineEvent) predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {
-		step := newEventsStep()
+		step := newTimelineEventsStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEvent
+		step.To.Schema = schemaConfig.IncidentTimelineEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

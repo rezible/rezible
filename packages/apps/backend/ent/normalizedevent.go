@@ -22,19 +22,19 @@ type NormalizedEvent struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// Normalized event type used to select validation and projection behavior.
+	Kind normalizedevent.Kind `json:"kind,omitempty"`
 	// Integration provider that produced the event, such as slack or github.
 	Provider string `json:"provider,omitempty"`
 	// Provider-specific event stream or webhook source the event came from.
 	ProviderSource string `json:"provider_source,omitempty"`
 	// Stable provider reference for the source event, used with the provider fields for idempotency.
 	ProviderEventRef string `json:"provider_event_ref,omitempty"`
-	// Normalized event type used to select validation and projection behavior.
-	Kind normalizedevent.Kind `json:"kind,omitempty"`
-	// Provider-neutral type of the primary subject this event is about.
-	SubjectKind string `json:"subject_kind,omitempty"`
 	// Stable external reference for the primary subject this event is about.
 	SubjectRef string `json:"subject_ref,omitempty"`
-	// Validated normalized attributes for this event kind.
+	// Provider-neutral type of the primary subject this event is about.
+	SubjectKind string `json:"subject_kind,omitempty"`
+	// Normalized attributes for this event kind.
 	Attributes map[string]interface{} `json:"attributes,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
@@ -52,9 +52,11 @@ type NormalizedEvent struct {
 type NormalizedEventEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// AlertFeedback holds the value of the alert_feedback edge.
+	AlertFeedback []*AlertFeedback `json:"alert_feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -68,6 +70,15 @@ func (e NormalizedEventEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// AlertFeedbackOrErr returns the AlertFeedback value or an error if the edge
+// was not loaded in eager-loading.
+func (e NormalizedEventEdges) AlertFeedbackOrErr() ([]*AlertFeedback, error) {
+	if e.loadedTypes[1] {
+		return e.AlertFeedback, nil
+	}
+	return nil, &NotLoadedError{edge: "alert_feedback"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -77,7 +88,7 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case normalizedevent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldKind, normalizedevent.FieldSubjectKind, normalizedevent.FieldSubjectRef:
+		case normalizedevent.FieldKind, normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldSubjectRef, normalizedevent.FieldSubjectKind:
 			values[i] = new(sql.NullString)
 		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt:
 			values[i] = new(sql.NullTime)
@@ -110,6 +121,12 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
+		case normalizedevent.FieldKind:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
+			} else if value.Valid {
+				_m.Kind = normalizedevent.Kind(value.String)
+			}
 		case normalizedevent.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider", values[i])
@@ -128,23 +145,17 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ProviderEventRef = value.String
 			}
-		case normalizedevent.FieldKind:
+		case normalizedevent.FieldSubjectRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field kind", values[i])
+				return fmt.Errorf("unexpected type %T for field subject_ref", values[i])
 			} else if value.Valid {
-				_m.Kind = normalizedevent.Kind(value.String)
+				_m.SubjectRef = value.String
 			}
 		case normalizedevent.FieldSubjectKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field subject_kind", values[i])
 			} else if value.Valid {
 				_m.SubjectKind = value.String
-			}
-		case normalizedevent.FieldSubjectRef:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subject_ref", values[i])
-			} else if value.Valid {
-				_m.SubjectRef = value.String
 			}
 		case normalizedevent.FieldAttributes:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -190,6 +201,11 @@ func (_m *NormalizedEvent) QueryTenant() *TenantQuery {
 	return NewNormalizedEventClient(_m.config).QueryTenant(_m)
 }
 
+// QueryAlertFeedback queries the "alert_feedback" edge of the NormalizedEvent entity.
+func (_m *NormalizedEvent) QueryAlertFeedback() *AlertFeedbackQuery {
+	return NewNormalizedEventClient(_m.config).QueryAlertFeedback(_m)
+}
+
 // Update returns a builder for updating this NormalizedEvent.
 // Note that you need to call NormalizedEvent.Unwrap() before calling this method if this NormalizedEvent
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -216,6 +232,9 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
+	builder.WriteString("kind=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
+	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
 	builder.WriteString(", ")
@@ -225,14 +244,11 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("provider_event_ref=")
 	builder.WriteString(_m.ProviderEventRef)
 	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
+	builder.WriteString("subject_ref=")
+	builder.WriteString(_m.SubjectRef)
 	builder.WriteString(", ")
 	builder.WriteString("subject_kind=")
 	builder.WriteString(_m.SubjectKind)
-	builder.WriteString(", ")
-	builder.WriteString("subject_ref=")
-	builder.WriteString(_m.SubjectRef)
 	builder.WriteString(", ")
 	builder.WriteString("attributes=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Attributes))

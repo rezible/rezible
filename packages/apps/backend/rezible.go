@@ -470,10 +470,6 @@ type (
 		Get(context.Context, predicate.Retrospective) (*ent.Retrospective, error)
 		Set(context.Context, uuid.UUID, func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error)
 
-		//ListReviews(context.Context, ListRetrospectiveReviewsParams) ([]*ent.RetrospectiveReview, error)
-		//GetReview(context.Context, uuid.UUID) (*ent.RetrospectiveReview, error)
-		//SetReview(context.Context, *ent.RetrospectiveReview) (*ent.RetrospectiveReview, error)
-
 		ListComments(context.Context, ListRetrospectiveCommentsParams) ([]*ent.RetrospectiveComment, error)
 		GetComment(context.Context, uuid.UUID) (*ent.RetrospectiveComment, error)
 		SetComment(context.Context, *ent.RetrospectiveComment) (*ent.RetrospectiveComment, error)
@@ -483,14 +479,13 @@ type (
 type (
 	ListEventsParams struct {
 		ent.ListParams
-		From            time.Time
-		To              time.Time
+		Predicates      []predicate.NormalizedEvent
 		WithAnnotations bool
 	}
 
 	EventsService interface {
-		GetEvent(ctx context.Context, id uuid.UUID) (*ent.Event, error)
-		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.Event], error)
+		GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error)
+		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)
 	}
 
 	ExpandAnnotationsParams struct {
@@ -512,7 +507,7 @@ type (
 	EventAnnotationsService interface {
 		ListAnnotations(ctx context.Context, params ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error)
 
-		LookupByUserEvent(ctx context.Context, userId uuid.UUID, event *ent.Event) (*ent.EventAnnotation, error)
+		Lookup(context.Context, predicate.EventAnnotation) (*ent.EventAnnotation, error)
 
 		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.EventAnnotation, error)
 		SetAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error)

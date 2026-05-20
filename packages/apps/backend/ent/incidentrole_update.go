@@ -53,26 +53,6 @@ func (_u *IncidentRoleUpdate) ClearArchiveTime() *IncidentRoleUpdate {
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *IncidentRoleUpdate) SetExternalID(v string) *IncidentRoleUpdate {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *IncidentRoleUpdate) SetNillableExternalID(v *string) *IncidentRoleUpdate {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *IncidentRoleUpdate) ClearExternalID() *IncidentRoleUpdate {
-	_u.mutation.ClearExternalID()
-	return _u
-}
-
 // SetName sets the "name" field.
 func (_u *IncidentRoleUpdate) SetName(v string) *IncidentRoleUpdate {
 	_u.mutation.SetName(v)
@@ -237,12 +217,6 @@ func (_u *IncidentRoleUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentrole.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(incidentrole.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(incidentrole.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)
 	}
@@ -386,26 +360,6 @@ func (_u *IncidentRoleUpdateOne) SetNillableArchiveTime(v *time.Time) *IncidentR
 // ClearArchiveTime clears the value of the "archive_time" field.
 func (_u *IncidentRoleUpdateOne) ClearArchiveTime() *IncidentRoleUpdateOne {
 	_u.mutation.ClearArchiveTime()
-	return _u
-}
-
-// SetExternalID sets the "external_id" field.
-func (_u *IncidentRoleUpdateOne) SetExternalID(v string) *IncidentRoleUpdateOne {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *IncidentRoleUpdateOne) SetNillableExternalID(v *string) *IncidentRoleUpdateOne {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *IncidentRoleUpdateOne) ClearExternalID() *IncidentRoleUpdateOne {
-	_u.mutation.ClearExternalID()
 	return _u
 }
 
@@ -602,12 +556,6 @@ func (_u *IncidentRoleUpdateOne) sqlSave(ctx context.Context) (_node *IncidentRo
 	}
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentrole.FieldArchiveTime, field.TypeTime)
-	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(incidentrole.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(incidentrole.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentrole.FieldName, field.TypeString, value)

@@ -7,8 +7,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/event"
 	ea "github.com/rezible/rezible/ent/eventannotation"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -54,20 +54,10 @@ func (s *EventAnnotationsService) GetAnnotation(ctx context.Context, id uuid.UUI
 		Only(ctx)
 }
 
-func (s *EventAnnotationsService) LookupByUserEvent(ctx context.Context, userId uuid.UUID, ev *ent.Event) (*ent.EventAnnotation, error) {
-	var eventPred predicate.Event
-
-	if ev.ID != uuid.Nil {
-		eventPred = event.ID(ev.ID)
-	} else if ev.ExternalID != "" {
-		eventPred = event.ExternalID(ev.ExternalID)
-	}
-
+func (s *EventAnnotationsService) Lookup(ctx context.Context, pred predicate.EventAnnotation) (*ent.EventAnnotation, error) {
 	query := s.db.EventAnnotation.Query().
-		Where(ea.CreatorID(userId)).
-		Where(ea.HasEventWith(eventPred)).
+		Where(pred).
 		WithEvent()
-
 	return query.Only(ctx)
 }
 
@@ -94,8 +84,8 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 	var created *ent.EventAnnotation
 	eventId := anno.EventID
 	if eventId == uuid.Nil && anno.Edges.Event != nil {
-		eventQuery := s.db.Event.Query().
-			Where(event.ExternalID(anno.Edges.Event.ExternalID))
+		eventQuery := s.db.NormalizedEvent.Query().
+			Where(ne.SubjectRef(anno.Edges.Event.SubjectRef))
 		existingId, eventErr := eventQuery.OnlyID(ctx)
 		if eventErr != nil && !ent.IsNotFound(eventErr) {
 			return nil, fmt.Errorf("failed to check for existing oncall event: %w", eventErr)
@@ -103,24 +93,24 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 		eventId = existingId
 	}
 	createFn := func(tx *ent.Tx) error {
-		if eventId == uuid.Nil {
-			e := anno.Edges.Event
-			if anno.Edges.Event == nil {
-				return fmt.Errorf("oncall annotation event is empty")
-			}
-			createEvent := tx.Event.Create().
-				SetExternalID(e.ExternalID).
-				SetSource(e.Source).
-				SetKind(e.Kind).
-				SetTitle(e.Title).
-				SetDescription(e.Description).
-				SetTimestamp(e.Timestamp)
-			createdEvent, eventErr := createEvent.Save(ctx)
-			if eventErr != nil {
-				return fmt.Errorf("create annotation event: %w", eventErr)
-			}
-			anno.EventID = createdEvent.ID
-		}
+		//if eventId == uuid.Nil {
+		//	e := anno.Edges.Event
+		//	if anno.Edges.Event == nil {
+		//		return fmt.Errorf("oncall annotation event is empty")
+		//	}
+		//	createEvent := tx.NormalizedEvent.Create().
+		//		SetExternalID(e.ExternalID).
+		//		SetSource(e.Source).
+		//		SetKind(e.Kind).
+		//		SetTitle(e.Title).
+		//		SetDescription(e.Description).
+		//		SetTimestamp(e.Timestamp)
+		//	createdEvent, eventErr := createEvent.Save(ctx)
+		//	if eventErr != nil {
+		//		return fmt.Errorf("create annotation event: %w", eventErr)
+		//	}
+		//	anno.EventID = createdEvent.ID
+		//}
 
 		createdAnno, annoErr := tx.EventAnnotation.Create().
 			SetEventID(anno.EventID).

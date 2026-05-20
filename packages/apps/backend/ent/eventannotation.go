@@ -11,8 +11,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -47,7 +47,7 @@ type EventAnnotationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Event holds the value of the event edge.
-	Event *Event `json:"event,omitempty"`
+	Event *NormalizedEvent `json:"event,omitempty"`
 	// Creator holds the value of the creator edge.
 	Creator *User `json:"creator,omitempty"`
 	// Handovers holds the value of the handovers edge.
@@ -70,11 +70,11 @@ func (e EventAnnotationEdges) TenantOrErr() (*Tenant, error) {
 
 // EventOrErr returns the Event value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e EventAnnotationEdges) EventOrErr() (*Event, error) {
+func (e EventAnnotationEdges) EventOrErr() (*NormalizedEvent, error) {
 	if e.Event != nil {
 		return e.Event, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: event.Label}
+		return nil, &NotFoundError{label: normalizedevent.Label}
 	}
 	return nil, &NotLoadedError{edge: "event"}
 }
@@ -198,7 +198,7 @@ func (_m *EventAnnotation) QueryTenant() *TenantQuery {
 }
 
 // QueryEvent queries the "event" edge of the EventAnnotation entity.
-func (_m *EventAnnotation) QueryEvent() *EventQuery {
+func (_m *EventAnnotation) QueryEvent() *NormalizedEventQuery {
 	return NewEventAnnotationClient(_m.config).QueryEvent(_m)
 }
 

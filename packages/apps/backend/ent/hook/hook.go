@@ -33,18 +33,6 @@ func (f AlertFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertFeedbackMutation", m)
 }
 
-// The AlertInstanceFunc type is an adapter to allow the use of ordinary
-// function as AlertInstance mutator.
-type AlertInstanceFunc func(context.Context, *ent.AlertInstanceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AlertInstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AlertInstanceMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInstanceMutation", m)
-}
-
 // The DocumentFunc type is an adapter to allow the use of ordinary
 // function as Document mutator.
 type DocumentFunc func(context.Context, *ent.DocumentMutation) (ent.Value, error)
@@ -67,18 +55,6 @@ func (f DocumentAccessFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Val
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.DocumentAccessMutation", m)
-}
-
-// The EventFunc type is an adapter to allow the use of ordinary
-// function as Event mutator.
-type EventFunc func(context.Context, *ent.EventMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f EventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.EventMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.EventMutation", m)
 }
 
 // The EventAnnotationFunc type is an adapter to allow the use of ordinary
@@ -151,66 +127,6 @@ func (f IncidentDebriefSuggestionFunc) Mutate(ctx context.Context, m ent.Mutatio
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentDebriefSuggestionMutation", m)
-}
-
-// The IncidentEventFunc type is an adapter to allow the use of ordinary
-// function as IncidentEvent mutator.
-type IncidentEventFunc func(context.Context, *ent.IncidentEventMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentEventMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventMutation", m)
-}
-
-// The IncidentEventContextFunc type is an adapter to allow the use of ordinary
-// function as IncidentEventContext mutator.
-type IncidentEventContextFunc func(context.Context, *ent.IncidentEventContextMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentEventContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentEventContextMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventContextMutation", m)
-}
-
-// The IncidentEventContributingFactorFunc type is an adapter to allow the use of ordinary
-// function as IncidentEventContributingFactor mutator.
-type IncidentEventContributingFactorFunc func(context.Context, *ent.IncidentEventContributingFactorMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentEventContributingFactorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentEventContributingFactorMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventContributingFactorMutation", m)
-}
-
-// The IncidentEventEvidenceFunc type is an adapter to allow the use of ordinary
-// function as IncidentEventEvidence mutator.
-type IncidentEventEvidenceFunc func(context.Context, *ent.IncidentEventEvidenceMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentEventEvidenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentEventEvidenceMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventEvidenceMutation", m)
-}
-
-// The IncidentEventTopologyContextFunc type is an adapter to allow the use of ordinary
-// function as IncidentEventTopologyContext mutator.
-type IncidentEventTopologyContextFunc func(context.Context, *ent.IncidentEventTopologyContextMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f IncidentEventTopologyContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IncidentEventTopologyContextMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentEventTopologyContextMutation", m)
 }
 
 // The IncidentFieldFunc type is an adapter to allow the use of ordinary
@@ -307,6 +223,66 @@ func (f IncidentTagFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTagMutation", m)
+}
+
+// The IncidentTimelineEventFunc type is an adapter to allow the use of ordinary
+// function as IncidentTimelineEvent mutator.
+type IncidentTimelineEventFunc func(context.Context, *ent.IncidentTimelineEventMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentTimelineEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentTimelineEventMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventMutation", m)
+}
+
+// The IncidentTimelineEventContextFunc type is an adapter to allow the use of ordinary
+// function as IncidentTimelineEventContext mutator.
+type IncidentTimelineEventContextFunc func(context.Context, *ent.IncidentTimelineEventContextMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentTimelineEventContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentTimelineEventContextMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventContextMutation", m)
+}
+
+// The IncidentTimelineEventContributingFactorFunc type is an adapter to allow the use of ordinary
+// function as IncidentTimelineEventContributingFactor mutator.
+type IncidentTimelineEventContributingFactorFunc func(context.Context, *ent.IncidentTimelineEventContributingFactorMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentTimelineEventContributingFactorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentTimelineEventContributingFactorMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventContributingFactorMutation", m)
+}
+
+// The IncidentTimelineEventEvidenceFunc type is an adapter to allow the use of ordinary
+// function as IncidentTimelineEventEvidence mutator.
+type IncidentTimelineEventEvidenceFunc func(context.Context, *ent.IncidentTimelineEventEvidenceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentTimelineEventEvidenceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentTimelineEventEvidenceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventEvidenceMutation", m)
+}
+
+// The IncidentTimelineEventTopologyContextFunc type is an adapter to allow the use of ordinary
+// function as IncidentTimelineEventTopologyContext mutator.
+type IncidentTimelineEventTopologyContextFunc func(context.Context, *ent.IncidentTimelineEventTopologyContextMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentTimelineEventTopologyContextFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentTimelineEventTopologyContextMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentTimelineEventTopologyContextMutation", m)
 }
 
 // The IncidentTypeFunc type is an adapter to allow the use of ordinary

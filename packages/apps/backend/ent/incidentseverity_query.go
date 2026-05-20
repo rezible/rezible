@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -30,6 +31,7 @@ type IncidentSeverityQuery struct {
 	inters               []Interceptor
 	predicates           []predicate.IncidentSeverity
 	withTenant           *TenantQuery
+	withProjectedFrom    *NormalizedEventQuery
 	withIncidents        *IncidentQuery
 	withDebriefQuestions *IncidentDebriefQuestionQuery
 	modifiers            []func(*sql.Selector)
@@ -87,6 +89,31 @@ func (_q *IncidentSeverityQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentSeverity
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryProjectedFrom chains the current query on the "projected_from" edge.
+func (_q *IncidentSeverityQuery) QueryProjectedFrom() *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentseverity.Table, incidentseverity.FieldID, selector),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentseverity.ProjectedFromTable, incidentseverity.ProjectedFromColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.IncidentSeverity
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -337,6 +364,7 @@ func (_q *IncidentSeverityQuery) Clone() *IncidentSeverityQuery {
 		inters:               append([]Interceptor{}, _q.inters...),
 		predicates:           append([]predicate.IncidentSeverity{}, _q.predicates...),
 		withTenant:           _q.withTenant.Clone(),
+		withProjectedFrom:    _q.withProjectedFrom.Clone(),
 		withIncidents:        _q.withIncidents.Clone(),
 		withDebriefQuestions: _q.withDebriefQuestions.Clone(),
 		// clone intermediate query.
@@ -354,6 +382,17 @@ func (_q *IncidentSeverityQuery) WithTenant(opts ...func(*TenantQuery)) *Inciden
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithProjectedFrom tells the query-builder to eager-load the nodes that are connected to
+// the "projected_from" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IncidentSeverityQuery) WithProjectedFrom(opts ...func(*NormalizedEventQuery)) *IncidentSeverityQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProjectedFrom = query
 	return _q
 }
 
@@ -463,8 +502,9 @@ func (_q *IncidentSeverityQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	var (
 		nodes       = []*IncidentSeverity{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
+			_q.withProjectedFrom != nil,
 			_q.withIncidents != nil,
 			_q.withDebriefQuestions != nil,
 		}
@@ -495,6 +535,12 @@ func (_q *IncidentSeverityQuery) sqlAll(ctx context.Context, hooks ...queryHook)
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *IncidentSeverity, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withProjectedFrom; query != nil {
+		if err := _q.loadProjectedFrom(ctx, query, nodes, nil,
+			func(n *IncidentSeverity, e *NormalizedEvent) { n.Edges.ProjectedFrom = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -539,6 +585,35 @@ func (_q *IncidentSeverityQuery) loadTenant(ctx context.Context, query *TenantQu
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *IncidentSeverityQuery) loadProjectedFrom(ctx context.Context, query *NormalizedEventQuery, nodes []*IncidentSeverity, init func(*IncidentSeverity), assign func(*IncidentSeverity, *NormalizedEvent)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*IncidentSeverity)
+	for i := range nodes {
+		fk := nodes[i].ProjectedEventID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(normalizedevent.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "projected_event_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -671,6 +746,9 @@ func (_q *IncidentSeverityQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(incidentseverity.FieldTenantID)
+		}
+		if _q.withProjectedFrom != nil {
+			_spec.Node.AddColumnOnce(incidentseverity.FieldProjectedEventID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

@@ -9,8 +9,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -21,6 +22,8 @@ type AlertFeedback struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
+	// AlertID holds the value of the "alert_id" field.
+	AlertID uuid.UUID `json:"alert_id,omitempty"`
 	// AlertInstanceID holds the value of the "alert_instance_id" field.
 	AlertInstanceID uuid.UUID `json:"alert_instance_id,omitempty"`
 	// Actionable holds the value of the "actionable" field.
@@ -33,19 +36,22 @@ type AlertFeedback struct {
 	DocumentationNeedsUpdate bool `json:"documentation_needs_update,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertFeedbackQuery when eager-loading is set.
-	Edges        AlertFeedbackEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges                           AlertFeedbackEdges `json:"edges"`
+	normalized_event_alert_feedback *uuid.UUID
+	selectValues                    sql.SelectValues
 }
 
 // AlertFeedbackEdges holds the relations/edges for other nodes in the graph.
 type AlertFeedbackEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// Alert holds the value of the alert edge.
+	Alert *Alert `json:"alert,omitempty"`
 	// AlertInstance holds the value of the alert_instance edge.
-	AlertInstance *AlertInstance `json:"alert_instance,omitempty"`
+	AlertInstance *NormalizedEvent `json:"alert_instance,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -59,13 +65,24 @@ func (e AlertFeedbackEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// AlertOrErr returns the Alert value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AlertFeedbackEdges) AlertOrErr() (*Alert, error) {
+	if e.Alert != nil {
+		return e.Alert, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: alert.Label}
+	}
+	return nil, &NotLoadedError{edge: "alert"}
+}
+
 // AlertInstanceOrErr returns the AlertInstance value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AlertFeedbackEdges) AlertInstanceOrErr() (*AlertInstance, error) {
+func (e AlertFeedbackEdges) AlertInstanceOrErr() (*NormalizedEvent, error) {
 	if e.AlertInstance != nil {
 		return e.AlertInstance, nil
-	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: alertinstance.Label}
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: normalizedevent.Label}
 	}
 	return nil, &NotLoadedError{edge: "alert_instance"}
 }
@@ -81,8 +98,10 @@ func (*AlertFeedback) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case alertfeedback.FieldAccurate:
 			values[i] = new(sql.NullString)
-		case alertfeedback.FieldID, alertfeedback.FieldAlertInstanceID:
+		case alertfeedback.FieldID, alertfeedback.FieldAlertID, alertfeedback.FieldAlertInstanceID:
 			values[i] = new(uuid.UUID)
+		case alertfeedback.ForeignKeys[0]: // normalized_event_alert_feedback
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -109,6 +128,12 @@ func (_m *AlertFeedback) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
+			}
+		case alertfeedback.FieldAlertID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field alert_id", values[i])
+			} else if value != nil {
+				_m.AlertID = *value
 			}
 		case alertfeedback.FieldAlertInstanceID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -140,6 +165,13 @@ func (_m *AlertFeedback) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DocumentationNeedsUpdate = value.Bool
 			}
+		case alertfeedback.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field normalized_event_alert_feedback", values[i])
+			} else if value.Valid {
+				_m.normalized_event_alert_feedback = new(uuid.UUID)
+				*_m.normalized_event_alert_feedback = *value.S.(*uuid.UUID)
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -158,8 +190,13 @@ func (_m *AlertFeedback) QueryTenant() *TenantQuery {
 	return NewAlertFeedbackClient(_m.config).QueryTenant(_m)
 }
 
+// QueryAlert queries the "alert" edge of the AlertFeedback entity.
+func (_m *AlertFeedback) QueryAlert() *AlertQuery {
+	return NewAlertFeedbackClient(_m.config).QueryAlert(_m)
+}
+
 // QueryAlertInstance queries the "alert_instance" edge of the AlertFeedback entity.
-func (_m *AlertFeedback) QueryAlertInstance() *AlertInstanceQuery {
+func (_m *AlertFeedback) QueryAlertInstance() *NormalizedEventQuery {
 	return NewAlertFeedbackClient(_m.config).QueryAlertInstance(_m)
 }
 
@@ -188,6 +225,9 @@ func (_m *AlertFeedback) String() string {
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
+	builder.WriteString(", ")
+	builder.WriteString("alert_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AlertID))
 	builder.WriteString(", ")
 	builder.WriteString("alert_instance_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AlertInstanceID))

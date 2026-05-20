@@ -47,20 +47,6 @@ func (_c *OncallScheduleCreate) SetNillableArchiveTime(v *time.Time) *OncallSche
 	return _c
 }
 
-// SetExternalID sets the "external_id" field.
-func (_c *OncallScheduleCreate) SetExternalID(v string) *OncallScheduleCreate {
-	_c.mutation.SetExternalID(v)
-	return _c
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_c *OncallScheduleCreate) SetNillableExternalID(v *string) *OncallScheduleCreate {
-	if v != nil {
-		_c.SetExternalID(*v)
-	}
-	return _c
-}
-
 // SetName sets the "name" field.
 func (_c *OncallScheduleCreate) SetName(v string) *OncallScheduleCreate {
 	_c.mutation.SetName(v)
@@ -231,10 +217,6 @@ func (_c *OncallScheduleCreate) createSpec() (*OncallSchedule, *sqlgraph.CreateS
 		_spec.SetField(oncallschedule.FieldArchiveTime, field.TypeTime, value)
 		_node.ArchiveTime = value
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(oncallschedule.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
-	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(oncallschedule.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -366,24 +348,6 @@ func (u *OncallScheduleUpsert) ClearArchiveTime() *OncallScheduleUpsert {
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *OncallScheduleUpsert) SetExternalID(v string) *OncallScheduleUpsert {
-	u.Set(oncallschedule.FieldExternalID, v)
-	return u
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OncallScheduleUpsert) UpdateExternalID() *OncallScheduleUpsert {
-	u.SetExcluded(oncallschedule.FieldExternalID)
-	return u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *OncallScheduleUpsert) ClearExternalID() *OncallScheduleUpsert {
-	u.SetNull(oncallschedule.FieldExternalID)
-	return u
-}
-
 // SetName sets the "name" field.
 func (u *OncallScheduleUpsert) SetName(v string) *OncallScheduleUpsert {
 	u.Set(oncallschedule.FieldName, v)
@@ -495,27 +459,6 @@ func (u *OncallScheduleUpsertOne) UpdateArchiveTime() *OncallScheduleUpsertOne {
 func (u *OncallScheduleUpsertOne) ClearArchiveTime() *OncallScheduleUpsertOne {
 	return u.Update(func(s *OncallScheduleUpsert) {
 		s.ClearArchiveTime()
-	})
-}
-
-// SetExternalID sets the "external_id" field.
-func (u *OncallScheduleUpsertOne) SetExternalID(v string) *OncallScheduleUpsertOne {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OncallScheduleUpsertOne) UpdateExternalID() *OncallScheduleUpsertOne {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *OncallScheduleUpsertOne) ClearExternalID() *OncallScheduleUpsertOne {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.ClearExternalID()
 	})
 }
 
@@ -804,27 +747,6 @@ func (u *OncallScheduleUpsertBulk) UpdateArchiveTime() *OncallScheduleUpsertBulk
 func (u *OncallScheduleUpsertBulk) ClearArchiveTime() *OncallScheduleUpsertBulk {
 	return u.Update(func(s *OncallScheduleUpsert) {
 		s.ClearArchiveTime()
-	})
-}
-
-// SetExternalID sets the "external_id" field.
-func (u *OncallScheduleUpsertBulk) SetExternalID(v string) *OncallScheduleUpsertBulk {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OncallScheduleUpsertBulk) UpdateExternalID() *OncallScheduleUpsertBulk {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *OncallScheduleUpsertBulk) ClearExternalID() *OncallScheduleUpsertBulk {
-	return u.Update(func(s *OncallScheduleUpsert) {
-		s.ClearExternalID()
 	})
 }
 

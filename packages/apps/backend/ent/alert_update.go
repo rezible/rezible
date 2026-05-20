@@ -12,8 +12,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertinstance"
+	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -33,23 +34,23 @@ func (_u *AlertUpdate) Where(ps ...predicate.Alert) *AlertUpdate {
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *AlertUpdate) SetExternalID(v string) *AlertUpdate {
-	_u.mutation.SetExternalID(v)
+// SetProjectedEventID sets the "projected_event_id" field.
+func (_u *AlertUpdate) SetProjectedEventID(v uuid.UUID) *AlertUpdate {
+	_u.mutation.SetProjectedEventID(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *AlertUpdate) SetNillableExternalID(v *string) *AlertUpdate {
+// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
+func (_u *AlertUpdate) SetNillableProjectedEventID(v *uuid.UUID) *AlertUpdate {
 	if v != nil {
-		_u.SetExternalID(*v)
+		_u.SetProjectedEventID(*v)
 	}
 	return _u
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *AlertUpdate) ClearExternalID() *AlertUpdate {
-	_u.mutation.ClearExternalID()
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (_u *AlertUpdate) ClearProjectedEventID() *AlertUpdate {
+	_u.mutation.ClearProjectedEventID()
 	return _u
 }
 
@@ -127,6 +128,25 @@ func (_u *AlertUpdate) ClearRosterID() *AlertUpdate {
 	return _u
 }
 
+// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
+func (_u *AlertUpdate) SetProjectedFromID(id uuid.UUID) *AlertUpdate {
+	_u.mutation.SetProjectedFromID(id)
+	return _u
+}
+
+// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
+func (_u *AlertUpdate) SetNillableProjectedFromID(id *uuid.UUID) *AlertUpdate {
+	if id != nil {
+		_u = _u.SetProjectedFromID(*id)
+	}
+	return _u
+}
+
+// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
+func (_u *AlertUpdate) SetProjectedFrom(v *NormalizedEvent) *AlertUpdate {
+	return _u.SetProjectedFromID(v.ID)
+}
+
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
 func (_u *AlertUpdate) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdate {
 	_u.mutation.AddPlaybookIDs(ids...)
@@ -147,24 +167,30 @@ func (_u *AlertUpdate) SetRoster(v *OncallRoster) *AlertUpdate {
 	return _u.SetRosterID(v.ID)
 }
 
-// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
-func (_u *AlertUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
-	_u.mutation.AddInstanceIDs(ids...)
+// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
+func (_u *AlertUpdate) AddFeedbackIDs(ids ...uuid.UUID) *AlertUpdate {
+	_u.mutation.AddFeedbackIDs(ids...)
 	return _u
 }
 
-// AddInstances adds the "instances" edges to the AlertInstance entity.
-func (_u *AlertUpdate) AddInstances(v ...*AlertInstance) *AlertUpdate {
+// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
+func (_u *AlertUpdate) AddFeedback(v ...*AlertFeedback) *AlertUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddInstanceIDs(ids...)
+	return _u.AddFeedbackIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
 func (_u *AlertUpdate) Mutation() *AlertMutation {
 	return _u.mutation
+}
+
+// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
+func (_u *AlertUpdate) ClearProjectedFrom() *AlertUpdate {
+	_u.mutation.ClearProjectedFrom()
+	return _u
 }
 
 // ClearPlaybooks clears all "playbooks" edges to the Playbook entity.
@@ -194,25 +220,25 @@ func (_u *AlertUpdate) ClearRoster() *AlertUpdate {
 	return _u
 }
 
-// ClearInstances clears all "instances" edges to the AlertInstance entity.
-func (_u *AlertUpdate) ClearInstances() *AlertUpdate {
-	_u.mutation.ClearInstances()
+// ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
+func (_u *AlertUpdate) ClearFeedback() *AlertUpdate {
+	_u.mutation.ClearFeedback()
 	return _u
 }
 
-// RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
-func (_u *AlertUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
-	_u.mutation.RemoveInstanceIDs(ids...)
+// RemoveFeedbackIDs removes the "feedback" edge to AlertFeedback entities by IDs.
+func (_u *AlertUpdate) RemoveFeedbackIDs(ids ...uuid.UUID) *AlertUpdate {
+	_u.mutation.RemoveFeedbackIDs(ids...)
 	return _u
 }
 
-// RemoveInstances removes "instances" edges to AlertInstance entities.
-func (_u *AlertUpdate) RemoveInstances(v ...*AlertInstance) *AlertUpdate {
+// RemoveFeedback removes "feedback" edges to AlertFeedback entities.
+func (_u *AlertUpdate) RemoveFeedback(v ...*AlertFeedback) *AlertUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveInstanceIDs(ids...)
+	return _u.RemoveFeedbackIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -268,12 +294,6 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(alert.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(alert.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
 	}
@@ -288,6 +308,37 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.DefinitionCleared() {
 		_spec.ClearField(alert.FieldDefinition, field.TypeString)
+	}
+	if _u.mutation.ProjectedFromCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alert.ProjectedFromTable,
+			Columns: []string{alert.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Alert
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alert.ProjectedFromTable,
+			Columns: []string{alert.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Alert
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -368,49 +419,49 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.InstancesCleared() {
+	if _u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Inverse: true,
+			Table:   alert.FeedbackTable,
+			Columns: []string{alert.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertFeedback
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
+	if nodes := _u.mutation.RemovedFeedbackIDs(); len(nodes) > 0 && !_u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Inverse: true,
+			Table:   alert.FeedbackTable,
+			Columns: []string{alert.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertFeedback
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.InstancesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Inverse: true,
+			Table:   alert.FeedbackTable,
+			Columns: []string{alert.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertFeedback
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -440,23 +491,23 @@ type AlertUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *AlertUpdateOne) SetExternalID(v string) *AlertUpdateOne {
-	_u.mutation.SetExternalID(v)
+// SetProjectedEventID sets the "projected_event_id" field.
+func (_u *AlertUpdateOne) SetProjectedEventID(v uuid.UUID) *AlertUpdateOne {
+	_u.mutation.SetProjectedEventID(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableExternalID(v *string) *AlertUpdateOne {
+// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
+func (_u *AlertUpdateOne) SetNillableProjectedEventID(v *uuid.UUID) *AlertUpdateOne {
 	if v != nil {
-		_u.SetExternalID(*v)
+		_u.SetProjectedEventID(*v)
 	}
 	return _u
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *AlertUpdateOne) ClearExternalID() *AlertUpdateOne {
-	_u.mutation.ClearExternalID()
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (_u *AlertUpdateOne) ClearProjectedEventID() *AlertUpdateOne {
+	_u.mutation.ClearProjectedEventID()
 	return _u
 }
 
@@ -534,6 +585,25 @@ func (_u *AlertUpdateOne) ClearRosterID() *AlertUpdateOne {
 	return _u
 }
 
+// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
+func (_u *AlertUpdateOne) SetProjectedFromID(id uuid.UUID) *AlertUpdateOne {
+	_u.mutation.SetProjectedFromID(id)
+	return _u
+}
+
+// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
+func (_u *AlertUpdateOne) SetNillableProjectedFromID(id *uuid.UUID) *AlertUpdateOne {
+	if id != nil {
+		_u = _u.SetProjectedFromID(*id)
+	}
+	return _u
+}
+
+// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
+func (_u *AlertUpdateOne) SetProjectedFrom(v *NormalizedEvent) *AlertUpdateOne {
+	return _u.SetProjectedFromID(v.ID)
+}
+
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
 func (_u *AlertUpdateOne) AddPlaybookIDs(ids ...uuid.UUID) *AlertUpdateOne {
 	_u.mutation.AddPlaybookIDs(ids...)
@@ -554,24 +624,30 @@ func (_u *AlertUpdateOne) SetRoster(v *OncallRoster) *AlertUpdateOne {
 	return _u.SetRosterID(v.ID)
 }
 
-// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
-func (_u *AlertUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	_u.mutation.AddInstanceIDs(ids...)
+// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
+func (_u *AlertUpdateOne) AddFeedbackIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	_u.mutation.AddFeedbackIDs(ids...)
 	return _u
 }
 
-// AddInstances adds the "instances" edges to the AlertInstance entity.
-func (_u *AlertUpdateOne) AddInstances(v ...*AlertInstance) *AlertUpdateOne {
+// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
+func (_u *AlertUpdateOne) AddFeedback(v ...*AlertFeedback) *AlertUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddInstanceIDs(ids...)
+	return _u.AddFeedbackIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
 func (_u *AlertUpdateOne) Mutation() *AlertMutation {
 	return _u.mutation
+}
+
+// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
+func (_u *AlertUpdateOne) ClearProjectedFrom() *AlertUpdateOne {
+	_u.mutation.ClearProjectedFrom()
+	return _u
 }
 
 // ClearPlaybooks clears all "playbooks" edges to the Playbook entity.
@@ -601,25 +677,25 @@ func (_u *AlertUpdateOne) ClearRoster() *AlertUpdateOne {
 	return _u
 }
 
-// ClearInstances clears all "instances" edges to the AlertInstance entity.
-func (_u *AlertUpdateOne) ClearInstances() *AlertUpdateOne {
-	_u.mutation.ClearInstances()
+// ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
+func (_u *AlertUpdateOne) ClearFeedback() *AlertUpdateOne {
+	_u.mutation.ClearFeedback()
 	return _u
 }
 
-// RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
-func (_u *AlertUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	_u.mutation.RemoveInstanceIDs(ids...)
+// RemoveFeedbackIDs removes the "feedback" edge to AlertFeedback entities by IDs.
+func (_u *AlertUpdateOne) RemoveFeedbackIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	_u.mutation.RemoveFeedbackIDs(ids...)
 	return _u
 }
 
-// RemoveInstances removes "instances" edges to AlertInstance entities.
-func (_u *AlertUpdateOne) RemoveInstances(v ...*AlertInstance) *AlertUpdateOne {
+// RemoveFeedback removes "feedback" edges to AlertFeedback entities.
+func (_u *AlertUpdateOne) RemoveFeedback(v ...*AlertFeedback) *AlertUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveInstanceIDs(ids...)
+	return _u.RemoveFeedbackIDs(ids...)
 }
 
 // Where appends a list predicates to the AlertUpdate builder.
@@ -705,12 +781,6 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(alert.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(alert.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Title(); ok {
 		_spec.SetField(alert.FieldTitle, field.TypeString, value)
 	}
@@ -725,6 +795,37 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 	}
 	if _u.mutation.DefinitionCleared() {
 		_spec.ClearField(alert.FieldDefinition, field.TypeString)
+	}
+	if _u.mutation.ProjectedFromCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alert.ProjectedFromTable,
+			Columns: []string{alert.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Alert
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   alert.ProjectedFromTable,
+			Columns: []string{alert.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.Alert
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.PlaybooksCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -805,49 +906,49 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.InstancesCleared() {
+	if _u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Inverse: true,
+			Table:   alert.FeedbackTable,
+			Columns: []string{alert.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertFeedback
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
+	if nodes := _u.mutation.RemovedFeedbackIDs(); len(nodes) > 0 && !_u.mutation.FeedbackCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Inverse: true,
+			Table:   alert.FeedbackTable,
+			Columns: []string{alert.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertFeedback
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.InstancesIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FeedbackIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   alert.InstancesTable,
-			Columns: []string{alert.InstancesColumn},
+			Inverse: true,
+			Table:   alert.FeedbackTable,
+			Columns: []string{alert.FeedbackColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertInstance
+		edge.Schema = _u.schemaConfig.AlertFeedback
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -9,11 +9,9 @@ import "context"
 type SchemaConfig struct {
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.
-	AlertInstance                             string // AlertInstance table.
 	AlertMetrics                              string // AlertMetrics table.
 	Document                                  string // Document table.
 	DocumentAccess                            string // DocumentAccess table.
-	Event                                     string // Event table.
 	EventAnnotation                           string // EventAnnotation table.
 	Incident                                  string // Incident table.
 	IncidentLinkedIncidents                   string // Incident-linked_incidents->Incident table.
@@ -29,11 +27,6 @@ type SchemaConfig struct {
 	IncidentDebriefQuestionIncidentTags       string // IncidentDebriefQuestion-incident_tags->IncidentTag table.
 	IncidentDebriefQuestionIncidentTypes      string // IncidentDebriefQuestion-incident_types->IncidentType table.
 	IncidentDebriefSuggestion                 string // IncidentDebriefSuggestion table.
-	IncidentEvent                             string // IncidentEvent table.
-	IncidentEventContext                      string // IncidentEventContext table.
-	IncidentEventContributingFactor           string // IncidentEventContributingFactor table.
-	IncidentEventEvidence                     string // IncidentEventEvidence table.
-	IncidentEventTopologyContext              string // IncidentEventTopologyContext table.
 	IncidentField                             string // IncidentField table.
 	IncidentFieldOption                       string // IncidentFieldOption table.
 	IncidentLink                              string // IncidentLink table.
@@ -42,6 +35,11 @@ type SchemaConfig struct {
 	IncidentRoleAssignment                    string // IncidentRoleAssignment table.
 	IncidentSeverity                          string // IncidentSeverity table.
 	IncidentTag                               string // IncidentTag table.
+	IncidentTimelineEvent                     string // IncidentTimelineEvent table.
+	IncidentTimelineEventContext              string // IncidentTimelineEventContext table.
+	IncidentTimelineEventContributingFactor   string // IncidentTimelineEventContributingFactor table.
+	IncidentTimelineEventEvidence             string // IncidentTimelineEventEvidence table.
+	IncidentTimelineEventTopologyContext      string // IncidentTimelineEventTopologyContext table.
 	IncidentType                              string // IncidentType table.
 	Integration                               string // Integration table.
 	IntegrationOAuthState                     string // IntegrationOAuthState table.

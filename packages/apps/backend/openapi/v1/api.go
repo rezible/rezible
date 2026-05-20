@@ -27,7 +27,7 @@ type Handler interface {
 	IncidentsHandler
 	IncidentMetadataHandler
 	IncidentMilestonesHandler
-	IncidentEventsHandler
+	IncidentTimelineHandler
 	IncidentDebriefsHandler
 
 	DocumentsHandler

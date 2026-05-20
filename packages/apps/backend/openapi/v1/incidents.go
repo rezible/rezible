@@ -141,8 +141,7 @@ func IncidentFromEnt(inc *ent.Incident) Incident {
 		}
 	}
 	if primaryVc := inc.Edges.GetPrimaryVideoConference(); primaryVc != nil {
-		primaryConf := VideoConferenceFromEnt(primaryVc)
-		attr.PrimaryVideoConference = &primaryConf
+		attr.PrimaryVideoConference = new(VideoConferenceFromEnt(primaryVc))
 	}
 
 	attr.CurrentStatus = currentStatusFromEnt(inc)

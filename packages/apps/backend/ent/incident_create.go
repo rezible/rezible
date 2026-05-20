@@ -15,15 +15,16 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
-	"github.com/rezible/rezible/ent/incidentevent"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/incidenttimelineevent"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/meetingsession"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/task"
 	"github.com/rezible/rezible/ent/tenant"
@@ -42,20 +43,6 @@ type IncidentCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (_c *IncidentCreate) SetTenantID(v int) *IncidentCreate {
 	_c.mutation.SetTenantID(v)
-	return _c
-}
-
-// SetExternalID sets the "external_id" field.
-func (_c *IncidentCreate) SetExternalID(v string) *IncidentCreate {
-	_c.mutation.SetExternalID(v)
-	return _c
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableExternalID(v *string) *IncidentCreate {
-	if v != nil {
-		_c.SetExternalID(*v)
-	}
 	return _c
 }
 
@@ -87,6 +74,20 @@ func (_c *IncidentCreate) SetNillableUpdatedAt(v *time.Time) *IncidentCreate {
 	return _c
 }
 
+// SetProjectedEventID sets the "projected_event_id" field.
+func (_c *IncidentCreate) SetProjectedEventID(v uuid.UUID) *IncidentCreate {
+	_c.mutation.SetProjectedEventID(v)
+	return _c
+}
+
+// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
+func (_c *IncidentCreate) SetNillableProjectedEventID(v *uuid.UUID) *IncidentCreate {
+	if v != nil {
+		_c.SetProjectedEventID(*v)
+	}
+	return _c
+}
+
 // SetSlug sets the "slug" field.
 func (_c *IncidentCreate) SetSlug(v string) *IncidentCreate {
 	_c.mutation.SetSlug(v)
@@ -96,20 +97,6 @@ func (_c *IncidentCreate) SetSlug(v string) *IncidentCreate {
 // SetTitle sets the "title" field.
 func (_c *IncidentCreate) SetTitle(v string) *IncidentCreate {
 	_c.mutation.SetTitle(v)
-	return _c
-}
-
-// SetTitle2 sets the "title2" field.
-func (_c *IncidentCreate) SetTitle2(v string) *IncidentCreate {
-	_c.mutation.SetTitle2(v)
-	return _c
-}
-
-// SetNillableTitle2 sets the "title2" field if the given value is not nil.
-func (_c *IncidentCreate) SetNillableTitle2(v *string) *IncidentCreate {
-	if v != nil {
-		_c.SetTitle2(*v)
-	}
 	return _c
 }
 
@@ -186,6 +173,25 @@ func (_c *IncidentCreate) SetTenant(v *Tenant) *IncidentCreate {
 	return _c.SetTenantID(v.ID)
 }
 
+// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
+func (_c *IncidentCreate) SetProjectedFromID(id uuid.UUID) *IncidentCreate {
+	_c.mutation.SetProjectedFromID(id)
+	return _c
+}
+
+// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
+func (_c *IncidentCreate) SetNillableProjectedFromID(id *uuid.UUID) *IncidentCreate {
+	if id != nil {
+		_c = _c.SetProjectedFromID(*id)
+	}
+	return _c
+}
+
+// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
+func (_c *IncidentCreate) SetProjectedFrom(v *NormalizedEvent) *IncidentCreate {
+	return _c.SetProjectedFromID(v.ID)
+}
+
 // SetSeverity sets the "severity" edge to the IncidentSeverity entity.
 func (_c *IncidentCreate) SetSeverity(v *IncidentSeverity) *IncidentCreate {
 	return _c.SetSeverityID(v.ID)
@@ -211,19 +217,19 @@ func (_c *IncidentCreate) AddMilestones(v ...*IncidentMilestone) *IncidentCreate
 	return _c.AddMilestoneIDs(ids...)
 }
 
-// AddEventIDs adds the "events" edge to the IncidentEvent entity by IDs.
-func (_c *IncidentCreate) AddEventIDs(ids ...uuid.UUID) *IncidentCreate {
-	_c.mutation.AddEventIDs(ids...)
+// AddTimelineEventIDs adds the "timeline_events" edge to the IncidentTimelineEvent entity by IDs.
+func (_c *IncidentCreate) AddTimelineEventIDs(ids ...uuid.UUID) *IncidentCreate {
+	_c.mutation.AddTimelineEventIDs(ids...)
 	return _c
 }
 
-// AddEvents adds the "events" edges to the IncidentEvent entity.
-func (_c *IncidentCreate) AddEvents(v ...*IncidentEvent) *IncidentCreate {
+// AddTimelineEvents adds the "timeline_events" edges to the IncidentTimelineEvent entity.
+func (_c *IncidentCreate) AddTimelineEvents(v ...*IncidentTimelineEvent) *IncidentCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddEventIDs(ids...)
+	return _c.AddTimelineEventIDs(ids...)
 }
 
 // SetRetrospectiveID sets the "retrospective" edge to the Retrospective entity by ID.
@@ -550,10 +556,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(incident.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
-	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(incident.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
@@ -569,10 +571,6 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.Title(); ok {
 		_spec.SetField(incident.FieldTitle, field.TypeString, value)
 		_node.Title = value
-	}
-	if value, ok := _c.mutation.Title2(); ok {
-		_spec.SetField(incident.FieldTitle2, field.TypeString, value)
-		_node.Title2 = value
 	}
 	if value, ok := _c.mutation.Summary(); ok {
 		_spec.SetField(incident.FieldSummary, field.TypeString, value)
@@ -602,6 +600,24 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.TenantID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incident.ProjectedFromTable,
+			Columns: []string{incident.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.Incident
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.ProjectedEventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.SeverityIDs(); len(nodes) > 0 {
@@ -657,18 +673,18 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.EventsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TimelineEventsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   incident.EventsTable,
-			Columns: []string{incident.EventsColumn},
+			Table:   incident.TimelineEventsTable,
+			Columns: []string{incident.TimelineEventsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(incidentevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(incidenttimelineevent.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.IncidentEvent
+		edge.Schema = _c.schemaConfig.IncidentTimelineEvent
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -937,24 +953,6 @@ type (
 	}
 )
 
-// SetExternalID sets the "external_id" field.
-func (u *IncidentUpsert) SetExternalID(v string) *IncidentUpsert {
-	u.Set(incident.FieldExternalID, v)
-	return u
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateExternalID() *IncidentUpsert {
-	u.SetExcluded(incident.FieldExternalID)
-	return u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *IncidentUpsert) ClearExternalID() *IncidentUpsert {
-	u.SetNull(incident.FieldExternalID)
-	return u
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (u *IncidentUpsert) SetCreatedAt(v time.Time) *IncidentUpsert {
 	u.Set(incident.FieldCreatedAt, v)
@@ -979,6 +977,24 @@ func (u *IncidentUpsert) UpdateUpdatedAt() *IncidentUpsert {
 	return u
 }
 
+// SetProjectedEventID sets the "projected_event_id" field.
+func (u *IncidentUpsert) SetProjectedEventID(v uuid.UUID) *IncidentUpsert {
+	u.Set(incident.FieldProjectedEventID, v)
+	return u
+}
+
+// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
+func (u *IncidentUpsert) UpdateProjectedEventID() *IncidentUpsert {
+	u.SetExcluded(incident.FieldProjectedEventID)
+	return u
+}
+
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (u *IncidentUpsert) ClearProjectedEventID() *IncidentUpsert {
+	u.SetNull(incident.FieldProjectedEventID)
+	return u
+}
+
 // SetSlug sets the "slug" field.
 func (u *IncidentUpsert) SetSlug(v string) *IncidentUpsert {
 	u.Set(incident.FieldSlug, v)
@@ -1000,24 +1016,6 @@ func (u *IncidentUpsert) SetTitle(v string) *IncidentUpsert {
 // UpdateTitle sets the "title" field to the value that was provided on create.
 func (u *IncidentUpsert) UpdateTitle() *IncidentUpsert {
 	u.SetExcluded(incident.FieldTitle)
-	return u
-}
-
-// SetTitle2 sets the "title2" field.
-func (u *IncidentUpsert) SetTitle2(v string) *IncidentUpsert {
-	u.Set(incident.FieldTitle2, v)
-	return u
-}
-
-// UpdateTitle2 sets the "title2" field to the value that was provided on create.
-func (u *IncidentUpsert) UpdateTitle2() *IncidentUpsert {
-	u.SetExcluded(incident.FieldTitle2)
-	return u
-}
-
-// ClearTitle2 clears the value of the "title2" field.
-func (u *IncidentUpsert) ClearTitle2() *IncidentUpsert {
-	u.SetNull(incident.FieldTitle2)
 	return u
 }
 
@@ -1144,27 +1142,6 @@ func (u *IncidentUpsertOne) Update(set func(*IncidentUpsert)) *IncidentUpsertOne
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *IncidentUpsertOne) SetExternalID(v string) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateExternalID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *IncidentUpsertOne) ClearExternalID() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearExternalID()
-	})
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (u *IncidentUpsertOne) SetCreatedAt(v time.Time) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1193,6 +1170,27 @@ func (u *IncidentUpsertOne) UpdateUpdatedAt() *IncidentUpsertOne {
 	})
 }
 
+// SetProjectedEventID sets the "projected_event_id" field.
+func (u *IncidentUpsertOne) SetProjectedEventID(v uuid.UUID) *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetProjectedEventID(v)
+	})
+}
+
+// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
+func (u *IncidentUpsertOne) UpdateProjectedEventID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateProjectedEventID()
+	})
+}
+
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (u *IncidentUpsertOne) ClearProjectedEventID() *IncidentUpsertOne {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearProjectedEventID()
+	})
+}
+
 // SetSlug sets the "slug" field.
 func (u *IncidentUpsertOne) SetSlug(v string) *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1218,27 +1216,6 @@ func (u *IncidentUpsertOne) SetTitle(v string) *IncidentUpsertOne {
 func (u *IncidentUpsertOne) UpdateTitle() *IncidentUpsertOne {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateTitle()
-	})
-}
-
-// SetTitle2 sets the "title2" field.
-func (u *IncidentUpsertOne) SetTitle2(v string) *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetTitle2(v)
-	})
-}
-
-// UpdateTitle2 sets the "title2" field to the value that was provided on create.
-func (u *IncidentUpsertOne) UpdateTitle2() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateTitle2()
-	})
-}
-
-// ClearTitle2 clears the value of the "title2" field.
-func (u *IncidentUpsertOne) ClearTitle2() *IncidentUpsertOne {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearTitle2()
 	})
 }
 
@@ -1544,27 +1521,6 @@ func (u *IncidentUpsertBulk) Update(set func(*IncidentUpsert)) *IncidentUpsertBu
 	return u
 }
 
-// SetExternalID sets the "external_id" field.
-func (u *IncidentUpsertBulk) SetExternalID(v string) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateExternalID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *IncidentUpsertBulk) ClearExternalID() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearExternalID()
-	})
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (u *IncidentUpsertBulk) SetCreatedAt(v time.Time) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1593,6 +1549,27 @@ func (u *IncidentUpsertBulk) UpdateUpdatedAt() *IncidentUpsertBulk {
 	})
 }
 
+// SetProjectedEventID sets the "projected_event_id" field.
+func (u *IncidentUpsertBulk) SetProjectedEventID(v uuid.UUID) *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.SetProjectedEventID(v)
+	})
+}
+
+// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
+func (u *IncidentUpsertBulk) UpdateProjectedEventID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.UpdateProjectedEventID()
+	})
+}
+
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (u *IncidentUpsertBulk) ClearProjectedEventID() *IncidentUpsertBulk {
+	return u.Update(func(s *IncidentUpsert) {
+		s.ClearProjectedEventID()
+	})
+}
+
 // SetSlug sets the "slug" field.
 func (u *IncidentUpsertBulk) SetSlug(v string) *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
@@ -1618,27 +1595,6 @@ func (u *IncidentUpsertBulk) SetTitle(v string) *IncidentUpsertBulk {
 func (u *IncidentUpsertBulk) UpdateTitle() *IncidentUpsertBulk {
 	return u.Update(func(s *IncidentUpsert) {
 		s.UpdateTitle()
-	})
-}
-
-// SetTitle2 sets the "title2" field.
-func (u *IncidentUpsertBulk) SetTitle2(v string) *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.SetTitle2(v)
-	})
-}
-
-// UpdateTitle2 sets the "title2" field to the value that was provided on create.
-func (u *IncidentUpsertBulk) UpdateTitle2() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.UpdateTitle2()
-	})
-}
-
-// ClearTitle2 clears the value of the "title2" field.
-func (u *IncidentUpsertBulk) ClearTitle2() *IncidentUpsertBulk {
-	return u.Update(func(s *IncidentUpsert) {
-		s.ClearTitle2()
 	})
 }
 

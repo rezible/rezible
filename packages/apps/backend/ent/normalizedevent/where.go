@@ -77,14 +77,14 @@ func ProviderEventRef(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldProviderEventRef, v))
 }
 
-// SubjectKind applies equality check predicate on the "subject_kind" field. It's identical to SubjectKindEQ.
-func SubjectKind(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectKind, v))
-}
-
 // SubjectRef applies equality check predicate on the "subject_ref" field. It's identical to SubjectRefEQ.
 func SubjectRef(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectRef, v))
+}
+
+// SubjectKind applies equality check predicate on the "subject_kind" field. It's identical to SubjectKindEQ.
+func SubjectKind(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectKind, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -120,6 +120,26 @@ func TenantIDIn(vs ...int) predicate.NormalizedEvent {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// KindEQ applies the EQ predicate on the "kind" field.
+func KindEQ(v Kind) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldKind, v))
+}
+
+// KindNEQ applies the NEQ predicate on the "kind" field.
+func KindNEQ(v Kind) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldKind, v))
+}
+
+// KindIn applies the In predicate on the "kind" field.
+func KindIn(vs ...Kind) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldKind, vs...))
+}
+
+// KindNotIn applies the NotIn predicate on the "kind" field.
+func KindNotIn(vs ...Kind) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldKind, vs...))
 }
 
 // ProviderEQ applies the EQ predicate on the "provider" field.
@@ -317,24 +337,69 @@ func ProviderEventRefContainsFold(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldProviderEventRef, v))
 }
 
-// KindEQ applies the EQ predicate on the "kind" field.
-func KindEQ(v Kind) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldKind, v))
+// SubjectRefEQ applies the EQ predicate on the "subject_ref" field.
+func SubjectRefEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectRef, v))
 }
 
-// KindNEQ applies the NEQ predicate on the "kind" field.
-func KindNEQ(v Kind) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNEQ(FieldKind, v))
+// SubjectRefNEQ applies the NEQ predicate on the "subject_ref" field.
+func SubjectRefNEQ(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldSubjectRef, v))
 }
 
-// KindIn applies the In predicate on the "kind" field.
-func KindIn(vs ...Kind) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldIn(FieldKind, vs...))
+// SubjectRefIn applies the In predicate on the "subject_ref" field.
+func SubjectRefIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldSubjectRef, vs...))
 }
 
-// KindNotIn applies the NotIn predicate on the "kind" field.
-func KindNotIn(vs ...Kind) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNotIn(FieldKind, vs...))
+// SubjectRefNotIn applies the NotIn predicate on the "subject_ref" field.
+func SubjectRefNotIn(vs ...string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldSubjectRef, vs...))
+}
+
+// SubjectRefGT applies the GT predicate on the "subject_ref" field.
+func SubjectRefGT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGT(FieldSubjectRef, v))
+}
+
+// SubjectRefGTE applies the GTE predicate on the "subject_ref" field.
+func SubjectRefGTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldGTE(FieldSubjectRef, v))
+}
+
+// SubjectRefLT applies the LT predicate on the "subject_ref" field.
+func SubjectRefLT(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLT(FieldSubjectRef, v))
+}
+
+// SubjectRefLTE applies the LTE predicate on the "subject_ref" field.
+func SubjectRefLTE(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldLTE(FieldSubjectRef, v))
+}
+
+// SubjectRefContains applies the Contains predicate on the "subject_ref" field.
+func SubjectRefContains(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContains(FieldSubjectRef, v))
+}
+
+// SubjectRefHasPrefix applies the HasPrefix predicate on the "subject_ref" field.
+func SubjectRefHasPrefix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldSubjectRef, v))
+}
+
+// SubjectRefHasSuffix applies the HasSuffix predicate on the "subject_ref" field.
+func SubjectRefHasSuffix(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldSubjectRef, v))
+}
+
+// SubjectRefEqualFold applies the EqualFold predicate on the "subject_ref" field.
+func SubjectRefEqualFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldSubjectRef, v))
+}
+
+// SubjectRefContainsFold applies the ContainsFold predicate on the "subject_ref" field.
+func SubjectRefContainsFold(v string) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSubjectRef, v))
 }
 
 // SubjectKindEQ applies the EQ predicate on the "subject_kind" field.
@@ -400,71 +465,6 @@ func SubjectKindEqualFold(v string) predicate.NormalizedEvent {
 // SubjectKindContainsFold applies the ContainsFold predicate on the "subject_kind" field.
 func SubjectKindContainsFold(v string) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSubjectKind, v))
-}
-
-// SubjectRefEQ applies the EQ predicate on the "subject_ref" field.
-func SubjectRefEQ(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldSubjectRef, v))
-}
-
-// SubjectRefNEQ applies the NEQ predicate on the "subject_ref" field.
-func SubjectRefNEQ(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNEQ(FieldSubjectRef, v))
-}
-
-// SubjectRefIn applies the In predicate on the "subject_ref" field.
-func SubjectRefIn(vs ...string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldIn(FieldSubjectRef, vs...))
-}
-
-// SubjectRefNotIn applies the NotIn predicate on the "subject_ref" field.
-func SubjectRefNotIn(vs ...string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNotIn(FieldSubjectRef, vs...))
-}
-
-// SubjectRefGT applies the GT predicate on the "subject_ref" field.
-func SubjectRefGT(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldGT(FieldSubjectRef, v))
-}
-
-// SubjectRefGTE applies the GTE predicate on the "subject_ref" field.
-func SubjectRefGTE(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldGTE(FieldSubjectRef, v))
-}
-
-// SubjectRefLT applies the LT predicate on the "subject_ref" field.
-func SubjectRefLT(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldLT(FieldSubjectRef, v))
-}
-
-// SubjectRefLTE applies the LTE predicate on the "subject_ref" field.
-func SubjectRefLTE(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldLTE(FieldSubjectRef, v))
-}
-
-// SubjectRefContains applies the Contains predicate on the "subject_ref" field.
-func SubjectRefContains(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldContains(FieldSubjectRef, v))
-}
-
-// SubjectRefHasPrefix applies the HasPrefix predicate on the "subject_ref" field.
-func SubjectRefHasPrefix(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldHasPrefix(FieldSubjectRef, v))
-}
-
-// SubjectRefHasSuffix applies the HasSuffix predicate on the "subject_ref" field.
-func SubjectRefHasSuffix(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldHasSuffix(FieldSubjectRef, v))
-}
-
-// SubjectRefEqualFold applies the EqualFold predicate on the "subject_ref" field.
-func SubjectRefEqualFold(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEqualFold(FieldSubjectRef, v))
-}
-
-// SubjectRefContainsFold applies the ContainsFold predicate on the "subject_ref" field.
-func SubjectRefContainsFold(v string) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldContainsFold(FieldSubjectRef, v))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
@@ -608,6 +608,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.NormalizedEvent {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.NormalizedEvent
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasAlertFeedback applies the HasEdge predicate on the "alert_feedback" edge.
+func HasAlertFeedback() predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, AlertFeedbackTable, AlertFeedbackColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AlertFeedback
+		step.Edge.Schema = schemaConfig.AlertFeedback
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAlertFeedbackWith applies the HasEdge predicate on the "alert_feedback" edge with a given conditions (other predicates).
+func HasAlertFeedbackWith(preds ...predicate.AlertFeedback) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(func(s *sql.Selector) {
+		step := newAlertFeedbackStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AlertFeedback
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

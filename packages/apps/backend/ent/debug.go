@@ -20,14 +20,6 @@ func (c *AlertFeedbackClient) Debug() *AlertFeedbackClient {
 	return &AlertFeedbackClient{config: cfg}
 }
 
-func (c *AlertInstanceClient) Debug() *AlertInstanceClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AlertInstanceClient{config: cfg}
-}
-
 func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
 	if c.debug {
 		return c
@@ -50,14 +42,6 @@ func (c *DocumentAccessClient) Debug() *DocumentAccessClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &DocumentAccessClient{config: cfg}
-}
-
-func (c *EventClient) Debug() *EventClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &EventClient{config: cfg}
 }
 
 func (c *EventAnnotationClient) Debug() *EventAnnotationClient {
@@ -106,46 +90,6 @@ func (c *IncidentDebriefSuggestionClient) Debug() *IncidentDebriefSuggestionClie
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &IncidentDebriefSuggestionClient{config: cfg}
-}
-
-func (c *IncidentEventClient) Debug() *IncidentEventClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IncidentEventClient{config: cfg}
-}
-
-func (c *IncidentEventContextClient) Debug() *IncidentEventContextClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IncidentEventContextClient{config: cfg}
-}
-
-func (c *IncidentEventContributingFactorClient) Debug() *IncidentEventContributingFactorClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IncidentEventContributingFactorClient{config: cfg}
-}
-
-func (c *IncidentEventEvidenceClient) Debug() *IncidentEventEvidenceClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IncidentEventEvidenceClient{config: cfg}
-}
-
-func (c *IncidentEventTopologyContextClient) Debug() *IncidentEventTopologyContextClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IncidentEventTopologyContextClient{config: cfg}
 }
 
 func (c *IncidentFieldClient) Debug() *IncidentFieldClient {
@@ -210,6 +154,46 @@ func (c *IncidentTagClient) Debug() *IncidentTagClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &IncidentTagClient{config: cfg}
+}
+
+func (c *IncidentTimelineEventClient) Debug() *IncidentTimelineEventClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentTimelineEventClient{config: cfg}
+}
+
+func (c *IncidentTimelineEventContextClient) Debug() *IncidentTimelineEventContextClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentTimelineEventContextClient{config: cfg}
+}
+
+func (c *IncidentTimelineEventContributingFactorClient) Debug() *IncidentTimelineEventContributingFactorClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentTimelineEventContributingFactorClient{config: cfg}
+}
+
+func (c *IncidentTimelineEventEvidenceClient) Debug() *IncidentTimelineEventEvidenceClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentTimelineEventEvidenceClient{config: cfg}
+}
+
+func (c *IncidentTimelineEventTopologyContextClient) Debug() *IncidentTimelineEventTopologyContextClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentTimelineEventTopologyContextClient{config: cfg}
 }
 
 func (c *IncidentTypeClient) Debug() *IncidentTypeClient {

@@ -19,18 +19,18 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
 	// FieldProviderSource holds the string denoting the provider_source field in the database.
 	FieldProviderSource = "provider_source"
 	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
 	FieldProviderEventRef = "provider_event_ref"
-	// FieldKind holds the string denoting the kind field in the database.
-	FieldKind = "kind"
-	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
-	FieldSubjectKind = "subject_kind"
 	// FieldSubjectRef holds the string denoting the subject_ref field in the database.
 	FieldSubjectRef = "subject_ref"
+	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
+	FieldSubjectKind = "subject_kind"
 	// FieldAttributes holds the string denoting the attributes field in the database.
 	FieldAttributes = "attributes"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -41,6 +41,8 @@ const (
 	FieldReceivedAt = "received_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeAlertFeedback holds the string denoting the alert_feedback edge name in mutations.
+	EdgeAlertFeedback = "alert_feedback"
 	// Table holds the table name of the normalizedevent in the database.
 	Table = "normalized_events"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -50,18 +52,25 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// AlertFeedbackTable is the table that holds the alert_feedback relation/edge.
+	AlertFeedbackTable = "alert_feedbacks"
+	// AlertFeedbackInverseTable is the table name for the AlertFeedback entity.
+	// It exists in this package in order to avoid circular dependency with the "alertfeedback" package.
+	AlertFeedbackInverseTable = "alert_feedbacks"
+	// AlertFeedbackColumn is the table column denoting the alert_feedback relation/edge.
+	AlertFeedbackColumn = "normalized_event_alert_feedback"
 )
 
 // Columns holds all SQL columns for normalizedevent fields.
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
+	FieldKind,
 	FieldProvider,
 	FieldProviderSource,
 	FieldProviderEventRef,
-	FieldKind,
-	FieldSubjectKind,
 	FieldSubjectRef,
+	FieldSubjectKind,
 	FieldAttributes,
 	FieldCreatedAt,
 	FieldOccurredAt,
@@ -92,10 +101,10 @@ var (
 	ProviderSourceValidator func(string) error
 	// ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
 	ProviderEventRefValidator func(string) error
-	// SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
-	SubjectKindValidator func(string) error
 	// SubjectRefValidator is a validator for the "subject_ref" field. It is called by the builders before save.
 	SubjectRefValidator func(string) error
+	// SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
+	SubjectKindValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
@@ -142,6 +151,11 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
+}
+
 // ByProvider orders the results by the provider field.
 func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
@@ -157,19 +171,14 @@ func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
 }
 
-// ByKind orders the results by the kind field.
-func ByKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKind, opts...).ToFunc()
+// BySubjectRef orders the results by the subject_ref field.
+func BySubjectRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSubjectRef, opts...).ToFunc()
 }
 
 // BySubjectKind orders the results by the subject_kind field.
 func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
-}
-
-// BySubjectRef orders the results by the subject_ref field.
-func BySubjectRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubjectRef, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.
@@ -193,10 +202,31 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
 	}
 }
+
+// ByAlertFeedbackCount orders the results by alert_feedback count.
+func ByAlertFeedbackCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newAlertFeedbackStep(), opts...)
+	}
+}
+
+// ByAlertFeedback orders the results by alert_feedback terms.
+func ByAlertFeedback(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAlertFeedbackStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newAlertFeedbackStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(AlertFeedbackInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, AlertFeedbackTable, AlertFeedbackColumn),
 	)
 }

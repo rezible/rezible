@@ -77,12 +77,10 @@ func TeamMembershipFromEnt(m *ent.TeamMembership) TeamMembership {
 		UserId: m.UserID,
 	}
 	if team, teamErr := m.Edges.TeamOrErr(); teamErr == nil {
-		teamModel := TeamFromEnt(team)
-		attr.Team = &teamModel
+		attr.Team = new(TeamFromEnt(team))
 	}
 	if user, userErr := m.Edges.UserOrErr(); userErr == nil {
-		userModel := UserFromEnt(user)
-		attr.User = &userModel
+		attr.User = new(UserFromEnt(user))
 	}
 	return TeamMembership{
 		Id:         m.ID,

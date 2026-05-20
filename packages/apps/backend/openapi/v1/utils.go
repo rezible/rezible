@@ -14,10 +14,6 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-const (
-	DefaultListLimit = 10
-)
-
 type Expandable[Attrs any] struct {
 	Id         uuid.UUID `json:"id"`
 	Attributes *Attrs    `json:"attributes,omitempty"`
@@ -126,7 +122,7 @@ func GetCalendarDateWindow(from, to CalendarDate) (time.Time, time.Time, error) 
 	return parsedFrom, parsedTo, errors.Join(fromErr, toErr)
 }
 
-// FlexibleId is a field which can be either a uuid or a slug
+// FlexibleId is a field which can be either a UUID or a slug
 type FlexibleId struct {
 	IsUUID bool
 	UUID   uuid.UUID

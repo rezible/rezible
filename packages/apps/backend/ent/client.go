@@ -18,21 +18,14 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
-	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
-	"github.com/rezible/rezible/ent/incidentevent"
-	"github.com/rezible/rezible/ent/incidenteventcontext"
-	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
-	"github.com/rezible/rezible/ent/incidenteventevidence"
-	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
@@ -41,6 +34,11 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/incidenttimelineevent"
+	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
+	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
+	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
@@ -94,16 +92,12 @@ type Client struct {
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
-	// AlertInstance is the client for interacting with the AlertInstance builders.
-	AlertInstance *AlertInstanceClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
 	// DocumentAccess is the client for interacting with the DocumentAccess builders.
 	DocumentAccess *DocumentAccessClient
-	// Event is the client for interacting with the Event builders.
-	Event *EventClient
 	// EventAnnotation is the client for interacting with the EventAnnotation builders.
 	EventAnnotation *EventAnnotationClient
 	// Incident is the client for interacting with the Incident builders.
@@ -116,16 +110,6 @@ type Client struct {
 	IncidentDebriefQuestion *IncidentDebriefQuestionClient
 	// IncidentDebriefSuggestion is the client for interacting with the IncidentDebriefSuggestion builders.
 	IncidentDebriefSuggestion *IncidentDebriefSuggestionClient
-	// IncidentEvent is the client for interacting with the IncidentEvent builders.
-	IncidentEvent *IncidentEventClient
-	// IncidentEventContext is the client for interacting with the IncidentEventContext builders.
-	IncidentEventContext *IncidentEventContextClient
-	// IncidentEventContributingFactor is the client for interacting with the IncidentEventContributingFactor builders.
-	IncidentEventContributingFactor *IncidentEventContributingFactorClient
-	// IncidentEventEvidence is the client for interacting with the IncidentEventEvidence builders.
-	IncidentEventEvidence *IncidentEventEvidenceClient
-	// IncidentEventTopologyContext is the client for interacting with the IncidentEventTopologyContext builders.
-	IncidentEventTopologyContext *IncidentEventTopologyContextClient
 	// IncidentField is the client for interacting with the IncidentField builders.
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
@@ -142,6 +126,16 @@ type Client struct {
 	IncidentSeverity *IncidentSeverityClient
 	// IncidentTag is the client for interacting with the IncidentTag builders.
 	IncidentTag *IncidentTagClient
+	// IncidentTimelineEvent is the client for interacting with the IncidentTimelineEvent builders.
+	IncidentTimelineEvent *IncidentTimelineEventClient
+	// IncidentTimelineEventContext is the client for interacting with the IncidentTimelineEventContext builders.
+	IncidentTimelineEventContext *IncidentTimelineEventContextClient
+	// IncidentTimelineEventContributingFactor is the client for interacting with the IncidentTimelineEventContributingFactor builders.
+	IncidentTimelineEventContributingFactor *IncidentTimelineEventContributingFactorClient
+	// IncidentTimelineEventEvidence is the client for interacting with the IncidentTimelineEventEvidence builders.
+	IncidentTimelineEventEvidence *IncidentTimelineEventEvidenceClient
+	// IncidentTimelineEventTopologyContext is the client for interacting with the IncidentTimelineEventTopologyContext builders.
+	IncidentTimelineEventTopologyContext *IncidentTimelineEventTopologyContextClient
 	// IncidentType is the client for interacting with the IncidentType builders.
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
@@ -235,22 +229,15 @@ func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
-	c.AlertInstance = NewAlertInstanceClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.DocumentAccess = NewDocumentAccessClient(c.config)
-	c.Event = NewEventClient(c.config)
 	c.EventAnnotation = NewEventAnnotationClient(c.config)
 	c.Incident = NewIncidentClient(c.config)
 	c.IncidentDebrief = NewIncidentDebriefClient(c.config)
 	c.IncidentDebriefMessage = NewIncidentDebriefMessageClient(c.config)
 	c.IncidentDebriefQuestion = NewIncidentDebriefQuestionClient(c.config)
 	c.IncidentDebriefSuggestion = NewIncidentDebriefSuggestionClient(c.config)
-	c.IncidentEvent = NewIncidentEventClient(c.config)
-	c.IncidentEventContext = NewIncidentEventContextClient(c.config)
-	c.IncidentEventContributingFactor = NewIncidentEventContributingFactorClient(c.config)
-	c.IncidentEventEvidence = NewIncidentEventEvidenceClient(c.config)
-	c.IncidentEventTopologyContext = NewIncidentEventTopologyContextClient(c.config)
 	c.IncidentField = NewIncidentFieldClient(c.config)
 	c.IncidentFieldOption = NewIncidentFieldOptionClient(c.config)
 	c.IncidentLink = NewIncidentLinkClient(c.config)
@@ -259,6 +246,11 @@ func (c *Client) init() {
 	c.IncidentRoleAssignment = NewIncidentRoleAssignmentClient(c.config)
 	c.IncidentSeverity = NewIncidentSeverityClient(c.config)
 	c.IncidentTag = NewIncidentTagClient(c.config)
+	c.IncidentTimelineEvent = NewIncidentTimelineEventClient(c.config)
+	c.IncidentTimelineEventContext = NewIncidentTimelineEventContextClient(c.config)
+	c.IncidentTimelineEventContributingFactor = NewIncidentTimelineEventContributingFactorClient(c.config)
+	c.IncidentTimelineEventEvidence = NewIncidentTimelineEventEvidenceClient(c.config)
+	c.IncidentTimelineEventTopologyContext = NewIncidentTimelineEventTopologyContextClient(c.config)
 	c.IncidentType = NewIncidentTypeClient(c.config)
 	c.Integration = NewIntegrationClient(c.config)
 	c.IntegrationOAuthState = NewIntegrationOAuthStateClient(c.config)
@@ -392,74 +384,72 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                                ctx,
-		config:                             cfg,
-		Alert:                              NewAlertClient(cfg),
-		AlertFeedback:                      NewAlertFeedbackClient(cfg),
-		AlertInstance:                      NewAlertInstanceClient(cfg),
-		AlertMetrics:                       NewAlertMetricsClient(cfg),
-		Document:                           NewDocumentClient(cfg),
-		DocumentAccess:                     NewDocumentAccessClient(cfg),
-		Event:                              NewEventClient(cfg),
-		EventAnnotation:                    NewEventAnnotationClient(cfg),
-		Incident:                           NewIncidentClient(cfg),
-		IncidentDebrief:                    NewIncidentDebriefClient(cfg),
-		IncidentDebriefMessage:             NewIncidentDebriefMessageClient(cfg),
-		IncidentDebriefQuestion:            NewIncidentDebriefQuestionClient(cfg),
-		IncidentDebriefSuggestion:          NewIncidentDebriefSuggestionClient(cfg),
-		IncidentEvent:                      NewIncidentEventClient(cfg),
-		IncidentEventContext:               NewIncidentEventContextClient(cfg),
-		IncidentEventContributingFactor:    NewIncidentEventContributingFactorClient(cfg),
-		IncidentEventEvidence:              NewIncidentEventEvidenceClient(cfg),
-		IncidentEventTopologyContext:       NewIncidentEventTopologyContextClient(cfg),
-		IncidentField:                      NewIncidentFieldClient(cfg),
-		IncidentFieldOption:                NewIncidentFieldOptionClient(cfg),
-		IncidentLink:                       NewIncidentLinkClient(cfg),
-		IncidentMilestone:                  NewIncidentMilestoneClient(cfg),
-		IncidentRole:                       NewIncidentRoleClient(cfg),
-		IncidentRoleAssignment:             NewIncidentRoleAssignmentClient(cfg),
-		IncidentSeverity:                   NewIncidentSeverityClient(cfg),
-		IncidentTag:                        NewIncidentTagClient(cfg),
-		IncidentType:                       NewIncidentTypeClient(cfg),
-		Integration:                        NewIntegrationClient(cfg),
-		IntegrationOAuthState:              NewIntegrationOAuthStateClient(cfg),
-		KnowledgeEntity:                    NewKnowledgeEntityClient(cfg),
-		KnowledgeEntityAlias:               NewKnowledgeEntityAliasClient(cfg),
-		KnowledgeEvidence:                  NewKnowledgeEvidenceClient(cfg),
-		KnowledgeRelationship:              NewKnowledgeRelationshipClient(cfg),
-		MeetingSchedule:                    NewMeetingScheduleClient(cfg),
-		MeetingSession:                     NewMeetingSessionClient(cfg),
-		NormalizedEvent:                    NewNormalizedEventClient(cfg),
-		NormalizedEventProjectionStatus:    NewNormalizedEventProjectionStatusClient(cfg),
-		OncallHandoverTemplate:             NewOncallHandoverTemplateClient(cfg),
-		OncallRoster:                       NewOncallRosterClient(cfg),
-		OncallRosterMetrics:                NewOncallRosterMetricsClient(cfg),
-		OncallSchedule:                     NewOncallScheduleClient(cfg),
-		OncallScheduleParticipant:          NewOncallScheduleParticipantClient(cfg),
-		OncallShift:                        NewOncallShiftClient(cfg),
-		OncallShiftHandover:                NewOncallShiftHandoverClient(cfg),
-		OncallShiftMetrics:                 NewOncallShiftMetricsClient(cfg),
-		Organization:                       NewOrganizationClient(cfg),
-		OrganizationRole:                   NewOrganizationRoleClient(cfg),
-		Playbook:                           NewPlaybookClient(cfg),
-		ProviderEventSyncCursor:            NewProviderEventSyncCursorClient(cfg),
-		ProviderEventSyncRun:               NewProviderEventSyncRunClient(cfg),
-		Retrospective:                      NewRetrospectiveClient(cfg),
-		RetrospectiveComment:               NewRetrospectiveCommentClient(cfg),
-		RetrospectiveReview:                NewRetrospectiveReviewClient(cfg),
-		SystemAnalysis:                     NewSystemAnalysisClient(cfg),
-		SystemAnalysisTopologyEdge:         NewSystemAnalysisTopologyEdgeClient(cfg),
-		SystemAnalysisTopologyNode:         NewSystemAnalysisTopologyNodeClient(cfg),
-		SystemTopologySnapshot:             NewSystemTopologySnapshotClient(cfg),
-		SystemTopologySnapshotEntity:       NewSystemTopologySnapshotEntityClient(cfg),
-		SystemTopologySnapshotRelationship: NewSystemTopologySnapshotRelationshipClient(cfg),
-		Task:                               NewTaskClient(cfg),
-		Team:                               NewTeamClient(cfg),
-		TeamMembership:                     NewTeamMembershipClient(cfg),
-		Tenant:                             NewTenantClient(cfg),
-		Ticket:                             NewTicketClient(cfg),
-		User:                               NewUserClient(cfg),
-		VideoConference:                    NewVideoConferenceClient(cfg),
+		ctx:                                     ctx,
+		config:                                  cfg,
+		Alert:                                   NewAlertClient(cfg),
+		AlertFeedback:                           NewAlertFeedbackClient(cfg),
+		AlertMetrics:                            NewAlertMetricsClient(cfg),
+		Document:                                NewDocumentClient(cfg),
+		DocumentAccess:                          NewDocumentAccessClient(cfg),
+		EventAnnotation:                         NewEventAnnotationClient(cfg),
+		Incident:                                NewIncidentClient(cfg),
+		IncidentDebrief:                         NewIncidentDebriefClient(cfg),
+		IncidentDebriefMessage:                  NewIncidentDebriefMessageClient(cfg),
+		IncidentDebriefQuestion:                 NewIncidentDebriefQuestionClient(cfg),
+		IncidentDebriefSuggestion:               NewIncidentDebriefSuggestionClient(cfg),
+		IncidentField:                           NewIncidentFieldClient(cfg),
+		IncidentFieldOption:                     NewIncidentFieldOptionClient(cfg),
+		IncidentLink:                            NewIncidentLinkClient(cfg),
+		IncidentMilestone:                       NewIncidentMilestoneClient(cfg),
+		IncidentRole:                            NewIncidentRoleClient(cfg),
+		IncidentRoleAssignment:                  NewIncidentRoleAssignmentClient(cfg),
+		IncidentSeverity:                        NewIncidentSeverityClient(cfg),
+		IncidentTag:                             NewIncidentTagClient(cfg),
+		IncidentTimelineEvent:                   NewIncidentTimelineEventClient(cfg),
+		IncidentTimelineEventContext:            NewIncidentTimelineEventContextClient(cfg),
+		IncidentTimelineEventContributingFactor: NewIncidentTimelineEventContributingFactorClient(cfg),
+		IncidentTimelineEventEvidence:           NewIncidentTimelineEventEvidenceClient(cfg),
+		IncidentTimelineEventTopologyContext:    NewIncidentTimelineEventTopologyContextClient(cfg),
+		IncidentType:                            NewIncidentTypeClient(cfg),
+		Integration:                             NewIntegrationClient(cfg),
+		IntegrationOAuthState:                   NewIntegrationOAuthStateClient(cfg),
+		KnowledgeEntity:                         NewKnowledgeEntityClient(cfg),
+		KnowledgeEntityAlias:                    NewKnowledgeEntityAliasClient(cfg),
+		KnowledgeEvidence:                       NewKnowledgeEvidenceClient(cfg),
+		KnowledgeRelationship:                   NewKnowledgeRelationshipClient(cfg),
+		MeetingSchedule:                         NewMeetingScheduleClient(cfg),
+		MeetingSession:                          NewMeetingSessionClient(cfg),
+		NormalizedEvent:                         NewNormalizedEventClient(cfg),
+		NormalizedEventProjectionStatus:         NewNormalizedEventProjectionStatusClient(cfg),
+		OncallHandoverTemplate:                  NewOncallHandoverTemplateClient(cfg),
+		OncallRoster:                            NewOncallRosterClient(cfg),
+		OncallRosterMetrics:                     NewOncallRosterMetricsClient(cfg),
+		OncallSchedule:                          NewOncallScheduleClient(cfg),
+		OncallScheduleParticipant:               NewOncallScheduleParticipantClient(cfg),
+		OncallShift:                             NewOncallShiftClient(cfg),
+		OncallShiftHandover:                     NewOncallShiftHandoverClient(cfg),
+		OncallShiftMetrics:                      NewOncallShiftMetricsClient(cfg),
+		Organization:                            NewOrganizationClient(cfg),
+		OrganizationRole:                        NewOrganizationRoleClient(cfg),
+		Playbook:                                NewPlaybookClient(cfg),
+		ProviderEventSyncCursor:                 NewProviderEventSyncCursorClient(cfg),
+		ProviderEventSyncRun:                    NewProviderEventSyncRunClient(cfg),
+		Retrospective:                           NewRetrospectiveClient(cfg),
+		RetrospectiveComment:                    NewRetrospectiveCommentClient(cfg),
+		RetrospectiveReview:                     NewRetrospectiveReviewClient(cfg),
+		SystemAnalysis:                          NewSystemAnalysisClient(cfg),
+		SystemAnalysisTopologyEdge:              NewSystemAnalysisTopologyEdgeClient(cfg),
+		SystemAnalysisTopologyNode:              NewSystemAnalysisTopologyNodeClient(cfg),
+		SystemTopologySnapshot:                  NewSystemTopologySnapshotClient(cfg),
+		SystemTopologySnapshotEntity:            NewSystemTopologySnapshotEntityClient(cfg),
+		SystemTopologySnapshotRelationship:      NewSystemTopologySnapshotRelationshipClient(cfg),
+		Task:                                    NewTaskClient(cfg),
+		Team:                                    NewTeamClient(cfg),
+		TeamMembership:                          NewTeamMembershipClient(cfg),
+		Tenant:                                  NewTenantClient(cfg),
+		Ticket:                                  NewTicketClient(cfg),
+		User:                                    NewUserClient(cfg),
+		VideoConference:                         NewVideoConferenceClient(cfg),
 	}, nil
 }
 
@@ -477,74 +467,72 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                                ctx,
-		config:                             cfg,
-		Alert:                              NewAlertClient(cfg),
-		AlertFeedback:                      NewAlertFeedbackClient(cfg),
-		AlertInstance:                      NewAlertInstanceClient(cfg),
-		AlertMetrics:                       NewAlertMetricsClient(cfg),
-		Document:                           NewDocumentClient(cfg),
-		DocumentAccess:                     NewDocumentAccessClient(cfg),
-		Event:                              NewEventClient(cfg),
-		EventAnnotation:                    NewEventAnnotationClient(cfg),
-		Incident:                           NewIncidentClient(cfg),
-		IncidentDebrief:                    NewIncidentDebriefClient(cfg),
-		IncidentDebriefMessage:             NewIncidentDebriefMessageClient(cfg),
-		IncidentDebriefQuestion:            NewIncidentDebriefQuestionClient(cfg),
-		IncidentDebriefSuggestion:          NewIncidentDebriefSuggestionClient(cfg),
-		IncidentEvent:                      NewIncidentEventClient(cfg),
-		IncidentEventContext:               NewIncidentEventContextClient(cfg),
-		IncidentEventContributingFactor:    NewIncidentEventContributingFactorClient(cfg),
-		IncidentEventEvidence:              NewIncidentEventEvidenceClient(cfg),
-		IncidentEventTopologyContext:       NewIncidentEventTopologyContextClient(cfg),
-		IncidentField:                      NewIncidentFieldClient(cfg),
-		IncidentFieldOption:                NewIncidentFieldOptionClient(cfg),
-		IncidentLink:                       NewIncidentLinkClient(cfg),
-		IncidentMilestone:                  NewIncidentMilestoneClient(cfg),
-		IncidentRole:                       NewIncidentRoleClient(cfg),
-		IncidentRoleAssignment:             NewIncidentRoleAssignmentClient(cfg),
-		IncidentSeverity:                   NewIncidentSeverityClient(cfg),
-		IncidentTag:                        NewIncidentTagClient(cfg),
-		IncidentType:                       NewIncidentTypeClient(cfg),
-		Integration:                        NewIntegrationClient(cfg),
-		IntegrationOAuthState:              NewIntegrationOAuthStateClient(cfg),
-		KnowledgeEntity:                    NewKnowledgeEntityClient(cfg),
-		KnowledgeEntityAlias:               NewKnowledgeEntityAliasClient(cfg),
-		KnowledgeEvidence:                  NewKnowledgeEvidenceClient(cfg),
-		KnowledgeRelationship:              NewKnowledgeRelationshipClient(cfg),
-		MeetingSchedule:                    NewMeetingScheduleClient(cfg),
-		MeetingSession:                     NewMeetingSessionClient(cfg),
-		NormalizedEvent:                    NewNormalizedEventClient(cfg),
-		NormalizedEventProjectionStatus:    NewNormalizedEventProjectionStatusClient(cfg),
-		OncallHandoverTemplate:             NewOncallHandoverTemplateClient(cfg),
-		OncallRoster:                       NewOncallRosterClient(cfg),
-		OncallRosterMetrics:                NewOncallRosterMetricsClient(cfg),
-		OncallSchedule:                     NewOncallScheduleClient(cfg),
-		OncallScheduleParticipant:          NewOncallScheduleParticipantClient(cfg),
-		OncallShift:                        NewOncallShiftClient(cfg),
-		OncallShiftHandover:                NewOncallShiftHandoverClient(cfg),
-		OncallShiftMetrics:                 NewOncallShiftMetricsClient(cfg),
-		Organization:                       NewOrganizationClient(cfg),
-		OrganizationRole:                   NewOrganizationRoleClient(cfg),
-		Playbook:                           NewPlaybookClient(cfg),
-		ProviderEventSyncCursor:            NewProviderEventSyncCursorClient(cfg),
-		ProviderEventSyncRun:               NewProviderEventSyncRunClient(cfg),
-		Retrospective:                      NewRetrospectiveClient(cfg),
-		RetrospectiveComment:               NewRetrospectiveCommentClient(cfg),
-		RetrospectiveReview:                NewRetrospectiveReviewClient(cfg),
-		SystemAnalysis:                     NewSystemAnalysisClient(cfg),
-		SystemAnalysisTopologyEdge:         NewSystemAnalysisTopologyEdgeClient(cfg),
-		SystemAnalysisTopologyNode:         NewSystemAnalysisTopologyNodeClient(cfg),
-		SystemTopologySnapshot:             NewSystemTopologySnapshotClient(cfg),
-		SystemTopologySnapshotEntity:       NewSystemTopologySnapshotEntityClient(cfg),
-		SystemTopologySnapshotRelationship: NewSystemTopologySnapshotRelationshipClient(cfg),
-		Task:                               NewTaskClient(cfg),
-		Team:                               NewTeamClient(cfg),
-		TeamMembership:                     NewTeamMembershipClient(cfg),
-		Tenant:                             NewTenantClient(cfg),
-		Ticket:                             NewTicketClient(cfg),
-		User:                               NewUserClient(cfg),
-		VideoConference:                    NewVideoConferenceClient(cfg),
+		ctx:                                     ctx,
+		config:                                  cfg,
+		Alert:                                   NewAlertClient(cfg),
+		AlertFeedback:                           NewAlertFeedbackClient(cfg),
+		AlertMetrics:                            NewAlertMetricsClient(cfg),
+		Document:                                NewDocumentClient(cfg),
+		DocumentAccess:                          NewDocumentAccessClient(cfg),
+		EventAnnotation:                         NewEventAnnotationClient(cfg),
+		Incident:                                NewIncidentClient(cfg),
+		IncidentDebrief:                         NewIncidentDebriefClient(cfg),
+		IncidentDebriefMessage:                  NewIncidentDebriefMessageClient(cfg),
+		IncidentDebriefQuestion:                 NewIncidentDebriefQuestionClient(cfg),
+		IncidentDebriefSuggestion:               NewIncidentDebriefSuggestionClient(cfg),
+		IncidentField:                           NewIncidentFieldClient(cfg),
+		IncidentFieldOption:                     NewIncidentFieldOptionClient(cfg),
+		IncidentLink:                            NewIncidentLinkClient(cfg),
+		IncidentMilestone:                       NewIncidentMilestoneClient(cfg),
+		IncidentRole:                            NewIncidentRoleClient(cfg),
+		IncidentRoleAssignment:                  NewIncidentRoleAssignmentClient(cfg),
+		IncidentSeverity:                        NewIncidentSeverityClient(cfg),
+		IncidentTag:                             NewIncidentTagClient(cfg),
+		IncidentTimelineEvent:                   NewIncidentTimelineEventClient(cfg),
+		IncidentTimelineEventContext:            NewIncidentTimelineEventContextClient(cfg),
+		IncidentTimelineEventContributingFactor: NewIncidentTimelineEventContributingFactorClient(cfg),
+		IncidentTimelineEventEvidence:           NewIncidentTimelineEventEvidenceClient(cfg),
+		IncidentTimelineEventTopologyContext:    NewIncidentTimelineEventTopologyContextClient(cfg),
+		IncidentType:                            NewIncidentTypeClient(cfg),
+		Integration:                             NewIntegrationClient(cfg),
+		IntegrationOAuthState:                   NewIntegrationOAuthStateClient(cfg),
+		KnowledgeEntity:                         NewKnowledgeEntityClient(cfg),
+		KnowledgeEntityAlias:                    NewKnowledgeEntityAliasClient(cfg),
+		KnowledgeEvidence:                       NewKnowledgeEvidenceClient(cfg),
+		KnowledgeRelationship:                   NewKnowledgeRelationshipClient(cfg),
+		MeetingSchedule:                         NewMeetingScheduleClient(cfg),
+		MeetingSession:                          NewMeetingSessionClient(cfg),
+		NormalizedEvent:                         NewNormalizedEventClient(cfg),
+		NormalizedEventProjectionStatus:         NewNormalizedEventProjectionStatusClient(cfg),
+		OncallHandoverTemplate:                  NewOncallHandoverTemplateClient(cfg),
+		OncallRoster:                            NewOncallRosterClient(cfg),
+		OncallRosterMetrics:                     NewOncallRosterMetricsClient(cfg),
+		OncallSchedule:                          NewOncallScheduleClient(cfg),
+		OncallScheduleParticipant:               NewOncallScheduleParticipantClient(cfg),
+		OncallShift:                             NewOncallShiftClient(cfg),
+		OncallShiftHandover:                     NewOncallShiftHandoverClient(cfg),
+		OncallShiftMetrics:                      NewOncallShiftMetricsClient(cfg),
+		Organization:                            NewOrganizationClient(cfg),
+		OrganizationRole:                        NewOrganizationRoleClient(cfg),
+		Playbook:                                NewPlaybookClient(cfg),
+		ProviderEventSyncCursor:                 NewProviderEventSyncCursorClient(cfg),
+		ProviderEventSyncRun:                    NewProviderEventSyncRunClient(cfg),
+		Retrospective:                           NewRetrospectiveClient(cfg),
+		RetrospectiveComment:                    NewRetrospectiveCommentClient(cfg),
+		RetrospectiveReview:                     NewRetrospectiveReviewClient(cfg),
+		SystemAnalysis:                          NewSystemAnalysisClient(cfg),
+		SystemAnalysisTopologyEdge:              NewSystemAnalysisTopologyEdgeClient(cfg),
+		SystemAnalysisTopologyNode:              NewSystemAnalysisTopologyNodeClient(cfg),
+		SystemTopologySnapshot:                  NewSystemTopologySnapshotClient(cfg),
+		SystemTopologySnapshotEntity:            NewSystemTopologySnapshotEntityClient(cfg),
+		SystemTopologySnapshotRelationship:      NewSystemTopologySnapshotRelationshipClient(cfg),
+		Task:                                    NewTaskClient(cfg),
+		Team:                                    NewTeamClient(cfg),
+		TeamMembership:                          NewTeamMembershipClient(cfg),
+		Tenant:                                  NewTenantClient(cfg),
+		Ticket:                                  NewTicketClient(cfg),
+		User:                                    NewUserClient(cfg),
+		VideoConference:                         NewVideoConferenceClient(cfg),
 	}, nil
 }
 
@@ -574,14 +562,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.AlertFeedback, c.AlertInstance, c.Document, c.DocumentAccess,
-		c.Event, c.EventAnnotation, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
-		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
-		c.IncidentEventTopologyContext, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
-		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
+		c.Alert, c.AlertFeedback, c.Document, c.DocumentAccess, c.EventAnnotation,
+		c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
+		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
+		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
 		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
@@ -603,14 +591,14 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.Document,
-		c.DocumentAccess, c.Event, c.EventAnnotation, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentEvent, c.IncidentEventContext,
-		c.IncidentEventContributingFactor, c.IncidentEventEvidence,
-		c.IncidentEventTopologyContext, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
-		c.IncidentSeverity, c.IncidentTag, c.IncidentType, c.Integration,
+		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Document, c.DocumentAccess,
+		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
+		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
+		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
 		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
@@ -635,14 +623,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Alert.mutate(ctx, m)
 	case *AlertFeedbackMutation:
 		return c.AlertFeedback.mutate(ctx, m)
-	case *AlertInstanceMutation:
-		return c.AlertInstance.mutate(ctx, m)
 	case *DocumentMutation:
 		return c.Document.mutate(ctx, m)
 	case *DocumentAccessMutation:
 		return c.DocumentAccess.mutate(ctx, m)
-	case *EventMutation:
-		return c.Event.mutate(ctx, m)
 	case *EventAnnotationMutation:
 		return c.EventAnnotation.mutate(ctx, m)
 	case *IncidentMutation:
@@ -655,16 +639,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentDebriefQuestion.mutate(ctx, m)
 	case *IncidentDebriefSuggestionMutation:
 		return c.IncidentDebriefSuggestion.mutate(ctx, m)
-	case *IncidentEventMutation:
-		return c.IncidentEvent.mutate(ctx, m)
-	case *IncidentEventContextMutation:
-		return c.IncidentEventContext.mutate(ctx, m)
-	case *IncidentEventContributingFactorMutation:
-		return c.IncidentEventContributingFactor.mutate(ctx, m)
-	case *IncidentEventEvidenceMutation:
-		return c.IncidentEventEvidence.mutate(ctx, m)
-	case *IncidentEventTopologyContextMutation:
-		return c.IncidentEventTopologyContext.mutate(ctx, m)
 	case *IncidentFieldMutation:
 		return c.IncidentField.mutate(ctx, m)
 	case *IncidentFieldOptionMutation:
@@ -681,6 +655,16 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentSeverity.mutate(ctx, m)
 	case *IncidentTagMutation:
 		return c.IncidentTag.mutate(ctx, m)
+	case *IncidentTimelineEventMutation:
+		return c.IncidentTimelineEvent.mutate(ctx, m)
+	case *IncidentTimelineEventContextMutation:
+		return c.IncidentTimelineEventContext.mutate(ctx, m)
+	case *IncidentTimelineEventContributingFactorMutation:
+		return c.IncidentTimelineEventContributingFactor.mutate(ctx, m)
+	case *IncidentTimelineEventEvidenceMutation:
+		return c.IncidentTimelineEventEvidence.mutate(ctx, m)
+	case *IncidentTimelineEventTopologyContextMutation:
+		return c.IncidentTimelineEventTopologyContext.mutate(ctx, m)
 	case *IncidentTypeMutation:
 		return c.IncidentType.mutate(ctx, m)
 	case *IntegrationMutation:
@@ -893,6 +877,25 @@ func (c *AlertClient) QueryTenant(_m *Alert) *TenantQuery {
 	return query
 }
 
+// QueryProjectedFrom queries the projected_from edge of a Alert.
+func (c *AlertClient) QueryProjectedFrom(_m *Alert) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alert.Table, alert.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alert.ProjectedFromTable, alert.ProjectedFromColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.Alert
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryPlaybooks queries the playbooks edge of a Alert.
 func (c *AlertClient) QueryPlaybooks(_m *Alert) *PlaybookQuery {
 	query := (&PlaybookClient{config: c.config}).Query()
@@ -931,19 +934,19 @@ func (c *AlertClient) QueryRoster(_m *Alert) *OncallRosterQuery {
 	return query
 }
 
-// QueryInstances queries the instances edge of a Alert.
-func (c *AlertClient) QueryInstances(_m *Alert) *AlertInstanceQuery {
-	query := (&AlertInstanceClient{config: c.config}).Query()
+// QueryFeedback queries the feedback edge of a Alert.
+func (c *AlertClient) QueryFeedback(_m *Alert) *AlertFeedbackQuery {
+	query := (&AlertFeedbackClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alert.Table, alert.FieldID, id),
-			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, alert.InstancesTable, alert.InstancesColumn),
+			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, alert.FeedbackTable, alert.FeedbackColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertInstance
-		step.Edge.Schema = schemaConfig.AlertInstance
+		step.To.Schema = schemaConfig.AlertFeedback
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -1103,18 +1106,37 @@ func (c *AlertFeedbackClient) QueryTenant(_m *AlertFeedback) *TenantQuery {
 	return query
 }
 
-// QueryAlertInstance queries the alert_instance edge of a AlertFeedback.
-func (c *AlertFeedbackClient) QueryAlertInstance(_m *AlertFeedback) *AlertInstanceQuery {
-	query := (&AlertInstanceClient{config: c.config}).Query()
+// QueryAlert queries the alert edge of a AlertFeedback.
+func (c *AlertFeedbackClient) QueryAlert(_m *AlertFeedback) *AlertQuery {
+	query := (&AlertClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, id),
-			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.AlertTable, alertfeedback.AlertColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.AlertFeedback
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlertInstance queries the alert_instance edge of a AlertFeedback.
+func (c *AlertFeedbackClient) QueryAlertInstance(_m *AlertFeedback) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.AlertInstanceTable, alertfeedback.AlertInstanceColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertInstance
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.AlertFeedback
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1145,216 +1167,6 @@ func (c *AlertFeedbackClient) mutate(ctx context.Context, m *AlertFeedbackMutati
 		return (&AlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AlertFeedback mutation op: %q", m.Op())
-	}
-}
-
-// AlertInstanceClient is a client for the AlertInstance schema.
-type AlertInstanceClient struct {
-	config
-}
-
-// NewAlertInstanceClient returns a client for the AlertInstance from the given config.
-func NewAlertInstanceClient(c config) *AlertInstanceClient {
-	return &AlertInstanceClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `alertinstance.Hooks(f(g(h())))`.
-func (c *AlertInstanceClient) Use(hooks ...Hook) {
-	c.hooks.AlertInstance = append(c.hooks.AlertInstance, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `alertinstance.Intercept(f(g(h())))`.
-func (c *AlertInstanceClient) Intercept(interceptors ...Interceptor) {
-	c.inters.AlertInstance = append(c.inters.AlertInstance, interceptors...)
-}
-
-// Create returns a builder for creating a AlertInstance entity.
-func (c *AlertInstanceClient) Create() *AlertInstanceCreate {
-	mutation := newAlertInstanceMutation(c.config, OpCreate)
-	return &AlertInstanceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of AlertInstance entities.
-func (c *AlertInstanceClient) CreateBulk(builders ...*AlertInstanceCreate) *AlertInstanceCreateBulk {
-	return &AlertInstanceCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *AlertInstanceClient) MapCreateBulk(slice any, setFunc func(*AlertInstanceCreate, int)) *AlertInstanceCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &AlertInstanceCreateBulk{err: fmt.Errorf("calling to AlertInstanceClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*AlertInstanceCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &AlertInstanceCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for AlertInstance.
-func (c *AlertInstanceClient) Update() *AlertInstanceUpdate {
-	mutation := newAlertInstanceMutation(c.config, OpUpdate)
-	return &AlertInstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *AlertInstanceClient) UpdateOne(_m *AlertInstance) *AlertInstanceUpdateOne {
-	mutation := newAlertInstanceMutation(c.config, OpUpdateOne, withAlertInstance(_m))
-	return &AlertInstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *AlertInstanceClient) UpdateOneID(id uuid.UUID) *AlertInstanceUpdateOne {
-	mutation := newAlertInstanceMutation(c.config, OpUpdateOne, withAlertInstanceID(id))
-	return &AlertInstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for AlertInstance.
-func (c *AlertInstanceClient) Delete() *AlertInstanceDelete {
-	mutation := newAlertInstanceMutation(c.config, OpDelete)
-	return &AlertInstanceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *AlertInstanceClient) DeleteOne(_m *AlertInstance) *AlertInstanceDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *AlertInstanceClient) DeleteOneID(id uuid.UUID) *AlertInstanceDeleteOne {
-	builder := c.Delete().Where(alertinstance.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &AlertInstanceDeleteOne{builder}
-}
-
-// Query returns a query builder for AlertInstance.
-func (c *AlertInstanceClient) Query() *AlertInstanceQuery {
-	return &AlertInstanceQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeAlertInstance},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a AlertInstance entity by its id.
-func (c *AlertInstanceClient) Get(ctx context.Context, id uuid.UUID) (*AlertInstance, error) {
-	return c.Query().Where(alertinstance.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *AlertInstanceClient) GetX(ctx context.Context, id uuid.UUID) *AlertInstance {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a AlertInstance.
-func (c *AlertInstanceClient) QueryTenant(_m *AlertInstance) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.TenantTable, alertinstance.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.AlertInstance
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAlert queries the alert edge of a AlertInstance.
-func (c *AlertInstanceClient) QueryAlert(_m *AlertInstance) *AlertQuery {
-	query := (&AlertClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
-			sqlgraph.To(alert.Table, alert.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.AlertTable, alertinstance.AlertColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.AlertInstance
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEvent queries the event edge of a AlertInstance.
-func (c *AlertInstanceClient) QueryEvent(_m *AlertInstance) *EventQuery {
-	query := (&EventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
-			sqlgraph.To(event.Table, event.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.EventTable, alertinstance.EventColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Event
-		step.Edge.Schema = schemaConfig.AlertInstance
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFeedback queries the feedback edge of a AlertInstance.
-func (c *AlertInstanceClient) QueryFeedback(_m *AlertInstance) *AlertFeedbackQuery {
-	query := (&AlertFeedbackClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
-			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.FeedbackTable, alertinstance.FeedbackColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertInstance
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *AlertInstanceClient) Hooks() []Hook {
-	hooks := c.hooks.AlertInstance
-	return append(hooks[:len(hooks):len(hooks)], alertinstance.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *AlertInstanceClient) Interceptors() []Interceptor {
-	return c.inters.AlertInstance
-}
-
-func (c *AlertInstanceClient) mutate(ctx context.Context, m *AlertInstanceMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&AlertInstanceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&AlertInstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&AlertInstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&AlertInstanceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown AlertInstance mutation op: %q", m.Op())
 	}
 }
 
@@ -1789,216 +1601,6 @@ func (c *DocumentAccessClient) mutate(ctx context.Context, m *DocumentAccessMuta
 	}
 }
 
-// EventClient is a client for the Event schema.
-type EventClient struct {
-	config
-}
-
-// NewEventClient returns a client for the Event from the given config.
-func NewEventClient(c config) *EventClient {
-	return &EventClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `event.Hooks(f(g(h())))`.
-func (c *EventClient) Use(hooks ...Hook) {
-	c.hooks.Event = append(c.hooks.Event, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `event.Intercept(f(g(h())))`.
-func (c *EventClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Event = append(c.inters.Event, interceptors...)
-}
-
-// Create returns a builder for creating a Event entity.
-func (c *EventClient) Create() *EventCreate {
-	mutation := newEventMutation(c.config, OpCreate)
-	return &EventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Event entities.
-func (c *EventClient) CreateBulk(builders ...*EventCreate) *EventCreateBulk {
-	return &EventCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *EventClient) MapCreateBulk(slice any, setFunc func(*EventCreate, int)) *EventCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &EventCreateBulk{err: fmt.Errorf("calling to EventClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*EventCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &EventCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Event.
-func (c *EventClient) Update() *EventUpdate {
-	mutation := newEventMutation(c.config, OpUpdate)
-	return &EventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *EventClient) UpdateOne(_m *Event) *EventUpdateOne {
-	mutation := newEventMutation(c.config, OpUpdateOne, withEvent(_m))
-	return &EventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *EventClient) UpdateOneID(id uuid.UUID) *EventUpdateOne {
-	mutation := newEventMutation(c.config, OpUpdateOne, withEventID(id))
-	return &EventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Event.
-func (c *EventClient) Delete() *EventDelete {
-	mutation := newEventMutation(c.config, OpDelete)
-	return &EventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *EventClient) DeleteOne(_m *Event) *EventDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *EventClient) DeleteOneID(id uuid.UUID) *EventDeleteOne {
-	builder := c.Delete().Where(event.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &EventDeleteOne{builder}
-}
-
-// Query returns a query builder for Event.
-func (c *EventClient) Query() *EventQuery {
-	return &EventQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeEvent},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Event entity by its id.
-func (c *EventClient) Get(ctx context.Context, id uuid.UUID) (*Event, error) {
-	return c.Query().Where(event.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *EventClient) GetX(ctx context.Context, id uuid.UUID) *Event {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a Event.
-func (c *EventClient) QueryTenant(_m *Event) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(event.Table, event.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, event.TenantTable, event.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.Event
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAlertInstance queries the alert_instance edge of a Event.
-func (c *EventClient) QueryAlertInstance(_m *Event) *AlertInstanceQuery {
-	query := (&AlertInstanceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(event.Table, event.FieldID, id),
-			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, event.AlertInstanceTable, event.AlertInstanceColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertInstance
-		step.Edge.Schema = schemaConfig.AlertInstance
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryIncidentEvent queries the incident_event edge of a Event.
-func (c *EventClient) QueryIncidentEvent(_m *Event) *IncidentEventQuery {
-	query := (&IncidentEventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(event.Table, event.FieldID, id),
-			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, event.IncidentEventTable, event.IncidentEventColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEvent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAnnotations queries the annotations edge of a Event.
-func (c *EventClient) QueryAnnotations(_m *Event) *EventAnnotationQuery {
-	query := (&EventAnnotationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(event.Table, event.FieldID, id),
-			sqlgraph.To(eventannotation.Table, eventannotation.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, event.AnnotationsTable, event.AnnotationsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.EventAnnotation
-		step.Edge.Schema = schemaConfig.EventAnnotation
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *EventClient) Hooks() []Hook {
-	hooks := c.hooks.Event
-	return append(hooks[:len(hooks):len(hooks)], event.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *EventClient) Interceptors() []Interceptor {
-	return c.inters.Event
-}
-
-func (c *EventClient) mutate(ctx context.Context, m *EventMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&EventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&EventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&EventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&EventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Event mutation op: %q", m.Op())
-	}
-}
-
 // EventAnnotationClient is a client for the EventAnnotation schema.
 type EventAnnotationClient struct {
 	config
@@ -2127,17 +1729,17 @@ func (c *EventAnnotationClient) QueryTenant(_m *EventAnnotation) *TenantQuery {
 }
 
 // QueryEvent queries the event edge of a EventAnnotation.
-func (c *EventAnnotationClient) QueryEvent(_m *EventAnnotation) *EventQuery {
-	query := (&EventClient{config: c.config}).Query()
+func (c *EventAnnotationClient) QueryEvent(_m *EventAnnotation) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(eventannotation.Table, eventannotation.FieldID, id),
-			sqlgraph.To(event.Table, event.FieldID),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, eventannotation.EventTable, eventannotation.EventColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Event
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.EventAnnotation
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2336,6 +1938,25 @@ func (c *IncidentClient) QueryTenant(_m *Incident) *TenantQuery {
 	return query
 }
 
+// QueryProjectedFrom queries the projected_from edge of a Incident.
+func (c *IncidentClient) QueryProjectedFrom(_m *Incident) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.ProjectedFromTable, incident.ProjectedFromColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.Incident
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QuerySeverity queries the severity edge of a Incident.
 func (c *IncidentClient) QuerySeverity(_m *Incident) *IncidentSeverityQuery {
 	query := (&IncidentSeverityClient{config: c.config}).Query()
@@ -2393,19 +2014,19 @@ func (c *IncidentClient) QueryMilestones(_m *Incident) *IncidentMilestoneQuery {
 	return query
 }
 
-// QueryEvents queries the events edge of a Incident.
-func (c *IncidentClient) QueryEvents(_m *Incident) *IncidentEventQuery {
-	query := (&IncidentEventClient{config: c.config}).Query()
+// QueryTimelineEvents queries the timeline_events edge of a Incident.
+func (c *IncidentClient) QueryTimelineEvents(_m *Incident) *IncidentTimelineEventQuery {
+	query := (&IncidentTimelineEventClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incident.EventsTable, incident.EventsColumn),
+			sqlgraph.To(incidenttimelineevent.Table, incidenttimelineevent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incident.TimelineEventsTable, incident.TimelineEventsColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEvent
+		step.To.Schema = schemaConfig.IncidentTimelineEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -3522,999 +3143,6 @@ func (c *IncidentDebriefSuggestionClient) mutate(ctx context.Context, m *Inciden
 		return (&IncidentDebriefSuggestionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IncidentDebriefSuggestion mutation op: %q", m.Op())
-	}
-}
-
-// IncidentEventClient is a client for the IncidentEvent schema.
-type IncidentEventClient struct {
-	config
-}
-
-// NewIncidentEventClient returns a client for the IncidentEvent from the given config.
-func NewIncidentEventClient(c config) *IncidentEventClient {
-	return &IncidentEventClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidentevent.Hooks(f(g(h())))`.
-func (c *IncidentEventClient) Use(hooks ...Hook) {
-	c.hooks.IncidentEvent = append(c.hooks.IncidentEvent, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidentevent.Intercept(f(g(h())))`.
-func (c *IncidentEventClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentEvent = append(c.inters.IncidentEvent, interceptors...)
-}
-
-// Create returns a builder for creating a IncidentEvent entity.
-func (c *IncidentEventClient) Create() *IncidentEventCreate {
-	mutation := newIncidentEventMutation(c.config, OpCreate)
-	return &IncidentEventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of IncidentEvent entities.
-func (c *IncidentEventClient) CreateBulk(builders ...*IncidentEventCreate) *IncidentEventCreateBulk {
-	return &IncidentEventCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *IncidentEventClient) MapCreateBulk(slice any, setFunc func(*IncidentEventCreate, int)) *IncidentEventCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &IncidentEventCreateBulk{err: fmt.Errorf("calling to IncidentEventClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*IncidentEventCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &IncidentEventCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for IncidentEvent.
-func (c *IncidentEventClient) Update() *IncidentEventUpdate {
-	mutation := newIncidentEventMutation(c.config, OpUpdate)
-	return &IncidentEventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *IncidentEventClient) UpdateOne(_m *IncidentEvent) *IncidentEventUpdateOne {
-	mutation := newIncidentEventMutation(c.config, OpUpdateOne, withIncidentEvent(_m))
-	return &IncidentEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *IncidentEventClient) UpdateOneID(id uuid.UUID) *IncidentEventUpdateOne {
-	mutation := newIncidentEventMutation(c.config, OpUpdateOne, withIncidentEventID(id))
-	return &IncidentEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for IncidentEvent.
-func (c *IncidentEventClient) Delete() *IncidentEventDelete {
-	mutation := newIncidentEventMutation(c.config, OpDelete)
-	return &IncidentEventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentEventClient) DeleteOne(_m *IncidentEvent) *IncidentEventDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentEventClient) DeleteOneID(id uuid.UUID) *IncidentEventDeleteOne {
-	builder := c.Delete().Where(incidentevent.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &IncidentEventDeleteOne{builder}
-}
-
-// Query returns a query builder for IncidentEvent.
-func (c *IncidentEventClient) Query() *IncidentEventQuery {
-	return &IncidentEventQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentEvent},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a IncidentEvent entity by its id.
-func (c *IncidentEventClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEvent, error) {
-	return c.Query().Where(incidentevent.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *IncidentEventClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEvent {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryTenant(_m *IncidentEvent) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentevent.TenantTable, incidentevent.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IncidentEvent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryIncident queries the incident edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryIncident(_m *IncidentEvent) *IncidentQuery {
-	query := (&IncidentClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(incident.Table, incident.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, incidentevent.IncidentTable, incidentevent.IncidentColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Incident
-		step.Edge.Schema = schemaConfig.IncidentEvent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEvent queries the event edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryEvent(_m *IncidentEvent) *EventQuery {
-	query := (&EventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(event.Table, event.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentevent.EventTable, incidentevent.EventColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Event
-		step.Edge.Schema = schemaConfig.IncidentEvent
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryContext queries the context edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryContext(_m *IncidentEvent) *IncidentEventContextQuery {
-	query := (&IncidentEventContextClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(incidenteventcontext.Table, incidenteventcontext.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, incidentevent.ContextTable, incidentevent.ContextColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEventContext
-		step.Edge.Schema = schemaConfig.IncidentEventContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFactors queries the factors edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryFactors(_m *IncidentEvent) *IncidentEventContributingFactorQuery {
-	query := (&IncidentEventContributingFactorClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incidentevent.FactorsTable, incidentevent.FactorsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEventContributingFactor
-		step.Edge.Schema = schemaConfig.IncidentEventContributingFactor
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEvidence queries the evidence edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryEvidence(_m *IncidentEvent) *IncidentEventEvidenceQuery {
-	query := (&IncidentEventEvidenceClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(incidenteventevidence.Table, incidenteventevidence.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, incidentevent.EvidenceTable, incidentevent.EvidenceColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEventEvidence
-		step.Edge.Schema = schemaConfig.IncidentEventEvidence
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryTopologyContext queries the topology_context edge of a IncidentEvent.
-func (c *IncidentEventClient) QueryTopologyContext(_m *IncidentEvent) *IncidentEventTopologyContextQuery {
-	query := (&IncidentEventTopologyContextClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentevent.Table, incidentevent.FieldID, id),
-			sqlgraph.To(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, incidentevent.TopologyContextTable, incidentevent.TopologyContextColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEventTopologyContext
-		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *IncidentEventClient) Hooks() []Hook {
-	hooks := c.hooks.IncidentEvent
-	return append(hooks[:len(hooks):len(hooks)], incidentevent.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *IncidentEventClient) Interceptors() []Interceptor {
-	return c.inters.IncidentEvent
-}
-
-func (c *IncidentEventClient) mutate(ctx context.Context, m *IncidentEventMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&IncidentEventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&IncidentEventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&IncidentEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&IncidentEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown IncidentEvent mutation op: %q", m.Op())
-	}
-}
-
-// IncidentEventContextClient is a client for the IncidentEventContext schema.
-type IncidentEventContextClient struct {
-	config
-}
-
-// NewIncidentEventContextClient returns a client for the IncidentEventContext from the given config.
-func NewIncidentEventContextClient(c config) *IncidentEventContextClient {
-	return &IncidentEventContextClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidenteventcontext.Hooks(f(g(h())))`.
-func (c *IncidentEventContextClient) Use(hooks ...Hook) {
-	c.hooks.IncidentEventContext = append(c.hooks.IncidentEventContext, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidenteventcontext.Intercept(f(g(h())))`.
-func (c *IncidentEventContextClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentEventContext = append(c.inters.IncidentEventContext, interceptors...)
-}
-
-// Create returns a builder for creating a IncidentEventContext entity.
-func (c *IncidentEventContextClient) Create() *IncidentEventContextCreate {
-	mutation := newIncidentEventContextMutation(c.config, OpCreate)
-	return &IncidentEventContextCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of IncidentEventContext entities.
-func (c *IncidentEventContextClient) CreateBulk(builders ...*IncidentEventContextCreate) *IncidentEventContextCreateBulk {
-	return &IncidentEventContextCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *IncidentEventContextClient) MapCreateBulk(slice any, setFunc func(*IncidentEventContextCreate, int)) *IncidentEventContextCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &IncidentEventContextCreateBulk{err: fmt.Errorf("calling to IncidentEventContextClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*IncidentEventContextCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &IncidentEventContextCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for IncidentEventContext.
-func (c *IncidentEventContextClient) Update() *IncidentEventContextUpdate {
-	mutation := newIncidentEventContextMutation(c.config, OpUpdate)
-	return &IncidentEventContextUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *IncidentEventContextClient) UpdateOne(_m *IncidentEventContext) *IncidentEventContextUpdateOne {
-	mutation := newIncidentEventContextMutation(c.config, OpUpdateOne, withIncidentEventContext(_m))
-	return &IncidentEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *IncidentEventContextClient) UpdateOneID(id uuid.UUID) *IncidentEventContextUpdateOne {
-	mutation := newIncidentEventContextMutation(c.config, OpUpdateOne, withIncidentEventContextID(id))
-	return &IncidentEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for IncidentEventContext.
-func (c *IncidentEventContextClient) Delete() *IncidentEventContextDelete {
-	mutation := newIncidentEventContextMutation(c.config, OpDelete)
-	return &IncidentEventContextDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentEventContextClient) DeleteOne(_m *IncidentEventContext) *IncidentEventContextDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentEventContextClient) DeleteOneID(id uuid.UUID) *IncidentEventContextDeleteOne {
-	builder := c.Delete().Where(incidenteventcontext.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &IncidentEventContextDeleteOne{builder}
-}
-
-// Query returns a query builder for IncidentEventContext.
-func (c *IncidentEventContextClient) Query() *IncidentEventContextQuery {
-	return &IncidentEventContextQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentEventContext},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a IncidentEventContext entity by its id.
-func (c *IncidentEventContextClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventContext, error) {
-	return c.Query().Where(incidenteventcontext.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *IncidentEventContextClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventContext {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a IncidentEventContext.
-func (c *IncidentEventContextClient) QueryTenant(_m *IncidentEventContext) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventcontext.Table, incidenteventcontext.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventcontext.TenantTable, incidenteventcontext.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IncidentEventContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEvent queries the event edge of a IncidentEventContext.
-func (c *IncidentEventContextClient) QueryEvent(_m *IncidentEventContext) *IncidentEventQuery {
-	query := (&IncidentEventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventcontext.Table, incidenteventcontext.FieldID, id),
-			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, incidenteventcontext.EventTable, incidenteventcontext.EventColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEventContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *IncidentEventContextClient) Hooks() []Hook {
-	hooks := c.hooks.IncidentEventContext
-	return append(hooks[:len(hooks):len(hooks)], incidenteventcontext.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *IncidentEventContextClient) Interceptors() []Interceptor {
-	return c.inters.IncidentEventContext
-}
-
-func (c *IncidentEventContextClient) mutate(ctx context.Context, m *IncidentEventContextMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&IncidentEventContextCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&IncidentEventContextUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&IncidentEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&IncidentEventContextDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown IncidentEventContext mutation op: %q", m.Op())
-	}
-}
-
-// IncidentEventContributingFactorClient is a client for the IncidentEventContributingFactor schema.
-type IncidentEventContributingFactorClient struct {
-	config
-}
-
-// NewIncidentEventContributingFactorClient returns a client for the IncidentEventContributingFactor from the given config.
-func NewIncidentEventContributingFactorClient(c config) *IncidentEventContributingFactorClient {
-	return &IncidentEventContributingFactorClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidenteventcontributingfactor.Hooks(f(g(h())))`.
-func (c *IncidentEventContributingFactorClient) Use(hooks ...Hook) {
-	c.hooks.IncidentEventContributingFactor = append(c.hooks.IncidentEventContributingFactor, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidenteventcontributingfactor.Intercept(f(g(h())))`.
-func (c *IncidentEventContributingFactorClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentEventContributingFactor = append(c.inters.IncidentEventContributingFactor, interceptors...)
-}
-
-// Create returns a builder for creating a IncidentEventContributingFactor entity.
-func (c *IncidentEventContributingFactorClient) Create() *IncidentEventContributingFactorCreate {
-	mutation := newIncidentEventContributingFactorMutation(c.config, OpCreate)
-	return &IncidentEventContributingFactorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of IncidentEventContributingFactor entities.
-func (c *IncidentEventContributingFactorClient) CreateBulk(builders ...*IncidentEventContributingFactorCreate) *IncidentEventContributingFactorCreateBulk {
-	return &IncidentEventContributingFactorCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *IncidentEventContributingFactorClient) MapCreateBulk(slice any, setFunc func(*IncidentEventContributingFactorCreate, int)) *IncidentEventContributingFactorCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &IncidentEventContributingFactorCreateBulk{err: fmt.Errorf("calling to IncidentEventContributingFactorClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*IncidentEventContributingFactorCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &IncidentEventContributingFactorCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for IncidentEventContributingFactor.
-func (c *IncidentEventContributingFactorClient) Update() *IncidentEventContributingFactorUpdate {
-	mutation := newIncidentEventContributingFactorMutation(c.config, OpUpdate)
-	return &IncidentEventContributingFactorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *IncidentEventContributingFactorClient) UpdateOne(_m *IncidentEventContributingFactor) *IncidentEventContributingFactorUpdateOne {
-	mutation := newIncidentEventContributingFactorMutation(c.config, OpUpdateOne, withIncidentEventContributingFactor(_m))
-	return &IncidentEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *IncidentEventContributingFactorClient) UpdateOneID(id uuid.UUID) *IncidentEventContributingFactorUpdateOne {
-	mutation := newIncidentEventContributingFactorMutation(c.config, OpUpdateOne, withIncidentEventContributingFactorID(id))
-	return &IncidentEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for IncidentEventContributingFactor.
-func (c *IncidentEventContributingFactorClient) Delete() *IncidentEventContributingFactorDelete {
-	mutation := newIncidentEventContributingFactorMutation(c.config, OpDelete)
-	return &IncidentEventContributingFactorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentEventContributingFactorClient) DeleteOne(_m *IncidentEventContributingFactor) *IncidentEventContributingFactorDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentEventContributingFactorClient) DeleteOneID(id uuid.UUID) *IncidentEventContributingFactorDeleteOne {
-	builder := c.Delete().Where(incidenteventcontributingfactor.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &IncidentEventContributingFactorDeleteOne{builder}
-}
-
-// Query returns a query builder for IncidentEventContributingFactor.
-func (c *IncidentEventContributingFactorClient) Query() *IncidentEventContributingFactorQuery {
-	return &IncidentEventContributingFactorQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentEventContributingFactor},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a IncidentEventContributingFactor entity by its id.
-func (c *IncidentEventContributingFactorClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventContributingFactor, error) {
-	return c.Query().Where(incidenteventcontributingfactor.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *IncidentEventContributingFactorClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventContributingFactor {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a IncidentEventContributingFactor.
-func (c *IncidentEventContributingFactorClient) QueryTenant(_m *IncidentEventContributingFactor) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventcontributingfactor.TenantTable, incidenteventcontributingfactor.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IncidentEventContributingFactor
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEvent queries the event edge of a IncidentEventContributingFactor.
-func (c *IncidentEventContributingFactorClient) QueryEvent(_m *IncidentEventContributingFactor) *IncidentEventQuery {
-	query := (&IncidentEventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventcontributingfactor.Table, incidenteventcontributingfactor.FieldID, id),
-			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, incidenteventcontributingfactor.EventTable, incidenteventcontributingfactor.EventColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEventContributingFactor
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *IncidentEventContributingFactorClient) Hooks() []Hook {
-	hooks := c.hooks.IncidentEventContributingFactor
-	return append(hooks[:len(hooks):len(hooks)], incidenteventcontributingfactor.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *IncidentEventContributingFactorClient) Interceptors() []Interceptor {
-	return c.inters.IncidentEventContributingFactor
-}
-
-func (c *IncidentEventContributingFactorClient) mutate(ctx context.Context, m *IncidentEventContributingFactorMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&IncidentEventContributingFactorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&IncidentEventContributingFactorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&IncidentEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&IncidentEventContributingFactorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown IncidentEventContributingFactor mutation op: %q", m.Op())
-	}
-}
-
-// IncidentEventEvidenceClient is a client for the IncidentEventEvidence schema.
-type IncidentEventEvidenceClient struct {
-	config
-}
-
-// NewIncidentEventEvidenceClient returns a client for the IncidentEventEvidence from the given config.
-func NewIncidentEventEvidenceClient(c config) *IncidentEventEvidenceClient {
-	return &IncidentEventEvidenceClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidenteventevidence.Hooks(f(g(h())))`.
-func (c *IncidentEventEvidenceClient) Use(hooks ...Hook) {
-	c.hooks.IncidentEventEvidence = append(c.hooks.IncidentEventEvidence, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidenteventevidence.Intercept(f(g(h())))`.
-func (c *IncidentEventEvidenceClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentEventEvidence = append(c.inters.IncidentEventEvidence, interceptors...)
-}
-
-// Create returns a builder for creating a IncidentEventEvidence entity.
-func (c *IncidentEventEvidenceClient) Create() *IncidentEventEvidenceCreate {
-	mutation := newIncidentEventEvidenceMutation(c.config, OpCreate)
-	return &IncidentEventEvidenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of IncidentEventEvidence entities.
-func (c *IncidentEventEvidenceClient) CreateBulk(builders ...*IncidentEventEvidenceCreate) *IncidentEventEvidenceCreateBulk {
-	return &IncidentEventEvidenceCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *IncidentEventEvidenceClient) MapCreateBulk(slice any, setFunc func(*IncidentEventEvidenceCreate, int)) *IncidentEventEvidenceCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &IncidentEventEvidenceCreateBulk{err: fmt.Errorf("calling to IncidentEventEvidenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*IncidentEventEvidenceCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &IncidentEventEvidenceCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for IncidentEventEvidence.
-func (c *IncidentEventEvidenceClient) Update() *IncidentEventEvidenceUpdate {
-	mutation := newIncidentEventEvidenceMutation(c.config, OpUpdate)
-	return &IncidentEventEvidenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *IncidentEventEvidenceClient) UpdateOne(_m *IncidentEventEvidence) *IncidentEventEvidenceUpdateOne {
-	mutation := newIncidentEventEvidenceMutation(c.config, OpUpdateOne, withIncidentEventEvidence(_m))
-	return &IncidentEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *IncidentEventEvidenceClient) UpdateOneID(id uuid.UUID) *IncidentEventEvidenceUpdateOne {
-	mutation := newIncidentEventEvidenceMutation(c.config, OpUpdateOne, withIncidentEventEvidenceID(id))
-	return &IncidentEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for IncidentEventEvidence.
-func (c *IncidentEventEvidenceClient) Delete() *IncidentEventEvidenceDelete {
-	mutation := newIncidentEventEvidenceMutation(c.config, OpDelete)
-	return &IncidentEventEvidenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentEventEvidenceClient) DeleteOne(_m *IncidentEventEvidence) *IncidentEventEvidenceDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentEventEvidenceClient) DeleteOneID(id uuid.UUID) *IncidentEventEvidenceDeleteOne {
-	builder := c.Delete().Where(incidenteventevidence.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &IncidentEventEvidenceDeleteOne{builder}
-}
-
-// Query returns a query builder for IncidentEventEvidence.
-func (c *IncidentEventEvidenceClient) Query() *IncidentEventEvidenceQuery {
-	return &IncidentEventEvidenceQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentEventEvidence},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a IncidentEventEvidence entity by its id.
-func (c *IncidentEventEvidenceClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventEvidence, error) {
-	return c.Query().Where(incidenteventevidence.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *IncidentEventEvidenceClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventEvidence {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a IncidentEventEvidence.
-func (c *IncidentEventEvidenceClient) QueryTenant(_m *IncidentEventEvidence) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventevidence.Table, incidenteventevidence.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventevidence.TenantTable, incidenteventevidence.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IncidentEventEvidence
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEvent queries the event edge of a IncidentEventEvidence.
-func (c *IncidentEventEvidenceClient) QueryEvent(_m *IncidentEventEvidence) *IncidentEventQuery {
-	query := (&IncidentEventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventevidence.Table, incidenteventevidence.FieldID, id),
-			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, incidenteventevidence.EventTable, incidenteventevidence.EventColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEventEvidence
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *IncidentEventEvidenceClient) Hooks() []Hook {
-	hooks := c.hooks.IncidentEventEvidence
-	return append(hooks[:len(hooks):len(hooks)], incidenteventevidence.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *IncidentEventEvidenceClient) Interceptors() []Interceptor {
-	return c.inters.IncidentEventEvidence
-}
-
-func (c *IncidentEventEvidenceClient) mutate(ctx context.Context, m *IncidentEventEvidenceMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&IncidentEventEvidenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&IncidentEventEvidenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&IncidentEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&IncidentEventEvidenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown IncidentEventEvidence mutation op: %q", m.Op())
-	}
-}
-
-// IncidentEventTopologyContextClient is a client for the IncidentEventTopologyContext schema.
-type IncidentEventTopologyContextClient struct {
-	config
-}
-
-// NewIncidentEventTopologyContextClient returns a client for the IncidentEventTopologyContext from the given config.
-func NewIncidentEventTopologyContextClient(c config) *IncidentEventTopologyContextClient {
-	return &IncidentEventTopologyContextClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `incidenteventtopologycontext.Hooks(f(g(h())))`.
-func (c *IncidentEventTopologyContextClient) Use(hooks ...Hook) {
-	c.hooks.IncidentEventTopologyContext = append(c.hooks.IncidentEventTopologyContext, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `incidenteventtopologycontext.Intercept(f(g(h())))`.
-func (c *IncidentEventTopologyContextClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IncidentEventTopologyContext = append(c.inters.IncidentEventTopologyContext, interceptors...)
-}
-
-// Create returns a builder for creating a IncidentEventTopologyContext entity.
-func (c *IncidentEventTopologyContextClient) Create() *IncidentEventTopologyContextCreate {
-	mutation := newIncidentEventTopologyContextMutation(c.config, OpCreate)
-	return &IncidentEventTopologyContextCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of IncidentEventTopologyContext entities.
-func (c *IncidentEventTopologyContextClient) CreateBulk(builders ...*IncidentEventTopologyContextCreate) *IncidentEventTopologyContextCreateBulk {
-	return &IncidentEventTopologyContextCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *IncidentEventTopologyContextClient) MapCreateBulk(slice any, setFunc func(*IncidentEventTopologyContextCreate, int)) *IncidentEventTopologyContextCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &IncidentEventTopologyContextCreateBulk{err: fmt.Errorf("calling to IncidentEventTopologyContextClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*IncidentEventTopologyContextCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &IncidentEventTopologyContextCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for IncidentEventTopologyContext.
-func (c *IncidentEventTopologyContextClient) Update() *IncidentEventTopologyContextUpdate {
-	mutation := newIncidentEventTopologyContextMutation(c.config, OpUpdate)
-	return &IncidentEventTopologyContextUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *IncidentEventTopologyContextClient) UpdateOne(_m *IncidentEventTopologyContext) *IncidentEventTopologyContextUpdateOne {
-	mutation := newIncidentEventTopologyContextMutation(c.config, OpUpdateOne, withIncidentEventTopologyContext(_m))
-	return &IncidentEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *IncidentEventTopologyContextClient) UpdateOneID(id uuid.UUID) *IncidentEventTopologyContextUpdateOne {
-	mutation := newIncidentEventTopologyContextMutation(c.config, OpUpdateOne, withIncidentEventTopologyContextID(id))
-	return &IncidentEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for IncidentEventTopologyContext.
-func (c *IncidentEventTopologyContextClient) Delete() *IncidentEventTopologyContextDelete {
-	mutation := newIncidentEventTopologyContextMutation(c.config, OpDelete)
-	return &IncidentEventTopologyContextDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *IncidentEventTopologyContextClient) DeleteOne(_m *IncidentEventTopologyContext) *IncidentEventTopologyContextDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IncidentEventTopologyContextClient) DeleteOneID(id uuid.UUID) *IncidentEventTopologyContextDeleteOne {
-	builder := c.Delete().Where(incidenteventtopologycontext.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &IncidentEventTopologyContextDeleteOne{builder}
-}
-
-// Query returns a query builder for IncidentEventTopologyContext.
-func (c *IncidentEventTopologyContextClient) Query() *IncidentEventTopologyContextQuery {
-	return &IncidentEventTopologyContextQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeIncidentEventTopologyContext},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a IncidentEventTopologyContext entity by its id.
-func (c *IncidentEventTopologyContextClient) Get(ctx context.Context, id uuid.UUID) (*IncidentEventTopologyContext, error) {
-	return c.Query().Where(incidenteventtopologycontext.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *IncidentEventTopologyContextClient) GetX(ctx context.Context, id uuid.UUID) *IncidentEventTopologyContext {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a IncidentEventTopologyContext.
-func (c *IncidentEventTopologyContextClient) QueryTenant(_m *IncidentEventTopologyContext) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.TenantTable, incidenteventtopologycontext.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryEvent queries the event edge of a IncidentEventTopologyContext.
-func (c *IncidentEventTopologyContextClient) QueryEvent(_m *IncidentEventTopologyContext) *IncidentEventQuery {
-	query := (&IncidentEventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, id),
-			sqlgraph.To(incidentevent.Table, incidentevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.EventTable, incidenteventtopologycontext.EventColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IncidentEvent
-		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryKnowledgeEntity queries the knowledge_entity edge of a IncidentEventTopologyContext.
-func (c *IncidentEventTopologyContextClient) QueryKnowledgeEntity(_m *IncidentEventTopologyContext) *KnowledgeEntityQuery {
-	query := (&KnowledgeEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, id),
-			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.KnowledgeEntityTable, incidenteventtopologycontext.KnowledgeEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.KnowledgeEntity
-		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QuerySnapshotEntity queries the snapshot_entity edge of a IncidentEventTopologyContext.
-func (c *IncidentEventTopologyContextClient) QuerySnapshotEntity(_m *IncidentEventTopologyContext) *SystemTopologySnapshotEntityQuery {
-	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidenteventtopologycontext.Table, incidenteventtopologycontext.FieldID, id),
-			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidenteventtopologycontext.SnapshotEntityTable, incidenteventtopologycontext.SnapshotEntityColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
-		step.Edge.Schema = schemaConfig.IncidentEventTopologyContext
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *IncidentEventTopologyContextClient) Hooks() []Hook {
-	hooks := c.hooks.IncidentEventTopologyContext
-	return append(hooks[:len(hooks):len(hooks)], incidenteventtopologycontext.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *IncidentEventTopologyContextClient) Interceptors() []Interceptor {
-	return c.inters.IncidentEventTopologyContext
-}
-
-func (c *IncidentEventTopologyContextClient) mutate(ctx context.Context, m *IncidentEventTopologyContextMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&IncidentEventTopologyContextCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&IncidentEventTopologyContextUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&IncidentEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&IncidentEventTopologyContextDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown IncidentEventTopologyContext mutation op: %q", m.Op())
 	}
 }
 
@@ -5813,6 +4441,25 @@ func (c *IncidentSeverityClient) QueryTenant(_m *IncidentSeverity) *TenantQuery 
 	return query
 }
 
+// QueryProjectedFrom queries the projected_from edge of a IncidentSeverity.
+func (c *IncidentSeverityClient) QueryProjectedFrom(_m *IncidentSeverity) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentseverity.Table, incidentseverity.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentseverity.ProjectedFromTable, incidentseverity.ProjectedFromColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.IncidentSeverity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryIncidents queries the incidents edge of a IncidentSeverity.
 func (c *IncidentSeverityClient) QueryIncidents(_m *IncidentSeverity) *IncidentQuery {
 	query := (&IncidentClient{config: c.config}).Query()
@@ -6067,6 +4714,999 @@ func (c *IncidentTagClient) mutate(ctx context.Context, m *IncidentTagMutation) 
 		return (&IncidentTagDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IncidentTag mutation op: %q", m.Op())
+	}
+}
+
+// IncidentTimelineEventClient is a client for the IncidentTimelineEvent schema.
+type IncidentTimelineEventClient struct {
+	config
+}
+
+// NewIncidentTimelineEventClient returns a client for the IncidentTimelineEvent from the given config.
+func NewIncidentTimelineEventClient(c config) *IncidentTimelineEventClient {
+	return &IncidentTimelineEventClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenttimelineevent.Hooks(f(g(h())))`.
+func (c *IncidentTimelineEventClient) Use(hooks ...Hook) {
+	c.hooks.IncidentTimelineEvent = append(c.hooks.IncidentTimelineEvent, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenttimelineevent.Intercept(f(g(h())))`.
+func (c *IncidentTimelineEventClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentTimelineEvent = append(c.inters.IncidentTimelineEvent, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentTimelineEvent entity.
+func (c *IncidentTimelineEventClient) Create() *IncidentTimelineEventCreate {
+	mutation := newIncidentTimelineEventMutation(c.config, OpCreate)
+	return &IncidentTimelineEventCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentTimelineEvent entities.
+func (c *IncidentTimelineEventClient) CreateBulk(builders ...*IncidentTimelineEventCreate) *IncidentTimelineEventCreateBulk {
+	return &IncidentTimelineEventCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentTimelineEventClient) MapCreateBulk(slice any, setFunc func(*IncidentTimelineEventCreate, int)) *IncidentTimelineEventCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentTimelineEventCreateBulk{err: fmt.Errorf("calling to IncidentTimelineEventClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentTimelineEventCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentTimelineEventCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) Update() *IncidentTimelineEventUpdate {
+	mutation := newIncidentTimelineEventMutation(c.config, OpUpdate)
+	return &IncidentTimelineEventUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentTimelineEventClient) UpdateOne(_m *IncidentTimelineEvent) *IncidentTimelineEventUpdateOne {
+	mutation := newIncidentTimelineEventMutation(c.config, OpUpdateOne, withIncidentTimelineEvent(_m))
+	return &IncidentTimelineEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentTimelineEventClient) UpdateOneID(id uuid.UUID) *IncidentTimelineEventUpdateOne {
+	mutation := newIncidentTimelineEventMutation(c.config, OpUpdateOne, withIncidentTimelineEventID(id))
+	return &IncidentTimelineEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) Delete() *IncidentTimelineEventDelete {
+	mutation := newIncidentTimelineEventMutation(c.config, OpDelete)
+	return &IncidentTimelineEventDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentTimelineEventClient) DeleteOne(_m *IncidentTimelineEvent) *IncidentTimelineEventDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentTimelineEventClient) DeleteOneID(id uuid.UUID) *IncidentTimelineEventDeleteOne {
+	builder := c.Delete().Where(incidenttimelineevent.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentTimelineEventDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) Query() *IncidentTimelineEventQuery {
+	return &IncidentTimelineEventQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentTimelineEvent},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentTimelineEvent entity by its id.
+func (c *IncidentTimelineEventClient) Get(ctx context.Context, id uuid.UUID) (*IncidentTimelineEvent, error) {
+	return c.Query().Where(incidenttimelineevent.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentTimelineEventClient) GetX(ctx context.Context, id uuid.UUID) *IncidentTimelineEvent {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) QueryTenant(_m *IncidentTimelineEvent) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineevent.Table, incidenttimelineevent.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineevent.TenantTable, incidenttimelineevent.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncident queries the incident edge of a IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) QueryIncident(_m *IncidentTimelineEvent) *IncidentQuery {
+	query := (&IncidentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineevent.Table, incidenttimelineevent.FieldID, id),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, incidenttimelineevent.IncidentTable, incidenttimelineevent.IncidentColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvent queries the event edge of a IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) QueryEvent(_m *IncidentTimelineEvent) *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineevent.Table, incidenttimelineevent.FieldID, id),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineevent.EventTable, incidenttimelineevent.EventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEvent
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryContext queries the context edge of a IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) QueryContext(_m *IncidentTimelineEvent) *IncidentTimelineEventContextQuery {
+	query := (&IncidentTimelineEventContextClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineevent.Table, incidenttimelineevent.FieldID, id),
+			sqlgraph.To(incidenttimelineeventcontext.Table, incidenttimelineeventcontext.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, incidenttimelineevent.ContextTable, incidenttimelineevent.ContextColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTimelineEventContext
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFactors queries the factors edge of a IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) QueryFactors(_m *IncidentTimelineEvent) *IncidentTimelineEventContributingFactorQuery {
+	query := (&IncidentTimelineEventContributingFactorClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineevent.Table, incidenttimelineevent.FieldID, id),
+			sqlgraph.To(incidenttimelineeventcontributingfactor.Table, incidenttimelineeventcontributingfactor.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incidenttimelineevent.FactorsTable, incidenttimelineevent.FactorsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTimelineEventContributingFactor
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventContributingFactor
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvidence queries the evidence edge of a IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) QueryEvidence(_m *IncidentTimelineEvent) *IncidentTimelineEventEvidenceQuery {
+	query := (&IncidentTimelineEventEvidenceClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineevent.Table, incidenttimelineevent.FieldID, id),
+			sqlgraph.To(incidenttimelineeventevidence.Table, incidenttimelineeventevidence.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, incidenttimelineevent.EvidenceTable, incidenttimelineevent.EvidenceColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTimelineEventEvidence
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventEvidence
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTopologyContext queries the topology_context edge of a IncidentTimelineEvent.
+func (c *IncidentTimelineEventClient) QueryTopologyContext(_m *IncidentTimelineEvent) *IncidentTimelineEventTopologyContextQuery {
+	query := (&IncidentTimelineEventTopologyContextClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineevent.Table, incidenttimelineevent.FieldID, id),
+			sqlgraph.To(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incidenttimelineevent.TopologyContextTable, incidenttimelineevent.TopologyContextColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentTimelineEventClient) Hooks() []Hook {
+	hooks := c.hooks.IncidentTimelineEvent
+	return append(hooks[:len(hooks):len(hooks)], incidenttimelineevent.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentTimelineEventClient) Interceptors() []Interceptor {
+	return c.inters.IncidentTimelineEvent
+}
+
+func (c *IncidentTimelineEventClient) mutate(ctx context.Context, m *IncidentTimelineEventMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentTimelineEventCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentTimelineEventUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentTimelineEventUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentTimelineEventDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentTimelineEvent mutation op: %q", m.Op())
+	}
+}
+
+// IncidentTimelineEventContextClient is a client for the IncidentTimelineEventContext schema.
+type IncidentTimelineEventContextClient struct {
+	config
+}
+
+// NewIncidentTimelineEventContextClient returns a client for the IncidentTimelineEventContext from the given config.
+func NewIncidentTimelineEventContextClient(c config) *IncidentTimelineEventContextClient {
+	return &IncidentTimelineEventContextClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenttimelineeventcontext.Hooks(f(g(h())))`.
+func (c *IncidentTimelineEventContextClient) Use(hooks ...Hook) {
+	c.hooks.IncidentTimelineEventContext = append(c.hooks.IncidentTimelineEventContext, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenttimelineeventcontext.Intercept(f(g(h())))`.
+func (c *IncidentTimelineEventContextClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentTimelineEventContext = append(c.inters.IncidentTimelineEventContext, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentTimelineEventContext entity.
+func (c *IncidentTimelineEventContextClient) Create() *IncidentTimelineEventContextCreate {
+	mutation := newIncidentTimelineEventContextMutation(c.config, OpCreate)
+	return &IncidentTimelineEventContextCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentTimelineEventContext entities.
+func (c *IncidentTimelineEventContextClient) CreateBulk(builders ...*IncidentTimelineEventContextCreate) *IncidentTimelineEventContextCreateBulk {
+	return &IncidentTimelineEventContextCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentTimelineEventContextClient) MapCreateBulk(slice any, setFunc func(*IncidentTimelineEventContextCreate, int)) *IncidentTimelineEventContextCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentTimelineEventContextCreateBulk{err: fmt.Errorf("calling to IncidentTimelineEventContextClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentTimelineEventContextCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentTimelineEventContextCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentTimelineEventContext.
+func (c *IncidentTimelineEventContextClient) Update() *IncidentTimelineEventContextUpdate {
+	mutation := newIncidentTimelineEventContextMutation(c.config, OpUpdate)
+	return &IncidentTimelineEventContextUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentTimelineEventContextClient) UpdateOne(_m *IncidentTimelineEventContext) *IncidentTimelineEventContextUpdateOne {
+	mutation := newIncidentTimelineEventContextMutation(c.config, OpUpdateOne, withIncidentTimelineEventContext(_m))
+	return &IncidentTimelineEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentTimelineEventContextClient) UpdateOneID(id uuid.UUID) *IncidentTimelineEventContextUpdateOne {
+	mutation := newIncidentTimelineEventContextMutation(c.config, OpUpdateOne, withIncidentTimelineEventContextID(id))
+	return &IncidentTimelineEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentTimelineEventContext.
+func (c *IncidentTimelineEventContextClient) Delete() *IncidentTimelineEventContextDelete {
+	mutation := newIncidentTimelineEventContextMutation(c.config, OpDelete)
+	return &IncidentTimelineEventContextDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentTimelineEventContextClient) DeleteOne(_m *IncidentTimelineEventContext) *IncidentTimelineEventContextDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentTimelineEventContextClient) DeleteOneID(id uuid.UUID) *IncidentTimelineEventContextDeleteOne {
+	builder := c.Delete().Where(incidenttimelineeventcontext.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentTimelineEventContextDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentTimelineEventContext.
+func (c *IncidentTimelineEventContextClient) Query() *IncidentTimelineEventContextQuery {
+	return &IncidentTimelineEventContextQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentTimelineEventContext},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentTimelineEventContext entity by its id.
+func (c *IncidentTimelineEventContextClient) Get(ctx context.Context, id uuid.UUID) (*IncidentTimelineEventContext, error) {
+	return c.Query().Where(incidenttimelineeventcontext.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentTimelineEventContextClient) GetX(ctx context.Context, id uuid.UUID) *IncidentTimelineEventContext {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentTimelineEventContext.
+func (c *IncidentTimelineEventContextClient) QueryTenant(_m *IncidentTimelineEventContext) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventcontext.Table, incidenttimelineeventcontext.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventcontext.TenantTable, incidenttimelineeventcontext.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvent queries the event edge of a IncidentTimelineEventContext.
+func (c *IncidentTimelineEventContextClient) QueryEvent(_m *IncidentTimelineEventContext) *IncidentTimelineEventQuery {
+	query := (&IncidentTimelineEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventcontext.Table, incidenttimelineeventcontext.FieldID, id),
+			sqlgraph.To(incidenttimelineevent.Table, incidenttimelineevent.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, incidenttimelineeventcontext.EventTable, incidenttimelineeventcontext.EventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTimelineEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentTimelineEventContextClient) Hooks() []Hook {
+	hooks := c.hooks.IncidentTimelineEventContext
+	return append(hooks[:len(hooks):len(hooks)], incidenttimelineeventcontext.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentTimelineEventContextClient) Interceptors() []Interceptor {
+	return c.inters.IncidentTimelineEventContext
+}
+
+func (c *IncidentTimelineEventContextClient) mutate(ctx context.Context, m *IncidentTimelineEventContextMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentTimelineEventContextCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentTimelineEventContextUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentTimelineEventContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentTimelineEventContextDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentTimelineEventContext mutation op: %q", m.Op())
+	}
+}
+
+// IncidentTimelineEventContributingFactorClient is a client for the IncidentTimelineEventContributingFactor schema.
+type IncidentTimelineEventContributingFactorClient struct {
+	config
+}
+
+// NewIncidentTimelineEventContributingFactorClient returns a client for the IncidentTimelineEventContributingFactor from the given config.
+func NewIncidentTimelineEventContributingFactorClient(c config) *IncidentTimelineEventContributingFactorClient {
+	return &IncidentTimelineEventContributingFactorClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenttimelineeventcontributingfactor.Hooks(f(g(h())))`.
+func (c *IncidentTimelineEventContributingFactorClient) Use(hooks ...Hook) {
+	c.hooks.IncidentTimelineEventContributingFactor = append(c.hooks.IncidentTimelineEventContributingFactor, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenttimelineeventcontributingfactor.Intercept(f(g(h())))`.
+func (c *IncidentTimelineEventContributingFactorClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentTimelineEventContributingFactor = append(c.inters.IncidentTimelineEventContributingFactor, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentTimelineEventContributingFactor entity.
+func (c *IncidentTimelineEventContributingFactorClient) Create() *IncidentTimelineEventContributingFactorCreate {
+	mutation := newIncidentTimelineEventContributingFactorMutation(c.config, OpCreate)
+	return &IncidentTimelineEventContributingFactorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentTimelineEventContributingFactor entities.
+func (c *IncidentTimelineEventContributingFactorClient) CreateBulk(builders ...*IncidentTimelineEventContributingFactorCreate) *IncidentTimelineEventContributingFactorCreateBulk {
+	return &IncidentTimelineEventContributingFactorCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentTimelineEventContributingFactorClient) MapCreateBulk(slice any, setFunc func(*IncidentTimelineEventContributingFactorCreate, int)) *IncidentTimelineEventContributingFactorCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentTimelineEventContributingFactorCreateBulk{err: fmt.Errorf("calling to IncidentTimelineEventContributingFactorClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentTimelineEventContributingFactorCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentTimelineEventContributingFactorCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentTimelineEventContributingFactor.
+func (c *IncidentTimelineEventContributingFactorClient) Update() *IncidentTimelineEventContributingFactorUpdate {
+	mutation := newIncidentTimelineEventContributingFactorMutation(c.config, OpUpdate)
+	return &IncidentTimelineEventContributingFactorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentTimelineEventContributingFactorClient) UpdateOne(_m *IncidentTimelineEventContributingFactor) *IncidentTimelineEventContributingFactorUpdateOne {
+	mutation := newIncidentTimelineEventContributingFactorMutation(c.config, OpUpdateOne, withIncidentTimelineEventContributingFactor(_m))
+	return &IncidentTimelineEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentTimelineEventContributingFactorClient) UpdateOneID(id uuid.UUID) *IncidentTimelineEventContributingFactorUpdateOne {
+	mutation := newIncidentTimelineEventContributingFactorMutation(c.config, OpUpdateOne, withIncidentTimelineEventContributingFactorID(id))
+	return &IncidentTimelineEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentTimelineEventContributingFactor.
+func (c *IncidentTimelineEventContributingFactorClient) Delete() *IncidentTimelineEventContributingFactorDelete {
+	mutation := newIncidentTimelineEventContributingFactorMutation(c.config, OpDelete)
+	return &IncidentTimelineEventContributingFactorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentTimelineEventContributingFactorClient) DeleteOne(_m *IncidentTimelineEventContributingFactor) *IncidentTimelineEventContributingFactorDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentTimelineEventContributingFactorClient) DeleteOneID(id uuid.UUID) *IncidentTimelineEventContributingFactorDeleteOne {
+	builder := c.Delete().Where(incidenttimelineeventcontributingfactor.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentTimelineEventContributingFactorDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentTimelineEventContributingFactor.
+func (c *IncidentTimelineEventContributingFactorClient) Query() *IncidentTimelineEventContributingFactorQuery {
+	return &IncidentTimelineEventContributingFactorQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentTimelineEventContributingFactor},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentTimelineEventContributingFactor entity by its id.
+func (c *IncidentTimelineEventContributingFactorClient) Get(ctx context.Context, id uuid.UUID) (*IncidentTimelineEventContributingFactor, error) {
+	return c.Query().Where(incidenttimelineeventcontributingfactor.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentTimelineEventContributingFactorClient) GetX(ctx context.Context, id uuid.UUID) *IncidentTimelineEventContributingFactor {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentTimelineEventContributingFactor.
+func (c *IncidentTimelineEventContributingFactorClient) QueryTenant(_m *IncidentTimelineEventContributingFactor) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventcontributingfactor.Table, incidenttimelineeventcontributingfactor.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventcontributingfactor.TenantTable, incidenttimelineeventcontributingfactor.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventContributingFactor
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvent queries the event edge of a IncidentTimelineEventContributingFactor.
+func (c *IncidentTimelineEventContributingFactorClient) QueryEvent(_m *IncidentTimelineEventContributingFactor) *IncidentTimelineEventQuery {
+	query := (&IncidentTimelineEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventcontributingfactor.Table, incidenttimelineeventcontributingfactor.FieldID, id),
+			sqlgraph.To(incidenttimelineevent.Table, incidenttimelineevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, incidenttimelineeventcontributingfactor.EventTable, incidenttimelineeventcontributingfactor.EventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTimelineEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventContributingFactor
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentTimelineEventContributingFactorClient) Hooks() []Hook {
+	hooks := c.hooks.IncidentTimelineEventContributingFactor
+	return append(hooks[:len(hooks):len(hooks)], incidenttimelineeventcontributingfactor.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentTimelineEventContributingFactorClient) Interceptors() []Interceptor {
+	return c.inters.IncidentTimelineEventContributingFactor
+}
+
+func (c *IncidentTimelineEventContributingFactorClient) mutate(ctx context.Context, m *IncidentTimelineEventContributingFactorMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentTimelineEventContributingFactorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentTimelineEventContributingFactorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentTimelineEventContributingFactorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentTimelineEventContributingFactorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentTimelineEventContributingFactor mutation op: %q", m.Op())
+	}
+}
+
+// IncidentTimelineEventEvidenceClient is a client for the IncidentTimelineEventEvidence schema.
+type IncidentTimelineEventEvidenceClient struct {
+	config
+}
+
+// NewIncidentTimelineEventEvidenceClient returns a client for the IncidentTimelineEventEvidence from the given config.
+func NewIncidentTimelineEventEvidenceClient(c config) *IncidentTimelineEventEvidenceClient {
+	return &IncidentTimelineEventEvidenceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenttimelineeventevidence.Hooks(f(g(h())))`.
+func (c *IncidentTimelineEventEvidenceClient) Use(hooks ...Hook) {
+	c.hooks.IncidentTimelineEventEvidence = append(c.hooks.IncidentTimelineEventEvidence, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenttimelineeventevidence.Intercept(f(g(h())))`.
+func (c *IncidentTimelineEventEvidenceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentTimelineEventEvidence = append(c.inters.IncidentTimelineEventEvidence, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentTimelineEventEvidence entity.
+func (c *IncidentTimelineEventEvidenceClient) Create() *IncidentTimelineEventEvidenceCreate {
+	mutation := newIncidentTimelineEventEvidenceMutation(c.config, OpCreate)
+	return &IncidentTimelineEventEvidenceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentTimelineEventEvidence entities.
+func (c *IncidentTimelineEventEvidenceClient) CreateBulk(builders ...*IncidentTimelineEventEvidenceCreate) *IncidentTimelineEventEvidenceCreateBulk {
+	return &IncidentTimelineEventEvidenceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentTimelineEventEvidenceClient) MapCreateBulk(slice any, setFunc func(*IncidentTimelineEventEvidenceCreate, int)) *IncidentTimelineEventEvidenceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentTimelineEventEvidenceCreateBulk{err: fmt.Errorf("calling to IncidentTimelineEventEvidenceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentTimelineEventEvidenceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentTimelineEventEvidenceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentTimelineEventEvidence.
+func (c *IncidentTimelineEventEvidenceClient) Update() *IncidentTimelineEventEvidenceUpdate {
+	mutation := newIncidentTimelineEventEvidenceMutation(c.config, OpUpdate)
+	return &IncidentTimelineEventEvidenceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentTimelineEventEvidenceClient) UpdateOne(_m *IncidentTimelineEventEvidence) *IncidentTimelineEventEvidenceUpdateOne {
+	mutation := newIncidentTimelineEventEvidenceMutation(c.config, OpUpdateOne, withIncidentTimelineEventEvidence(_m))
+	return &IncidentTimelineEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentTimelineEventEvidenceClient) UpdateOneID(id uuid.UUID) *IncidentTimelineEventEvidenceUpdateOne {
+	mutation := newIncidentTimelineEventEvidenceMutation(c.config, OpUpdateOne, withIncidentTimelineEventEvidenceID(id))
+	return &IncidentTimelineEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentTimelineEventEvidence.
+func (c *IncidentTimelineEventEvidenceClient) Delete() *IncidentTimelineEventEvidenceDelete {
+	mutation := newIncidentTimelineEventEvidenceMutation(c.config, OpDelete)
+	return &IncidentTimelineEventEvidenceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentTimelineEventEvidenceClient) DeleteOne(_m *IncidentTimelineEventEvidence) *IncidentTimelineEventEvidenceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentTimelineEventEvidenceClient) DeleteOneID(id uuid.UUID) *IncidentTimelineEventEvidenceDeleteOne {
+	builder := c.Delete().Where(incidenttimelineeventevidence.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentTimelineEventEvidenceDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentTimelineEventEvidence.
+func (c *IncidentTimelineEventEvidenceClient) Query() *IncidentTimelineEventEvidenceQuery {
+	return &IncidentTimelineEventEvidenceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentTimelineEventEvidence},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentTimelineEventEvidence entity by its id.
+func (c *IncidentTimelineEventEvidenceClient) Get(ctx context.Context, id uuid.UUID) (*IncidentTimelineEventEvidence, error) {
+	return c.Query().Where(incidenttimelineeventevidence.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentTimelineEventEvidenceClient) GetX(ctx context.Context, id uuid.UUID) *IncidentTimelineEventEvidence {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentTimelineEventEvidence.
+func (c *IncidentTimelineEventEvidenceClient) QueryTenant(_m *IncidentTimelineEventEvidence) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventevidence.Table, incidenttimelineeventevidence.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventevidence.TenantTable, incidenttimelineeventevidence.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventEvidence
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvent queries the event edge of a IncidentTimelineEventEvidence.
+func (c *IncidentTimelineEventEvidenceClient) QueryEvent(_m *IncidentTimelineEventEvidence) *IncidentTimelineEventQuery {
+	query := (&IncidentTimelineEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventevidence.Table, incidenttimelineeventevidence.FieldID, id),
+			sqlgraph.To(incidenttimelineevent.Table, incidenttimelineevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, incidenttimelineeventevidence.EventTable, incidenttimelineeventevidence.EventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTimelineEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventEvidence
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentTimelineEventEvidenceClient) Hooks() []Hook {
+	hooks := c.hooks.IncidentTimelineEventEvidence
+	return append(hooks[:len(hooks):len(hooks)], incidenttimelineeventevidence.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentTimelineEventEvidenceClient) Interceptors() []Interceptor {
+	return c.inters.IncidentTimelineEventEvidence
+}
+
+func (c *IncidentTimelineEventEvidenceClient) mutate(ctx context.Context, m *IncidentTimelineEventEvidenceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentTimelineEventEvidenceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentTimelineEventEvidenceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentTimelineEventEvidenceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentTimelineEventEvidenceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentTimelineEventEvidence mutation op: %q", m.Op())
+	}
+}
+
+// IncidentTimelineEventTopologyContextClient is a client for the IncidentTimelineEventTopologyContext schema.
+type IncidentTimelineEventTopologyContextClient struct {
+	config
+}
+
+// NewIncidentTimelineEventTopologyContextClient returns a client for the IncidentTimelineEventTopologyContext from the given config.
+func NewIncidentTimelineEventTopologyContextClient(c config) *IncidentTimelineEventTopologyContextClient {
+	return &IncidentTimelineEventTopologyContextClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidenttimelineeventtopologycontext.Hooks(f(g(h())))`.
+func (c *IncidentTimelineEventTopologyContextClient) Use(hooks ...Hook) {
+	c.hooks.IncidentTimelineEventTopologyContext = append(c.hooks.IncidentTimelineEventTopologyContext, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidenttimelineeventtopologycontext.Intercept(f(g(h())))`.
+func (c *IncidentTimelineEventTopologyContextClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentTimelineEventTopologyContext = append(c.inters.IncidentTimelineEventTopologyContext, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentTimelineEventTopologyContext entity.
+func (c *IncidentTimelineEventTopologyContextClient) Create() *IncidentTimelineEventTopologyContextCreate {
+	mutation := newIncidentTimelineEventTopologyContextMutation(c.config, OpCreate)
+	return &IncidentTimelineEventTopologyContextCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentTimelineEventTopologyContext entities.
+func (c *IncidentTimelineEventTopologyContextClient) CreateBulk(builders ...*IncidentTimelineEventTopologyContextCreate) *IncidentTimelineEventTopologyContextCreateBulk {
+	return &IncidentTimelineEventTopologyContextCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentTimelineEventTopologyContextClient) MapCreateBulk(slice any, setFunc func(*IncidentTimelineEventTopologyContextCreate, int)) *IncidentTimelineEventTopologyContextCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentTimelineEventTopologyContextCreateBulk{err: fmt.Errorf("calling to IncidentTimelineEventTopologyContextClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentTimelineEventTopologyContextCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentTimelineEventTopologyContextCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentTimelineEventTopologyContext.
+func (c *IncidentTimelineEventTopologyContextClient) Update() *IncidentTimelineEventTopologyContextUpdate {
+	mutation := newIncidentTimelineEventTopologyContextMutation(c.config, OpUpdate)
+	return &IncidentTimelineEventTopologyContextUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentTimelineEventTopologyContextClient) UpdateOne(_m *IncidentTimelineEventTopologyContext) *IncidentTimelineEventTopologyContextUpdateOne {
+	mutation := newIncidentTimelineEventTopologyContextMutation(c.config, OpUpdateOne, withIncidentTimelineEventTopologyContext(_m))
+	return &IncidentTimelineEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentTimelineEventTopologyContextClient) UpdateOneID(id uuid.UUID) *IncidentTimelineEventTopologyContextUpdateOne {
+	mutation := newIncidentTimelineEventTopologyContextMutation(c.config, OpUpdateOne, withIncidentTimelineEventTopologyContextID(id))
+	return &IncidentTimelineEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentTimelineEventTopologyContext.
+func (c *IncidentTimelineEventTopologyContextClient) Delete() *IncidentTimelineEventTopologyContextDelete {
+	mutation := newIncidentTimelineEventTopologyContextMutation(c.config, OpDelete)
+	return &IncidentTimelineEventTopologyContextDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentTimelineEventTopologyContextClient) DeleteOne(_m *IncidentTimelineEventTopologyContext) *IncidentTimelineEventTopologyContextDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentTimelineEventTopologyContextClient) DeleteOneID(id uuid.UUID) *IncidentTimelineEventTopologyContextDeleteOne {
+	builder := c.Delete().Where(incidenttimelineeventtopologycontext.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentTimelineEventTopologyContextDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentTimelineEventTopologyContext.
+func (c *IncidentTimelineEventTopologyContextClient) Query() *IncidentTimelineEventTopologyContextQuery {
+	return &IncidentTimelineEventTopologyContextQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentTimelineEventTopologyContext},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentTimelineEventTopologyContext entity by its id.
+func (c *IncidentTimelineEventTopologyContextClient) Get(ctx context.Context, id uuid.UUID) (*IncidentTimelineEventTopologyContext, error) {
+	return c.Query().Where(incidenttimelineeventtopologycontext.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentTimelineEventTopologyContextClient) GetX(ctx context.Context, id uuid.UUID) *IncidentTimelineEventTopologyContext {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentTimelineEventTopologyContext.
+func (c *IncidentTimelineEventTopologyContextClient) QueryTenant(_m *IncidentTimelineEventTopologyContext) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventtopologycontext.TenantTable, incidenttimelineeventtopologycontext.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryEvent queries the event edge of a IncidentTimelineEventTopologyContext.
+func (c *IncidentTimelineEventTopologyContextClient) QueryEvent(_m *IncidentTimelineEventTopologyContext) *IncidentTimelineEventQuery {
+	query := (&IncidentTimelineEventClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID, id),
+			sqlgraph.To(incidenttimelineevent.Table, incidenttimelineevent.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventtopologycontext.EventTable, incidenttimelineeventtopologycontext.EventColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentTimelineEvent
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity queries the knowledge_entity edge of a IncidentTimelineEventTopologyContext.
+func (c *IncidentTimelineEventTopologyContextClient) QueryKnowledgeEntity(_m *IncidentTimelineEventTopologyContext) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventtopologycontext.KnowledgeEntityTable, incidenttimelineeventtopologycontext.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QuerySnapshotEntity queries the snapshot_entity edge of a IncidentTimelineEventTopologyContext.
+func (c *IncidentTimelineEventTopologyContextClient) QuerySnapshotEntity(_m *IncidentTimelineEventTopologyContext) *SystemTopologySnapshotEntityQuery {
+	query := (&SystemTopologySnapshotEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidenttimelineeventtopologycontext.Table, incidenttimelineeventtopologycontext.FieldID, id),
+			sqlgraph.To(systemtopologysnapshotentity.Table, systemtopologysnapshotentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidenttimelineeventtopologycontext.SnapshotEntityTable, incidenttimelineeventtopologycontext.SnapshotEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.SystemTopologySnapshotEntity
+		step.Edge.Schema = schemaConfig.IncidentTimelineEventTopologyContext
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentTimelineEventTopologyContextClient) Hooks() []Hook {
+	hooks := c.hooks.IncidentTimelineEventTopologyContext
+	return append(hooks[:len(hooks):len(hooks)], incidenttimelineeventtopologycontext.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentTimelineEventTopologyContextClient) Interceptors() []Interceptor {
+	return c.inters.IncidentTimelineEventTopologyContext
+}
+
+func (c *IncidentTimelineEventTopologyContextClient) mutate(ctx context.Context, m *IncidentTimelineEventTopologyContextMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentTimelineEventTopologyContextCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentTimelineEventTopologyContextUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentTimelineEventTopologyContextUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentTimelineEventTopologyContextDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentTimelineEventTopologyContext mutation op: %q", m.Op())
 	}
 }
 
@@ -7969,6 +7609,25 @@ func (c *NormalizedEventClient) QueryTenant(_m *NormalizedEvent) *TenantQuery {
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.NormalizedEvent
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlertFeedback queries the alert_feedback edge of a NormalizedEvent.
+func (c *NormalizedEventClient) QueryAlertFeedback(_m *NormalizedEvent) *AlertFeedbackQuery {
+	query := (&AlertFeedbackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, id),
+			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, normalizedevent.AlertFeedbackTable, normalizedevent.AlertFeedbackColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AlertFeedback
+		step.Edge.Schema = schemaConfig.AlertFeedback
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -14325,39 +13984,39 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, AlertFeedback, AlertInstance, Document, DocumentAccess, Event,
-		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
-		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
-		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentEventTopologyContext, IncidentField, IncidentFieldOption, IncidentLink,
+		Alert, AlertFeedback, Document, DocumentAccess, EventAnnotation, Incident,
+		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, Integration, IntegrationOAuthState, KnowledgeEntity,
-		KnowledgeEntityAlias, KnowledgeEvidence, KnowledgeRelationship,
-		MeetingSchedule, MeetingSession, NormalizedEvent,
-		NormalizedEventProjectionStatus, OncallHandoverTemplate, OncallRoster,
-		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
-		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationRole,
-		Playbook, ProviderEventSyncCursor, ProviderEventSyncRun, Retrospective,
-		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
+		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
+		IncidentTimelineEventTopologyContext, IncidentType, Integration,
+		IntegrationOAuthState, KnowledgeEntity, KnowledgeEntityAlias,
+		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
+		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
+		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
+		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
+		OrganizationRole, Playbook, ProviderEventSyncCursor, ProviderEventSyncRun,
+		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
 	inters struct {
-		Alert, AlertFeedback, AlertInstance, AlertMetrics, Document, DocumentAccess,
-		Event, EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
-		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentEvent,
-		IncidentEventContext, IncidentEventContributingFactor, IncidentEventEvidence,
-		IncidentEventTopologyContext, IncidentField, IncidentFieldOption, IncidentLink,
+		Alert, AlertFeedback, AlertMetrics, Document, DocumentAccess, EventAnnotation,
+		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentType, Integration, IntegrationOAuthState, KnowledgeEntity,
-		KnowledgeEntityAlias, KnowledgeEvidence, KnowledgeRelationship,
-		MeetingSchedule, MeetingSession, NormalizedEvent,
-		NormalizedEventProjectionStatus, OncallHandoverTemplate, OncallRoster,
-		OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant, OncallShift,
-		OncallShiftHandover, OncallShiftMetrics, Organization, OrganizationRole,
-		Playbook, ProviderEventSyncCursor, ProviderEventSyncRun, Retrospective,
-		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
+		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
+		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
+		IncidentTimelineEventTopologyContext, IncidentType, Integration,
+		IntegrationOAuthState, KnowledgeEntity, KnowledgeEntityAlias,
+		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
+		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
+		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
+		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
+		OrganizationRole, Playbook, ProviderEventSyncCursor, ProviderEventSyncRun,
+		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
@@ -14369,11 +14028,9 @@ var (
 	DefaultSchemaConfig = SchemaConfig{
 		Alert:                                 tableSchemas[0],
 		AlertFeedback:                         tableSchemas[0],
-		AlertInstance:                         tableSchemas[0],
 		AlertMetrics:                          tableSchemas[0],
 		Document:                              tableSchemas[0],
 		DocumentAccess:                        tableSchemas[0],
-		Event:                                 tableSchemas[0],
 		EventAnnotation:                       tableSchemas[0],
 		Incident:                              tableSchemas[0],
 		IncidentFieldSelections:               tableSchemas[0],
@@ -14388,11 +14045,6 @@ var (
 		IncidentDebriefQuestionIncidentTags:       tableSchemas[0],
 		IncidentDebriefQuestionIncidentTypes:      tableSchemas[0],
 		IncidentDebriefSuggestion:                 tableSchemas[0],
-		IncidentEvent:                             tableSchemas[0],
-		IncidentEventContext:                      tableSchemas[0],
-		IncidentEventContributingFactor:           tableSchemas[0],
-		IncidentEventEvidence:                     tableSchemas[0],
-		IncidentEventTopologyContext:              tableSchemas[0],
 		IncidentField:                             tableSchemas[0],
 		IncidentFieldOption:                       tableSchemas[0],
 		IncidentLink:                              tableSchemas[0],
@@ -14401,6 +14053,11 @@ var (
 		IncidentRoleAssignment:                    tableSchemas[0],
 		IncidentSeverity:                          tableSchemas[0],
 		IncidentTag:                               tableSchemas[0],
+		IncidentTimelineEvent:                     tableSchemas[0],
+		IncidentTimelineEventContext:              tableSchemas[0],
+		IncidentTimelineEventContributingFactor:   tableSchemas[0],
+		IncidentTimelineEventEvidence:             tableSchemas[0],
+		IncidentTimelineEventTopologyContext:      tableSchemas[0],
 		IncidentType:                              tableSchemas[0],
 		Integration:                               tableSchemas[0],
 		IntegrationOAuthState:                     tableSchemas[0],

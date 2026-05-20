@@ -35,20 +35,6 @@ func (_c *TeamCreate) SetTenantID(v int) *TeamCreate {
 	return _c
 }
 
-// SetExternalID sets the "external_id" field.
-func (_c *TeamCreate) SetExternalID(v string) *TeamCreate {
-	_c.mutation.SetExternalID(v)
-	return _c
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_c *TeamCreate) SetNillableExternalID(v *string) *TeamCreate {
-	if v != nil {
-		_c.SetExternalID(*v)
-	}
-	return _c
-}
-
 // SetSlug sets the "slug" field.
 func (_c *TeamCreate) SetSlug(v string) *TeamCreate {
 	_c.mutation.SetSlug(v)
@@ -281,10 +267,6 @@ func (_c *TeamCreate) createSpec() (*Team, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(team.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
-	}
 	if value, ok := _c.mutation.Slug(); ok {
 		_spec.SetField(team.FieldSlug, field.TypeString, value)
 		_node.Slug = value
@@ -463,24 +445,6 @@ type (
 	}
 )
 
-// SetExternalID sets the "external_id" field.
-func (u *TeamUpsert) SetExternalID(v string) *TeamUpsert {
-	u.Set(team.FieldExternalID, v)
-	return u
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *TeamUpsert) UpdateExternalID() *TeamUpsert {
-	u.SetExcluded(team.FieldExternalID)
-	return u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *TeamUpsert) ClearExternalID() *TeamUpsert {
-	u.SetNull(team.FieldExternalID)
-	return u
-}
-
 // SetSlug sets the "slug" field.
 func (u *TeamUpsert) SetSlug(v string) *TeamUpsert {
 	u.Set(team.FieldSlug, v)
@@ -590,27 +554,6 @@ func (u *TeamUpsertOne) Update(set func(*TeamUpsert)) *TeamUpsertOne {
 		set(&TeamUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetExternalID sets the "external_id" field.
-func (u *TeamUpsertOne) SetExternalID(v string) *TeamUpsertOne {
-	return u.Update(func(s *TeamUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *TeamUpsertOne) UpdateExternalID() *TeamUpsertOne {
-	return u.Update(func(s *TeamUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *TeamUpsertOne) ClearExternalID() *TeamUpsertOne {
-	return u.Update(func(s *TeamUpsert) {
-		s.ClearExternalID()
-	})
 }
 
 // SetSlug sets the "slug" field.
@@ -899,27 +842,6 @@ func (u *TeamUpsertBulk) Update(set func(*TeamUpsert)) *TeamUpsertBulk {
 		set(&TeamUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetExternalID sets the "external_id" field.
-func (u *TeamUpsertBulk) SetExternalID(v string) *TeamUpsertBulk {
-	return u.Update(func(s *TeamUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *TeamUpsertBulk) UpdateExternalID() *TeamUpsertBulk {
-	return u.Update(func(s *TeamUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *TeamUpsertBulk) ClearExternalID() *TeamUpsertBulk {
-	return u.Update(func(s *TeamUpsert) {
-		s.ClearExternalID()
-	})
 }
 
 // SetSlug sets the "slug" field.

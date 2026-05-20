@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"math/rand"
@@ -16,12 +17,8 @@ import (
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	imodel "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/incidentseverity"
-	"github.com/rezible/rezible/ent/incidenttype"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
-	"github.com/rezible/rezible/integrations/projections"
 )
 
 type IncidentService struct {
@@ -46,131 +43,23 @@ func NewIncidentService(svcs *rez.Services) (*IncidentService, error) {
 	return svc, nil
 }
 
-func incidentEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	if event.Kind != ne.KindIncidentObserved {
-		return nil
-	}
+func (s *IncidentService) registerMessageHandlers() error {
+	eventsErr := s.msgs.AddEventHandlers(
+		rez.NewEventHandler("db.IncidentService.OnIncidentUpdate", s.onIncidentUpdate))
+	return errors.Join(eventsErr)
+}
 
-	observed, validationErr := projections.DecodeEvent[projections.IncidentObservedAttributes](event)
-	if validationErr != nil || observed == nil {
-		return fmt.Errorf("invalid event: %w", validationErr)
-	}
-
-	attrs := observed.Attributes
-	severity, severityErr := upsertProjectedIncidentSeverity(ctx, client, attrs.SeverityName, attrs.SeverityRank)
-	if severityErr != nil {
-		return fmt.Errorf("upsert incident severity: %w", severityErr)
-	}
-	incidentType, typeErr := upsertProjectedIncidentType(ctx, client, attrs.TypeName)
-	if typeErr != nil {
-		return fmt.Errorf("upsert incident type: %w", typeErr)
-	}
-
-	openedAt := event.OccurredAt
-	if openedAt.IsZero() {
-		openedAt = event.ReceivedAt
-	}
-	if openedAt.IsZero() {
-		openedAt = time.Now().UTC()
-	}
-
-	existing, queryErr := client.Incident.Query().
-		Where(incident.ExternalID(event.SubjectRef)).
-		Only(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return fmt.Errorf("query incident: %w", queryErr)
-	}
-
-	if existing != nil {
-		if _, updateErr := client.Incident.UpdateOne(existing).
-			SetTitle(attrs.Title).
-			SetSummary(attrs.Summary).
-			SetOpenedAt(openedAt).
-			SetSeverityID(severity.ID).
-			SetTypeID(incidentType.ID).
-			Save(ctx); updateErr != nil {
-			return fmt.Errorf("update incident: %w", updateErr)
-		}
-		return nil
-	}
-
-	incidentSlug, slugErr := generateProjectedIncidentSlug(ctx, client, openedAt, attrs.Title)
-	if slugErr != nil {
-		return fmt.Errorf("generate incident slug: %w", slugErr)
-	}
-
-	if _, createErr := client.Incident.Create().
-		SetExternalID(event.SubjectRef).
-		SetSlug(incidentSlug).
-		SetTitle(attrs.Title).
-		SetSummary(attrs.Summary).
-		SetOpenedAt(openedAt).
-		SetSeverityID(severity.ID).
-		SetTypeID(incidentType.ID).
-		Save(ctx); createErr != nil {
-		return fmt.Errorf("create incident: %w", createErr)
-	}
-
+func (s *IncidentService) onIncidentUpdate(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
+	//msQuery := s.db.IncidentMilestone.Query().
+	//	Where(incidentmilestone.IncidentID(ev.IncidentId))
+	//milestones, msErr := msQuery.All(ctx)
+	//if msErr != nil {
+	//	return fmt.Errorf("incident milestone query: %w", msErr)
+	//}
+	//for _, m := range milestones {
+	//	slog.Debug("Incident milestone", "milestone", m.String())
+	//}
 	return nil
-}
-
-func upsertProjectedIncidentSeverity(ctx context.Context, client *ent.Client, name string, rank int) (*ent.IncidentSeverity, error) {
-	existing, queryErr := client.IncidentSeverity.Query().
-		Where(incidentseverity.Name(name)).
-		First(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("query: %w", queryErr)
-	}
-	if existing != nil {
-		return client.IncidentSeverity.UpdateOne(existing).
-			SetRank(rank).
-			Save(ctx)
-	}
-	return client.IncidentSeverity.Create().
-		SetName(name).
-		SetRank(rank).
-		SetExternalID(slug.Make(name)).
-		Save(ctx)
-}
-
-func upsertProjectedIncidentType(ctx context.Context, client *ent.Client, name string) (*ent.IncidentType, error) {
-	existing, queryErr := client.IncidentType.Query().
-		Where(incidenttype.Name(name)).
-		First(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("query: %w", queryErr)
-	}
-	if existing != nil {
-		return existing, nil
-	}
-	return client.IncidentType.Create().
-		SetName(name).
-		Save(ctx)
-}
-
-func generateProjectedIncidentSlug(ctx context.Context, client *ent.Client, openedAt time.Time, title string) (string, error) {
-	datePrefix := openedAt.Format("060102")
-	base := slug.Make(fmt.Sprintf("%s-%s", datePrefix, title))
-	if base == "" {
-		base = slug.Make(fmt.Sprintf("%s-incident", datePrefix))
-	}
-
-	const maxRetries = 10
-	for attempt := 0; attempt < maxRetries; attempt++ {
-		candidate := base
-		if attempt > 0 {
-			candidate = fmt.Sprintf("%s-%d", base, attempt+1)
-		}
-		exists, queryErr := client.Incident.Query().Where(incident.Slug(candidate)).Exist(ctx)
-		if queryErr != nil {
-			return "", fmt.Errorf("check uniqueness: %w", queryErr)
-		}
-		if !exists {
-			return candidate, nil
-		}
-	}
-
-	return fmt.Sprintf("%s-%s", base, uuid.NewString()[:8]), nil
 }
 
 func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {

@@ -10,22 +10,15 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
-	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
-	"github.com/rezible/rezible/ent/incidentevent"
-	"github.com/rezible/rezible/ent/incidenteventcontext"
-	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
-	"github.com/rezible/rezible/ent/incidenteventevidence"
-	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
@@ -34,6 +27,11 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/incidenttimelineevent"
+	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
+	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
+	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
@@ -187,33 +185,6 @@ func (f TraverseAlertFeedback) Traverse(ctx context.Context, q ent.Query) error 
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertFeedbackQuery", q)
 }
 
-// The AlertInstanceFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AlertInstanceFunc func(context.Context, *ent.AlertInstanceQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f AlertInstanceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AlertInstanceQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertInstanceQuery", q)
-}
-
-// The TraverseAlertInstance type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAlertInstance func(context.Context, *ent.AlertInstanceQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAlertInstance) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseAlertInstance) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AlertInstanceQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AlertInstanceQuery", q)
-}
-
 // The AlertMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
 type AlertMetricsFunc func(context.Context, *ent.AlertMetricsQuery) (ent.Value, error)
 
@@ -293,33 +264,6 @@ func (f TraverseDocumentAccess) Traverse(ctx context.Context, q ent.Query) error
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.DocumentAccessQuery", q)
-}
-
-// The EventFunc type is an adapter to allow the use of ordinary function as a Querier.
-type EventFunc func(context.Context, *ent.EventQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f EventFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.EventQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.EventQuery", q)
-}
-
-// The TraverseEvent type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseEvent func(context.Context, *ent.EventQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseEvent) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseEvent) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.EventQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.EventQuery", q)
 }
 
 // The EventAnnotationFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -482,141 +426,6 @@ func (f TraverseIncidentDebriefSuggestion) Traverse(ctx context.Context, q ent.Q
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentDebriefSuggestionQuery", q)
-}
-
-// The IncidentEventFunc type is an adapter to allow the use of ordinary function as a Querier.
-type IncidentEventFunc func(context.Context, *ent.IncidentEventQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f IncidentEventFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.IncidentEventQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventQuery", q)
-}
-
-// The TraverseIncidentEvent type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseIncidentEvent func(context.Context, *ent.IncidentEventQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseIncidentEvent) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseIncidentEvent) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentEventQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventQuery", q)
-}
-
-// The IncidentEventContextFunc type is an adapter to allow the use of ordinary function as a Querier.
-type IncidentEventContextFunc func(context.Context, *ent.IncidentEventContextQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f IncidentEventContextFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.IncidentEventContextQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventContextQuery", q)
-}
-
-// The TraverseIncidentEventContext type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseIncidentEventContext func(context.Context, *ent.IncidentEventContextQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseIncidentEventContext) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseIncidentEventContext) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentEventContextQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventContextQuery", q)
-}
-
-// The IncidentEventContributingFactorFunc type is an adapter to allow the use of ordinary function as a Querier.
-type IncidentEventContributingFactorFunc func(context.Context, *ent.IncidentEventContributingFactorQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f IncidentEventContributingFactorFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.IncidentEventContributingFactorQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventContributingFactorQuery", q)
-}
-
-// The TraverseIncidentEventContributingFactor type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseIncidentEventContributingFactor func(context.Context, *ent.IncidentEventContributingFactorQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseIncidentEventContributingFactor) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseIncidentEventContributingFactor) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentEventContributingFactorQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventContributingFactorQuery", q)
-}
-
-// The IncidentEventEvidenceFunc type is an adapter to allow the use of ordinary function as a Querier.
-type IncidentEventEvidenceFunc func(context.Context, *ent.IncidentEventEvidenceQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f IncidentEventEvidenceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.IncidentEventEvidenceQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventEvidenceQuery", q)
-}
-
-// The TraverseIncidentEventEvidence type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseIncidentEventEvidence func(context.Context, *ent.IncidentEventEvidenceQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseIncidentEventEvidence) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseIncidentEventEvidence) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentEventEvidenceQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventEvidenceQuery", q)
-}
-
-// The IncidentEventTopologyContextFunc type is an adapter to allow the use of ordinary function as a Querier.
-type IncidentEventTopologyContextFunc func(context.Context, *ent.IncidentEventTopologyContextQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f IncidentEventTopologyContextFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.IncidentEventTopologyContextQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventTopologyContextQuery", q)
-}
-
-// The TraverseIncidentEventTopologyContext type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseIncidentEventTopologyContext func(context.Context, *ent.IncidentEventTopologyContextQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseIncidentEventTopologyContext) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseIncidentEventTopologyContext) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IncidentEventTopologyContextQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentEventTopologyContextQuery", q)
 }
 
 // The IncidentFieldFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -833,6 +642,141 @@ func (f TraverseIncidentTag) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTagQuery", q)
+}
+
+// The IncidentTimelineEventFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentTimelineEventFunc func(context.Context, *ent.IncidentTimelineEventQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IncidentTimelineEventFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentTimelineEventQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventQuery", q)
+}
+
+// The TraverseIncidentTimelineEvent type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentTimelineEvent func(context.Context, *ent.IncidentTimelineEventQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIncidentTimelineEvent) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIncidentTimelineEvent) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentTimelineEventQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventQuery", q)
+}
+
+// The IncidentTimelineEventContextFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentTimelineEventContextFunc func(context.Context, *ent.IncidentTimelineEventContextQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IncidentTimelineEventContextFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentTimelineEventContextQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventContextQuery", q)
+}
+
+// The TraverseIncidentTimelineEventContext type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentTimelineEventContext func(context.Context, *ent.IncidentTimelineEventContextQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIncidentTimelineEventContext) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIncidentTimelineEventContext) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentTimelineEventContextQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventContextQuery", q)
+}
+
+// The IncidentTimelineEventContributingFactorFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentTimelineEventContributingFactorFunc func(context.Context, *ent.IncidentTimelineEventContributingFactorQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IncidentTimelineEventContributingFactorFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentTimelineEventContributingFactorQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventContributingFactorQuery", q)
+}
+
+// The TraverseIncidentTimelineEventContributingFactor type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentTimelineEventContributingFactor func(context.Context, *ent.IncidentTimelineEventContributingFactorQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIncidentTimelineEventContributingFactor) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIncidentTimelineEventContributingFactor) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentTimelineEventContributingFactorQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventContributingFactorQuery", q)
+}
+
+// The IncidentTimelineEventEvidenceFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentTimelineEventEvidenceFunc func(context.Context, *ent.IncidentTimelineEventEvidenceQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IncidentTimelineEventEvidenceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentTimelineEventEvidenceQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventEvidenceQuery", q)
+}
+
+// The TraverseIncidentTimelineEventEvidence type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentTimelineEventEvidence func(context.Context, *ent.IncidentTimelineEventEvidenceQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIncidentTimelineEventEvidence) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIncidentTimelineEventEvidence) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentTimelineEventEvidenceQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventEvidenceQuery", q)
+}
+
+// The IncidentTimelineEventTopologyContextFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentTimelineEventTopologyContextFunc func(context.Context, *ent.IncidentTimelineEventTopologyContextQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IncidentTimelineEventTopologyContextFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentTimelineEventTopologyContextQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventTopologyContextQuery", q)
+}
+
+// The TraverseIncidentTimelineEventTopologyContext type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentTimelineEventTopologyContext func(context.Context, *ent.IncidentTimelineEventTopologyContextQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIncidentTimelineEventTopologyContext) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIncidentTimelineEventTopologyContext) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentTimelineEventTopologyContextQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentTimelineEventTopologyContextQuery", q)
 }
 
 // The IncidentTypeFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1922,16 +1866,12 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
 	case *ent.AlertFeedbackQuery:
 		return &query[*ent.AlertFeedbackQuery, predicate.AlertFeedback, alertfeedback.OrderOption]{typ: ent.TypeAlertFeedback, tq: q}, nil
-	case *ent.AlertInstanceQuery:
-		return &query[*ent.AlertInstanceQuery, predicate.AlertInstance, alertinstance.OrderOption]{typ: ent.TypeAlertInstance, tq: q}, nil
 	case *ent.AlertMetricsQuery:
 		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
 	case *ent.DocumentQuery:
 		return &query[*ent.DocumentQuery, predicate.Document, document.OrderOption]{typ: ent.TypeDocument, tq: q}, nil
 	case *ent.DocumentAccessQuery:
 		return &query[*ent.DocumentAccessQuery, predicate.DocumentAccess, documentaccess.OrderOption]{typ: ent.TypeDocumentAccess, tq: q}, nil
-	case *ent.EventQuery:
-		return &query[*ent.EventQuery, predicate.Event, event.OrderOption]{typ: ent.TypeEvent, tq: q}, nil
 	case *ent.EventAnnotationQuery:
 		return &query[*ent.EventAnnotationQuery, predicate.EventAnnotation, eventannotation.OrderOption]{typ: ent.TypeEventAnnotation, tq: q}, nil
 	case *ent.IncidentQuery:
@@ -1944,16 +1884,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentDebriefQuestionQuery, predicate.IncidentDebriefQuestion, incidentdebriefquestion.OrderOption]{typ: ent.TypeIncidentDebriefQuestion, tq: q}, nil
 	case *ent.IncidentDebriefSuggestionQuery:
 		return &query[*ent.IncidentDebriefSuggestionQuery, predicate.IncidentDebriefSuggestion, incidentdebriefsuggestion.OrderOption]{typ: ent.TypeIncidentDebriefSuggestion, tq: q}, nil
-	case *ent.IncidentEventQuery:
-		return &query[*ent.IncidentEventQuery, predicate.IncidentEvent, incidentevent.OrderOption]{typ: ent.TypeIncidentEvent, tq: q}, nil
-	case *ent.IncidentEventContextQuery:
-		return &query[*ent.IncidentEventContextQuery, predicate.IncidentEventContext, incidenteventcontext.OrderOption]{typ: ent.TypeIncidentEventContext, tq: q}, nil
-	case *ent.IncidentEventContributingFactorQuery:
-		return &query[*ent.IncidentEventContributingFactorQuery, predicate.IncidentEventContributingFactor, incidenteventcontributingfactor.OrderOption]{typ: ent.TypeIncidentEventContributingFactor, tq: q}, nil
-	case *ent.IncidentEventEvidenceQuery:
-		return &query[*ent.IncidentEventEvidenceQuery, predicate.IncidentEventEvidence, incidenteventevidence.OrderOption]{typ: ent.TypeIncidentEventEvidence, tq: q}, nil
-	case *ent.IncidentEventTopologyContextQuery:
-		return &query[*ent.IncidentEventTopologyContextQuery, predicate.IncidentEventTopologyContext, incidenteventtopologycontext.OrderOption]{typ: ent.TypeIncidentEventTopologyContext, tq: q}, nil
 	case *ent.IncidentFieldQuery:
 		return &query[*ent.IncidentFieldQuery, predicate.IncidentField, incidentfield.OrderOption]{typ: ent.TypeIncidentField, tq: q}, nil
 	case *ent.IncidentFieldOptionQuery:
@@ -1970,6 +1900,16 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentSeverityQuery, predicate.IncidentSeverity, incidentseverity.OrderOption]{typ: ent.TypeIncidentSeverity, tq: q}, nil
 	case *ent.IncidentTagQuery:
 		return &query[*ent.IncidentTagQuery, predicate.IncidentTag, incidenttag.OrderOption]{typ: ent.TypeIncidentTag, tq: q}, nil
+	case *ent.IncidentTimelineEventQuery:
+		return &query[*ent.IncidentTimelineEventQuery, predicate.IncidentTimelineEvent, incidenttimelineevent.OrderOption]{typ: ent.TypeIncidentTimelineEvent, tq: q}, nil
+	case *ent.IncidentTimelineEventContextQuery:
+		return &query[*ent.IncidentTimelineEventContextQuery, predicate.IncidentTimelineEventContext, incidenttimelineeventcontext.OrderOption]{typ: ent.TypeIncidentTimelineEventContext, tq: q}, nil
+	case *ent.IncidentTimelineEventContributingFactorQuery:
+		return &query[*ent.IncidentTimelineEventContributingFactorQuery, predicate.IncidentTimelineEventContributingFactor, incidenttimelineeventcontributingfactor.OrderOption]{typ: ent.TypeIncidentTimelineEventContributingFactor, tq: q}, nil
+	case *ent.IncidentTimelineEventEvidenceQuery:
+		return &query[*ent.IncidentTimelineEventEvidenceQuery, predicate.IncidentTimelineEventEvidence, incidenttimelineeventevidence.OrderOption]{typ: ent.TypeIncidentTimelineEventEvidence, tq: q}, nil
+	case *ent.IncidentTimelineEventTopologyContextQuery:
+		return &query[*ent.IncidentTimelineEventTopologyContextQuery, predicate.IncidentTimelineEventTopologyContext, incidenttimelineeventtopologycontext.OrderOption]{typ: ent.TypeIncidentTimelineEventTopologyContext, tq: q}, nil
 	case *ent.IncidentTypeQuery:
 		return &query[*ent.IncidentTypeQuery, predicate.IncidentType, incidenttype.OrderOption]{typ: ent.TypeIncidentType, tq: q}, nil
 	case *ent.IntegrationQuery:

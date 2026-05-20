@@ -1,15 +1,11 @@
 -- create "alerts" table
-CREATE TABLE "alerts" ("id" uuid NOT NULL, "external_id" character varying NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "roster_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "alerts" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "projected_event_id" uuid NULL, "roster_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "alert_tenant_id" to table: "alerts"
 CREATE INDEX "alert_tenant_id" ON "alerts" ("tenant_id");
 -- create "alert_feedbacks" table
-CREATE TABLE "alert_feedbacks" ("id" uuid NOT NULL, "actionable" boolean NOT NULL, "accurate" character varying NOT NULL, "documentation_available" boolean NOT NULL, "documentation_needs_update" boolean NOT NULL, "tenant_id" bigint NOT NULL, "alert_instance_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "alert_feedbacks" ("id" uuid NOT NULL, "actionable" boolean NOT NULL, "accurate" character varying NOT NULL, "documentation_available" boolean NOT NULL, "documentation_needs_update" boolean NOT NULL, "tenant_id" bigint NOT NULL, "alert_id" uuid NOT NULL, "alert_instance_id" uuid NULL, "normalized_event_alert_feedback" uuid NULL, PRIMARY KEY ("id"));
 -- create index "alertfeedback_tenant_id" to table: "alert_feedbacks"
 CREATE INDEX "alertfeedback_tenant_id" ON "alert_feedbacks" ("tenant_id");
--- create "alert_instances" table
-CREATE TABLE "alert_instances" ("id" uuid NOT NULL, "external_id" character varying NULL, "acknowledged_at" timestamptz NULL, "alert_instances" uuid NULL, "tenant_id" bigint NOT NULL, "alert_id" uuid NOT NULL, "event_id" uuid NOT NULL, "alert_instance_feedback" uuid NULL, PRIMARY KEY ("id"));
--- create index "alertinstance_tenant_id" to table: "alert_instances"
-CREATE INDEX "alertinstance_tenant_id" ON "alert_instances" ("tenant_id");
 -- create "documents" table
 CREATE TABLE "documents" ("id" uuid NOT NULL, "content" bytea NOT NULL, "access_restricted" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "document_tenant_id" to table: "documents"
@@ -18,16 +14,12 @@ CREATE INDEX "document_tenant_id" ON "documents" ("tenant_id");
 CREATE TABLE "document_accesses" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "can_view" boolean NOT NULL DEFAULT false, "can_edit" boolean NOT NULL DEFAULT false, "can_manage" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, "document_id" uuid NOT NULL, "user_id" uuid NULL, "team_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "documentaccess_tenant_id" to table: "document_accesses"
 CREATE INDEX "documentaccess_tenant_id" ON "document_accesses" ("tenant_id");
--- create "events" table
-CREATE TABLE "events" ("id" uuid NOT NULL, "external_id" character varying NULL, "timestamp" timestamptz NOT NULL, "kind" character varying NOT NULL, "title" character varying NOT NULL, "description" character varying NOT NULL, "source" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "event_tenant_id" to table: "events"
-CREATE INDEX "event_tenant_id" ON "events" ("tenant_id");
 -- create "event_annotations" table
 CREATE TABLE "event_annotations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "minutes_occupied" bigint NOT NULL, "notes" text NOT NULL, "tags" jsonb NOT NULL, "tenant_id" bigint NOT NULL, "event_id" uuid NOT NULL, "creator_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "eventannotation_tenant_id" to table: "event_annotations"
 CREATE INDEX "eventannotation_tenant_id" ON "event_annotations" ("tenant_id");
 -- create "incidents" table
-CREATE TABLE "incidents" ("id" uuid NOT NULL, "external_id" character varying NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "slug" character varying NOT NULL, "title" character varying NOT NULL, "title2" character varying NULL, "summary" character varying NULL, "chat_channel_id" character varying NULL, "opened_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "severity_id" uuid NOT NULL, "type_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "incidents" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "slug" character varying NOT NULL, "title" character varying NOT NULL, "summary" character varying NULL, "chat_channel_id" character varying NULL, "opened_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "projected_event_id" uuid NULL, "severity_id" uuid NOT NULL, "type_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidents_slug_key" to table: "incidents"
 CREATE UNIQUE INDEX "incidents_slug_key" ON "incidents" ("slug");
 -- create index "incident_tenant_id" to table: "incidents"
@@ -48,30 +40,6 @@ CREATE INDEX "incidentdebriefquestion_tenant_id" ON "incident_debrief_questions"
 CREATE TABLE "incident_debrief_suggestions" ("id" uuid NOT NULL, "content" text NOT NULL, "incident_debrief_suggestions" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidentdebriefsuggestion_tenant_id" to table: "incident_debrief_suggestions"
 CREATE INDEX "incidentdebriefsuggestion_tenant_id" ON "incident_debrief_suggestions" ("tenant_id");
--- create "incident_events" table
-CREATE TABLE "incident_events" ("id" uuid NOT NULL, "timestamp" timestamptz NOT NULL, "kind" character varying NOT NULL, "title" character varying NOT NULL, "description" text NULL, "is_key" boolean NOT NULL DEFAULT false, "sequence" bigint NOT NULL DEFAULT 0, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "incident_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "event_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "incidentevent_tenant_id" to table: "incident_events"
-CREATE INDEX "incidentevent_tenant_id" ON "incident_events" ("tenant_id");
--- create index "incidentevent_kind" to table: "incident_events"
-CREATE INDEX "incidentevent_kind" ON "incident_events" ("kind");
--- create "incident_event_contexts" table
-CREATE TABLE "incident_event_contexts" ("id" uuid NOT NULL, "system_state" text NULL, "decision_options" jsonb NULL, "decision_rationale" text NULL, "involved_personnel" jsonb NULL, "created_at" timestamptz NOT NULL, "incident_event_context" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "incident_event_contexts_incident_event_context_key" to table: "incident_event_contexts"
-CREATE UNIQUE INDEX "incident_event_contexts_incident_event_context_key" ON "incident_event_contexts" ("incident_event_context");
--- create index "incidenteventcontext_tenant_id" to table: "incident_event_contexts"
-CREATE INDEX "incidenteventcontext_tenant_id" ON "incident_event_contexts" ("tenant_id");
--- create "incident_event_contributing_factors" table
-CREATE TABLE "incident_event_contributing_factors" ("id" uuid NOT NULL, "factor_type" character varying NOT NULL, "description" text NULL, "created_at" timestamptz NOT NULL, "incident_event_factors" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "incidenteventcontributingfactor_tenant_id" to table: "incident_event_contributing_factors"
-CREATE INDEX "incidenteventcontributingfactor_tenant_id" ON "incident_event_contributing_factors" ("tenant_id");
--- create "incident_event_evidences" table
-CREATE TABLE "incident_event_evidences" ("id" uuid NOT NULL, "evidence_type" character varying NOT NULL, "url" character varying NOT NULL, "title" character varying NOT NULL, "description" text NULL, "created_at" timestamptz NOT NULL, "incident_event_evidence" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "incidenteventevidence_tenant_id" to table: "incident_event_evidences"
-CREATE INDEX "incidenteventevidence_tenant_id" ON "incident_event_evidences" ("tenant_id");
--- create "incident_event_topology_contexts" table
-CREATE TABLE "incident_event_topology_contexts" ("id" uuid NOT NULL, "relationship" character varying NOT NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "incident_event_id" uuid NOT NULL, "knowledge_entity_id" uuid NULL, "snapshot_entity_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "incidenteventtopologycontext_tenant_id" to table: "incident_event_topology_contexts"
-CREATE INDEX "incidenteventtopologycontext_tenant_id" ON "incident_event_topology_contexts" ("tenant_id");
 -- create "incident_fields" table
 CREATE TABLE "incident_fields" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidentfield_tenant_id" to table: "incident_fields"
@@ -91,7 +59,7 @@ CREATE TABLE "incident_milestones" ("id" uuid NOT NULL, "kind" character varying
 -- create index "incidentmilestone_tenant_id" to table: "incident_milestones"
 CREATE INDEX "incidentmilestone_tenant_id" ON "incident_milestones" ("tenant_id");
 -- create "incident_roles" table
-CREATE TABLE "incident_roles" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "external_id" character varying NULL, "name" character varying NOT NULL, "required" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "incident_roles" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "required" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidentrole_tenant_id" to table: "incident_roles"
 CREATE INDEX "incidentrole_tenant_id" ON "incident_roles" ("tenant_id");
 -- create "incident_role_assignments" table
@@ -101,13 +69,37 @@ CREATE INDEX "incidentroleassignment_tenant_id" ON "incident_role_assignments" (
 -- create index "incidentroleassignment_user_id_incident_id" to table: "incident_role_assignments"
 CREATE UNIQUE INDEX "incidentroleassignment_user_id_incident_id" ON "incident_role_assignments" ("user_id", "incident_id");
 -- create "incident_severities" table
-CREATE TABLE "incident_severities" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "external_id" character varying NULL, "name" character varying NOT NULL, "rank" bigint NOT NULL, "color" character varying NULL, "description" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "incident_severities" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "rank" bigint NOT NULL, "color" character varying NULL, "description" character varying NULL, "tenant_id" bigint NOT NULL, "projected_event_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "incidentseverity_tenant_id" to table: "incident_severities"
 CREATE INDEX "incidentseverity_tenant_id" ON "incident_severities" ("tenant_id");
 -- create "incident_tags" table
 CREATE TABLE "incident_tags" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "key" character varying NOT NULL, "value" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidenttag_tenant_id" to table: "incident_tags"
 CREATE INDEX "incidenttag_tenant_id" ON "incident_tags" ("tenant_id");
+-- create "incident_timeline_events" table
+CREATE TABLE "incident_timeline_events" ("id" uuid NOT NULL, "timestamp" timestamptz NOT NULL, "kind" character varying NOT NULL, "title" character varying NOT NULL, "description" text NULL, "is_key" boolean NOT NULL DEFAULT false, "sequence" bigint NOT NULL DEFAULT 0, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "incident_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "event_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "incidenttimelineevent_tenant_id" to table: "incident_timeline_events"
+CREATE INDEX "incidenttimelineevent_tenant_id" ON "incident_timeline_events" ("tenant_id");
+-- create index "incidenttimelineevent_kind" to table: "incident_timeline_events"
+CREATE INDEX "incidenttimelineevent_kind" ON "incident_timeline_events" ("kind");
+-- create "incident_timeline_event_contexts" table
+CREATE TABLE "incident_timeline_event_contexts" ("id" uuid NOT NULL, "system_state" text NULL, "decision_options" jsonb NULL, "decision_rationale" text NULL, "involved_personnel" jsonb NULL, "created_at" timestamptz NOT NULL, "incident_timeline_event_context" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+-- create index "incident_timeline_event_contexts_incident_timeline_event_context_key" to table: "incident_timeline_event_contexts"
+CREATE UNIQUE INDEX "incident_timeline_event_contexts_incident_timeline_event_context_key" ON "incident_timeline_event_contexts" ("incident_timeline_event_context");
+-- create index "incidenttimelineeventcontext_tenant_id" to table: "incident_timeline_event_contexts"
+CREATE INDEX "incidenttimelineeventcontext_tenant_id" ON "incident_timeline_event_contexts" ("tenant_id");
+-- create "incident_timeline_event_contributing_factors" table
+CREATE TABLE "incident_timeline_event_contributing_factors" ("id" uuid NOT NULL, "factor_type" character varying NOT NULL, "description" text NULL, "created_at" timestamptz NOT NULL, "incident_timeline_event_factors" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+-- create index "incidenttimelineeventcontributingfactor_tenant_id" to table: "incident_timeline_event_contributing_factors"
+CREATE INDEX "incidenttimelineeventcontributingfactor_tenant_id" ON "incident_timeline_event_contributing_factors" ("tenant_id");
+-- create "incident_timeline_event_evidences" table
+CREATE TABLE "incident_timeline_event_evidences" ("id" uuid NOT NULL, "evidence_type" character varying NOT NULL, "url" character varying NOT NULL, "title" character varying NOT NULL, "description" text NULL, "created_at" timestamptz NOT NULL, "incident_timeline_event_evidence" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+-- create index "incidenttimelineeventevidence_tenant_id" to table: "incident_timeline_event_evidences"
+CREATE INDEX "incidenttimelineeventevidence_tenant_id" ON "incident_timeline_event_evidences" ("tenant_id");
+-- create "incident_timeline_event_topology_contexts" table
+CREATE TABLE "incident_timeline_event_topology_contexts" ("id" uuid NOT NULL, "relationship" character varying NOT NULL, "created_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "incident_event_id" uuid NOT NULL, "knowledge_entity_id" uuid NULL, "snapshot_entity_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "incidenttimelineeventtopologycontext_tenant_id" to table: "incident_timeline_event_topology_contexts"
+CREATE INDEX "incidenttimelineeventtopologycontext_tenant_id" ON "incident_timeline_event_topology_contexts" ("tenant_id");
 -- create "incident_types" table
 CREATE TABLE "incident_types" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "incidenttype_tenant_id" to table: "incident_types"
@@ -189,7 +181,7 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "kind" character varying NOT NULL, "subject_kind" character varying NOT NULL, "subject_ref" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "subject_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
 -- create index "normalizedevent_tenant_id_prov_089950886f426b5eaeeba9e4f3d2645c" to table: "normalized_events"
@@ -209,7 +201,7 @@ CREATE TABLE "oncall_handover_templates" ("id" uuid NOT NULL, "created_at" times
 -- create index "oncallhandovertemplate_tenant_id" to table: "oncall_handover_templates"
 CREATE INDEX "oncallhandovertemplate_tenant_id" ON "oncall_handover_templates" ("tenant_id");
 -- create "oncall_rosters" table
-CREATE TABLE "oncall_rosters" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "external_id" character varying NULL, "name" character varying NOT NULL, "slug" character varying NOT NULL, "timezone" character varying NULL, "chat_handle" character varying NULL, "chat_channel_id" character varying NULL, "handover_template_id" uuid NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "oncall_rosters" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "slug" character varying NOT NULL, "timezone" character varying NULL, "chat_handle" character varying NULL, "chat_channel_id" character varying NULL, "handover_template_id" uuid NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "oncall_rosters_slug_key" to table: "oncall_rosters"
 CREATE UNIQUE INDEX "oncall_rosters_slug_key" ON "oncall_rosters" ("slug");
 -- create index "oncallroster_tenant_id" to table: "oncall_rosters"
@@ -219,7 +211,7 @@ CREATE TABLE "oncall_roster_metrics" ("id" uuid NOT NULL, "tenant_id" bigint NOT
 -- create index "oncallrostermetrics_tenant_id" to table: "oncall_roster_metrics"
 CREATE INDEX "oncallrostermetrics_tenant_id" ON "oncall_roster_metrics" ("tenant_id");
 -- create "oncall_schedules" table
-CREATE TABLE "oncall_schedules" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "external_id" character varying NULL, "name" character varying NOT NULL, "timezone" character varying NULL, "roster_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "oncall_schedules" ("id" uuid NOT NULL, "archive_time" timestamptz NULL, "name" character varying NOT NULL, "timezone" character varying NULL, "roster_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "oncallschedule_tenant_id" to table: "oncall_schedules"
 CREATE INDEX "oncallschedule_tenant_id" ON "oncall_schedules" ("tenant_id");
 -- create "oncall_schedule_participants" table
@@ -227,7 +219,7 @@ CREATE TABLE "oncall_schedule_participants" ("id" uuid NOT NULL, "index" bigint 
 -- create index "oncallscheduleparticipant_tenant_id" to table: "oncall_schedule_participants"
 CREATE INDEX "oncallscheduleparticipant_tenant_id" ON "oncall_schedule_participants" ("tenant_id");
 -- create "oncall_shifts" table
-CREATE TABLE "oncall_shifts" ("id" uuid NOT NULL, "external_id" character varying NULL, "role" character varying NULL DEFAULT 'primary', "start_at" timestamptz NOT NULL, "end_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, "roster_id" uuid NOT NULL, "primary_shift_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "oncall_shifts_oncall_shifts_primary_shift" FOREIGN KEY ("primary_shift_id") REFERENCES "oncall_shifts" ("id") ON DELETE SET NULL);
+CREATE TABLE "oncall_shifts" ("id" uuid NOT NULL, "role" character varying NULL DEFAULT 'primary', "start_at" timestamptz NOT NULL, "end_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, "roster_id" uuid NOT NULL, "primary_shift_id" uuid NULL, PRIMARY KEY ("id"), CONSTRAINT "oncall_shifts_oncall_shifts_primary_shift" FOREIGN KEY ("primary_shift_id") REFERENCES "oncall_shifts" ("id") ON DELETE SET NULL);
 -- create index "oncall_shifts_primary_shift_id_key" to table: "oncall_shifts"
 CREATE UNIQUE INDEX "oncall_shifts_primary_shift_id_key" ON "oncall_shifts" ("primary_shift_id");
 -- create index "oncallshift_tenant_id" to table: "oncall_shifts"
@@ -259,7 +251,7 @@ CREATE INDEX "organizationrole_tenant_id" ON "organization_roles" ("tenant_id");
 -- create index "organizationrole_org_id_user_id" to table: "organization_roles"
 CREATE UNIQUE INDEX "organizationrole_org_id_user_id" ON "organization_roles" ("org_id", "user_id");
 -- create "playbooks" table
-CREATE TABLE "playbooks" ("id" uuid NOT NULL, "external_id" character varying NULL, "title" character varying NOT NULL, "content" bytea NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "playbooks" ("id" uuid NOT NULL, "title" character varying NOT NULL, "content" bytea NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "playbook_tenant_id" to table: "playbooks"
 CREATE INDEX "playbook_tenant_id" ON "playbooks" ("tenant_id");
 -- create "provider_event_sync_cursors" table
@@ -269,11 +261,11 @@ CREATE INDEX "providereventsynccursor_tenant_id" ON "provider_event_sync_cursors
 -- create index "providereventsynccursor_tenant_id_provider_provider_source" to table: "provider_event_sync_cursors"
 CREATE UNIQUE INDEX "providereventsynccursor_tenant_id_provider_provider_source" ON "provider_event_sync_cursors" ("tenant_id", "provider", "provider_source");
 -- create "provider_event_sync_runs" table
-CREATE TABLE "provider_event_sync_runs" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "provider_event_sync_runs" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "source_cursors" jsonb NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "providereventsyncrun_tenant_id" to table: "provider_event_sync_runs"
 CREATE INDEX "providereventsyncrun_tenant_id" ON "provider_event_sync_runs" ("tenant_id");
--- create index "providereventsyncrun_tenant_id_40a84cd4e2a28c8508538a845519d553" to table: "provider_event_sync_runs"
-CREATE INDEX "providereventsyncrun_tenant_id_40a84cd4e2a28c8508538a845519d553" ON "provider_event_sync_runs" ("tenant_id", "provider", "provider_source", "started_at");
+-- create index "providereventsyncrun_tenant_id_provider_started_at" to table: "provider_event_sync_runs"
+CREATE INDEX "providereventsyncrun_tenant_id_provider_started_at" ON "provider_event_sync_runs" ("tenant_id", "provider", "started_at");
 -- create index "providereventsyncrun_tenant_id_status_started_at" to table: "provider_event_sync_runs"
 CREATE INDEX "providereventsyncrun_tenant_id_status_started_at" ON "provider_event_sync_runs" ("tenant_id", "status", "started_at");
 -- create "retrospectives" table
@@ -343,7 +335,7 @@ CREATE TABLE "tasks" ("id" uuid NOT NULL, "type" character varying NOT NULL, "ti
 -- create index "task_tenant_id" to table: "tasks"
 CREATE INDEX "task_tenant_id" ON "tasks" ("tenant_id");
 -- create "teams" table
-CREATE TABLE "teams" ("id" uuid NOT NULL, "external_id" character varying NULL, "slug" character varying NOT NULL, "name" character varying NOT NULL, "chat_channel_id" character varying NULL, "timezone" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "teams" ("id" uuid NOT NULL, "slug" character varying NOT NULL, "name" character varying NOT NULL, "chat_channel_id" character varying NULL, "timezone" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "teams_slug_key" to table: "teams"
 CREATE UNIQUE INDEX "teams_slug_key" ON "teams" ("slug");
 -- create index "team_tenant_id" to table: "teams"
@@ -357,7 +349,7 @@ CREATE UNIQUE INDEX "teammembership_team_id_user_id" ON "team_memberships" ("tea
 -- create "tenants" table
 CREATE TABLE "tenants" ("id" bigint NOT NULL GENERATED BY DEFAULT AS IDENTITY, PRIMARY KEY ("id"));
 -- create "tickets" table
-CREATE TABLE "tickets" ("id" uuid NOT NULL, "external_id" character varying NULL, "title" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "tickets" ("id" uuid NOT NULL, "title" character varying NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "ticket_tenant_id" to table: "tickets"
 CREATE INDEX "ticket_tenant_id" ON "tickets" ("tenant_id");
 -- create "users" table
@@ -405,21 +397,17 @@ CREATE TABLE "team_oncall_rosters" ("team_id" uuid NOT NULL, "oncall_roster_id" 
 -- create "user_watched_oncall_rosters" table
 CREATE TABLE "user_watched_oncall_rosters" ("user_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("user_id", "oncall_roster_id"));
 -- modify "alerts" table
-ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_oncall_rosters_alerts" FOREIGN KEY ("roster_id") REFERENCES "oncall_rosters" ("id") ON DELETE SET NULL;
+ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_normalized_events_projected_from" FOREIGN KEY ("projected_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL, ADD CONSTRAINT "alerts_oncall_rosters_alerts" FOREIGN KEY ("roster_id") REFERENCES "oncall_rosters" ("id") ON DELETE SET NULL;
 -- modify "alert_feedbacks" table
-ALTER TABLE "alert_feedbacks" ADD CONSTRAINT "alert_feedbacks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_feedbacks_alert_instances_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "alert_instances" ("id") ON DELETE NO ACTION;
--- modify "alert_instances" table
-ALTER TABLE "alert_instances" ADD CONSTRAINT "alert_instances_alerts_instances" FOREIGN KEY ("alert_instances") REFERENCES "alerts" ("id") ON DELETE SET NULL, ADD CONSTRAINT "alert_instances_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_alerts_alert" FOREIGN KEY ("alert_id") REFERENCES "alerts" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_events_event" FOREIGN KEY ("event_id") REFERENCES "events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_alert_feedbacks_feedback" FOREIGN KEY ("alert_instance_feedback") REFERENCES "alert_feedbacks" ("id") ON DELETE SET NULL;
+ALTER TABLE "alert_feedbacks" ADD CONSTRAINT "alert_feedbacks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_feedbacks_alerts_alert" FOREIGN KEY ("alert_id") REFERENCES "alerts" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_feedbacks_normalized_events_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL, ADD CONSTRAINT "alert_feedbacks_normalized_events_alert_feedback" FOREIGN KEY ("normalized_event_alert_feedback") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
 -- modify "documents" table
 ALTER TABLE "documents" ADD CONSTRAINT "documents_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "document_accesses" table
 ALTER TABLE "document_accesses" ADD CONSTRAINT "document_accesses_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "document_accesses_documents_document" FOREIGN KEY ("document_id") REFERENCES "documents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "document_accesses_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL, ADD CONSTRAINT "document_accesses_teams_team" FOREIGN KEY ("team_id") REFERENCES "teams" ("id") ON DELETE SET NULL;
--- modify "events" table
-ALTER TABLE "events" ADD CONSTRAINT "events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "event_annotations" table
-ALTER TABLE "event_annotations" ADD CONSTRAINT "event_annotations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "event_annotations_events_event" FOREIGN KEY ("event_id") REFERENCES "events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "event_annotations_users_creator" FOREIGN KEY ("creator_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
+ALTER TABLE "event_annotations" ADD CONSTRAINT "event_annotations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "event_annotations_normalized_events_event" FOREIGN KEY ("event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "event_annotations_users_creator" FOREIGN KEY ("creator_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "incidents" table
-ALTER TABLE "incidents" ADD CONSTRAINT "incidents_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incidents_incident_severities_severity" FOREIGN KEY ("severity_id") REFERENCES "incident_severities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incidents_incident_types_type" FOREIGN KEY ("type_id") REFERENCES "incident_types" ("id") ON DELETE NO ACTION;
+ALTER TABLE "incidents" ADD CONSTRAINT "incidents_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incidents_normalized_events_projected_from" FOREIGN KEY ("projected_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL, ADD CONSTRAINT "incidents_incident_severities_severity" FOREIGN KEY ("severity_id") REFERENCES "incident_severities" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incidents_incident_types_type" FOREIGN KEY ("type_id") REFERENCES "incident_types" ("id") ON DELETE NO ACTION;
 -- modify "incident_debriefs" table
 ALTER TABLE "incident_debriefs" ADD CONSTRAINT "incident_debriefs_incidents_debriefs" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_debriefs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_debriefs_users_incident_debriefs" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "incident_debrief_messages" table
@@ -428,16 +416,6 @@ ALTER TABLE "incident_debrief_messages" ADD CONSTRAINT "incident_debrief_message
 ALTER TABLE "incident_debrief_questions" ADD CONSTRAINT "incident_debrief_questions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "incident_debrief_suggestions" table
 ALTER TABLE "incident_debrief_suggestions" ADD CONSTRAINT "incident_debrief_suggestions_incident_debriefs_suggestions" FOREIGN KEY ("incident_debrief_suggestions") REFERENCES "incident_debriefs" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_debrief_suggestions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "incident_events" table
-ALTER TABLE "incident_events" ADD CONSTRAINT "incident_events_incidents_events" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_events_events_event" FOREIGN KEY ("event_id") REFERENCES "events" ("id") ON DELETE SET NULL;
--- modify "incident_event_contexts" table
-ALTER TABLE "incident_event_contexts" ADD CONSTRAINT "incident_event_contexts_incident_events_context" FOREIGN KEY ("incident_event_context") REFERENCES "incident_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_contexts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "incident_event_contributing_factors" table
-ALTER TABLE "incident_event_contributing_factors" ADD CONSTRAINT "incident_event_contributing_factors_incident_events_factors" FOREIGN KEY ("incident_event_factors") REFERENCES "incident_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_contributing_factors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "incident_event_evidences" table
-ALTER TABLE "incident_event_evidences" ADD CONSTRAINT "incident_event_evidences_incident_events_evidence" FOREIGN KEY ("incident_event_evidence") REFERENCES "incident_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_evidences_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "incident_event_topology_contexts" table
-ALTER TABLE "incident_event_topology_contexts" ADD CONSTRAINT "incident_event_topology_contexts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_topology_contexts_incident_events_event" FOREIGN KEY ("incident_event_id") REFERENCES "incident_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_event_topology_contex_b2409285a56a4f4f12a362a2778ee979" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "incident_event_topology_contex_d1a9f110c3f1f9c744c079c1c462929b" FOREIGN KEY ("snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE SET NULL;
 -- modify "incident_fields" table
 ALTER TABLE "incident_fields" ADD CONSTRAINT "incident_fields_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "incident_field_options" table
@@ -451,9 +429,19 @@ ALTER TABLE "incident_roles" ADD CONSTRAINT "incident_roles_tenants_tenant" FORE
 -- modify "incident_role_assignments" table
 ALTER TABLE "incident_role_assignments" ADD CONSTRAINT "incident_role_assignments_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_role_assignments_incidents_incident" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_role_assignments_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_role_assignments_incident_roles_role" FOREIGN KEY ("role_id") REFERENCES "incident_roles" ("id") ON DELETE NO ACTION;
 -- modify "incident_severities" table
-ALTER TABLE "incident_severities" ADD CONSTRAINT "incident_severities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+ALTER TABLE "incident_severities" ADD CONSTRAINT "incident_severities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_severities_normalized_events_projected_from" FOREIGN KEY ("projected_event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
 -- modify "incident_tags" table
 ALTER TABLE "incident_tags" ADD CONSTRAINT "incident_tags_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "incident_timeline_events" table
+ALTER TABLE "incident_timeline_events" ADD CONSTRAINT "incident_timeline_events_incidents_timeline_events" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_timeline_events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_timeline_events_normalized_events_event" FOREIGN KEY ("event_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
+-- modify "incident_timeline_event_contexts" table
+ALTER TABLE "incident_timeline_event_contexts" ADD CONSTRAINT "incident_timeline_event_contex_5ac24bfc474fb61b9351fb5cba7c87cb" FOREIGN KEY ("incident_timeline_event_context") REFERENCES "incident_timeline_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_timeline_event_contexts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "incident_timeline_event_contributing_factors" table
+ALTER TABLE "incident_timeline_event_contributing_factors" ADD CONSTRAINT "incident_timeline_event_contri_0aecb2f20121e2d628c1402580fe5d71" FOREIGN KEY ("incident_timeline_event_factors") REFERENCES "incident_timeline_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_timeline_event_contributing_factors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "incident_timeline_event_evidences" table
+ALTER TABLE "incident_timeline_event_evidences" ADD CONSTRAINT "incident_timeline_event_eviden_37786b98ea2184b38a27c223bdf28160" FOREIGN KEY ("incident_timeline_event_evidence") REFERENCES "incident_timeline_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_timeline_event_evidences_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "incident_timeline_event_topology_contexts" table
+ALTER TABLE "incident_timeline_event_topology_contexts" ADD CONSTRAINT "incident_timeline_event_topology_contexts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_timeline_event_topolo_9d336da69e411af955f7f9ddff677001" FOREIGN KEY ("incident_event_id") REFERENCES "incident_timeline_events" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "incident_timeline_event_topolo_71fa443670cce4d56bfb9e7041730983" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "incident_timeline_event_topolo_c9aecaf9d13cd231fe8f3c66ff0e4671" FOREIGN KEY ("snapshot_entity_id") REFERENCES "system_topology_snapshot_entities" ("id") ON DELETE SET NULL;
 -- modify "incident_types" table
 ALTER TABLE "incident_types" ADD CONSTRAINT "incident_types_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "integrations" table

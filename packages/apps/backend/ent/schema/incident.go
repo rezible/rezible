@@ -18,8 +18,8 @@ func (Incident) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationDataMixin{},
 		TimestampsMixin{},
+		EventEntityLinkMixin{},
 	}
 }
 
@@ -29,7 +29,6 @@ func (Incident) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("slug").Unique(),
 		field.String("title"),
-		field.String("title2").Optional(),
 		field.UUID("severity_id", uuid.UUID{}),
 		field.UUID("type_id", uuid.UUID{}),
 		field.String("summary").Optional(),
@@ -51,7 +50,7 @@ func (Incident) Edges() []ent.Edge {
 			Field("type_id"),
 
 		edge.To("milestones", IncidentMilestone.Type),
-		edge.To("events", IncidentEvent.Type),
+		edge.To("timeline_events", IncidentTimelineEvent.Type),
 
 		edge.To("retrospective", Retrospective.Type).
 			Unique(),

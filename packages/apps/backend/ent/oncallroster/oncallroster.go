@@ -18,8 +18,6 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldArchiveTime holds the string denoting the archive_time field in the database.
 	FieldArchiveTime = "archive_time"
-	// FieldExternalID holds the string denoting the external_id field in the database.
-	FieldExternalID = "external_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldSlug holds the string denoting the slug field in the database.
@@ -109,7 +107,6 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldArchiveTime,
-	FieldExternalID,
 	FieldName,
 	FieldSlug,
 	FieldTimezone,
@@ -166,11 +163,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 // ByArchiveTime orders the results by the archive_time field.
 func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
-}
-
-// ByExternalID orders the results by the external_id field.
-func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.

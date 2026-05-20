@@ -19,7 +19,6 @@ func (OncallRoster) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
-		IntegrationDataMixin{},
 	}
 }
 

@@ -35,26 +35,6 @@ func (_u *OncallShiftUpdate) Where(ps ...predicate.OncallShift) *OncallShiftUpda
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *OncallShiftUpdate) SetExternalID(v string) *OncallShiftUpdate {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *OncallShiftUpdate) SetNillableExternalID(v *string) *OncallShiftUpdate {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *OncallShiftUpdate) ClearExternalID() *OncallShiftUpdate {
-	_u.mutation.ClearExternalID()
-	return _u
-}
-
 // SetUserID sets the "user_id" field.
 func (_u *OncallShiftUpdate) SetUserID(v uuid.UUID) *OncallShiftUpdate {
 	_u.mutation.SetUserID(v)
@@ -303,12 +283,6 @@ func (_u *OncallShiftUpdate) sqlSave(ctx context.Context) (_node int, err error)
 			}
 		}
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(oncallshift.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(oncallshift.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(oncallshift.FieldRole, field.TypeEnum, value)
 	}
@@ -498,26 +472,6 @@ type OncallShiftUpdateOne struct {
 	hooks     []Hook
 	mutation  *OncallShiftMutation
 	modifiers []func(*sql.UpdateBuilder)
-}
-
-// SetExternalID sets the "external_id" field.
-func (_u *OncallShiftUpdateOne) SetExternalID(v string) *OncallShiftUpdateOne {
-	_u.mutation.SetExternalID(v)
-	return _u
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *OncallShiftUpdateOne) SetNillableExternalID(v *string) *OncallShiftUpdateOne {
-	if v != nil {
-		_u.SetExternalID(*v)
-	}
-	return _u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *OncallShiftUpdateOne) ClearExternalID() *OncallShiftUpdateOne {
-	_u.mutation.ClearExternalID()
-	return _u
 }
 
 // SetUserID sets the "user_id" field.
@@ -797,12 +751,6 @@ func (_u *OncallShiftUpdateOne) sqlSave(ctx context.Context) (_node *OncallShift
 				ps[i](selector)
 			}
 		}
-	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(oncallshift.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(oncallshift.FieldExternalID, field.TypeString)
 	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(oncallshift.FieldRole, field.TypeEnum, value)

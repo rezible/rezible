@@ -16,8 +16,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldExternalID holds the string denoting the external_id field in the database.
-	FieldExternalID = "external_id"
+	// FieldProjectedEventID holds the string denoting the projected_event_id field in the database.
+	FieldProjectedEventID = "projected_event_id"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
 	// FieldDescription holds the string denoting the description field in the database.
@@ -28,12 +28,14 @@ const (
 	FieldRosterID = "roster_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeProjectedFrom holds the string denoting the projected_from edge name in mutations.
+	EdgeProjectedFrom = "projected_from"
 	// EdgePlaybooks holds the string denoting the playbooks edge name in mutations.
 	EdgePlaybooks = "playbooks"
 	// EdgeRoster holds the string denoting the roster edge name in mutations.
 	EdgeRoster = "roster"
-	// EdgeInstances holds the string denoting the instances edge name in mutations.
-	EdgeInstances = "instances"
+	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
+	EdgeFeedback = "feedback"
 	// Table holds the table name of the alert in the database.
 	Table = "alerts"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -43,6 +45,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// ProjectedFromTable is the table that holds the projected_from relation/edge.
+	ProjectedFromTable = "alerts"
+	// ProjectedFromInverseTable is the table name for the NormalizedEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
+	ProjectedFromInverseTable = "normalized_events"
+	// ProjectedFromColumn is the table column denoting the projected_from relation/edge.
+	ProjectedFromColumn = "projected_event_id"
 	// PlaybooksTable is the table that holds the playbooks relation/edge. The primary key declared below.
 	PlaybooksTable = "playbook_alerts"
 	// PlaybooksInverseTable is the table name for the Playbook entity.
@@ -55,20 +64,20 @@ const (
 	RosterInverseTable = "oncall_rosters"
 	// RosterColumn is the table column denoting the roster relation/edge.
 	RosterColumn = "roster_id"
-	// InstancesTable is the table that holds the instances relation/edge.
-	InstancesTable = "alert_instances"
-	// InstancesInverseTable is the table name for the AlertInstance entity.
-	// It exists in this package in order to avoid circular dependency with the "alertinstance" package.
-	InstancesInverseTable = "alert_instances"
-	// InstancesColumn is the table column denoting the instances relation/edge.
-	InstancesColumn = "alert_instances"
+	// FeedbackTable is the table that holds the feedback relation/edge.
+	FeedbackTable = "alert_feedbacks"
+	// FeedbackInverseTable is the table name for the AlertFeedback entity.
+	// It exists in this package in order to avoid circular dependency with the "alertfeedback" package.
+	FeedbackInverseTable = "alert_feedbacks"
+	// FeedbackColumn is the table column denoting the feedback relation/edge.
+	FeedbackColumn = "alert_id"
 )
 
 // Columns holds all SQL columns for alert fields.
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldExternalID,
+	FieldProjectedEventID,
 	FieldTitle,
 	FieldDescription,
 	FieldDefinition,
@@ -116,9 +125,9 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByExternalID orders the results by the external_id field.
-func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
+// ByProjectedEventID orders the results by the projected_event_id field.
+func ByProjectedEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProjectedEventID, opts...).ToFunc()
 }
 
 // ByTitle orders the results by the title field.
@@ -148,6 +157,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByProjectedFromField orders the results by projected_from field.
+func ByProjectedFromField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectedFromStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // ByPlaybooksCount orders the results by playbooks count.
 func ByPlaybooksCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -169,17 +185,17 @@ func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByInstancesCount orders the results by instances count.
-func ByInstancesCount(opts ...sql.OrderTermOption) OrderOption {
+// ByFeedbackCount orders the results by feedback count.
+func ByFeedbackCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newInstancesStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newFeedbackStep(), opts...)
 	}
 }
 
-// ByInstances orders the results by instances terms.
-func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByFeedback orders the results by feedback terms.
+func ByFeedback(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newFeedbackStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -187,6 +203,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
+	)
+}
+func newProjectedFromStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectedFromInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ProjectedFromTable, ProjectedFromColumn),
 	)
 }
 func newPlaybooksStep() *sqlgraph.Step {
@@ -203,10 +226,10 @@ func newRosterStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, true, RosterTable, RosterColumn),
 	)
 }
-func newInstancesStep() *sqlgraph.Step {
+func newFeedbackStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(InstancesInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
+		sqlgraph.To(FeedbackInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
 	)
 }

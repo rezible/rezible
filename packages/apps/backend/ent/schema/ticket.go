@@ -17,7 +17,6 @@ func (Ticket) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		IntegrationDataMixin{},
 	}
 }
 

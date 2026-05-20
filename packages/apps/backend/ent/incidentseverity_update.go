@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -53,23 +54,23 @@ func (_u *IncidentSeverityUpdate) ClearArchiveTime() *IncidentSeverityUpdate {
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *IncidentSeverityUpdate) SetExternalID(v string) *IncidentSeverityUpdate {
-	_u.mutation.SetExternalID(v)
+// SetProjectedEventID sets the "projected_event_id" field.
+func (_u *IncidentSeverityUpdate) SetProjectedEventID(v uuid.UUID) *IncidentSeverityUpdate {
+	_u.mutation.SetProjectedEventID(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *IncidentSeverityUpdate) SetNillableExternalID(v *string) *IncidentSeverityUpdate {
+// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
+func (_u *IncidentSeverityUpdate) SetNillableProjectedEventID(v *uuid.UUID) *IncidentSeverityUpdate {
 	if v != nil {
-		_u.SetExternalID(*v)
+		_u.SetProjectedEventID(*v)
 	}
 	return _u
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *IncidentSeverityUpdate) ClearExternalID() *IncidentSeverityUpdate {
-	_u.mutation.ClearExternalID()
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (_u *IncidentSeverityUpdate) ClearProjectedEventID() *IncidentSeverityUpdate {
+	_u.mutation.ClearProjectedEventID()
 	return _u
 }
 
@@ -148,6 +149,25 @@ func (_u *IncidentSeverityUpdate) ClearDescription() *IncidentSeverityUpdate {
 	return _u
 }
 
+// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
+func (_u *IncidentSeverityUpdate) SetProjectedFromID(id uuid.UUID) *IncidentSeverityUpdate {
+	_u.mutation.SetProjectedFromID(id)
+	return _u
+}
+
+// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
+func (_u *IncidentSeverityUpdate) SetNillableProjectedFromID(id *uuid.UUID) *IncidentSeverityUpdate {
+	if id != nil {
+		_u = _u.SetProjectedFromID(*id)
+	}
+	return _u
+}
+
+// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
+func (_u *IncidentSeverityUpdate) SetProjectedFrom(v *NormalizedEvent) *IncidentSeverityUpdate {
+	return _u.SetProjectedFromID(v.ID)
+}
+
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
 func (_u *IncidentSeverityUpdate) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdate {
 	_u.mutation.AddIncidentIDs(ids...)
@@ -181,6 +201,12 @@ func (_u *IncidentSeverityUpdate) AddDebriefQuestions(v ...*IncidentDebriefQuest
 // Mutation returns the IncidentSeverityMutation object of the builder.
 func (_u *IncidentSeverityUpdate) Mutation() *IncidentSeverityMutation {
 	return _u.mutation
+}
+
+// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
+func (_u *IncidentSeverityUpdate) ClearProjectedFrom() *IncidentSeverityUpdate {
+	_u.mutation.ClearProjectedFrom()
+	return _u
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
@@ -284,12 +310,6 @@ func (_u *IncidentSeverityUpdate) sqlSave(ctx context.Context) (_node int, err e
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentseverity.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(incidentseverity.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(incidentseverity.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 	}
@@ -310,6 +330,37 @@ func (_u *IncidentSeverityUpdate) sqlSave(ctx context.Context) (_node int, err e
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentseverity.FieldDescription, field.TypeString)
+	}
+	if _u.mutation.ProjectedFromCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentseverity.ProjectedFromTable,
+			Columns: []string{incidentseverity.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSeverity
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentseverity.ProjectedFromTable,
+			Columns: []string{incidentseverity.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSeverity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -451,23 +502,23 @@ func (_u *IncidentSeverityUpdateOne) ClearArchiveTime() *IncidentSeverityUpdateO
 	return _u
 }
 
-// SetExternalID sets the "external_id" field.
-func (_u *IncidentSeverityUpdateOne) SetExternalID(v string) *IncidentSeverityUpdateOne {
-	_u.mutation.SetExternalID(v)
+// SetProjectedEventID sets the "projected_event_id" field.
+func (_u *IncidentSeverityUpdateOne) SetProjectedEventID(v uuid.UUID) *IncidentSeverityUpdateOne {
+	_u.mutation.SetProjectedEventID(v)
 	return _u
 }
 
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_u *IncidentSeverityUpdateOne) SetNillableExternalID(v *string) *IncidentSeverityUpdateOne {
+// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
+func (_u *IncidentSeverityUpdateOne) SetNillableProjectedEventID(v *uuid.UUID) *IncidentSeverityUpdateOne {
 	if v != nil {
-		_u.SetExternalID(*v)
+		_u.SetProjectedEventID(*v)
 	}
 	return _u
 }
 
-// ClearExternalID clears the value of the "external_id" field.
-func (_u *IncidentSeverityUpdateOne) ClearExternalID() *IncidentSeverityUpdateOne {
-	_u.mutation.ClearExternalID()
+// ClearProjectedEventID clears the value of the "projected_event_id" field.
+func (_u *IncidentSeverityUpdateOne) ClearProjectedEventID() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearProjectedEventID()
 	return _u
 }
 
@@ -546,6 +597,25 @@ func (_u *IncidentSeverityUpdateOne) ClearDescription() *IncidentSeverityUpdateO
 	return _u
 }
 
+// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
+func (_u *IncidentSeverityUpdateOne) SetProjectedFromID(id uuid.UUID) *IncidentSeverityUpdateOne {
+	_u.mutation.SetProjectedFromID(id)
+	return _u
+}
+
+// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
+func (_u *IncidentSeverityUpdateOne) SetNillableProjectedFromID(id *uuid.UUID) *IncidentSeverityUpdateOne {
+	if id != nil {
+		_u = _u.SetProjectedFromID(*id)
+	}
+	return _u
+}
+
+// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
+func (_u *IncidentSeverityUpdateOne) SetProjectedFrom(v *NormalizedEvent) *IncidentSeverityUpdateOne {
+	return _u.SetProjectedFromID(v.ID)
+}
+
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
 func (_u *IncidentSeverityUpdateOne) AddIncidentIDs(ids ...uuid.UUID) *IncidentSeverityUpdateOne {
 	_u.mutation.AddIncidentIDs(ids...)
@@ -579,6 +649,12 @@ func (_u *IncidentSeverityUpdateOne) AddDebriefQuestions(v ...*IncidentDebriefQu
 // Mutation returns the IncidentSeverityMutation object of the builder.
 func (_u *IncidentSeverityUpdateOne) Mutation() *IncidentSeverityMutation {
 	return _u.mutation
+}
+
+// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
+func (_u *IncidentSeverityUpdateOne) ClearProjectedFrom() *IncidentSeverityUpdateOne {
+	_u.mutation.ClearProjectedFrom()
+	return _u
 }
 
 // ClearIncidents clears all "incidents" edges to the Incident entity.
@@ -712,12 +788,6 @@ func (_u *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Incide
 	if _u.mutation.ArchiveTimeCleared() {
 		_spec.ClearField(incidentseverity.FieldArchiveTime, field.TypeTime)
 	}
-	if value, ok := _u.mutation.ExternalID(); ok {
-		_spec.SetField(incidentseverity.FieldExternalID, field.TypeString, value)
-	}
-	if _u.mutation.ExternalIDCleared() {
-		_spec.ClearField(incidentseverity.FieldExternalID, field.TypeString)
-	}
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(incidentseverity.FieldName, field.TypeString, value)
 	}
@@ -738,6 +808,37 @@ func (_u *IncidentSeverityUpdateOne) sqlSave(ctx context.Context) (_node *Incide
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentseverity.FieldDescription, field.TypeString)
+	}
+	if _u.mutation.ProjectedFromCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentseverity.ProjectedFromTable,
+			Columns: []string{incidentseverity.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSeverity
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   incidentseverity.ProjectedFromTable,
+			Columns: []string{incidentseverity.ProjectedFromColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentSeverity
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.IncidentsCleared() {
 		edge := &sqlgraph.EdgeSpec{

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -32,8 +33,12 @@ func (h *eventsHandler) ListEvents(ctx context.Context, req *oapi.ListEventsRequ
 
 	params := rez.ListEventsParams{
 		ListParams: req.ListParams(),
-		From:       req.From,
-		To:         req.To,
+	}
+	if !req.From.IsZero() {
+		params.Predicates = append(params.Predicates, ne.OccurredAtGTE(req.From))
+	}
+	if !req.To.IsZero() {
+		params.Predicates = append(params.Predicates, ne.OccurredAtLTE(req.To))
 	}
 
 	listRes, eventsErr := h.events.ListEvents(ctx, params)

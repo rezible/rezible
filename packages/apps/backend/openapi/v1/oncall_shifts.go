@@ -112,8 +112,7 @@ func OncallShiftFromEnt(shift *ent.OncallShift) OncallShift {
 	}
 
 	if shift.Edges.PrimaryShift != nil {
-		primary := OncallShiftFromEnt(shift.Edges.PrimaryShift)
-		attr.PrimaryShift = &primary
+		attr.PrimaryShift = new(OncallShiftFromEnt(shift.Edges.PrimaryShift))
 	} else if shift.PrimaryShiftID != uuid.Nil {
 		attr.PrimaryShift = &OncallShift{Id: shift.PrimaryShiftID}
 	}
@@ -142,8 +141,7 @@ func convertRawHandoverContents(contents []byte) ([]OncallShiftHandoverSection, 
 			Kind:   rawContent.Kind,
 		}
 		if rawContent.Kind == "regular" && rawContent.JsonContent != nil {
-			str := string(rawContent.JsonContent)
-			content[i].JsonContent = &str
+			content[i].JsonContent = new(string(rawContent.JsonContent))
 		}
 	}
 	return content, nil

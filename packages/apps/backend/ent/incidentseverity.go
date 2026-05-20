@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/incidentseverity"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -23,8 +24,8 @@ type IncidentSeverity struct {
 	TenantID int `json:"tenant_id,omitempty"`
 	// ArchiveTime holds the value of the "archive_time" field.
 	ArchiveTime time.Time `json:"archive_time,omitempty"`
-	// ExternalID holds the value of the "external_id" field.
-	ExternalID string `json:"external_id,omitempty"`
+	// ProjectedEventID holds the value of the "projected_event_id" field.
+	ProjectedEventID uuid.UUID `json:"projected_event_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Rank holds the value of the "rank" field.
@@ -43,13 +44,15 @@ type IncidentSeverity struct {
 type IncidentSeverityEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// ProjectedFrom holds the value of the projected_from edge.
+	ProjectedFrom *NormalizedEvent `json:"projected_from,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
 	// DebriefQuestions holds the value of the debrief_questions edge.
 	DebriefQuestions []*IncidentDebriefQuestion `json:"debrief_questions,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -63,10 +66,21 @@ func (e IncidentSeverityEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// ProjectedFromOrErr returns the ProjectedFrom value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IncidentSeverityEdges) ProjectedFromOrErr() (*NormalizedEvent, error) {
+	if e.ProjectedFrom != nil {
+		return e.ProjectedFrom, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: normalizedevent.Label}
+	}
+	return nil, &NotLoadedError{edge: "projected_from"}
+}
+
 // IncidentsOrErr returns the Incidents value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentSeverityEdges) IncidentsOrErr() ([]*Incident, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Incidents, nil
 	}
 	return nil, &NotLoadedError{edge: "incidents"}
@@ -75,7 +89,7 @@ func (e IncidentSeverityEdges) IncidentsOrErr() ([]*Incident, error) {
 // DebriefQuestionsOrErr returns the DebriefQuestions value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentSeverityEdges) DebriefQuestionsOrErr() ([]*IncidentDebriefQuestion, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.DebriefQuestions, nil
 	}
 	return nil, &NotLoadedError{edge: "debrief_questions"}
@@ -88,11 +102,11 @@ func (*IncidentSeverity) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incidentseverity.FieldTenantID, incidentseverity.FieldRank:
 			values[i] = new(sql.NullInt64)
-		case incidentseverity.FieldExternalID, incidentseverity.FieldName, incidentseverity.FieldColor, incidentseverity.FieldDescription:
+		case incidentseverity.FieldName, incidentseverity.FieldColor, incidentseverity.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidentseverity.FieldArchiveTime:
 			values[i] = new(sql.NullTime)
-		case incidentseverity.FieldID:
+		case incidentseverity.FieldID, incidentseverity.FieldProjectedEventID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -127,11 +141,11 @@ func (_m *IncidentSeverity) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ArchiveTime = value.Time
 			}
-		case incidentseverity.FieldExternalID:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_id", values[i])
-			} else if value.Valid {
-				_m.ExternalID = value.String
+		case incidentseverity.FieldProjectedEventID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field projected_event_id", values[i])
+			} else if value != nil {
+				_m.ProjectedEventID = *value
 			}
 		case incidentseverity.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -175,6 +189,11 @@ func (_m *IncidentSeverity) QueryTenant() *TenantQuery {
 	return NewIncidentSeverityClient(_m.config).QueryTenant(_m)
 }
 
+// QueryProjectedFrom queries the "projected_from" edge of the IncidentSeverity entity.
+func (_m *IncidentSeverity) QueryProjectedFrom() *NormalizedEventQuery {
+	return NewIncidentSeverityClient(_m.config).QueryProjectedFrom(_m)
+}
+
 // QueryIncidents queries the "incidents" edge of the IncidentSeverity entity.
 func (_m *IncidentSeverity) QueryIncidents() *IncidentQuery {
 	return NewIncidentSeverityClient(_m.config).QueryIncidents(_m)
@@ -214,8 +233,8 @@ func (_m *IncidentSeverity) String() string {
 	builder.WriteString("archive_time=")
 	builder.WriteString(_m.ArchiveTime.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("external_id=")
-	builder.WriteString(_m.ExternalID)
+	builder.WriteString("projected_event_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ProjectedEventID))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)

@@ -61,6 +61,23 @@ func DecodeEvent[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
 	return &Event[A]{Event: ev, Attributes: asEvent}, nil
 }
 
+type EventDisplay struct {
+	Title       string
+	Description string
+}
+
+func GetEventDisplay(ev *ent.NormalizedEvent) (*EventDisplay, error) {
+	if ev == nil {
+		return nil, fmt.Errorf("normalized event is nil")
+	}
+	// TODO: actually convert
+	disp := &EventDisplay{
+		Title:       "TODO",
+		Description: "",
+	}
+	return disp, nil
+}
+
 func requiredString(ev *ent.NormalizedEvent, key string) (string, error) {
 	value, ok := ev.Attributes[key]
 	if !ok {

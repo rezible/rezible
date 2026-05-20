@@ -14,9 +14,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -31,7 +31,7 @@ type EventAnnotationQuery struct {
 	inters        []Interceptor
 	predicates    []predicate.EventAnnotation
 	withTenant    *TenantQuery
-	withEvent     *EventQuery
+	withEvent     *NormalizedEventQuery
 	withCreator   *UserQuery
 	withHandovers *OncallShiftHandoverQuery
 	modifiers     []func(*sql.Selector)
@@ -97,8 +97,8 @@ func (_q *EventAnnotationQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryEvent chains the current query on the "event" edge.
-func (_q *EventAnnotationQuery) QueryEvent() *EventQuery {
-	query := (&EventClient{config: _q.config}).Query()
+func (_q *EventAnnotationQuery) QueryEvent() *NormalizedEventQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -109,11 +109,11 @@ func (_q *EventAnnotationQuery) QueryEvent() *EventQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(eventannotation.Table, eventannotation.FieldID, selector),
-			sqlgraph.To(event.Table, event.FieldID),
+			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, eventannotation.EventTable, eventannotation.EventColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Event
+		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.EventAnnotation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -387,8 +387,8 @@ func (_q *EventAnnotationQuery) WithTenant(opts ...func(*TenantQuery)) *EventAnn
 
 // WithEvent tells the query-builder to eager-load the nodes that are connected to
 // the "event" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *EventAnnotationQuery) WithEvent(opts ...func(*EventQuery)) *EventAnnotationQuery {
-	query := (&EventClient{config: _q.config}).Query()
+func (_q *EventAnnotationQuery) WithEvent(opts ...func(*NormalizedEventQuery)) *EventAnnotationQuery {
+	query := (&NormalizedEventClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -540,7 +540,7 @@ func (_q *EventAnnotationQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	}
 	if query := _q.withEvent; query != nil {
 		if err := _q.loadEvent(ctx, query, nodes, nil,
-			func(n *EventAnnotation, e *Event) { n.Edges.Event = e }); err != nil {
+			func(n *EventAnnotation, e *NormalizedEvent) { n.Edges.Event = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -589,7 +589,7 @@ func (_q *EventAnnotationQuery) loadTenant(ctx context.Context, query *TenantQue
 	}
 	return nil
 }
-func (_q *EventAnnotationQuery) loadEvent(ctx context.Context, query *EventQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *Event)) error {
+func (_q *EventAnnotationQuery) loadEvent(ctx context.Context, query *NormalizedEventQuery, nodes []*EventAnnotation, init func(*EventAnnotation), assign func(*EventAnnotation, *NormalizedEvent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*EventAnnotation)
 	for i := range nodes {
@@ -602,7 +602,7 @@ func (_q *EventAnnotationQuery) loadEvent(ctx context.Context, query *EventQuery
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(event.IDIn(ids...))
+	query.Where(normalizedevent.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err

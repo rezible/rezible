@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	ne "github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/integrations/projections"
 	"github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
@@ -153,13 +155,17 @@ func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]slack.Block,
 		if evErr != nil {
 			return nil, fmt.Errorf("annotation event not loaded: %w", evErr)
 		}
+		disp, dispErr := projections.GetEventDisplay(ev)
+		if dispErr != nil {
+			return nil, fmt.Errorf("annotation event display err: %w", dispErr)
+		}
 
 		var eventEls []slack.RichTextSectionElement
-		if ev.Kind == "incident" {
+		if ev.Kind == ne.KindIncidentObserved {
 			link := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), ev.ID)
-			eventEls = append(eventEls, slack.NewRichTextSectionLinkElement(link, ev.Title, nil))
+			eventEls = append(eventEls, slack.NewRichTextSectionLinkElement(link, disp.Title, nil))
 		} else {
-			eventEls = append(eventEls, slack.NewRichTextSectionTextElement(ev.Title, nil))
+			eventEls = append(eventEls, slack.NewRichTextSectionTextElement(disp.Title, nil))
 		}
 
 		eventList := slack.NewRichTextList(slack.RTEListBullet, 0)

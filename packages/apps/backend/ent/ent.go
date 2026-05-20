@@ -14,22 +14,15 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
-	"github.com/rezible/rezible/ent/event"
 	"github.com/rezible/rezible/ent/eventannotation"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
-	"github.com/rezible/rezible/ent/incidentevent"
-	"github.com/rezible/rezible/ent/incidenteventcontext"
-	"github.com/rezible/rezible/ent/incidenteventcontributingfactor"
-	"github.com/rezible/rezible/ent/incidenteventevidence"
-	"github.com/rezible/rezible/ent/incidenteventtopologycontext"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
 	"github.com/rezible/rezible/ent/incidentlink"
@@ -38,6 +31,11 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttag"
+	"github.com/rezible/rezible/ent/incidenttimelineevent"
+	"github.com/rezible/rezible/ent/incidenttimelineeventcontext"
+	"github.com/rezible/rezible/ent/incidenttimelineeventcontributingfactor"
+	"github.com/rezible/rezible/ent/incidenttimelineeventevidence"
+	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
@@ -138,72 +136,70 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			alert.Table:                              alert.ValidColumn,
-			alertfeedback.Table:                      alertfeedback.ValidColumn,
-			alertinstance.Table:                      alertinstance.ValidColumn,
-			alertmetrics.Table:                       alertmetrics.ValidColumn,
-			document.Table:                           document.ValidColumn,
-			documentaccess.Table:                     documentaccess.ValidColumn,
-			event.Table:                              event.ValidColumn,
-			eventannotation.Table:                    eventannotation.ValidColumn,
-			incident.Table:                           incident.ValidColumn,
-			incidentdebrief.Table:                    incidentdebrief.ValidColumn,
-			incidentdebriefmessage.Table:             incidentdebriefmessage.ValidColumn,
-			incidentdebriefquestion.Table:            incidentdebriefquestion.ValidColumn,
-			incidentdebriefsuggestion.Table:          incidentdebriefsuggestion.ValidColumn,
-			incidentevent.Table:                      incidentevent.ValidColumn,
-			incidenteventcontext.Table:               incidenteventcontext.ValidColumn,
-			incidenteventcontributingfactor.Table:    incidenteventcontributingfactor.ValidColumn,
-			incidenteventevidence.Table:              incidenteventevidence.ValidColumn,
-			incidenteventtopologycontext.Table:       incidenteventtopologycontext.ValidColumn,
-			incidentfield.Table:                      incidentfield.ValidColumn,
-			incidentfieldoption.Table:                incidentfieldoption.ValidColumn,
-			incidentlink.Table:                       incidentlink.ValidColumn,
-			incidentmilestone.Table:                  incidentmilestone.ValidColumn,
-			incidentrole.Table:                       incidentrole.ValidColumn,
-			incidentroleassignment.Table:             incidentroleassignment.ValidColumn,
-			incidentseverity.Table:                   incidentseverity.ValidColumn,
-			incidenttag.Table:                        incidenttag.ValidColumn,
-			incidenttype.Table:                       incidenttype.ValidColumn,
-			integration.Table:                        integration.ValidColumn,
-			integrationoauthstate.Table:              integrationoauthstate.ValidColumn,
-			knowledgeentity.Table:                    knowledgeentity.ValidColumn,
-			knowledgeentityalias.Table:               knowledgeentityalias.ValidColumn,
-			knowledgeevidence.Table:                  knowledgeevidence.ValidColumn,
-			knowledgerelationship.Table:              knowledgerelationship.ValidColumn,
-			meetingschedule.Table:                    meetingschedule.ValidColumn,
-			meetingsession.Table:                     meetingsession.ValidColumn,
-			normalizedevent.Table:                    normalizedevent.ValidColumn,
-			normalizedeventprojectionstatus.Table:    normalizedeventprojectionstatus.ValidColumn,
-			oncallhandovertemplate.Table:             oncallhandovertemplate.ValidColumn,
-			oncallroster.Table:                       oncallroster.ValidColumn,
-			oncallrostermetrics.Table:                oncallrostermetrics.ValidColumn,
-			oncallschedule.Table:                     oncallschedule.ValidColumn,
-			oncallscheduleparticipant.Table:          oncallscheduleparticipant.ValidColumn,
-			oncallshift.Table:                        oncallshift.ValidColumn,
-			oncallshifthandover.Table:                oncallshifthandover.ValidColumn,
-			oncallshiftmetrics.Table:                 oncallshiftmetrics.ValidColumn,
-			organization.Table:                       organization.ValidColumn,
-			organizationrole.Table:                   organizationrole.ValidColumn,
-			playbook.Table:                           playbook.ValidColumn,
-			providereventsynccursor.Table:            providereventsynccursor.ValidColumn,
-			providereventsyncrun.Table:               providereventsyncrun.ValidColumn,
-			retrospective.Table:                      retrospective.ValidColumn,
-			retrospectivecomment.Table:               retrospectivecomment.ValidColumn,
-			retrospectivereview.Table:                retrospectivereview.ValidColumn,
-			systemanalysis.Table:                     systemanalysis.ValidColumn,
-			systemanalysistopologyedge.Table:         systemanalysistopologyedge.ValidColumn,
-			systemanalysistopologynode.Table:         systemanalysistopologynode.ValidColumn,
-			systemtopologysnapshot.Table:             systemtopologysnapshot.ValidColumn,
-			systemtopologysnapshotentity.Table:       systemtopologysnapshotentity.ValidColumn,
-			systemtopologysnapshotrelationship.Table: systemtopologysnapshotrelationship.ValidColumn,
-			task.Table:                               task.ValidColumn,
-			team.Table:                               team.ValidColumn,
-			teammembership.Table:                     teammembership.ValidColumn,
-			tenant.Table:                             tenant.ValidColumn,
-			ticket.Table:                             ticket.ValidColumn,
-			user.Table:                               user.ValidColumn,
-			videoconference.Table:                    videoconference.ValidColumn,
+			alert.Table:                                   alert.ValidColumn,
+			alertfeedback.Table:                           alertfeedback.ValidColumn,
+			alertmetrics.Table:                            alertmetrics.ValidColumn,
+			document.Table:                                document.ValidColumn,
+			documentaccess.Table:                          documentaccess.ValidColumn,
+			eventannotation.Table:                         eventannotation.ValidColumn,
+			incident.Table:                                incident.ValidColumn,
+			incidentdebrief.Table:                         incidentdebrief.ValidColumn,
+			incidentdebriefmessage.Table:                  incidentdebriefmessage.ValidColumn,
+			incidentdebriefquestion.Table:                 incidentdebriefquestion.ValidColumn,
+			incidentdebriefsuggestion.Table:               incidentdebriefsuggestion.ValidColumn,
+			incidentfield.Table:                           incidentfield.ValidColumn,
+			incidentfieldoption.Table:                     incidentfieldoption.ValidColumn,
+			incidentlink.Table:                            incidentlink.ValidColumn,
+			incidentmilestone.Table:                       incidentmilestone.ValidColumn,
+			incidentrole.Table:                            incidentrole.ValidColumn,
+			incidentroleassignment.Table:                  incidentroleassignment.ValidColumn,
+			incidentseverity.Table:                        incidentseverity.ValidColumn,
+			incidenttag.Table:                             incidenttag.ValidColumn,
+			incidenttimelineevent.Table:                   incidenttimelineevent.ValidColumn,
+			incidenttimelineeventcontext.Table:            incidenttimelineeventcontext.ValidColumn,
+			incidenttimelineeventcontributingfactor.Table: incidenttimelineeventcontributingfactor.ValidColumn,
+			incidenttimelineeventevidence.Table:           incidenttimelineeventevidence.ValidColumn,
+			incidenttimelineeventtopologycontext.Table:    incidenttimelineeventtopologycontext.ValidColumn,
+			incidenttype.Table:                            incidenttype.ValidColumn,
+			integration.Table:                             integration.ValidColumn,
+			integrationoauthstate.Table:                   integrationoauthstate.ValidColumn,
+			knowledgeentity.Table:                         knowledgeentity.ValidColumn,
+			knowledgeentityalias.Table:                    knowledgeentityalias.ValidColumn,
+			knowledgeevidence.Table:                       knowledgeevidence.ValidColumn,
+			knowledgerelationship.Table:                   knowledgerelationship.ValidColumn,
+			meetingschedule.Table:                         meetingschedule.ValidColumn,
+			meetingsession.Table:                          meetingsession.ValidColumn,
+			normalizedevent.Table:                         normalizedevent.ValidColumn,
+			normalizedeventprojectionstatus.Table:         normalizedeventprojectionstatus.ValidColumn,
+			oncallhandovertemplate.Table:                  oncallhandovertemplate.ValidColumn,
+			oncallroster.Table:                            oncallroster.ValidColumn,
+			oncallrostermetrics.Table:                     oncallrostermetrics.ValidColumn,
+			oncallschedule.Table:                          oncallschedule.ValidColumn,
+			oncallscheduleparticipant.Table:               oncallscheduleparticipant.ValidColumn,
+			oncallshift.Table:                             oncallshift.ValidColumn,
+			oncallshifthandover.Table:                     oncallshifthandover.ValidColumn,
+			oncallshiftmetrics.Table:                      oncallshiftmetrics.ValidColumn,
+			organization.Table:                            organization.ValidColumn,
+			organizationrole.Table:                        organizationrole.ValidColumn,
+			playbook.Table:                                playbook.ValidColumn,
+			providereventsynccursor.Table:                 providereventsynccursor.ValidColumn,
+			providereventsyncrun.Table:                    providereventsyncrun.ValidColumn,
+			retrospective.Table:                           retrospective.ValidColumn,
+			retrospectivecomment.Table:                    retrospectivecomment.ValidColumn,
+			retrospectivereview.Table:                     retrospectivereview.ValidColumn,
+			systemanalysis.Table:                          systemanalysis.ValidColumn,
+			systemanalysistopologyedge.Table:              systemanalysistopologyedge.ValidColumn,
+			systemanalysistopologynode.Table:              systemanalysistopologynode.ValidColumn,
+			systemtopologysnapshot.Table:                  systemtopologysnapshot.ValidColumn,
+			systemtopologysnapshotentity.Table:            systemtopologysnapshotentity.ValidColumn,
+			systemtopologysnapshotrelationship.Table:      systemtopologysnapshotrelationship.ValidColumn,
+			task.Table:                                    task.ValidColumn,
+			team.Table:                                    team.ValidColumn,
+			teammembership.Table:                          teammembership.ValidColumn,
+			tenant.Table:                                  tenant.ValidColumn,
+			ticket.Table:                                  ticket.ValidColumn,
+			user.Table:                                    user.ValidColumn,
+			videoconference.Table:                         videoconference.ValidColumn,
 		})
 	})
 	return columnCheck(t, c)

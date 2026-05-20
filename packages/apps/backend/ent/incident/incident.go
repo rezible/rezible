@@ -18,18 +18,16 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldExternalID holds the string denoting the external_id field in the database.
-	FieldExternalID = "external_id"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldProjectedEventID holds the string denoting the projected_event_id field in the database.
+	FieldProjectedEventID = "projected_event_id"
 	// FieldSlug holds the string denoting the slug field in the database.
 	FieldSlug = "slug"
 	// FieldTitle holds the string denoting the title field in the database.
 	FieldTitle = "title"
-	// FieldTitle2 holds the string denoting the title2 field in the database.
-	FieldTitle2 = "title2"
 	// FieldSeverityID holds the string denoting the severity_id field in the database.
 	FieldSeverityID = "severity_id"
 	// FieldTypeID holds the string denoting the type_id field in the database.
@@ -42,14 +40,16 @@ const (
 	FieldOpenedAt = "opened_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
+	// EdgeProjectedFrom holds the string denoting the projected_from edge name in mutations.
+	EdgeProjectedFrom = "projected_from"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
 	EdgeSeverity = "severity"
 	// EdgeType holds the string denoting the type edge name in mutations.
 	EdgeType = "type"
 	// EdgeMilestones holds the string denoting the milestones edge name in mutations.
 	EdgeMilestones = "milestones"
-	// EdgeEvents holds the string denoting the events edge name in mutations.
-	EdgeEvents = "events"
+	// EdgeTimelineEvents holds the string denoting the timeline_events edge name in mutations.
+	EdgeTimelineEvents = "timeline_events"
 	// EdgeRetrospective holds the string denoting the retrospective edge name in mutations.
 	EdgeRetrospective = "retrospective"
 	// EdgeUsers holds the string denoting the users edge name in mutations.
@@ -83,6 +83,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
+	// ProjectedFromTable is the table that holds the projected_from relation/edge.
+	ProjectedFromTable = "incidents"
+	// ProjectedFromInverseTable is the table name for the NormalizedEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
+	ProjectedFromInverseTable = "normalized_events"
+	// ProjectedFromColumn is the table column denoting the projected_from relation/edge.
+	ProjectedFromColumn = "projected_event_id"
 	// SeverityTable is the table that holds the severity relation/edge.
 	SeverityTable = "incidents"
 	// SeverityInverseTable is the table name for the IncidentSeverity entity.
@@ -104,13 +111,13 @@ const (
 	MilestonesInverseTable = "incident_milestones"
 	// MilestonesColumn is the table column denoting the milestones relation/edge.
 	MilestonesColumn = "incident_id"
-	// EventsTable is the table that holds the events relation/edge.
-	EventsTable = "incident_events"
-	// EventsInverseTable is the table name for the IncidentEvent entity.
-	// It exists in this package in order to avoid circular dependency with the "incidentevent" package.
-	EventsInverseTable = "incident_events"
-	// EventsColumn is the table column denoting the events relation/edge.
-	EventsColumn = "incident_id"
+	// TimelineEventsTable is the table that holds the timeline_events relation/edge.
+	TimelineEventsTable = "incident_timeline_events"
+	// TimelineEventsInverseTable is the table name for the IncidentTimelineEvent entity.
+	// It exists in this package in order to avoid circular dependency with the "incidenttimelineevent" package.
+	TimelineEventsInverseTable = "incident_timeline_events"
+	// TimelineEventsColumn is the table column denoting the timeline_events relation/edge.
+	TimelineEventsColumn = "incident_id"
 	// RetrospectiveTable is the table that holds the retrospective relation/edge.
 	RetrospectiveTable = "retrospectives"
 	// RetrospectiveInverseTable is the table name for the Retrospective entity.
@@ -188,12 +195,11 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldExternalID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldProjectedEventID,
 	FieldSlug,
 	FieldTitle,
-	FieldTitle2,
 	FieldSeverityID,
 	FieldTypeID,
 	FieldSummary,
@@ -262,11 +268,6 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByExternalID orders the results by the external_id field.
-func ByExternalID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldExternalID, opts...).ToFunc()
-}
-
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
@@ -277,6 +278,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByProjectedEventID orders the results by the projected_event_id field.
+func ByProjectedEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProjectedEventID, opts...).ToFunc()
+}
+
 // BySlug orders the results by the slug field.
 func BySlug(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldSlug, opts...).ToFunc()
@@ -285,11 +291,6 @@ func BySlug(opts ...sql.OrderTermOption) OrderOption {
 // ByTitle orders the results by the title field.
 func ByTitle(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTitle, opts...).ToFunc()
-}
-
-// ByTitle2 orders the results by the title2 field.
-func ByTitle2(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTitle2, opts...).ToFunc()
 }
 
 // BySeverityID orders the results by the severity_id field.
@@ -324,6 +325,13 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByProjectedFromField orders the results by projected_from field.
+func ByProjectedFromField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectedFromStep(), sql.OrderByField(field, opts...))
+	}
+}
+
 // BySeverityField orders the results by severity field.
 func BySeverityField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -352,17 +360,17 @@ func ByMilestones(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByEventsCount orders the results by events count.
-func ByEventsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByTimelineEventsCount orders the results by timeline_events count.
+func ByTimelineEventsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newEventsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newTimelineEventsStep(), opts...)
 	}
 }
 
-// ByEvents orders the results by events terms.
-func ByEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByTimelineEvents orders the results by timeline_events terms.
+func ByTimelineEvents(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newTimelineEventsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -533,6 +541,13 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
+func newProjectedFromStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectedFromInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, ProjectedFromTable, ProjectedFromColumn),
+	)
+}
 func newSeverityStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -554,11 +569,11 @@ func newMilestonesStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.O2M, false, MilestonesTable, MilestonesColumn),
 	)
 }
-func newEventsStep() *sqlgraph.Step {
+func newTimelineEventsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(EventsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, EventsTable, EventsColumn),
+		sqlgraph.To(TimelineEventsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, TimelineEventsTable, TimelineEventsColumn),
 	)
 }
 func newRetrospectiveStep() *sqlgraph.Step {

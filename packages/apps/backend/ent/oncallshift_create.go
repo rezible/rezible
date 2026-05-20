@@ -35,20 +35,6 @@ func (_c *OncallShiftCreate) SetTenantID(v int) *OncallShiftCreate {
 	return _c
 }
 
-// SetExternalID sets the "external_id" field.
-func (_c *OncallShiftCreate) SetExternalID(v string) *OncallShiftCreate {
-	_c.mutation.SetExternalID(v)
-	return _c
-}
-
-// SetNillableExternalID sets the "external_id" field if the given value is not nil.
-func (_c *OncallShiftCreate) SetNillableExternalID(v *string) *OncallShiftCreate {
-	if v != nil {
-		_c.SetExternalID(*v)
-	}
-	return _c
-}
-
 // SetUserID sets the "user_id" field.
 func (_c *OncallShiftCreate) SetUserID(v uuid.UUID) *OncallShiftCreate {
 	_c.mutation.SetUserID(v)
@@ -292,10 +278,6 @@ func (_c *OncallShiftCreate) createSpec() (*OncallShift, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ExternalID(); ok {
-		_spec.SetField(oncallshift.FieldExternalID, field.TypeString, value)
-		_node.ExternalID = value
-	}
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(oncallshift.FieldRole, field.TypeEnum, value)
 		_node.Role = value
@@ -466,24 +448,6 @@ type (
 	}
 )
 
-// SetExternalID sets the "external_id" field.
-func (u *OncallShiftUpsert) SetExternalID(v string) *OncallShiftUpsert {
-	u.Set(oncallshift.FieldExternalID, v)
-	return u
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OncallShiftUpsert) UpdateExternalID() *OncallShiftUpsert {
-	u.SetExcluded(oncallshift.FieldExternalID)
-	return u
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *OncallShiftUpsert) ClearExternalID() *OncallShiftUpsert {
-	u.SetNull(oncallshift.FieldExternalID)
-	return u
-}
-
 // SetUserID sets the "user_id" field.
 func (u *OncallShiftUpsert) SetUserID(v uuid.UUID) *OncallShiftUpsert {
 	u.Set(oncallshift.FieldUserID, v)
@@ -617,27 +581,6 @@ func (u *OncallShiftUpsertOne) Update(set func(*OncallShiftUpsert)) *OncallShift
 		set(&OncallShiftUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetExternalID sets the "external_id" field.
-func (u *OncallShiftUpsertOne) SetExternalID(v string) *OncallShiftUpsertOne {
-	return u.Update(func(s *OncallShiftUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OncallShiftUpsertOne) UpdateExternalID() *OncallShiftUpsertOne {
-	return u.Update(func(s *OncallShiftUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *OncallShiftUpsertOne) ClearExternalID() *OncallShiftUpsertOne {
-	return u.Update(func(s *OncallShiftUpsert) {
-		s.ClearExternalID()
-	})
 }
 
 // SetUserID sets the "user_id" field.
@@ -954,27 +897,6 @@ func (u *OncallShiftUpsertBulk) Update(set func(*OncallShiftUpsert)) *OncallShif
 		set(&OncallShiftUpsert{UpdateSet: update})
 	}))
 	return u
-}
-
-// SetExternalID sets the "external_id" field.
-func (u *OncallShiftUpsertBulk) SetExternalID(v string) *OncallShiftUpsertBulk {
-	return u.Update(func(s *OncallShiftUpsert) {
-		s.SetExternalID(v)
-	})
-}
-
-// UpdateExternalID sets the "external_id" field to the value that was provided on create.
-func (u *OncallShiftUpsertBulk) UpdateExternalID() *OncallShiftUpsertBulk {
-	return u.Update(func(s *OncallShiftUpsert) {
-		s.UpdateExternalID()
-	})
-}
-
-// ClearExternalID clears the value of the "external_id" field.
-func (u *OncallShiftUpsertBulk) ClearExternalID() *OncallShiftUpsertBulk {
-	return u.Update(func(s *OncallShiftUpsert) {
-		s.ClearExternalID()
-	})
 }
 
 // SetUserID sets the "user_id" field.

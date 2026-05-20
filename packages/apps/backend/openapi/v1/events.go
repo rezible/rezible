@@ -36,12 +36,12 @@ type (
 	}
 )
 
-func EventFromEnt(e *ent.Event) Event {
+func EventFromEnt(e *ent.NormalizedEvent) Event {
 	attr := EventAttributes{
-		Kind:        e.Kind.String(),
-		Title:       e.Title,
-		Description: e.Description,
-		Timestamp:   e.Timestamp,
+		Kind: e.Kind.String(),
+		//Title:       e.Title,
+		//Description: e.Description,
+		Timestamp: e.OccurredAt,
 	}
 
 	//if e.Edges.Annotations != nil {
