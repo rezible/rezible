@@ -1,4 +1,4 @@
-package eventprojections
+package projections
 
 import "github.com/rezible/rezible/ent"
 
@@ -23,9 +23,6 @@ func (a RepositoryObservedAttributes) Encode() map[string]any {
 }
 
 func DecodeRepositoryObservedEvent(ev *ent.NormalizedEvent) (any, error) {
-	if attrsErr := rejectUnsupportedAttributes(ev, attrDisplayName, attrURL); attrsErr != nil {
-		return nil, attrsErr
-	}
 	displayName, nameErr := requiredString(ev, attrDisplayName)
 	if nameErr != nil {
 		return nil, nameErr
@@ -38,5 +35,5 @@ func DecodeRepositoryObservedEvent(ev *ent.NormalizedEvent) (any, error) {
 		DisplayName: displayName,
 		URL:         url,
 	}
-	return RepositoryObserved{Event: ev, Attributes: attrs}, nil
+	return attrs, nil
 }

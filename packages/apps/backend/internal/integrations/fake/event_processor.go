@@ -8,6 +8,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/integrations/projections"
 )
 
 func (i *integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
@@ -34,40 +36,78 @@ func (p *eventProcessor) Process(ctx context.Context, prov rez.ProviderEvent) (e
 }
 
 func (p *eventProcessor) processAlert(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	var payload alertFiredPayload
+	var payload alertObservedPayload
 	if jsonErr := json.Unmarshal(prov.Payload, &payload); jsonErr != nil {
-		return nil, fmt.Errorf("unmarshal alertFiredPayload: %w", jsonErr)
+		return nil, fmt.Errorf("unmarshal alert observed payload: %w", jsonErr)
 	}
 
-	//attrs := eventprojections.UserObservedAttributes{}
+	occurredAt := payload.OccurredAt
+	if occurredAt.IsZero() {
+		occurredAt = prov.ReceivedAt
+	}
+	if occurredAt.IsZero() {
+		occurredAt = time.Now().UTC()
+	}
+
+	attrs := projections.AlertObservedAttributes{
+		Title:       payload.Title,
+		Description: payload.Description,
+		Definition:  payload.Definition,
+	}
 
 	result := &ent.NormalizedEvent{
-		Provider:       integrationName,
-		ProviderSource: sourceAlerts,
-		//Kind:             ne.KindAlert,
+		Provider:         integrationName,
+		ProviderSource:   sourceAlerts,
+		Kind:             ne.KindAlertObserved,
 		SubjectKind:      "alert",
 		SubjectRef:       prov.SubjectRef,
 		ProviderEventRef: prov.ProviderEventRef,
-		OccurredAt:       time.Now(),
+		OccurredAt:       occurredAt,
 		ReceivedAt:       prov.ReceivedAt,
-		//Attributes:       attrs.Encode(),
+		Attributes:       attrs.Encode(),
+	}
+	if result.ReceivedAt.IsZero() {
+		result.ReceivedAt = occurredAt
 	}
 
 	return ent.NormalizedEvents{result}, nil
 }
 
 func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	var payload incidentObservedPayload
+	if jsonErr := json.Unmarshal(prov.Payload, &payload); jsonErr != nil {
+		return nil, fmt.Errorf("unmarshal incident observed payload: %w", jsonErr)
+	}
+
+	occurredAt := payload.OccurredAt
+	if occurredAt.IsZero() {
+		occurredAt = prov.ReceivedAt
+	}
+	if occurredAt.IsZero() {
+		occurredAt = time.Now().UTC()
+	}
+
+	attrs := projections.IncidentObservedAttributes{
+		Title:        payload.Title,
+		Summary:      payload.Summary,
+		SeverityName: payload.SeverityName,
+		SeverityRank: payload.SeverityRank,
+		TypeName:     payload.TypeName,
+	}
 
 	result := &ent.NormalizedEvent{
 		Provider:         integrationName,
 		ProviderSource:   sourceIncidents,
 		ProviderEventRef: prov.ProviderEventRef,
-		//Kind:             ne.KindIncident,
-		SubjectKind: "incident",
-		SubjectRef:  prov.SubjectRef,
-		OccurredAt:  time.Now(),
-		ReceivedAt:  prov.ReceivedAt,
-		//Attributes:       attrs.Encode(),
+		Kind:             ne.KindIncidentObserved,
+		SubjectKind:      "incident",
+		SubjectRef:       prov.SubjectRef,
+		OccurredAt:       occurredAt,
+		ReceivedAt:       prov.ReceivedAt,
+		Attributes:       attrs.Encode(),
+	}
+	if result.ReceivedAt.IsZero() {
+		result.ReceivedAt = occurredAt
 	}
 
 	return ent.NormalizedEvents{result}, nil

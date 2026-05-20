@@ -67,6 +67,9 @@
 		{#if !!ctrl.configError}
 			<InlineAlert bind:error={ctrl.configError} />
 		{/if}
+		{#if !!ctrl.syncStatusError}
+			<InlineAlert error={ctrl.syncStatusError} dismissable={false} />
+		{/if}
 
 		{#if ctrl.oauthSelectionRequired}
 			<div class="flex flex-col gap-3 rounded-md border p-3">
@@ -79,7 +82,8 @@
 						<label class="flex items-center gap-3 rounded-md border p-3 text-sm">
 							<Checkbox
 								checked={oauth.selectedExternalRefs.has(option.externalRef)}
-								onCheckedChange={(checked) => oauth.toggleSelection(option.externalRef, !!checked)}
+								onCheckedChange={(checked) =>
+									oauth.toggleSelection(option.externalRef, !!checked)}
 							/>
 							<span class="flex flex-col">
 								<span class="font-medium">{option.displayName}</span>
@@ -117,7 +121,9 @@
 						<div class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
 							<div class="min-w-0">
 								<div class="truncate font-medium">{configured.attributes.displayName}</div>
-								<div class="truncate text-muted-foreground">{configured.attributes.externalRef}</div>
+								<div class="truncate text-muted-foreground">
+									{configured.attributes.externalRef}
+								</div>
 							</div>
 							<div class="flex flex-wrap justify-end gap-1">
 								{#each Object.entries(configured.attributes.dataKinds).filter(([, enabled]) => enabled) as [kind] (kind)}
@@ -126,6 +132,34 @@
 							</div>
 						</div>
 					{/each}
+				</div>
+				<div class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
+					<div class="flex min-w-0 items-center gap-2">
+						<span class="text-muted-foreground">Data sync</span>
+						{#if ctrl.latestSyncStatusDisplay}
+							<Badge
+								variant={ctrl.latestSyncStatusDisplay.variant}
+								class={ctrl.latestSyncStatusDisplay.class}
+							>
+								{ctrl.latestSyncStatusDisplay.label}
+							</Badge>
+						{:else}
+							<Badge variant="outline">No runs</Badge>
+						{/if}
+						{#if ctrl.isSyncing}
+							<Spinner aria-label="Sync status updating" />
+						{/if}
+					</div>
+					<Button
+						variant="ghost"
+						size="sm"
+						disabled={ctrl.loading || ctrl.isSyncing}
+						onclick={() => {
+							ctrl.refetchSyncStatus();
+						}}
+					>
+						Refresh
+					</Button>
 				</div>
 			{/if}
 
@@ -152,11 +186,18 @@
 					{/if}
 				</Button>
 				<Button
-					onclick={() => {ctrl.requestDataSync();}}
+					onclick={() => {
+						ctrl.requestSync();
+					}}
 					variant="outline"
-					disabled={ctrl.loading}
+					disabled={!ctrl.hasConfigured || ctrl.loading || ctrl.isSyncing}
 				>
-					Request Data Sync
+					{#if ctrl.isSyncing}
+						<Spinner />
+						Syncing...
+					{:else}
+						Request Data Sync
+					{/if}
 				</Button>
 			</div>
 		{/if}

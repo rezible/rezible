@@ -10,7 +10,7 @@ import (
 
 const integrationName = "fake"
 
-var supportedDataKinds = []string{"topology_entities"}
+var supportedDataKinds = []string{"alerts", "incidents"}
 
 type integration struct{}
 

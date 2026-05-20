@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -13,6 +12,8 @@ import (
 	afb "github.com/rezible/rezible/ent/alertfeedback"
 	ae "github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/event"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/integrations/projections"
 )
 
 type AlertService struct {
@@ -30,6 +31,65 @@ func NewAlertService(svcs *rez.Services) (*AlertService, error) {
 func alertEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
 	if event.Kind != ne.KindAlertObserved {
 		return nil
+	}
+
+	observed, validationErr := projections.DecodeEvent[projections.AlertObservedAttributes](event)
+	if validationErr != nil || observed == nil {
+		return fmt.Errorf("invalid event: %w", validationErr)
+	}
+
+	attrs := observed.Attributes
+	existingAlert, queryErr := client.Alert.Query().
+		Where(alert.ExternalID(event.SubjectRef)).
+		Only(ctx)
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return fmt.Errorf("query alert: %w", queryErr)
+	}
+
+	var savedAlert *ent.Alert
+	if existingAlert != nil {
+		var updateErr error
+		savedAlert, updateErr = client.Alert.UpdateOne(existingAlert).
+			SetTitle(attrs.Title).
+			SetDescription(attrs.Description).
+			SetDefinition(attrs.Definition).
+			Save(ctx)
+		if updateErr != nil {
+			return fmt.Errorf("update alert: %w", updateErr)
+		}
+	} else {
+		var createErr error
+		savedAlert, createErr = client.Alert.Create().
+			SetExternalID(event.SubjectRef).
+			SetTitle(attrs.Title).
+			SetDescription(attrs.Description).
+			SetDefinition(attrs.Definition).
+			Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create alert: %w", createErr)
+		}
+	}
+
+	existingInstance, queryErr := client.AlertInstance.Query().
+		Where(ae.ExternalID(event.ProviderEventRef)).
+		Only(ctx)
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return fmt.Errorf("query alert instance: %w", queryErr)
+	}
+	if existingInstance != nil {
+		if _, updateErr := client.AlertInstance.UpdateOne(existingInstance).
+			SetAlertID(savedAlert.ID).
+			Save(ctx); updateErr != nil {
+			return fmt.Errorf("update alert instance: %w", updateErr)
+		}
+		return nil
+	}
+
+	if _, createErr := client.AlertInstance.Create().
+		SetExternalID(event.ProviderEventRef).
+		SetAlertID(savedAlert.ID).
+		Save(ctx); createErr != nil {
+		return fmt.Errorf("create alert instance: %w", createErr)
 	}
 
 	return nil

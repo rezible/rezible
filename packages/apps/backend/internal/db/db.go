@@ -1,10 +1,10 @@
 package db
 
-import "github.com/rezible/rezible/integrations/eventprojections"
+import "github.com/rezible/rezible/integrations/projections"
 
 func RegisterEventProcessors() {
-	eventprojections.RegisterHandler("knowledge", knowledgeEntityEventProjectionHandler)
-	eventprojections.RegisterHandler("users", userEventProjectionHandler)
-	eventprojections.RegisterHandler("incidents", incidentEventProjectionHandler)
-	eventprojections.RegisterHandler("alerts", alertEventProjectionHandler)
+	projections.RegisterHandler("knowledge", knowledgeEntityEventProjectionHandler)
+	projections.RegisterHandler("users", userEventProjectionHandler)
+	projections.RegisterHandler("incidents", incidentEventProjectionHandler)
+	projections.RegisterHandler("alerts", alertEventProjectionHandler)
 }

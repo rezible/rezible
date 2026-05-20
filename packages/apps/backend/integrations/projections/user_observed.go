@@ -1,4 +1,4 @@
-package eventprojections
+package projections
 
 import "github.com/rezible/rezible/ent"
 
@@ -26,9 +26,6 @@ func (a UserObservedAttributes) Encode() map[string]any {
 }
 
 func DecodeUserObservedEvent(ev *ent.NormalizedEvent) (any, error) {
-	if attrsErr := rejectUnsupportedAttributes(ev, attrEmail, attrChatId, attrTimezone); attrsErr != nil {
-		return nil, attrsErr
-	}
 	email, emailErr := requiredString(ev, attrEmail)
 	if emailErr != nil {
 		return nil, emailErr
@@ -46,5 +43,5 @@ func DecodeUserObservedEvent(ev *ent.NormalizedEvent) (any, error) {
 		ChatId:   chatId,
 		Timezone: tz,
 	}
-	return UserObserved{Event: ev, Attributes: attrs}, nil
+	return attrs, nil
 }

@@ -1,12 +1,12 @@
-package eventprojections
+package projections
 
 import (
 	"context"
 	"fmt"
+	"math"
 	"strings"
 	"sync"
 
-	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 )
@@ -38,9 +38,11 @@ var decoders = map[ne.Kind]decoder{
 	ne.KindRepositoryObserved:  DecodeRepositoryObservedEvent,
 	ne.KindChangeEventObserved: DecodeChangeEventObservedEvent,
 	ne.KindUserObserved:        DecodeUserObservedEvent,
+	ne.KindIncidentObserved:    DecodeIncidentObservedEvent,
+	ne.KindAlertObserved:       DecodeAlertObservedEvent,
 }
 
-func DecodeEvent(ev *ent.NormalizedEvent) (any, error) {
+func DecodeEvent[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
 	if ev == nil {
 		return nil, fmt.Errorf("normalized event is nil")
 	}
@@ -48,17 +50,15 @@ func DecodeEvent(ev *ent.NormalizedEvent) (any, error) {
 	if !ok {
 		return nil, fmt.Errorf("unsupported normalized event kind %q", ev.Kind)
 	}
-	return decode(ev)
-}
-
-func rejectUnsupportedAttributes(ev *ent.NormalizedEvent, supported ...string) error {
-	supportedSet := mapset.NewSet(supported...)
-	for key := range ev.Attributes {
-		if !supportedSet.Contains(key) {
-			return fmt.Errorf("%s event has unsupported %s attribute", ev.Kind, key)
-		}
+	decoded, decodeErr := decode(ev)
+	if decodeErr != nil {
+		return nil, fmt.Errorf("failed to decode: %w", decodeErr)
 	}
-	return nil
+	asEvent, castOk := decoded.(A)
+	if !castOk {
+		return nil, fmt.Errorf("failed to cast %T to T", decoded)
+	}
+	return &Event[A]{Event: ev, Attributes: asEvent}, nil
 }
 
 func requiredString(ev *ent.NormalizedEvent, key string) (string, error) {
@@ -87,4 +87,27 @@ func optionalString(ev *ent.NormalizedEvent, key string) (string, error) {
 		return "", fmt.Errorf("%s attribute must be a string", key)
 	}
 	return strings.TrimSpace(str), nil
+}
+
+func requiredInt(ev *ent.NormalizedEvent, key string) (int, error) {
+	value, ok := ev.Attributes[key]
+	if !ok {
+		return 0, fmt.Errorf("%s event missing required %s attribute", ev.Kind, key)
+	}
+	switch n := value.(type) {
+	case int:
+		return n, nil
+	case int64:
+		if n < math.MinInt || n > math.MaxInt {
+			return 0, fmt.Errorf("%s attribute is outside int range", key)
+		}
+		return int(n), nil
+	case float64:
+		if math.Trunc(n) != n || n < math.MinInt || n > math.MaxInt {
+			return 0, fmt.Errorf("%s attribute must be an integer", key)
+		}
+		return int(n), nil
+	default:
+		return 0, fmt.Errorf("%s attribute must be an integer", key)
+	}
 }

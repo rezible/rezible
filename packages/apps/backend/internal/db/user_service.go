@@ -7,15 +7,14 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/integrations/eventprojections"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/integrations/projections"
 )
 
 type UserService struct {
@@ -37,16 +36,12 @@ func userEventProjectionHandler(ctx context.Context, client *ent.Client, event *
 		return nil
 	}
 	slog.Debug("user event projection handler")
-	pe, validationErr := eventprojections.DecodeEvent(event)
-	if validationErr != nil || pe == nil {
+	decoded, validationErr := projections.DecodeEvent[projections.UserObservedAttributes](event)
+	if validationErr != nil || decoded == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}
-	ue, ok := pe.(eventprojections.UserObserved)
-	if !ok {
-		return fmt.Errorf("failed to decode event")
-	}
 
-	attrs := ue.Attributes
+	attrs := decoded.Attributes
 	upsert := client.User.Create().
 		SetEmail(attrs.Email).
 		SetChatID(attrs.ChatId).

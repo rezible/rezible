@@ -11,7 +11,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	"github.com/rezible/rezible/integrations/eventprojections"
+	"github.com/rezible/rezible/integrations/projections"
 )
 
 const (
@@ -27,17 +27,17 @@ const (
 )
 
 func knowledgeEntityEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	projectionEvent, validationErr := eventprojections.DecodeEvent(event)
-	if validationErr != nil || projectionEvent == nil {
+	decoded, validationErr := projections.DecodeEvent[any](event)
+	if validationErr != nil || decoded == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}
 	proj := newKnowledgeEntityEventProjector(event, newKnowledgeService(client))
 	var result *ProjectionResult
-	switch ev := projectionEvent.(type) {
-	case eventprojections.RepositoryObserved:
-		result = proj.projectRepositoryObserved(ev)
-	case eventprojections.ChangeEventObserved:
-		result = proj.projectCodeChangeEventObserved(ev)
+	switch attrs := decoded.Attributes.(type) {
+	case projections.RepositoryObservedAttributes:
+		result = proj.projectRepositoryObserved(projections.RepositoryObserved{Event: event, Attributes: attrs})
+	case projections.ChangeEventObservedAttributes:
+		result = proj.projectCodeChangeEventObserved(projections.ChangeEventObserved{Event: event, Attributes: attrs})
 	}
 	if result != nil {
 		return proj.saveProjectionResult(ctx, result)
@@ -346,7 +346,7 @@ type ProjectedRelationship struct {
 	ToAlias       EntityAliasRef
 }
 
-func (kp *knowledgeEntityEventProjector) projectRepositoryObserved(pe eventprojections.RepositoryObserved) *ProjectionResult {
+func (kp *knowledgeEntityEventProjector) projectRepositoryObserved(pe projections.RepositoryObserved) *ProjectionResult {
 	repoEntity := ProjectedEntity{
 		Kind:          knowledgeKindCodeRepository,
 		AssertionKind: assertionCodeRepositoryExists,
@@ -363,7 +363,7 @@ func (kp *knowledgeEntityEventProjector) projectRepositoryObserved(pe eventproje
 	return &ProjectionResult{Entities: []ProjectedEntity{repoEntity}}
 }
 
-func (kp *knowledgeEntityEventProjector) projectCodeChangeEventObserved(pe eventprojections.ChangeEventObserved) *ProjectionResult {
+func (kp *knowledgeEntityEventProjector) projectCodeChangeEventObserved(pe projections.ChangeEventObserved) *ProjectionResult {
 	ev := pe.Event
 	attrs := pe.Attributes
 	changeEventAlias := EntityAliasRef{

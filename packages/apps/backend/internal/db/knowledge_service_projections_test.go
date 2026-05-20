@@ -7,7 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/integrations/eventprojections"
+	"github.com/rezible/rezible/integrations/projections"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -19,16 +19,16 @@ func TestProjectRepositoryObservedMapsToRepositoryFactEvidence(t *testing.T) {
 		ProviderSource: "repositories",
 		SubjectRef:     "myorg/api",
 		Kind:           ne.KindRepositoryObserved,
-		Attributes: eventprojections.RepositoryObservedAttributes{
+		Attributes: projections.RepositoryObservedAttributes{
 			DisplayName: "myorg/api",
 			URL:         "https://github.com/myorg/api",
 		}.Encode(),
 	}
 	proj := newKnowledgeEntityEventProjector(ev, nil)
 
-	result := proj.projectRepositoryObserved(eventprojections.RepositoryObserved{
+	result := proj.projectRepositoryObserved(projections.RepositoryObserved{
 		Event: ev,
-		Attributes: eventprojections.RepositoryObservedAttributes{
+		Attributes: projections.RepositoryObservedAttributes{
 			DisplayName: "myorg/api",
 			URL:         "https://github.com/myorg/api",
 		},
@@ -56,16 +56,16 @@ func TestProjectChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *t
 		ProviderSource: "push",
 		SubjectRef:     "github:myorg/api:abc123",
 		Kind:           ne.KindChangeEventObserved,
-		Attributes: eventprojections.ChangeEventObservedAttributes{
+		Attributes: projections.ChangeEventObservedAttributes{
 			RepositoryExternalRef: "myorg/api",
 			DisplayName:           "refs/heads/main",
 		}.Encode(),
 	}
 	proj := newKnowledgeEntityEventProjector(ev, nil)
 
-	result := proj.projectCodeChangeEventObserved(eventprojections.ChangeEventObserved{
+	result := proj.projectCodeChangeEventObserved(projections.ChangeEventObserved{
 		Event: ev,
-		Attributes: eventprojections.ChangeEventObservedAttributes{
+		Attributes: projections.ChangeEventObservedAttributes{
 			RepositoryExternalRef: "myorg/api",
 			DisplayName:           "refs/heads/main",
 		},

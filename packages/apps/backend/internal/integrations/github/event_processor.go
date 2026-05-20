@@ -7,11 +7,10 @@ import (
 	"time"
 
 	"github.com/google/go-github/v84/github"
-	"github.com/rezible/rezible/integrations/eventprojections"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/integrations/projections"
 )
 
 const zeroSHA = "0000000000000000000000000000000000000000"
@@ -62,7 +61,7 @@ func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.Normalize
 		subjectRef = fmt.Sprintf("github:%s:%s", event.GetRepo().GetFullName(), event.GetAfter())
 	}
 
-	attrs := eventprojections.ChangeEventObservedAttributes{
+	attrs := projections.ChangeEventObservedAttributes{
 		RepositoryExternalRef: event.GetRepo().GetFullName(),
 		DisplayName:           event.GetRef(),
 	}
@@ -94,7 +93,7 @@ func (p *eventProcessor) processPullRequest(prov rez.ProviderEvent) (ent.Normali
 		subjectRef = fmt.Sprintf("github:%s:pr:%d", event.GetRepo().GetFullName(), prNum)
 	}
 
-	attrs := eventprojections.ChangeEventObservedAttributes{
+	attrs := projections.ChangeEventObservedAttributes{
 		RepositoryExternalRef: event.GetRepo().GetFullName(),
 		DisplayName:           pr.GetTitle(),
 	}
@@ -134,7 +133,7 @@ func (p *eventProcessor) processRepoObserved(prov rez.ProviderEvent) (ent.Normal
 
 	repositoryRef := payload.FullName
 
-	attrs := eventprojections.RepositoryObservedAttributes{
+	attrs := projections.RepositoryObservedAttributes{
 		DisplayName: repositoryRef,
 		URL:         payload.HTMLURL,
 	}

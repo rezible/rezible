@@ -9,7 +9,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/integrations/eventprojections"
+	"github.com/rezible/rezible/integrations/projections"
 	"github.com/slack-go/slack/slackevents"
 )
 
@@ -43,7 +43,7 @@ func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.Normal
 		return nil, fmt.Errorf("unmarshal userObservedPayload: %w", jsonErr)
 	}
 
-	attrs := eventprojections.UserObservedAttributes{
+	attrs := projections.UserObservedAttributes{
 		Email:    payload.Email,
 		ChatId:   payload.SlackID,
 		Timezone: payload.Timezone,
@@ -80,7 +80,7 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 		providerEventRef = cb.EventID
 	}
 
-	var attrs eventprojections.ChatMessageAttributes
+	var attrs projections.ChatMessageAttributes
 	var ts string
 	var eventTS string
 	switch data := ev.InnerEvent.Data.(type) {

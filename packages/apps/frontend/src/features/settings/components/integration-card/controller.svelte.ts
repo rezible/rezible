@@ -2,11 +2,11 @@ import { Context, watch, type Getter } from "runed";
 import {
 	type ErrorModel,
 	type AvailableIntegration,
-	type ExternalIntegrationOption,
 	type ConfiguredIntegration,
+	type IntegrationProviderDataSyncStatus,
+	getIntegrationDataSyncStatusOptions,
 	requestIntegrationDataSyncMutation,
 } from "$lib/api";
-import { page } from "$app/state";
 
 import SlackConfig from "./config-components/SlackConfig.svelte";
 import PlaceholderConfig from "./config-components/PlaceholderConfig.svelte";
@@ -16,9 +16,7 @@ import { useIntegrationsController } from "$features/settings/lib/integrationsCo
 import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 import type { Component } from "svelte";
 import { resolve } from "$app/paths";
-import { clearQueryParams } from "$src/lib/utils";
-import { SvelteSet } from "svelte/reactivity";
-import { createMutation } from "@tanstack/svelte-query";
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 
 const configs: Record<string, Component> = {
 	slack: SlackConfig,
@@ -26,19 +24,42 @@ const configs: Record<string, Component> = {
 	github: GithubConfig,
 };
 
+type SyncStatusDisplay = {
+	label: string;
+	variant: "default" | "secondary" | "destructive" | "outline";
+	class?: string;
+};
+
+const syncStatusDisplays: Record<string, SyncStatusDisplay> = {
+	queued: { label: "Queued", variant: "outline" },
+	started: { label: "Started", variant: "secondary", class: "text-blue-700" },
+	complete: { label: "Complete", variant: "secondary", class: "text-green-700" },
+	success: { label: "Success", variant: "secondary", class: "text-green-700" },
+	error: { label: "Error", variant: "destructive" },
+	failed: { label: "Failed", variant: "destructive" },
+	skipped: { label: "Skipped", variant: "outline" },
+};
+
+const pollAfterRequestMs = 10_000;
+const pollIntervalMs = 3_000;
+
 export class IntegrationCardController {
 	integrations = useIntegrationsController();
 	oauth = useIntegrationOAuthController();
 
 	constructor(integrationFn: Getter<AvailableIntegration>) {
-		watch(integrationFn, (intg) => {this.integration = intg});
+		watch(integrationFn, (intg) => {
+			this.integration = intg;
+		});
 	}
 
 	private integration = $state<AvailableIntegration>();
 	name = $derived(this.integration?.name);
 	Component = $derived(this.name && this.name in configs ? configs[this.name] : PlaceholderConfig);
 
-	configured = $derived<ConfiguredIntegration[]>(!!this.name ? (this.integrations.configuredByProvider.get(this.name) ?? []) : []);
+	configured = $derived<ConfiguredIntegration[]>(
+		!!this.name ? (this.integrations.configuredByProvider.get(this.name) ?? []) : []
+	);
 	hasConfigured = $derived(this.configured.length > 0);
 	primaryConfigured = $derived(this.configured[0]);
 
@@ -87,7 +108,7 @@ export class IntegrationCardController {
 
 	private isConfiguring = $derived(!!this.name && this.integrations.configuringProviderName === this.name);
 	private isOAuthPending = $derived(this.oauth.pending && this.oauth.name === this.name);
-	
+
 	loading = $derived(this.isOAuthPending || this.isConfiguring);
 
 	async startOAuthFlow() {
@@ -122,13 +143,69 @@ export class IntegrationCardController {
 		}
 	}
 
-	private requestDataSyncMutation = createMutation(() => requestIntegrationDataSyncMutation());
-	async requestDataSync() {
-		if (!this.name) return;
-		this.requestDataSyncMutation.mutateAsync({ 
-			path: { name: this.name },
-			body: { attributes: {} }
+	private syncRequestPolling = $state(false);
+	private syncPollTimeout: ReturnType<typeof setTimeout> | undefined;
+	private syncRequestError = $state<ErrorModel>();
+
+	private syncStatusQueryOptions = $derived(
+		getIntegrationDataSyncStatusOptions({
+			path: { name: this.name ?? "" },
 		})
+	);
+	private syncStatusQuery = createQuery(() => ({
+		...this.syncStatusQueryOptions,
+		enabled: !!this.name && this.hasConfigured,
+		refetchInterval: this.syncRequestPolling ? pollIntervalMs : false,
+	}));
+	private requestDataSyncMutation = createMutation(() => ({
+		...requestIntegrationDataSyncMutation(),
+		onSuccess: async () => {
+			this.syncRequestError = undefined;
+			this.startSyncStatusPolling();
+			await this.syncStatusQuery.refetch();
+		},
+		onError: (err) => {
+			this.syncRequestError = err;
+		},
+	}));
+
+	syncStatusRuns = $derived<IntegrationProviderDataSyncStatus[]>(this.syncStatusQuery.data?.data ?? []);
+	syncStatusError = $derived(
+		(this.syncRequestError ?? this.syncStatusQuery.error) as ErrorModel | undefined
+	);
+	latestSyncStatus = $derived<string | undefined>(this.syncStatusRuns[0]?.attributes.status);
+	latestSyncStatusDisplay = $derived<SyncStatusDisplay | undefined>(
+		this.formatSyncStatus(this.latestSyncStatus)
+	);
+	isSyncing = $derived(this.requestDataSyncMutation.isPending || this.syncRequestPolling);
+
+	private formatSyncStatus(status?: string): SyncStatusDisplay | undefined {
+		if (!status) return undefined;
+		return syncStatusDisplays[status] ?? { label: status, variant: "outline" };
+	}
+
+	private startSyncStatusPolling() {
+		this.syncRequestPolling = true;
+		if (this.syncPollTimeout) {
+			clearTimeout(this.syncPollTimeout);
+		}
+		this.syncPollTimeout = setTimeout(() => {
+			this.syncRequestPolling = false;
+			this.syncPollTimeout = undefined;
+		}, pollAfterRequestMs);
+	}
+
+	async requestSync() {
+		if (!this.name || !this.hasConfigured || this.requestDataSyncMutation.isPending) return;
+		await this.requestDataSyncMutation.mutateAsync({
+			path: { name: this.name },
+			body: { attributes: {} },
+		});
+	}
+
+	async refetchSyncStatus() {
+		this.syncRequestError = undefined;
+		await this.syncStatusQuery.refetch();
 	}
 }
 

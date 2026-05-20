@@ -1,4 +1,4 @@
-package eventprojections
+package projections
 
 import "github.com/rezible/rezible/ent"
 
@@ -29,9 +29,6 @@ func (a ChatMessageAttributes) Encode() map[string]any {
 }
 
 func DecodeChatMessageEvent(ev *ent.NormalizedEvent) (any, error) {
-	if attrsErr := rejectUnsupportedAttributes(ev, attrConversationExternalRef, attrBody, attrSenderExternalRef, attrThreadExternalRef); attrsErr != nil {
-		return nil, attrsErr
-	}
 	conversationRef, conversationRefErr := requiredString(ev, attrConversationExternalRef)
 	if conversationRefErr != nil {
 		return nil, conversationRefErr
@@ -54,5 +51,5 @@ func DecodeChatMessageEvent(ev *ent.NormalizedEvent) (any, error) {
 		SenderExternalRef:       senderRef,
 		ThreadExternalRef:       threadRef,
 	}
-	return ChatMessage{Event: ev, Attributes: attrs}, nil
+	return attrs, nil
 }

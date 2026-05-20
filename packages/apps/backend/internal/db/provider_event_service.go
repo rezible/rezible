@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/integrations/eventprojections"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
@@ -17,6 +15,8 @@ import (
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	neps "github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
 	pesr "github.com/rezible/rezible/ent/providereventsyncrun"
+	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/integrations/projections"
 	"github.com/rezible/rezible/jobs"
 	"github.com/rezible/rezible/telemetry"
 )
@@ -209,7 +209,7 @@ func (s *ProviderEventService) syncEvents(ctx context.Context, querier rez.Provi
 		if validErr := syncItem.args.validate(); validErr != nil {
 			return res, fmt.Errorf("invalid event args: %w", validErr)
 		}
-		batch = append(batch)
+		batch = append(batch, syncItem)
 		if len(batch) >= providerEventSyncBatchSize {
 			if flushErr := flushBatch(); flushErr != nil {
 				return res, flushErr
@@ -341,7 +341,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 		return nil
 	}
 
-	if len(normalizedEvents) == 0 {
+	if len(normalizedEvents) > 0 {
 		if saveErr := ent.WithTx(ctx, s.db, saveNormalizedEventsFn); saveErr != nil {
 			return res, fmt.Errorf("saving normalized events: %w", saveErr)
 		}
@@ -351,7 +351,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 
 func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) error {
 	failed := map[string]error{}
-	for name, handlerFn := range eventprojections.GetHandlers() {
+	for name, handlerFn := range projections.GetHandlers() {
 		// query for existing projection status
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
