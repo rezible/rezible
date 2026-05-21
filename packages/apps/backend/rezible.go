@@ -232,7 +232,7 @@ type (
 	}
 
 	ProviderEventService interface {
-		Ingest(context.Context, ProviderEvent) (*ProviderEventIngestResult, error)
+		Ingest(context.Context, ProviderEvent) error
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
 	}
 

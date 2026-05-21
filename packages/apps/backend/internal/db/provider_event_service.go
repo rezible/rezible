@@ -2,9 +2,9 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
-	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -22,24 +22,23 @@ import (
 	"github.com/rezible/rezible/telemetry"
 )
 
-const providerEventSyncBatchSize = 100
-
 type ProviderEventService struct {
 	logger *slog.Logger
 	db     *ent.Client
 
-	jobService   rez.JobsService
-	integrations rez.IntegrationsService
-	metrics      *providerEventMetrics
+	jobService     rez.JobsService
+	integrations   rez.IntegrationsService
+	eventTelemetry *providerEventTelemetry
 }
 
 func NewProviderEventService(ctx context.Context, svcs *rez.Services) *ProviderEventService {
+	logger := telemetry.NewLogger(ctx, telemetry.WithLogPackage("provider_events"))
 	pe := &ProviderEventService{
-		logger:       telemetry.NewLogger(ctx, telemetry.WithLogPackage("provider_events")),
-		db:           svcs.Database.Client(),
-		jobService:   svcs.Jobs,
-		integrations: svcs.Integrations,
-		metrics:      newProviderEventMetrics(),
+		logger:         logger,
+		db:             svcs.Database.Client(),
+		jobService:     svcs.Jobs,
+		integrations:   svcs.Integrations,
+		eventTelemetry: newProviderEventTelemetry(logger),
 	}
 	jobs.RegisterWorkerFunc(pe.HandleProviderEventSyncJob)
 	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
@@ -47,34 +46,34 @@ func NewProviderEventService(ctx context.Context, svcs *rez.Services) *ProviderE
 	return pe
 }
 
-func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) (*rez.ProviderEventIngestResult, error) {
-	res, ingestErr := s.ingest(ctx, ev)
-	s.metrics.recordIngested(ctx, ev, res, ingestErr)
-	return res, ingestErr
+func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
+	res := s.ingest(ctx, ev)
+	s.eventTelemetry.recordIngested(ctx, ev, res)
+	return res.error
 }
 
-func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent) (*rez.ProviderEventIngestResult, error) {
-	processEvent := processProviderEventArgs{Event: ev}
-	if validationErr := processEvent.validate(); validationErr != nil {
-		return nil, fmt.Errorf("invalid event: %w", validationErr)
-	}
+type providerEventIngestResult struct {
+	duplicate bool
+	error     error
+}
 
-	insertOpts := &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
-	insertRes, insertErr := s.jobService.Insert(ctx, processEvent, insertOpts)
+func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent) providerEventIngestResult {
+	var res providerEventIngestResult
+	processArgs := processProviderEventArgs{Event: ev}
+	if validationErr := processArgs.validate(); validationErr != nil {
+		res.error = fmt.Errorf("invalid event: %w", validationErr)
+		return res
+	}
+	insertOpts := &river.InsertOpts{
+		UniqueOpts: river.UniqueOpts{ByArgs: true},
+	}
+	insertRes, insertErr := s.jobService.Insert(ctx, processArgs, insertOpts)
 	if insertErr != nil {
-		return nil, fmt.Errorf("could not insert provider event job: %w", insertErr)
+		res.error = fmt.Errorf("could not insert provider event job: %w", insertErr)
+	} else {
+		res.duplicate = insertRes.UniqueSkippedAsDuplicate
 	}
-
-	res := &rez.ProviderEventIngestResult{
-		Duplicate: insertRes != nil && insertRes.UniqueSkippedAsDuplicate,
-	}
-	if res.Duplicate {
-		s.logger.Debug("skipped duplicate provider event",
-			"provider", ev.Provider,
-			"source", ev.ProviderSource,
-		)
-	}
-	return res, nil
+	return res
 }
 
 func (s *ProviderEventService) HandleProviderEventSyncJob(ctx context.Context, args jobs.ProviderEventSyncJob) error {
@@ -105,123 +104,9 @@ func (s *ProviderEventService) HandleProviderEventSyncJob(ctx context.Context, a
 }
 
 func (s *ProviderEventService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, opts rez.ProviderEventSyncOptions) error {
-	startedAt := time.Now()
-	res, syncErr := s.syncEvents(ctx, querier, opts.QueryRequest)
-
-	saveRunResult := s.db.ProviderEventSyncRun.Create().
-		SetProvider(querier.Provider()).
-		SetSourceCursors(res.sourceCursors).
-		SetSyncReason(opts.SyncReason).
-		SetStartedAt(startedAt).
-		SetFinishedAt(time.Now().UTC()).
-		SetEventsPulled(res.pulled).
-		SetEventsIngested(res.ingested).
-		SetDuplicates(res.duplicates).
-		SetStatus(pesr.StatusSuccess)
-	if syncErr != nil {
-		saveRunResult.SetStatus(pesr.StatusFailed)
-		errMsg := strings.TrimSpace(syncErr.Error())
-		if len(errMsg) > 100 {
-			errMsg = errMsg[:100] + "..."
-		}
-		saveRunResult.SetFailureMessage(errMsg)
-	}
-	if saveRunErr := saveRunResult.Exec(ctx); saveRunErr != nil {
-		return fmt.Errorf("save provider event sync run: %w", saveRunErr)
-	}
-
-	return syncErr
-}
-
-func (s *ProviderEventService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
-	res, err := s.processProviderEvent(ctx, args.Event)
-	s.metrics.recordProcessed(ctx, args.Event, res, err)
-	return err
-}
-
-func (s *ProviderEventService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
-	ev, queryErr := s.db.NormalizedEvent.Get(ctx, args.EventId)
-	if queryErr != nil {
-		return fmt.Errorf("query normalized event: %w", queryErr)
-	}
-	return s.projectNormalizedEvent(ctx, ev)
-}
-
-type providerEventSyncResult struct {
-	pulled        int
-	ingested      int
-	duplicates    int
-	sourceCursors map[string]string
-}
-
-func (s *ProviderEventService) syncEvents(ctx context.Context, querier rez.ProviderEventQuerier, req rez.ProviderEventQueryRequest) (providerEventSyncResult, error) {
-	res := providerEventSyncResult{
-		sourceCursors: map[string]string{},
-	}
-
-	type syncBatchItem struct {
-		args        processProviderEventArgs
-		cursorAfter *string
-	}
-	batch := make([]syncBatchItem, 0, providerEventSyncBatchSize)
-
-	flushBatch := func() error {
-		if len(batch) == 0 {
-			return nil
-		}
-		slog.DebugContext(ctx, "flushing batch", "len", len(batch))
-		params := make([]river.InsertManyParams, len(batch))
-		for i, item := range batch {
-			params[i] = river.InsertManyParams{
-				Args:       item.args,
-				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
-			}
-		}
-		results, insertErr := s.jobService.InsertMany(ctx, params)
-		if insertErr != nil {
-			return fmt.Errorf("could not insert provider event jobs: %w", insertErr)
-		}
-		for i, result := range results {
-			if result != nil && result.UniqueSkippedAsDuplicate {
-				res.duplicates++
-			} else {
-				res.ingested++
-			}
-			if i < len(batch) {
-				batchItem := batch[i]
-				if batchItem.cursorAfter != nil {
-					res.sourceCursors[batchItem.args.Event.ProviderSource] = *batchItem.cursorAfter
-				}
-			}
-		}
-		return nil
-	}
-
-	for result, pullErr := range querier.PullEvents(ctx, req) {
-		if pullErr != nil {
-			return res, fmt.Errorf("pull provider events: %w", pullErr)
-		}
-		res.pulled++
-
-		syncItem := syncBatchItem{
-			args:        processProviderEventArgs{Event: result.Event},
-			cursorAfter: result.SourceCursorAfter,
-		}
-		if validErr := syncItem.args.validate(); validErr != nil {
-			return res, fmt.Errorf("invalid event args: %w", validErr)
-		}
-		batch = append(batch, syncItem)
-		if len(batch) >= providerEventSyncBatchSize {
-			if flushErr := flushBatch(); flushErr != nil {
-				return res, flushErr
-			}
-			batch = make([]syncBatchItem, 0, providerEventSyncBatchSize)
-		}
-		if result.SourceCursorAfter == nil {
-			break
-		}
-	}
-	return res, flushBatch()
+	res := s.syncEvents(ctx, querier, opts.QueryRequest)
+	s.saveSyncEventsResult(ctx, opts.SyncReason, res)
+	return res.syncError
 }
 
 type processProviderEventArgs struct {
@@ -251,41 +136,139 @@ func (a processProviderEventArgs) validate() error {
 	return nil
 }
 
-type processProviderEventResult struct {
-	processTime    time.Duration
-	processSuccess bool
-	normalizeCount int
-
-	projectionSuccess bool
-	projectionTime    time.Duration
+func (s *ProviderEventService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
+	res := s.processProviderEvent(ctx, args.Event)
+	s.eventTelemetry.recordProcessed(ctx, args.Event, res)
+	return res.error
 }
 
-func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov rez.ProviderEvent) (*processProviderEventResult, error) {
+func (s *ProviderEventService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
+	ev, queryErr := s.db.NormalizedEvent.Get(ctx, args.EventId)
+	if queryErr != nil {
+		return fmt.Errorf("query normalized event: %w", queryErr)
+	}
+
+	res := s.projectNormalizedEvent(ctx, ev)
+
+	for name, errs := range res.handlerErrors {
+		s.logger.WarnContext(ctx, "failed to update projection status",
+			"handler", name,
+			"errors", errors.Join(errs...),
+		)
+	}
+
+	return nil
+}
+
+type providerEventSyncResult struct {
+	syncError error
+
+	provider       string
+	startedAt      time.Time
+	eventsPulled   int
+	eventsIngested int
+	duplicates     int
+	sourceCursors  map[string]string
+}
+
+func (s *ProviderEventService) syncEvents(ctx context.Context, querier rez.ProviderEventQuerier, req rez.ProviderEventQueryRequest) providerEventSyncResult {
+	res := providerEventSyncResult{
+		startedAt:     time.Now(),
+		provider:      querier.Provider(),
+		sourceCursors: map[string]string{},
+	}
+
+	const batchSize = 100
+
+	batch := make([]rez.ProviderEventQueryResult, 0, batchSize)
+
+	flushBatch := func() bool {
+		if len(batch) == 0 {
+			return true
+		}
+		s.logger.DebugContext(ctx, "flushing batch", "len", len(batch))
+		params := make([]river.InsertManyParams, len(batch))
+		for i, item := range batch {
+			params[i] = river.InsertManyParams{
+				Args:       processProviderEventArgs{Event: item.Event},
+				InsertOpts: &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}},
+			}
+		}
+		results, insertErr := s.jobService.InsertMany(ctx, params)
+		if insertErr != nil {
+			res.syncError = fmt.Errorf("inserting process provider event jobs: %w", insertErr)
+			return false
+		}
+		for i, result := range results {
+			if result != nil && result.UniqueSkippedAsDuplicate {
+				res.duplicates++
+			} else {
+				res.eventsIngested++
+			}
+			if i < len(batch) {
+				batchItem := batch[i]
+				if batchItem.SourceCursorAfter != nil {
+					res.sourceCursors[batchItem.Event.ProviderSource] = *batchItem.SourceCursorAfter
+				}
+			}
+		}
+		return true
+	}
+
+	for result, pullErr := range querier.PullEvents(ctx, req) {
+		if pullErr != nil {
+			res.syncError = fmt.Errorf("pulling events from querier: %w", pullErr)
+			break
+		}
+		if result == nil {
+			break
+		}
+		res.eventsPulled++
+		batch = append(batch, *result)
+		if len(batch) >= batchSize {
+			if flushOk := flushBatch(); !flushOk {
+				break
+			}
+			batch = make([]rez.ProviderEventQueryResult, 0, batchSize)
+		}
+		if result.SourceCursorAfter == nil {
+			break
+		}
+	}
+	flushBatch()
+	return res
+}
+
+type processProviderEventResult struct {
+	error error
+
+	processTime                time.Duration
+	processSuccess             bool
+	normalizeCount             int
+	insertProjectionDuplicates int
+}
+
+func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov rez.ProviderEvent) processProviderEventResult {
+	var res processProviderEventResult
 	if _, tenantOk := execution.GetContext(ctx).TenantID(); !tenantOk {
-		return nil, fmt.Errorf("tenant not found in context")
+		res.error = fmt.Errorf("tenant not found in context")
+		return res
 	}
 
 	processStart := time.Now()
 	proc, getProcErr := s.integrations.GetProviderEventProcessor(prov.Provider)
 	if getProcErr != nil {
-		return nil, fmt.Errorf("event processor %s", getProcErr)
+		res.error = fmt.Errorf("get '%s' processor: %w", prov.Provider, getProcErr)
+		return res
 	}
 
 	normalizedEvents, procErr := proc.Process(ctx, prov)
 
-	slog.DebugContext(ctx, "processed provider event",
-		"provider", prov.Provider,
-		"source", prov.ProviderSource,
-		"subject_ref", prov.SubjectRef,
-		"error", procErr,
-		"normalized_count", len(normalizedEvents),
-	)
-
-	res := &processProviderEventResult{}
 	res.processTime = time.Since(processStart)
 	res.normalizeCount = len(normalizedEvents)
 	if procErr != nil {
-		return res, fmt.Errorf("processing provider event: %w", procErr)
+		res.error = fmt.Errorf("processing event: %w", procErr)
+		return res
 	}
 	res.processSuccess = true
 
@@ -315,25 +298,26 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 	}
 
 	saveNormalizedEventsFn := func(tx *ent.Tx) error {
-		upsertBulk := tx.NormalizedEvent.
-			MapCreateBulk(normalizedEvents, mapCreateEventFn).
+		upsertBulk := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, mapCreateEventFn).
 			OnConflict(upsertConflictColumns).
 			UpdateNewValues()
 		if upsertErr := upsertBulk.Exec(ctx); upsertErr != nil {
 			return fmt.Errorf("upsert normalized events: %w", upsertErr)
 		}
-		evs, evsErr := tx.NormalizedEvent.Query().Where(ne.ProviderEventRefIn(eventRefs.ToSlice()...)).All(ctx)
+
+		queryEvents := tx.NormalizedEvent.Query().
+			Where(ne.ProviderEventRefIn(eventRefs.ToSlice()...))
+		evs, evsErr := queryEvents.All(ctx)
 		if evsErr != nil {
 			return fmt.Errorf("query normalized events: %w", evsErr)
 		}
 
 		params := make([]river.InsertManyParams, len(evs))
 		for i, ev := range evs {
-			projectEventArgs := jobs.ProjectNormalizedEvent{
-				EventId: ev.ID,
-			}
 			params[i] = river.InsertManyParams{
-				Args:       projectEventArgs,
+				Args: jobs.ProjectNormalizedEvent{
+					EventId: ev.ID,
+				},
 				InsertOpts: &river.InsertOpts{
 					//UniqueOpts: river.UniqueOpts{ByArgs: true},
 				},
@@ -343,38 +327,40 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 		if jobErr != nil {
 			return fmt.Errorf("inserting project events: %w", jobErr)
 		}
-
-		numDuplicate := 0
 		for _, r := range insertRes {
 			if r.UniqueSkippedAsDuplicate {
-				numDuplicate++
+				res.insertProjectionDuplicates++
 			}
 		}
-		slog.DebugContext(ctx, "inserted projection job for normalized events",
-			"count", len(insertRes),
-			"numDuplicate", numDuplicate,
-		)
-
 		return nil
 	}
 
 	if len(normalizedEvents) > 0 {
 		if saveErr := ent.WithTx(ctx, s.db, saveNormalizedEventsFn); saveErr != nil {
-			return res, fmt.Errorf("saving normalized events: %w", saveErr)
+			res.error = fmt.Errorf("saving normalized events: %w", saveErr)
 		}
 	}
-	return res, nil
+	return res
 }
 
-func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) error {
-	failed := map[string]error{}
+type projectNormalizedEventResult struct {
+	handlerErrors map[string][]error
+}
+
+func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) projectNormalizedEventResult {
+	res := projectNormalizedEventResult{
+		handlerErrors: make(map[string][]error),
+	}
+	appendHandlerErr := func(name string, err error) {
+		res.handlerErrors[name] = append(res.handlerErrors[name], err)
+	}
 	for name, handlerFn := range projections.GetHandlers() {
 		// query for existing projection status
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
 		status, statusErr := queryStatus.Only(ctx)
 		if statusErr != nil && !ent.IsNotFound(statusErr) {
-			failed[name] = fmt.Errorf("query projection status: %w", statusErr)
+			appendHandlerErr(name, fmt.Errorf("query projection status: %w", statusErr))
 			continue
 		}
 		if status != nil {
@@ -390,43 +376,57 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 				SetLastAttemptedAt(time.Now().UTC())
 			status, statusErr = setPendingStatus.Save(ctx)
 			if statusErr != nil {
-				failed[name] = fmt.Errorf("mark projection pending: %w", statusErr)
+				appendHandlerErr(name, fmt.Errorf("mark projection pending: %w", statusErr))
 				continue
 			}
 		}
 
-		projectErr := ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {
+		projectionErr := ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {
 			return handlerFn(ctx, tx.Client(), ev)
 		})
 
 		update := status.Update()
-		if projectErr == nil {
+		if projectionErr == nil {
 			update.SetStatus(neps.StatusSucceeded).
 				SetSucceededAt(time.Now().UTC()).
 				ClearFailedAt().
 				ClearLastError()
 		} else {
-			failed[name] = projectErr
+			appendHandlerErr(name, fmt.Errorf("save projection tx: %w", projectionErr))
 			update.SetStatus(neps.StatusFailed).
 				SetFailedAt(time.Now().UTC()).
-				SetLastError(projectErr.Error())
+				SetLastError(projectionErr.Error())
 		}
 		if statusErr = update.Exec(ctx); statusErr != nil {
-			failed[name] = fmt.Errorf("update projection status: %w", statusErr)
-			continue
+			appendHandlerErr(name, fmt.Errorf("update projection status: %w", statusErr))
 		}
 	}
 
-	for name, err := range failed {
-		slog.WarnContext(ctx, "failed to update projection status",
-			"handler", name,
-			"err", err,
-		)
-	}
-	return nil
+	return res
 }
 
-type providerEventMetrics struct {
+func (s *ProviderEventService) saveSyncEventsResult(ctx context.Context, reason string, res providerEventSyncResult) {
+	saveResult := s.db.ProviderEventSyncRun.Create().
+		SetSyncReason(reason).
+		SetProvider(res.provider).
+		SetSourceCursors(res.sourceCursors).
+		SetEventsPulled(res.eventsPulled).
+		SetEventsIngested(res.eventsIngested).
+		SetDuplicates(res.duplicates).
+		SetStartedAt(res.startedAt).
+		SetFinishedAt(time.Now().UTC()).
+		SetStatus(pesr.StatusSuccess)
+	if res.syncError != nil {
+		saveResult.SetStatus(pesr.StatusFailed)
+		saveResult.SetFailureMessage(res.syncError.Error())
+	}
+	if saveRunErr := saveResult.Exec(ctx); saveRunErr != nil {
+		s.logger.ErrorContext(ctx, "failed to save provider events", "err", saveRunErr)
+	}
+}
+
+type providerEventTelemetry struct {
+	logger            *slog.Logger
 	ingested          telemetry.Int64Counter
 	processed         telemetry.Int64Counter
 	processSeconds    telemetry.Float64Histogram
@@ -434,9 +434,10 @@ type providerEventMetrics struct {
 	normalizedEvents  telemetry.Int64Counter
 }
 
-func newProviderEventMetrics() *providerEventMetrics {
+func newProviderEventTelemetry(logger *slog.Logger) *providerEventTelemetry {
 	meter := telemetry.DefaultMeter()
-	return &providerEventMetrics{
+	return &providerEventTelemetry{
+		logger:            logger,
 		ingested:          telemetry.Int64CounterInstrument(meter, "rezible.backend.provider_events.ingested", "Provider events ingested"),
 		processed:         telemetry.Int64CounterInstrument(meter, "rezible.backend.provider_events.processed", "Provider events processed"),
 		processSeconds:    telemetry.Float64HistogramInstrument(meter, "rezible.backend.provider_events.normalize_duration", "Provider event normalization processing duration", "s"),
@@ -445,35 +446,52 @@ func newProviderEventMetrics() *providerEventMetrics {
 	}
 }
 
-func (m *providerEventMetrics) recordIngested(ctx context.Context, ev rez.ProviderEvent, res *rez.ProviderEventIngestResult, err error) {
-	if m != nil {
-		m.ingested.Add(ctx, 1, telemetry.WithMetricAttributes(
-			telemetry.StringAttr("provider", telemetry.NormalizeLabel(ev.Provider)),
-			telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(ev.ProviderSource)),
-			telemetry.ResultAttr(err),
-			telemetry.BoolAttr("duplicate", res != nil && res.Duplicate),
-		))
+func (m *providerEventTelemetry) recordIngested(ctx context.Context, ev rez.ProviderEvent, res providerEventIngestResult) {
+	if m == nil {
+		return
+	}
+	m.ingested.Add(ctx, 1, telemetry.WithMetricAttributes(
+		telemetry.StringAttr("provider", telemetry.NormalizeLabel(ev.Provider)),
+		telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(ev.ProviderSource)),
+		telemetry.ResultAttr(res.error),
+		telemetry.BoolAttr("duplicate", res.duplicate),
+	))
+	if res.duplicate {
+		m.logger.Info("skipped ingesting duplicate provider event",
+			"provider", ev.Provider,
+			"source", ev.ProviderSource,
+		)
 	}
 }
 
-func (m *providerEventMetrics) recordProcessed(ctx context.Context, ev rez.ProviderEvent, res *processProviderEventResult, err error) {
-	if m != nil {
-		processSuccess := res != nil && res.processSuccess
-		projectionSuccess := res != nil && res.projectionSuccess
-		attrs := []telemetry.KeyValue{
-			telemetry.StringAttr("provider", telemetry.NormalizeLabel(ev.Provider)),
-			telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(ev.ProviderSource)),
-			telemetry.ResultAttr(err),
-			telemetry.BoolAttr("process_success", processSuccess),
-			telemetry.BoolAttr("projection_success", projectionSuccess),
-		}
-		m.processed.Add(ctx, 1, telemetry.WithMetricAttributes(attrs...))
-		if res != nil {
-			m.processSeconds.Record(ctx, res.processTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
-			if res.normalizeCount > 0 {
-				m.normalizedEvents.Add(ctx, int64(res.normalizeCount), telemetry.WithMetricAttributes(attrs...))
-				m.projectionSeconds.Record(ctx, res.projectionTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
-			}
+func (m *providerEventTelemetry) recordProcessed(ctx context.Context, ev rez.ProviderEvent, res processProviderEventResult) {
+	if m == nil {
+		return
+	}
+
+	attrs := []telemetry.KeyValue{
+		telemetry.StringAttr("provider", telemetry.NormalizeLabel(ev.Provider)),
+		telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(ev.ProviderSource)),
+		telemetry.ResultAttr(res.error),
+		telemetry.BoolAttr("process_success", res.processSuccess),
+	}
+	m.processed.Add(ctx, 1, telemetry.WithMetricAttributes(attrs...))
+
+	logAttrs := []slog.Attr{
+		slog.Any("provider", ev.Provider),
+		slog.Any("source", ev.ProviderSource),
+		slog.Any("subject_ref", ev.SubjectRef),
+		slog.Any("error", res.error),
+	}
+	if res.error == nil {
+		logAttrs = append(logAttrs,
+			slog.Any("normalized_count", res.normalizeCount),
+			slog.Any("insert_projection_duplicates", res.insertProjectionDuplicates))
+		m.processSeconds.Record(ctx, res.processTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
+		if res.normalizeCount > 0 {
+			m.normalizedEvents.Add(ctx, int64(res.normalizeCount), telemetry.WithMetricAttributes(attrs...))
 		}
 	}
+
+	m.logger.LogAttrs(ctx, slog.LevelInfo, "processed provider event", logAttrs...)
 }
