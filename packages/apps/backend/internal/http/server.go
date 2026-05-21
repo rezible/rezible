@@ -12,6 +12,7 @@ import (
 	"github.com/koding/websocketproxy"
 	"github.com/rezible/rezible/internal/http/api/v1"
 	"github.com/rezible/rezible/internal/http/oidc"
+	slogchi "github.com/samber/slog-chi"
 
 	"github.com/go-chi/chi/v5"
 	rez "github.com/rezible/rezible"
@@ -23,6 +24,7 @@ import (
 type Server struct {
 	cfg        Config
 	router     *chi.Mux
+	logger     *slog.Logger
 	httpServer *http.Server
 }
 
@@ -38,18 +40,21 @@ func NewServer(ctx context.Context, svcs *rez.Services) (*Server, error) {
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
-	s := Server{cfg: cfg}
 
-	s.router = chi.NewRouter()
+	s := Server{
+		cfg:    cfg,
+		router: chi.NewRouter(),
+		logger: slog.Default().WithGroup("http"),
+	}
+
 	s.router.Use(s.makeExecutionContextMiddleware())
-	s.router.Use(RequestLoggerMiddleware(slog.Default()))
+	s.router.Use(s.makeRequestLoggerMiddleware())
 
 	handler, handlerErr := s.makeRequestHandler(ctx, svcs)
 	if handlerErr != nil {
 		return nil, fmt.Errorf("http request handler: %w", handlerErr)
 	}
-	base := ensureSlashPrefix(cfg.BasePath)
-	s.router.Mount(base, http.StripPrefix(cfg.BasePath, handler))
+	s.router.Mount(ensureSlashPrefix(cfg.BasePath), http.StripPrefix(cfg.BasePath, handler))
 
 	return &s, nil
 }
@@ -61,6 +66,17 @@ func (s *Server) makeExecutionContextMiddleware() func(http.Handler) http.Handle
 			next.ServeHTTP(w, r.WithContext(execCtx))
 		})
 	}
+}
+
+func (s *Server) makeRequestLoggerMiddleware() func(http.Handler) http.Handler {
+	return slogchi.NewWithConfig(s.logger, slogchi.Config{
+		DefaultLevel:     slog.LevelInfo,
+		ClientErrorLevel: slog.LevelInfo,
+		ServerErrorLevel: slog.LevelError,
+		WithRequestID:    true,
+		WithSpanID:       true,
+		WithTraceID:      true,
+	})
 }
 
 func (s *Server) makeRequestHandler(ctx context.Context, svcs *rez.Services) (http.Handler, error) {

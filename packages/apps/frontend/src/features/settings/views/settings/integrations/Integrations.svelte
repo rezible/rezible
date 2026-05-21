@@ -21,7 +21,7 @@
 			<span>Starting OAuth flow...</span>
 		</div>
 	{:else}
-		<div class="grid gap-3 md:grid-cols-2">
+		<div class="grid gap-3 md:grid-cols-1">
 			{#each controller.available as integration}
 				{@const name = integration.name}
 				{#key name}

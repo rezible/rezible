@@ -1,4 +1,7 @@
 import { Context, watch, type Getter } from "runed";
+import type { Component } from "svelte";
+
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 import {
 	type ErrorModel,
 	type AvailableIntegration,
@@ -6,23 +9,133 @@ import {
 	type IntegrationProviderDataSyncStatus,
 	getIntegrationDataSyncStatusOptions,
 	requestIntegrationDataSyncMutation,
+	type ConfigureIntegrationRequestBody,
 } from "$lib/api";
+
+import { resolve } from "$app/paths";
+import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 
 import SlackConfig from "./config-components/SlackConfig.svelte";
 import PlaceholderConfig from "./config-components/PlaceholderConfig.svelte";
 import GoogleConfig from "./config-components/GoogleConfig.svelte";
 import GithubConfig from "./config-components/GithubConfig.svelte";
-import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
-import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
-import type { Component } from "svelte";
-import { resolve } from "$app/paths";
-import { createMutation, createQuery } from "@tanstack/svelte-query";
+import FakeConfig from "./config-components/FakeConfig.svelte";
 
 const configs: Record<string, Component> = {
 	slack: SlackConfig,
 	google: GoogleConfig,
 	github: GithubConfig,
+	fake: FakeConfig,
 };
+
+export type ConfigRequestAttributes = ConfigureIntegrationRequestBody["attributes"];
+
+export class IntegrationCardController {
+	integrations = useIntegrationsController();
+	oauth = useIntegrationOAuthController();
+
+	constructor(integrationFn: Getter<AvailableIntegration>) {
+		watch(integrationFn, (intg) => {
+			this.integration = intg;
+		});
+	}
+
+	private integration = $state<AvailableIntegration>();
+	name = $derived(this.integration?.name);
+	ConfigComponent = $derived(this.name && this.name in configs ? configs[this.name] : PlaceholderConfig);
+
+	configured = $derived<ConfiguredIntegration[]>(
+		!!this.name ? (this.integrations.configuredByProvider.get(this.name) ?? []) : []
+	);
+	hasConfigured = $derived(this.configured.length > 0);
+
+	dataKinds = $derived.by<Record<string, boolean>>(() => {
+		const result: Record<string, boolean> = {};
+		for (const intg of this.configured) {
+			for (const [kind, enabled] of Object.entries(intg.attributes.dataKinds)) {
+				result[kind] = result[kind] || enabled;
+			}
+		}
+		return result;
+	});
+	enabledDataKinds = $derived(
+		Object.entries(this.dataKinds)
+			.filter(([_, enabled]) => !!enabled)
+			.map(([name, _]) => name) ?? []
+	);
+
+	configError = $state<ErrorModel>();
+	private setConfigError(err?: unknown) {
+		if (!err) {
+			this.configError = undefined;
+			return;
+		}
+		this.configError = {
+			title: "Integration Setup Failed",
+			detail: err instanceof Error ? err.message : "An unknown issue occurred",
+		};
+	}
+
+	isConfigurePending = $derived(!!this.name && this.integrations.configuringProviderName === this.name);
+	isOAuthPending = $derived(this.oauth.pending && this.oauth.name === this.name);
+	oauthSelectionRequired = $derived(this.oauth.selectionRequired && this.oauth.name === this.name);
+
+	loading = $derived(this.isOAuthPending || this.isConfigurePending);
+
+	editingConfigured = $state<ConfiguredIntegration>();
+	configAttrs = $state<ConfigRequestAttributes>();
+	showConfig = $state(false);
+
+	async startConfigure(ci?: ConfiguredIntegration) {
+		if (this.loading || !this.name || !this.integration) return;
+		this.editingConfigured = ci;
+		this.showConfig = true;
+	}
+
+	setConfig(attrs: ConfigRequestAttributes) {
+		this.configAttrs = attrs;
+	}
+	hasChanges = $derived(!!this.configAttrs);
+
+	updateConfig(updateFn: (attrs?: ConfigRequestAttributes) => ConfigRequestAttributes) {
+		this.configAttrs = updateFn(this.configAttrs);
+	}
+
+	clearConfig() {
+		this.showConfig = false;
+		this.configAttrs = undefined;
+		this.editingConfigured = undefined;
+	}
+
+	async saveConfig() {
+		if (!this.name || !this.hasChanges || !this.configAttrs) return;
+		try {
+			await this.integrations.configure(this.name, this.configAttrs);
+			this.clearConfig();
+			this.setConfigError();
+		} catch (e) {
+			this.setConfigError(e);
+		}
+	}
+
+	async startOAuthFlow() {
+		if (this.loading || !this.name) return;
+		const name = this.name;
+		try {
+			const callbackPath = resolve(`/settings/integration-callback/${name}`);
+			const flowUrl = await this.oauth.getStartFlowUrl(this.name, callbackPath);
+			window.location.assign(flowUrl);
+		} catch (e) {
+			this.setConfigError(e);
+		}
+	}
+}
+
+const ctx = new Context<IntegrationCardController>("IntegrationCardController");
+export const initIntegrationCardController = (fn: Getter<AvailableIntegration>) =>
+	ctx.set(new IntegrationCardController(fn));
+export const useIntegrationCardController = () => ctx.get();
 
 type SyncStatusDisplay = {
 	label: string;
@@ -43,105 +156,8 @@ const syncStatusDisplays: Record<string, SyncStatusDisplay> = {
 const pollAfterRequestMs = 10_000;
 const pollIntervalMs = 3_000;
 
-export class IntegrationCardController {
-	integrations = useIntegrationsController();
-	oauth = useIntegrationOAuthController();
-
-	constructor(integrationFn: Getter<AvailableIntegration>) {
-		watch(integrationFn, (intg) => {
-			this.integration = intg;
-		});
-	}
-
-	private integration = $state<AvailableIntegration>();
-	name = $derived(this.integration?.name);
-	Component = $derived(this.name && this.name in configs ? configs[this.name] : PlaceholderConfig);
-
-	configured = $derived<ConfiguredIntegration[]>(
-		!!this.name ? (this.integrations.configuredByProvider.get(this.name) ?? []) : []
-	);
-	hasConfigured = $derived(this.configured.length > 0);
-	primaryConfigured = $derived(this.configured[0]);
-
-	dataKinds = $derived.by<Record<string, boolean>>(() => {
-		const result: Record<string, boolean> = {};
-		for (const intg of this.configured) {
-			for (const [kind, enabled] of Object.entries(intg.attributes.dataKinds)) {
-				result[kind] = result[kind] || enabled;
-			}
-		}
-		return result;
-	});
-	enabledDataKinds = $derived(
-		Object.entries(this.dataKinds)
-			.filter(([_, enabled]) => !!enabled)
-			.map(([name, _]) => name) ?? []
-	);
-
-	hasChanges = $state(false);
-	private configDraft = $state<Record<string, unknown>>({});
-	setConfig(key: string, val: unknown) {
-		this.configDraft[key] = val;
-		this.hasChanges = true;
-	}
-
-	clearConfig(key?: string) {
-		if (key) {
-			delete this.configDraft[key];
-		} else {
-			this.configDraft = {};
-		}
-		this.hasChanges = Object.keys(this.configDraft).length > 0;
-	}
-
-	configError = $state<ErrorModel>();
-	private setConfigError(err?: unknown) {
-		if (!err) {
-			this.configError = undefined;
-			return;
-		}
-		this.configError = {
-			title: "Integration Setup Failed",
-			detail: err instanceof Error ? err.message : "An unknown issue occurred",
-		};
-	}
-
-	private isConfiguring = $derived(!!this.name && this.integrations.configuringProviderName === this.name);
-	private isOAuthPending = $derived(this.oauth.pending && this.oauth.name === this.name);
-
-	loading = $derived(this.isOAuthPending || this.isConfiguring);
-
-	async startOAuthFlow() {
-		if (this.loading || !this.name) return;
-		const name = this.name;
-		try {
-			const callbackPath = resolve(`/settings/integration-callback/${name}`);
-			const flowUrl = await this.oauth.getStartFlowUrl(this.name, callbackPath);
-			window.location.assign(flowUrl);
-		} catch (e) {
-			this.setConfigError(e);
-		}
-	}
-
-	oauthSelectionRequired = $derived(this.oauth.selectionRequired && this.oauth.name === this.name);
-
-	async save() {
-		if (!this.name || !this.hasChanges) return;
-		const currConfig = this.primaryConfigured?.attributes.config ?? {};
-		const externalRef = this.primaryConfigured?.attributes.externalRef ?? "default";
-		const displayName = this.primaryConfigured?.attributes.displayName ?? this.name;
-		try {
-			await this.integrations.configure(this.name, {
-				displayName,
-				externalRef,
-				config: { ...currConfig, ...$state.snapshot(this.configDraft) },
-			});
-			this.clearConfig();
-			this.setConfigError();
-		} catch (e) {
-			this.setConfigError(e);
-		}
-	}
+export class IntegrationDataSyncController {
+	private ctrl = useIntegrationCardController();
 
 	private syncRequestPolling = $state(false);
 	private syncPollTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -149,12 +165,12 @@ export class IntegrationCardController {
 
 	private syncStatusQueryOptions = $derived(
 		getIntegrationDataSyncStatusOptions({
-			path: { name: this.name ?? "" },
+			path: { name: this.ctrl.name ?? "" },
 		})
 	);
 	private syncStatusQuery = createQuery(() => ({
 		...this.syncStatusQueryOptions,
-		enabled: !!this.name && this.hasConfigured,
+		enabled: !!this.ctrl.name && this.ctrl.hasConfigured,
 		refetchInterval: this.syncRequestPolling ? pollIntervalMs : false,
 	}));
 	private requestDataSyncMutation = createMutation(() => ({
@@ -196,9 +212,10 @@ export class IntegrationCardController {
 	}
 
 	async requestSync() {
-		if (!this.name || !this.hasConfigured || this.requestDataSyncMutation.isPending) return;
+		const name = this.ctrl.name;
+		if (!name || !this.ctrl.hasConfigured || this.requestDataSyncMutation.isPending) return;
 		await this.requestDataSyncMutation.mutateAsync({
-			path: { name: this.name },
+			path: { name },
 			body: { attributes: {} },
 		});
 	}
@@ -208,8 +225,3 @@ export class IntegrationCardController {
 		await this.syncStatusQuery.refetch();
 	}
 }
-
-const ctx = new Context<IntegrationCardController>("IntegrationCardController");
-export const initIntegrationCardController = (fn: Getter<AvailableIntegration>) =>
-	ctx.set(new IntegrationCardController(fn));
-export const useIntegrationCardController = () => ctx.get();

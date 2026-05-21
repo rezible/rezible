@@ -1,39 +1,56 @@
 <script lang="ts">
 	import * as Alert from "$components/ui/alert";
 	import { Badge } from "$components/ui/badge";
+	import { Button } from "$src/components/ui/button";
+	import RiGithubFill from "remixicon-svelte/icons/github-fill";
 	import { useIntegrationCardController } from "../controller.svelte";
 
 	const ctrl = useIntegrationCardController();
 
-	const installations = $derived(
-		ctrl.configured.map((configured) => {
-			const config = configured.attributes.config;
-			const org = typeof config.org === "string" ? config.org : configured.attributes.displayName;
-			const installationId =
-				typeof config.installation_id === "number" || typeof config.installation_id === "string"
-					? String(config.installation_id)
-					: configured.attributes.externalRef;
-			return { id: configured.id, org, installationId };
-		})
-	);
+	const ci = $derived(ctrl.editingConfigured);
+	const installation = $derived.by(() => {
+		if (!ci) return;
+		const config = ci.attributes.config;
+		const org = typeof config.org === "string" ? config.org : ci.attributes.displayName;
+		const installationId =
+			typeof config.installation_id === "number" || typeof config.installation_id === "string"
+				? String(config.installation_id)
+				: ci.attributes.externalRef;
+		return { id: ci.id, org, installationId };
+	})
 </script>
 
-{#if ctrl.hasConfigured}
+{#if installation}
 	<Alert.Root>
 		<Alert.Title>GitHub connected</Alert.Title>
 		<Alert.Description class="flex flex-wrap items-center gap-2">
 			<span>Repository and change event access is configured via OAuth.</span>
-			{#each installations as installation (installation.id)}
-				<Badge variant="secondary">{installation.org}</Badge>
-				<Badge variant="outline">Installation {installation.installationId}</Badge>
-			{/each}
+			<Badge variant="secondary">{installation.org}</Badge>
+			<Badge variant="outline">Installation {installation.installationId}</Badge>
 		</Alert.Description>
 	</Alert.Root>
 {:else}
 	<Alert.Root>
 		<Alert.Title>Connect GitHub</Alert.Title>
 		<Alert.Description>
-			Use OAuth to install the GitHub app and grant repository/change event access.
+			Sign in with Slack to install the GitHub app and grant repository/change event access.
 		</Alert.Description>
 	</Alert.Root>
+
+	<div class="place-self-center">
+		<Button
+			onclick={() => {
+				ctrl.startOAuthFlow();
+			}}
+			variant="ghost"
+			class="w-fit h-fit cursor-pointer p-0"
+		>
+			<span
+			class="inline-flex h-10 items-center gap-2 rounded-md bg-foreground px-4 text-sm font-medium text-background"
+		>
+			<RiGithubFill class="size-5" />
+			Connect GitHub
+		</span>
+		</Button>
+	</div>
 {/if}

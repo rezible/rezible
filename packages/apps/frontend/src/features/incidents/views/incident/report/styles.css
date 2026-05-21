@@ -23,13 +23,16 @@ span.collaboration-cursor__caret {
 }
 
 .rez-discussion-draft {
-	@apply bg-yellow-900 border-b border-yellow-400 cursor-pointer;
+	background-color: var(--bg-yellow-900);
+	/* @apply bg-yellow-900 border-b border-yellow-400 cursor-pointer; */
 }
 
 .rez-annotation {
-	@apply bg-accent-900 border-b border-yellow-400 cursor-pointer;
+	background-color: var(--bg-accent-900);
+	/* @apply bg-accent-900 border-b border-yellow-400 cursor-pointer; */
 }
 
 .rez-user-mention {
-	@apply bg-accent-400 border text-accent-content;
+	background-color: var(--bg-accent-400);
+	/* @apply bg-accent-400 border text-accent-content; */
 }

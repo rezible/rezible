@@ -39,7 +39,7 @@
 				</div>
 			{/if}
 
-			<div id="scroll-body" class="flex-1 min-h-0 overflow-y-auto p-2">
+			<div id="scroll-body" class="flex-1 flex min-h-0 overflow-y-auto p-2">
 				{@render children()}
 			</div>
 		</main>

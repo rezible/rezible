@@ -369,7 +369,6 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) error {
 	failed := map[string]error{}
 	for name, handlerFn := range projections.GetHandlers() {
-		slog.Debug("projecting event", "handler", name)
 		// query for existing projection status
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))

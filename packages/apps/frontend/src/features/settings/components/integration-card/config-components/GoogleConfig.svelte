@@ -3,37 +3,16 @@
 	import { Input } from "$components/ui/input";
 	import { Label } from "$components/ui/label";
 	import { Switch } from "$components/ui/switch";
-	import { useIntegrationCardController } from "../controller.svelte";
+	import { useIntegrationCardController, type ConfigRequestAttributes } from "../controller.svelte";
 
 	const ctrl = useIntegrationCardController();
 
-	let videoConferenceEnabled = $state(true);
-	const onVideoConferenceChange = (checked: boolean) => {
-		videoConferenceEnabled = checked;
-		ctrl.setConfig("video_conferencing", checked);
-	};
-
-	let serviceAccountInput = $state<HTMLInputElement>(null!);
-	let svcAccDragActive = $state(false);
-	let svcAccParseError = $state("");
-	let svcAccFileName = $state("");
-
-	const onFileInputChange = async () => {
-		if (!serviceAccountInput.files || serviceAccountInput.files.length === 0) return;
-		await loadServiceAccountFile(serviceAccountInput.files[0]);
-	};
-
-	const onFileDrop = async (evt: DragEvent) => {
-		evt.preventDefault();
-		svcAccDragActive = false;
-
-		const file = evt.dataTransfer?.files.item(0);
-		if (file) await loadServiceAccountFile(file);
-	};
+	let svcAccParseError = $state<string>();
+	let svcAccFileName = $state<string>();
 
 	const loadServiceAccountFile = async (file: File) => {
-		svcAccParseError = "";
-		svcAccFileName = "";
+		svcAccParseError = undefined;
+		svcAccFileName = undefined;
 		try {
 			const fileData = await file.text();
 			const parsed = JSON.parse(fileData);
@@ -42,7 +21,7 @@
 				return;
 			}
 			svcAccFileName = file.name;
-			ctrl.setConfig("service_account_credentials", parsed);
+			console.log("parsed", parsed);
 		} catch {
 			svcAccParseError = "Could not parse JSON file. Check that this is a valid service account credentials file.";
 		}
@@ -50,8 +29,8 @@
 </script>
 
 <div class="flex flex-col gap-3">
-	{#if ctrl.hasConfigured}
-		<div class="flex items-center justify-between rounded-md border p-3">
+	{#if !!ctrl.editingConfigured}
+		<!--div class="flex items-center justify-between rounded-md border p-3">
 			<div class="flex flex-col gap-1">
 				<Label for="google-video-conference-toggle">Enable incident video conferences</Label>
 				<p class="text-sm text-muted-foreground">Creates Google Meet links for incidents when supported.</p>
@@ -61,30 +40,39 @@
 				checked={videoConferenceEnabled}
 				onCheckedChange={onVideoConferenceChange}
 			/>
-		</div>
+		</div-->
 	{:else}
 		<div class="space-y-2">
 			<Label for="google-service-account-file">Service account credentials</Label>
 			<div
 				role="region"
-				class="rounded-md border border-dashed p-4 text-sm transition-colors"
-				class:border-primary={svcAccDragActive}
-				class:bg-accent={svcAccDragActive}
-				ondragover={(evt) => {
-					evt.preventDefault();
-					svcAccDragActive = true;
+				class="rounded-md border border-dashed p-4 text-sm transition-colors [&.is-dragging]:border-primary [&.is-dragging]:bg-accent"
+				ondragover={e => {
+					e.preventDefault();
+					e.currentTarget.classList.add("is-dragging");
 				}}
-				ondragleave={() => {svcAccDragActive = false}}
-				ondrop={onFileDrop}
+				ondragleave={e => {
+					e.preventDefault();
+					e.currentTarget.classList.remove("is-dragging");
+				}}
+				ondrop={e => {
+					e.preventDefault();
+					e.currentTarget.classList.remove("is-dragging");
+					const file = e.dataTransfer?.files.item(0);
+					if (!!file) loadServiceAccountFile(file);
+				}}
 			>
 				<p>Drag and drop JSON credentials here, or choose a file.</p>
 				<div class="mt-3">
 					<Input
 						id="google-service-account-file"
-						bind:ref={serviceAccountInput}
 						type="file"
 						accept=".json,application/json"
-						onchange={onFileInputChange}
+						onchange={e => {
+							e.preventDefault();
+							const file = e.currentTarget.files?.item(0);
+							if (!!file) loadServiceAccountFile(file);
+						}}
 					/>
 				</div>
 				{#if svcAccFileName}

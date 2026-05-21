@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { useAppShell, type PageBreadcrumb } from "$lib/app-shell.svelte";
-
 	import type { IncidentViewRouteParam } from "$params/incidentView";
-	import { initIncidentViewController, type IncidentViewParams } from "./controller.svelte";
-	import { initIncidentCollaborationController } from "./collaboration.svelte";
+	import { initIncidentViewController } from "./controller.svelte";
 
 	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
 	import PageActions from "./PageActions.svelte";
@@ -12,11 +10,12 @@
 	import IncidentAnalysis from "./analysis/IncidentAnalysis.svelte";
 	import IncidentReport from "./report/IncidentReport.svelte";
 
-	const { slug, routeParam }: { slug: string, routeParam: IncidentViewRouteParam } = $props();
-
-	const params = $derived<IncidentViewParams>({ slug, routeParam });
-	const view = initIncidentViewController(() => params);
-	const collab = initIncidentCollaborationController(view);
+	type Props = {
+		slug: string;
+		routeParam: IncidentViewRouteParam;
+	};
+	const { slug, routeParam }: Props = $props();
+	const view = initIncidentViewController(() => slug);
 
 	const incidentTitle = $derived(view.incident?.attributes.title);
 
@@ -30,21 +29,13 @@
 	appShell.setPageActions(PageActions, true);
 </script>
 
-{#snippet infoBar()}
-	<!-- TODO -->
-{/snippet}
-
-{#snippet tabSidebar()}
-	<ContextSidebar {collab} />
-{/snippet}
-
 <TabbedViewContainer 
-	route="/incidents/[slug]/[[view=incidentView]]" 
-	{infoBar}
-	{tabSidebar} 
+	route="/incidents/[slug]/[[view=incidentView]]"
 	tabs={[
 		{label: "Overview", component: IncidentOverview, params: {slug}},
 		{label: "System Analysis", component: IncidentAnalysis, params: {slug, view: "analysis"}},
 		{label: "Report", component: IncidentReport, params: {slug, view: "report"}},
 	]}
 />
+
+<ContextSidebar collab={view.collab} />

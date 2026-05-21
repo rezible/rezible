@@ -1,25 +1,36 @@
 import { getIncidentOptions, getRetrospectiveOptions } from "$lib/api";
-import type { IncidentViewRouteParam } from "$params/incidentView";
 import { getLocalTimeZone } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
-
-export type IncidentViewParams = {
-	slug: string;
-	routeParam: IncidentViewRouteParam;
-}
+import { initIncidentCollaborationController } from "./collaboration.svelte";
+import { onMount } from "svelte";
 
 export class IncidentViewController {
 	queryClient = useQueryClient();
 
-	slug = $state<string>(null!);
-	routeParam = $state<IncidentViewRouteParam>(null!);
+	collab = initIncidentCollaborationController();
 
-	constructor(paramsFn: Getter<IncidentViewParams>) {
-		watch(paramsFn, ({slug, routeParam}) => {
-			this.slug = slug;
-			this.routeParam = routeParam;
+	slug = $state<string>(null!);
+
+	constructor(slugFn: Getter<string>) {
+		onMount(() => {
+			return () => {
+				this.cleanup();
+			}
 		});
+
+		watch(slugFn, slug => {
+			this.slug = slug;
+		});
+
+
+		watch(() => this.documentId, documentId => { 
+			this.collab.connect(documentId);
+		});
+	}
+
+	private cleanup() {
+		this.collab.cleanup();
 	}
 
 	private incidentQueryOptions = $derived(getIncidentOptions({ path: { id: this.slug } }));
@@ -43,5 +54,5 @@ export class IncidentViewController {
 }
 
 const ctx = new Context<IncidentViewController>("IncidentViewController");
-export const initIncidentViewController = (paramsFn: Getter<IncidentViewParams>) => ctx.set(new IncidentViewController(paramsFn));
+export const initIncidentViewController = (slugFn: Getter<string>) => ctx.set(new IncidentViewController(slugFn));
 export const useIncidentView = () => ctx.get();

@@ -40,13 +40,20 @@ export class InitialSetupViewController {
         })
     }
 
+    private finishingSetup = $state(false);
     private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
     async doFinishOrganizationSetup() {
         if (this.finishOrgSetupMut.isPending) return;
         const id = this.session.org?.id;
         if (!id) return;
-        await this.finishOrgSetupMut.mutateAsync({ path: { id } });
-        this.session.refetch();
+        this.finishingSetup = true;
+        try {
+            await this.finishOrgSetupMut.mutateAsync({ path: { id } });
+            this.session.refetch();
+        } catch (e) {
+            console.error("failed to finish setup", e);
+            this.finishingSetup = false;
+        }
     }
 
     loading = $derived(this.finishOrgSetupMut.isPending || this.integrations.loading);

@@ -10,11 +10,9 @@
 
 <script lang="ts" generics="Route extends RouteId">
 	import { page } from "$app/state";
-	import type { Pathname } from "$app/types";
 	import type { ResolvedPathname } from "$app/types";
 	import type { RouteId } from "$app/types";
 	import type { Component, Snippet } from "svelte";
-	import { SvelteMap } from "svelte/reactivity";
 
 	type Props = { 
 		route: Route;

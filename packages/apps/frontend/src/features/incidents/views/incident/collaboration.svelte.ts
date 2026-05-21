@@ -3,44 +3,24 @@ import {
 	WebSocketStatus,
 	type StatesArray,
 } from "@hocuspocus/provider";
-import { onMount } from "svelte";
-import { Context, watch } from "runed";
-import type { IncidentViewController } from "./controller.svelte";
+import { Context } from "runed";
 
 export class IncidentCollaborationController {
-	incidentView: IncidentViewController;
-
 	provider = $state<HocuspocusProvider>();
 	awareness = $state<StatesArray>([]);
 	status = $state<WebSocketStatus>(WebSocketStatus.Disconnected);
 	error = $state<Error>();
 
-	constructor(incidentView: IncidentViewController) {
-		this.incidentView = incidentView;
-		watch(() => incidentView.documentId, id => { this.connect(id) });
-		onMount(() => (() => { this.cleanup() }));
-	};
-
-	private cleanup() {
-		// https://github.com/ueberdosis/hocuspocus/issues/845
-		try {
-			if (this.provider?.isSynced) this.provider.disconnect();
-			this.provider?.destroy();
-			this.provider = undefined;
-		} catch (e) {
-			console.error("failed to disconnect collaboration provider ", e);
-		}
-		this.awareness = [];
-		this.status = WebSocketStatus.Disconnected;
-		this.error = undefined;
-	};
-
 	async connect(id?: string) {
 		this.cleanup();
 		if (!id) return;
 
+		const documentsUrl = new URL(window.location.href);
+		documentsUrl.pathname = "/api/documents";
+
+		console.log("documents", documentsUrl);
 		this.provider = new HocuspocusProvider({
-			url: "/api/documents",
+			url: documentsUrl.toString(),
 			token: "foobar",
 			name: id,
 			onAwarenessChange: ({states}) => {
@@ -59,8 +39,22 @@ export class IncidentCollaborationController {
 			},
 		});
 	};
+
+	cleanup() {
+		// https://github.com/ueberdosis/hocuspocus/issues/845
+		try {
+			if (this.provider?.isSynced) this.provider.disconnect();
+			this.provider?.destroy();
+			this.provider = undefined;
+		} catch (e) {
+			console.error("failed to disconnect collaboration provider ", e);
+		}
+		this.awareness = [];
+		this.status = WebSocketStatus.Disconnected;
+		this.error = undefined;
+	};
 }
 
 const ctx = new Context<IncidentCollaborationController>("IncidentCollaborationController");
-export const initIncidentCollaborationController = (vc: IncidentViewController) => ctx.set(new IncidentCollaborationController(vc));
+export const initIncidentCollaborationController = () => ctx.set(new IncidentCollaborationController());
 export const useIncidentCollaboration = () => ctx.get();

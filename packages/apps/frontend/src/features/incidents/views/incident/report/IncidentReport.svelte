@@ -1,5 +1,5 @@
 <script lang="ts">
-	import "./styles.postcss";
+	import "./styles.css";
 	import type { Editor as TiptapEditor } from "@tiptap/core";
 
 	import { useIncidentView } from "$features/incidents/views/incident";
@@ -50,8 +50,10 @@
 				</div>
 			{/each}
 		{:else}
-			<span>Connecting...</span>
-			<LoadingIndicator />
+			<div class="h-16 overflow-hidden flex items-center gap-4">
+				<LoadingIndicator />
+				<span>Loading document...</span>
+			</div>
 		{/if}
 	</div>
 </div>

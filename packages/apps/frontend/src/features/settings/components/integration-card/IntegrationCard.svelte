@@ -10,6 +10,8 @@
 	import RiGithubFill from "remixicon-svelte/icons/github-fill";
 	import { Checkbox } from "$components/ui/checkbox";
 	import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
+	import IntegrationDataSync from "./IntegrationDataSync.svelte";
+	import ConfiguredIntegrationPanel from "./ConfiguredIntegrationPanel.svelte";
 
 	type Props = {
 		integration: AvailableIntegration;
@@ -18,57 +20,37 @@
 
 	const ctrl = initIntegrationCardController(() => integration);
 	const oauth = useIntegrationOAuthController();
-</script>
 
-{#snippet oauthFlowButtonContent()}
-	{#if ctrl.name === "slack"}
-		<img
-			alt="Add to Slack"
-			width="139px"
-			height="40px"
-			src="https://platform.slack-edge.com/img/add_to_slack.png"
-			srcSet="https://platform.slack-edge.com/img/add_to_slack.png 1x, https://platform.slack-edge.com/img/add_to_slack@2x.png 2x"
-		/>
-	{:else if ctrl.name === "github"}
-		<span
-			class="inline-flex h-10 items-center gap-2 rounded-md bg-foreground px-4 text-sm font-medium text-background"
-		>
-			<RiGithubFill class="size-5" />
-			Connect GitHub
-		</span>
-	{:else}
-		<span>Start OAuth Flow</span>
-	{/if}
-{/snippet}
+	const showContent = $derived(!!ctrl.configError || ctrl.oauthSelectionRequired || ctrl.hasConfigured || ctrl.showConfig);
+</script>
 
 <Card.Root class="gap-4 p-4 min-w-xs">
 	<Card.Header class="p-0">
 		<div class="flex items-center justify-between gap-4 h-fit">
 			<div class="flex flex-col gap-2">
 				<Card.Title class="capitalize">{integration.name}</Card.Title>
-				{#if ctrl.enabledDataKinds.length > 0}
-					<div class="flex items-center gap-2 text-sm text-muted-foreground">
-						<span>Enabled:</span>
-						<div class="flex flex-wrap gap-2">
-							{#each ctrl.enabledDataKinds as kind (kind)}
-								<Badge variant="secondary">{kind}</Badge>
-							{/each}
-						</div>
-					</div>
+			</div>
+			<div class="flex items-center gap-2">
+				{#if ctrl.hasConfigured}
+					<Badge variant="secondary">{ctrl.configured.length} configured</Badge>
+				{:else if !ctrl.showConfig}
+					<Button
+						onclick={() => {
+							ctrl.startConfigure();
+						}}
+						variant="outline"
+						disabled={ctrl.loading}
+					>
+						Connect {ctrl.hasConfigured ? "another" : ""}
+					</Button>
 				{/if}
 			</div>
-			<Badge variant={ctrl.hasConfigured ? "secondary" : "outline"}
-				>{ctrl.hasConfigured ? `${ctrl.configured.length} configured` : "Not configured"}</Badge
-			>
 		</div>
 	</Card.Header>
 
-	<Card.Content class="p-0 flex flex-col gap-3">
+	<Card.Content class="p-0 flex flex-col gap-3 {showContent ? '' : 'hidden'}">
 		{#if !!ctrl.configError}
 			<InlineAlert bind:error={ctrl.configError} />
-		{/if}
-		{#if !!ctrl.syncStatusError}
-			<InlineAlert error={ctrl.syncStatusError} dismissable={false} />
 		{/if}
 
 		{#if ctrl.oauthSelectionRequired}
@@ -102,104 +84,31 @@
 					Connect selected
 				</Button>
 			</div>
-		{:else if integration.oauthRequired && !ctrl.hasConfigured}
-			<div class="place-self-center">
-				<Button
-					onclick={() => {
-						ctrl.startOAuthFlow();
-					}}
-					variant="ghost"
-					class="w-fit h-fit cursor-pointer p-0"
-				>
-					{@render oauthFlowButtonContent()}
-				</Button>
-			</div>
 		{:else}
 			{#if ctrl.hasConfigured}
 				<div class="flex flex-col gap-2">
 					{#each ctrl.configured as configured (configured.id)}
-						<div class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
-							<div class="min-w-0">
-								<div class="truncate font-medium">{configured.attributes.displayName}</div>
-								<div class="truncate text-muted-foreground">
-									{configured.attributes.externalRef}
-								</div>
-							</div>
-							<div class="flex flex-wrap justify-end gap-1">
-								{#each Object.entries(configured.attributes.dataKinds).filter(([, enabled]) => enabled) as [kind] (kind)}
-									<Badge variant="secondary">{kind}</Badge>
-								{/each}
-							</div>
-						</div>
+						<ConfiguredIntegrationPanel {configured} />
 					{/each}
 				</div>
-				<div class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
-					<div class="flex min-w-0 items-center gap-2">
-						<span class="text-muted-foreground">Data sync</span>
-						{#if ctrl.latestSyncStatusDisplay}
-							<Badge
-								variant={ctrl.latestSyncStatusDisplay.variant}
-								class={ctrl.latestSyncStatusDisplay.class}
-							>
-								{ctrl.latestSyncStatusDisplay.label}
-							</Badge>
-						{:else}
-							<Badge variant="outline">No runs</Badge>
-						{/if}
-						{#if ctrl.isSyncing}
-							<Spinner aria-label="Sync status updating" />
-						{/if}
-					</div>
-					<Button
-						variant="ghost"
-						size="sm"
-						disabled={ctrl.loading || ctrl.isSyncing}
-						onclick={() => {
-							ctrl.refetchSyncStatus();
-						}}
-					>
-						Refresh
-					</Button>
-				</div>
+				<IntegrationDataSync />
 			{/if}
 
-			<ctrl.Component />
+			{#if ctrl.showConfig}
+				<ctrl.ConfigComponent />
 
-			<div class="flex flex-wrap gap-2">
-				{#if integration.oauthRequired}
-					<Button
-						onclick={() => {
-							ctrl.startOAuthFlow();
-						}}
-						variant="outline"
-						disabled={ctrl.loading}
-					>
-						Connect another
+				<div class="flex flex-wrap gap-2">
+					<Button disabled={!ctrl.hasChanges || ctrl.loading} onclick={() => ctrl.saveConfig()}>
+						{#if ctrl.loading}
+							<Spinner />
+							Saving...
+						{:else}
+							Save
+						{/if}
 					</Button>
-				{/if}
-				<Button disabled={!ctrl.hasChanges || ctrl.loading} onclick={() => ctrl.save()}>
-					{#if ctrl.loading}
-						<Spinner />
-						Saving...
-					{:else}
-						Save
-					{/if}
-				</Button>
-				<Button
-					onclick={() => {
-						ctrl.requestSync();
-					}}
-					variant="outline"
-					disabled={!ctrl.hasConfigured || ctrl.loading || ctrl.isSyncing}
-				>
-					{#if ctrl.isSyncing}
-						<Spinner />
-						Syncing...
-					{:else}
-						Request Data Sync
-					{/if}
-				</Button>
-			</div>
+					<Button disabled={ctrl.loading} onclick={() => ctrl.clearConfig()}>Cancel</Button>
+				</div>
+			{/if}
 		{/if}
 	</Card.Content>
 </Card.Root>

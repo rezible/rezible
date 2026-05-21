@@ -25,7 +25,7 @@
         controller.submit();
     }}
 >
-    <div class="flex-1 space-y-4 overflow-y-auto px-4 py-4">
+    <div class="flex-1 space-y-4 overflow-y-auto px-4 pb-4">
         <InlineAlert error={metadataError ?? controller.error} />
 
         <div class="grid gap-4 md:grid-cols-2">
@@ -168,7 +168,7 @@
                 Cancel
             </Button>
             <Button type="submit" disabled={!controller.canSubmit}>
-                {controller.isPending ? "Creating..." : "Create Incident"}
+                {controller.isPending ? "Creating..." : "Create"}
             </Button>
         </Dialog.Footer>
     </div>

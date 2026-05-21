@@ -6,15 +6,12 @@ require (
 	ariga.io/atlas v1.2.0
 	entgo.io/ent v0.14.6
 	github.com/ThreeDotsLabs/watermill v1.5.1
-	github.com/andygrunwald/go-jira v1.17.0
 	github.com/bradleyfalzon/ghinstallation/v2 v2.18.0
 	github.com/coreos/go-oidc/v3 v3.18.0
 	github.com/danielgtaylor/huma/v2 v2.37.3
 	github.com/deckarep/golang-set/v2 v2.9.0
 	github.com/dentech-floss/watermill-opentelemetry-go-extra v0.1.2
 	github.com/go-chi/chi/v5 v5.2.5
-	github.com/go-chi/httplog/v3 v3.3.0
-	github.com/go-faker/faker/v4 v4.7.0
 	github.com/golang-migrate/migrate/v4 v4.19.1
 	github.com/google/go-github/v84 v84.0.0
 	github.com/google/uuid v1.6.0
@@ -31,6 +28,7 @@ require (
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.36.0
 	github.com/riverqueue/river/rivertype v0.36.0
 	github.com/riverqueue/rivercontrib/otelriver v0.7.0
+	github.com/samber/slog-chi v1.19.1
 	github.com/slack-go/slack v0.23.1
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
 	github.com/stretchr/objx v0.5.3
@@ -136,7 +134,6 @@ require (
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
-	github.com/trivago/tgo v1.0.7 // indirect
 	github.com/vektra/mockery/v3 v3.7.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect

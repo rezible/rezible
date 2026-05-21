@@ -7,9 +7,10 @@ export dbAppUser := env("POSTGRES_APP_USER")
 [doc("Setup the workspace & install dependencies")]
 [working-directory("..")]
 @setup:
-    just backend install
+    just backend::install
     bun install
-    just devenv setup-workspace
+    -just dev::setup-workspace
+    just backend::apply-migrations
 
 [default]
 [doc("Run all services & dependencies using process-compose")]
