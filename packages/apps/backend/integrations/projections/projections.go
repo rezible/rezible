@@ -34,12 +34,14 @@ func GetHandlers() map[string]EventProjectionHandlerFunc {
 type decoder func(*ent.NormalizedEvent) (any, error)
 
 var decoders = map[ne.Kind]decoder{
-	ne.KindChatMessage:         DecodeChatMessageEvent,
-	ne.KindRepositoryObserved:  DecodeRepositoryObservedEvent,
-	ne.KindChangeEventObserved: DecodeChangeEventObservedEvent,
-	ne.KindUserObserved:        DecodeUserObservedEvent,
-	ne.KindIncidentObserved:    DecodeIncidentObservedEvent,
-	ne.KindAlertObserved:       DecodeAlertObservedEvent,
+	ne.KindChatMessage:                DecodeChatMessageEvent,
+	ne.KindRepositoryObserved:         DecodeRepositoryObservedEvent,
+	ne.KindChangeEventObserved:        DecodeChangeEventObservedEvent,
+	ne.KindUserObserved:               DecodeUserObservedEvent,
+	ne.KindIncidentObserved:           DecodeIncidentObservedEvent,
+	ne.KindAlertObserved:              DecodeAlertObservedEvent,
+	ne.KindSystemComponentObserved:    DecodeSystemComponentObservedEvent,
+	ne.KindSystemRelationshipObserved: DecodeSystemRelationshipObservedEvent,
 }
 
 func DecodeEvent[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
@@ -77,6 +79,8 @@ func GetEventDisplay(ev *ent.NormalizedEvent) (*EventDisplay, error) {
 	}
 	return disp, nil
 }
+
+// TODO: use something like mapstructure
 
 func requiredString(ev *ent.NormalizedEvent, key string) (string, error) {
 	value, ok := ev.Attributes[key]
@@ -127,4 +131,16 @@ func requiredInt(ev *ent.NormalizedEvent, key string) (int, error) {
 	default:
 		return 0, fmt.Errorf("%s attribute must be an integer", key)
 	}
+}
+
+func optionalMap(ev *ent.NormalizedEvent, key string) (map[string]any, error) {
+	value, exists := ev.Attributes[key]
+	if !exists || value == nil {
+		return map[string]any{}, nil
+	}
+	props, ok := value.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("%s attribute must be an object", key)
+	}
+	return props, nil
 }

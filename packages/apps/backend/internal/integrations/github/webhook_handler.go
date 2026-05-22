@@ -80,7 +80,7 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Payload:          body,
 	}
 
-	if _, ingestErr := h.services.ProviderEvents.Ingest(r.Context(), pe); ingestErr != nil {
+	if ingestErr := h.services.ProviderEvents.Ingest(r.Context(), pe); ingestErr != nil {
 		slog.ErrorContext(r.Context(), "failed to ingest github webhook event", "error", ingestErr)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return

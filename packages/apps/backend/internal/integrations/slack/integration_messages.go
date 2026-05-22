@@ -71,7 +71,7 @@ func (h *messageHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Ev
 			ProviderEventRef: ev.EventID,
 			Payload:          data,
 		}
-		if _, ingestErr := h.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
+		if ingestErr := h.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
 			return fmt.Errorf("ingest event: %w", ingestErr)
 		}
 	}

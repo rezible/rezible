@@ -1417,7 +1417,7 @@ var (
 	// NormalizedEventsColumns holds the columns for the "normalized_events" table.
 	NormalizedEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message", "repository_observed", "user_observed", "incident_observed", "alert_observed", "change_event_observed"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message", "repository_observed", "user_observed", "incident_observed", "alert_observed", "change_event_observed", "system_component_observed", "system_relationship_observed"}},
 		{Name: "provider", Type: field.TypeString},
 		{Name: "provider_source", Type: field.TypeString},
 		{Name: "provider_event_ref", Type: field.TypeString},

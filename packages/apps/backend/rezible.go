@@ -241,6 +241,11 @@ type (
 	}
 )
 
+func (req ProviderEventQueryRequest) GetSourceCursor(src string) (string, bool) {
+	cursor, exists := req.SourceCursors[src]
+	return cursor, exists || len(req.SourceCursors) == 0
+}
+
 type (
 	OrganizationService interface {
 		SyncFromAuthProvider(context.Context, ent.Organization) (*ent.Organization, error)

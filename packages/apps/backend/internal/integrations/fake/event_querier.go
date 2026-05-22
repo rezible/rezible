@@ -29,18 +29,100 @@ func (q *eventQuerier) Provider() string {
 
 func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		if alertsCursor, ok := req.SourceCursors[sourceAlerts]; ok || len(req.SourceCursors) == 0 {
+		if incidentsCursor, shouldQuery := req.GetSourceCursor(sourceIncidents); shouldQuery {
+			for ev, evErr := range q.pullIncidentEvents(ctx, incidentsCursor) {
+				if !yield(ev, evErr) {
+					return
+				}
+			}
+		}
+		if alertsCursor, shouldQuery := req.GetSourceCursor(sourceAlerts); shouldQuery {
 			for ev, evErr := range q.pullAlertEvents(ctx, alertsCursor) {
 				if !yield(ev, evErr) {
 					return
 				}
 			}
 		}
-		if incidentsCursor, ok := req.SourceCursors[sourceIncidents]; ok || len(req.SourceCursors) == 0 {
-			for ev, evErr := range q.pullIncidentEvents(ctx, incidentsCursor) {
+		if topologyCursor, shouldQuery := req.GetSourceCursor(sourceTopology); shouldQuery {
+			for ev, evErr := range q.pullTopologyEvents(ctx, topologyCursor) {
 				if !yield(ev, evErr) {
 					return
 				}
+			}
+		}
+	}
+}
+
+var fakeIncidentEvents = []incidentObservedPayload{
+	{
+		ExternalID:    "checkout-search-timeouts",
+		Title:         "Checkout search lookups timing out",
+		Summary:       "Checkout requests that need product search enrichment are timing out for a subset of customers.",
+		SeverityName:  "SEV-1",
+		SeverityRank:  1,
+		TypeName:      "Customer Impact",
+		OccurredAt:    time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
+		ObservationID: "checkout-search-timeouts-observed",
+	},
+	{
+		ExternalID:    "catalog-search-stale-results",
+		Title:         "Catalog search returning stale results",
+		Summary:       "The catalog search index failed to refresh after the nightly product import.",
+		SeverityName:  "SEV-2",
+		SeverityRank:  2,
+		TypeName:      "Data Freshness",
+		OccurredAt:    time.Date(2026, 5, 13, 2, 30, 0, 0, time.UTC),
+		ObservationID: "catalog-search-stale-results-observed",
+	},
+	{
+		ExternalID:    "search-admin-dashboard-degraded",
+		Title:         "Search admin dashboard degraded",
+		Summary:       "Internal teams are seeing slow loads and intermittent errors in search administration views.",
+		SeverityName:  "SEV-3",
+		SeverityRank:  3,
+		TypeName:      "Internal Tooling",
+		OccurredAt:    time.Date(2026, 5, 14, 5, 0, 0, 0, time.UTC),
+		ObservationID: "search-admin-dashboard-degraded-observed",
+	},
+}
+
+type incidentObservedPayload struct {
+	ExternalID    string    `json:"external_id"`
+	Title         string    `json:"title"`
+	Summary       string    `json:"summary,omitempty"`
+	SeverityName  string    `json:"severity_name"`
+	SeverityRank  int       `json:"severity_rank"`
+	TypeName      string    `json:"type_name"`
+	OccurredAt    time.Time `json:"occurred_at"`
+	ObservationID string    `json:"observation_id"`
+}
+
+func (q *eventQuerier) pullIncidentEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+		for _, payload := range fakeIncidentEvents {
+			if cursor != "" && payload.ObservationID <= cursor {
+				continue
+			}
+			payloadBytes, jsonErr := json.Marshal(payload)
+			if jsonErr != nil {
+				yield(nil, fmt.Errorf("json marshal incident: %w", jsonErr))
+				return
+			}
+			res := &rez.ProviderEventQueryResult{
+				Event: rez.ProviderEvent{
+					Provider:         integrationName,
+					ProviderSource:   sourceIncidents,
+					ProviderEventRef: fmt.Sprintf("fake:%s:%s", sourceIncidents, payload.ObservationID),
+					SubjectRef:       fmt.Sprintf("fake:incident:%s", payload.ExternalID),
+					ReceivedAt:       payload.OccurredAt,
+					Payload:          payloadBytes,
+					ContentType:      "application/json",
+				},
+				SourceCursorAfter: new(payload.ObservationID),
+			}
+
+			if !yield(res, nil) {
+				return
 			}
 		}
 	}
@@ -53,17 +135,6 @@ type alertObservedPayload struct {
 	Definition  string    `json:"definition,omitempty"`
 	OccurredAt  time.Time `json:"occurred_at"`
 	InstanceRef string    `json:"instance_ref"`
-}
-
-type incidentObservedPayload struct {
-	ExternalID    string    `json:"external_id"`
-	Title         string    `json:"title"`
-	Summary       string    `json:"summary,omitempty"`
-	SeverityName  string    `json:"severity_name"`
-	SeverityRank  int       `json:"severity_rank"`
-	TypeName      string    `json:"type_name"`
-	OccurredAt    time.Time `json:"occurred_at"`
-	ObservationID string    `json:"observation_id"`
 }
 
 var fakeAlertEvents = []alertObservedPayload{
@@ -109,39 +180,6 @@ var fakeAlertEvents = []alertObservedPayload{
 	},
 }
 
-var fakeIncidentEvents = []incidentObservedPayload{
-	{
-		ExternalID:    "checkout-search-timeouts",
-		Title:         "Checkout search lookups timing out",
-		Summary:       "Checkout requests that need product search enrichment are timing out for a subset of customers.",
-		SeverityName:  "SEV-1",
-		SeverityRank:  1,
-		TypeName:      "Customer Impact",
-		OccurredAt:    time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
-		ObservationID: "checkout-search-timeouts-observed",
-	},
-	{
-		ExternalID:    "catalog-search-stale-results",
-		Title:         "Catalog search returning stale results",
-		Summary:       "The catalog search index failed to refresh after the nightly product import.",
-		SeverityName:  "SEV-2",
-		SeverityRank:  2,
-		TypeName:      "Data Freshness",
-		OccurredAt:    time.Date(2026, 5, 13, 2, 30, 0, 0, time.UTC),
-		ObservationID: "catalog-search-stale-results-observed",
-	},
-	{
-		ExternalID:    "search-admin-dashboard-degraded",
-		Title:         "Search admin dashboard degraded",
-		Summary:       "Internal teams are seeing slow loads and intermittent errors in search administration views.",
-		SeverityName:  "SEV-3",
-		SeverityRank:  3,
-		TypeName:      "Internal Tooling",
-		OccurredAt:    time.Date(2026, 5, 14, 5, 0, 0, 0, time.UTC),
-		ObservationID: "search-admin-dashboard-degraded-observed",
-	},
-}
-
 func (q *eventQuerier) pullAlertEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, payload := range fakeAlertEvents {
@@ -164,37 +202,6 @@ func (q *eventQuerier) pullAlertEvents(ctx context.Context, cursor string) iter.
 					ContentType:      "application/json",
 				},
 				SourceCursorAfter: new(payload.InstanceRef),
-			}
-
-			if !yield(res, nil) {
-				return
-			}
-		}
-	}
-}
-
-func (q *eventQuerier) pullIncidentEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		for _, payload := range fakeIncidentEvents {
-			if cursor != "" && payload.ObservationID <= cursor {
-				continue
-			}
-			payloadBytes, jsonErr := json.Marshal(payload)
-			if jsonErr != nil {
-				yield(nil, fmt.Errorf("json marshal incident: %w", jsonErr))
-				return
-			}
-			res := &rez.ProviderEventQueryResult{
-				Event: rez.ProviderEvent{
-					Provider:         integrationName,
-					ProviderSource:   sourceIncidents,
-					ProviderEventRef: fmt.Sprintf("fake:%s:%s", sourceIncidents, payload.ObservationID),
-					SubjectRef:       fmt.Sprintf("fake:incident:%s", payload.ExternalID),
-					ReceivedAt:       payload.OccurredAt,
-					Payload:          payloadBytes,
-					ContentType:      "application/json",
-				},
-				SourceCursorAfter: new(payload.ObservationID),
 			}
 
 			if !yield(res, nil) {

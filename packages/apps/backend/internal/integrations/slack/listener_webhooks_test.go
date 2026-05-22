@@ -39,7 +39,7 @@ func makeWebhookListener(t *testing.T) *WebhookListener {
 	t.Helper()
 
 	ingestor := mocks.NewMockProviderEventService(t)
-	ingestor.On("Ingest", mock.Anything, mock.Anything).Maybe().Return((*rez.ProviderEventIngestResult)(nil), nil)
+	ingestor.On("Ingest", mock.Anything, mock.Anything).Maybe().Return(nil)
 
 	handler := &messageHandler{
 		services: &rez.Services{
@@ -67,7 +67,7 @@ func TestEventsAPIWebhookEnqueuesVerifiedCallbackEvent(t *testing.T) {
 			ev.ProviderSource == sourceEventsApiCallback &&
 			ev.SubjectRef == "slack:T123:D123:123.456" &&
 			ev.ProviderEventRef == "Ev123"
-	})).Return((*rez.ProviderEventIngestResult)(nil), nil).Once()
+	})).Return(nil).Once()
 	msgs := mocks.NewMockMessageService(t)
 	msgs.On("PublishEvent", mock.Anything, mock.Anything).Maybe().Return(nil)
 	listener := &WebhookListener{

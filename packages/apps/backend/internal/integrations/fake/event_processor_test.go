@@ -82,3 +82,93 @@ func TestProcessIncidentObservedEvent(t *testing.T) {
 	assert.Equal(t, payload.SeverityName, decoded.Attributes.SeverityName)
 	assert.Equal(t, payload.SeverityRank, decoded.Attributes.SeverityRank)
 }
+
+func TestProcessTopologyComponentObservedEvent(t *testing.T) {
+	occurredAt := time.Date(2026, 5, 10, 8, 0, 0, 0, time.UTC)
+	payload := topologyObservedPayload{
+		ObservationType: topologyObservationComponent,
+		OccurredAt:      occurredAt,
+		Component: &topologyComponentPayload{
+			ExternalRef: "fake:component:search_api",
+			Kind:        "service",
+			DisplayName: "Search API",
+			Description: "Product search query API.",
+			Properties: map[string]any{
+				"criticality": "high",
+				"owner_team":  "commerce_team",
+			},
+		},
+	}
+	payloadBytes, jsonErr := json.Marshal(payload)
+	require.NoError(t, jsonErr)
+
+	events, err := (&eventProcessor{}).Process(t.Context(), rez.ProviderEvent{
+		Provider:         integrationName,
+		ProviderSource:   sourceTopology,
+		ProviderEventRef: "fake:system_topology:component:search_api",
+		SubjectRef:       "fake:component:search_api",
+		ReceivedAt:       occurredAt,
+		Payload:          payloadBytes,
+	})
+
+	require.NoError(t, err)
+	require.Len(t, events, 1)
+	ev := events[0]
+	assert.Equal(t, ne.KindSystemComponentObserved, ev.Kind)
+	assert.Equal(t, "system_component", ev.SubjectKind)
+	assert.Equal(t, "fake:component:search_api", ev.SubjectRef)
+	assert.Equal(t, occurredAt, ev.OccurredAt)
+
+	decoded, decodeErr := projections.DecodeEvent[projections.SystemComponentObservedAttributes](ev)
+	require.NoError(t, decodeErr)
+	assert.Equal(t, payload.Component.DisplayName, decoded.Attributes.DisplayName)
+	assert.Equal(t, payload.Component.Kind, decoded.Attributes.Kind)
+	assert.Equal(t, "commerce_team", decoded.Attributes.Properties["owner_team"])
+}
+
+func TestProcessTopologyRelationshipObservedEvent(t *testing.T) {
+	occurredAt := time.Date(2026, 5, 10, 8, 1, 0, 0, time.UTC)
+	payload := topologyObservedPayload{
+		ObservationType: topologyObservationRelationship,
+		OccurredAt:      occurredAt,
+		Relationship: &topologyRelationshipPayload{
+			ExternalRef:       "fake:relationship:checkout_service:calls:search_api",
+			Kind:              "calls",
+			DisplayName:       "Checkout Service calls Search API",
+			SourceExternalRef: "fake:component:checkout_service",
+			SourceKind:        "service",
+			SourceDisplayName: "Checkout Service",
+			TargetExternalRef: "fake:component:search_api",
+			TargetKind:        "service",
+			TargetDisplayName: "Search API",
+			Properties: map[string]any{
+				"critical_path": true,
+			},
+		},
+	}
+	payloadBytes, jsonErr := json.Marshal(payload)
+	require.NoError(t, jsonErr)
+
+	events, err := (&eventProcessor{}).Process(t.Context(), rez.ProviderEvent{
+		Provider:         integrationName,
+		ProviderSource:   sourceTopology,
+		ProviderEventRef: "fake:system_topology:relationship:checkout_service:calls:search_api",
+		SubjectRef:       "fake:relationship:checkout_service:calls:search_api",
+		ReceivedAt:       occurredAt,
+		Payload:          payloadBytes,
+	})
+
+	require.NoError(t, err)
+	require.Len(t, events, 1)
+	ev := events[0]
+	assert.Equal(t, ne.KindSystemRelationshipObserved, ev.Kind)
+	assert.Equal(t, "system_relationship", ev.SubjectKind)
+	assert.Equal(t, occurredAt, ev.OccurredAt)
+
+	decoded, decodeErr := projections.DecodeEvent[projections.SystemRelationshipObservedAttributes](ev)
+	require.NoError(t, decodeErr)
+	assert.Equal(t, payload.Relationship.Kind, decoded.Attributes.Kind)
+	assert.Equal(t, payload.Relationship.SourceExternalRef, decoded.Attributes.SourceExternalRef)
+	assert.Equal(t, payload.Relationship.TargetExternalRef, decoded.Attributes.TargetExternalRef)
+	assert.Equal(t, true, decoded.Attributes.Properties["critical_path"])
+}

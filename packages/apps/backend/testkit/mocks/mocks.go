@@ -737,31 +737,20 @@ func (_m *MockProviderEventService) EXPECT() *MockProviderEventService_Expecter 
 }
 
 // Ingest provides a mock function for the type MockProviderEventService
-func (_mock *MockProviderEventService) Ingest(context1 context.Context, providerEvent rez.ProviderEvent) (*rez.ProviderEventIngestResult, error) {
+func (_mock *MockProviderEventService) Ingest(context1 context.Context, providerEvent rez.ProviderEvent) error {
 	ret := _mock.Called(context1, providerEvent)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Ingest")
 	}
 
-	var r0 *rez.ProviderEventIngestResult
-	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEvent) (*rez.ProviderEventIngestResult, error)); ok {
-		return returnFunc(context1, providerEvent)
-	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEvent) *rez.ProviderEventIngestResult); ok {
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEvent) error); ok {
 		r0 = returnFunc(context1, providerEvent)
 	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).(*rez.ProviderEventIngestResult)
-		}
+		r0 = ret.Error(0)
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ProviderEvent) error); ok {
-		r1 = returnFunc(context1, providerEvent)
-	} else {
-		r1 = ret.Error(1)
-	}
-	return r0, r1
+	return r0
 }
 
 // MockProviderEventService_Ingest_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Ingest'
@@ -794,12 +783,12 @@ func (_c *MockProviderEventService_Ingest_Call) Run(run func(context1 context.Co
 	return _c
 }
 
-func (_c *MockProviderEventService_Ingest_Call) Return(providerEventIngestResult *rez.ProviderEventIngestResult, err error) *MockProviderEventService_Ingest_Call {
-	_c.Call.Return(providerEventIngestResult, err)
+func (_c *MockProviderEventService_Ingest_Call) Return(err error) *MockProviderEventService_Ingest_Call {
+	_c.Call.Return(err)
 	return _c
 }
 
-func (_c *MockProviderEventService_Ingest_Call) RunAndReturn(run func(context1 context.Context, providerEvent rez.ProviderEvent) (*rez.ProviderEventIngestResult, error)) *MockProviderEventService_Ingest_Call {
+func (_c *MockProviderEventService_Ingest_Call) RunAndReturn(run func(context1 context.Context, providerEvent rez.ProviderEvent) error) *MockProviderEventService_Ingest_Call {
 	_c.Call.Return(run)
 	return _c
 }

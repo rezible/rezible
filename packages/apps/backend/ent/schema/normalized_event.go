@@ -29,6 +29,8 @@ var normalizedEventKinds = []string{
 	"incident_observed",
 	"alert_observed",
 	"change_event_observed",
+	"system_component_observed",
+	"system_relationship_observed",
 }
 
 func (NormalizedEvent) Fields() []ent.Field {

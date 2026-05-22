@@ -12,27 +12,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func makeEntityAliasRef(ev *ent.NormalizedEvent) EntityAliasRef {
+	return EntityAliasRef{
+		Provider:           ev.Provider,
+		ProviderSource:     ev.ProviderSource,
+		ProviderSubjectRef: ev.SubjectRef,
+	}
+}
+
 func TestProjectRepositoryObservedMapsToRepositoryFactEvidence(t *testing.T) {
+	attrs := projections.RepositoryObservedAttributes{
+		DisplayName: "myorg/api",
+		URL:         "https://github.com/myorg/api",
+	}
 	ev := &ent.NormalizedEvent{
 		ID:             uuid.New(),
+		Kind:           ne.KindRepositoryObserved,
 		Provider:       "github",
 		ProviderSource: "repositories",
 		SubjectRef:     "myorg/api",
-		Kind:           ne.KindRepositoryObserved,
-		Attributes: projections.RepositoryObservedAttributes{
-			DisplayName: "myorg/api",
-			URL:         "https://github.com/myorg/api",
-		}.Encode(),
+		Attributes:     attrs.Encode(),
 	}
-	proj := newKnowledgeEntityEventProjector(ev, nil)
+	ref := makeEntityAliasRef(ev)
+	observed := projections.RepositoryObserved{
+		Event:      ev,
+		Attributes: attrs,
+	}
 
-	result := proj.projectRepositoryObserved(projections.RepositoryObserved{
-		Event: ev,
-		Attributes: projections.RepositoryObservedAttributes{
-			DisplayName: "myorg/api",
-			URL:         "https://github.com/myorg/api",
-		},
-	})
+	proj := newKnowledgeEntityEventProjector(ev, nil)
+	result := proj.projectRepositoryObserved(observed)
 
 	require.Len(t, result.Entities, 1)
 	assert.Empty(t, result.Relationships)
@@ -42,34 +50,26 @@ func TestProjectRepositoryObservedMapsToRepositoryFactEvidence(t *testing.T) {
 	assert.Equal(t, assertionCodeRepositoryExists, entity.AssertionKind)
 	assert.Equal(t, "myorg/api", entity.DisplayName)
 	require.Len(t, entity.Aliases, 1)
-	assert.Equal(t, EntityAliasRef{
-		Provider:           "github",
-		ProviderSource:     "repositories",
-		ProviderSubjectRef: "myorg/api",
-	}, entity.Aliases[0])
+	assert.Equal(t, ref, entity.Aliases[0])
 }
 
 func TestProjectChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *testing.T) {
+	attrs := projections.ChangeEventObservedAttributes{
+		RepositoryExternalRef: "myorg/api",
+		DisplayName:           "refs/heads/main",
+	}
 	ev := &ent.NormalizedEvent{
 		ID:             uuid.New(),
 		Provider:       "github",
 		ProviderSource: "push",
 		SubjectRef:     "github:myorg/api:abc123",
 		Kind:           ne.KindChangeEventObserved,
-		Attributes: projections.ChangeEventObservedAttributes{
-			RepositoryExternalRef: "myorg/api",
-			DisplayName:           "refs/heads/main",
-		}.Encode(),
+		Attributes:     attrs.Encode(),
 	}
-	proj := newKnowledgeEntityEventProjector(ev, nil)
+	observed := projections.ChangeEventObserved{Event: ev, Attributes: attrs}
 
-	result := proj.projectCodeChangeEventObserved(projections.ChangeEventObserved{
-		Event: ev,
-		Attributes: projections.ChangeEventObservedAttributes{
-			RepositoryExternalRef: "myorg/api",
-			DisplayName:           "refs/heads/main",
-		},
-	})
+	proj := newKnowledgeEntityEventProjector(ev, nil)
+	result := proj.projectCodeChangeEventObserved(observed)
 
 	require.Len(t, result.Entities, 2)
 	assert.Equal(t, knowledgeKindCodeChange, result.Entities[0].Kind)
@@ -89,10 +89,92 @@ func TestProjectChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *t
 func TestProjectorObservedAtPrefersOccurredAt(t *testing.T) {
 	occurredAt := time.Date(2026, 5, 11, 10, 0, 0, 0, time.UTC)
 	receivedAt := occurredAt.Add(time.Hour)
-	proj := newKnowledgeEntityEventProjector(&ent.NormalizedEvent{
-		OccurredAt: occurredAt,
-		ReceivedAt: receivedAt,
-	}, nil)
+	ev := &ent.NormalizedEvent{OccurredAt: occurredAt, ReceivedAt: receivedAt}
 
-	assert.Equal(t, occurredAt, proj.observedAt())
+	assert.Equal(t, occurredAt, newKnowledgeEntityEventProjector(ev, nil).resolveEventObservedAt(ev))
+}
+
+func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
+	attrs := projections.SystemComponentObservedAttributes{
+		ExternalRef: "fake:component:search_api",
+		Kind:        "service",
+		DisplayName: "Search API",
+		Description: "Product search query API.",
+		Properties: map[string]any{
+			"criticality": "high",
+		},
+	}
+	ev := &ent.NormalizedEvent{
+		ID:             uuid.New(),
+		Provider:       "fake",
+		ProviderSource: "system_topology",
+		SubjectRef:     "fake:component:search_api",
+		Kind:           ne.KindSystemComponentObserved,
+		Attributes:     attrs.Encode(),
+	}
+	ref := makeEntityAliasRef(ev)
+	observed := projections.SystemComponentObserved{Event: ev, Attributes: attrs}
+
+	proj := newKnowledgeEntityEventProjector(ev, nil)
+	result := proj.projectSystemComponentObserved(observed)
+
+	require.Len(t, result.Entities, 1)
+	assert.Empty(t, result.Relationships)
+	entity := result.Entities[0]
+	assert.Equal(t, attrs.Kind, entity.Kind)
+	assert.Equal(t, assertionSystemComponentExists, entity.AssertionKind)
+	assert.Equal(t, attrs.DisplayName, entity.DisplayName)
+	assert.Equal(t, attrs.Description, entity.Description)
+	assert.Equal(t, attrs.Properties["criticality"], entity.Properties["criticality"])
+	require.Len(t, entity.Aliases, 1)
+	assert.Equal(t, ref, entity.Aliases[0])
+}
+
+func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t *testing.T) {
+	attrs := projections.SystemRelationshipObservedAttributes{
+		ExternalRef:       "fake:relationship:checkout_service:calls:search_api",
+		Kind:              "calls",
+		DisplayName:       "Checkout Service calls Search API",
+		SourceExternalRef: "fake:component:checkout_service",
+		SourceKind:        "service",
+		SourceDisplayName: "Checkout Service",
+		TargetExternalRef: "fake:component:search_api",
+		TargetKind:        "service",
+		TargetDisplayName: "Search API",
+		Properties: map[string]any{
+			"critical_path": true,
+		},
+	}
+	ev := &ent.NormalizedEvent{
+		ID:             uuid.New(),
+		Provider:       "fake",
+		ProviderSource: "system_topology",
+		SubjectRef:     "fake:relationship:checkout_service:calls:search_api",
+		Kind:           ne.KindSystemRelationshipObserved,
+		Attributes:     attrs.Encode(),
+	}
+	observed := projections.SystemRelationshipObserved{
+		Event:      ev,
+		Attributes: attrs,
+	}
+
+	proj := newKnowledgeEntityEventProjector(ev, nil)
+	result := proj.projectSystemRelationshipObserved(observed)
+
+	require.Len(t, result.Entities, 2)
+	assert.Equal(t, "service", result.Entities[0].Kind)
+	assert.Equal(t, "Checkout Service", result.Entities[0].DisplayName)
+	assert.True(t, result.Entities[0].IsPlaceholder)
+	assert.Equal(t, "service", result.Entities[1].Kind)
+	assert.Equal(t, "Search API", result.Entities[1].DisplayName)
+	assert.True(t, result.Entities[1].IsPlaceholder)
+
+	require.Len(t, result.Relationships, 1)
+	relationship := result.Relationships[0]
+	assert.Equal(t, "calls", relationship.Kind)
+	assert.Equal(t, assertionSystemRelationshipExists, relationship.AssertionKind)
+	assert.Equal(t, "Checkout Service calls Search API", relationship.DisplayName)
+	assert.Equal(t, result.Entities[0].Aliases[0], relationship.FromAlias)
+	assert.Equal(t, result.Entities[1].Aliases[0], relationship.ToAlias)
+	assert.Equal(t, true, relationship.Properties["critical_path"])
 }
