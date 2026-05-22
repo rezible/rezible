@@ -135,7 +135,7 @@ func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, se
 	return rel, nil
 }
 
-func (s *KnowledgeService) AddEvidence(ctx context.Context, setFn func(*ent.KnowledgeEvidenceMutation)) (*ent.KnowledgeEvidence, error) {
+func (s *KnowledgeService) AddEvidence(ctx context.Context, setFn func(*ent.KnowledgeEvidenceMutation)) (uuid.UUID, error) {
 	create := s.dbc.KnowledgeEvidence.Create().SetID(uuid.New())
 	mutation := create.Mutation()
 
@@ -144,14 +144,14 @@ func (s *KnowledgeService) AddEvidence(ctx context.Context, setFn func(*ent.Know
 	entityID, hasEntity := mutation.EntityID()
 	relationshipID, hasRelationship := mutation.RelationshipID()
 	if hasEntity == hasRelationship {
-		return nil, fmt.Errorf("knowledge evidence requires exactly one of entity_id or relationship_id")
+		return uuid.Nil, fmt.Errorf("requires exactly one of entity_id or relationship_id")
 	}
 	if subjectType, ok := mutation.SubjectType(); ok {
 		if hasEntity && subjectType != knev.SubjectTypeEntity {
-			return nil, fmt.Errorf("knowledge evidence subject_type must be entity for entity_id %s", entityID)
+			return uuid.Nil, fmt.Errorf("subject_type must be entity for entity_id %s", entityID)
 		}
 		if hasRelationship && subjectType != knev.SubjectTypeRelationship {
-			return nil, fmt.Errorf("knowledge evidence subject_type must be relationship for relationship_id %s", relationshipID)
+			return uuid.Nil, fmt.Errorf("subject_type must be relationship for relationship_id %s", relationshipID)
 		}
 	}
 
@@ -166,11 +166,7 @@ func (s *KnowledgeService) AddEvidence(ctx context.Context, setFn func(*ent.Know
 	} else {
 		conflictCols = append(conflictCols, knev.FieldRelationshipID)
 	}
-	create.OnConflict(sql.ConflictColumns(conflictCols...)).DoNothing()
+	upsert := create.OnConflict(sql.ConflictColumns(conflictCols...)).DoNothing()
 
-	evidence, saveErr := create.Save(ctx)
-	if saveErr != nil {
-		return nil, fmt.Errorf("save knowledge evidence: %w", saveErr)
-	}
-	return evidence, nil
+	return upsert.ID(ctx)
 }

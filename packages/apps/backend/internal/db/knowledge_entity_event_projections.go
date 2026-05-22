@@ -145,10 +145,10 @@ func (kp *knowledgeEntityEventProjector) saveProjectedEntity(ctx context.Context
 		return nil, fmt.Errorf("failed to resolve existing projected entity: %w", lookupErr)
 	}
 
-	var existing *ent.KnowledgeEntity
+	var current *ent.KnowledgeEntity
 	if existingId != uuid.Nil {
 		var existingErr error
-		existing, existingErr = kp.knowledge.GetEntity(ctx, kne.ID(existingId))
+		current, existingErr = kp.knowledge.GetEntity(ctx, kne.ID(existingId))
 		if existingErr != nil {
 			return nil, fmt.Errorf("query existing projected entity: %w", existingErr)
 		}
@@ -157,33 +157,27 @@ func (kp *knowledgeEntityEventProjector) saveProjectedEntity(ctx context.Context
 	observedAt := kp.resolveEventObservedAt(kp.event)
 	mergedProperties := proj.Properties
 	evidenceKind := knev.EvidenceKindObserved
-	if existing != nil {
-		mergedProperties = proj.mergeProperties(existing.Properties)
-		if !reflect.DeepEqual(existing.Properties, mergedProperties) {
+	if current != nil {
+		mergedProperties = proj.mergeProperties(current.Properties)
+		if !reflect.DeepEqual(current.Properties, mergedProperties) {
 			evidenceKind = knev.EvidenceKindChanged
 		}
 	}
 
 	setEntity := func(m *ent.KnowledgeEntityMutation) {
-		if existing != nil {
-			m.SetKind(existing.Kind)
-			if proj.DisplayName != "" && proj.DisplayName != existing.DisplayName && !proj.IsPlaceholder {
-				m.SetDisplayName(proj.DisplayName)
-			} else {
-				m.SetDisplayName(existing.DisplayName)
-			}
-			m.SetDescription(existing.Description)
-			m.SetProperties(mergedProperties)
-			if existing.FirstObservedAt == nil {
-				m.SetFirstObservedAt(observedAt)
-			}
-		} else {
+		if current == nil {
 			m.SetKind(proj.Kind)
+		}
+		if !proj.IsPlaceholder || current == nil || current.DisplayName == "" {
 			m.SetDisplayName(proj.DisplayName)
+		}
+		if !proj.IsPlaceholder || current == nil || current.Description == "" {
 			m.SetDescription(proj.Description)
-			m.SetProperties(mergedProperties)
+		}
+		if current == nil || current.FirstObservedAt == nil {
 			m.SetFirstObservedAt(observedAt)
 		}
+		m.SetProperties(mergedProperties)
 		m.SetLastObservedAt(observedAt)
 		m.ClearDeletedAt()
 	}
@@ -196,15 +190,19 @@ func (kp *knowledgeEntityEventProjector) saveProjectedEntity(ctx context.Context
 		if aliasLookupErr != nil && !ent.IsNotFound(aliasLookupErr) {
 			return nil, fmt.Errorf("lookup existing alias: %w", aliasLookupErr)
 		}
-		if existingAlias != nil && existingAlias.EntityID != savedEntity.ID {
-			return nil, fmt.Errorf(
-				"knowledge alias %s/%s/%s already belongs to entity %s, cannot attach to entity %s",
-				alias.Provider,
-				alias.ProviderSource,
-				alias.ProviderSubjectRef,
-				existingAlias.EntityID,
-				savedEntity.ID,
-			)
+		var existingAliasId uuid.UUID
+		if existingAlias != nil {
+			if existingAlias.EntityID != savedEntity.ID {
+				return nil, fmt.Errorf(
+					"knowledge alias %s/%s/%s already belongs to entity %s, cannot attach to entity %s",
+					alias.Provider,
+					alias.ProviderSource,
+					alias.ProviderSubjectRef,
+					existingAlias.EntityID,
+					savedEntity.ID,
+				)
+			}
+			existingAliasId = existingAlias.ID
 		}
 
 		setEntityAlias := func(m *ent.KnowledgeEntityAliasMutation) {
@@ -213,7 +211,7 @@ func (kp *knowledgeEntityEventProjector) saveProjectedEntity(ctx context.Context
 			m.SetProviderSource(alias.ProviderSource)
 			m.SetProviderSubjectRef(alias.ProviderSubjectRef)
 		}
-		savedAlias, aliasErr := kp.knowledge.SetEntityAlias(ctx, uuid.Nil, setEntityAlias)
+		savedAlias, aliasErr := kp.knowledge.SetEntityAlias(ctx, existingAliasId, setEntityAlias)
 		if aliasErr != nil {
 			return nil, fmt.Errorf("upsert knowledge alias: %w", aliasErr)
 		}
@@ -257,19 +255,20 @@ func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.C
 		return fmt.Errorf("alias resolved to nil entity id")
 	}
 
-	existing, existingErr := kp.knowledge.GetRelationship(ctx, knr.And(
-		knr.SourceEntityID(fromId),
-		knr.TargetEntityID(toId),
-		knr.Kind(rel.Kind),
-	))
+	lookupExistingPred := knr.And(knr.Kind(rel.Kind), knr.SourceEntityID(fromId), knr.TargetEntityID(toId))
+	existing, existingErr := kp.knowledge.GetRelationship(ctx, lookupExistingPred)
 	if existingErr != nil && !ent.IsNotFound(existingErr) {
 		return fmt.Errorf("query existing relationship: %w", existingErr)
 	}
 
 	observedAt := kp.resolveEventObservedAt(kp.event)
 	evidenceKind := knev.EvidenceKindObserved
-	if existing != nil && !reflect.DeepEqual(existing.Properties, rel.Properties) {
-		evidenceKind = knev.EvidenceKindChanged
+	var existingId uuid.UUID
+	if existing != nil {
+		existingId = existing.ID
+		if !reflect.DeepEqual(existing.Properties, rel.Properties) {
+			evidenceKind = knev.EvidenceKindChanged
+		}
 	}
 
 	setRelationshipFn := func(m *ent.KnowledgeRelationshipMutation) {
@@ -287,7 +286,7 @@ func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.C
 			m.SetProperties(rel.Properties)
 		}
 	}
-	savedRel, saveErr := kp.knowledge.SetRelationship(ctx, uuid.Nil, setRelationshipFn)
+	savedRel, saveErr := kp.knowledge.SetRelationship(ctx, existingId, setRelationshipFn)
 	if saveErr != nil {
 		return fmt.Errorf("upsert knowledge relationship: %w", saveErr)
 	}
