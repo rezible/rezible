@@ -33,9 +33,19 @@ format:
 @run *ARGS:
     go run ./cmd/rezible {{ARGS}}
 
-@test:
-    # devbox run start-dev-services
-    go test $(go list ./... | grep -v /ent/)
+@test *ARGS:
+    go test {{ARGS}}
+
+exclude_test_packages_pattern := "/ent/"
+
+@test-all:
+    just test $(go list ./... | grep -v '{{exclude_test_packages_pattern}}')
+
+@test-package PACKAGE *ARGS:
+    just test '{{PACKAGE}}' {{ARGS}}
+
+@test-pattern PATTERN:
+    just test $(go list ./... | grep -v '{{exclude_test_packages_pattern}}') -run {{PATTERN}}
 
 @codegen:
     go generate ./...
