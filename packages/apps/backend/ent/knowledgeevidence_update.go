@@ -143,16 +143,16 @@ func (_u *KnowledgeEvidenceUpdate) SetNillableNormalizedEventID(v *uuid.UUID) *K
 	return _u
 }
 
-// SetAssertionKind sets the "assertion_kind" field.
-func (_u *KnowledgeEvidenceUpdate) SetAssertionKind(v string) *KnowledgeEvidenceUpdate {
-	_u.mutation.SetAssertionKind(v)
+// SetAssertion sets the "assertion" field.
+func (_u *KnowledgeEvidenceUpdate) SetAssertion(v string) *KnowledgeEvidenceUpdate {
+	_u.mutation.SetAssertion(v)
 	return _u
 }
 
-// SetNillableAssertionKind sets the "assertion_kind" field if the given value is not nil.
-func (_u *KnowledgeEvidenceUpdate) SetNillableAssertionKind(v *string) *KnowledgeEvidenceUpdate {
+// SetNillableAssertion sets the "assertion" field if the given value is not nil.
+func (_u *KnowledgeEvidenceUpdate) SetNillableAssertion(v *string) *KnowledgeEvidenceUpdate {
 	if v != nil {
-		_u.SetAssertionKind(*v)
+		_u.SetAssertion(*v)
 	}
 	return _u
 }
@@ -202,20 +202,6 @@ func (_u *KnowledgeEvidenceUpdate) SetNillableEffectiveAt(v *time.Time) *Knowled
 // ClearEffectiveAt clears the value of the "effective_at" field.
 func (_u *KnowledgeEvidenceUpdate) ClearEffectiveAt() *KnowledgeEvidenceUpdate {
 	_u.mutation.ClearEffectiveAt()
-	return _u
-}
-
-// SetSource sets the "source" field.
-func (_u *KnowledgeEvidenceUpdate) SetSource(v string) *KnowledgeEvidenceUpdate {
-	_u.mutation.SetSource(v)
-	return _u
-}
-
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *KnowledgeEvidenceUpdate) SetNillableSource(v *string) *KnowledgeEvidenceUpdate {
-	if v != nil {
-		_u.SetSource(*v)
-	}
 	return _u
 }
 
@@ -329,19 +315,14 @@ func (_u *KnowledgeEvidenceUpdate) check() error {
 			return &ValidationError{Name: "subject_type", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.subject_type": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.AssertionKind(); ok {
-		if err := knowledgeevidence.AssertionKindValidator(v); err != nil {
-			return &ValidationError{Name: "assertion_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.assertion_kind": %w`, err)}
+	if v, ok := _u.mutation.Assertion(); ok {
+		if err := knowledgeevidence.AssertionValidator(v); err != nil {
+			return &ValidationError{Name: "assertion", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.assertion": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.EvidenceKind(); ok {
 		if err := knowledgeevidence.EvidenceKindValidator(v); err != nil {
 			return &ValidationError{Name: "evidence_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.evidence_kind": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := knowledgeevidence.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.source": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -380,8 +361,8 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 	if value, ok := _u.mutation.SubjectType(); ok {
 		_spec.SetField(knowledgeevidence.FieldSubjectType, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AssertionKind(); ok {
-		_spec.SetField(knowledgeevidence.FieldAssertionKind, field.TypeString, value)
+	if value, ok := _u.mutation.Assertion(); ok {
+		_spec.SetField(knowledgeevidence.FieldAssertion, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.EvidenceKind(); ok {
 		_spec.SetField(knowledgeevidence.FieldEvidenceKind, field.TypeEnum, value)
@@ -394,9 +375,6 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 	}
 	if _u.mutation.EffectiveAtCleared() {
 		_spec.ClearField(knowledgeevidence.FieldEffectiveAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(knowledgeevidence.FieldSource, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Properties(); ok {
 		_spec.SetField(knowledgeevidence.FieldProperties, field.TypeJSON, value)
@@ -660,16 +638,16 @@ func (_u *KnowledgeEvidenceUpdateOne) SetNillableNormalizedEventID(v *uuid.UUID)
 	return _u
 }
 
-// SetAssertionKind sets the "assertion_kind" field.
-func (_u *KnowledgeEvidenceUpdateOne) SetAssertionKind(v string) *KnowledgeEvidenceUpdateOne {
-	_u.mutation.SetAssertionKind(v)
+// SetAssertion sets the "assertion" field.
+func (_u *KnowledgeEvidenceUpdateOne) SetAssertion(v string) *KnowledgeEvidenceUpdateOne {
+	_u.mutation.SetAssertion(v)
 	return _u
 }
 
-// SetNillableAssertionKind sets the "assertion_kind" field if the given value is not nil.
-func (_u *KnowledgeEvidenceUpdateOne) SetNillableAssertionKind(v *string) *KnowledgeEvidenceUpdateOne {
+// SetNillableAssertion sets the "assertion" field if the given value is not nil.
+func (_u *KnowledgeEvidenceUpdateOne) SetNillableAssertion(v *string) *KnowledgeEvidenceUpdateOne {
 	if v != nil {
-		_u.SetAssertionKind(*v)
+		_u.SetAssertion(*v)
 	}
 	return _u
 }
@@ -719,20 +697,6 @@ func (_u *KnowledgeEvidenceUpdateOne) SetNillableEffectiveAt(v *time.Time) *Know
 // ClearEffectiveAt clears the value of the "effective_at" field.
 func (_u *KnowledgeEvidenceUpdateOne) ClearEffectiveAt() *KnowledgeEvidenceUpdateOne {
 	_u.mutation.ClearEffectiveAt()
-	return _u
-}
-
-// SetSource sets the "source" field.
-func (_u *KnowledgeEvidenceUpdateOne) SetSource(v string) *KnowledgeEvidenceUpdateOne {
-	_u.mutation.SetSource(v)
-	return _u
-}
-
-// SetNillableSource sets the "source" field if the given value is not nil.
-func (_u *KnowledgeEvidenceUpdateOne) SetNillableSource(v *string) *KnowledgeEvidenceUpdateOne {
-	if v != nil {
-		_u.SetSource(*v)
-	}
 	return _u
 }
 
@@ -859,19 +823,14 @@ func (_u *KnowledgeEvidenceUpdateOne) check() error {
 			return &ValidationError{Name: "subject_type", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.subject_type": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.AssertionKind(); ok {
-		if err := knowledgeevidence.AssertionKindValidator(v); err != nil {
-			return &ValidationError{Name: "assertion_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.assertion_kind": %w`, err)}
+	if v, ok := _u.mutation.Assertion(); ok {
+		if err := knowledgeevidence.AssertionValidator(v); err != nil {
+			return &ValidationError{Name: "assertion", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.assertion": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.EvidenceKind(); ok {
 		if err := knowledgeevidence.EvidenceKindValidator(v); err != nil {
 			return &ValidationError{Name: "evidence_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.evidence_kind": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.Source(); ok {
-		if err := knowledgeevidence.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.source": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -927,8 +886,8 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 	if value, ok := _u.mutation.SubjectType(); ok {
 		_spec.SetField(knowledgeevidence.FieldSubjectType, field.TypeEnum, value)
 	}
-	if value, ok := _u.mutation.AssertionKind(); ok {
-		_spec.SetField(knowledgeevidence.FieldAssertionKind, field.TypeString, value)
+	if value, ok := _u.mutation.Assertion(); ok {
+		_spec.SetField(knowledgeevidence.FieldAssertion, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.EvidenceKind(); ok {
 		_spec.SetField(knowledgeevidence.FieldEvidenceKind, field.TypeEnum, value)
@@ -941,9 +900,6 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 	}
 	if _u.mutation.EffectiveAtCleared() {
 		_spec.ClearField(knowledgeevidence.FieldEffectiveAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.Source(); ok {
-		_spec.SetField(knowledgeevidence.FieldSource, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Properties(); ok {
 		_spec.SetField(knowledgeevidence.FieldProperties, field.TypeJSON, value)

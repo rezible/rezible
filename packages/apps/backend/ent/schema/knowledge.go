@@ -186,7 +186,7 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 			Comment("Provider alias used to resolve entity evidence, when applicable."),
 		field.UUID("normalized_event_id", uuid.UUID{}).
 			Comment("Normalized event that produced this evidence record."),
-		field.String("assertion_kind").NotEmpty().
+		field.String("assertion").NotEmpty().
 			Comment("Domain assertion supported by this evidence, such as code_repository_exists or team_owns_service."),
 		field.Enum("evidence_kind").Values("observed", "changed", "deleted", "contradicted").
 			Comment("How this event affects evidence for the assertion."),
@@ -194,7 +194,6 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 			Comment("Time observed this evidence, usually the normalized event occurred_at."),
 		field.Time("effective_at").Optional().Nillable().
 			Comment("Provider/domain effective time when it differs from observed_at."),
-		field.String("source").NotEmpty(),
 		field.JSON("properties", map[string]any{}).
 			Optional().
 			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
@@ -227,8 +226,8 @@ func (KnowledgeEvidence) Indexes() []ent.Index {
 		index.Fields("tenant_id", "relationship_id"),
 		index.Fields("tenant_id", "alias_id"),
 		index.Fields("tenant_id", "normalized_event_id"),
-		index.Fields("tenant_id", "assertion_kind", "evidence_kind", "observed_at"),
-		index.Fields("tenant_id", "normalized_event_id", "assertion_kind", "subject_type", "entity_id").Unique(),
-		index.Fields("tenant_id", "normalized_event_id", "assertion_kind", "subject_type", "relationship_id").Unique(),
+		index.Fields("tenant_id", "evidence_kind", "observed_at"),
+		index.Fields("tenant_id", "normalized_event_id", "subject_type", "entity_id").Unique(),
+		index.Fields("tenant_id", "normalized_event_id", "subject_type", "relationship_id").Unique(),
 	}
 }

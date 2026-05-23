@@ -33,16 +33,14 @@ const (
 	FieldAliasID = "alias_id"
 	// FieldNormalizedEventID holds the string denoting the normalized_event_id field in the database.
 	FieldNormalizedEventID = "normalized_event_id"
-	// FieldAssertionKind holds the string denoting the assertion_kind field in the database.
-	FieldAssertionKind = "assertion_kind"
+	// FieldAssertion holds the string denoting the assertion field in the database.
+	FieldAssertion = "assertion"
 	// FieldEvidenceKind holds the string denoting the evidence_kind field in the database.
 	FieldEvidenceKind = "evidence_kind"
 	// FieldObservedAt holds the string denoting the observed_at field in the database.
 	FieldObservedAt = "observed_at"
 	// FieldEffectiveAt holds the string denoting the effective_at field in the database.
 	FieldEffectiveAt = "effective_at"
-	// FieldSource holds the string denoting the source field in the database.
-	FieldSource = "source"
 	// FieldProperties holds the string denoting the properties field in the database.
 	FieldProperties = "properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -105,11 +103,10 @@ var Columns = []string{
 	FieldRelationshipID,
 	FieldAliasID,
 	FieldNormalizedEventID,
-	FieldAssertionKind,
+	FieldAssertion,
 	FieldEvidenceKind,
 	FieldObservedAt,
 	FieldEffectiveAt,
-	FieldSource,
 	FieldProperties,
 }
 
@@ -137,10 +134,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// AssertionKindValidator is a validator for the "assertion_kind" field. It is called by the builders before save.
-	AssertionKindValidator func(string) error
-	// SourceValidator is a validator for the "source" field. It is called by the builders before save.
-	SourceValidator func(string) error
+	// AssertionValidator is a validator for the "assertion" field. It is called by the builders before save.
+	AssertionValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -241,9 +236,9 @@ func ByNormalizedEventID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldNormalizedEventID, opts...).ToFunc()
 }
 
-// ByAssertionKind orders the results by the assertion_kind field.
-func ByAssertionKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAssertionKind, opts...).ToFunc()
+// ByAssertion orders the results by the assertion field.
+func ByAssertion(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAssertion, opts...).ToFunc()
 }
 
 // ByEvidenceKind orders the results by the evidence_kind field.
@@ -259,11 +254,6 @@ func ByObservedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByEffectiveAt orders the results by the effective_at field.
 func ByEffectiveAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldEffectiveAt, opts...).ToFunc()
-}
-
-// BySource orders the results by the source field.
-func BySource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSource, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

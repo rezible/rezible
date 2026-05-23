@@ -20,17 +20,44 @@ type Event[T any] struct {
 
 type EventProjectionHandlerFunc = func(context.Context, *ent.Client, *ent.NormalizedEvent) error
 
-var projectionFuncsMu sync.RWMutex
-var projectionFuncs = make(map[string]EventProjectionHandlerFunc)
-
-func RegisterHandler(name string, handler EventProjectionHandlerFunc) {
-	projectionFuncsMu.Lock()
-	defer projectionFuncsMu.Unlock()
-	projectionFuncs[name] = handler
+type EventProjectionHandler struct {
+	Handler      EventProjectionHandlerFunc
+	SubjectKinds []SubjectKind
 }
 
-func GetHandlers() map[string]EventProjectionHandlerFunc {
-	return projectionFuncs
+var projectionFuncsMu sync.RWMutex
+var projectionFuncs = make(map[string]EventProjectionHandler)
+
+func RegisterHandler(name string, handler EventProjectionHandlerFunc, subjectKinds ...SubjectKind) {
+	projectionFuncsMu.Lock()
+	defer projectionFuncsMu.Unlock()
+	projectionFuncs[name] = EventProjectionHandler{
+		Handler:      handler,
+		SubjectKinds: subjectKinds,
+	}
+}
+
+func GetHandlersFor(ev *ent.NormalizedEvent) map[string]EventProjectionHandlerFunc {
+	projectionFuncsMu.RLock()
+	defer projectionFuncsMu.RUnlock()
+
+	handlers := make(map[string]EventProjectionHandlerFunc)
+	if ev == nil {
+		return handlers
+	}
+	for name, registered := range projectionFuncs {
+		if len(registered.SubjectKinds) == 0 {
+			handlers[name] = registered.Handler
+			continue
+		}
+		for _, subjectKind := range registered.SubjectKinds {
+			if subjectKind.Matches(ev) {
+				handlers[name] = registered.Handler
+				break
+			}
+		}
+	}
+	return handlers
 }
 
 type EventDisplay struct {

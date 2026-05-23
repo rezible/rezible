@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
@@ -44,6 +45,7 @@ type UserQuery struct {
 	inters                           []Interceptor
 	predicates                       []predicate.User
 	withTenant                       *TenantQuery
+	withKnowledgeEntity              *KnowledgeEntityQuery
 	withOrganizationRole             *OrganizationRoleQuery
 	withTeams                        *TeamQuery
 	withWatchedOncallRosters         *OncallRosterQuery
@@ -117,6 +119,31 @@ func (_q *UserQuery) QueryTenant() *TenantQuery {
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.User
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
+func (_q *UserQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, selector),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.KnowledgeEntityTable, user.KnowledgeEntityColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.User
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -767,6 +794,7 @@ func (_q *UserQuery) Clone() *UserQuery {
 		inters:                           append([]Interceptor{}, _q.inters...),
 		predicates:                       append([]predicate.User{}, _q.predicates...),
 		withTenant:                       _q.withTenant.Clone(),
+		withKnowledgeEntity:              _q.withKnowledgeEntity.Clone(),
 		withOrganizationRole:             _q.withOrganizationRole.Clone(),
 		withTeams:                        _q.withTeams.Clone(),
 		withWatchedOncallRosters:         _q.withWatchedOncallRosters.Clone(),
@@ -800,6 +828,17 @@ func (_q *UserQuery) WithTenant(opts ...func(*TenantQuery)) *UserQuery {
 		opt(query)
 	}
 	_q.withTenant = query
+	return _q
+}
+
+// WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
+// the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *UserQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *UserQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withKnowledgeEntity = query
 	return _q
 }
 
@@ -1085,8 +1124,9 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	var (
 		nodes       = []*User{}
 		_spec       = _q.querySpec()
-		loadedTypes = [19]bool{
+		loadedTypes = [20]bool{
 			_q.withTenant != nil,
+			_q.withKnowledgeEntity != nil,
 			_q.withOrganizationRole != nil,
 			_q.withTeams != nil,
 			_q.withWatchedOncallRosters != nil,
@@ -1133,6 +1173,12 @@ func (_q *UserQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*User, e
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *User, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withKnowledgeEntity; query != nil {
+		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
+			func(n *User, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -1298,6 +1344,38 @@ func (_q *UserQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes [
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *UserQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*User, init func(*User), assign func(*User, *KnowledgeEntity)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*User)
+	for i := range nodes {
+		if nodes[i].KnowledgeEntityID == nil {
+			continue
+		}
+		fk := *nodes[i].KnowledgeEntityID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(knowledgeentity.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "knowledge_entity_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -1971,6 +2049,9 @@ func (_q *UserQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(user.FieldTenantID)
+		}
+		if _q.withKnowledgeEntity != nil {
+			_spec.Node.AddColumnOnce(user.FieldKnowledgeEntityID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

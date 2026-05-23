@@ -17,6 +17,7 @@ func (User) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
+		KnowledgeEntityLinkMixin{},
 	}
 }
 

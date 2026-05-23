@@ -41,15 +41,13 @@ type KnowledgeEvidence struct {
 	// Normalized event that produced this evidence record.
 	NormalizedEventID uuid.UUID `json:"normalized_event_id,omitempty"`
 	// Domain assertion supported by this evidence, such as code_repository_exists or team_owns_service.
-	AssertionKind string `json:"assertion_kind,omitempty"`
+	Assertion string `json:"assertion,omitempty"`
 	// How this event affects evidence for the assertion.
 	EvidenceKind knowledgeevidence.EvidenceKind `json:"evidence_kind,omitempty"`
 	// Time observed this evidence, usually the normalized event occurred_at.
 	ObservedAt time.Time `json:"observed_at,omitempty"`
 	// Provider/domain effective time when it differs from observed_at.
 	EffectiveAt *time.Time `json:"effective_at,omitempty"`
-	// Source holds the value of the "source" field.
-	Source string `json:"source,omitempty"`
 	// Properties holds the value of the "properties" field.
 	Properties map[string]interface{} `json:"properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -141,7 +139,7 @@ func (*KnowledgeEvidence) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case knowledgeevidence.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeevidence.FieldSubjectType, knowledgeevidence.FieldAssertionKind, knowledgeevidence.FieldEvidenceKind, knowledgeevidence.FieldSource:
+		case knowledgeevidence.FieldSubjectType, knowledgeevidence.FieldAssertion, knowledgeevidence.FieldEvidenceKind:
 			values[i] = new(sql.NullString)
 		case knowledgeevidence.FieldCreatedAt, knowledgeevidence.FieldUpdatedAt, knowledgeevidence.FieldObservedAt, knowledgeevidence.FieldEffectiveAt:
 			values[i] = new(sql.NullTime)
@@ -219,11 +217,11 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 			} else if value != nil {
 				_m.NormalizedEventID = *value
 			}
-		case knowledgeevidence.FieldAssertionKind:
+		case knowledgeevidence.FieldAssertion:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field assertion_kind", values[i])
+				return fmt.Errorf("unexpected type %T for field assertion", values[i])
 			} else if value.Valid {
-				_m.AssertionKind = value.String
+				_m.Assertion = value.String
 			}
 		case knowledgeevidence.FieldEvidenceKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -243,12 +241,6 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 			} else if value.Valid {
 				_m.EffectiveAt = new(time.Time)
 				*_m.EffectiveAt = value.Time
-			}
-		case knowledgeevidence.FieldSource:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field source", values[i])
-			} else if value.Valid {
-				_m.Source = value.String
 			}
 		case knowledgeevidence.FieldProperties:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -349,8 +341,8 @@ func (_m *KnowledgeEvidence) String() string {
 	builder.WriteString("normalized_event_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.NormalizedEventID))
 	builder.WriteString(", ")
-	builder.WriteString("assertion_kind=")
-	builder.WriteString(_m.AssertionKind)
+	builder.WriteString("assertion=")
+	builder.WriteString(_m.Assertion)
 	builder.WriteString(", ")
 	builder.WriteString("evidence_kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EvidenceKind))
@@ -362,9 +354,6 @@ func (_m *KnowledgeEvidence) String() string {
 		builder.WriteString("effective_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
-	builder.WriteString(", ")
-	builder.WriteString("source=")
-	builder.WriteString(_m.Source)
 	builder.WriteString(", ")
 	builder.WriteString("properties=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Properties))

@@ -353,7 +353,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 	appendHandlerErr := func(name string, err error) {
 		res.handlerErrors[name] = append(res.handlerErrors[name], err)
 	}
-	for name, handlerFn := range projections.GetHandlers() {
+	for name, handlerFn := range projections.GetHandlersFor(ev) {
 		// query for existing projection status
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))

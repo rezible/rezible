@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
@@ -43,6 +44,20 @@ type UserCreate struct {
 // SetTenantID sets the "tenant_id" field.
 func (_c *UserCreate) SetTenantID(v int) *UserCreate {
 	_c.mutation.SetTenantID(v)
+	return _c
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_c *UserCreate) SetKnowledgeEntityID(v uuid.UUID) *UserCreate {
+	_c.mutation.SetKnowledgeEntityID(v)
+	return _c
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_c *UserCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *UserCreate {
+	if v != nil {
+		_c.SetKnowledgeEntityID(*v)
+	}
 	return _c
 }
 
@@ -125,6 +140,11 @@ func (_c *UserCreate) SetNillableID(v *uuid.UUID) *UserCreate {
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *UserCreate) SetTenant(v *Tenant) *UserCreate {
 	return _c.SetTenantID(v.ID)
+}
+
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_c *UserCreate) SetKnowledgeEntity(v *KnowledgeEntity) *UserCreate {
+	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
@@ -541,6 +561,24 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.KnowledgeEntityTable,
+			Columns: []string{user.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.User
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.KnowledgeEntityID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.OrganizationRoleIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
@@ -913,6 +951,24 @@ type (
 	}
 )
 
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *UserUpsert) SetKnowledgeEntityID(v uuid.UUID) *UserUpsert {
+	u.Set(user.FieldKnowledgeEntityID, v)
+	return u
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *UserUpsert) UpdateKnowledgeEntityID() *UserUpsert {
+	u.SetExcluded(user.FieldKnowledgeEntityID)
+	return u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *UserUpsert) ClearKnowledgeEntityID() *UserUpsert {
+	u.SetNull(user.FieldKnowledgeEntityID)
+	return u
+}
+
 // SetEmail sets the "email" field.
 func (u *UserUpsert) SetEmail(v string) *UserUpsert {
 	u.Set(user.FieldEmail, v)
@@ -1040,6 +1096,27 @@ func (u *UserUpsertOne) Update(set func(*UserUpsert)) *UserUpsertOne {
 		set(&UserUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *UserUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *UserUpsertOne) UpdateKnowledgeEntityID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *UserUpsertOne) ClearKnowledgeEntityID() *UserUpsertOne {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearKnowledgeEntityID()
+	})
 }
 
 // SetEmail sets the "email" field.
@@ -1349,6 +1426,27 @@ func (u *UserUpsertBulk) Update(set func(*UserUpsert)) *UserUpsertBulk {
 		set(&UserUpsert{UpdateSet: update})
 	}))
 	return u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *UserUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.SetKnowledgeEntityID(v)
+	})
+}
+
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *UserUpsertBulk) UpdateKnowledgeEntityID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.UpdateKnowledgeEntityID()
+	})
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *UserUpsertBulk) ClearKnowledgeEntityID() *UserUpsertBulk {
+	return u.Update(func(s *UserUpsert) {
+		s.ClearKnowledgeEntityID()
+	})
 }
 
 // SetEmail sets the "email" field.

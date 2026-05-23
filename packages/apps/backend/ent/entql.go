@@ -646,11 +646,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgeevidence.FieldRelationshipID:    {Type: field.TypeUUID, Column: knowledgeevidence.FieldRelationshipID},
 			knowledgeevidence.FieldAliasID:           {Type: field.TypeUUID, Column: knowledgeevidence.FieldAliasID},
 			knowledgeevidence.FieldNormalizedEventID: {Type: field.TypeUUID, Column: knowledgeevidence.FieldNormalizedEventID},
-			knowledgeevidence.FieldAssertionKind:     {Type: field.TypeString, Column: knowledgeevidence.FieldAssertionKind},
+			knowledgeevidence.FieldAssertion:         {Type: field.TypeString, Column: knowledgeevidence.FieldAssertion},
 			knowledgeevidence.FieldEvidenceKind:      {Type: field.TypeEnum, Column: knowledgeevidence.FieldEvidenceKind},
 			knowledgeevidence.FieldObservedAt:        {Type: field.TypeTime, Column: knowledgeevidence.FieldObservedAt},
 			knowledgeevidence.FieldEffectiveAt:       {Type: field.TypeTime, Column: knowledgeevidence.FieldEffectiveAt},
-			knowledgeevidence.FieldSource:            {Type: field.TypeString, Column: knowledgeevidence.FieldSource},
 			knowledgeevidence.FieldProperties:        {Type: field.TypeJSON, Column: knowledgeevidence.FieldProperties},
 		},
 	}
@@ -1292,12 +1291,13 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "User",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			user.FieldTenantID:       {Type: field.TypeInt, Column: user.FieldTenantID},
-			user.FieldEmail:          {Type: field.TypeString, Column: user.FieldEmail},
-			user.FieldName:           {Type: field.TypeString, Column: user.FieldName},
-			user.FieldChatID:         {Type: field.TypeString, Column: user.FieldChatID},
-			user.FieldTimezone:       {Type: field.TypeString, Column: user.FieldTimezone},
-			user.FieldAuthProviderID: {Type: field.TypeString, Column: user.FieldAuthProviderID},
+			user.FieldTenantID:          {Type: field.TypeInt, Column: user.FieldTenantID},
+			user.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: user.FieldKnowledgeEntityID},
+			user.FieldEmail:             {Type: field.TypeString, Column: user.FieldEmail},
+			user.FieldName:              {Type: field.TypeString, Column: user.FieldName},
+			user.FieldChatID:            {Type: field.TypeString, Column: user.FieldChatID},
+			user.FieldTimezone:          {Type: field.TypeString, Column: user.FieldTimezone},
+			user.FieldAuthProviderID:    {Type: field.TypeString, Column: user.FieldAuthProviderID},
 		},
 	}
 	graph.Nodes[63] = &sqlgraph.Node{
@@ -4062,6 +4062,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"User",
 		"Tenant",
+	)
+	graph.MustAddE(
+		"knowledge_entity",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.KnowledgeEntityTable,
+			Columns: []string{user.KnowledgeEntityColumn},
+			Bidi:    false,
+		},
+		"User",
+		"KnowledgeEntity",
 	)
 	graph.MustAddE(
 		"organization_role",
@@ -7964,9 +7976,9 @@ func (f *KnowledgeEvidenceFilter) WhereNormalizedEventID(p entql.ValueP) {
 	f.Where(p.Field(knowledgeevidence.FieldNormalizedEventID))
 }
 
-// WhereAssertionKind applies the entql string predicate on the assertion_kind field.
-func (f *KnowledgeEvidenceFilter) WhereAssertionKind(p entql.StringP) {
-	f.Where(p.Field(knowledgeevidence.FieldAssertionKind))
+// WhereAssertion applies the entql string predicate on the assertion field.
+func (f *KnowledgeEvidenceFilter) WhereAssertion(p entql.StringP) {
+	f.Where(p.Field(knowledgeevidence.FieldAssertion))
 }
 
 // WhereEvidenceKind applies the entql string predicate on the evidence_kind field.
@@ -7982,11 +7994,6 @@ func (f *KnowledgeEvidenceFilter) WhereObservedAt(p entql.TimeP) {
 // WhereEffectiveAt applies the entql time.Time predicate on the effective_at field.
 func (f *KnowledgeEvidenceFilter) WhereEffectiveAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgeevidence.FieldEffectiveAt))
-}
-
-// WhereSource applies the entql string predicate on the source field.
-func (f *KnowledgeEvidenceFilter) WhereSource(p entql.StringP) {
-	f.Where(p.Field(knowledgeevidence.FieldSource))
 }
 
 // WhereProperties applies the entql json.RawMessage predicate on the properties field.
@@ -12017,6 +12024,11 @@ func (f *UserFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(user.FieldTenantID))
 }
 
+// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
+func (f *UserFilter) WhereKnowledgeEntityID(p entql.ValueP) {
+	f.Where(p.Field(user.FieldKnowledgeEntityID))
+}
+
 // WhereEmail applies the entql string predicate on the email field.
 func (f *UserFilter) WhereEmail(p entql.StringP) {
 	f.Where(p.Field(user.FieldEmail))
@@ -12050,6 +12062,20 @@ func (f *UserFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *UserFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
+func (f *UserFilter) WhereHasKnowledgeEntity() {
+	f.Where(entql.HasEdge("knowledge_entity"))
+}
+
+// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
+func (f *UserFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

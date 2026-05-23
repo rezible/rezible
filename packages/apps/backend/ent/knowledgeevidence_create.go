@@ -117,9 +117,9 @@ func (_c *KnowledgeEvidenceCreate) SetNormalizedEventID(v uuid.UUID) *KnowledgeE
 	return _c
 }
 
-// SetAssertionKind sets the "assertion_kind" field.
-func (_c *KnowledgeEvidenceCreate) SetAssertionKind(v string) *KnowledgeEvidenceCreate {
-	_c.mutation.SetAssertionKind(v)
+// SetAssertion sets the "assertion" field.
+func (_c *KnowledgeEvidenceCreate) SetAssertion(v string) *KnowledgeEvidenceCreate {
+	_c.mutation.SetAssertion(v)
 	return _c
 }
 
@@ -146,12 +146,6 @@ func (_c *KnowledgeEvidenceCreate) SetNillableEffectiveAt(v *time.Time) *Knowled
 	if v != nil {
 		_c.SetEffectiveAt(*v)
 	}
-	return _c
-}
-
-// SetSource sets the "source" field.
-func (_c *KnowledgeEvidenceCreate) SetSource(v string) *KnowledgeEvidenceCreate {
-	_c.mutation.SetSource(v)
 	return _c
 }
 
@@ -283,12 +277,12 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 	if _, ok := _c.mutation.NormalizedEventID(); !ok {
 		return &ValidationError{Name: "normalized_event_id", err: errors.New(`ent: missing required field "KnowledgeEvidence.normalized_event_id"`)}
 	}
-	if _, ok := _c.mutation.AssertionKind(); !ok {
-		return &ValidationError{Name: "assertion_kind", err: errors.New(`ent: missing required field "KnowledgeEvidence.assertion_kind"`)}
+	if _, ok := _c.mutation.Assertion(); !ok {
+		return &ValidationError{Name: "assertion", err: errors.New(`ent: missing required field "KnowledgeEvidence.assertion"`)}
 	}
-	if v, ok := _c.mutation.AssertionKind(); ok {
-		if err := knowledgeevidence.AssertionKindValidator(v); err != nil {
-			return &ValidationError{Name: "assertion_kind", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.assertion_kind": %w`, err)}
+	if v, ok := _c.mutation.Assertion(); ok {
+		if err := knowledgeevidence.AssertionValidator(v); err != nil {
+			return &ValidationError{Name: "assertion", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.assertion": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.EvidenceKind(); !ok {
@@ -301,14 +295,6 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 	}
 	if _, ok := _c.mutation.ObservedAt(); !ok {
 		return &ValidationError{Name: "observed_at", err: errors.New(`ent: missing required field "KnowledgeEvidence.observed_at"`)}
-	}
-	if _, ok := _c.mutation.Source(); !ok {
-		return &ValidationError{Name: "source", err: errors.New(`ent: missing required field "KnowledgeEvidence.source"`)}
-	}
-	if v, ok := _c.mutation.Source(); ok {
-		if err := knowledgeevidence.SourceValidator(v); err != nil {
-			return &ValidationError{Name: "source", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.source": %w`, err)}
-		}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEvidence.tenant"`)}
@@ -365,9 +351,9 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 		_spec.SetField(knowledgeevidence.FieldSubjectType, field.TypeEnum, value)
 		_node.SubjectType = value
 	}
-	if value, ok := _c.mutation.AssertionKind(); ok {
-		_spec.SetField(knowledgeevidence.FieldAssertionKind, field.TypeString, value)
-		_node.AssertionKind = value
+	if value, ok := _c.mutation.Assertion(); ok {
+		_spec.SetField(knowledgeevidence.FieldAssertion, field.TypeString, value)
+		_node.Assertion = value
 	}
 	if value, ok := _c.mutation.EvidenceKind(); ok {
 		_spec.SetField(knowledgeevidence.FieldEvidenceKind, field.TypeEnum, value)
@@ -380,10 +366,6 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 	if value, ok := _c.mutation.EffectiveAt(); ok {
 		_spec.SetField(knowledgeevidence.FieldEffectiveAt, field.TypeTime, value)
 		_node.EffectiveAt = &value
-	}
-	if value, ok := _c.mutation.Source(); ok {
-		_spec.SetField(knowledgeevidence.FieldSource, field.TypeString, value)
-		_node.Source = value
 	}
 	if value, ok := _c.mutation.Properties(); ok {
 		_spec.SetField(knowledgeevidence.FieldProperties, field.TypeJSON, value)
@@ -633,15 +615,15 @@ func (u *KnowledgeEvidenceUpsert) UpdateNormalizedEventID() *KnowledgeEvidenceUp
 	return u
 }
 
-// SetAssertionKind sets the "assertion_kind" field.
-func (u *KnowledgeEvidenceUpsert) SetAssertionKind(v string) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldAssertionKind, v)
+// SetAssertion sets the "assertion" field.
+func (u *KnowledgeEvidenceUpsert) SetAssertion(v string) *KnowledgeEvidenceUpsert {
+	u.Set(knowledgeevidence.FieldAssertion, v)
 	return u
 }
 
-// UpdateAssertionKind sets the "assertion_kind" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateAssertionKind() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldAssertionKind)
+// UpdateAssertion sets the "assertion" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsert) UpdateAssertion() *KnowledgeEvidenceUpsert {
+	u.SetExcluded(knowledgeevidence.FieldAssertion)
 	return u
 }
 
@@ -684,18 +666,6 @@ func (u *KnowledgeEvidenceUpsert) UpdateEffectiveAt() *KnowledgeEvidenceUpsert {
 // ClearEffectiveAt clears the value of the "effective_at" field.
 func (u *KnowledgeEvidenceUpsert) ClearEffectiveAt() *KnowledgeEvidenceUpsert {
 	u.SetNull(knowledgeevidence.FieldEffectiveAt)
-	return u
-}
-
-// SetSource sets the "source" field.
-func (u *KnowledgeEvidenceUpsert) SetSource(v string) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldSource, v)
-	return u
-}
-
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateSource() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldSource)
 	return u
 }
 
@@ -887,17 +857,17 @@ func (u *KnowledgeEvidenceUpsertOne) UpdateNormalizedEventID() *KnowledgeEvidenc
 	})
 }
 
-// SetAssertionKind sets the "assertion_kind" field.
-func (u *KnowledgeEvidenceUpsertOne) SetAssertionKind(v string) *KnowledgeEvidenceUpsertOne {
+// SetAssertion sets the "assertion" field.
+func (u *KnowledgeEvidenceUpsertOne) SetAssertion(v string) *KnowledgeEvidenceUpsertOne {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetAssertionKind(v)
+		s.SetAssertion(v)
 	})
 }
 
-// UpdateAssertionKind sets the "assertion_kind" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateAssertionKind() *KnowledgeEvidenceUpsertOne {
+// UpdateAssertion sets the "assertion" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsertOne) UpdateAssertion() *KnowledgeEvidenceUpsertOne {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateAssertionKind()
+		s.UpdateAssertion()
 	})
 }
 
@@ -947,20 +917,6 @@ func (u *KnowledgeEvidenceUpsertOne) UpdateEffectiveAt() *KnowledgeEvidenceUpser
 func (u *KnowledgeEvidenceUpsertOne) ClearEffectiveAt() *KnowledgeEvidenceUpsertOne {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
 		s.ClearEffectiveAt()
-	})
-}
-
-// SetSource sets the "source" field.
-func (u *KnowledgeEvidenceUpsertOne) SetSource(v string) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetSource(v)
-	})
-}
-
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateSource() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateSource()
 	})
 }
 
@@ -1322,17 +1278,17 @@ func (u *KnowledgeEvidenceUpsertBulk) UpdateNormalizedEventID() *KnowledgeEviden
 	})
 }
 
-// SetAssertionKind sets the "assertion_kind" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetAssertionKind(v string) *KnowledgeEvidenceUpsertBulk {
+// SetAssertion sets the "assertion" field.
+func (u *KnowledgeEvidenceUpsertBulk) SetAssertion(v string) *KnowledgeEvidenceUpsertBulk {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetAssertionKind(v)
+		s.SetAssertion(v)
 	})
 }
 
-// UpdateAssertionKind sets the "assertion_kind" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateAssertionKind() *KnowledgeEvidenceUpsertBulk {
+// UpdateAssertion sets the "assertion" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsertBulk) UpdateAssertion() *KnowledgeEvidenceUpsertBulk {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateAssertionKind()
+		s.UpdateAssertion()
 	})
 }
 
@@ -1382,20 +1338,6 @@ func (u *KnowledgeEvidenceUpsertBulk) UpdateEffectiveAt() *KnowledgeEvidenceUpse
 func (u *KnowledgeEvidenceUpsertBulk) ClearEffectiveAt() *KnowledgeEvidenceUpsertBulk {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
 		s.ClearEffectiveAt()
-	})
-}
-
-// SetSource sets the "source" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetSource(v string) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetSource(v)
-	})
-}
-
-// UpdateSource sets the "source" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateSource() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateSource()
 	})
 }
 

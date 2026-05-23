@@ -753,14 +753,10 @@ func init() {
 	knowledgeevidence.DefaultUpdatedAt = knowledgeevidenceDescUpdatedAt.Default.(func() time.Time)
 	// knowledgeevidence.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	knowledgeevidence.UpdateDefaultUpdatedAt = knowledgeevidenceDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// knowledgeevidenceDescAssertionKind is the schema descriptor for assertion_kind field.
-	knowledgeevidenceDescAssertionKind := knowledgeevidenceFields[6].Descriptor()
-	// knowledgeevidence.AssertionKindValidator is a validator for the "assertion_kind" field. It is called by the builders before save.
-	knowledgeevidence.AssertionKindValidator = knowledgeevidenceDescAssertionKind.Validators[0].(func(string) error)
-	// knowledgeevidenceDescSource is the schema descriptor for source field.
-	knowledgeevidenceDescSource := knowledgeevidenceFields[10].Descriptor()
-	// knowledgeevidence.SourceValidator is a validator for the "source" field. It is called by the builders before save.
-	knowledgeevidence.SourceValidator = knowledgeevidenceDescSource.Validators[0].(func(string) error)
+	// knowledgeevidenceDescAssertion is the schema descriptor for assertion field.
+	knowledgeevidenceDescAssertion := knowledgeevidenceFields[6].Descriptor()
+	// knowledgeevidence.AssertionValidator is a validator for the "assertion" field. It is called by the builders before save.
+	knowledgeevidence.AssertionValidator = knowledgeevidenceDescAssertion.Validators[0].(func(string) error)
 	// knowledgeevidenceDescID is the schema descriptor for id field.
 	knowledgeevidenceDescID := knowledgeevidenceFields[0].Descriptor()
 	// knowledgeevidence.DefaultID holds the default value on creation for the id field.

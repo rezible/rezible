@@ -28,7 +28,7 @@ func handleIncidentEventProjection(ctx context.Context, client *ent.Client, even
 		h := &incidentEventProjectionHandler{
 			client:    client,
 			observed:  observed,
-			knowledge: newKnowledgeEntityEventProjector(event, client),
+			knowledge: newKnowledgeService(client),
 		}
 		return h.handle(ctx)
 	}
@@ -39,7 +39,7 @@ func handleIncidentEventProjection(ctx context.Context, client *ent.Client, even
 type incidentEventProjectionHandler struct {
 	client    *ent.Client
 	observed  *projections.IncidentEvent
-	knowledge *knowledgeEntityEventProjector
+	knowledge *KnowledgeService
 }
 
 func (h *incidentEventProjectionHandler) handle(ctx context.Context) error {
@@ -55,61 +55,50 @@ func (h *incidentEventProjectionHandler) handle(ctx context.Context) error {
 	ev := h.observed.Event
 
 	attrs := h.observed.Attributes
-	projectedEntity := ProjectedKnowledgeEntity{
-		Kind:          knowledgeKindIncident,
-		AssertionKind: assertionIncidentObserved,
-		DisplayName:   attrs.Title,
-		Properties:    ev.Attributes,
-		Aliases:       []EntityAliasRef{h.knowledge.makeEntityRef(ev, "")},
+	observedAt := observedAtForEvent(ev)
+	entityParams := ResolveKnowledgeEntityParams{
+		Event:       ev,
+		Kind:        knowledgeKindIncident,
+		DisplayName: attrs.Title,
+		Aliases:     []EntityAliasRef{entityAliasRefForEvent(ev, "")},
 	}
-	savedKnowledge, knowledgeErr := h.knowledge.saveProjectedEntity(ctx, projectedEntity)
+	savedKnowledge, knowledgeErr := h.knowledge.ResolveEntityWithAssertion(ctx, entityParams, assertionIncidentObserved)
 	if knowledgeErr != nil {
 		return fmt.Errorf("resolve incident knowledge entity: %w", knowledgeErr)
 	}
-	if len(savedKnowledge.Aliases) == 0 {
-		return fmt.Errorf("incident knowledge entity has no aliases")
-	}
-	if evidenceErr := h.knowledge.addEntityEvidence(ctx, savedKnowledge); evidenceErr != nil {
-		return fmt.Errorf("record incident evidence: %w", evidenceErr)
-	}
 
-	existing, queryExistingErr := h.client.Incident.Query().
+	updateCount, updateErr := h.client.Incident.Update().
 		Where(incident.KnowledgeEntityID(savedKnowledge.Entity.ID)).
-		Only(ctx)
-	if queryExistingErr != nil && !ent.IsNotFound(queryExistingErr) {
-		return fmt.Errorf("query existing incident: %w", queryExistingErr)
+		SetTitle(attrs.Title).
+		SetSummary(attrs.Summary).
+		SetSeverityID(sevId).
+		SetTypeID(typeId).
+		Save(ctx)
+	if updateErr != nil {
+		return fmt.Errorf("update incident: %w", updateErr)
+	}
+	if updateCount > 1 {
+		return fmt.Errorf("expected at most one incident for knowledge entity %s, updated %d", savedKnowledge.Entity.ID, updateCount)
+	}
+	if updateCount == 1 {
+		return nil
 	}
 
-	openedAt := ev.OccurredAt
-	if openedAt.IsZero() {
-		if !ev.ReceivedAt.IsZero() {
-			openedAt = ev.ReceivedAt
-		} else {
-			openedAt = time.Now().UTC()
-		}
+	openedAt := observedAt
+	incidentSlug, slugErr := h.generateProjectedIncidentSlug(ctx, openedAt, attrs.Title)
+	if slugErr != nil {
+		return fmt.Errorf("generate incident slug: %w", slugErr)
 	}
-
-	var mut *ent.IncidentMutation
-	if existing != nil {
-		mut = existing.Update().Mutation()
-	} else {
-		incidentSlug, slugErr := h.generateProjectedIncidentSlug(ctx, openedAt, attrs.Title)
-		if slugErr != nil {
-			return fmt.Errorf("generate incident slug: %w", slugErr)
-		}
-		mut = h.client.Incident.Create().
-			SetSlug(incidentSlug).
-			Mutation()
-	}
-	mut.SetKnowledgeEntityID(savedKnowledge.Entity.ID)
-	mut.SetTitle(attrs.Title)
-	mut.SetSummary(attrs.Summary)
-	mut.SetOpenedAt(openedAt)
-	mut.SetSeverityID(sevId)
-	mut.SetTypeID(typeId)
-
-	if _, mutErr := h.client.Mutate(ctx, mut); mutErr != nil {
-		return fmt.Errorf("incident mutation: %w", mutErr)
+	if _, createErr := h.client.Incident.Create().
+		SetKnowledgeEntityID(savedKnowledge.Entity.ID).
+		SetSlug(incidentSlug).
+		SetTitle(attrs.Title).
+		SetSummary(attrs.Summary).
+		SetOpenedAt(openedAt).
+		SetSeverityID(sevId).
+		SetTypeID(typeId).
+		Save(ctx); createErr != nil {
+		return fmt.Errorf("create incident: %w", createErr)
 	}
 
 	return nil

@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
@@ -12,6 +11,7 @@ import (
 
 const (
 	assertionAlertDefinitionObserved = "alert_definition_observed"
+	knowledgeKindAlert               = "alert"
 )
 
 func handleAlertEventProjection(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
@@ -21,9 +21,9 @@ func handleAlertEventProjection(ctx context.Context, client *ent.Client, event *
 			return fmt.Errorf("invalid event: %w", validationErr)
 		}
 		ap := &alertEventProjectionHandler{
-			client:   client,
-			observed: observed,
-			kp:       newKnowledgeEntityEventProjector(event, client),
+			client:    client,
+			observed:  observed,
+			knowledge: newKnowledgeService(client),
 		}
 		return ap.handle(ctx)
 	}
@@ -32,29 +32,23 @@ func handleAlertEventProjection(ctx context.Context, client *ent.Client, event *
 }
 
 type alertEventProjectionHandler struct {
-	client   *ent.Client
-	observed *projections.AlertEvent
-	kp       *knowledgeEntityEventProjector
+	client    *ent.Client
+	observed  *projections.AlertEvent
+	knowledge *KnowledgeService
 }
 
 func (h *alertEventProjectionHandler) handle(ctx context.Context) error {
 	attrs := h.observed.Attributes
-	projEntity := ProjectedKnowledgeEntity{
-		Kind:          "alert_definition",
-		AssertionKind: assertionAlertDefinitionObserved,
-		DisplayName:   attrs.Title,
-		Properties:    h.observed.Event.Attributes,
-		Aliases:       []EntityAliasRef{h.kp.makeEntityRef(h.observed.Event, "")},
+	ev := h.observed.Event
+	params := ResolveKnowledgeEntityParams{
+		Event:       ev,
+		Kind:        knowledgeKindAlert,
+		DisplayName: attrs.Title,
+		Aliases:     []EntityAliasRef{entityAliasRefForEvent(ev, "")},
 	}
-	savedKnowledge, saveKnowledgeErr := h.kp.saveProjectedEntity(ctx, projEntity)
+	savedKnowledge, saveKnowledgeErr := h.knowledge.ResolveEntityWithAssertion(ctx, params, assertionAlertDefinitionObserved)
 	if saveKnowledgeErr != nil {
 		return fmt.Errorf("save projected entity: %w", saveKnowledgeErr)
-	}
-	if len(savedKnowledge.Aliases) == 0 {
-		return fmt.Errorf("alert knowledge entity has no aliases")
-	}
-	if evidenceErr := h.kp.addEntityEvidence(ctx, savedKnowledge); evidenceErr != nil {
-		return fmt.Errorf("add entity evidence: %w", evidenceErr)
 	}
 
 	upsert := h.client.Alert.Create().
@@ -64,17 +58,9 @@ func (h *alertEventProjectionHandler) handle(ctx context.Context) error {
 		SetDefinition(attrs.Definition).
 		OnConflictColumns(alert.FieldTenantID, alert.FieldKnowledgeEntityID).
 		UpdateNewValues()
-	alertId, saveErr := upsert.ID(ctx)
-	if saveErr != nil {
+	if _, saveErr := upsert.ID(ctx); saveErr != nil {
 		return fmt.Errorf("upsert alert: %w", saveErr)
 	}
-	slog.Debug("saved alert", slog.String("id", alertId.String()))
 
 	return nil
-}
-
-func (h *alertEventProjectionHandler) alertProjectionChanged(existing *ent.Alert, attrs projections.AlertSubjectAttributes) bool {
-	return existing.Title != attrs.Title ||
-		existing.Description != attrs.Description ||
-		existing.Definition != attrs.Definition
 }

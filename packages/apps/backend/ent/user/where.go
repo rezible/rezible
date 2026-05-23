@@ -60,6 +60,11 @@ func TenantID(v int) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldTenantID, v))
 }
 
+// KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
+func KnowledgeEntityID(v uuid.UUID) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKnowledgeEntityID, v))
+}
+
 // Email applies equality check predicate on the "email" field. It's identical to EmailEQ.
 func Email(v string) predicate.User {
 	return predicate.User(sql.FieldEQ(FieldEmail, v))
@@ -103,6 +108,36 @@ func TenantIDIn(vs ...int) predicate.User {
 // TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
 func TenantIDNotIn(vs ...int) predicate.User {
 	return predicate.User(sql.FieldNotIn(FieldTenantID, vs...))
+}
+
+// KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDEQ(v uuid.UUID) predicate.User {
+	return predicate.User(sql.FieldEQ(FieldKnowledgeEntityID, v))
+}
+
+// KnowledgeEntityIDNEQ applies the NEQ predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNEQ(v uuid.UUID) predicate.User {
+	return predicate.User(sql.FieldNEQ(FieldKnowledgeEntityID, v))
+}
+
+// KnowledgeEntityIDIn applies the In predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDIn(vs ...uuid.UUID) predicate.User {
+	return predicate.User(sql.FieldIn(FieldKnowledgeEntityID, vs...))
+}
+
+// KnowledgeEntityIDNotIn applies the NotIn predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.User {
+	return predicate.User(sql.FieldNotIn(FieldKnowledgeEntityID, vs...))
+}
+
+// KnowledgeEntityIDIsNil applies the IsNil predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDIsNil() predicate.User {
+	return predicate.User(sql.FieldIsNull(FieldKnowledgeEntityID))
+}
+
+// KnowledgeEntityIDNotNil applies the NotNil predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNotNil() predicate.User {
+	return predicate.User(sql.FieldNotNull(FieldKnowledgeEntityID))
 }
 
 // EmailEQ applies the EQ predicate on the "email" field.
@@ -480,6 +515,35 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.User {
 		step := newTenantStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.User
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
+func HasKnowledgeEntity() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.User
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
+func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newKnowledgeEntityStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.User
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

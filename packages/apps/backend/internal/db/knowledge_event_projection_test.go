@@ -35,7 +35,7 @@ func TestProjectCodeForgeObservedMapsToRepositoryFactEvidence(t *testing.T) {
 
 	entity := result.Entities[0]
 	assert.Equal(t, knowledgeKindCodeRepository, entity.Kind)
-	assert.Equal(t, assertionCodeRepositoryExists, entity.AssertionKind)
+	assert.Equal(t, assertionCodeRepositoryExists, entity.Assertion)
 	assert.Equal(t, "myorg/api", entity.DisplayName)
 	require.Len(t, entity.Aliases, 1)
 	assert.Equal(t, proj.makeEntityRef(ev, ""), entity.Aliases[0])
@@ -62,15 +62,15 @@ func TestProjectCodeChangeEventObservedMapsChangeRepositoryRelationshipEvidence(
 
 	require.Len(t, result.Entities, 2)
 	assert.Equal(t, knowledgeKindCodeChange, result.Entities[0].Kind)
-	assert.Equal(t, assertionCodeChangeObserved, result.Entities[0].AssertionKind)
+	assert.Equal(t, assertionCodeChangeObserved, result.Entities[0].Assertion)
 	assert.Equal(t, knowledgeKindCodeRepository, result.Entities[1].Kind)
-	assert.Equal(t, assertionCodeRepositoryExists, result.Entities[1].AssertionKind)
+	assert.Equal(t, assertionCodeRepositoryExists, result.Entities[1].Assertion)
 	assert.True(t, result.Entities[1].IsPlaceholder)
 
 	require.Len(t, result.Relationships, 1)
 	rel := result.Relationships[0]
 	assert.Equal(t, relationshipKindTouched, rel.Kind)
-	assert.Equal(t, assertionCodeChangeTouchedRepository, rel.AssertionKind)
+	assert.Equal(t, assertionCodeChangeTouchedRepository, rel.Assertion)
 	assert.Equal(t, result.Entities[0].Aliases[0], rel.FromAlias)
 	assert.Equal(t, result.Entities[1].Aliases[0], rel.ToAlias)
 }
@@ -111,10 +111,10 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 	assert.Empty(t, result.Relationships)
 	entity := result.Entities[0]
 	assert.Equal(t, attrs.Kind, entity.Kind)
-	assert.Equal(t, assertionSystemComponentExists, entity.AssertionKind)
+	assert.Equal(t, assertionSystemComponentExists, entity.Assertion)
 	assert.Equal(t, attrs.DisplayName, entity.DisplayName)
 	assert.Equal(t, attrs.Description, entity.Description)
-	assert.Equal(t, attrs.Properties["criticality"], entity.Properties["criticality"])
+	assert.Equal(t, attrs.Properties["criticality"], entity.Attributes["criticality"])
 	require.Len(t, entity.Aliases, 1)
 	assert.Equal(t, proj.makeEntityRef(ev, ""), entity.Aliases[0])
 }
@@ -159,9 +159,9 @@ func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t
 	require.Len(t, result.Relationships, 1)
 	relationship := result.Relationships[0]
 	assert.Equal(t, "calls", relationship.Kind)
-	assert.Equal(t, assertionSystemRelationshipExists, relationship.AssertionKind)
+	assert.Equal(t, assertionSystemRelationshipExists, relationship.Assertion)
 	assert.Equal(t, "Checkout Service calls Search API", relationship.DisplayName)
 	assert.Equal(t, result.Entities[0].Aliases[0], relationship.FromAlias)
 	assert.Equal(t, result.Entities[1].Aliases[0], relationship.ToAlias)
-	assert.Equal(t, true, relationship.Properties["critical_path"])
+	assert.Equal(t, true, relationship.Attributes["critical_path"])
 }

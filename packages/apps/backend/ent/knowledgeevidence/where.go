@@ -92,9 +92,9 @@ func NormalizedEventID(v uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldNormalizedEventID, v))
 }
 
-// AssertionKind applies equality check predicate on the "assertion_kind" field. It's identical to AssertionKindEQ.
-func AssertionKind(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAssertionKind, v))
+// Assertion applies equality check predicate on the "assertion" field. It's identical to AssertionEQ.
+func Assertion(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAssertion, v))
 }
 
 // ObservedAt applies equality check predicate on the "observed_at" field. It's identical to ObservedAtEQ.
@@ -105,11 +105,6 @@ func ObservedAt(v time.Time) predicate.KnowledgeEvidence {
 // EffectiveAt applies equality check predicate on the "effective_at" field. It's identical to EffectiveAtEQ.
 func EffectiveAt(v time.Time) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEffectiveAt, v))
-}
-
-// Source applies equality check predicate on the "source" field. It's identical to SourceEQ.
-func Source(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldSource, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -342,69 +337,69 @@ func NormalizedEventIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldNormalizedEventID, vs...))
 }
 
-// AssertionKindEQ applies the EQ predicate on the "assertion_kind" field.
-func AssertionKindEQ(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAssertionKind, v))
+// AssertionEQ applies the EQ predicate on the "assertion" field.
+func AssertionEQ(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAssertion, v))
 }
 
-// AssertionKindNEQ applies the NEQ predicate on the "assertion_kind" field.
-func AssertionKindNEQ(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldAssertionKind, v))
+// AssertionNEQ applies the NEQ predicate on the "assertion" field.
+func AssertionNEQ(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldAssertion, v))
 }
 
-// AssertionKindIn applies the In predicate on the "assertion_kind" field.
-func AssertionKindIn(vs ...string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldAssertionKind, vs...))
+// AssertionIn applies the In predicate on the "assertion" field.
+func AssertionIn(vs ...string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldAssertion, vs...))
 }
 
-// AssertionKindNotIn applies the NotIn predicate on the "assertion_kind" field.
-func AssertionKindNotIn(vs ...string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldAssertionKind, vs...))
+// AssertionNotIn applies the NotIn predicate on the "assertion" field.
+func AssertionNotIn(vs ...string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldAssertion, vs...))
 }
 
-// AssertionKindGT applies the GT predicate on the "assertion_kind" field.
-func AssertionKindGT(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGT(FieldAssertionKind, v))
+// AssertionGT applies the GT predicate on the "assertion" field.
+func AssertionGT(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldGT(FieldAssertion, v))
 }
 
-// AssertionKindGTE applies the GTE predicate on the "assertion_kind" field.
-func AssertionKindGTE(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldAssertionKind, v))
+// AssertionGTE applies the GTE predicate on the "assertion" field.
+func AssertionGTE(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldAssertion, v))
 }
 
-// AssertionKindLT applies the LT predicate on the "assertion_kind" field.
-func AssertionKindLT(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLT(FieldAssertionKind, v))
+// AssertionLT applies the LT predicate on the "assertion" field.
+func AssertionLT(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldLT(FieldAssertion, v))
 }
 
-// AssertionKindLTE applies the LTE predicate on the "assertion_kind" field.
-func AssertionKindLTE(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldAssertionKind, v))
+// AssertionLTE applies the LTE predicate on the "assertion" field.
+func AssertionLTE(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldAssertion, v))
 }
 
-// AssertionKindContains applies the Contains predicate on the "assertion_kind" field.
-func AssertionKindContains(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldContains(FieldAssertionKind, v))
+// AssertionContains applies the Contains predicate on the "assertion" field.
+func AssertionContains(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldContains(FieldAssertion, v))
 }
 
-// AssertionKindHasPrefix applies the HasPrefix predicate on the "assertion_kind" field.
-func AssertionKindHasPrefix(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldHasPrefix(FieldAssertionKind, v))
+// AssertionHasPrefix applies the HasPrefix predicate on the "assertion" field.
+func AssertionHasPrefix(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldHasPrefix(FieldAssertion, v))
 }
 
-// AssertionKindHasSuffix applies the HasSuffix predicate on the "assertion_kind" field.
-func AssertionKindHasSuffix(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldHasSuffix(FieldAssertionKind, v))
+// AssertionHasSuffix applies the HasSuffix predicate on the "assertion" field.
+func AssertionHasSuffix(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldHasSuffix(FieldAssertion, v))
 }
 
-// AssertionKindEqualFold applies the EqualFold predicate on the "assertion_kind" field.
-func AssertionKindEqualFold(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEqualFold(FieldAssertionKind, v))
+// AssertionEqualFold applies the EqualFold predicate on the "assertion" field.
+func AssertionEqualFold(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEqualFold(FieldAssertion, v))
 }
 
-// AssertionKindContainsFold applies the ContainsFold predicate on the "assertion_kind" field.
-func AssertionKindContainsFold(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldContainsFold(FieldAssertionKind, v))
+// AssertionContainsFold applies the ContainsFold predicate on the "assertion" field.
+func AssertionContainsFold(v string) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldContainsFold(FieldAssertion, v))
 }
 
 // EvidenceKindEQ applies the EQ predicate on the "evidence_kind" field.
@@ -515,71 +510,6 @@ func EffectiveAtIsNil() predicate.KnowledgeEvidence {
 // EffectiveAtNotNil applies the NotNil predicate on the "effective_at" field.
 func EffectiveAtNotNil() predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldEffectiveAt))
-}
-
-// SourceEQ applies the EQ predicate on the "source" field.
-func SourceEQ(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldSource, v))
-}
-
-// SourceNEQ applies the NEQ predicate on the "source" field.
-func SourceNEQ(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldSource, v))
-}
-
-// SourceIn applies the In predicate on the "source" field.
-func SourceIn(vs ...string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldSource, vs...))
-}
-
-// SourceNotIn applies the NotIn predicate on the "source" field.
-func SourceNotIn(vs ...string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldSource, vs...))
-}
-
-// SourceGT applies the GT predicate on the "source" field.
-func SourceGT(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGT(FieldSource, v))
-}
-
-// SourceGTE applies the GTE predicate on the "source" field.
-func SourceGTE(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldGTE(FieldSource, v))
-}
-
-// SourceLT applies the LT predicate on the "source" field.
-func SourceLT(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLT(FieldSource, v))
-}
-
-// SourceLTE applies the LTE predicate on the "source" field.
-func SourceLTE(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldLTE(FieldSource, v))
-}
-
-// SourceContains applies the Contains predicate on the "source" field.
-func SourceContains(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldContains(FieldSource, v))
-}
-
-// SourceHasPrefix applies the HasPrefix predicate on the "source" field.
-func SourceHasPrefix(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldHasPrefix(FieldSource, v))
-}
-
-// SourceHasSuffix applies the HasSuffix predicate on the "source" field.
-func SourceHasSuffix(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldHasSuffix(FieldSource, v))
-}
-
-// SourceEqualFold applies the EqualFold predicate on the "source" field.
-func SourceEqualFold(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEqualFold(FieldSource, v))
-}
-
-// SourceContainsFold applies the ContainsFold predicate on the "source" field.
-func SourceContainsFold(v string) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldContainsFold(FieldSource, v))
 }
 
 // PropertiesIsNil applies the IsNil predicate on the "properties" field.

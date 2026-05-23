@@ -13403,6 +13403,25 @@ func (c *UserClient) QueryTenant(_m *User) *TenantQuery {
 	return query
 }
 
+// QueryKnowledgeEntity queries the knowledge_entity edge of a User.
+func (c *UserClient) QueryKnowledgeEntity(_m *User) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, user.KnowledgeEntityTable, user.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.User
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryOrganizationRole queries the organization_role edge of a User.
 func (c *UserClient) QueryOrganizationRole(_m *User) *OrganizationRoleQuery {
 	query := (&OrganizationRoleClient{config: c.config}).Query()

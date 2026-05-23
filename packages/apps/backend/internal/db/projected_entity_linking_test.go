@@ -98,6 +98,50 @@ func (s *ProjectedEntityLinkingSuite) TestIncidentProjectionUnchangedRefreshWrit
 	s.Equal(knev.EvidenceKindObserved, evidence[1].EvidenceKind)
 }
 
+func (s *ProjectedEntityLinkingSuite) TestIncidentProjectionPreservesFirstObservedAndOpenedAt() {
+	ctx := s.SeedTenantContext()
+	subjectRef := "fake:incident:" + uuid.NewString()
+
+	ev1 := s.createIncidentEvent(ctx, subjectRef, "API outage", "Requests are failing")
+	ev1.OccurredAt = time.Date(2026, 5, 1, 10, 0, 0, 0, time.UTC)
+	ev1.ReceivedAt = ev1.OccurredAt
+	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev1))
+
+	ev2 := s.createIncidentEvent(ctx, subjectRef, "API outage updated", "Requests are still failing")
+	ev2.OccurredAt = time.Date(2026, 5, 1, 11, 0, 0, 0, time.UTC)
+	ev2.ReceivedAt = ev2.OccurredAt
+	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev2))
+
+	entity := s.entityForAlias(ctx, "fake", subjectRef)
+	s.Require().NotNil(entity.FirstObservedAt)
+	s.Require().NotNil(entity.LastObservedAt)
+	s.True(ev1.OccurredAt.Equal(*entity.FirstObservedAt))
+	s.True(ev2.OccurredAt.Equal(*entity.LastObservedAt))
+
+	inc, err := s.Client().Incident.Query().
+		Where(incident.KnowledgeEntityID(entity.ID)).
+		Only(ctx)
+	s.Require().NoError(err)
+	s.True(ev1.OccurredAt.Equal(inc.OpenedAt))
+}
+
+func (s *ProjectedEntityLinkingSuite) TestIncidentEvidencePropertiesUseEventAttributes() {
+	ctx := s.SeedTenantContext()
+	subjectRef := "fake:incident:" + uuid.NewString()
+
+	ev1 := s.createIncidentEvent(ctx, subjectRef, "Initial API outage", "First summary")
+	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev1))
+
+	ev2 := s.createIncidentEvent(ctx, subjectRef, "Updated API outage", "Second summary")
+	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev2))
+
+	entity := s.entityForAlias(ctx, "fake", subjectRef)
+	evidence := s.entityEvidence(ctx, entity.ID)
+	s.Require().Len(evidence, 2)
+	s.Equal("First summary", evidence[0].Properties["summary"])
+	s.Equal("Second summary", evidence[1].Properties["summary"])
+}
+
 func (s *ProjectedEntityLinkingSuite) TestAlertProjectionReusesKnowledgeEntityAndAlert() {
 	ctx := s.SeedTenantContext()
 	subjectRef := "fake:alert:" + uuid.NewString()
@@ -116,6 +160,7 @@ func (s *ProjectedEntityLinkingSuite) TestAlertProjectionReusesKnowledgeEntityAn
 	s.Len(alerts, 1)
 	s.Require().NotNil(alerts[0].KnowledgeEntityID)
 	s.Equal("Latency alert updated", alerts[0].Title)
+	s.Equal(knowledgeKindAlert, entity.Kind)
 
 	evidence := s.entityEvidence(ctx, *alerts[0].KnowledgeEntityID)
 	s.Len(evidence, 2)
@@ -123,26 +168,66 @@ func (s *ProjectedEntityLinkingSuite) TestAlertProjectionReusesKnowledgeEntityAn
 	s.Equal(knev.EvidenceKindChanged, evidence[1].EvidenceKind)
 }
 
-//func (s *ProjectedEntityLinkingSuite) TestUserProjectionFailsWhenLinkedUserConflictsWithEmailUser() {
-//	ctx := s.SeedTenantContext()
-//
-//	subjectRef := "slack:U" + uuid.NewString()
-//
-//	linkedEmail := fmt.Sprintf("linked-%s@example.com", uuid.NewString())
-//	firstEvent := s.createUserEvent(ctx, subjectRef, linkedEmail, "Linked User")
-//
-//	s.Require().NoError(handleUserEventProjection(ctx, s.Client(), firstEvent))
-//
-//	conflictEmail := fmt.Sprintf("conflict-%s@example.com", uuid.NewString())
-//	conflictEvent := s.createUserEvent(ctx, subjectRef, conflictEmail, "Conflict User")
-//
-//	saveConflict := s.Client().User.Create().
-//		SetEmail(conflictEmail).
-//		SetName("Conflict User")
-//	s.Require().NoError(saveConflict.Exec(ctx))
-//
-//	s.Error(handleUserEventProjection(ctx, s.Client(), conflictEvent))
-//}
+func (s *ProjectedEntityLinkingSuite) TestUserProjectionLinksKnowledgeEntityAndFallsBackByEmail() {
+	ctx := s.SeedTenantContext()
+	subjectRef := "slack:U" + uuid.NewString()
+	email := "user-" + uuid.NewString() + "@example.com"
+
+	existingUser, createErr := s.Client().User.Create().
+		SetEmail(email).
+		SetName("Existing User").
+		Save(ctx)
+	s.Require().NoError(createErr)
+
+	ev := s.createUserEvent(ctx, subjectRef, email, "Updated User")
+	s.Require().NoError(handleUserEventProjection(ctx, s.Client(), ev))
+
+	entity := s.entityForAlias(ctx, "fake", subjectRef)
+	updatedUser, userErr := s.Client().User.Get(ctx, existingUser.ID)
+	s.Require().NoError(userErr)
+	s.Require().NotNil(updatedUser.KnowledgeEntityID)
+	s.Equal(entity.ID, *updatedUser.KnowledgeEntityID)
+	s.Equal("Updated User", updatedUser.Name)
+
+	evidence := s.entityEvidence(ctx, entity.ID)
+	s.Len(evidence, 1)
+	s.Equal(knev.EvidenceKindObserved, evidence[0].EvidenceKind)
+}
+
+func (s *ProjectedEntityLinkingSuite) TestUserProjectionFailsWhenLinkedUserConflictsWithEmailUser() {
+	ctx := s.SeedTenantContext()
+	subjectRef := "slack:U" + uuid.NewString()
+
+	linkedEmail := "linked-" + uuid.NewString() + "@example.com"
+	firstEvent := s.createUserEvent(ctx, subjectRef, linkedEmail, "Linked User")
+	s.Require().NoError(handleUserEventProjection(ctx, s.Client(), firstEvent))
+
+	conflictEmail := "conflict-" + uuid.NewString() + "@example.com"
+	_, createErr := s.Client().User.Create().
+		SetEmail(conflictEmail).
+		SetName("Conflict User").
+		Save(ctx)
+	s.Require().NoError(createErr)
+
+	conflictEvent := s.createUserEvent(ctx, subjectRef, conflictEmail, "Conflict User")
+	s.Error(handleUserEventProjection(ctx, s.Client(), conflictEvent))
+}
+
+func (s *ProjectedEntityLinkingSuite) TestProjectionStatusOnlyCreatedForApplicableHandlers() {
+	ctx := s.SeedTenantContext()
+	RegisterEventProcessors()
+
+	ev := s.createIncidentEvent(ctx, "fake:incident:"+uuid.NewString(), "API outage", "Requests are failing")
+	providerEvents := &ProviderEventService{db: s.Client()}
+
+	res := providerEvents.projectNormalizedEvent(ctx, ev)
+	s.Empty(res.handlerErrors)
+
+	statuses, err := s.Client().NormalizedEventProjectionStatus.Query().All(ctx)
+	s.Require().NoError(err)
+	s.Len(statuses, 1)
+	s.Equal("incidents", statuses[0].HandlerName)
+}
 
 func (s *ProjectedEntityLinkingSuite) TestKnowledgeAliasConflictFailsProjection() {
 	ctx := s.SeedTenantContext()
@@ -157,11 +242,11 @@ func (s *ProjectedEntityLinkingSuite) TestKnowledgeAliasConflictFailsProjection(
 	ev := s.createSystemComponentEvent(ctx, "fake:service:"+uuid.NewString())
 	projector := newKnowledgeEntityEventProjector(ev, s.Client())
 	_, err := projector.saveProjectedEntity(ctx, ProjectedKnowledgeEntity{
-		Kind:          "service",
-		AssertionKind: assertionSystemComponentExists,
-		DisplayName:   "Conflicting service",
-		Properties:    map[string]any{"external_ref": "conflict"},
-		Aliases:       []EntityAliasRef{aliasA, aliasB},
+		Kind:        "service",
+		Assertion:   assertionSystemComponentExists,
+		DisplayName: "Conflicting service",
+		Attributes:  map[string]any{"external_ref": "conflict"},
+		Aliases:     []EntityAliasRef{aliasA, aliasB},
 	})
 	s.Error(err)
 }
@@ -169,7 +254,6 @@ func (s *ProjectedEntityLinkingSuite) TestKnowledgeAliasConflictFailsProjection(
 func (s *ProjectedEntityLinkingSuite) createIncidentEvent(ctx context.Context, subjectRef string, title string, summary string) *ent.NormalizedEvent {
 	attrs := projections.IncidentSubjectAttributes{
 		Title:       title,
-		ExternalRef: subjectRef,
 		Summary:     summary,
 		SeverityRef: "SEV-1",
 		TypeRef:     "outage",

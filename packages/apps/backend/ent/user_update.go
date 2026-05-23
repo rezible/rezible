@@ -19,6 +19,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentroleassignment"
 	"github.com/rezible/rezible/ent/integrationoauthstate"
 	"github.com/rezible/rezible/ent/internal"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
 	"github.com/rezible/rezible/ent/oncallshift"
@@ -43,6 +44,26 @@ type UserUpdate struct {
 // Where appends a list predicates to the UserUpdate builder.
 func (_u *UserUpdate) Where(ps ...predicate.User) *UserUpdate {
 	_u.mutation.Where(ps...)
+	return _u
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *UserUpdate) SetKnowledgeEntityID(v uuid.UUID) *UserUpdate {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *UserUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *UserUpdate {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *UserUpdate) ClearKnowledgeEntityID() *UserUpdate {
+	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -132,6 +153,11 @@ func (_u *UserUpdate) SetNillableAuthProviderID(v *string) *UserUpdate {
 func (_u *UserUpdate) ClearAuthProviderID() *UserUpdate {
 	_u.mutation.ClearAuthProviderID()
 	return _u
+}
+
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *UserUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *UserUpdate {
+	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
@@ -411,6 +437,12 @@ func (_u *UserUpdate) AddRoleAssignments(v ...*IncidentRoleAssignment) *UserUpda
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdate) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *UserUpdate) ClearKnowledgeEntity() *UserUpdate {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // ClearOrganizationRole clears the "organization_role" edge to the OrganizationRole entity.
@@ -852,6 +884,37 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _u.mutation.AuthProviderIDCleared() {
 		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
+	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.KnowledgeEntityTable,
+			Columns: []string{user.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.User
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.KnowledgeEntityTable,
+			Columns: []string{user.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.User
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.OrganizationRoleCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1766,6 +1829,26 @@ type UserUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *UserUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *UserUpdateOne {
+	_u.mutation.SetKnowledgeEntityID(v)
+	return _u
+}
+
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *UserUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *UserUpdateOne {
+	if v != nil {
+		_u.SetKnowledgeEntityID(*v)
+	}
+	return _u
+}
+
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *UserUpdateOne) ClearKnowledgeEntityID() *UserUpdateOne {
+	_u.mutation.ClearKnowledgeEntityID()
+	return _u
+}
+
 // SetEmail sets the "email" field.
 func (_u *UserUpdateOne) SetEmail(v string) *UserUpdateOne {
 	_u.mutation.SetEmail(v)
@@ -1852,6 +1935,11 @@ func (_u *UserUpdateOne) SetNillableAuthProviderID(v *string) *UserUpdateOne {
 func (_u *UserUpdateOne) ClearAuthProviderID() *UserUpdateOne {
 	_u.mutation.ClearAuthProviderID()
 	return _u
+}
+
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *UserUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *UserUpdateOne {
+	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // SetOrganizationRoleID sets the "organization_role" edge to the OrganizationRole entity by ID.
@@ -2131,6 +2219,12 @@ func (_u *UserUpdateOne) AddRoleAssignments(v ...*IncidentRoleAssignment) *UserU
 // Mutation returns the UserMutation object of the builder.
 func (_u *UserUpdateOne) Mutation() *UserMutation {
 	return _u.mutation
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *UserUpdateOne) ClearKnowledgeEntity() *UserUpdateOne {
+	_u.mutation.ClearKnowledgeEntity()
+	return _u
 }
 
 // ClearOrganizationRole clears the "organization_role" edge to the OrganizationRole entity.
@@ -2602,6 +2696,37 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 	}
 	if _u.mutation.AuthProviderIDCleared() {
 		_spec.ClearField(user.FieldAuthProviderID, field.TypeString)
+	}
+	if _u.mutation.KnowledgeEntityCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.KnowledgeEntityTable,
+			Columns: []string{user.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.User
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   user.KnowledgeEntityTable,
+			Columns: []string{user.KnowledgeEntityColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.User
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.OrganizationRoleCleared() {
 		edge := &sqlgraph.EdgeSpec{

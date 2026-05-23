@@ -94,7 +94,6 @@ type (
 	// IncidentSubjectAttributes are the provider-neutral attributes persisted for incident observations.
 	IncidentSubjectAttributes struct {
 		Title       string `attr:"title" validate:"required"`
-		ExternalRef string `attr:"external_ref" validate:"required"`
 		Summary     string `attr:"summary"`
 		SeverityRef string `attr:"severity_ref" validate:"required"`
 		TypeRef     string `attr:"type_ref" validate:"required"`

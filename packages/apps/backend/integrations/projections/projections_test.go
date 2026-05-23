@@ -24,7 +24,6 @@ func TestEncodeAttributesUsesAttributeTags(t *testing.T) {
 
 func TestDecodeIncidentObservedEvent(t *testing.T) {
 	attrs := IncidentSubjectAttributes{
-		ExternalRef: "foo",
 		Title:       "Checkout search lookups timing out",
 		Summary:     "Checkout requests are timing out.",
 		SeverityRef: "SEV-1",

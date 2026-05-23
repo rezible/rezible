@@ -96,7 +96,6 @@ func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.Normalized
 	}
 
 	attrs := projections.IncidentSubjectAttributes{
-		ExternalRef: payload.ExternalID,
 		Title:       payload.Title,
 		Summary:     payload.Summary,
 		SeverityRef: payload.SeverityRef,
