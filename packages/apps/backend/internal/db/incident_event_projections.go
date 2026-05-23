@@ -9,7 +9,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/ent/incidentseverity"
+	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/integrations/projections"
@@ -20,7 +20,7 @@ func handleIncidentEventProjection(ctx context.Context, client *ent.Client, even
 		return nil
 	}
 
-	observed, validationErr := projections.DecodeEvent[projections.IncidentObservedAttributes](event)
+	observed, validationErr := projections.DecodeIncidentObserved(event)
 	if validationErr != nil || observed == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}
@@ -34,11 +34,11 @@ type incidentEventProjectionHandler struct {
 }
 
 func (h *incidentEventProjectionHandler) handle(ctx context.Context) error {
-	severity, severityErr := h.upsertProjectedIncidentSeverity(ctx)
+	sevId, severityErr := h.upsertProjectedIncidentSeverity(ctx)
 	if severityErr != nil {
 		return fmt.Errorf("upsert incident severity: %w", severityErr)
 	}
-	incidentType, typeErr := h.upsertProjectedIncidentType(ctx)
+	typeId, typeErr := h.upsertProjectedIncidentType(ctx)
 	if typeErr != nil {
 		return fmt.Errorf("upsert incident type: %w", typeErr)
 	}
@@ -61,15 +61,9 @@ func (h *incidentEventProjectionHandler) handle(ctx context.Context) error {
 		return fmt.Errorf("query existing incident: %w", queryExistingErr)
 	}
 
-	var mut ent.Mutation
+	var mut *ent.IncidentMutation
 	if existing != nil {
-		update := h.client.Incident.UpdateOne(existing).
-			SetTitle(attrs.Title).
-			SetSummary(attrs.Summary).
-			SetOpenedAt(openedAt).
-			SetSeverityID(severity.ID).
-			SetTypeID(incidentType.ID)
-		mut = update.Mutation()
+		mut = existing.Update().Mutation()
 	} else {
 		incidentSlug, slugErr := h.generateProjectedIncidentSlug(ctx, openedAt, attrs.Title)
 		if slugErr != nil {
@@ -77,57 +71,39 @@ func (h *incidentEventProjectionHandler) handle(ctx context.Context) error {
 		}
 		create := h.client.Incident.Create().
 			SetProjectedFromID(ev.ID).
-			SetSlug(incidentSlug).
-			SetTitle(attrs.Title).
-			SetSummary(attrs.Summary).
-			SetOpenedAt(openedAt).
-			SetSeverityID(severity.ID).
-			SetTypeID(incidentType.ID)
+			SetSlug(incidentSlug)
 		mut = create.Mutation()
 	}
+	mut.SetTitle(attrs.Title)
+	mut.SetSummary(attrs.Summary)
+	mut.SetOpenedAt(openedAt)
+	mut.SetSeverityID(sevId)
+	mut.SetTypeID(typeId)
 
 	if _, mutErr := h.client.Mutate(ctx, mut); mutErr != nil {
-		return fmt.Errorf("incident projection mutation: %w", mutErr)
+		return fmt.Errorf("incident mutation: %w", mutErr)
 	}
 
 	return nil
 }
 
-func (h *incidentEventProjectionHandler) upsertProjectedIncidentSeverity(ctx context.Context) (*ent.IncidentSeverity, error) {
-	sevName := h.observed.Attributes.SeverityName
-	sevRank := h.observed.Attributes.SeverityRank
-	existing, queryErr := h.client.IncidentSeverity.Query().
-		Where(incidentseverity.Name(sevName)).
-		First(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("query: %w", queryErr)
-	}
-	if existing != nil {
-		return h.client.IncidentSeverity.UpdateOne(existing).
-			SetRank(sevRank).
-			Save(ctx)
-	}
-	return h.client.IncidentSeverity.Create().
-		SetName(sevName).
-		SetRank(sevRank).
-		SetProjectedEventID(h.observed.Event.ID).
-		Save(ctx)
+func (h *incidentEventProjectionHandler) upsertProjectedIncidentSeverity(ctx context.Context) (uuid.UUID, error) {
+	ref := h.observed.Attributes.SeverityRef
+	upsert := h.client.IncidentSeverity.Create().
+		SetName(ref).
+		SetRank(0).
+		OnConflictColumns(incsev.FieldTenantID, incsev.FieldName).
+		DoNothing()
+	return upsert.ID(ctx)
 }
 
-func (h *incidentEventProjectionHandler) upsertProjectedIncidentType(ctx context.Context) (*ent.IncidentType, error) {
-	typeName := h.observed.Attributes.TypeName
-	existing, queryErr := h.client.IncidentType.Query().
-		Where(incidenttype.Name(typeName)).
-		First(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return nil, fmt.Errorf("query: %w", queryErr)
-	}
-	if existing != nil {
-		return existing, nil
-	}
-	return h.client.IncidentType.Create().
-		SetName(typeName).
-		Save(ctx)
+func (h *incidentEventProjectionHandler) upsertProjectedIncidentType(ctx context.Context) (uuid.UUID, error) {
+	ref := h.observed.Attributes.TypeRef
+	upsert := h.client.IncidentType.Create().
+		SetName(ref).
+		OnConflictColumns(incidenttype.FieldTenantID, incidenttype.FieldName).
+		DoNothing()
+	return upsert.ID(ctx)
 }
 
 func (h *incidentEventProjectionHandler) generateProjectedIncidentSlug(ctx context.Context, openedAt time.Time, title string) (string, error) {

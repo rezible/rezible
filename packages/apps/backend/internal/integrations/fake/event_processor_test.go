@@ -40,7 +40,7 @@ func TestProcessAlertObservedEvent(t *testing.T) {
 	assert.Equal(t, "fake:alert:search-api-latency", ev.SubjectRef)
 	assert.Equal(t, occurredAt, ev.OccurredAt)
 
-	decoded, decodeErr := projections.DecodeEvent[projections.AlertObservedAttributes](ev)
+	decoded, decodeErr := projections.DecodeAlertObserved(ev)
 	require.NoError(t, decodeErr)
 	assert.Equal(t, "Search API response time high", decoded.Attributes.Title)
 	assert.Equal(t, "p95 latency is above threshold.", decoded.Attributes.Description)
@@ -49,12 +49,12 @@ func TestProcessAlertObservedEvent(t *testing.T) {
 func TestProcessIncidentObservedEvent(t *testing.T) {
 	occurredAt := time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC)
 	payload := incidentObservedPayload{
-		Title:        "Checkout search lookups timing out",
-		Summary:      "Checkout requests are timing out.",
-		SeverityName: "SEV-1",
-		SeverityRank: 1,
-		TypeName:     "Customer Impact",
-		OccurredAt:   occurredAt,
+		ExternalID:  "foobar",
+		Title:       "Checkout search lookups timing out",
+		Summary:     "Checkout requests are timing out.",
+		SeverityRef: "SEV-1",
+		TypeRef:     "Customer Impact",
+		OccurredAt:  occurredAt,
 	}
 	payloadBytes, jsonErr := json.Marshal(payload)
 	require.NoError(t, jsonErr)
@@ -76,11 +76,10 @@ func TestProcessIncidentObservedEvent(t *testing.T) {
 	assert.Equal(t, "fake:incident:checkout-search-timeouts", ev.SubjectRef)
 	assert.Equal(t, occurredAt, ev.OccurredAt)
 
-	decoded, decodeErr := projections.DecodeEvent[projections.IncidentObservedAttributes](ev)
+	decoded, decodeErr := projections.DecodeIncidentObserved(ev)
 	require.NoError(t, decodeErr)
 	assert.Equal(t, payload.Title, decoded.Attributes.Title)
-	assert.Equal(t, payload.SeverityName, decoded.Attributes.SeverityName)
-	assert.Equal(t, payload.SeverityRank, decoded.Attributes.SeverityRank)
+	assert.Equal(t, payload.SeverityRef, decoded.Attributes.SeverityRef)
 }
 
 func TestProcessTopologyComponentObservedEvent(t *testing.T) {
@@ -119,7 +118,7 @@ func TestProcessTopologyComponentObservedEvent(t *testing.T) {
 	assert.Equal(t, "fake:component:search_api", ev.SubjectRef)
 	assert.Equal(t, occurredAt, ev.OccurredAt)
 
-	decoded, decodeErr := projections.DecodeEvent[projections.SystemComponentObservedAttributes](ev)
+	decoded, decodeErr := projections.DecodeSystemComponentObserved(ev)
 	require.NoError(t, decodeErr)
 	assert.Equal(t, payload.Component.DisplayName, decoded.Attributes.DisplayName)
 	assert.Equal(t, payload.Component.Kind, decoded.Attributes.Kind)
@@ -165,7 +164,7 @@ func TestProcessTopologyRelationshipObservedEvent(t *testing.T) {
 	assert.Equal(t, "system_relationship", ev.SubjectKind)
 	assert.Equal(t, occurredAt, ev.OccurredAt)
 
-	decoded, decodeErr := projections.DecodeEvent[projections.SystemRelationshipObservedAttributes](ev)
+	decoded, decodeErr := projections.DecodeSystemRelationshipObserved(ev)
 	require.NoError(t, decodeErr)
 	assert.Equal(t, payload.Relationship.Kind, decoded.Attributes.Kind)
 	assert.Equal(t, payload.Relationship.SourceExternalRef, decoded.Attributes.SourceExternalRef)

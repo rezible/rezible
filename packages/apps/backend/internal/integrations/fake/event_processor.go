@@ -57,6 +57,10 @@ func (p *eventProcessor) processAlert(prov rez.ProviderEvent) (ent.NormalizedEve
 		Description: payload.Description,
 		Definition:  payload.Definition,
 	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode alert observed attributes: %w", encodeErr)
+	}
 
 	result := &ent.NormalizedEvent{
 		Provider:         integrationName,
@@ -67,7 +71,7 @@ func (p *eventProcessor) processAlert(prov rez.ProviderEvent) (ent.NormalizedEve
 		ProviderEventRef: prov.ProviderEventRef,
 		OccurredAt:       occurredAt,
 		ReceivedAt:       prov.ReceivedAt,
-		Attributes:       attrs.Encode(),
+		Attributes:       encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {
 		result.ReceivedAt = occurredAt
@@ -91,11 +95,15 @@ func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.Normalized
 	}
 
 	attrs := projections.IncidentObservedAttributes{
-		Title:        payload.Title,
-		Summary:      payload.Summary,
-		SeverityName: payload.SeverityName,
-		SeverityRank: payload.SeverityRank,
-		TypeName:     payload.TypeName,
+		ExternalRef: payload.ExternalID,
+		Title:       payload.Title,
+		Summary:     payload.Summary,
+		SeverityRef: payload.SeverityRef,
+		TypeRef:     payload.TypeRef,
+	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode incident observed attributes: %w", encodeErr)
 	}
 
 	result := &ent.NormalizedEvent{
@@ -107,7 +115,7 @@ func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.Normalized
 		SubjectRef:       prov.SubjectRef,
 		OccurredAt:       occurredAt,
 		ReceivedAt:       prov.ReceivedAt,
-		Attributes:       attrs.Encode(),
+		Attributes:       encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {
 		result.ReceivedAt = occurredAt
@@ -142,43 +150,23 @@ func (p *eventProcessor) processTopology(prov rez.ProviderEvent) (ent.Normalized
 		result.ReceivedAt = occurredAt
 	}
 
+	payloadErr := fmt.Errorf("unknown topology observation type: %s", payload.ObservationType)
 	switch payload.ObservationType {
 	case topologyObservationComponent:
-		if payload.Component == nil {
-			return nil, fmt.Errorf("topology component payload is required")
+		{
+			result.Kind = ne.KindSystemComponentObserved
+			result.SubjectKind = "system_component"
+			result.Attributes, payloadErr = payload.Component.encodeAttributes()
 		}
-		attrs := projections.SystemComponentObservedAttributes{
-			ExternalRef: payload.Component.ExternalRef,
-			Kind:        payload.Component.Kind,
-			DisplayName: payload.Component.DisplayName,
-			Description: payload.Component.Description,
-			Properties:  payload.Component.Properties,
-		}
-		result.Kind = ne.KindSystemComponentObserved
-		result.SubjectKind = "system_component"
-		result.Attributes = attrs.Encode()
 	case topologyObservationRelationship:
-		if payload.Relationship == nil {
-			return nil, fmt.Errorf("topology relationship payload is required")
+		{
+			result.Kind = ne.KindSystemRelationshipObserved
+			result.SubjectKind = "system_relationship"
+			result.Attributes, payloadErr = payload.Relationship.encodeAttributes()
 		}
-		attrs := projections.SystemRelationshipObservedAttributes{
-			ExternalRef:       payload.Relationship.ExternalRef,
-			Kind:              payload.Relationship.Kind,
-			DisplayName:       payload.Relationship.DisplayName,
-			Description:       payload.Relationship.Description,
-			SourceExternalRef: payload.Relationship.SourceExternalRef,
-			SourceKind:        payload.Relationship.SourceKind,
-			SourceDisplayName: payload.Relationship.SourceDisplayName,
-			TargetExternalRef: payload.Relationship.TargetExternalRef,
-			TargetKind:        payload.Relationship.TargetKind,
-			TargetDisplayName: payload.Relationship.TargetDisplayName,
-			Properties:        payload.Relationship.Properties,
-		}
-		result.Kind = ne.KindSystemRelationshipObserved
-		result.SubjectKind = "system_relationship"
-		result.Attributes = attrs.Encode()
-	default:
-		return nil, fmt.Errorf("unknown topology observation type: %s", payload.ObservationType)
+	}
+	if payloadErr != nil {
+		return nil, fmt.Errorf("topology component payload invalid: %w", payloadErr)
 	}
 
 	return ent.NormalizedEvents{result}, nil

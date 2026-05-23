@@ -31,8 +31,10 @@ func TestProjectRepositoryObservedMapsToRepositoryFactEvidence(t *testing.T) {
 		Provider:       "github",
 		ProviderSource: "repositories",
 		SubjectRef:     "myorg/api",
-		Attributes:     attrs.Encode(),
 	}
+	var encodeAttrsErr error
+	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
+	require.NoError(t, encodeAttrsErr)
 	ref := makeEntityAliasRef(ev)
 	observed := projections.RepositoryObserved{
 		Event:      ev,
@@ -54,7 +56,7 @@ func TestProjectRepositoryObservedMapsToRepositoryFactEvidence(t *testing.T) {
 }
 
 func TestProjectChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *testing.T) {
-	attrs := projections.ChangeEventObservedAttributes{
+	attrs := projections.CodeChangeObservedAttributes{
 		RepositoryExternalRef: "myorg/api",
 		DisplayName:           "refs/heads/main",
 	}
@@ -64,9 +66,12 @@ func TestProjectChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *t
 		ProviderSource: "push",
 		SubjectRef:     "github:myorg/api:abc123",
 		Kind:           ne.KindChangeEventObserved,
-		Attributes:     attrs.Encode(),
 	}
-	observed := projections.ChangeEventObserved{Event: ev, Attributes: attrs}
+	var encodeAttrsErr error
+	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
+	require.NoError(t, encodeAttrsErr)
+
+	observed := projections.CodeChangeObserved{Event: ev, Attributes: attrs}
 
 	proj := newKnowledgeEntityEventProjector(ev, nil)
 	result := proj.projectCodeChangeEventObserved(observed)
@@ -110,8 +115,10 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 		ProviderSource: "system_topology",
 		SubjectRef:     "fake:component:search_api",
 		Kind:           ne.KindSystemComponentObserved,
-		Attributes:     attrs.Encode(),
 	}
+	var encodeAttrsErr error
+	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
+	require.NoError(t, encodeAttrsErr)
 	ref := makeEntityAliasRef(ev)
 	observed := projections.SystemComponentObserved{Event: ev, Attributes: attrs}
 
@@ -151,12 +158,12 @@ func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t
 		ProviderSource: "system_topology",
 		SubjectRef:     "fake:relationship:checkout_service:calls:search_api",
 		Kind:           ne.KindSystemRelationshipObserved,
-		Attributes:     attrs.Encode(),
 	}
-	observed := projections.SystemRelationshipObserved{
-		Event:      ev,
-		Attributes: attrs,
-	}
+	var encodeAttrsErr error
+	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
+	require.NoError(t, encodeAttrsErr)
+
+	observed := projections.SystemRelationshipObserved{Event: ev, Attributes: attrs}
 
 	proj := newKnowledgeEntityEventProjector(ev, nil)
 	result := proj.projectSystemRelationshipObserved(observed)

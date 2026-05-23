@@ -30,9 +30,7 @@
 			</div>
 			<div class="flex items-center gap-2">
 				<Button
-					onclick={() => {
-						ctrl.startConfigure();
-					}}
+					onclick={() => {ctrl.startConfig()}}
 					variant="outline"
 					disabled={ctrl.loading}
 				>

@@ -61,9 +61,13 @@ func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.Normalize
 		subjectRef = fmt.Sprintf("github:%s:%s", event.GetRepo().GetFullName(), event.GetAfter())
 	}
 
-	attrs := projections.ChangeEventObservedAttributes{
+	attrs := projections.CodeChangeObservedAttributes{
 		RepositoryExternalRef: event.GetRepo().GetFullName(),
 		DisplayName:           event.GetRef(),
+	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode change event observed attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
 		Provider:         integrationName,
@@ -73,7 +77,7 @@ func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.Normalize
 		SubjectKind:      "change_event",
 		SubjectRef:       subjectRef,
 		OccurredAt:       occurredAt,
-		Attributes:       attrs.Encode(),
+		Attributes:       encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil
@@ -93,9 +97,13 @@ func (p *eventProcessor) processPullRequest(prov rez.ProviderEvent) (ent.Normali
 		subjectRef = fmt.Sprintf("github:%s:pr:%d", event.GetRepo().GetFullName(), prNum)
 	}
 
-	attrs := projections.ChangeEventObservedAttributes{
+	attrs := projections.CodeChangeObservedAttributes{
 		RepositoryExternalRef: event.GetRepo().GetFullName(),
 		DisplayName:           pr.GetTitle(),
+	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode change event observed attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
 		Provider:         integrationName,
@@ -105,7 +113,7 @@ func (p *eventProcessor) processPullRequest(prov rez.ProviderEvent) (ent.Normali
 		ProviderEventRef: prov.ProviderEventRef,
 		SubjectRef:       subjectRef,
 		OccurredAt:       pr.GetCreatedAt().Time,
-		Attributes:       attrs.Encode(),
+		Attributes:       encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil
@@ -137,6 +145,10 @@ func (p *eventProcessor) processRepoObserved(prov rez.ProviderEvent) (ent.Normal
 		DisplayName: repositoryRef,
 		URL:         payload.HTMLURL,
 	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode repository observed attributes: %w", encodeErr)
+	}
 	result := &ent.NormalizedEvent{
 		Provider:         integrationName,
 		ProviderSource:   sourceRepositories,
@@ -146,7 +158,7 @@ func (p *eventProcessor) processRepoObserved(prov rez.ProviderEvent) (ent.Normal
 		SubjectRef:       repositoryRef,
 		OccurredAt:       occurredAt,
 		ReceivedAt:       prov.ReceivedAt,
-		Attributes:       attrs.Encode(),
+		Attributes:       encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {
 		result.ReceivedAt = occurredAt

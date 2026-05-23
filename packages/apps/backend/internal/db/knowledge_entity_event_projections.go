@@ -11,6 +11,7 @@ import (
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/integrations/projections"
 )
 
@@ -28,25 +29,17 @@ const (
 	relationshipKindTouched     = "touched_repository"
 )
 
-func knowledgeEntityEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	decoded, validationErr := projections.DecodeEvent[any](event)
-	if validationErr != nil || decoded == nil {
-		return fmt.Errorf("invalid event: %w", validationErr)
-	}
-	proj := newKnowledgeEntityEventProjector(event, newKnowledgeService(client))
-	var result *KnowledgeProjectionResult
-	switch attrs := decoded.Attributes.(type) {
-	case projections.RepositoryObservedAttributes:
-		result = proj.projectRepositoryObserved(projections.RepositoryObserved{Event: event, Attributes: attrs})
-	case projections.ChangeEventObservedAttributes:
-		result = proj.projectCodeChangeEventObserved(projections.ChangeEventObserved{Event: event, Attributes: attrs})
-	case projections.SystemComponentObservedAttributes:
-		result = proj.projectSystemComponentObserved(projections.SystemComponentObserved{Event: event, Attributes: attrs})
-	case projections.SystemRelationshipObservedAttributes:
-		result = proj.projectSystemRelationshipObserved(projections.SystemRelationshipObserved{Event: event, Attributes: attrs})
+func knowledgeEntityEventProjectionHandler(ctx context.Context, client *ent.Client, ev *ent.NormalizedEvent) error {
+	proj := newKnowledgeEntityEventProjector(ev, newKnowledgeService(client))
+
+	result, eventErr := proj.projectEvent(ev)
+	if eventErr != nil {
+		return fmt.Errorf("project event: %w", eventErr)
 	}
 	if result != nil {
-		return proj.saveProjectionResult(ctx, result)
+		if saveErr := proj.saveProjectionResult(ctx, result); saveErr != nil {
+			return fmt.Errorf("save projection result: %w", saveErr)
+		}
 	}
 	return nil
 }
@@ -58,6 +51,41 @@ type knowledgeEntityEventProjector struct {
 
 func newKnowledgeEntityEventProjector(ev *ent.NormalizedEvent, ks *KnowledgeService) *knowledgeEntityEventProjector {
 	return &knowledgeEntityEventProjector{event: ev, knowledge: ks}
+}
+
+func (kp *knowledgeEntityEventProjector) projectEvent(ev *ent.NormalizedEvent) (*KnowledgeProjectionResult, error) {
+	var decErr error
+	switch ev.Kind {
+	case ne.KindRepositoryObserved:
+		{
+			var obs *projections.RepositoryObserved
+			if obs, decErr = projections.DecodeRepositoryObserved(ev); decErr == nil {
+				return kp.projectRepositoryObserved(*obs), decErr
+			}
+		}
+	case ne.KindChangeEventObserved:
+		{
+			var obs *projections.CodeChangeObserved
+			if obs, decErr = projections.DecodeCodeChangeObserved(ev); decErr == nil {
+				return kp.projectCodeChangeEventObserved(*obs), decErr
+			}
+		}
+	case ne.KindSystemComponentObserved:
+		{
+			var obs *projections.SystemComponentObserved
+			if obs, decErr = projections.DecodeSystemComponentObserved(ev); decErr == nil {
+				return kp.projectSystemComponentObserved(*obs), decErr
+			}
+		}
+	case ne.KindSystemRelationshipObserved:
+		{
+			var obs *projections.SystemRelationshipObserved
+			if obs, decErr = projections.DecodeSystemRelationshipObserved(ev); decErr == nil {
+				return kp.projectSystemRelationshipObserved(*obs), decErr
+			}
+		}
+	}
+	return nil, decErr
 }
 
 type EntityAliasRef struct {
@@ -372,7 +400,7 @@ func (kp *knowledgeEntityEventProjector) projectRepositoryObserved(pe projection
 	return &KnowledgeProjectionResult{Entities: []ProjectedKnowledgeEntity{repoEntity}}
 }
 
-func (kp *knowledgeEntityEventProjector) projectCodeChangeEventObserved(pe projections.ChangeEventObserved) *KnowledgeProjectionResult {
+func (kp *knowledgeEntityEventProjector) projectCodeChangeEventObserved(pe projections.CodeChangeObserved) *KnowledgeProjectionResult {
 	attrs := pe.Attributes
 	changeEventAlias := kp.makeEntityRef(pe.Event, "")
 	codeChangedEntity := ProjectedKnowledgeEntity{

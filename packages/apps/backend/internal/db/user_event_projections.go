@@ -16,7 +16,7 @@ func userEventProjectionHandler(ctx context.Context, client *ent.Client, event *
 	if event.Kind != ne.KindUserObserved {
 		return nil
 	}
-	decoded, validationErr := projections.DecodeEvent[projections.UserObservedAttributes](event)
+	decoded, validationErr := projections.DecodeUserObserved(event)
 	if validationErr != nil || decoded == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}

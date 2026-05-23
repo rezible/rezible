@@ -58,9 +58,8 @@ var fakeIncidentEvents = []incidentObservedPayload{
 		ExternalID:    "checkout-search-timeouts",
 		Title:         "Checkout search lookups timing out",
 		Summary:       "Checkout requests that need product search enrichment are timing out for a subset of customers.",
-		SeverityName:  "SEV-1",
-		SeverityRank:  1,
-		TypeName:      "Customer Impact",
+		SeverityRef:   "SEV-1",
+		TypeRef:       "Customer Impact",
 		OccurredAt:    time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
 		ObservationID: "checkout-search-timeouts-observed",
 	},
@@ -68,9 +67,8 @@ var fakeIncidentEvents = []incidentObservedPayload{
 		ExternalID:    "catalog-search-stale-results",
 		Title:         "Catalog search returning stale results",
 		Summary:       "The catalog search index failed to refresh after the nightly product import.",
-		SeverityName:  "SEV-2",
-		SeverityRank:  2,
-		TypeName:      "Data Freshness",
+		SeverityRef:   "SEV-2",
+		TypeRef:       "Data Freshness",
 		OccurredAt:    time.Date(2026, 5, 13, 2, 30, 0, 0, time.UTC),
 		ObservationID: "catalog-search-stale-results-observed",
 	},
@@ -78,9 +76,8 @@ var fakeIncidentEvents = []incidentObservedPayload{
 		ExternalID:    "search-admin-dashboard-degraded",
 		Title:         "Search admin dashboard degraded",
 		Summary:       "Internal teams are seeing slow loads and intermittent errors in search administration views.",
-		SeverityName:  "SEV-3",
-		SeverityRank:  3,
-		TypeName:      "Internal Tooling",
+		SeverityRef:   "SEV-3",
+		TypeRef:       "Internal Tooling",
 		OccurredAt:    time.Date(2026, 5, 14, 5, 0, 0, 0, time.UTC),
 		ObservationID: "search-admin-dashboard-degraded-observed",
 	},
@@ -90,9 +87,8 @@ type incidentObservedPayload struct {
 	ExternalID    string    `json:"external_id"`
 	Title         string    `json:"title"`
 	Summary       string    `json:"summary,omitempty"`
-	SeverityName  string    `json:"severity_name"`
-	SeverityRank  int       `json:"severity_rank"`
-	TypeName      string    `json:"type_name"`
+	SeverityRef   string    `json:"severity_ref"`
+	TypeRef       string    `json:"type_ref"`
 	OccurredAt    time.Time `json:"occurred_at"`
 	ObservationID string    `json:"observation_id"`
 }

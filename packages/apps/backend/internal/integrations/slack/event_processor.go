@@ -49,6 +49,10 @@ func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.Normal
 		ChatId:   payload.SlackID,
 		Timezone: payload.Timezone,
 	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode user observed attributes: %w", encodeErr)
+	}
 
 	result := &ent.NormalizedEvent{
 		Provider:         integrationName,
@@ -59,7 +63,7 @@ func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.Normal
 		ProviderEventRef: prov.ProviderEventRef,
 		OccurredAt:       payload.UpdatedAt.Time(),
 		ReceivedAt:       prov.ReceivedAt,
-		Attributes:       attrs.Encode(),
+		Attributes:       encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil
@@ -123,6 +127,10 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 	if providerEventRef == "" {
 		providerEventRef = subjectRef
 	}
+	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
+	if encodeErr != nil {
+		return nil, fmt.Errorf("encode chat message attributes: %w", encodeErr)
+	}
 
 	result := &ent.NormalizedEvent{
 		Provider:         integrationName,
@@ -133,7 +141,7 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 		SubjectRef:       subjectRef,
 		OccurredAt:       occurredAt,
 		ReceivedAt:       receivedAt,
-		Attributes:       attrs.Encode(),
+		Attributes:       encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil

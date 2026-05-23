@@ -87,7 +87,7 @@ export class IntegrationCardController {
 	configAttrs = $state<ConfigRequestAttributes>();
 	showConfig = $state(false);
 
-	async startConfigure(ci?: ConfiguredIntegration) {
+	startConfig(ci?: ConfiguredIntegration) {
 		if (this.loading || !this.name || !this.integration) return;
 		this.editingConfigured = ci;
 		this.showConfig = true;

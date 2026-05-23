@@ -2,13 +2,17 @@ package projections
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"math"
+	"reflect"
 	"strings"
 	"sync"
 
-	"github.com/rezible/rezible/ent"
+	"github.com/go-playground/validator/v10"
+	"github.com/go-viper/mapstructure/v2"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
+
+	"github.com/rezible/rezible/ent"
 )
 
 type Event[T any] struct {
@@ -31,38 +35,6 @@ func GetHandlers() map[string]EventProjectionHandlerFunc {
 	return projectionFuncs
 }
 
-type decoder func(*ent.NormalizedEvent) (any, error)
-
-var decoders = map[ne.Kind]decoder{
-	ne.KindChatMessage:                DecodeChatMessageEvent,
-	ne.KindRepositoryObserved:         DecodeRepositoryObservedEvent,
-	ne.KindChangeEventObserved:        DecodeChangeEventObservedEvent,
-	ne.KindUserObserved:               DecodeUserObservedEvent,
-	ne.KindIncidentObserved:           DecodeIncidentObservedEvent,
-	ne.KindAlertObserved:              DecodeAlertObservedEvent,
-	ne.KindSystemComponentObserved:    DecodeSystemComponentObservedEvent,
-	ne.KindSystemRelationshipObserved: DecodeSystemRelationshipObservedEvent,
-}
-
-func DecodeEvent[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
-	if ev == nil {
-		return nil, fmt.Errorf("normalized event is nil")
-	}
-	decode, ok := decoders[ev.Kind]
-	if !ok {
-		return nil, fmt.Errorf("unsupported normalized event kind %q", ev.Kind)
-	}
-	decoded, decodeErr := decode(ev)
-	if decodeErr != nil {
-		return nil, fmt.Errorf("failed to decode: %w", decodeErr)
-	}
-	asEvent, castOk := decoded.(A)
-	if !castOk {
-		return nil, fmt.Errorf("failed to cast %T to T", decoded)
-	}
-	return &Event[A]{Event: ev, Attributes: asEvent}, nil
-}
-
 type EventDisplay struct {
 	Title       string
 	Description string
@@ -80,67 +52,126 @@ func GetEventDisplay(ev *ent.NormalizedEvent) (*EventDisplay, error) {
 	return disp, nil
 }
 
-// TODO: use something like mapstructure
+type EventAttributes map[string]any
 
-func requiredString(ev *ent.NormalizedEvent, key string) (string, error) {
-	value, ok := ev.Attributes[key]
-	if !ok {
-		return "", fmt.Errorf("%s event missing required %s attribute", ev.Kind, key)
+func EncodeAttributes[A any](attrs A) (EventAttributes, error) {
+	if validationErr := validateAttributes(attrs); validationErr != nil {
+		return nil, fmt.Errorf("validate attributes: %w", validationErr)
 	}
-	str, strOk := value.(string)
-	if !strOk {
-		return "", fmt.Errorf("%s attribute must be a string", key)
+	// mapstructure encode is just a "reverse decode"
+	var encodedAttrs EventAttributes
+	cfg := &mapstructure.DecoderConfig{
+		Result:      &encodedAttrs,
+		TagName:     attributeFieldNameTag,
+		ErrorUnused: true,
 	}
-	str = strings.TrimSpace(str)
-	if str == "" {
-		return "", fmt.Errorf("%s event missing required %s attribute", ev.Kind, key)
+	decoder, decoderErr := mapstructure.NewDecoder(cfg)
+	if decoderErr != nil {
+		return nil, fmt.Errorf("create decoder: %w", decoderErr)
 	}
-	return str, nil
+	if decodeErr := decoder.Decode(attrs); decodeErr != nil {
+		return nil, fmt.Errorf("decode attributes: %w", decodeErr)
+	}
+	return encodedAttrs, nil
 }
 
-func optionalString(ev *ent.NormalizedEvent, key string) (string, error) {
-	value, exists := ev.Attributes[key]
-	if !exists {
-		return "", nil
+func decodeKind[A any](ev *ent.NormalizedEvent, kind ne.Kind) (*Event[A], error) {
+	if ev == nil {
+		return nil, fmt.Errorf("normalized event is nil")
 	}
-	str, ok := value.(string)
-	if !ok {
-		return "", fmt.Errorf("%s attribute must be a string", key)
+	if ev.Kind != kind {
+		return nil, fmt.Errorf("expected normalized event kind %q, got %q", kind, ev.Kind)
 	}
-	return strings.TrimSpace(str), nil
+	return DecodeAs[A](ev)
 }
 
-func requiredInt(ev *ent.NormalizedEvent, key string) (int, error) {
-	value, ok := ev.Attributes[key]
-	if !ok {
-		return 0, fmt.Errorf("%s event missing required %s attribute", ev.Kind, key)
+func DecodeAs[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
+	if ev == nil {
+		return nil, fmt.Errorf("normalized event is nil")
 	}
-	switch n := value.(type) {
-	case int:
-		return n, nil
-	case int64:
-		if n < math.MinInt || n > math.MaxInt {
-			return 0, fmt.Errorf("%s attribute is outside int range", key)
+	eventAttrs := ev.Attributes
+	if eventAttrs == nil {
+		eventAttrs = EventAttributes{}
+	}
+	var attrs A
+	cfg := &mapstructure.DecoderConfig{
+		Result:      &attrs,
+		TagName:     attributeFieldNameTag,
+		ErrorUnused: true,
+	}
+	decoder, decoderErr := mapstructure.NewDecoder(cfg)
+	if decoderErr != nil {
+		return nil, fmt.Errorf("create decoder: %w", decoderErr)
+	}
+	if decodeErr := decoder.Decode(eventAttrs); decodeErr != nil {
+		return nil, fmt.Errorf("decode attributes: %w", decodeErr)
+	}
+	if validationErr := validateAttributes(attrs); validationErr != nil {
+		return nil, fmt.Errorf("validate attributes: %w", validationErr)
+	}
+	return &Event[A]{Event: ev, Attributes: attrs}, nil
+}
+
+var attributeValidator = newProjectionValidator()
+
+func newProjectionValidator() *validator.Validate {
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
+		if name, _, _ := strings.Cut(field.Tag.Get(attributeFieldNameTag), ","); name != "" && name != "-" {
+			return name
 		}
-		return int(n), nil
-	case float64:
-		if math.Trunc(n) != n || n < math.MinInt || n > math.MaxInt {
-			return 0, fmt.Errorf("%s attribute must be an integer", key)
-		}
-		return int(n), nil
-	default:
-		return 0, fmt.Errorf("%s attribute must be an integer", key)
-	}
+		return field.Name
+	})
+	return validate
 }
 
-func optionalMap(ev *ent.NormalizedEvent, key string) (map[string]any, error) {
-	value, exists := ev.Attributes[key]
-	if !exists || value == nil {
-		return map[string]any{}, nil
+func validateAttributes[A any](attrs A) error {
+	if validationErr := attributeValidator.Struct(attrs); validationErr != nil {
+		if errs, ok := errors.AsType[validator.ValidationErrors](validationErr); ok && len(errs) > 0 {
+			msgs := make([]string, len(errs))
+			for i, verr := range errs {
+				msgs[i] = fmt.Sprintf("[%s:%s]", verr.Field(), verr.Error())
+			}
+			return fmt.Errorf("field: %s", strings.Join(msgs, " "))
+		}
 	}
-	props, ok := value.(map[string]any)
-	if !ok {
-		return nil, fmt.Errorf("%s attribute must be an object", key)
+	return nil
+}
+
+func encodeAttributeStruct(attrs any) (EventAttributes, error) {
+	value := reflect.ValueOf(attrs)
+	for value.Kind() == reflect.Pointer {
+		if value.IsNil() {
+			return nil, fmt.Errorf("attributes are nil")
+		}
+		value = value.Elem()
 	}
-	return props, nil
+	if value.Kind() != reflect.Struct {
+		return nil, fmt.Errorf("attributes must be a struct")
+	}
+
+	typ := value.Type()
+	encoded := make(EventAttributes, value.NumField())
+	for i := range value.NumField() {
+		fieldInfo := typ.Field(i)
+		name, _, _ := strings.Cut(fieldInfo.Tag.Get(attributeFieldNameTag), ",")
+		if name == "-" {
+			continue
+		}
+		if name == "" {
+			name = fieldInfo.Name
+		}
+		encoded[name] = encodeAttributeValue(value.Field(i))
+	}
+	return encoded, nil
+}
+
+func encodeAttributeValue(value reflect.Value) any {
+	if value.Kind() == reflect.Pointer {
+		if value.IsNil() {
+			return nil
+		}
+		return encodeAttributeValue(value.Elem())
+	}
+	return value.Interface()
 }

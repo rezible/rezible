@@ -9,39 +9,61 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDecodeIncidentObservedEvent(t *testing.T) {
-	ev := &ent.NormalizedEvent{
-		Kind: ne.KindIncidentObserved,
-		Attributes: IncidentObservedAttributes{
-			Title:        "Checkout search lookups timing out",
-			Summary:      "Checkout requests are timing out.",
-			SeverityName: "SEV-1",
-			SeverityRank: 1,
-			TypeName:     "Customer Impact",
-		}.Encode(),
-	}
-
-	incEv, err := DecodeEvent[IncidentObservedAttributes](ev)
-	require.NoError(t, err)
-	assert.Equal(t, "Checkout search lookups timing out", incEv.Attributes.Title)
-	assert.Equal(t, "SEV-1", incEv.Attributes.SeverityName)
-	assert.Equal(t, 1, incEv.Attributes.SeverityRank)
-	assert.Equal(t, "Customer Impact", incEv.Attributes.TypeName)
+type ExampleEventAttributes struct {
+	FooBar string `attr:"foo_bar" validate:"required"`
 }
 
-func TestDecodeAlertObservedEvent(t *testing.T) {
+func TestEncodeAttributesUsesAttributeTags(t *testing.T) {
+	attrs := ExampleEventAttributes{
+		FooBar: "baz",
+	}
+	encoded, encodeErr := EncodeAttributes(attrs)
+	require.NoError(t, encodeErr)
+	assert.Equal(t, attrs.FooBar, encoded["foo_bar"])
+	assert.NotContains(t, encoded, "FooBar")
+}
+
+func TestDecodeIncidentObservedEvent(t *testing.T) {
+	attrs := IncidentObservedAttributes{
+		ExternalRef: "foo",
+		Title:       "Checkout search lookups timing out",
+		Summary:     "Checkout requests are timing out.",
+		SeverityRef: "SEV-1",
+		TypeRef:     "Customer Impact",
+	}
+	encAttrs, encErr := EncodeAttributes(attrs)
+	require.NoError(t, encErr)
 	ev := &ent.NormalizedEvent{
-		Kind: ne.KindAlertObserved,
-		Attributes: AlertObservedAttributes{
-			Title:       "Search API response time high",
-			Description: "p95 latency is above threshold.",
-			Definition:  "avg(last_5m):p95:search.api.response_time > 2000",
-		}.Encode(),
+		Kind:       ne.KindIncidentObserved,
+		Attributes: encAttrs,
 	}
 
-	alertEv, err := DecodeEvent[AlertObservedAttributes](ev)
+	incEv, err := DecodeAs[IncidentObservedAttributes](ev)
 	require.NoError(t, err)
-	assert.Equal(t, "Search API response time high", alertEv.Attributes.Title)
-	assert.Equal(t, "p95 latency is above threshold.", alertEv.Attributes.Description)
-	assert.Equal(t, "avg(last_5m):p95:search.api.response_time > 2000", alertEv.Attributes.Definition)
+	assert.Equal(t, "Checkout search lookups timing out", incEv.Attributes.Title)
+	assert.Equal(t, attrs.SeverityRef, incEv.Attributes.SeverityRef)
+	assert.Equal(t, attrs.TypeRef, incEv.Attributes.TypeRef)
+}
+
+func TestDecodeWithRejectsMissingRequiredAttributes(t *testing.T) {
+	ev := &ent.NormalizedEvent{
+		Attributes: map[string]any{
+			"foo_bar": "",
+		},
+	}
+	_, err := DecodeAs[ExampleEventAttributes](ev)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "failed on the 'required' tag")
+}
+
+func TestDecodeWithRejectsUnknownAttributes(t *testing.T) {
+	ev := &ent.NormalizedEvent{
+		Attributes: map[string]any{
+			"foo_bar":    "baz",
+			"unexpected": true,
+		},
+	}
+	_, err := DecodeAs[ExampleEventAttributes](ev)
+	require.Error(t, err)
+	assert.ErrorContains(t, err, "invalid keys")
 }

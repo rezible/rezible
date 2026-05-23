@@ -8,6 +8,7 @@ import (
 	"time"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/integrations/projections"
 )
 
 const (
@@ -16,39 +17,17 @@ const (
 )
 
 type (
+	fakeTopologyEvent struct {
+		Cursor     string
+		SubjectRef string
+		Payload    topologyObservedPayload
+	}
+
 	topologyObservedPayload struct {
 		ObservationType string                       `json:"observation_type"`
 		OccurredAt      time.Time                    `json:"occurred_at"`
 		Component       *topologyComponentPayload    `json:"component,omitempty"`
 		Relationship    *topologyRelationshipPayload `json:"relationship,omitempty"`
-	}
-
-	topologyComponentPayload struct {
-		ExternalRef string         `json:"external_ref"`
-		Kind        string         `json:"kind"`
-		DisplayName string         `json:"display_name"`
-		Description string         `json:"description,omitempty"`
-		Properties  map[string]any `json:"properties,omitempty"`
-	}
-
-	topologyRelationshipPayload struct {
-		ExternalRef       string         `json:"external_ref"`
-		Kind              string         `json:"kind"`
-		DisplayName       string         `json:"display_name,omitempty"`
-		Description       string         `json:"description,omitempty"`
-		SourceExternalRef string         `json:"source_external_ref"`
-		SourceKind        string         `json:"source_kind"`
-		SourceDisplayName string         `json:"source_display_name"`
-		TargetExternalRef string         `json:"target_external_ref"`
-		TargetKind        string         `json:"target_kind"`
-		TargetDisplayName string         `json:"target_display_name"`
-		Properties        map[string]any `json:"properties,omitempty"`
-	}
-
-	fakeTopologyEvent struct {
-		Cursor     string
-		SubjectRef string
-		Payload    topologyObservedPayload
 	}
 )
 
@@ -116,6 +95,27 @@ func (q *eventQuerier) pullTopologyEvents(ctx context.Context, cursor string) it
 	}
 }
 
+type topologyComponentPayload struct {
+	ExternalRef string         `json:"external_ref"`
+	Kind        string         `json:"kind"`
+	DisplayName string         `json:"display_name"`
+	Description string         `json:"description,omitempty"`
+	Properties  map[string]any `json:"properties,omitempty"`
+}
+
+func (tcp *topologyComponentPayload) encodeAttributes() (projections.EventAttributes, error) {
+	if tcp == nil {
+		return nil, fmt.Errorf("component payload is required")
+	}
+	return projections.EncodeAttributes(projections.SystemComponentObservedAttributes{
+		ExternalRef: tcp.ExternalRef,
+		Kind:        tcp.Kind,
+		DisplayName: tcp.DisplayName,
+		Description: tcp.Description,
+		Properties:  tcp.Properties,
+	})
+}
+
 func componentRef(id string) string {
 	return fmt.Sprintf("fake:component:%s", id)
 }
@@ -174,6 +174,39 @@ func makeFakeTopologyComponents() []topologyComponentPayload {
 		component("commerce_team", "team", "Commerce Team", "Owns catalog, checkout, orders, and payments.", map[string]any{"slack_channel": "#team-commerce", "oncall_roster": "commerce-primary"}),
 		component("platform_team", "team", "Platform Team", "Owns shared platform, messaging, and communications infrastructure.", map[string]any{"slack_channel": "#team-platform", "oncall_roster": "platform-primary"}),
 	}
+}
+
+type topologyRelationshipPayload struct {
+	ExternalRef       string         `json:"external_ref"`
+	Kind              string         `json:"kind"`
+	DisplayName       string         `json:"display_name,omitempty"`
+	Description       string         `json:"description,omitempty"`
+	SourceExternalRef string         `json:"source_external_ref"`
+	SourceKind        string         `json:"source_kind"`
+	SourceDisplayName string         `json:"source_display_name"`
+	TargetExternalRef string         `json:"target_external_ref"`
+	TargetKind        string         `json:"target_kind"`
+	TargetDisplayName string         `json:"target_display_name"`
+	Properties        map[string]any `json:"properties,omitempty"`
+}
+
+func (trp *topologyRelationshipPayload) encodeAttributes() (projections.EventAttributes, error) {
+	if trp == nil {
+		return nil, fmt.Errorf("relationship payload is required")
+	}
+	return projections.EncodeAttributes(projections.SystemRelationshipObservedAttributes{
+		ExternalRef:       trp.ExternalRef,
+		Kind:              trp.Kind,
+		DisplayName:       trp.DisplayName,
+		Description:       trp.Description,
+		SourceExternalRef: trp.SourceExternalRef,
+		SourceKind:        trp.SourceKind,
+		SourceDisplayName: trp.SourceDisplayName,
+		TargetExternalRef: trp.TargetExternalRef,
+		TargetKind:        trp.TargetKind,
+		TargetDisplayName: trp.TargetDisplayName,
+		Properties:        trp.Properties,
+	})
 }
 
 func makeFakeTopologyRelationships(cmps []topologyComponentPayload) []topologyRelationshipPayload {

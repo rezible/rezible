@@ -32,7 +32,7 @@ func alertEventProjectionHandler(ctx context.Context, client *ent.Client, event 
 		return nil
 	}
 
-	observed, validationErr := projections.DecodeEvent[projections.AlertObservedAttributes](event)
+	observed, validationErr := projections.DecodeAlertObserved(event)
 	if validationErr != nil || observed == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}
@@ -113,14 +113,14 @@ func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertM
 	for _, fb := range a.Edges.Feedback {
 		if ev := fb.Edges.AlertInstance; ev != nil {
 			// metrics.EventCount++
-			if _, insErr := projections.DecodeEvent[projections.AlertObservedAttributes](ev); insErr == nil {
-				//if !ins.AcknowledgedAt.IsZero() {
-				//	hour := ins.AcknowledgedAt.Hour()
-				//	if hour > 18 || hour < 9 {
-				//		metrics.NightInterruptCount++
-				//	}
-				//}
-			}
+			//if _, insErr := projections.DecodeAlertObserved(ev); insErr == nil {
+			//if !ins.AcknowledgedAt.IsZero() {
+			//	hour := ins.AcknowledgedAt.Hour()
+			//	if hour > 18 || hour < 9 {
+			//		metrics.NightInterruptCount++
+			//	}
+			//}
+			//}
 		}
 		metrics.FeedbackCount++
 		if fb.Actionable {
