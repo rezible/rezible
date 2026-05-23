@@ -1,173 +1,126 @@
 package fakeprovider
 
 import (
-	"encoding/json"
 	"testing"
 	"time"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/integrations/projections"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+type convertablePayload interface {
+	toEvent() (*rez.ProviderEvent, error)
+}
+
+func processPayload(t *testing.T, ev convertablePayload) ent.NormalizedEvents {
+	provEvent, eventErr := ev.toEvent()
+	require.NoError(t, eventErr)
+	require.NotNil(t, provEvent)
+	events, procErr := (&eventProcessor{}).Process(t.Context(), *provEvent)
+	require.NoError(t, procErr)
+	return events
+}
+
 func TestProcessAlertObservedEvent(t *testing.T) {
-	occurredAt := time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC)
 	payload := alertObservedPayload{
 		Title:       "Search API response time high",
 		Description: "p95 latency is above threshold.",
 		Definition:  "avg(last_5m):p95:search.api.response_time > 2000",
-		OccurredAt:  occurredAt,
+		OccurredAt:  time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
 	}
-	payloadBytes, jsonErr := json.Marshal(payload)
-	require.NoError(t, jsonErr)
-	prov := rez.ProviderEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceAlerts,
-		ProviderEventRef: "fake:alerts:search-api-latency",
-		SubjectRef:       "fake:alert:search-api-latency",
-		ReceivedAt:       occurredAt,
-		Payload:          payloadBytes,
-	}
-	events, procErr := (&eventProcessor{}).Process(t.Context(), prov)
-
-	require.NoError(t, procErr)
+	events := processPayload(t, payload)
 	require.Len(t, events, 1)
 	ev := events[0]
-	assert.Equal(t, ne.KindAlertObserved, ev.Kind)
-	assert.Equal(t, "alert", ev.SubjectKind)
-	assert.Equal(t, "fake:alert:search-api-latency", ev.SubjectRef)
-	assert.Equal(t, occurredAt, ev.OccurredAt)
+	assert.Equal(t, ne.ActivityKindObserved, ev.ActivityKind)
+	assert.True(t, projections.SubjectKindAlert.Matches(ev))
+	assert.Equal(t, payload.getSubjectRef(), ev.ProviderSubjectRef)
+	assert.Equal(t, payload.OccurredAt, ev.OccurredAt)
 
-	decoded, decodeErr := projections.DecodeAlertObserved(ev)
+	decoded, decodeErr := projections.DecodeAlertEvent(ev)
 	require.NoError(t, decodeErr)
 	assert.Equal(t, "Search API response time high", decoded.Attributes.Title)
 	assert.Equal(t, "p95 latency is above threshold.", decoded.Attributes.Description)
 }
 
 func TestProcessIncidentObservedEvent(t *testing.T) {
-	occurredAt := time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC)
 	payload := incidentObservedPayload{
 		ExternalID:  "foobar",
 		Title:       "Checkout search lookups timing out",
 		Summary:     "Checkout requests are timing out.",
 		SeverityRef: "SEV-1",
 		TypeRef:     "Customer Impact",
-		OccurredAt:  occurredAt,
+		OccurredAt:  time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC),
 	}
-	payloadBytes, jsonErr := json.Marshal(payload)
-	require.NoError(t, jsonErr)
-
-	events, err := (&eventProcessor{}).Process(t.Context(), rez.ProviderEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceIncidents,
-		ProviderEventRef: "fake:incidents:checkout-search-timeouts",
-		SubjectRef:       "fake:incident:checkout-search-timeouts",
-		ReceivedAt:       occurredAt,
-		Payload:          payloadBytes,
-	})
-
-	require.NoError(t, err)
+	events := processPayload(t, payload)
 	require.Len(t, events, 1)
 	ev := events[0]
-	assert.Equal(t, ne.KindIncidentObserved, ev.Kind)
-	assert.Equal(t, "incident", ev.SubjectKind)
-	assert.Equal(t, "fake:incident:checkout-search-timeouts", ev.SubjectRef)
-	assert.Equal(t, occurredAt, ev.OccurredAt)
+	assert.True(t, projections.SubjectKindIncident.Matches(ev))
+	assert.Equal(t, payload.getSubjectRef(), ev.ProviderSubjectRef)
+	assert.Equal(t, payload.OccurredAt, ev.OccurredAt)
 
-	decoded, decodeErr := projections.DecodeIncidentObserved(ev)
+	decoded, decodeErr := projections.DecodeIncidentEvent(ev)
 	require.NoError(t, decodeErr)
 	assert.Equal(t, payload.Title, decoded.Attributes.Title)
 	assert.Equal(t, payload.SeverityRef, decoded.Attributes.SeverityRef)
 }
 
 func TestProcessTopologyComponentObservedEvent(t *testing.T) {
-	occurredAt := time.Date(2026, 5, 10, 8, 0, 0, 0, time.UTC)
-	payload := topologyObservedPayload{
-		ObservationType: topologyObservationComponent,
-		OccurredAt:      occurredAt,
-		Component: &topologyComponentPayload{
-			ExternalRef: "fake:component:search_api",
-			Kind:        "service",
-			DisplayName: "Search API",
-			Description: "Product search query API.",
-			Properties: map[string]any{
-				"criticality": "high",
-				"owner_team":  "commerce_team",
-			},
+	ownerTeam := "commerce_team"
+	payload := &topologyComponentObservedPayload{
+		ExternalRef: "fake:component:search_api",
+		Kind:        "service",
+		DisplayName: "Search API",
+		Description: "Product search query API.",
+		Properties: map[string]any{
+			"criticality": "high",
+			"owner_team":  ownerTeam,
 		},
 	}
-	payloadBytes, jsonErr := json.Marshal(payload)
-	require.NoError(t, jsonErr)
 
-	events, err := (&eventProcessor{}).Process(t.Context(), rez.ProviderEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceTopology,
-		ProviderEventRef: "fake:system_topology:component:search_api",
-		SubjectRef:       "fake:component:search_api",
-		ReceivedAt:       occurredAt,
-		Payload:          payloadBytes,
-	})
-
-	require.NoError(t, err)
+	events := processPayload(t, payload)
 	require.Len(t, events, 1)
-	ev := events[0]
-	assert.Equal(t, ne.KindSystemComponentObserved, ev.Kind)
-	assert.Equal(t, "system_component", ev.SubjectKind)
-	assert.Equal(t, "fake:component:search_api", ev.SubjectRef)
-	assert.Equal(t, occurredAt, ev.OccurredAt)
 
-	decoded, decodeErr := projections.DecodeSystemComponentObserved(ev)
+	ev := events[0]
+	assert.True(t, projections.SubjectKindSystemComponent.Matches(ev))
+	assert.Equal(t, payload.getSubjectRef(), ev.ProviderSubjectRef)
+
+	decoded, decodeErr := projections.DecodeSystemComponentEvent(ev)
 	require.NoError(t, decodeErr)
-	assert.Equal(t, payload.Component.DisplayName, decoded.Attributes.DisplayName)
-	assert.Equal(t, payload.Component.Kind, decoded.Attributes.Kind)
-	assert.Equal(t, "commerce_team", decoded.Attributes.Properties["owner_team"])
+	assert.Equal(t, payload.DisplayName, decoded.Attributes.DisplayName)
+	assert.Equal(t, payload.Kind, decoded.Attributes.Kind)
+	assert.Equal(t, ownerTeam, decoded.Attributes.Properties["owner_team"])
 }
 
 func TestProcessTopologyRelationshipObservedEvent(t *testing.T) {
-	occurredAt := time.Date(2026, 5, 10, 8, 1, 0, 0, time.UTC)
-	payload := topologyObservedPayload{
-		ObservationType: topologyObservationRelationship,
-		OccurredAt:      occurredAt,
-		Relationship: &topologyRelationshipPayload{
-			ExternalRef:       "fake:relationship:checkout_service:calls:search_api",
-			Kind:              "calls",
-			DisplayName:       "Checkout Service calls Search API",
-			SourceExternalRef: "fake:component:checkout_service",
-			SourceKind:        "service",
-			SourceDisplayName: "Checkout Service",
-			TargetExternalRef: "fake:component:search_api",
-			TargetKind:        "service",
-			TargetDisplayName: "Search API",
-			Properties: map[string]any{
-				"critical_path": true,
-			},
+	payload := &topologyRelationshipObservedPayload{
+		ExternalRef:       "fake:relationship:checkout_service:calls:search_api",
+		Kind:              "calls",
+		DisplayName:       "Checkout Service calls Search API",
+		SourceExternalRef: "fake:component:checkout_service",
+		SourceKind:        "service",
+		SourceDisplayName: "Checkout Service",
+		TargetExternalRef: "fake:component:search_api",
+		TargetKind:        "service",
+		TargetDisplayName: "Search API",
+		Properties: map[string]any{
+			"critical_path": true,
 		},
 	}
-	payloadBytes, jsonErr := json.Marshal(payload)
-	require.NoError(t, jsonErr)
 
-	events, err := (&eventProcessor{}).Process(t.Context(), rez.ProviderEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceTopology,
-		ProviderEventRef: "fake:system_topology:relationship:checkout_service:calls:search_api",
-		SubjectRef:       "fake:relationship:checkout_service:calls:search_api",
-		ReceivedAt:       occurredAt,
-		Payload:          payloadBytes,
-	})
-
-	require.NoError(t, err)
+	events := processPayload(t, payload)
 	require.Len(t, events, 1)
 	ev := events[0]
-	assert.Equal(t, ne.KindSystemRelationshipObserved, ev.Kind)
-	assert.Equal(t, "system_relationship", ev.SubjectKind)
-	assert.Equal(t, occurredAt, ev.OccurredAt)
+	assert.True(t, projections.SubjectKindSystemRelationship.Matches(ev))
+	assert.Equal(t, payload.getSubjectRef(), ev.ProviderSubjectRef)
 
-	decoded, decodeErr := projections.DecodeSystemRelationshipObserved(ev)
+	decoded, decodeErr := projections.DecodeSystemRelationshipEvent(ev)
 	require.NoError(t, decodeErr)
-	assert.Equal(t, payload.Relationship.Kind, decoded.Attributes.Kind)
-	assert.Equal(t, payload.Relationship.SourceExternalRef, decoded.Attributes.SourceExternalRef)
-	assert.Equal(t, payload.Relationship.TargetExternalRef, decoded.Attributes.TargetExternalRef)
+	assert.Equal(t, payload.Kind, decoded.Attributes.Kind)
+	assert.Equal(t, payload.SourceExternalRef, decoded.Attributes.SourceExternalRef)
+	assert.Equal(t, payload.TargetExternalRef, decoded.Attributes.TargetExternalRef)
 	assert.Equal(t, true, decoded.Attributes.Properties["critical_path"])
 }

@@ -6,17 +6,17 @@ import (
 	"log/slog"
 
 	"github.com/rezible/rezible/ent"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/integrations/projections"
 )
 
 func userEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	slog.Debug("user event projection handler", "kind", event.Kind.String())
-	if event.Kind != ne.KindUserObserved {
+	slog.Debug("user event projection handler", "kind", event.SubjectKind)
+	if !projections.SubjectKindUser.Matches(event) {
 		return nil
 	}
-	decoded, validationErr := projections.DecodeUserObserved(event)
+
+	decoded, validationErr := projections.DecodeUserEvent(event)
 	if validationErr != nil || decoded == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}

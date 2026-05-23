@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	rez "github.com/rezible/rezible"
@@ -52,7 +53,7 @@ func (p *eventProcessor) processAlert(prov rez.ProviderEvent) (ent.NormalizedEve
 		occurredAt = time.Now().UTC()
 	}
 
-	attrs := projections.AlertObservedAttributes{
+	attrs := projections.AlertSubjectAttributes{
 		Title:       payload.Title,
 		Description: payload.Description,
 		Definition:  payload.Definition,
@@ -63,15 +64,15 @@ func (p *eventProcessor) processAlert(prov rez.ProviderEvent) (ent.NormalizedEve
 	}
 
 	result := &ent.NormalizedEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceAlerts,
-		Kind:             ne.KindAlertObserved,
-		SubjectKind:      "alert",
-		SubjectRef:       prov.SubjectRef,
-		ProviderEventRef: prov.ProviderEventRef,
-		OccurredAt:       occurredAt,
-		ReceivedAt:       prov.ReceivedAt,
-		Attributes:       encodedAttrs,
+		Provider:           integrationName,
+		ProviderSource:     sourceAlerts,
+		ActivityKind:       ne.ActivityKindObserved,
+		SubjectKind:        projections.SubjectKindAlert.String(),
+		ProviderSubjectRef: prov.ProviderSubjectRef,
+		ProviderEventRef:   prov.ProviderEventRef,
+		OccurredAt:         occurredAt,
+		ReceivedAt:         prov.ReceivedAt,
+		Attributes:         encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {
 		result.ReceivedAt = occurredAt
@@ -94,7 +95,7 @@ func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.Normalized
 		occurredAt = time.Now().UTC()
 	}
 
-	attrs := projections.IncidentObservedAttributes{
+	attrs := projections.IncidentSubjectAttributes{
 		ExternalRef: payload.ExternalID,
 		Title:       payload.Title,
 		Summary:     payload.Summary,
@@ -107,15 +108,15 @@ func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.Normalized
 	}
 
 	result := &ent.NormalizedEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceIncidents,
-		ProviderEventRef: prov.ProviderEventRef,
-		Kind:             ne.KindIncidentObserved,
-		SubjectKind:      "incident",
-		SubjectRef:       prov.SubjectRef,
-		OccurredAt:       occurredAt,
-		ReceivedAt:       prov.ReceivedAt,
-		Attributes:       encodedAttrs,
+		Provider:           integrationName,
+		ProviderSource:     sourceIncidents,
+		ProviderEventRef:   prov.ProviderEventRef,
+		ActivityKind:       ne.ActivityKindObserved,
+		SubjectKind:        projections.SubjectKindIncident.String(),
+		ProviderSubjectRef: prov.ProviderSubjectRef,
+		OccurredAt:         occurredAt,
+		ReceivedAt:         prov.ReceivedAt,
+		Attributes:         encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {
 		result.ReceivedAt = occurredAt
@@ -125,49 +126,23 @@ func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.Normalized
 }
 
 func (p *eventProcessor) processTopology(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	var payload topologyObservedPayload
-	if jsonErr := json.Unmarshal(prov.Payload, &payload); jsonErr != nil {
-		return nil, fmt.Errorf("unmarshal topology observed payload: %w", jsonErr)
-	}
-
-	occurredAt := payload.OccurredAt
-	if occurredAt.IsZero() {
-		occurredAt = prov.ReceivedAt
-	}
-	if occurredAt.IsZero() {
-		occurredAt = time.Now().UTC()
-	}
-
 	result := &ent.NormalizedEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceTopology,
-		ProviderEventRef: prov.ProviderEventRef,
-		SubjectRef:       prov.SubjectRef,
-		OccurredAt:       occurredAt,
-		ReceivedAt:       prov.ReceivedAt,
-	}
-	if result.ReceivedAt.IsZero() {
-		result.ReceivedAt = occurredAt
+		Provider:           integrationName,
+		ProviderSource:     sourceTopology,
+		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderSubjectRef: prov.ProviderSubjectRef,
+		ActivityKind:       ne.ActivityKindObserved,
+		ReceivedAt:         prov.ReceivedAt,
+		OccurredAt:         prov.ReceivedAt,
 	}
 
-	payloadErr := fmt.Errorf("unknown topology observation type: %s", payload.ObservationType)
-	switch payload.ObservationType {
-	case topologyObservationComponent:
-		{
-			result.Kind = ne.KindSystemComponentObserved
-			result.SubjectKind = "system_component"
-			result.Attributes, payloadErr = payload.Component.encodeAttributes()
-		}
-	case topologyObservationRelationship:
-		{
-			result.Kind = ne.KindSystemRelationshipObserved
-			result.SubjectKind = "system_relationship"
-			result.Attributes, payloadErr = payload.Relationship.encodeAttributes()
-		}
+	eventErr := fmt.Errorf("unknown topology subject ref: %s", prov.ProviderSubjectRef)
+	if strings.HasPrefix(prov.ProviderSubjectRef, componentRefPrefix) {
+		result.SubjectKind = projections.SubjectKindSystemComponent.String()
+		result.Attributes, eventErr = getTopologyComponentAttributes(prov.Payload)
+	} else if strings.HasPrefix(prov.ProviderSubjectRef, relationshipRefPrefix) {
+		result.SubjectKind = projections.SubjectKindSystemRelationship.String()
+		result.Attributes, eventErr = getTopologyRelationshipAttributes(prov.Payload)
 	}
-	if payloadErr != nil {
-		return nil, fmt.Errorf("topology component payload invalid: %w", payloadErr)
-	}
-
-	return ent.NormalizedEvents{result}, nil
+	return ent.NormalizedEvents{result}, eventErr
 }

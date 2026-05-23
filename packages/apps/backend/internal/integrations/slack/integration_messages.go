@@ -65,11 +65,11 @@ func (h *messageHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Ev
 	innerType := slackevents.EventsAPIType(inner.Type)
 	if processCallbackEventTypes.Contains(innerType) {
 		pe := rez.ProviderEvent{
-			Provider:         integrationName,
-			ProviderSource:   sourceEventsApiCallback,
-			SubjectRef:       h.callbackEventSubjectRef(ev, data),
-			ProviderEventRef: ev.EventID,
-			Payload:          data,
+			Provider:           integrationName,
+			ProviderSource:     sourceEventsApiCallback,
+			ProviderSubjectRef: h.callbackEventProviderSubjectRef(ev, data),
+			ProviderEventRef:   ev.EventID,
+			Payload:            data,
 		}
 		if ingestErr := h.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
 			return fmt.Errorf("ingest event: %w", ingestErr)
@@ -83,7 +83,7 @@ func (h *messageHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Ev
 	return nil
 }
 
-func (h *messageHandler) callbackEventSubjectRef(ev *slackevents.EventsAPICallbackEvent, data []byte) string {
+func (h *messageHandler) callbackEventProviderSubjectRef(ev *slackevents.EventsAPICallbackEvent, data []byte) string {
 	type callbackEventPayload struct {
 		TeamID       string `json:"team_id"`
 		EnterpriseID string `json:"enterprise_id"`

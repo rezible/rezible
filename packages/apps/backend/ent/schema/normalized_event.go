@@ -22,31 +22,20 @@ func (NormalizedEvent) Mixin() []ent.Mixin {
 	}
 }
 
-var normalizedEventKinds = []string{
-	"chat_message",
-	"repository_observed",
-	"user_observed",
-	"incident_observed",
-	"alert_observed",
-	"change_event_observed",
-	"system_component_observed",
-	"system_relationship_observed",
-}
-
 func (NormalizedEvent) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.Enum("kind").Values(normalizedEventKinds...).
-			Comment("Normalized event type used to select validation and projection behavior."),
+		field.Enum("activity_kind").Values("received", "observed", "deleted").
+			Comment("Kind of activity represented by the event."),
 		field.String("provider").NotEmpty().
 			Comment("Integration provider that produced the event, such as slack or github."),
 		field.String("provider_source").NotEmpty().
 			Comment("Provider-specific event stream or webhook source the event came from."),
 		field.String("provider_event_ref").NotEmpty().
 			Comment("Stable provider reference for the source event, used with the provider fields for idempotency."),
-		field.String("subject_ref").NotEmpty().
-			Comment("Stable external reference for the primary subject this event is about."),
-		field.String("subject_kind").NotEmpty().
+		field.String("provider_subject_ref").NotEmpty().
+			Comment("Stable provider reference for the primary subject this event is about."),
+		field.String("subject_kind").
 			Comment("Provider-neutral type of the primary subject this event is about."),
 		field.JSON("attributes", map[string]any{}).
 			Comment("Normalized attributes for this event kind.").
@@ -65,9 +54,9 @@ func (NormalizedEvent) Edges() []ent.Edge {
 
 func (NormalizedEvent) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "provider", "provider_source", "provider_event_ref", "kind", "subject_ref").
+		index.Fields("tenant_id", "provider", "provider_source", "provider_event_ref", "provider_subject_ref").
 			Unique(),
-		index.Fields("tenant_id", "kind", "occurred_at"),
+		index.Fields("tenant_id", "provider", "provider_source", "occurred_at"),
 	}
 }
 

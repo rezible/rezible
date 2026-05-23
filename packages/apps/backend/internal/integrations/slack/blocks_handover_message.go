@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/integrations/projections"
 	"github.com/slack-go/slack"
 
@@ -161,7 +160,7 @@ func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]slack.Block,
 		}
 
 		var eventEls []slack.RichTextSectionElement
-		if ev.Kind == ne.KindIncidentObserved {
+		if projections.SubjectKindIncident.Matches(ev) {
 			link := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), ev.ID)
 			eventEls = append(eventEls, slack.NewRichTextSectionLinkElement(link, disp.Title, nil))
 		} else {

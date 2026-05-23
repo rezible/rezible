@@ -181,13 +181,13 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "subject_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "activity_kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
--- create index "normalizedevent_tenant_id_prov_089950886f426b5eaeeba9e4f3d2645c" to table: "normalized_events"
-CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_089950886f426b5eaeeba9e4f3d2645c" ON "normalized_events" ("tenant_id", "provider", "provider_source", "provider_event_ref", "kind", "subject_ref");
--- create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
-CREATE INDEX "normalizedevent_tenant_id_kind_occurred_at" ON "normalized_events" ("tenant_id", "kind", "occurred_at");
+-- create index "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" to table: "normalized_events"
+CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" ON "normalized_events" ("tenant_id", "provider", "provider_source", "provider_event_ref", "provider_subject_ref");
+-- create index "normalizedevent_tenant_id_provider_provider_source_occurred_at" to table: "normalized_events"
+CREATE INDEX "normalizedevent_tenant_id_provider_provider_source_occurred_at" ON "normalized_events" ("tenant_id", "provider", "provider_source", "occurred_at");
 -- create "normalized_event_projection_status" table
 CREATE TABLE "normalized_event_projection_status" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "handler_name" character varying NOT NULL, "status" character varying NOT NULL DEFAULT 'pending', "last_error" character varying NULL, "last_attempted_at" timestamptz NULL, "succeeded_at" timestamptz NULL, "failed_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "normalized_event_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedeventprojectionstatus_tenant_id" to table: "normalized_event_projection_status"

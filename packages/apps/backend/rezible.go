@@ -198,14 +198,14 @@ type (
 
 type (
 	ProviderEvent struct {
-		Provider         string
-		ProviderSource   string
-		ProviderEventRef string
-		SubjectRef       string
-		ReceivedAt       time.Time
-		Payload          []byte
-		ContentType      string
-		RequestMetadata  map[string]string
+		Provider           string
+		ProviderSource     string
+		ProviderEventRef   string
+		ProviderSubjectRef string
+		ReceivedAt         time.Time
+		Payload            []byte
+		ContentType        string
+		RequestMetadata    map[string]string
 	}
 
 	ProviderEventProcessor interface {

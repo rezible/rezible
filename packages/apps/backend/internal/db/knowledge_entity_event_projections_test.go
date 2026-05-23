@@ -6,7 +6,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/integrations/projections"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,33 +15,29 @@ func makeEntityAliasRef(ev *ent.NormalizedEvent) EntityAliasRef {
 	return EntityAliasRef{
 		Provider:           ev.Provider,
 		ProviderSource:     ev.ProviderSource,
-		ProviderSubjectRef: ev.SubjectRef,
+		ProviderSubjectRef: ev.ProviderSubjectRef,
 	}
 }
 
-func TestProjectRepositoryObservedMapsToRepositoryFactEvidence(t *testing.T) {
-	attrs := projections.RepositoryObservedAttributes{
+func TestProjectCodeForgeObservedMapsToRepositoryFactEvidence(t *testing.T) {
+	attrs := projections.CodeForgeSubjectAttributes{
 		DisplayName: "myorg/api",
 		URL:         "https://github.com/myorg/api",
 	}
 	ev := &ent.NormalizedEvent{
-		ID:             uuid.New(),
-		Kind:           ne.KindRepositoryObserved,
-		Provider:       "github",
-		ProviderSource: "repositories",
-		SubjectRef:     "myorg/api",
+		ID:                 uuid.New(),
+		SubjectKind:        projections.SubjectKindCodeForge.String(),
+		Provider:           "github",
+		ProviderSource:     "repositories",
+		ProviderSubjectRef: "myorg/api",
 	}
 	var encodeAttrsErr error
 	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
 	require.NoError(t, encodeAttrsErr)
 	ref := makeEntityAliasRef(ev)
-	observed := projections.RepositoryObserved{
-		Event:      ev,
-		Attributes: attrs,
-	}
 
 	proj := newKnowledgeEntityEventProjector(ev, nil)
-	result := proj.projectRepositoryObserved(observed)
+	result := proj.projectCodeForgeEvent(&projections.CodeForgeEvent{Event: ev, Attributes: attrs})
 
 	require.Len(t, result.Entities, 1)
 	assert.Empty(t, result.Relationships)
@@ -55,26 +50,24 @@ func TestProjectRepositoryObservedMapsToRepositoryFactEvidence(t *testing.T) {
 	assert.Equal(t, ref, entity.Aliases[0])
 }
 
-func TestProjectChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *testing.T) {
-	attrs := projections.CodeChangeObservedAttributes{
+func TestProjectCodeChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *testing.T) {
+	attrs := projections.CodeChangeSubjectAttributes{
 		RepositoryExternalRef: "myorg/api",
 		DisplayName:           "refs/heads/main",
 	}
 	ev := &ent.NormalizedEvent{
-		ID:             uuid.New(),
-		Provider:       "github",
-		ProviderSource: "push",
-		SubjectRef:     "github:myorg/api:abc123",
-		Kind:           ne.KindChangeEventObserved,
+		ID:                 uuid.New(),
+		Provider:           "github",
+		ProviderSource:     "push",
+		ProviderSubjectRef: "github:myorg/api:abc123",
+		SubjectKind:        projections.SubjectKindCodeChange.String(),
 	}
 	var encodeAttrsErr error
 	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
 	require.NoError(t, encodeAttrsErr)
 
-	observed := projections.CodeChangeObserved{Event: ev, Attributes: attrs}
-
 	proj := newKnowledgeEntityEventProjector(ev, nil)
-	result := proj.projectCodeChangeEventObserved(observed)
+	result := proj.projectCodeChangeEvent(&projections.CodeChangeEvent{Event: ev, Attributes: attrs})
 
 	require.Len(t, result.Entities, 2)
 	assert.Equal(t, knowledgeKindCodeChange, result.Entities[0].Kind)
@@ -100,7 +93,7 @@ func TestProjectorObservedAtPrefersOccurredAt(t *testing.T) {
 }
 
 func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
-	attrs := projections.SystemComponentObservedAttributes{
+	attrs := projections.SystemComponentSubjectAttributes{
 		ExternalRef: "fake:component:search_api",
 		Kind:        "service",
 		DisplayName: "Search API",
@@ -110,20 +103,19 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 		},
 	}
 	ev := &ent.NormalizedEvent{
-		ID:             uuid.New(),
-		Provider:       "fake",
-		ProviderSource: "system_topology",
-		SubjectRef:     "fake:component:search_api",
-		Kind:           ne.KindSystemComponentObserved,
+		ID:                 uuid.New(),
+		Provider:           "fake",
+		ProviderSource:     "system_topology",
+		ProviderSubjectRef: "fake:component:search_api",
+		SubjectKind:        projections.SubjectKindSystemComponent.String(),
 	}
 	var encodeAttrsErr error
 	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
 	require.NoError(t, encodeAttrsErr)
 	ref := makeEntityAliasRef(ev)
-	observed := projections.SystemComponentObserved{Event: ev, Attributes: attrs}
 
 	proj := newKnowledgeEntityEventProjector(ev, nil)
-	result := proj.projectSystemComponentObserved(observed)
+	result := proj.projectSystemComponentEvent(&projections.SystemComponentEvent{Event: ev, Attributes: attrs})
 
 	require.Len(t, result.Entities, 1)
 	assert.Empty(t, result.Relationships)
@@ -138,7 +130,7 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 }
 
 func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t *testing.T) {
-	attrs := projections.SystemRelationshipObservedAttributes{
+	attrs := projections.SystemRelationshipSubjectAttributes{
 		ExternalRef:       "fake:relationship:checkout_service:calls:search_api",
 		Kind:              "calls",
 		DisplayName:       "Checkout Service calls Search API",
@@ -153,20 +145,18 @@ func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t
 		},
 	}
 	ev := &ent.NormalizedEvent{
-		ID:             uuid.New(),
-		Provider:       "fake",
-		ProviderSource: "system_topology",
-		SubjectRef:     "fake:relationship:checkout_service:calls:search_api",
-		Kind:           ne.KindSystemRelationshipObserved,
+		ID:                 uuid.New(),
+		Provider:           "fake",
+		ProviderSource:     "system_topology",
+		ProviderSubjectRef: "fake:relationship:checkout_service:calls:search_api",
+		SubjectKind:        projections.SubjectKindSystemRelationship.String(),
 	}
 	var encodeAttrsErr error
 	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
 	require.NoError(t, encodeAttrsErr)
 
-	observed := projections.SystemRelationshipObserved{Event: ev, Attributes: attrs}
-
 	proj := newKnowledgeEntityEventProjector(ev, nil)
-	result := proj.projectSystemRelationshipObserved(observed)
+	result := proj.projectSystemRelationshipEvent(&projections.SystemRelationshipEvent{Event: ev, Attributes: attrs})
 
 	require.Len(t, result.Entities, 2)
 	assert.Equal(t, "service", result.Entities[0].Kind)

@@ -19,16 +19,16 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldKind holds the string denoting the kind field in the database.
-	FieldKind = "kind"
+	// FieldActivityKind holds the string denoting the activity_kind field in the database.
+	FieldActivityKind = "activity_kind"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
 	// FieldProviderSource holds the string denoting the provider_source field in the database.
 	FieldProviderSource = "provider_source"
 	// FieldProviderEventRef holds the string denoting the provider_event_ref field in the database.
 	FieldProviderEventRef = "provider_event_ref"
-	// FieldSubjectRef holds the string denoting the subject_ref field in the database.
-	FieldSubjectRef = "subject_ref"
+	// FieldProviderSubjectRef holds the string denoting the provider_subject_ref field in the database.
+	FieldProviderSubjectRef = "provider_subject_ref"
 	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
 	FieldSubjectKind = "subject_kind"
 	// FieldAttributes holds the string denoting the attributes field in the database.
@@ -65,11 +65,11 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldKind,
+	FieldActivityKind,
 	FieldProvider,
 	FieldProviderSource,
 	FieldProviderEventRef,
-	FieldSubjectRef,
+	FieldProviderSubjectRef,
 	FieldSubjectKind,
 	FieldAttributes,
 	FieldCreatedAt,
@@ -101,42 +101,35 @@ var (
 	ProviderSourceValidator func(string) error
 	// ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
 	ProviderEventRefValidator func(string) error
-	// SubjectRefValidator is a validator for the "subject_ref" field. It is called by the builders before save.
-	SubjectRefValidator func(string) error
-	// SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
-	SubjectKindValidator func(string) error
+	// ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
+	ProviderSubjectRefValidator func(string) error
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
-// Kind defines the type for the "kind" enum field.
-type Kind string
+// ActivityKind defines the type for the "activity_kind" enum field.
+type ActivityKind string
 
-// Kind values.
+// ActivityKind values.
 const (
-	KindChatMessage                Kind = "chat_message"
-	KindRepositoryObserved         Kind = "repository_observed"
-	KindUserObserved               Kind = "user_observed"
-	KindIncidentObserved           Kind = "incident_observed"
-	KindAlertObserved              Kind = "alert_observed"
-	KindChangeEventObserved        Kind = "change_event_observed"
-	KindSystemComponentObserved    Kind = "system_component_observed"
-	KindSystemRelationshipObserved Kind = "system_relationship_observed"
+	ActivityKindReceived ActivityKind = "received"
+	ActivityKindObserved ActivityKind = "observed"
+	ActivityKindDeleted  ActivityKind = "deleted"
 )
 
-func (k Kind) String() string {
-	return string(k)
+func (ak ActivityKind) String() string {
+	return string(ak)
 }
 
-// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
-func KindValidator(k Kind) error {
-	switch k {
-	case KindChatMessage, KindRepositoryObserved, KindUserObserved, KindIncidentObserved, KindAlertObserved, KindChangeEventObserved, KindSystemComponentObserved, KindSystemRelationshipObserved:
+// ActivityKindValidator is a validator for the "activity_kind" field enum values. It is called by the builders before save.
+func ActivityKindValidator(ak ActivityKind) error {
+	switch ak {
+	case ActivityKindReceived, ActivityKindObserved, ActivityKindDeleted:
 		return nil
 	default:
-		return fmt.Errorf("normalizedevent: invalid enum value for kind field: %q", k)
+		return fmt.Errorf("normalizedevent: invalid enum value for activity_kind field: %q", ak)
 	}
 }
 
@@ -153,9 +146,9 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByKind orders the results by the kind field.
-func ByKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldKind, opts...).ToFunc()
+// ByActivityKind orders the results by the activity_kind field.
+func ByActivityKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldActivityKind, opts...).ToFunc()
 }
 
 // ByProvider orders the results by the provider field.
@@ -173,9 +166,9 @@ func ByProviderEventRef(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProviderEventRef, opts...).ToFunc()
 }
 
-// BySubjectRef orders the results by the subject_ref field.
-func BySubjectRef(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubjectRef, opts...).ToFunc()
+// ByProviderSubjectRef orders the results by the provider_subject_ref field.
+func ByProviderSubjectRef(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldProviderSubjectRef, opts...).ToFunc()
 }
 
 // BySubjectKind orders the results by the subject_kind field.

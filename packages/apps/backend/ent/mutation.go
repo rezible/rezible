@@ -30184,11 +30184,11 @@ type NormalizedEventMutation struct {
 	op                    Op
 	typ                   string
 	id                    *uuid.UUID
-	kind                  *normalizedevent.Kind
+	activity_kind         *normalizedevent.ActivityKind
 	provider              *string
 	provider_source       *string
 	provider_event_ref    *string
-	subject_ref           *string
+	provider_subject_ref  *string
 	subject_kind          *string
 	attributes            *map[string]interface{}
 	created_at            *time.Time
@@ -30345,40 +30345,40 @@ func (m *NormalizedEventMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetKind sets the "kind" field.
-func (m *NormalizedEventMutation) SetKind(n normalizedevent.Kind) {
-	m.kind = &n
+// SetActivityKind sets the "activity_kind" field.
+func (m *NormalizedEventMutation) SetActivityKind(nk normalizedevent.ActivityKind) {
+	m.activity_kind = &nk
 }
 
-// Kind returns the value of the "kind" field in the mutation.
-func (m *NormalizedEventMutation) Kind() (r normalizedevent.Kind, exists bool) {
-	v := m.kind
+// ActivityKind returns the value of the "activity_kind" field in the mutation.
+func (m *NormalizedEventMutation) ActivityKind() (r normalizedevent.ActivityKind, exists bool) {
+	v := m.activity_kind
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldKind returns the old "kind" field's value of the NormalizedEvent entity.
+// OldActivityKind returns the old "activity_kind" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldKind(ctx context.Context) (v normalizedevent.Kind, err error) {
+func (m *NormalizedEventMutation) OldActivityKind(ctx context.Context) (v normalizedevent.ActivityKind, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldKind is only allowed on UpdateOne operations")
+		return v, errors.New("OldActivityKind is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldKind requires an ID field in the mutation")
+		return v, errors.New("OldActivityKind requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldKind: %w", err)
+		return v, fmt.Errorf("querying old value for OldActivityKind: %w", err)
 	}
-	return oldValue.Kind, nil
+	return oldValue.ActivityKind, nil
 }
 
-// ResetKind resets all changes to the "kind" field.
-func (m *NormalizedEventMutation) ResetKind() {
-	m.kind = nil
+// ResetActivityKind resets all changes to the "activity_kind" field.
+func (m *NormalizedEventMutation) ResetActivityKind() {
+	m.activity_kind = nil
 }
 
 // SetProvider sets the "provider" field.
@@ -30489,40 +30489,40 @@ func (m *NormalizedEventMutation) ResetProviderEventRef() {
 	m.provider_event_ref = nil
 }
 
-// SetSubjectRef sets the "subject_ref" field.
-func (m *NormalizedEventMutation) SetSubjectRef(s string) {
-	m.subject_ref = &s
+// SetProviderSubjectRef sets the "provider_subject_ref" field.
+func (m *NormalizedEventMutation) SetProviderSubjectRef(s string) {
+	m.provider_subject_ref = &s
 }
 
-// SubjectRef returns the value of the "subject_ref" field in the mutation.
-func (m *NormalizedEventMutation) SubjectRef() (r string, exists bool) {
-	v := m.subject_ref
+// ProviderSubjectRef returns the value of the "provider_subject_ref" field in the mutation.
+func (m *NormalizedEventMutation) ProviderSubjectRef() (r string, exists bool) {
+	v := m.provider_subject_ref
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldSubjectRef returns the old "subject_ref" field's value of the NormalizedEvent entity.
+// OldProviderSubjectRef returns the old "provider_subject_ref" field's value of the NormalizedEvent entity.
 // If the NormalizedEvent object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *NormalizedEventMutation) OldSubjectRef(ctx context.Context) (v string, err error) {
+func (m *NormalizedEventMutation) OldProviderSubjectRef(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSubjectRef is only allowed on UpdateOne operations")
+		return v, errors.New("OldProviderSubjectRef is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSubjectRef requires an ID field in the mutation")
+		return v, errors.New("OldProviderSubjectRef requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSubjectRef: %w", err)
+		return v, fmt.Errorf("querying old value for OldProviderSubjectRef: %w", err)
 	}
-	return oldValue.SubjectRef, nil
+	return oldValue.ProviderSubjectRef, nil
 }
 
-// ResetSubjectRef resets all changes to the "subject_ref" field.
-func (m *NormalizedEventMutation) ResetSubjectRef() {
-	m.subject_ref = nil
+// ResetProviderSubjectRef resets all changes to the "provider_subject_ref" field.
+func (m *NormalizedEventMutation) ResetProviderSubjectRef() {
+	m.provider_subject_ref = nil
 }
 
 // SetSubjectKind sets the "subject_kind" field.
@@ -30824,8 +30824,8 @@ func (m *NormalizedEventMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, normalizedevent.FieldTenantID)
 	}
-	if m.kind != nil {
-		fields = append(fields, normalizedevent.FieldKind)
+	if m.activity_kind != nil {
+		fields = append(fields, normalizedevent.FieldActivityKind)
 	}
 	if m.provider != nil {
 		fields = append(fields, normalizedevent.FieldProvider)
@@ -30836,8 +30836,8 @@ func (m *NormalizedEventMutation) Fields() []string {
 	if m.provider_event_ref != nil {
 		fields = append(fields, normalizedevent.FieldProviderEventRef)
 	}
-	if m.subject_ref != nil {
-		fields = append(fields, normalizedevent.FieldSubjectRef)
+	if m.provider_subject_ref != nil {
+		fields = append(fields, normalizedevent.FieldProviderSubjectRef)
 	}
 	if m.subject_kind != nil {
 		fields = append(fields, normalizedevent.FieldSubjectKind)
@@ -30864,16 +30864,16 @@ func (m *NormalizedEventMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case normalizedevent.FieldTenantID:
 		return m.TenantID()
-	case normalizedevent.FieldKind:
-		return m.Kind()
+	case normalizedevent.FieldActivityKind:
+		return m.ActivityKind()
 	case normalizedevent.FieldProvider:
 		return m.Provider()
 	case normalizedevent.FieldProviderSource:
 		return m.ProviderSource()
 	case normalizedevent.FieldProviderEventRef:
 		return m.ProviderEventRef()
-	case normalizedevent.FieldSubjectRef:
-		return m.SubjectRef()
+	case normalizedevent.FieldProviderSubjectRef:
+		return m.ProviderSubjectRef()
 	case normalizedevent.FieldSubjectKind:
 		return m.SubjectKind()
 	case normalizedevent.FieldAttributes:
@@ -30895,16 +30895,16 @@ func (m *NormalizedEventMutation) OldField(ctx context.Context, name string) (en
 	switch name {
 	case normalizedevent.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case normalizedevent.FieldKind:
-		return m.OldKind(ctx)
+	case normalizedevent.FieldActivityKind:
+		return m.OldActivityKind(ctx)
 	case normalizedevent.FieldProvider:
 		return m.OldProvider(ctx)
 	case normalizedevent.FieldProviderSource:
 		return m.OldProviderSource(ctx)
 	case normalizedevent.FieldProviderEventRef:
 		return m.OldProviderEventRef(ctx)
-	case normalizedevent.FieldSubjectRef:
-		return m.OldSubjectRef(ctx)
+	case normalizedevent.FieldProviderSubjectRef:
+		return m.OldProviderSubjectRef(ctx)
 	case normalizedevent.FieldSubjectKind:
 		return m.OldSubjectKind(ctx)
 	case normalizedevent.FieldAttributes:
@@ -30931,12 +30931,12 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case normalizedevent.FieldKind:
-		v, ok := value.(normalizedevent.Kind)
+	case normalizedevent.FieldActivityKind:
+		v, ok := value.(normalizedevent.ActivityKind)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetKind(v)
+		m.SetActivityKind(v)
 		return nil
 	case normalizedevent.FieldProvider:
 		v, ok := value.(string)
@@ -30959,12 +30959,12 @@ func (m *NormalizedEventMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetProviderEventRef(v)
 		return nil
-	case normalizedevent.FieldSubjectRef:
+	case normalizedevent.FieldProviderSubjectRef:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetSubjectRef(v)
+		m.SetProviderSubjectRef(v)
 		return nil
 	case normalizedevent.FieldSubjectKind:
 		v, ok := value.(string)
@@ -31056,8 +31056,8 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 	case normalizedevent.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case normalizedevent.FieldKind:
-		m.ResetKind()
+	case normalizedevent.FieldActivityKind:
+		m.ResetActivityKind()
 		return nil
 	case normalizedevent.FieldProvider:
 		m.ResetProvider()
@@ -31068,8 +31068,8 @@ func (m *NormalizedEventMutation) ResetField(name string) error {
 	case normalizedevent.FieldProviderEventRef:
 		m.ResetProviderEventRef()
 		return nil
-	case normalizedevent.FieldSubjectRef:
-		m.ResetSubjectRef()
+	case normalizedevent.FieldProviderSubjectRef:
+		m.ResetProviderSubjectRef()
 		return nil
 	case normalizedevent.FieldSubjectKind:
 		m.ResetSubjectKind()

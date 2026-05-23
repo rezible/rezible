@@ -870,14 +870,10 @@ func init() {
 	normalizedeventDescProviderEventRef := normalizedeventFields[4].Descriptor()
 	// normalizedevent.ProviderEventRefValidator is a validator for the "provider_event_ref" field. It is called by the builders before save.
 	normalizedevent.ProviderEventRefValidator = normalizedeventDescProviderEventRef.Validators[0].(func(string) error)
-	// normalizedeventDescSubjectRef is the schema descriptor for subject_ref field.
-	normalizedeventDescSubjectRef := normalizedeventFields[5].Descriptor()
-	// normalizedevent.SubjectRefValidator is a validator for the "subject_ref" field. It is called by the builders before save.
-	normalizedevent.SubjectRefValidator = normalizedeventDescSubjectRef.Validators[0].(func(string) error)
-	// normalizedeventDescSubjectKind is the schema descriptor for subject_kind field.
-	normalizedeventDescSubjectKind := normalizedeventFields[6].Descriptor()
-	// normalizedevent.SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
-	normalizedevent.SubjectKindValidator = normalizedeventDescSubjectKind.Validators[0].(func(string) error)
+	// normalizedeventDescProviderSubjectRef is the schema descriptor for provider_subject_ref field.
+	normalizedeventDescProviderSubjectRef := normalizedeventFields[5].Descriptor()
+	// normalizedevent.ProviderSubjectRefValidator is a validator for the "provider_subject_ref" field. It is called by the builders before save.
+	normalizedevent.ProviderSubjectRefValidator = normalizedeventDescProviderSubjectRef.Validators[0].(func(string) error)
 	// normalizedeventDescCreatedAt is the schema descriptor for created_at field.
 	normalizedeventDescCreatedAt := normalizedeventFields[8].Descriptor()
 	// normalizedevent.DefaultCreatedAt holds the default value on creation for the created_at field.

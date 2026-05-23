@@ -30,21 +30,21 @@ func (q *eventQuerier) Provider() string {
 func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		if incidentsCursor, shouldQuery := req.GetSourceCursor(sourceIncidents); shouldQuery {
-			for ev, evErr := range q.pullIncidentEvents(ctx, incidentsCursor) {
+			for ev, evErr := range q.pullIncidentEvents(incidentsCursor) {
 				if !yield(ev, evErr) {
 					return
 				}
 			}
 		}
 		if alertsCursor, shouldQuery := req.GetSourceCursor(sourceAlerts); shouldQuery {
-			for ev, evErr := range q.pullAlertEvents(ctx, alertsCursor) {
+			for ev, evErr := range q.pullAlertEvents(alertsCursor) {
 				if !yield(ev, evErr) {
 					return
 				}
 			}
 		}
 		if topologyCursor, shouldQuery := req.GetSourceCursor(sourceTopology); shouldQuery {
-			for ev, evErr := range q.pullTopologyEvents(ctx, topologyCursor) {
+			for ev, evErr := range q.pullTopologyEvents(topologyCursor) {
 				if !yield(ev, evErr) {
 					return
 				}
@@ -93,7 +93,31 @@ type incidentObservedPayload struct {
 	ObservationID string    `json:"observation_id"`
 }
 
-func (q *eventQuerier) pullIncidentEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (p incidentObservedPayload) getEventRef() string {
+	return "fake:incidents:" + p.ObservationID
+}
+
+func (p incidentObservedPayload) getSubjectRef() string {
+	return "fake:incidents:" + p.ExternalID
+}
+
+func (p incidentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
+	enc, jsonErr := json.Marshal(p)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+	prov := &rez.ProviderEvent{
+		Provider:           integrationName,
+		ProviderSource:     sourceIncidents,
+		ProviderEventRef:   p.getEventRef(),
+		ProviderSubjectRef: p.getSubjectRef(),
+		ReceivedAt:         p.OccurredAt,
+		Payload:            enc,
+	}
+	return prov, nil
+}
+
+func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, payload := range fakeIncidentEvents {
 			if cursor != "" && payload.ObservationID <= cursor {
@@ -106,13 +130,13 @@ func (q *eventQuerier) pullIncidentEvents(ctx context.Context, cursor string) it
 			}
 			res := &rez.ProviderEventQueryResult{
 				Event: rez.ProviderEvent{
-					Provider:         integrationName,
-					ProviderSource:   sourceIncidents,
-					ProviderEventRef: fmt.Sprintf("fake:%s:%s", sourceIncidents, payload.ObservationID),
-					SubjectRef:       fmt.Sprintf("fake:incident:%s", payload.ExternalID),
-					ReceivedAt:       payload.OccurredAt,
-					Payload:          payloadBytes,
-					ContentType:      "application/json",
+					Provider:           integrationName,
+					ProviderSource:     sourceIncidents,
+					ProviderEventRef:   fmt.Sprintf("fake:%s:%s", sourceIncidents, payload.ObservationID),
+					ProviderSubjectRef: fmt.Sprintf("fake:incident:%s", payload.ExternalID),
+					ReceivedAt:         payload.OccurredAt,
+					Payload:            payloadBytes,
+					ContentType:        "application/json",
 				},
 				SourceCursorAfter: new(payload.ObservationID),
 			}
@@ -131,6 +155,30 @@ type alertObservedPayload struct {
 	Definition  string    `json:"definition,omitempty"`
 	OccurredAt  time.Time `json:"occurred_at"`
 	InstanceRef string    `json:"instance_ref"`
+}
+
+func (p alertObservedPayload) getEventRef() string {
+	return "fake:alerts:" + p.InstanceRef
+}
+
+func (p alertObservedPayload) getSubjectRef() string {
+	return "fake:alert:" + p.ExternalID
+}
+
+func (p alertObservedPayload) toEvent() (*rez.ProviderEvent, error) {
+	enc, jsonErr := json.Marshal(p)
+	if jsonErr != nil {
+		return nil, jsonErr
+	}
+	prov := &rez.ProviderEvent{
+		Provider:           integrationName,
+		ProviderSource:     sourceAlerts,
+		ProviderEventRef:   p.getEventRef(),
+		ProviderSubjectRef: p.getSubjectRef(),
+		ReceivedAt:         p.OccurredAt,
+		Payload:            enc,
+	}
+	return prov, nil
 }
 
 var fakeAlertEvents = []alertObservedPayload{
@@ -176,27 +224,19 @@ var fakeAlertEvents = []alertObservedPayload{
 	},
 }
 
-func (q *eventQuerier) pullAlertEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) pullAlertEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, payload := range fakeAlertEvents {
 			if cursor != "" && payload.InstanceRef <= cursor {
 				continue
 			}
-			payloadBytes, jsonErr := json.Marshal(payload)
-			if jsonErr != nil {
+			ev, jsonErr := payload.toEvent()
+			if jsonErr != nil || ev == nil {
 				yield(nil, fmt.Errorf("json marshal alert: %w", jsonErr))
 				return
 			}
 			res := &rez.ProviderEventQueryResult{
-				Event: rez.ProviderEvent{
-					Provider:         integrationName,
-					ProviderSource:   sourceAlerts,
-					ProviderEventRef: fmt.Sprintf("fake:%s:%s", sourceAlerts, payload.InstanceRef),
-					SubjectRef:       fmt.Sprintf("fake:alert:%s", payload.ExternalID),
-					ReceivedAt:       payload.OccurredAt,
-					Payload:          payloadBytes,
-					ContentType:      "application/json",
-				},
+				Event:             *ev,
 				SourceCursorAfter: new(payload.InstanceRef),
 			}
 

@@ -32,16 +32,16 @@ func (_u *NormalizedEventUpdate) Where(ps ...predicate.NormalizedEvent) *Normali
 	return _u
 }
 
-// SetKind sets the "kind" field.
-func (_u *NormalizedEventUpdate) SetKind(v normalizedevent.Kind) *NormalizedEventUpdate {
-	_u.mutation.SetKind(v)
+// SetActivityKind sets the "activity_kind" field.
+func (_u *NormalizedEventUpdate) SetActivityKind(v normalizedevent.ActivityKind) *NormalizedEventUpdate {
+	_u.mutation.SetActivityKind(v)
 	return _u
 }
 
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableKind(v *normalizedevent.Kind) *NormalizedEventUpdate {
+// SetNillableActivityKind sets the "activity_kind" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableActivityKind(v *normalizedevent.ActivityKind) *NormalizedEventUpdate {
 	if v != nil {
-		_u.SetKind(*v)
+		_u.SetActivityKind(*v)
 	}
 	return _u
 }
@@ -88,16 +88,16 @@ func (_u *NormalizedEventUpdate) SetNillableProviderEventRef(v *string) *Normali
 	return _u
 }
 
-// SetSubjectRef sets the "subject_ref" field.
-func (_u *NormalizedEventUpdate) SetSubjectRef(v string) *NormalizedEventUpdate {
-	_u.mutation.SetSubjectRef(v)
+// SetProviderSubjectRef sets the "provider_subject_ref" field.
+func (_u *NormalizedEventUpdate) SetProviderSubjectRef(v string) *NormalizedEventUpdate {
+	_u.mutation.SetProviderSubjectRef(v)
 	return _u
 }
 
-// SetNillableSubjectRef sets the "subject_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableSubjectRef(v *string) *NormalizedEventUpdate {
+// SetNillableProviderSubjectRef sets the "provider_subject_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableProviderSubjectRef(v *string) *NormalizedEventUpdate {
 	if v != nil {
-		_u.SetSubjectRef(*v)
+		_u.SetProviderSubjectRef(*v)
 	}
 	return _u
 }
@@ -234,9 +234,9 @@ func (_u *NormalizedEventUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *NormalizedEventUpdate) check() error {
-	if v, ok := _u.mutation.Kind(); ok {
-		if err := normalizedevent.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
+	if v, ok := _u.mutation.ActivityKind(); ok {
+		if err := normalizedevent.ActivityKindValidator(v); err != nil {
+			return &ValidationError{Name: "activity_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.activity_kind": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Provider(); ok {
@@ -254,14 +254,9 @@ func (_u *NormalizedEventUpdate) check() error {
 			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.SubjectRef(); ok {
-		if err := normalizedevent.SubjectRefValidator(v); err != nil {
-			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.SubjectKind(); ok {
-		if err := normalizedevent.SubjectKindValidator(v); err != nil {
-			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_kind": %w`, err)}
+	if v, ok := _u.mutation.ProviderSubjectRef(); ok {
+		if err := normalizedevent.ProviderSubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_subject_ref": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -288,8 +283,8 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 			}
 		}
 	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
+	if value, ok := _u.mutation.ActivityKind(); ok {
+		_spec.SetField(normalizedevent.FieldActivityKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
@@ -300,8 +295,8 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.ProviderEventRef(); ok {
 		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SubjectRef(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderSubjectRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderSubjectRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SubjectKind(); ok {
 		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)
@@ -390,16 +385,16 @@ type NormalizedEventUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetKind sets the "kind" field.
-func (_u *NormalizedEventUpdateOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpdateOne {
-	_u.mutation.SetKind(v)
+// SetActivityKind sets the "activity_kind" field.
+func (_u *NormalizedEventUpdateOne) SetActivityKind(v normalizedevent.ActivityKind) *NormalizedEventUpdateOne {
+	_u.mutation.SetActivityKind(v)
 	return _u
 }
 
-// SetNillableKind sets the "kind" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableKind(v *normalizedevent.Kind) *NormalizedEventUpdateOne {
+// SetNillableActivityKind sets the "activity_kind" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableActivityKind(v *normalizedevent.ActivityKind) *NormalizedEventUpdateOne {
 	if v != nil {
-		_u.SetKind(*v)
+		_u.SetActivityKind(*v)
 	}
 	return _u
 }
@@ -446,16 +441,16 @@ func (_u *NormalizedEventUpdateOne) SetNillableProviderEventRef(v *string) *Norm
 	return _u
 }
 
-// SetSubjectRef sets the "subject_ref" field.
-func (_u *NormalizedEventUpdateOne) SetSubjectRef(v string) *NormalizedEventUpdateOne {
-	_u.mutation.SetSubjectRef(v)
+// SetProviderSubjectRef sets the "provider_subject_ref" field.
+func (_u *NormalizedEventUpdateOne) SetProviderSubjectRef(v string) *NormalizedEventUpdateOne {
+	_u.mutation.SetProviderSubjectRef(v)
 	return _u
 }
 
-// SetNillableSubjectRef sets the "subject_ref" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableSubjectRef(v *string) *NormalizedEventUpdateOne {
+// SetNillableProviderSubjectRef sets the "provider_subject_ref" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableProviderSubjectRef(v *string) *NormalizedEventUpdateOne {
 	if v != nil {
-		_u.SetSubjectRef(*v)
+		_u.SetProviderSubjectRef(*v)
 	}
 	return _u
 }
@@ -605,9 +600,9 @@ func (_u *NormalizedEventUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *NormalizedEventUpdateOne) check() error {
-	if v, ok := _u.mutation.Kind(); ok {
-		if err := normalizedevent.KindValidator(v); err != nil {
-			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
+	if v, ok := _u.mutation.ActivityKind(); ok {
+		if err := normalizedevent.ActivityKindValidator(v); err != nil {
+			return &ValidationError{Name: "activity_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.activity_kind": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Provider(); ok {
@@ -625,14 +620,9 @@ func (_u *NormalizedEventUpdateOne) check() error {
 			return &ValidationError{Name: "provider_event_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_event_ref": %w`, err)}
 		}
 	}
-	if v, ok := _u.mutation.SubjectRef(); ok {
-		if err := normalizedevent.SubjectRefValidator(v); err != nil {
-			return &ValidationError{Name: "subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_ref": %w`, err)}
-		}
-	}
-	if v, ok := _u.mutation.SubjectKind(); ok {
-		if err := normalizedevent.SubjectKindValidator(v); err != nil {
-			return &ValidationError{Name: "subject_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.subject_kind": %w`, err)}
+	if v, ok := _u.mutation.ProviderSubjectRef(); ok {
+		if err := normalizedevent.ProviderSubjectRefValidator(v); err != nil {
+			return &ValidationError{Name: "provider_subject_ref", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.provider_subject_ref": %w`, err)}
 		}
 	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
@@ -676,8 +666,8 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 			}
 		}
 	}
-	if value, ok := _u.mutation.Kind(); ok {
-		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
+	if value, ok := _u.mutation.ActivityKind(); ok {
+		_spec.SetField(normalizedevent.FieldActivityKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
@@ -688,8 +678,8 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	if value, ok := _u.mutation.ProviderEventRef(); ok {
 		_spec.SetField(normalizedevent.FieldProviderEventRef, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.SubjectRef(); ok {
-		_spec.SetField(normalizedevent.FieldSubjectRef, field.TypeString, value)
+	if value, ok := _u.mutation.ProviderSubjectRef(); ok {
+		_spec.SetField(normalizedevent.FieldProviderSubjectRef, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.SubjectKind(); ok {
 		_spec.SetField(normalizedevent.FieldSubjectKind, field.TypeString, value)

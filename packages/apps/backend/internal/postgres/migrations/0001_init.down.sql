@@ -360,10 +360,10 @@ DROP INDEX "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8";
 DROP INDEX "normalizedeventprojectionstatus_tenant_id";
 -- reverse: create "normalized_event_projection_status" table
 DROP TABLE "normalized_event_projection_status";
--- reverse: create index "normalizedevent_tenant_id_kind_occurred_at" to table: "normalized_events"
-DROP INDEX "normalizedevent_tenant_id_kind_occurred_at";
--- reverse: create index "normalizedevent_tenant_id_prov_089950886f426b5eaeeba9e4f3d2645c" to table: "normalized_events"
-DROP INDEX "normalizedevent_tenant_id_prov_089950886f426b5eaeeba9e4f3d2645c";
+-- reverse: create index "normalizedevent_tenant_id_provider_provider_source_occurred_at" to table: "normalized_events"
+DROP INDEX "normalizedevent_tenant_id_provider_provider_source_occurred_at";
+-- reverse: create index "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" to table: "normalized_events"
+DROP INDEX "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433";
 -- reverse: create index "normalizedevent_tenant_id" to table: "normalized_events"
 DROP INDEX "normalizedevent_tenant_id";
 -- reverse: create "normalized_events" table

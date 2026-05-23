@@ -1,7 +1,6 @@
 package fakeprovider
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"iter"
@@ -11,91 +10,61 @@ import (
 	"github.com/rezible/rezible/integrations/projections"
 )
 
-const (
-	topologyObservationComponent    = "component"
-	topologyObservationRelationship = "relationship"
-)
-
-type (
-	fakeTopologyEvent struct {
-		Cursor     string
-		SubjectRef string
-		Payload    topologyObservedPayload
-	}
-
-	topologyObservedPayload struct {
-		ObservationType string                       `json:"observation_type"`
-		OccurredAt      time.Time                    `json:"occurred_at"`
-		Component       *topologyComponentPayload    `json:"component,omitempty"`
-		Relationship    *topologyRelationshipPayload `json:"relationship,omitempty"`
-	}
-)
+type fakeTopologyEvent struct {
+	Cursor              string
+	ComponentPayload    *topologyComponentObservedPayload
+	RelationshipPayload *topologyRelationshipObservedPayload
+}
 
 func makeFakeTopologyEvents() []fakeTopologyEvent {
 	fakeComponents := makeFakeTopologyComponents()
 	fakeRels := makeFakeTopologyRelationships(fakeComponents)
 
-	fakeTopologyObservedAt := time.Date(2026, 5, 10, 8, 0, 0, 0, time.UTC)
-
 	events := make([]fakeTopologyEvent, 0, len(fakeComponents)+len(fakeRels))
 	for i, payload := range fakeComponents {
 		events = append(events, fakeTopologyEvent{
-			Cursor:     fmt.Sprintf("component:%03d:%s", i+1, payload.ExternalRef),
-			SubjectRef: payload.ExternalRef,
-			Payload: topologyObservedPayload{
-				ObservationType: topologyObservationComponent,
-				OccurredAt:      fakeTopologyObservedAt,
-				Component:       &payload,
-			},
+			Cursor:           fmt.Sprintf("component:%03d:%s", i+1, payload.ExternalRef),
+			ComponentPayload: &payload,
 		})
 	}
 	for i, payload := range fakeRels {
 		payload.Properties["source_external_ref"] = payload.SourceExternalRef
 		payload.Properties["target_external_ref"] = payload.TargetExternalRef
 		events = append(events, fakeTopologyEvent{
-			Cursor:     fmt.Sprintf("relationship:%03d:%s", i+1, payload.ExternalRef),
-			SubjectRef: payload.ExternalRef,
-			Payload: topologyObservedPayload{
-				ObservationType: topologyObservationRelationship,
-				OccurredAt:      fakeTopologyObservedAt.Add(time.Minute),
-				Relationship:    &payload,
-			},
+			Cursor:              fmt.Sprintf("relationship:%03d:%s", i+1, payload.ExternalRef),
+			RelationshipPayload: &payload,
 		})
 	}
 	return events
 }
 
-func (q *eventQuerier) pullTopologyEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) pullTopologyEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, fakeEvent := range makeFakeTopologyEvents() {
 			if cursor != "" && fakeEvent.Cursor <= cursor {
 				continue
 			}
-			payloadBytes, jsonErr := json.Marshal(fakeEvent.Payload)
-			if jsonErr != nil {
-				yield(nil, fmt.Errorf("json marshal topology event: %w", jsonErr))
-				return
-			}
 			res := &rez.ProviderEventQueryResult{
-				Event: rez.ProviderEvent{
-					Provider:         integrationName,
-					ProviderSource:   sourceTopology,
-					ProviderEventRef: fmt.Sprintf("fake:%s:%s", sourceTopology, fakeEvent.Cursor),
-					SubjectRef:       fakeEvent.SubjectRef,
-					ReceivedAt:       fakeEvent.Payload.OccurredAt,
-					Payload:          payloadBytes,
-					ContentType:      "application/json",
-				},
 				SourceCursorAfter: new(fakeEvent.Cursor),
 			}
-			if !yield(res, nil) {
+			var prov *rez.ProviderEvent
+			provErr := fmt.Errorf("no embedded payload")
+			if fakeEvent.ComponentPayload != nil {
+				prov, provErr = fakeEvent.ComponentPayload.toEvent()
+			} else if fakeEvent.RelationshipPayload != nil {
+				prov, provErr = fakeEvent.RelationshipPayload.toEvent()
+			}
+			if prov != nil {
+				res.Event = *prov
+			}
+			if !yield(res, provErr) {
 				return
 			}
 		}
 	}
 }
 
-type topologyComponentPayload struct {
+type topologyComponentObservedPayload struct {
 	ExternalRef string         `json:"external_ref"`
 	Kind        string         `json:"kind"`
 	DisplayName string         `json:"display_name"`
@@ -103,32 +72,59 @@ type topologyComponentPayload struct {
 	Properties  map[string]any `json:"properties,omitempty"`
 }
 
-func (tcp *topologyComponentPayload) encodeAttributes() (projections.EventAttributes, error) {
-	if tcp == nil {
-		return nil, fmt.Errorf("component payload is required")
+const componentRefPrefix = "fake:topology:component:"
+
+func (p topologyComponentObservedPayload) getEventRef() string {
+	return componentRefPrefix + p.ExternalRef
+}
+
+func (p topologyComponentObservedPayload) getSubjectRef() string {
+	return componentRefPrefix + p.ExternalRef
+}
+
+func (p topologyComponentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
+	enc, jsonErr := json.Marshal(p)
+	if jsonErr != nil {
+		return nil, jsonErr
 	}
-	return projections.EncodeAttributes(projections.SystemComponentObservedAttributes{
-		ExternalRef: tcp.ExternalRef,
-		Kind:        tcp.Kind,
-		DisplayName: tcp.DisplayName,
-		Description: tcp.Description,
-		Properties:  tcp.Properties,
+	prov := &rez.ProviderEvent{
+		Provider:           integrationName,
+		ProviderSource:     sourceTopology,
+		ProviderEventRef:   p.getEventRef(),
+		ProviderSubjectRef: p.getSubjectRef(),
+		ReceivedAt:         time.Now(),
+		Payload:            enc,
+	}
+	return prov, nil
+}
+
+func getTopologyComponentAttributes(payload []byte) (projections.EventAttributes, error) {
+	var cop topologyComponentObservedPayload
+	if err := json.Unmarshal(payload, &cop); err != nil {
+		return nil, err
+	}
+	return projections.EncodeAttributes(projections.SystemComponentSubjectAttributes{
+		ExternalRef: cop.ExternalRef,
+		Kind:        cop.Kind,
+		DisplayName: cop.DisplayName,
+		Description: cop.Description,
+		Properties:  cop.Properties,
 	})
 }
 
 func componentRef(id string) string {
-	return fmt.Sprintf("fake:component:%s", id)
+	return componentRefPrefix + id
 }
 
-func makeFakeTopologyComponents() []topologyComponentPayload {
-	component := func(id string, kind string, displayName string, description string, properties map[string]any) topologyComponentPayload {
+func makeFakeTopologyComponents() []topologyComponentObservedPayload {
+	component := func(id string, kind string, displayName string, description string, properties map[string]any) topologyComponentObservedPayload {
 		props := map[string]any{
 			"external_ref": componentRef(id),
 		}
 		for k, v := range properties {
 			props[k] = v
 		}
-		return topologyComponentPayload{
+		return topologyComponentObservedPayload{
 			ExternalRef: componentRef(id),
 			Kind:        kind,
 			DisplayName: displayName,
@@ -137,7 +133,7 @@ func makeFakeTopologyComponents() []topologyComponentPayload {
 		}
 	}
 
-	return []topologyComponentPayload{
+	return []topologyComponentObservedPayload{
 		component("web_app", "user_surface", "Customer Web App", "Primary customer-facing storefront and account experience.", map[string]any{"tier": "edge", "criticality": "high", "lifecycle": "production", "runtime": "sveltekit", "region": "global", "owner_team": "commerce_team", "repository_external_ref": "rezible-commerce/web-app", "tags": []string{"customer-facing", "frontend"}, "business_domain": "commerce"}),
 		component("admin_console", "user_surface", "Admin Console", "Internal operations interface for catalog, search, and order support.", map[string]any{"tier": "internal", "criticality": "medium", "lifecycle": "production", "runtime": "sveltekit", "region": "global", "owner_team": "platform_team", "repository_external_ref": "rezible-commerce/admin-console", "tags": []string{"internal", "operations"}, "business_domain": "operations"}),
 		component("public_api_gateway", "gateway", "Public API Gateway", "Ingress gateway for public REST and partner API traffic.", map[string]any{"tier": "edge", "criticality": "high", "lifecycle": "production", "runtime": "envoy", "region": "us-east-1", "owner_team": "platform_team", "tags": []string{"api", "ingress"}, "business_domain": "platform"}),
@@ -176,7 +172,7 @@ func makeFakeTopologyComponents() []topologyComponentPayload {
 	}
 }
 
-type topologyRelationshipPayload struct {
+type topologyRelationshipObservedPayload struct {
 	ExternalRef       string         `json:"external_ref"`
 	Kind              string         `json:"kind"`
 	DisplayName       string         `json:"display_name,omitempty"`
@@ -190,27 +186,54 @@ type topologyRelationshipPayload struct {
 	Properties        map[string]any `json:"properties,omitempty"`
 }
 
-func (trp *topologyRelationshipPayload) encodeAttributes() (projections.EventAttributes, error) {
-	if trp == nil {
-		return nil, fmt.Errorf("relationship payload is required")
+const relationshipRefPrefix = "fake:topology:relationship:"
+
+func (p topologyRelationshipObservedPayload) getEventRef() string {
+	return relationshipRefPrefix + p.ExternalRef
+}
+
+func (p topologyRelationshipObservedPayload) getSubjectRef() string {
+	return relationshipRefPrefix + p.ExternalRef
+}
+
+func (p topologyRelationshipObservedPayload) toEvent() (*rez.ProviderEvent, error) {
+	enc, jsonErr := json.Marshal(p)
+	if jsonErr != nil {
+		return nil, jsonErr
 	}
-	return projections.EncodeAttributes(projections.SystemRelationshipObservedAttributes{
-		ExternalRef:       trp.ExternalRef,
-		Kind:              trp.Kind,
-		DisplayName:       trp.DisplayName,
-		Description:       trp.Description,
-		SourceExternalRef: trp.SourceExternalRef,
-		SourceKind:        trp.SourceKind,
-		SourceDisplayName: trp.SourceDisplayName,
-		TargetExternalRef: trp.TargetExternalRef,
-		TargetKind:        trp.TargetKind,
-		TargetDisplayName: trp.TargetDisplayName,
-		Properties:        trp.Properties,
+	prov := &rez.ProviderEvent{
+		Provider:           integrationName,
+		ProviderSource:     sourceTopology,
+		ProviderEventRef:   p.getEventRef(),
+		ProviderSubjectRef: p.getSubjectRef(),
+		ReceivedAt:         time.Now(),
+		Payload:            enc,
+	}
+	return prov, nil
+}
+
+func getTopologyRelationshipAttributes(payload []byte) (projections.EventAttributes, error) {
+	var rop topologyRelationshipObservedPayload
+	if err := json.Unmarshal(payload, &rop); err != nil {
+		return nil, err
+	}
+	return projections.EncodeAttributes(projections.SystemRelationshipSubjectAttributes{
+		ExternalRef:       rop.ExternalRef,
+		Kind:              rop.Kind,
+		DisplayName:       rop.DisplayName,
+		Description:       rop.Description,
+		SourceExternalRef: rop.SourceExternalRef,
+		SourceKind:        rop.SourceKind,
+		SourceDisplayName: rop.SourceDisplayName,
+		TargetExternalRef: rop.TargetExternalRef,
+		TargetKind:        rop.TargetKind,
+		TargetDisplayName: rop.TargetDisplayName,
+		Properties:        rop.Properties,
 	})
 }
 
-func makeFakeTopologyRelationships(cmps []topologyComponentPayload) []topologyRelationshipPayload {
-	mustTopologyComponent := func(id string) topologyComponentPayload {
+func makeFakeTopologyRelationships(cmps []topologyComponentObservedPayload) []topologyRelationshipObservedPayload {
+	mustTopologyComponent := func(id string) topologyComponentObservedPayload {
 		ref := componentRef(id)
 		for _, c := range cmps {
 			if c.ExternalRef == ref {
@@ -220,11 +243,11 @@ func makeFakeTopologyRelationships(cmps []topologyComponentPayload) []topologyRe
 		panic(fmt.Sprintf("unknown fake topology component: %s", id))
 	}
 
-	rel := func(sourceID string, kind string, targetID string, displayName string) topologyRelationshipPayload {
+	rel := func(sourceID string, kind string, targetID string, displayName string) topologyRelationshipObservedPayload {
 		source := mustTopologyComponent(sourceID)
 		target := mustTopologyComponent(targetID)
 		externalRef := fmt.Sprintf("fake:relationship:%s:%s:%s", sourceID, kind, targetID)
-		return topologyRelationshipPayload{
+		return topologyRelationshipObservedPayload{
 			ExternalRef:       externalRef,
 			Kind:              kind,
 			DisplayName:       displayName,
@@ -242,7 +265,7 @@ func makeFakeTopologyRelationships(cmps []topologyComponentPayload) []topologyRe
 		}
 	}
 
-	return []topologyRelationshipPayload{
+	return []topologyRelationshipObservedPayload{
 		rel("web_app", "calls", "public_api_gateway", "Customer Web App calls Public API Gateway"),
 		rel("admin_console", "calls", "public_api_gateway", "Admin Console calls Public API Gateway"),
 		rel("public_api_gateway", "calls", "auth_service", "Public API Gateway calls Auth Service"),

@@ -43,7 +43,7 @@ func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.Normal
 		return nil, fmt.Errorf("unmarshal userObservedPayload: %w", jsonErr)
 	}
 
-	attrs := projections.UserObservedAttributes{
+	attrs := projections.UserSubjectAttributes{
 		Name:     payload.Name,
 		Email:    payload.Email,
 		ChatId:   payload.SlackID,
@@ -55,15 +55,15 @@ func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.Normal
 	}
 
 	result := &ent.NormalizedEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceUsers,
-		Kind:             ne.KindUserObserved,
-		SubjectKind:      "user",
-		SubjectRef:       prov.SubjectRef,
-		ProviderEventRef: prov.ProviderEventRef,
-		OccurredAt:       payload.UpdatedAt.Time(),
-		ReceivedAt:       prov.ReceivedAt,
-		Attributes:       encodedAttrs,
+		Provider:           integrationName,
+		ProviderSource:     sourceUsers,
+		ActivityKind:       ne.ActivityKindObserved,
+		SubjectKind:        projections.SubjectKindUser.String(),
+		ProviderSubjectRef: prov.ProviderSubjectRef,
+		ProviderEventRef:   prov.ProviderEventRef,
+		OccurredAt:         payload.UpdatedAt.Time(),
+		ReceivedAt:         prov.ReceivedAt,
+		Attributes:         encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil
@@ -120,12 +120,12 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 		receivedAt = occurredAt
 	}
 
-	subjectRef := prov.SubjectRef
-	if subjectRef == "" {
-		subjectRef = fmt.Sprintf("slack:%s:%s:%s", ev.TeamID, attrs.ConversationExternalRef, ts)
+	ProviderSubjectRef := prov.ProviderSubjectRef
+	if ProviderSubjectRef == "" {
+		ProviderSubjectRef = fmt.Sprintf("slack:%s:%s:%s", ev.TeamID, attrs.ConversationExternalRef, ts)
 	}
 	if providerEventRef == "" {
-		providerEventRef = subjectRef
+		providerEventRef = ProviderSubjectRef
 	}
 	encodedAttrs, encodeErr := projections.EncodeAttributes(attrs)
 	if encodeErr != nil {
@@ -133,15 +133,15 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 	}
 
 	result := &ent.NormalizedEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceEventsApiCallback,
-		ProviderEventRef: providerEventRef,
-		Kind:             ne.KindChatMessage,
-		SubjectKind:      "message",
-		SubjectRef:       subjectRef,
-		OccurredAt:       occurredAt,
-		ReceivedAt:       receivedAt,
-		Attributes:       encodedAttrs,
+		Provider:           integrationName,
+		ProviderSource:     sourceEventsApiCallback,
+		ProviderEventRef:   providerEventRef,
+		ActivityKind:       ne.ActivityKindReceived,
+		SubjectKind:        projections.SubjectKindChatMessage.String(),
+		ProviderSubjectRef: ProviderSubjectRef,
+		OccurredAt:         occurredAt,
+		ReceivedAt:         receivedAt,
+		Attributes:         encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil

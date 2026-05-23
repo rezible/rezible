@@ -28,11 +28,11 @@ func NewAlertService(svcs *rez.Services) (*AlertService, error) {
 }
 
 func alertEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	if event.Kind != ne.KindAlertObserved {
+	if !projections.SubjectKindAlert.Matches(event) {
 		return nil
 	}
 
-	observed, validationErr := projections.DecodeAlertObserved(event)
+	observed, validationErr := projections.DecodeAlertEvent(event)
 	if validationErr != nil || observed == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}

@@ -10,8 +10,6 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
-
 	"github.com/rezible/rezible/ent"
 )
 
@@ -75,17 +73,7 @@ func EncodeAttributes[A any](attrs A) (EventAttributes, error) {
 	return encodedAttrs, nil
 }
 
-func decodeKind[A any](ev *ent.NormalizedEvent, kind ne.Kind) (*Event[A], error) {
-	if ev == nil {
-		return nil, fmt.Errorf("normalized event is nil")
-	}
-	if ev.Kind != kind {
-		return nil, fmt.Errorf("expected normalized event kind %q, got %q", kind, ev.Kind)
-	}
-	return DecodeAs[A](ev)
-}
-
-func DecodeAs[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
+func DecodeSubjectAttributes[A any](ev *ent.NormalizedEvent) (*Event[A], error) {
 	if ev == nil {
 		return nil, fmt.Errorf("normalized event is nil")
 	}
@@ -136,42 +124,4 @@ func validateAttributes[A any](attrs A) error {
 		}
 	}
 	return nil
-}
-
-func encodeAttributeStruct(attrs any) (EventAttributes, error) {
-	value := reflect.ValueOf(attrs)
-	for value.Kind() == reflect.Pointer {
-		if value.IsNil() {
-			return nil, fmt.Errorf("attributes are nil")
-		}
-		value = value.Elem()
-	}
-	if value.Kind() != reflect.Struct {
-		return nil, fmt.Errorf("attributes must be a struct")
-	}
-
-	typ := value.Type()
-	encoded := make(EventAttributes, value.NumField())
-	for i := range value.NumField() {
-		fieldInfo := typ.Field(i)
-		name, _, _ := strings.Cut(fieldInfo.Tag.Get(attributeFieldNameTag), ",")
-		if name == "-" {
-			continue
-		}
-		if name == "" {
-			name = fieldInfo.Name
-		}
-		encoded[name] = encodeAttributeValue(value.Field(i))
-	}
-	return encoded, nil
-}
-
-func encodeAttributeValue(value reflect.Value) any {
-	if value.Kind() == reflect.Pointer {
-		if value.IsNil() {
-			return nil
-		}
-		return encodeAttributeValue(value.Elem())
-	}
-	return value.Interface()
 }

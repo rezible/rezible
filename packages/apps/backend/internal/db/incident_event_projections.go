@@ -11,16 +11,15 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/integrations/projections"
 )
 
 func handleIncidentEventProjection(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	if event.Kind != ne.KindIncidentObserved {
+	if !projections.SubjectKindIncident.Matches(event) {
 		return nil
 	}
 
-	observed, validationErr := projections.DecodeIncidentObserved(event)
+	observed, validationErr := projections.DecodeIncidentEvent(event)
 	if validationErr != nil || observed == nil {
 		return fmt.Errorf("invalid event: %w", validationErr)
 	}
@@ -30,7 +29,7 @@ func handleIncidentEventProjection(ctx context.Context, client *ent.Client, even
 
 type incidentEventProjectionHandler struct {
 	client   *ent.Client
-	observed *projections.IncidentObserved
+	observed *projections.IncidentEvent
 }
 
 func (h *incidentEventProjectionHandler) handle(ctx context.Context) error {

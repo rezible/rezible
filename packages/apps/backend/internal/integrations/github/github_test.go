@@ -174,11 +174,11 @@ func TestPushProcessor_ValidPayload(t *testing.T) {
 	require.Len(t, events, 1)
 	ev := events[0]
 	assert.Equal(t, ne.KindChangeEventObserved, ev.Kind)
-	assert.NotEmpty(t, ev.SubjectRef)
+	assert.NotEmpty(t, ev.ProviderSubjectRef)
 	assert.NotEmpty(t, ev.ProviderEventRef)
 	assert.NotEmpty(t, ev.Attributes)
 	assert.Equal(t, after, ev.ProviderEventRef)
-	assert.Equal(t, fmt.Sprintf("github:%s:%s", fullName, after), ev.SubjectRef)
+	assert.Equal(t, fmt.Sprintf("github:%s:%s", fullName, after), ev.ProviderSubjectRef)
 }
 
 func TestPushProcessor_BranchDeletion(t *testing.T) {
@@ -259,11 +259,11 @@ func TestPRProcessor_ValidPayload(t *testing.T) {
 	require.Len(t, events, 1)
 	ev := events[0]
 	assert.Equal(t, ne.KindChangeEventObserved, ev.Kind)
-	assert.NotEmpty(t, ev.SubjectRef)
+	assert.NotEmpty(t, ev.ProviderSubjectRef)
 	assert.NotEmpty(t, ev.ProviderEventRef)
 	assert.NotEmpty(t, ev.Attributes)
 	assert.Equal(t, fmt.Sprintf("pr:%d", prNum), ev.ProviderEventRef)
-	assert.Equal(t, fmt.Sprintf("github:%s:pr:%d", fullName, prNum), ev.SubjectRef)
+	assert.Equal(t, fmt.Sprintf("github:%s:pr:%d", fullName, prNum), ev.ProviderSubjectRef)
 }
 
 func TestPRProcessor_InvalidJSON(t *testing.T) {
@@ -345,7 +345,7 @@ func TestWebhookHandler_CallsIngest(t *testing.T) {
 	provEvs.On("Ingest", mock.Anything, mock.MatchedBy(func(ev rez.ProviderEvent) bool {
 		return ev.Provider == integrationName &&
 			ev.ProviderSource == event &&
-			ev.SubjectRef == "github:push:delivery-abc" &&
+			ev.ProviderSubjectRef == "github:push:delivery-abc" &&
 			string(ev.Payload) == body &&
 			ev.ProviderDeliveryRef == delivery
 	})).Return((*rez.ProviderEventIngestResult)(nil), nil).Once()

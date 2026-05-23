@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/rezible/rezible/ent"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -24,7 +23,7 @@ func TestEncodeAttributesUsesAttributeTags(t *testing.T) {
 }
 
 func TestDecodeIncidentObservedEvent(t *testing.T) {
-	attrs := IncidentObservedAttributes{
+	attrs := IncidentSubjectAttributes{
 		ExternalRef: "foo",
 		Title:       "Checkout search lookups timing out",
 		Summary:     "Checkout requests are timing out.",
@@ -34,11 +33,10 @@ func TestDecodeIncidentObservedEvent(t *testing.T) {
 	encAttrs, encErr := EncodeAttributes(attrs)
 	require.NoError(t, encErr)
 	ev := &ent.NormalizedEvent{
-		Kind:       ne.KindIncidentObserved,
 		Attributes: encAttrs,
 	}
 
-	incEv, err := DecodeAs[IncidentObservedAttributes](ev)
+	incEv, err := DecodeSubjectAttributes[IncidentSubjectAttributes](ev)
 	require.NoError(t, err)
 	assert.Equal(t, "Checkout search lookups timing out", incEv.Attributes.Title)
 	assert.Equal(t, attrs.SeverityRef, incEv.Attributes.SeverityRef)
@@ -51,7 +49,7 @@ func TestDecodeWithRejectsMissingRequiredAttributes(t *testing.T) {
 			"foo_bar": "",
 		},
 	}
-	_, err := DecodeAs[ExampleEventAttributes](ev)
+	_, err := DecodeSubjectAttributes[ExampleEventAttributes](ev)
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "failed on the 'required' tag")
 }
@@ -63,7 +61,7 @@ func TestDecodeWithRejectsUnknownAttributes(t *testing.T) {
 			"unexpected": true,
 		},
 	}
-	_, err := DecodeAs[ExampleEventAttributes](ev)
+	_, err := DecodeSubjectAttributes[ExampleEventAttributes](ev)
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "invalid keys")
 }

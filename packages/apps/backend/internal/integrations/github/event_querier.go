@@ -91,13 +91,13 @@ func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter str
 
 			res := &rez.ProviderEventQueryResult{
 				Event: rez.ProviderEvent{
-					Provider:         integrationName,
-					ProviderSource:   sourceRepositories,
-					SubjectRef:       "github:" + payload.FullName,
-					ProviderEventRef: fmt.Sprintf("github:repositories:%s:%s", deliveryRefID, receivedAt.Format(time.RFC3339Nano)),
-					ReceivedAt:       receivedAt,
-					Payload:          body,
-					ContentType:      "application/json",
+					Provider:           integrationName,
+					ProviderSource:     sourceRepositories,
+					ProviderSubjectRef: "github:" + payload.FullName,
+					ProviderEventRef:   fmt.Sprintf("github:repositories:%s:%s", deliveryRefID, receivedAt.Format(time.RFC3339Nano)),
+					ReceivedAt:         receivedAt,
+					Payload:            body,
+					ContentType:        "application/json",
 				},
 				SourceCursorAfter: new(cursor),
 			}

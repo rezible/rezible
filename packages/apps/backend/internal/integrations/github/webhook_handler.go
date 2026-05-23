@@ -47,14 +47,14 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	deliveryRef := r.Header.Get("X-GitHub-Delivery")
 
-	subjectRef := fmt.Sprintf("github:%s", eventType)
+	ProviderSubjectRef := fmt.Sprintf("github:%s", eventType)
 	if eventType == sourcePushEvent {
 		var payload pushEventPayload
 		if jsonErr := json.Unmarshal(body, &payload); jsonErr != nil {
 			slog.Error("failed to unmarshal payload", "error", jsonErr.Error())
 		}
 		if payload.Repository.FullName != "" && payload.After != "" {
-			subjectRef = fmt.Sprintf("github:%s:%s", payload.Repository.FullName, payload.After)
+			ProviderSubjectRef = fmt.Sprintf("github:%s:%s", payload.Repository.FullName, payload.After)
 		}
 	} else if eventType == sourcePullEvent {
 		var payload pullRequestPayload
@@ -62,22 +62,22 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			slog.Error("failed to unmarshal payload", "error", jsonErr.Error())
 		}
 		if payload.Repository.FullName != "" && payload.Number != 0 {
-			subjectRef = fmt.Sprintf("github:%s:pr:%d", payload.Repository.FullName, payload.Number)
+			ProviderSubjectRef = fmt.Sprintf("github:%s:pr:%d", payload.Repository.FullName, payload.Number)
 		}
 	} else {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 	//} else if deliveryRef != "" {
-	//	subjectRef = fmt.Sprintf("github:%s:%s", eventType, deliveryRef)
+	//	ProviderSubjectRef = fmt.Sprintf("github:%s:%s", eventType, deliveryRef)
 	//}
 
 	pe := rez.ProviderEvent{
-		Provider:         integrationName,
-		ProviderSource:   eventType,
-		ProviderEventRef: deliveryRef,
-		SubjectRef:       subjectRef,
-		Payload:          body,
+		Provider:           integrationName,
+		ProviderSource:     eventType,
+		ProviderEventRef:   deliveryRef,
+		ProviderSubjectRef: ProviderSubjectRef,
+		Payload:            body,
 	}
 
 	if ingestErr := h.services.ProviderEvents.Ingest(r.Context(), pe); ingestErr != nil {

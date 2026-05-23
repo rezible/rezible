@@ -65,7 +65,7 @@ func TestEventsAPIWebhookEnqueuesVerifiedCallbackEvent(t *testing.T) {
 	provEvs.On("Ingest", mock.Anything, mock.MatchedBy(func(ev rez.ProviderEvent) bool {
 		return ev.Provider == integrationName &&
 			ev.ProviderSource == sourceEventsApiCallback &&
-			ev.SubjectRef == "slack:T123:D123:123.456" &&
+			ev.ProviderSubjectRef == "slack:T123:D123:123.456" &&
 			ev.ProviderEventRef == "Ev123"
 	})).Return(nil).Once()
 	msgs := mocks.NewMockMessageService(t)

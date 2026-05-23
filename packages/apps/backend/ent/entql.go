@@ -736,17 +736,17 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "NormalizedEvent",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			normalizedevent.FieldTenantID:         {Type: field.TypeInt, Column: normalizedevent.FieldTenantID},
-			normalizedevent.FieldKind:             {Type: field.TypeEnum, Column: normalizedevent.FieldKind},
-			normalizedevent.FieldProvider:         {Type: field.TypeString, Column: normalizedevent.FieldProvider},
-			normalizedevent.FieldProviderSource:   {Type: field.TypeString, Column: normalizedevent.FieldProviderSource},
-			normalizedevent.FieldProviderEventRef: {Type: field.TypeString, Column: normalizedevent.FieldProviderEventRef},
-			normalizedevent.FieldSubjectRef:       {Type: field.TypeString, Column: normalizedevent.FieldSubjectRef},
-			normalizedevent.FieldSubjectKind:      {Type: field.TypeString, Column: normalizedevent.FieldSubjectKind},
-			normalizedevent.FieldAttributes:       {Type: field.TypeJSON, Column: normalizedevent.FieldAttributes},
-			normalizedevent.FieldCreatedAt:        {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
-			normalizedevent.FieldOccurredAt:       {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
-			normalizedevent.FieldReceivedAt:       {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
+			normalizedevent.FieldTenantID:           {Type: field.TypeInt, Column: normalizedevent.FieldTenantID},
+			normalizedevent.FieldActivityKind:       {Type: field.TypeEnum, Column: normalizedevent.FieldActivityKind},
+			normalizedevent.FieldProvider:           {Type: field.TypeString, Column: normalizedevent.FieldProvider},
+			normalizedevent.FieldProviderSource:     {Type: field.TypeString, Column: normalizedevent.FieldProviderSource},
+			normalizedevent.FieldProviderEventRef:   {Type: field.TypeString, Column: normalizedevent.FieldProviderEventRef},
+			normalizedevent.FieldProviderSubjectRef: {Type: field.TypeString, Column: normalizedevent.FieldProviderSubjectRef},
+			normalizedevent.FieldSubjectKind:        {Type: field.TypeString, Column: normalizedevent.FieldSubjectKind},
+			normalizedevent.FieldAttributes:         {Type: field.TypeJSON, Column: normalizedevent.FieldAttributes},
+			normalizedevent.FieldCreatedAt:          {Type: field.TypeTime, Column: normalizedevent.FieldCreatedAt},
+			normalizedevent.FieldOccurredAt:         {Type: field.TypeTime, Column: normalizedevent.FieldOccurredAt},
+			normalizedevent.FieldReceivedAt:         {Type: field.TypeTime, Column: normalizedevent.FieldReceivedAt},
 		},
 	}
 	graph.Nodes[34] = &sqlgraph.Node{
@@ -8571,9 +8571,9 @@ func (f *NormalizedEventFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(normalizedevent.FieldTenantID))
 }
 
-// WhereKind applies the entql string predicate on the kind field.
-func (f *NormalizedEventFilter) WhereKind(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldKind))
+// WhereActivityKind applies the entql string predicate on the activity_kind field.
+func (f *NormalizedEventFilter) WhereActivityKind(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldActivityKind))
 }
 
 // WhereProvider applies the entql string predicate on the provider field.
@@ -8591,9 +8591,9 @@ func (f *NormalizedEventFilter) WhereProviderEventRef(p entql.StringP) {
 	f.Where(p.Field(normalizedevent.FieldProviderEventRef))
 }
 
-// WhereSubjectRef applies the entql string predicate on the subject_ref field.
-func (f *NormalizedEventFilter) WhereSubjectRef(p entql.StringP) {
-	f.Where(p.Field(normalizedevent.FieldSubjectRef))
+// WhereProviderSubjectRef applies the entql string predicate on the provider_subject_ref field.
+func (f *NormalizedEventFilter) WhereProviderSubjectRef(p entql.StringP) {
+	f.Where(p.Field(normalizedevent.FieldProviderSubjectRef))
 }
 
 // WhereSubjectKind applies the entql string predicate on the subject_kind field.

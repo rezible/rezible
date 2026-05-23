@@ -22,16 +22,16 @@ type NormalizedEvent struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// Normalized event type used to select validation and projection behavior.
-	Kind normalizedevent.Kind `json:"kind,omitempty"`
+	// Kind of activity represented by the event.
+	ActivityKind normalizedevent.ActivityKind `json:"activity_kind,omitempty"`
 	// Integration provider that produced the event, such as slack or github.
 	Provider string `json:"provider,omitempty"`
 	// Provider-specific event stream or webhook source the event came from.
 	ProviderSource string `json:"provider_source,omitempty"`
 	// Stable provider reference for the source event, used with the provider fields for idempotency.
 	ProviderEventRef string `json:"provider_event_ref,omitempty"`
-	// Stable external reference for the primary subject this event is about.
-	SubjectRef string `json:"subject_ref,omitempty"`
+	// Stable provider reference for the primary subject this event is about.
+	ProviderSubjectRef string `json:"provider_subject_ref,omitempty"`
 	// Provider-neutral type of the primary subject this event is about.
 	SubjectKind string `json:"subject_kind,omitempty"`
 	// Normalized attributes for this event kind.
@@ -88,7 +88,7 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case normalizedevent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedevent.FieldKind, normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldSubjectRef, normalizedevent.FieldSubjectKind:
+		case normalizedevent.FieldActivityKind, normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldProviderSubjectRef, normalizedevent.FieldSubjectKind:
 			values[i] = new(sql.NullString)
 		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt:
 			values[i] = new(sql.NullTime)
@@ -121,11 +121,11 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case normalizedevent.FieldKind:
+		case normalizedevent.FieldActivityKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field kind", values[i])
+				return fmt.Errorf("unexpected type %T for field activity_kind", values[i])
 			} else if value.Valid {
-				_m.Kind = normalizedevent.Kind(value.String)
+				_m.ActivityKind = normalizedevent.ActivityKind(value.String)
 			}
 		case normalizedevent.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -145,11 +145,11 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.ProviderEventRef = value.String
 			}
-		case normalizedevent.FieldSubjectRef:
+		case normalizedevent.FieldProviderSubjectRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subject_ref", values[i])
+				return fmt.Errorf("unexpected type %T for field provider_subject_ref", values[i])
 			} else if value.Valid {
-				_m.SubjectRef = value.String
+				_m.ProviderSubjectRef = value.String
 			}
 		case normalizedevent.FieldSubjectKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -232,8 +232,8 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
+	builder.WriteString("activity_kind=")
+	builder.WriteString(fmt.Sprintf("%v", _m.ActivityKind))
 	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
@@ -244,8 +244,8 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("provider_event_ref=")
 	builder.WriteString(_m.ProviderEventRef)
 	builder.WriteString(", ")
-	builder.WriteString("subject_ref=")
-	builder.WriteString(_m.SubjectRef)
+	builder.WriteString("provider_subject_ref=")
+	builder.WriteString(_m.ProviderSubjectRef)
 	builder.WriteString(", ")
 	builder.WriteString("subject_kind=")
 	builder.WriteString(_m.SubjectKind)

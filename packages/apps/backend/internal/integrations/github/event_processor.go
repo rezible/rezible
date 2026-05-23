@@ -56,12 +56,12 @@ func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.Normalize
 		occurredAt = hc.GetTimestamp().Time
 	}
 
-	subjectRef := prov.SubjectRef
-	if subjectRef == "" {
-		subjectRef = fmt.Sprintf("github:%s:%s", event.GetRepo().GetFullName(), event.GetAfter())
+	ProviderSubjectRef := prov.ProviderSubjectRef
+	if ProviderSubjectRef == "" {
+		ProviderSubjectRef = fmt.Sprintf("github:%s:%s", event.GetRepo().GetFullName(), event.GetAfter())
 	}
 
-	attrs := projections.CodeChangeObservedAttributes{
+	attrs := projections.CodeChangeSubjectAttributes{
 		RepositoryExternalRef: event.GetRepo().GetFullName(),
 		DisplayName:           event.GetRef(),
 	}
@@ -70,14 +70,14 @@ func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.Normalize
 		return nil, fmt.Errorf("encode change event observed attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourcePushEvent,
-		ProviderEventRef: prov.ProviderEventRef,
-		Kind:             ne.KindChangeEventObserved,
-		SubjectKind:      "change_event",
-		SubjectRef:       subjectRef,
-		OccurredAt:       occurredAt,
-		Attributes:       encodedAttrs,
+		Provider:           integrationName,
+		ProviderSource:     sourcePushEvent,
+		ProviderEventRef:   prov.ProviderEventRef,
+		ActivityKind:       ne.ActivityKindObserved,
+		SubjectKind:        projections.SubjectKindCodeChange.String(),
+		ProviderSubjectRef: ProviderSubjectRef,
+		OccurredAt:         occurredAt,
+		Attributes:         encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil
@@ -92,12 +92,12 @@ func (p *eventProcessor) processPullRequest(prov rez.ProviderEvent) (ent.Normali
 	pr := event.GetPullRequest()
 	prNum := pr.GetNumber()
 
-	subjectRef := prov.SubjectRef
-	if subjectRef == "" {
-		subjectRef = fmt.Sprintf("github:%s:pr:%d", event.GetRepo().GetFullName(), prNum)
+	ProviderSubjectRef := prov.ProviderSubjectRef
+	if ProviderSubjectRef == "" {
+		ProviderSubjectRef = fmt.Sprintf("github:%s:pr:%d", event.GetRepo().GetFullName(), prNum)
 	}
 
-	attrs := projections.CodeChangeObservedAttributes{
+	attrs := projections.CodeChangeSubjectAttributes{
 		RepositoryExternalRef: event.GetRepo().GetFullName(),
 		DisplayName:           pr.GetTitle(),
 	}
@@ -106,14 +106,14 @@ func (p *eventProcessor) processPullRequest(prov rez.ProviderEvent) (ent.Normali
 		return nil, fmt.Errorf("encode change event observed attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourcePullEvent,
-		Kind:             ne.KindChangeEventObserved,
-		SubjectKind:      "change_event",
-		ProviderEventRef: prov.ProviderEventRef,
-		SubjectRef:       subjectRef,
-		OccurredAt:       pr.GetCreatedAt().Time,
-		Attributes:       encodedAttrs,
+		Provider:           integrationName,
+		ProviderSource:     sourcePullEvent,
+		ActivityKind:       ne.ActivityKindObserved,
+		SubjectKind:        projections.SubjectKindCodeChange.String(),
+		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderSubjectRef: ProviderSubjectRef,
+		OccurredAt:         pr.GetCreatedAt().Time,
+		Attributes:         encodedAttrs,
 	}
 
 	return ent.NormalizedEvents{result}, nil
@@ -141,7 +141,7 @@ func (p *eventProcessor) processRepoObserved(prov rez.ProviderEvent) (ent.Normal
 
 	repositoryRef := payload.FullName
 
-	attrs := projections.RepositoryObservedAttributes{
+	attrs := projections.CodeForgeSubjectAttributes{
 		DisplayName: repositoryRef,
 		URL:         payload.HTMLURL,
 	}
@@ -150,15 +150,15 @@ func (p *eventProcessor) processRepoObserved(prov rez.ProviderEvent) (ent.Normal
 		return nil, fmt.Errorf("encode repository observed attributes: %w", encodeErr)
 	}
 	result := &ent.NormalizedEvent{
-		Provider:         integrationName,
-		ProviderSource:   sourceRepositories,
-		Kind:             ne.KindRepositoryObserved,
-		SubjectKind:      "repository",
-		ProviderEventRef: prov.ProviderEventRef,
-		SubjectRef:       repositoryRef,
-		OccurredAt:       occurredAt,
-		ReceivedAt:       prov.ReceivedAt,
-		Attributes:       encodedAttrs,
+		Provider:           integrationName,
+		ProviderSource:     sourceRepositories,
+		ActivityKind:       ne.ActivityKindObserved,
+		SubjectKind:        projections.SubjectKindCodeForge.String(),
+		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderSubjectRef: repositoryRef,
+		OccurredAt:         occurredAt,
+		ReceivedAt:         prov.ReceivedAt,
+		Attributes:         encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {
 		result.ReceivedAt = occurredAt

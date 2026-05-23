@@ -2,10 +2,21 @@ package projections
 
 import (
 	"github.com/rezible/rezible/ent"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 )
 
 const attributeFieldNameTag = "attr"
+
+type SubjectKind string
+
+func (k SubjectKind) String() string {
+	return string(k)
+}
+
+func (k SubjectKind) Matches(ev *ent.NormalizedEvent) bool {
+	return SubjectKind(ev.SubjectKind) == k
+}
+
+const SubjectKindChatMessage SubjectKind = "chat_message"
 
 type (
 	// ChatMessage is a normalized chat message observed from a messaging provider.
@@ -20,46 +31,49 @@ type (
 	}
 )
 
-func DecodeChatMessage(ev *ent.NormalizedEvent) (*ChatMessage, error) {
-	return decodeKind[ChatMessageAttributes](ev, ne.KindChatMessage)
+func DecodeChatMessageEvent(ev *ent.NormalizedEvent) (*ChatMessage, error) {
+	return DecodeSubjectAttributes[ChatMessageAttributes](ev)
 }
 
 type (
-	// RepositoryObserved is a normalized repository observation from a code forge provider.
-	RepositoryObserved = Event[RepositoryObservedAttributes]
+	CodeForgeEvent = Event[CodeForgeSubjectAttributes]
 
-	// RepositoryObservedAttributes are the provider-neutral attributes persisted for repository observations.
-	RepositoryObservedAttributes struct {
+	// CodeForgeSubjectAttributes are the provider-neutral attributes persisted for repository observations.
+	CodeForgeSubjectAttributes struct {
 		DisplayName string `attr:"display_name" validate:"required"`
 		URL         string `attr:"url"`
 	}
 )
 
-func DecodeRepositoryObserved(ev *ent.NormalizedEvent) (*RepositoryObserved, error) {
-	return decodeKind[RepositoryObservedAttributes](ev, ne.KindRepositoryObserved)
+const SubjectKindCodeForge SubjectKind = "code_forge"
+
+func DecodeCodeForgeEvent(ev *ent.NormalizedEvent) (*CodeForgeEvent, error) {
+	return DecodeSubjectAttributes[CodeForgeSubjectAttributes](ev)
 }
 
 type (
-	// CodeChangeObserved is a normalized code change event from a code forge provider.
-	CodeChangeObserved = Event[CodeChangeObservedAttributes]
+	// CodeChangeEvent is a normalized code change event from a code forge provider.
+	CodeChangeEvent = Event[CodeChangeSubjectAttributes]
 
-	// CodeChangeObservedAttributes are the provider-neutral attributes persisted for code change events.
-	CodeChangeObservedAttributes struct {
+	// CodeChangeSubjectAttributes are the provider-neutral attributes persisted for code change events.
+	CodeChangeSubjectAttributes struct {
 		RepositoryExternalRef string `attr:"repository_external_ref" validate:"required"`
 		DisplayName           string `attr:"display_name" validate:"required"`
 	}
 )
 
-func DecodeCodeChangeObserved(ev *ent.NormalizedEvent) (*CodeChangeObserved, error) {
-	return decodeKind[CodeChangeObservedAttributes](ev, ne.KindChangeEventObserved)
+const SubjectKindCodeChange SubjectKind = "code_change"
+
+func DecodeCodeChangeEvent(ev *ent.NormalizedEvent) (*CodeChangeEvent, error) {
+	return DecodeSubjectAttributes[CodeChangeSubjectAttributes](ev)
 }
 
 type (
-	// UserObserved is a normalized user observation from an organization or chat provider.
-	UserObserved = Event[UserObservedAttributes]
+	// UserEvent is a normalized user observation from an organization or chat provider.
+	UserEvent = Event[UserSubjectAttributes]
 
-	// UserObservedAttributes are the provider-neutral attributes persisted for user observations.
-	UserObservedAttributes struct {
+	// UserSubjectAttributes are the provider-neutral attributes persisted for user observations.
+	UserSubjectAttributes struct {
 		Name     string `attr:"name" validate:"required"`
 		Email    string `attr:"email" validate:"required"`
 		ChatId   string `attr:"chat_id"`
@@ -67,16 +81,18 @@ type (
 	}
 )
 
-func DecodeUserObserved(ev *ent.NormalizedEvent) (*UserObserved, error) {
-	return decodeKind[UserObservedAttributes](ev, ne.KindUserObserved)
+const SubjectKindUser SubjectKind = "User"
+
+func DecodeUserEvent(ev *ent.NormalizedEvent) (*UserEvent, error) {
+	return DecodeSubjectAttributes[UserSubjectAttributes](ev)
 }
 
 type (
-	// IncidentObserved is a normalized incident observation from an incident provider.
-	IncidentObserved = Event[IncidentObservedAttributes]
+	// IncidentEvent is a normalized incident observation from an incident provider.
+	IncidentEvent = Event[IncidentSubjectAttributes]
 
-	// IncidentObservedAttributes are the provider-neutral attributes persisted for incident observations.
-	IncidentObservedAttributes struct {
+	// IncidentSubjectAttributes are the provider-neutral attributes persisted for incident observations.
+	IncidentSubjectAttributes struct {
 		Title       string `attr:"title" validate:"required"`
 		ExternalRef string `attr:"external_ref" validate:"required"`
 		Summary     string `attr:"summary"`
@@ -85,32 +101,36 @@ type (
 	}
 )
 
-func DecodeIncidentObserved(ev *ent.NormalizedEvent) (*IncidentObserved, error) {
-	return decodeKind[IncidentObservedAttributes](ev, ne.KindIncidentObserved)
+const SubjectKindIncident SubjectKind = "Incident"
+
+func DecodeIncidentEvent(ev *ent.NormalizedEvent) (*IncidentEvent, error) {
+	return DecodeSubjectAttributes[IncidentSubjectAttributes](ev)
 }
 
 type (
-	// AlertObserved is a normalized alert observation from an alerting provider.
-	AlertObserved = Event[AlertObservedAttributes]
+	// AlertEvent is a normalized alert observation from an alerting provider.
+	AlertEvent = Event[AlertSubjectAttributes]
 
-	// AlertObservedAttributes are the provider-neutral attributes persisted for alert observations.
-	AlertObservedAttributes struct {
+	// AlertSubjectAttributes are the provider-neutral attributes persisted for alert observations.
+	AlertSubjectAttributes struct {
 		Title       string `attr:"title" validate:"required"`
 		Description string `attr:"description"`
 		Definition  string `attr:"definition"`
 	}
 )
 
-func DecodeAlertObserved(ev *ent.NormalizedEvent) (*AlertObserved, error) {
-	return decodeKind[AlertObservedAttributes](ev, ne.KindAlertObserved)
+const SubjectKindAlert SubjectKind = "Alert"
+
+func DecodeAlertEvent(ev *ent.NormalizedEvent) (*AlertEvent, error) {
+	return DecodeSubjectAttributes[AlertSubjectAttributes](ev)
 }
 
 type (
-	// SystemComponentObserved is a normalized system component observation from a topology provider.
-	SystemComponentObserved = Event[SystemComponentObservedAttributes]
+	// SystemComponentEvent is a normalized system component observation from a topology provider.
+	SystemComponentEvent = Event[SystemComponentSubjectAttributes]
 
-	// SystemComponentObservedAttributes are the provider-neutral attributes persisted for system component observations.
-	SystemComponentObservedAttributes struct {
+	// SystemComponentSubjectAttributes are the provider-neutral attributes persisted for system component observations.
+	SystemComponentSubjectAttributes struct {
 		ExternalRef string         `attr:"external_ref" validate:"required"`
 		Kind        string         `attr:"kind" validate:"required"`
 		DisplayName string         `attr:"display_name" validate:"required"`
@@ -119,16 +139,18 @@ type (
 	}
 )
 
-func DecodeSystemComponentObserved(ev *ent.NormalizedEvent) (*SystemComponentObserved, error) {
-	return decodeKind[SystemComponentObservedAttributes](ev, ne.KindSystemComponentObserved)
+const SubjectKindSystemComponent SubjectKind = "SystemComponent"
+
+func DecodeSystemComponentEvent(ev *ent.NormalizedEvent) (*SystemComponentEvent, error) {
+	return DecodeSubjectAttributes[SystemComponentSubjectAttributes](ev)
 }
 
 type (
-	// SystemRelationshipObserved is a normalized system relationship observation from a topology provider.
-	SystemRelationshipObserved = Event[SystemRelationshipObservedAttributes]
+	// SystemRelationshipEvent is a normalized system relationship observation from a topology provider.
+	SystemRelationshipEvent = Event[SystemRelationshipSubjectAttributes]
 
-	// SystemRelationshipObservedAttributes are the provider-neutral attributes persisted for system relationship observations.
-	SystemRelationshipObservedAttributes struct {
+	// SystemRelationshipSubjectAttributes are the provider-neutral attributes persisted for system relationship observations.
+	SystemRelationshipSubjectAttributes struct {
 		ExternalRef       string         `attr:"external_ref" validate:"required"`
 		Kind              string         `attr:"kind" validate:"required"`
 		DisplayName       string         `attr:"display_name"`
@@ -143,6 +165,8 @@ type (
 	}
 )
 
-func DecodeSystemRelationshipObserved(ev *ent.NormalizedEvent) (*SystemRelationshipObserved, error) {
-	return decodeKind[SystemRelationshipObservedAttributes](ev, ne.KindSystemRelationshipObserved)
+const SubjectKindSystemRelationship SubjectKind = "SystemRelationship"
+
+func DecodeSystemRelationshipEvent(ev *ent.NormalizedEvent) (*SystemRelationshipEvent, error) {
+	return DecodeSubjectAttributes[SystemRelationshipSubjectAttributes](ev)
 }

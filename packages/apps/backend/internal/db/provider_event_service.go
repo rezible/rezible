@@ -124,7 +124,7 @@ func (a processProviderEventArgs) validate() error {
 	if a.Event.ProviderSource == "" {
 		return fmt.Errorf("event provider_source is required")
 	}
-	if a.Event.SubjectRef == "" {
+	if a.Event.ProviderSubjectRef == "" {
 		return fmt.Errorf("event subject_ref is required")
 	}
 	if len(a.Event.Payload) == 0 {
@@ -277,9 +277,9 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 		c.SetProvider(ev.Provider).
 			SetProviderSource(ev.ProviderSource).
 			SetProviderEventRef(ev.ProviderEventRef).
-			SetKind(ev.Kind).
+			SetActivityKind(ev.ActivityKind).
 			SetSubjectKind(ev.SubjectKind).
-			SetSubjectRef(ev.SubjectRef).
+			SetProviderSubjectRef(ev.ProviderSubjectRef).
 			SetOccurredAt(ev.OccurredAt).
 			SetReceivedAt(ev.ReceivedAt).
 			SetAttributes(ev.Attributes)
@@ -289,8 +289,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 		ne.FieldProvider,
 		ne.FieldProviderSource,
 		ne.FieldProviderEventRef,
-		ne.FieldKind,
-		ne.FieldSubjectRef,
+		ne.FieldProviderSubjectRef,
 	)
 	eventRefs := mapset.NewSet[string]()
 	for _, ev := range normalizedEvents {
@@ -480,7 +479,7 @@ func (m *providerEventTelemetry) recordProcessed(ctx context.Context, ev rez.Pro
 	logAttrs := []slog.Attr{
 		slog.Any("provider", ev.Provider),
 		slog.Any("source", ev.ProviderSource),
-		slog.Any("subject_ref", ev.SubjectRef),
+		slog.Any("subject_ref", ev.ProviderSubjectRef),
 		slog.Any("error", res.error),
 	}
 	if res.error == nil {

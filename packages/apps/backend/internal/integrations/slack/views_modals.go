@@ -52,7 +52,7 @@ func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotat
 	}
 
 	lookupAnno := ea.And(
-		ea.HasEventWith(ne.SubjectRef(meta.MsgId.String())),
+		ea.HasEventWith(ne.ProviderSubjectRef(meta.MsgId.String())),
 		ea.CreatorID(userId))
 
 	curr, currErr := s.annos.Lookup(ctx, lookupAnno)
@@ -112,7 +112,7 @@ func (s *ChatService) getAnnotationModalAnnotation(ctx context.Context, view sla
 
 	// TODO: convert this from event processor?
 	ev := &ent.NormalizedEvent{
-		SubjectRef: meta.MsgId.String(),
+		ProviderSubjectRef: meta.MsgId.String(),
 		//Kind:        "message",
 		//Timestamp:   meta.MsgId.getTimestamp(),
 		//Source:      "slack",

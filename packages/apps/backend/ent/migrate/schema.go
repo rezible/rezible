@@ -1417,11 +1417,11 @@ var (
 	// NormalizedEventsColumns holds the columns for the "normalized_events" table.
 	NormalizedEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "kind", Type: field.TypeEnum, Enums: []string{"chat_message", "repository_observed", "user_observed", "incident_observed", "alert_observed", "change_event_observed", "system_component_observed", "system_relationship_observed"}},
+		{Name: "activity_kind", Type: field.TypeEnum, Enums: []string{"received", "observed", "deleted"}},
 		{Name: "provider", Type: field.TypeString},
 		{Name: "provider_source", Type: field.TypeString},
 		{Name: "provider_event_ref", Type: field.TypeString},
-		{Name: "subject_ref", Type: field.TypeString},
+		{Name: "provider_subject_ref", Type: field.TypeString},
 		{Name: "subject_kind", Type: field.TypeString},
 		{Name: "attributes", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "created_at", Type: field.TypeTime},
@@ -1449,14 +1449,14 @@ var (
 				Columns: []*schema.Column{NormalizedEventsColumns[11]},
 			},
 			{
-				Name:    "normalizedevent_tenant_id_provider_provider_source_provider_event_ref_kind_subject_ref",
+				Name:    "normalizedevent_tenant_id_provider_provider_source_provider_event_ref_provider_subject_ref",
 				Unique:  true,
-				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[2], NormalizedEventsColumns[3], NormalizedEventsColumns[4], NormalizedEventsColumns[1], NormalizedEventsColumns[5]},
+				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[2], NormalizedEventsColumns[3], NormalizedEventsColumns[4], NormalizedEventsColumns[5]},
 			},
 			{
-				Name:    "normalizedevent_tenant_id_kind_occurred_at",
+				Name:    "normalizedevent_tenant_id_provider_provider_source_occurred_at",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[1], NormalizedEventsColumns[9]},
+				Columns: []*schema.Column{NormalizedEventsColumns[11], NormalizedEventsColumns[2], NormalizedEventsColumns[3], NormalizedEventsColumns[9]},
 			},
 		},
 	}

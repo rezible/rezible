@@ -85,13 +85,13 @@ func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string
 
 			res := &rez.ProviderEventQueryResult{
 				Event: rez.ProviderEvent{
-					Provider:         integrationName,
-					ProviderSource:   sourceUsers,
-					ProviderEventRef: fmt.Sprintf("%s:%s:%s", q.ci.teamId(), u.ID, u.Updated),
-					SubjectRef:       fmt.Sprintf("slack:%s", u.ID),
-					ReceivedAt:       time.Now(),
-					Payload:          payload,
-					ContentType:      "application/json",
+					Provider:           integrationName,
+					ProviderSource:     sourceUsers,
+					ProviderEventRef:   fmt.Sprintf("%s:%s:%s", q.ci.teamId(), u.ID, u.Updated),
+					ProviderSubjectRef: fmt.Sprintf("slack:%s", u.ID),
+					ReceivedAt:         time.Now(),
+					Payload:            payload,
+					ContentType:        "application/json",
 				},
 			}
 

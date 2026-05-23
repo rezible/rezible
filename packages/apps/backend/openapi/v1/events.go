@@ -27,18 +27,18 @@ type (
 	}
 
 	EventAttributes struct {
-		Kind        string    `json:"kind"`
-		Title       string    `json:"title"`
-		Description string    `json:"description"`
-		Timestamp   time.Time `json:"timestamp"`
-		RosterId    uuid.UUID `json:"roster_id,omitempty"`
-		AlertId     uuid.UUID `json:"alert_id,omitempty"`
+		ActivityKind string    `json:"kind"`
+		Title        string    `json:"title"`
+		Description  string    `json:"description"`
+		Timestamp    time.Time `json:"timestamp"`
+		RosterId     uuid.UUID `json:"roster_id,omitempty"`
+		AlertId      uuid.UUID `json:"alert_id,omitempty"`
 	}
 )
 
 func EventFromEnt(e *ent.NormalizedEvent) Event {
 	attr := EventAttributes{
-		Kind: e.Kind.String(),
+		ActivityKind: e.ActivityKind.String(),
 		//Title:       e.Title,
 		//Description: e.Description,
 		Timestamp: e.OccurredAt,
