@@ -79,7 +79,6 @@ func (KnowledgeEntityAlias) Fields() []ent.Field {
 		field.UUID("entity_id", uuid.UUID{}),
 		field.String("display_name").Optional(),
 		field.String("provider"),
-		field.String("provider_source"),
 		field.String("provider_subject_ref"),
 	}
 }
@@ -97,7 +96,7 @@ func (KnowledgeEntityAlias) Edges() []ent.Edge {
 func (KnowledgeEntityAlias) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "entity_id"),
-		index.Fields("tenant_id", "provider", "provider_source", "provider_subject_ref").Unique(),
+		index.Fields("tenant_id", "provider", "provider_subject_ref").Unique(),
 	}
 }
 

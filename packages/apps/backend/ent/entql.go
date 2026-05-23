@@ -625,7 +625,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			knowledgeentityalias.FieldEntityID:           {Type: field.TypeUUID, Column: knowledgeentityalias.FieldEntityID},
 			knowledgeentityalias.FieldDisplayName:        {Type: field.TypeString, Column: knowledgeentityalias.FieldDisplayName},
 			knowledgeentityalias.FieldProvider:           {Type: field.TypeString, Column: knowledgeentityalias.FieldProvider},
-			knowledgeentityalias.FieldProviderSource:     {Type: field.TypeString, Column: knowledgeentityalias.FieldProviderSource},
 			knowledgeentityalias.FieldProviderSubjectRef: {Type: field.TypeString, Column: knowledgeentityalias.FieldProviderSubjectRef},
 		},
 	}
@@ -7868,11 +7867,6 @@ func (f *KnowledgeEntityAliasFilter) WhereDisplayName(p entql.StringP) {
 // WhereProvider applies the entql string predicate on the provider field.
 func (f *KnowledgeEntityAliasFilter) WhereProvider(p entql.StringP) {
 	f.Where(p.Field(knowledgeentityalias.FieldProvider))
-}
-
-// WhereProviderSource applies the entql string predicate on the provider_source field.
-func (f *KnowledgeEntityAliasFilter) WhereProviderSource(p entql.StringP) {
-	f.Where(p.Field(knowledgeentityalias.FieldProviderSource))
 }
 
 // WhereProviderSubjectRef applies the entql string predicate on the provider_subject_ref field.

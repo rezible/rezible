@@ -19,7 +19,8 @@ mod packages 'packages'
     just backend::codegen
     just packages::generate-api-client
 
-@generate-initial-migration:
+@regenerate-and-apply-db-schema:
     just backend::gen-schema
     just dev setup-workspace --force
     just backend::create-initial-migration
+    just backend::apply-migrations

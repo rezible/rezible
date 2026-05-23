@@ -50,7 +50,6 @@ func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, set
 		conflictCols := sql.ConflictColumns(
 			knea.FieldTenantID,
 			knea.FieldProvider,
-			knea.FieldProviderSource,
 			knea.FieldProviderSubjectRef,
 		)
 		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeEntityAliasUpsert) {
@@ -73,8 +72,7 @@ func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, set
 
 func (s *KnowledgeService) lookupEntityAliasRef(ctx context.Context, ref EntityAliasRef) (*ent.KnowledgeEntityAlias, error) {
 	queryExisting := s.dbc.KnowledgeEntityAlias.Query().Where(
-		knea.Provider(ref.Provider), knea.ProviderSource(ref.ProviderSource),
-		knea.ProviderSubjectRef(ref.ProviderSubjectRef))
+		knea.Provider(ref.Provider), knea.ProviderSubjectRef(ref.ProviderSubjectRef))
 	return queryExisting.Only(ctx)
 }
 

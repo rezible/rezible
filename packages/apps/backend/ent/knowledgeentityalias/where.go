@@ -87,11 +87,6 @@ func Provider(v string) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldProvider, v))
 }
 
-// ProviderSource applies equality check predicate on the "provider_source" field. It's identical to ProviderSourceEQ.
-func ProviderSource(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldProviderSource, v))
-}
-
 // ProviderSubjectRef applies equality check predicate on the "provider_subject_ref" field. It's identical to ProviderSubjectRefEQ.
 func ProviderSubjectRef(v string) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldProviderSubjectRef, v))
@@ -355,71 +350,6 @@ func ProviderEqualFold(v string) predicate.KnowledgeEntityAlias {
 // ProviderContainsFold applies the ContainsFold predicate on the "provider" field.
 func ProviderContainsFold(v string) predicate.KnowledgeEntityAlias {
 	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldProvider, v))
-}
-
-// ProviderSourceEQ applies the EQ predicate on the "provider_source" field.
-func ProviderSourceEQ(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEQ(FieldProviderSource, v))
-}
-
-// ProviderSourceNEQ applies the NEQ predicate on the "provider_source" field.
-func ProviderSourceNEQ(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNEQ(FieldProviderSource, v))
-}
-
-// ProviderSourceIn applies the In predicate on the "provider_source" field.
-func ProviderSourceIn(vs ...string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldIn(FieldProviderSource, vs...))
-}
-
-// ProviderSourceNotIn applies the NotIn predicate on the "provider_source" field.
-func ProviderSourceNotIn(vs ...string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldNotIn(FieldProviderSource, vs...))
-}
-
-// ProviderSourceGT applies the GT predicate on the "provider_source" field.
-func ProviderSourceGT(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGT(FieldProviderSource, v))
-}
-
-// ProviderSourceGTE applies the GTE predicate on the "provider_source" field.
-func ProviderSourceGTE(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldGTE(FieldProviderSource, v))
-}
-
-// ProviderSourceLT applies the LT predicate on the "provider_source" field.
-func ProviderSourceLT(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLT(FieldProviderSource, v))
-}
-
-// ProviderSourceLTE applies the LTE predicate on the "provider_source" field.
-func ProviderSourceLTE(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldLTE(FieldProviderSource, v))
-}
-
-// ProviderSourceContains applies the Contains predicate on the "provider_source" field.
-func ProviderSourceContains(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldContains(FieldProviderSource, v))
-}
-
-// ProviderSourceHasPrefix applies the HasPrefix predicate on the "provider_source" field.
-func ProviderSourceHasPrefix(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldHasPrefix(FieldProviderSource, v))
-}
-
-// ProviderSourceHasSuffix applies the HasSuffix predicate on the "provider_source" field.
-func ProviderSourceHasSuffix(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldHasSuffix(FieldProviderSource, v))
-}
-
-// ProviderSourceEqualFold applies the EqualFold predicate on the "provider_source" field.
-func ProviderSourceEqualFold(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldEqualFold(FieldProviderSource, v))
-}
-
-// ProviderSourceContainsFold applies the ContainsFold predicate on the "provider_source" field.
-func ProviderSourceContainsFold(v string) predicate.KnowledgeEntityAlias {
-	return predicate.KnowledgeEntityAlias(sql.FieldContainsFold(FieldProviderSource, v))
 }
 
 // ProviderSubjectRefEQ applies the EQ predicate on the "provider_subject_ref" field.

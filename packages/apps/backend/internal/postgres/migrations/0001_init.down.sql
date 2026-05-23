@@ -412,8 +412,8 @@ DROP INDEX "knowledgeevidence_tenant_id_entity_id";
 DROP INDEX "knowledgeevidence_tenant_id";
 -- reverse: create "knowledge_evidences" table
 DROP TABLE "knowledge_evidences";
--- reverse: create index "knowledgeentityalias_tenant_id_bedde5b02dd708153cce4f6b86ce1c2c" to table: "knowledge_entity_alias"
-DROP INDEX "knowledgeentityalias_tenant_id_bedde5b02dd708153cce4f6b86ce1c2c";
+-- reverse: create index "knowledgeentityalias_tenant_id_provider_provider_subject_ref" to table: "knowledge_entity_alias"
+DROP INDEX "knowledgeentityalias_tenant_id_provider_provider_subject_ref";
 -- reverse: create index "knowledgeentityalias_tenant_id_entity_id" to table: "knowledge_entity_alias"
 DROP INDEX "knowledgeentityalias_tenant_id_entity_id";
 -- reverse: create index "knowledgeentityalias_tenant_id" to table: "knowledge_entity_alias"

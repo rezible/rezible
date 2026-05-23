@@ -87,12 +87,6 @@ func (_c *KnowledgeEntityAliasCreate) SetProvider(v string) *KnowledgeEntityAlia
 	return _c
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_c *KnowledgeEntityAliasCreate) SetProviderSource(v string) *KnowledgeEntityAliasCreate {
-	_c.mutation.SetProviderSource(v)
-	return _c
-}
-
 // SetProviderSubjectRef sets the "provider_subject_ref" field.
 func (_c *KnowledgeEntityAliasCreate) SetProviderSubjectRef(v string) *KnowledgeEntityAliasCreate {
 	_c.mutation.SetProviderSubjectRef(v)
@@ -216,9 +210,6 @@ func (_c *KnowledgeEntityAliasCreate) check() error {
 	if _, ok := _c.mutation.Provider(); !ok {
 		return &ValidationError{Name: "provider", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.provider"`)}
 	}
-	if _, ok := _c.mutation.ProviderSource(); !ok {
-		return &ValidationError{Name: "provider_source", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.provider_source"`)}
-	}
 	if _, ok := _c.mutation.ProviderSubjectRef(); !ok {
 		return &ValidationError{Name: "provider_subject_ref", err: errors.New(`ent: missing required field "KnowledgeEntityAlias.provider_subject_ref"`)}
 	}
@@ -280,10 +271,6 @@ func (_c *KnowledgeEntityAliasCreate) createSpec() (*KnowledgeEntityAlias, *sqlg
 	if value, ok := _c.mutation.Provider(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProvider, field.TypeString, value)
 		_node.Provider = value
-	}
-	if value, ok := _c.mutation.ProviderSource(); ok {
-		_spec.SetField(knowledgeentityalias.FieldProviderSource, field.TypeString, value)
-		_node.ProviderSource = value
 	}
 	if value, ok := _c.mutation.ProviderSubjectRef(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProviderSubjectRef, field.TypeString, value)
@@ -460,18 +447,6 @@ func (u *KnowledgeEntityAliasUpsert) UpdateProvider() *KnowledgeEntityAliasUpser
 	return u
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (u *KnowledgeEntityAliasUpsert) SetProviderSource(v string) *KnowledgeEntityAliasUpsert {
-	u.Set(knowledgeentityalias.FieldProviderSource, v)
-	return u
-}
-
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsert) UpdateProviderSource() *KnowledgeEntityAliasUpsert {
-	u.SetExcluded(knowledgeentityalias.FieldProviderSource)
-	return u
-}
-
 // SetProviderSubjectRef sets the "provider_subject_ref" field.
 func (u *KnowledgeEntityAliasUpsert) SetProviderSubjectRef(v string) *KnowledgeEntityAliasUpsert {
 	u.Set(knowledgeentityalias.FieldProviderSubjectRef, v)
@@ -609,20 +584,6 @@ func (u *KnowledgeEntityAliasUpsertOne) SetProvider(v string) *KnowledgeEntityAl
 func (u *KnowledgeEntityAliasUpsertOne) UpdateProvider() *KnowledgeEntityAliasUpsertOne {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
 		s.UpdateProvider()
-	})
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (u *KnowledgeEntityAliasUpsertOne) SetProviderSource(v string) *KnowledgeEntityAliasUpsertOne {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetProviderSource(v)
-	})
-}
-
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertOne) UpdateProviderSource() *KnowledgeEntityAliasUpsertOne {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateProviderSource()
 	})
 }
 
@@ -932,20 +893,6 @@ func (u *KnowledgeEntityAliasUpsertBulk) SetProvider(v string) *KnowledgeEntityA
 func (u *KnowledgeEntityAliasUpsertBulk) UpdateProvider() *KnowledgeEntityAliasUpsertBulk {
 	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
 		s.UpdateProvider()
-	})
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (u *KnowledgeEntityAliasUpsertBulk) SetProviderSource(v string) *KnowledgeEntityAliasUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.SetProviderSource(v)
-	})
-}
-
-// UpdateProviderSource sets the "provider_source" field to the value that was provided on create.
-func (u *KnowledgeEntityAliasUpsertBulk) UpdateProviderSource() *KnowledgeEntityAliasUpsertBulk {
-	return u.Update(func(s *KnowledgeEntityAliasUpsert) {
-		s.UpdateProviderSource()
 	})
 }
 

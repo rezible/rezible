@@ -28,8 +28,6 @@ const (
 	FieldDisplayName = "display_name"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
-	// FieldProviderSource holds the string denoting the provider_source field in the database.
-	FieldProviderSource = "provider_source"
 	// FieldProviderSubjectRef holds the string denoting the provider_subject_ref field in the database.
 	FieldProviderSubjectRef = "provider_subject_ref"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
@@ -72,7 +70,6 @@ var Columns = []string{
 	FieldEntityID,
 	FieldDisplayName,
 	FieldProvider,
-	FieldProviderSource,
 	FieldProviderSubjectRef,
 }
 
@@ -140,11 +137,6 @@ func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
 // ByProvider orders the results by the provider field.
 func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
-}
-
-// ByProviderSource orders the results by the provider_source field.
-func ByProviderSource(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProviderSource, opts...).ToFunc()
 }
 
 // ByProviderSubjectRef orders the results by the provider_subject_ref field.

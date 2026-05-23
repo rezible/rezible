@@ -1115,7 +1115,6 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "display_name", Type: field.TypeString, Nullable: true},
 		{Name: "provider", Type: field.TypeString},
-		{Name: "provider_source", Type: field.TypeString},
 		{Name: "provider_subject_ref", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "entity_id", Type: field.TypeUUID},
@@ -1128,13 +1127,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "knowledge_entity_alias_tenants_tenant",
-				Columns:    []*schema.Column{KnowledgeEntityAliasColumns[7]},
+				Columns:    []*schema.Column{KnowledgeEntityAliasColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "knowledge_entity_alias_knowledge_entities_entity",
-				Columns:    []*schema.Column{KnowledgeEntityAliasColumns[8]},
+				Columns:    []*schema.Column{KnowledgeEntityAliasColumns[7]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1143,17 +1142,17 @@ var (
 			{
 				Name:    "knowledgeentityalias_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntityAliasColumns[7]},
+				Columns: []*schema.Column{KnowledgeEntityAliasColumns[6]},
 			},
 			{
 				Name:    "knowledgeentityalias_tenant_id_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{KnowledgeEntityAliasColumns[7], KnowledgeEntityAliasColumns[8]},
+				Columns: []*schema.Column{KnowledgeEntityAliasColumns[6], KnowledgeEntityAliasColumns[7]},
 			},
 			{
-				Name:    "knowledgeentityalias_tenant_id_provider_provider_source_provider_subject_ref",
+				Name:    "knowledgeentityalias_tenant_id_provider_provider_subject_ref",
 				Unique:  true,
-				Columns: []*schema.Column{KnowledgeEntityAliasColumns[7], KnowledgeEntityAliasColumns[4], KnowledgeEntityAliasColumns[5], KnowledgeEntityAliasColumns[6]},
+				Columns: []*schema.Column{KnowledgeEntityAliasColumns[6], KnowledgeEntityAliasColumns[4], KnowledgeEntityAliasColumns[5]},
 			},
 		},
 	}

@@ -89,7 +89,6 @@ func (kp *knowledgeEntityEventProjector) projectEvent(ev *ent.NormalizedEvent) (
 
 type EntityAliasRef struct {
 	Provider           string
-	ProviderSource     string
 	ProviderSubjectRef string
 }
 
@@ -119,15 +118,11 @@ func (kp *knowledgeEntityEventProjector) convertProjectedAlias(alias *ent.Knowle
 	if alias.Provider == "" {
 		return nil, fmt.Errorf("provider is required")
 	}
-	if alias.ProviderSource == "" {
-		return nil, fmt.Errorf("provider_source is required")
-	}
 	if alias.ProviderSubjectRef == "" {
 		return nil, fmt.Errorf("provider_subject_ref is required")
 	}
 	return &EntityAliasRef{
 		Provider:           alias.Provider,
-		ProviderSource:     alias.ProviderSource,
 		ProviderSubjectRef: alias.ProviderSubjectRef,
 	}, nil
 }
@@ -221,9 +216,8 @@ func (kp *knowledgeEntityEventProjector) saveProjectedEntity(ctx context.Context
 		if existingAlias != nil {
 			if existingAlias.EntityID != savedEntity.ID {
 				return nil, fmt.Errorf(
-					"knowledge alias %s/%s/%s already belongs to entity %s, cannot attach to entity %s",
+					"knowledge alias %s/%s already belongs to entity %s, cannot attach to entity %s",
 					alias.Provider,
-					alias.ProviderSource,
 					alias.ProviderSubjectRef,
 					existingAlias.EntityID,
 					savedEntity.ID,
@@ -235,7 +229,6 @@ func (kp *knowledgeEntityEventProjector) saveProjectedEntity(ctx context.Context
 		setEntityAlias := func(m *ent.KnowledgeEntityAliasMutation) {
 			m.SetEntityID(savedEntity.ID)
 			m.SetProvider(alias.Provider)
-			m.SetProviderSource(alias.ProviderSource)
 			m.SetProviderSubjectRef(alias.ProviderSubjectRef)
 		}
 		savedAlias, aliasErr := kp.knowledge.SetEntityAlias(ctx, existingAliasId, setEntityAlias)
@@ -383,7 +376,6 @@ func (kp *knowledgeEntityEventProjector) makeEntityRef(ev *ent.NormalizedEvent, 
 	}
 	return EntityAliasRef{
 		Provider:           ev.Provider,
-		ProviderSource:     ev.ProviderSource,
 		ProviderSubjectRef: ProviderSubjectRef,
 	}
 }

@@ -11,14 +11,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func makeEntityAliasRef(ev *ent.NormalizedEvent) EntityAliasRef {
-	return EntityAliasRef{
-		Provider:           ev.Provider,
-		ProviderSource:     ev.ProviderSource,
-		ProviderSubjectRef: ev.ProviderSubjectRef,
-	}
-}
-
 func TestProjectCodeForgeObservedMapsToRepositoryFactEvidence(t *testing.T) {
 	attrs := projections.CodeForgeSubjectAttributes{
 		DisplayName: "myorg/api",
@@ -34,9 +26,8 @@ func TestProjectCodeForgeObservedMapsToRepositoryFactEvidence(t *testing.T) {
 	var encodeAttrsErr error
 	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
 	require.NoError(t, encodeAttrsErr)
-	ref := makeEntityAliasRef(ev)
-
 	proj := newKnowledgeEntityEventProjector(ev, nil)
+
 	result := proj.projectCodeForgeEvent(&projections.CodeForgeEvent{Event: ev, Attributes: attrs})
 
 	require.Len(t, result.Entities, 1)
@@ -47,7 +38,7 @@ func TestProjectCodeForgeObservedMapsToRepositoryFactEvidence(t *testing.T) {
 	assert.Equal(t, assertionCodeRepositoryExists, entity.AssertionKind)
 	assert.Equal(t, "myorg/api", entity.DisplayName)
 	require.Len(t, entity.Aliases, 1)
-	assert.Equal(t, ref, entity.Aliases[0])
+	assert.Equal(t, proj.makeEntityRef(ev, ""), entity.Aliases[0])
 }
 
 func TestProjectCodeChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *testing.T) {
@@ -112,7 +103,6 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 	var encodeAttrsErr error
 	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
 	require.NoError(t, encodeAttrsErr)
-	ref := makeEntityAliasRef(ev)
 
 	proj := newKnowledgeEntityEventProjector(ev, nil)
 	result := proj.projectSystemComponentEvent(&projections.SystemComponentEvent{Event: ev, Attributes: attrs})
@@ -126,7 +116,7 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 	assert.Equal(t, attrs.Description, entity.Description)
 	assert.Equal(t, attrs.Properties["criticality"], entity.Properties["criticality"])
 	require.Len(t, entity.Aliases, 1)
-	assert.Equal(t, ref, entity.Aliases[0])
+	assert.Equal(t, proj.makeEntityRef(ev, ""), entity.Aliases[0])
 }
 
 func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t *testing.T) {

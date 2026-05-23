@@ -101,20 +101,6 @@ func (_u *KnowledgeEntityAliasUpdate) SetNillableProvider(v *string) *KnowledgeE
 	return _u
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (_u *KnowledgeEntityAliasUpdate) SetProviderSource(v string) *KnowledgeEntityAliasUpdate {
-	_u.mutation.SetProviderSource(v)
-	return _u
-}
-
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdate) SetNillableProviderSource(v *string) *KnowledgeEntityAliasUpdate {
-	if v != nil {
-		_u.SetProviderSource(*v)
-	}
-	return _u
-}
-
 // SetProviderSubjectRef sets the "provider_subject_ref" field.
 func (_u *KnowledgeEntityAliasUpdate) SetProviderSubjectRef(v string) *KnowledgeEntityAliasUpdate {
 	_u.mutation.SetProviderSubjectRef(v)
@@ -266,9 +252,6 @@ func (_u *KnowledgeEntityAliasUpdate) sqlSave(ctx context.Context) (_node int, e
 	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProvider, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderSource(); ok {
-		_spec.SetField(knowledgeentityalias.FieldProviderSource, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ProviderSubjectRef(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProviderSubjectRef, field.TypeString, value)
@@ -440,20 +423,6 @@ func (_u *KnowledgeEntityAliasUpdateOne) SetProvider(v string) *KnowledgeEntityA
 func (_u *KnowledgeEntityAliasUpdateOne) SetNillableProvider(v *string) *KnowledgeEntityAliasUpdateOne {
 	if v != nil {
 		_u.SetProvider(*v)
-	}
-	return _u
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (_u *KnowledgeEntityAliasUpdateOne) SetProviderSource(v string) *KnowledgeEntityAliasUpdateOne {
-	_u.mutation.SetProviderSource(v)
-	return _u
-}
-
-// SetNillableProviderSource sets the "provider_source" field if the given value is not nil.
-func (_u *KnowledgeEntityAliasUpdateOne) SetNillableProviderSource(v *string) *KnowledgeEntityAliasUpdateOne {
-	if v != nil {
-		_u.SetProviderSource(*v)
 	}
 	return _u
 }
@@ -639,9 +608,6 @@ func (_u *KnowledgeEntityAliasUpdateOne) sqlSave(ctx context.Context) (_node *Kn
 	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProvider, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.ProviderSource(); ok {
-		_spec.SetField(knowledgeentityalias.FieldProviderSource, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ProviderSubjectRef(); ok {
 		_spec.SetField(knowledgeentityalias.FieldProviderSubjectRef, field.TypeString, value)

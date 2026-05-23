@@ -24316,7 +24316,6 @@ type KnowledgeEntityAliasMutation struct {
 	updated_at           *time.Time
 	display_name         *string
 	provider             *string
-	provider_source      *string
 	provider_subject_ref *string
 	clearedFields        map[string]struct{}
 	tenant               *int
@@ -24664,42 +24663,6 @@ func (m *KnowledgeEntityAliasMutation) ResetProvider() {
 	m.provider = nil
 }
 
-// SetProviderSource sets the "provider_source" field.
-func (m *KnowledgeEntityAliasMutation) SetProviderSource(s string) {
-	m.provider_source = &s
-}
-
-// ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *KnowledgeEntityAliasMutation) ProviderSource() (r string, exists bool) {
-	v := m.provider_source
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderSource returns the old "provider_source" field's value of the KnowledgeEntityAlias entity.
-// If the KnowledgeEntityAlias object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEntityAliasMutation) OldProviderSource(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSource requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
-	}
-	return oldValue.ProviderSource, nil
-}
-
-// ResetProviderSource resets all changes to the "provider_source" field.
-func (m *KnowledgeEntityAliasMutation) ResetProviderSource() {
-	m.provider_source = nil
-}
-
 // SetProviderSubjectRef sets the "provider_subject_ref" field.
 func (m *KnowledgeEntityAliasMutation) SetProviderSubjectRef(s string) {
 	m.provider_subject_ref = &s
@@ -24878,7 +24841,7 @@ func (m *KnowledgeEntityAliasMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeEntityAliasMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, knowledgeentityalias.FieldTenantID)
 	}
@@ -24896,9 +24859,6 @@ func (m *KnowledgeEntityAliasMutation) Fields() []string {
 	}
 	if m.provider != nil {
 		fields = append(fields, knowledgeentityalias.FieldProvider)
-	}
-	if m.provider_source != nil {
-		fields = append(fields, knowledgeentityalias.FieldProviderSource)
 	}
 	if m.provider_subject_ref != nil {
 		fields = append(fields, knowledgeentityalias.FieldProviderSubjectRef)
@@ -24923,8 +24883,6 @@ func (m *KnowledgeEntityAliasMutation) Field(name string) (ent.Value, bool) {
 		return m.DisplayName()
 	case knowledgeentityalias.FieldProvider:
 		return m.Provider()
-	case knowledgeentityalias.FieldProviderSource:
-		return m.ProviderSource()
 	case knowledgeentityalias.FieldProviderSubjectRef:
 		return m.ProviderSubjectRef()
 	}
@@ -24948,8 +24906,6 @@ func (m *KnowledgeEntityAliasMutation) OldField(ctx context.Context, name string
 		return m.OldDisplayName(ctx)
 	case knowledgeentityalias.FieldProvider:
 		return m.OldProvider(ctx)
-	case knowledgeentityalias.FieldProviderSource:
-		return m.OldProviderSource(ctx)
 	case knowledgeentityalias.FieldProviderSubjectRef:
 		return m.OldProviderSubjectRef(ctx)
 	}
@@ -25002,13 +24958,6 @@ func (m *KnowledgeEntityAliasMutation) SetField(name string, value ent.Value) er
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProvider(v)
-		return nil
-	case knowledgeentityalias.FieldProviderSource:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderSource(v)
 		return nil
 	case knowledgeentityalias.FieldProviderSubjectRef:
 		v, ok := value.(string)
@@ -25095,9 +25044,6 @@ func (m *KnowledgeEntityAliasMutation) ResetField(name string) error {
 		return nil
 	case knowledgeentityalias.FieldProvider:
 		m.ResetProvider()
-		return nil
-	case knowledgeentityalias.FieldProviderSource:
-		m.ResetProviderSource()
 		return nil
 	case knowledgeentityalias.FieldProviderSubjectRef:
 		m.ResetProviderSubjectRef()

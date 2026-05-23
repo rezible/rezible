@@ -32,8 +32,6 @@ type KnowledgeEntityAlias struct {
 	DisplayName string `json:"display_name,omitempty"`
 	// Provider holds the value of the "provider" field.
 	Provider string `json:"provider,omitempty"`
-	// ProviderSource holds the value of the "provider_source" field.
-	ProviderSource string `json:"provider_source,omitempty"`
 	// ProviderSubjectRef holds the value of the "provider_subject_ref" field.
 	ProviderSubjectRef string `json:"provider_subject_ref,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -93,7 +91,7 @@ func (*KnowledgeEntityAlias) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgeentityalias.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case knowledgeentityalias.FieldDisplayName, knowledgeentityalias.FieldProvider, knowledgeentityalias.FieldProviderSource, knowledgeentityalias.FieldProviderSubjectRef:
+		case knowledgeentityalias.FieldDisplayName, knowledgeentityalias.FieldProvider, knowledgeentityalias.FieldProviderSubjectRef:
 			values[i] = new(sql.NullString)
 		case knowledgeentityalias.FieldCreatedAt, knowledgeentityalias.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -155,12 +153,6 @@ func (_m *KnowledgeEntityAlias) assignValues(columns []string, values []any) err
 				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
 				_m.Provider = value.String
-			}
-		case knowledgeentityalias.FieldProviderSource:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider_source", values[i])
-			} else if value.Valid {
-				_m.ProviderSource = value.String
 			}
 		case knowledgeentityalias.FieldProviderSubjectRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -236,9 +228,6 @@ func (_m *KnowledgeEntityAlias) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)
-	builder.WriteString(", ")
-	builder.WriteString("provider_source=")
-	builder.WriteString(_m.ProviderSource)
 	builder.WriteString(", ")
 	builder.WriteString("provider_subject_ref=")
 	builder.WriteString(_m.ProviderSubjectRef)

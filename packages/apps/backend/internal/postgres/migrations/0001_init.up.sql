@@ -129,13 +129,13 @@ CREATE INDEX "knowledgeentity_tenant_id_kind_last_observed_at" ON "knowledge_ent
 -- create index "knowledgeentity_tenant_id_kind_deleted_at" to table: "knowledge_entities"
 CREATE INDEX "knowledgeentity_tenant_id_kind_deleted_at" ON "knowledge_entities" ("tenant_id", "kind", "deleted_at");
 -- create "knowledge_entity_alias" table
-CREATE TABLE "knowledge_entity_alias" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "display_name" character varying NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "knowledge_entity_alias" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "display_name" character varying NULL, "provider" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentityalias_tenant_id" to table: "knowledge_entity_alias"
 CREATE INDEX "knowledgeentityalias_tenant_id" ON "knowledge_entity_alias" ("tenant_id");
 -- create index "knowledgeentityalias_tenant_id_entity_id" to table: "knowledge_entity_alias"
 CREATE INDEX "knowledgeentityalias_tenant_id_entity_id" ON "knowledge_entity_alias" ("tenant_id", "entity_id");
--- create index "knowledgeentityalias_tenant_id_bedde5b02dd708153cce4f6b86ce1c2c" to table: "knowledge_entity_alias"
-CREATE UNIQUE INDEX "knowledgeentityalias_tenant_id_bedde5b02dd708153cce4f6b86ce1c2c" ON "knowledge_entity_alias" ("tenant_id", "provider", "provider_source", "provider_subject_ref");
+-- create index "knowledgeentityalias_tenant_id_provider_provider_subject_ref" to table: "knowledge_entity_alias"
+CREATE UNIQUE INDEX "knowledgeentityalias_tenant_id_provider_provider_subject_ref" ON "knowledge_entity_alias" ("tenant_id", "provider", "provider_subject_ref");
 -- create "knowledge_evidences" table
 CREATE TABLE "knowledge_evidences" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "subject_type" character varying NOT NULL, "assertion_kind" character varying NOT NULL, "evidence_kind" character varying NOT NULL, "observed_at" timestamptz NOT NULL, "effective_at" timestamptz NULL, "source" character varying NOT NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "entity_id" uuid NULL, "relationship_id" uuid NULL, "alias_id" uuid NULL, "normalized_event_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeevidence_tenant_id" to table: "knowledge_evidences"
