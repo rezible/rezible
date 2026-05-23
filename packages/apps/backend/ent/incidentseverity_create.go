@@ -16,7 +16,6 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebriefquestion"
 	"github.com/rezible/rezible/ent/incidentseverity"
-	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -44,20 +43,6 @@ func (_c *IncidentSeverityCreate) SetArchiveTime(v time.Time) *IncidentSeverityC
 func (_c *IncidentSeverityCreate) SetNillableArchiveTime(v *time.Time) *IncidentSeverityCreate {
 	if v != nil {
 		_c.SetArchiveTime(*v)
-	}
-	return _c
-}
-
-// SetProjectedEventID sets the "projected_event_id" field.
-func (_c *IncidentSeverityCreate) SetProjectedEventID(v uuid.UUID) *IncidentSeverityCreate {
-	_c.mutation.SetProjectedEventID(v)
-	return _c
-}
-
-// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
-func (_c *IncidentSeverityCreate) SetNillableProjectedEventID(v *uuid.UUID) *IncidentSeverityCreate {
-	if v != nil {
-		_c.SetProjectedEventID(*v)
 	}
 	return _c
 }
@@ -119,25 +104,6 @@ func (_c *IncidentSeverityCreate) SetNillableID(v *uuid.UUID) *IncidentSeverityC
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *IncidentSeverityCreate) SetTenant(v *Tenant) *IncidentSeverityCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
-func (_c *IncidentSeverityCreate) SetProjectedFromID(id uuid.UUID) *IncidentSeverityCreate {
-	_c.mutation.SetProjectedFromID(id)
-	return _c
-}
-
-// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
-func (_c *IncidentSeverityCreate) SetNillableProjectedFromID(id *uuid.UUID) *IncidentSeverityCreate {
-	if id != nil {
-		_c = _c.SetProjectedFromID(*id)
-	}
-	return _c
-}
-
-// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
-func (_c *IncidentSeverityCreate) SetProjectedFrom(v *NormalizedEvent) *IncidentSeverityCreate {
-	return _c.SetProjectedFromID(v.ID)
 }
 
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by IDs.
@@ -306,24 +272,6 @@ func (_c *IncidentSeverityCreate) createSpec() (*IncidentSeverity, *sqlgraph.Cre
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ProjectedFromIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentseverity.ProjectedFromTable,
-			Columns: []string{incidentseverity.ProjectedFromColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.IncidentSeverity
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.ProjectedEventID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.IncidentsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -425,24 +373,6 @@ func (u *IncidentSeverityUpsert) UpdateArchiveTime() *IncidentSeverityUpsert {
 // ClearArchiveTime clears the value of the "archive_time" field.
 func (u *IncidentSeverityUpsert) ClearArchiveTime() *IncidentSeverityUpsert {
 	u.SetNull(incidentseverity.FieldArchiveTime)
-	return u
-}
-
-// SetProjectedEventID sets the "projected_event_id" field.
-func (u *IncidentSeverityUpsert) SetProjectedEventID(v uuid.UUID) *IncidentSeverityUpsert {
-	u.Set(incidentseverity.FieldProjectedEventID, v)
-	return u
-}
-
-// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
-func (u *IncidentSeverityUpsert) UpdateProjectedEventID() *IncidentSeverityUpsert {
-	u.SetExcluded(incidentseverity.FieldProjectedEventID)
-	return u
-}
-
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (u *IncidentSeverityUpsert) ClearProjectedEventID() *IncidentSeverityUpsert {
-	u.SetNull(incidentseverity.FieldProjectedEventID)
 	return u
 }
 
@@ -581,27 +511,6 @@ func (u *IncidentSeverityUpsertOne) UpdateArchiveTime() *IncidentSeverityUpsertO
 func (u *IncidentSeverityUpsertOne) ClearArchiveTime() *IncidentSeverityUpsertOne {
 	return u.Update(func(s *IncidentSeverityUpsert) {
 		s.ClearArchiveTime()
-	})
-}
-
-// SetProjectedEventID sets the "projected_event_id" field.
-func (u *IncidentSeverityUpsertOne) SetProjectedEventID(v uuid.UUID) *IncidentSeverityUpsertOne {
-	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.SetProjectedEventID(v)
-	})
-}
-
-// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
-func (u *IncidentSeverityUpsertOne) UpdateProjectedEventID() *IncidentSeverityUpsertOne {
-	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.UpdateProjectedEventID()
-	})
-}
-
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (u *IncidentSeverityUpsertOne) ClearProjectedEventID() *IncidentSeverityUpsertOne {
-	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.ClearProjectedEventID()
 	})
 }
 
@@ -918,27 +827,6 @@ func (u *IncidentSeverityUpsertBulk) UpdateArchiveTime() *IncidentSeverityUpsert
 func (u *IncidentSeverityUpsertBulk) ClearArchiveTime() *IncidentSeverityUpsertBulk {
 	return u.Update(func(s *IncidentSeverityUpsert) {
 		s.ClearArchiveTime()
-	})
-}
-
-// SetProjectedEventID sets the "projected_event_id" field.
-func (u *IncidentSeverityUpsertBulk) SetProjectedEventID(v uuid.UUID) *IncidentSeverityUpsertBulk {
-	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.SetProjectedEventID(v)
-	})
-}
-
-// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
-func (u *IncidentSeverityUpsertBulk) UpdateProjectedEventID() *IncidentSeverityUpsertBulk {
-	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.UpdateProjectedEventID()
-	})
-}
-
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (u *IncidentSeverityUpsertBulk) ClearProjectedEventID() *IncidentSeverityUpsertBulk {
-	return u.Update(func(s *IncidentSeverityUpsert) {
-		s.ClearProjectedEventID()
 	})
 }
 

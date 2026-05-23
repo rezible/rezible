@@ -22,8 +22,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldProjectedEventID holds the string denoting the projected_event_id field in the database.
-	FieldProjectedEventID = "projected_event_id"
+	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
+	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldSlug holds the string denoting the slug field in the database.
 	FieldSlug = "slug"
 	// FieldTitle holds the string denoting the title field in the database.
@@ -40,8 +40,8 @@ const (
 	FieldOpenedAt = "opened_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeProjectedFrom holds the string denoting the projected_from edge name in mutations.
-	EdgeProjectedFrom = "projected_from"
+	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
+	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgeSeverity holds the string denoting the severity edge name in mutations.
 	EdgeSeverity = "severity"
 	// EdgeType holds the string denoting the type edge name in mutations.
@@ -83,13 +83,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// ProjectedFromTable is the table that holds the projected_from relation/edge.
-	ProjectedFromTable = "incidents"
-	// ProjectedFromInverseTable is the table name for the NormalizedEvent entity.
-	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
-	ProjectedFromInverseTable = "normalized_events"
-	// ProjectedFromColumn is the table column denoting the projected_from relation/edge.
-	ProjectedFromColumn = "projected_event_id"
+	// KnowledgeEntityTable is the table that holds the knowledge_entity relation/edge.
+	KnowledgeEntityTable = "incidents"
+	// KnowledgeEntityInverseTable is the table name for the KnowledgeEntity entity.
+	// It exists in this package in order to avoid circular dependency with the "knowledgeentity" package.
+	KnowledgeEntityInverseTable = "knowledge_entities"
+	// KnowledgeEntityColumn is the table column denoting the knowledge_entity relation/edge.
+	KnowledgeEntityColumn = "knowledge_entity_id"
 	// SeverityTable is the table that holds the severity relation/edge.
 	SeverityTable = "incidents"
 	// SeverityInverseTable is the table name for the IncidentSeverity entity.
@@ -197,7 +197,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldProjectedEventID,
+	FieldKnowledgeEntityID,
 	FieldSlug,
 	FieldTitle,
 	FieldSeverityID,
@@ -278,9 +278,9 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByProjectedEventID orders the results by the projected_event_id field.
-func ByProjectedEventID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProjectedEventID, opts...).ToFunc()
+// ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
+func ByKnowledgeEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKnowledgeEntityID, opts...).ToFunc()
 }
 
 // BySlug orders the results by the slug field.
@@ -325,10 +325,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByProjectedFromField orders the results by projected_from field.
-func ByProjectedFromField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByKnowledgeEntityField orders the results by knowledge_entity field.
+func ByKnowledgeEntityField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newProjectedFromStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newKnowledgeEntityStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -541,11 +541,11 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newProjectedFromStep() *sqlgraph.Step {
+func newKnowledgeEntityStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ProjectedFromInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ProjectedFromTable, ProjectedFromColumn),
+		sqlgraph.To(KnowledgeEntityInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 	)
 }
 func newSeverityStep() *sqlgraph.Step {

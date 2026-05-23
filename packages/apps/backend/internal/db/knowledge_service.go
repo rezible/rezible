@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	stdsql "database/sql"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql"
@@ -44,20 +46,15 @@ func (s *KnowledgeService) SetEntity(ctx context.Context, id uuid.UUID, setFn fu
 
 func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error) {
 	var mutator ent.EntityMutator[*ent.KnowledgeEntityAlias, *ent.KnowledgeEntityAliasMutation]
-	if id == uuid.Nil {
-		create := s.dbc.KnowledgeEntityAlias.Create().SetID(uuid.New())
-		mutator = create
-		conflictCols := sql.ConflictColumns(
-			knea.FieldTenantID,
-			knea.FieldProvider,
-			knea.FieldProviderSubjectRef,
-		)
-		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeEntityAliasUpsert) {
-			u.UpdateUpdatedAt()
-			u.UpdateDisplayName()
-		})
-	} else {
+	if id != uuid.Nil {
 		mutator = s.dbc.KnowledgeEntityAlias.UpdateOneID(id)
+	} else {
+		create := s.dbc.KnowledgeEntityAlias.Create().SetID(uuid.New())
+		conflictCols := sql.ConflictColumns(knea.FieldTenantID, knea.FieldProvider, knea.FieldProviderSubjectRef)
+		create.OnConflict(conflictCols).
+			UpdateUpdatedAt().
+			UpdateDisplayName()
+		mutator = create
 	}
 
 	setFn(mutator.Mutation())
@@ -71,8 +68,8 @@ func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, set
 }
 
 func (s *KnowledgeService) lookupEntityAliasRef(ctx context.Context, ref EntityAliasRef) (*ent.KnowledgeEntityAlias, error) {
-	queryExisting := s.dbc.KnowledgeEntityAlias.Query().Where(
-		knea.Provider(ref.Provider), knea.ProviderSubjectRef(ref.ProviderSubjectRef))
+	queryExisting := s.dbc.KnowledgeEntityAlias.Query().
+		Where(knea.Provider(ref.Provider), knea.ProviderSubjectRef(ref.ProviderSubjectRef))
 	return queryExisting.Only(ctx)
 }
 
@@ -95,13 +92,13 @@ func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, se
 	setFn(mutation)
 
 	if creating {
-		conflictCols := sql.ConflictColumns(
+		relationshipConflictCols := sql.ConflictColumns(
 			knr.FieldTenantID,
 			knr.FieldSourceEntityID,
 			knr.FieldTargetEntityID,
 			knr.FieldKind,
 		)
-		create.OnConflict(conflictCols).Update(func(u *ent.KnowledgeRelationshipUpsert) {
+		upsertRelationshipFn := func(u *ent.KnowledgeRelationshipUpsert) {
 			u.UpdateUpdatedAt()
 			if _, ok := mutation.DisplayName(); ok {
 				u.UpdateDisplayName()
@@ -123,7 +120,8 @@ func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, se
 			} else if _, ok := mutation.DeletedAt(); ok {
 				u.UpdateDeletedAt()
 			}
-		})
+		}
+		create.OnConflict(relationshipConflictCols).Update(upsertRelationshipFn)
 	}
 
 	rel, saveErr := mutator.Save(ctx)
@@ -164,7 +162,11 @@ func (s *KnowledgeService) AddEvidence(ctx context.Context, setFn func(*ent.Know
 	} else {
 		conflictCols = append(conflictCols, knev.FieldRelationshipID)
 	}
-	upsert := create.OnConflict(sql.ConflictColumns(conflictCols...)).DoNothing()
+	upsert := create.OnConflictColumns(conflictCols...).DoNothing()
 
-	return upsert.ID(ctx)
+	id, saveErr := upsert.ID(ctx)
+	if saveErr != nil && !errors.Is(saveErr, stdsql.ErrNoRows) {
+		return uuid.Nil, fmt.Errorf("save evidence: %w", saveErr)
+	}
+	return id, nil
 }

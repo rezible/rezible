@@ -877,18 +877,18 @@ func (c *AlertClient) QueryTenant(_m *Alert) *TenantQuery {
 	return query
 }
 
-// QueryProjectedFrom queries the projected_from edge of a Alert.
-func (c *AlertClient) QueryProjectedFrom(_m *Alert) *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: c.config}).Query()
+// QueryKnowledgeEntity queries the knowledge_entity edge of a Alert.
+func (c *AlertClient) QueryKnowledgeEntity(_m *Alert) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alert.Table, alert.FieldID, id),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alert.ProjectedFromTable, alert.ProjectedFromColumn),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alert.KnowledgeEntityTable, alert.KnowledgeEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Alert
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1938,18 +1938,18 @@ func (c *IncidentClient) QueryTenant(_m *Incident) *TenantQuery {
 	return query
 }
 
-// QueryProjectedFrom queries the projected_from edge of a Incident.
-func (c *IncidentClient) QueryProjectedFrom(_m *Incident) *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: c.config}).Query()
+// QueryKnowledgeEntity queries the knowledge_entity edge of a Incident.
+func (c *IncidentClient) QueryKnowledgeEntity(_m *Incident) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(incident.Table, incident.FieldID, id),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incident.ProjectedFromTable, incident.ProjectedFromColumn),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incident.KnowledgeEntityTable, incident.KnowledgeEntityColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Incident
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -4434,25 +4434,6 @@ func (c *IncidentSeverityClient) QueryTenant(_m *IncidentSeverity) *TenantQuery 
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IncidentSeverity
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryProjectedFrom queries the projected_from edge of a IncidentSeverity.
-func (c *IncidentSeverityClient) QueryProjectedFrom(_m *IncidentSeverity) *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(incidentseverity.Table, incidentseverity.FieldID, id),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, incidentseverity.ProjectedFromTable, incidentseverity.ProjectedFromColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.IncidentSeverity
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil

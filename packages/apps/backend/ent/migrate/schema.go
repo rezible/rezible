@@ -15,7 +15,7 @@ var (
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "definition", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "projected_event_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "roster_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AlertsTable holds the schema information for the "alerts" table.
@@ -31,9 +31,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "alerts_normalized_events_projected_from",
+				Symbol:     "alerts_knowledge_entities_knowledge_entity",
 				Columns:    []*schema.Column{AlertsColumns[5]},
-				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
@@ -48,6 +48,11 @@ var (
 				Name:    "alert_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{AlertsColumns[4]},
+			},
+			{
+				Name:    "alert_tenant_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{AlertsColumns[4], AlertsColumns[5]},
 			},
 		},
 	}
@@ -237,7 +242,7 @@ var (
 		{Name: "chat_channel_id", Type: field.TypeString, Nullable: true},
 		{Name: "opened_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "projected_event_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "severity_id", Type: field.TypeUUID},
 		{Name: "type_id", Type: field.TypeUUID},
 	}
@@ -254,9 +259,9 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "incidents_normalized_events_projected_from",
+				Symbol:     "incidents_knowledge_entities_knowledge_entity",
 				Columns:    []*schema.Column{IncidentsColumns[9]},
-				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 			{
@@ -277,6 +282,11 @@ var (
 				Name:    "incident_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{IncidentsColumns[8]},
+			},
+			{
+				Name:    "incident_tenant_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentsColumns[8], IncidentsColumns[9]},
 			},
 		},
 	}
@@ -673,7 +683,6 @@ var (
 		{Name: "color", Type: field.TypeString, Nullable: true},
 		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "projected_event_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// IncidentSeveritiesTable holds the schema information for the "incident_severities" table.
 	IncidentSeveritiesTable = &schema.Table{
@@ -687,18 +696,17 @@ var (
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
-			{
-				Symbol:     "incident_severities_normalized_events_projected_from",
-				Columns:    []*schema.Column{IncidentSeveritiesColumns[7]},
-				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "incidentseverity_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{IncidentSeveritiesColumns[6]},
+			},
+			{
+				Name:    "incidentseverity_tenant_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentSeveritiesColumns[6], IncidentSeveritiesColumns[2]},
 			},
 		},
 	}
@@ -970,6 +978,11 @@ var (
 				Name:    "incidenttype_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{IncidentTypesColumns[3]},
+			},
+			{
+				Name:    "incidenttype_tenant_id_name",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentTypesColumns[3], IncidentTypesColumns[2]},
 			},
 		},
 	}
@@ -3181,7 +3194,7 @@ var (
 
 func init() {
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
-	AlertsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
+	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	AlertsTable.ForeignKeys[2].RefTable = OncallRostersTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertFeedbacksTable.ForeignKeys[1].RefTable = AlertsTable
@@ -3196,7 +3209,7 @@ func init() {
 	EventAnnotationsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	EventAnnotationsTable.ForeignKeys[2].RefTable = UsersTable
 	IncidentsTable.ForeignKeys[0].RefTable = TenantsTable
-	IncidentsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
+	IncidentsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	IncidentsTable.ForeignKeys[2].RefTable = IncidentSeveritiesTable
 	IncidentsTable.ForeignKeys[3].RefTable = IncidentTypesTable
 	IncidentDebriefsTable.ForeignKeys[0].RefTable = IncidentsTable
@@ -3223,7 +3236,6 @@ func init() {
 	IncidentRoleAssignmentsTable.ForeignKeys[2].RefTable = UsersTable
 	IncidentRoleAssignmentsTable.ForeignKeys[3].RefTable = IncidentRolesTable
 	IncidentSeveritiesTable.ForeignKeys[0].RefTable = TenantsTable
-	IncidentSeveritiesTable.ForeignKeys[1].RefTable = NormalizedEventsTable
 	IncidentTagsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentTimelineEventsTable.ForeignKeys[0].RefTable = IncidentsTable
 	IncidentTimelineEventsTable.ForeignKeys[1].RefTable = TenantsTable

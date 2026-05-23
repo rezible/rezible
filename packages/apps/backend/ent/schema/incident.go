@@ -19,7 +19,7 @@ func (Incident) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		TimestampsMixin{},
-		EventEntityLinkMixin{},
+		KnowledgeEntityLinkMixin{},
 	}
 }
 

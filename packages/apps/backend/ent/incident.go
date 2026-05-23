@@ -13,7 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -29,8 +29,8 @@ type Incident struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// ProjectedEventID holds the value of the "projected_event_id" field.
-	ProjectedEventID uuid.UUID `json:"projected_event_id,omitempty"`
+	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
+	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// Slug holds the value of the "slug" field.
 	Slug string `json:"slug,omitempty"`
 	// Title holds the value of the "title" field.
@@ -55,8 +55,8 @@ type Incident struct {
 type IncidentEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// ProjectedFrom holds the value of the projected_from edge.
-	ProjectedFrom *NormalizedEvent `json:"projected_from,omitempty"`
+	// KnowledgeEntity holds the value of the knowledge_entity edge.
+	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// Severity holds the value of the severity edge.
 	Severity *IncidentSeverity `json:"severity,omitempty"`
 	// Type holds the value of the type edge.
@@ -105,15 +105,15 @@ func (e IncidentEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// ProjectedFromOrErr returns the ProjectedFrom value or an error if the edge
+// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e IncidentEdges) ProjectedFromOrErr() (*NormalizedEvent, error) {
-	if e.ProjectedFrom != nil {
-		return e.ProjectedFrom, nil
+func (e IncidentEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+	if e.KnowledgeEntity != nil {
+		return e.KnowledgeEntity, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: normalizedevent.Label}
+		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
-	return nil, &NotLoadedError{edge: "projected_from"}
+	return nil, &NotLoadedError{edge: "knowledge_entity"}
 }
 
 // SeverityOrErr returns the Severity value or an error if the edge
@@ -271,13 +271,15 @@ func (*Incident) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case incident.FieldKnowledgeEntityID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case incident.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case incident.FieldSlug, incident.FieldTitle, incident.FieldSummary, incident.FieldChatChannelID:
 			values[i] = new(sql.NullString)
 		case incident.FieldCreatedAt, incident.FieldUpdatedAt, incident.FieldOpenedAt:
 			values[i] = new(sql.NullTime)
-		case incident.FieldID, incident.FieldProjectedEventID, incident.FieldSeverityID, incident.FieldTypeID:
+		case incident.FieldID, incident.FieldSeverityID, incident.FieldTypeID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -318,11 +320,12 @@ func (_m *Incident) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case incident.FieldProjectedEventID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field projected_event_id", values[i])
-			} else if value != nil {
-				_m.ProjectedEventID = *value
+		case incident.FieldKnowledgeEntityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
+			} else if value.Valid {
+				_m.KnowledgeEntityID = new(uuid.UUID)
+				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
 			}
 		case incident.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -384,9 +387,9 @@ func (_m *Incident) QueryTenant() *TenantQuery {
 	return NewIncidentClient(_m.config).QueryTenant(_m)
 }
 
-// QueryProjectedFrom queries the "projected_from" edge of the Incident entity.
-func (_m *Incident) QueryProjectedFrom() *NormalizedEventQuery {
-	return NewIncidentClient(_m.config).QueryProjectedFrom(_m)
+// QueryKnowledgeEntity queries the "knowledge_entity" edge of the Incident entity.
+func (_m *Incident) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	return NewIncidentClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
 // QuerySeverity queries the "severity" edge of the Incident entity.
@@ -501,8 +504,10 @@ func (_m *Incident) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("projected_event_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ProjectedEventID))
+	if v := _m.KnowledgeEntityID; v != nil {
+		builder.WriteString("knowledge_entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("slug=")
 	builder.WriteString(_m.Slug)

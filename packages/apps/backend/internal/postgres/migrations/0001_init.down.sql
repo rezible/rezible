@@ -117,7 +117,7 @@ ALTER TABLE "incident_timeline_events" DROP CONSTRAINT "incident_timeline_events
 -- reverse: modify "incident_tags" table
 ALTER TABLE "incident_tags" DROP CONSTRAINT "incident_tags_tenants_tenant";
 -- reverse: modify "incident_severities" table
-ALTER TABLE "incident_severities" DROP CONSTRAINT "incident_severities_normalized_events_projected_from", DROP CONSTRAINT "incident_severities_tenants_tenant";
+ALTER TABLE "incident_severities" DROP CONSTRAINT "incident_severities_tenants_tenant";
 -- reverse: modify "incident_role_assignments" table
 ALTER TABLE "incident_role_assignments" DROP CONSTRAINT "incident_role_assignments_incident_roles_role", DROP CONSTRAINT "incident_role_assignments_users_user", DROP CONSTRAINT "incident_role_assignments_incidents_incident", DROP CONSTRAINT "incident_role_assignments_tenants_tenant";
 -- reverse: modify "incident_roles" table
@@ -139,7 +139,7 @@ ALTER TABLE "incident_debrief_messages" DROP CONSTRAINT "incident_debrief_messag
 -- reverse: modify "incident_debriefs" table
 ALTER TABLE "incident_debriefs" DROP CONSTRAINT "incident_debriefs_users_incident_debriefs", DROP CONSTRAINT "incident_debriefs_tenants_tenant", DROP CONSTRAINT "incident_debriefs_incidents_debriefs";
 -- reverse: modify "incidents" table
-ALTER TABLE "incidents" DROP CONSTRAINT "incidents_incident_types_type", DROP CONSTRAINT "incidents_incident_severities_severity", DROP CONSTRAINT "incidents_normalized_events_projected_from", DROP CONSTRAINT "incidents_tenants_tenant";
+ALTER TABLE "incidents" DROP CONSTRAINT "incidents_incident_types_type", DROP CONSTRAINT "incidents_incident_severities_severity", DROP CONSTRAINT "incidents_knowledge_entities_knowledge_entity", DROP CONSTRAINT "incidents_tenants_tenant";
 -- reverse: modify "event_annotations" table
 ALTER TABLE "event_annotations" DROP CONSTRAINT "event_annotations_users_creator", DROP CONSTRAINT "event_annotations_normalized_events_event", DROP CONSTRAINT "event_annotations_tenants_tenant";
 -- reverse: modify "document_accesses" table
@@ -149,7 +149,7 @@ ALTER TABLE "documents" DROP CONSTRAINT "documents_tenants_tenant";
 -- reverse: modify "alert_feedbacks" table
 ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_normalized_events_alert_feedback", DROP CONSTRAINT "alert_feedbacks_normalized_events_alert_instance", DROP CONSTRAINT "alert_feedbacks_alerts_alert", DROP CONSTRAINT "alert_feedbacks_tenants_tenant";
 -- reverse: modify "alerts" table
-ALTER TABLE "alerts" DROP CONSTRAINT "alerts_oncall_rosters_alerts", DROP CONSTRAINT "alerts_normalized_events_projected_from", DROP CONSTRAINT "alerts_tenants_tenant";
+ALTER TABLE "alerts" DROP CONSTRAINT "alerts_oncall_rosters_alerts", DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
 -- reverse: create "user_watched_oncall_rosters" table
 DROP TABLE "user_watched_oncall_rosters";
 -- reverse: create "team_oncall_rosters" table
@@ -444,6 +444,8 @@ DROP INDEX "integration_tenant_id_provider";
 DROP INDEX "integration_tenant_id";
 -- reverse: create "integrations" table
 DROP TABLE "integrations";
+-- reverse: create index "incidenttype_tenant_id_name" to table: "incident_types"
+DROP INDEX "incidenttype_tenant_id_name";
 -- reverse: create index "incidenttype_tenant_id" to table: "incident_types"
 DROP INDEX "incidenttype_tenant_id";
 -- reverse: create "incident_types" table
@@ -476,6 +478,8 @@ DROP TABLE "incident_timeline_events";
 DROP INDEX "incidenttag_tenant_id";
 -- reverse: create "incident_tags" table
 DROP TABLE "incident_tags";
+-- reverse: create index "incidentseverity_tenant_id_name" to table: "incident_severities"
+DROP INDEX "incidentseverity_tenant_id_name";
 -- reverse: create index "incidentseverity_tenant_id" to table: "incident_severities"
 DROP INDEX "incidentseverity_tenant_id";
 -- reverse: create "incident_severities" table
@@ -524,6 +528,8 @@ DROP TABLE "incident_debrief_messages";
 DROP INDEX "incidentdebrief_tenant_id";
 -- reverse: create "incident_debriefs" table
 DROP TABLE "incident_debriefs";
+-- reverse: create index "incident_tenant_id_knowledge_entity_id" to table: "incidents"
+DROP INDEX "incident_tenant_id_knowledge_entity_id";
 -- reverse: create index "incident_tenant_id" to table: "incidents"
 DROP INDEX "incident_tenant_id";
 -- reverse: create index "incidents_slug_key" to table: "incidents"
@@ -546,6 +552,8 @@ DROP TABLE "documents";
 DROP INDEX "alertfeedback_tenant_id";
 -- reverse: create "alert_feedbacks" table
 DROP TABLE "alert_feedbacks";
+-- reverse: create index "alert_tenant_id_knowledge_entity_id" to table: "alerts"
+DROP INDEX "alert_tenant_id_knowledge_entity_id";
 -- reverse: create index "alert_tenant_id" to table: "alerts"
 DROP INDEX "alert_tenant_id";
 -- reverse: create "alerts" table

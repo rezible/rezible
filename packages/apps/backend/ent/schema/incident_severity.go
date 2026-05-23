@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +18,6 @@ func (IncidentSeverity) Mixin() []ent.Mixin {
 		BaseMixin{},
 		TenantMixin{},
 		ArchiveMixin{},
-		EventEntityLinkMixin{},
 	}
 }
 
@@ -38,5 +38,11 @@ func (IncidentSeverity) Edges() []ent.Edge {
 		edge.From("incidents", Incident.Type).Ref("severity"),
 
 		edge.From("debrief_questions", IncidentDebriefQuestion.Type).Ref("incident_severities"),
+	}
+}
+
+func (IncidentSeverity) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "name").Unique(),
 	}
 }

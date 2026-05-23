@@ -89,12 +89,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Alert",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			alert.FieldTenantID:         {Type: field.TypeInt, Column: alert.FieldTenantID},
-			alert.FieldProjectedEventID: {Type: field.TypeUUID, Column: alert.FieldProjectedEventID},
-			alert.FieldTitle:            {Type: field.TypeString, Column: alert.FieldTitle},
-			alert.FieldDescription:      {Type: field.TypeString, Column: alert.FieldDescription},
-			alert.FieldDefinition:       {Type: field.TypeString, Column: alert.FieldDefinition},
-			alert.FieldRosterID:         {Type: field.TypeUUID, Column: alert.FieldRosterID},
+			alert.FieldTenantID:          {Type: field.TypeInt, Column: alert.FieldTenantID},
+			alert.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: alert.FieldKnowledgeEntityID},
+			alert.FieldTitle:             {Type: field.TypeString, Column: alert.FieldTitle},
+			alert.FieldDescription:       {Type: field.TypeString, Column: alert.FieldDescription},
+			alert.FieldDefinition:        {Type: field.TypeString, Column: alert.FieldDefinition},
+			alert.FieldRosterID:          {Type: field.TypeUUID, Column: alert.FieldRosterID},
 		},
 	}
 	graph.Nodes[1] = &sqlgraph.Node{
@@ -206,17 +206,17 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "Incident",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			incident.FieldTenantID:         {Type: field.TypeInt, Column: incident.FieldTenantID},
-			incident.FieldCreatedAt:        {Type: field.TypeTime, Column: incident.FieldCreatedAt},
-			incident.FieldUpdatedAt:        {Type: field.TypeTime, Column: incident.FieldUpdatedAt},
-			incident.FieldProjectedEventID: {Type: field.TypeUUID, Column: incident.FieldProjectedEventID},
-			incident.FieldSlug:             {Type: field.TypeString, Column: incident.FieldSlug},
-			incident.FieldTitle:            {Type: field.TypeString, Column: incident.FieldTitle},
-			incident.FieldSeverityID:       {Type: field.TypeUUID, Column: incident.FieldSeverityID},
-			incident.FieldTypeID:           {Type: field.TypeUUID, Column: incident.FieldTypeID},
-			incident.FieldSummary:          {Type: field.TypeString, Column: incident.FieldSummary},
-			incident.FieldChatChannelID:    {Type: field.TypeString, Column: incident.FieldChatChannelID},
-			incident.FieldOpenedAt:         {Type: field.TypeTime, Column: incident.FieldOpenedAt},
+			incident.FieldTenantID:          {Type: field.TypeInt, Column: incident.FieldTenantID},
+			incident.FieldCreatedAt:         {Type: field.TypeTime, Column: incident.FieldCreatedAt},
+			incident.FieldUpdatedAt:         {Type: field.TypeTime, Column: incident.FieldUpdatedAt},
+			incident.FieldKnowledgeEntityID: {Type: field.TypeUUID, Column: incident.FieldKnowledgeEntityID},
+			incident.FieldSlug:              {Type: field.TypeString, Column: incident.FieldSlug},
+			incident.FieldTitle:             {Type: field.TypeString, Column: incident.FieldTitle},
+			incident.FieldSeverityID:        {Type: field.TypeUUID, Column: incident.FieldSeverityID},
+			incident.FieldTypeID:            {Type: field.TypeUUID, Column: incident.FieldTypeID},
+			incident.FieldSummary:           {Type: field.TypeString, Column: incident.FieldSummary},
+			incident.FieldChatChannelID:     {Type: field.TypeString, Column: incident.FieldChatChannelID},
+			incident.FieldOpenedAt:          {Type: field.TypeTime, Column: incident.FieldOpenedAt},
 		},
 	}
 	graph.Nodes[7] = &sqlgraph.Node{
@@ -405,13 +405,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "IncidentSeverity",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			incidentseverity.FieldTenantID:         {Type: field.TypeInt, Column: incidentseverity.FieldTenantID},
-			incidentseverity.FieldArchiveTime:      {Type: field.TypeTime, Column: incidentseverity.FieldArchiveTime},
-			incidentseverity.FieldProjectedEventID: {Type: field.TypeUUID, Column: incidentseverity.FieldProjectedEventID},
-			incidentseverity.FieldName:             {Type: field.TypeString, Column: incidentseverity.FieldName},
-			incidentseverity.FieldRank:             {Type: field.TypeInt, Column: incidentseverity.FieldRank},
-			incidentseverity.FieldColor:            {Type: field.TypeString, Column: incidentseverity.FieldColor},
-			incidentseverity.FieldDescription:      {Type: field.TypeString, Column: incidentseverity.FieldDescription},
+			incidentseverity.FieldTenantID:    {Type: field.TypeInt, Column: incidentseverity.FieldTenantID},
+			incidentseverity.FieldArchiveTime: {Type: field.TypeTime, Column: incidentseverity.FieldArchiveTime},
+			incidentseverity.FieldName:        {Type: field.TypeString, Column: incidentseverity.FieldName},
+			incidentseverity.FieldRank:        {Type: field.TypeInt, Column: incidentseverity.FieldRank},
+			incidentseverity.FieldColor:       {Type: field.TypeString, Column: incidentseverity.FieldColor},
+			incidentseverity.FieldDescription: {Type: field.TypeString, Column: incidentseverity.FieldDescription},
 		},
 	}
 	graph.Nodes[18] = &sqlgraph.Node{
@@ -1341,16 +1340,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
-		"projected_from",
+		"knowledge_entity",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.ProjectedFromTable,
-			Columns: []string{alert.ProjectedFromColumn},
+			Table:   alert.KnowledgeEntityTable,
+			Columns: []string{alert.KnowledgeEntityColumn},
 			Bidi:    false,
 		},
 		"Alert",
-		"NormalizedEvent",
+		"KnowledgeEntity",
 	)
 	graph.MustAddE(
 		"playbooks",
@@ -1569,16 +1568,16 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"Tenant",
 	)
 	graph.MustAddE(
-		"projected_from",
+		"knowledge_entity",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   incident.ProjectedFromTable,
-			Columns: []string{incident.ProjectedFromColumn},
+			Table:   incident.KnowledgeEntityTable,
+			Columns: []string{incident.KnowledgeEntityColumn},
 			Bidi:    false,
 		},
 		"Incident",
-		"NormalizedEvent",
+		"KnowledgeEntity",
 	)
 	graph.MustAddE(
 		"severity",
@@ -2215,18 +2214,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		"IncidentSeverity",
 		"Tenant",
-	)
-	graph.MustAddE(
-		"projected_from",
-		&sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   incidentseverity.ProjectedFromTable,
-			Columns: []string{incidentseverity.ProjectedFromColumn},
-			Bidi:    false,
-		},
-		"IncidentSeverity",
-		"NormalizedEvent",
 	)
 	graph.MustAddE(
 		"incidents",
@@ -4382,9 +4369,9 @@ func (f *AlertFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(alert.FieldTenantID))
 }
 
-// WhereProjectedEventID applies the entql [16]byte predicate on the projected_event_id field.
-func (f *AlertFilter) WhereProjectedEventID(p entql.ValueP) {
-	f.Where(p.Field(alert.FieldProjectedEventID))
+// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
+func (f *AlertFilter) WhereKnowledgeEntityID(p entql.ValueP) {
+	f.Where(p.Field(alert.FieldKnowledgeEntityID))
 }
 
 // WhereTitle applies the entql string predicate on the title field.
@@ -4421,14 +4408,14 @@ func (f *AlertFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	})))
 }
 
-// WhereHasProjectedFrom applies a predicate to check if query has an edge projected_from.
-func (f *AlertFilter) WhereHasProjectedFrom() {
-	f.Where(entql.HasEdge("projected_from"))
+// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
+func (f *AlertFilter) WhereHasKnowledgeEntity() {
+	f.Where(entql.HasEdge("knowledge_entity"))
 }
 
-// WhereHasProjectedFromWith applies a predicate to check if query has an edge projected_from with a given conditions (other predicates).
-func (f *AlertFilter) WhereHasProjectedFromWith(preds ...predicate.NormalizedEvent) {
-	f.Where(entql.HasEdgeWith("projected_from", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
+func (f *AlertFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -5093,9 +5080,9 @@ func (f *IncidentFilter) WhereUpdatedAt(p entql.TimeP) {
 	f.Where(p.Field(incident.FieldUpdatedAt))
 }
 
-// WhereProjectedEventID applies the entql [16]byte predicate on the projected_event_id field.
-func (f *IncidentFilter) WhereProjectedEventID(p entql.ValueP) {
-	f.Where(p.Field(incident.FieldProjectedEventID))
+// WhereKnowledgeEntityID applies the entql [16]byte predicate on the knowledge_entity_id field.
+func (f *IncidentFilter) WhereKnowledgeEntityID(p entql.ValueP) {
+	f.Where(p.Field(incident.FieldKnowledgeEntityID))
 }
 
 // WhereSlug applies the entql string predicate on the slug field.
@@ -5147,14 +5134,14 @@ func (f *IncidentFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	})))
 }
 
-// WhereHasProjectedFrom applies a predicate to check if query has an edge projected_from.
-func (f *IncidentFilter) WhereHasProjectedFrom() {
-	f.Where(entql.HasEdge("projected_from"))
+// WhereHasKnowledgeEntity applies a predicate to check if query has an edge knowledge_entity.
+func (f *IncidentFilter) WhereHasKnowledgeEntity() {
+	f.Where(entql.HasEdge("knowledge_entity"))
 }
 
-// WhereHasProjectedFromWith applies a predicate to check if query has an edge projected_from with a given conditions (other predicates).
-func (f *IncidentFilter) WhereHasProjectedFromWith(preds ...predicate.NormalizedEvent) {
-	f.Where(entql.HasEdgeWith("projected_from", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasKnowledgeEntityWith applies a predicate to check if query has an edge knowledge_entity with a given conditions (other predicates).
+func (f *IncidentFilter) WhereHasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) {
+	f.Where(entql.HasEdgeWith("knowledge_entity", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}
@@ -6564,11 +6551,6 @@ func (f *IncidentSeverityFilter) WhereArchiveTime(p entql.TimeP) {
 	f.Where(p.Field(incidentseverity.FieldArchiveTime))
 }
 
-// WhereProjectedEventID applies the entql [16]byte predicate on the projected_event_id field.
-func (f *IncidentSeverityFilter) WhereProjectedEventID(p entql.ValueP) {
-	f.Where(p.Field(incidentseverity.FieldProjectedEventID))
-}
-
 // WhereName applies the entql string predicate on the name field.
 func (f *IncidentSeverityFilter) WhereName(p entql.StringP) {
 	f.Where(p.Field(incidentseverity.FieldName))
@@ -6597,20 +6579,6 @@ func (f *IncidentSeverityFilter) WhereHasTenant() {
 // WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
 func (f *IncidentSeverityFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
 	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
-		for _, p := range preds {
-			p(s)
-		}
-	})))
-}
-
-// WhereHasProjectedFrom applies a predicate to check if query has an edge projected_from.
-func (f *IncidentSeverityFilter) WhereHasProjectedFrom() {
-	f.Where(entql.HasEdge("projected_from"))
-}
-
-// WhereHasProjectedFromWith applies a predicate to check if query has an edge projected_from with a given conditions (other predicates).
-func (f *IncidentSeverityFilter) WhereHasProjectedFromWith(preds ...predicate.NormalizedEvent) {
-	f.Where(entql.HasEdgeWith("projected_from", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

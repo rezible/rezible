@@ -14,7 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -34,23 +34,23 @@ func (_u *AlertUpdate) Where(ps ...predicate.Alert) *AlertUpdate {
 	return _u
 }
 
-// SetProjectedEventID sets the "projected_event_id" field.
-func (_u *AlertUpdate) SetProjectedEventID(v uuid.UUID) *AlertUpdate {
-	_u.mutation.SetProjectedEventID(v)
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *AlertUpdate) SetKnowledgeEntityID(v uuid.UUID) *AlertUpdate {
+	_u.mutation.SetKnowledgeEntityID(v)
 	return _u
 }
 
-// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
-func (_u *AlertUpdate) SetNillableProjectedEventID(v *uuid.UUID) *AlertUpdate {
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *AlertUpdate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertUpdate {
 	if v != nil {
-		_u.SetProjectedEventID(*v)
+		_u.SetKnowledgeEntityID(*v)
 	}
 	return _u
 }
 
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (_u *AlertUpdate) ClearProjectedEventID() *AlertUpdate {
-	_u.mutation.ClearProjectedEventID()
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *AlertUpdate) ClearKnowledgeEntityID() *AlertUpdate {
+	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -128,23 +128,9 @@ func (_u *AlertUpdate) ClearRosterID() *AlertUpdate {
 	return _u
 }
 
-// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
-func (_u *AlertUpdate) SetProjectedFromID(id uuid.UUID) *AlertUpdate {
-	_u.mutation.SetProjectedFromID(id)
-	return _u
-}
-
-// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
-func (_u *AlertUpdate) SetNillableProjectedFromID(id *uuid.UUID) *AlertUpdate {
-	if id != nil {
-		_u = _u.SetProjectedFromID(*id)
-	}
-	return _u
-}
-
-// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
-func (_u *AlertUpdate) SetProjectedFrom(v *NormalizedEvent) *AlertUpdate {
-	return _u.SetProjectedFromID(v.ID)
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *AlertUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertUpdate {
+	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
@@ -187,9 +173,9 @@ func (_u *AlertUpdate) Mutation() *AlertMutation {
 	return _u.mutation
 }
 
-// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
-func (_u *AlertUpdate) ClearProjectedFrom() *AlertUpdate {
-	_u.mutation.ClearProjectedFrom()
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *AlertUpdate) ClearKnowledgeEntity() *AlertUpdate {
+	_u.mutation.ClearKnowledgeEntity()
 	return _u
 }
 
@@ -309,29 +295,29 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.DefinitionCleared() {
 		_spec.ClearField(alert.FieldDefinition, field.TypeString)
 	}
-	if _u.mutation.ProjectedFromCleared() {
+	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.ProjectedFromTable,
-			Columns: []string{alert.ProjectedFromColumn},
+			Table:   alert.KnowledgeEntityTable,
+			Columns: []string{alert.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Alert
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.ProjectedFromTable,
-			Columns: []string{alert.ProjectedFromColumn},
+			Table:   alert.KnowledgeEntityTable,
+			Columns: []string{alert.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Alert
@@ -491,23 +477,23 @@ type AlertUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetProjectedEventID sets the "projected_event_id" field.
-func (_u *AlertUpdateOne) SetProjectedEventID(v uuid.UUID) *AlertUpdateOne {
-	_u.mutation.SetProjectedEventID(v)
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_u *AlertUpdateOne) SetKnowledgeEntityID(v uuid.UUID) *AlertUpdateOne {
+	_u.mutation.SetKnowledgeEntityID(v)
 	return _u
 }
 
-// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableProjectedEventID(v *uuid.UUID) *AlertUpdateOne {
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_u *AlertUpdateOne) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertUpdateOne {
 	if v != nil {
-		_u.SetProjectedEventID(*v)
+		_u.SetKnowledgeEntityID(*v)
 	}
 	return _u
 }
 
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (_u *AlertUpdateOne) ClearProjectedEventID() *AlertUpdateOne {
-	_u.mutation.ClearProjectedEventID()
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (_u *AlertUpdateOne) ClearKnowledgeEntityID() *AlertUpdateOne {
+	_u.mutation.ClearKnowledgeEntityID()
 	return _u
 }
 
@@ -585,23 +571,9 @@ func (_u *AlertUpdateOne) ClearRosterID() *AlertUpdateOne {
 	return _u
 }
 
-// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
-func (_u *AlertUpdateOne) SetProjectedFromID(id uuid.UUID) *AlertUpdateOne {
-	_u.mutation.SetProjectedFromID(id)
-	return _u
-}
-
-// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableProjectedFromID(id *uuid.UUID) *AlertUpdateOne {
-	if id != nil {
-		_u = _u.SetProjectedFromID(*id)
-	}
-	return _u
-}
-
-// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
-func (_u *AlertUpdateOne) SetProjectedFrom(v *NormalizedEvent) *AlertUpdateOne {
-	return _u.SetProjectedFromID(v.ID)
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *AlertUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AlertUpdateOne {
+	return _u.SetKnowledgeEntityID(v.ID)
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
@@ -644,9 +616,9 @@ func (_u *AlertUpdateOne) Mutation() *AlertMutation {
 	return _u.mutation
 }
 
-// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
-func (_u *AlertUpdateOne) ClearProjectedFrom() *AlertUpdateOne {
-	_u.mutation.ClearProjectedFrom()
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_u *AlertUpdateOne) ClearKnowledgeEntity() *AlertUpdateOne {
+	_u.mutation.ClearKnowledgeEntity()
 	return _u
 }
 
@@ -796,29 +768,29 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 	if _u.mutation.DefinitionCleared() {
 		_spec.ClearField(alert.FieldDefinition, field.TypeString)
 	}
-	if _u.mutation.ProjectedFromCleared() {
+	if _u.mutation.KnowledgeEntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.ProjectedFromTable,
-			Columns: []string{alert.ProjectedFromColumn},
+			Table:   alert.KnowledgeEntityTable,
+			Columns: []string{alert.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Alert
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.ProjectedFromTable,
-			Columns: []string{alert.ProjectedFromColumn},
+			Table:   alert.KnowledgeEntityTable,
+			Columns: []string{alert.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _u.schemaConfig.Alert

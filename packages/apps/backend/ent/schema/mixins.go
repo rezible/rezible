@@ -152,21 +152,28 @@ func (d ArchiveMixin) P(w interface{ WhereP(...func(*sql.Selector)) }) {
 	)
 }
 
-type EventEntityLinkMixin struct {
+type KnowledgeEntityLinkMixin struct {
 	mixin.Schema
 }
 
-func (i EventEntityLinkMixin) Fields() []ent.Field {
+func (i KnowledgeEntityLinkMixin) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("projected_event_id", uuid.New()).
-			Optional(),
+		field.UUID("knowledge_entity_id", uuid.UUID{}).
+			Optional().
+			Nillable(),
 	}
 }
 
-func (i EventEntityLinkMixin) Edges() []ent.Edge {
+func (i KnowledgeEntityLinkMixin) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("projected_from", NormalizedEvent.Type).
+		edge.To("knowledge_entity", KnowledgeEntity.Type).
 			Unique().
-			Field("projected_event_id"),
+			Field("knowledge_entity_id"),
+	}
+}
+
+func (i KnowledgeEntityLinkMixin) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "knowledge_entity_id").Unique(),
 	}
 }

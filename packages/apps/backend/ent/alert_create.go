@@ -14,7 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/tenant"
@@ -34,16 +34,16 @@ func (_c *AlertCreate) SetTenantID(v int) *AlertCreate {
 	return _c
 }
 
-// SetProjectedEventID sets the "projected_event_id" field.
-func (_c *AlertCreate) SetProjectedEventID(v uuid.UUID) *AlertCreate {
-	_c.mutation.SetProjectedEventID(v)
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (_c *AlertCreate) SetKnowledgeEntityID(v uuid.UUID) *AlertCreate {
+	_c.mutation.SetKnowledgeEntityID(v)
 	return _c
 }
 
-// SetNillableProjectedEventID sets the "projected_event_id" field if the given value is not nil.
-func (_c *AlertCreate) SetNillableProjectedEventID(v *uuid.UUID) *AlertCreate {
+// SetNillableKnowledgeEntityID sets the "knowledge_entity_id" field if the given value is not nil.
+func (_c *AlertCreate) SetNillableKnowledgeEntityID(v *uuid.UUID) *AlertCreate {
 	if v != nil {
-		_c.SetProjectedEventID(*v)
+		_c.SetKnowledgeEntityID(*v)
 	}
 	return _c
 }
@@ -115,23 +115,9 @@ func (_c *AlertCreate) SetTenant(v *Tenant) *AlertCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID.
-func (_c *AlertCreate) SetProjectedFromID(id uuid.UUID) *AlertCreate {
-	_c.mutation.SetProjectedFromID(id)
-	return _c
-}
-
-// SetNillableProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by ID if the given value is not nil.
-func (_c *AlertCreate) SetNillableProjectedFromID(id *uuid.UUID) *AlertCreate {
-	if id != nil {
-		_c = _c.SetProjectedFromID(*id)
-	}
-	return _c
-}
-
-// SetProjectedFrom sets the "projected_from" edge to the NormalizedEvent entity.
-func (_c *AlertCreate) SetProjectedFrom(v *NormalizedEvent) *AlertCreate {
-	return _c.SetProjectedFromID(v.ID)
+// SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (_c *AlertCreate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertCreate {
+	return _c.SetKnowledgeEntityID(v.ID)
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by IDs.
@@ -294,22 +280,22 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ProjectedFromIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.KnowledgeEntityIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   alert.ProjectedFromTable,
-			Columns: []string{alert.ProjectedFromColumn},
+			Table:   alert.KnowledgeEntityTable,
+			Columns: []string{alert.KnowledgeEntityColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(knowledgeentity.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.ProjectedEventID = nodes[0]
+		_node.KnowledgeEntityID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.PlaybooksIDs(); len(nodes) > 0 {
@@ -416,21 +402,21 @@ type (
 	}
 )
 
-// SetProjectedEventID sets the "projected_event_id" field.
-func (u *AlertUpsert) SetProjectedEventID(v uuid.UUID) *AlertUpsert {
-	u.Set(alert.FieldProjectedEventID, v)
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *AlertUpsert) SetKnowledgeEntityID(v uuid.UUID) *AlertUpsert {
+	u.Set(alert.FieldKnowledgeEntityID, v)
 	return u
 }
 
-// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateProjectedEventID() *AlertUpsert {
-	u.SetExcluded(alert.FieldProjectedEventID)
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *AlertUpsert) UpdateKnowledgeEntityID() *AlertUpsert {
+	u.SetExcluded(alert.FieldKnowledgeEntityID)
 	return u
 }
 
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (u *AlertUpsert) ClearProjectedEventID() *AlertUpsert {
-	u.SetNull(alert.FieldProjectedEventID)
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *AlertUpsert) ClearKnowledgeEntityID() *AlertUpsert {
+	u.SetNull(alert.FieldKnowledgeEntityID)
 	return u
 }
 
@@ -551,24 +537,24 @@ func (u *AlertUpsertOne) Update(set func(*AlertUpsert)) *AlertUpsertOne {
 	return u
 }
 
-// SetProjectedEventID sets the "projected_event_id" field.
-func (u *AlertUpsertOne) SetProjectedEventID(v uuid.UUID) *AlertUpsertOne {
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *AlertUpsertOne) SetKnowledgeEntityID(v uuid.UUID) *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.SetProjectedEventID(v)
+		s.SetKnowledgeEntityID(v)
 	})
 }
 
-// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateProjectedEventID() *AlertUpsertOne {
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *AlertUpsertOne) UpdateKnowledgeEntityID() *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.UpdateProjectedEventID()
+		s.UpdateKnowledgeEntityID()
 	})
 }
 
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (u *AlertUpsertOne) ClearProjectedEventID() *AlertUpsertOne {
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *AlertUpsertOne) ClearKnowledgeEntityID() *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
-		s.ClearProjectedEventID()
+		s.ClearKnowledgeEntityID()
 	})
 }
 
@@ -867,24 +853,24 @@ func (u *AlertUpsertBulk) Update(set func(*AlertUpsert)) *AlertUpsertBulk {
 	return u
 }
 
-// SetProjectedEventID sets the "projected_event_id" field.
-func (u *AlertUpsertBulk) SetProjectedEventID(v uuid.UUID) *AlertUpsertBulk {
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (u *AlertUpsertBulk) SetKnowledgeEntityID(v uuid.UUID) *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.SetProjectedEventID(v)
+		s.SetKnowledgeEntityID(v)
 	})
 }
 
-// UpdateProjectedEventID sets the "projected_event_id" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateProjectedEventID() *AlertUpsertBulk {
+// UpdateKnowledgeEntityID sets the "knowledge_entity_id" field to the value that was provided on create.
+func (u *AlertUpsertBulk) UpdateKnowledgeEntityID() *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.UpdateProjectedEventID()
+		s.UpdateKnowledgeEntityID()
 	})
 }
 
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (u *AlertUpsertBulk) ClearProjectedEventID() *AlertUpsertBulk {
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (u *AlertUpsertBulk) ClearKnowledgeEntityID() *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
-		s.ClearProjectedEventID()
+		s.ClearKnowledgeEntityID()
 	})
 }
 

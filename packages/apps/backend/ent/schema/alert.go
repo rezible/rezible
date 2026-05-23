@@ -15,7 +15,7 @@ func (Alert) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		EventEntityLinkMixin{},
+		KnowledgeEntityLinkMixin{},
 	}
 }
 

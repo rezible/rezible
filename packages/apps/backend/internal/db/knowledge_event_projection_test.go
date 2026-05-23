@@ -80,7 +80,7 @@ func TestProjectorObservedAtPrefersOccurredAt(t *testing.T) {
 	receivedAt := occurredAt.Add(time.Hour)
 	ev := &ent.NormalizedEvent{OccurredAt: occurredAt, ReceivedAt: receivedAt}
 
-	assert.Equal(t, occurredAt, newKnowledgeEntityEventProjector(ev, nil).resolveEventObservedAt(ev))
+	assert.Equal(t, occurredAt, newKnowledgeEntityEventProjector(ev, nil).observedAt)
 }
 
 func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {

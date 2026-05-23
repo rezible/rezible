@@ -18,8 +18,6 @@ const (
 	FieldTenantID = "tenant_id"
 	// FieldArchiveTime holds the string denoting the archive_time field in the database.
 	FieldArchiveTime = "archive_time"
-	// FieldProjectedEventID holds the string denoting the projected_event_id field in the database.
-	FieldProjectedEventID = "projected_event_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldRank holds the string denoting the rank field in the database.
@@ -30,8 +28,6 @@ const (
 	FieldDescription = "description"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeProjectedFrom holds the string denoting the projected_from edge name in mutations.
-	EdgeProjectedFrom = "projected_from"
 	// EdgeIncidents holds the string denoting the incidents edge name in mutations.
 	EdgeIncidents = "incidents"
 	// EdgeDebriefQuestions holds the string denoting the debrief_questions edge name in mutations.
@@ -45,13 +41,6 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// ProjectedFromTable is the table that holds the projected_from relation/edge.
-	ProjectedFromTable = "incident_severities"
-	// ProjectedFromInverseTable is the table name for the NormalizedEvent entity.
-	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
-	ProjectedFromInverseTable = "normalized_events"
-	// ProjectedFromColumn is the table column denoting the projected_from relation/edge.
-	ProjectedFromColumn = "projected_event_id"
 	// IncidentsTable is the table that holds the incidents relation/edge.
 	IncidentsTable = "incidents"
 	// IncidentsInverseTable is the table name for the Incident entity.
@@ -71,7 +60,6 @@ var Columns = []string{
 	FieldID,
 	FieldTenantID,
 	FieldArchiveTime,
-	FieldProjectedEventID,
 	FieldName,
 	FieldRank,
 	FieldColor,
@@ -125,11 +113,6 @@ func ByArchiveTime(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldArchiveTime, opts...).ToFunc()
 }
 
-// ByProjectedEventID orders the results by the projected_event_id field.
-func ByProjectedEventID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldProjectedEventID, opts...).ToFunc()
-}
-
 // ByName orders the results by the name field.
 func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
@@ -154,13 +137,6 @@ func ByDescription(opts ...sql.OrderTermOption) OrderOption {
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-
-// ByProjectedFromField orders the results by projected_from field.
-func ByProjectedFromField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newProjectedFromStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -196,13 +172,6 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newProjectedFromStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ProjectedFromInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, ProjectedFromTable, ProjectedFromColumn),
 	)
 }
 func newIncidentsStep() *sqlgraph.Step {

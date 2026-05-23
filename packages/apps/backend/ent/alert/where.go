@@ -60,9 +60,9 @@ func TenantID(v int) predicate.Alert {
 	return predicate.Alert(sql.FieldEQ(FieldTenantID, v))
 }
 
-// ProjectedEventID applies equality check predicate on the "projected_event_id" field. It's identical to ProjectedEventIDEQ.
-func ProjectedEventID(v uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldProjectedEventID, v))
+// KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
+func KnowledgeEntityID(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldKnowledgeEntityID, v))
 }
 
 // Title applies equality check predicate on the "title" field. It's identical to TitleEQ.
@@ -105,34 +105,34 @@ func TenantIDNotIn(vs ...int) predicate.Alert {
 	return predicate.Alert(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// ProjectedEventIDEQ applies the EQ predicate on the "projected_event_id" field.
-func ProjectedEventIDEQ(v uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldProjectedEventID, v))
+// KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDEQ(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldEQ(FieldKnowledgeEntityID, v))
 }
 
-// ProjectedEventIDNEQ applies the NEQ predicate on the "projected_event_id" field.
-func ProjectedEventIDNEQ(v uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldNEQ(FieldProjectedEventID, v))
+// KnowledgeEntityIDNEQ applies the NEQ predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNEQ(v uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldNEQ(FieldKnowledgeEntityID, v))
 }
 
-// ProjectedEventIDIn applies the In predicate on the "projected_event_id" field.
-func ProjectedEventIDIn(vs ...uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldIn(FieldProjectedEventID, vs...))
+// KnowledgeEntityIDIn applies the In predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDIn(vs ...uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldIn(FieldKnowledgeEntityID, vs...))
 }
 
-// ProjectedEventIDNotIn applies the NotIn predicate on the "projected_event_id" field.
-func ProjectedEventIDNotIn(vs ...uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldNotIn(FieldProjectedEventID, vs...))
+// KnowledgeEntityIDNotIn applies the NotIn predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNotIn(vs ...uuid.UUID) predicate.Alert {
+	return predicate.Alert(sql.FieldNotIn(FieldKnowledgeEntityID, vs...))
 }
 
-// ProjectedEventIDIsNil applies the IsNil predicate on the "projected_event_id" field.
-func ProjectedEventIDIsNil() predicate.Alert {
-	return predicate.Alert(sql.FieldIsNull(FieldProjectedEventID))
+// KnowledgeEntityIDIsNil applies the IsNil predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDIsNil() predicate.Alert {
+	return predicate.Alert(sql.FieldIsNull(FieldKnowledgeEntityID))
 }
 
-// ProjectedEventIDNotNil applies the NotNil predicate on the "projected_event_id" field.
-func ProjectedEventIDNotNil() predicate.Alert {
-	return predicate.Alert(sql.FieldNotNull(FieldProjectedEventID))
+// KnowledgeEntityIDNotNil applies the NotNil predicate on the "knowledge_entity_id" field.
+func KnowledgeEntityIDNotNil() predicate.Alert {
+	return predicate.Alert(sql.FieldNotNull(FieldKnowledgeEntityID))
 }
 
 // TitleEQ applies the EQ predicate on the "title" field.
@@ -409,26 +409,26 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.Alert {
 	})
 }
 
-// HasProjectedFrom applies the HasEdge predicate on the "projected_from" edge.
-func HasProjectedFrom() predicate.Alert {
+// HasKnowledgeEntity applies the HasEdge predicate on the "knowledge_entity" edge.
+func HasKnowledgeEntity() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, ProjectedFromTable, ProjectedFromColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, KnowledgeEntityTable, KnowledgeEntityColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Alert
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasProjectedFromWith applies the HasEdge predicate on the "projected_from" edge with a given conditions (other predicates).
-func HasProjectedFromWith(preds ...predicate.NormalizedEvent) predicate.Alert {
+// HasKnowledgeEntityWith applies the HasEdge predicate on the "knowledge_entity" edge with a given conditions (other predicates).
+func HasKnowledgeEntityWith(preds ...predicate.KnowledgeEntity) predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
-		step := newProjectedFromStep()
+		step := newKnowledgeEntityStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Alert
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

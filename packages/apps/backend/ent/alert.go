@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -22,8 +22,8 @@ type Alert struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// ProjectedEventID holds the value of the "projected_event_id" field.
-	ProjectedEventID uuid.UUID `json:"projected_event_id,omitempty"`
+	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
+	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// Title holds the value of the "title" field.
 	Title string `json:"title,omitempty"`
 	// Description holds the value of the "description" field.
@@ -42,8 +42,8 @@ type Alert struct {
 type AlertEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// ProjectedFrom holds the value of the projected_from edge.
-	ProjectedFrom *NormalizedEvent `json:"projected_from,omitempty"`
+	// KnowledgeEntity holds the value of the knowledge_entity edge.
+	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// Playbooks holds the value of the playbooks edge.
 	Playbooks []*Playbook `json:"playbooks,omitempty"`
 	// Roster holds the value of the roster edge.
@@ -66,15 +66,15 @@ func (e AlertEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// ProjectedFromOrErr returns the ProjectedFrom value or an error if the edge
+// KnowledgeEntityOrErr returns the KnowledgeEntity value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AlertEdges) ProjectedFromOrErr() (*NormalizedEvent, error) {
-	if e.ProjectedFrom != nil {
-		return e.ProjectedFrom, nil
+func (e AlertEdges) KnowledgeEntityOrErr() (*KnowledgeEntity, error) {
+	if e.KnowledgeEntity != nil {
+		return e.KnowledgeEntity, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: normalizedevent.Label}
+		return nil, &NotFoundError{label: knowledgeentity.Label}
 	}
-	return nil, &NotLoadedError{edge: "projected_from"}
+	return nil, &NotLoadedError{edge: "knowledge_entity"}
 }
 
 // PlaybooksOrErr returns the Playbooks value or an error if the edge
@@ -111,11 +111,13 @@ func (*Alert) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case alert.FieldKnowledgeEntityID:
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case alert.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case alert.FieldTitle, alert.FieldDescription, alert.FieldDefinition:
 			values[i] = new(sql.NullString)
-		case alert.FieldID, alert.FieldProjectedEventID, alert.FieldRosterID:
+		case alert.FieldID, alert.FieldRosterID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -144,11 +146,12 @@ func (_m *Alert) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case alert.FieldProjectedEventID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field projected_event_id", values[i])
-			} else if value != nil {
-				_m.ProjectedEventID = *value
+		case alert.FieldKnowledgeEntityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field knowledge_entity_id", values[i])
+			} else if value.Valid {
+				_m.KnowledgeEntityID = new(uuid.UUID)
+				*_m.KnowledgeEntityID = *value.S.(*uuid.UUID)
 			}
 		case alert.FieldTitle:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -192,9 +195,9 @@ func (_m *Alert) QueryTenant() *TenantQuery {
 	return NewAlertClient(_m.config).QueryTenant(_m)
 }
 
-// QueryProjectedFrom queries the "projected_from" edge of the Alert entity.
-func (_m *Alert) QueryProjectedFrom() *NormalizedEventQuery {
-	return NewAlertClient(_m.config).QueryProjectedFrom(_m)
+// QueryKnowledgeEntity queries the "knowledge_entity" edge of the Alert entity.
+func (_m *Alert) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	return NewAlertClient(_m.config).QueryKnowledgeEntity(_m)
 }
 
 // QueryPlaybooks queries the "playbooks" edge of the Alert entity.
@@ -238,8 +241,10 @@ func (_m *Alert) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("projected_event_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ProjectedEventID))
+	if v := _m.KnowledgeEntityID; v != nil {
+		builder.WriteString("knowledge_entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("title=")
 	builder.WriteString(_m.Title)

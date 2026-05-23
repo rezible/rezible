@@ -17,7 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -27,16 +27,16 @@ import (
 // AlertQuery is the builder for querying Alert entities.
 type AlertQuery struct {
 	config
-	ctx               *QueryContext
-	order             []alert.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.Alert
-	withTenant        *TenantQuery
-	withProjectedFrom *NormalizedEventQuery
-	withPlaybooks     *PlaybookQuery
-	withRoster        *OncallRosterQuery
-	withFeedback      *AlertFeedbackQuery
-	modifiers         []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []alert.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.Alert
+	withTenant          *TenantQuery
+	withKnowledgeEntity *KnowledgeEntityQuery
+	withPlaybooks       *PlaybookQuery
+	withRoster          *OncallRosterQuery
+	withFeedback        *AlertFeedbackQuery
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -98,9 +98,9 @@ func (_q *AlertQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryProjectedFrom chains the current query on the "projected_from" edge.
-func (_q *AlertQuery) QueryProjectedFrom() *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
+// QueryKnowledgeEntity chains the current query on the "knowledge_entity" edge.
+func (_q *AlertQuery) QueryKnowledgeEntity() *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -111,11 +111,11 @@ func (_q *AlertQuery) QueryProjectedFrom() *NormalizedEventQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alert.Table, alert.FieldID, selector),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alert.ProjectedFromTable, alert.ProjectedFromColumn),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alert.KnowledgeEntityTable, alert.KnowledgeEntityColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.KnowledgeEntity
 		step.Edge.Schema = schemaConfig.Alert
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -385,16 +385,16 @@ func (_q *AlertQuery) Clone() *AlertQuery {
 		return nil
 	}
 	return &AlertQuery{
-		config:            _q.config,
-		ctx:               _q.ctx.Clone(),
-		order:             append([]alert.OrderOption{}, _q.order...),
-		inters:            append([]Interceptor{}, _q.inters...),
-		predicates:        append([]predicate.Alert{}, _q.predicates...),
-		withTenant:        _q.withTenant.Clone(),
-		withProjectedFrom: _q.withProjectedFrom.Clone(),
-		withPlaybooks:     _q.withPlaybooks.Clone(),
-		withRoster:        _q.withRoster.Clone(),
-		withFeedback:      _q.withFeedback.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]alert.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.Alert{}, _q.predicates...),
+		withTenant:          _q.withTenant.Clone(),
+		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
+		withPlaybooks:       _q.withPlaybooks.Clone(),
+		withRoster:          _q.withRoster.Clone(),
+		withFeedback:        _q.withFeedback.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -413,14 +413,14 @@ func (_q *AlertQuery) WithTenant(opts ...func(*TenantQuery)) *AlertQuery {
 	return _q
 }
 
-// WithProjectedFrom tells the query-builder to eager-load the nodes that are connected to
-// the "projected_from" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertQuery) WithProjectedFrom(opts ...func(*NormalizedEventQuery)) *AlertQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
+// WithKnowledgeEntity tells the query-builder to eager-load the nodes that are connected to
+// the "knowledge_entity" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertQuery) WithKnowledgeEntity(opts ...func(*KnowledgeEntityQuery)) *AlertQuery {
+	query := (&KnowledgeEntityClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withProjectedFrom = query
+	_q.withKnowledgeEntity = query
 	return _q
 }
 
@@ -543,7 +543,7 @@ func (_q *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 		_spec       = _q.querySpec()
 		loadedTypes = [5]bool{
 			_q.withTenant != nil,
-			_q.withProjectedFrom != nil,
+			_q.withKnowledgeEntity != nil,
 			_q.withPlaybooks != nil,
 			_q.withRoster != nil,
 			_q.withFeedback != nil,
@@ -578,9 +578,9 @@ func (_q *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 			return nil, err
 		}
 	}
-	if query := _q.withProjectedFrom; query != nil {
-		if err := _q.loadProjectedFrom(ctx, query, nodes, nil,
-			func(n *Alert, e *NormalizedEvent) { n.Edges.ProjectedFrom = e }); err != nil {
+	if query := _q.withKnowledgeEntity; query != nil {
+		if err := _q.loadKnowledgeEntity(ctx, query, nodes, nil,
+			func(n *Alert, e *KnowledgeEntity) { n.Edges.KnowledgeEntity = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -636,11 +636,14 @@ func (_q *AlertQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes 
 	}
 	return nil
 }
-func (_q *AlertQuery) loadProjectedFrom(ctx context.Context, query *NormalizedEventQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *NormalizedEvent)) error {
+func (_q *AlertQuery) loadKnowledgeEntity(ctx context.Context, query *KnowledgeEntityQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *KnowledgeEntity)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Alert)
 	for i := range nodes {
-		fk := nodes[i].ProjectedEventID
+		if nodes[i].KnowledgeEntityID == nil {
+			continue
+		}
+		fk := *nodes[i].KnowledgeEntityID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -649,7 +652,7 @@ func (_q *AlertQuery) loadProjectedFrom(ctx context.Context, query *NormalizedEv
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(normalizedevent.IDIn(ids...))
+	query.Where(knowledgeentity.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -657,7 +660,7 @@ func (_q *AlertQuery) loadProjectedFrom(ctx context.Context, query *NormalizedEv
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "projected_event_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "knowledge_entity_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -821,8 +824,8 @@ func (_q *AlertQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(alert.FieldTenantID)
 		}
-		if _q.withProjectedFrom != nil {
-			_spec.Node.AddColumnOnce(alert.FieldProjectedEventID)
+		if _q.withKnowledgeEntity != nil {
+			_spec.Node.AddColumnOnce(alert.FieldKnowledgeEntityID)
 		}
 		if _q.withRoster != nil {
 			_spec.Node.AddColumnOnce(alert.FieldRosterID)

@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"log/slog"
 
 	"github.com/google/uuid"
 
@@ -12,7 +11,6 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	afb "github.com/rezible/rezible/ent/alertfeedback"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/integrations/projections"
 )
 
 type AlertService struct {
@@ -25,52 +23,6 @@ func NewAlertService(svcs *rez.Services) (*AlertService, error) {
 	}
 
 	return s, nil
-}
-
-func alertEventProjectionHandler(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
-	if !projections.SubjectKindAlert.Matches(event) {
-		return nil
-	}
-
-	observed, validationErr := projections.DecodeAlertEvent(event)
-	if validationErr != nil || observed == nil {
-		return fmt.Errorf("invalid event: %w", validationErr)
-	}
-
-	attrs := observed.Attributes
-	existingAlert, queryErr := client.Alert.Query().
-		Where(alert.ProjectedEventID(event.ID)).
-		Only(ctx)
-	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return fmt.Errorf("query alert: %w", queryErr)
-	}
-
-	var savedAlert *ent.Alert
-	if existingAlert != nil {
-		var updateErr error
-		savedAlert, updateErr = client.Alert.UpdateOne(existingAlert).
-			SetTitle(attrs.Title).
-			SetDescription(attrs.Description).
-			SetDefinition(attrs.Definition).
-			Save(ctx)
-		if updateErr != nil {
-			return fmt.Errorf("update alert: %w", updateErr)
-		}
-	} else {
-		var createErr error
-		savedAlert, createErr = client.Alert.Create().
-			SetProjectedFromID(event.ID).
-			SetTitle(attrs.Title).
-			SetDescription(attrs.Description).
-			SetDefinition(attrs.Definition).
-			Save(ctx)
-		if createErr != nil {
-			return fmt.Errorf("create alert: %w", createErr)
-		}
-	}
-	slog.Debug("saved alert", slog.String("id", savedAlert.ID.String()))
-
-	return nil
 }
 
 func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsParams) ([]*ent.Alert, int, error) {

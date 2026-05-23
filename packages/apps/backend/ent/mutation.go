@@ -156,28 +156,28 @@ const (
 // AlertMutation represents an operation that mutates the Alert nodes in the graph.
 type AlertMutation struct {
 	config
-	op                    Op
-	typ                   string
-	id                    *uuid.UUID
-	title                 *string
-	description           *string
-	definition            *string
-	clearedFields         map[string]struct{}
-	tenant                *int
-	clearedtenant         bool
-	projected_from        *uuid.UUID
-	clearedprojected_from bool
-	playbooks             map[uuid.UUID]struct{}
-	removedplaybooks      map[uuid.UUID]struct{}
-	clearedplaybooks      bool
-	roster                *uuid.UUID
-	clearedroster         bool
-	feedback              map[uuid.UUID]struct{}
-	removedfeedback       map[uuid.UUID]struct{}
-	clearedfeedback       bool
-	done                  bool
-	oldValue              func(context.Context) (*Alert, error)
-	predicates            []predicate.Alert
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	title                   *string
+	description             *string
+	definition              *string
+	clearedFields           map[string]struct{}
+	tenant                  *int
+	clearedtenant           bool
+	knowledge_entity        *uuid.UUID
+	clearedknowledge_entity bool
+	playbooks               map[uuid.UUID]struct{}
+	removedplaybooks        map[uuid.UUID]struct{}
+	clearedplaybooks        bool
+	roster                  *uuid.UUID
+	clearedroster           bool
+	feedback                map[uuid.UUID]struct{}
+	removedfeedback         map[uuid.UUID]struct{}
+	clearedfeedback         bool
+	done                    bool
+	oldValue                func(context.Context) (*Alert, error)
+	predicates              []predicate.Alert
 }
 
 var _ ent.Mutation = (*AlertMutation)(nil)
@@ -320,53 +320,53 @@ func (m *AlertMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetProjectedEventID sets the "projected_event_id" field.
-func (m *AlertMutation) SetProjectedEventID(u uuid.UUID) {
-	m.projected_from = &u
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (m *AlertMutation) SetKnowledgeEntityID(u uuid.UUID) {
+	m.knowledge_entity = &u
 }
 
-// ProjectedEventID returns the value of the "projected_event_id" field in the mutation.
-func (m *AlertMutation) ProjectedEventID() (r uuid.UUID, exists bool) {
-	v := m.projected_from
+// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
+func (m *AlertMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_entity
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProjectedEventID returns the old "projected_event_id" field's value of the Alert entity.
+// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the Alert entity.
 // If the Alert object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *AlertMutation) OldProjectedEventID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *AlertMutation) OldKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProjectedEventID is only allowed on UpdateOne operations")
+		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProjectedEventID requires an ID field in the mutation")
+		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProjectedEventID: %w", err)
+		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
 	}
-	return oldValue.ProjectedEventID, nil
+	return oldValue.KnowledgeEntityID, nil
 }
 
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (m *AlertMutation) ClearProjectedEventID() {
-	m.projected_from = nil
-	m.clearedFields[alert.FieldProjectedEventID] = struct{}{}
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (m *AlertMutation) ClearKnowledgeEntityID() {
+	m.knowledge_entity = nil
+	m.clearedFields[alert.FieldKnowledgeEntityID] = struct{}{}
 }
 
-// ProjectedEventIDCleared returns if the "projected_event_id" field was cleared in this mutation.
-func (m *AlertMutation) ProjectedEventIDCleared() bool {
-	_, ok := m.clearedFields[alert.FieldProjectedEventID]
+// KnowledgeEntityIDCleared returns if the "knowledge_entity_id" field was cleared in this mutation.
+func (m *AlertMutation) KnowledgeEntityIDCleared() bool {
+	_, ok := m.clearedFields[alert.FieldKnowledgeEntityID]
 	return ok
 }
 
-// ResetProjectedEventID resets all changes to the "projected_event_id" field.
-func (m *AlertMutation) ResetProjectedEventID() {
-	m.projected_from = nil
-	delete(m.clearedFields, alert.FieldProjectedEventID)
+// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
+func (m *AlertMutation) ResetKnowledgeEntityID() {
+	m.knowledge_entity = nil
+	delete(m.clearedFields, alert.FieldKnowledgeEntityID)
 }
 
 // SetTitle sets the "title" field.
@@ -579,44 +579,31 @@ func (m *AlertMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by id.
-func (m *AlertMutation) SetProjectedFromID(id uuid.UUID) {
-	m.projected_from = &id
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (m *AlertMutation) ClearKnowledgeEntity() {
+	m.clearedknowledge_entity = true
+	m.clearedFields[alert.FieldKnowledgeEntityID] = struct{}{}
 }
 
-// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
-func (m *AlertMutation) ClearProjectedFrom() {
-	m.clearedprojected_from = true
-	m.clearedFields[alert.FieldProjectedEventID] = struct{}{}
+// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *AlertMutation) KnowledgeEntityCleared() bool {
+	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
 }
 
-// ProjectedFromCleared reports if the "projected_from" edge to the NormalizedEvent entity was cleared.
-func (m *AlertMutation) ProjectedFromCleared() bool {
-	return m.ProjectedEventIDCleared() || m.clearedprojected_from
-}
-
-// ProjectedFromID returns the "projected_from" edge ID in the mutation.
-func (m *AlertMutation) ProjectedFromID() (id uuid.UUID, exists bool) {
-	if m.projected_from != nil {
-		return *m.projected_from, true
-	}
-	return
-}
-
-// ProjectedFromIDs returns the "projected_from" edge IDs in the mutation.
+// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ProjectedFromID instead. It exists only for internal usage by the builders.
-func (m *AlertMutation) ProjectedFromIDs() (ids []uuid.UUID) {
-	if id := m.projected_from; id != nil {
+// KnowledgeEntityID instead. It exists only for internal usage by the builders.
+func (m *AlertMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_entity; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetProjectedFrom resets all changes to the "projected_from" edge.
-func (m *AlertMutation) ResetProjectedFrom() {
-	m.projected_from = nil
-	m.clearedprojected_from = false
+// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
+func (m *AlertMutation) ResetKnowledgeEntity() {
+	m.knowledge_entity = nil
+	m.clearedknowledge_entity = false
 }
 
 // AddPlaybookIDs adds the "playbooks" edge to the Playbook entity by ids.
@@ -792,8 +779,8 @@ func (m *AlertMutation) Fields() []string {
 	if m.tenant != nil {
 		fields = append(fields, alert.FieldTenantID)
 	}
-	if m.projected_from != nil {
-		fields = append(fields, alert.FieldProjectedEventID)
+	if m.knowledge_entity != nil {
+		fields = append(fields, alert.FieldKnowledgeEntityID)
 	}
 	if m.title != nil {
 		fields = append(fields, alert.FieldTitle)
@@ -817,8 +804,8 @@ func (m *AlertMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case alert.FieldTenantID:
 		return m.TenantID()
-	case alert.FieldProjectedEventID:
-		return m.ProjectedEventID()
+	case alert.FieldKnowledgeEntityID:
+		return m.KnowledgeEntityID()
 	case alert.FieldTitle:
 		return m.Title()
 	case alert.FieldDescription:
@@ -838,8 +825,8 @@ func (m *AlertMutation) OldField(ctx context.Context, name string) (ent.Value, e
 	switch name {
 	case alert.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case alert.FieldProjectedEventID:
-		return m.OldProjectedEventID(ctx)
+	case alert.FieldKnowledgeEntityID:
+		return m.OldKnowledgeEntityID(ctx)
 	case alert.FieldTitle:
 		return m.OldTitle(ctx)
 	case alert.FieldDescription:
@@ -864,12 +851,12 @@ func (m *AlertMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTenantID(v)
 		return nil
-	case alert.FieldProjectedEventID:
+	case alert.FieldKnowledgeEntityID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProjectedEventID(v)
+		m.SetKnowledgeEntityID(v)
 		return nil
 	case alert.FieldTitle:
 		v, ok := value.(string)
@@ -932,8 +919,8 @@ func (m *AlertMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *AlertMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(alert.FieldProjectedEventID) {
-		fields = append(fields, alert.FieldProjectedEventID)
+	if m.FieldCleared(alert.FieldKnowledgeEntityID) {
+		fields = append(fields, alert.FieldKnowledgeEntityID)
 	}
 	if m.FieldCleared(alert.FieldDescription) {
 		fields = append(fields, alert.FieldDescription)
@@ -958,8 +945,8 @@ func (m *AlertMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *AlertMutation) ClearField(name string) error {
 	switch name {
-	case alert.FieldProjectedEventID:
-		m.ClearProjectedEventID()
+	case alert.FieldKnowledgeEntityID:
+		m.ClearKnowledgeEntityID()
 		return nil
 	case alert.FieldDescription:
 		m.ClearDescription()
@@ -981,8 +968,8 @@ func (m *AlertMutation) ResetField(name string) error {
 	case alert.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case alert.FieldProjectedEventID:
-		m.ResetProjectedEventID()
+	case alert.FieldKnowledgeEntityID:
+		m.ResetKnowledgeEntityID()
 		return nil
 	case alert.FieldTitle:
 		m.ResetTitle()
@@ -1006,8 +993,8 @@ func (m *AlertMutation) AddedEdges() []string {
 	if m.tenant != nil {
 		edges = append(edges, alert.EdgeTenant)
 	}
-	if m.projected_from != nil {
-		edges = append(edges, alert.EdgeProjectedFrom)
+	if m.knowledge_entity != nil {
+		edges = append(edges, alert.EdgeKnowledgeEntity)
 	}
 	if m.playbooks != nil {
 		edges = append(edges, alert.EdgePlaybooks)
@@ -1029,8 +1016,8 @@ func (m *AlertMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case alert.EdgeProjectedFrom:
-		if id := m.projected_from; id != nil {
+	case alert.EdgeKnowledgeEntity:
+		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
 	case alert.EdgePlaybooks:
@@ -1091,8 +1078,8 @@ func (m *AlertMutation) ClearedEdges() []string {
 	if m.clearedtenant {
 		edges = append(edges, alert.EdgeTenant)
 	}
-	if m.clearedprojected_from {
-		edges = append(edges, alert.EdgeProjectedFrom)
+	if m.clearedknowledge_entity {
+		edges = append(edges, alert.EdgeKnowledgeEntity)
 	}
 	if m.clearedplaybooks {
 		edges = append(edges, alert.EdgePlaybooks)
@@ -1112,8 +1099,8 @@ func (m *AlertMutation) EdgeCleared(name string) bool {
 	switch name {
 	case alert.EdgeTenant:
 		return m.clearedtenant
-	case alert.EdgeProjectedFrom:
-		return m.clearedprojected_from
+	case alert.EdgeKnowledgeEntity:
+		return m.clearedknowledge_entity
 	case alert.EdgePlaybooks:
 		return m.clearedplaybooks
 	case alert.EdgeRoster:
@@ -1131,8 +1118,8 @@ func (m *AlertMutation) ClearEdge(name string) error {
 	case alert.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case alert.EdgeProjectedFrom:
-		m.ClearProjectedFrom()
+	case alert.EdgeKnowledgeEntity:
+		m.ClearKnowledgeEntity()
 		return nil
 	case alert.EdgeRoster:
 		m.ClearRoster()
@@ -1148,8 +1135,8 @@ func (m *AlertMutation) ResetEdge(name string) error {
 	case alert.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case alert.EdgeProjectedFrom:
-		m.ResetProjectedFrom()
+	case alert.EdgeKnowledgeEntity:
+		m.ResetKnowledgeEntity()
 		return nil
 	case alert.EdgePlaybooks:
 		m.ResetPlaybooks()
@@ -4587,8 +4574,8 @@ type IncidentMutation struct {
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
-	projected_from           *uuid.UUID
-	clearedprojected_from    bool
+	knowledge_entity         *uuid.UUID
+	clearedknowledge_entity  bool
 	severity                 *uuid.UUID
 	clearedseverity          bool
 	_type                    *uuid.UUID
@@ -4851,53 +4838,53 @@ func (m *IncidentMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
-// SetProjectedEventID sets the "projected_event_id" field.
-func (m *IncidentMutation) SetProjectedEventID(u uuid.UUID) {
-	m.projected_from = &u
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (m *IncidentMutation) SetKnowledgeEntityID(u uuid.UUID) {
+	m.knowledge_entity = &u
 }
 
-// ProjectedEventID returns the value of the "projected_event_id" field in the mutation.
-func (m *IncidentMutation) ProjectedEventID() (r uuid.UUID, exists bool) {
-	v := m.projected_from
+// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
+func (m *IncidentMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_entity
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldProjectedEventID returns the old "projected_event_id" field's value of the Incident entity.
+// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the Incident entity.
 // If the Incident object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentMutation) OldProjectedEventID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *IncidentMutation) OldKnowledgeEntityID(ctx context.Context) (v *uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProjectedEventID is only allowed on UpdateOne operations")
+		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProjectedEventID requires an ID field in the mutation")
+		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProjectedEventID: %w", err)
+		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
 	}
-	return oldValue.ProjectedEventID, nil
+	return oldValue.KnowledgeEntityID, nil
 }
 
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (m *IncidentMutation) ClearProjectedEventID() {
-	m.projected_from = nil
-	m.clearedFields[incident.FieldProjectedEventID] = struct{}{}
+// ClearKnowledgeEntityID clears the value of the "knowledge_entity_id" field.
+func (m *IncidentMutation) ClearKnowledgeEntityID() {
+	m.knowledge_entity = nil
+	m.clearedFields[incident.FieldKnowledgeEntityID] = struct{}{}
 }
 
-// ProjectedEventIDCleared returns if the "projected_event_id" field was cleared in this mutation.
-func (m *IncidentMutation) ProjectedEventIDCleared() bool {
-	_, ok := m.clearedFields[incident.FieldProjectedEventID]
+// KnowledgeEntityIDCleared returns if the "knowledge_entity_id" field was cleared in this mutation.
+func (m *IncidentMutation) KnowledgeEntityIDCleared() bool {
+	_, ok := m.clearedFields[incident.FieldKnowledgeEntityID]
 	return ok
 }
 
-// ResetProjectedEventID resets all changes to the "projected_event_id" field.
-func (m *IncidentMutation) ResetProjectedEventID() {
-	m.projected_from = nil
-	delete(m.clearedFields, incident.FieldProjectedEventID)
+// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
+func (m *IncidentMutation) ResetKnowledgeEntityID() {
+	m.knowledge_entity = nil
+	delete(m.clearedFields, incident.FieldKnowledgeEntityID)
 }
 
 // SetSlug sets the "slug" field.
@@ -5205,44 +5192,31 @@ func (m *IncidentMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by id.
-func (m *IncidentMutation) SetProjectedFromID(id uuid.UUID) {
-	m.projected_from = &id
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (m *IncidentMutation) ClearKnowledgeEntity() {
+	m.clearedknowledge_entity = true
+	m.clearedFields[incident.FieldKnowledgeEntityID] = struct{}{}
 }
 
-// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
-func (m *IncidentMutation) ClearProjectedFrom() {
-	m.clearedprojected_from = true
-	m.clearedFields[incident.FieldProjectedEventID] = struct{}{}
+// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *IncidentMutation) KnowledgeEntityCleared() bool {
+	return m.KnowledgeEntityIDCleared() || m.clearedknowledge_entity
 }
 
-// ProjectedFromCleared reports if the "projected_from" edge to the NormalizedEvent entity was cleared.
-func (m *IncidentMutation) ProjectedFromCleared() bool {
-	return m.ProjectedEventIDCleared() || m.clearedprojected_from
-}
-
-// ProjectedFromID returns the "projected_from" edge ID in the mutation.
-func (m *IncidentMutation) ProjectedFromID() (id uuid.UUID, exists bool) {
-	if m.projected_from != nil {
-		return *m.projected_from, true
-	}
-	return
-}
-
-// ProjectedFromIDs returns the "projected_from" edge IDs in the mutation.
+// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ProjectedFromID instead. It exists only for internal usage by the builders.
-func (m *IncidentMutation) ProjectedFromIDs() (ids []uuid.UUID) {
-	if id := m.projected_from; id != nil {
+// KnowledgeEntityID instead. It exists only for internal usage by the builders.
+func (m *IncidentMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_entity; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetProjectedFrom resets all changes to the "projected_from" edge.
-func (m *IncidentMutation) ResetProjectedFrom() {
-	m.projected_from = nil
-	m.clearedprojected_from = false
+// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
+func (m *IncidentMutation) ResetKnowledgeEntity() {
+	m.knowledge_entity = nil
+	m.clearedknowledge_entity = false
 }
 
 // ClearSeverity clears the "severity" edge to the IncidentSeverity entity.
@@ -6084,8 +6058,8 @@ func (m *IncidentMutation) Fields() []string {
 	if m.updated_at != nil {
 		fields = append(fields, incident.FieldUpdatedAt)
 	}
-	if m.projected_from != nil {
-		fields = append(fields, incident.FieldProjectedEventID)
+	if m.knowledge_entity != nil {
+		fields = append(fields, incident.FieldKnowledgeEntityID)
 	}
 	if m.slug != nil {
 		fields = append(fields, incident.FieldSlug)
@@ -6122,8 +6096,8 @@ func (m *IncidentMutation) Field(name string) (ent.Value, bool) {
 		return m.CreatedAt()
 	case incident.FieldUpdatedAt:
 		return m.UpdatedAt()
-	case incident.FieldProjectedEventID:
-		return m.ProjectedEventID()
+	case incident.FieldKnowledgeEntityID:
+		return m.KnowledgeEntityID()
 	case incident.FieldSlug:
 		return m.Slug()
 	case incident.FieldTitle:
@@ -6153,8 +6127,8 @@ func (m *IncidentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldCreatedAt(ctx)
 	case incident.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
-	case incident.FieldProjectedEventID:
-		return m.OldProjectedEventID(ctx)
+	case incident.FieldKnowledgeEntityID:
+		return m.OldKnowledgeEntityID(ctx)
 	case incident.FieldSlug:
 		return m.OldSlug(ctx)
 	case incident.FieldTitle:
@@ -6199,12 +6173,12 @@ func (m *IncidentMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetUpdatedAt(v)
 		return nil
-	case incident.FieldProjectedEventID:
+	case incident.FieldKnowledgeEntityID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetProjectedEventID(v)
+		m.SetKnowledgeEntityID(v)
 		return nil
 	case incident.FieldSlug:
 		v, ok := value.(string)
@@ -6288,8 +6262,8 @@ func (m *IncidentMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *IncidentMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(incident.FieldProjectedEventID) {
-		fields = append(fields, incident.FieldProjectedEventID)
+	if m.FieldCleared(incident.FieldKnowledgeEntityID) {
+		fields = append(fields, incident.FieldKnowledgeEntityID)
 	}
 	if m.FieldCleared(incident.FieldSummary) {
 		fields = append(fields, incident.FieldSummary)
@@ -6311,8 +6285,8 @@ func (m *IncidentMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *IncidentMutation) ClearField(name string) error {
 	switch name {
-	case incident.FieldProjectedEventID:
-		m.ClearProjectedEventID()
+	case incident.FieldKnowledgeEntityID:
+		m.ClearKnowledgeEntityID()
 		return nil
 	case incident.FieldSummary:
 		m.ClearSummary()
@@ -6337,8 +6311,8 @@ func (m *IncidentMutation) ResetField(name string) error {
 	case incident.FieldUpdatedAt:
 		m.ResetUpdatedAt()
 		return nil
-	case incident.FieldProjectedEventID:
-		m.ResetProjectedEventID()
+	case incident.FieldKnowledgeEntityID:
+		m.ResetKnowledgeEntityID()
 		return nil
 	case incident.FieldSlug:
 		m.ResetSlug()
@@ -6371,8 +6345,8 @@ func (m *IncidentMutation) AddedEdges() []string {
 	if m.tenant != nil {
 		edges = append(edges, incident.EdgeTenant)
 	}
-	if m.projected_from != nil {
-		edges = append(edges, incident.EdgeProjectedFrom)
+	if m.knowledge_entity != nil {
+		edges = append(edges, incident.EdgeKnowledgeEntity)
 	}
 	if m.severity != nil {
 		edges = append(edges, incident.EdgeSeverity)
@@ -6433,8 +6407,8 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case incident.EdgeProjectedFrom:
-		if id := m.projected_from; id != nil {
+	case incident.EdgeKnowledgeEntity:
+		if id := m.knowledge_entity; id != nil {
 			return []ent.Value{*id}
 		}
 	case incident.EdgeSeverity:
@@ -6668,8 +6642,8 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	if m.clearedtenant {
 		edges = append(edges, incident.EdgeTenant)
 	}
-	if m.clearedprojected_from {
-		edges = append(edges, incident.EdgeProjectedFrom)
+	if m.clearedknowledge_entity {
+		edges = append(edges, incident.EdgeKnowledgeEntity)
 	}
 	if m.clearedseverity {
 		edges = append(edges, incident.EdgeSeverity)
@@ -6728,8 +6702,8 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 	switch name {
 	case incident.EdgeTenant:
 		return m.clearedtenant
-	case incident.EdgeProjectedFrom:
-		return m.clearedprojected_from
+	case incident.EdgeKnowledgeEntity:
+		return m.clearedknowledge_entity
 	case incident.EdgeSeverity:
 		return m.clearedseverity
 	case incident.EdgeType:
@@ -6773,8 +6747,8 @@ func (m *IncidentMutation) ClearEdge(name string) error {
 	case incident.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case incident.EdgeProjectedFrom:
-		m.ClearProjectedFrom()
+	case incident.EdgeKnowledgeEntity:
+		m.ClearKnowledgeEntity()
 		return nil
 	case incident.EdgeSeverity:
 		m.ClearSeverity()
@@ -6796,8 +6770,8 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 	case incident.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case incident.EdgeProjectedFrom:
-		m.ResetProjectedFrom()
+	case incident.EdgeKnowledgeEntity:
+		m.ResetKnowledgeEntity()
 		return nil
 	case incident.EdgeSeverity:
 		m.ResetSeverity()
@@ -14542,8 +14516,6 @@ type IncidentSeverityMutation struct {
 	clearedFields            map[string]struct{}
 	tenant                   *int
 	clearedtenant            bool
-	projected_from           *uuid.UUID
-	clearedprojected_from    bool
 	incidents                map[uuid.UUID]struct{}
 	removedincidents         map[uuid.UUID]struct{}
 	clearedincidents         bool
@@ -14742,55 +14714,6 @@ func (m *IncidentSeverityMutation) ArchiveTimeCleared() bool {
 func (m *IncidentSeverityMutation) ResetArchiveTime() {
 	m.archive_time = nil
 	delete(m.clearedFields, incidentseverity.FieldArchiveTime)
-}
-
-// SetProjectedEventID sets the "projected_event_id" field.
-func (m *IncidentSeverityMutation) SetProjectedEventID(u uuid.UUID) {
-	m.projected_from = &u
-}
-
-// ProjectedEventID returns the value of the "projected_event_id" field in the mutation.
-func (m *IncidentSeverityMutation) ProjectedEventID() (r uuid.UUID, exists bool) {
-	v := m.projected_from
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProjectedEventID returns the old "projected_event_id" field's value of the IncidentSeverity entity.
-// If the IncidentSeverity object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IncidentSeverityMutation) OldProjectedEventID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProjectedEventID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProjectedEventID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProjectedEventID: %w", err)
-	}
-	return oldValue.ProjectedEventID, nil
-}
-
-// ClearProjectedEventID clears the value of the "projected_event_id" field.
-func (m *IncidentSeverityMutation) ClearProjectedEventID() {
-	m.projected_from = nil
-	m.clearedFields[incidentseverity.FieldProjectedEventID] = struct{}{}
-}
-
-// ProjectedEventIDCleared returns if the "projected_event_id" field was cleared in this mutation.
-func (m *IncidentSeverityMutation) ProjectedEventIDCleared() bool {
-	_, ok := m.clearedFields[incidentseverity.FieldProjectedEventID]
-	return ok
-}
-
-// ResetProjectedEventID resets all changes to the "projected_event_id" field.
-func (m *IncidentSeverityMutation) ResetProjectedEventID() {
-	m.projected_from = nil
-	delete(m.clearedFields, incidentseverity.FieldProjectedEventID)
 }
 
 // SetName sets the "name" field.
@@ -15010,46 +14933,6 @@ func (m *IncidentSeverityMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// SetProjectedFromID sets the "projected_from" edge to the NormalizedEvent entity by id.
-func (m *IncidentSeverityMutation) SetProjectedFromID(id uuid.UUID) {
-	m.projected_from = &id
-}
-
-// ClearProjectedFrom clears the "projected_from" edge to the NormalizedEvent entity.
-func (m *IncidentSeverityMutation) ClearProjectedFrom() {
-	m.clearedprojected_from = true
-	m.clearedFields[incidentseverity.FieldProjectedEventID] = struct{}{}
-}
-
-// ProjectedFromCleared reports if the "projected_from" edge to the NormalizedEvent entity was cleared.
-func (m *IncidentSeverityMutation) ProjectedFromCleared() bool {
-	return m.ProjectedEventIDCleared() || m.clearedprojected_from
-}
-
-// ProjectedFromID returns the "projected_from" edge ID in the mutation.
-func (m *IncidentSeverityMutation) ProjectedFromID() (id uuid.UUID, exists bool) {
-	if m.projected_from != nil {
-		return *m.projected_from, true
-	}
-	return
-}
-
-// ProjectedFromIDs returns the "projected_from" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// ProjectedFromID instead. It exists only for internal usage by the builders.
-func (m *IncidentSeverityMutation) ProjectedFromIDs() (ids []uuid.UUID) {
-	if id := m.projected_from; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetProjectedFrom resets all changes to the "projected_from" edge.
-func (m *IncidentSeverityMutation) ResetProjectedFrom() {
-	m.projected_from = nil
-	m.clearedprojected_from = false
-}
-
 // AddIncidentIDs adds the "incidents" edge to the Incident entity by ids.
 func (m *IncidentSeverityMutation) AddIncidentIDs(ids ...uuid.UUID) {
 	if m.incidents == nil {
@@ -15192,15 +15075,12 @@ func (m *IncidentSeverityMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IncidentSeverityMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, incidentseverity.FieldTenantID)
 	}
 	if m.archive_time != nil {
 		fields = append(fields, incidentseverity.FieldArchiveTime)
-	}
-	if m.projected_from != nil {
-		fields = append(fields, incidentseverity.FieldProjectedEventID)
 	}
 	if m.name != nil {
 		fields = append(fields, incidentseverity.FieldName)
@@ -15226,8 +15106,6 @@ func (m *IncidentSeverityMutation) Field(name string) (ent.Value, bool) {
 		return m.TenantID()
 	case incidentseverity.FieldArchiveTime:
 		return m.ArchiveTime()
-	case incidentseverity.FieldProjectedEventID:
-		return m.ProjectedEventID()
 	case incidentseverity.FieldName:
 		return m.Name()
 	case incidentseverity.FieldRank:
@@ -15249,8 +15127,6 @@ func (m *IncidentSeverityMutation) OldField(ctx context.Context, name string) (e
 		return m.OldTenantID(ctx)
 	case incidentseverity.FieldArchiveTime:
 		return m.OldArchiveTime(ctx)
-	case incidentseverity.FieldProjectedEventID:
-		return m.OldProjectedEventID(ctx)
 	case incidentseverity.FieldName:
 		return m.OldName(ctx)
 	case incidentseverity.FieldRank:
@@ -15281,13 +15157,6 @@ func (m *IncidentSeverityMutation) SetField(name string, value ent.Value) error 
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetArchiveTime(v)
-		return nil
-	case incidentseverity.FieldProjectedEventID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProjectedEventID(v)
 		return nil
 	case incidentseverity.FieldName:
 		v, ok := value.(string)
@@ -15365,9 +15234,6 @@ func (m *IncidentSeverityMutation) ClearedFields() []string {
 	if m.FieldCleared(incidentseverity.FieldArchiveTime) {
 		fields = append(fields, incidentseverity.FieldArchiveTime)
 	}
-	if m.FieldCleared(incidentseverity.FieldProjectedEventID) {
-		fields = append(fields, incidentseverity.FieldProjectedEventID)
-	}
 	if m.FieldCleared(incidentseverity.FieldColor) {
 		fields = append(fields, incidentseverity.FieldColor)
 	}
@@ -15391,9 +15257,6 @@ func (m *IncidentSeverityMutation) ClearField(name string) error {
 	case incidentseverity.FieldArchiveTime:
 		m.ClearArchiveTime()
 		return nil
-	case incidentseverity.FieldProjectedEventID:
-		m.ClearProjectedEventID()
-		return nil
 	case incidentseverity.FieldColor:
 		m.ClearColor()
 		return nil
@@ -15414,9 +15277,6 @@ func (m *IncidentSeverityMutation) ResetField(name string) error {
 	case incidentseverity.FieldArchiveTime:
 		m.ResetArchiveTime()
 		return nil
-	case incidentseverity.FieldProjectedEventID:
-		m.ResetProjectedEventID()
-		return nil
 	case incidentseverity.FieldName:
 		m.ResetName()
 		return nil
@@ -15435,12 +15295,9 @@ func (m *IncidentSeverityMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentSeverityMutation) AddedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.tenant != nil {
 		edges = append(edges, incidentseverity.EdgeTenant)
-	}
-	if m.projected_from != nil {
-		edges = append(edges, incidentseverity.EdgeProjectedFrom)
 	}
 	if m.incidents != nil {
 		edges = append(edges, incidentseverity.EdgeIncidents)
@@ -15457,10 +15314,6 @@ func (m *IncidentSeverityMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case incidentseverity.EdgeTenant:
 		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case incidentseverity.EdgeProjectedFrom:
-		if id := m.projected_from; id != nil {
 			return []ent.Value{*id}
 		}
 	case incidentseverity.EdgeIncidents:
@@ -15481,7 +15334,7 @@ func (m *IncidentSeverityMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentSeverityMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.removedincidents != nil {
 		edges = append(edges, incidentseverity.EdgeIncidents)
 	}
@@ -15513,12 +15366,9 @@ func (m *IncidentSeverityMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentSeverityMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 4)
+	edges := make([]string, 0, 3)
 	if m.clearedtenant {
 		edges = append(edges, incidentseverity.EdgeTenant)
-	}
-	if m.clearedprojected_from {
-		edges = append(edges, incidentseverity.EdgeProjectedFrom)
 	}
 	if m.clearedincidents {
 		edges = append(edges, incidentseverity.EdgeIncidents)
@@ -15535,8 +15385,6 @@ func (m *IncidentSeverityMutation) EdgeCleared(name string) bool {
 	switch name {
 	case incidentseverity.EdgeTenant:
 		return m.clearedtenant
-	case incidentseverity.EdgeProjectedFrom:
-		return m.clearedprojected_from
 	case incidentseverity.EdgeIncidents:
 		return m.clearedincidents
 	case incidentseverity.EdgeDebriefQuestions:
@@ -15552,9 +15400,6 @@ func (m *IncidentSeverityMutation) ClearEdge(name string) error {
 	case incidentseverity.EdgeTenant:
 		m.ClearTenant()
 		return nil
-	case incidentseverity.EdgeProjectedFrom:
-		m.ClearProjectedFrom()
-		return nil
 	}
 	return fmt.Errorf("unknown IncidentSeverity unique edge %s", name)
 }
@@ -15565,9 +15410,6 @@ func (m *IncidentSeverityMutation) ResetEdge(name string) error {
 	switch name {
 	case incidentseverity.EdgeTenant:
 		m.ResetTenant()
-		return nil
-	case incidentseverity.EdgeProjectedFrom:
-		m.ResetProjectedFrom()
 		return nil
 	case incidentseverity.EdgeIncidents:
 		m.ResetIncidents()
