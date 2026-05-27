@@ -386,6 +386,10 @@ github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7
 github.com/rs/zerolog v1.35.0 h1:VD0ykx7HMiMJytqINBsKcbLS+BJ4WYjz+05us+LRTdI=
 github.com/rs/zerolog v1.35.0/go.mod h1:EjML9kdfa/RMA7h/6z6pYmq1ykOuA8/mjWaEvGI+jcw=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
+github.com/samber/do/v2 v2.0.0 h1:tnunwWaoqSfJ9hxVIaJawIo7JXHQlqT9d9YBXlE9Keg=
+github.com/samber/do/v2 v2.0.0/go.mod h1:ZSBCE7Xr6nTNIOVo4DBrkl2+ydUbIOzJjjdV8En5XO4=
+github.com/samber/go-type-to-string v1.8.0 h1:5z6tDTjtXxkIAoAuHAZYMYR8mkBZjVgeSH7jcSLqc8w=
+github.com/samber/go-type-to-string v1.8.0/go.mod h1:jpU77vIDoIxkahknKDoEx9C8bQ1ADnh2sotZ8I4QqBU=
 github.com/samber/slog-chi v1.19.1 h1:gwBq1QOxeHtjYoHwPi0LJ2i6nQmy/hda1jIeT+OwdYc=
 github.com/samber/slog-chi v1.19.1/go.mod h1:a1iIuofF2gS1ii8aXIQhC6TEguLOhOvSM958fY5hToU=
 github.com/slack-go/slack v0.23.1 h1:ZS5B96wxxYQRwvJ3/vJFtqtUZi3tXhsZCyT44Nv7M80=

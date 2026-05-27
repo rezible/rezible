@@ -54,23 +54,30 @@ func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context
 }
 
 func ContextWithLoggerOptions(ctx context.Context, opts ...LoggerOption) context.Context {
-	return ContextWithLogger(ctx, NewLogger(ctx, opts...))
+	return ContextWithLogger(ctx, NewLogger(opts...))
 }
 
 func LoggerFromContext(ctx context.Context, opts ...LoggerOption) *Logger {
-	return NewLogger(ctx, opts...)
+	if ctx != nil {
+		if parent, ok := ctx.Value(loggerContextKey{}).(*Logger); ok {
+			opts = append(opts, WithParentLogger(parent))
+		}
+	}
+	return NewLogger(opts...)
 }
 
-func NewLogger(ctx context.Context, opts ...LoggerOption) *Logger {
+func NewPackageLogger(name string, opts ...LoggerOption) *Logger {
+	opts = append(opts, WithLogPackage(name))
+	return NewLogger(opts...)
+}
+
+func NewLogger(opts ...LoggerOption) *Logger {
 	cfg := loggerOptions{}
 	for _, opt := range opts {
 		opt(&cfg)
 	}
 
 	logger := cfg.parent
-	if logger == nil && ctx != nil {
-		logger, _ = ctx.Value(loggerContextKey{}).(*Logger)
-	}
 	if logger == nil {
 		logger = slog.Default()
 	}

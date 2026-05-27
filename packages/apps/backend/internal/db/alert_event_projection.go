@@ -14,7 +14,7 @@ const (
 	knowledgeKindAlert               = "alert"
 )
 
-func handleAlertEventProjection(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
+func HandleAlertEventProjection(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
 	if projections.SubjectKindAlert.Matches(event) {
 		observed, validationErr := projections.DecodeAlertEvent(event)
 		if validationErr != nil || observed == nil {

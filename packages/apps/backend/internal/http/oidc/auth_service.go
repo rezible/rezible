@@ -40,7 +40,7 @@ type AuthSessionService struct {
 	oauth      *oauthHandler
 }
 
-func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
+func NewAuthSessionService(orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
 	oauthRedirectUrl, redirectErr := url.JoinPath(rez.Config.AppUrl(), "/api/auth/callback")
 	if redirectErr != nil {
 		return nil, fmt.Errorf("redirect url: %w", redirectErr)
@@ -61,7 +61,7 @@ func NewAuthSessionService(ctx context.Context, orgs rez.OrganizationService, us
 		return nil, fmt.Errorf("cookie codec: %w", codecErr)
 	}
 
-	oauth, oauthErr := makeOAuthHandler(ctx, cfg, codec)
+	oauth, oauthErr := makeOAuthHandler(cfg, codec)
 	if oauthErr != nil {
 		return nil, fmt.Errorf("oauth handler: %w", oauthErr)
 	}

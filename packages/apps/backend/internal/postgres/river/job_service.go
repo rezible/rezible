@@ -28,13 +28,13 @@ type JobService struct {
 	client *riverClient
 }
 
-func NewJobService(ctx context.Context, pool *pgxpool.Pool) (*JobService, error) {
+func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
 	queues := map[string]river.QueueConfig{
 		river.QueueDefault: {MaxWorkers: 20},
 	}
 
 	s := &JobService{
-		logger: telemetry.NewLogger(ctx, telemetry.WithLogPackage("river"), telemetry.WithMinLogLevel(slog.LevelInfo)),
+		logger: telemetry.NewPackageLogger("river", telemetry.WithMinLogLevel(slog.LevelInfo)),
 	}
 
 	tel := telemetry.Default()

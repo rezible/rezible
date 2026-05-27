@@ -23,27 +23,28 @@ import (
 )
 
 type ProviderEventService struct {
-	logger *slog.Logger
-	db     *ent.Client
-
+	logger         *slog.Logger
+	db             *ent.Client
+	reg            *projections.EventProjectionHandlerRegistry
 	jobService     rez.JobsService
 	integrations   rez.IntegrationsService
 	eventTelemetry *providerEventTelemetry
 }
 
-func NewProviderEventService(ctx context.Context, svcs *rez.Services) *ProviderEventService {
-	logger := telemetry.NewLogger(ctx, telemetry.WithLogPackage("provider_events"))
+func NewProviderEventService(dbc *ent.Client, jobSvc rez.JobsService, intgs rez.IntegrationsService, reg *projections.EventProjectionHandlerRegistry) (*ProviderEventService, error) {
+	logger := telemetry.NewPackageLogger("provider_events")
 	pe := &ProviderEventService{
 		logger:         logger,
-		db:             svcs.Database.Client(),
-		jobService:     svcs.Jobs,
-		integrations:   svcs.Integrations,
+		db:             dbc,
+		reg:            reg,
+		jobService:     jobSvc,
+		integrations:   intgs,
 		eventTelemetry: newProviderEventTelemetry(logger),
 	}
 	jobs.RegisterWorkerFunc(pe.HandleProviderEventSyncJob)
 	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
 	jobs.RegisterWorkerFunc(pe.HandleEventProjectionJob)
-	return pe
+	return pe, nil
 }
 
 func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
@@ -353,7 +354,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 	appendHandlerErr := func(name string, err error) {
 		res.handlerErrors[name] = append(res.handlerErrors[name], err)
 	}
-	for name, handlerFn := range projections.GetHandlersFor(ev) {
+	for name, handlerFn := range s.reg.GetHandlersFor(ev) {
 		// query for existing projection status
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))

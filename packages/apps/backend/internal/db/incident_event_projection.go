@@ -19,7 +19,7 @@ const (
 	knowledgeKindIncident     = "incident"
 )
 
-func handleIncidentEventProjection(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
+func HandleIncidentEventProjection(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
 	if projections.SubjectKindIncident.Matches(event) {
 		observed, validationErr := projections.DecodeIncidentEvent(event)
 		if validationErr != nil || observed == nil {

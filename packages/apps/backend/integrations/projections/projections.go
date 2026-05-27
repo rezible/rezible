@@ -1,12 +1,10 @@
 package projections
 
 import (
-	"context"
 	"errors"
 	"fmt"
 	"reflect"
 	"strings"
-	"sync"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/go-viper/mapstructure/v2"
@@ -16,48 +14,6 @@ import (
 type Event[T any] struct {
 	Event      *ent.NormalizedEvent
 	Attributes T
-}
-
-type EventProjectionHandlerFunc = func(context.Context, *ent.Client, *ent.NormalizedEvent) error
-
-type EventProjectionHandler struct {
-	Handler      EventProjectionHandlerFunc
-	SubjectKinds []SubjectKind
-}
-
-var projectionFuncsMu sync.RWMutex
-var projectionFuncs = make(map[string]EventProjectionHandler)
-
-func RegisterHandler(name string, handler EventProjectionHandlerFunc, subjectKinds ...SubjectKind) {
-	projectionFuncsMu.Lock()
-	defer projectionFuncsMu.Unlock()
-	projectionFuncs[name] = EventProjectionHandler{
-		Handler:      handler,
-		SubjectKinds: subjectKinds,
-	}
-}
-
-func GetHandlersFor(ev *ent.NormalizedEvent) map[string]EventProjectionHandlerFunc {
-	projectionFuncsMu.RLock()
-	defer projectionFuncsMu.RUnlock()
-
-	handlers := make(map[string]EventProjectionHandlerFunc)
-	if ev == nil {
-		return handlers
-	}
-	for name, registered := range projectionFuncs {
-		if len(registered.SubjectKinds) == 0 {
-			handlers[name] = registered.Handler
-			continue
-		}
-		for _, subjectKind := range registered.SubjectKinds {
-			if subjectKind.Matches(ev) {
-				handlers[name] = registered.Handler
-				break
-			}
-		}
-	}
-	return handlers
 }
 
 type EventDisplay struct {

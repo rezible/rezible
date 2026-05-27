@@ -10,10 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqljson"
+	"github.com/google/uuid"
 	pesr "github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/riverqueue/river"
-
-	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
@@ -28,12 +27,14 @@ import (
 type IntegrationsService struct {
 	db   *ent.Client
 	jobs rez.JobsService
+	reg  *integrations.PackageRegistry
 }
 
-func NewIntegrationsService(svcs *rez.Services) (*IntegrationsService, error) {
+func NewIntegrationsService(dbc *ent.Client, jobs rez.JobsService, reg *integrations.PackageRegistry) (*IntegrationsService, error) {
 	s := &IntegrationsService{
-		db:   svcs.Database.Client(),
-		jobs: svcs.Jobs,
+		db:   dbc,
+		jobs: jobs,
+		reg:  reg,
 	}
 
 	s.registerJobs()
@@ -60,7 +61,7 @@ func (s *IntegrationsService) registerJobs() {
 }
 
 func (s *IntegrationsService) GetAvailable() []rez.IntegrationPackage {
-	return integrations.GetAvailable()
+	return s.reg.GetAvailable()
 }
 
 func (s *IntegrationsService) ListConfigured(ctx context.Context, params rez.ListIntegrationsParams) ([]rez.ConfiguredIntegration, error) {
@@ -97,7 +98,7 @@ func (s *IntegrationsService) Configure(ctx context.Context, params rez.Configur
 	if params.Config == nil {
 		params.Config = map[string]any{}
 	}
-	p, pErr := integrations.GetPackage(params.Provider)
+	p, pErr := s.reg.GetPackage(params.Provider)
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", params.Provider, pErr)
 	}
@@ -122,7 +123,7 @@ func (s *IntegrationsService) UpdateConfiguredPreferences(ctx context.Context, i
 		return nil, fmt.Errorf("failed to get integration: %w", currErr)
 	}
 
-	p, pErr := integrations.GetPackage(curr.Provider)
+	p, pErr := s.reg.GetPackage(curr.Provider)
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", curr.Provider, pErr)
 	}
@@ -143,7 +144,7 @@ func (s *IntegrationsService) DeleteConfigured(ctx context.Context, id uuid.UUID
 }
 
 func (s *IntegrationsService) GetProviderEventProcessor(provider string) (rez.ProviderEventProcessor, error) {
-	procs := integrations.GetProviderEventProcessors()
+	procs := s.reg.GetProviderEventProcessors()
 	proc, ok := procs[provider]
 	if !ok {
 		return nil, fmt.Errorf("provider %s not found", provider)
@@ -158,7 +159,7 @@ func (s *IntegrationsService) GetProviderEventQueriers(ctx context.Context, prov
 	}
 	var queriers []rez.ProviderEventQuerier
 	for _, intg := range intgs {
-		q, qErr := integrations.GetProviderEventQuerier(intg)
+		q, qErr := s.reg.GetProviderEventQuerier(intg)
 		if qErr != nil {
 			return nil, fmt.Errorf("failed to get integration event queriers: %w", qErr)
 		}
@@ -197,7 +198,7 @@ func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.Integ
 }
 
 func (s *IntegrationsService) asConfigured(i *ent.Integration) (rez.ConfiguredIntegration, error) {
-	p, pErr := integrations.GetPackage(i.Provider)
+	p, pErr := s.reg.GetPackage(i.Provider)
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get integration package: %w", pErr)
 	}
@@ -304,7 +305,7 @@ func (s *IntegrationsService) getOAuthState(ctx context.Context, provider string
 }
 
 func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, provider string, redirect *url.URL) (string, error) {
-	oi, oiErr := integrations.GetOAuthIntegration(provider)
+	oi, oiErr := s.reg.GetOAuthIntegration(provider)
 	if oiErr != nil {
 		return "", fmt.Errorf("invalid oauth2 integration: %w", oiErr)
 	}
@@ -320,7 +321,7 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, provider stri
 }
 
 func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, provider string, params rez.CompleteIntegrationOAuth2Params) (*rez.CompleteIntegrationOAuth2Result, error) {
-	oi, oiErr := integrations.GetOAuthIntegration(provider)
+	oi, oiErr := s.reg.GetOAuthIntegration(provider)
 	if oiErr != nil {
 		return nil, fmt.Errorf("invalid oauth2 integration: %w", oiErr)
 	}
@@ -460,7 +461,7 @@ func (s *IntegrationsService) externalOptionsFromMaps(raw []map[string]any) []re
 
 func (s *IntegrationsService) getConfiguredIntegrationForDataKind(ctx context.Context, dataKind string) (rez.ConfiguredIntegration, error) {
 	var providers []string
-	for _, p := range integrations.GetAvailable() {
+	for _, p := range s.reg.GetAvailable() {
 		if slices.Contains(p.SupportedDataKinds(), dataKind) {
 			providers = append(providers, p.Name())
 		}
@@ -470,7 +471,7 @@ func (s *IntegrationsService) getConfiguredIntegrationForDataKind(ctx context.Co
 		return nil, listErr
 	}
 	for _, intg := range intgs {
-		p, pErr := integrations.GetPackage(intg.Provider)
+		p, pErr := s.reg.GetPackage(intg.Provider)
 		if pErr != nil {
 			return nil, fmt.Errorf("get package %s: %w", intg.Provider, pErr)
 		}

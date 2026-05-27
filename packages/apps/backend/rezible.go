@@ -47,14 +47,9 @@ type EventListener interface {
 	Stop(ctx context.Context) error
 }
 
-type DatabaseClient interface {
-	Client() *ent.Client
-	Close()
-}
-
 type Services struct {
 	// TODO: don't expose this
-	Database DatabaseClient
+	Database *ent.Client
 
 	Jobs             JobsService
 	ProviderEvents   ProviderEventService
@@ -75,6 +70,30 @@ type Services struct {
 	Retros           RetrospectiveService
 	Alerts           AlertService
 	Playbooks        PlaybookService
+}
+
+type ServiceRegistry interface {
+	ConfigLoader() ConfigLoader
+	DatabaseClient() DatabaseClient
+	JobsService() JobsService
+	ProviderEventService() ProviderEventService
+	MessageService() MessageService
+	SystemTopologyService() SystemTopologyService
+	OrganizationService() OrganizationService
+	IntegrationsService() IntegrationsService
+	UserService() UserService
+	TeamService() TeamService
+	IncidentService() IncidentService
+	DebriefService() DebriefService
+	OncallRostersService() OncallRostersService
+	OncallShiftsService() OncallShiftsService
+	OncallMetricsService() OncallMetricsService
+	EventsService() EventsService
+	EventAnnotationsService() EventAnnotationsService
+	DocumentsService() DocumentsService
+	RetrospectiveService() RetrospectiveService
+	AlertService() AlertService
+	PlaybookService() PlaybookService
 }
 
 type (

@@ -30,10 +30,10 @@ func (s *ProjectedEntityLinkingSuite) TestIncidentProjectionReusesKnowledgeEntit
 	subjectRef := "fake:incident:" + uuid.NewString()
 
 	ev1 := s.createIncidentEvent(ctx, subjectRef, "Initial API outage", "Requests are failing")
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev1))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev1))
 
 	ev2 := s.createIncidentEvent(ctx, subjectRef, "Updated API outage", "Requests are still failing")
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev2))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev2))
 
 	entity := s.entityForAlias(ctx, "fake", subjectRef)
 
@@ -56,8 +56,8 @@ func (s *ProjectedEntityLinkingSuite) TestIncidentProjectionReprocessingEventDoe
 	ctx := s.SeedTenantContext()
 	ev := s.createIncidentEvent(ctx, "fake:incident:"+uuid.NewString(), "API outage", "Requests are failing")
 
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev))
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev))
 
 	entity := s.entityForAlias(ctx, "fake", ev.ProviderSubjectRef)
 	incidents, err := s.Client().Incident.Query().
@@ -81,8 +81,8 @@ func (s *ProjectedEntityLinkingSuite) TestIncidentProjectionUnchangedRefreshWrit
 	ev2.OccurredAt = ev1.OccurredAt
 	ev2.ReceivedAt = ev1.ReceivedAt
 
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev1))
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev2))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev1))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev2))
 
 	entity := s.entityForAlias(ctx, "fake", subjectRef)
 	incidents, err := s.Client().Incident.Query().
@@ -105,12 +105,12 @@ func (s *ProjectedEntityLinkingSuite) TestIncidentProjectionPreservesFirstObserv
 	ev1 := s.createIncidentEvent(ctx, subjectRef, "API outage", "Requests are failing")
 	ev1.OccurredAt = time.Date(2026, 5, 1, 10, 0, 0, 0, time.UTC)
 	ev1.ReceivedAt = ev1.OccurredAt
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev1))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev1))
 
 	ev2 := s.createIncidentEvent(ctx, subjectRef, "API outage updated", "Requests are still failing")
 	ev2.OccurredAt = time.Date(2026, 5, 1, 11, 0, 0, 0, time.UTC)
 	ev2.ReceivedAt = ev2.OccurredAt
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev2))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev2))
 
 	entity := s.entityForAlias(ctx, "fake", subjectRef)
 	s.Require().NotNil(entity.FirstObservedAt)
@@ -130,10 +130,10 @@ func (s *ProjectedEntityLinkingSuite) TestIncidentEvidencePropertiesUseEventAttr
 	subjectRef := "fake:incident:" + uuid.NewString()
 
 	ev1 := s.createIncidentEvent(ctx, subjectRef, "Initial API outage", "First summary")
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev1))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev1))
 
 	ev2 := s.createIncidentEvent(ctx, subjectRef, "Updated API outage", "Second summary")
-	s.Require().NoError(handleIncidentEventProjection(ctx, s.Client(), ev2))
+	s.Require().NoError(HandleIncidentEventProjection(ctx, s.Client(), ev2))
 
 	entity := s.entityForAlias(ctx, "fake", subjectRef)
 	evidence := s.entityEvidence(ctx, entity.ID)
@@ -147,10 +147,10 @@ func (s *ProjectedEntityLinkingSuite) TestAlertProjectionReusesKnowledgeEntityAn
 	subjectRef := "fake:alert:" + uuid.NewString()
 
 	ev1 := s.createAlertEvent(ctx, subjectRef, "Latency alert", "p95 latency is high")
-	s.Require().NoError(handleAlertEventProjection(ctx, s.Client(), ev1))
+	s.Require().NoError(HandleAlertEventProjection(ctx, s.Client(), ev1))
 
 	ev2 := s.createAlertEvent(ctx, subjectRef, "Latency alert updated", "p99 latency is high")
-	s.Require().NoError(handleAlertEventProjection(ctx, s.Client(), ev2))
+	s.Require().NoError(HandleAlertEventProjection(ctx, s.Client(), ev2))
 
 	entity := s.entityForAlias(ctx, "fake", subjectRef)
 	alerts, err := s.Client().Alert.Query().
@@ -180,7 +180,7 @@ func (s *ProjectedEntityLinkingSuite) TestUserProjectionLinksKnowledgeEntityAndF
 	s.Require().NoError(createErr)
 
 	ev := s.createUserEvent(ctx, subjectRef, email, "Updated User")
-	s.Require().NoError(handleUserEventProjection(ctx, s.Client(), ev))
+	s.Require().NoError(HandleUserEventProjection(ctx, s.Client(), ev))
 
 	entity := s.entityForAlias(ctx, "fake", subjectRef)
 	updatedUser, userErr := s.Client().User.Get(ctx, existingUser.ID)
@@ -200,7 +200,7 @@ func (s *ProjectedEntityLinkingSuite) TestUserProjectionFailsWhenLinkedUserConfl
 
 	linkedEmail := "linked-" + uuid.NewString() + "@example.com"
 	firstEvent := s.createUserEvent(ctx, subjectRef, linkedEmail, "Linked User")
-	s.Require().NoError(handleUserEventProjection(ctx, s.Client(), firstEvent))
+	s.Require().NoError(HandleUserEventProjection(ctx, s.Client(), firstEvent))
 
 	conflictEmail := "conflict-" + uuid.NewString() + "@example.com"
 	_, createErr := s.Client().User.Create().
@@ -210,15 +210,16 @@ func (s *ProjectedEntityLinkingSuite) TestUserProjectionFailsWhenLinkedUserConfl
 	s.Require().NoError(createErr)
 
 	conflictEvent := s.createUserEvent(ctx, subjectRef, conflictEmail, "Conflict User")
-	s.Error(handleUserEventProjection(ctx, s.Client(), conflictEvent))
+	s.Error(HandleUserEventProjection(ctx, s.Client(), conflictEvent))
 }
 
 func (s *ProjectedEntityLinkingSuite) TestProjectionStatusOnlyCreatedForApplicableHandlers() {
 	ctx := s.SeedTenantContext()
-	RegisterEventProcessors()
+	pr := projections.NewEventProjectionHandlerRegistry()
+	RegisterEventProcessors(pr)
 
 	ev := s.createIncidentEvent(ctx, "fake:incident:"+uuid.NewString(), "API outage", "Requests are failing")
-	providerEvents := &ProviderEventService{db: s.Client()}
+	providerEvents := &ProviderEventService{db: s.Client(), reg: pr}
 
 	res := providerEvents.projectNormalizedEvent(ctx, ev)
 	s.Empty(res.handlerErrors)

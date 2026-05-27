@@ -15,7 +15,7 @@ const (
 	knowledgeKindUser            = "user"
 )
 
-func handleUserEventProjection(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
+func HandleUserEventProjection(ctx context.Context, client *ent.Client, event *ent.NormalizedEvent) error {
 	if projections.SubjectKindUser.Matches(event) {
 		projEvent, eventErr := projections.DecodeUserEvent(event)
 		if eventErr != nil || projEvent == nil {

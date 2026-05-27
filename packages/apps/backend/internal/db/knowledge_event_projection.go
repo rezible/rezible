@@ -24,7 +24,7 @@ const (
 	relationshipKindTouched     = "touched_repository"
 )
 
-func handleKnowledgeEntityEventProjection(ctx context.Context, client *ent.Client, ev *ent.NormalizedEvent) error {
+func HandleKnowledgeEntityEventProjection(ctx context.Context, client *ent.Client, ev *ent.NormalizedEvent) error {
 	proj := newKnowledgeEntityEventProjector(ev, client)
 
 	result, eventErr := proj.projectEvent(ev)

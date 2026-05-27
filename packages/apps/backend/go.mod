@@ -129,6 +129,8 @@ require (
 	github.com/riverqueue/river/riverdriver/riversqlite v0.31.0 // indirect
 	github.com/riverqueue/river/rivershared v0.36.0 // indirect
 	github.com/rs/zerolog v1.35.0 // indirect
+	github.com/samber/do/v2 v2.0.0 // indirect
+	github.com/samber/go-type-to-string v1.8.0 // indirect
 	github.com/sony/gobreaker v1.0.0 // indirect
 	github.com/spf13/afero v1.14.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect

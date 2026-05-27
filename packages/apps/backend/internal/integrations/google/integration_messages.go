@@ -11,11 +11,17 @@ import (
 )
 
 type eventHandler struct {
-	services *rez.Services
+	integrations rez.IntegrationsService
+	messages     rez.MessageService
+	incidents    rez.IncidentService
 }
 
 func (i *integration) registerMessageHandlers() error {
-	mh := &eventHandler{services: i.services}
+	mh := &eventHandler{
+		integrations: i.services.Integrations,
+		messages:     i.services.Messages,
+		incidents:    i.services.Incidents,
+	}
 	eventsErr := i.services.Messages.AddEventHandlers(
 		rez.NewEventHandler("GoogleOnIncidentUpdate", mh.onIncidentUpdate))
 	if eventsErr != nil {
@@ -30,7 +36,8 @@ func (i *integration) registerMessageHandlers() error {
 }
 
 func (h *eventHandler) withConfiguredIntegration(ctx context.Context, fn func(*ConfiguredIntegration) error) error {
-	intgs, lookupErr := h.services.Integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
+	listParams := rez.ListIntegrationsParams{Providers: []string{integrationName}}
+	intgs, lookupErr := h.integrations.ListConfigured(ctx, listParams)
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return nil
@@ -59,7 +66,7 @@ func (h *eventHandler) onIncidentCreated(ctx context.Context, id uuid.UUID) erro
 		if !ci.isVideoConferenceEnabled() {
 			return nil
 		}
-		return h.services.Messages.SendCommand(ctx, &cmdCreateIncidentVideoConference{IncidentId: id})
+		return h.messages.SendCommand(ctx, &cmdCreateIncidentVideoConference{IncidentId: id})
 	})
 }
 
@@ -69,7 +76,7 @@ type cmdCreateIncidentVideoConference struct {
 
 func (h *eventHandler) createIncidentVideoConference(ctx context.Context, cmd *cmdCreateIncidentVideoConference) error {
 	return h.withConfiguredIntegration(ctx, func(ci *ConfiguredIntegration) error {
-		inc, incErr := h.services.Incidents.Get(ctx, incident.ID(cmd.IncidentId))
+		inc, incErr := h.incidents.Get(ctx, incident.ID(cmd.IncidentId))
 		if incErr != nil {
 			return fmt.Errorf("get incident: %w", incErr)
 		}

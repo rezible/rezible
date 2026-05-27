@@ -32,7 +32,7 @@ type oauthHandler struct {
 	idTokenVerifier     *oidc.IDTokenVerifier
 }
 
-func makeOAuthHandler(ctx context.Context, cfg Config, codec *cookieCodec) (*oauthHandler, error) {
+func makeOAuthHandler(cfg Config, codec *cookieCodec) (*oauthHandler, error) {
 	apiAudience := rez.Config.ApiUrl()
 	if apiAudience == "" {
 		return nil, fmt.Errorf("no api url configured, can't verify token audience")

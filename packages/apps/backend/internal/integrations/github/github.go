@@ -25,14 +25,14 @@ type integration struct {
 	services              *rez.Services
 	oauth2Config          *oauth2.Config
 	listUserInstallations func(context.Context, string) ([]*gh.Installation, error)
-	webhookHandlers       map[string]http.Handler
+	webhookHandler        http.Handler
 }
 
 func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
 	i := &integration{
 		services:              svcs,
 		listUserInstallations: listUserInstallations,
-		webhookHandlers:       make(map[string]http.Handler),
+		webhookHandler:        http.NotFoundHandler(),
 	}
 
 	if cfgErr := rez.Config.Unmarshal("github", &i.cfg); cfgErr != nil {
@@ -41,7 +41,7 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 	i.oauth2Config = i.loadOAuthConfig()
 
 	if i.cfg.Enabled {
-		i.webhookHandlers["/"] = newWebhookHandler(i.cfg.WebhookSecret, svcs)
+		i.webhookHandler = newWebhookHandler(i.cfg.WebhookSecret, svcs)
 	}
 
 	return i, nil
@@ -56,6 +56,10 @@ func (i *integration) IsAvailable() (bool, error) {
 		return false, nil
 	}
 	return true, i.cfg.validate()
+}
+
+func (i *integration) WebhookHandler() http.Handler {
+	return i.webhookHandler
 }
 
 func (i *integration) SupportedDataKinds() []string {
@@ -173,10 +177,6 @@ func (i *integration) ValidateUserPreferences(_ map[string]any) error {
 
 func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
 	return newConfiguredIntegration(i.services, intg)
-}
-
-func (i *integration) WebhookHandlers() map[string]http.Handler {
-	return i.webhookHandlers
 }
 
 // ConfiguredIntegration wraps an *ent.Integration for a specific tenant installation.

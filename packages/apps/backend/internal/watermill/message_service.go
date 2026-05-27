@@ -31,8 +31,8 @@ type MessageService struct {
 	eventProc *cqrs.EventProcessor
 }
 
-func NewMessageService(ctx context.Context) (*MessageService, error) {
-	logger := telemetry.NewLogger(ctx, telemetry.WithLogPackage("watermill"), telemetry.WithMinLogLevel(slog.LevelWarn))
+func NewMessageService() (*MessageService, error) {
+	logger := telemetry.NewPackageLogger("watermill", telemetry.WithMinLogLevel(slog.LevelWarn))
 	ms := MessageService{
 		logger:     watermill.NewSlogLogger(logger),
 		marshaller: cqrs.JSONMarshaler{GenerateName: cqrs.FullyQualifiedStructName},

@@ -24,19 +24,19 @@ const (
 var supportedDataKinds = []string{"chat", "users"}
 
 type integration struct {
-	cfg             Config
-	services        *rez.Services
-	oauth2Config    *oauth2.Config
-	eventListeners  map[string]rez.EventListener
-	webhookHandlers map[string]http.Handler
+	cfg            Config
+	services       *rez.Services
+	oauth2Config   *oauth2.Config
+	eventListeners map[string]rez.EventListener
+	webhookHandler http.Handler
 }
 
 func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
 	intg := &integration{
-		services:        svcs,
-		webhookHandlers: make(map[string]http.Handler),
-		eventListeners:  make(map[string]rez.EventListener),
-		cfg:             Config{},
+		services:       svcs,
+		webhookHandler: http.NotFoundHandler(),
+		eventListeners: make(map[string]rez.EventListener),
+		cfg:            Config{},
 	}
 
 	if cfgErr := rez.Config.Unmarshal("slack", &intg.cfg); cfgErr != nil {
@@ -65,7 +65,7 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 		if whErr != nil {
 			return nil, fmt.Errorf("webhook listener: %w", whErr)
 		}
-		intg.webhookHandlers["/"] = wh.Handler()
+		intg.webhookHandler = wh.Handler()
 	}
 
 	return intg, nil
@@ -86,8 +86,8 @@ func (i *integration) EventListeners() map[string]rez.EventListener {
 	return i.eventListeners
 }
 
-func (i *integration) WebhookHandlers() map[string]http.Handler {
-	return i.webhookHandlers
+func (i *integration) WebhookHandler() http.Handler {
+	return i.webhookHandler
 }
 
 func (i *integration) SupportedDataKinds() []string {

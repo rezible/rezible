@@ -10,14 +10,10 @@ import (
 	"strings"
 
 	"github.com/koding/websocketproxy"
-	"github.com/rezible/rezible/internal/http/api/v1"
-	"github.com/rezible/rezible/internal/http/oidc"
 	slogchi "github.com/samber/slog-chi"
 
 	"github.com/go-chi/chi/v5"
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/integrations"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -35,7 +31,12 @@ func ensureSlashPrefix(s string) string {
 	return s
 }
 
-func NewServer(ctx context.Context, svcs *rez.Services) (*Server, error) {
+type UserAuthSessionService interface {
+	Handler() http.Handler
+	ExecutionContextMiddleware() func(http.Handler) http.Handler
+}
+
+func NewServer(auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
 	cfg, cfgErr := loadConfig()
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
@@ -50,11 +51,9 @@ func NewServer(ctx context.Context, svcs *rez.Services) (*Server, error) {
 	s.router.Use(s.makeExecutionContextMiddleware())
 	s.router.Use(s.makeRequestLoggerMiddleware())
 
-	handler, handlerErr := s.makeRequestHandler(ctx, svcs)
-	if handlerErr != nil {
+	if handlerErr := s.mountRequestHandler(auth, oapiV1Handler, webhookHandlers); handlerErr != nil {
 		return nil, fmt.Errorf("http request handler: %w", handlerErr)
 	}
-	s.router.Mount(ensureSlashPrefix(cfg.BasePath), http.StripPrefix(cfg.BasePath, handler))
 
 	return &s, nil
 }
@@ -79,18 +78,13 @@ func (s *Server) makeRequestLoggerMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func (s *Server) makeRequestHandler(ctx context.Context, svcs *rez.Services) (http.Handler, error) {
-	auth, authErr := oidc.NewAuthSessionService(ctx, svcs.Organizations, svcs.Users)
-	if authErr != nil {
-		return nil, fmt.Errorf("oidc.NewAuthSessionService: %w", authErr)
-	}
-
+func (s *Server) mountRequestHandler(auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) error {
 	r := chi.NewRouter()
 
 	r.Get("/health", s.makeHealthCheckHandler())
 
 	webhooks := chi.NewMux()
-	for route, wh := range integrations.GetWebhookHandlers() {
+	for route, wh := range webhookHandlers {
 		webhooks.Mount(ensureSlashPrefix(route), wh)
 	}
 	r.Mount("/webhooks", webhooks)
@@ -105,11 +99,14 @@ func (s *Server) makeRequestHandler(ctx context.Context, svcs *rez.Services) (ht
 			ar.Handle("/documents", s.makeDocumentsProxyHandler())
 		}
 
-		api := oapiv1.MakeApi(apiv1.NewHandler(svcs), oapiv1.MakeSecurityMiddleware(), oapiv1.MakeAPITelemetryMiddleware())
+		api := oapiv1.MakeApi(oapiV1Handler, oapiv1.MakeSecurityMiddleware(), oapiv1.MakeAPITelemetryMiddleware())
 		ar.Mount(oapiv1.VersionPrefix, api.Adapter())
 	})
 
-	return r, nil
+	basePath := s.cfg.BasePath
+	s.router.Mount(ensureSlashPrefix(basePath), http.StripPrefix(basePath, r))
+
+	return nil
 }
 
 func (s *Server) makeDocumentsProxyHandler() http.Handler {
