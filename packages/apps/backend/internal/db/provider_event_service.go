@@ -27,12 +27,12 @@ type ProviderEventService struct {
 	logger       *slog.Logger
 	db           *ent.Client
 	reg          *projections.EventProjectionHandlerRegistry
-	jobService   rez.JobsService
+	jobService   rez.JobService
 	integrations rez.IntegrationsService
 	telemetry    *providerEventTelemetry
 }
 
-func NewProviderEventService(ts rez.TelemetryService, dbc *ent.Client, jobSvc rez.JobsService, intgs rez.IntegrationsService, reg *projections.EventProjectionHandlerRegistry) (*ProviderEventService, error) {
+func NewProviderEventService(ts rez.TelemetryService, dbc *ent.Client, jobSvc rez.JobService, intgs rez.IntegrationsService, reg *projections.EventProjectionHandlerRegistry) (*ProviderEventService, error) {
 	logger := ts.NewLogger(rez.LoggerOptions{PackageName: "provider_events"})
 	pe := &ProviderEventService{
 		logger:       logger,

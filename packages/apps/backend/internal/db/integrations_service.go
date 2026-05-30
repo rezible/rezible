@@ -26,11 +26,11 @@ import (
 
 type IntegrationsService struct {
 	db   *ent.Client
-	jobs rez.JobsService
+	jobs rez.JobService
 	reg  *integrations.PackageRegistry
 }
 
-func NewIntegrationsService(dbc *ent.Client, jobs rez.JobsService, reg *integrations.PackageRegistry) (*IntegrationsService, error) {
+func NewIntegrationsService(dbc *ent.Client, jobs rez.JobService, reg *integrations.PackageRegistry) (*IntegrationsService, error) {
 	s := &IntegrationsService{
 		db:   dbc,
 		jobs: jobs,

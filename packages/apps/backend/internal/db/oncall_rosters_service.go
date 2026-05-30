@@ -15,10 +15,10 @@ import (
 
 type OncallRostersService struct {
 	db   *ent.Client
-	jobs rez.JobsService
+	jobs rez.JobService
 }
 
-func NewOncallRostersService(dbc *ent.Client, jobSvc rez.JobsService) (*OncallRostersService, error) {
+func NewOncallRostersService(dbc *ent.Client, jobSvc rez.JobService) (*OncallRostersService, error) {
 	s := &OncallRostersService{
 		db:   dbc,
 		jobs: jobSvc,

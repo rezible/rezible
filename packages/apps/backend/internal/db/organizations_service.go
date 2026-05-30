@@ -16,10 +16,10 @@ import (
 
 type OrganizationsService struct {
 	dbc  *ent.Client
-	jobs rez.JobsService
+	jobs rez.JobService
 }
 
-func NewOrganizationsService(dbc *ent.Client, jobs rez.JobsService) (*OrganizationsService, error) {
+func NewOrganizationsService(dbc *ent.Client, jobs rez.JobService) (*OrganizationsService, error) {
 	return &OrganizationsService{dbc: dbc, jobs: jobs}, nil
 }
 

@@ -24,11 +24,11 @@ import (
 
 type OncallShiftsService struct {
 	db           *ent.Client
-	jobs         rez.JobsService
+	jobs         rez.JobService
 	integrations rez.IntegrationsService
 }
 
-func NewOncallShiftsService(dbc *ent.Client, jobSvc rez.JobsService, intgs rez.IntegrationsService) (*OncallShiftsService, error) {
+func NewOncallShiftsService(dbc *ent.Client, jobSvc rez.JobService, intgs rez.IntegrationsService) (*OncallShiftsService, error) {
 	s := &OncallShiftsService{
 		db:           dbc,
 		jobs:         jobSvc,

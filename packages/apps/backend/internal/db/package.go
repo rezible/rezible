@@ -12,14 +12,14 @@ var Package = do.Package(
 	do.Lazy(func(i do.Injector) (rez.IntegrationsService, error) {
 		return NewIntegrationsService(
 			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[*integrations.PackageRegistry](i))
 	}),
 	do.Lazy(func(i do.Injector) (rez.ProviderEventService, error) {
 		return NewProviderEventService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IntegrationsService](i),
 			do.MustInvoke[*projections.EventProjectionHandlerRegistry](i),
 		)
@@ -27,7 +27,7 @@ var Package = do.Package(
 	do.Lazy(func(i do.Injector) (rez.OrganizationService, error) {
 		return NewOrganizationsService(
 			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.JobService](i),
 		)
 	}),
 	do.Lazy(func(i do.Injector) (rez.UserService, error) {
@@ -54,7 +54,7 @@ var Package = do.Package(
 	do.Lazy(func(i do.Injector) (rez.IncidentService, error) {
 		return NewIncidentService(
 			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.UserService](i),
 		)
@@ -62,7 +62,7 @@ var Package = do.Package(
 	do.Lazy(func(i do.Injector) (rez.OncallRostersService, error) {
 		return NewOncallRostersService(
 			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.JobService](i),
 		)
 	}),
 	do.Lazy(func(i do.Injector) (rez.SystemTopologyService, error) {
@@ -73,7 +73,7 @@ var Package = do.Package(
 	do.Lazy(func(i do.Injector) (rez.OncallShiftsService, error) {
 		return NewOncallShiftsService(
 			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IntegrationsService](i),
 		)
 	}),
@@ -86,7 +86,7 @@ var Package = do.Package(
 	do.Lazy(func(i do.Injector) (rez.DebriefService, error) {
 		return NewDebriefService(
 			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.JobService](i),
 		)
 	}),
 	do.Lazy(func(i do.Injector) (rez.RetrospectiveService, error) {

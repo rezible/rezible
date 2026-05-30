@@ -23,13 +23,13 @@ import (
 
 type IncidentService struct {
 	db    *ent.Client
-	jobs  rez.JobsService
+	jobs  rez.JobService
 	msgs  rez.MessageService
 	users rez.UserService
 }
 
 func NewIncidentService(db *ent.Client,
-	jobs rez.JobsService,
+	jobs rez.JobService,
 	msgs rez.MessageService,
 	users rez.UserService,
 ) (*IncidentService, error) {

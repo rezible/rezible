@@ -18,10 +18,10 @@ import (
 
 type DebriefService struct {
 	db   *ent.Client
-	jobs rez.JobsService
+	jobs rez.JobService
 }
 
-func NewDebriefService(dbc *ent.Client, jobSvc rez.JobsService) (*DebriefService, error) {
+func NewDebriefService(dbc *ent.Client, jobSvc rez.JobService) (*DebriefService, error) {
 	svc := &DebriefService{
 		db:   dbc,
 		jobs: jobSvc,

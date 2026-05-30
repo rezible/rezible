@@ -7,7 +7,7 @@ import (
 )
 
 var Package = do.Package(
-	do.Lazy(func(i do.Injector) (rez.JobsService, error) {
+	do.Lazy(func(i do.Injector) (rez.JobService, error) {
 		return NewJobService(do.MustInvoke[rez.TelemetryService](i), do.MustInvoke[*pgxpool.Pool](i))
 	}),
 )
