@@ -48,21 +48,6 @@ func (r *PackageRegistry) GetAvailable() []rez.IntegrationPackage {
 	return r.availablePackages
 }
 
-func (r *PackageRegistry) GetListeners() map[string]rez.Listener {
-	type integrationPackageWithEventListeners interface {
-		Listeners() map[string]rez.Listener
-	}
-	els := make(map[string]rez.Listener)
-	for _, pkg := range r.availablePackages {
-		if elPkg, ok := pkg.(integrationPackageWithEventListeners); ok {
-			for name, listener := range elPkg.Listeners() {
-				els[name] = listener
-			}
-		}
-	}
-	return els
-}
-
 func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {
 	type IntegrationWithWebhookHandler interface {
 		WebhookHandler() http.Handler

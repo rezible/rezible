@@ -45,11 +45,6 @@ type ConfigLoader interface {
 	ApiUrl() string
 }
 
-type Listener interface {
-	Start(ctx context.Context) error
-	Stop(ctx context.Context) error
-}
-
 type (
 	LoggerOptions struct {
 		Parent      *slog.Logger
