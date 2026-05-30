@@ -25,16 +25,18 @@ import (
 )
 
 type IntegrationsService struct {
-	db   *ent.Client
-	jobs rez.JobService
-	reg  *integrations.PackageRegistry
+	db     *ent.Client
+	jobs   rez.JobService
+	reg    *integrations.PackageRegistry
+	appUrl string
 }
 
-func NewIntegrationsService(dbc *ent.Client, jobs rez.JobService, reg *integrations.PackageRegistry) (*IntegrationsService, error) {
+func NewIntegrationsService(cl rez.ConfigLoader, dbc *ent.Client, jobs rez.JobService, reg *integrations.PackageRegistry) (*IntegrationsService, error) {
 	s := &IntegrationsService{
-		db:   dbc,
-		jobs: jobs,
-		reg:  reg,
+		db:     dbc,
+		jobs:   jobs,
+		reg:    reg,
+		appUrl: cl.AppUrl(),
 	}
 
 	s.registerJobs()
@@ -304,7 +306,16 @@ func (s *IntegrationsService) getOAuthState(ctx context.Context, provider string
 	return stateMatch, nil
 }
 
-func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, provider string, redirect *url.URL) (string, error) {
+func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, provider string, callbackPath string) (string, error) {
+	callbackUrl, pathErr := url.JoinPath(s.appUrl, callbackPath)
+	if pathErr != nil {
+		return "", fmt.Errorf("invalid callback path: %w", pathErr)
+	}
+	redirectUrl, urlErr := url.Parse(callbackUrl)
+	if urlErr != nil {
+		return "", fmt.Errorf("invalid callback url: %w", urlErr)
+	}
+
 	oi, oiErr := s.reg.GetOAuthIntegration(provider)
 	if oiErr != nil {
 		return "", fmt.Errorf("invalid oauth2 integration: %w", oiErr)
@@ -314,8 +325,8 @@ func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, provider stri
 		return "", fmt.Errorf("failed to make oauth state: %w", stateErr)
 	}
 	cfg := oi.OAuth2Config()
-	if redirect != nil {
-		cfg.RedirectURL = redirect.String()
+	if redirectUrl != nil {
+		cfg.RedirectURL = redirectUrl.String()
 	}
 	return cfg.AuthCodeURL(state), nil
 }

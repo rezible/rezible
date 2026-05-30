@@ -79,7 +79,6 @@ func (s *JobService) Start(ctx context.Context) error {
 }
 
 func (s *JobService) Shutdown(ctx context.Context) error {
-	s.logger.Info("stop job service")
 	if s.client != nil {
 		return s.client.Stop(ctx)
 	}

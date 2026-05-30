@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	entsql "entgo.io/ent/dialect/sql"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/stretchr/testify/suite"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/peterldowns/pgtestdb"
 	"github.com/peterldowns/pgtestdb/migrators/golangmigrator"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/internal/koanf"
@@ -30,6 +30,8 @@ type options struct {
 type Suite struct {
 	suite.Suite
 
+	cl rez.ConfigLoader
+
 	opts options
 
 	dbClient *ent.Client
@@ -44,7 +46,9 @@ func NewSuite(opts ...Option) Suite {
 	for _, opt := range opts {
 		opt(&cfg)
 	}
-	return Suite{opts: cfg}
+	return Suite{
+		opts: cfg,
+	}
 }
 
 func (s *Suite) SetupSuite() {
@@ -62,12 +66,12 @@ func (s *Suite) BeforeTest(suiteName, testName string) {
 }
 
 func (s *Suite) SetConfigOverrides(overrides map[string]any) {
-	cfg, cfgErr := koanf.NewConfigLoader(s.T().Context(), koanf.ConfigLoaderOptions{
+	cfg, cfgErr := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{
 		LoadEnvironment: true,
 		Overrides:       overrides,
 	})
 	s.Require().NoError(cfgErr)
-	rez.Config = cfg
+	s.cl = cfg
 }
 
 func (s *Suite) DatabaseClient() *ent.Client { return s.dbClient }
@@ -83,7 +87,7 @@ func (s *Suite) SeedTenantContext() context.Context {
 }
 
 func (s *Suite) setupTestDatabase() {
-	pgCfg, pgCfgErr := postgres.LoadConfig()
+	pgCfg, pgCfgErr := postgres.LoadConfig(s.cl)
 	s.Require().NoError(pgCfgErr, "loading postgres config")
 	s.Require().NotEmpty(pgCfg.AdminRole.Name, "migrations config nil")
 

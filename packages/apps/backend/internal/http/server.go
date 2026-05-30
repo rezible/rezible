@@ -38,8 +38,8 @@ type UserAuthSessionService interface {
 	ExecutionContextMiddleware() func(http.Handler) http.Handler
 }
 
-func NewServer(ts rez.TelemetryService, auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
-	cfg, cfgErr := loadConfig()
+func NewServer(cl rez.ConfigLoader, ts rez.TelemetryService, auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
+	cfg, cfgErr := loadConfig(cl)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}

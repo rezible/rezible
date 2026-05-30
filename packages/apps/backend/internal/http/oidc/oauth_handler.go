@@ -23,6 +23,7 @@ type oauthHandler struct {
 	cfg   oidcConfig
 	codec *cookieCodec
 
+	apiAudience     string
 	singleTenantOrg *ent.Organization
 
 	resourceOption      oauth2.AuthCodeOption
@@ -30,28 +31,6 @@ type oauthHandler struct {
 	oauthCfg            *oauth2.Config
 	accessTokenVerifier *oidc.IDTokenVerifier
 	idTokenVerifier     *oidc.IDTokenVerifier
-}
-
-func makeOAuthHandler(cfg Config, codec *cookieCodec) (*oauthHandler, error) {
-	apiAudience := rez.Config.ApiUrl()
-	if apiAudience == "" {
-		return nil, fmt.Errorf("no api url configured, can't verify token audience")
-	}
-
-	h := &oauthHandler{
-		cfg:            cfg.Oidc,
-		codec:          codec,
-		resourceOption: oauth2.SetAuthURLParam("resource", apiAudience),
-	}
-
-	if rez.Config.SingleTenantMode() {
-		h.singleTenantOrg = &ent.Organization{
-			AuthProviderID: "default",
-			Name:           cfg.SingleTenantOrgName,
-		}
-	}
-
-	return h, nil
 }
 
 func (h *oauthHandler) scopes() []string {
@@ -69,7 +48,7 @@ func (h *oauthHandler) ensureProvider(ctx context.Context) error {
 		if provErr != nil {
 			return fmt.Errorf("create oidc provider: %w", provErr)
 		}
-		accessTokenAudience := rez.Config.ApiUrl()
+		accessTokenAudience := h.apiAudience
 		if h.singleTenantOrg != nil {
 			accessTokenAudience = h.cfg.ClientID
 		}

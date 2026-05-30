@@ -16,14 +16,16 @@ import (
 )
 
 type messageHandler struct {
+	appUrl       string
 	messages     rez.MessageService
 	provEvents   rez.ProviderEventService
 	integrations rez.IntegrationsService
 	incidents    rez.IncidentService
 }
 
-func makeMessageHandler(msgs rez.MessageService, provEvents rez.ProviderEventService, intgs rez.IntegrationsService, incidents rez.IncidentService) (*messageHandler, error) {
+func makeMessageHandler(cl rez.ConfigLoader, msgs rez.MessageService, provEvents rez.ProviderEventService, intgs rez.IntegrationsService, incidents rez.IncidentService) (*messageHandler, error) {
 	h := &messageHandler{
+		appUrl:       cl.AppUrl(),
 		messages:     msgs,
 		provEvents:   provEvents,
 		integrations: intgs,
@@ -164,7 +166,7 @@ func (h *messageHandler) withIncidentUpdateProcessor(ctx context.Context, id uui
 	if !ok {
 		return fmt.Errorf("failed to cast to *ConfiguredIntegration")
 	}
-	p, procErr := newIncidentUpdateProcessor(ctx, newChatService(ctx, ci), h.incidents, h.messages, id)
+	p, procErr := newIncidentUpdateProcessor(ctx, h.appUrl, newChatService(ctx, ci), h.incidents, h.messages, id)
 	if procErr != nil {
 		return fmt.Errorf("creating incident update processor: %w", procErr)
 	}

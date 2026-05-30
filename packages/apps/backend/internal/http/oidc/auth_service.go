@@ -12,9 +12,11 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
+	"golang.org/x/oauth2"
 )
 
 type Config struct {
@@ -40,8 +42,8 @@ type AuthSessionService struct {
 	oauth      *oauthHandler
 }
 
-func NewAuthSessionService(orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
-	oauthRedirectUrl, redirectErr := url.JoinPath(rez.Config.AppUrl(), "/api/auth/callback")
+func NewAuthSessionService(cl rez.ConfigLoader, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
+	oauthRedirectUrl, redirectErr := url.JoinPath(cl.AppUrl(), "/api/auth/callback")
 	if redirectErr != nil {
 		return nil, fmt.Errorf("redirect url: %w", redirectErr)
 	}
@@ -52,7 +54,7 @@ func NewAuthSessionService(orgs rez.OrganizationService, users rez.UserService) 
 			RedirectUrl: oauthRedirectUrl,
 		},
 	}
-	if cfgErr := rez.Config.Unmarshal("auth", &cfg); cfgErr != nil {
+	if cfgErr := cl.Unmarshal("auth", &cfg); cfgErr != nil {
 		return nil, fmt.Errorf("config: %w", cfgErr)
 	}
 
@@ -61,9 +63,21 @@ func NewAuthSessionService(orgs rez.OrganizationService, users rez.UserService) 
 		return nil, fmt.Errorf("cookie codec: %w", codecErr)
 	}
 
-	oauth, oauthErr := makeOAuthHandler(cfg, codec)
-	if oauthErr != nil {
-		return nil, fmt.Errorf("oauth handler: %w", oauthErr)
+	apiAudience := cl.ApiUrl()
+	if apiAudience == "" {
+		return nil, fmt.Errorf("no api url configured, can't verify token audience")
+	}
+	oauth := &oauthHandler{
+		cfg:            cfg.Oidc,
+		codec:          codec,
+		apiAudience:    apiAudience,
+		resourceOption: oauth2.SetAuthURLParam("resource", apiAudience),
+	}
+	if cl.SingleTenantMode() {
+		oauth.singleTenantOrg = &ent.Organization{
+			AuthProviderID: "default",
+			Name:           cfg.SingleTenantOrgName,
+		}
 	}
 
 	s := &AuthSessionService{

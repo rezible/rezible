@@ -5,7 +5,6 @@ import (
 	"strings"
 	"text/template"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/slack-go/slack"
@@ -17,14 +16,16 @@ const (
 )
 
 type incidentDetailsMessageBuilder struct {
+	appUrl   string
 	blocks   []slack.Block
 	incident *ent.Incident
 }
 
 var incidentDetailsTemplate = template.Template{}
 
-func newIncidentDetailsMessageBuilder(inc *ent.Incident) *incidentDetailsMessageBuilder {
+func newIncidentDetailsMessageBuilder(appUrl string, inc *ent.Incident) *incidentDetailsMessageBuilder {
 	return &incidentDetailsMessageBuilder{
+		appUrl:   appUrl,
 		blocks:   []slack.Block{},
 		incident: inc,
 	}
@@ -92,7 +93,7 @@ func (b *incidentDetailsMessageBuilder) latestUpdateSummary() string {
 }
 
 func (b *incidentDetailsMessageBuilder) makeDetailsText() {
-	webLink := fmt.Sprintf("%s/incidents/%s", rez.Config.AppUrl(), b.incident.Slug)
+	webLink := fmt.Sprintf("%s/incidents/%s", b.appUrl, b.incident.Slug)
 	sev := b.incident.Edges.Severity
 	detailsText := fmt.Sprintf(
 		"*Incident Details*\n*Title:* %s\n*Severity:* %s\n*Status:* %s\n*Roles:*\n%s\n*Latest Update:* %s\n*Web:* %s",
@@ -122,19 +123,22 @@ func (b *incidentDetailsMessageBuilder) makeActions() {
 type incidentAnnouncementMessageBuilder struct {
 	blocks   []slack.Block
 	incident *ent.Incident
+	builder  *incidentDetailsMessageBuilder
 }
 
-func newIncidentAnnouncementMessageBuilder(inc *ent.Incident) *incidentAnnouncementMessageBuilder {
+func newIncidentAnnouncementMessageBuilder(appUrl string, inc *ent.Incident) *incidentAnnouncementMessageBuilder {
 	return &incidentAnnouncementMessageBuilder{
 		blocks:   []slack.Block{},
 		incident: inc,
+		builder:  newIncidentDetailsMessageBuilder(appUrl, inc),
 	}
 }
 
 func (b *incidentAnnouncementMessageBuilder) build() []slack.Block {
 	sev := b.incident.Edges.Severity
 	headerText := fmt.Sprintf(":rotating_light: Incident declared in <#%s> [%s]", b.incident.ChatChannelID, sev.Name)
-	contextText := fmt.Sprintf("*%s*\nStatus: %s", b.incident.Title, newIncidentDetailsMessageBuilder(b.incident).currentStatus())
+
+	contextText := fmt.Sprintf("*%s*\nStatus: %s", b.incident.Title, b.builder.currentStatus())
 
 	b.blocks = []slack.Block{
 		slack.NewSectionBlock(markdownText(headerText), nil, nil),

@@ -11,15 +11,19 @@ import (
 
 var Package = do.Package(
 	do.Lazy(func(i do.Injector) (UserAuthSessionService, error) {
-		orgs := do.MustInvoke[rez.OrganizationService](i)
-		users := do.MustInvoke[rez.UserService](i)
-		return oidc.NewAuthSessionService(orgs, users)
+		return oidc.NewAuthSessionService(
+			do.MustInvoke[rez.ConfigLoader](i),
+			do.MustInvoke[rez.OrganizationService](i),
+			do.MustInvoke[rez.UserService](i),
+		)
 	}),
 	do.Lazy(func(i do.Injector) (*Server, error) {
-		telemetry := do.MustInvoke[rez.TelemetryService](i)
-		auth := do.MustInvoke[UserAuthSessionService](i)
-		v1Handler := do.MustInvoke[oapiv1.Handler](i)
-		ipr := do.MustInvoke[*integrations.PackageRegistry](i)
-		return NewServer(telemetry, auth, v1Handler, ipr.GetWebhookHandlers())
+		return NewServer(
+			do.MustInvoke[rez.ConfigLoader](i),
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[UserAuthSessionService](i),
+			do.MustInvoke[oapiv1.Handler](i),
+			do.MustInvoke[*integrations.PackageRegistry](i).GetWebhookHandlers(),
+		)
 	}),
 )

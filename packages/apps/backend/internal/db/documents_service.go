@@ -22,14 +22,14 @@ type DocumentsService struct {
 	cfg documentsServiceConfig
 }
 
-func NewDocumentsService(dbc *ent.Client, teams rez.TeamService) (*DocumentsService, error) {
+func NewDocumentsService(cl rez.ConfigLoader, dbc *ent.Client, teams rez.TeamService) (*DocumentsService, error) {
 	svc := &DocumentsService{
 		db:    dbc,
 		teams: teams,
 		cfg:   documentsServiceConfig{},
 	}
 
-	if cfgErr := rez.Config.Unmarshal("documents", &svc.cfg); cfgErr != nil {
+	if cfgErr := cl.Unmarshal("documents", &svc.cfg); cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 

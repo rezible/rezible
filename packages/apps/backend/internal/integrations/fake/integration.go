@@ -11,22 +11,22 @@ const integrationName = "fake"
 
 var Package = do.Package(
 	do.Lazy(func(i do.Injector) (*Integration, error) {
-		return &Integration{}, nil
+		return &Integration{
+			available: do.MustInvoke[rez.ConfigLoader](i).DebugMode(),
+		}, nil
 	}),
 )
 
-func SetupPackage(i do.Injector) (rez.IntegrationPackage, error) {
-	return &Integration{}, nil
+type Integration struct {
+	available bool
 }
-
-type Integration struct{}
 
 func (i *Integration) Name() string {
 	return integrationName
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	return rez.Config.DebugMode(), nil
+	return i.available, nil
 }
 
 var supportedDataKinds = []string{"alerts", "incidents", "system_topology"}

@@ -34,39 +34,13 @@ var postgresMigrateConfig = &postgresmigrate.Config{
 	MigrationsTable: migrationsTable,
 }
 
-func RequireCurrentMigrations(ctx context.Context, cfg Config) error {
-	mg := &MigratorClient{connectionString: cfg.getDsn(cfg.AppRole)}
-	status, statusErr := mg.GetCurrentStatus(ctx)
-	if statusErr != nil {
-		return fmt.Errorf("get current migration status: %w", statusErr)
-	}
-	return status.requireUpToDate()
-}
-
-func CreateSchemaMigration(ctx context.Context, name string) error {
-	c, cErr := newAdminMigratorClient()
-	if cErr != nil {
-		return fmt.Errorf("make client: %w", cErr)
-	}
-	return c.CreateSchemaMigration(ctx, name)
-}
-
-func RunMigrations(ctx context.Context, direction string) error {
-	c, cErr := newAdminMigratorClient()
-	if cErr != nil {
-		return fmt.Errorf("make client: %w", cErr)
-	}
-	return c.Run(ctx, direction)
-}
-
 type MigratorClient struct {
 	connectionString string
 }
 
-func newAdminMigratorClient() (*MigratorClient, error) {
-	cfg, cfgErr := LoadConfig()
-	if cfgErr != nil || cfg.AdminRole.Name == "" {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
+func NewMigratorClient(cfg Config) (*MigratorClient, error) {
+	if cfg.AdminRole.Name == "" {
+		return nil, fmt.Errorf("admin role name cannot be empty")
 	}
 
 	m := &MigratorClient{

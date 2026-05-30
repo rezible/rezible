@@ -215,11 +215,14 @@ func (s *ProjectedEntityLinkingSuite) TestUserProjectionFailsWhenLinkedUserConfl
 
 func (s *ProjectedEntityLinkingSuite) TestProjectionStatusOnlyCreatedForApplicableHandlers() {
 	ctx := s.SeedTenantContext()
-	pr := projections.NewEventProjectionHandlerRegistry()
-	RegisterEventProcessors(pr)
+
+	providerEvents := &ProviderEventService{
+		db:  s.Client(),
+		reg: projections.NewEventProjectionHandlerRegistry(),
+	}
+	RegisterEventProcessors(providerEvents.reg)
 
 	ev := s.createIncidentEvent(ctx, "fake:incident:"+uuid.NewString(), "API outage", "Requests are failing")
-	providerEvents := &ProviderEventService{db: s.Client(), reg: pr}
 
 	res := providerEvents.projectNormalizedEvent(ctx, ev)
 	s.Empty(res.handlerErrors)

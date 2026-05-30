@@ -20,17 +20,17 @@ type DocumentsProxyConfig struct {
 	serverUrl *url.URL
 }
 
-func loadConfig() (Config, error) {
+func loadConfig(cl rez.ConfigLoader) (Config, error) {
 	cfg := Config{
-		Host:     rez.Config.GetString("HOST", "0.0.0.0"),
-		Port:     rez.Config.GetString("PORT", "7002"),
+		Host:     cl.GetString("HOST", "0.0.0.0"),
+		Port:     cl.GetString("PORT", "7002"),
 		BasePath: "",
 		DocumentsProxy: DocumentsProxyConfig{
 			Enabled:   false,
 			ProxyHost: "localhost:7003",
 		},
 	}
-	if cfgErr := rez.Config.Unmarshal("server.http", &cfg); cfgErr != nil {
+	if cfgErr := cl.Unmarshal("server.http", &cfg); cfgErr != nil {
 		return cfg, fmt.Errorf("failed to unmarshal config: %w", cfgErr)
 	}
 	if cfg.DocumentsProxy.Enabled {

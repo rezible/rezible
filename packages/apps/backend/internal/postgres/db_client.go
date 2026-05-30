@@ -24,13 +24,18 @@ type DatabaseClient struct {
 	client *ent.Client
 }
 
-func NewDatabaseClient(ctx context.Context) (*DatabaseClient, error) {
-	cfg, cfgErr := LoadConfig()
+func NewDatabaseClient(ctx context.Context, cl rez.ConfigLoader) (*DatabaseClient, error) {
+	cfg, cfgErr := LoadConfig(cl)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("load config: %w", cfgErr)
 	}
 
-	if migrationsErr := RequireCurrentMigrations(ctx, cfg); migrationsErr != nil {
+	mg := &MigratorClient{connectionString: cfg.getDsn(cfg.AppRole)}
+	status, statusErr := mg.GetCurrentStatus(ctx)
+	if statusErr != nil {
+		return nil, fmt.Errorf("get current migration status: %w", statusErr)
+	}
+	if migrationsErr := status.requireUpToDate(); migrationsErr != nil {
 		return nil, fmt.Errorf("migration status: %w", migrationsErr)
 	}
 
@@ -59,7 +64,6 @@ func (dbc *DatabaseClient) Pool() *pgxpool.Pool {
 }
 
 func (dbc *DatabaseClient) Shutdown() {
-	fmt.Printf("shutting down database client\n")
 	if dbc.client != nil {
 		if clientErr := dbc.client.Close(); clientErr != nil {
 			slog.Error("failed to close client", "error", clientErr)

@@ -1,7 +1,6 @@
 package koanf
 
 import (
-	"context"
 	"fmt"
 	"strings"
 
@@ -29,7 +28,7 @@ type ConfigLoaderOptions struct {
 
 const delim = "."
 
-func NewConfigLoader(ctx context.Context, opts ConfigLoaderOptions) (*Config, error) {
+func NewConfigLoader(opts ConfigLoaderOptions) (*Config, error) {
 	k := koanf.New(delim)
 
 	if opts.LoadEnvironment {

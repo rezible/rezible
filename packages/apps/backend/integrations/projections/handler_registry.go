@@ -9,7 +9,9 @@ import (
 )
 
 var Package = do.Package(
-	do.Eager(NewEventProjectionHandlerRegistry()),
+	do.Lazy(func(i do.Injector) (*EventProjectionHandlerRegistry, error) {
+		return NewEventProjectionHandlerRegistry(), nil
+	}),
 )
 
 type EventProjectionHandlerFunc = func(context.Context, *ent.Client, *ent.NormalizedEvent) error

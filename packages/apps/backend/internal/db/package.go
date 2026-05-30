@@ -11,6 +11,7 @@ import (
 var Package = do.Package(
 	do.Lazy(func(i do.Injector) (rez.IntegrationsService, error) {
 		return NewIntegrationsService(
+			do.MustInvoke[rez.ConfigLoader](i),
 			do.MustInvoke[*ent.Client](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[*integrations.PackageRegistry](i))
@@ -104,6 +105,7 @@ var Package = do.Package(
 	}),
 	do.Lazy(func(i do.Injector) (rez.DocumentsService, error) {
 		return NewDocumentsService(
+			do.MustInvoke[rez.ConfigLoader](i),
 			do.MustInvoke[*ent.Client](i),
 			do.MustInvoke[rez.TeamService](i),
 		)

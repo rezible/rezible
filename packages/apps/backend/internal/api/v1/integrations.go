@@ -3,7 +3,6 @@ package apiv1
 import (
 	"context"
 	"fmt"
-	"net/url"
 
 	rez "github.com/rezible/rezible"
 	oapi "github.com/rezible/rezible/openapi/v1"
@@ -14,7 +13,9 @@ type integrationsHandler struct {
 }
 
 func newIntegrationsHandler(integrations rez.IntegrationsService) *integrationsHandler {
-	return &integrationsHandler{integrations: integrations}
+	return &integrationsHandler{
+		integrations: integrations,
+	}
 }
 
 func (h *integrationsHandler) ListAvailableIntegrations(ctx context.Context, req *oapi.ListAvailableIntegrationsRequest) (*oapi.ListAvailableIntegrationsResponse, error) {
@@ -104,16 +105,7 @@ func (h *integrationsHandler) DeleteConfiguredIntegration(ctx context.Context, r
 func (h *integrationsHandler) StartIntegrationOAuthFlow(ctx context.Context, req *oapi.StartIntegrationOAuthFlowRequest) (*oapi.StartIntegrationOAuthFlowResponse, error) {
 	var resp oapi.StartIntegrationOAuthFlowResponse
 
-	callbackUrl, pathErr := url.JoinPath(rez.Config.AppUrl(), req.Body.Attributes.CallbackPath)
-	if pathErr != nil {
-		return nil, oapi.Error(ctx, "invalid callback path", pathErr)
-	}
-	redirectUrl, urlErr := url.Parse(callbackUrl)
-	if urlErr != nil {
-		return nil, oapi.Error(ctx, "invalid callback url", urlErr)
-	}
-
-	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name, redirectUrl)
+	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name, req.Body.Attributes.CallbackPath)
 	if flowErr != nil {
 		return nil, oapi.Error(ctx, "failed to start flow", flowErr)
 	}

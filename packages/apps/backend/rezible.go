@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"iter"
 	"log/slog"
-	"net/url"
 	"time"
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
@@ -30,8 +29,6 @@ var (
 	ErrAuthSessionInvalid       = fmt.Errorf("auth session invalid")
 	ErrNoConfiguredIntegrations = fmt.Errorf("no configured integrations")
 )
-
-var Config ConfigLoader
 
 type ConfigLoader interface {
 	Exists(key string) bool
@@ -171,7 +168,7 @@ type (
 		GetProviderEventProcessor(provider string) (ProviderEventProcessor, error)
 		GetProviderEventQueriers(ctx context.Context, provider string) ([]ProviderEventQuerier, error)
 
-		StartOAuth2Flow(ctx context.Context, provider string, redirect *url.URL) (string, error)
+		StartOAuth2Flow(ctx context.Context, provider string, callbackPath string) (string, error)
 		SelectOAuth2Flow(ctx context.Context, provider string, params SelectIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 		CompleteOAuth2Flow(ctx context.Context, provider string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 

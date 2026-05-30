@@ -39,8 +39,8 @@ func runServices(ctx context.Context, i do.Injector) error {
 	}
 
 	errChan := make(chan error)
-	p := pool.New().WithErrors().WithContext(ctx)
 	go func() {
+		p := pool.New().WithErrors().WithContext(ctx)
 		for _, l := range services {
 			slog.Info("Starting " + strings.TrimLeft(fmt.Sprintf("%T", l), "*"))
 			p.Go(l.Start)

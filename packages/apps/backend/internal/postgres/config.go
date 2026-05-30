@@ -12,14 +12,14 @@ import (
 	"github.com/rezible/rezible/internal/postgres/river"
 )
 
-func LoadConfig() (Config, error) {
+func LoadConfig(cl rez.ConfigLoader) (Config, error) {
 	cfg := Config{
 		Host:     "postgres",
 		Port:     5432,
 		Database: "rezible",
 		SSLMode:  "require",
 	}
-	return cfg, rez.Config.Unmarshal("postgres", &cfg)
+	return cfg, cl.Unmarshal("postgres", &cfg)
 }
 
 type Config struct {

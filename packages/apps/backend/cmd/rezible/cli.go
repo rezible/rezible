@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
@@ -18,7 +19,6 @@ import (
 	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
@@ -26,46 +26,46 @@ import (
 )
 
 func main() {
-	i := do.New()
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	baseCtx := context.Background()
+	ctx, stop := signal.NotifyContext(baseCtx, syscall.SIGTERM, syscall.SIGINT)
 	defer stop()
+
+	i := do.New()
 
 	root := &cli.Command{
 		Name:  "rezible",
 		Usage: "backend server control",
-		Before: func(ctx context.Context, c *cli.Command) (context.Context, error) {
-			return setupPackages(ctx, i)
-		},
 		Commands: []*cli.Command{
 			makeServeCommand(i),
+			makeMigrationsCommand(i),
 			makeSpecCommand(),
-			makeMigrationsCommand(),
+		},
+		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
+			ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
+			setupPackages(ctx, i)
+			if pkgErr := integrations.RegisterIntegrations(i); pkgErr != nil {
+				return nil, fmt.Errorf("failed to register integrations: %w", pkgErr)
+			}
+			return ctx, nil
+		},
+		After: func(ctx context.Context, command *cli.Command) error {
+			shutdownCtx, cancelShutdown := context.WithTimeout(baseCtx, 5*time.Second)
+			defer cancelShutdown()
+			if shutdown := i.ShutdownWithContext(shutdownCtx); !shutdown.Succeed {
+				return shutdown
+			}
+			return nil
 		},
 	}
 
-	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
-	var exitCode int
 	if runErr := root.Run(ctx, os.Args); runErr != nil {
 		fmt.Printf("run error: %v\n", runErr)
-		exitCode = 1
-	} else {
-		fmt.Println()
+		os.Exit(1)
 	}
-
-	shutdown := i.Shutdown()
-	if !shutdown.Succeed {
-		fmt.Printf("shutdown error: %s", shutdown.Error())
-		exitCode = 1
-	}
-	os.Exit(exitCode)
 }
 
-func setupPackages(ctx context.Context, i do.Injector) (context.Context, error) {
-	koanf.PackageContext(ctx, i)
-	// TODO: dont use global
-	rez.Config = do.MustInvoke[rez.ConfigLoader](i)
-
+func setupPackages(ctx context.Context, i do.Injector) {
+	koanf.Package(i)
 	telemetry.PackageContext(ctx, i)
 	postgres.PackageContext(ctx, i)
 	river.Package(i)
@@ -75,12 +75,6 @@ func setupPackages(ctx context.Context, i do.Injector) (context.Context, error) 
 	db.Package(i)
 	http.Package(i)
 	apiv1.Package(i)
-
-	if pkgErr := integrations.RegisterIntegrations(i); pkgErr != nil {
-		return nil, fmt.Errorf("failed to register integrations: %w", pkgErr)
-	}
-
-	return ctx, nil
 }
 
 func makeServeCommand(i do.Injector) *cli.Command {
@@ -110,7 +104,7 @@ func makeSpecCommand() *cli.Command {
 	}
 }
 
-func makeMigrationsCommand() *cli.Command {
+func makeMigrationsCommand(i do.Injector) *cli.Command {
 	nameArg := &cli.StringArg{
 		Name:      "name",
 		UsageText: "name of the migration",
@@ -122,7 +116,6 @@ func makeMigrationsCommand() *cli.Command {
 		UsageText: "direction to migrate",
 		Config:    cli.StringConfig{TrimSpace: true},
 	}
-
 	return &cli.Command{
 		Name:  "migrations",
 		Usage: "database migrations control",
@@ -132,7 +125,8 @@ func makeMigrationsCommand() *cli.Command {
 				Usage:     "Create a new database migration",
 				Arguments: []cli.Argument{nameArg},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return postgres.CreateSchemaMigration(ctx, nameArg.Value)
+					mc := do.MustInvoke[*postgres.MigratorClient](i)
+					return mc.CreateSchemaMigration(ctx, nameArg.Value)
 				},
 			},
 			{
@@ -147,7 +141,8 @@ func makeMigrationsCommand() *cli.Command {
 				Usage:     "Apply pending database migrations",
 				Arguments: []cli.Argument{directionArg},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return postgres.RunMigrations(ctx, directionArg.Value)
+					mc := do.MustInvoke[*postgres.MigratorClient](i)
+					return mc.Run(ctx, directionArg.Value)
 				},
 			},
 		},

@@ -18,9 +18,9 @@ func getConfigModels(ctx context.Context) ([]model.LLM, error) {
 	return models, nil
 }
 
-func newClaudeLanguageModel(ctx context.Context) (model.LLM, error) {
+func newClaudeLanguageModel(ctx context.Context, cl rez.ConfigLoader) (model.LLM, error) {
 	var cfg AnthropicConfig
-	if cfgErr := rez.Config.Unmarshal("anthropic", &cfg); cfgErr != nil {
+	if cfgErr := cl.Unmarshal("anthropic", &cfg); cfgErr != nil {
 		return nil, fmt.Errorf("anthropic config: %w", cfgErr)
 	}
 

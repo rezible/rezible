@@ -17,7 +17,7 @@ type PackageRegistry struct {
 	availablePackages []rez.IntegrationPackage
 }
 
-func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
+func (r *PackageRegistry) registerPackage(pkg rez.IntegrationPackage) error {
 	available, configErr := pkg.IsAvailable()
 	if !available {
 		nameAttr := slog.Any("name", pkg.Name())

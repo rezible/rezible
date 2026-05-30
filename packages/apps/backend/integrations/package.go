@@ -45,9 +45,8 @@ var Package = do.Package(
 
 func RegisterIntegrations(i do.Injector) error {
 	reg := do.MustInvoke[*PackageRegistry](i)
-	pkgs := do.MustInvoke[integrationPackages](i)
-	for _, pkg := range pkgs {
-		if regErr := reg.RegisterPackage(pkg); regErr != nil {
+	for _, pkg := range do.MustInvoke[integrationPackages](i) {
+		if regErr := reg.registerPackage(pkg); regErr != nil {
 			return fmt.Errorf("failed to register integration package: %w", regErr)
 		}
 	}
