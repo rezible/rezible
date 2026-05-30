@@ -1,5 +1,3 @@
-env_files = [".env.dev"]
-
 [build]
 cmd = "go build -o ./tmp/rezible ./cmd/rezible"
 entrypoint = ["./tmp/rezible"]

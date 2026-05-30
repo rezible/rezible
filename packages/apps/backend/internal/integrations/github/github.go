@@ -20,61 +20,62 @@ const integrationName = "github"
 
 var supportedDataKinds = []string{"repositories", "change_events"}
 
-type integration struct {
+type Integration struct {
 	cfg                   Config
-	services              *rez.Services
 	oauth2Config          *oauth2.Config
 	listUserInstallations func(context.Context, string) ([]*gh.Installation, error)
 	webhookHandler        http.Handler
 }
 
-func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	i := &integration{
-		services:              svcs,
+func MakeIntegration(cl rez.ConfigLoader, provEvents rez.ProviderEventService) (*Integration, error) {
+	var cfg Config
+	if cfgErr := cl.Unmarshal("github", &cfg); cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
+	}
+
+	i := &Integration{
+		cfg:                   cfg,
 		listUserInstallations: listUserInstallations,
 		webhookHandler:        http.NotFoundHandler(),
 	}
 
-	if cfgErr := rez.Config.Unmarshal("github", &i.cfg); cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
-	}
 	i.oauth2Config = i.loadOAuthConfig()
 
 	if i.cfg.Enabled {
-		i.webhookHandler = newWebhookHandler(i.cfg.WebhookSecret, svcs)
+		i.webhookHandler = newWebhookHandler(i.cfg.WebhookSecret, provEvents)
 	}
 
 	return i, nil
 }
 
-func (i *integration) Name() string {
+func (i *Integration) Name() string {
 	return integrationName
 }
 
-func (i *integration) IsAvailable() (bool, error) {
+func (i *Integration) IsAvailable() (bool, error) {
 	if !i.cfg.Enabled {
 		return false, nil
 	}
 	return true, i.cfg.validate()
 }
 
-func (i *integration) WebhookHandler() http.Handler {
+func (i *Integration) WebhookHandler() http.Handler {
 	return i.webhookHandler
 }
 
-func (i *integration) SupportedDataKinds() []string {
+func (i *Integration) SupportedDataKinds() []string {
 	return supportedDataKinds
 }
 
-func (i *integration) OAuthConfigRequired() bool {
+func (i *Integration) OAuthConfigRequired() bool {
 	return true
 }
 
-func (i *integration) OAuth2Config() *oauth2.Config {
+func (i *Integration) OAuth2Config() *oauth2.Config {
 	return i.oauth2Config
 }
 
-func (i *integration) loadOAuthConfig() *oauth2.Config {
+func (i *Integration) loadOAuthConfig() *oauth2.Config {
 	return &oauth2.Config{
 		ClientID:     i.cfg.App.ClientID,
 		ClientSecret: i.cfg.App.ClientSecret,
@@ -104,7 +105,7 @@ func listUserInstallations(ctx context.Context, accessToken string) ([]*gh.Insta
 	return all, nil
 }
 
-func (i *integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez.ExternalIntegrationOption, error) {
+func (i *Integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez.ExternalIntegrationOption, error) {
 	if t == nil || t.AccessToken == "" {
 		return nil, fmt.Errorf("missing access token")
 	}
@@ -112,7 +113,7 @@ func (i *integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez
 		i.listUserInstallations = listUserInstallations
 	}
 
-	// The shared OAuth integration contract does not carry a request context into this hook.
+	// The shared OAuth Integration contract does not carry a request context into this hook.
 	installations, err := i.listUserInstallations(context.TODO(), t.AccessToken)
 	if err != nil {
 		return nil, fmt.Errorf("list github installations: %w", err)
@@ -147,7 +148,7 @@ func (i *integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez
 	return options, nil
 }
 
-func (i *integration) ValidateConfig(cfg map[string]any) error {
+func (i *Integration) ValidateConfig(cfg map[string]any) error {
 	// Extract app config fields from the map
 	app, hasApp := cfg["app"].(map[string]any)
 	if !hasApp {
@@ -171,22 +172,21 @@ func (i *integration) ValidateConfig(cfg map[string]any) error {
 	return c.validate()
 }
 
-func (i *integration) ValidateUserPreferences(_ map[string]any) error {
+func (i *Integration) ValidateUserPreferences(_ map[string]any) error {
 	return nil
 }
 
-func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
-	return newConfiguredIntegration(i.services, intg)
+func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
+	return i.newConfiguredIntegration(intg)
 }
 
 // ConfiguredIntegration wraps an *ent.Integration for a specific tenant installation.
 type ConfiguredIntegration struct {
-	svcs *rez.Services
 	intg *ent.Integration
 }
 
-func newConfiguredIntegration(svcs *rez.Services, intg *ent.Integration) *ConfiguredIntegration {
-	return &ConfiguredIntegration{svcs: svcs, intg: intg}
+func (i *Integration) newConfiguredIntegration(intg *ent.Integration) *ConfiguredIntegration {
+	return &ConfiguredIntegration{intg: intg}
 }
 
 func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Context {

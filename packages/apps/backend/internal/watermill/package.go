@@ -1,12 +1,12 @@
 package watermill
 
 import (
-	"context"
-
 	rez "github.com/rezible/rezible"
 	"github.com/samber/do/v2"
 )
 
-func ProvideMessageService(ctx context.Context, inj do.Injector) (rez.MessageService, error) {
-	return NewMessageService(ctx)
-}
+var Package = do.Package(
+	do.Lazy(func(i do.Injector) (rez.MessageService, error) {
+		return NewMessageService(do.MustInvoke[rez.TelemetryService](i))
+	}),
+)

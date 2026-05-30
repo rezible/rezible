@@ -9,6 +9,7 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	"github.com/samber/do/v2"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
 
@@ -17,30 +18,51 @@ import (
 	"github.com/rezible/rezible/execution"
 )
 
-const (
-	integrationName = "slack"
+var Package = do.Package(
+	do.Lazy(func(i do.Injector) (*messageHandler, error) {
+		return makeMessageHandler(
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.ProviderEventService](i),
+			do.MustInvoke[rez.IntegrationsService](i),
+			do.MustInvoke[rez.IncidentService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (*Integration, error) {
+		cl := do.MustInvoke[rez.ConfigLoader](i)
+		mh := do.MustInvoke[*messageHandler](i)
+		return makeIntegration(
+			cl,
+			mh,
+			do.MustInvoke[rez.IntegrationsService](i),
+			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.UserService](i),
+			do.MustInvoke[rez.EventAnnotationsService](i),
+		)
+	}),
 )
 
-var supportedDataKinds = []string{"chat", "users"}
+const integrationName = "slack"
 
-type integration struct {
-	cfg            Config
-	services       *rez.Services
-	oauth2Config   *oauth2.Config
-	eventListeners map[string]rez.EventListener
-	webhookHandler http.Handler
-}
-
-func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	intg := &integration{
-		services:       svcs,
-		webhookHandler: http.NotFoundHandler(),
-		eventListeners: make(map[string]rez.EventListener),
-		cfg:            Config{},
+func makeIntegration(
+	cl rez.ConfigLoader,
+	mh *messageHandler,
+	intgSvc rez.IntegrationsService,
+	incSvc rez.IncidentService,
+	usersSvc rez.UserService,
+	eventAnnoSvc rez.EventAnnotationsService,
+) (*Integration, error) {
+	var cfg Config
+	if cfgErr := cl.Unmarshal("slack", &cfg); cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 
-	if cfgErr := rez.Config.Unmarshal("slack", &intg.cfg); cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
+	intg := &Integration{
+		webhookHandler: http.NotFoundHandler(),
+		cfg:            cfg,
+		users:          usersSvc,
+		integrations:   intgSvc,
+		incidents:      incSvc,
+		eventAnnos:     eventAnnoSvc,
 	}
 
 	oauthCfg, oauthErr := intg.loadOAuthConfig()
@@ -49,56 +71,76 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 	}
 	intg.oauth2Config = oauthCfg
 
-	eh, ehErr := intg.makeMessageHandler()
-	if ehErr != nil {
-		return nil, fmt.Errorf("event handler: %w", ehErr)
-	}
-
-	if intg.cfg.SocketMode.Enabled {
-		sml, smlErr := intg.newSocketModeEventListener(eh)
-		if smlErr != nil {
-			return nil, fmt.Errorf("socketmode listener: %w", smlErr)
-		}
-		intg.eventListeners["slack_socketmode"] = sml
-	} else {
-		wh, whErr := intg.newWebhookListener(eh)
+	if !intg.cfg.SocketMode.Enabled {
+		wh, whErr := makeWebhookListener(cfg.Webhooks.SigningSecret, mh)
 		if whErr != nil {
 			return nil, fmt.Errorf("webhook listener: %w", whErr)
 		}
 		intg.webhookHandler = wh.Handler()
+	} else {
+		sml, smlErr := makeSocketModeEventListener(cl, mh)
+		if smlErr != nil {
+			return nil, fmt.Errorf("socket mode event listener: %w", smlErr)
+		}
+		intg.socketModeListener = sml
 	}
 
 	return intg, nil
 }
 
-func (i *integration) Name() string {
+type Integration struct {
+	cfg          Config
+	oauth2Config *oauth2.Config
+
+	webhookHandler     http.Handler
+	socketModeListener *SocketModeListener
+
+	users        rez.UserService
+	integrations rez.IntegrationsService
+	incidents    rez.IncidentService
+	eventAnnos   rez.EventAnnotationsService
+}
+
+func (i *Integration) Name() string {
 	return integrationName
 }
 
-func (i *integration) IsAvailable() (bool, error) {
+func (i *Integration) IsAvailable() (bool, error) {
 	if !i.cfg.Enabled {
 		return false, nil
 	}
 	return true, i.cfg.validate()
 }
 
-func (i *integration) EventListeners() map[string]rez.EventListener {
-	return i.eventListeners
-}
-
-func (i *integration) WebhookHandler() http.Handler {
+func (i *Integration) WebhookHandler() http.Handler {
 	return i.webhookHandler
 }
 
-func (i *integration) SupportedDataKinds() []string {
+func (i *Integration) Start(ctx context.Context) error {
+	if i.socketModeListener != nil {
+		return i.socketModeListener.Start(ctx)
+	}
+	return nil
+}
+
+func (i *Integration) Shutdown(ctx context.Context) error {
+	if i.socketModeListener != nil {
+		return i.socketModeListener.Shutdown(ctx)
+	}
+	return nil
+}
+
+var supportedDataKinds = []string{"chat", "users"}
+
+func (i *Integration) SupportedDataKinds() []string {
 	return supportedDataKinds
 }
 
-func (i *integration) OAuthConfigRequired() bool {
+func (i *Integration) OAuthConfigRequired() bool {
 	return true
 }
 
-func (i *integration) OAuth2Config() *oauth2.Config {
+func (i *Integration) OAuth2Config() *oauth2.Config {
 	return i.oauth2Config
 }
 
@@ -132,7 +174,7 @@ var oAuthScopes = []string{
 	"channels:write.invites",
 }
 
-func (i *integration) loadOAuthConfig() (*oauth2.Config, error) {
+func (i *Integration) loadOAuthConfig() (*oauth2.Config, error) {
 	if i.cfg.OAuth.ClientId == "" || i.cfg.OAuth.ClientSecret == "" {
 		return nil, fmt.Errorf("failed to load OAuth client id or client secret")
 	}
@@ -176,7 +218,7 @@ func getTeamInfoFromTokenData(tokenData any) (map[string]any, error) {
 	return data, nil
 }
 
-func (i *integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez.ExternalIntegrationOption, error) {
+func (i *Integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez.ExternalIntegrationOption, error) {
 	if scopesErr := validateOauthTokenScopes(t); scopesErr != nil {
 		return nil, scopesErr
 	}
@@ -220,25 +262,35 @@ func (i *integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez
 	}}, nil
 }
 
-func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
-	return newConfiguredIntegration(i.services, intg)
+func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
+	return i.makeConfiguredIntegration(intg)
 }
 
-func (i *integration) ValidateConfig(cfg map[string]any) error {
+func (i *Integration) ValidateConfig(cfg map[string]any) error {
 	return nil
 }
 
-func (i *integration) ValidateUserPreferences(prefs map[string]any) error {
+func (i *Integration) ValidateUserPreferences(prefs map[string]any) error {
 	return nil
 }
 
 type ConfiguredIntegration struct {
-	svcs *rez.Services
 	intg *ent.Integration
+
+	users        rez.UserService
+	integrations rez.IntegrationsService
+	incidents    rez.IncidentService
+	eventAnnos   rez.EventAnnotationsService
 }
 
-func newConfiguredIntegration(svcs *rez.Services, intg *ent.Integration) *ConfiguredIntegration {
-	return &ConfiguredIntegration{svcs: svcs, intg: intg}
+func (i *Integration) makeConfiguredIntegration(intg *ent.Integration) *ConfiguredIntegration {
+	return &ConfiguredIntegration{
+		intg:         intg,
+		users:        i.users,
+		integrations: i.integrations,
+		incidents:    i.incidents,
+		eventAnnos:   i.eventAnnos,
+	}
 }
 
 func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Context {
@@ -369,5 +421,5 @@ func lookupTenantIntegration(ctx context.Context, integrations rez.IntegrationsS
 			return ci, nil
 		}
 	}
-	return nil, fmt.Errorf("integration not found")
+	return nil, fmt.Errorf("Integration not found")
 }

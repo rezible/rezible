@@ -88,7 +88,8 @@ var attributeValidator = newProjectionValidator()
 func newProjectionValidator() *validator.Validate {
 	validate := validator.New(validator.WithRequiredStructEnabled())
 	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
-		if name, _, _ := strings.Cut(field.Tag.Get(attributeFieldNameTag), ","); name != "" && name != "-" {
+		name, _, found := strings.Cut(field.Tag.Get(attributeFieldNameTag), ",")
+		if found && name != "" && name != "-" {
 			return name
 		}
 		return field.Name

@@ -17,10 +17,8 @@ type AlertService struct {
 	db *ent.Client
 }
 
-func NewAlertService(svcs *rez.Services) (*AlertService, error) {
-	s := &AlertService{
-		db: svcs.Database.Client(),
-	}
+func NewAlertService(dbc *ent.Client) (*AlertService, error) {
+	s := &AlertService{db: dbc}
 
 	return s, nil
 }

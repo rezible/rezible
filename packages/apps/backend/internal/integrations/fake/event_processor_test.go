@@ -99,10 +99,10 @@ func TestProcessTopologyRelationshipObservedEvent(t *testing.T) {
 	payload := &topologyRelationshipObservedPayload{
 		ExternalRef:       "fake:relationship:checkout_service:calls:search_api",
 		Kind:              "calls",
-		DisplayName:       "Checkout Service calls Search API",
+		DisplayName:       "Checkout Listener calls Search API",
 		SourceExternalRef: "fake:component:checkout_service",
 		SourceKind:        "service",
-		SourceDisplayName: "Checkout Service",
+		SourceDisplayName: "Checkout Listener",
 		TargetExternalRef: "fake:component:search_api",
 		TargetKind:        "service",
 		TargetDisplayName: "Search API",

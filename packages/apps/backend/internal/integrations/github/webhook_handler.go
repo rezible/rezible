@@ -15,12 +15,12 @@ import (
 )
 
 type webhookHandler struct {
-	services *rez.Services
-	secret   string
+	secret     string
+	provEvents rez.ProviderEventService
 }
 
-func newWebhookHandler(secret string, svcs *rez.Services) http.Handler {
-	return &webhookHandler{secret: secret, services: svcs}
+func newWebhookHandler(secret string, provEvents rez.ProviderEventService) http.Handler {
+	return &webhookHandler{secret: secret, provEvents: provEvents}
 }
 
 func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -80,7 +80,7 @@ func (h *webhookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		Payload:            body,
 	}
 
-	if ingestErr := h.services.ProviderEvents.Ingest(r.Context(), pe); ingestErr != nil {
+	if ingestErr := h.provEvents.Ingest(r.Context(), pe); ingestErr != nil {
 		slog.ErrorContext(r.Context(), "failed to ingest github webhook event", "error", ingestErr)
 		http.Error(w, "internal error", http.StatusInternalServerError)
 		return

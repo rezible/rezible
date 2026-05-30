@@ -12,8 +12,8 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func (i *integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
-	return newEventQuerier(newConfiguredIntegration(i.services, intg)), nil
+func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+	return newEventQuerier(i.makeConfiguredIntegration(intg)), nil
 }
 
 type eventQuerier struct {

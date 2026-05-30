@@ -99,7 +99,7 @@ func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *en
 			SetCreatedByIntegration(integrationName)
 		return []ent.Mutation{conferenceCreate.Mutation()}
 	}
-	if _, setErr := s.ci.svcs.Incidents.Set(ctx, inc.ID, setFn); setErr != nil {
+	if _, setErr := s.ci.incidents.Set(ctx, inc.ID, setFn); setErr != nil {
 		return fmt.Errorf("set incident conference: %w", setErr)
 	}
 	slog.Debug("created incident conference",

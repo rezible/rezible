@@ -22,11 +22,15 @@ type RetrospectiveService struct {
 	incidents rez.IncidentService
 }
 
-func NewRetrospectiveService(svcs *rez.Services) (*RetrospectiveService, error) {
+func NewRetrospectiveService(
+	db *ent.Client,
+	msgs rez.MessageService,
+	incidents rez.IncidentService,
+) (*RetrospectiveService, error) {
 	svc := &RetrospectiveService{
-		db:        svcs.Database.Client(),
-		msgs:      svcs.Messages,
-		incidents: svcs.Incidents,
+		db:        db,
+		msgs:      msgs,
+		incidents: incidents,
 	}
 
 	if msgsErr := svc.registerMessageHandlers(); msgsErr != nil {

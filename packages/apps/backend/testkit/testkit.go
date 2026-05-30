@@ -70,17 +70,7 @@ func (s *Suite) SetConfigOverrides(overrides map[string]any) {
 	rez.Config = cfg
 }
 
-type suiteDbClient struct {
-	client *ent.Client
-}
-
-func (s *suiteDbClient) Client() *ent.Client {
-	return s.client
-}
-
-func (s *suiteDbClient) Close() {}
-
-func (s *Suite) DatabaseClient() rez.DatabaseClient { return &suiteDbClient{client: s.dbClient} }
+func (s *Suite) DatabaseClient() *ent.Client { return s.dbClient }
 
 func (s *Suite) Client() *ent.Client { return s.dbClient }
 
@@ -97,11 +87,14 @@ func (s *Suite) setupTestDatabase() {
 	s.Require().NoError(pgCfgErr, "loading postgres config")
 	s.Require().NotEmpty(pgCfg.AdminRole.Name, "migrations config nil")
 
+	fmt.Printf("cfg: %+v\n", pgCfg)
+
 	opts := fmt.Sprintf("sslmode=%s&search_path=%s", pgCfg.SSLMode, postgres.SchemaName)
 	pgxConf := pgtestdb.Config{
 		DriverName: "pgx",
 		Host:       pgCfg.Host,
 		Port:       fmt.Sprintf("%d", pgCfg.Port),
+		Database:   pgCfg.Database,
 		Options:    opts,
 		User:       pgCfg.AdminRole.Name,
 		Password:   pgCfg.AdminRole.Password,

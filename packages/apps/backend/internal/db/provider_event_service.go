@@ -10,6 +10,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/riverqueue/river"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -19,27 +21,26 @@ import (
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations/projections"
 	"github.com/rezible/rezible/jobs"
-	"github.com/rezible/rezible/telemetry"
 )
 
 type ProviderEventService struct {
-	logger         *slog.Logger
-	db             *ent.Client
-	reg            *projections.EventProjectionHandlerRegistry
-	jobService     rez.JobsService
-	integrations   rez.IntegrationsService
-	eventTelemetry *providerEventTelemetry
+	logger       *slog.Logger
+	db           *ent.Client
+	reg          *projections.EventProjectionHandlerRegistry
+	jobService   rez.JobsService
+	integrations rez.IntegrationsService
+	telemetry    *providerEventTelemetry
 }
 
-func NewProviderEventService(dbc *ent.Client, jobSvc rez.JobsService, intgs rez.IntegrationsService, reg *projections.EventProjectionHandlerRegistry) (*ProviderEventService, error) {
-	logger := telemetry.NewPackageLogger("provider_events")
+func NewProviderEventService(ts rez.TelemetryService, dbc *ent.Client, jobSvc rez.JobsService, intgs rez.IntegrationsService, reg *projections.EventProjectionHandlerRegistry) (*ProviderEventService, error) {
+	logger := ts.NewLogger(rez.LoggerOptions{PackageName: "provider_events"})
 	pe := &ProviderEventService{
-		logger:         logger,
-		db:             dbc,
-		reg:            reg,
-		jobService:     jobSvc,
-		integrations:   intgs,
-		eventTelemetry: newProviderEventTelemetry(logger),
+		logger:       logger,
+		db:           dbc,
+		reg:          reg,
+		jobService:   jobSvc,
+		integrations: intgs,
+		telemetry:    newProviderEventTelemetry(ts, logger),
 	}
 	jobs.RegisterWorkerFunc(pe.HandleProviderEventSyncJob)
 	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
@@ -49,7 +50,7 @@ func NewProviderEventService(dbc *ent.Client, jobSvc rez.JobsService, intgs rez.
 
 func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
 	res := s.ingest(ctx, ev)
-	s.eventTelemetry.recordIngested(ctx, ev, res)
+	s.telemetry.recordIngested(ctx, ev, res)
 	return res.error
 }
 
@@ -139,7 +140,7 @@ func (a processProviderEventArgs) validate() error {
 
 func (s *ProviderEventService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
 	res := s.processProviderEvent(ctx, args.Event)
-	s.eventTelemetry.recordProcessed(ctx, args.Event, res)
+	s.telemetry.recordProcessed(ctx, args.Event, res)
 	return res.error
 }
 
@@ -427,22 +428,31 @@ func (s *ProviderEventService) saveSyncEventsResult(ctx context.Context, reason 
 
 type providerEventTelemetry struct {
 	logger            *slog.Logger
-	ingested          telemetry.Int64Counter
-	processed         telemetry.Int64Counter
-	processSeconds    telemetry.Float64Histogram
-	projectionSeconds telemetry.Float64Histogram
-	normalizedEvents  telemetry.Int64Counter
+	ingested          metric.Int64Counter
+	processed         metric.Int64Counter
+	processSeconds    metric.Float64Histogram
+	projectionSeconds metric.Float64Histogram
+	normalizedEvents  metric.Int64Counter
 }
 
-func newProviderEventTelemetry(logger *slog.Logger) *providerEventTelemetry {
-	meter := telemetry.DefaultMeter()
+func newProviderEventTelemetry(ts rez.TelemetryService, logger *slog.Logger) *providerEventTelemetry {
+	meter := ts.DefaultMeter()
+	processSeconds, processSecondsErr := meter.Float64Histogram("rezible.backend.provider_events.normalize_duration", metric.WithDescription("Provider event normalization processing duration"), metric.WithUnit("s"))
+	ingested, ingestedErr := meter.Int64Counter("rezible.backend.provider_events.ingested", metric.WithDescription("Provider events ingested"))
+	processed, processedErr := meter.Int64Counter("rezible.backend.provider_events.processed", metric.WithDescription("Provider events processed"))
+	normalizedEvents, normalizedEventsErr := meter.Int64Counter("rezible.backend.provider_events.normalized_events", metric.WithDescription("Normalized provider events saved"))
+	projectionSeconds, projectionSecondsErr := meter.Float64Histogram("rezible.backend.provider_events.projection_duration", metric.WithDescription("Normalized event projection duration"), metric.WithUnit("s"))
+	telErr := errors.Join(processSecondsErr, ingestedErr, processedErr, normalizedEventsErr, projectionSecondsErr)
+	if telErr != nil {
+		panic("telemetry instruments err: " + telErr.Error())
+	}
 	return &providerEventTelemetry{
 		logger:            logger,
-		ingested:          telemetry.Int64CounterInstrument(meter, "rezible.backend.provider_events.ingested", "Provider events ingested"),
-		processed:         telemetry.Int64CounterInstrument(meter, "rezible.backend.provider_events.processed", "Provider events processed"),
-		processSeconds:    telemetry.Float64HistogramInstrument(meter, "rezible.backend.provider_events.normalize_duration", "Provider event normalization processing duration", "s"),
-		normalizedEvents:  telemetry.Int64CounterInstrument(meter, "rezible.backend.provider_events.normalized_events", "Normalized provider events saved"),
-		projectionSeconds: telemetry.Float64HistogramInstrument(meter, "rezible.backend.provider_events.projection_duration", "Normalized event projection duration", "s"),
+		ingested:          ingested,
+		processed:         processed,
+		processSeconds:    processSeconds,
+		normalizedEvents:  normalizedEvents,
+		projectionSeconds: projectionSeconds,
 	}
 }
 
@@ -450,11 +460,11 @@ func (m *providerEventTelemetry) recordIngested(ctx context.Context, ev rez.Prov
 	if m == nil {
 		return
 	}
-	m.ingested.Add(ctx, 1, telemetry.WithMetricAttributes(
-		telemetry.StringAttr("provider", telemetry.NormalizeLabel(ev.Provider)),
-		telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(ev.ProviderSource)),
-		telemetry.ResultAttr(res.error),
-		telemetry.BoolAttr("duplicate", res.duplicate),
+	m.ingested.Add(ctx, 1, metric.WithAttributes(
+		attribute.String("provider", ev.Provider),
+		attribute.String("provider_source", ev.ProviderSource),
+		attribute.Bool("success", res.error == nil),
+		attribute.Bool("duplicate", res.duplicate),
 	))
 	if res.duplicate {
 		m.logger.Info("skipped ingesting duplicate provider event",
@@ -469,13 +479,13 @@ func (m *providerEventTelemetry) recordProcessed(ctx context.Context, ev rez.Pro
 		return
 	}
 
-	attrs := []telemetry.KeyValue{
-		telemetry.StringAttr("provider", telemetry.NormalizeLabel(ev.Provider)),
-		telemetry.StringAttr("provider_source", telemetry.NormalizeLabel(ev.ProviderSource)),
-		telemetry.ResultAttr(res.error),
-		telemetry.BoolAttr("process_success", res.processSuccess),
+	attrs := []attribute.KeyValue{
+		attribute.String("provider", ev.Provider),
+		attribute.String("provider_source", ev.ProviderSource),
+		attribute.Bool("success", res.error == nil),
+		attribute.Bool("process_success", res.processSuccess),
 	}
-	m.processed.Add(ctx, 1, telemetry.WithMetricAttributes(attrs...))
+	m.processed.Add(ctx, 1, metric.WithAttributes(attrs...))
 
 	logAttrs := []slog.Attr{
 		slog.Any("provider", ev.Provider),
@@ -487,9 +497,9 @@ func (m *providerEventTelemetry) recordProcessed(ctx context.Context, ev rez.Pro
 		logAttrs = append(logAttrs,
 			slog.Any("normalized_count", res.normalizeCount),
 			slog.Any("insert_projection_duplicates", res.insertProjectionDuplicates))
-		m.processSeconds.Record(ctx, res.processTime.Seconds(), telemetry.WithMetricAttributes(attrs...))
+		m.processSeconds.Record(ctx, res.processTime.Seconds(), metric.WithAttributes(attrs...))
 		if res.normalizeCount > 0 {
-			m.normalizedEvents.Add(ctx, int64(res.normalizeCount), telemetry.WithMetricAttributes(attrs...))
+			m.normalizedEvents.Add(ctx, int64(res.normalizeCount), metric.WithAttributes(attrs...))
 		}
 	}
 

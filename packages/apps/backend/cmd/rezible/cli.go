@@ -3,69 +3,92 @@ package main
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"os"
+	"os/signal"
 	"syscall"
 
-	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/telemetry"
+	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/integrations"
+	"github.com/rezible/rezible/integrations/projections"
+	apiv1 "github.com/rezible/rezible/internal/api/v1"
+	"github.com/rezible/rezible/internal/db"
+	"github.com/rezible/rezible/internal/http"
+	"github.com/rezible/rezible/internal/postgres/river"
+	"github.com/rezible/rezible/internal/watermill"
 	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 
-	"github.com/rezible/rezible/execution"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/telemetry"
 )
 
 func main() {
 	i := do.New()
 
-	makeCli(i)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
 
-	_, shutdown := i.ShutdownOnSignals(syscall.SIGTERM, os.Interrupt)
-	if !shutdown.Succeed {
-		slog.Error("failed", "error", shutdown.Error())
-		os.Exit(1)
+	root := &cli.Command{
+		Name:  "rezible",
+		Usage: "backend server control",
+		Before: func(ctx context.Context, c *cli.Command) (context.Context, error) {
+			return setupPackages(ctx, i)
+		},
+		Commands: []*cli.Command{
+			makeServeCommand(i),
+			makeSpecCommand(),
+			makeMigrationsCommand(),
+		},
 	}
+
+	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
+	var exitCode int
+	if runErr := root.Run(ctx, os.Args); runErr != nil {
+		fmt.Printf("run error: %v\n", runErr)
+		exitCode = 1
+	} else {
+		fmt.Println()
+	}
+
+	shutdown := i.Shutdown()
+	if !shutdown.Succeed {
+		fmt.Printf("shutdown error: %s", shutdown.Error())
+		exitCode = 1
+	}
+	os.Exit(exitCode)
 }
 
-func makeCli(i do.Injector) *cli.Command {
-	beforeFn := func(ctx context.Context, c *cli.Command) (context.Context, error) {
-		ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
-		if telemetryErr := telemetry.Init(ctx); telemetryErr != nil {
-			return nil, fmt.Errorf("failed to initialize telemetry: %w", telemetryErr)
-		}
+func setupPackages(ctx context.Context, i do.Injector) (context.Context, error) {
+	koanf.PackageContext(ctx, i)
+	// TODO: dont use global
+	rez.Config = do.MustInvoke[rez.ConfigLoader](i)
 
-		cfgOpts := koanf.ConfigLoaderOptions{
-			LoadEnvironment: true,
-		}
-		cfgLoader, cfgErr := koanf.NewConfigLoader(ctx, cfgOpts)
-		if cfgErr != nil {
-			return nil, fmt.Errorf("failed to load configuration: %w", cfgErr)
-		}
-		rez.Config = cfgLoader
-		do.ProvideValue[rez.ConfigLoader](i, cfgLoader)
+	telemetry.PackageContext(ctx, i)
+	postgres.PackageContext(ctx, i)
+	river.Package(i)
+	watermill.Package(i)
+	integrations.Package(i)
+	projections.Package(i)
+	db.Package(i)
+	http.Package(i)
+	apiv1.Package(i)
 
-		return ctx, nil
+	if pkgErr := integrations.RegisterIntegrations(i); pkgErr != nil {
+		return nil, fmt.Errorf("failed to register integrations: %w", pkgErr)
 	}
 
-	serveCmd := &cli.Command{
+	return ctx, nil
+}
+
+func makeServeCommand(i do.Injector) *cli.Command {
+	return &cli.Command{
 		Name:  "serve",
 		Usage: "Run rezible server",
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			return runServer(ctx, i)
-		},
-	}
-
-	return &cli.Command{
-		Name:   "rezible",
-		Usage:  "backend server control",
-		Before: beforeFn,
-		Commands: []*cli.Command{
-			serveCmd,
-			makeSpecCommand(),
-			makeMigrationsCommand(),
 		},
 	}
 }

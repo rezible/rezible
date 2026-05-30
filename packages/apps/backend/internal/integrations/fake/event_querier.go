@@ -11,7 +11,7 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-func (i *integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
 	return newEventQuerier(&ConfiguredIntegration{intg: intg}), nil
 }
 

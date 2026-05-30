@@ -15,9 +15,9 @@ type TeamService struct {
 	db *ent.Client
 }
 
-func NewTeamService(svcs *rez.Services) (*TeamService, error) {
+func NewTeamService(dbc *ent.Client) (*TeamService, error) {
 	s := &TeamService{
-		db: svcs.Database.Client(),
+		db: dbc,
 	}
 
 	return s, nil

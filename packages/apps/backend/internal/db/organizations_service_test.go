@@ -3,7 +3,6 @@ package db
 import (
 	"testing"
 
-	rez "github.com/rezible/rezible"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
@@ -38,19 +37,15 @@ func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimes
 	jobs := mocks.NewMockJobsService(s.T())
 	jobs.On("Insert", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
 
-	svcs := &rez.Services{
-		Database: s.DatabaseClient(),
-		Jobs:     jobs,
-	}
-
-	orgs, orgsErr := NewOrganizationsService(svcs)
+	dbc := s.DatabaseClient()
+	orgs, orgsErr := NewOrganizationsService(dbc, jobs)
 	s.Require().NoError(orgsErr)
 
 	tenantCtx := s.SeedTenantContext()
 	setupErr := orgs.CompleteSetup(tenantCtx, s.SeedOrganization)
 	s.Require().NoError(setupErr)
 
-	updated, getErr := svcs.Database.Client().Organization.Get(tenantCtx, s.SeedOrganization.ID)
+	updated, getErr := dbc.Organization.Get(tenantCtx, s.SeedOrganization.ID)
 	s.Require().NoError(getErr)
 	s.False(updated.InitialSetupAt.IsZero())
 }

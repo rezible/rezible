@@ -17,6 +17,7 @@ var Package = do.Package(
 	}),
 	do.Lazy(func(i do.Injector) (rez.ProviderEventService, error) {
 		return NewProviderEventService(
+			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[*ent.Client](i),
 			do.MustInvoke[rez.JobsService](i),
 			do.MustInvoke[rez.IntegrationsService](i),
@@ -29,81 +30,82 @@ var Package = do.Package(
 			do.MustInvoke[rez.JobsService](i),
 		)
 	}),
+	do.Lazy(func(i do.Injector) (rez.UserService, error) {
+		return NewUserService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.OrganizationService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.TeamService, error) {
+		return NewTeamService(do.MustInvoke[*ent.Client](i))
+	}),
+	do.Lazy(func(i do.Injector) (rez.EventsService, error) {
+		return NewEventsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.UserService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.EventAnnotationsService, error) {
+		return NewEventAnnotationsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.EventsService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.IncidentService, error) {
+		return NewIncidentService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.UserService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.OncallRostersService, error) {
+		return NewOncallRostersService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobsService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.SystemTopologyService, error) {
+		return NewSystemTopologyService(
+			do.MustInvoke[*ent.Client](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.OncallShiftsService, error) {
+		return NewOncallShiftsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobsService](i),
+			do.MustInvoke[rez.IntegrationsService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.OncallMetricsService, error) {
+		return NewOncallMetricsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.OncallShiftsService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.DebriefService, error) {
+		return NewDebriefService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobsService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.RetrospectiveService, error) {
+		return NewRetrospectiveService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.IncidentService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (rez.AlertService, error) {
+		return NewAlertService(do.MustInvoke[*ent.Client](i))
+	}),
+	do.Lazy(func(i do.Injector) (rez.PlaybookService, error) {
+		return NewPlaybookService(do.MustInvoke[*ent.Client](i))
+	}),
+	do.Lazy(func(i do.Injector) (rez.DocumentsService, error) {
+		return NewDocumentsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.TeamService](i),
+		)
+	}),
 )
-
-/*
-	svcs.Organizations, svcErr = db.NewOrganizationsService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewOrganizationsService: %w", svcErr)
-	}
-
-	svcs.Users, svcErr = db.NewUserService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewUserService: %w", svcErr)
-	}
-
-	svcs.Teams, svcErr = db.NewTeamService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewTeamService: %w", svcErr)
-	}
-
-	svcs.Events, svcErr = db.NewEventsService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewEventsService: %w", svcErr)
-	}
-
-	svcs.EventAnnotations, svcErr = db.NewEventAnnotationsService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewEventAnnotationsService: %w", svcErr)
-	}
-
-	svcs.Incidents, svcErr = db.NewIncidentService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewIncidentService: %w", svcErr)
-	}
-
-	svcs.OncallRosters, svcErr = db.NewOncallRostersService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewOncallRostersService: %w", svcErr)
-	}
-
-	svcs.Topology, svcErr = db.NewSystemTopologyService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewTopologyService: %w", svcErr)
-	}
-
-	svcs.OncallShifts, svcErr = db.NewOncallShiftsService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewOncallShiftsService: %w", svcErr)
-	}
-
-	svcs.OncallMetrics, svcErr = db.NewOncallMetricsService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewOncallMetricsService: %w", svcErr)
-	}
-
-	svcs.Debriefs, svcErr = db.NewDebriefService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewDebriefService: %w", svcErr)
-	}
-
-	svcs.Retros, svcErr = db.NewRetrospectiveService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewRetrospectiveService: %w", svcErr)
-	}
-
-	svcs.Alerts, svcErr = db.NewAlertService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewAlertService: %w", svcErr)
-	}
-
-	svcs.Playbooks, svcErr = db.NewPlaybookService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewPlaybookService: %w", svcErr)
-	}
-
-	svcs.Documents, svcErr = db.NewDocumentsService(svcs)
-	if svcErr != nil {
-		return fmt.Errorf("db.NewDocumentsService: %w", svcErr)
-	}
-*/

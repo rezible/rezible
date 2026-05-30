@@ -15,12 +15,11 @@ import (
 
 const zeroSHA = "0000000000000000000000000000000000000000"
 
-func (i *integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
-	return &eventProcessor{services: i.services}
+func (i *Integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
+	return &eventProcessor{}
 }
 
 type eventProcessor struct {
-	services *rez.Services
 }
 
 const (

@@ -20,7 +20,7 @@ func TestValidateConfig_MissingCredentials(t *testing.T) {
 		{"app": map[string]any{"app_id": float64(123), "client_id": "cid"}},
 		{"app": map[string]any{"app_id": float64(123), "client_id": "cid", "client_secret": "cs"}},
 	}
-	intg := &integration{}
+	intg := &Integration{}
 	for _, cfg := range cases {
 		err := intg.ValidateConfig(cfg)
 		assert.Error(t, err, "expected error for config: %v", cfg)
@@ -28,7 +28,7 @@ func TestValidateConfig_MissingCredentials(t *testing.T) {
 }
 
 func TestValidateConfig_ValidAppCredentials(t *testing.T) {
-	intg := &integration{}
+	intg := &Integration{}
 	cfg := map[string]any{
 		"app": map[string]any{
 			"app_id":          float64(123),
@@ -41,7 +41,7 @@ func TestValidateConfig_ValidAppCredentials(t *testing.T) {
 }
 
 func TestOAuth2Config(t *testing.T) {
-	intg := &integration{cfg: Config{
+	intg := &Integration{cfg: Config{
 		App: struct {
 			AppID         int64  `cfg:"app_id"`
 			ClientID      string `cfg:"client_id"`
@@ -67,7 +67,7 @@ func TestOAuth2Config(t *testing.T) {
 }
 
 func TestExtractIntegrationOptionsFromToken(t *testing.T) {
-	intg := &integration{
+	intg := &Integration{
 		cfg: Config{
 			App: struct {
 				AppID         int64  `cfg:"app_id"`
@@ -99,7 +99,7 @@ func TestExtractIntegrationOptionsFromToken(t *testing.T) {
 }
 
 func TestExtractIntegrationOptionsFromToken_NoInstallations(t *testing.T) {
-	intg := &integration{
+	intg := &Integration{
 		listUserInstallations: func(_ context.Context, _ string) ([]*github.Installation, error) {
 			return nil, nil
 		},
@@ -112,7 +112,7 @@ func TestExtractIntegrationOptionsFromToken_NoInstallations(t *testing.T) {
 }
 
 func TestExtractIntegrationOptionsFromToken_MultipleInstallations(t *testing.T) {
-	intg := &integration{
+	intg := &Integration{
 		listUserInstallations: func(_ context.Context, _ string) ([]*github.Installation, error) {
 			return []*github.Installation{
 				{ID: github.Ptr[int64](1), Account: &github.User{Login: github.Ptr("org-one")}},
@@ -361,14 +361,14 @@ func TestWebhookHandler_CallsIngest(t *testing.T) {
 // --- IsAvailable tests ---
 
 func TestIsAvailable_Disabled(t *testing.T) {
-	i := &integration{cfg: Config{Enabled: false}}
+	i := &Integration{cfg: Config{Enabled: false}}
 	available, err := i.IsAvailable()
 	require.NoError(t, err)
 	assert.False(t, available)
 }
 
 func TestIsAvailable_Enabled(t *testing.T) {
-	i := &integration{cfg: Config{
+	i := &Integration{cfg: Config{
 		Enabled: true,
 		App: struct {
 			AppID         int64  `cfg:"app_id"`

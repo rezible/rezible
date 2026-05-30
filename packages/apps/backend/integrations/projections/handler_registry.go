@@ -5,6 +5,11 @@ import (
 	"sync"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/samber/do/v2"
+)
+
+var Package = do.Package(
+	do.Eager(NewEventProjectionHandlerRegistry()),
 )
 
 type EventProjectionHandlerFunc = func(context.Context, *ent.Client, *ent.NormalizedEvent) error

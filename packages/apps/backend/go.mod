@@ -30,6 +30,7 @@ require (
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.36.0
 	github.com/riverqueue/river/rivertype v0.36.0
 	github.com/riverqueue/rivercontrib/otelriver v0.7.0
+	github.com/samber/do/v2 v2.0.0
 	github.com/samber/slog-chi v1.19.1
 	github.com/slack-go/slack v0.23.1
 	github.com/sourcegraph/conc v0.3.1-0.20240121214520-5f936abd7ae8
@@ -129,7 +130,6 @@ require (
 	github.com/riverqueue/river/riverdriver/riversqlite v0.31.0 // indirect
 	github.com/riverqueue/river/rivershared v0.36.0 // indirect
 	github.com/rs/zerolog v1.35.0 // indirect
-	github.com/samber/do/v2 v2.0.0 // indirect
 	github.com/samber/go-type-to-string v1.8.0 // indirect
 	github.com/sony/gobreaker v1.0.0 // indirect
 	github.com/spf13/afero v1.14.0 // indirect

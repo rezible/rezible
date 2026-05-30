@@ -284,6 +284,108 @@ func (_c *MockMessageService_SendCommand_Call) RunAndReturn(run func(ctx context
 	return _c
 }
 
+// Start provides a mock function for the type MockMessageService
+func (_mock *MockMessageService) Start(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Start")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockMessageService_Start_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Start'
+type MockMessageService_Start_Call struct {
+	*mock.Call
+}
+
+// Start is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockMessageService_Expecter) Start(ctx interface{}) *MockMessageService_Start_Call {
+	return &MockMessageService_Start_Call{Call: _e.mock.On("Start", ctx)}
+}
+
+func (_c *MockMessageService_Start_Call) Run(run func(ctx context.Context)) *MockMessageService_Start_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockMessageService_Start_Call) Return(err error) *MockMessageService_Start_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockMessageService_Start_Call) RunAndReturn(run func(ctx context.Context) error) *MockMessageService_Start_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// Stop provides a mock function for the type MockMessageService
+func (_mock *MockMessageService) Stop(ctx context.Context) error {
+	ret := _mock.Called(ctx)
+
+	if len(ret) == 0 {
+		panic("no return value specified for Stop")
+	}
+
+	var r0 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
+		r0 = returnFunc(ctx)
+	} else {
+		r0 = ret.Error(0)
+	}
+	return r0
+}
+
+// MockMessageService_Stop_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'Stop'
+type MockMessageService_Stop_Call struct {
+	*mock.Call
+}
+
+// Stop is a helper method to define mock.On call
+//   - ctx context.Context
+func (_e *MockMessageService_Expecter) Stop(ctx interface{}) *MockMessageService_Stop_Call {
+	return &MockMessageService_Stop_Call{Call: _e.mock.On("Stop", ctx)}
+}
+
+func (_c *MockMessageService_Stop_Call) Run(run func(ctx context.Context)) *MockMessageService_Stop_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		run(
+			arg0,
+		)
+	})
+	return _c
+}
+
+func (_c *MockMessageService_Stop_Call) Return(err error) *MockMessageService_Stop_Call {
+	_c.Call.Return(err)
+	return _c
+}
+
+func (_c *MockMessageService_Stop_Call) RunAndReturn(run func(ctx context.Context) error) *MockMessageService_Stop_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // NewMockJobsService creates a new instance of MockJobsService. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewMockJobsService(t interface {
@@ -608,8 +710,8 @@ func (_c *MockJobsService_InsertTx_Call) RunAndReturn(run func(context1 context.
 }
 
 // Start provides a mock function for the type MockJobsService
-func (_mock *MockJobsService) Start(context1 context.Context) error {
-	ret := _mock.Called(context1)
+func (_mock *MockJobsService) Start(ctx context.Context) error {
+	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Start")
@@ -617,7 +719,7 @@ func (_mock *MockJobsService) Start(context1 context.Context) error {
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
-		r0 = returnFunc(context1)
+		r0 = returnFunc(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -630,12 +732,12 @@ type MockJobsService_Start_Call struct {
 }
 
 // Start is a helper method to define mock.On call
-//   - context1 context.Context
-func (_e *MockJobsService_Expecter) Start(context1 interface{}) *MockJobsService_Start_Call {
-	return &MockJobsService_Start_Call{Call: _e.mock.On("Start", context1)}
+//   - ctx context.Context
+func (_e *MockJobsService_Expecter) Start(ctx interface{}) *MockJobsService_Start_Call {
+	return &MockJobsService_Start_Call{Call: _e.mock.On("Start", ctx)}
 }
 
-func (_c *MockJobsService_Start_Call) Run(run func(context1 context.Context)) *MockJobsService_Start_Call {
+func (_c *MockJobsService_Start_Call) Run(run func(ctx context.Context)) *MockJobsService_Start_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -653,14 +755,14 @@ func (_c *MockJobsService_Start_Call) Return(err error) *MockJobsService_Start_C
 	return _c
 }
 
-func (_c *MockJobsService_Start_Call) RunAndReturn(run func(context1 context.Context) error) *MockJobsService_Start_Call {
+func (_c *MockJobsService_Start_Call) RunAndReturn(run func(ctx context.Context) error) *MockJobsService_Start_Call {
 	_c.Call.Return(run)
 	return _c
 }
 
 // Stop provides a mock function for the type MockJobsService
-func (_mock *MockJobsService) Stop(context1 context.Context) error {
-	ret := _mock.Called(context1)
+func (_mock *MockJobsService) Stop(ctx context.Context) error {
+	ret := _mock.Called(ctx)
 
 	if len(ret) == 0 {
 		panic("no return value specified for Stop")
@@ -668,7 +770,7 @@ func (_mock *MockJobsService) Stop(context1 context.Context) error {
 
 	var r0 error
 	if returnFunc, ok := ret.Get(0).(func(context.Context) error); ok {
-		r0 = returnFunc(context1)
+		r0 = returnFunc(ctx)
 	} else {
 		r0 = ret.Error(0)
 	}
@@ -681,12 +783,12 @@ type MockJobsService_Stop_Call struct {
 }
 
 // Stop is a helper method to define mock.On call
-//   - context1 context.Context
-func (_e *MockJobsService_Expecter) Stop(context1 interface{}) *MockJobsService_Stop_Call {
-	return &MockJobsService_Stop_Call{Call: _e.mock.On("Stop", context1)}
+//   - ctx context.Context
+func (_e *MockJobsService_Expecter) Stop(ctx interface{}) *MockJobsService_Stop_Call {
+	return &MockJobsService_Stop_Call{Call: _e.mock.On("Stop", ctx)}
 }
 
-func (_c *MockJobsService_Stop_Call) Run(run func(context1 context.Context)) *MockJobsService_Stop_Call {
+func (_c *MockJobsService_Stop_Call) Run(run func(ctx context.Context)) *MockJobsService_Stop_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
@@ -704,7 +806,7 @@ func (_c *MockJobsService_Stop_Call) Return(err error) *MockJobsService_Stop_Cal
 	return _c
 }
 
-func (_c *MockJobsService_Stop_Call) RunAndReturn(run func(context1 context.Context) error) *MockJobsService_Stop_Call {
+func (_c *MockJobsService_Stop_Call) RunAndReturn(run func(ctx context.Context) error) *MockJobsService_Stop_Call {
 	_c.Call.Return(run)
 	return _c
 }

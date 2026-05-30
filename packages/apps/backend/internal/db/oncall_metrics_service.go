@@ -15,15 +15,13 @@ import (
 
 type OncallMetricsService struct {
 	db     *ent.Client
-	jobs   rez.JobsService
 	shifts rez.OncallShiftsService
 }
 
-func NewOncallMetricsService(svcs *rez.Services) (*OncallMetricsService, error) {
+func NewOncallMetricsService(dbc *ent.Client, shifts rez.OncallShiftsService) (*OncallMetricsService, error) {
 	s := &OncallMetricsService{
-		db:     svcs.Database.Client(),
-		jobs:   svcs.Jobs,
-		shifts: svcs.OncallShifts,
+		db:     dbc,
+		shifts: shifts,
 	}
 
 	jobs.RegisterWorkerFunc(s.handleGenerateShiftMetrics)

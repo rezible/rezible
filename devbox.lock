@@ -284,6 +284,90 @@
           "store_path": "/nix/store/wn7gkgzq7ri40f4yfbm0sw4f1p4q90jd-process-compose-1.110.0"
         }
       }
+    },
+    "wget@latest": {
+      "last_modified": "2026-04-23T13:07:47Z",
+      "resolved": "github:NixOS/nixpkgs/01fbdeef22b76df85ea168fbfe1bfd9e63681b30#wget",
+      "source": "devbox-search",
+      "version": "1.25.0",
+      "systems": {
+        "aarch64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/g3zg3mrp4dnch0g748cj0mbfn7ydh7q5-wget-1.25.0",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/0v5wckyjpjbrz77a26p3q31p5gf3pvz2-wget-1.25.0-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/r7zi9c7r8arah1cvn74dpmvpyxlwqz2z-wget-1.25.0-info"
+            }
+          ],
+          "store_path": "/nix/store/g3zg3mrp4dnch0g748cj0mbfn7ydh7q5-wget-1.25.0"
+        },
+        "aarch64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/wham0rw5mn9lj4ccvv5rj0mvsidiy93r-wget-1.25.0",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/r3jkrk3n04b0ljmkzamnz3a7jcls77w6-wget-1.25.0-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/9i5lq0qxz2fdvkd2hn5a6zz4g51gd9ls-wget-1.25.0-info"
+            }
+          ],
+          "store_path": "/nix/store/wham0rw5mn9lj4ccvv5rj0mvsidiy93r-wget-1.25.0"
+        },
+        "x86_64-darwin": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/xlk6pr38nwnfppbyw737ky1czz4lgpx9-wget-1.25.0",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/4l29hjhiw5001s4n91yv5iww2p6hl8nv-wget-1.25.0-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/zjhs0l6cizpam0qk9bnxqgbxig6ry2kb-wget-1.25.0-info"
+            }
+          ],
+          "store_path": "/nix/store/xlk6pr38nwnfppbyw737ky1czz4lgpx9-wget-1.25.0"
+        },
+        "x86_64-linux": {
+          "outputs": [
+            {
+              "name": "out",
+              "path": "/nix/store/qhw2wiwwmc8hscm80mjfzzlwy82l2j14-wget-1.25.0",
+              "default": true
+            },
+            {
+              "name": "man",
+              "path": "/nix/store/s3dgaz2qh63vzq7kcqqj29ar19bzagf6-wget-1.25.0-man",
+              "default": true
+            },
+            {
+              "name": "info",
+              "path": "/nix/store/7mp72aaziy81zdi2gglfm8nhy6mxhbr2-wget-1.25.0-info"
+            }
+          ],
+          "store_path": "/nix/store/qhw2wiwwmc8hscm80mjfzzlwy82l2j14-wget-1.25.0"
+        }
+      }
     }
   }
 }

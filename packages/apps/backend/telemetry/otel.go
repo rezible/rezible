@@ -3,127 +3,144 @@ package telemetry
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
+	"time"
 
+	"github.com/lmittmann/tint"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
-	otelattribute "go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/propagation"
+
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	sdkresource "go.opentelemetry.io/otel/sdk/resource"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
-	otellog "go.opentelemetry.io/otel/log"
+
 	otelmetric "go.opentelemetry.io/otel/metric"
 	noopmetric "go.opentelemetry.io/otel/metric/noop"
-	"go.opentelemetry.io/otel/propagation"
-	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
-	"go.opentelemetry.io/otel/sdk/resource"
-	sdktrace "go.opentelemetry.io/otel/sdk/trace"
+
 	oteltrace "go.opentelemetry.io/otel/trace"
 	nooptrace "go.opentelemetry.io/otel/trace/noop"
 )
 
-type (
-	KeyValue = otelattribute.KeyValue
-
-	TracerProvider = oteltrace.TracerProvider
-	Tracer         oteltrace.Tracer
-
-	LoggerProvider otellog.LoggerProvider
-
-	MeterProvider              = otelmetric.MeterProvider
-	Meter                      = otelmetric.Meter
-	MeterOption                = otelmetric.MeterOption
-	Int64Counter               = otelmetric.Int64Counter
-	Float64Histogram           = otelmetric.Float64Histogram
-	Int64ObservableGauge       = otelmetric.Int64ObservableGauge
-	Observer                   = otelmetric.Observer
-	Observable                 = otelmetric.Observable
-	MeasurementOption          = otelmetric.MeasurementOption
-	Registration               = otelmetric.Registration
-	Int64CounterOption         = otelmetric.Int64CounterOption
-	Float64HistogramOption     = otelmetric.Float64HistogramOption
-	Int64ObservableGaugeOption = otelmetric.Int64ObservableGaugeOption
-)
-
-func initOpenTelemetry(ctx context.Context, cfg Config) (*Service, error) {
+func newOpenTelemetryService(ctx context.Context, cfg Config) (*Service, error) {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
 		propagation.Baggage{},
 	))
 
-	res, resErr := makeResource(ctx, cfg)
-	if resErr != nil {
-		return nil, resErr
+	resOpts := []sdkresource.Option{
+		sdkresource.WithFromEnv(),
+		sdkresource.WithTelemetrySDK(),
+		sdkresource.WithAttributes(attribute.String("service.name", cfg.ServiceName)),
 	}
 
+	res, resErr := sdkresource.New(ctx, resOpts...)
+	if resErr != nil {
+		return nil, fmt.Errorf("otel resource: %w", resErr)
+	}
+
+	s := &Service{cfg: cfg}
+	if loggerErr := s.initLogger(); loggerErr != nil {
+		return nil, fmt.Errorf("failed to initialize logger: %w", loggerErr)
+	}
+
+	if tracerErr := s.initTracerProvider(ctx, res); tracerErr != nil {
+		return nil, fmt.Errorf("failed to initialize tracer: %w", tracerErr)
+	}
+
+	if metricsErr := s.initMetricsProvider(ctx, res); metricsErr != nil {
+		return nil, fmt.Errorf("failed to initialize metrics: %w", metricsErr)
+	}
+
+	return s, nil
+}
+
+func (s *Service) initLogger() error {
 	var slogHandlers []slog.Handler
-	if cfg.Logging.Console.Enabled {
-		slogHandlers = append(slogHandlers, makeSlogConsoleHandler(os.Stderr, cfg))
+	if s.cfg.Logging.Console.Enabled {
+		slogHandlers = append(slogHandlers, s.makeSlogConsoleHandler(os.Stderr))
 	}
 
 	//var lp LoggerProvider
-	if cfg.isOTelLoggingEnabled() {
+	if s.cfg.isOTelLoggingEnabled() {
 		// unused
 	} else {
 		//lp = nooplog.NewLoggerProvider()
 	}
-	logger := slog.New(slog.NewMultiHandler(slogHandlers...))
-	slog.SetDefault(logger)
+	s.logger = slog.New(slog.NewMultiHandler(slogHandlers...))
+	slog.SetDefault(s.logger)
 
-	var tp TracerProvider
-	if cfg.isOTelTracingEnabled() {
+	return nil
+}
+
+func (s *Service) makeSlogConsoleHandler(w io.Writer) slog.Handler {
+	opts := &slog.HandlerOptions{
+		AddSource:   s.cfg.Logging.AddSource,
+		Level:       s.cfg.getSlogLogLevel(s.cfg.Logging.Console.Level),
+		ReplaceAttr: nil,
+	}
+	if s.cfg.Logging.Console.Json {
+		return slog.NewJSONHandler(w, opts)
+	}
+	if !s.cfg.Logging.Console.Color {
+		return slog.NewTextHandler(w, opts)
+	}
+	return tint.NewHandler(w, &tint.Options{
+		Level:      opts.Level,
+		TimeFormat: time.Kitchen,
+	})
+}
+
+func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resource) error {
+	var tp oteltrace.TracerProvider
+	if s.cfg.isOTelTracingEnabled() {
 		traceExporter, traceExporterErr := otlptracegrpc.New(ctx)
 		if traceExporterErr != nil {
-			return nil, fmt.Errorf("otlp trace exporter: %w", traceExporterErr)
+			return fmt.Errorf("otlp trace exporter: %w", traceExporterErr)
 		}
-		sdkTp := sdktrace.NewTracerProvider(sdktrace.WithResource(res), sdktrace.WithBatcher(traceExporter))
-		shutdownFns = append(shutdownFns, sdkTp.Shutdown)
+		sdkTp := sdktrace.NewTracerProvider(sdktrace.WithResource(r), sdktrace.WithBatcher(traceExporter))
+		s.shutdownFns = append(s.shutdownFns, sdkTp.Shutdown)
 		tp = sdkTp
 	} else {
 		slog.Info("tracing disabled")
 		tp = nooptrace.NewTracerProvider()
 	}
 	otel.SetTracerProvider(tp)
+	s.tracerProvider = tp
+	return nil
+}
 
-	var mp MeterProvider
-	if cfg.isOTelMetricsEnabled() {
+func (s *Service) initMetricsProvider(ctx context.Context, r *sdkresource.Resource) error {
+	var mp otelmetric.MeterProvider
+	if s.cfg.isOTelMetricsEnabled() {
 		metricExporter, metricExporterErr := otlpmetricgrpc.New(ctx)
 		if metricExporterErr != nil {
-			return nil, fmt.Errorf("otlp metric exporter: %w", metricExporterErr)
+			return fmt.Errorf("otlp metric exporter: %w", metricExporterErr)
 		}
 		var readerOpts []sdkmetric.PeriodicReaderOption
-		if cfg.Metrics.Interval > 0 {
-			readerOpts = append(readerOpts, sdkmetric.WithInterval(cfg.Metrics.Interval))
+		if s.cfg.Metrics.Interval > 0 {
+			readerOpts = append(readerOpts, sdkmetric.WithInterval(s.cfg.Metrics.Interval))
 		}
 		sdkMp := sdkmetric.NewMeterProvider(
-			sdkmetric.WithResource(res),
+			sdkmetric.WithResource(r),
 			sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter, readerOpts...)),
 		)
-		shutdownFns = append(shutdownFns, sdkMp.Shutdown)
+		s.shutdownFns = append(s.shutdownFns, sdkMp.Shutdown)
 		mp = sdkMp
 	} else {
 		slog.Info("metrics disabled")
 		mp = noopmetric.NewMeterProvider()
 	}
 	otel.SetMeterProvider(mp)
-
 	if startErr := runtime.Start(runtime.WithMeterProvider(mp)); startErr != nil {
 		slog.Warn("failed to start runtime metrics", "error", startErr)
 	}
-
-	return NewService(logger, mp, tp), nil
-}
-
-func makeResource(ctx context.Context, cfg Config) (*resource.Resource, error) {
-	resOpts := []resource.Option{
-		resource.WithFromEnv(),
-		resource.WithTelemetrySDK(),
-		resource.WithAttributes(StringAttr("service.name", cfg.ServiceName)),
-	}
-
-	res, resErr := resource.New(ctx, resOpts...)
-	if resErr != nil {
-		return nil, fmt.Errorf("otel resource: %w", resErr)
-	}
-	return res, nil
+	s.meterProvider = mp
+	return nil
 }

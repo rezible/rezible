@@ -1,83 +1,39 @@
 package integrations
 
 import (
-	"context"
 	"fmt"
 	"log/slog"
 	"net/http"
-	"reflect"
-	"runtime"
 
-	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/rezible/rezible/telemetry"
 	"golang.org/x/oauth2"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/internal/integrations/fake"
-	"github.com/rezible/rezible/internal/integrations/github"
-	"github.com/rezible/rezible/internal/integrations/google"
-	"github.com/rezible/rezible/internal/integrations/slack"
-)
-
-var (
-	setupFuncs = []rez.PackageSetupFunc{
-		fakeprovider.SetupIntegration,
-		slack.SetupIntegration,
-		google.SetupIntegration,
-		github.SetupIntegration,
-	}
 )
 
 type PackageRegistry struct {
+	logger            *slog.Logger
 	nameMap           map[string]rez.IntegrationPackage
 	availablePackages []rez.IntegrationPackage
 }
 
-func NewPackageRegistry() *PackageRegistry {
-	return &PackageRegistry{
-		nameMap: make(map[string]rez.IntegrationPackage),
+func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
+	available, configErr := pkg.IsAvailable()
+	if !available {
+		nameAttr := slog.Any("name", pkg.Name())
+		if configErr != nil {
+			errAttr := slog.Any("config_error", configErr.Error())
+			slog.Warn("integration config error", nameAttr, errAttr)
+		} else {
+			slog.Info("integration not available", nameAttr)
+		}
+		return configErr
 	}
-}
+	r.logger.Debug("loaded integration", "name", pkg.Name())
+	r.availablePackages = append(r.availablePackages, pkg)
+	r.nameMap[pkg.Name()] = pkg
 
-type integrationPackageWithEventListeners interface {
-	EventListeners() map[string]rez.EventListener
-}
-
-func (r *PackageRegistry) SetupPackages(ctx context.Context, svcs *rez.Services) (map[string]rez.EventListener, error) {
-	enabledSupportedDataKinds := mapset.NewSet[string]()
-	els := make(map[string]rez.EventListener)
-	logger := telemetry.NewPackageLogger("integrations")
-	for _, setupFn := range setupFuncs {
-		pkg, pkgErr := setupFn(ctx, svcs)
-		if pkgErr != nil {
-			funcName := runtime.FuncForPC(reflect.ValueOf(setupFn).Pointer()).Name()
-			return nil, fmt.Errorf("%s: %w", funcName, pkgErr)
-		}
-		available, configErr := pkg.IsAvailable()
-		if !available || configErr != nil {
-			lvl := slog.LevelInfo
-			l := logger.With("name", pkg.Name())
-			if configErr != nil {
-				lvl = slog.LevelWarn
-				l = l.With("config_error", configErr.Error())
-			}
-			l.Log(ctx, lvl, "integration not available")
-			continue
-		}
-		logger.DebugContext(ctx, "loaded integration", "name", pkg.Name())
-		r.availablePackages = append(r.availablePackages, pkg)
-		r.nameMap[pkg.Name()] = pkg
-		enabledSupportedDataKinds.Append(pkg.SupportedDataKinds()...)
-
-		if elPkg, ok := pkg.(integrationPackageWithEventListeners); ok {
-			for name, listener := range elPkg.EventListeners() {
-				els[name] = listener
-			}
-		}
-	}
-
-	return els, nil
+	return nil
 }
 
 func (r *PackageRegistry) GetPackage(name string) (rez.IntegrationPackage, error) {
@@ -90,6 +46,21 @@ func (r *PackageRegistry) GetPackage(name string) (rez.IntegrationPackage, error
 
 func (r *PackageRegistry) GetAvailable() []rez.IntegrationPackage {
 	return r.availablePackages
+}
+
+func (r *PackageRegistry) GetListeners() map[string]rez.Listener {
+	type integrationPackageWithEventListeners interface {
+		Listeners() map[string]rez.Listener
+	}
+	els := make(map[string]rez.Listener)
+	for _, pkg := range r.availablePackages {
+		if elPkg, ok := pkg.(integrationPackageWithEventListeners); ok {
+			for name, listener := range elPkg.Listeners() {
+				els[name] = listener
+			}
+		}
+	}
+	return els
 }
 
 func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {

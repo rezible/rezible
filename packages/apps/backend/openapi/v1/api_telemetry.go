@@ -1,18 +1,24 @@
 package v1
 
 import (
+	"errors"
 	"net/http"
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 
-	"github.com/rezible/rezible/telemetry"
+	rez "github.com/rezible/rezible"
 )
 
-func MakeAPITelemetryMiddleware() func(huma.Context, func(huma.Context)) {
-	m := telemetry.DefaultMeter()
-	requests := telemetry.Int64CounterInstrument(m, "rezible.backend.http.server.requests", "HTTP requests handled by the backend")
-	requestSeconds := telemetry.Float64HistogramInstrument(m, "rezible.backend.http.server.duration", "HTTP request duration", "s")
+func MakeAPITelemetryMiddleware(ts rez.TelemetryService) func(huma.Context, func(huma.Context)) {
+	m := ts.DefaultMeter()
+	requests, requestsErr := m.Int64Counter("rezible.backend.http.server.requests", metric.WithDescription("HTTP requests handled by the backend"))
+	requestSeconds, requestSecondsErr := m.Float64Histogram("rezible.backend.http.server.duration", metric.WithDescription("HTTP request duration"), metric.WithUnit("s"))
+	if telErr := errors.Join(requestsErr, requestSecondsErr); telErr != nil {
+		panic("telemetry error: " + telErr.Error())
+	}
 
 	return func(ctx huma.Context, next func(huma.Context)) {
 		start := time.Now()
@@ -31,13 +37,13 @@ func MakeAPITelemetryMiddleware() func(huma.Context, func(huma.Context)) {
 			operationID = op.OperationID
 		}
 
-		attrs := []telemetry.KeyValue{
-			telemetry.StringAttr("http.request.method", ctx.Method()),
-			telemetry.StringAttr("http.route", telemetry.NormalizeLabel(route)),
-			telemetry.IntAttr("http.response.status_code", status),
-			telemetry.StringAttr("rezible.operation_id", telemetry.NormalizeLabel(operationID)),
+		attrs := []attribute.KeyValue{
+			attribute.String("http.request.method", ctx.Method()),
+			attribute.String("http.route", route),
+			attribute.Int("http.response.status_code", status),
+			attribute.String("rezible.operation_id", operationID),
 		}
-		requests.Add(ctx.Context(), 1, telemetry.WithMetricAttributes(attrs...))
-		requestSeconds.Record(ctx.Context(), time.Since(start).Seconds(), telemetry.WithMetricAttributes(attrs...))
+		requests.Add(ctx.Context(), 1, metric.WithAttributes(attrs...))
+		requestSeconds.Record(ctx.Context(), time.Since(start).Seconds(), metric.WithAttributes(attrs...))
 	}
 }

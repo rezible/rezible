@@ -1,6 +1,7 @@
 package watermill
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -8,9 +9,11 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
+
 	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/telemetry"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/metric"
 )
 
 const (
@@ -18,9 +21,12 @@ const (
 )
 
 func (ms *MessageService) telemetryMiddleware(fn message.HandlerFunc) message.HandlerFunc {
-	m := telemetry.DefaultMeter()
-	messagesHandled := telemetry.Int64CounterInstrument(m, "backend.messages.handled", "Watermill messages handled")
-	messageHandlingSeconds := telemetry.Float64HistogramInstrument(m, "backend.messages.handle_duration", "Watermill message handling duration", "s")
+	m := ms.telemetry.DefaultMeter()
+	messagesHandled, messagesHandledErr := m.Int64Counter("backend.messages.handled", metric.WithDescription("Watermill messages handled"))
+	messageHandlingSeconds, messageHandlingSecondsErr := m.Float64Histogram("backend.messages.handle_duration", metric.WithDescription("Watermill message handling duration"), metric.WithUnit("s"))
+	if telErr := errors.Join(messagesHandledErr, messageHandlingSecondsErr); telErr != nil {
+		panic("telemetry error: " + telErr.Error())
+	}
 
 	return func(msg *message.Message) ([]*message.Message, error) {
 		name := ms.marshaller.NameFromMessage(msg)
@@ -29,10 +35,10 @@ func (ms *MessageService) telemetryMiddleware(fn message.HandlerFunc) message.Ha
 		start := time.Now()
 		out, err := fn(msg)
 
-		attrsOpts := telemetry.WithMetricAttributes(
-			telemetry.StringAttr("message.name", telemetry.NormalizeLabel(name)),
-			telemetry.StringAttr("topic", telemetry.NormalizeLabel(topic)),
-			telemetry.ResultAttr(err),
+		attrsOpts := metric.WithAttributes(
+			attribute.String("message.name", name),
+			attribute.String("topic", topic),
+			attribute.Bool("success", err == nil),
 		)
 		ctx := msg.Context()
 		messagesHandled.Add(ctx, 1, attrsOpts)
@@ -43,8 +49,11 @@ func (ms *MessageService) telemetryMiddleware(fn message.HandlerFunc) message.Ha
 }
 
 func (ms *MessageService) addPublisherDecorations(base message.Publisher) (message.Publisher, error) {
-	m := telemetry.DefaultMeter()
-	messagesPublished := telemetry.Int64CounterInstrument(m, "backend.messages.published", "Watermill messages published")
+	m := ms.telemetry.DefaultMeter()
+	messagesPublished, messagesPublishedErr := m.Int64Counter("backend.messages.published", metric.WithDescription("Watermill messages published"))
+	if messagesPublishedErr != nil {
+		return nil, fmt.Errorf("telemetry error: %w", messagesPublishedErr)
+	}
 
 	decorator := message.MessageTransformPublisherDecorator(func(msg *message.Message) {
 		messagesPublished.Add(msg.Context(), 1)
@@ -62,8 +71,11 @@ func (ms *MessageService) addPublisherDecorations(base message.Publisher) (messa
 }
 
 func (ms *MessageService) setupPoisonQueue(router *message.Router, pub message.Publisher, sub message.Subscriber) (message.HandlerMiddleware, error) {
-	messagesPoisoned := telemetry.Int64CounterInstrument(telemetry.DefaultMeter(), "backend.messages.poisoned",
-		"Watermill messages sent to the poison queue")
+	numPoisonedMetric, metricErr := ms.telemetry.DefaultMeter().Int64Counter("backend.messages.poisoned",
+		metric.WithDescription("Watermill messages sent to the poison queue"))
+	if metricErr != nil {
+		return nil, fmt.Errorf("telemetry error: %w", metricErr)
+	}
 
 	poisonFilter := func(err error) bool {
 		return true
@@ -75,7 +87,7 @@ func (ms *MessageService) setupPoisonQueue(router *message.Router, pub message.P
 		return nil, fmt.Errorf("failed initializing poison queue: %w", poisonErr)
 	}
 	router.AddConsumerHandler("PoisonQueueLogger", poisonQueueTopic, sub, func(msg *message.Message) error {
-		messagesPoisoned.Add(msg.Context(), 1)
+		numPoisonedMetric.Add(msg.Context(), 1)
 		router.Logger().Info("message sent to poison queue", watermill.LogFields{"uuid": msg.UUID})
 		return nil
 	})

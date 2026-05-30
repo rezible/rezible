@@ -15,10 +15,10 @@ type EventsService struct {
 	users rez.UserService
 }
 
-func NewEventsService(svcs *rez.Services) (*EventsService, error) {
+func NewEventsService(dbc *ent.Client, users rez.UserService) (*EventsService, error) {
 	s := &EventsService{
-		db:    svcs.Database.Client(),
-		users: svcs.Users,
+		db:    dbc,
+		users: users,
 	}
 
 	return s, nil

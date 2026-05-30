@@ -11,15 +11,16 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message"
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	"github.com/ThreeDotsLabs/watermill/pubsub/gochannel"
-	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
 
+	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
 
-	"github.com/rezible/rezible/telemetry"
+	rez "github.com/rezible/rezible"
 )
 
 type MessageService struct {
-	logger watermill.LoggerAdapter
+	telemetry rez.TelemetryService
+	logger    watermill.LoggerAdapter
 
 	router     *message.Router
 	marshaller cqrs.CommandEventMarshaler
@@ -31,9 +32,14 @@ type MessageService struct {
 	eventProc *cqrs.EventProcessor
 }
 
-func NewMessageService() (*MessageService, error) {
-	logger := telemetry.NewPackageLogger("watermill", telemetry.WithMinLogLevel(slog.LevelWarn))
+func NewMessageService(ts rez.TelemetryService) (*MessageService, error) {
+	loggerOpts := rez.LoggerOptions{
+		PackageName: "watermill",
+		Level:       slog.LevelWarn,
+	}
+	logger := ts.NewLogger(loggerOpts)
 	ms := MessageService{
+		telemetry:  ts,
 		logger:     watermill.NewSlogLogger(logger),
 		marshaller: cqrs.JSONMarshaler{GenerateName: cqrs.FullyQualifiedStructName},
 	}
@@ -85,12 +91,10 @@ func NewMessageService() (*MessageService, error) {
 }
 
 func (ms *MessageService) Start(ctx context.Context) error {
-	ms.logger.Debug("starting message service", nil)
 	return ms.router.Run(ctx)
 }
 
-func (ms *MessageService) Stop(ctx context.Context) error {
-	ms.logger.Debug("stopping message service", nil)
+func (ms *MessageService) Shutdown(ctx context.Context) error {
 	if !ms.router.IsRunning() || ms.router.IsClosed() {
 		return nil
 	}

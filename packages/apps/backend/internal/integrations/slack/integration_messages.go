@@ -16,28 +16,33 @@ import (
 )
 
 type messageHandler struct {
-	services *rez.Services
+	messages     rez.MessageService
+	provEvents   rez.ProviderEventService
+	integrations rez.IntegrationsService
+	incidents    rez.IncidentService
 }
 
-func (i *integration) makeMessageHandler() (*messageHandler, error) {
-	svcs := i.services
-	h := &messageHandler{services: svcs}
-
-	if msgsErr := h.registerHandlers(svcs.Messages); msgsErr != nil {
+func makeMessageHandler(msgs rez.MessageService, provEvents rez.ProviderEventService, intgs rez.IntegrationsService, incidents rez.IncidentService) (*messageHandler, error) {
+	h := &messageHandler{
+		messages:     msgs,
+		provEvents:   provEvents,
+		integrations: intgs,
+		incidents:    incidents,
+	}
+	if msgsErr := h.registerHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
 	}
-
 	return h, nil
 }
 
-func (h *messageHandler) registerHandlers(msgs rez.MessageService) error {
+func (h *messageHandler) registerHandlers() error {
 	return errors.Join(
-		msgs.AddEventHandlers(
+		h.messages.AddEventHandlers(
 			rez.NewEventHandler("slack.events.callback_event", h.handleCallbackEvent),
 			rez.NewEventHandler("slack.incidents.updated", h.onIncidentUpdated),
 			rez.NewEventHandler("slack.incidents.milestone_updated", h.onIncidentMilestoneUpdated),
 		),
-		msgs.AddCommandHandlers(
+		h.messages.AddCommandHandlers(
 			rez.NewCommandHandler("slack.handle_slash_command", h.handleSlashCommand),
 			rez.NewCommandHandler("slack.handle_interaction", h.handleInteraction),
 			rez.NewCommandHandler("slack.create_incident_channel", h.createIncidentChannel),
@@ -47,11 +52,11 @@ func (h *messageHandler) registerHandlers(msgs rez.MessageService) error {
 }
 
 func (h *messageHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
-	return h.services.Messages.SendCommand(ctx, handleSlashCommand{Command: sc})
+	return h.messages.SendCommand(ctx, handleSlashCommand{Command: sc})
 }
 
 func (h *messageHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
-	return h.services.Messages.SendCommand(ctx, handleInteraction{Data: data})
+	return h.messages.SendCommand(ctx, handleInteraction{Data: data})
 }
 
 func (h *messageHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.EventsAPICallbackEvent, data []byte) error {
@@ -71,12 +76,12 @@ func (h *messageHandler) OnCallbackEvent(ctx context.Context, ev *slackevents.Ev
 			ProviderEventRef:   ev.EventID,
 			Payload:            data,
 		}
-		if ingestErr := h.services.ProviderEvents.Ingest(ctx, pe); ingestErr != nil {
+		if ingestErr := h.provEvents.Ingest(ctx, pe); ingestErr != nil {
 			return fmt.Errorf("ingest event: %w", ingestErr)
 		}
 	}
 	if respondCallbackInnerEvents.Contains(innerType) {
-		if publishErr := h.services.Messages.PublishEvent(ctx, callbackEvent{Data: data}); publishErr != nil {
+		if publishErr := h.messages.PublishEvent(ctx, callbackEvent{Data: data}); publishErr != nil {
 			return fmt.Errorf("publish callback event: %w", publishErr)
 		}
 	}
@@ -129,12 +134,12 @@ func (h *messageHandler) OnOptions(ctx context.Context, data []byte) error {
 }
 
 func (h *messageHandler) withChatService(ctx context.Context, ids installIds, fn func(*ChatService) error) error {
-	ci, lookupErr := lookupTenantIntegration(ctx, h.services.Integrations, ids)
+	ci, lookupErr := lookupTenantIntegration(ctx, h.integrations, ids)
 	if lookupErr != nil {
 		return lookupErr
 	}
 	if ci == nil {
-		slog.Warn("received slack event with no configured integration found!",
+		slog.Warn("received slack event with no configured Integration found!",
 			"teamId", ids.TeamId,
 			"enterpriseId", ids.EnterpriseId,
 		)
@@ -144,12 +149,12 @@ func (h *messageHandler) withChatService(ctx context.Context, ids installIds, fn
 }
 
 func (h *messageHandler) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
-	intgs, lookupErr := h.services.Integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
+	intgs, lookupErr := h.integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return nil
 		}
-		return fmt.Errorf("getting configured integration: %w", lookupErr)
+		return fmt.Errorf("getting configured Integration: %w", lookupErr)
 	}
 	// TODO: handle multiple installations
 	if len(intgs) == 0 {
@@ -159,7 +164,7 @@ func (h *messageHandler) withIncidentUpdateProcessor(ctx context.Context, id uui
 	if !ok {
 		return fmt.Errorf("failed to cast to *ConfiguredIntegration")
 	}
-	p, procErr := newIncidentUpdateProcessor(ctx, newChatService(ctx, ci), h.services, id)
+	p, procErr := newIncidentUpdateProcessor(ctx, newChatService(ctx, ci), h.incidents, h.messages, id)
 	if procErr != nil {
 		return fmt.Errorf("creating incident update processor: %w", procErr)
 	}

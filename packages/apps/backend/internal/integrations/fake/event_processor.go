@@ -13,7 +13,7 @@ import (
 	"github.com/rezible/rezible/integrations/projections"
 )
 
-func (i *integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
+func (i *Integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
 	return &eventProcessor{}
 }
 

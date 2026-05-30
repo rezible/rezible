@@ -7,6 +7,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	rez "github.com/rezible/rezible"
 	"github.com/riverqueue/rivercontrib/otelriver"
 
 	"github.com/riverqueue/river"
@@ -16,7 +17,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/jobs"
-	"github.com/rezible/rezible/telemetry"
 )
 
 const SchemaName = "river"
@@ -28,16 +28,20 @@ type JobService struct {
 	client *riverClient
 }
 
-func NewJobService(pool *pgxpool.Pool) (*JobService, error) {
+func NewJobService(tel rez.TelemetryService, pool *pgxpool.Pool) (*JobService, error) {
 	queues := map[string]river.QueueConfig{
 		river.QueueDefault: {MaxWorkers: 20},
 	}
 
+	logger := tel.NewLogger(rez.LoggerOptions{
+		PackageName: "river",
+		Level:       slog.LevelInfo,
+	})
+
 	s := &JobService{
-		logger: telemetry.NewPackageLogger("river", telemetry.WithMinLogLevel(slog.LevelInfo)),
+		logger: logger,
 	}
 
-	tel := telemetry.Default()
 	telemetryMiddleware := otelriver.NewMiddleware(&otelriver.MiddlewareConfig{
 		DurationUnit:                "s",
 		EnableSemanticMetrics:       true,
@@ -71,11 +75,11 @@ func (s *JobService) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to add periodic jobs: %w", pjErr)
 	}
 	ctx = execution.NewRootContext(ctx, execution.KindSystem, execution.SourceJob)
-	ctx = telemetry.ContextWithLoggerOptions(ctx, telemetry.WithLogValues("source", string(execution.SourceJob)))
 	return s.client.Start(ctx)
 }
 
-func (s *JobService) Stop(ctx context.Context) error {
+func (s *JobService) Shutdown(ctx context.Context) error {
+	s.logger.Info("stop job service")
 	if s.client != nil {
 		return s.client.Stop(ctx)
 	}

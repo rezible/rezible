@@ -16,18 +16,18 @@ type eventHandler struct {
 	incidents    rez.IncidentService
 }
 
-func (i *integration) registerMessageHandlers() error {
+func (i *Integration) registerMessageHandlers() error {
 	mh := &eventHandler{
-		integrations: i.services.Integrations,
-		messages:     i.services.Messages,
-		incidents:    i.services.Incidents,
+		integrations: i.integrations,
+		messages:     i.messages,
+		incidents:    i.incidents,
 	}
-	eventsErr := i.services.Messages.AddEventHandlers(
+	eventsErr := i.messages.AddEventHandlers(
 		rez.NewEventHandler("GoogleOnIncidentUpdate", mh.onIncidentUpdate))
 	if eventsErr != nil {
 		return fmt.Errorf("events: %w", eventsErr)
 	}
-	cmdsErr := i.services.Messages.AddCommandHandlers(
+	cmdsErr := i.messages.AddCommandHandlers(
 		rez.NewCommandHandler("Google.CreateIncidentVideoConference", mh.createIncidentVideoConference))
 	if cmdsErr != nil {
 		return fmt.Errorf("commands: %w", cmdsErr)
@@ -42,7 +42,7 @@ func (h *eventHandler) withConfiguredIntegration(ctx context.Context, fn func(*C
 		if ent.IsNotFound(lookupErr) {
 			return nil
 		}
-		return fmt.Errorf("error looking up integration: %w", lookupErr)
+		return fmt.Errorf("error looking up Integration: %w", lookupErr)
 	}
 	if len(intgs) == 0 {
 		return nil
@@ -51,7 +51,7 @@ func (h *eventHandler) withConfiguredIntegration(ctx context.Context, fn func(*C
 	if ci, ok := intgs[0].(*ConfiguredIntegration); ok {
 		return fn(ci)
 	}
-	return fmt.Errorf("invalid configured integration: %w", lookupErr)
+	return fmt.Errorf("invalid configured Integration: %w", lookupErr)
 }
 
 func (h *eventHandler) onIncidentUpdate(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {

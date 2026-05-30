@@ -13,9 +13,9 @@ type PlaybookService struct {
 	db *ent.Client
 }
 
-func NewPlaybookService(svcs *rez.Services) (*PlaybookService, error) {
+func NewPlaybookService(dbc *ent.Client) (*PlaybookService, error) {
 	s := &PlaybookService{
-		db: svcs.Database.Client(),
+		db: dbc,
 	}
 
 	return s, nil

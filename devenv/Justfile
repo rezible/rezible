@@ -42,14 +42,23 @@ dbName := "rez-"+branchId
     just set-domains
 
 _write-workspace-env:
-    #!/bin/env bun
+    #!/usr/bin/env bun
     await Bun.write("{{workspace_env_file}}", [
       "WORKSPACE_ID={{branchId}}",
       "POSTGRES_APP_DB={{dbName}}",
     ].join("\n"))
 
+test-db:
+    #!/usr/bin/env bun
+    import { SQL } from "bun";
+    (async () => {
+        const adminConn = `postgres://{{dbAdminUser}}:{{dbAdminUser}}@localhost:{{dbPort}}`;
+        const adminPg = new SQL(adminConn);
+        console.log(`query: (${adminConn})`, await adminPg.unsafe(`SELECT 1`));
+    })()
+
 _setup-workspace-db:
-    #!/bin/env bun
+    #!/usr/bin/env bun
     import { SQL } from "bun";
     (async () => {
         const adminConn = `postgres://{{dbAdminUser}}:{{dbAdminUser}}@localhost:{{dbPort}}`;

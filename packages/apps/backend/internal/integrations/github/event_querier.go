@@ -12,8 +12,8 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-func (i *integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
-	ci := newConfiguredIntegration(i.services, intg)
+func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+	ci := i.newConfiguredIntegration(intg)
 	client, clientErr := newClient(ci)
 	if clientErr != nil {
 		return nil, clientErr

@@ -1,6 +1,7 @@
 set shell := ["bash", "-uc"]
 
 set dotenv-filename := ".env.workspace"
+set dotenv-load := true
 
 mod dev 'devenv'
 mod backend 'packages/apps/backend'

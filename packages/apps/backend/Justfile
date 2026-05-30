@@ -1,5 +1,15 @@
 set shell := ["bash", "-uc"]
 
+export DEBUG_MODE := "true"
+export SINGLE_TENANT_MODE := "true"
+
+export SERVER__HTTP__DOCUMENTS_PROXY__ENABLED := "true"
+export SERVER__HTTP__DOCUMENTS_PROXY__PROXY_PATH := "/documents"
+
+export AUTH__OIDC__CLIENT_ID := "test-client"
+export AUTH__OIDC__CLIENT_SECRET := "superdupersecret"
+export AUTH__SESSION_SECRET := "superduuuuuuuuuuuuuuuuupersecret"
+
 export POSTGRES__HOST := "localhost"
 export POSTGRES__PORT := env("POSTGRES_PORT")
 export POSTGRES__DATABASE := env("POSTGRES_APP_DB", "rezible-main")

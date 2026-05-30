@@ -4,36 +4,16 @@ import (
 	"context"
 	"log/slog"
 	"testing"
-	"time"
+
+	rez "github.com/rezible/rezible"
 )
-
-func TestLoggerInheritsParentFromContext(t *testing.T) {
-	ctx := t.Context()
-	handler := newTestHandler()
-	parent := slog.New(handler).With("request_id", "req-1")
-	ctx = ContextWithLogger(ctx, parent)
-
-	logger := NewLogger(ctx, WithLogPackage("db"), WithLogAttrs(slog.String("tenant", "acme")))
-
-	record := slog.NewRecord(time.Now(), slog.LevelInfo, "test", 0)
-	if err := logger.Handler().Handle(ctx, record); err != nil {
-		t.Fatalf("handle record: %v", err)
-	}
-
-	if !handler.hasAttr("request_id", "req-1") {
-		t.Fatal("expected child logger to inherit parent attributes")
-	}
-	if !handler.hasAttr("package", "db") {
-		t.Fatal("expected child logger to include option attributes")
-	}
-	if !handler.hasAttr("tenant", "acme") {
-		t.Fatal("expected child logger to include slog attrs")
-	}
-}
 
 func TestLoggerMinLevel(t *testing.T) {
 	ctx := t.Context()
-	logger := NewLogger(ctx, WithParentLogger(slog.New(newTestHandler())), WithMinLogLevel(slog.LevelWarn))
+	opts := rez.LoggerOptions{
+		Level: slog.LevelWarn,
+	}
+	logger := NewLogger(opts)
 
 	if logger.Enabled(ctx, slog.LevelInfo) {
 		t.Fatal("expected info to be disabled")

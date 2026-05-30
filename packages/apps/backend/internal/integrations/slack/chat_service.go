@@ -28,11 +28,11 @@ func newChatService(ctx context.Context, ci *ConfiguredIntegration) *ChatService
 	return &ChatService{
 		ci:           ci,
 		client:       slack.New(ci.accessToken()),
-		logger:       telemetry.NewLogger(ctx, telemetry.WithLogPackage("slack")),
-		users:        ci.svcs.Users,
-		integrations: ci.svcs.Integrations,
-		incidents:    ci.svcs.Incidents,
-		annos:        ci.svcs.EventAnnotations,
+		logger:       telemetry.NewLogger(rez.LoggerOptions{PackageName: "slack"}),
+		users:        ci.users,
+		integrations: ci.integrations,
+		incidents:    ci.incidents,
+		annos:        ci.eventAnnos,
 	}
 }
 

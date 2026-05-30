@@ -2,49 +2,12 @@ package telemetry
 
 import (
 	"context"
-	"io"
 	"log/slog"
-	"time"
 
-	"github.com/lmittmann/tint"
+	rez "github.com/rezible/rezible"
 )
-
-type (
-	Logger     = slog.Logger
-	LogLevel   = slog.Level
-	LogLeveler = slog.Leveler
-	LogAttr    = slog.Attr
-)
-
-func makeSlogConsoleHandler(w io.Writer, cfg Config) slog.Handler {
-	opts := &slog.HandlerOptions{
-		AddSource:   cfg.Logging.AddSource,
-		Level:       cfg.getSlogLogLevel(cfg.Logging.Console.Level),
-		ReplaceAttr: nil,
-	}
-	if cfg.Logging.Console.Json {
-		return slog.NewJSONHandler(w, opts)
-	}
-	if !cfg.Logging.Console.Color {
-		return slog.NewTextHandler(w, opts)
-	}
-	return tint.NewHandler(w, &tint.Options{
-		Level:      opts.Level,
-		TimeFormat: time.Kitchen,
-	})
-}
 
 type loggerContextKey struct{}
-
-type loggerOptions struct {
-	parent *slog.Logger
-	level  LogLeveler
-	attrs  []LogAttr
-	args   []any
-	groups []string
-}
-
-type LoggerOption func(*loggerOptions)
 
 func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context {
 	if logger == nil {
@@ -53,94 +16,43 @@ func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context
 	return context.WithValue(ctx, loggerContextKey{}, logger)
 }
 
-func ContextWithLoggerOptions(ctx context.Context, opts ...LoggerOption) context.Context {
-	return ContextWithLogger(ctx, NewLogger(opts...))
-}
-
-func LoggerFromContext(ctx context.Context, opts ...LoggerOption) *Logger {
+func LoggerFromContext(ctx context.Context) *slog.Logger {
+	opts := rez.LoggerOptions{}
 	if ctx != nil {
-		if parent, ok := ctx.Value(loggerContextKey{}).(*Logger); ok {
-			opts = append(opts, WithParentLogger(parent))
+		if parent, ok := ctx.Value(loggerContextKey{}).(*slog.Logger); ok {
+			opts.Parent = parent
 		}
 	}
-	return NewLogger(opts...)
+	return NewLogger(opts)
 }
 
-func NewPackageLogger(name string, opts ...LoggerOption) *Logger {
-	opts = append(opts, WithLogPackage(name))
-	return NewLogger(opts...)
-}
-
-func NewLogger(opts ...LoggerOption) *Logger {
-	cfg := loggerOptions{}
-	for _, opt := range opts {
-		opt(&cfg)
-	}
-
-	logger := cfg.parent
+func NewLogger(opts rez.LoggerOptions) *slog.Logger {
+	logger := opts.Parent
 	if logger == nil {
 		logger = slog.Default()
 	}
-	if cfg.level != nil {
+	if opts.Level != nil {
 		logger = slog.New(levelHandler{
 			base:  logger.Handler(),
-			level: cfg.level,
+			level: opts.Level,
 		})
 	}
-	if len(cfg.attrs) > 0 {
-		logger = logger.With(slogAttrsToArgs(cfg.attrs)...)
+	if len(opts.Attrs) > 0 {
+		args := make([]any, 0, len(opts.Attrs))
+		for _, attr := range opts.Attrs {
+			args = append(args, attr)
+		}
+		logger = logger.With(args...)
 	}
-	if len(cfg.args) > 0 {
-		logger = logger.With(cfg.args...)
-	}
-	for _, group := range cfg.groups {
+	for _, group := range opts.Groups {
 		logger = logger.WithGroup(group)
 	}
 	return logger
 }
 
-func WithParentLogger(logger *slog.Logger) LoggerOption {
-	return func(opts *loggerOptions) {
-		opts.parent = logger
-	}
-}
-
-func WithMinLogLevel(level LogLeveler) LoggerOption {
-	return func(opts *loggerOptions) {
-		opts.level = level
-	}
-}
-
-func WithLogAttrs(attrs ...LogAttr) LoggerOption {
-	return func(opts *loggerOptions) {
-		opts.attrs = append(opts.attrs, attrs...)
-	}
-}
-
-func WithLogValues(args ...any) LoggerOption {
-	return func(opts *loggerOptions) {
-		opts.args = append(opts.args, args...)
-	}
-}
-
-func WithLogGroup(name string) LoggerOption {
-	return func(opts *loggerOptions) {
-		if name != "" {
-			opts.groups = append(opts.groups, name)
-		}
-	}
-}
-
-func WithLogPackage(name string) LoggerOption {
-	if name == "" {
-		name = "unknown"
-	}
-	return WithLogValues("package", name)
-}
-
 type levelHandler struct {
 	base  slog.Handler
-	level LogLeveler
+	level slog.Leveler
 }
 
 func (h levelHandler) Enabled(ctx context.Context, level slog.Level) bool {
@@ -163,12 +75,4 @@ func (h levelHandler) WithGroup(name string) slog.Handler {
 		base:  h.base.WithGroup(name),
 		level: h.level,
 	}
-}
-
-func slogAttrsToArgs(attrs []LogAttr) []any {
-	args := make([]any, 0, len(attrs))
-	for _, attr := range attrs {
-		args = append(args, attr)
-	}
-	return args
 }

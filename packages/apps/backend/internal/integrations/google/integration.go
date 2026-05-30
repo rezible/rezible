@@ -15,12 +15,29 @@ const integrationName = "google"
 
 var supportedDataKinds = []string{"video_conference"}
 
-type integration struct {
-	services *rez.Services
+type Integration struct {
+	users        rez.UserService
+	integrations rez.IntegrationsService
+	messages     rez.MessageService
+	incidents    rez.IncidentService
+	eventAnnos   rez.EventAnnotationsService
 }
 
-func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	i := &integration{services: svcs}
+func MakeIntegration(
+	ci rez.ConfigLoader,
+	users rez.UserService,
+	integrations rez.IntegrationsService,
+	messages rez.MessageService,
+	incidents rez.IncidentService,
+	eventAnnos rez.EventAnnotationsService,
+) (*Integration, error) {
+	i := &Integration{
+		users:        users,
+		integrations: integrations,
+		messages:     messages,
+		incidents:    incidents,
+		eventAnnos:   eventAnnos,
+	}
 
 	if msgsErr := i.registerMessageHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("registering message handlers: %w", msgsErr)
@@ -29,42 +46,42 @@ func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationP
 	return i, nil
 }
 
-func (i *integration) Name() string {
+func (i *Integration) Name() string {
 	return integrationName
 }
 
-func (i *integration) IsAvailable() (bool, error) {
+func (i *Integration) IsAvailable() (bool, error) {
 	// TODO: check config
 	return true, nil
 }
 
-func (i *integration) SupportedDataKinds() []string {
+func (i *Integration) SupportedDataKinds() []string {
 	return supportedDataKinds
 }
 
-func (i *integration) OAuthConfigRequired() bool {
+func (i *Integration) OAuthConfigRequired() bool {
 	return false
 }
 
-func (i *integration) ValidateConfig(cfg map[string]any) error {
+func (i *Integration) ValidateConfig(cfg map[string]any) error {
 	return nil
 }
 
-func (i *integration) ValidateUserPreferences(prefs map[string]any) error {
+func (i *Integration) ValidateUserPreferences(prefs map[string]any) error {
 	return nil
 }
 
-func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
-	return newConfiguredIntegration(intg, i.services)
+func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
+	return i.newConfiguredIntegration(intg)
 }
 
-func newConfiguredIntegration(intg *ent.Integration, svcs *rez.Services) *ConfiguredIntegration {
-	return &ConfiguredIntegration{intg: intg, svcs: svcs}
+func (i *Integration) newConfiguredIntegration(intg *ent.Integration) *ConfiguredIntegration {
+	return &ConfiguredIntegration{intg: intg, incidents: i.incidents}
 }
 
 type ConfiguredIntegration struct {
-	svcs *rez.Services
-	intg *ent.Integration
+	intg      *ent.Integration
+	incidents rez.IncidentService
 }
 
 func (ci *ConfiguredIntegration) ID() uuid.UUID {

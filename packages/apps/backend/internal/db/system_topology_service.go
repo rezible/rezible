@@ -17,8 +17,8 @@ type SystemTopologyService struct {
 	db *ent.Client
 }
 
-func NewSystemTopologyService(svcs *rez.Services) (*SystemTopologyService, error) {
-	return &SystemTopologyService{db: svcs.Database.Client()}, nil
+func NewSystemTopologyService(dbc *ent.Client) (*SystemTopologyService, error) {
+	return &SystemTopologyService{db: dbc}, nil
 }
 
 func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.ListSystemTopologyEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {

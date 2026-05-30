@@ -44,7 +44,7 @@ type metricsConfig struct {
 	Interval time.Duration `cfg:"interval"`
 }
 
-func loadConfig() (Config, error) {
+func loadConfig(cl rez.ConfigLoader) (Config, error) {
 	cfg := Config{
 		ServiceName: os.Getenv("OTEL_SERVICE_NAME"),
 		Logging: loggingConfig{
@@ -62,7 +62,7 @@ func loadConfig() (Config, error) {
 			Interval: 30 * time.Second,
 		},
 	}
-	if rez.Config.DebugMode() {
+	if cl.DebugMode() {
 		cfg.Logging.Console = loggingConsoleConfig{
 			Enabled: true,
 			Level:   "debug",
@@ -73,10 +73,8 @@ func loadConfig() (Config, error) {
 	if cfg.ServiceName == "" {
 		cfg.ServiceName = defaultServiceName
 	}
-	if rez.Config != nil {
-		if cfgErr := rez.Config.Unmarshal("telemetry", &cfg); cfgErr != nil {
-			return cfg, fmt.Errorf("telemetry config: %w", cfgErr)
-		}
+	if cfgErr := cl.Unmarshal("telemetry", &cfg); cfgErr != nil {
+		return cfg, fmt.Errorf("telemetry config: %w", cfgErr)
 	}
 	return cfg, nil
 }

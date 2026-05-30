@@ -28,12 +28,16 @@ type IncidentService struct {
 	users rez.UserService
 }
 
-func NewIncidentService(svcs *rez.Services) (*IncidentService, error) {
+func NewIncidentService(db *ent.Client,
+	jobs rez.JobsService,
+	msgs rez.MessageService,
+	users rez.UserService,
+) (*IncidentService, error) {
 	svc := &IncidentService{
-		db:    svcs.Database.Client(),
-		jobs:  svcs.Jobs,
-		msgs:  svcs.Messages,
-		users: svcs.Users,
+		db:    db,
+		jobs:  jobs,
+		msgs:  msgs,
+		users: users,
 	}
 
 	if msgsErr := svc.registerMessageHandlers(); msgsErr != nil {

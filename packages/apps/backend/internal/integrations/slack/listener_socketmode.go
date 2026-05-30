@@ -20,17 +20,26 @@ type SocketModeListener struct {
 	stopFn  func() error
 }
 
-func (i *integration) newSocketModeEventListener(handler *messageHandler) (*SocketModeListener, error) {
-	return &SocketModeListener{
-		client:  socketmode.New(slack.New(i.cfg.BotToken, slack.OptionAppLevelToken(i.cfg.AppToken))),
-		handler: handler,
+func makeSocketModeEventListener(cl rez.ConfigLoader, mh *messageHandler) (*SocketModeListener, error) {
+	var cfg Config
+	if cfgErr := cl.Unmarshal("slack", &cfg); cfgErr != nil {
+		return nil, fmt.Errorf("config error: %w", cfgErr)
+	}
+	l := &SocketModeListener{
+		handler: mh,
 		stopFn:  func() error { return nil },
-	}, nil
+	}
+	if cl.SingleTenantMode() {
+
+		l.client = socketmode.New(slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken)))
+	}
+	return l, nil
 }
 
 func (l *SocketModeListener) Start(baseCtx context.Context) error {
-	if !rez.Config.SingleTenantMode() {
-		return fmt.Errorf("can't use socket mode in multi-tenant mode")
+	if l.client == nil {
+		fmt.Printf("no client for socketmode\n")
+		return nil
 	}
 
 	cancelCtx, cancel := context.WithCancel(baseCtx)
@@ -57,7 +66,7 @@ func (l *SocketModeListener) Start(baseCtx context.Context) error {
 	return nil
 }
 
-func (l *SocketModeListener) Stop(ctx context.Context) error {
+func (l *SocketModeListener) Shutdown(ctx context.Context) error {
 	slog.Info("Stopping Slack socket mode listener")
 	return l.stopFn()
 }

@@ -22,14 +22,14 @@ type WebhookListener struct {
 	signingSecret string
 }
 
-func (i *integration) newWebhookListener(handler *messageHandler) (*WebhookListener, error) {
-	if i.cfg.Webhooks.SigningSecret == "" {
+func makeWebhookListener(signingSecret string, mh *messageHandler) (*WebhookListener, error) {
+	if signingSecret == "" {
 		return nil, fmt.Errorf("slack.webhooks.signing_secret not set")
 	}
 
 	return &WebhookListener{
-		handler:       handler,
-		signingSecret: i.cfg.Webhooks.SigningSecret,
+		signingSecret: signingSecret,
+		handler:       mh,
 	}, nil
 }
 

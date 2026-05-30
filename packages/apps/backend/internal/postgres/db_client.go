@@ -58,7 +58,8 @@ func (dbc *DatabaseClient) Pool() *pgxpool.Pool {
 	return dbc.pool
 }
 
-func (dbc *DatabaseClient) Close() {
+func (dbc *DatabaseClient) Shutdown() {
+	fmt.Printf("shutting down database client\n")
 	if dbc.client != nil {
 		if clientErr := dbc.client.Close(); clientErr != nil {
 			slog.Error("failed to close client", "error", clientErr)

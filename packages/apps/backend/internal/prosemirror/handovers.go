@@ -19,7 +19,7 @@ var (
 	dividerNode = prosemirror.Node{Type: prosemirror.NodeType{Name: "divider"}}
 )
 
-func (s *NodeService) CreateOncallShiftHandoverMessage(sections []rez.OncallShiftHandoverSection, annotations []*ent.EventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*rez.ContentNode, error) {
+func CreateOncallShiftHandoverMessage(sections []rez.OncallShiftHandoverSection, annotations []*ent.EventAnnotation, roster *ent.OncallRoster, endingShift *ent.OncallShift, startingShift *ent.OncallShift) (*rez.ContentNode, error) {
 	var content []prosemirror.Node
 
 	content = append(content, buildHandoverHeaderSection(roster, endingShift, startingShift), dividerNode)

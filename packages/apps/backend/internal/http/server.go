@@ -10,6 +10,8 @@ import (
 	"strings"
 
 	"github.com/koding/websocketproxy"
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/openapi"
 	slogchi "github.com/samber/slog-chi"
 
 	"github.com/go-chi/chi/v5"
@@ -36,7 +38,7 @@ type UserAuthSessionService interface {
 	ExecutionContextMiddleware() func(http.Handler) http.Handler
 }
 
-func NewServer(auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
+func NewServer(ts rez.TelemetryService, auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
 	cfg, cfgErr := loadConfig()
 	if cfgErr != nil {
 		return nil, fmt.Errorf("config error: %w", cfgErr)
@@ -51,7 +53,9 @@ func NewServer(auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhoo
 	s.router.Use(s.makeExecutionContextMiddleware())
 	s.router.Use(s.makeRequestLoggerMiddleware())
 
-	if handlerErr := s.mountRequestHandler(auth, oapiV1Handler, webhookHandlers); handlerErr != nil {
+	api := oapiv1.MakeApi(oapiV1Handler, oapiv1.MakeSecurityMiddleware(), oapiv1.MakeAPITelemetryMiddleware(ts))
+
+	if handlerErr := s.mountRequestHandler(auth, api, webhookHandlers); handlerErr != nil {
 		return nil, fmt.Errorf("http request handler: %w", handlerErr)
 	}
 
@@ -78,7 +82,7 @@ func (s *Server) makeRequestLoggerMiddleware() func(http.Handler) http.Handler {
 	})
 }
 
-func (s *Server) mountRequestHandler(auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) error {
+func (s *Server) mountRequestHandler(auth UserAuthSessionService, api openapi.API, webhookHandlers map[string]http.Handler) error {
 	r := chi.NewRouter()
 
 	r.Get("/health", s.makeHealthCheckHandler())
@@ -98,8 +102,6 @@ func (s *Server) mountRequestHandler(auth UserAuthSessionService, oapiV1Handler 
 		if s.cfg.DocumentsProxy.Enabled {
 			ar.Handle("/documents", s.makeDocumentsProxyHandler())
 		}
-
-		api := oapiv1.MakeApi(oapiV1Handler, oapiv1.MakeSecurityMiddleware(), oapiv1.MakeAPITelemetryMiddleware())
 		ar.Mount(oapiv1.VersionPrefix, api.Adapter())
 	})
 

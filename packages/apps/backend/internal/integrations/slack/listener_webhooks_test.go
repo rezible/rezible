@@ -35,16 +35,14 @@ func signedSlackRequest(t *testing.T, method, target, body string) *http.Request
 	return req
 }
 
-func makeWebhookListener(t *testing.T) *WebhookListener {
+func makeTestWebhookListener(t *testing.T) *WebhookListener {
 	t.Helper()
 
 	ingestor := mocks.NewMockProviderEventService(t)
 	ingestor.On("Ingest", mock.Anything, mock.Anything).Maybe().Return(nil)
 
 	handler := &messageHandler{
-		services: &rez.Services{
-			ProviderEvents: ingestor,
-		},
+		provEvents: ingestor,
 	}
 	return &WebhookListener{
 		handler:       handler,
@@ -70,15 +68,13 @@ func TestEventsAPIWebhookEnqueuesVerifiedCallbackEvent(t *testing.T) {
 	})).Return(nil).Once()
 	msgs := mocks.NewMockMessageService(t)
 	msgs.On("PublishEvent", mock.Anything, mock.Anything).Maybe().Return(nil)
-	listener := &WebhookListener{
-		handler: &messageHandler{
-			services: &rez.Services{
-				ProviderEvents: provEvs,
-				Messages:       msgs,
-			},
-		},
-		signingSecret: signingSecret,
+
+	mh := &messageHandler{
+		provEvents: provEvs,
+		messages:   msgs,
 	}
+	listener, listenerErr := makeWebhookListener(signingSecret, mh)
+	require.NoError(t, listenerErr)
 	req := signedSlackRequest(t, http.MethodPost, "/events", body)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -87,7 +83,7 @@ func TestEventsAPIWebhookEnqueuesVerifiedCallbackEvent(t *testing.T) {
 }
 
 func TestEventsAPIWebhookRejectsInvalidSignatureWithoutEnqueue(t *testing.T) {
-	listener := makeWebhookListener(t)
+	listener := makeTestWebhookListener(t)
 	req := httptest.NewRequest(http.MethodPost, "/events", strings.NewReader(`{"type":"event_callback"}`))
 	req.Header.Set("X-Slack-Request-Timestamp", strconv.FormatInt(time.Now().Unix(), 10))
 	req.Header.Set("X-Slack-Signature", "v0="+strings.Repeat("0", 64))
@@ -100,7 +96,7 @@ func TestEventsAPIWebhookRejectsInvalidSignatureWithoutEnqueue(t *testing.T) {
 
 func TestEventsAPIWebhookURLVerificationIsSynchronous(t *testing.T) {
 	body := `{"type":"url_verification","challenge":"challenge-value","token":"legacy-token"}`
-	listener := makeWebhookListener(t)
+	listener := makeTestWebhookListener(t)
 	req := signedSlackRequest(t, http.MethodPost, "/events", body)
 	rec := httptest.NewRecorder()
 	listener.Handler().ServeHTTP(rec, req)

@@ -21,10 +21,10 @@ type DebriefService struct {
 	jobs rez.JobsService
 }
 
-func NewDebriefService(svcs *rez.Services) (*DebriefService, error) {
+func NewDebriefService(dbc *ent.Client, jobSvc rez.JobsService) (*DebriefService, error) {
 	svc := &DebriefService{
-		db:   svcs.Database.Client(),
-		jobs: svcs.Jobs,
+		db:   dbc,
+		jobs: jobSvc,
 	}
 
 	jobs.RegisterWorkerFunc(svc.handleSendDebriefRequests)

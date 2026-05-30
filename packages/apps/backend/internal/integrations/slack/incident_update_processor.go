@@ -27,16 +27,16 @@ type incidentUpdateProcessor struct {
 	inc *ent.Incident
 }
 
-func newIncidentUpdateProcessor(ctx context.Context, chat *ChatService, services *rez.Services, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
-	inc, incErr := services.Incidents.Get(ctx, incident.ID(incidentId))
+func newIncidentUpdateProcessor(ctx context.Context, chat *ChatService, incSvc rez.IncidentService, msgs rez.MessageService, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
+	inc, incErr := incSvc.Get(ctx, incident.ID(incidentId))
 	if incErr != nil {
 		return nil, fmt.Errorf("get incident: %w", incErr)
 	}
 	return &incidentUpdateProcessor{
-		logger:    telemetry.NewLogger(ctx, telemetry.WithLogPackage("slack_incidents")),
+		logger:    telemetry.NewLogger(rez.LoggerOptions{PackageName: "slack_incidents"}),
 		chat:      chat,
-		incidents: services.Incidents,
-		messages:  services.Messages,
+		incidents: incSvc,
+		messages:  msgs,
 		inc:       inc,
 	}, nil
 }

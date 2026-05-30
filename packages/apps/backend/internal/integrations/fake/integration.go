@@ -1,49 +1,53 @@
 package fakeprovider
 
 import (
-	"context"
-
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/samber/do/v2"
 )
 
 const integrationName = "fake"
 
-var supportedDataKinds = []string{"alerts", "incidents", "system_topology"}
+var Package = do.Package(
+	do.Lazy(func(i do.Injector) (*Integration, error) {
+		return &Integration{}, nil
+	}),
+)
 
-type integration struct{}
-
-func SetupIntegration(ctx context.Context, svcs *rez.Services) (rez.IntegrationPackage, error) {
-	intg := &integration{}
-	return intg, nil
+func SetupPackage(i do.Injector) (rez.IntegrationPackage, error) {
+	return &Integration{}, nil
 }
 
-func (i *integration) Name() string {
+type Integration struct{}
+
+func (i *Integration) Name() string {
 	return integrationName
 }
 
-func (i *integration) IsAvailable() (bool, error) {
+func (i *Integration) IsAvailable() (bool, error) {
 	return rez.Config.DebugMode(), nil
 }
 
-func (i *integration) SupportedDataKinds() []string {
+var supportedDataKinds = []string{"alerts", "incidents", "system_topology"}
+
+func (i *Integration) SupportedDataKinds() []string {
 	return supportedDataKinds
 }
 
-func (i *integration) OAuthConfigRequired() bool {
+func (i *Integration) OAuthConfigRequired() bool {
 	return false
 }
 
-func (i *integration) ValidateConfig(cfg map[string]any) error {
+func (i *Integration) ValidateConfig(cfg map[string]any) error {
 	return nil
 }
 
-func (i *integration) ValidateUserPreferences(prefs map[string]any) error {
+func (i *Integration) ValidateUserPreferences(prefs map[string]any) error {
 	return nil
 }
 
-func (i *integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
+func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
 	return &ConfiguredIntegration{intg: intg}
 }
 

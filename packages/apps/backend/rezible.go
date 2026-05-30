@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"iter"
+	"log/slog"
 	"net/url"
 	"time"
 
@@ -12,6 +13,8 @@ import (
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
+	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/predicate"
@@ -42,59 +45,33 @@ type ConfigLoader interface {
 	ApiUrl() string
 }
 
-type EventListener interface {
+type Listener interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context) error
 }
 
-type Services struct {
-	// TODO: don't expose this
-	Database *ent.Client
+type (
+	LoggerOptions struct {
+		Parent      *slog.Logger
+		PackageName string
+		Level       slog.Leveler
+		Attrs       []slog.Attr
+		Groups      []string
+	}
 
-	Jobs             JobsService
-	ProviderEvents   ProviderEventService
-	Messages         MessageService
-	Topology         SystemTopologyService
-	Organizations    OrganizationService
-	Integrations     IntegrationsService
-	Users            UserService
-	Teams            TeamService
-	Incidents        IncidentService
-	Debriefs         DebriefService
-	OncallRosters    OncallRostersService
-	OncallShifts     OncallShiftsService
-	OncallMetrics    OncallMetricsService
-	Events           EventsService
-	EventAnnotations EventAnnotationsService
-	Documents        DocumentsService
-	Retros           RetrospectiveService
-	Alerts           AlertService
-	Playbooks        PlaybookService
-}
+	TelemetryService interface {
+		NewLogger(opts LoggerOptions) *slog.Logger
+		Logger() *slog.Logger
 
-type ServiceRegistry interface {
-	ConfigLoader() ConfigLoader
-	DatabaseClient() DatabaseClient
-	JobsService() JobsService
-	ProviderEventService() ProviderEventService
-	MessageService() MessageService
-	SystemTopologyService() SystemTopologyService
-	OrganizationService() OrganizationService
-	IntegrationsService() IntegrationsService
-	UserService() UserService
-	TeamService() TeamService
-	IncidentService() IncidentService
-	DebriefService() DebriefService
-	OncallRostersService() OncallRostersService
-	OncallShiftsService() OncallShiftsService
-	OncallMetricsService() OncallMetricsService
-	EventsService() EventsService
-	EventAnnotationsService() EventAnnotationsService
-	DocumentsService() DocumentsService
-	RetrospectiveService() RetrospectiveService
-	AlertService() AlertService
-	PlaybookService() PlaybookService
-}
+		TracerProvider() trace.TracerProvider
+		Tracer(name string, opts ...trace.TracerOption) trace.Tracer
+		DefaultTracer() trace.Tracer
+
+		MeterProvider() metric.MeterProvider
+		Meter(name string, opts ...metric.MeterOption) metric.Meter
+		DefaultMeter() metric.Meter
+	}
+)
 
 type (
 	MessageService interface {
@@ -116,9 +93,6 @@ func NewEventHandler[T any](name string, handleFn func(context.Context, *T) erro
 
 type (
 	JobsService interface {
-		Start(context.Context) error
-		Stop(context.Context) error
-
 		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
 		InsertTx(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
 		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
@@ -127,8 +101,6 @@ type (
 )
 
 type (
-	PackageSetupFunc = func(context.Context, *Services) (IntegrationPackage, error)
-
 	IntegrationPackage interface {
 		Name() string
 		IsAvailable() (bool, error)
