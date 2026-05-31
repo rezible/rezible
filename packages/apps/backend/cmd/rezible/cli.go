@@ -54,11 +54,11 @@ func makeServeCommand(i do.Injector) *cli.Command {
 		Name:  "serve",
 		Usage: "Run rezible server",
 		Action: func(ctx context.Context, cmd *cli.Command) error {
-			r, invErr := do.Invoke[*appRunner](i)
-			if invErr != nil {
-				return fmt.Errorf("making app runner: %w", invErr)
+			app, appErr := do.Invoke[*appRunner](i)
+			if appErr != nil {
+				return fmt.Errorf("making app runner: %w", appErr)
 			}
-			return r.start(ctx)
+			return app.start(ctx)
 		},
 		After: func(_ context.Context, command *cli.Command) error {
 			shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
@@ -67,7 +67,6 @@ func makeServeCommand(i do.Injector) *cli.Command {
 
 			var shutdownErr error
 			for sd, sErr := range shutdown.Errors {
-				fmt.Printf("shutdown error: %v %s\n", sd, sErr)
 				if !errors.Is(sErr, context.Canceled) {
 					fmt.Printf("\n\t[%s] ERROR: %s\n", sd.Service, sErr.Error())
 					shutdownErr = errors.Join(shutdownErr, sErr)

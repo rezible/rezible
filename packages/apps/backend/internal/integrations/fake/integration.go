@@ -4,21 +4,18 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/samber/do/v2"
 )
 
 const integrationName = "fake"
 
-var Package = do.Package(
-	do.Lazy(func(i do.Injector) (*Integration, error) {
-		return &Integration{
-			available: do.MustInvoke[rez.Config](i).App.DebugMode,
-		}, nil
-	}),
-)
-
 type Integration struct {
 	available bool
+}
+
+func MakeIntegration(cfg rez.Config) *Integration {
+	return &Integration{
+		available: cfg.App.DebugMode,
+	}
 }
 
 func (i *Integration) Name() string {

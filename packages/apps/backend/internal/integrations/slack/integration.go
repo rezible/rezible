@@ -9,7 +9,6 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
-	"github.com/samber/do/v2"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
 
@@ -18,58 +17,42 @@ import (
 	"github.com/rezible/rezible/execution"
 )
 
-var Package = do.Package(
-	do.Lazy(func(i do.Injector) (*messageHandler, error) {
-		return makeMessageHandler(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.ProviderEventService](i),
-			do.MustInvoke[rez.IntegrationsService](i),
-			do.MustInvoke[rez.IncidentService](i),
-		)
-	}),
-	do.Lazy(func(i do.Injector) (*Integration, error) {
-		loadedCfg := do.MustInvoke[rez.Config](i)
-		return makeIntegration(
-			loadedCfg.Integrations.Slack,
-			do.MustInvoke[*messageHandler](i),
-			do.MustInvoke[rez.IntegrationsService](i),
-			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.EventAnnotationsService](i),
-		)
-	}),
-)
-
 const integrationName = "slack"
 
-func makeIntegration(
-	cfg rez.IntegrationsConfigSlack,
-	mh *messageHandler,
-	intgSvc rez.IntegrationsService,
-	incSvc rez.IncidentService,
-	usersSvc rez.UserService,
-	eventAnnoSvc rez.EventAnnotationsService,
+func MakeIntegration(
+	cfg rez.Config,
+	intgs rez.IntegrationsService,
+	incs rez.IncidentService,
+	users rez.UserService,
+	eventAnnos rez.EventAnnotationsService,
+	messages rez.MessageService,
+	provEvents rez.ProviderEventService,
 ) (*Integration, error) {
 	intg := &Integration{
 		webhookHandler: http.NotFoundHandler(),
-		cfg:            cfg,
-		users:          usersSvc,
-		integrations:   intgSvc,
-		incidents:      incSvc,
-		eventAnnos:     eventAnnoSvc,
+		cfg:            cfg.Integrations.Slack,
+		users:          users,
+		integrations:   intgs,
+		incidents:      incs,
+		eventAnnos:     eventAnnos,
 	}
 
 	intg.oauth2Config = intg.makeOAuth2Config()
 
-	if !cfg.EnableSocketMode {
-		wh, whErr := makeWebhookListener(cfg.WebhookSigningSecret, mh)
+	mh, mhErr := intg.makeMessageHandler(cfg, messages, provEvents)
+	if mhErr != nil {
+		return nil, fmt.Errorf("message handler: %w", mhErr)
+	}
+
+	slackCfg := cfg.Integrations.Slack
+	if !slackCfg.EnableSocketMode {
+		wh, whErr := makeWebhookListener(slackCfg.WebhookSigningSecret, mh)
 		if whErr != nil {
 			return nil, fmt.Errorf("webhook listener: %w", whErr)
 		}
 		intg.webhookHandler = wh.Handler()
 	} else {
-		sml, smlErr := makeSocketModeEventListener(cfg, mh)
+		sml, smlErr := makeSocketModeEventListener(slackCfg, mh)
 		if smlErr != nil {
 			return nil, fmt.Errorf("socket mode event listener: %w", smlErr)
 		}

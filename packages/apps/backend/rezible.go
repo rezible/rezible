@@ -34,6 +34,11 @@ type ConfigLoader interface {
 	LoadConfig(ctx context.Context) (Config, error)
 }
 
+type LifecycleService interface {
+	Start(context.Context) error
+	Shutdown(context.Context) error
+}
+
 type (
 	NewLoggerOptions struct {
 		Parent      *slog.Logger

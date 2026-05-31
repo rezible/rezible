@@ -22,13 +22,13 @@ type messageHandler struct {
 	incidents    rez.IncidentService
 }
 
-func makeMessageHandler(cfg rez.Config, msgs rez.MessageService, provEvents rez.ProviderEventService, intgs rez.IntegrationsService, incidents rez.IncidentService) (*messageHandler, error) {
+func (i *Integration) makeMessageHandler(cfg rez.Config, msgs rez.MessageService, provEvents rez.ProviderEventService) (*messageHandler, error) {
 	h := &messageHandler{
 		appCfg:       cfg.App,
 		messages:     msgs,
 		provEvents:   provEvents,
-		integrations: intgs,
-		incidents:    incidents,
+		integrations: i.integrations,
+		incidents:    i.incidents,
 	}
 	if msgsErr := h.registerHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
