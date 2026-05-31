@@ -15,7 +15,6 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
-	"github.com/rezible/rezible/telemetry"
 )
 
 type incidentUpdateProcessor struct {
@@ -51,7 +50,7 @@ func (h *messageHandler) newIncidentUpdateProcessor(ctx context.Context, inciden
 	return &incidentUpdateProcessor{
 		inc:       inc,
 		chat:      newChatService(ci),
-		logger:    telemetry.NewLogger(rez.NewLoggerOptions{PackageName: "slack_incidents"}),
+		logger:    slog.Default().With("service", "slack.incident_updates"),
 		appCfg:    h.appCfg,
 		incidents: h.incidents,
 		messages:  h.messages,

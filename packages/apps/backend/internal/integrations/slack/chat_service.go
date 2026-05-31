@@ -9,7 +9,6 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/telemetry"
 	"github.com/slack-go/slack"
 )
 
@@ -28,7 +27,7 @@ func newChatService(ci *ConfiguredIntegration) *ChatService {
 	return &ChatService{
 		ci:           ci,
 		client:       slack.New(ci.accessToken()),
-		logger:       telemetry.NewLogger(rez.NewLoggerOptions{PackageName: "slack"}),
+		logger:       slog.Default().With("service", "slack.chat_service"),
 		users:        ci.users,
 		integrations: ci.integrations,
 		incidents:    ci.incidents,
