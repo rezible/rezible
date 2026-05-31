@@ -61,10 +61,9 @@ func makeServeCommand(i do.Injector) *cli.Command {
 			return app.start(ctx)
 		},
 		After: func(_ context.Context, command *cli.Command) error {
-			shutdownCtx, cancelShutdown := context.WithTimeout(context.Background(), 5*time.Second)
-			defer cancelShutdown()
-			shutdown := i.ShutdownWithContext(shutdownCtx)
-
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			shutdown := i.ShutdownWithContext(ctx)
 			var shutdownErr error
 			for sd, sErr := range shutdown.Errors {
 				if !errors.Is(sErr, context.Canceled) {
