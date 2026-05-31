@@ -12,25 +12,15 @@ import (
 	"github.com/rezible/rezible/execution"
 )
 
-type documentsServiceConfig struct {
-}
-
 type DocumentsService struct {
 	db    *ent.Client
 	teams rez.TeamService
-
-	cfg documentsServiceConfig
 }
 
-func NewDocumentsService(cl rez.ConfigLoader, dbc *ent.Client, teams rez.TeamService) (*DocumentsService, error) {
+func NewDocumentsService(dbc *ent.Client, teams rez.TeamService) (*DocumentsService, error) {
 	svc := &DocumentsService{
 		db:    dbc,
 		teams: teams,
-		cfg:   documentsServiceConfig{},
-	}
-
-	if cfgErr := cl.Unmarshal("documents", &svc.cfg); cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
 	}
 
 	return svc, nil

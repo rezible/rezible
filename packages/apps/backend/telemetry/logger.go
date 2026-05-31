@@ -17,7 +17,7 @@ func ContextWithLogger(ctx context.Context, logger *slog.Logger) context.Context
 }
 
 func LoggerFromContext(ctx context.Context) *slog.Logger {
-	opts := rez.LoggerOptions{}
+	opts := rez.NewLoggerOptions{}
 	if ctx != nil {
 		if parent, ok := ctx.Value(loggerContextKey{}).(*slog.Logger); ok {
 			opts.Parent = parent
@@ -26,7 +26,7 @@ func LoggerFromContext(ctx context.Context) *slog.Logger {
 	return NewLogger(opts)
 }
 
-func NewLogger(opts rez.LoggerOptions) *slog.Logger {
+func NewLogger(opts rez.NewLoggerOptions) *slog.Logger {
 	logger := opts.Parent
 	if logger == nil {
 		logger = slog.Default()

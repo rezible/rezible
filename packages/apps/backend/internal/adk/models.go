@@ -2,7 +2,6 @@ package adk
 
 import (
 	"context"
-	"fmt"
 
 	rez "github.com/rezible/rezible"
 	"google.golang.org/adk/model"
@@ -19,10 +18,10 @@ func getConfigModels(ctx context.Context) ([]model.LLM, error) {
 }
 
 func newClaudeLanguageModel(ctx context.Context, cl rez.ConfigLoader) (model.LLM, error) {
-	var cfg AnthropicConfig
-	if cfgErr := cl.Unmarshal("anthropic", &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("anthropic config: %w", cfgErr)
-	}
+	//var cfg AnthropicConfig
+	//if cfgErr := cl.Unmarshal("anthropic", &cfg); cfgErr != nil {
+	//	return nil, fmt.Errorf("anthropic config: %w", cfgErr)
+	//}
 
 	//claudeCfg := &claude.Config{
 	//	APIKey: cfg.ApiKey,

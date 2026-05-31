@@ -8,7 +8,7 @@ import (
 var Package = do.Package(
 	do.Lazy(func(i do.Injector) (*Integration, error) {
 		return MakeIntegration(
-			do.MustInvoke[rez.ConfigLoader](i),
+			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.IntegrationsService](i),
 			do.MustInvoke[rez.MessageService](i),

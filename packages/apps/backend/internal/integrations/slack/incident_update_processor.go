@@ -20,26 +20,41 @@ import (
 
 type incidentUpdateProcessor struct {
 	logger    *slog.Logger
-	appUrl    string
-	chat      *ChatService
+	appCfg    rez.AppConfig
 	incidents rez.IncidentService
 	messages  rez.MessageService
 
-	inc *ent.Incident
+	chat *ChatService
+	inc  *ent.Incident
 }
 
-func newIncidentUpdateProcessor(ctx context.Context, appUrl string, chat *ChatService, incSvc rez.IncidentService, msgs rez.MessageService, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
-	inc, incErr := incSvc.Get(ctx, incident.ID(incidentId))
+func (h *messageHandler) newIncidentUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
+	intgs, lookupErr := h.integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
+	if lookupErr != nil {
+		if ent.IsNotFound(lookupErr) {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("getting configured Integration: %w", lookupErr)
+	}
+	// TODO: handle multiple installations
+	if len(intgs) == 0 {
+		return nil, nil
+	}
+	ci, ok := intgs[0].(*ConfiguredIntegration)
+	if !ok {
+		return nil, fmt.Errorf("failed to cast to *ConfiguredIntegration")
+	}
+	inc, incErr := h.incidents.Get(ctx, incident.ID(incidentId))
 	if incErr != nil {
 		return nil, fmt.Errorf("get incident: %w", incErr)
 	}
 	return &incidentUpdateProcessor{
-		logger:    telemetry.NewLogger(rez.LoggerOptions{PackageName: "slack_incidents"}),
-		appUrl:    appUrl,
-		chat:      chat,
-		incidents: incSvc,
-		messages:  msgs,
 		inc:       inc,
+		chat:      newChatService(ci),
+		logger:    telemetry.NewLogger(rez.NewLoggerOptions{PackageName: "slack_incidents"}),
+		appCfg:    h.appCfg,
+		incidents: h.incidents,
+		messages:  h.messages,
 	}, nil
 }
 
@@ -262,7 +277,7 @@ func (p *incidentUpdateProcessor) postIncidentAnnouncement(ctx context.Context) 
 		return fmt.Errorf("failed to get announcement channel: %w", chanErr)
 	}
 
-	builder := newIncidentAnnouncementMessageBuilder(p.appUrl, p.inc)
+	builder := newIncidentAnnouncementMessageBuilder(p.appCfg.FrontendUrl, p.inc)
 
 	_, postErr := p.chat.postMessage(ctx, announcementChannelId, slack.MsgOptionBlocks(builder.build()...))
 	if postErr != nil {
@@ -299,7 +314,7 @@ func (p *incidentUpdateProcessor) updateIncidentChannel(ctx context.Context) err
 }
 
 func (p *incidentUpdateProcessor) updateIncidentChannelPinnedDetailsMessage(ctx context.Context) error {
-	builder := newIncidentDetailsMessageBuilder(p.appUrl, p.inc)
+	builder := newIncidentDetailsMessageBuilder(p.appCfg.FrontendUrl, p.inc)
 
 	pins, _, pinsErr := p.chat.client.ListPinsContext(ctx, p.inc.ChatChannelID)
 	if pinsErr != nil {
@@ -380,7 +395,7 @@ func (p *incidentUpdateProcessor) ensureIncidentChannelBookmarks(ctx context.Con
 	if !hasDetails {
 		_, addErr := p.chat.client.AddBookmark(p.inc.ChatChannelID, slack.AddBookmarkParameters{
 			Title: detailsTitle,
-			Link:  fmt.Sprintf("%s/incidents/%s", p.appUrl, p.inc.Slug),
+			Link:  fmt.Sprintf("%s/incidents/%s", p.appCfg.FrontendUrl, p.inc.Slug),
 			Type:  "link",
 		})
 		if addErr != nil {

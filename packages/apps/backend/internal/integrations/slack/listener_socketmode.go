@@ -20,17 +20,12 @@ type SocketModeListener struct {
 	stopFn  func() error
 }
 
-func makeSocketModeEventListener(cl rez.ConfigLoader, mh *messageHandler) (*SocketModeListener, error) {
-	var cfg Config
-	if cfgErr := cl.Unmarshal("slack", &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
-	}
+func makeSocketModeEventListener(cfg rez.IntegrationsConfigSlack, mh *messageHandler) (*SocketModeListener, error) {
 	l := &SocketModeListener{
 		handler: mh,
 		stopFn:  func() error { return nil },
 	}
-	if cl.SingleTenantMode() {
-
+	if cfg.EnableSocketMode {
 		l.client = socketmode.New(slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken)))
 	}
 	return l, nil

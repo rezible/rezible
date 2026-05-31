@@ -31,19 +31,11 @@ var (
 )
 
 type ConfigLoader interface {
-	Exists(key string) bool
-	GetString(key string, fallback string) string
-	Unmarshal(key string, v any) error
-
-	DebugMode() bool
-	SingleTenantMode() bool
-
-	AppUrl() string
-	ApiUrl() string
+	LoadConfig(ctx context.Context) (*Config, error)
 }
 
 type (
-	LoggerOptions struct {
+	NewLoggerOptions struct {
 		Parent      *slog.Logger
 		PackageName string
 		Level       slog.Leveler
@@ -52,7 +44,7 @@ type (
 	}
 
 	TelemetryService interface {
-		NewLogger(opts LoggerOptions) *slog.Logger
+		NewLogger(opts NewLoggerOptions) *slog.Logger
 		Logger() *slog.Logger
 
 		TracerProvider() trace.TracerProvider
@@ -97,7 +89,7 @@ type (
 		Name() string
 		IsAvailable() (bool, error)
 		SupportedDataKinds() []string
-		ValidateConfig(map[string]any) error
+		ValidateUserConfig(map[string]any) error
 		ValidateUserPreferences(map[string]any) error
 		OAuthConfigRequired() bool
 		GetConfiguredIntegration(*ent.Integration) ConfiguredIntegration

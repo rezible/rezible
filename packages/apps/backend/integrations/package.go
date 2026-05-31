@@ -24,7 +24,7 @@ var Package = do.Package(
 		tel := do.MustInvoke[rez.TelemetryService](i)
 		reg := &PackageRegistry{
 			nameMap: make(map[string]rez.IntegrationPackage),
-			logger:  tel.NewLogger(rez.LoggerOptions{PackageName: "integrations"}),
+			logger:  tel.NewLogger(rez.NewLoggerOptions{PackageName: "integrations"}),
 		}
 		return reg, nil
 	}),

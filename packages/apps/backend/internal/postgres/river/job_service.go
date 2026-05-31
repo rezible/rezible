@@ -33,7 +33,7 @@ func NewJobService(tel rez.TelemetryService, pool *pgxpool.Pool) (*JobService, e
 		river.QueueDefault: {MaxWorkers: 20},
 	}
 
-	logger := tel.NewLogger(rez.LoggerOptions{
+	logger := tel.NewLogger(rez.NewLoggerOptions{
 		PackageName: "river",
 		Level:       slog.LevelInfo,
 	})

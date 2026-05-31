@@ -33,7 +33,7 @@ type MessageService struct {
 }
 
 func NewMessageService(ts rez.TelemetryService) (*MessageService, error) {
-	loggerOpts := rez.LoggerOptions{
+	loggerOpts := rez.NewLoggerOptions{
 		PackageName: "watermill",
 		Level:       slog.LevelWarn,
 	}

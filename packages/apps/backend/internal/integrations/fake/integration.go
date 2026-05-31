@@ -12,7 +12,7 @@ const integrationName = "fake"
 var Package = do.Package(
 	do.Lazy(func(i do.Injector) (*Integration, error) {
 		return &Integration{
-			available: do.MustInvoke[rez.ConfigLoader](i).DebugMode(),
+			available: do.MustInvoke[rez.Config](i).App.DebugMode,
 		}, nil
 	}),
 )
@@ -39,7 +39,7 @@ func (i *Integration) OAuthConfigRequired() bool {
 	return false
 }
 
-func (i *Integration) ValidateConfig(cfg map[string]any) error {
+func (i *Integration) ValidateUserConfig(cfg map[string]any) error {
 	return nil
 }
 

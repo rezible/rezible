@@ -11,6 +11,7 @@ import (
 	entsql "entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/schema"
 	"github.com/jackc/pgx/v5/pgxpool"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/rezible/rezible/internal/postgres/river"
 
@@ -38,13 +39,25 @@ type MigratorClient struct {
 	connectionString string
 }
 
-func NewMigratorClient(cfg Config) (*MigratorClient, error) {
+func requireMigrationsUpToDate(ctx context.Context, connString string) error {
+	mg := &MigratorClient{connectionString: connString}
+	status, statusErr := mg.GetCurrentStatus(ctx)
+	if statusErr != nil {
+		return fmt.Errorf("get current migration status: %w", statusErr)
+	}
+	if migrationsErr := status.requireUpToDate(); migrationsErr != nil {
+		return fmt.Errorf("migration status: %w", migrationsErr)
+	}
+	return nil
+}
+
+func NewAdminMigratorClient(cfg rez.PostgresConfig) (*MigratorClient, error) {
 	if cfg.AdminRole.Name == "" {
 		return nil, fmt.Errorf("admin role name cannot be empty")
 	}
 
 	m := &MigratorClient{
-		connectionString: cfg.getDsn(cfg.AdminRole),
+		connectionString: getDsn(cfg, cfg.AdminRole),
 	}
 	return m, nil
 }

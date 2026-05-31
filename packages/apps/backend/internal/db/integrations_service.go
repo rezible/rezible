@@ -25,18 +25,18 @@ import (
 )
 
 type IntegrationsService struct {
-	db     *ent.Client
+	appCfg rez.AppConfig
+	dbc    *ent.Client
 	jobs   rez.JobService
 	reg    *integrations.PackageRegistry
-	appUrl string
 }
 
-func NewIntegrationsService(cl rez.ConfigLoader, dbc *ent.Client, jobs rez.JobService, reg *integrations.PackageRegistry) (*IntegrationsService, error) {
+func NewIntegrationsService(appCfg rez.AppConfig, dbc *ent.Client, jobs rez.JobService, reg *integrations.PackageRegistry) (*IntegrationsService, error) {
 	s := &IntegrationsService{
-		db:     dbc,
+		dbc:    dbc,
 		jobs:   jobs,
 		reg:    reg,
-		appUrl: cl.AppUrl(),
+		appCfg: appCfg,
 	}
 
 	s.registerJobs()
@@ -104,7 +104,7 @@ func (s *IntegrationsService) Configure(ctx context.Context, params rez.Configur
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", params.Provider, pErr)
 	}
-	if prefsErr := p.ValidateConfig(params.Config); prefsErr != nil {
+	if prefsErr := p.ValidateUserConfig(params.Config); prefsErr != nil {
 		return nil, fmt.Errorf("invalid config: %w", prefsErr)
 	}
 	intg, setErr := s.set(ctx, params, func(m *ent.IntegrationMutation) {
@@ -133,7 +133,7 @@ func (s *IntegrationsService) UpdateConfiguredPreferences(ctx context.Context, i
 	if prefsErr := p.ValidateUserPreferences(prefs); prefsErr != nil {
 		return nil, fmt.Errorf("invalid user preferences: %w", prefsErr)
 	}
-	intg, saveErr := s.db.Integration.UpdateOneID(id).SetUserPreferences(prefs).Save(ctx)
+	intg, saveErr := s.dbc.Integration.UpdateOneID(id).SetUserPreferences(prefs).Save(ctx)
 	if saveErr != nil {
 		return nil, fmt.Errorf("failed to set integration: %w", saveErr)
 	}
@@ -141,7 +141,7 @@ func (s *IntegrationsService) UpdateConfiguredPreferences(ctx context.Context, i
 }
 
 func (s *IntegrationsService) DeleteConfigured(ctx context.Context, id uuid.UUID) error {
-	deleteErr := s.db.Integration.DeleteOneID(id).Exec(ctx)
+	deleteErr := s.dbc.Integration.DeleteOneID(id).Exec(ctx)
 	return deleteErr
 }
 
@@ -155,7 +155,7 @@ func (s *IntegrationsService) GetProviderEventProcessor(provider string) (rez.Pr
 }
 
 func (s *IntegrationsService) GetProviderEventQueriers(ctx context.Context, provider string) ([]rez.ProviderEventQuerier, error) {
-	intgs, queryErr := s.db.Integration.Query().Where(integration.ProviderEQ(provider)).All(ctx)
+	intgs, queryErr := s.dbc.Integration.Query().Where(integration.ProviderEQ(provider)).All(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("failed to get integrations: %w", queryErr)
 	}
@@ -171,7 +171,7 @@ func (s *IntegrationsService) GetProviderEventQueriers(ctx context.Context, prov
 }
 
 func (s *IntegrationsService) listQuery(p rez.ListIntegrationsParams) *ent.IntegrationQuery {
-	query := s.db.Integration.Query()
+	query := s.dbc.Integration.Query()
 	if len(p.IDs) > 0 {
 		query.Where(integration.IDIn(p.IDs...))
 	}
@@ -217,11 +217,11 @@ func (s *IntegrationsService) listIntegrations(ctx context.Context, params rez.L
 }
 
 func (s *IntegrationsService) getById(ctx context.Context, id uuid.UUID) (*ent.Integration, error) {
-	return s.db.Integration.Get(ctx, id)
+	return s.dbc.Integration.Get(ctx, id)
 }
 
 func (s *IntegrationsService) getByProviderExternalRef(ctx context.Context, provider, externalRef string) (*ent.Integration, error) {
-	q := s.db.Integration.Query().Where(integration.Provider(provider), integration.ExternalRef(externalRef))
+	q := s.dbc.Integration.Query().Where(integration.Provider(provider), integration.ExternalRef(externalRef))
 	intg, getErr := q.Only(ctx)
 	if getErr != nil {
 		if ent.IsNotFound(getErr) {
@@ -240,11 +240,11 @@ func (s *IntegrationsService) set(ctx context.Context, params rez.ConfigureInteg
 
 	var upsert ent.EntityMutator[*ent.Integration, *ent.IntegrationMutation]
 	if curr == nil {
-		upsert = s.db.Integration.Create().
+		upsert = s.dbc.Integration.Create().
 			SetProvider(params.Provider).
 			SetExternalRef(params.ExternalRef)
 	} else {
-		upsert = s.db.Integration.UpdateOneID(curr.ID)
+		upsert = s.dbc.Integration.UpdateOneID(curr.ID)
 	}
 
 	upsert.Mutation().SetDisplayName(params.DisplayName)
@@ -275,7 +275,7 @@ func (s *IntegrationsService) makeOAuthState(ctx context.Context, provider strin
 	}
 	// TODO: replace this with something actually random
 	state := uuid.New().String()
-	create := s.db.IntegrationOAuthState.Create().
+	create := s.dbc.IntegrationOAuthState.Create().
 		SetUserID(userId).
 		SetState(state).
 		SetProvider(provider)
@@ -288,13 +288,13 @@ func (s *IntegrationsService) getOAuthState(ctx context.Context, provider string
 		return nil, rez.ErrAuthSessionMissing
 	}
 	userIntegrationStates := ioas.And(ioas.UserIDEQ(userId), ioas.ProviderEQ(provider))
-	query := s.db.IntegrationOAuthState.Query().
+	query := s.dbc.IntegrationOAuthState.Query().
 		Where(userIntegrationStates, ioas.ExpiresAtGT(time.Now()), ioas.StateEQ(state))
 	stateMatch, queryErr := query.Only(ctx)
 	if queryErr != nil {
 		return nil, fmt.Errorf("query failed: %w", queryErr)
 	}
-	cleanup := s.db.IntegrationOAuthState.Delete().
+	cleanup := s.dbc.IntegrationOAuthState.Delete().
 		Where(userIntegrationStates, ioas.ExpiresAtLT(time.Now()))
 	if _, cleanupErr := cleanup.Exec(ctx); cleanupErr != nil {
 		slog.Error("failed to cleanup old integration user oauth states",
@@ -307,7 +307,7 @@ func (s *IntegrationsService) getOAuthState(ctx context.Context, provider string
 }
 
 func (s *IntegrationsService) StartOAuth2Flow(ctx context.Context, provider string, callbackPath string) (string, error) {
-	callbackUrl, pathErr := url.JoinPath(s.appUrl, callbackPath)
+	callbackUrl, pathErr := url.JoinPath(s.appCfg.FrontendUrl, callbackPath)
 	if pathErr != nil {
 		return "", fmt.Errorf("invalid callback path: %w", pathErr)
 	}
@@ -414,7 +414,7 @@ func (s *IntegrationsService) SelectOAuth2Flow(ctx context.Context, provider str
 	if cfgErr != nil {
 		return nil, cfgErr
 	}
-	if deleteErr := s.db.IntegrationOAuthState.DeleteOneID(state.ID).Exec(ctx); deleteErr != nil {
+	if deleteErr := s.dbc.IntegrationOAuthState.DeleteOneID(state.ID).Exec(ctx); deleteErr != nil {
 		slog.Error("failed to delete oauth selection state", "error", deleteErr)
 	}
 	return &rez.CompleteIntegrationOAuth2Result{Status: "configured", Configured: configured}, nil
@@ -542,7 +542,7 @@ func (s *IntegrationsService) RequestDataSync(ctx context.Context, provider stri
 }
 
 func (s *IntegrationsService) GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error) {
-	query := s.db.ProviderEventSyncRun.Query().
+	query := s.dbc.ProviderEventSyncRun.Query().
 		Where(pesr.Provider(provider)).
 		Order(pesr.ByStartedAt(sql.OrderDesc())).
 		Limit(5)

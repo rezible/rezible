@@ -12,9 +12,9 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-func (i *Integration) MakeProviderEventQuerier(cfg Config, intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+func (i *Integration) MakeProviderEventQuerier(cfg rez.IntegrationsConfigGithub, intg *ent.Integration) (rez.ProviderEventQuerier, error) {
 	ci := i.newConfiguredIntegration(intg)
-	client, clientErr := newClient(cfg, ci)
+	client, clientErr := newAppClient(cfg, ci)
 	if clientErr != nil {
 		return nil, clientErr
 	}

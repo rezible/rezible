@@ -19,71 +19,50 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type Config struct {
-	SessionSecret       []byte     `cfg:"session_secret"`
-	Oidc                oidcConfig `cfg:"oidc"`
-	SingleTenantOrgName string     `cfg:"single_tenant_org_name"`
-}
-
-type oidcConfig struct {
-	Issuer       string `cfg:"issuer"`
-	ClientID     string `cfg:"client_id"`
-	ClientSecret string `cfg:"client_secret"`
-	RedirectUrl  string `cfg:"redirect_url"`
-}
-
 type AuthSessionService struct {
 	orgs  rez.OrganizationService
 	users rez.UserService
 
-	cfg        Config
 	cookiePath string
 	codec      *cookieCodec
 	oauth      *oauthHandler
 }
 
-func NewAuthSessionService(cl rez.ConfigLoader, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
-	oauthRedirectUrl, redirectErr := url.JoinPath(cl.AppUrl(), "/api/auth/callback")
-	if redirectErr != nil {
-		return nil, fmt.Errorf("redirect url: %w", redirectErr)
+func NewAuthSessionService(cfg rez.Config, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
+	oauthRedirectUrl := cfg.HttpServer.Auth.Oidc.RedirectUrl
+	if oauthRedirectUrl == "" {
+		var pathError error
+		oauthRedirectUrl, pathError = url.JoinPath(cfg.App.FrontendUrl, "/api/auth/callback")
+		if pathError != nil {
+			return nil, fmt.Errorf("oauth redirect url: %w", pathError)
+		}
 	}
 
-	cfg := Config{
-		SingleTenantOrgName: "Default",
-		Oidc: oidcConfig{
-			RedirectUrl: oauthRedirectUrl,
-		},
-	}
-	if cfgErr := cl.Unmarshal("auth", &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("config: %w", cfgErr)
-	}
-
-	codec, codecErr := newCookieCodec(cfg.SessionSecret)
+	codec, codecErr := newCookieCodec(cfg.HttpServer.Auth.SessionSecret)
 	if codecErr != nil {
 		return nil, fmt.Errorf("cookie codec: %w", codecErr)
 	}
 
-	apiAudience := cl.ApiUrl()
+	apiAudience := cfg.App.ApiUrl
 	if apiAudience == "" {
 		return nil, fmt.Errorf("no api url configured, can't verify token audience")
 	}
 	oauth := &oauthHandler{
-		cfg:            cfg.Oidc,
+		cfg:            cfg.HttpServer.Auth.Oidc,
 		codec:          codec,
 		apiAudience:    apiAudience,
 		resourceOption: oauth2.SetAuthURLParam("resource", apiAudience),
 	}
-	if cl.SingleTenantMode() {
+	if cfg.App.SingleTenant.Enabled {
 		oauth.singleTenantOrg = &ent.Organization{
 			AuthProviderID: "default",
-			Name:           cfg.SingleTenantOrgName,
+			Name:           cfg.App.SingleTenant.OrgName,
 		}
 	}
 
 	s := &AuthSessionService{
 		orgs:       orgs,
 		users:      users,
-		cfg:        cfg,
 		cookiePath: "/api",
 		codec:      codec,
 		oauth:      oauth,

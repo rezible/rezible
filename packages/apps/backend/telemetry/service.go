@@ -11,13 +11,10 @@ import (
 )
 
 const (
-	defaultServiceName = "rezible-backend"
-	defaultMeterName   = "github.com/rezible/rezible"
+	defaultMeterName = "github.com/rezible/rezible"
 )
 
 type Service struct {
-	cfg Config
-
 	logger         *slog.Logger
 	meterProvider  metric.MeterProvider
 	tracerProvider trace.TracerProvider
@@ -33,7 +30,7 @@ func (s *Service) Shutdown(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) NewLogger(opts rez.LoggerOptions) *slog.Logger {
+func (s *Service) NewLogger(opts rez.NewLoggerOptions) *slog.Logger {
 	return NewLogger(opts)
 }
 

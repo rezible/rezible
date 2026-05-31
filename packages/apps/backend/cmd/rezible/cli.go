@@ -8,6 +8,7 @@ import (
 	"syscall"
 	"time"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/integrations/projections"
@@ -31,6 +32,7 @@ func main() {
 	defer stop()
 
 	i := do.New()
+	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
 
 	root := &cli.Command{
 		Name:  "rezible",
@@ -41,10 +43,8 @@ func main() {
 			makeSpecCommand(),
 		},
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
-			setupPackages(ctx, i)
-			if pkgErr := integrations.RegisterIntegrations(i); pkgErr != nil {
-				return nil, fmt.Errorf("failed to register integrations: %w", pkgErr)
+			if pkgErr := provideDependencies(ctx, i); pkgErr != nil {
+				return nil, fmt.Errorf("failed to provide dependencies: %w", pkgErr)
 			}
 			return ctx, nil
 		},
@@ -64,7 +64,7 @@ func main() {
 	}
 }
 
-func setupPackages(ctx context.Context, i do.Injector) {
+func provideDependencies(ctx context.Context, i do.Injector) error {
 	koanf.Package(i)
 	telemetry.PackageContext(ctx, i)
 	postgres.PackageContext(ctx, i)
@@ -75,6 +75,18 @@ func setupPackages(ctx context.Context, i do.Injector) {
 	db.Package(i)
 	http.Package(i)
 	apiv1.Package(i)
+
+	if intgErr := integrations.RegisterIntegrations(i); intgErr != nil {
+		return fmt.Errorf("failed to register integrations: %w", intgErr)
+	}
+
+	cfg, cfgErr := do.MustInvoke[rez.ConfigLoader](i).LoadConfig(ctx)
+	if cfgErr != nil || cfg == nil {
+		return fmt.Errorf("failed to load config: %w", cfgErr)
+	}
+	do.ProvideValue[rez.Config](i, *cfg)
+
+	return nil
 }
 
 func makeServeCommand(i do.Injector) *cli.Command {

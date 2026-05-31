@@ -22,7 +22,7 @@ import (
 var Package = do.Package(
 	do.Lazy(func(i do.Injector) (*messageHandler, error) {
 		return makeMessageHandler(
-			do.MustInvoke[rez.ConfigLoader](i),
+			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.ProviderEventService](i),
 			do.MustInvoke[rez.IntegrationsService](i),
@@ -31,7 +31,7 @@ var Package = do.Package(
 	}),
 	do.Lazy(func(i do.Injector) (*Integration, error) {
 		return makeIntegration(
-			do.MustInvoke[rez.ConfigLoader](i),
+			do.MustInvoke[rez.Config](i).Integrations.Slack,
 			do.MustInvoke[*messageHandler](i),
 			do.MustInvoke[rez.IntegrationsService](i),
 			do.MustInvoke[rez.IncidentService](i),
@@ -43,35 +43,14 @@ var Package = do.Package(
 
 const integrationName = "slack"
 
-type Config struct {
-	Enabled    bool   `cfg:"enabled"`
-	AppToken   string `cfg:"app_token"`
-	BotToken   string `cfg:"bot_token"`
-	SocketMode struct {
-		Enabled bool `cfg:"enabled"`
-	} `cfg:"socketmode"`
-	Webhooks struct {
-		SigningSecret string `cfg:"signing_secret"`
-	} `cfg:"webhooks"`
-	OAuth struct {
-		ClientId     string `cfg:"client_id"`
-		ClientSecret string `cfg:"client_secret"`
-	} `cfg:"oauth"`
-}
-
 func makeIntegration(
-	cl rez.ConfigLoader,
+	cfg rez.IntegrationsConfigSlack,
 	mh *messageHandler,
 	intgSvc rez.IntegrationsService,
 	incSvc rez.IncidentService,
 	usersSvc rez.UserService,
 	eventAnnoSvc rez.EventAnnotationsService,
 ) (*Integration, error) {
-	var cfg Config
-	if cfgErr := cl.Unmarshal("slack", &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
-	}
-
 	intg := &Integration{
 		webhookHandler: http.NotFoundHandler(),
 		cfg:            cfg,
@@ -81,20 +60,16 @@ func makeIntegration(
 		eventAnnos:     eventAnnoSvc,
 	}
 
-	oauthCfg, oauthErr := intg.loadOAuthConfig()
-	if oauthErr != nil {
-		return nil, fmt.Errorf("oauth config error: %w", oauthErr)
-	}
-	intg.oauth2Config = oauthCfg
+	intg.oauth2Config = intg.makeOAuth2Config()
 
-	if !intg.cfg.SocketMode.Enabled {
-		wh, whErr := makeWebhookListener(cfg.Webhooks.SigningSecret, mh)
+	if !intg.cfg.EnableSocketMode {
+		wh, whErr := makeWebhookListener(cfg.WebhookSigningSecret, mh)
 		if whErr != nil {
 			return nil, fmt.Errorf("webhook listener: %w", whErr)
 		}
 		intg.webhookHandler = wh.Handler()
 	} else {
-		sml, smlErr := makeSocketModeEventListener(cl, mh)
+		sml, smlErr := makeSocketModeEventListener(cfg, mh)
 		if smlErr != nil {
 			return nil, fmt.Errorf("socket mode event listener: %w", smlErr)
 		}
@@ -105,7 +80,7 @@ func makeIntegration(
 }
 
 type Integration struct {
-	cfg          Config
+	cfg          rez.IntegrationsConfigSlack
 	oauth2Config *oauth2.Config
 
 	webhookHandler     http.Handler
@@ -126,13 +101,13 @@ func (i *Integration) IsAvailable() (bool, error) {
 		return false, nil
 	}
 	var errs []error
-	if i.cfg.OAuth.ClientId == "" {
+	if i.cfg.OAuthClientId == "" {
 		errs = append(errs, errors.New("slack.oauth.client_id not set"))
 	}
-	if i.cfg.OAuth.ClientSecret == "" {
+	if i.cfg.OAuthClientSecret == "" {
 		errs = append(errs, errors.New("slack.oauth.client_secret not set"))
 	}
-	if i.cfg.SocketMode.Enabled {
+	if i.cfg.EnableSocketMode {
 		if i.socketModeListener == nil {
 			errs = append(errs, errors.New("socket mode requires single tenant mode"))
 		}
@@ -143,7 +118,7 @@ func (i *Integration) IsAvailable() (bool, error) {
 			errs = append(errs, errors.New("slack.bot_token not set"))
 		}
 	} else {
-		if i.cfg.Webhooks.SigningSecret == "" {
+		if i.cfg.WebhookSigningSecret == "" {
 			errs = append(errs, errors.New("slack.webhooks.signing_secret not set"))
 		}
 	}
@@ -212,20 +187,16 @@ var oAuthScopes = []string{
 	"channels:write.invites",
 }
 
-func (i *Integration) loadOAuthConfig() (*oauth2.Config, error) {
-	if i.cfg.OAuth.ClientId == "" || i.cfg.OAuth.ClientSecret == "" {
-		return nil, fmt.Errorf("failed to load OAuth client id or client secret")
-	}
-
+func (i *Integration) makeOAuth2Config() *oauth2.Config {
 	return &oauth2.Config{
-		ClientID:     i.cfg.OAuth.ClientId,
-		ClientSecret: i.cfg.OAuth.ClientSecret,
+		ClientID:     i.cfg.OAuthClientId,
+		ClientSecret: i.cfg.OAuthClientSecret,
 		Endpoint: oauth2.Endpoint{
 			AuthURL:  "https://slack.com/oauth/v2/authorize",
 			TokenURL: "https://slack.com/api/oauth.v2.access",
 		},
 		Scopes: oAuthScopes,
-	}, nil
+	}
 }
 
 func validateOauthTokenScopes(t *oauth2.Token) error {
@@ -304,7 +275,7 @@ func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.Config
 	return i.makeConfiguredIntegration(intg)
 }
 
-func (i *Integration) ValidateConfig(cfg map[string]any) error {
+func (i *Integration) ValidateUserConfig(cfg map[string]any) error {
 	return nil
 }
 
@@ -420,7 +391,7 @@ func (ci *ConfiguredIntegration) GetAvailableDataKinds() map[string]bool {
 }
 
 func (ci *ConfiguredIntegration) MakeChatService(ctx context.Context) (rez.ChatService, error) {
-	return newChatService(ctx, ci), nil
+	return newChatService(ci), nil
 }
 
 type installIds struct {

@@ -12,14 +12,12 @@ import (
 func PackageContext(ctx context.Context, i do.Injector) {
 	do.Package(
 		do.Lazy(func(i do.Injector) (*MigratorClient, error) {
-			cfg, cfgErr := LoadConfig(do.MustInvoke[rez.ConfigLoader](i))
-			if cfgErr != nil {
-				return nil, cfgErr
-			}
-			return NewMigratorClient(cfg)
+			cfg := do.MustInvoke[rez.Config](i)
+			return NewAdminMigratorClient(cfg.Postgres)
 		}),
 		do.Lazy(func(i do.Injector) (*DatabaseClient, error) {
-			return NewDatabaseClient(ctx, do.MustInvoke[rez.ConfigLoader](i))
+			cfg := do.MustInvoke[rez.Config](i)
+			return NewDatabaseClient(ctx, cfg.Postgres)
 		}),
 		do.Lazy(func(i do.Injector) (*ent.Client, error) {
 			return do.MustInvoke[*DatabaseClient](i).Client(), nil

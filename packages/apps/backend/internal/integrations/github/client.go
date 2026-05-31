@@ -7,6 +7,7 @@ import (
 
 	"github.com/bradleyfalzon/ghinstallation/v2"
 	"github.com/google/go-github/v84/github"
+	rez "github.com/rezible/rezible"
 )
 
 type githubClient struct {
@@ -14,7 +15,7 @@ type githubClient struct {
 	client *github.Client
 }
 
-func newClient(cfg Config, ci *ConfiguredIntegration) (*githubClient, error) {
+func newAppClient(cfg rez.IntegrationsConfigGithub, ci *ConfiguredIntegration) (*githubClient, error) {
 	transport, transportErr := ghinstallation.New(
 		http.DefaultTransport,
 		cfg.App.AppID,

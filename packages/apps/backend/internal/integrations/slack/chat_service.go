@@ -24,11 +24,11 @@ type ChatService struct {
 	annos        rez.EventAnnotationsService
 }
 
-func newChatService(ctx context.Context, ci *ConfiguredIntegration) *ChatService {
+func newChatService(ci *ConfiguredIntegration) *ChatService {
 	return &ChatService{
 		ci:           ci,
 		client:       slack.New(ci.accessToken()),
-		logger:       telemetry.NewLogger(rez.LoggerOptions{PackageName: "slack"}),
+		logger:       telemetry.NewLogger(rez.NewLoggerOptions{PackageName: "slack"}),
 		users:        ci.users,
 		integrations: ci.integrations,
 		incidents:    ci.incidents,

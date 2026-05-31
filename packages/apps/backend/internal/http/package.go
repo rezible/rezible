@@ -12,14 +12,14 @@ import (
 var Package = do.Package(
 	do.Lazy(func(i do.Injector) (UserAuthSessionService, error) {
 		return oidc.NewAuthSessionService(
-			do.MustInvoke[rez.ConfigLoader](i),
+			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),
 		)
 	}),
 	do.Lazy(func(i do.Injector) (*Server, error) {
 		return NewServer(
-			do.MustInvoke[rez.ConfigLoader](i),
+			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[UserAuthSessionService](i),
 			do.MustInvoke[oapiv1.Handler](i),

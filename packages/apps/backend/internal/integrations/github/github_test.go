@@ -7,82 +7,46 @@ import (
 	"time"
 
 	"github.com/google/go-github/v84/github"
+	rez "github.com/rezible/rezible"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2"
 )
 
-func TestValidateConfig_MissingCredentials(t *testing.T) {
-	cases := []map[string]any{
-		{},
-		{"app": map[string]any{}},
-		{"app": map[string]any{"app_id": float64(123)}},
-		{"app": map[string]any{"app_id": float64(123), "client_id": "cid"}},
-		{"app": map[string]any{"app_id": float64(123), "client_id": "cid", "client_secret": "cs"}},
-	}
-	intg := &Integration{}
-	for _, cfg := range cases {
-		err := intg.ValidateConfig(cfg)
-		assert.Error(t, err, "expected error for config: %v", cfg)
-	}
-}
-
-func TestValidateConfig_ValidAppCredentials(t *testing.T) {
-	intg := &Integration{}
-	cfg := map[string]any{
-		"app": map[string]any{
-			"app_id":          float64(123),
-			"client_id":       "client-id",
-			"client_secret":   "client-secret",
-			"private_key_pem": "-----BEGIN RSA PRIVATE KEY-----\nfake\n-----END RSA PRIVATE KEY-----",
-		},
-	}
-	require.NoError(t, intg.ValidateConfig(cfg))
+func makeIntegrationConfig() rez.IntegrationsConfigGithub {
+	cfg := rez.IntegrationsConfigGithub{}
+	cfg.App.AppID = 123
+	cfg.App.ClientID = "client-id"
+	cfg.App.ClientSecret = "client-secret"
+	return cfg
 }
 
 func TestOAuth2Config(t *testing.T) {
-	intg := &Integration{cfg: Config{
-		App: struct {
-			AppID         int64  `cfg:"app_id"`
-			ClientID      string `cfg:"client_id"`
-			ClientSecret  string `cfg:"client_secret"`
-			PrivateKeyPEM string `cfg:"private_key_pem"`
-		}{
-			ClientID:     "client-id",
-			ClientSecret: "client-secret",
-		},
-	}}
+	intg := &Integration{cfg: makeIntegrationConfig()}
 	intg.oauth2Config = intg.loadOAuthConfig()
 
-	cfg := intg.OAuth2Config()
-	require.NotNil(t, cfg)
-	assert.Equal(t, "client-id", cfg.ClientID)
-	assert.Equal(t, "client-secret", cfg.ClientSecret)
-	assert.Equal(t, "https://github.com/login/oauth/authorize", cfg.Endpoint.AuthURL)
-	assert.Equal(t, "https://github.com/login/oauth/access_token", cfg.Endpoint.TokenURL)
+	oauthCfg := intg.OAuth2Config()
+	require.NotNil(t, oauthCfg)
+	assert.Equal(t, "client-id", oauthCfg.ClientID)
+	assert.Equal(t, "client-secret", oauthCfg.ClientSecret)
+	assert.Equal(t, "https://github.com/login/oauth/authorize", oauthCfg.Endpoint.AuthURL)
+	assert.Equal(t, "https://github.com/login/oauth/access_token", oauthCfg.Endpoint.TokenURL)
 
-	authURL := cfg.AuthCodeURL("state-value")
+	authURL := oauthCfg.AuthCodeURL("state-value")
 	assert.Contains(t, authURL, "client_id=client-id")
 	assert.Contains(t, authURL, "state=state-value")
 }
 
 func TestExtractIntegrationOptionsFromToken(t *testing.T) {
 	intg := &Integration{
-		cfg: Config{
-			App: struct {
-				AppID         int64  `cfg:"app_id"`
-				ClientID      string `cfg:"client_id"`
-				ClientSecret  string `cfg:"client_secret"`
-				PrivateKeyPEM string `cfg:"private_key_pem"`
-			}{AppID: 123},
-		},
+		cfg: makeIntegrationConfig(),
 		listUserInstallations: func(_ context.Context, token string) ([]*github.Installation, error) {
 			assert.Equal(t, "access-token", token)
 			return []*github.Installation{
 				{
-					ID:      github.Ptr[int64](456),
-					AppID:   github.Ptr[int64](123),
-					Account: &github.User{Login: github.Ptr("myorg")},
+					ID:      new(int64(456)),
+					AppID:   new(int64(123)),
+					Account: &github.User{Login: new("myorg")},
 				},
 			}, nil
 		},

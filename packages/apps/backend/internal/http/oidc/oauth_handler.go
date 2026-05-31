@@ -20,7 +20,7 @@ const (
 )
 
 type oauthHandler struct {
-	cfg   oidcConfig
+	cfg   rez.HttpAuthOidcConfig
 	codec *cookieCodec
 
 	apiAudience     string

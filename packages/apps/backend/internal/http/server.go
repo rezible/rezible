@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/koding/websocketproxy"
@@ -20,7 +21,7 @@ import (
 )
 
 type Server struct {
-	cfg        Config
+	cfg        rez.HttpServerConfig
 	router     *chi.Mux
 	logger     *slog.Logger
 	httpServer *http.Server
@@ -38,14 +39,9 @@ type UserAuthSessionService interface {
 	ExecutionContextMiddleware() func(http.Handler) http.Handler
 }
 
-func NewServer(cl rez.ConfigLoader, ts rez.TelemetryService, auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
-	cfg, cfgErr := loadConfig(cl)
-	if cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
-	}
-
+func NewServer(cfg rez.Config, ts rez.TelemetryService, auth UserAuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
 	s := Server{
-		cfg:    cfg,
+		cfg:    cfg.HttpServer,
 		router: chi.NewRouter(),
 		logger: slog.Default().WithGroup("http"),
 	}
@@ -83,6 +79,15 @@ func (s *Server) makeRequestLoggerMiddleware() func(http.Handler) http.Handler {
 }
 
 func (s *Server) mountRequestHandler(auth UserAuthSessionService, api openapi.API, webhookHandlers map[string]http.Handler) error {
+	var documentsProxyUrl *url.URL
+	if s.cfg.DocumentsProxy.Enabled {
+		proxyUrl, parseErr := url.Parse("ws://" + s.cfg.DocumentsProxy.ProxyHost)
+		if parseErr != nil {
+			return fmt.Errorf("failed to parse documents_proxy.proxy_host: %w", parseErr)
+		}
+		documentsProxyUrl = proxyUrl
+	}
+
 	r := chi.NewRouter()
 
 	r.Get("/health", s.makeHealthCheckHandler())
@@ -98,11 +103,10 @@ func (s *Server) mountRequestHandler(auth UserAuthSessionService, api openapi.AP
 	// routes requiring auth context
 	r.Group(func(ar chi.Router) {
 		ar.Use(auth.ExecutionContextMiddleware())
-
-		if s.cfg.DocumentsProxy.Enabled {
-			ar.Handle("/documents", s.makeDocumentsProxyHandler())
-		}
 		ar.Mount(oapiv1.VersionPrefix, api.Adapter())
+		if documentsProxyUrl != nil {
+			ar.Handle("/documents", s.makeDocumentsProxyHandler(documentsProxyUrl))
+		}
 	})
 
 	basePath := s.cfg.BasePath
@@ -111,7 +115,7 @@ func (s *Server) mountRequestHandler(auth UserAuthSessionService, api openapi.AP
 	return nil
 }
 
-func (s *Server) makeDocumentsProxyHandler() http.Handler {
+func (s *Server) makeDocumentsProxyHandler(serverUrl *url.URL) http.Handler {
 	headerKey := "X-Rez-Tenant-ID"
 	setAuthHeaders := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -125,7 +129,8 @@ func (s *Server) makeDocumentsProxyHandler() http.Handler {
 			next.ServeHTTP(w, r)
 		})
 	}
-	proxy := websocketproxy.NewProxy(s.cfg.DocumentsProxy.serverUrl)
+
+	proxy := websocketproxy.NewProxy(serverUrl)
 	proxy.Director = func(r *http.Request, h http.Header) {
 		h.Set(headerKey, r.Header.Get(headerKey))
 	}

@@ -12,36 +12,7 @@ import (
 	"github.com/rezible/rezible/internal/postgres/river"
 )
 
-func LoadConfig(cl rez.ConfigLoader) (Config, error) {
-	cfg := Config{
-		Host:     "postgres",
-		Port:     5432,
-		Database: "rezible",
-		SSLMode:  "require",
-	}
-	return cfg, cl.Unmarshal("postgres", &cfg)
-}
-
-type Config struct {
-	Host      string      `cfg:"host"`
-	Port      uint16      `cfg:"port"`
-	Database  string      `cfg:"database"`
-	AppRole   RoleConfig  `cfg:"role_app"`
-	AdminRole RoleConfig  `cfg:"role_admin"`
-	SSLMode   string      `cfg:"sslmode"`
-	Pool      *PoolConfig `cfg:"pool"`
-}
-
-type PoolConfig struct {
-	MaxConns int32 `cfg:"pool_max_conns"`
-}
-
-type RoleConfig struct {
-	Name     string `cfg:"name"`
-	Password string `cfg:"password"`
-}
-
-func (cfg *Config) getDsn(role RoleConfig) string {
+func getDsn(cfg rez.PostgresConfig, role rez.PostgresRoleConfig) string {
 	var dsn []string
 	dsn = append(dsn, fmt.Sprintf("user='%s'", role.Name))
 	if role.Password != "" {
@@ -53,15 +24,11 @@ func (cfg *Config) getDsn(role RoleConfig) string {
 		dsn = append(dsn, fmt.Sprintf("dbname='%s'", cfg.Database))
 	}
 	dsn = append(dsn, fmt.Sprintf("sslmode='%s'", cfg.SSLMode))
-	if cfg.Pool != nil {
-		var poolDsn []string
-		if cfg.Pool.MaxConns != 0 {
-			dsn = append(dsn, fmt.Sprintf("pool_max_conns='%d'", cfg.Pool.MaxConns))
-		}
-		if len(poolDsn) > 0 {
-			dsn = append(dsn, strings.Join(poolDsn, " "))
-		}
+
+	if cfg.PoolMaxConns != 0 {
+		dsn = append(dsn, fmt.Sprintf("pool_max_conns='%d'", cfg.PoolMaxConns))
 	}
+
 	return strings.Join(dsn, " ")
 }
 

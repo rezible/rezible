@@ -1,14 +1,17 @@
 set shell := ["bash", "-uc"]
 
-export DEBUG_MODE := "true"
-export SINGLE_TENANT_MODE := "true"
+export APP__DEBUG_MODE := "true"
+export APP__FRONTEND_URL := env("APP_URL")
+export APP__API_URL := env("API_URL")
+export APP__SINGLETENANT__ENABLED := "true"
 
-export SERVER__HTTP__DOCUMENTS_PROXY__ENABLED := "true"
-export SERVER__HTTP__DOCUMENTS_PROXY__PROXY_PATH := "/documents"
-
-export AUTH__OIDC__CLIENT_ID := "test-client"
-export AUTH__OIDC__CLIENT_SECRET := "superdupersecret"
-export AUTH__SESSION_SECRET := "superduuuuuuuuuuuuuuuuupersecret"
+export HTTP__PORT := env("BACKEND_PORT")
+export HTTP__AUTH__SESSION_SECRET := "superduuuuuuuuuuuuuuuuupersecret"
+export HTTP__AUTH__OIDC__ISSUER := env("AUTH_URL")
+export HTTP__AUTH__OIDC__CLIENT_ID := "test-client"
+export HTTP__AUTH__OIDC__CLIENT_SECRET := "superdupersecret"
+export HTTP__DOCUMENTS_PROXY__ENABLED := "true"
+export HTTP__DOCUMENTS_PROXY__PROXY_PATH := "/documents"
 
 export POSTGRES__HOST := "localhost"
 export POSTGRES__PORT := env("POSTGRES_PORT")
@@ -18,8 +21,6 @@ export POSTGRES__ROLE_ADMIN__NAME := env("POSTGRES_ADMIN_USER", "postgres")
 export POSTGRES__ROLE_ADMIN__PASSWORD := POSTGRES__ROLE_ADMIN__NAME
 export POSTGRES__ROLE_APP__NAME := env("POSTGRES_APP_USER")
 export POSTGRES__ROLE_APP__PASSWORD := POSTGRES__ROLE_APP__NAME
-export SERVER__HTTP__PORT := env("BACKEND_PORT")
-export AUTH__OIDC__ISSUER := env("AUTH_URL")
 
 export OTEL_SERVICE_NAME := "rezible-backend"
 export OTEL_TRACES_EXPORTER := "otlp"

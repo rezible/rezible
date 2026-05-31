@@ -10,7 +10,7 @@ import (
 
 func TestLoggerMinLevel(t *testing.T) {
 	ctx := t.Context()
-	opts := rez.LoggerOptions{
+	opts := rez.NewLoggerOptions{
 		Level: slog.LevelWarn,
 	}
 	logger := NewLogger(opts)

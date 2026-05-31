@@ -26,14 +26,15 @@ func runServer(ctx context.Context, i do.Injector) error {
 	return nil
 }
 
-type startable interface {
+type lifecycleService interface {
 	Start(context.Context) error
+	Shutdown(context.Context) error
 }
 
 func runServices(ctx context.Context, i do.Injector) error {
-	var services []startable
+	var services []lifecycleService
 	for _, desc := range i.ListInvokedServices() {
-		if svc, ok := do.MustInvokeNamed[any](i, desc.Service).(startable); ok {
+		if svc, ok := do.MustInvokeNamed[any](i, desc.Service).(lifecycleService); ok {
 			services = append(services, svc)
 		}
 	}

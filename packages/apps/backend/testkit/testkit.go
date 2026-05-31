@@ -30,7 +30,7 @@ type options struct {
 type Suite struct {
 	suite.Suite
 
-	cl rez.ConfigLoader
+	cfg rez.Config
 
 	opts options
 
@@ -52,7 +52,7 @@ func NewSuite(opts ...Option) Suite {
 }
 
 func (s *Suite) SetupSuite() {
-	s.SetConfigOverrides(nil)
+	s.LoadConfig(nil)
 	s.setupTestDatabase()
 	s.SeedTestEntities()
 }
@@ -62,16 +62,20 @@ func (s *Suite) TearDownSuite() {
 }
 
 func (s *Suite) BeforeTest(suiteName, testName string) {
-	s.SetConfigOverrides(nil)
+	s.LoadConfig(nil)
 }
 
-func (s *Suite) SetConfigOverrides(overrides map[string]any) {
-	cfg, cfgErr := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{
+func (s *Suite) LoadConfig(overrides map[string]any) {
+	clOpts := koanf.ConfigLoaderOptions{
 		LoadEnvironment: true,
 		Overrides:       overrides,
-	})
+	}
+	cl, clErr := koanf.NewConfigLoader(clOpts)
+	s.Require().NoError(clErr)
+	cfg, cfgErr := cl.LoadConfig(s.T().Context())
 	s.Require().NoError(cfgErr)
-	s.cl = cfg
+	s.Require().NotNil(cfg)
+	s.cfg = *cfg
 }
 
 func (s *Suite) DatabaseClient() *ent.Client { return s.dbClient }
@@ -87,11 +91,8 @@ func (s *Suite) SeedTenantContext() context.Context {
 }
 
 func (s *Suite) setupTestDatabase() {
-	pgCfg, pgCfgErr := postgres.LoadConfig(s.cl)
-	s.Require().NoError(pgCfgErr, "loading postgres config")
-	s.Require().NotEmpty(pgCfg.AdminRole.Name, "migrations config nil")
-
-	fmt.Printf("cfg: %+v\n", pgCfg)
+	pgCfg := s.cfg.Postgres
+	s.Require().NotEmpty(pgCfg.AdminRole.Name, "postgres migrations admin config empty")
 
 	opts := fmt.Sprintf("sslmode=%s&search_path=%s", pgCfg.SSLMode, postgres.SchemaName)
 	pgxConf := pgtestdb.Config{
@@ -107,19 +108,17 @@ func (s *Suite) setupTestDatabase() {
 			Password: pgCfg.AppRole.Password,
 		},
 	}
-	testDb := pgtestdb.New(s.T(), pgxConf, newTestDbMigrator(pgCfg))
+	testDb := pgtestdb.New(s.T(), pgxConf, newTestDbMigrator())
 	s.dbClient = postgres.MakeEntClient(entsql.OpenDB("postgres", testDb))
 }
 
 type testDbMigrator struct {
-	cfg postgres.Config
-	gm  *golangmigrator.GolangMigrator
+	gm *golangmigrator.GolangMigrator
 }
 
-func newTestDbMigrator(cfg postgres.Config) *testDbMigrator {
+func newTestDbMigrator() *testDbMigrator {
 	return &testDbMigrator{
-		cfg: cfg,
-		gm:  golangmigrator.New(migrations.EmbedFSDir, golangmigrator.WithFS(migrations.FS)),
+		gm: golangmigrator.New(migrations.EmbedFSDir, golangmigrator.WithFS(migrations.FS)),
 	}
 }
 

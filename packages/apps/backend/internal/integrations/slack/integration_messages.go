@@ -12,20 +12,19 @@ import (
 	"github.com/slack-go/slack/slackevents"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 )
 
 type messageHandler struct {
-	appUrl       string
+	appCfg       rez.AppConfig
 	messages     rez.MessageService
 	provEvents   rez.ProviderEventService
 	integrations rez.IntegrationsService
 	incidents    rez.IncidentService
 }
 
-func makeMessageHandler(cl rez.ConfigLoader, msgs rez.MessageService, provEvents rez.ProviderEventService, intgs rez.IntegrationsService, incidents rez.IncidentService) (*messageHandler, error) {
+func makeMessageHandler(cfg rez.Config, msgs rez.MessageService, provEvents rez.ProviderEventService, intgs rez.IntegrationsService, incidents rez.IncidentService) (*messageHandler, error) {
 	h := &messageHandler{
-		appUrl:       cl.AppUrl(),
+		appCfg:       cfg.App,
 		messages:     msgs,
 		provEvents:   provEvents,
 		integrations: intgs,
@@ -147,26 +146,11 @@ func (h *messageHandler) withChatService(ctx context.Context, ids installIds, fn
 		)
 		return nil
 	}
-	return fn(newChatService(ctx, ci))
+	return fn(newChatService(ci))
 }
 
 func (h *messageHandler) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
-	intgs, lookupErr := h.integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
-	if lookupErr != nil {
-		if ent.IsNotFound(lookupErr) {
-			return nil
-		}
-		return fmt.Errorf("getting configured Integration: %w", lookupErr)
-	}
-	// TODO: handle multiple installations
-	if len(intgs) == 0 {
-		return nil
-	}
-	ci, ok := intgs[0].(*ConfiguredIntegration)
-	if !ok {
-		return fmt.Errorf("failed to cast to *ConfiguredIntegration")
-	}
-	p, procErr := newIncidentUpdateProcessor(ctx, h.appUrl, newChatService(ctx, ci), h.incidents, h.messages, id)
+	p, procErr := h.newIncidentUpdateProcessor(ctx, id)
 	if procErr != nil {
 		return fmt.Errorf("creating incident update processor: %w", procErr)
 	}

@@ -6,9 +6,11 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/lmittmann/tint"
+	rez "github.com/rezible/rezible"
 	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
@@ -28,16 +30,18 @@ import (
 	nooptrace "go.opentelemetry.io/otel/trace/noop"
 )
 
-func newOpenTelemetryService(ctx context.Context, cfg Config) (*Service, error) {
+func NewOpenTelemetryService(ctx context.Context, cfg rez.Config) (*Service, error) {
 	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
 		propagation.TraceContext{},
 		propagation.Baggage{},
 	))
 
+	s := &Service{}
+
 	resOpts := []sdkresource.Option{
 		sdkresource.WithFromEnv(),
 		sdkresource.WithTelemetrySDK(),
-		sdkresource.WithAttributes(attribute.String("service.name", cfg.ServiceName)),
+		sdkresource.WithAttributes(attribute.String("service.name", cfg.Telemetry.ServiceName)),
 	}
 
 	res, resErr := sdkresource.New(ctx, resOpts...)
@@ -45,30 +49,43 @@ func newOpenTelemetryService(ctx context.Context, cfg Config) (*Service, error) 
 		return nil, fmt.Errorf("otel resource: %w", resErr)
 	}
 
-	s := &Service{cfg: cfg}
-	if loggerErr := s.initLogger(); loggerErr != nil {
+	logCfg := cfg.Telemetry.Logging
+	if cfg.App.DebugMode {
+		logCfg.Console = rez.LoggingConsoleConfig{
+			Enabled: true,
+			Level:   "debug",
+			Json:    false,
+			Color:   true,
+		}
+	}
+
+	if loggerErr := s.initLogger(logCfg); loggerErr != nil {
 		return nil, fmt.Errorf("failed to initialize logger: %w", loggerErr)
 	}
 
-	if tracerErr := s.initTracerProvider(ctx, res); tracerErr != nil {
+	if tracerErr := s.initTracerProvider(ctx, res, cfg.Telemetry.Tracing); tracerErr != nil {
 		return nil, fmt.Errorf("failed to initialize tracer: %w", tracerErr)
 	}
 
-	if metricsErr := s.initMetricsProvider(ctx, res); metricsErr != nil {
+	if metricsErr := s.initMetricsProvider(ctx, res, cfg.Telemetry.Metrics); metricsErr != nil {
 		return nil, fmt.Errorf("failed to initialize metrics: %w", metricsErr)
 	}
 
 	return s, nil
 }
 
-func (s *Service) initLogger() error {
+func isOtelEnvDisabled() bool {
+	return strings.EqualFold(os.Getenv("OTEL_SDK_DISABLED"), "true")
+}
+
+func (s *Service) initLogger(cfg rez.LoggingConfig) error {
 	var slogHandlers []slog.Handler
-	if s.cfg.Logging.Console.Enabled {
-		slogHandlers = append(slogHandlers, s.makeSlogConsoleHandler(os.Stderr))
+	if cfg.Console.Enabled {
+		slogHandlers = append(slogHandlers, s.makeSlogConsoleHandler(os.Stderr, cfg))
 	}
 
 	//var lp LoggerProvider
-	if s.cfg.isOTelLoggingEnabled() {
+	if !isOtelEnvDisabled() && cfg.OTel.Enabled {
 		// unused
 	} else {
 		//lp = nooplog.NewLoggerProvider()
@@ -79,16 +96,27 @@ func (s *Service) initLogger() error {
 	return nil
 }
 
-func (s *Service) makeSlogConsoleHandler(w io.Writer) slog.Handler {
+func (s *Service) makeSlogConsoleHandler(w io.Writer, cfg rez.LoggingConfig) slog.Handler {
 	opts := &slog.HandlerOptions{
-		AddSource:   s.cfg.Logging.AddSource,
-		Level:       s.cfg.getSlogLogLevel(s.cfg.Logging.Console.Level),
+		AddSource:   cfg.AddSource,
+		Level:       slog.LevelInfo,
 		ReplaceAttr: nil,
 	}
-	if s.cfg.Logging.Console.Json {
+
+	switch strings.ToLower(strings.TrimSpace(cfg.Console.Level)) {
+	case "debug":
+		opts.Level = slog.LevelDebug
+	case "info":
+		opts.Level = slog.LevelInfo
+	case "warn":
+		opts.Level = slog.LevelWarn
+	case "error":
+		opts.Level = slog.LevelError
+	}
+	if cfg.Console.Json {
 		return slog.NewJSONHandler(w, opts)
 	}
-	if !s.cfg.Logging.Console.Color {
+	if !cfg.Console.Color {
 		return slog.NewTextHandler(w, opts)
 	}
 	return tint.NewHandler(w, &tint.Options{
@@ -97,9 +125,9 @@ func (s *Service) makeSlogConsoleHandler(w io.Writer) slog.Handler {
 	})
 }
 
-func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resource) error {
+func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resource, cfg rez.TracingConfig) error {
 	var tp oteltrace.TracerProvider
-	if s.cfg.isOTelTracingEnabled() {
+	if !isOtelEnvDisabled() && cfg.Enabled {
 		traceExporter, traceExporterErr := otlptracegrpc.New(ctx)
 		if traceExporterErr != nil {
 			return fmt.Errorf("otlp trace exporter: %w", traceExporterErr)
@@ -116,16 +144,16 @@ func (s *Service) initTracerProvider(ctx context.Context, r *sdkresource.Resourc
 	return nil
 }
 
-func (s *Service) initMetricsProvider(ctx context.Context, r *sdkresource.Resource) error {
+func (s *Service) initMetricsProvider(ctx context.Context, r *sdkresource.Resource, cfg rez.MetricsConfig) error {
 	var mp otelmetric.MeterProvider
-	if s.cfg.isOTelMetricsEnabled() {
+	if !isOtelEnvDisabled() && cfg.Enabled {
 		metricExporter, metricExporterErr := otlpmetricgrpc.New(ctx)
 		if metricExporterErr != nil {
 			return fmt.Errorf("otlp metric exporter: %w", metricExporterErr)
 		}
 		var readerOpts []sdkmetric.PeriodicReaderOption
-		if s.cfg.Metrics.Interval > 0 {
-			readerOpts = append(readerOpts, sdkmetric.WithInterval(s.cfg.Metrics.Interval))
+		if cfg.Interval > 0 {
+			readerOpts = append(readerOpts, sdkmetric.WithInterval(cfg.Interval))
 		}
 		sdkMp := sdkmetric.NewMeterProvider(
 			sdkmetric.WithResource(r),

@@ -24,7 +24,7 @@ type Integration struct {
 }
 
 func MakeIntegration(
-	ci rez.ConfigLoader,
+	cfg rez.Config,
 	users rez.UserService,
 	integrations rez.IntegrationsService,
 	messages rez.MessageService,
@@ -63,7 +63,7 @@ func (i *Integration) OAuthConfigRequired() bool {
 	return false
 }
 
-func (i *Integration) ValidateConfig(cfg map[string]any) error {
+func (i *Integration) ValidateUserConfig(cfg map[string]any) error {
 	return nil
 }
 

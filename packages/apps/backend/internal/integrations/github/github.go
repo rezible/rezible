@@ -21,20 +21,15 @@ const integrationName = "github"
 var supportedDataKinds = []string{"repositories", "change_events"}
 
 type Integration struct {
-	cfg                   Config
+	cfg                   rez.IntegrationsConfigGithub
 	oauth2Config          *oauth2.Config
 	listUserInstallations func(context.Context, string) ([]*gh.Installation, error)
 	webhookHandler        http.Handler
 }
 
-func MakeIntegration(cl rez.ConfigLoader, provEvents rez.ProviderEventService) (*Integration, error) {
-	var cfg Config
-	if cfgErr := cl.Unmarshal("github", &cfg); cfgErr != nil {
-		return nil, fmt.Errorf("config error: %w", cfgErr)
-	}
-
+func MakeIntegration(cfg rez.Config, provEvents rez.ProviderEventService) (*Integration, error) {
 	i := &Integration{
-		cfg:                   cfg,
+		cfg:                   cfg.Integrations.Github,
 		listUserInstallations: listUserInstallations,
 		webhookHandler:        http.NotFoundHandler(),
 	}
@@ -56,7 +51,7 @@ func (i *Integration) IsAvailable() (bool, error) {
 	if !i.cfg.Enabled {
 		return false, nil
 	}
-	return true, i.cfg.validate()
+	return true, nil
 }
 
 func (i *Integration) WebhookHandler() http.Handler {
@@ -148,31 +143,31 @@ func (i *Integration) ExtractIntegrationOptionsFromToken(t *oauth2.Token) ([]rez
 	return options, nil
 }
 
-func (i *Integration) ValidateConfig(cfg map[string]any) error {
-	// Extract app config fields from the map
-	app, hasApp := cfg["app"].(map[string]any)
-	if !hasApp {
-		return fmt.Errorf("missing app configuration")
-	}
-
-	var c Config
-	if appID, ok := app["app_id"].(float64); ok {
-		c.App.AppID = int64(appID)
-	}
-	if clientID, ok := app["client_id"].(string); ok {
-		c.App.ClientID = clientID
-	}
-	if clientSecret, ok := app["client_secret"].(string); ok {
-		c.App.ClientSecret = clientSecret
-	}
-	if privateKeyPEM, ok := app["private_key_pem"].(string); ok {
-		c.App.PrivateKeyPEM = privateKeyPEM
-	}
-
-	return c.validate()
+type userConfig struct {
+	data objx.Map
 }
 
-func (i *Integration) ValidateUserPreferences(_ map[string]any) error {
+func (i *Integration) ValidateUserConfig(cfg map[string]any) error {
+	//uc := userConfig{data: objx.New(cfg)}
+	/*
+		if appID, ok := app["app_id"].(float64); ok {
+			c.App.AppID = int64(appID)
+		}
+		if clientID, ok := app["client_id"].(string); ok {
+			c.App.ClientID = clientID
+		}
+		if clientSecret, ok := app["client_secret"].(string); ok {
+			c.App.ClientSecret = clientSecret
+		}
+		if privateKeyPEM, ok := app["private_key_pem"].(string); ok {
+			c.App.PrivateKeyPEM = privateKeyPEM
+		}
+	*/
+
+	return nil
+}
+
+func (i *Integration) ValidateUserPreferences(prefs map[string]any) error {
 	return nil
 }
 
@@ -183,18 +178,22 @@ func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.Config
 // ConfiguredIntegration wraps an *ent.Integration for a specific tenant installation.
 type ConfiguredIntegration struct {
 	intg *ent.Integration
+	cfg  userConfig
 }
 
 func (i *Integration) newConfiguredIntegration(intg *ent.Integration) *ConfiguredIntegration {
-	return &ConfiguredIntegration{intg: intg}
+	return &ConfiguredIntegration{
+		intg: intg,
+		cfg:  userConfig{data: objx.New(intg.Config)},
+	}
 }
 
 func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Context {
 	return execution.NewTenantContext(ctx, ci.intg.TenantID)
 }
 
-func (ci *ConfiguredIntegration) config() objx.Map {
-	return objx.New(ci.intg.Config)
+func (ci *ConfiguredIntegration) config() userConfig {
+	return userConfig{data: objx.New(ci.intg.Config)}
 }
 
 const (
@@ -203,11 +202,11 @@ const (
 )
 
 func (ci *ConfiguredIntegration) orgName() string {
-	return ci.config().Get(configOrg).String()
+	return ci.cfg.data.Get(configOrg).String()
 }
 
 func (ci *ConfiguredIntegration) installationID() int64 {
-	v := ci.config().Get(configInstallationID)
+	v := ci.cfg.data.Get(configInstallationID)
 	if v.IsFloat64() {
 		return int64(v.Float64())
 	}
@@ -231,7 +230,7 @@ func (ci *ConfiguredIntegration) ExternalRef() string {
 }
 
 func (ci *ConfiguredIntegration) GetSanitizedConfig() map[string]any {
-	return ci.config().Exclude([]string{})
+	return ci.cfg.data.Exclude([]string{})
 }
 
 func (ci *ConfiguredIntegration) GetUserPreferences() map[string]any {

@@ -24,22 +24,14 @@ type DatabaseClient struct {
 	client *ent.Client
 }
 
-func NewDatabaseClient(ctx context.Context, cl rez.ConfigLoader) (*DatabaseClient, error) {
-	cfg, cfgErr := LoadConfig(cl)
-	if cfgErr != nil {
-		return nil, fmt.Errorf("load config: %w", cfgErr)
-	}
+func NewDatabaseClient(ctx context.Context, cfg rez.PostgresConfig) (*DatabaseClient, error) {
+	connString := getDsn(cfg, cfg.AppRole)
 
-	mg := &MigratorClient{connectionString: cfg.getDsn(cfg.AppRole)}
-	status, statusErr := mg.GetCurrentStatus(ctx)
-	if statusErr != nil {
-		return nil, fmt.Errorf("get current migration status: %w", statusErr)
-	}
-	if migrationsErr := status.requireUpToDate(); migrationsErr != nil {
+	if migrationsErr := requireMigrationsUpToDate(ctx, connString); migrationsErr != nil {
 		return nil, fmt.Errorf("migration status: %w", migrationsErr)
 	}
 
-	pool, poolErr := openPgxPool(ctx, cfg.getDsn(cfg.AppRole))
+	pool, poolErr := openPgxPool(ctx, connString)
 	if poolErr != nil {
 		return nil, fmt.Errorf("open pgxpool: %w", poolErr)
 	}
