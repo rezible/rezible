@@ -119,7 +119,6 @@ func (kp *knowledgeEntityEventProjector) saveProjection(ctx context.Context, res
 			DisplayName: proj.DisplayName,
 			Description: proj.Description,
 			Properties:  proj.Properties,
-			Edges:       ent.KnowledgeEntityEdges{},
 		}
 		params := rez.ResolveKnowledgeEntityParams{
 			IsPlaceholder:     proj.IsPlaceholder,
@@ -196,14 +195,12 @@ func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.C
 		Description:     proj.Description,
 		FirstObservedAt: &kp.observedAt,
 		Properties:      proj.Properties,
-		Edges: ent.KnowledgeRelationshipEdges{
-			Evidence: []*ent.KnowledgeEvidence{
-				{
-					NormalizedEventID: kp.event.ID,
-					Assertion:         proj.Assertion,
-					ObservedAt:        kp.observedAt,
-				},
-			},
+	}
+	rel.Edges.Evidence = []*ent.KnowledgeEvidence{
+		{
+			NormalizedEventID: kp.event.ID,
+			Assertion:         proj.Assertion,
+			ObservedAt:        kp.observedAt,
 		},
 	}
 	_, saveErr := kp.knowledge.ResolveRelationship(ctx, rel)
@@ -214,6 +211,12 @@ func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.C
 }
 
 // Event projections
+
+func eventKnowledgeEntityAliases(ev *ent.NormalizedEvent) []*ent.KnowledgeEntityAlias {
+	return []*ent.KnowledgeEntityAlias{
+		{Provider: ev.Provider, ProviderSubjectRef: ev.ProviderSubjectRef},
+	}
+}
 
 type KnowledgeProjection struct {
 	Entities      []ProjectedKnowledgeEntity
@@ -240,21 +243,11 @@ type ProjectedKnowledgeRelationship struct {
 	ToAlias     EntityAliasRef
 }
 
-func (kp *knowledgeEntityEventProjector) makeEntityRef(ev *ent.NormalizedEvent, ProviderSubjectRef string) EntityAliasRef {
-	return entityAliasRefForEvent(ev, ProviderSubjectRef)
-}
-
-func entityAliasRefForEvent(ev *ent.NormalizedEvent, providerSubjectRef string) EntityAliasRef {
+func (kp *knowledgeEntityEventProjector) makeEntityRef(ev *ent.NormalizedEvent, providerSubjectRef string) EntityAliasRef {
 	if providerSubjectRef == "" {
 		providerSubjectRef = ev.ProviderSubjectRef
 	}
 	return EntityAliasRef{Provider: ev.Provider, ProviderSubjectRef: providerSubjectRef}
-}
-
-func eventKnowledgeEntityAliases(ev *ent.NormalizedEvent) []*ent.KnowledgeEntityAlias {
-	return []*ent.KnowledgeEntityAlias{
-		{Provider: ev.Provider, ProviderSubjectRef: ev.ProviderSubjectRef},
-	}
 }
 
 func (kp *knowledgeEntityEventProjector) projectCodeForgeEvent(pe *projections.CodeForgeEvent) *KnowledgeProjection {
