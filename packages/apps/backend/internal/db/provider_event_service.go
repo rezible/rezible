@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"sync"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -24,28 +25,46 @@ import (
 )
 
 type ProviderEventService struct {
-	logger       *slog.Logger
-	db           *ent.Client
-	reg          *projections.EventProjectionHandlerRegistry
+	logger *slog.Logger
+	db     *ent.Client
+
+	eventProjectors   map[string]eventProjector
+	eventProjectorsMu sync.RWMutex
+
 	jobService   rez.JobService
 	integrations rez.IntegrationsService
 	telemetry    *providerEventTelemetry
 }
 
-func NewProviderEventService(ts rez.TelemetryService, dbc *ent.Client, jobSvc rez.JobService, intgs rez.IntegrationsService, reg *projections.EventProjectionHandlerRegistry) (*ProviderEventService, error) {
+type eventProjector struct {
+	handler      rez.ProviderEventProjectionHandler
+	subjectKinds mapset.Set[projections.SubjectKind]
+}
+
+func NewProviderEventService(ts rez.TelemetryService, dbc *ent.Client, jobSvc rez.JobService, intgs rez.IntegrationsService) (*ProviderEventService, error) {
 	logger := ts.NewLogger(rez.NewLoggerOptions{PackageName: "provider_events"})
 	pe := &ProviderEventService{
-		logger:       logger,
-		db:           dbc,
-		reg:          reg,
-		jobService:   jobSvc,
-		integrations: intgs,
-		telemetry:    newProviderEventTelemetry(ts, logger),
+		logger:          logger,
+		db:              dbc,
+		eventProjectors: make(map[string]eventProjector),
+		jobService:      jobSvc,
+		integrations:    intgs,
+		telemetry:       newProviderEventTelemetry(ts, logger),
 	}
 	jobs.RegisterWorkerFunc(pe.HandleProviderEventSyncJob)
 	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
 	jobs.RegisterWorkerFunc(pe.HandleEventProjectionJob)
 	return pe, nil
+}
+
+func (s *ProviderEventService) RegisterProjectionHandler(name string, handler rez.ProviderEventProjectionHandler, kinds ...projections.SubjectKind) {
+	s.eventProjectorsMu.Lock()
+	defer s.eventProjectorsMu.Unlock()
+	slog.Debug("registered event projection handler", "name", name, "kinds", kinds)
+	s.eventProjectors[name] = eventProjector{
+		handler:      handler,
+		subjectKinds: mapset.NewSet(kinds...),
+	}
 }
 
 func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
@@ -355,7 +374,11 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 	appendHandlerErr := func(name string, err error) {
 		res.handlerErrors[name] = append(res.handlerErrors[name], err)
 	}
-	for name, handlerFn := range s.reg.GetHandlersFor(ev) {
+	kind := projections.SubjectKind(ev.SubjectKind)
+	for name, proj := range s.eventProjectors {
+		if !proj.subjectKinds.Contains(kind) {
+			continue
+		}
 		// query for existing projection status
 		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
@@ -382,9 +405,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 			}
 		}
 
-		projectionErr := ent.WithTx(ctx, s.db, func(tx *ent.Tx) error {
-			return handlerFn(ctx, tx.Client(), ev)
-		})
+		projectionErr := proj.handler.HandleEventProjection(ctx, ev)
 
 		update := status.Update()
 		if projectionErr == nil {

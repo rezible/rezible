@@ -14,20 +14,20 @@ import (
 	"github.com/rezible/rezible/jobs"
 )
 
-type OrganizationsService struct {
+type OrganizationService struct {
 	dbc  *ent.Client
 	jobs rez.JobService
 }
 
-func NewOrganizationsService(dbc *ent.Client, jobs rez.JobService) (*OrganizationsService, error) {
-	return &OrganizationsService{dbc: dbc, jobs: jobs}, nil
+func NewOrganizationService(dbc *ent.Client, jobs rez.JobService) (*OrganizationService, error) {
+	return &OrganizationService{dbc: dbc, jobs: jobs}, nil
 }
 
-func (s *OrganizationsService) Get(ctx context.Context, p predicate.Organization) (*ent.Organization, error) {
+func (s *OrganizationService) Get(ctx context.Context, p predicate.Organization) (*ent.Organization, error) {
 	return s.dbc.Organization.Query().Where(p).First(ctx)
 }
 
-func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.Organization) (*ent.Organization, error) {
+func (s *OrganizationService) SyncFromAuthProvider(ctx context.Context, po ent.Organization) (*ent.Organization, error) {
 	if po.AuthProviderID == "" {
 		return nil, fmt.Errorf("no auth provider id set")
 	}
@@ -76,7 +76,7 @@ func (s *OrganizationsService) SyncFromAuthProvider(ctx context.Context, po ent.
 	return updated, nil
 }
 
-func (s *OrganizationsService) CompleteSetup(ctx context.Context, org *ent.Organization) error {
+func (s *OrganizationService) CompleteSetup(ctx context.Context, org *ent.Organization) error {
 	update := s.dbc.Organization.UpdateOne(org).SetInitialSetupAt(time.Now())
 	if updateErr := update.Exec(ctx); updateErr != nil {
 		return fmt.Errorf("update: %w", updateErr)

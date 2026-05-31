@@ -114,7 +114,7 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 	assert.Equal(t, assertionSystemComponentExists, entity.Assertion)
 	assert.Equal(t, attrs.DisplayName, entity.DisplayName)
 	assert.Equal(t, attrs.Description, entity.Description)
-	assert.Equal(t, attrs.Properties["criticality"], entity.Attributes["criticality"])
+	assert.Equal(t, attrs.Properties["criticality"], entity.Properties["criticality"])
 	require.Len(t, entity.Aliases, 1)
 	assert.Equal(t, proj.makeEntityRef(ev, ""), entity.Aliases[0])
 }
@@ -163,5 +163,5 @@ func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t
 	assert.Equal(t, "Checkout Service calls Search API", relationship.DisplayName)
 	assert.Equal(t, result.Entities[0].Aliases[0], relationship.FromAlias)
 	assert.Equal(t, result.Entities[1].Aliases[0], relationship.ToAlias)
-	assert.Equal(t, true, relationship.Attributes["critical_path"])
+	assert.Equal(t, true, relationship.Properties["critical_path"])
 }

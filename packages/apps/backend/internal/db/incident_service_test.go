@@ -26,10 +26,7 @@ func (s *IncidentServiceSuite) newService() *IncidentService {
 	msgs.EXPECT().AddEventHandlers(mock.Anything).Return(nil)
 	msgs.EXPECT().PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
 
-	jobs := mocks.NewMockJobsService(s.T())
-	users := mocks.NewMockUserService(s.T())
-
-	svc, err := NewIncidentService(s.DatabaseClient(), jobs, msgs, users)
+	svc, err := NewIncidentService(s.DatabaseClient(), msgs, nil)
 	s.Require().NoError(err)
 	return svc
 }

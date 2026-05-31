@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
@@ -18,23 +19,24 @@ import (
 )
 
 type KnowledgeService struct {
-	dbc *ent.Client
+	client *ent.Client
 }
 
-func newKnowledgeService(dbc *ent.Client) *KnowledgeService {
-	return &KnowledgeService{dbc: dbc}
+func NewKnowledgeService(client *ent.Client) *KnowledgeService {
+	s := &KnowledgeService{client: client}
+	return s
 }
 
 func (s *KnowledgeService) GetEntity(ctx context.Context, p predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error) {
-	return s.dbc.KnowledgeEntity.Query().Where(p).Only(ctx)
+	return s.client.KnowledgeEntity.Query().Where(p).Only(ctx)
 }
 
 func (s *KnowledgeService) SetEntity(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error) {
 	var mutator ent.EntityMutator[*ent.KnowledgeEntity, *ent.KnowledgeEntityMutation]
 	if id == uuid.Nil {
-		mutator = s.dbc.KnowledgeEntity.Create().SetID(uuid.New())
+		mutator = s.client.KnowledgeEntity.Create().SetID(uuid.New())
 	} else {
-		mutator = s.dbc.KnowledgeEntity.UpdateOneID(id)
+		mutator = s.client.KnowledgeEntity.UpdateOneID(id)
 	}
 
 	setFn(mutator.Mutation())
@@ -49,9 +51,9 @@ func (s *KnowledgeService) SetEntity(ctx context.Context, id uuid.UUID, setFn fu
 func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error) {
 	var mutator ent.EntityMutator[*ent.KnowledgeEntityAlias, *ent.KnowledgeEntityAliasMutation]
 	if id != uuid.Nil {
-		mutator = s.dbc.KnowledgeEntityAlias.UpdateOneID(id)
+		mutator = s.client.KnowledgeEntityAlias.UpdateOneID(id)
 	} else {
-		create := s.dbc.KnowledgeEntityAlias.Create().SetID(uuid.New())
+		create := s.client.KnowledgeEntityAlias.Create().SetID(uuid.New())
 		conflictCols := sql.ConflictColumns(knea.FieldTenantID, knea.FieldProvider, knea.FieldProviderSubjectRef)
 		create.OnConflict(conflictCols).
 			UpdateUpdatedAt().
@@ -69,33 +71,12 @@ func (s *KnowledgeService) SetEntityAlias(ctx context.Context, id uuid.UUID, set
 	return alias, nil
 }
 
-func (s *KnowledgeService) lookupEntityAliasRef(ctx context.Context, ref EntityAliasRef) (*ent.KnowledgeEntityAlias, error) {
-	queryExisting := s.dbc.KnowledgeEntityAlias.Query().
-		Where(knea.Provider(ref.Provider), knea.ProviderSubjectRef(ref.ProviderSubjectRef))
-	return queryExisting.Only(ctx)
-}
+func (s *KnowledgeService) ResolveEntityAliases(ctx context.Context, aliases ...*ent.KnowledgeEntityAlias) ([]*ent.KnowledgeEntityAlias, error) {
+	resolved := make([]*ent.KnowledgeEntityAlias, 0, len(aliases))
+	var entityId uuid.UUID
 
-func (s *KnowledgeService) resolveExistingEntityIDByAliases(ctx context.Context, refs ...EntityAliasRef) (uuid.UUID, error) {
-	result, err := s.resolveAliases(ctx, refs...)
-	if err != nil || result.Entity == nil {
-		return uuid.Nil, err
-	}
-	return result.Entity.ID, nil
-}
-
-type resolvedKnowledgeAlias struct {
-	Entity  *ent.KnowledgeEntity
-	Aliases map[EntityAliasRef]*ent.KnowledgeEntityAlias
-}
-
-func (s *KnowledgeService) resolveAliases(ctx context.Context, refs ...EntityAliasRef) (*resolvedKnowledgeAlias, error) {
-	result := &resolvedKnowledgeAlias{
-		Aliases: make(map[EntityAliasRef]*ent.KnowledgeEntityAlias, len(refs)),
-	}
-
-	var resolvedId uuid.UUID
-	for _, ref := range refs {
-		query := s.dbc.KnowledgeEntityAlias.Query().
+	for _, ref := range aliases {
+		query := s.client.KnowledgeEntityAlias.Query().
 			Where(knea.Provider(ref.Provider), knea.ProviderSubjectRef(ref.ProviderSubjectRef)).
 			WithEntity()
 		alias, queryErr := query.Only(ctx)
@@ -105,43 +86,32 @@ func (s *KnowledgeService) resolveAliases(ctx context.Context, refs ...EntityAli
 		if alias == nil {
 			continue
 		}
-		result.Aliases[ref] = alias
-		if resolvedId == uuid.Nil {
-			resolvedId = alias.EntityID
-			result.Entity = alias.Edges.Entity
+		resolved = append(resolved, alias)
+		if entityId == uuid.Nil {
+			entityId = alias.EntityID
 			continue
 		}
-		if resolvedId != alias.EntityID {
+		if entityId != alias.EntityID {
 			return nil, fmt.Errorf("projected aliases resolve to different entities: %s -> %s (expected %s)",
-				ref.ProviderSubjectRef, alias.EntityID, resolvedId)
+				ref.ProviderSubjectRef, alias.EntityID, entityId)
 		}
 	}
 
-	return result, nil
+	return resolved, nil
 }
 
-type ResolveKnowledgeEntityParams struct {
-	IsPlaceholder bool
-	Kind          string
-	DisplayName   string
-	Description   string
-	Aliases       []EntityAliasRef
-	Event         *ent.NormalizedEvent
-}
-
-type ResolvedKnowledgeEntity struct {
-	Entity       *ent.KnowledgeEntity
-	Aliases      []*ent.KnowledgeEntityAlias
-	EvidenceKind knev.EvidenceKind
-}
-
-func (s *KnowledgeService) ResolveEntityByAliases(ctx context.Context, params ResolveKnowledgeEntityParams) (*ResolvedKnowledgeEntity, error) {
-	aliasResolution, lookupErr := s.resolveAliases(ctx, params.Aliases...)
-	if lookupErr != nil {
-		return nil, fmt.Errorf("resolve existing entity: %w", lookupErr)
+func (s *KnowledgeService) ResolveEntity(ctx context.Context, params rez.ResolveKnowledgeEntityParams) (*ent.KnowledgeEntity, error) {
+	var current *ent.KnowledgeEntity
+	resolvedAliases, resolveAliasesErr := s.ResolveEntityAliases(ctx, params.Aliases...)
+	if resolveAliasesErr != nil {
+		return nil, fmt.Errorf("resolve existing entity aliases: %w", resolveAliasesErr)
 	}
-
-	current := aliasResolution.Entity
+	for _, alias := range resolvedAliases {
+		if alias.Edges.Entity != nil {
+			current = alias.Edges.Entity
+			break
+		}
+	}
 	isCreate := current == nil
 
 	mergedProperties := params.Event.Attributes
@@ -152,15 +122,16 @@ func (s *KnowledgeService) ResolveEntityByAliases(ctx context.Context, params Re
 	var existingId uuid.UUID
 	if current != nil {
 		existingId = current.ID
-		if current.Kind != params.Kind {
-			return nil, fmt.Errorf("knowledge alias resolved to incompatible entity kind %q, expected %q", current.Kind, params.Kind)
+		if current.Kind != params.Entity.Kind {
+			return nil, fmt.Errorf("knowledge alias resolved to incompatible entity kind %q, expected %q",
+				current.Kind, params.Entity.Kind)
 		}
 
 		mergedProperties = s.mergeProperties(current.Properties, params.Event.Attributes, params.IsPlaceholder)
 		propsChanged := !reflect.DeepEqual(current.Properties, mergedProperties)
 		undeleted := current.DeletedAt != nil
 		displayChanged := !params.IsPlaceholder &&
-			(current.DisplayName != params.DisplayName || current.Description != params.Description)
+			(current.DisplayName != params.Entity.DisplayName || current.Description != params.Entity.Description)
 		if propsChanged || displayChanged || undeleted {
 			evidenceKind = knev.EvidenceKindChanged
 		}
@@ -170,13 +141,13 @@ func (s *KnowledgeService) ResolveEntityByAliases(ctx context.Context, params Re
 	setEntityFn := func(m *ent.KnowledgeEntityMutation) {
 		shouldRefreshIdentity := isCreate || !params.IsPlaceholder
 		if shouldRefreshIdentity {
-			m.SetKind(params.Kind)
+			m.SetKind(params.Entity.Kind)
 		}
 		if shouldRefreshIdentity || current.DisplayName == "" {
-			m.SetDisplayName(params.DisplayName)
+			m.SetDisplayName(params.Entity.DisplayName)
 		}
 		if shouldRefreshIdentity || current.Description == "" {
-			m.SetDescription(params.Description)
+			m.SetDescription(params.Entity.Description)
 		}
 		if isCreate || current.FirstObservedAt == nil {
 			m.SetFirstObservedAt(observedAt)
@@ -190,9 +161,15 @@ func (s *KnowledgeService) ResolveEntityByAliases(ctx context.Context, params Re
 		return nil, fmt.Errorf("set entity: %w", entityErr)
 	}
 
+	aliasRefs := make(map[string]*ent.KnowledgeEntityAlias)
+	for _, alias := range resolvedAliases {
+		aliasRefs[s.makeAliasRef(alias)] = alias
+	}
+
 	savedAliases := make([]*ent.KnowledgeEntityAlias, 0, len(params.Aliases))
 	for _, alias := range params.Aliases {
-		if existingAlias, resolved := aliasResolution.Aliases[alias]; resolved && existingAlias != nil {
+		existingAlias, resolved := aliasRefs[s.makeAliasRef(alias)]
+		if resolved && existingAlias != nil {
 			savedAliases = append(savedAliases, existingAlias)
 			continue
 		}
@@ -209,33 +186,32 @@ func (s *KnowledgeService) ResolveEntityByAliases(ctx context.Context, params Re
 
 		savedAliases = append(savedAliases, savedAlias)
 	}
+	savedEntity.Edges.Aliases = savedAliases
 
-	return &ResolvedKnowledgeEntity{
-		Entity:       savedEntity,
-		Aliases:      savedAliases,
-		EvidenceKind: evidenceKind,
-	}, nil
+	// add evidence for event
+	if params.EvidenceAssertion != "" {
+		builders := make([]*ent.KnowledgeEvidenceCreate, len(savedAliases))
+		for i, alias := range savedAliases {
+			builders[i] = s.client.KnowledgeEvidence.Create().
+				SetNormalizedEventID(params.Event.ID).
+				SetAssertion(params.EvidenceAssertion).
+				SetEntityID(savedEntity.ID).
+				SetAliasID(alias.ID).
+				SetEvidenceKind(evidenceKind).
+				SetProperties(params.Event.Attributes)
+		}
+		savedEvidence, evidenceErr := s.AddEvidence(ctx, s.client, builders...)
+		if evidenceErr != nil {
+			return nil, fmt.Errorf("record entity evidence: %w", evidenceErr)
+		}
+		savedEntity.Edges.Evidence = savedEvidence
+	}
+
+	return savedEntity, nil
 }
 
-func (s *KnowledgeService) ResolveEntityWithAssertion(ctx context.Context, entityParams ResolveKnowledgeEntityParams, assertion string) (*ResolvedKnowledgeEntity, error) {
-	resolved, resolveErr := s.ResolveEntityByAliases(ctx, entityParams)
-	if resolveErr != nil {
-		return nil, fmt.Errorf("resolve entity: %w", resolveErr)
-	}
-	if len(resolved.Aliases) == 0 {
-		return nil, fmt.Errorf("resolved knowledge entity has no aliases")
-	}
-	evidenceParams := RecordKnowledgeEntityEvidenceParams{
-		Event:        entityParams.Event,
-		Assertion:    assertion,
-		EntityID:     resolved.Entity.ID,
-		Aliases:      resolved.Aliases,
-		EvidenceKind: resolved.EvidenceKind,
-	}
-	if evidenceErr := s.RecordEntityEvidence(ctx, evidenceParams); evidenceErr != nil {
-		return nil, fmt.Errorf("record entity evidence: %w", evidenceErr)
-	}
-	return resolved, nil
+func (s *KnowledgeService) makeAliasRef(a *ent.KnowledgeEntityAlias) string {
+	return fmt.Sprintf("%s_%s", a.Provider, a.ProviderSubjectRef)
 }
 
 func (s *KnowledgeService) mergeProperties(existing, projected map[string]any, preserveExisting bool) map[string]any {
@@ -255,61 +231,14 @@ func (s *KnowledgeService) mergeProperties(existing, projected map[string]any, p
 	return merged
 }
 
-type RecordKnowledgeEntityEvidenceParams struct {
-	EntityID     uuid.UUID
-	Aliases      []*ent.KnowledgeEntityAlias
-	Event        *ent.NormalizedEvent
-	Assertion    string
-	EvidenceKind knev.EvidenceKind
-}
-
-func (s *KnowledgeService) RecordEntityEvidence(ctx context.Context, params RecordKnowledgeEntityEvidenceParams) error {
-	for _, alias := range params.Aliases {
-		_, evidenceErr := s.AddEvidence(ctx, func(m *ent.KnowledgeEvidenceMutation) {
-			m.SetSubjectType(knev.SubjectTypeEntity)
-			m.SetEntityID(params.EntityID)
-			m.SetAliasID(alias.ID)
-			m.SetNormalizedEventID(params.Event.ID)
-			m.SetAssertion(params.Assertion)
-			m.SetEvidenceKind(params.EvidenceKind)
-			m.SetObservedAt(observedAtForEvent(params.Event))
-			if params.Event.Attributes != nil {
-				m.SetProperties(params.Event.Attributes)
-			}
-		})
-		if evidenceErr != nil {
-			return fmt.Errorf("entity alias evidence: %w", evidenceErr)
-		}
-	}
-	return nil
-}
-
-func (s *KnowledgeService) GetRelationship(ctx context.Context, p predicate.KnowledgeRelationship) (*ent.KnowledgeRelationship, error) {
-	return s.dbc.KnowledgeRelationship.Query().Where(p).Only(ctx)
-}
-
-type ResolveKnowledgeRelationshipParams struct {
-	Kind           string
-	DisplayName    string
-	Description    string
-	SourceEntityID uuid.UUID
-	TargetEntityID uuid.UUID
-	ObservedAt     time.Time
-	Attributes     map[string]any
-}
-
-type ResolvedKnowledgeRelationship struct {
-	Relationship *ent.KnowledgeRelationship
-	EvidenceKind knev.EvidenceKind
-}
-
-func (s *KnowledgeService) ResolveRelationship(ctx context.Context, params ResolveKnowledgeRelationshipParams) (*ResolvedKnowledgeRelationship, error) {
+func (s *KnowledgeService) ResolveRelationship(ctx context.Context, rel *ent.KnowledgeRelationship) (*ent.KnowledgeRelationship, error) {
 	lookupExistingPred := knr.And(
-		knr.Kind(params.Kind),
-		knr.SourceEntityID(params.SourceEntityID),
-		knr.TargetEntityID(params.TargetEntityID),
+		knr.Kind(rel.Kind),
+		knr.SourceEntityID(rel.SourceEntityID),
+		knr.TargetEntityID(rel.TargetEntityID),
 	)
-	existing, existingErr := s.GetRelationship(ctx, lookupExistingPred)
+	lookupQuery := s.client.KnowledgeRelationship.Query().Where(lookupExistingPred)
+	existing, existingErr := lookupQuery.Only(ctx)
 	if existingErr != nil && !ent.IsNotFound(existingErr) {
 		return nil, fmt.Errorf("query existing relationship: %w", existingErr)
 	}
@@ -318,111 +247,96 @@ func (s *KnowledgeService) ResolveRelationship(ctx context.Context, params Resol
 	var existingID uuid.UUID
 	if existing != nil {
 		existingID = existing.ID
-		propsChanged := !reflect.DeepEqual(existing.Properties, params.Attributes)
-		displayChanged := existing.DisplayName != params.DisplayName || existing.Description != params.Description
+		propsChanged := !reflect.DeepEqual(existing.Properties, rel.Properties)
+		displayChanged := existing.DisplayName != rel.DisplayName || existing.Description != rel.Description
 		undeleted := existing.DeletedAt != nil
 		if propsChanged || displayChanged || undeleted {
 			evidenceKind = knev.EvidenceKindChanged
 		}
 	}
+	for _, ev := range rel.Edges.Evidence {
+		ev.EvidenceKind = evidenceKind
+	}
 
-	savedRel, saveErr := s.SetRelationship(ctx, existingID, func(m *ent.KnowledgeRelationshipMutation) {
-		m.SetSourceEntityID(params.SourceEntityID)
-		m.SetTargetEntityID(params.TargetEntityID)
-		m.SetKind(params.Kind)
-		m.SetDisplayName(params.DisplayName)
-		m.SetDescription(params.Description)
+	firstObservedAt := time.Now().UTC()
+	if rel.FirstObservedAt != nil {
+		firstObservedAt = *rel.FirstObservedAt
+	}
+	lastObservedAt := time.Now().UTC()
+	if rel.LastObservedAt != nil {
+		lastObservedAt = *rel.LastObservedAt
+	}
+	setRelationshipFn := func(m *ent.KnowledgeRelationshipMutation) {
+		m.SetSourceEntityID(rel.SourceEntityID)
+		m.SetTargetEntityID(rel.TargetEntityID)
+		m.SetKind(rel.Kind)
+		m.SetDisplayName(rel.DisplayName)
+		m.SetDescription(rel.Description)
 		if existing == nil || existing.FirstObservedAt == nil {
-			m.SetFirstObservedAt(params.ObservedAt)
+			m.SetFirstObservedAt(firstObservedAt)
 		}
-		m.SetLastObservedAt(params.ObservedAt)
+		m.SetLastObservedAt(lastObservedAt)
 		m.ClearDeletedAt()
-		if params.Attributes != nil {
-			m.SetProperties(params.Attributes)
+		if rel.Properties != nil {
+			m.SetProperties(rel.Properties)
 		}
-	})
-	if saveErr != nil {
-		return nil, fmt.Errorf("upsert relationship: %w", saveErr)
 	}
 
-	return &ResolvedKnowledgeRelationship{
-		Relationship: savedRel,
-		EvidenceKind: evidenceKind,
-	}, nil
-}
-
-type RecordKnowledgeRelationshipEvidenceParams struct {
-	RelationshipID    uuid.UUID
-	NormalizedEventID uuid.UUID
-	EvidenceKind      knev.EvidenceKind
-	Assertion         string
-	ObservedAt        time.Time
-	Attributes        map[string]any
-}
-
-func (s *KnowledgeService) RecordRelationshipEvidence(ctx context.Context, params RecordKnowledgeRelationshipEvidenceParams) error {
-	_, evidenceErr := s.AddEvidence(ctx, func(m *ent.KnowledgeEvidenceMutation) {
-		m.SetSubjectType(knev.SubjectTypeRelationship)
-		m.SetRelationshipID(params.RelationshipID)
-		m.SetNormalizedEventID(params.NormalizedEventID)
-		m.SetAssertion(params.Assertion)
-		m.SetEvidenceKind(params.EvidenceKind)
-		m.SetObservedAt(params.ObservedAt)
-		if params.Attributes != nil {
-			m.SetProperties(params.Attributes)
+	resolved := existing
+	txFn := func(tx *ent.Tx) error {
+		client := tx.Client()
+		savedRel, saveErr := s.SetRelationship(ctx, existingID, client, setRelationshipFn)
+		if saveErr != nil {
+			return fmt.Errorf("upsert relationship: %w", saveErr)
 		}
-	})
-	if evidenceErr != nil {
-		return fmt.Errorf("record relationship evidence: %w", evidenceErr)
+		if len(rel.Edges.Evidence) > 0 {
+			builders := make([]*ent.KnowledgeEvidenceCreate, len(rel.Edges.Evidence))
+			for i, e := range rel.Edges.Evidence {
+				createEv := tx.KnowledgeEvidence.Create().
+					SetSubjectType(knev.SubjectTypeRelationship).
+					SetRelationshipID(savedRel.ID).
+					SetNormalizedEventID(e.ID).
+					SetAssertion(e.Assertion).
+					SetEvidenceKind(evidenceKind).
+					SetObservedAt(lastObservedAt)
+				builders[i] = createEv
+			}
+			savedEvidence, evidenceErr := s.AddEvidence(ctx, client, builders...)
+			if evidenceErr != nil {
+				return fmt.Errorf("record relationship evidence: %w", evidenceErr)
+			}
+			savedRel.Edges.Evidence = savedEvidence
+		}
+		resolved = savedRel
+		return nil
 	}
-	return nil
+	if txErr := ent.WithTx(ctx, s.client, txFn); txErr != nil {
+		return nil, fmt.Errorf("failed to resolve relationship: %w", txErr)
+	}
+	return resolved, nil
 }
 
-func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, setFn func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error) {
+func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, client *ent.Client, setFn func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error) {
 	var mutator ent.EntityMutator[*ent.KnowledgeRelationship, *ent.KnowledgeRelationshipMutation]
 	var create *ent.KnowledgeRelationshipCreate
 	creating := id == uuid.Nil
 	if creating {
-		create = s.dbc.KnowledgeRelationship.Create().SetID(uuid.New())
+		create = client.KnowledgeRelationship.Create().SetID(uuid.New())
 		mutator = create
 	} else {
-		mutator = s.dbc.KnowledgeRelationship.UpdateOneID(id)
+		mutator = client.KnowledgeRelationship.UpdateOneID(id)
 	}
 
 	mutation := mutator.Mutation()
 	setFn(mutation)
 
 	if creating {
-		relationshipConflictCols := sql.ConflictColumns(
+		create.OnConflictColumns(
 			knr.FieldTenantID,
 			knr.FieldSourceEntityID,
 			knr.FieldTargetEntityID,
 			knr.FieldKind,
-		)
-		upsertRelationshipFn := func(u *ent.KnowledgeRelationshipUpsert) {
-			u.UpdateUpdatedAt()
-			if _, ok := mutation.DisplayName(); ok {
-				u.UpdateDisplayName()
-			}
-			if _, ok := mutation.Description(); ok {
-				u.UpdateDescription()
-			}
-			if _, ok := mutation.Properties(); ok {
-				u.UpdateProperties()
-			}
-			if _, ok := mutation.FirstObservedAt(); ok {
-				u.UpdateFirstObservedAt()
-			}
-			if _, ok := mutation.LastObservedAt(); ok {
-				u.UpdateLastObservedAt()
-			}
-			if mutation.DeletedAtCleared() {
-				u.ClearDeletedAt()
-			} else if _, ok := mutation.DeletedAt(); ok {
-				u.UpdateDeletedAt()
-			}
-		}
-		create.OnConflict(relationshipConflictCols).Update(upsertRelationshipFn)
+		).UpdateNewValues()
 	}
 
 	rel, saveErr := mutator.Save(ctx)
@@ -432,23 +346,27 @@ func (s *KnowledgeService) SetRelationship(ctx context.Context, id uuid.UUID, se
 	return rel, nil
 }
 
-func (s *KnowledgeService) AddEvidence(ctx context.Context, setFn func(*ent.KnowledgeEvidenceMutation)) (uuid.UUID, error) {
-	create := s.dbc.KnowledgeEvidence.Create().SetID(uuid.New())
-	mutation := create.Mutation()
+func (s *KnowledgeService) AddEvidence(ctx context.Context, client *ent.Client, builders ...*ent.KnowledgeEvidenceCreate) ([]*ent.KnowledgeEvidence, error) {
+	create := client.KnowledgeEvidence.CreateBulk(builders...)
 
-	setFn(mutation)
+	ids := make([]uuid.UUID, len(builders))
+	for i, b := range builders {
+		ids[i] = uuid.New()
+		b.SetID(ids[i])
 
-	entityID, hasEntity := mutation.EntityID()
-	relationshipID, hasRelationship := mutation.RelationshipID()
-	if hasEntity == hasRelationship {
-		return uuid.Nil, fmt.Errorf("requires exactly one of entity_id or relationship_id")
-	}
-	if subjectType, ok := mutation.SubjectType(); ok {
-		if hasEntity && subjectType != knev.SubjectTypeEntity {
-			return uuid.Nil, fmt.Errorf("subject_type must be entity for entity_id %s", entityID)
+		mut := b.Mutation()
+		entityID, hasEntity := mut.EntityID()
+		relationshipID, hasRelationship := mut.RelationshipID()
+		if hasEntity == hasRelationship {
+			return nil, fmt.Errorf("requires exactly one of entity_id or relationship_id")
 		}
-		if hasRelationship && subjectType != knev.SubjectTypeRelationship {
-			return uuid.Nil, fmt.Errorf("subject_type must be relationship for relationship_id %s", relationshipID)
+		if subjectType, ok := mut.SubjectType(); ok {
+			if hasEntity && subjectType != knev.SubjectTypeEntity {
+				return nil, fmt.Errorf("subject_type must be entity for entity_id %s", entityID)
+			}
+			if hasRelationship && subjectType != knev.SubjectTypeRelationship {
+				return nil, fmt.Errorf("subject_type must be relationship for relationship_id %s", relationshipID)
+			}
 		}
 	}
 
@@ -456,17 +374,18 @@ func (s *KnowledgeService) AddEvidence(ctx context.Context, setFn func(*ent.Know
 		knev.FieldTenantID,
 		knev.FieldNormalizedEventID,
 		knev.FieldSubjectType,
-	}
-	if hasEntity {
-		conflictCols = append(conflictCols, knev.FieldEntityID)
-	} else {
-		conflictCols = append(conflictCols, knev.FieldRelationshipID)
+		knev.FieldEntityID,
+		knev.FieldRelationshipID,
 	}
 	upsert := create.OnConflictColumns(conflictCols...).DoNothing()
 
-	id, saveErr := upsert.ID(ctx)
-	if saveErr != nil && !errors.Is(saveErr, stdsql.ErrNoRows) {
-		return uuid.Nil, fmt.Errorf("save evidence: %w", saveErr)
+	if saveErr := upsert.Exec(ctx); saveErr != nil && !errors.Is(saveErr, stdsql.ErrNoRows) {
+		return nil, fmt.Errorf("save evidence: %w", saveErr)
 	}
-	return id, nil
+
+	results, queryErr := client.KnowledgeEvidence.Query().Where(knev.IDIn(ids...)).All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("query evidence: %w", queryErr)
+	}
+	return results, nil
 }

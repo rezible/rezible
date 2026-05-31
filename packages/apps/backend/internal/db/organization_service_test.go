@@ -34,11 +34,11 @@ func (s *OrganizationsServiceSuite) TestFindOrCreateFromProviderDisallowsTenantC
 func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimestamp() {
 	s.SeedTestEntities()
 
-	jobs := mocks.NewMockJobsService(s.T())
+	jobs := mocks.NewMockJobService(s.T())
 	jobs.On("Insert", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
 
 	dbc := s.DatabaseClient()
-	orgs, orgsErr := NewOrganizationsService(dbc, jobs)
+	orgs, orgsErr := NewOrganizationService(dbc, jobs)
 	s.Require().NoError(orgsErr)
 
 	tenantCtx := s.SeedTenantContext()

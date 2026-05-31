@@ -9,6 +9,7 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/integrations/projections"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -211,9 +212,14 @@ type (
 		QueryRequest ProviderEventQueryRequest
 	}
 
+	ProviderEventProjectionHandler interface {
+		HandleEventProjection(context.Context, *ent.NormalizedEvent) error
+	}
+
 	ProviderEventService interface {
 		Ingest(context.Context, ProviderEvent) error
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
+		RegisterProjectionHandler(name string, h ProviderEventProjectionHandler, kinds ...projections.SubjectKind)
 	}
 
 	ProviderEventIngestResult struct {
@@ -250,8 +256,25 @@ type (
 )
 
 type (
+	ResolveKnowledgeEntityParams struct {
+		IsPlaceholder     bool
+		Event             *ent.NormalizedEvent
+		Entity            *ent.KnowledgeEntity
+		Aliases           []*ent.KnowledgeEntityAlias
+		EvidenceAssertion string
+	}
 	KnowledgeService interface {
 		GetEntity(context.Context, predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error)
+		ResolveEntity(context.Context, ResolveKnowledgeEntityParams) (*ent.KnowledgeEntity, error)
+		SetEntity(context.Context, uuid.UUID, func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error)
+
+		SetEntityAlias(context.Context, uuid.UUID, func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error)
+		ResolveEntityAliases(context.Context, ...*ent.KnowledgeEntityAlias) ([]*ent.KnowledgeEntityAlias, error)
+
+		SetRelationship(context.Context, uuid.UUID, *ent.Client, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
+		ResolveRelationship(context.Context, *ent.KnowledgeRelationship) (*ent.KnowledgeRelationship, error)
+
+		AddEvidence(context.Context, *ent.Client, ...*ent.KnowledgeEvidenceCreate) ([]*ent.KnowledgeEvidence, error)
 	}
 )
 
