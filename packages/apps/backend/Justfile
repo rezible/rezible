@@ -39,7 +39,7 @@ format:
     go fmt ./...
 
 @dev:
-    go tool air -c .air.toml
+    go tool reflex -r '\.go' -s -- sh -c 'go run ./cmd/rezible serve'
 
 @run *ARGS:
     go run ./cmd/rezible {{ARGS}}

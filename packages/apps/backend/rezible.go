@@ -31,7 +31,7 @@ var (
 )
 
 type ConfigLoader interface {
-	LoadConfig(ctx context.Context) (*Config, error)
+	LoadConfig(ctx context.Context) (Config, error)
 }
 
 type (

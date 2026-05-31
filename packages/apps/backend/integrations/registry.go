@@ -17,7 +17,14 @@ type PackageRegistry struct {
 	availablePackages []rez.IntegrationPackage
 }
 
-func (r *PackageRegistry) registerPackage(pkg rez.IntegrationPackage) error {
+func NewPackageRegistry(tel rez.TelemetryService) *PackageRegistry {
+	return &PackageRegistry{
+		nameMap: make(map[string]rez.IntegrationPackage),
+		logger:  tel.NewLogger(rez.NewLoggerOptions{PackageName: "integrations"}),
+	}
+}
+
+func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
 	available, configErr := pkg.IsAvailable()
 	if !available {
 		nameAttr := slog.Any("name", pkg.Name())

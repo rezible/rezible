@@ -10,16 +10,7 @@ import (
 	"github.com/knadh/koanf/providers/env/v2"
 	"github.com/knadh/koanf/v2"
 
-	"github.com/samber/do/v2"
-
 	rez "github.com/rezible/rezible"
-)
-
-var Package = do.Package(
-	do.Lazy(func(i do.Injector) (*ConfigLoader, error) {
-		return NewConfigLoader(ConfigLoaderOptions{LoadEnvironment: true})
-	}),
-	do.Bind[*ConfigLoader, rez.ConfigLoader](),
 )
 
 type ConfigLoader struct {
@@ -65,11 +56,11 @@ func NewConfigLoader(opts ConfigLoaderOptions) (*ConfigLoader, error) {
 	return cfg, nil
 }
 
-func (c *ConfigLoader) LoadConfig(ctx context.Context) (*rez.Config, error) {
+func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
 	cfg := rez.DefaultConfig()
 	cfgErr := c.loader.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: structTag})
 	if cfgErr != nil {
-		return nil, fmt.Errorf("unmarshal: %w", cfgErr)
+		return cfg, fmt.Errorf("unmarshal: %w", cfgErr)
 	}
 
 	if validationErr := c.validator.StructCtx(ctx, cfg); validationErr != nil {
@@ -78,8 +69,8 @@ func (c *ConfigLoader) LoadConfig(ctx context.Context) (*rez.Config, error) {
 			for i, verr := range errs {
 				msgs[i] = fmt.Sprintf("[%d: %s]", i, verr)
 			}
-			return nil, fmt.Errorf("validation: %s", strings.Join(msgs, " "))
+			return cfg, fmt.Errorf("validation: %s", strings.Join(msgs, " "))
 		}
 	}
-	return &cfg, nil
+	return cfg, nil
 }

@@ -143,12 +143,12 @@ func (s *Server) makeHealthCheckHandler() http.HandlerFunc {
 	}
 }
 
-func (s *Server) Start(baseCtx context.Context) error {
+func (s *Server) Start(ctx context.Context) error {
 	s.httpServer = &http.Server{
 		Addr:    net.JoinHostPort(s.cfg.Host, s.cfg.Port),
 		Handler: s.router,
 		BaseContext: func(l net.Listener) context.Context {
-			return baseCtx
+			return ctx
 		},
 	}
 
@@ -156,11 +156,11 @@ func (s *Server) Start(baseCtx context.Context) error {
 	if err := s.httpServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return fmt.Errorf("http server error: %w", err)
 	}
-	slog.Info("Stopped HTTP server")
 	return nil
 }
 
-func (s *Server) Stop(ctx context.Context) error {
+func (s *Server) Shutdown(ctx context.Context) error {
+	slog.Info("HTTP server shutting down")
 	if s.httpServer == nil {
 		return nil
 	}

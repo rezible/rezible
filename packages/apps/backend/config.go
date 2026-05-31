@@ -116,8 +116,8 @@ type (
 	IntegrationsConfigSlack struct {
 		Enabled bool `cfg:"enabled"`
 
-		OAuthClientId     string `cfg:"client_id" validate:"required_if=Enabled true"`
-		OAuthClientSecret string `cfg:"client_secret" validate:"required_if=Enabled true"`
+		OAuthClientId     string `cfg:"oauth_client_id" validate:"required_if=Enabled true"`
+		OAuthClientSecret string `cfg:"oauth_client_secret" validate:"required_if=Enabled true"`
 
 		WebhookSigningSecret string `cfg:"webhook_signing_secret" validate:"required_if=EnableSocketMode false"`
 

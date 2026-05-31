@@ -5,13 +5,6 @@ import (
 	"sync"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/samber/do/v2"
-)
-
-var Package = do.Package(
-	do.Lazy(func(i do.Injector) (*EventProjectionHandlerRegistry, error) {
-		return NewEventProjectionHandlerRegistry(), nil
-	}),
 )
 
 type EventProjectionHandlerFunc = func(context.Context, *ent.Client, *ent.NormalizedEvent) error

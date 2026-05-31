@@ -72,10 +72,10 @@ func (s *Suite) LoadConfig(overrides map[string]any) {
 	}
 	cl, clErr := koanf.NewConfigLoader(clOpts)
 	s.Require().NoError(clErr)
-	cfg, cfgErr := cl.LoadConfig(s.T().Context())
+	var cfgErr error
+	s.cfg, cfgErr = cl.LoadConfig(s.T().Context())
 	s.Require().NoError(cfgErr)
-	s.Require().NotNil(cfg)
-	s.cfg = *cfg
+	s.Require().NotNil(s.cfg)
 }
 
 func (s *Suite) DatabaseClient() *ent.Client { return s.dbClient }

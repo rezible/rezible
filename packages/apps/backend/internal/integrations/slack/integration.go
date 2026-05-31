@@ -2,7 +2,6 @@ package slack
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -30,8 +29,9 @@ var Package = do.Package(
 		)
 	}),
 	do.Lazy(func(i do.Injector) (*Integration, error) {
+		loadedCfg := do.MustInvoke[rez.Config](i)
 		return makeIntegration(
-			do.MustInvoke[rez.Config](i).Integrations.Slack,
+			loadedCfg.Integrations.Slack,
 			do.MustInvoke[*messageHandler](i),
 			do.MustInvoke[rez.IntegrationsService](i),
 			do.MustInvoke[rez.IncidentService](i),
@@ -62,7 +62,7 @@ func makeIntegration(
 
 	intg.oauth2Config = intg.makeOAuth2Config()
 
-	if !intg.cfg.EnableSocketMode {
+	if !cfg.EnableSocketMode {
 		wh, whErr := makeWebhookListener(cfg.WebhookSigningSecret, mh)
 		if whErr != nil {
 			return nil, fmt.Errorf("webhook listener: %w", whErr)
@@ -97,32 +97,7 @@ func (i *Integration) Name() string {
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	if !i.cfg.Enabled {
-		return false, nil
-	}
-	var errs []error
-	if i.cfg.OAuthClientId == "" {
-		errs = append(errs, errors.New("slack.oauth.client_id not set"))
-	}
-	if i.cfg.OAuthClientSecret == "" {
-		errs = append(errs, errors.New("slack.oauth.client_secret not set"))
-	}
-	if i.cfg.EnableSocketMode {
-		if i.socketModeListener == nil {
-			errs = append(errs, errors.New("socket mode requires single tenant mode"))
-		}
-		if i.cfg.AppToken == "" {
-			errs = append(errs, errors.New("slack.app_token not set"))
-		}
-		if i.cfg.BotToken == "" {
-			errs = append(errs, errors.New("slack.bot_token not set"))
-		}
-	} else {
-		if i.cfg.WebhookSigningSecret == "" {
-			errs = append(errs, errors.New("slack.webhooks.signing_secret not set"))
-		}
-	}
-	return len(errs) == 0, errors.Join(errs...)
+	return i.cfg.Enabled, nil
 }
 
 func (i *Integration) WebhookHandler() http.Handler {
