@@ -19,40 +19,31 @@ import (
 	"github.com/rezible/rezible/internal/postgres"
 )
 
-type Option func(*options)
-
-type options struct {
-	skipSeedOrganization bool
-	skipSeedUser         bool
-}
-
 type Suite struct {
 	suite.Suite
 
-	cfg rez.Config
-
 	opts options
 
-	db rez.Database
+	cfg rez.Config
+	db  rez.Database
 
 	SeedTenant       *ent.Tenant
 	SeedOrganization *ent.Organization
 	SeedUser         *ent.User
 }
 
-func NewSuite(opts ...Option) Suite {
-	cfg := options{}
-	for _, opt := range opts {
-		opt(&cfg)
+func NewSuite(optFns ...SuiteOption) Suite {
+	opts := options{}
+	for _, opt := range optFns {
+		opt(&opts)
 	}
-	return Suite{
-		opts: cfg,
-	}
+	return Suite{opts: opts}
 }
 
 func (s *Suite) SetupSuite() {
-	s.LoadConfig(nil)
-	s.setupTestDatabase(s.cfg.Postgres)
+	s.T().Log("setup suite")
+	s.loadConfig()
+	s.setupTestDatabase()
 	s.SeedTestEntities()
 }
 
@@ -61,22 +52,25 @@ func (s *Suite) TearDownSuite() {
 }
 
 func (s *Suite) BeforeTest(suiteName, testName string) {
-	s.LoadConfig(nil)
+	s.loadConfig()
 }
 
-func (s *Suite) LoadConfig(overrides map[string]any) {
+func (s *Suite) loadConfig() {
 	cl := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{
 		LoadEnvironment: true,
-		Overrides:       overrides,
+		Overrides:       s.opts.configOverrides,
+		SkipValidation:  true,
 	})
 	cfg, cfgErr := cl.LoadConfig(s.T().Context())
 	s.Require().NoError(cfgErr)
 	s.cfg = cfg
 }
 
+func (s *Suite) Config() rez.Config { return s.cfg }
+
 func (s *Suite) Database() rez.Database { return s.db }
 
-func (s *Suite) Client() *ent.Client { return s.db.Client(s.T().Context()) }
+func (s *Suite) Client(ctx context.Context) *ent.Client { return s.db.Client(ctx) }
 
 func (s *Suite) SystemContext() context.Context {
 	return execution.NewSystemContext(s.T().Context())
@@ -86,7 +80,8 @@ func (s *Suite) SeedTenantContext() context.Context {
 	return execution.NewTenantContext(s.T().Context(), s.SeedTenant.ID)
 }
 
-func (s *Suite) setupTestDatabase(cfg rez.PostgresConfig) {
+func (s *Suite) setupTestDatabase() {
+	cfg := s.cfg.Postgres
 	s.Require().NotEmpty(cfg.AdminRole.Name, "postgres migrations admin config empty")
 
 	opts := fmt.Sprintf("sslmode=%s&search_path=%s", cfg.SSLMode, postgres.SchemaName)

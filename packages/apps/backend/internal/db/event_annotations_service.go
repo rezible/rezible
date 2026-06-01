@@ -13,13 +13,13 @@ import (
 )
 
 type EventAnnotationsService struct {
-	db     *ent.Client
-	events rez.EventsService
+	db     rez.Database
+	events rez.ProviderEventService
 }
 
-func NewEventAnnotationsService(dbc *ent.Client, events rez.EventsService) (*EventAnnotationsService, error) {
+func NewEventAnnotationsService(db rez.Database, events rez.ProviderEventService) (*EventAnnotationsService, error) {
 	s := &EventAnnotationsService{
-		db:     dbc,
+		db:     db,
 		events: events,
 	}
 
@@ -27,7 +27,7 @@ func NewEventAnnotationsService(dbc *ent.Client, events rez.EventsService) (*Eve
 }
 
 func (s *EventAnnotationsService) ListAnnotations(ctx context.Context, params rez.ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error) {
-	query := s.db.EventAnnotation.Query()
+	query := s.db.Client(ctx).EventAnnotation.Query()
 
 	if !params.From.IsZero() {
 		query.Where(ea.CreatedAtGTE(params.From))
@@ -47,7 +47,7 @@ func (s *EventAnnotationsService) ListAnnotations(ctx context.Context, params re
 }
 
 func (s *EventAnnotationsService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.EventAnnotation, error) {
-	return s.db.EventAnnotation.Query().
+	return s.db.Client(ctx).EventAnnotation.Query().
 		Where(ea.ID(id)).
 		WithCreator().
 		WithEvent().
@@ -55,7 +55,7 @@ func (s *EventAnnotationsService) GetAnnotation(ctx context.Context, id uuid.UUI
 }
 
 func (s *EventAnnotationsService) Lookup(ctx context.Context, pred predicate.EventAnnotation) (*ent.EventAnnotation, error) {
-	query := s.db.EventAnnotation.Query().
+	query := s.db.Client(ctx).EventAnnotation.Query().
 		Where(pred).
 		WithEvent()
 	return query.Only(ctx)
@@ -69,7 +69,7 @@ func (s *EventAnnotationsService) SetAnnotation(ctx context.Context, anno *ent.E
 		}
 		return nil, fmt.Errorf("querying current annotation: %w", currErr)
 	}
-	updated, annoErr := s.db.EventAnnotation.UpdateOneID(anno.ID).
+	updated, annoErr := s.db.Client(ctx).EventAnnotation.UpdateOneID(anno.ID).
 		SetMinutesOccupied(anno.MinutesOccupied).
 		SetNotes(anno.Notes).
 		SetTags(anno.Tags).
@@ -84,7 +84,7 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 	var created *ent.EventAnnotation
 	eventId := anno.EventID
 	if eventId == uuid.Nil && anno.Edges.Event != nil {
-		eventQuery := s.db.NormalizedEvent.Query().
+		eventQuery := s.db.Client(ctx).NormalizedEvent.Query().
 			Where(ne.ProviderSubjectRef(anno.Edges.Event.ProviderSubjectRef))
 		existingId, eventErr := eventQuery.OnlyID(ctx)
 		if eventErr != nil && !ent.IsNotFound(eventErr) {
@@ -92,7 +92,7 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 		}
 		eventId = existingId
 	}
-	createFn := func(tx *ent.Tx) error {
+	createFn := func(txCtx context.Context, tx *ent.Client) error {
 		//if eventId == uuid.Nil {
 		//	e := anno.Edges.Event
 		//	if anno.Edges.Event == nil {
@@ -138,12 +138,12 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 		created = createdAnno
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.db, createFn); txErr != nil {
+	if txErr := s.db.WithTx(ctx, createFn); txErr != nil {
 		return nil, fmt.Errorf("creating annotation: %w", txErr)
 	}
 	return created, nil
 }
 
 func (s *EventAnnotationsService) DeleteAnnotation(ctx context.Context, id uuid.UUID) error {
-	return s.db.EventAnnotation.DeleteOneID(id).Exec(ctx)
+	return s.db.Client(ctx).EventAnnotation.DeleteOneID(id).Exec(ctx)
 }

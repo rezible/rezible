@@ -42,7 +42,7 @@ type LifecycleService interface {
 
 type Database interface {
 	Client(context.Context) *ent.Client
-	WithTx(context.Context, func(txCtx context.Context) error, ...ent.TxOption) error
+	WithTx(context.Context, func(context.Context, *ent.Client) error, ...ent.TxOption) error
 	Shutdown() error
 }
 
@@ -222,10 +222,19 @@ type (
 		HandleEventProjection(context.Context, *ent.NormalizedEvent) error
 	}
 
+	ListEventsParams struct {
+		ent.ListParams
+		Predicates      []predicate.NormalizedEvent
+		WithAnnotations bool
+	}
+
 	ProviderEventService interface {
 		Ingest(context.Context, ProviderEvent) error
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
 		RegisterProjectionHandler(name string, h ProviderEventProjectionHandler, kinds ...projections.SubjectKind)
+
+		GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error)
+		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)
 	}
 
 	ProviderEventIngestResult struct {
@@ -491,17 +500,6 @@ type (
 )
 
 type (
-	ListEventsParams struct {
-		ent.ListParams
-		Predicates      []predicate.NormalizedEvent
-		WithAnnotations bool
-	}
-
-	EventsService interface {
-		GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error)
-		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)
-	}
-
 	ExpandAnnotationsParams struct {
 		WithCreator       bool
 		WithRoster        bool

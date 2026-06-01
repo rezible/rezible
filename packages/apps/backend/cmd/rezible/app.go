@@ -54,6 +54,12 @@ func (r *app) loadConfig(ctx context.Context) error {
 	return nil
 }
 
+func (r *app) printConfig() error {
+	cfg := do.MustInvoke[rez.Config](r.i)
+	fmt.Printf("%+v\n", cfg)
+	return nil
+}
+
 func (r *app) start(ctx context.Context, services []rez.LifecycleService) error {
 	errChan := make(chan error)
 	go func() {

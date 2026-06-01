@@ -41,6 +41,13 @@ func makeCli() *cli.Command {
 				},
 			},
 			{
+				Name:  "print-config",
+				Usage: "print loaded configuration",
+				Action: func(ctx context.Context, cmd *cli.Command) error {
+					return a.printConfig()
+				},
+			},
+			{
 				Name:  "spec",
 				Usage: "Print the OpenAPI spec",
 				Flags: []cli.Flag{&cli.BoolFlag{Name: "json"}},

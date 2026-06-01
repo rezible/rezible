@@ -1,25 +1,8 @@
 package testkit
 
 import (
-	"fmt"
-	"sync/atomic"
-
 	"github.com/google/uuid"
 )
-
-func WithSkipSeedOrganization() Option {
-	return func(o *options) { o.skipSeedOrganization = true }
-}
-
-func WithSkipSeedUser() Option {
-	return func(o *options) { o.skipSeedUser = true }
-}
-
-var seq atomic.Int64
-
-func next(prefix string) string {
-	return fmt.Sprintf("%s_%d", prefix, seq.Add(1))
-}
 
 func (s *Suite) SeedTestEntities() {
 	ctx := s.SystemContext()

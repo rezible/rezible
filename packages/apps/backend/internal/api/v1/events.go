@@ -9,10 +9,10 @@ import (
 )
 
 type eventsHandler struct {
-	events rez.EventsService
+	events rez.ProviderEventService
 }
 
-func newEventsHandler(events rez.EventsService) *eventsHandler {
+func newEventsHandler(events rez.ProviderEventService) *eventsHandler {
 	return &eventsHandler{events: events}
 }
 

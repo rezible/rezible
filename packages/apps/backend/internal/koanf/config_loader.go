@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/go-playground/validator/v10"
@@ -20,8 +21,10 @@ type ConfigLoader struct {
 }
 
 type ConfigLoaderOptions struct {
-	LoadEnvironment bool
-	Overrides       map[string]any
+	LoadEnvironment     bool
+	Overrides           map[string]any
+	SkipValidation      bool
+	LogValidationErrors bool
 }
 
 const (
@@ -46,9 +49,25 @@ func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
 		}
 	}
 
+	if c.opts.Overrides != nil {
+		overrideLoader := koanf.New(delim)
+		for k, v := range c.opts.Overrides {
+			if ovrErr := overrideLoader.Set(k, v); ovrErr != nil {
+				return cfg, fmt.Errorf("failed to set override (%s=%s): %w", k, v, ovrErr)
+			}
+		}
+		if mergeErr := c.loader.Merge(overrideLoader); mergeErr != nil {
+			return cfg, fmt.Errorf("failed to merge overrides: %w", mergeErr)
+		}
+	}
+
 	cfgErr := c.loader.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: structTag})
 	if cfgErr != nil {
 		return cfg, fmt.Errorf("unmarshal: %w", cfgErr)
+	}
+
+	if c.opts.SkipValidation {
+		return cfg, nil
 	}
 
 	if validationErr := c.validator.StructCtx(ctx, cfg); validationErr != nil {
@@ -57,7 +76,11 @@ func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
 			for i, verr := range errs {
 				msgs[i] = fmt.Sprintf("[%d: %s]", i, verr)
 			}
-			return cfg, fmt.Errorf("validation: %s", strings.Join(msgs, " "))
+			if c.opts.LogValidationErrors {
+				slog.Error("validation errors:", strings.Join(msgs, "; "))
+			} else {
+				return cfg, fmt.Errorf("validation: %s", strings.Join(msgs, " "))
+			}
 		}
 	}
 	return cfg, nil

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"io"
 	"log/slog"
 
@@ -22,6 +23,8 @@ type DatabaseClient struct {
 	driver dialect.Driver
 	client *ent.Client
 }
+
+type txContextKey struct{}
 
 type PgxPool = pgxpool.Pool
 
@@ -42,12 +45,65 @@ func newDatabaseClient(driver dialect.Driver) *DatabaseClient {
 }
 
 func (dbc *DatabaseClient) Client(ctx context.Context) *ent.Client {
+	if tx, ok := txFromContext(ctx); ok {
+		return tx.Client()
+	}
 	return dbc.client
 }
 
-func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Context) error, opts ...ent.TxOption) error {
+func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Context, tx *ent.Client) error, opts ...ent.TxOption) error {
+	if tx, ok := txFromContext(ctx); ok {
+		applyTxOptions(tx, opts...)
+		return fn(ctx, tx.Client())
+	}
 
+	tx, txErr := dbc.client.Tx(ctx)
+	if txErr != nil {
+		return fmt.Errorf("begin transaction: %w", txErr)
+	}
+	applyTxOptions(tx, opts...)
+
+	defer func() {
+		if v := recover(); v != nil {
+			if rbErr := tx.Rollback(); rbErr != nil {
+				panic(fmt.Errorf("%v: rollback transaction: %w", v, rbErr))
+			}
+			panic(v)
+		}
+	}()
+
+	if fnErr := fn(contextWithTx(ctx, tx), tx.Client()); fnErr != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return fmt.Errorf("%w: rollback transaction: %w", fnErr, rbErr)
+		}
+		return fnErr
+	}
+	if commitErr := tx.Commit(); commitErr != nil {
+		return fmt.Errorf("commit transaction: %w", commitErr)
+	}
 	return nil
+}
+
+func txFromContext(ctx context.Context) (*ent.Tx, bool) {
+	tx, ok := ctx.Value(txContextKey{}).(*ent.Tx)
+	return tx, ok
+}
+
+func contextWithTx(ctx context.Context, tx *ent.Tx) context.Context {
+	return context.WithValue(ctx, txContextKey{}, tx)
+}
+
+func applyTxOptions(tx *ent.Tx, opts ...ent.TxOption) {
+	txOpts := &ent.TxOptions{}
+	for _, opt := range opts {
+		opt(txOpts)
+	}
+	for _, hook := range txOpts.OnCommit {
+		tx.OnCommit(hook)
+	}
+	for _, hook := range txOpts.OnRollback {
+		tx.OnRollback(hook)
+	}
 }
 
 //func (dbc *DatabaseClient) RequireUpToDateMigrations(ctx context.Context) error {

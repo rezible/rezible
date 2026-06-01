@@ -2,7 +2,6 @@ package main
 
 import (
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/integrations"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
@@ -60,7 +59,7 @@ func provideDependencies(i do.Injector) {
 
 	do.Provide(i, func(i do.Injector) (oapiv1.Handler, error) {
 		return apiv1.NewHandler(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.AlertService](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),
@@ -125,14 +124,14 @@ var provideIntegrations = do.Package(
 
 var provideServices = do.Package(
 	do.Lazy(func(i do.Injector) (*db.KnowledgeService, error) {
-		return db.NewKnowledgeService(do.MustInvoke[*ent.Client](i)), nil
+		return db.NewKnowledgeService(do.MustInvoke[rez.Database](i)), nil
 	}),
 	do.Bind[*db.KnowledgeService, rez.KnowledgeService](),
 
 	do.Lazy(func(i do.Injector) (*db.IntegrationsService, error) {
 		return db.NewIntegrationsService(
 			do.MustInvoke[rez.Config](i).App,
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[*integrations.PackageRegistry](i))
 	}),
@@ -141,7 +140,7 @@ var provideServices = do.Package(
 	do.Lazy(func(i do.Injector) (*db.ProviderEventService, error) {
 		return db.NewProviderEventService(
 			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IntegrationsService](i),
 		)
@@ -150,7 +149,7 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.OrganizationService, error) {
 		return db.NewOrganizationService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 		)
 	}),
@@ -158,7 +157,7 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.UserService, error) {
 		return db.NewUserService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.KnowledgeService](i),
 		)
@@ -166,29 +165,21 @@ var provideServices = do.Package(
 	do.Bind[*db.UserService, rez.UserService](),
 
 	do.Lazy(func(i do.Injector) (*db.TeamService, error) {
-		return db.NewTeamService(do.MustInvoke[*ent.Client](i))
+		return db.NewTeamService(do.MustInvoke[rez.Database](i))
 	}),
 	do.Bind[*db.TeamService, rez.TeamService](),
 
-	do.Lazy(func(i do.Injector) (*db.EventsService, error) {
-		return db.NewEventsService(
-			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.UserService](i),
-		)
-	}),
-	do.Bind[*db.EventsService, rez.EventsService](),
-
 	do.Lazy(func(i do.Injector) (*db.EventAnnotationsService, error) {
 		return db.NewEventAnnotationsService(
-			do.MustInvoke[*ent.Client](i),
-			do.MustInvoke[rez.EventsService](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.ProviderEventService](i),
 		)
 	}),
 	do.Bind[*db.EventAnnotationsService, rez.EventAnnotationsService](),
 
 	do.Lazy(func(i do.Injector) (*db.IncidentService, error) {
 		return db.NewIncidentService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.KnowledgeService](i),
 		)
@@ -197,7 +188,7 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.OncallRostersService, error) {
 		return db.NewOncallRostersService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 		)
 	}),
@@ -205,7 +196,7 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.OncallShiftsService, error) {
 		return db.NewOncallShiftsService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.IntegrationsService](i),
 		)
@@ -214,7 +205,7 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.OncallMetricsService, error) {
 		return db.NewOncallMetricsService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.OncallShiftsService](i),
 		)
 	}),
@@ -222,14 +213,14 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.SystemTopologyService, error) {
 		return db.NewSystemTopologyService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 		)
 	}),
 	do.Bind[*db.SystemTopologyService, rez.SystemTopologyService](),
 
 	do.Lazy(func(i do.Injector) (*db.DebriefService, error) {
 		return db.NewDebriefService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 		)
 	}),
@@ -237,7 +228,7 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.RetrospectiveService, error) {
 		return db.NewRetrospectiveService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IncidentService](i),
 		)
@@ -246,20 +237,20 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.AlertService, error) {
 		return db.NewAlertService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.KnowledgeService](i),
 		)
 	}),
 	do.Bind[*db.AlertService, rez.AlertService](),
 
 	do.Lazy(func(i do.Injector) (*db.PlaybookService, error) {
-		return db.NewPlaybookService(do.MustInvoke[*ent.Client](i))
+		return db.NewPlaybookService(do.MustInvoke[rez.Database](i))
 	}),
 	do.Bind[*db.PlaybookService, rez.PlaybookService](),
 
 	do.Lazy(func(i do.Injector) (*db.DocumentsService, error) {
 		return db.NewDocumentsService(
-			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.TeamService](i),
 		)
 	}),

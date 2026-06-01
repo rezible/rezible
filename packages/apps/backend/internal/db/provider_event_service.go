@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -26,7 +27,7 @@ import (
 
 type ProviderEventService struct {
 	logger *slog.Logger
-	db     *ent.Client
+	db     rez.Database
 
 	eventProjectors   map[string]eventProjector
 	eventProjectorsMu sync.RWMutex
@@ -41,11 +42,11 @@ type eventProjector struct {
 	subjectKinds mapset.Set[projections.SubjectKind]
 }
 
-func NewProviderEventService(ts rez.TelemetryService, dbc *ent.Client, jobSvc rez.JobService, intgs rez.IntegrationsService) (*ProviderEventService, error) {
+func NewProviderEventService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationsService) (*ProviderEventService, error) {
 	logger := ts.NewLogger(rez.NewLoggerOptions{PackageName: "provider_events"})
 	pe := &ProviderEventService{
 		logger:          logger,
-		db:              dbc,
+		db:              db,
 		eventProjectors: make(map[string]eventProjector),
 		jobService:      jobSvc,
 		integrations:    intgs,
@@ -55,6 +56,27 @@ func NewProviderEventService(ts rez.TelemetryService, dbc *ent.Client, jobSvc re
 	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
 	jobs.RegisterWorkerFunc(pe.HandleEventProjectionJob)
 	return pe, nil
+}
+
+func (s *ProviderEventService) GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error) {
+	return s.db.Client(ctx).NormalizedEvent.Get(ctx, id)
+}
+
+func (s *ProviderEventService) ListEvents(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error) {
+	query := s.db.Client(ctx).NormalizedEvent.Query()
+
+	query.Order(ne.ByOccurredAt(params.GetOrder()))
+	query.Where(params.Predicates...)
+
+	if params.WithAnnotations {
+		//query.WithAnnotations(func(q *ent.EventAnnotationQuery) {
+		//	if params.AnnotationRosterID != uuid.Nil {
+		//		q.Where(oncallannotation.RosterID(params.AnnotationRosterID))
+		//	}
+		//})
+	}
+
+	return ent.DoListQuery[ent.NormalizedEvent, *ent.NormalizedEventQuery](ctx, query, params.ListParams)
 }
 
 func (s *ProviderEventService) RegisterProjectionHandler(name string, handler rez.ProviderEventProjectionHandler, kinds ...projections.SubjectKind) {
@@ -164,7 +186,7 @@ func (s *ProviderEventService) HandleProcessEventJob(ctx context.Context, args p
 }
 
 func (s *ProviderEventService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
-	ev, queryErr := s.db.NormalizedEvent.Get(ctx, args.EventId)
+	ev, queryErr := s.db.Client(ctx).NormalizedEvent.Get(ctx, args.EventId)
 	if queryErr != nil {
 		return fmt.Errorf("query normalized event: %w", queryErr)
 	}
@@ -317,7 +339,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 		eventRefs.Add(ev.ProviderEventRef)
 	}
 
-	saveNormalizedEventsFn := func(tx *ent.Tx) error {
+	saveNormalizedEventsFn := func(txCtx context.Context, tx *ent.Client) error {
 		upsertBulk := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, mapCreateEventFn).
 			OnConflict(upsertConflictColumns).
 			UpdateNewValues()
@@ -343,7 +365,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 				},
 			}
 		}
-		insertRes, jobErr := s.jobService.InsertManyTx(ctx, tx, params)
+		insertRes, jobErr := s.jobService.InsertMany(ctx, params)
 		if jobErr != nil {
 			return fmt.Errorf("inserting project events: %w", jobErr)
 		}
@@ -356,7 +378,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 	}
 
 	if len(normalizedEvents) > 0 {
-		if saveErr := ent.WithTx(ctx, s.db, saveNormalizedEventsFn); saveErr != nil {
+		if saveErr := s.db.WithTx(ctx, saveNormalizedEventsFn); saveErr != nil {
 			res.error = fmt.Errorf("saving normalized events: %w", saveErr)
 		}
 	}
@@ -380,7 +402,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 			continue
 		}
 		// query for existing projection status
-		queryStatus := s.db.NormalizedEventProjectionStatus.Query().
+		queryStatus := s.db.Client(ctx).NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
 		status, statusErr := queryStatus.Only(ctx)
 		if statusErr != nil && !ent.IsNotFound(statusErr) {
@@ -393,7 +415,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 				continue
 			}
 		} else {
-			setPendingStatus := s.db.NormalizedEventProjectionStatus.Create().
+			setPendingStatus := s.db.Client(ctx).NormalizedEventProjectionStatus.Create().
 				SetStatus(neps.StatusPending).
 				SetNormalizedEventID(ev.ID).
 				SetHandlerName(name).
@@ -428,7 +450,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 }
 
 func (s *ProviderEventService) saveSyncEventsResult(ctx context.Context, reason string, res providerEventSyncResult) {
-	saveResult := s.db.ProviderEventSyncRun.Create().
+	saveResult := s.db.Client(ctx).ProviderEventSyncRun.Create().
 		SetSyncReason(reason).
 		SetProvider(res.provider).
 		SetSourceCursors(res.sourceCursors).

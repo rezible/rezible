@@ -60,7 +60,7 @@ func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie 
 
 	// TODO: use regular incident service update flow here instead
 
-	updateCount, updateErr := s.client.Incident.Update().
+	updateCount, updateErr := s.db.Client(ctx).Incident.Update().
 		Where(incident.KnowledgeEntityID(knowledgeEntity.ID)).
 		SetTitle(attrs.Title).
 		SetSummary(attrs.Summary).
@@ -83,7 +83,7 @@ func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie 
 	if slugErr != nil {
 		return fmt.Errorf("generate incident slug: %w", slugErr)
 	}
-	if _, createErr := s.client.Incident.Create().
+	if _, createErr := s.db.Client(ctx).Incident.Create().
 		SetKnowledgeEntityID(knowledgeEntity.ID).
 		SetSlug(incidentSlug).
 		SetTitle(attrs.Title).
@@ -99,7 +99,7 @@ func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie 
 }
 
 func (s *IncidentService) saveProjectedIncidentSeverity(ctx context.Context, attrs projections.IncidentSubjectAttributes) (uuid.UUID, error) {
-	existing, queryErr := s.client.IncidentSeverity.Query().
+	existing, queryErr := s.db.Client(ctx).IncidentSeverity.Query().
 		Where(incsev.Name(attrs.SeverityRef)).
 		Only(ctx)
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
@@ -109,7 +109,7 @@ func (s *IncidentService) saveProjectedIncidentSeverity(ctx context.Context, att
 		return existing.ID, nil
 	}
 
-	created, createErr := s.client.IncidentSeverity.Create().
+	created, createErr := s.db.Client(ctx).IncidentSeverity.Create().
 		SetName(attrs.SeverityRef).
 		SetRank(0).
 		Save(ctx)
@@ -120,7 +120,7 @@ func (s *IncidentService) saveProjectedIncidentSeverity(ctx context.Context, att
 }
 
 func (s *IncidentService) saveProjectedIncidentType(ctx context.Context, attrs projections.IncidentSubjectAttributes) (uuid.UUID, error) {
-	existing, queryErr := s.client.IncidentType.Query().
+	existing, queryErr := s.db.Client(ctx).IncidentType.Query().
 		Where(incidenttype.Name(attrs.TypeRef)).
 		Only(ctx)
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
@@ -129,7 +129,7 @@ func (s *IncidentService) saveProjectedIncidentType(ctx context.Context, attrs p
 	if existing != nil {
 		return existing.ID, nil
 	}
-	created, createErr := s.client.IncidentType.Create().
+	created, createErr := s.db.Client(ctx).IncidentType.Create().
 		SetName(attrs.TypeRef).
 		Save(ctx)
 	if createErr != nil {

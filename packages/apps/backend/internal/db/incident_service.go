@@ -21,14 +21,14 @@ import (
 )
 
 type IncidentService struct {
-	client    *ent.Client
+	db        rez.Database
 	msgs      rez.MessageService
 	knowledge rez.KnowledgeService
 }
 
-func NewIncidentService(client *ent.Client, msgs rez.MessageService, knowledge rez.KnowledgeService) (*IncidentService, error) {
+func NewIncidentService(db rez.Database, msgs rez.MessageService, knowledge rez.KnowledgeService) (*IncidentService, error) {
 	svc := &IncidentService{
-		client:    client,
+		db:        db,
 		msgs:      msgs,
 		knowledge: knowledge,
 	}
@@ -79,15 +79,15 @@ func (s *IncidentService) allQueryEdges(q *ent.IncidentQuery) {
 	q.WithVideoConferences()
 }
 
-func (s *IncidentService) incidentQuery(pred predicate.Incident, edgesFn func(*ent.IncidentQuery)) *ent.IncidentQuery {
+func (s *IncidentService) incidentQuery(ctx context.Context, pred predicate.Incident, edgesFn func(*ent.IncidentQuery)) *ent.IncidentQuery {
 	// TODO: use a view for this
-	q := s.client.Incident.Query().Where(pred)
+	q := s.db.Client(ctx).Incident.Query().Where(pred)
 	edgesFn(q)
 	return q
 }
 
 func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListIncidentsParams) (*ent.ListResult[ent.Incident], error) {
-	query := s.client.Incident.Query()
+	query := s.db.Client(ctx).Incident.Query()
 	query.Order(incident.ByOpenedAt(params.GetOrder()))
 	if !params.OpenedAfter.IsZero() {
 		query.Where(incident.OpenedAtGT(params.OpenedAfter))
@@ -108,11 +108,11 @@ func (s *IncidentService) ListIncidents(ctx context.Context, params rez.ListInci
 }
 
 func (s *IncidentService) Query(ctx context.Context, p predicate.Incident, withFn func(*ent.IncidentQuery)) (*ent.Incident, error) {
-	return s.incidentQuery(p, withFn).Only(ctx)
+	return s.incidentQuery(ctx, p, withFn).Only(ctx)
 }
 
 func (s *IncidentService) Get(ctx context.Context, p predicate.Incident) (*ent.Incident, error) {
-	return s.incidentQuery(p, s.allQueryEdges).Only(ctx)
+	return s.incidentQuery(ctx, p, s.allQueryEdges).Only(ctx)
 }
 
 func (s *IncidentService) getIncidentEdgeMutationUpdateEvent(incidentId uuid.UUID, m ent.Mutation, v ent.Value) any {
@@ -143,8 +143,9 @@ func (s *IncidentService) getIncidentEdgeMutationUpdateEvent(incidentId uuid.UUI
 
 func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error) {
 	var curr *ent.Incident
+	client := s.db.Client(ctx)
 	if id != uuid.Nil {
-		inc, getErr := s.client.Incident.Get(ctx, id)
+		inc, getErr := client.Incident.Get(ctx, id)
 		if getErr != nil {
 			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
 		}
@@ -154,7 +155,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 
 	var generatedUniqueSlug string
 	if curr == nil {
-		m := s.client.Incident.Create().Mutation()
+		m := client.Incident.Create().Mutation()
 		setFn(m)
 		openedAt := time.Now()
 		if at, exists := m.OpenedAt(); exists {
@@ -169,7 +170,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 
 	var updateEvents []any
 	var updated *ent.Incident
-	updateTx := func(tx *ent.Tx) error {
+	updateTx := func(txCtx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
 		if curr == nil {
 			mutator = tx.Incident.Create().SetID(uuid.New())
@@ -195,7 +196,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		updateEvents = append(updateEvents, incEvent)
 
 		for _, edgeMut := range edgeMuts {
-			v, edgeErr := tx.Client().Mutate(ctx, edgeMut)
+			v, edgeErr := tx.Mutate(ctx, edgeMut)
 			if edgeErr != nil {
 				return fmt.Errorf("edge mutation: %w", edgeErr)
 			}
@@ -204,7 +205,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.client, updateTx); txErr != nil {
+	if txErr := s.db.WithTx(ctx, updateTx); txErr != nil {
 		return nil, fmt.Errorf("update: %w", txErr)
 	}
 
@@ -218,7 +219,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 }
 
 func (s *IncidentService) Archive(ctx context.Context, id uuid.UUID) error {
-	return s.client.Incident.DeleteOneID(id).Exec(ctx)
+	return s.db.Client(ctx).Incident.DeleteOneID(id).Exec(ctx)
 }
 
 // TODO: load these from somewhere
@@ -248,7 +249,7 @@ func (s *IncidentService) generateIncidentSlug(ctx context.Context, openedAt tim
 		noun := slugNouns[randgen.Intn(len(slugNouns))]
 		candidate := slug.Make(fmt.Sprintf("%s-%s-%s", datePrefix, adj, noun))
 
-		exists, queryErr := s.client.Incident.Query().Where(incident.Slug(candidate)).Exist(ctx)
+		exists, queryErr := s.db.Client(ctx).Incident.Query().Where(incident.Slug(candidate)).Exist(ctx)
 		if queryErr != nil {
 			return "", fmt.Errorf("failed to check slug uniqueness: %w", queryErr)
 		}
@@ -267,19 +268,19 @@ func (s *IncidentService) generateIncidentSlug(ctx context.Context, openedAt tim
 }
 
 func (s *IncidentService) ListIncidentRoles(ctx context.Context) ([]*ent.IncidentRole, error) {
-	return s.client.IncidentRole.Query().All(ctx)
+	return s.db.Client(ctx).IncidentRole.Query().All(ctx)
 }
 
 func (s *IncidentService) ListIncidentSeverities(ctx context.Context) ([]*ent.IncidentSeverity, error) {
-	return s.client.IncidentSeverity.Query().All(ctx)
+	return s.db.Client(ctx).IncidentSeverity.Query().All(ctx)
 }
 
 func (s *IncidentService) GetIncidentSeverity(ctx context.Context, id uuid.UUID) (*ent.IncidentSeverity, error) {
-	return s.client.IncidentSeverity.Get(ctx, id)
+	return s.db.Client(ctx).IncidentSeverity.Get(ctx, id)
 }
 
 func (s *IncidentService) GetIncidentMilestone(ctx context.Context, id uuid.UUID) (*ent.IncidentMilestone, error) {
-	query := s.client.IncidentMilestone.Query().
+	query := s.db.Client(ctx).IncidentMilestone.Query().
 		Where(im.ID(id)).
 		WithUser()
 	return query.Only(ctx)
@@ -288,7 +289,7 @@ func (s *IncidentService) GetIncidentMilestone(ctx context.Context, id uuid.UUID
 func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {
 	var curr *ent.IncidentMilestone
 	if id != uuid.Nil {
-		inc, getErr := s.client.IncidentMilestone.Get(ctx, id)
+		inc, getErr := s.db.Client(ctx).IncidentMilestone.Get(ctx, id)
 		if getErr != nil {
 			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
 		}
@@ -296,7 +297,7 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 	}
 
 	var updated *ent.IncidentMilestone
-	updateTx := func(tx *ent.Tx) error {
+	updateTx := func(txCtx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.IncidentMilestone, *ent.IncidentMilestoneMutation]
 		if curr == nil {
 			mutator = tx.IncidentMilestone.Create().SetID(uuid.New())
@@ -316,7 +317,7 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 		return nil
 	}
 
-	if txErr := ent.WithTx(ctx, s.client, updateTx); txErr != nil {
+	if txErr := s.db.WithTx(ctx, updateTx); txErr != nil {
 		return nil, fmt.Errorf("update: %w", txErr)
 	}
 
@@ -333,17 +334,17 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 }
 
 func (s *IncidentService) ListIncidentTypes(ctx context.Context) ([]*ent.IncidentType, error) {
-	return s.client.IncidentType.Query().All(ctx)
+	return s.db.Client(ctx).IncidentType.Query().All(ctx)
 }
 
 func (s *IncidentService) ListIncidentFields(ctx context.Context) ([]*ent.IncidentField, error) {
-	return s.client.IncidentField.Query().
+	return s.db.Client(ctx).IncidentField.Query().
 		WithOptions().
 		All(ctx)
 }
 
 func (s *IncidentService) ListIncidentTags(ctx context.Context) ([]*ent.IncidentTag, error) {
-	return s.client.IncidentTag.Query().All(ctx)
+	return s.db.Client(ctx).IncidentTag.Query().All(ctx)
 }
 
 func (s *IncidentService) GetIncidentMetadata(ctx context.Context) (*rez.IncidentMetadata, error) {
