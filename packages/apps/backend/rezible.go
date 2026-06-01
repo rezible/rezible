@@ -90,9 +90,7 @@ func NewEventHandler[T any](name string, handleFn func(context.Context, *T) erro
 type (
 	JobService interface {
 		Insert(context.Context, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
-		InsertTx(context.Context, *ent.Tx, river.JobArgs, *river.InsertOpts) (*rivertype.JobInsertResult, error)
 		InsertMany(context.Context, []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
-		InsertManyTx(ctx context.Context, tx *ent.Tx, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error)
 	}
 )
 

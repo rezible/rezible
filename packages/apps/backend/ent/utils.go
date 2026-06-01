@@ -66,39 +66,6 @@ type EntityMutator[T any, M ent.Mutation] interface {
 	Mutation() M
 }
 
-func WithTx(ctx context.Context, client *Client, fn func(tx *Tx) error) error {
-	_, err := WithTxReturning(ctx, client, func(tx *Tx) (*any, error) {
-		return nil, fn(tx)
-	})
-	return err
-}
-
-func WithTxReturning[T any](ctx context.Context, client *Client, fn func(tx *Tx) (*T, error)) (*T, error) {
-	tx, txErr := client.Tx(ctx)
-	if txErr != nil {
-		return nil, txErr
-	}
-	defer func() {
-		if v := recover(); v != nil {
-			if rbErr := tx.Rollback(); rbErr != nil {
-				panic(fmt.Errorf("%v: rolling back transaction: %w", v, rbErr))
-			}
-			panic(v)
-		}
-	}()
-	res, fnErr := fn(tx)
-	if fnErr != nil {
-		if rbErr := tx.Rollback(); rbErr != nil {
-			fnErr = fmt.Errorf("%w: rolling back transaction: %w", fnErr, rbErr)
-		}
-		return nil, fnErr
-	}
-	if commitErr := tx.Commit(); commitErr != nil {
-		return nil, fmt.Errorf("committing transaction: %w", commitErr)
-	}
-	return res, nil
-}
-
 func ExtractPgxTx(txClient *Tx) (pgx.Tx, error) {
 	// extract pgx transaction from driver (hacky but eh)
 	txDrv, drvOk := txClient.config.driver.(*txDriver)

@@ -24,8 +24,6 @@ type DatabaseClient struct {
 	client *ent.Client
 }
 
-type txContextKey struct{}
-
 type PgxPool = pgxpool.Pool
 
 func NewPgxPoolDatabaseClient(pool *pgxpool.Pool) *DatabaseClient {
@@ -45,14 +43,14 @@ func newDatabaseClient(driver dialect.Driver) *DatabaseClient {
 }
 
 func (dbc *DatabaseClient) Client(ctx context.Context) *ent.Client {
-	if tx, ok := txFromContext(ctx); ok {
+	if tx := ent.TxFromContext(ctx); tx != nil {
 		return tx.Client()
 	}
 	return dbc.client
 }
 
 func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Context, tx *ent.Client) error, opts ...ent.TxOption) error {
-	if tx, ok := txFromContext(ctx); ok {
+	if tx := ent.TxFromContext(ctx); tx != nil {
 		applyTxOptions(tx, opts...)
 		return fn(ctx, tx.Client())
 	}
@@ -72,7 +70,8 @@ func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Con
 		}
 	}()
 
-	if fnErr := fn(contextWithTx(ctx, tx), tx.Client()); fnErr != nil {
+	txCtx := ent.NewTxContext(ctx, tx)
+	if fnErr := fn(txCtx, tx.Client()); fnErr != nil {
 		if rbErr := tx.Rollback(); rbErr != nil {
 			return fmt.Errorf("%w: rollback transaction: %w", fnErr, rbErr)
 		}
@@ -82,15 +81,6 @@ func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Con
 		return fmt.Errorf("commit transaction: %w", commitErr)
 	}
 	return nil
-}
-
-func txFromContext(ctx context.Context) (*ent.Tx, bool) {
-	tx, ok := ctx.Value(txContextKey{}).(*ent.Tx)
-	return tx, ok
-}
-
-func contextWithTx(ctx context.Context, tx *ent.Tx) context.Context {
-	return context.WithValue(ctx, txContextKey{}, tx)
 }
 
 func applyTxOptions(tx *ent.Tx, opts ...ent.TxOption) {

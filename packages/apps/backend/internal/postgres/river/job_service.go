@@ -29,17 +29,11 @@ type JobService struct {
 }
 
 func NewJobService(tel rez.TelemetryService, pool *pgxpool.Pool) (*JobService, error) {
-	queues := map[string]river.QueueConfig{
-		river.QueueDefault: {MaxWorkers: 20},
-	}
-
-	logger := tel.NewLogger(rez.NewLoggerOptions{
-		PackageName: "river",
-		Level:       slog.LevelInfo,
-	})
-
 	s := &JobService{
-		logger: logger,
+		logger: tel.NewLogger(rez.NewLoggerOptions{
+			PackageName: "river",
+			Level:       slog.LevelInfo,
+		}),
 	}
 
 	telemetryMiddleware := otelriver.NewMiddleware(&otelriver.MiddlewareConfig{
@@ -58,7 +52,9 @@ func NewJobService(tel rez.TelemetryService, pool *pgxpool.Pool) (*JobService, e
 			&accessContextMiddleware{},
 		},
 		Workers: jobs.GetWorkers(),
-		Queues:  queues,
+		Queues: map[string]river.QueueConfig{
+			river.QueueDefault: {MaxWorkers: 20},
+		},
 	}
 	var clientErr error
 	s.client, clientErr = river.NewClient(riverpgxv5.New(pool), cfg)
@@ -85,42 +81,30 @@ func (s *JobService) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-func (s *JobService) Insert(ctx context.Context, args river.JobArgs, opts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
-	res, insertErr := s.client.Insert(ctx, args, opts)
-	if insertErr != nil {
-		return nil, fmt.Errorf("could not insert job: %w", insertErr)
+func (s *JobService) extractContextPgxTx(ctx context.Context) (bool, pgx.Tx, error) {
+	if tx := ent.TxFromContext(ctx); tx != nil {
+		pgxTx, pgErr := ent.ExtractPgxTx(tx)
+		return true, pgxTx, pgErr
 	}
-	return res, nil
+	return false, nil, nil
 }
 
-func (s *JobService) InsertTx(ctx context.Context, tx *ent.Tx, args river.JobArgs, opts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
-	pgxTx, pgErr := ent.ExtractPgxTx(tx)
-	if pgErr != nil {
-		return nil, fmt.Errorf("extract pgx tx: %w", pgErr)
+func (s *JobService) Insert(ctx context.Context, args river.JobArgs, opts *river.InsertOpts) (*rivertype.JobInsertResult, error) {
+	if isTx, pgxTx, txErr := s.extractContextPgxTx(ctx); isTx {
+		if txErr != nil {
+			return nil, fmt.Errorf("extract pgx tx: %w", txErr)
+		}
+		return s.client.InsertTx(ctx, pgxTx, args, opts)
 	}
-	res, insertErr := s.client.InsertTx(ctx, pgxTx, args, opts)
-	if insertErr != nil {
-		return nil, fmt.Errorf("could not insert job in tx: %w", insertErr)
-	}
-	return res, nil
+	return s.client.Insert(ctx, args, opts)
 }
 
 func (s *JobService) InsertMany(ctx context.Context, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error) {
-	res, insertErr := s.client.InsertMany(ctx, params)
-	if insertErr != nil {
-		return nil, fmt.Errorf("could not insert jobs: %w", insertErr)
+	if isTx, pgxTx, txErr := s.extractContextPgxTx(ctx); isTx {
+		if txErr != nil {
+			return nil, fmt.Errorf("extract pgx tx: %w", txErr)
+		}
+		return s.client.InsertManyTx(ctx, pgxTx, params)
 	}
-	return res, nil
-}
-
-func (s *JobService) InsertManyTx(ctx context.Context, tx *ent.Tx, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error) {
-	pgxTx, pgErr := ent.ExtractPgxTx(tx)
-	if pgErr != nil {
-		return nil, fmt.Errorf("extract pgx tx: %w", pgErr)
-	}
-	res, insertErr := s.client.InsertManyTx(ctx, pgxTx, params)
-	if insertErr != nil {
-		return nil, fmt.Errorf("could not insert jobs: %w", insertErr)
-	}
-	return res, nil
+	return s.client.InsertMany(ctx, params)
 }
