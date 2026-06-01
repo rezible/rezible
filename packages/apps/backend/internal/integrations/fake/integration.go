@@ -56,6 +56,10 @@ func (ci *ConfiguredIntegration) ID() uuid.UUID {
 	return ci.intg.ID
 }
 
+func (ci *ConfiguredIntegration) Integration() *ent.Integration {
+	return ci.intg
+}
+
 func (ci *ConfiguredIntegration) Provider() string {
 	return ci.intg.Provider
 }

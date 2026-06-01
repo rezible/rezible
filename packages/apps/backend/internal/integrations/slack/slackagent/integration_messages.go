@@ -1,19 +1,6 @@
-package slack
+package slackagent
 
-import (
-	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"log/slog"
-
-	"github.com/google/uuid"
-	"github.com/slack-go/slack"
-	"github.com/slack-go/slack/slackevents"
-
-	rez "github.com/rezible/rezible"
-)
-
+/*
 type messageHandler struct {
 	appCfg       rez.AppConfig
 	db           rez.Database
@@ -136,7 +123,7 @@ func (h *messageHandler) OnOptions(ctx context.Context, data []byte) error {
 	return nil
 }
 
-func (h *messageHandler) withChatService(ctx context.Context, ids installIds, fn func(*ChatService) error) error {
+func (h *messageHandler) withChatService(ctx context.Context, ids IntegrationInstallIds, fn func(*ChatService) error) error {
 	ci, lookupErr := lookupTenantIntegration(ctx, h.integrations, ids)
 	if lookupErr != nil {
 		return lookupErr
@@ -197,7 +184,7 @@ type handleSlashCommand struct {
 }
 
 func (h *messageHandler) handleSlashCommand(ctx context.Context, cmd *handleSlashCommand) error {
-	ids := installIds{TeamId: cmd.Command.TeamID, EnterpriseId: cmd.Command.EnterpriseID}
+	ids := IntegrationInstallIds{TeamId: cmd.Command.TeamID, EnterpriseId: cmd.Command.EnterpriseID}
 	return h.withChatService(ctx, ids, func(chat *ChatService) error {
 		return chat.handleSlashCommand(ctx, &cmd.Command)
 	})
@@ -212,7 +199,7 @@ func (h *messageHandler) handleInteraction(ctx context.Context, ev *handleIntera
 	if err := ic.UnmarshalJSON(ev.Data); err != nil {
 		return fmt.Errorf("invalid interaction payload: %w", err)
 	}
-	ids := installIds{TeamId: ic.Team.ID, EnterpriseId: ic.Enterprise.ID}
+	ids := IntegrationInstallIds{TeamId: ic.Team.ID, EnterpriseId: ic.Enterprise.ID}
 	return h.withChatService(ctx, ids, func(chat *ChatService) error {
 		return chat.handleInteractionCallback(ctx, &ic)
 	})
@@ -227,8 +214,10 @@ func (h *messageHandler) handleCallbackEvent(ctx context.Context, ev *callbackEv
 	if parseErr != nil {
 		return fmt.Errorf("parse event: %w", parseErr)
 	}
-	ids := installIds{TeamId: cb.TeamID, EnterpriseId: cb.EnterpriseID}
+	ids := IntegrationInstallIds{TeamId: cb.TeamID, EnterpriseId: cb.EnterpriseID}
 	return h.withChatService(ctx, ids, func(chat *ChatService) error {
 		return chat.handleCallbackEvent(ctx, &cb)
 	})
 }
+
+*/

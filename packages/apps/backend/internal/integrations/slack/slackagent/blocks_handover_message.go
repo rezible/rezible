@@ -1,11 +1,13 @@
-package slack
+package slackagent
 
 import (
 	"fmt"
 	"time"
 
 	"github.com/rezible/rezible/integrations/projections"
-	"github.com/slack-go/slack"
+
+	"github.com/rezible/rezible/internal/integrations/slack"
+	goslack "github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -15,7 +17,7 @@ import (
 	TODO: eventually this should be handled by the document service - converted to *rez.ContentNode
 */
 
-//func buildHandoverMessage(params rez.SendOncallHandoverParams) (string, slack.MsgOption, error) {
+//func buildHandoverMessage(params rez.SendOncallHandoverParams) (string, goslack.MsgOption, error) {
 //	mb, builderErr := newHandoverMessageBuilder(params.EndingShift, params.StartingShift, params.PinnedAnnotations)
 //	if builderErr != nil {
 //		return "", nil, fmt.Errorf("new builder: %w", builderErr)
@@ -27,7 +29,7 @@ import (
 //}
 
 type handoverMessageBuilder struct {
-	blocks []slack.Block
+	blocks []goslack.Block
 
 	appUrl            string
 	roster            *ent.OncallRoster
@@ -79,51 +81,51 @@ func (b *handoverMessageBuilder) getChannel() string {
 	return b.roster.ChatChannelID
 }
 
-func (b *handoverMessageBuilder) addBlocks(blocks ...slack.Block) {
+func (b *handoverMessageBuilder) addBlocks(blocks ...goslack.Block) {
 	b.blocks = append(b.blocks, blocks...)
 }
 
 func (b *handoverMessageBuilder) build(content []rez.OncallShiftHandoverSection) error {
-	b.blocks = make([]slack.Block, 0)
+	b.blocks = make([]goslack.Block, 0)
 
 	// Header
 	headerText := fmt.Sprintf(":pager: %s - Oncall Handover :pager:", b.roster.Name)
-	headerObject := slack.NewTextBlockObject(slack.PlainTextType, headerText, true, false)
+	headerObject := goslack.NewTextBlockObject(goslack.PlainTextType, headerText, true, false)
 
-	usersBlock := slack.NewRichTextSection(
-		slack.NewRichTextSectionUserElement(b.senderId, nil),
-		slack.NewRichTextSectionTextElement(" to ", nil),
-		slack.NewRichTextSectionUserElement(b.receiverId, nil))
+	usersBlock := goslack.NewRichTextSection(
+		goslack.NewRichTextSectionUserElement(b.senderId, nil),
+		goslack.NewRichTextSectionTextElement(" to ", nil),
+		goslack.NewRichTextSectionUserElement(b.receiverId, nil))
 
 	contextText := fmt.Sprintf("Shift Ending %s", b.endingShift.EndAt.Format(time.DateOnly))
-	contextObject := slack.NewTextBlockObject(slack.MarkdownType, contextText, false, false)
+	contextObject := goslack.NewTextBlockObject(goslack.MarkdownType, contextText, false, false)
 
 	b.addBlocks(
-		slack.NewHeaderBlock(headerObject, slack.HeaderBlockOptionBlockID("header")),
-		slack.NewRichTextBlock("header_users", usersBlock),
-		slack.NewContextBlock("header_time", contextObject))
+		goslack.NewHeaderBlock(headerObject, goslack.HeaderBlockOptionBlockID("header")),
+		goslack.NewRichTextBlock("header_users", usersBlock),
+		goslack.NewContextBlock("header_time", contextObject))
 
 	// Dynamic Sections
-	b.addBlocks(slack.NewDividerBlock())
+	b.addBlocks(goslack.NewDividerBlock())
 	for idx, s := range content {
 		id := fmt.Sprintf("section_%d", idx)
 		if sectionErr := b.addSection(id, s.Header, s.Kind, s.Content); sectionErr != nil {
 			return fmt.Errorf("section %d: %w", idx, sectionErr)
 		}
 	}
-	b.addBlocks(slack.NewDividerBlock())
+	b.addBlocks(goslack.NewDividerBlock())
 
 	// Footer
 	endingShiftLink := fmt.Sprintf("%s/oncall/shifts/%s", b.appUrl, b.endingShift.ID)
-	footerEl := slack.NewRichTextSection(slack.NewRichTextSectionLinkElement(
+	footerEl := goslack.NewRichTextSection(goslack.NewRichTextSectionLinkElement(
 		endingShiftLink, "View Full Shift Details in Rezible", nil))
-	b.addBlocks(slack.NewRichTextBlock("handover_footer", footerEl))
+	b.addBlocks(goslack.NewRichTextBlock("handover_footer", footerEl))
 
 	return nil
 }
 
 func (b *handoverMessageBuilder) addSection(id string, header, kind string, content *rez.ContentNode) error {
-	b.addBlocks(slack.NewHeaderBlock(plainText(header)))
+	b.addBlocks(goslack.NewHeaderBlock(slack.PlainTextBlock(header)))
 
 	if kind == "annotations" {
 		annoBlocks, annosErr := b.createPinnedAnnotationsBlocks()
@@ -132,7 +134,7 @@ func (b *handoverMessageBuilder) addSection(id string, header, kind string, cont
 		}
 		b.addBlocks(annoBlocks...)
 	} else if kind == "regular" {
-		b.addBlocks(convertContentToBlocks(id, content)...)
+		b.addBlocks(slack.ConvertContentToBlocks(id, content)...)
 	} else {
 		return fmt.Errorf("unknown section kind '%s'", kind)
 	}
@@ -140,13 +142,13 @@ func (b *handoverMessageBuilder) addSection(id string, header, kind string, cont
 	return nil
 }
 
-func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]slack.Block, error) {
+func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]goslack.Block, error) {
 	if len(b.pinnedAnnotations) == 0 {
-		sectionBlock := slack.NewSectionBlock(plainText("No Pinned Annotations"), nil, nil)
-		return []slack.Block{sectionBlock}, nil
+		sectionBlock := goslack.NewSectionBlock(slack.PlainTextBlock("No Pinned Annotations"), nil, nil)
+		return []goslack.Block{sectionBlock}, nil
 	}
 
-	var blocks []slack.Block
+	var blocks []goslack.Block
 
 	for idx, a := range b.pinnedAnnotations {
 		blockId := fmt.Sprintf("pinned_annotation_%d", idx)
@@ -160,26 +162,26 @@ func (b *handoverMessageBuilder) createPinnedAnnotationsBlocks() ([]slack.Block,
 			return nil, fmt.Errorf("annotation event display err: %w", dispErr)
 		}
 
-		var eventEls []slack.RichTextSectionElement
+		var eventEls []goslack.RichTextSectionElement
 		if projections.SubjectKindIncident.Matches(ev) {
 			link := fmt.Sprintf("%s/incidents/%s", b.appUrl, ev.ID)
-			eventEls = append(eventEls, slack.NewRichTextSectionLinkElement(link, disp.Title, nil))
+			eventEls = append(eventEls, goslack.NewRichTextSectionLinkElement(link, disp.Title, nil))
 		} else {
-			eventEls = append(eventEls, slack.NewRichTextSectionTextElement(disp.Title, nil))
+			eventEls = append(eventEls, goslack.NewRichTextSectionTextElement(disp.Title, nil))
 		}
 
-		eventList := slack.NewRichTextList(slack.RTEListBullet, 0)
+		eventList := goslack.NewRichTextList(goslack.RTEListBullet, 0)
 		for _, el := range eventEls {
-			eventList.Elements = append(eventList.Elements, slack.NewRichTextSection(el))
+			eventList.Elements = append(eventList.Elements, goslack.NewRichTextSection(el))
 		}
 
-		style := &slack.RichTextSectionTextStyle{Italic: true}
-		notesSection := slack.NewRichTextList(slack.RTEListBullet, 1,
-			slack.NewRichTextSection(slack.NewRichTextSectionTextElement(a.Notes, style)))
+		style := &goslack.RichTextSectionTextStyle{Italic: true}
+		notesSection := goslack.NewRichTextList(goslack.RTEListBullet, 1,
+			goslack.NewRichTextSection(goslack.NewRichTextSectionTextElement(a.Notes, style)))
 
 		blocks = append(blocks,
-			slack.NewRichTextBlock(blockId+"_events", eventList),
-			slack.NewRichTextBlock(blockId, notesSection))
+			goslack.NewRichTextBlock(blockId+"_events", eventList),
+			goslack.NewRichTextBlock(blockId, notesSection))
 	}
 
 	return blocks, nil

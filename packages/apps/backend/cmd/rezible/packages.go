@@ -10,7 +10,8 @@ import (
 	fakeprovider "github.com/rezible/rezible/internal/integrations/fake"
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
-	"github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
+	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
@@ -91,8 +92,8 @@ func provideDependencies(i do.Injector) {
 }
 
 var provideIntegrations = do.Package(
-	do.Lazy(func(i do.Injector) (*slack.Integration, error) {
-		return slack.MakeIntegration(
+	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
+		return slackagent.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.IncidentService](i),
@@ -100,6 +101,16 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.EventAnnotationsService](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.ProviderEventService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
+		return slackincidents.MakeIntegration(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.UserService](i),
+			do.MustInvoke[rez.EventAnnotationsService](i),
+			do.MustInvoke[rez.MessageService](i),
 		)
 	}),
 	do.Lazy(func(i do.Injector) (*fakeprovider.Integration, error) {

@@ -41,7 +41,6 @@ func NewSuite(optFns ...SuiteOption) Suite {
 }
 
 func (s *Suite) SetupSuite() {
-	s.T().Log("setup suite")
 	s.loadConfig()
 	s.setupTestDatabase()
 	s.SeedTestEntities()

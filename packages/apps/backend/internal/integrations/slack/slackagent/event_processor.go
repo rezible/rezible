@@ -1,4 +1,4 @@
-package slack
+package slackagent
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/integrations/projections"
+	"github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/slack-go/slack/slackevents"
 )
 
@@ -112,7 +113,7 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 		return nil, nil
 	}
 
-	occurredAt := tryConvertTs(ts, tryConvertTs(eventTS, prov.ReceivedAt))
+	occurredAt := slack.TryConvertSlackTs(ts, slack.TryConvertSlackTs(eventTS, prov.ReceivedAt))
 
 	receivedAt := prov.ReceivedAt
 	if receivedAt.IsZero() {

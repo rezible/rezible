@@ -9,21 +9,21 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
-func plainText(text string) *slack.TextBlockObject {
+func PlainTextBlock(text string) *slack.TextBlockObject {
 	if text == "" {
 		return nil
 	}
 	return slack.NewTextBlockObject(slack.PlainTextType, text, true, false)
 }
 
-func markdownText(text string) *slack.TextBlockObject {
+func MarkdownBlock(text string) *slack.TextBlockObject {
 	if text == "" {
 		return nil
 	}
 	return slack.NewTextBlockObject(slack.MarkdownType, text, false, false)
 }
 
-func getViewStateBlockAction(state *slack.ViewState, ids blockActionIds) *slack.BlockAction {
+func GetViewStateBlockAction(state *slack.ViewState, ids BlockActionIds) *slack.BlockAction {
 	if block, blockOk := state.Values[ids.Block]; blockOk {
 		if action, inputOk := block[ids.Input]; inputOk {
 			return &action
@@ -32,29 +32,29 @@ func getViewStateBlockAction(state *slack.ViewState, ids blockActionIds) *slack.
 	return nil
 }
 
-type blockActionIds struct {
+type BlockActionIds struct {
 	Block string
 	Input string
 }
 
-func (ids blockActionIds) GetStateValue(state *slack.ViewState) string {
-	action := getViewStateBlockAction(state, ids)
+func (ids BlockActionIds) GetStateValue(state *slack.ViewState) string {
+	action := GetViewStateBlockAction(state, ids)
 	if action == nil {
 		return ""
 	}
 	return action.Value
 }
 
-func (ids blockActionIds) GetStateSelectedValue(state *slack.ViewState) string {
-	action := getViewStateBlockAction(state, ids)
+func (ids BlockActionIds) GetStateSelectedValue(state *slack.ViewState) string {
+	action := GetViewStateBlockAction(state, ids)
 	if action == nil {
 		return ""
 	}
 	return action.SelectedOption.Value
 }
 
-func (ids blockActionIds) GetStateSelectedValues(state *slack.ViewState) []string {
-	action := getViewStateBlockAction(state, ids)
+func (ids BlockActionIds) GetStateSelectedValues(state *slack.ViewState) []string {
+	action := GetViewStateBlockAction(state, ids)
 	if action == nil || len(action.SelectedOptions) == 0 {
 		return nil
 	}
@@ -67,7 +67,7 @@ func (ids blockActionIds) GetStateSelectedValues(state *slack.ViewState) []strin
 	return values
 }
 
-func convertContentToBlocks(prefix string, content *rez.ContentNode) []slack.Block {
+func ConvertContentToBlocks(prefix string, content *rez.ContentNode) []slack.Block {
 	c := &blockConverter{}
 	if prefix != "" {
 		c.prefix = prefix + "_"

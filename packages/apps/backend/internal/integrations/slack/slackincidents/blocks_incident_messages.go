@@ -1,4 +1,4 @@
-package slack
+package slackincidents
 
 import (
 	"fmt"
@@ -7,7 +7,8 @@ import (
 
 	"github.com/rezible/rezible/ent"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
-	"github.com/slack-go/slack"
+	"github.com/rezible/rezible/internal/integrations/slack"
+	goslack "github.com/slack-go/slack"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 
 type incidentDetailsMessageBuilder struct {
 	appUrl   string
-	blocks   []slack.Block
+	blocks   []goslack.Block
 	incident *ent.Incident
 }
 
@@ -26,18 +27,18 @@ var incidentDetailsTemplate = template.Template{}
 func newIncidentDetailsMessageBuilder(appUrl string, inc *ent.Incident) *incidentDetailsMessageBuilder {
 	return &incidentDetailsMessageBuilder{
 		appUrl:   appUrl,
-		blocks:   []slack.Block{},
+		blocks:   []goslack.Block{},
 		incident: inc,
 	}
 }
 
-func (b *incidentDetailsMessageBuilder) build() []slack.Block {
+func (b *incidentDetailsMessageBuilder) build() []goslack.Block {
 	b.makeDetailsText()
 	b.makeActions()
 	return b.blocks
 }
 
-func (b *incidentDetailsMessageBuilder) isDetailsMessage(msg *slack.Message) bool {
+func (b *incidentDetailsMessageBuilder) isDetailsMessage(msg *goslack.Message) bool {
 	return msg.Text != "" && strings.HasPrefix(msg.Text, "*Incident Details*")
 }
 
@@ -109,40 +110,40 @@ func (b *incidentDetailsMessageBuilder) makeDetailsText() {
 		detailsText += fmt.Sprintf("\n*Video Conference:* %s", vc.JoinURL)
 	}
 
-	b.blocks = append(b.blocks, slack.NewSectionBlock(markdownText(detailsText), nil, nil))
+	b.blocks = append(b.blocks, goslack.NewSectionBlock(slack.MarkdownBlock(detailsText), nil, nil))
 }
 
 func (b *incidentDetailsMessageBuilder) makeActions() {
-	detailsButton := slack.NewButtonBlockElement(actionCallbackIdIncidentDetailsModalButton, "details",
-		plainText("Update Incident Details :gear:"))
-	milestoneButton := slack.NewButtonBlockElement(actionCallbackIdIncidentMilestoneModalButton, "milestone",
-		plainText("Update Incident Status"))
-	b.blocks = append(b.blocks, slack.NewActionBlock("incident_details_actions", detailsButton, milestoneButton))
+	detailsButton := goslack.NewButtonBlockElement(actionCallbackIdIncidentDetailsModalButton, "details",
+		slack.PlainTextBlock("Update Incident Details :gear:"))
+	milestoneButton := goslack.NewButtonBlockElement(actionCallbackIdIncidentMilestoneModalButton, "milestone",
+		slack.PlainTextBlock("Update Incident Status"))
+	b.blocks = append(b.blocks, goslack.NewActionBlock("incident_details_actions", detailsButton, milestoneButton))
 }
 
 type incidentAnnouncementMessageBuilder struct {
-	blocks   []slack.Block
+	blocks   []goslack.Block
 	incident *ent.Incident
 	builder  *incidentDetailsMessageBuilder
 }
 
 func newIncidentAnnouncementMessageBuilder(appUrl string, inc *ent.Incident) *incidentAnnouncementMessageBuilder {
 	return &incidentAnnouncementMessageBuilder{
-		blocks:   []slack.Block{},
+		blocks:   []goslack.Block{},
 		incident: inc,
 		builder:  newIncidentDetailsMessageBuilder(appUrl, inc),
 	}
 }
 
-func (b *incidentAnnouncementMessageBuilder) build() []slack.Block {
+func (b *incidentAnnouncementMessageBuilder) build() []goslack.Block {
 	sev := b.incident.Edges.Severity
 	headerText := fmt.Sprintf(":rotating_light: Incident declared in <#%s> [%s]", b.incident.ChatChannelID, sev.Name)
 
 	contextText := fmt.Sprintf("*%s*\nStatus: %s", b.incident.Title, b.builder.currentStatus())
 
-	b.blocks = []slack.Block{
-		slack.NewSectionBlock(markdownText(headerText), nil, nil),
-		slack.NewSectionBlock(markdownText(contextText), nil, nil),
+	b.blocks = []goslack.Block{
+		goslack.NewSectionBlock(slack.MarkdownBlock(headerText), nil, nil),
+		goslack.NewSectionBlock(slack.MarkdownBlock(contextText), nil, nil),
 	}
 
 	return b.blocks

@@ -188,6 +188,10 @@ func (i *Integration) newConfiguredIntegration(intg *ent.Integration) *Configure
 	}
 }
 
+func (ci *ConfiguredIntegration) Integration() *ent.Integration {
+	return ci.intg
+}
+
 func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Context {
 	return execution.NewTenantContext(ctx, ci.intg.TenantID)
 }

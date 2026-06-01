@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	rez "github.com/rezible/rezible"
 	"github.com/sourcegraph/conc/pool"
 
 	"github.com/slack-go/slack"
@@ -15,28 +14,21 @@ import (
 )
 
 type SocketModeListener struct {
-	client  *socketmode.Client
-	handler *messageHandler
-	stopFn  func() error
+	client       *socketmode.Client
+	eventHandler *EventHandler
+	stopFn       func() error
 }
 
-func makeSocketModeEventListener(cfg rez.IntegrationsConfigSlack, mh *messageHandler) (*SocketModeListener, error) {
+func MakeSocketModeListener(client *slack.Client, evth *EventHandler) (*SocketModeListener, error) {
 	l := &SocketModeListener{
-		handler: mh,
-		stopFn:  func() error { return nil },
-	}
-	if cfg.EnableSocketMode {
-		l.client = socketmode.New(slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken)))
+		eventHandler: evth,
+		client:       socketmode.New(client),
+		stopFn:       func() error { return nil },
 	}
 	return l, nil
 }
 
 func (l *SocketModeListener) Start(baseCtx context.Context) error {
-	if l.client == nil {
-		fmt.Printf("no client for socketmode\n")
-		return nil
-	}
-
 	cancelCtx, cancel := context.WithCancel(baseCtx)
 
 	p := pool.New().
@@ -92,7 +84,7 @@ func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 
 	var handleErr error
 	if evt.Type == socketmode.EventTypeInteractive {
-		handleErr = l.handler.OnInteractionCallback(ctx, evt.Request.Payload)
+		handleErr = l.eventHandler.OnInteractionCallback(ctx, evt.Request.Payload)
 	} else if evt.Type == socketmode.EventTypeSlashCommand {
 		handleErr = l.onSlashCommand(ctx, evt)
 	} else if evt.Type == socketmode.EventTypeEventsAPI {
@@ -113,7 +105,7 @@ func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 
 func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) error {
 	if cmd, ok := e.Data.(slack.SlashCommand); ok {
-		return l.handler.OnSlashCommand(ctx, cmd)
+		return l.eventHandler.OnSlashCommand(ctx, cmd)
 	}
 	return fmt.Errorf("invalid SlashCommand data")
 }
@@ -125,9 +117,9 @@ func (l *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Even
 			if !cbOk {
 				return fmt.Errorf("failed to cast callback event")
 			}
-			return l.handler.OnCallbackEvent(ctx, cb, e.Request.Payload)
+			return l.eventHandler.OnCallbackEvent(ctx, cb, e.Request.Payload)
 		} else if evt.Type == slackevents.AppRateLimited {
-			return l.handler.OnAppRateLimitedEvent(ctx)
+			return l.eventHandler.OnAppRateLimitedEvent(ctx)
 		}
 		return fmt.Errorf("unknown slack callback event type: %s", evt.Type)
 	}

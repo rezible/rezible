@@ -2,6 +2,7 @@ package slack
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -10,7 +11,23 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {
+type IntegrationInstallIds struct {
+	TeamId       string `json:"teamId"`
+	EnterpriseId string `json:"enterpriseId,omitempty"`
+}
+
+func (i IntegrationInstallIds) configValues() map[string]any {
+	m := map[string]any{}
+	if i.TeamId != "" {
+		m["team.id"] = i.TeamId
+	}
+	if i.EnterpriseId != "" {
+		m["enterprise.id"] = i.EnterpriseId
+	}
+	return m
+}
+
+func GetAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {
 	params := &slack.GetUsersInConversationParameters{
 		ChannelID: convId,
 		Limit:     100,
@@ -30,15 +47,26 @@ func getAllUsersInConversation(ctx context.Context, client *slack.Client, convId
 	return allIds, nil
 }
 
-func logSlackViewErrorResponse(err error, resp *slack.ViewResponse) {
+func LogSlackViewErrorResponse(logger *slog.Logger, err error, resp *slack.ViewResponse) {
 	args := []any{"error", err}
 	if resp != nil {
 		args = append(args, "response_messages", resp.ResponseMetadata.Messages)
 	}
-	slog.Error("slack view response error", args...)
+	logger.Error("slack view response error", args...)
 }
 
-func convertSlackTs(ts string) time.Time {
+func CommandErrorResponse(message string) *slack.Blocks {
+	return &slack.Blocks{
+		BlockSet: []slack.Block{
+			&slack.SectionBlock{
+				Type: slack.MBTSection,
+				Text: PlainTextBlock(fmt.Sprintf("❌ %s", message)),
+			},
+		},
+	}
+}
+
+func ConvertSlackTs(ts string) time.Time {
 	parts := strings.Split(ts, ".")
 	if len(parts) < 2 {
 		return time.Time{}
@@ -50,20 +78,20 @@ func convertSlackTs(ts string) time.Time {
 	return time.Unix(secs, 0)
 }
 
-func tryConvertTs(ts string, fallback time.Time) time.Time {
-	if conv := convertSlackTs(ts); !conv.IsZero() {
+func TryConvertSlackTs(ts string, fallback time.Time) time.Time {
+	if conv := ConvertSlackTs(ts); !conv.IsZero() {
 		return conv
 	}
 	return fallback
 }
 
-type messageId string
+type MessageId string
 
-func (m messageId) getTimestamp() time.Time {
+func (m MessageId) GetTimestamp() time.Time {
 	_, ts, _ := strings.Cut(m.String(), "_")
-	return convertSlackTs(ts)
+	return ConvertSlackTs(ts)
 }
 
-func (m messageId) String() string {
+func (m MessageId) String() string {
 	return string(m)
 }

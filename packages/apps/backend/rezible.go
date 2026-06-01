@@ -107,6 +107,7 @@ type (
 
 	ConfiguredIntegration interface {
 		ID() uuid.UUID
+		Integration() *ent.Integration
 		Provider() string
 		DisplayName() string
 		ExternalRef() string
