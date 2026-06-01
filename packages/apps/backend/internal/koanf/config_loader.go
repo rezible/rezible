@@ -77,7 +77,7 @@ func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
 				msgs[i] = fmt.Sprintf("[%d: %s]", i, verr)
 			}
 			if c.opts.LogValidationErrors {
-				slog.Error("validation errors:", strings.Join(msgs, "; "))
+				slog.Error("validation errors:" + strings.Join(msgs, "; "))
 			} else {
 				return cfg, fmt.Errorf("validation: %s", strings.Join(msgs, " "))
 			}

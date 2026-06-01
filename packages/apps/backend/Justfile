@@ -49,8 +49,8 @@ format:
 
 exclude_test_packages_pattern := "/ent/"
 
-@test-all:
-    just test $(go list ./... | grep -v '{{exclude_test_packages_pattern}}')
+@test-all *ARGS:
+    just test {{ARGS}} $(go list ./... | grep -v '{{exclude_test_packages_pattern}}')
 
 @test-package PACKAGE *ARGS:
     just test '{{PACKAGE}}' {{ARGS}}
