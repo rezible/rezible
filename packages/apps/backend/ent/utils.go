@@ -42,8 +42,27 @@ func (p ListParams) GetQueryContext(parent context.Context) context.Context {
 	return parent
 }
 
+type TxOption func(*TxOptions)
+
+type TxOptions struct {
+	OnCommit   []CommitHook
+	OnRollback []RollbackHook
+}
+
+func WithCommitHook(h CommitHook) TxOption {
+	return func(opts *TxOptions) {
+		opts.OnCommit = append(opts.OnCommit, h)
+	}
+}
+
+func WithRollbackHook(h RollbackHook) TxOption {
+	return func(opts *TxOptions) {
+		opts.OnRollback = append(opts.OnRollback, h)
+	}
+}
+
 type EntityMutator[T any, M ent.Mutation] interface {
-	Save(ctx context.Context) (T, error)
+	Save(context.Context) (T, error)
 	Mutation() M
 }
 

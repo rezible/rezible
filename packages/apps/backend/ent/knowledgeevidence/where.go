@@ -87,9 +87,9 @@ func AliasID(v uuid.UUID) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldAliasID, v))
 }
 
-// NormalizedEventID applies equality check predicate on the "normalized_event_id" field. It's identical to NormalizedEventIDEQ.
-func NormalizedEventID(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldNormalizedEventID, v))
+// EventID applies equality check predicate on the "event_id" field. It's identical to EventIDEQ.
+func EventID(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
 }
 
 // Assertion applies equality check predicate on the "assertion" field. It's identical to AssertionEQ.
@@ -317,24 +317,24 @@ func AliasIDNotNil() predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldAliasID))
 }
 
-// NormalizedEventIDEQ applies the EQ predicate on the "normalized_event_id" field.
-func NormalizedEventIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldNormalizedEventID, v))
+// EventIDEQ applies the EQ predicate on the "event_id" field.
+func EventIDEQ(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldEQ(FieldEventID, v))
 }
 
-// NormalizedEventIDNEQ applies the NEQ predicate on the "normalized_event_id" field.
-func NormalizedEventIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldNormalizedEventID, v))
+// EventIDNEQ applies the NEQ predicate on the "event_id" field.
+func EventIDNEQ(v uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNEQ(FieldEventID, v))
 }
 
-// NormalizedEventIDIn applies the In predicate on the "normalized_event_id" field.
-func NormalizedEventIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIn(FieldNormalizedEventID, vs...))
+// EventIDIn applies the In predicate on the "event_id" field.
+func EventIDIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldIn(FieldEventID, vs...))
 }
 
-// NormalizedEventIDNotIn applies the NotIn predicate on the "normalized_event_id" field.
-func NormalizedEventIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldNormalizedEventID, vs...))
+// EventIDNotIn applies the NotIn predicate on the "event_id" field.
+func EventIDNotIn(vs ...uuid.UUID) predicate.KnowledgeEvidence {
+	return predicate.KnowledgeEvidence(sql.FieldNotIn(FieldEventID, vs...))
 }
 
 // AssertionEQ applies the EQ predicate on the "assertion" field.
@@ -512,16 +512,6 @@ func EffectiveAtNotNil() predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldEffectiveAt))
 }
 
-// PropertiesIsNil applies the IsNil predicate on the "properties" field.
-func PropertiesIsNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldIsNull(FieldProperties))
-}
-
-// PropertiesNotNil applies the NotNil predicate on the "properties" field.
-func PropertiesNotNil() predicate.KnowledgeEvidence {
-	return predicate.KnowledgeEvidence(sql.FieldNotNull(FieldProperties))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
@@ -638,12 +628,12 @@ func HasAliasWith(preds ...predicate.KnowledgeEntityAlias) predicate.KnowledgeEv
 	})
 }
 
-// HasNormalizedEvent applies the HasEdge predicate on the "normalized_event" edge.
-func HasNormalizedEvent() predicate.KnowledgeEvidence {
+// HasEvent applies the HasEdge predicate on the "event" edge.
+func HasEvent() predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, NormalizedEventTable, NormalizedEventColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.NormalizedEvent
@@ -652,10 +642,10 @@ func HasNormalizedEvent() predicate.KnowledgeEvidence {
 	})
 }
 
-// HasNormalizedEventWith applies the HasEdge predicate on the "normalized_event" edge with a given conditions (other predicates).
-func HasNormalizedEventWith(preds ...predicate.NormalizedEvent) predicate.KnowledgeEvidence {
+// HasEventWith applies the HasEdge predicate on the "event" edge with a given conditions (other predicates).
+func HasEventWith(preds ...predicate.NormalizedEvent) predicate.KnowledgeEvidence {
 	return predicate.KnowledgeEvidence(func(s *sql.Selector) {
-		step := newNormalizedEventStep()
+		step := newEventStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.NormalizedEvent
 		step.Edge.Schema = schemaConfig.KnowledgeEvidence

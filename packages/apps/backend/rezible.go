@@ -40,6 +40,12 @@ type LifecycleService interface {
 	Shutdown(context.Context) error
 }
 
+type Database interface {
+	Client(context.Context) *ent.Client
+	WithTx(context.Context, func(txCtx context.Context) error, ...ent.TxOption) error
+	Shutdown() error
+}
+
 type (
 	NewLoggerOptions struct {
 		Parent      *slog.Logger
@@ -271,10 +277,10 @@ type (
 		SetEntityAlias(context.Context, uuid.UUID, func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error)
 		ResolveEntityAliases(context.Context, ...*ent.KnowledgeEntityAlias) ([]*ent.KnowledgeEntityAlias, error)
 
-		SetRelationship(context.Context, uuid.UUID, *ent.Client, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
+		SetRelationship(context.Context, uuid.UUID, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
 		ResolveRelationship(context.Context, *ent.KnowledgeRelationship) (*ent.KnowledgeRelationship, error)
 
-		AddEvidence(context.Context, *ent.Client, ...*ent.KnowledgeEvidenceCreate) ([]*ent.KnowledgeEvidence, error)
+		AddEvidence(context.Context, ...*ent.KnowledgeEvidenceCreate) ([]*ent.KnowledgeEvidence, error)
 	}
 )
 

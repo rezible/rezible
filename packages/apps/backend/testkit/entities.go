@@ -1,12 +1,10 @@
 package testkit
 
 import (
-	"context"
 	"fmt"
 	"sync/atomic"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent"
 )
 
 func WithSkipSeedOrganization() Option {
@@ -26,7 +24,9 @@ func next(prefix string) string {
 func (s *Suite) SeedTestEntities() {
 	ctx := s.SystemContext()
 
-	tenant, tenantErr := s.Client().Tenant.Create().Save(ctx)
+	client := s.db.Client(ctx)
+
+	tenant, tenantErr := client.Tenant.Create().Save(ctx)
 	s.Require().NoError(tenantErr, "failed to create tenant")
 	s.SeedTenant = tenant
 	ctx = s.SeedTenantContext()
@@ -34,7 +34,7 @@ func (s *Suite) SeedTestEntities() {
 	if s.opts.skipSeedOrganization {
 		return
 	}
-	org, orgErr := s.Client().Organization.Create().
+	org, orgErr := client.Organization.Create().
 		SetName("Test Organization").
 		SetAuthProviderID(uuid.NewString()).
 		Save(ctx)
@@ -44,19 +44,9 @@ func (s *Suite) SeedTestEntities() {
 	if s.opts.skipSeedUser {
 		return
 	}
-	_, usrErr := s.Client().User.Create().
+	_, usrErr := client.User.Create().
 		SetEmail("owner+" + uuid.NewString() + "@example.com").
 		SetName("Owner").
 		Save(ctx)
 	s.Require().NoError(usrErr, "failed to create user")
-}
-
-func (s *Suite) CreateTestUser(ctx context.Context, name string) *ent.User {
-	s.T().Helper()
-	create := s.Client().User.Create().
-		SetEmail(next("user") + "@example.com").
-		SetName(name)
-	u, saveErr := create.Save(ctx)
-	s.Require().NoError(saveErr, "failed to save user")
-	return u
 }

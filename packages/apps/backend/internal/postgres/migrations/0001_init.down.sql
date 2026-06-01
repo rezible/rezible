@@ -93,7 +93,7 @@ ALTER TABLE "meeting_schedules" DROP CONSTRAINT "meeting_schedules_tenants_tenan
 -- reverse: modify "knowledge_relationships" table
 ALTER TABLE "knowledge_relationships" DROP CONSTRAINT "knowledge_relationships_knowledge_entities_target_entity", DROP CONSTRAINT "knowledge_relationships_knowledge_entities_source_entity", DROP CONSTRAINT "knowledge_relationships_tenants_tenant";
 -- reverse: modify "knowledge_evidences" table
-ALTER TABLE "knowledge_evidences" DROP CONSTRAINT "knowledge_evidences_normalized_events_normalized_event", DROP CONSTRAINT "knowledge_evidences_knowledge_entity_alias_alias", DROP CONSTRAINT "knowledge_evidences_knowledge_relationships_relationship", DROP CONSTRAINT "knowledge_evidences_knowledge_entities_entity", DROP CONSTRAINT "knowledge_evidences_tenants_tenant";
+ALTER TABLE "knowledge_evidences" DROP CONSTRAINT "knowledge_evidences_normalized_events_event", DROP CONSTRAINT "knowledge_evidences_knowledge_entity_alias_alias", DROP CONSTRAINT "knowledge_evidences_knowledge_relationships_relationship", DROP CONSTRAINT "knowledge_evidences_knowledge_entities_entity", DROP CONSTRAINT "knowledge_evidences_tenants_tenant";
 -- reverse: modify "knowledge_entity_alias" table
 ALTER TABLE "knowledge_entity_alias" DROP CONSTRAINT "knowledge_entity_alias_knowledge_entities_entity", DROP CONSTRAINT "knowledge_entity_alias_tenants_tenant";
 -- reverse: modify "knowledge_entities" table
@@ -396,20 +396,16 @@ DROP INDEX "knowledgerelationship_tenant_i_c2e180b6bf727a089ab234a0504ce8ba";
 DROP INDEX "knowledgerelationship_tenant_id";
 -- reverse: create "knowledge_relationships" table
 DROP TABLE "knowledge_relationships";
--- reverse: create index "knowledgeevidence_tenant_id_no_d6cd57892903bda48327d9a50268d49a" to table: "knowledge_evidences"
-DROP INDEX "knowledgeevidence_tenant_id_no_d6cd57892903bda48327d9a50268d49a";
--- reverse: create index "knowledgeevidence_tenant_id_no_1702ca50172343508f9240026f2cd427" to table: "knowledge_evidences"
-DROP INDEX "knowledgeevidence_tenant_id_no_1702ca50172343508f9240026f2cd427";
--- reverse: create index "knowledgeevidence_tenant_id_evidence_kind_observed_at" to table: "knowledge_evidences"
-DROP INDEX "knowledgeevidence_tenant_id_evidence_kind_observed_at";
--- reverse: create index "knowledgeevidence_tenant_id_normalized_event_id" to table: "knowledge_evidences"
-DROP INDEX "knowledgeevidence_tenant_id_normalized_event_id";
+-- reverse: create index "knowledgeevidence_tenant_id_event_id" to table: "knowledge_evidences"
+DROP INDEX "knowledgeevidence_tenant_id_event_id";
 -- reverse: create index "knowledgeevidence_tenant_id_alias_id" to table: "knowledge_evidences"
 DROP INDEX "knowledgeevidence_tenant_id_alias_id";
 -- reverse: create index "knowledgeevidence_tenant_id_relationship_id" to table: "knowledge_evidences"
 DROP INDEX "knowledgeevidence_tenant_id_relationship_id";
 -- reverse: create index "knowledgeevidence_tenant_id_entity_id" to table: "knowledge_evidences"
 DROP INDEX "knowledgeevidence_tenant_id_entity_id";
+-- reverse: create index "knowledgeevidence_tenant_id_en_f1b9bb3b8ee45b8e08fb3b4cf03cfec9" to table: "knowledge_evidences"
+DROP INDEX "knowledgeevidence_tenant_id_en_f1b9bb3b8ee45b8e08fb3b4cf03cfec9";
 -- reverse: create index "knowledgeevidence_tenant_id" to table: "knowledge_evidences"
 DROP INDEX "knowledgeevidence_tenant_id";
 -- reverse: create "knowledge_evidences" table

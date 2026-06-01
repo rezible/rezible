@@ -16,6 +16,7 @@ import (
 type ConfigLoader struct {
 	loader    *koanf.Koanf
 	validator *validator.Validate
+	opts      ConfigLoaderOptions
 }
 
 type ConfigLoaderOptions struct {
@@ -28,36 +29,23 @@ const (
 	structTag = "cfg"
 )
 
-func NewConfigLoader(opts ConfigLoaderOptions) (*ConfigLoader, error) {
-	k := koanf.New(delim)
-	v := validator.New(validator.WithRequiredStructEnabled())
-
-	if opts.LoadEnvironment {
-		prefix := ""
-		envProv := env.Provider(delim, env.Opt{
-			TransformFunc: func(k, v string) (string, any) {
-				k = strings.ReplaceAll(strings.ToLower(strings.TrimPrefix(k, prefix)), "__", delim)
-				if strings.Contains(v, " ") {
-					return k, strings.Split(v, " ")
-				}
-				return k, v
-			},
-		})
-		if envErr := k.Load(envProv, nil); envErr != nil {
-			return nil, fmt.Errorf("failed to load env provider: %w", envErr)
-		}
+func NewConfigLoader(opts ConfigLoaderOptions) *ConfigLoader {
+	return &ConfigLoader{
+		loader:    koanf.New(delim),
+		validator: validator.New(validator.WithRequiredStructEnabled()),
+		opts:      opts,
 	}
-
-	cfg := &ConfigLoader{
-		loader:    k,
-		validator: v,
-	}
-
-	return cfg, nil
 }
 
 func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
 	cfg := rez.DefaultConfig()
+
+	if c.opts.LoadEnvironment {
+		if envErr := c.loadEnvironment(); envErr != nil {
+			return cfg, fmt.Errorf("failed to load env provider: %w", envErr)
+		}
+	}
+
 	cfgErr := c.loader.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: structTag})
 	if cfgErr != nil {
 		return cfg, fmt.Errorf("unmarshal: %w", cfgErr)
@@ -73,4 +61,18 @@ func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
 		}
 	}
 	return cfg, nil
+}
+
+func (c *ConfigLoader) loadEnvironment() error {
+	prefix := ""
+	envProv := env.Provider(delim, env.Opt{
+		TransformFunc: func(k, v string) (string, any) {
+			k = strings.ReplaceAll(strings.ToLower(strings.TrimPrefix(k, prefix)), "__", delim)
+			if strings.Contains(v, " ") {
+				return k, strings.Split(v, " ")
+			}
+			return k, v
+		},
+	})
+	return c.loader.Load(envProv, nil)
 }

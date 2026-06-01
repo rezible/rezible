@@ -2,7 +2,6 @@ package schema
 
 import (
 	"entgo.io/ent"
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -35,7 +34,7 @@ func (KnowledgeEntity) Fields() []ent.Field {
 			Comment("Time observed explicit evidence that this entity no longer exists or applies."),
 		field.JSON("properties", map[string]any{}).
 			Optional().
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
+			SchemaType(schemaTypeJsonB),
 	}
 }
 
@@ -128,7 +127,7 @@ func (KnowledgeRelationship) Fields() []ent.Field {
 			Comment("Time observed explicit evidence that this relationship no longer exists or applies."),
 		field.JSON("properties", map[string]any{}).
 			Optional().
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
+			SchemaType(schemaTypeJsonB),
 	}
 }
 
@@ -184,7 +183,7 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 			Comment("Relationship this evidence supports. Exactly one of entity_id or relationship_id should be set."),
 		field.UUID("alias_id", uuid.UUID{}).Optional().Nillable().
 			Comment("Provider alias used to resolve entity evidence, when applicable."),
-		field.UUID("normalized_event_id", uuid.UUID{}).
+		field.UUID("event_id", uuid.UUID{}).
 			Comment("Normalized event that produced this evidence record."),
 		field.String("assertion").NotEmpty().
 			Comment("Domain assertion supported by this evidence, such as code_repository_exists or team_owns_service."),
@@ -194,9 +193,6 @@ func (KnowledgeEvidence) Fields() []ent.Field {
 			Comment("Time observed this evidence, usually the normalized event occurred_at."),
 		field.Time("effective_at").Optional().Nillable().
 			Comment("Provider/domain effective time when it differs from observed_at."),
-		field.JSON("properties", map[string]any{}).
-			Optional().
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
 	}
 }
 
@@ -214,20 +210,18 @@ func (KnowledgeEvidence) Edges() []ent.Edge {
 			Unique().
 			Field("alias_id"),
 
-		edge.To("normalized_event", NormalizedEvent.Type).
+		edge.To("event", NormalizedEvent.Type).
 			Unique().Required().
-			Field("normalized_event_id"),
+			Field("event_id"),
 	}
 }
 
 func (KnowledgeEvidence) Indexes() []ent.Index {
 	return []ent.Index{
+		index.Fields("tenant_id", "entity_id", "event_id", "subject_type", "relationship_id", "alias_id").Unique(),
 		index.Fields("tenant_id", "entity_id"),
 		index.Fields("tenant_id", "relationship_id"),
 		index.Fields("tenant_id", "alias_id"),
-		index.Fields("tenant_id", "normalized_event_id"),
-		index.Fields("tenant_id", "evidence_kind", "observed_at"),
-		index.Fields("tenant_id", "normalized_event_id", "subject_type", "entity_id").Unique(),
-		index.Fields("tenant_id", "normalized_event_id", "subject_type", "relationship_id").Unique(),
+		index.Fields("tenant_id", "event_id"),
 	}
 }

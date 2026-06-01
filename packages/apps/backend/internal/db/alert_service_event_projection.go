@@ -16,28 +16,35 @@ const (
 )
 
 func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
-	if !projections.SubjectKindAlert.Matches(event) {
-		return nil
+	if projections.SubjectKindAlert.Matches(event) {
+		observed, validationErr := projections.DecodeAlertEvent(event)
+		if validationErr != nil || observed == nil {
+			return fmt.Errorf("invalid event: %w", validationErr)
+		}
+		return s.handleAlertEventProjection(ctx, observed)
 	}
-	observed, validationErr := projections.DecodeAlertEvent(event)
-	if validationErr != nil || observed == nil {
-		return fmt.Errorf("invalid event: %w", validationErr)
-	}
+	return nil
+}
 
-	attrs := observed.Attributes
+func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *projections.AlertEvent) error {
+	attrs := ae.Attributes
 	entityParams := rez.ResolveKnowledgeEntityParams{
-		Event:             event,
+		Event:             ae.Event,
 		EvidenceAssertion: assertionAlertDefinitionObserved,
 		Entity: &ent.KnowledgeEntity{
 			Kind:        knowledgeKindAlert,
 			DisplayName: attrs.Title,
 		},
-		Aliases: eventKnowledgeEntityAliases(event),
+		Aliases: []*ent.KnowledgeEntityAlias{
+			{Provider: ae.Event.Provider, ProviderSubjectRef: ae.Event.ProviderSubjectRef},
+		},
 	}
 	knowledgeEntity, saveKnowledgeErr := s.knowledge.ResolveEntity(ctx, entityParams)
 	if saveKnowledgeErr != nil {
 		return fmt.Errorf("save projected entity: %w", saveKnowledgeErr)
 	}
+
+	// TODO: use regular alert service update flow here instead
 
 	upsert := s.client.Alert.Create().
 		SetKnowledgeEntityID(knowledgeEntity.ID).

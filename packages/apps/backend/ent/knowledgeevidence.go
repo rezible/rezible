@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -39,7 +38,7 @@ type KnowledgeEvidence struct {
 	// Provider alias used to resolve entity evidence, when applicable.
 	AliasID *uuid.UUID `json:"alias_id,omitempty"`
 	// Normalized event that produced this evidence record.
-	NormalizedEventID uuid.UUID `json:"normalized_event_id,omitempty"`
+	EventID uuid.UUID `json:"event_id,omitempty"`
 	// Domain assertion supported by this evidence, such as code_repository_exists or team_owns_service.
 	Assertion string `json:"assertion,omitempty"`
 	// How this event affects evidence for the assertion.
@@ -48,8 +47,6 @@ type KnowledgeEvidence struct {
 	ObservedAt time.Time `json:"observed_at,omitempty"`
 	// Provider/domain effective time when it differs from observed_at.
 	EffectiveAt *time.Time `json:"effective_at,omitempty"`
-	// Properties holds the value of the "properties" field.
-	Properties map[string]interface{} `json:"properties,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the KnowledgeEvidenceQuery when eager-loading is set.
 	Edges        KnowledgeEvidenceEdges `json:"edges"`
@@ -66,8 +63,8 @@ type KnowledgeEvidenceEdges struct {
 	Relationship *KnowledgeRelationship `json:"relationship,omitempty"`
 	// Alias holds the value of the alias edge.
 	Alias *KnowledgeEntityAlias `json:"alias,omitempty"`
-	// NormalizedEvent holds the value of the normalized_event edge.
-	NormalizedEvent *NormalizedEvent `json:"normalized_event,omitempty"`
+	// Event holds the value of the event edge.
+	Event *NormalizedEvent `json:"event,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [5]bool
@@ -117,15 +114,15 @@ func (e KnowledgeEvidenceEdges) AliasOrErr() (*KnowledgeEntityAlias, error) {
 	return nil, &NotLoadedError{edge: "alias"}
 }
 
-// NormalizedEventOrErr returns the NormalizedEvent value or an error if the edge
+// EventOrErr returns the Event value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e KnowledgeEvidenceEdges) NormalizedEventOrErr() (*NormalizedEvent, error) {
-	if e.NormalizedEvent != nil {
-		return e.NormalizedEvent, nil
+func (e KnowledgeEvidenceEdges) EventOrErr() (*NormalizedEvent, error) {
+	if e.Event != nil {
+		return e.Event, nil
 	} else if e.loadedTypes[4] {
 		return nil, &NotFoundError{label: normalizedevent.Label}
 	}
-	return nil, &NotLoadedError{edge: "normalized_event"}
+	return nil, &NotLoadedError{edge: "event"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -135,15 +132,13 @@ func (*KnowledgeEvidence) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case knowledgeevidence.FieldEntityID, knowledgeevidence.FieldRelationshipID, knowledgeevidence.FieldAliasID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case knowledgeevidence.FieldProperties:
-			values[i] = new([]byte)
 		case knowledgeevidence.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case knowledgeevidence.FieldSubjectType, knowledgeevidence.FieldAssertion, knowledgeevidence.FieldEvidenceKind:
 			values[i] = new(sql.NullString)
 		case knowledgeevidence.FieldCreatedAt, knowledgeevidence.FieldUpdatedAt, knowledgeevidence.FieldObservedAt, knowledgeevidence.FieldEffectiveAt:
 			values[i] = new(sql.NullTime)
-		case knowledgeevidence.FieldID, knowledgeevidence.FieldNormalizedEventID:
+		case knowledgeevidence.FieldID, knowledgeevidence.FieldEventID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -211,11 +206,11 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 				_m.AliasID = new(uuid.UUID)
 				*_m.AliasID = *value.S.(*uuid.UUID)
 			}
-		case knowledgeevidence.FieldNormalizedEventID:
+		case knowledgeevidence.FieldEventID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field normalized_event_id", values[i])
+				return fmt.Errorf("unexpected type %T for field event_id", values[i])
 			} else if value != nil {
-				_m.NormalizedEventID = *value
+				_m.EventID = *value
 			}
 		case knowledgeevidence.FieldAssertion:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -241,14 +236,6 @@ func (_m *KnowledgeEvidence) assignValues(columns []string, values []any) error 
 			} else if value.Valid {
 				_m.EffectiveAt = new(time.Time)
 				*_m.EffectiveAt = value.Time
-			}
-		case knowledgeevidence.FieldProperties:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field properties", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Properties); err != nil {
-					return fmt.Errorf("unmarshal field properties: %w", err)
-				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -283,9 +270,9 @@ func (_m *KnowledgeEvidence) QueryAlias() *KnowledgeEntityAliasQuery {
 	return NewKnowledgeEvidenceClient(_m.config).QueryAlias(_m)
 }
 
-// QueryNormalizedEvent queries the "normalized_event" edge of the KnowledgeEvidence entity.
-func (_m *KnowledgeEvidence) QueryNormalizedEvent() *NormalizedEventQuery {
-	return NewKnowledgeEvidenceClient(_m.config).QueryNormalizedEvent(_m)
+// QueryEvent queries the "event" edge of the KnowledgeEvidence entity.
+func (_m *KnowledgeEvidence) QueryEvent() *NormalizedEventQuery {
+	return NewKnowledgeEvidenceClient(_m.config).QueryEvent(_m)
 }
 
 // Update returns a builder for updating this KnowledgeEvidence.
@@ -338,8 +325,8 @@ func (_m *KnowledgeEvidence) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("normalized_event_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.NormalizedEventID))
+	builder.WriteString("event_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.EventID))
 	builder.WriteString(", ")
 	builder.WriteString("assertion=")
 	builder.WriteString(_m.Assertion)
@@ -354,9 +341,6 @@ func (_m *KnowledgeEvidence) String() string {
 		builder.WriteString("effective_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
-	builder.WriteString(", ")
-	builder.WriteString("properties=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Properties))
 	builder.WriteByte(')')
 	return builder.String()
 }

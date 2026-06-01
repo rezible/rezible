@@ -129,16 +129,16 @@ func (_u *KnowledgeEvidenceUpdate) ClearAliasID() *KnowledgeEvidenceUpdate {
 	return _u
 }
 
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (_u *KnowledgeEvidenceUpdate) SetNormalizedEventID(v uuid.UUID) *KnowledgeEvidenceUpdate {
-	_u.mutation.SetNormalizedEventID(v)
+// SetEventID sets the "event_id" field.
+func (_u *KnowledgeEvidenceUpdate) SetEventID(v uuid.UUID) *KnowledgeEvidenceUpdate {
+	_u.mutation.SetEventID(v)
 	return _u
 }
 
-// SetNillableNormalizedEventID sets the "normalized_event_id" field if the given value is not nil.
-func (_u *KnowledgeEvidenceUpdate) SetNillableNormalizedEventID(v *uuid.UUID) *KnowledgeEvidenceUpdate {
+// SetNillableEventID sets the "event_id" field if the given value is not nil.
+func (_u *KnowledgeEvidenceUpdate) SetNillableEventID(v *uuid.UUID) *KnowledgeEvidenceUpdate {
 	if v != nil {
-		_u.SetNormalizedEventID(*v)
+		_u.SetEventID(*v)
 	}
 	return _u
 }
@@ -205,18 +205,6 @@ func (_u *KnowledgeEvidenceUpdate) ClearEffectiveAt() *KnowledgeEvidenceUpdate {
 	return _u
 }
 
-// SetProperties sets the "properties" field.
-func (_u *KnowledgeEvidenceUpdate) SetProperties(v map[string]interface{}) *KnowledgeEvidenceUpdate {
-	_u.mutation.SetProperties(v)
-	return _u
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (_u *KnowledgeEvidenceUpdate) ClearProperties() *KnowledgeEvidenceUpdate {
-	_u.mutation.ClearProperties()
-	return _u
-}
-
 // SetEntity sets the "entity" edge to the KnowledgeEntity entity.
 func (_u *KnowledgeEvidenceUpdate) SetEntity(v *KnowledgeEntity) *KnowledgeEvidenceUpdate {
 	return _u.SetEntityID(v.ID)
@@ -232,9 +220,9 @@ func (_u *KnowledgeEvidenceUpdate) SetAlias(v *KnowledgeEntityAlias) *KnowledgeE
 	return _u.SetAliasID(v.ID)
 }
 
-// SetNormalizedEvent sets the "normalized_event" edge to the NormalizedEvent entity.
-func (_u *KnowledgeEvidenceUpdate) SetNormalizedEvent(v *NormalizedEvent) *KnowledgeEvidenceUpdate {
-	return _u.SetNormalizedEventID(v.ID)
+// SetEvent sets the "event" edge to the NormalizedEvent entity.
+func (_u *KnowledgeEvidenceUpdate) SetEvent(v *NormalizedEvent) *KnowledgeEvidenceUpdate {
+	return _u.SetEventID(v.ID)
 }
 
 // Mutation returns the KnowledgeEvidenceMutation object of the builder.
@@ -260,9 +248,9 @@ func (_u *KnowledgeEvidenceUpdate) ClearAlias() *KnowledgeEvidenceUpdate {
 	return _u
 }
 
-// ClearNormalizedEvent clears the "normalized_event" edge to the NormalizedEvent entity.
-func (_u *KnowledgeEvidenceUpdate) ClearNormalizedEvent() *KnowledgeEvidenceUpdate {
-	_u.mutation.ClearNormalizedEvent()
+// ClearEvent clears the "event" edge to the NormalizedEvent entity.
+func (_u *KnowledgeEvidenceUpdate) ClearEvent() *KnowledgeEvidenceUpdate {
+	_u.mutation.ClearEvent()
 	return _u
 }
 
@@ -328,8 +316,8 @@ func (_u *KnowledgeEvidenceUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.tenant"`)
 	}
-	if _u.mutation.NormalizedEventCleared() && len(_u.mutation.NormalizedEventIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.normalized_event"`)
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.event"`)
 	}
 	return nil
 }
@@ -375,12 +363,6 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 	}
 	if _u.mutation.EffectiveAtCleared() {
 		_spec.ClearField(knowledgeevidence.FieldEffectiveAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.Properties(); ok {
-		_spec.SetField(knowledgeevidence.FieldProperties, field.TypeJSON, value)
-	}
-	if _u.mutation.PropertiesCleared() {
-		_spec.ClearField(knowledgeevidence.FieldProperties, field.TypeJSON)
 	}
 	if _u.mutation.EntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -475,12 +457,12 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.NormalizedEventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   knowledgeevidence.NormalizedEventTable,
-			Columns: []string{knowledgeevidence.NormalizedEventColumn},
+			Table:   knowledgeevidence.EventTable,
+			Columns: []string{knowledgeevidence.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
@@ -489,12 +471,12 @@ func (_u *KnowledgeEvidenceUpdate) sqlSave(ctx context.Context) (_node int, err 
 		edge.Schema = _u.schemaConfig.KnowledgeEvidence
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.NormalizedEventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   knowledgeevidence.NormalizedEventTable,
-			Columns: []string{knowledgeevidence.NormalizedEventColumn},
+			Table:   knowledgeevidence.EventTable,
+			Columns: []string{knowledgeevidence.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
@@ -624,16 +606,16 @@ func (_u *KnowledgeEvidenceUpdateOne) ClearAliasID() *KnowledgeEvidenceUpdateOne
 	return _u
 }
 
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (_u *KnowledgeEvidenceUpdateOne) SetNormalizedEventID(v uuid.UUID) *KnowledgeEvidenceUpdateOne {
-	_u.mutation.SetNormalizedEventID(v)
+// SetEventID sets the "event_id" field.
+func (_u *KnowledgeEvidenceUpdateOne) SetEventID(v uuid.UUID) *KnowledgeEvidenceUpdateOne {
+	_u.mutation.SetEventID(v)
 	return _u
 }
 
-// SetNillableNormalizedEventID sets the "normalized_event_id" field if the given value is not nil.
-func (_u *KnowledgeEvidenceUpdateOne) SetNillableNormalizedEventID(v *uuid.UUID) *KnowledgeEvidenceUpdateOne {
+// SetNillableEventID sets the "event_id" field if the given value is not nil.
+func (_u *KnowledgeEvidenceUpdateOne) SetNillableEventID(v *uuid.UUID) *KnowledgeEvidenceUpdateOne {
 	if v != nil {
-		_u.SetNormalizedEventID(*v)
+		_u.SetEventID(*v)
 	}
 	return _u
 }
@@ -700,18 +682,6 @@ func (_u *KnowledgeEvidenceUpdateOne) ClearEffectiveAt() *KnowledgeEvidenceUpdat
 	return _u
 }
 
-// SetProperties sets the "properties" field.
-func (_u *KnowledgeEvidenceUpdateOne) SetProperties(v map[string]interface{}) *KnowledgeEvidenceUpdateOne {
-	_u.mutation.SetProperties(v)
-	return _u
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (_u *KnowledgeEvidenceUpdateOne) ClearProperties() *KnowledgeEvidenceUpdateOne {
-	_u.mutation.ClearProperties()
-	return _u
-}
-
 // SetEntity sets the "entity" edge to the KnowledgeEntity entity.
 func (_u *KnowledgeEvidenceUpdateOne) SetEntity(v *KnowledgeEntity) *KnowledgeEvidenceUpdateOne {
 	return _u.SetEntityID(v.ID)
@@ -727,9 +697,9 @@ func (_u *KnowledgeEvidenceUpdateOne) SetAlias(v *KnowledgeEntityAlias) *Knowled
 	return _u.SetAliasID(v.ID)
 }
 
-// SetNormalizedEvent sets the "normalized_event" edge to the NormalizedEvent entity.
-func (_u *KnowledgeEvidenceUpdateOne) SetNormalizedEvent(v *NormalizedEvent) *KnowledgeEvidenceUpdateOne {
-	return _u.SetNormalizedEventID(v.ID)
+// SetEvent sets the "event" edge to the NormalizedEvent entity.
+func (_u *KnowledgeEvidenceUpdateOne) SetEvent(v *NormalizedEvent) *KnowledgeEvidenceUpdateOne {
+	return _u.SetEventID(v.ID)
 }
 
 // Mutation returns the KnowledgeEvidenceMutation object of the builder.
@@ -755,9 +725,9 @@ func (_u *KnowledgeEvidenceUpdateOne) ClearAlias() *KnowledgeEvidenceUpdateOne {
 	return _u
 }
 
-// ClearNormalizedEvent clears the "normalized_event" edge to the NormalizedEvent entity.
-func (_u *KnowledgeEvidenceUpdateOne) ClearNormalizedEvent() *KnowledgeEvidenceUpdateOne {
-	_u.mutation.ClearNormalizedEvent()
+// ClearEvent clears the "event" edge to the NormalizedEvent entity.
+func (_u *KnowledgeEvidenceUpdateOne) ClearEvent() *KnowledgeEvidenceUpdateOne {
+	_u.mutation.ClearEvent()
 	return _u
 }
 
@@ -836,8 +806,8 @@ func (_u *KnowledgeEvidenceUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.tenant"`)
 	}
-	if _u.mutation.NormalizedEventCleared() && len(_u.mutation.NormalizedEventIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.normalized_event"`)
+	if _u.mutation.EventCleared() && len(_u.mutation.EventIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "KnowledgeEvidence.event"`)
 	}
 	return nil
 }
@@ -900,12 +870,6 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 	}
 	if _u.mutation.EffectiveAtCleared() {
 		_spec.ClearField(knowledgeevidence.FieldEffectiveAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.Properties(); ok {
-		_spec.SetField(knowledgeevidence.FieldProperties, field.TypeJSON, value)
-	}
-	if _u.mutation.PropertiesCleared() {
-		_spec.ClearField(knowledgeevidence.FieldProperties, field.TypeJSON)
 	}
 	if _u.mutation.EntityCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1000,12 +964,12 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.NormalizedEventCleared() {
+	if _u.mutation.EventCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   knowledgeevidence.NormalizedEventTable,
-			Columns: []string{knowledgeevidence.NormalizedEventColumn},
+			Table:   knowledgeevidence.EventTable,
+			Columns: []string{knowledgeevidence.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
@@ -1014,12 +978,12 @@ func (_u *KnowledgeEvidenceUpdateOne) sqlSave(ctx context.Context) (_node *Knowl
 		edge.Schema = _u.schemaConfig.KnowledgeEvidence
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.NormalizedEventIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   knowledgeevidence.NormalizedEventTable,
-			Columns: []string{knowledgeevidence.NormalizedEventColumn},
+			Table:   knowledgeevidence.EventTable,
+			Columns: []string{knowledgeevidence.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),

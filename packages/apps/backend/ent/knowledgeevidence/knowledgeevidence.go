@@ -31,8 +31,8 @@ const (
 	FieldRelationshipID = "relationship_id"
 	// FieldAliasID holds the string denoting the alias_id field in the database.
 	FieldAliasID = "alias_id"
-	// FieldNormalizedEventID holds the string denoting the normalized_event_id field in the database.
-	FieldNormalizedEventID = "normalized_event_id"
+	// FieldEventID holds the string denoting the event_id field in the database.
+	FieldEventID = "event_id"
 	// FieldAssertion holds the string denoting the assertion field in the database.
 	FieldAssertion = "assertion"
 	// FieldEvidenceKind holds the string denoting the evidence_kind field in the database.
@@ -41,8 +41,6 @@ const (
 	FieldObservedAt = "observed_at"
 	// FieldEffectiveAt holds the string denoting the effective_at field in the database.
 	FieldEffectiveAt = "effective_at"
-	// FieldProperties holds the string denoting the properties field in the database.
-	FieldProperties = "properties"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeEntity holds the string denoting the entity edge name in mutations.
@@ -51,8 +49,8 @@ const (
 	EdgeRelationship = "relationship"
 	// EdgeAlias holds the string denoting the alias edge name in mutations.
 	EdgeAlias = "alias"
-	// EdgeNormalizedEvent holds the string denoting the normalized_event edge name in mutations.
-	EdgeNormalizedEvent = "normalized_event"
+	// EdgeEvent holds the string denoting the event edge name in mutations.
+	EdgeEvent = "event"
 	// Table holds the table name of the knowledgeevidence in the database.
 	Table = "knowledge_evidences"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -83,13 +81,13 @@ const (
 	AliasInverseTable = "knowledge_entity_alias"
 	// AliasColumn is the table column denoting the alias relation/edge.
 	AliasColumn = "alias_id"
-	// NormalizedEventTable is the table that holds the normalized_event relation/edge.
-	NormalizedEventTable = "knowledge_evidences"
-	// NormalizedEventInverseTable is the table name for the NormalizedEvent entity.
+	// EventTable is the table that holds the event relation/edge.
+	EventTable = "knowledge_evidences"
+	// EventInverseTable is the table name for the NormalizedEvent entity.
 	// It exists in this package in order to avoid circular dependency with the "normalizedevent" package.
-	NormalizedEventInverseTable = "normalized_events"
-	// NormalizedEventColumn is the table column denoting the normalized_event relation/edge.
-	NormalizedEventColumn = "normalized_event_id"
+	EventInverseTable = "normalized_events"
+	// EventColumn is the table column denoting the event relation/edge.
+	EventColumn = "event_id"
 )
 
 // Columns holds all SQL columns for knowledgeevidence fields.
@@ -102,12 +100,11 @@ var Columns = []string{
 	FieldEntityID,
 	FieldRelationshipID,
 	FieldAliasID,
-	FieldNormalizedEventID,
+	FieldEventID,
 	FieldAssertion,
 	FieldEvidenceKind,
 	FieldObservedAt,
 	FieldEffectiveAt,
-	FieldProperties,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -231,9 +228,9 @@ func ByAliasID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAliasID, opts...).ToFunc()
 }
 
-// ByNormalizedEventID orders the results by the normalized_event_id field.
-func ByNormalizedEventID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldNormalizedEventID, opts...).ToFunc()
+// ByEventID orders the results by the event_id field.
+func ByEventID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldEventID, opts...).ToFunc()
 }
 
 // ByAssertion orders the results by the assertion field.
@@ -284,10 +281,10 @@ func ByAliasField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByNormalizedEventField orders the results by normalized_event field.
-func ByNormalizedEventField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByEventField orders the results by event field.
+func ByEventField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newNormalizedEventStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newEventStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -318,10 +315,10 @@ func newAliasStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, AliasTable, AliasColumn),
 	)
 }
-func newNormalizedEventStep() *sqlgraph.Step {
+func newEventStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(NormalizedEventInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, NormalizedEventTable, NormalizedEventColumn),
+		sqlgraph.To(EventInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, EventTable, EventColumn),
 	)
 }

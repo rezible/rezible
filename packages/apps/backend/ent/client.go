@@ -6812,15 +6812,15 @@ func (c *KnowledgeEvidenceClient) QueryAlias(_m *KnowledgeEvidence) *KnowledgeEn
 	return query
 }
 
-// QueryNormalizedEvent queries the normalized_event edge of a KnowledgeEvidence.
-func (c *KnowledgeEvidenceClient) QueryNormalizedEvent(_m *KnowledgeEvidence) *NormalizedEventQuery {
+// QueryEvent queries the event edge of a KnowledgeEvidence.
+func (c *KnowledgeEvidenceClient) QueryEvent(_m *KnowledgeEvidence) *NormalizedEventQuery {
 	query := (&NormalizedEventClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(knowledgeevidence.Table, knowledgeevidence.FieldID, id),
 			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeevidence.NormalizedEventTable, knowledgeevidence.NormalizedEventColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeevidence.EventTable, knowledgeevidence.EventColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.NormalizedEvent

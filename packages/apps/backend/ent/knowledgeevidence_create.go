@@ -111,9 +111,9 @@ func (_c *KnowledgeEvidenceCreate) SetNillableAliasID(v *uuid.UUID) *KnowledgeEv
 	return _c
 }
 
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (_c *KnowledgeEvidenceCreate) SetNormalizedEventID(v uuid.UUID) *KnowledgeEvidenceCreate {
-	_c.mutation.SetNormalizedEventID(v)
+// SetEventID sets the "event_id" field.
+func (_c *KnowledgeEvidenceCreate) SetEventID(v uuid.UUID) *KnowledgeEvidenceCreate {
+	_c.mutation.SetEventID(v)
 	return _c
 }
 
@@ -146,12 +146,6 @@ func (_c *KnowledgeEvidenceCreate) SetNillableEffectiveAt(v *time.Time) *Knowled
 	if v != nil {
 		_c.SetEffectiveAt(*v)
 	}
-	return _c
-}
-
-// SetProperties sets the "properties" field.
-func (_c *KnowledgeEvidenceCreate) SetProperties(v map[string]interface{}) *KnowledgeEvidenceCreate {
-	_c.mutation.SetProperties(v)
 	return _c
 }
 
@@ -189,9 +183,9 @@ func (_c *KnowledgeEvidenceCreate) SetAlias(v *KnowledgeEntityAlias) *KnowledgeE
 	return _c.SetAliasID(v.ID)
 }
 
-// SetNormalizedEvent sets the "normalized_event" edge to the NormalizedEvent entity.
-func (_c *KnowledgeEvidenceCreate) SetNormalizedEvent(v *NormalizedEvent) *KnowledgeEvidenceCreate {
-	return _c.SetNormalizedEventID(v.ID)
+// SetEvent sets the "event" edge to the NormalizedEvent entity.
+func (_c *KnowledgeEvidenceCreate) SetEvent(v *NormalizedEvent) *KnowledgeEvidenceCreate {
+	return _c.SetEventID(v.ID)
 }
 
 // Mutation returns the KnowledgeEvidenceMutation object of the builder.
@@ -274,8 +268,8 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 			return &ValidationError{Name: "subject_type", err: fmt.Errorf(`ent: validator failed for field "KnowledgeEvidence.subject_type": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.NormalizedEventID(); !ok {
-		return &ValidationError{Name: "normalized_event_id", err: errors.New(`ent: missing required field "KnowledgeEvidence.normalized_event_id"`)}
+	if _, ok := _c.mutation.EventID(); !ok {
+		return &ValidationError{Name: "event_id", err: errors.New(`ent: missing required field "KnowledgeEvidence.event_id"`)}
 	}
 	if _, ok := _c.mutation.Assertion(); !ok {
 		return &ValidationError{Name: "assertion", err: errors.New(`ent: missing required field "KnowledgeEvidence.assertion"`)}
@@ -299,8 +293,8 @@ func (_c *KnowledgeEvidenceCreate) check() error {
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "KnowledgeEvidence.tenant"`)}
 	}
-	if len(_c.mutation.NormalizedEventIDs()) == 0 {
-		return &ValidationError{Name: "normalized_event", err: errors.New(`ent: missing required edge "KnowledgeEvidence.normalized_event"`)}
+	if len(_c.mutation.EventIDs()) == 0 {
+		return &ValidationError{Name: "event", err: errors.New(`ent: missing required edge "KnowledgeEvidence.event"`)}
 	}
 	return nil
 }
@@ -366,10 +360,6 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 	if value, ok := _c.mutation.EffectiveAt(); ok {
 		_spec.SetField(knowledgeevidence.FieldEffectiveAt, field.TypeTime, value)
 		_node.EffectiveAt = &value
-	}
-	if value, ok := _c.mutation.Properties(); ok {
-		_spec.SetField(knowledgeevidence.FieldProperties, field.TypeJSON, value)
-		_node.Properties = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -443,12 +433,12 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 		_node.AliasID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.NormalizedEventIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.EventIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   knowledgeevidence.NormalizedEventTable,
-			Columns: []string{knowledgeevidence.NormalizedEventColumn},
+			Table:   knowledgeevidence.EventTable,
+			Columns: []string{knowledgeevidence.EventColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
@@ -458,7 +448,7 @@ func (_c *KnowledgeEvidenceCreate) createSpec() (*KnowledgeEvidence, *sqlgraph.C
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.NormalizedEventID = nodes[0]
+		_node.EventID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -603,15 +593,15 @@ func (u *KnowledgeEvidenceUpsert) ClearAliasID() *KnowledgeEvidenceUpsert {
 	return u
 }
 
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (u *KnowledgeEvidenceUpsert) SetNormalizedEventID(v uuid.UUID) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldNormalizedEventID, v)
+// SetEventID sets the "event_id" field.
+func (u *KnowledgeEvidenceUpsert) SetEventID(v uuid.UUID) *KnowledgeEvidenceUpsert {
+	u.Set(knowledgeevidence.FieldEventID, v)
 	return u
 }
 
-// UpdateNormalizedEventID sets the "normalized_event_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateNormalizedEventID() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldNormalizedEventID)
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsert) UpdateEventID() *KnowledgeEvidenceUpsert {
+	u.SetExcluded(knowledgeevidence.FieldEventID)
 	return u
 }
 
@@ -666,24 +656,6 @@ func (u *KnowledgeEvidenceUpsert) UpdateEffectiveAt() *KnowledgeEvidenceUpsert {
 // ClearEffectiveAt clears the value of the "effective_at" field.
 func (u *KnowledgeEvidenceUpsert) ClearEffectiveAt() *KnowledgeEvidenceUpsert {
 	u.SetNull(knowledgeevidence.FieldEffectiveAt)
-	return u
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeEvidenceUpsert) SetProperties(v map[string]interface{}) *KnowledgeEvidenceUpsert {
-	u.Set(knowledgeevidence.FieldProperties, v)
-	return u
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsert) UpdateProperties() *KnowledgeEvidenceUpsert {
-	u.SetExcluded(knowledgeevidence.FieldProperties)
-	return u
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEvidenceUpsert) ClearProperties() *KnowledgeEvidenceUpsert {
-	u.SetNull(knowledgeevidence.FieldProperties)
 	return u
 }
 
@@ -843,17 +815,17 @@ func (u *KnowledgeEvidenceUpsertOne) ClearAliasID() *KnowledgeEvidenceUpsertOne 
 	})
 }
 
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (u *KnowledgeEvidenceUpsertOne) SetNormalizedEventID(v uuid.UUID) *KnowledgeEvidenceUpsertOne {
+// SetEventID sets the "event_id" field.
+func (u *KnowledgeEvidenceUpsertOne) SetEventID(v uuid.UUID) *KnowledgeEvidenceUpsertOne {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetNormalizedEventID(v)
+		s.SetEventID(v)
 	})
 }
 
-// UpdateNormalizedEventID sets the "normalized_event_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateNormalizedEventID() *KnowledgeEvidenceUpsertOne {
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsertOne) UpdateEventID() *KnowledgeEvidenceUpsertOne {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateNormalizedEventID()
+		s.UpdateEventID()
 	})
 }
 
@@ -917,27 +889,6 @@ func (u *KnowledgeEvidenceUpsertOne) UpdateEffectiveAt() *KnowledgeEvidenceUpser
 func (u *KnowledgeEvidenceUpsertOne) ClearEffectiveAt() *KnowledgeEvidenceUpsertOne {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
 		s.ClearEffectiveAt()
-	})
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeEvidenceUpsertOne) SetProperties(v map[string]interface{}) *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetProperties(v)
-	})
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertOne) UpdateProperties() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateProperties()
-	})
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEvidenceUpsertOne) ClearProperties() *KnowledgeEvidenceUpsertOne {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearProperties()
 	})
 }
 
@@ -1264,17 +1215,17 @@ func (u *KnowledgeEvidenceUpsertBulk) ClearAliasID() *KnowledgeEvidenceUpsertBul
 	})
 }
 
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetNormalizedEventID(v uuid.UUID) *KnowledgeEvidenceUpsertBulk {
+// SetEventID sets the "event_id" field.
+func (u *KnowledgeEvidenceUpsertBulk) SetEventID(v uuid.UUID) *KnowledgeEvidenceUpsertBulk {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetNormalizedEventID(v)
+		s.SetEventID(v)
 	})
 }
 
-// UpdateNormalizedEventID sets the "normalized_event_id" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateNormalizedEventID() *KnowledgeEvidenceUpsertBulk {
+// UpdateEventID sets the "event_id" field to the value that was provided on create.
+func (u *KnowledgeEvidenceUpsertBulk) UpdateEventID() *KnowledgeEvidenceUpsertBulk {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateNormalizedEventID()
+		s.UpdateEventID()
 	})
 }
 
@@ -1338,27 +1289,6 @@ func (u *KnowledgeEvidenceUpsertBulk) UpdateEffectiveAt() *KnowledgeEvidenceUpse
 func (u *KnowledgeEvidenceUpsertBulk) ClearEffectiveAt() *KnowledgeEvidenceUpsertBulk {
 	return u.Update(func(s *KnowledgeEvidenceUpsert) {
 		s.ClearEffectiveAt()
-	})
-}
-
-// SetProperties sets the "properties" field.
-func (u *KnowledgeEvidenceUpsertBulk) SetProperties(v map[string]interface{}) *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.SetProperties(v)
-	})
-}
-
-// UpdateProperties sets the "properties" field to the value that was provided on create.
-func (u *KnowledgeEvidenceUpsertBulk) UpdateProperties() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.UpdateProperties()
-	})
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (u *KnowledgeEvidenceUpsertBulk) ClearProperties() *KnowledgeEvidenceUpsertBulk {
-	return u.Update(func(s *KnowledgeEvidenceUpsert) {
-		s.ClearProperties()
 	})
 }
 

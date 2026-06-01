@@ -638,19 +638,18 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "KnowledgeEvidence",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			knowledgeevidence.FieldTenantID:          {Type: field.TypeInt, Column: knowledgeevidence.FieldTenantID},
-			knowledgeevidence.FieldCreatedAt:         {Type: field.TypeTime, Column: knowledgeevidence.FieldCreatedAt},
-			knowledgeevidence.FieldUpdatedAt:         {Type: field.TypeTime, Column: knowledgeevidence.FieldUpdatedAt},
-			knowledgeevidence.FieldSubjectType:       {Type: field.TypeEnum, Column: knowledgeevidence.FieldSubjectType},
-			knowledgeevidence.FieldEntityID:          {Type: field.TypeUUID, Column: knowledgeevidence.FieldEntityID},
-			knowledgeevidence.FieldRelationshipID:    {Type: field.TypeUUID, Column: knowledgeevidence.FieldRelationshipID},
-			knowledgeevidence.FieldAliasID:           {Type: field.TypeUUID, Column: knowledgeevidence.FieldAliasID},
-			knowledgeevidence.FieldNormalizedEventID: {Type: field.TypeUUID, Column: knowledgeevidence.FieldNormalizedEventID},
-			knowledgeevidence.FieldAssertion:         {Type: field.TypeString, Column: knowledgeevidence.FieldAssertion},
-			knowledgeevidence.FieldEvidenceKind:      {Type: field.TypeEnum, Column: knowledgeevidence.FieldEvidenceKind},
-			knowledgeevidence.FieldObservedAt:        {Type: field.TypeTime, Column: knowledgeevidence.FieldObservedAt},
-			knowledgeevidence.FieldEffectiveAt:       {Type: field.TypeTime, Column: knowledgeevidence.FieldEffectiveAt},
-			knowledgeevidence.FieldProperties:        {Type: field.TypeJSON, Column: knowledgeevidence.FieldProperties},
+			knowledgeevidence.FieldTenantID:       {Type: field.TypeInt, Column: knowledgeevidence.FieldTenantID},
+			knowledgeevidence.FieldCreatedAt:      {Type: field.TypeTime, Column: knowledgeevidence.FieldCreatedAt},
+			knowledgeevidence.FieldUpdatedAt:      {Type: field.TypeTime, Column: knowledgeevidence.FieldUpdatedAt},
+			knowledgeevidence.FieldSubjectType:    {Type: field.TypeEnum, Column: knowledgeevidence.FieldSubjectType},
+			knowledgeevidence.FieldEntityID:       {Type: field.TypeUUID, Column: knowledgeevidence.FieldEntityID},
+			knowledgeevidence.FieldRelationshipID: {Type: field.TypeUUID, Column: knowledgeevidence.FieldRelationshipID},
+			knowledgeevidence.FieldAliasID:        {Type: field.TypeUUID, Column: knowledgeevidence.FieldAliasID},
+			knowledgeevidence.FieldEventID:        {Type: field.TypeUUID, Column: knowledgeevidence.FieldEventID},
+			knowledgeevidence.FieldAssertion:      {Type: field.TypeString, Column: knowledgeevidence.FieldAssertion},
+			knowledgeevidence.FieldEvidenceKind:   {Type: field.TypeEnum, Column: knowledgeevidence.FieldEvidenceKind},
+			knowledgeevidence.FieldObservedAt:     {Type: field.TypeTime, Column: knowledgeevidence.FieldObservedAt},
+			knowledgeevidence.FieldEffectiveAt:    {Type: field.TypeTime, Column: knowledgeevidence.FieldEffectiveAt},
 		},
 	}
 	graph.Nodes[30] = &sqlgraph.Node{
@@ -2696,12 +2695,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		"KnowledgeEntityAlias",
 	)
 	graph.MustAddE(
-		"normalized_event",
+		"event",
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   knowledgeevidence.NormalizedEventTable,
-			Columns: []string{knowledgeevidence.NormalizedEventColumn},
+			Table:   knowledgeevidence.EventTable,
+			Columns: []string{knowledgeevidence.EventColumn},
 			Bidi:    false,
 		},
 		"KnowledgeEvidence",
@@ -7971,9 +7970,9 @@ func (f *KnowledgeEvidenceFilter) WhereAliasID(p entql.ValueP) {
 	f.Where(p.Field(knowledgeevidence.FieldAliasID))
 }
 
-// WhereNormalizedEventID applies the entql [16]byte predicate on the normalized_event_id field.
-func (f *KnowledgeEvidenceFilter) WhereNormalizedEventID(p entql.ValueP) {
-	f.Where(p.Field(knowledgeevidence.FieldNormalizedEventID))
+// WhereEventID applies the entql [16]byte predicate on the event_id field.
+func (f *KnowledgeEvidenceFilter) WhereEventID(p entql.ValueP) {
+	f.Where(p.Field(knowledgeevidence.FieldEventID))
 }
 
 // WhereAssertion applies the entql string predicate on the assertion field.
@@ -7994,11 +7993,6 @@ func (f *KnowledgeEvidenceFilter) WhereObservedAt(p entql.TimeP) {
 // WhereEffectiveAt applies the entql time.Time predicate on the effective_at field.
 func (f *KnowledgeEvidenceFilter) WhereEffectiveAt(p entql.TimeP) {
 	f.Where(p.Field(knowledgeevidence.FieldEffectiveAt))
-}
-
-// WhereProperties applies the entql json.RawMessage predicate on the properties field.
-func (f *KnowledgeEvidenceFilter) WhereProperties(p entql.BytesP) {
-	f.Where(p.Field(knowledgeevidence.FieldProperties))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -8057,14 +8051,14 @@ func (f *KnowledgeEvidenceFilter) WhereHasAliasWith(preds ...predicate.Knowledge
 	})))
 }
 
-// WhereHasNormalizedEvent applies a predicate to check if query has an edge normalized_event.
-func (f *KnowledgeEvidenceFilter) WhereHasNormalizedEvent() {
-	f.Where(entql.HasEdge("normalized_event"))
+// WhereHasEvent applies a predicate to check if query has an edge event.
+func (f *KnowledgeEvidenceFilter) WhereHasEvent() {
+	f.Where(entql.HasEdge("event"))
 }
 
-// WhereHasNormalizedEventWith applies a predicate to check if query has an edge normalized_event with a given conditions (other predicates).
-func (f *KnowledgeEvidenceFilter) WhereHasNormalizedEventWith(preds ...predicate.NormalizedEvent) {
-	f.Where(entql.HasEdgeWith("normalized_event", sqlgraph.WrapFunc(func(s *sql.Selector) {
+// WhereHasEventWith applies a predicate to check if query has an edge event with a given conditions (other predicates).
+func (f *KnowledgeEvidenceFilter) WhereHasEventWith(preds ...predicate.NormalizedEvent) {
+	f.Where(entql.HasEdgeWith("event", sqlgraph.WrapFunc(func(s *sql.Selector) {
 		for _, p := range preds {
 			p(s)
 		}

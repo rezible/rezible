@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/schema"
@@ -21,6 +22,8 @@ import (
 	"github.com/rezible/rezible/ent/privacy"
 	"github.com/rezible/rezible/ent/schema/rules"
 )
+
+var schemaTypeJsonB = map[string]string{dialect.Postgres: "jsonb"}
 
 type BaseMixin struct {
 	mixin.Schema

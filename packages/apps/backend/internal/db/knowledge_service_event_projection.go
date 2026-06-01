@@ -99,59 +99,51 @@ func (kp *knowledgeEntityEventProjector) projectEvent(ev *ent.NormalizedEvent) (
 	return nil, decErr
 }
 
-type EntityAliasRef struct {
+type entityAliasRef struct {
 	Provider           string
 	ProviderSubjectRef string
 }
 
-func (r EntityAliasRef) asAlias() *ent.KnowledgeEntityAlias {
-	return &ent.KnowledgeEntityAlias{
-		Provider:           r.Provider,
-		ProviderSubjectRef: r.ProviderSubjectRef,
-	}
+func (r entityAliasRef) asAlias() *ent.KnowledgeEntityAlias {
+	return &ent.KnowledgeEntityAlias{Provider: r.Provider, ProviderSubjectRef: r.ProviderSubjectRef}
 }
 
 func (kp *knowledgeEntityEventProjector) saveProjection(ctx context.Context, result *KnowledgeProjection) error {
-	savedAliasRefLookup := make(map[EntityAliasRef]uuid.UUID)
+	aliasRefLookup := make(map[entityAliasRef]uuid.UUID)
 	for _, proj := range result.Entities {
-		entity := &ent.KnowledgeEntity{
-			Kind:        proj.Kind,
-			DisplayName: proj.DisplayName,
-			Description: proj.Description,
-			Properties:  proj.Properties,
-		}
 		params := rez.ResolveKnowledgeEntityParams{
-			IsPlaceholder:     proj.IsPlaceholder,
-			Event:             kp.event,
-			Entity:            entity,
+			IsPlaceholder: proj.IsPlaceholder,
+			Event:         kp.event,
+			Entity: &ent.KnowledgeEntity{
+				Kind:        proj.Kind,
+				DisplayName: proj.DisplayName,
+				Description: proj.Description,
+				Properties:  proj.Properties,
+			},
 			Aliases:           make([]*ent.KnowledgeEntityAlias, len(proj.Aliases)),
 			EvidenceAssertion: proj.Assertion,
 		}
-		for i, alias := range proj.Aliases {
-			params.Aliases[i] = alias.asAlias()
+		for i, ref := range proj.Aliases {
+			params.Aliases[i] = ref.asAlias()
 		}
 		saved, saveErr := kp.knowledge.ResolveEntity(ctx, params)
 		if saveErr != nil {
 			return fmt.Errorf("save projected entity: %w", saveErr)
 		}
 		for _, aliasRef := range proj.Aliases {
-			savedAliasRefLookup[aliasRef] = saved.ID
+			aliasRefLookup[aliasRef] = saved.ID
 		}
 	}
 	for _, projRel := range result.Relationships {
-		if saveErr := kp.saveProjectedRelationship(ctx, projRel, savedAliasRefLookup); saveErr != nil {
+		if saveErr := kp.saveProjectedRelationship(ctx, projRel, aliasRefLookup); saveErr != nil {
 			return fmt.Errorf("save projected relationship: %w", saveErr)
 		}
 	}
 	return nil
 }
 
-func (kp *knowledgeEntityEventProjector) resolveEntityFromAlias(ctx context.Context, ref EntityAliasRef) (*ent.KnowledgeEntity, error) {
-	alias := &ent.KnowledgeEntityAlias{
-		Provider:           ref.Provider,
-		ProviderSubjectRef: ref.ProviderSubjectRef,
-	}
-	resolvedAliases, resolveAliasesErr := kp.knowledge.ResolveEntityAliases(ctx, alias)
+func (kp *knowledgeEntityEventProjector) resolveEntityFromAlias(ctx context.Context, ref entityAliasRef) (*ent.KnowledgeEntity, error) {
+	resolvedAliases, resolveAliasesErr := kp.knowledge.ResolveEntityAliases(ctx, ref.asAlias())
 	if resolveAliasesErr != nil {
 		return nil, fmt.Errorf("resolve existing entity aliases: %w", resolveAliasesErr)
 	}
@@ -163,7 +155,7 @@ func (kp *knowledgeEntityEventProjector) resolveEntityFromAlias(ctx context.Cont
 	return nil, nil
 }
 
-func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.Context, proj ProjectedKnowledgeRelationship, refLookup map[EntityAliasRef]uuid.UUID) error {
+func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.Context, proj ProjectedKnowledgeRelationship, refLookup map[entityAliasRef]uuid.UUID) error {
 	fromId, fromAliasWasSaved := refLookup[proj.FromAlias]
 	if !fromAliasWasSaved || fromId == uuid.Nil {
 		fromEntity, resolveEntityErr := kp.resolveEntityFromAlias(ctx, proj.FromAlias)
@@ -198,9 +190,9 @@ func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.C
 	}
 	rel.Edges.Evidence = []*ent.KnowledgeEvidence{
 		{
-			NormalizedEventID: kp.event.ID,
-			Assertion:         proj.Assertion,
-			ObservedAt:        kp.observedAt,
+			EventID:    kp.event.ID,
+			Assertion:  proj.Assertion,
+			ObservedAt: kp.observedAt,
 		},
 	}
 	_, saveErr := kp.knowledge.ResolveRelationship(ctx, rel)
@@ -211,12 +203,6 @@ func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.C
 }
 
 // Event projections
-
-func eventKnowledgeEntityAliases(ev *ent.NormalizedEvent) []*ent.KnowledgeEntityAlias {
-	return []*ent.KnowledgeEntityAlias{
-		{Provider: ev.Provider, ProviderSubjectRef: ev.ProviderSubjectRef},
-	}
-}
 
 type KnowledgeProjection struct {
 	Entities      []ProjectedKnowledgeEntity
@@ -230,7 +216,7 @@ type ProjectedKnowledgeEntity struct {
 	DisplayName   string
 	Description   string
 	Properties    map[string]any
-	Aliases       []EntityAliasRef
+	Aliases       []entityAliasRef
 }
 
 type ProjectedKnowledgeRelationship struct {
@@ -239,15 +225,15 @@ type ProjectedKnowledgeRelationship struct {
 	DisplayName string
 	Description string
 	Properties  map[string]any
-	FromAlias   EntityAliasRef
-	ToAlias     EntityAliasRef
+	FromAlias   entityAliasRef
+	ToAlias     entityAliasRef
 }
 
-func (kp *knowledgeEntityEventProjector) makeEntityRef(ev *ent.NormalizedEvent, providerSubjectRef string) EntityAliasRef {
+func (kp *knowledgeEntityEventProjector) makeEntityRef(ev *ent.NormalizedEvent, providerSubjectRef string) entityAliasRef {
 	if providerSubjectRef == "" {
 		providerSubjectRef = ev.ProviderSubjectRef
 	}
-	return EntityAliasRef{Provider: ev.Provider, ProviderSubjectRef: providerSubjectRef}
+	return entityAliasRef{Provider: ev.Provider, ProviderSubjectRef: providerSubjectRef}
 }
 
 func (kp *knowledgeEntityEventProjector) projectCodeForgeEvent(pe *projections.CodeForgeEvent) *KnowledgeProjection {
@@ -256,7 +242,7 @@ func (kp *knowledgeEntityEventProjector) projectCodeForgeEvent(pe *projections.C
 		Assertion:   assertionCodeRepositoryExists,
 		DisplayName: pe.Attributes.DisplayName,
 		Properties:  pe.Event.Attributes,
-		Aliases:     []EntityAliasRef{kp.makeEntityRef(pe.Event, "")},
+		Aliases:     []entityAliasRef{kp.makeEntityRef(pe.Event, "")},
 	}
 	return &KnowledgeProjection{Entities: []ProjectedKnowledgeEntity{repoEntity}}
 }
@@ -269,7 +255,7 @@ func (kp *knowledgeEntityEventProjector) projectCodeChangeEvent(pe *projections.
 		Assertion:   assertionCodeChangeObserved,
 		DisplayName: attrs.DisplayName,
 		Properties:  pe.Event.Attributes,
-		Aliases:     []EntityAliasRef{changeEventAlias},
+		Aliases:     []entityAliasRef{changeEventAlias},
 	}
 
 	entities := []ProjectedKnowledgeEntity{codeChangedEntity}
@@ -282,7 +268,7 @@ func (kp *knowledgeEntityEventProjector) projectCodeChangeEvent(pe *projections.
 			Assertion:     assertionCodeRepositoryExists,
 			DisplayName:   attrs.RepositoryExternalRef,
 			Properties:    map[string]any{"external_ref": attrs.RepositoryExternalRef},
-			Aliases:       []EntityAliasRef{repoAlias},
+			Aliases:       []entityAliasRef{repoAlias},
 			IsPlaceholder: true,
 		})
 
@@ -310,7 +296,7 @@ func (kp *knowledgeEntityEventProjector) projectSystemComponentEvent(pe *project
 		DisplayName: attrs.DisplayName,
 		Description: attrs.Description,
 		Properties:  attrs.Properties,
-		Aliases:     []EntityAliasRef{kp.makeEntityRef(pe.Event, attrs.ExternalRef)},
+		Aliases:     []entityAliasRef{kp.makeEntityRef(pe.Event, attrs.ExternalRef)},
 	}
 	return &KnowledgeProjection{
 		Entities: []ProjectedKnowledgeEntity{componentEntity},
@@ -327,7 +313,7 @@ func (kp *knowledgeEntityEventProjector) projectSystemRelationshipEvent(pe *proj
 		Assertion:     assertionSystemComponentExists,
 		DisplayName:   attrs.SourceDisplayName,
 		Properties:    map[string]any{"external_ref": attrs.SourceExternalRef},
-		Aliases:       []EntityAliasRef{sourceAlias},
+		Aliases:       []entityAliasRef{sourceAlias},
 	}
 
 	targetAlias := kp.makeEntityRef(pe.Event, attrs.TargetExternalRef)
@@ -337,7 +323,7 @@ func (kp *knowledgeEntityEventProjector) projectSystemRelationshipEvent(pe *proj
 		Assertion:     assertionSystemComponentExists,
 		DisplayName:   attrs.TargetDisplayName,
 		Properties:    map[string]any{"external_ref": attrs.TargetExternalRef},
-		Aliases:       []EntityAliasRef{targetAlias},
+		Aliases:       []entityAliasRef{targetAlias},
 	}
 
 	relationship := ProjectedKnowledgeRelationship{

@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"fmt"
 
-	entsql "entgo.io/ent/dialect/sql"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/stretchr/testify/suite"
@@ -34,7 +33,7 @@ type Suite struct {
 
 	opts options
 
-	dbClient *ent.Client
+	db rez.Database
 
 	SeedTenant       *ent.Tenant
 	SeedOrganization *ent.Organization
@@ -53,7 +52,7 @@ func NewSuite(opts ...Option) Suite {
 
 func (s *Suite) SetupSuite() {
 	s.LoadConfig(nil)
-	s.setupTestDatabase()
+	s.setupTestDatabase(s.cfg.Postgres)
 	s.SeedTestEntities()
 }
 
@@ -66,21 +65,18 @@ func (s *Suite) BeforeTest(suiteName, testName string) {
 }
 
 func (s *Suite) LoadConfig(overrides map[string]any) {
-	clOpts := koanf.ConfigLoaderOptions{
+	cl := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{
 		LoadEnvironment: true,
 		Overrides:       overrides,
-	}
-	cl, clErr := koanf.NewConfigLoader(clOpts)
-	s.Require().NoError(clErr)
-	var cfgErr error
-	s.cfg, cfgErr = cl.LoadConfig(s.T().Context())
+	})
+	cfg, cfgErr := cl.LoadConfig(s.T().Context())
 	s.Require().NoError(cfgErr)
-	s.Require().NotNil(s.cfg)
+	s.cfg = cfg
 }
 
-func (s *Suite) DatabaseClient() *ent.Client { return s.dbClient }
+func (s *Suite) Database() rez.Database { return s.db }
 
-func (s *Suite) Client() *ent.Client { return s.dbClient }
+func (s *Suite) Client() *ent.Client { return s.db.Client(s.T().Context()) }
 
 func (s *Suite) SystemContext() context.Context {
 	return execution.NewSystemContext(s.T().Context())
@@ -90,26 +86,24 @@ func (s *Suite) SeedTenantContext() context.Context {
 	return execution.NewTenantContext(s.T().Context(), s.SeedTenant.ID)
 }
 
-func (s *Suite) setupTestDatabase() {
-	pgCfg := s.cfg.Postgres
-	s.Require().NotEmpty(pgCfg.AdminRole.Name, "postgres migrations admin config empty")
+func (s *Suite) setupTestDatabase(cfg rez.PostgresConfig) {
+	s.Require().NotEmpty(cfg.AdminRole.Name, "postgres migrations admin config empty")
 
-	opts := fmt.Sprintf("sslmode=%s&search_path=%s", pgCfg.SSLMode, postgres.SchemaName)
+	opts := fmt.Sprintf("sslmode=%s&search_path=%s", cfg.SSLMode, postgres.SchemaName)
 	pgxConf := pgtestdb.Config{
 		DriverName: "pgx",
-		Host:       pgCfg.Host,
-		Port:       fmt.Sprintf("%d", pgCfg.Port),
-		Database:   pgCfg.Database,
+		Host:       cfg.Host,
+		Port:       fmt.Sprintf("%d", cfg.Port),
+		Database:   cfg.Database,
 		Options:    opts,
-		User:       pgCfg.AdminRole.Name,
-		Password:   pgCfg.AdminRole.Password,
+		User:       cfg.AdminRole.Name,
+		Password:   cfg.AdminRole.Password,
 		TestRole: &pgtestdb.Role{
-			Username: pgCfg.AppRole.Name,
-			Password: pgCfg.AppRole.Password,
+			Username: cfg.AppRole.Name,
+			Password: cfg.AppRole.Password,
 		},
 	}
-	testDb := pgtestdb.New(s.T(), pgxConf, newTestDbMigrator())
-	s.dbClient = postgres.MakeEntClient(entsql.OpenDB("postgres", testDb))
+	s.db = postgres.NewStdDatabaseClient(pgtestdb.New(s.T(), pgxConf, newTestDbMigrator()))
 }
 
 type testDbMigrator struct {
@@ -141,7 +135,7 @@ func (m *testDbMigrator) Migrate(ctx context.Context, db *sql.DB, config pgtestd
 }
 
 func (s *Suite) closeTestDatabase() {
-	if closeErr := s.dbClient.Close(); closeErr != nil {
+	if closeErr := s.db.Shutdown(); closeErr != nil {
 		s.T().Logf("failed to close database client: %v", closeErr)
 	}
 }

@@ -1,14 +1,9 @@
 package main
 
 import (
-	"context"
-	"fmt"
-	"strings"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/integrations/projections"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
@@ -17,52 +12,35 @@ import (
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
 	"github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
-	"github.com/rezible/rezible/telemetry"
 	"github.com/samber/do/v2"
 )
 
-func provideDependencies(ctx context.Context, i do.Injector) error {
-	cl, clErr := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{LoadEnvironment: true})
-	if clErr != nil {
-		return fmt.Errorf("config loader: %w", clErr)
-	}
-	do.ProvideValue(i, cl)
-	do.ProvideValue[rez.ConfigLoader](i, cl)
-
-	cfg, cfgErr := cl.LoadConfig(ctx)
-	if cfgErr != nil {
-		return fmt.Errorf("load config: %w", cfgErr)
-	}
-	do.ProvideValue[rez.Config](i, cfg)
-
-	do.Provide(i, func(i do.Injector) (*telemetry.Service, error) {
-		return telemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
+func provideDependencies(i do.Injector) {
+	do.Provide(i, func(i do.Injector) (*postgres.MigrationService, error) {
+		return postgres.NewMigrationService(do.MustInvoke[rez.Config](i).Postgres), nil
 	})
-	do.MustAs[*telemetry.Service, rez.TelemetryService](i)
 
-	do.Provide(i, func(i do.Injector) (*postgres.MigratorClient, error) {
-		return postgres.NewAdminMigratorClient(do.MustInvoke[rez.Config](i).Postgres)
-	})
 	do.Provide(i, func(i do.Injector) (*postgres.DatabaseClient, error) {
-		return postgres.NewDatabaseClient(ctx, do.MustInvoke[rez.Config](i).Postgres)
+		appPool := do.MustInvoke[*postgres.PgxPool](i)
+		return postgres.NewPgxPoolDatabaseClient(appPool), nil
 	})
-	do.Provide(i, func(i do.Injector) (*ent.Client, error) {
-		pgDbc := do.MustInvoke[*postgres.DatabaseClient](i)
-		return pgDbc.Client(), nil
-	})
-	do.Provide(i, func(i do.Injector) (rez.JobService, error) {
-		pgDbc := do.MustInvoke[*postgres.DatabaseClient](i)
-		return river.NewJobService(do.MustInvoke[rez.TelemetryService](i), pgDbc.Pool())
+	do.MustAs[*postgres.DatabaseClient, rez.Database](i)
+
+	do.Provide(i, func(i do.Injector) (*river.JobService, error) {
+		return river.NewJobService(
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[*postgres.PgxPool](i),
+		)
 	})
 
-	do.Provide(i, func(i do.Injector) (rez.MessageService, error) {
+	do.Provide(i, func(i do.Injector) (*watermill.MessageService, error) {
 		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i))
 	})
+	do.MustAs[*watermill.MessageService, rez.MessageService](i)
 
 	do.Provide(i, func(i do.Injector) (*integrations.PackageRegistry, error) {
 		return integrations.NewPackageRegistry(do.MustInvoke[rez.TelemetryService](i)), nil
@@ -70,58 +48,50 @@ func provideDependencies(ctx context.Context, i do.Injector) error {
 
 	do.Provide(i, func(i do.Injector) (*oidc.AuthSessionService, error) {
 		return oidc.NewAuthSessionService(
-			cfg,
+			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),
 		)
 	})
 	do.MustAs[*oidc.AuthSessionService, http.UserAuthSessionService](i)
 
-	do.Package(provideServices()...)(i)
+	provideServices(i)
+	provideIntegrations(i)
 
 	do.Provide(i, func(i do.Injector) (oapiv1.Handler, error) {
-		return makeOpenApiHandler(i), nil
+		return apiv1.NewHandler(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.AlertService](i),
+			do.MustInvoke[rez.OrganizationService](i),
+			do.MustInvoke[rez.UserService](i),
+			do.MustInvoke[rez.DocumentsService](i),
+			do.MustInvoke[rez.DebriefService](i),
+			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.IntegrationsService](i),
+			do.MustInvoke[rez.EventsService](i),
+			do.MustInvoke[rez.EventAnnotationsService](i),
+			do.MustInvoke[rez.OncallRostersService](i),
+			do.MustInvoke[rez.OncallShiftsService](i),
+			do.MustInvoke[rez.OncallMetricsService](i),
+			do.MustInvoke[rez.PlaybookService](i),
+			do.MustInvoke[rez.RetrospectiveService](i),
+			do.MustInvoke[rez.SystemTopologyService](i),
+		), nil
 	})
 
 	do.Provide(i, func(i do.Injector) (*http.Server, error) {
 		return http.NewServer(
-			cfg,
+			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[http.UserAuthSessionService](i),
 			do.MustInvoke[oapiv1.Handler](i),
 			do.MustInvoke[*integrations.PackageRegistry](i).GetWebhookHandlers(),
 		)
 	})
-
-	if intgsErr := registerIntegrationPackages(i); intgsErr != nil {
-		return fmt.Errorf("register integration packages: %w", intgsErr)
-	}
-
-	registerEventProjectionServices(i)
-
-	do.Provide(i, func(i do.Injector) (*appRunner, error) {
-		// invoke http server
-		if _, srvErr := do.Invoke[*http.Server](i); srvErr != nil {
-			return nil, fmt.Errorf("failed to initialize server: %v", srvErr)
-		}
-		var services []rez.LifecycleService
-		for _, desc := range i.ListInvokedServices() {
-			s, invErr := do.InvokeNamed[any](i, desc.Service)
-			if invErr != nil {
-				return nil, fmt.Errorf("failed to invoke: %v", invErr)
-			}
-			if svc, ok := s.(rez.LifecycleService); ok {
-				services = append(services, svc)
-			}
-		}
-		return &appRunner{services: services}, nil
-	})
-
-	return nil
 }
 
-func registerIntegrationPackages(i do.Injector) error {
-	do.Provide(i, func(i do.Injector) (*slack.Integration, error) {
+var provideIntegrations = do.Package(
+	do.Lazy(func(i do.Injector) (*slack.Integration, error) {
 		return slack.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.IntegrationsService](i),
@@ -131,17 +101,17 @@ func registerIntegrationPackages(i do.Injector) error {
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.ProviderEventService](i),
 		)
-	})
-	do.Provide(i, func(i do.Injector) (*fakeprovider.Integration, error) {
+	}),
+	do.Lazy(func(i do.Injector) (*fakeprovider.Integration, error) {
 		return fakeprovider.MakeIntegration(do.MustInvoke[rez.Config](i)), nil
-	})
-	do.Provide(i, func(i do.Injector) (*github.Integration, error) {
+	}),
+	do.Lazy(func(i do.Injector) (*github.Integration, error) {
 		return github.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.ProviderEventService](i),
 		)
-	})
-	do.Provide(i, func(i do.Injector) (*google.Integration, error) {
+	}),
+	do.Lazy(func(i do.Injector) (*google.Integration, error) {
 		return google.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.UserService](i),
@@ -150,206 +120,148 @@ func registerIntegrationPackages(i do.Injector) error {
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.EventAnnotationsService](i),
 		)
-	})
+	}),
+)
 
-	var pkgs []rez.IntegrationPackage
-	for _, desc := range i.ListProvidedServices() {
-		svc := desc.Service
-		if strings.Contains(svc, "internal/integrations") {
-			if pkg, ok := do.MustInvokeNamed[any](i, svc).(rez.IntegrationPackage); ok {
-				pkgs = append(pkgs, pkg)
-			}
-		}
-	}
+var provideServices = do.Package(
+	do.Lazy(func(i do.Injector) (*db.KnowledgeService, error) {
+		return db.NewKnowledgeService(do.MustInvoke[*ent.Client](i)), nil
+	}),
+	do.Bind[*db.KnowledgeService, rez.KnowledgeService](),
 
-	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
-	for _, pkg := range pkgs {
-		if regErr := intgReg.RegisterPackage(pkg); regErr != nil {
-			return fmt.Errorf("failed to register integration package: %w", regErr)
-		}
-	}
+	do.Lazy(func(i do.Injector) (*db.IntegrationsService, error) {
+		return db.NewIntegrationsService(
+			do.MustInvoke[rez.Config](i).App,
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[*integrations.PackageRegistry](i))
+	}),
+	do.Bind[*db.IntegrationsService, rez.IntegrationsService](),
 
-	return nil
-}
+	do.Lazy(func(i do.Injector) (*db.ProviderEventService, error) {
+		return db.NewProviderEventService(
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.IntegrationsService](i),
+		)
+	}),
+	do.Bind[*db.ProviderEventService, rez.ProviderEventService](),
 
-func registerEventProjectionServices(i do.Injector) {
-	s := do.MustInvoke[rez.ProviderEventService](i)
-	s.RegisterProjectionHandler("knowledge", do.MustInvoke[*db.KnowledgeService](i),
-		projections.SubjectKindCodeForge,
-		projections.SubjectKindCodeChange,
-		projections.SubjectKindSystemComponent,
-		projections.SubjectKindSystemRelationship,
-	)
-	s.RegisterProjectionHandler("users", do.MustInvoke[*db.UserService](i),
-		projections.SubjectKindUser)
-	s.RegisterProjectionHandler("incidents", do.MustInvoke[*db.IncidentService](i),
-		projections.SubjectKindIncident)
-	s.RegisterProjectionHandler("alerts", do.MustInvoke[*db.AlertService](i),
-		projections.SubjectKindAlert)
-}
+	do.Lazy(func(i do.Injector) (*db.OrganizationService, error) {
+		return db.NewOrganizationService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobService](i),
+		)
+	}),
+	do.Bind[*db.OrganizationService, rez.OrganizationService](),
 
-func makeOpenApiHandler(i do.Injector) oapiv1.Handler {
-	return apiv1.NewHandler(
-		do.MustInvoke[*ent.Client](i),
-		do.MustInvoke[rez.AlertService](i),
-		do.MustInvoke[rez.OrganizationService](i),
-		do.MustInvoke[rez.UserService](i),
-		do.MustInvoke[rez.DocumentsService](i),
-		do.MustInvoke[rez.DebriefService](i),
-		do.MustInvoke[rez.IncidentService](i),
-		do.MustInvoke[rez.IntegrationsService](i),
-		do.MustInvoke[rez.EventsService](i),
-		do.MustInvoke[rez.EventAnnotationsService](i),
-		do.MustInvoke[rez.OncallRostersService](i),
-		do.MustInvoke[rez.OncallShiftsService](i),
-		do.MustInvoke[rez.OncallMetricsService](i),
-		do.MustInvoke[rez.PlaybookService](i),
-		do.MustInvoke[rez.RetrospectiveService](i),
-		do.MustInvoke[rez.SystemTopologyService](i),
-	)
-}
+	do.Lazy(func(i do.Injector) (*db.UserService, error) {
+		return db.NewUserService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.OrganizationService](i),
+			do.MustInvoke[rez.KnowledgeService](i),
+		)
+	}),
+	do.Bind[*db.UserService, rez.UserService](),
 
-func provideServices() []func(do.Injector) {
-	return []func(do.Injector){
-		do.Bind[*db.KnowledgeService, rez.KnowledgeService](),
-		do.Lazy(func(i do.Injector) (*db.KnowledgeService, error) {
-			return db.NewKnowledgeService(do.MustInvoke[*ent.Client](i)), nil
-		}),
+	do.Lazy(func(i do.Injector) (*db.TeamService, error) {
+		return db.NewTeamService(do.MustInvoke[*ent.Client](i))
+	}),
+	do.Bind[*db.TeamService, rez.TeamService](),
 
-		do.Bind[*db.IntegrationsService, rez.IntegrationsService](),
-		do.Lazy(func(i do.Injector) (*db.IntegrationsService, error) {
-			return db.NewIntegrationsService(
-				do.MustInvoke[rez.Config](i).App,
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.JobService](i),
-				do.MustInvoke[*integrations.PackageRegistry](i))
-		}),
+	do.Lazy(func(i do.Injector) (*db.EventsService, error) {
+		return db.NewEventsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.UserService](i),
+		)
+	}),
+	do.Bind[*db.EventsService, rez.EventsService](),
 
-		do.Bind[*db.ProviderEventService, rez.ProviderEventService](),
-		do.Lazy(func(i do.Injector) (*db.ProviderEventService, error) {
-			return db.NewProviderEventService(
-				do.MustInvoke[rez.TelemetryService](i),
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.JobService](i),
-				do.MustInvoke[rez.IntegrationsService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.EventAnnotationsService, error) {
+		return db.NewEventAnnotationsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.EventsService](i),
+		)
+	}),
+	do.Bind[*db.EventAnnotationsService, rez.EventAnnotationsService](),
 
-		do.Bind[*db.OrganizationService, rez.OrganizationService](),
-		do.Lazy(func(i do.Injector) (*db.OrganizationService, error) {
-			return db.NewOrganizationService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.JobService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.IncidentService, error) {
+		return db.NewIncidentService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.KnowledgeService](i),
+		)
+	}),
+	do.Bind[*db.IncidentService, rez.IncidentService](),
 
-		do.Bind[*db.UserService, rez.UserService](),
-		do.Lazy(func(i do.Injector) (*db.UserService, error) {
-			return db.NewUserService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.OrganizationService](i),
-				do.MustInvoke[rez.KnowledgeService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.OncallRostersService, error) {
+		return db.NewOncallRostersService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobService](i),
+		)
+	}),
+	do.Bind[*db.OncallRostersService, rez.OncallRostersService](),
 
-		do.Bind[*db.TeamService, rez.TeamService](),
-		do.Lazy(func(i do.Injector) (*db.TeamService, error) {
-			return db.NewTeamService(do.MustInvoke[*ent.Client](i))
-		}),
+	do.Lazy(func(i do.Injector) (*db.OncallShiftsService, error) {
+		return db.NewOncallShiftsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.IntegrationsService](i),
+		)
+	}),
+	do.Bind[*db.OncallShiftsService, rez.OncallShiftsService](),
 
-		do.Bind[*db.EventsService, rez.EventsService](),
-		do.Lazy(func(i do.Injector) (*db.EventsService, error) {
-			return db.NewEventsService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.UserService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.OncallMetricsService, error) {
+		return db.NewOncallMetricsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.OncallShiftsService](i),
+		)
+	}),
+	do.Bind[*db.OncallMetricsService, rez.OncallMetricsService](),
 
-		do.Bind[*db.EventAnnotationsService, rez.EventAnnotationsService](),
-		do.Lazy(func(i do.Injector) (*db.EventAnnotationsService, error) {
-			return db.NewEventAnnotationsService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.EventsService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.SystemTopologyService, error) {
+		return db.NewSystemTopologyService(
+			do.MustInvoke[*ent.Client](i),
+		)
+	}),
+	do.Bind[*db.SystemTopologyService, rez.SystemTopologyService](),
 
-		do.Bind[*db.IncidentService, rez.IncidentService](),
-		do.Lazy(func(i do.Injector) (*db.IncidentService, error) {
-			return db.NewIncidentService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.MessageService](i),
-				do.MustInvoke[rez.KnowledgeService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.DebriefService, error) {
+		return db.NewDebriefService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.JobService](i),
+		)
+	}),
+	do.Bind[*db.DebriefService, rez.DebriefService](),
 
-		do.Bind[*db.OncallRostersService, rez.OncallRostersService](),
-		do.Lazy(func(i do.Injector) (*db.OncallRostersService, error) {
-			return db.NewOncallRostersService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.JobService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.RetrospectiveService, error) {
+		return db.NewRetrospectiveService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.IncidentService](i),
+		)
+	}),
+	do.Bind[*db.RetrospectiveService, rez.RetrospectiveService](),
 
-		do.Bind[*db.OncallShiftsService, rez.OncallShiftsService](),
-		do.Lazy(func(i do.Injector) (*db.OncallShiftsService, error) {
-			return db.NewOncallShiftsService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.JobService](i),
-				do.MustInvoke[rez.IntegrationsService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.AlertService, error) {
+		return db.NewAlertService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.KnowledgeService](i),
+		)
+	}),
+	do.Bind[*db.AlertService, rez.AlertService](),
 
-		do.Bind[*db.OncallMetricsService, rez.OncallMetricsService](),
-		do.Lazy(func(i do.Injector) (*db.OncallMetricsService, error) {
-			return db.NewOncallMetricsService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.OncallShiftsService](i),
-			)
-		}),
+	do.Lazy(func(i do.Injector) (*db.PlaybookService, error) {
+		return db.NewPlaybookService(do.MustInvoke[*ent.Client](i))
+	}),
+	do.Bind[*db.PlaybookService, rez.PlaybookService](),
 
-		do.Bind[*db.SystemTopologyService, rez.SystemTopologyService](),
-		do.Lazy(func(i do.Injector) (*db.SystemTopologyService, error) {
-			return db.NewSystemTopologyService(
-				do.MustInvoke[*ent.Client](i),
-			)
-		}),
-
-		do.Bind[*db.DebriefService, rez.DebriefService](),
-		do.Lazy(func(i do.Injector) (*db.DebriefService, error) {
-			return db.NewDebriefService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.JobService](i),
-			)
-		}),
-
-		do.Bind[*db.RetrospectiveService, rez.RetrospectiveService](),
-		do.Lazy(func(i do.Injector) (*db.RetrospectiveService, error) {
-			return db.NewRetrospectiveService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.MessageService](i),
-				do.MustInvoke[rez.IncidentService](i),
-			)
-		}),
-
-		do.Bind[*db.AlertService, rez.AlertService](),
-		do.Lazy(func(i do.Injector) (*db.AlertService, error) {
-			return db.NewAlertService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.KnowledgeService](i),
-			)
-		}),
-
-		do.Bind[*db.PlaybookService, rez.PlaybookService](),
-		do.Lazy(func(i do.Injector) (*db.PlaybookService, error) {
-			return db.NewPlaybookService(do.MustInvoke[*ent.Client](i))
-		}),
-
-		do.Bind[*db.DocumentsService, rez.DocumentsService](),
-		do.Lazy(func(i do.Injector) (*db.DocumentsService, error) {
-			return db.NewDocumentsService(
-				do.MustInvoke[*ent.Client](i),
-				do.MustInvoke[rez.TeamService](i),
-			)
-		}),
-	}
-}
+	do.Lazy(func(i do.Injector) (*db.DocumentsService, error) {
+		return db.NewDocumentsService(
+			do.MustInvoke[*ent.Client](i),
+			do.MustInvoke[rez.TeamService](i),
+		)
+	}),
+	do.Bind[*db.DocumentsService, rez.DocumentsService](),
+)

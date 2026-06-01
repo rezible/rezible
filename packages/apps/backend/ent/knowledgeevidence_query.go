@@ -26,16 +26,16 @@ import (
 // KnowledgeEvidenceQuery is the builder for querying KnowledgeEvidence entities.
 type KnowledgeEvidenceQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []knowledgeevidence.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.KnowledgeEvidence
-	withTenant          *TenantQuery
-	withEntity          *KnowledgeEntityQuery
-	withRelationship    *KnowledgeRelationshipQuery
-	withAlias           *KnowledgeEntityAliasQuery
-	withNormalizedEvent *NormalizedEventQuery
-	modifiers           []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []knowledgeevidence.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.KnowledgeEvidence
+	withTenant       *TenantQuery
+	withEntity       *KnowledgeEntityQuery
+	withRelationship *KnowledgeRelationshipQuery
+	withAlias        *KnowledgeEntityAliasQuery
+	withEvent        *NormalizedEventQuery
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -172,8 +172,8 @@ func (_q *KnowledgeEvidenceQuery) QueryAlias() *KnowledgeEntityAliasQuery {
 	return query
 }
 
-// QueryNormalizedEvent chains the current query on the "normalized_event" edge.
-func (_q *KnowledgeEvidenceQuery) QueryNormalizedEvent() *NormalizedEventQuery {
+// QueryEvent chains the current query on the "event" edge.
+func (_q *KnowledgeEvidenceQuery) QueryEvent() *NormalizedEventQuery {
 	query := (&NormalizedEventClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -186,7 +186,7 @@ func (_q *KnowledgeEvidenceQuery) QueryNormalizedEvent() *NormalizedEventQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(knowledgeevidence.Table, knowledgeevidence.FieldID, selector),
 			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeevidence.NormalizedEventTable, knowledgeevidence.NormalizedEventColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, knowledgeevidence.EventTable, knowledgeevidence.EventColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.NormalizedEvent
@@ -384,16 +384,16 @@ func (_q *KnowledgeEvidenceQuery) Clone() *KnowledgeEvidenceQuery {
 		return nil
 	}
 	return &KnowledgeEvidenceQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]knowledgeevidence.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.KnowledgeEvidence{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withEntity:          _q.withEntity.Clone(),
-		withRelationship:    _q.withRelationship.Clone(),
-		withAlias:           _q.withAlias.Clone(),
-		withNormalizedEvent: _q.withNormalizedEvent.Clone(),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]knowledgeevidence.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.KnowledgeEvidence{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withEntity:       _q.withEntity.Clone(),
+		withRelationship: _q.withRelationship.Clone(),
+		withAlias:        _q.withAlias.Clone(),
+		withEvent:        _q.withEvent.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -445,14 +445,14 @@ func (_q *KnowledgeEvidenceQuery) WithAlias(opts ...func(*KnowledgeEntityAliasQu
 	return _q
 }
 
-// WithNormalizedEvent tells the query-builder to eager-load the nodes that are connected to
-// the "normalized_event" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *KnowledgeEvidenceQuery) WithNormalizedEvent(opts ...func(*NormalizedEventQuery)) *KnowledgeEvidenceQuery {
+// WithEvent tells the query-builder to eager-load the nodes that are connected to
+// the "event" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *KnowledgeEvidenceQuery) WithEvent(opts ...func(*NormalizedEventQuery)) *KnowledgeEvidenceQuery {
 	query := (&NormalizedEventClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withNormalizedEvent = query
+	_q.withEvent = query
 	return _q
 }
 
@@ -545,7 +545,7 @@ func (_q *KnowledgeEvidenceQuery) sqlAll(ctx context.Context, hooks ...queryHook
 			_q.withEntity != nil,
 			_q.withRelationship != nil,
 			_q.withAlias != nil,
-			_q.withNormalizedEvent != nil,
+			_q.withEvent != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -595,9 +595,9 @@ func (_q *KnowledgeEvidenceQuery) sqlAll(ctx context.Context, hooks ...queryHook
 			return nil, err
 		}
 	}
-	if query := _q.withNormalizedEvent; query != nil {
-		if err := _q.loadNormalizedEvent(ctx, query, nodes, nil,
-			func(n *KnowledgeEvidence, e *NormalizedEvent) { n.Edges.NormalizedEvent = e }); err != nil {
+	if query := _q.withEvent; query != nil {
+		if err := _q.loadEvent(ctx, query, nodes, nil,
+			func(n *KnowledgeEvidence, e *NormalizedEvent) { n.Edges.Event = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -729,11 +729,11 @@ func (_q *KnowledgeEvidenceQuery) loadAlias(ctx context.Context, query *Knowledg
 	}
 	return nil
 }
-func (_q *KnowledgeEvidenceQuery) loadNormalizedEvent(ctx context.Context, query *NormalizedEventQuery, nodes []*KnowledgeEvidence, init func(*KnowledgeEvidence), assign func(*KnowledgeEvidence, *NormalizedEvent)) error {
+func (_q *KnowledgeEvidenceQuery) loadEvent(ctx context.Context, query *NormalizedEventQuery, nodes []*KnowledgeEvidence, init func(*KnowledgeEvidence), assign func(*KnowledgeEvidence, *NormalizedEvent)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*KnowledgeEvidence)
 	for i := range nodes {
-		fk := nodes[i].NormalizedEventID
+		fk := nodes[i].EventID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -750,7 +750,7 @@ func (_q *KnowledgeEvidenceQuery) loadNormalizedEvent(ctx context.Context, query
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "normalized_event_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "event_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -801,8 +801,8 @@ func (_q *KnowledgeEvidenceQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withAlias != nil {
 			_spec.Node.AddColumnOnce(knowledgeevidence.FieldAliasID)
 		}
-		if _q.withNormalizedEvent != nil {
-			_spec.Node.AddColumnOnce(knowledgeevidence.FieldNormalizedEventID)
+		if _q.withEvent != nil {
+			_spec.Node.AddColumnOnce(knowledgeevidence.FieldEventID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

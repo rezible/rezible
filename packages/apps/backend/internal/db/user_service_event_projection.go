@@ -17,28 +17,35 @@ const (
 )
 
 func (s *UserService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
-	if !projections.SubjectKindUser.Matches(event) {
-		return nil
+	if projections.SubjectKindUser.Matches(event) {
+		decoded, eventErr := projections.DecodeUserEvent(event)
+		if eventErr != nil || decoded == nil {
+			return fmt.Errorf("invalid event: %w", eventErr)
+		}
+		return s.handleUserEventProjection(ctx, decoded)
 	}
-	decoded, eventErr := projections.DecodeUserEvent(event)
-	if eventErr != nil || decoded == nil {
-		return fmt.Errorf("invalid event: %w", eventErr)
-	}
+	return nil
+}
 
-	attrs := decoded.Attributes
+func (s *UserService) handleUserEventProjection(ctx context.Context, ue *projections.UserEvent) error {
+	attrs := ue.Attributes
 	entityParams := rez.ResolveKnowledgeEntityParams{
-		Event:             event,
+		Event:             ue.Event,
 		EvidenceAssertion: assertionUserProfileObserved,
 		Entity: &ent.KnowledgeEntity{
 			Kind:        knowledgeKindUser,
 			DisplayName: attrs.Name,
 		},
-		Aliases: eventKnowledgeEntityAliases(event),
+		Aliases: []*ent.KnowledgeEntityAlias{
+			{Provider: ue.Event.Provider, ProviderSubjectRef: ue.Event.ProviderSubjectRef},
+		},
 	}
 	knoEnt, knowledgeErr := s.knowledge.ResolveEntity(ctx, entityParams)
 	if knowledgeErr != nil {
 		return fmt.Errorf("resolve user knowledge entity: %w", knowledgeErr)
 	}
+
+	// TODO: use regular user service update flow here instead
 
 	linked, linkedErr := s.client.User.Query().
 		Where(user.KnowledgeEntityID(knoEnt.ID)).

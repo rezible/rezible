@@ -19,37 +19,46 @@ const (
 )
 
 func (s *IncidentService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
-	if !projections.SubjectKindIncident.Matches(event) {
-		return nil
+	if projections.SubjectKindIncident.Matches(event) {
+		decoded, validationErr := projections.DecodeIncidentEvent(event)
+		if validationErr != nil || decoded == nil {
+			return fmt.Errorf("invalid event: %w", validationErr)
+		}
+		return s.handleIncidentEventProjection(ctx, decoded)
 	}
-	decoded, validationErr := projections.DecodeIncidentEvent(event)
-	if validationErr != nil || decoded == nil {
-		return fmt.Errorf("invalid event: %w", validationErr)
-	}
-	sevId, severityErr := s.saveProjectedIncidentSeverity(ctx, decoded.Attributes)
+	return nil
+}
+
+func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie *projections.IncidentEvent) error {
+	attrs := ie.Attributes
+	sevId, severityErr := s.saveProjectedIncidentSeverity(ctx, attrs)
 	if severityErr != nil {
 		return fmt.Errorf("upsert incident severity: %w", severityErr)
 	}
-	typeId, typeErr := s.saveProjectedIncidentType(ctx, decoded.Attributes)
+	typeId, typeErr := s.saveProjectedIncidentType(ctx, attrs)
 	if typeErr != nil {
 		return fmt.Errorf("upsert incident type: %w", typeErr)
 	}
 
-	attrs := decoded.Attributes
-	observedAt := observedAtForEvent(event)
+	// TODO: we shouldnt need this
+	observedAt := observedAtForEvent(ie.Event)
 	entityParams := rez.ResolveKnowledgeEntityParams{
-		Event:             event,
+		Event:             ie.Event,
 		EvidenceAssertion: assertionIncidentObserved,
 		Entity: &ent.KnowledgeEntity{
 			Kind:        knowledgeKindIncident,
 			DisplayName: attrs.Title,
 		},
-		Aliases: eventKnowledgeEntityAliases(event),
+		Aliases: []*ent.KnowledgeEntityAlias{
+			{Provider: ie.Event.Provider, ProviderSubjectRef: ie.Event.ProviderSubjectRef},
+		},
 	}
 	knowledgeEntity, knowledgeErr := s.knowledge.ResolveEntity(ctx, entityParams)
 	if knowledgeErr != nil {
 		return fmt.Errorf("resolve incident knowledge entity: %w", knowledgeErr)
 	}
+
+	// TODO: use regular incident service update flow here instead
 
 	updateCount, updateErr := s.client.Incident.Update().
 		Where(incident.KnowledgeEntityID(knowledgeEntity.ID)).

@@ -25017,31 +25017,30 @@ func (m *KnowledgeEntityAliasMutation) ResetEdge(name string) error {
 // KnowledgeEvidenceMutation represents an operation that mutates the KnowledgeEvidence nodes in the graph.
 type KnowledgeEvidenceMutation struct {
 	config
-	op                      Op
-	typ                     string
-	id                      *uuid.UUID
-	created_at              *time.Time
-	updated_at              *time.Time
-	subject_type            *knowledgeevidence.SubjectType
-	assertion               *string
-	evidence_kind           *knowledgeevidence.EvidenceKind
-	observed_at             *time.Time
-	effective_at            *time.Time
-	properties              *map[string]interface{}
-	clearedFields           map[string]struct{}
-	tenant                  *int
-	clearedtenant           bool
-	entity                  *uuid.UUID
-	clearedentity           bool
-	relationship            *uuid.UUID
-	clearedrelationship     bool
-	alias                   *uuid.UUID
-	clearedalias            bool
-	normalized_event        *uuid.UUID
-	clearednormalized_event bool
-	done                    bool
-	oldValue                func(context.Context) (*KnowledgeEvidence, error)
-	predicates              []predicate.KnowledgeEvidence
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	created_at          *time.Time
+	updated_at          *time.Time
+	subject_type        *knowledgeevidence.SubjectType
+	assertion           *string
+	evidence_kind       *knowledgeevidence.EvidenceKind
+	observed_at         *time.Time
+	effective_at        *time.Time
+	clearedFields       map[string]struct{}
+	tenant              *int
+	clearedtenant       bool
+	entity              *uuid.UUID
+	clearedentity       bool
+	relationship        *uuid.UUID
+	clearedrelationship bool
+	alias               *uuid.UUID
+	clearedalias        bool
+	event               *uuid.UUID
+	clearedevent        bool
+	done                bool
+	oldValue            func(context.Context) (*KnowledgeEvidence, error)
+	predicates          []predicate.KnowledgeEvidence
 }
 
 var _ ent.Mutation = (*KnowledgeEvidenceMutation)(nil)
@@ -25439,40 +25438,40 @@ func (m *KnowledgeEvidenceMutation) ResetAliasID() {
 	delete(m.clearedFields, knowledgeevidence.FieldAliasID)
 }
 
-// SetNormalizedEventID sets the "normalized_event_id" field.
-func (m *KnowledgeEvidenceMutation) SetNormalizedEventID(u uuid.UUID) {
-	m.normalized_event = &u
+// SetEventID sets the "event_id" field.
+func (m *KnowledgeEvidenceMutation) SetEventID(u uuid.UUID) {
+	m.event = &u
 }
 
-// NormalizedEventID returns the value of the "normalized_event_id" field in the mutation.
-func (m *KnowledgeEvidenceMutation) NormalizedEventID() (r uuid.UUID, exists bool) {
-	v := m.normalized_event
+// EventID returns the value of the "event_id" field in the mutation.
+func (m *KnowledgeEvidenceMutation) EventID() (r uuid.UUID, exists bool) {
+	v := m.event
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldNormalizedEventID returns the old "normalized_event_id" field's value of the KnowledgeEvidence entity.
+// OldEventID returns the old "event_id" field's value of the KnowledgeEvidence entity.
 // If the KnowledgeEvidence object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEvidenceMutation) OldNormalizedEventID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *KnowledgeEvidenceMutation) OldEventID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldNormalizedEventID is only allowed on UpdateOne operations")
+		return v, errors.New("OldEventID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldNormalizedEventID requires an ID field in the mutation")
+		return v, errors.New("OldEventID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldNormalizedEventID: %w", err)
+		return v, fmt.Errorf("querying old value for OldEventID: %w", err)
 	}
-	return oldValue.NormalizedEventID, nil
+	return oldValue.EventID, nil
 }
 
-// ResetNormalizedEventID resets all changes to the "normalized_event_id" field.
-func (m *KnowledgeEvidenceMutation) ResetNormalizedEventID() {
-	m.normalized_event = nil
+// ResetEventID resets all changes to the "event_id" field.
+func (m *KnowledgeEvidenceMutation) ResetEventID() {
+	m.event = nil
 }
 
 // SetAssertion sets the "assertion" field.
@@ -25632,55 +25631,6 @@ func (m *KnowledgeEvidenceMutation) ResetEffectiveAt() {
 	delete(m.clearedFields, knowledgeevidence.FieldEffectiveAt)
 }
 
-// SetProperties sets the "properties" field.
-func (m *KnowledgeEvidenceMutation) SetProperties(value map[string]interface{}) {
-	m.properties = &value
-}
-
-// Properties returns the value of the "properties" field in the mutation.
-func (m *KnowledgeEvidenceMutation) Properties() (r map[string]interface{}, exists bool) {
-	v := m.properties
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProperties returns the old "properties" field's value of the KnowledgeEvidence entity.
-// If the KnowledgeEvidence object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *KnowledgeEvidenceMutation) OldProperties(ctx context.Context) (v map[string]interface{}, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProperties is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProperties requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProperties: %w", err)
-	}
-	return oldValue.Properties, nil
-}
-
-// ClearProperties clears the value of the "properties" field.
-func (m *KnowledgeEvidenceMutation) ClearProperties() {
-	m.properties = nil
-	m.clearedFields[knowledgeevidence.FieldProperties] = struct{}{}
-}
-
-// PropertiesCleared returns if the "properties" field was cleared in this mutation.
-func (m *KnowledgeEvidenceMutation) PropertiesCleared() bool {
-	_, ok := m.clearedFields[knowledgeevidence.FieldProperties]
-	return ok
-}
-
-// ResetProperties resets all changes to the "properties" field.
-func (m *KnowledgeEvidenceMutation) ResetProperties() {
-	m.properties = nil
-	delete(m.clearedFields, knowledgeevidence.FieldProperties)
-}
-
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *KnowledgeEvidenceMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -25789,31 +25739,31 @@ func (m *KnowledgeEvidenceMutation) ResetAlias() {
 	m.clearedalias = false
 }
 
-// ClearNormalizedEvent clears the "normalized_event" edge to the NormalizedEvent entity.
-func (m *KnowledgeEvidenceMutation) ClearNormalizedEvent() {
-	m.clearednormalized_event = true
-	m.clearedFields[knowledgeevidence.FieldNormalizedEventID] = struct{}{}
+// ClearEvent clears the "event" edge to the NormalizedEvent entity.
+func (m *KnowledgeEvidenceMutation) ClearEvent() {
+	m.clearedevent = true
+	m.clearedFields[knowledgeevidence.FieldEventID] = struct{}{}
 }
 
-// NormalizedEventCleared reports if the "normalized_event" edge to the NormalizedEvent entity was cleared.
-func (m *KnowledgeEvidenceMutation) NormalizedEventCleared() bool {
-	return m.clearednormalized_event
+// EventCleared reports if the "event" edge to the NormalizedEvent entity was cleared.
+func (m *KnowledgeEvidenceMutation) EventCleared() bool {
+	return m.clearedevent
 }
 
-// NormalizedEventIDs returns the "normalized_event" edge IDs in the mutation.
+// EventIDs returns the "event" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// NormalizedEventID instead. It exists only for internal usage by the builders.
-func (m *KnowledgeEvidenceMutation) NormalizedEventIDs() (ids []uuid.UUID) {
-	if id := m.normalized_event; id != nil {
+// EventID instead. It exists only for internal usage by the builders.
+func (m *KnowledgeEvidenceMutation) EventIDs() (ids []uuid.UUID) {
+	if id := m.event; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetNormalizedEvent resets all changes to the "normalized_event" edge.
-func (m *KnowledgeEvidenceMutation) ResetNormalizedEvent() {
-	m.normalized_event = nil
-	m.clearednormalized_event = false
+// ResetEvent resets all changes to the "event" edge.
+func (m *KnowledgeEvidenceMutation) ResetEvent() {
+	m.event = nil
+	m.clearedevent = false
 }
 
 // Where appends a list predicates to the KnowledgeEvidenceMutation builder.
@@ -25850,7 +25800,7 @@ func (m *KnowledgeEvidenceMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *KnowledgeEvidenceMutation) Fields() []string {
-	fields := make([]string, 0, 13)
+	fields := make([]string, 0, 12)
 	if m.tenant != nil {
 		fields = append(fields, knowledgeevidence.FieldTenantID)
 	}
@@ -25872,8 +25822,8 @@ func (m *KnowledgeEvidenceMutation) Fields() []string {
 	if m.alias != nil {
 		fields = append(fields, knowledgeevidence.FieldAliasID)
 	}
-	if m.normalized_event != nil {
-		fields = append(fields, knowledgeevidence.FieldNormalizedEventID)
+	if m.event != nil {
+		fields = append(fields, knowledgeevidence.FieldEventID)
 	}
 	if m.assertion != nil {
 		fields = append(fields, knowledgeevidence.FieldAssertion)
@@ -25886,9 +25836,6 @@ func (m *KnowledgeEvidenceMutation) Fields() []string {
 	}
 	if m.effective_at != nil {
 		fields = append(fields, knowledgeevidence.FieldEffectiveAt)
-	}
-	if m.properties != nil {
-		fields = append(fields, knowledgeevidence.FieldProperties)
 	}
 	return fields
 }
@@ -25912,8 +25859,8 @@ func (m *KnowledgeEvidenceMutation) Field(name string) (ent.Value, bool) {
 		return m.RelationshipID()
 	case knowledgeevidence.FieldAliasID:
 		return m.AliasID()
-	case knowledgeevidence.FieldNormalizedEventID:
-		return m.NormalizedEventID()
+	case knowledgeevidence.FieldEventID:
+		return m.EventID()
 	case knowledgeevidence.FieldAssertion:
 		return m.Assertion()
 	case knowledgeevidence.FieldEvidenceKind:
@@ -25922,8 +25869,6 @@ func (m *KnowledgeEvidenceMutation) Field(name string) (ent.Value, bool) {
 		return m.ObservedAt()
 	case knowledgeevidence.FieldEffectiveAt:
 		return m.EffectiveAt()
-	case knowledgeevidence.FieldProperties:
-		return m.Properties()
 	}
 	return nil, false
 }
@@ -25947,8 +25892,8 @@ func (m *KnowledgeEvidenceMutation) OldField(ctx context.Context, name string) (
 		return m.OldRelationshipID(ctx)
 	case knowledgeevidence.FieldAliasID:
 		return m.OldAliasID(ctx)
-	case knowledgeevidence.FieldNormalizedEventID:
-		return m.OldNormalizedEventID(ctx)
+	case knowledgeevidence.FieldEventID:
+		return m.OldEventID(ctx)
 	case knowledgeevidence.FieldAssertion:
 		return m.OldAssertion(ctx)
 	case knowledgeevidence.FieldEvidenceKind:
@@ -25957,8 +25902,6 @@ func (m *KnowledgeEvidenceMutation) OldField(ctx context.Context, name string) (
 		return m.OldObservedAt(ctx)
 	case knowledgeevidence.FieldEffectiveAt:
 		return m.OldEffectiveAt(ctx)
-	case knowledgeevidence.FieldProperties:
-		return m.OldProperties(ctx)
 	}
 	return nil, fmt.Errorf("unknown KnowledgeEvidence field %s", name)
 }
@@ -26017,12 +25960,12 @@ func (m *KnowledgeEvidenceMutation) SetField(name string, value ent.Value) error
 		}
 		m.SetAliasID(v)
 		return nil
-	case knowledgeevidence.FieldNormalizedEventID:
+	case knowledgeevidence.FieldEventID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetNormalizedEventID(v)
+		m.SetEventID(v)
 		return nil
 	case knowledgeevidence.FieldAssertion:
 		v, ok := value.(string)
@@ -26051,13 +25994,6 @@ func (m *KnowledgeEvidenceMutation) SetField(name string, value ent.Value) error
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetEffectiveAt(v)
-		return nil
-	case knowledgeevidence.FieldProperties:
-		v, ok := value.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProperties(v)
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence field %s", name)
@@ -26104,9 +26040,6 @@ func (m *KnowledgeEvidenceMutation) ClearedFields() []string {
 	if m.FieldCleared(knowledgeevidence.FieldEffectiveAt) {
 		fields = append(fields, knowledgeevidence.FieldEffectiveAt)
 	}
-	if m.FieldCleared(knowledgeevidence.FieldProperties) {
-		fields = append(fields, knowledgeevidence.FieldProperties)
-	}
 	return fields
 }
 
@@ -26132,9 +26065,6 @@ func (m *KnowledgeEvidenceMutation) ClearField(name string) error {
 		return nil
 	case knowledgeevidence.FieldEffectiveAt:
 		m.ClearEffectiveAt()
-		return nil
-	case knowledgeevidence.FieldProperties:
-		m.ClearProperties()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence nullable field %s", name)
@@ -26165,8 +26095,8 @@ func (m *KnowledgeEvidenceMutation) ResetField(name string) error {
 	case knowledgeevidence.FieldAliasID:
 		m.ResetAliasID()
 		return nil
-	case knowledgeevidence.FieldNormalizedEventID:
-		m.ResetNormalizedEventID()
+	case knowledgeevidence.FieldEventID:
+		m.ResetEventID()
 		return nil
 	case knowledgeevidence.FieldAssertion:
 		m.ResetAssertion()
@@ -26179,9 +26109,6 @@ func (m *KnowledgeEvidenceMutation) ResetField(name string) error {
 		return nil
 	case knowledgeevidence.FieldEffectiveAt:
 		m.ResetEffectiveAt()
-		return nil
-	case knowledgeevidence.FieldProperties:
-		m.ResetProperties()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence field %s", name)
@@ -26202,8 +26129,8 @@ func (m *KnowledgeEvidenceMutation) AddedEdges() []string {
 	if m.alias != nil {
 		edges = append(edges, knowledgeevidence.EdgeAlias)
 	}
-	if m.normalized_event != nil {
-		edges = append(edges, knowledgeevidence.EdgeNormalizedEvent)
+	if m.event != nil {
+		edges = append(edges, knowledgeevidence.EdgeEvent)
 	}
 	return edges
 }
@@ -26228,8 +26155,8 @@ func (m *KnowledgeEvidenceMutation) AddedIDs(name string) []ent.Value {
 		if id := m.alias; id != nil {
 			return []ent.Value{*id}
 		}
-	case knowledgeevidence.EdgeNormalizedEvent:
-		if id := m.normalized_event; id != nil {
+	case knowledgeevidence.EdgeEvent:
+		if id := m.event; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -26263,8 +26190,8 @@ func (m *KnowledgeEvidenceMutation) ClearedEdges() []string {
 	if m.clearedalias {
 		edges = append(edges, knowledgeevidence.EdgeAlias)
 	}
-	if m.clearednormalized_event {
-		edges = append(edges, knowledgeevidence.EdgeNormalizedEvent)
+	if m.clearedevent {
+		edges = append(edges, knowledgeevidence.EdgeEvent)
 	}
 	return edges
 }
@@ -26281,8 +26208,8 @@ func (m *KnowledgeEvidenceMutation) EdgeCleared(name string) bool {
 		return m.clearedrelationship
 	case knowledgeevidence.EdgeAlias:
 		return m.clearedalias
-	case knowledgeevidence.EdgeNormalizedEvent:
-		return m.clearednormalized_event
+	case knowledgeevidence.EdgeEvent:
+		return m.clearedevent
 	}
 	return false
 }
@@ -26303,8 +26230,8 @@ func (m *KnowledgeEvidenceMutation) ClearEdge(name string) error {
 	case knowledgeevidence.EdgeAlias:
 		m.ClearAlias()
 		return nil
-	case knowledgeevidence.EdgeNormalizedEvent:
-		m.ClearNormalizedEvent()
+	case knowledgeevidence.EdgeEvent:
+		m.ClearEvent()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence unique edge %s", name)
@@ -26326,8 +26253,8 @@ func (m *KnowledgeEvidenceMutation) ResetEdge(name string) error {
 	case knowledgeevidence.EdgeAlias:
 		m.ResetAlias()
 		return nil
-	case knowledgeevidence.EdgeNormalizedEvent:
-		m.ResetNormalizedEvent()
+	case knowledgeevidence.EdgeEvent:
+		m.ResetEvent()
 		return nil
 	}
 	return fmt.Errorf("unknown KnowledgeEvidence edge %s", name)
