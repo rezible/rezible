@@ -14,13 +14,13 @@ import (
 )
 
 type OncallRostersService struct {
-	db   *ent.Client
+	db   rez.Database
 	jobs rez.JobService
 }
 
-func NewOncallRostersService(dbc *ent.Client, jobSvc rez.JobService) (*OncallRostersService, error) {
+func NewOncallRostersService(db rez.Database, jobSvc rez.JobService) (*OncallRostersService, error) {
 	s := &OncallRostersService{
-		db:   dbc,
+		db:   db,
 		jobs: jobSvc,
 	}
 
@@ -28,7 +28,7 @@ func NewOncallRostersService(dbc *ent.Client, jobSvc rez.JobService) (*OncallRos
 }
 
 func (s *OncallRostersService) GetRosterByID(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error) {
-	roster, rosterErr := s.db.OncallRoster.Get(ctx, id)
+	roster, rosterErr := s.db.Client(ctx).OncallRoster.Get(ctx, id)
 	if rosterErr != nil {
 		return nil, fmt.Errorf("failed to query roster: %w", rosterErr)
 	}
@@ -36,14 +36,14 @@ func (s *OncallRostersService) GetRosterByID(ctx context.Context, id uuid.UUID) 
 }
 
 func (s *OncallRostersService) GetRosterByScheduleId(ctx context.Context, scheduleId uuid.UUID) (*ent.OncallRoster, error) {
-	return s.db.OncallSchedule.Query().
+	return s.db.Client(ctx).OncallSchedule.Query().
 		Where(oncallschedule.ID(scheduleId)).
 		QueryRoster().
 		Only(ctx)
 }
 
 func (s *OncallRostersService) GetRosterBySlug(ctx context.Context, slug string) (*ent.OncallRoster, error) {
-	query := s.db.OncallRoster.Query().
+	query := s.db.Client(ctx).OncallRoster.Query().
 		Where(oncallroster.Slug(slug))
 
 	roster, rosterErr := query.Only(ctx)
@@ -54,7 +54,7 @@ func (s *OncallRostersService) GetRosterBySlug(ctx context.Context, slug string)
 }
 
 func (s *OncallRostersService) ListRosters(ctx context.Context, params rez.ListOncallRostersParams) (*ent.ListResult[ent.OncallRoster], error) {
-	query := s.db.OncallRoster.Query()
+	query := s.db.Client(ctx).OncallRoster.Query()
 
 	if params.UserID != uuid.Nil {
 		schedList, schedulesErr := s.ListSchedules(ctx, rez.ListOncallSchedulesParams{
@@ -76,11 +76,11 @@ func (s *OncallRostersService) ListRosters(ctx context.Context, params rez.ListO
 func (s *OncallRostersService) ListSchedules(ctx context.Context, params rez.ListOncallSchedulesParams) (*ent.ListResult[ent.OncallSchedule], error) {
 	var query *ent.OncallScheduleQuery
 	if params.UserID != uuid.Nil {
-		query = s.db.OncallScheduleParticipant.Query().
+		query = s.db.Client(ctx).OncallScheduleParticipant.Query().
 			Where(ocsp.UserID(params.UserID)).
 			QuerySchedule()
 	} else {
-		query = s.db.OncallSchedule.Query()
+		query = s.db.Client(ctx).OncallSchedule.Query()
 	}
 
 	return ent.DoListQuery[ent.OncallSchedule, *ent.OncallScheduleQuery](ctx, query, params.ListParams)

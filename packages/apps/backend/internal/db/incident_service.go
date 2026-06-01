@@ -185,7 +185,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		}
 
 		var saveErr error
-		updated, saveErr = mutator.Save(ctx)
+		updated, saveErr = mutator.Save(txCtx)
 		if saveErr != nil {
 			return fmt.Errorf("save incident: %w", saveErr)
 		}
@@ -196,7 +196,7 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		updateEvents = append(updateEvents, incEvent)
 
 		for _, edgeMut := range edgeMuts {
-			v, edgeErr := tx.Mutate(ctx, edgeMut)
+			v, edgeErr := tx.Mutate(txCtx, edgeMut)
 			if edgeErr != nil {
 				return fmt.Errorf("edge mutation: %w", edgeErr)
 			}
@@ -309,7 +309,7 @@ func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID
 		setFn(mut)
 
 		var saveErr error
-		updated, saveErr = mutator.Save(ctx)
+		updated, saveErr = mutator.Save(txCtx)
 		if saveErr != nil {
 			return fmt.Errorf("save: %w", saveErr)
 		}

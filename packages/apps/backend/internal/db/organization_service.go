@@ -15,16 +15,16 @@ import (
 )
 
 type OrganizationService struct {
-	dbc  *ent.Client
+	db   rez.Database
 	jobs rez.JobService
 }
 
-func NewOrganizationService(dbc *ent.Client, jobs rez.JobService) (*OrganizationService, error) {
-	return &OrganizationService{dbc: dbc, jobs: jobs}, nil
+func NewOrganizationService(db rez.Database, jobs rez.JobService) (*OrganizationService, error) {
+	return &OrganizationService{db: db, jobs: jobs}, nil
 }
 
 func (s *OrganizationService) Get(ctx context.Context, p predicate.Organization) (*ent.Organization, error) {
-	return s.dbc.Organization.Query().Where(p).First(ctx)
+	return s.db.Client(ctx).Organization.Query().Where(p).First(ctx)
 }
 
 func (s *OrganizationService) SyncFromAuthProvider(ctx context.Context, po ent.Organization) (*ent.Organization, error) {
@@ -43,7 +43,7 @@ func (s *OrganizationService) SyncFromAuthProvider(ctx context.Context, po ent.O
 	}
 
 	var updated *ent.Organization
-	updateTx := func(tx *ent.Tx) error {
+	updateTx := func(txCtx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.Organization, *ent.OrganizationMutation]
 		if existing != nil {
 			mutator = tx.Organization.UpdateOne(existing)
@@ -69,7 +69,7 @@ func (s *OrganizationService) SyncFromAuthProvider(ctx context.Context, po ent.O
 
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.dbc, updateTx); txErr != nil {
+	if txErr := s.db.WithTx(ctx, updateTx); txErr != nil {
 		return nil, fmt.Errorf("update: %w", txErr)
 	}
 
@@ -77,7 +77,7 @@ func (s *OrganizationService) SyncFromAuthProvider(ctx context.Context, po ent.O
 }
 
 func (s *OrganizationService) CompleteSetup(ctx context.Context, org *ent.Organization) error {
-	update := s.dbc.Organization.UpdateOne(org).SetInitialSetupAt(time.Now())
+	update := s.db.Client(ctx).Organization.UpdateOne(org).SetInitialSetupAt(time.Now())
 	if updateErr := update.Exec(ctx); updateErr != nil {
 		return fmt.Errorf("update: %w", updateErr)
 	}

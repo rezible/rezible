@@ -3,23 +3,23 @@ package apiv1
 import (
 	"context"
 
-	"github.com/rezible/rezible/ent"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/schema"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type tasksHandler struct {
-	db *ent.Client
+	db rez.Database
 }
 
-func newTasksHandler(db *ent.Client) *tasksHandler {
-	return &tasksHandler{db}
+func newTasksHandler(db rez.Database) *tasksHandler {
+	return &tasksHandler{db: db}
 }
 
 func (h *tasksHandler) ListTasks(ctx context.Context, request *oapi.ListTasksRequest) (*oapi.ListTasksResponse, error) {
 	var resp oapi.ListTasksResponse
 
-	query := h.db.Task.Query().
+	query := h.db.Client(ctx).Task.Query().
 		Limit(request.Limit).
 		Offset(request.Offset)
 
@@ -49,7 +49,7 @@ func (h *tasksHandler) CreateTask(ctx context.Context, request *oapi.CreateTaskR
 func (h *tasksHandler) GetTask(ctx context.Context, request *oapi.GetTaskRequest) (*oapi.GetTaskResponse, error) {
 	var resp oapi.GetTaskResponse
 
-	task, queryErr := h.db.Task.Get(ctx, request.Id)
+	task, queryErr := h.db.Client(ctx).Task.Get(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to fetch task", queryErr)
 	}
@@ -67,7 +67,7 @@ func (h *tasksHandler) UpdateTask(ctx context.Context, request *oapi.UpdateTaskR
 func (h *tasksHandler) ArchiveTask(ctx context.Context, request *oapi.ArchiveTaskRequest) (*oapi.ArchiveTaskResponse, error) {
 	var resp oapi.ArchiveTaskResponse
 
-	archiveErr := h.db.Task.DeleteOneID(request.Id).Exec(ctx)
+	archiveErr := h.db.Client(ctx).Task.DeleteOneID(request.Id).Exec(ctx)
 	if archiveErr != nil {
 		return nil, oapi.Error(ctx, "failed to archive task", archiveErr)
 	}

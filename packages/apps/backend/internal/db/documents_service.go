@@ -13,13 +13,13 @@ import (
 )
 
 type DocumentsService struct {
-	db    *ent.Client
+	db    rez.Database
 	teams rez.TeamService
 }
 
-func NewDocumentsService(dbc *ent.Client, teams rez.TeamService) (*DocumentsService, error) {
+func NewDocumentsService(db rez.Database, teams rez.TeamService) (*DocumentsService, error) {
 	svc := &DocumentsService{
-		db:    dbc,
+		db:    db,
 		teams: teams,
 	}
 
@@ -70,7 +70,7 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 }
 
 func (s *DocumentsService) getBestDocumentAccess(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*ent.DocumentAccess, error) {
-	accessQuery := s.db.DocumentAccess.Query().
+	accessQuery := s.db.Client(ctx).DocumentAccess.Query().
 		Where(da.DocumentID(docId)).
 		Where(da.Or(da.UserID(userId), da.TeamIDNotNil()))
 	accesses, accessesErr := accessQuery.All(ctx)
@@ -123,7 +123,7 @@ func (s *DocumentsService) getBestDocumentAccess(ctx context.Context, docId uuid
 }
 
 func (s *DocumentsService) GetDocument(ctx context.Context, id uuid.UUID) (*ent.Document, error) {
-	return s.db.Document.Get(ctx, id)
+	return s.db.Client(ctx).Document.Get(ctx, id)
 }
 
 type documentMutator interface {
@@ -135,13 +135,13 @@ func (s *DocumentsService) SetDocument(ctx context.Context, id uuid.UUID, setFn 
 	var mutator documentMutator
 	isNew := id == uuid.Nil
 	if isNew {
-		mutator = s.db.Document.Create().SetID(uuid.New())
+		mutator = s.db.Client(ctx).Document.Create().SetID(uuid.New())
 	} else {
-		curr, getErr := s.db.Document.Get(ctx, id)
+		curr, getErr := s.db.Client(ctx).Document.Get(ctx, id)
 		if getErr != nil {
 			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
 		}
-		mutator = s.db.Document.UpdateOne(curr)
+		mutator = s.db.Client(ctx).Document.UpdateOne(curr)
 	}
 
 	mut := mutator.Mutation()

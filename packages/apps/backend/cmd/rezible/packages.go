@@ -35,6 +35,7 @@ func provideDependencies(i do.Injector) {
 			do.MustInvoke[*postgres.PgxPool](i),
 		)
 	})
+	do.MustAs[*river.JobService, rez.JobService](i)
 
 	do.Provide(i, func(i do.Injector) (*watermill.MessageService, error) {
 		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i))
@@ -67,7 +68,7 @@ func provideDependencies(i do.Injector) {
 			do.MustInvoke[rez.DebriefService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.IntegrationsService](i),
-			do.MustInvoke[rez.EventsService](i),
+			do.MustInvoke[rez.ProviderEventService](i),
 			do.MustInvoke[rez.EventAnnotationsService](i),
 			do.MustInvoke[rez.OncallRostersService](i),
 			do.MustInvoke[rez.OncallShiftsService](i),

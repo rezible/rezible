@@ -4,8 +4,8 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 
-	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/schema"
 	entteam "github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
@@ -13,19 +13,17 @@ import (
 )
 
 type teamsHandler struct {
-	users       *ent.UserClient
-	teams       *ent.TeamClient
-	memberships *ent.TeamMembershipClient
+	db rez.Database
 }
 
-func newTeamsHandler(users *ent.UserClient, teams *ent.TeamClient, memberships *ent.TeamMembershipClient) *teamsHandler {
-	return &teamsHandler{users: users, teams: teams, memberships: memberships}
+func newTeamsHandler(db rez.Database) *teamsHandler {
+	return &teamsHandler{db: db}
 }
 
 func (h *teamsHandler) ListTeams(ctx context.Context, request *oapi.ListTeamsRequest) (*oapi.ListTeamsResponse, error) {
 	var resp oapi.ListTeamsResponse
 
-	query := h.teams.Query()
+	query := h.db.Client(ctx).Team.Query()
 
 	if request.IncludeArchived {
 		ctx = schema.IncludeArchived(ctx)
@@ -63,7 +61,7 @@ func (h *teamsHandler) CreateTeam(ctx context.Context, request *oapi.CreateTeamR
 	var resp oapi.CreateTeamResponse
 
 	attr := request.Body.Attributes
-	query := h.teams.Create().
+	query := h.db.Client(ctx).Team.Create().
 		SetName(attr.Name)
 
 	team, err := query.Save(ctx)
@@ -82,7 +80,7 @@ func (h *teamsHandler) GetTeam(ctx context.Context, request *oapi.GetTeamRequest
 	if request.Id.IsSlug {
 		pred = entteam.Slug(request.Id.Slug)
 	}
-	team, queryErr := h.teams.Query().Where(pred).Only(ctx)
+	team, queryErr := h.db.Client(ctx).Team.Query().Where(pred).Only(ctx)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "failed to get team", queryErr)
 	}
@@ -95,7 +93,7 @@ func (h *teamsHandler) UpdateTeam(ctx context.Context, request *oapi.UpdateTeamR
 	var resp oapi.UpdateTeamResponse
 
 	attr := request.Body.Attributes
-	query := h.teams.UpdateOneID(request.Id).
+	query := h.db.Client(ctx).Team.UpdateOneID(request.Id).
 		SetNillableName(attr.Name.NillableValue())
 
 	team, err := query.Save(ctx)
@@ -110,7 +108,7 @@ func (h *teamsHandler) UpdateTeam(ctx context.Context, request *oapi.UpdateTeamR
 func (h *teamsHandler) ArchiveTeam(ctx context.Context, request *oapi.ArchiveTeamRequest) (*oapi.ArchiveTeamResponse, error) {
 	var resp oapi.ArchiveTeamResponse
 
-	err := h.teams.DeleteOneID(request.Id).Exec(ctx)
+	err := h.db.Client(ctx).Team.DeleteOneID(request.Id).Exec(ctx)
 	if err != nil {
 		return nil, oapi.Error(ctx, "failed to archive team", err)
 	}
@@ -121,7 +119,7 @@ func (h *teamsHandler) ArchiveTeam(ctx context.Context, request *oapi.ArchiveTea
 func (h *teamsHandler) ListTeamMemberships(ctx context.Context, request *oapi.ListTeamMembershipsRequest) (*oapi.ListTeamMembershipsResponse, error) {
 	var resp oapi.ListTeamMembershipsResponse
 
-	query := h.memberships.Query().
+	query := h.db.Client(ctx).TeamMembership.Query().
 		WithTeam().
 		WithUser()
 	if request.TeamId != uuid.Nil {
@@ -158,7 +156,7 @@ func (h *teamsHandler) CreateTeamMembership(ctx context.Context, request *oapi.C
 	var resp oapi.CreateTeamMembershipResponse
 
 	attr := request.Body.Attributes
-	created, createErr := h.memberships.Create().
+	created, createErr := h.db.Client(ctx).TeamMembership.Create().
 		SetTeamID(attr.TeamId).
 		SetUserID(attr.UserId).
 		SetRole(teammembership.Role(attr.Role)).
@@ -167,7 +165,7 @@ func (h *teamsHandler) CreateTeamMembership(ctx context.Context, request *oapi.C
 		return nil, oapi.Error(ctx, "failed to create team membership", createErr)
 	}
 
-	membership, queryErr := h.memberships.Query().
+	membership, queryErr := h.db.Client(ctx).TeamMembership.Query().
 		Where(teammembership.ID(created.ID)).
 		WithTeam().
 		WithUser().
@@ -183,7 +181,7 @@ func (h *teamsHandler) UpdateTeamMembership(ctx context.Context, request *oapi.U
 	var resp oapi.UpdateTeamMembershipResponse
 
 	attr := request.Body.Attributes
-	query := h.memberships.UpdateOneID(request.Id)
+	query := h.db.Client(ctx).TeamMembership.UpdateOneID(request.Id)
 	if attr.Role != nil {
 		query = query.SetRole(teammembership.Role(*attr.Role))
 	}
@@ -191,7 +189,7 @@ func (h *teamsHandler) UpdateTeamMembership(ctx context.Context, request *oapi.U
 		return nil, oapi.Error(ctx, "failed to update team membership", saveErr)
 	}
 
-	membership, queryErr := h.memberships.Query().
+	membership, queryErr := h.db.Client(ctx).TeamMembership.Query().
 		Where(teammembership.ID(request.Id)).
 		WithTeam().
 		WithUser().
@@ -206,7 +204,7 @@ func (h *teamsHandler) UpdateTeamMembership(ctx context.Context, request *oapi.U
 func (h *teamsHandler) DeleteTeamMembership(ctx context.Context, request *oapi.DeleteTeamMembershipRequest) (*oapi.DeleteTeamMembershipResponse, error) {
 	var resp oapi.DeleteTeamMembershipResponse
 
-	if delErr := h.memberships.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
+	if delErr := h.db.Client(ctx).TeamMembership.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
 		return nil, oapi.Error(ctx, "failed to archive team membership", delErr)
 	}
 	return &resp, nil

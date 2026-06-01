@@ -14,14 +14,14 @@ import (
 )
 
 type UserService struct {
-	client    *ent.Client
+	db        rez.Database
 	orgs      rez.OrganizationService
 	knowledge rez.KnowledgeService
 }
 
-func NewUserService(client *ent.Client, orgs rez.OrganizationService, knowledge rez.KnowledgeService) (*UserService, error) {
+func NewUserService(db rez.Database, orgs rez.OrganizationService, knowledge rez.KnowledgeService) (*UserService, error) {
 	s := &UserService{
-		client:    client,
+		db:        db,
 		orgs:      orgs,
 		knowledge: knowledge,
 	}
@@ -57,12 +57,12 @@ func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organizat
 }
 
 func (s *UserService) Get(ctx context.Context, p predicate.User) (*ent.User, error) {
-	return s.client.User.Query().Where(p).Only(ctx)
+	return s.db.Client(ctx).User.Query().Where(p).Only(ctx)
 }
 
 func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.UserMutation)) (*ent.User, error) {
 	var savedUser *ent.User
-	setTxFn := func(tx *ent.Tx) error {
+	setTxFn := func(txCtx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.User, *ent.UserMutation]
 		if id == uuid.Nil {
 			mutator = tx.User.Create().SetID(uuid.New())
@@ -79,14 +79,14 @@ func (s *UserService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.Use
 		}
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.client, setTxFn); txErr != nil {
+	if txErr := s.db.WithTx(ctx, setTxFn); txErr != nil {
 		return nil, txErr
 	}
 	return savedUser, nil
 }
 
 func (s *UserService) List(ctx context.Context, params rez.ListUsersParams) ([]*ent.User, error) {
-	query := s.client.User.Query().
+	query := s.db.Client(ctx).User.Query().
 		Order(user.ByID()).
 		Limit(params.GetLimit()).
 		Offset(params.Offset)

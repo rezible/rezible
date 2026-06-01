@@ -17,13 +17,13 @@ import (
 )
 
 type DebriefService struct {
-	db   *ent.Client
+	db   rez.Database
 	jobs rez.JobService
 }
 
-func NewDebriefService(dbc *ent.Client, jobSvc rez.JobService) (*DebriefService, error) {
+func NewDebriefService(db rez.Database, jobSvc rez.JobService) (*DebriefService, error) {
 	svc := &DebriefService{
-		db:   dbc,
+		db:   db,
 		jobs: jobSvc,
 	}
 
@@ -56,7 +56,7 @@ func (s *DebriefService) CreateDebrief(ctx context.Context, incidentId uuid.UUID
 }
 
 func (s *DebriefService) createDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID, required bool) (*ent.IncidentDebrief, error) {
-	return s.db.IncidentDebrief.Create().
+	return s.db.Client(ctx).IncidentDebrief.Create().
 		SetIncidentID(incidentId).
 		SetUserID(userId).
 		SetRequired(required).
@@ -65,7 +65,7 @@ func (s *DebriefService) createDebrief(ctx context.Context, incidentId uuid.UUID
 }
 
 func (s *DebriefService) isUserDebriefRequired(ctx context.Context, userId, incidentId uuid.UUID) (bool, error) {
-	hadRole, roleErr := s.db.IncidentRoleAssignment.Query().
+	hadRole, roleErr := s.db.Client(ctx).IncidentRoleAssignment.Query().
 		Where(incidentroleassignment.UserID(userId)).
 		Where(incidentroleassignment.IncidentID(incidentId)).
 		Exist(ctx)
@@ -90,23 +90,23 @@ func (s *DebriefService) StartDebrief(ctx context.Context, debriefId uuid.UUID) 
 		return debrief, nil
 	}
 
-	updateTxFn := func(tx *ent.Tx) error {
+	updateTxFn := func(txCtx context.Context, tx *ent.Client) error {
 		updated, updateErr := tx.IncidentDebrief.UpdateOneID(debriefId).
 			SetStarted(true).
-			Save(ctx)
+			Save(txCtx)
 		if updateErr != nil {
 			return fmt.Errorf("failed to start incident debrief: %w", updateErr)
 		}
 
 		args := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
-		if _, genErr := s.jobs.InsertTx(ctx, tx, args, nil); genErr != nil {
+		if _, genErr := s.jobs.Insert(txCtx, args, nil); genErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genErr)
 		}
 
 		debrief = updated
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.db, updateTxFn); txErr != nil {
+	if txErr := s.db.WithTx(ctx, updateTxFn); txErr != nil {
 		return nil, fmt.Errorf("failed to start debrief: %w", txErr)
 	}
 
@@ -123,24 +123,24 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 	//	return debrief, nil
 	//}
 
-	updateTxFn := func(tx *ent.Tx) error {
+	updateTxFn := func(txCtx context.Context, tx *ent.Client) error {
 		updated, updateErr := tx.IncidentDebrief.UpdateOneID(debriefId).
 			SetStarted(true).
 			// SetCompleted(true).
-			Save(ctx)
+			Save(txCtx)
 		if updateErr != nil {
 			return fmt.Errorf("failed to save: %w", updateErr)
 		}
 
 		args := jobs.GenerateIncidentDebriefSuggestions{DebriefId: debriefId}
-		if _, genErr := s.jobs.InsertTx(ctx, tx, args, nil); genErr != nil {
+		if _, genErr := s.jobs.Insert(txCtx, args, nil); genErr != nil {
 			return fmt.Errorf("failed to request suggestions generation: %w", genErr)
 		}
 
 		debrief = updated
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.db, updateTxFn); txErr != nil {
+	if txErr := s.db.WithTx(ctx, updateTxFn); txErr != nil {
 		return nil, fmt.Errorf("failed to start debrief: %w", txErr)
 	}
 
@@ -148,22 +148,22 @@ func (s *DebriefService) CompleteDebrief(ctx context.Context, debriefId uuid.UUI
 }
 
 func (s *DebriefService) GetDebrief(ctx context.Context, id uuid.UUID) (*ent.IncidentDebrief, error) {
-	return s.db.IncidentDebrief.Get(ctx, id)
+	return s.db.Client(ctx).IncidentDebrief.Get(ctx, id)
 }
 
 func (s *DebriefService) GetUserDebrief(ctx context.Context, incidentId uuid.UUID, userId uuid.UUID) (*ent.IncidentDebrief, error) {
-	return s.db.IncidentDebrief.Query().
+	return s.db.Client(ctx).IncidentDebrief.Query().
 		Where(incidentdebrief.And(incidentdebrief.IncidentID(incidentId), incidentdebrief.UserID(userId))).
 		Only(ctx)
 }
 
 func (s *DebriefService) sendDebriefRequests(ctx context.Context, incidentId uuid.UUID) error {
-	inc, incErr := s.db.Incident.Get(ctx, incidentId)
+	inc, incErr := s.db.Client(ctx).Incident.Get(ctx, incidentId)
 	if incErr != nil {
 		return fmt.Errorf("get incident %s failed: %w", incidentId.String(), incErr)
 	}
 
-	debriefs, debriefsErr := s.db.IncidentDebrief.Query().
+	debriefs, debriefsErr := s.db.Client(ctx).IncidentDebrief.Query().
 		Where(incidentdebrief.IncidentID(incidentId)).
 		All(ctx)
 	if debriefsErr != nil && !ent.IsNotFound(debriefsErr) {
@@ -175,7 +175,7 @@ func (s *DebriefService) sendDebriefRequests(ctx context.Context, incidentId uui
 		alreadyRequestedIds[i] = debrief.UserID
 	}
 
-	assnQuery := s.db.IncidentRoleAssignment.Query().
+	assnQuery := s.db.Client(ctx).IncidentRoleAssignment.Query().
 		Where(incidentroleassignment.IncidentID(incidentId)).
 		Where(incidentroleassignment.UserIDNotIn(alreadyRequestedIds...)).
 		WithUser()
@@ -221,38 +221,38 @@ func (s *DebriefService) prepareUserDebrief(ctx context.Context, user *ent.User,
 }
 
 func (s *DebriefService) AddDebriefMessage(ctx context.Context, debriefId uuid.UUID, content string) (*ent.IncidentDebriefMessage, error) {
-	debrief, getErr := s.db.IncidentDebrief.Get(ctx, debriefId)
+	debrief, getErr := s.db.Client(ctx).IncidentDebrief.Get(ctx, debriefId)
 	if getErr != nil {
 		return nil, getErr
 	}
 
 	var msg *ent.IncidentDebriefMessage
-	addMessageTx := func(tx *ent.Tx) error {
+	addMessageTx := func(txCtx context.Context, tx *ent.Client) error {
 		created, msgErr := tx.IncidentDebriefMessage.Create().
 			SetDebriefID(debrief.ID).
 			SetType(incidentdebriefmessage.TypeUser).
 			SetBody(content).
-			Save(ctx)
+			Save(txCtx)
 		if msgErr != nil {
 			return fmt.Errorf("failed to save incident debrief message: %w", msgErr)
 		}
 
 		args := jobs.GenerateIncidentDebriefResponse{DebriefId: debriefId}
-		if _, genJobErr := s.jobs.InsertTx(ctx, tx, args, nil); genJobErr != nil {
+		if _, genJobErr := s.jobs.Insert(txCtx, args, nil); genJobErr != nil {
 			return fmt.Errorf("failed to request response generation: %w", genJobErr)
 		}
 
 		msg = created
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.db, addMessageTx); txErr != nil {
+	if txErr := s.db.WithTx(ctx, addMessageTx); txErr != nil {
 		return nil, fmt.Errorf("failed to add user debrief message: %w", txErr)
 	}
 	return msg, nil
 }
 
 func (s *DebriefService) generateDebriefResponse(ctx context.Context, debriefId uuid.UUID) error {
-	debrief, debriefErr := s.db.IncidentDebrief.Query().
+	debrief, debriefErr := s.db.Client(ctx).IncidentDebrief.Query().
 		Where(incidentdebrief.ID(debriefId)).
 		WithMessages().
 		Only(ctx)
@@ -279,7 +279,7 @@ func (s *DebriefService) generateDebriefResponse(ctx context.Context, debriefId 
 		panic("TODO: ai debrief message")
 	}
 
-	create := s.db.IncidentDebriefMessage.Create().
+	create := s.db.Client(ctx).IncidentDebriefMessage.Create().
 		SetDebriefID(debrief.ID).
 		SetType(msg.Type).
 		SetBody(msg.Body).
@@ -331,7 +331,7 @@ func (s *DebriefService) getApplicableQuestionsForDebrief(ctx context.Context, d
 	// TODO: cache this
 	var debriefQuestions []*ent.IncidentDebriefQuestion
 
-	questions, qErr := s.db.IncidentDebriefQuestion.Query().
+	questions, qErr := s.db.Client(ctx).IncidentDebriefQuestion.Query().
 		WithIncidentFields().
 		WithIncidentRoles().
 		WithIncidentSeverities().

@@ -118,7 +118,7 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 			SetMinutesOccupied(anno.MinutesOccupied).
 			SetNotes(anno.Notes).
 			SetTags(anno.Tags).
-			Save(ctx)
+			Save(txCtx)
 		if annoErr != nil {
 			return fmt.Errorf("create annotation: %w", annoErr)
 		}

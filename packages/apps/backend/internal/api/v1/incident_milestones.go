@@ -3,23 +3,23 @@ package apiv1
 import (
 	"context"
 
-	"github.com/rezible/rezible/ent"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type incidentMilestonesHandler struct {
-	db *ent.Client
+	db rez.Database
 }
 
-func newIncidentMilestonesHandler(db *ent.Client) *incidentMilestonesHandler {
+func newIncidentMilestonesHandler(db rez.Database) *incidentMilestonesHandler {
 	return &incidentMilestonesHandler{db: db}
 }
 
 func (h *incidentMilestonesHandler) ListIncidentMilestones(ctx context.Context, request *oapi.ListIncidentMilestonesRequest) (*oapi.ListIncidentMilestonesResponse, error) {
 	var resp oapi.ListIncidentMilestonesResponse
 
-	query := h.db.IncidentMilestone.Query()
+	query := h.db.Client(ctx).IncidentMilestone.Query()
 
 	query.Limit(10)
 	query.Offset(0)
@@ -41,7 +41,7 @@ func (h *incidentMilestonesHandler) CreateIncidentMilestone(ctx context.Context,
 	var resp oapi.CreateIncidentMilestoneResponse
 
 	attrs := request.Body.Attributes
-	query := h.db.IncidentMilestone.Create().
+	query := h.db.Client(ctx).IncidentMilestone.Create().
 		SetIncidentID(request.Id).
 		SetKind(incidentmilestone.Kind(attrs.Kind)).
 		SetTimestamp(attrs.Timestamp)
@@ -60,7 +60,7 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 
 	attrs := input.Body.Attributes
 
-	query := h.db.IncidentMilestone.UpdateOneID(input.Id).
+	query := h.db.Client(ctx).IncidentMilestone.UpdateOneID(input.Id).
 		SetNillableDescription(attrs.Description).
 		SetNillableTimestamp(attrs.Timestamp)
 
@@ -80,7 +80,7 @@ func (h *incidentMilestonesHandler) UpdateIncidentMilestone(ctx context.Context,
 func (h *incidentMilestonesHandler) DeleteIncidentMilestone(ctx context.Context, input *oapi.DeleteIncidentMilestoneRequest) (*oapi.DeleteIncidentMilestoneResponse, error) {
 	var resp oapi.DeleteIncidentMilestoneResponse
 
-	deleteErr := h.db.IncidentMilestone.DeleteOneID(input.Id).Exec(ctx)
+	deleteErr := h.db.Client(ctx).IncidentMilestone.DeleteOneID(input.Id).Exec(ctx)
 	if deleteErr != nil {
 		return nil, oapi.Error(ctx, "failed to archive incident event", deleteErr)
 	}

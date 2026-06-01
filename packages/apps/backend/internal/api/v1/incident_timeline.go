@@ -6,24 +6,24 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 
-	"github.com/rezible/rezible/ent"
 	itle "github.com/rezible/rezible/ent/incidenttimelineevent"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
 type incidentTimelineHandler struct {
-	db *ent.Client
+	db rez.Database
 }
 
-func newIncidentTimelineHandler(db *ent.Client) *incidentTimelineHandler {
-	return &incidentTimelineHandler{db}
+func newIncidentTimelineHandler(db rez.Database) *incidentTimelineHandler {
+	return &incidentTimelineHandler{db: db}
 }
 
 func (h *incidentTimelineHandler) ListIncidentTimelineEvents(ctx context.Context, request *oapi.ListIncidentTimelineEventsRequest) (*oapi.ListIncidentTimelineEventsResponse, error) {
 	var resp oapi.ListIncidentTimelineEventsResponse
 
-	query := h.db.IncidentTimelineEvent.Query().
+	query := h.db.Client(ctx).IncidentTimelineEvent.Query().
 		Where(itle.IncidentID(request.Id)).
 		WithTopologyContext()
 	events, eventsErr := query.All(ctx)
@@ -39,7 +39,7 @@ func (h *incidentTimelineHandler) ListIncidentTimelineEvents(ctx context.Context
 }
 
 func (h *incidentTimelineHandler) getEventSequence(ctx context.Context, incidentId uuid.UUID, timestamp time.Time) (int, error) {
-	query := h.db.IncidentTimelineEvent.Query().
+	query := h.db.Client(ctx).IncidentTimelineEvent.Query().
 		Where(itle.And(itle.IncidentID(incidentId), itle.Timestamp(timestamp)))
 
 	num, countErr := query.Count(ctx)
@@ -66,7 +66,7 @@ func (h *incidentTimelineHandler) CreateIncidentTimelineEvent(ctx context.Contex
 		return nil, oapi.Error(ctx, "failed to get sequence for incident event", seqErr)
 	}
 
-	create := h.db.IncidentTimelineEvent.Create().
+	create := h.db.Client(ctx).IncidentTimelineEvent.Create().
 		SetIncidentID(request.Id).
 		SetTitle(attr.Title).
 		SetKind(kind).
@@ -89,7 +89,7 @@ func (h *incidentTimelineHandler) UpdateIncidentTimelineEvent(ctx context.Contex
 
 	attr := request.Body.Attributes
 
-	update := h.db.IncidentTimelineEvent.UpdateOneID(request.Id).
+	update := h.db.Client(ctx).IncidentTimelineEvent.UpdateOneID(request.Id).
 		SetNillableTitle(attr.Title).
 		SetNillableTimestamp(attr.Timestamp)
 
@@ -113,7 +113,7 @@ func (h *incidentTimelineHandler) UpdateIncidentTimelineEvent(ctx context.Contex
 func (h *incidentTimelineHandler) DeleteIncidentTimelineEvent(ctx context.Context, request *oapi.DeleteIncidentTimelineEventRequest) (*oapi.DeleteIncidentTimelineEventResponse, error) {
 	var resp oapi.DeleteIncidentTimelineEventResponse
 
-	if deleteErr := h.db.IncidentTimelineEvent.DeleteOneID(request.Id).Exec(ctx); deleteErr != nil {
+	if deleteErr := h.db.Client(ctx).IncidentTimelineEvent.DeleteOneID(request.Id).Exec(ctx); deleteErr != nil {
 		return nil, oapi.Error(ctx, "failed to delete incident event", deleteErr)
 	}
 

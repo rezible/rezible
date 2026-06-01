@@ -47,7 +47,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 
 	// TODO: use regular user service update flow here instead
 
-	linked, linkedErr := s.client.User.Query().
+	linked, linkedErr := s.db.Client(ctx).User.Query().
 		Where(user.KnowledgeEntityID(knoEnt.ID)).
 		Only(ctx)
 	if linkedErr != nil && !ent.IsNotFound(linkedErr) {
@@ -57,7 +57,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 	var emailUser *ent.User
 	if linked == nil || linked.Email != attrs.Email {
 		var emailErr error
-		emailUser, emailErr = s.client.User.Query().
+		emailUser, emailErr = s.db.Client(ctx).User.Query().
 			Where(user.Email(attrs.Email)).
 			Only(ctx)
 		if emailErr != nil && !ent.IsNotFound(emailErr) {
@@ -83,9 +83,9 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 
 	var mut *ent.UserMutation
 	if userID == uuid.Nil {
-		mut = s.client.User.Create().Mutation()
+		mut = s.db.Client(ctx).User.Create().Mutation()
 	} else {
-		mut = s.client.User.UpdateOneID(userID).Mutation()
+		mut = s.db.Client(ctx).User.UpdateOneID(userID).Mutation()
 	}
 	mut.SetKnowledgeEntityID(knoEnt.ID)
 	mut.SetName(attrs.Name)
@@ -93,7 +93,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 	mut.SetChatID(attrs.ChatId)
 	mut.SetTimezone(attrs.Timezone)
 
-	if _, saveErr := s.client.Mutate(ctx, mut); saveErr != nil {
+	if _, saveErr := s.db.Client(ctx).Mutate(ctx, mut); saveErr != nil {
 		return fmt.Errorf("save user: %w", saveErr)
 	}
 

@@ -23,14 +23,14 @@ import (
 )
 
 type OncallShiftsService struct {
-	db           *ent.Client
+	db           rez.Database
 	jobs         rez.JobService
 	integrations rez.IntegrationsService
 }
 
-func NewOncallShiftsService(dbc *ent.Client, jobSvc rez.JobService, intgs rez.IntegrationsService) (*OncallShiftsService, error) {
+func NewOncallShiftsService(db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationsService) (*OncallShiftsService, error) {
 	s := &OncallShiftsService{
-		db:           dbc,
+		db:           db,
 		jobs:         jobSvc,
 		integrations: intgs,
 	}
@@ -69,7 +69,7 @@ func (s *OncallShiftsService) ensureShiftHandoverReminderSent(ctx context.Contex
 }
 
 func (s *OncallShiftsService) GetShiftByID(ctx context.Context, id uuid.UUID) (*ent.OncallShift, error) {
-	query := s.db.OncallShift.Query().
+	query := s.db.Client(ctx).OncallShift.Query().
 		Where(ocs.ID(id)).
 		WithRoster().
 		WithUser()
@@ -77,7 +77,7 @@ func (s *OncallShiftsService) GetShiftByID(ctx context.Context, id uuid.UUID) (*
 }
 
 func (s *OncallShiftsService) getNextShift(ctx context.Context, shift *ent.OncallShift) (*ent.OncallShift, error) {
-	return s.db.OncallShift.Query().
+	return s.db.Client(ctx).OncallShift.Query().
 		Where(ocs.RosterID(shift.RosterID)).
 		Where(ocs.IDNEQ(shift.ID)).
 		Where(ocs.StartAtGTE(shift.StartAt)).
@@ -88,7 +88,7 @@ func (s *OncallShiftsService) getNextShift(ctx context.Context, shift *ent.Oncal
 }
 
 func (s *OncallShiftsService) getPreviousShift(ctx context.Context, shift *ent.OncallShift) (*ent.OncallShift, error) {
-	return s.db.OncallShift.Query().
+	return s.db.Client(ctx).OncallShift.Query().
 		Where(ocs.RosterID(shift.RosterID)).
 		Where(ocs.IDNEQ(shift.ID)).
 		Where(ocs.EndAtLTE(shift.StartAt)).
@@ -99,7 +99,7 @@ func (s *OncallShiftsService) getPreviousShift(ctx context.Context, shift *ent.O
 }
 
 func (s *OncallShiftsService) GetAdjacentShifts(ctx context.Context, id uuid.UUID) (*ent.OncallShift, *ent.OncallShift, error) {
-	shift, shiftErr := s.db.OncallShift.Get(ctx, id)
+	shift, shiftErr := s.db.Client(ctx).OncallShift.Get(ctx, id)
 	if shiftErr != nil {
 		return nil, nil, fmt.Errorf("lookup shift: %w", shiftErr)
 	}
@@ -118,7 +118,7 @@ func (s *OncallShiftsService) GetAdjacentShifts(ctx context.Context, id uuid.UUI
 }
 
 func (s *OncallShiftsService) ListShifts(ctx context.Context, params rez.ListOncallShiftsParams) (*ent.ListResult[ent.OncallShift], error) {
-	query := s.db.OncallShift.Query().
+	query := s.db.Client(ctx).OncallShift.Query().
 		Order(ocs.ByEndAt(sql.OrderDesc())).
 		WithRoster().
 		WithUser()
@@ -145,7 +145,7 @@ func (s *OncallShiftsService) queryShiftsEndingWithinWindow(ctx context.Context,
 	windowEnd := time.Now().Add(window)
 	shiftEndingWithinWindow := ocs.And(ocs.EndAtGTE(windowStart), ocs.EndAtLTE(windowEnd))
 
-	query := s.db.OncallShift.Query().
+	query := s.db.Client(ctx).OncallShift.Query().
 		Where(shiftEndingWithinWindow).
 		WithHandover()
 
@@ -213,21 +213,21 @@ func (s *OncallShiftsService) scanShifts(ctx context.Context) error {
 }
 
 func (s *OncallShiftsService) GetShiftHandover(ctx context.Context, id uuid.UUID) (*ent.OncallShiftHandover, error) {
-	return s.db.OncallShiftHandover.Query().
+	return s.db.Client(ctx).OncallShiftHandover.Query().
 		Where(oncallshifthandover.ID(id)).
 		WithPinnedAnnotations().
 		Only(ctx)
 }
 
 func (s *OncallShiftsService) getRosterForShift(ctx context.Context, id uuid.UUID) (*ent.OncallRoster, error) {
-	return s.db.OncallShift.Query().
+	return s.db.Client(ctx).OncallShift.Query().
 		Where(ocs.ID(id)).
 		QueryRoster().
 		Only(ctx)
 }
 
 func (s *OncallShiftsService) GetHandoverForShift(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftHandover, error) {
-	handover, queryErr := s.db.OncallShiftHandover.Query().
+	handover, queryErr := s.db.Client(ctx).OncallShiftHandover.Query().
 		Where(oncallshifthandover.ShiftID(shiftId)).
 		WithPinnedAnnotations().
 		Only(ctx)
@@ -250,7 +250,7 @@ var defaultHandoverTemplate = []byte(`[
 
 func (s *OncallShiftsService) getRosterHandoverTemplateContents(ctx context.Context, rosterId uuid.UUID) ([]byte, error) {
 	isRosterOrDefault := ohot.Or(ohot.IsDefault(true), ohot.HasRosterWith(oncallroster.ID(rosterId)))
-	tmpl, tmplErr := s.db.OncallHandoverTemplate.Query().
+	tmpl, tmplErr := s.db.Client(ctx).OncallHandoverTemplate.Query().
 		Where(isRosterOrDefault).
 		Order(ohot.ByUpdatedAt()).
 		First(ctx)
@@ -274,7 +274,7 @@ func (s *OncallShiftsService) createShiftHandover(ctx context.Context, shiftId u
 		return nil, fmt.Errorf("failed to get roster handover template contents: %w", contentsErr)
 	}
 
-	return s.db.OncallShiftHandover.Create().
+	return s.db.Client(ctx).OncallShiftHandover.Create().
 		SetShiftID(shiftId).
 		SetContents(contents).
 		SetCreatedAt(time.Now()).
@@ -332,7 +332,7 @@ func (s *OncallShiftsService) sendShiftHandoverReminder(ctx context.Context, shi
 }
 
 func (s *OncallShiftsService) SendShiftHandover(ctx context.Context, handoverId uuid.UUID) (*ent.OncallShiftHandover, error) {
-	hoQuery := s.db.OncallShiftHandover.Query().
+	hoQuery := s.db.Client(ctx).OncallShiftHandover.Query().
 		Where(oncallshifthandover.ID(handoverId)).
 		WithShift(func(q *ent.OncallShiftQuery) {
 			q.WithRoster()

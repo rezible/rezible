@@ -22,19 +22,21 @@ func TestRetrospectiveServiceSuite(t *testing.T) {
 func (s *RetrospectiveServiceSuite) createIncident() *ent.Incident {
 	ctx := s.SeedTenantContext()
 
-	severity, err := s.Client().IncidentSeverity.Create().
+	client := s.Database().Client(ctx)
+
+	severity, err := client.IncidentSeverity.Create().
 		SetName("SEV-1 " + uuid.NewString()).
 		SetRank(1).
 		SetDescription("Critical").
 		Save(ctx)
 	s.Require().NoError(err)
 
-	incidentType, err := s.Client().IncidentType.Create().
+	incidentType, err := client.IncidentType.Create().
 		SetName("Customer Impact " + uuid.NewString()).
 		Save(ctx)
 	s.Require().NoError(err)
 
-	inc, err := s.Client().Incident.Create().
+	inc, err := client.Incident.Create().
 		SetSlug("incident-" + uuid.NewString()).
 		SetTitle("API outage").
 		SetSeverityID(severity.ID).
@@ -46,14 +48,14 @@ func (s *RetrospectiveServiceSuite) createIncident() *ent.Incident {
 
 func (s *RetrospectiveServiceSuite) TestCreateFullRetrospectiveCreatesSnapshotBackedAnalysis() {
 	ctx := s.SeedTenantContext()
-	svc := &RetrospectiveService{db: s.Client()}
+	svc := &RetrospectiveService{db: s.Database()}
 	inc := s.createIncident()
 
 	retro, err := svc.createForIncident(ctx, inc)
 	s.Require().NoError(err)
 	s.NotEqual(uuid.Nil, retro.SystemAnalysisID)
 
-	analysis, err := s.Client().SystemAnalysis.Query().
+	analysis, err := s.Database().Client(ctx).SystemAnalysis.Query().
 		Where(systemanalysis.ID(retro.SystemAnalysisID)).
 		WithTopologySnapshot().
 		Only(ctx)

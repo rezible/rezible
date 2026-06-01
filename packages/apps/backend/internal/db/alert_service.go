@@ -14,13 +14,13 @@ import (
 )
 
 type AlertService struct {
-	client    *ent.Client
+	db        rez.Database
 	knowledge rez.KnowledgeService
 }
 
-func NewAlertService(client *ent.Client, knowledge rez.KnowledgeService) (*AlertService, error) {
+func NewAlertService(db rez.Database, knowledge rez.KnowledgeService) (*AlertService, error) {
 	s := &AlertService{
-		client:    client,
+		db:        db,
 		knowledge: knowledge,
 	}
 
@@ -28,7 +28,7 @@ func NewAlertService(client *ent.Client, knowledge rez.KnowledgeService) (*Alert
 }
 
 func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsParams) ([]*ent.Alert, int, error) {
-	query := s.client.Alert.Query().
+	query := s.db.Client(ctx).Alert.Query().
 		Where()
 
 	qCtx := params.GetQueryContext(ctx)
@@ -47,11 +47,11 @@ func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsPara
 }
 
 func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.Alert, error) {
-	return s.client.Alert.Query().Where(alert.ID(id)).WithRoster().Only(ctx)
+	return s.db.Client(ctx).Alert.Query().Where(alert.ID(id)).WithRoster().Only(ctx)
 }
 
 func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertMetricsParams) (*ent.AlertMetrics, error) {
-	query := s.client.Alert.Query().Where(alert.ID(params.AlertId)).
+	query := s.db.Client(ctx).Alert.Query().Where(alert.ID(params.AlertId)).
 		WithFeedback(func(afbq *ent.AlertFeedbackQuery) {
 			afbq.WithAlertInstance(func(neq *ent.NormalizedEventQuery) {
 				neq.Where(ne.Or(ne.OccurredAtGTE(params.From), ne.OccurredAtLTE(params.To)))

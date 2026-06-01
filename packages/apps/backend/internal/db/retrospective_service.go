@@ -17,13 +17,13 @@ import (
 )
 
 type RetrospectiveService struct {
-	db        *ent.Client
+	db        rez.Database
 	msgs      rez.MessageService
 	incidents rez.IncidentService
 }
 
 func NewRetrospectiveService(
-	db *ent.Client,
+	db rez.Database,
 	msgs rez.MessageService,
 	incidents rez.IncidentService,
 ) (*RetrospectiveService, error) {
@@ -78,15 +78,15 @@ func (s *RetrospectiveService) handleUpdateForIncident(ctx context.Context, cmd 
 }
 
 func (s *RetrospectiveService) Get(ctx context.Context, p predicate.Retrospective) (*ent.Retrospective, error) {
-	return s.db.Retrospective.Query().Where(p).Only(ctx)
+	return s.db.Client(ctx).Retrospective.Query().Where(p).Only(ctx)
 }
 
 func (s *RetrospectiveService) GetById(ctx context.Context, id uuid.UUID) (*ent.Retrospective, error) {
-	return s.db.Retrospective.Get(ctx, id)
+	return s.db.Client(ctx).Retrospective.Get(ctx, id)
 }
 
 func (s *RetrospectiveService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.RetrospectiveMutation)) (*ent.Retrospective, error) {
-	update := s.db.Retrospective.UpdateOneID(id)
+	update := s.db.Client(ctx).Retrospective.UpdateOneID(id)
 
 	setFn(update.Mutation())
 
@@ -104,7 +104,7 @@ func (s *RetrospectiveService) getRetrospectiveKind(ctx context.Context, inc *en
 }
 
 func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
-	exists, queryErr := s.db.Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Exist(ctx)
+	exists, queryErr := s.db.Client(ctx).Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Exist(ctx)
 	if exists || queryErr != nil {
 		return nil, queryErr
 	}
@@ -114,11 +114,11 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 	}
 
 	var created *ent.Retrospective
-	createTxFn := func(tx *ent.Tx) error {
+	createTxFn := func(txCtx context.Context, tx *ent.Client) error {
 		createdDoc, createDocErr := tx.Document.Create().
 			SetContent([]byte("")).
 			SetAccessRestricted(false).
-			Save(ctx)
+			Save(txCtx)
 		if createDocErr != nil {
 			return fmt.Errorf("create doc: %w", createDocErr)
 		}
@@ -130,7 +130,7 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 			SetState(retrospective.StateDraft)
 
 		var createRetroErr error
-		created, createRetroErr = create.Save(ctx)
+		created, createRetroErr = create.Save(txCtx)
 		if createRetroErr != nil {
 			return fmt.Errorf("create retrospective: %w", createRetroErr)
 		}
@@ -141,7 +141,7 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 				SetScopeProperties(map[string]any{
 					"incidentId": inc.ID.String(),
 				}).
-				Save(ctx)
+				Save(txCtx)
 			if createSnapshotErr != nil {
 				return fmt.Errorf("create topology snapshot: %w", createSnapshotErr)
 			}
@@ -149,7 +149,7 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 			createdAnalysis, createAnalysisErr := tx.SystemAnalysis.Create().
 				SetRetrospective(created).
 				SetTopologySnapshot(topologySnapshot).
-				Save(ctx)
+				Save(txCtx)
 			if createAnalysisErr != nil {
 				return fmt.Errorf("create analysis: %w", createAnalysisErr)
 			}
@@ -157,28 +157,28 @@ func (s *RetrospectiveService) createForIncident(ctx context.Context, inc *ent.I
 		}
 		return nil
 	}
-	if txErr := ent.WithTx(ctx, s.db, createTxFn); txErr != nil {
+	if txErr := s.db.WithTx(ctx, createTxFn); txErr != nil {
 		return nil, fmt.Errorf("create tx failed: %w", txErr)
 	}
 	return created, nil
 }
 
 func (s *RetrospectiveService) GetForIncident(ctx context.Context, inc *ent.Incident) (*ent.Retrospective, error) {
-	return s.db.Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Only(ctx)
+	return s.db.Client(ctx).Retrospective.Query().Where(retrospective.IncidentID(inc.ID)).Only(ctx)
 }
 
 func (s *RetrospectiveService) GetComment(ctx context.Context, id uuid.UUID) (*ent.RetrospectiveComment, error) {
-	return s.db.RetrospectiveComment.Get(ctx, id)
+	return s.db.Client(ctx).RetrospectiveComment.Get(ctx, id)
 }
 
 func (s *RetrospectiveService) SetComment(ctx context.Context, cmt *ent.RetrospectiveComment) (*ent.RetrospectiveComment, error) {
 	var m *ent.RetrospectiveCommentMutation
 	if cmt.ID != uuid.Nil {
-		m = s.db.RetrospectiveComment.UpdateOneID(cmt.ID).Mutation()
+		m = s.db.Client(ctx).RetrospectiveComment.UpdateOneID(cmt.ID).Mutation()
 	} else {
-		m = s.db.RetrospectiveComment.Create().Mutation()
+		m = s.db.Client(ctx).RetrospectiveComment.Create().Mutation()
 	}
-	v, setErr := s.db.Mutate(ctx, m)
+	v, setErr := s.db.Client(ctx).Mutate(ctx, m)
 	if setErr != nil {
 		return nil, fmt.Errorf("failed to %s comment: %w", m.Op(), setErr)
 	}
@@ -190,7 +190,7 @@ func (s *RetrospectiveService) SetComment(ctx context.Context, cmt *ent.Retrospe
 }
 
 func (s *RetrospectiveService) ListComments(ctx context.Context, params rez.ListRetrospectiveCommentsParams) ([]*ent.RetrospectiveComment, error) {
-	query := s.db.RetrospectiveComment.Query().
+	query := s.db.Client(ctx).RetrospectiveComment.Query().
 		Where(retrospectivecomment.RetrospectiveID(params.RetrospectiveID))
 
 	if params.WithReplies {

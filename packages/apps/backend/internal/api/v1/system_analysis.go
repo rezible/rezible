@@ -3,6 +3,7 @@ package apiv1
 import (
 	"context"
 
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	sa "github.com/rezible/rezible/ent/systemanalysis"
 	sate "github.com/rezible/rezible/ent/systemanalysistopologyedge"
@@ -11,17 +12,17 @@ import (
 )
 
 type systemAnalysisHandler struct {
-	db *ent.Client
+	db rez.Database
 }
 
-func newSystemAnalysisHandler(db *ent.Client) *systemAnalysisHandler {
+func newSystemAnalysisHandler(db rez.Database) *systemAnalysisHandler {
 	return &systemAnalysisHandler{db: db}
 }
 
 func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *oapi.GetSystemAnalysisRequest) (*oapi.GetSystemAnalysisResponse, error) {
 	var resp oapi.GetSystemAnalysisResponse
 
-	analysis, queryErr := s.db.SystemAnalysis.Query().
+	analysis, queryErr := s.db.Client(ctx).SystemAnalysis.Query().
 		Where(sa.ID(request.Id)).
 		WithTopologySnapshot(func(q *ent.SystemTopologySnapshotQuery) {
 			q.WithEntities()
@@ -45,7 +46,7 @@ func (s *systemAnalysisHandler) GetSystemAnalysis(ctx context.Context, request *
 func (s *systemAnalysisHandler) ListSystemAnalysisNodes(ctx context.Context, request *oapi.ListSystemAnalysisNodesRequest) (*oapi.ListSystemAnalysisNodesResponse, error) {
 	var resp oapi.ListSystemAnalysisNodesResponse
 
-	nodes, queryErr := s.db.SystemAnalysisTopologyNode.Query().
+	nodes, queryErr := s.db.Client(ctx).SystemAnalysisTopologyNode.Query().
 		Where(satn.AnalysisID(request.Id)).
 		WithSnapshotEntity().
 		All(ctx)
@@ -69,7 +70,7 @@ func (s *systemAnalysisHandler) AddSystemAnalysisNode(ctx context.Context, reque
 func (s *systemAnalysisHandler) GetSystemAnalysisNode(ctx context.Context, request *oapi.GetSystemAnalysisNodeRequest) (*oapi.GetSystemAnalysisNodeResponse, error) {
 	var resp oapi.GetSystemAnalysisNodeResponse
 
-	node, getErr := s.db.SystemAnalysisTopologyNode.Query().
+	node, getErr := s.db.Client(ctx).SystemAnalysisTopologyNode.Query().
 		Where(satn.ID(request.Id)).
 		WithSnapshotEntity().
 		Only(ctx)
@@ -85,7 +86,7 @@ func (s *systemAnalysisHandler) UpdateSystemAnalysisNode(ctx context.Context, re
 	var resp oapi.UpdateSystemAnalysisNodeResponse
 
 	attr := request.Body.Attributes
-	update := s.db.SystemAnalysisTopologyNode.UpdateOneID(request.Id).
+	update := s.db.Client(ctx).SystemAnalysisTopologyNode.UpdateOneID(request.Id).
 		SetNillableDescription(attr.Description)
 	if attr.Position != nil {
 		update.SetPosX(attr.Position.X)
@@ -105,7 +106,7 @@ func (s *systemAnalysisHandler) UpdateSystemAnalysisNode(ctx context.Context, re
 func (s *systemAnalysisHandler) DeleteSystemAnalysisNode(ctx context.Context, request *oapi.DeleteSystemAnalysisNodeRequest) (*oapi.DeleteSystemAnalysisNodeResponse, error) {
 	var resp oapi.DeleteSystemAnalysisNodeResponse
 
-	if delErr := s.db.SystemAnalysisTopologyNode.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
+	if delErr := s.db.Client(ctx).SystemAnalysisTopologyNode.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
 		return nil, oapi.Error(ctx, "failed to delete system analysis node", delErr)
 	}
 
@@ -115,7 +116,7 @@ func (s *systemAnalysisHandler) DeleteSystemAnalysisNode(ctx context.Context, re
 func (s *systemAnalysisHandler) ListSystemAnalysisEdges(ctx context.Context, request *oapi.ListSystemAnalysisEdgesRequest) (*oapi.ListSystemAnalysisEdgesResponse, error) {
 	var resp oapi.ListSystemAnalysisEdgesResponse
 
-	edges, queryErr := s.db.SystemAnalysisTopologyEdge.Query().
+	edges, queryErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.Query().
 		Where(sate.AnalysisID(request.Id)).
 		WithSnapshotRelationship().
 		All(ctx)
@@ -134,7 +135,7 @@ func (s *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, reque
 	var resp oapi.AddSystemAnalysisEdgeResponse
 
 	attr := request.Body.Attributes
-	created, createErr := s.db.SystemAnalysisTopologyEdge.Create().
+	created, createErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.Create().
 		SetAnalysisID(request.Id).
 		SetSnapshotRelationshipID(attr.SnapshotRelationshipId).
 		SetDescription(attr.Description).
@@ -142,7 +143,7 @@ func (s *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, reque
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "failed to add system analysis edge", createErr)
 	}
-	created.Edges.SnapshotRelationship, _ = s.db.SystemTopologySnapshotRelationship.Get(ctx, attr.SnapshotRelationshipId)
+	created.Edges.SnapshotRelationship, _ = s.db.Client(ctx).SystemTopologySnapshotRelationship.Get(ctx, attr.SnapshotRelationshipId)
 	resp.Body.Data = oapi.SystemAnalysisEdgeFromEnt(created)
 
 	return &resp, nil
@@ -151,7 +152,7 @@ func (s *systemAnalysisHandler) AddSystemAnalysisEdge(ctx context.Context, reque
 func (s *systemAnalysisHandler) GetSystemAnalysisEdge(ctx context.Context, request *oapi.GetSystemAnalysisEdgeRequest) (*oapi.GetSystemAnalysisEdgeResponse, error) {
 	var resp oapi.GetSystemAnalysisEdgeResponse
 
-	edge, getErr := s.db.SystemAnalysisTopologyEdge.Query().
+	edge, getErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.Query().
 		Where(sate.ID(request.Id)).
 		WithSnapshotRelationship().
 		Only(ctx)
@@ -166,7 +167,7 @@ func (s *systemAnalysisHandler) GetSystemAnalysisEdge(ctx context.Context, reque
 func (s *systemAnalysisHandler) UpdateSystemAnalysisEdge(ctx context.Context, request *oapi.UpdateSystemAnalysisEdgeRequest) (*oapi.UpdateSystemAnalysisEdgeResponse, error) {
 	var resp oapi.UpdateSystemAnalysisEdgeResponse
 
-	updated, updateErr := s.db.SystemAnalysisTopologyEdge.UpdateOneID(request.Id).
+	updated, updateErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.UpdateOneID(request.Id).
 		SetNillableDescription(request.Body.Attributes.Description).
 		Save(ctx)
 	if updateErr != nil {
@@ -181,7 +182,7 @@ func (s *systemAnalysisHandler) UpdateSystemAnalysisEdge(ctx context.Context, re
 func (s *systemAnalysisHandler) DeleteSystemAnalysisEdge(ctx context.Context, request *oapi.DeleteSystemAnalysisEdgeRequest) (*oapi.DeleteSystemAnalysisEdgeResponse, error) {
 	var resp oapi.DeleteSystemAnalysisEdgeResponse
 
-	if delErr := s.db.SystemAnalysisTopologyEdge.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
+	if delErr := s.db.Client(ctx).SystemAnalysisTopologyEdge.DeleteOneID(request.Id).Exec(ctx); delErr != nil {
 		return nil, oapi.Error(ctx, "failed to delete system analysis edge", delErr)
 	}
 

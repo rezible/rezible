@@ -14,13 +14,13 @@ import (
 )
 
 type OncallMetricsService struct {
-	db     *ent.Client
+	db     rez.Database
 	shifts rez.OncallShiftsService
 }
 
-func NewOncallMetricsService(dbc *ent.Client, shifts rez.OncallShiftsService) (*OncallMetricsService, error) {
+func NewOncallMetricsService(db rez.Database, shifts rez.OncallShiftsService) (*OncallMetricsService, error) {
 	s := &OncallMetricsService{
-		db:     dbc,
+		db:     db,
 		shifts: shifts,
 	}
 
@@ -35,7 +35,7 @@ func (s *OncallMetricsService) handleGenerateShiftMetrics(ctx context.Context, a
 }
 
 func (s *OncallMetricsService) queryShiftMetrics(ctx context.Context, shiftId uuid.UUID) (*ent.OncallShiftMetrics, error) {
-	return s.db.OncallShiftMetrics.Query().Where(oncallshiftmetrics.ShiftID(shiftId)).Only(ctx)
+	return s.db.Client(ctx).OncallShiftMetrics.Query().Where(oncallshiftmetrics.ShiftID(shiftId)).Only(ctx)
 }
 
 func (s *OncallMetricsService) getShiftIncidents(ctx context.Context, shift *ent.OncallShift) ([]*ent.Incident, error) {
@@ -43,7 +43,7 @@ func (s *OncallMetricsService) getShiftIncidents(ctx context.Context, shift *ent
 }
 
 func (s *OncallMetricsService) upsertShiftMetrics(ctx context.Context, m *ent.OncallShiftMetrics) (*ent.OncallShiftMetrics, error) {
-	create := s.db.OncallShiftMetrics.Create().
+	create := s.db.Client(ctx).OncallShiftMetrics.Create().
 		SetShiftID(m.ShiftID).
 		SetBurdenScore(m.BurdenScore).
 		SetEventFrequency(m.EventFrequency).

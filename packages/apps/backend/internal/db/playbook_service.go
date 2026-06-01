@@ -10,19 +10,19 @@ import (
 )
 
 type PlaybookService struct {
-	db *ent.Client
+	db rez.Database
 }
 
-func NewPlaybookService(dbc *ent.Client) (*PlaybookService, error) {
+func NewPlaybookService(db rez.Database) (*PlaybookService, error) {
 	s := &PlaybookService{
-		db: dbc,
+		db: db,
 	}
 
 	return s, nil
 }
 
 func (s *PlaybookService) ListPlaybooks(ctx context.Context, params rez.ListPlaybooksParams) ([]*ent.Playbook, int, error) {
-	query := s.db.Playbook.Query().
+	query := s.db.Client(ctx).Playbook.Query().
 		Where()
 
 	qCtx := params.GetQueryContext(ctx)
@@ -41,7 +41,7 @@ func (s *PlaybookService) ListPlaybooks(ctx context.Context, params rez.ListPlay
 }
 
 func (s *PlaybookService) GetPlaybook(ctx context.Context, id uuid.UUID) (*ent.Playbook, error) {
-	return s.db.Playbook.Get(ctx, id)
+	return s.db.Client(ctx).Playbook.Get(ctx, id)
 }
 
 type saveablePlaybookQuery interface {
@@ -51,11 +51,11 @@ type saveablePlaybookQuery interface {
 func (s *PlaybookService) SetPlaybook(ctx context.Context, playbook *ent.Playbook) (*ent.Playbook, error) {
 	var q saveablePlaybookQuery
 	if playbook.ID == uuid.Nil {
-		q = s.db.Playbook.Create().
+		q = s.db.Client(ctx).Playbook.Create().
 			SetTitle(playbook.Title).
 			SetContent(playbook.Content)
 	} else {
-		q = s.db.Playbook.UpdateOneID(playbook.ID).
+		q = s.db.Client(ctx).Playbook.UpdateOneID(playbook.ID).
 			SetTitle(playbook.Title).
 			SetContent(playbook.Content)
 	}

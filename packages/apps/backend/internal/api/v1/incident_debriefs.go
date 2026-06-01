@@ -13,13 +13,13 @@ import (
 )
 
 type incidentDebriefsHandler struct {
-	questions *ent.IncidentDebriefQuestionClient
-	users     rez.UserService
-	debriefs  rez.DebriefService
+	db       rez.Database
+	users    rez.UserService
+	debriefs rez.DebriefService
 }
 
-func newIncidentDebriefsHandler(questions *ent.IncidentDebriefQuestionClient, users rez.UserService, debriefs rez.DebriefService) *incidentDebriefsHandler {
-	return &incidentDebriefsHandler{questions, users, debriefs}
+func newIncidentDebriefsHandler(db rez.Database, users rez.UserService, debriefs rez.DebriefService) *incidentDebriefsHandler {
+	return &incidentDebriefsHandler{db: db, users: users, debriefs: debriefs}
 }
 
 func (h *incidentDebriefsHandler) GetIncidentUserDebrief(ctx context.Context, request *oapi.GetIncidentUserDebriefRequest) (*oapi.GetIncidentUserDebriefResponse, error) {
@@ -144,7 +144,7 @@ func (h *incidentDebriefsHandler) ListIncidentDebriefSuggestions(ctx context.Con
 func (h *incidentDebriefsHandler) ListIncidentDebriefQuestions(ctx context.Context, request *oapi.ListIncidentDebriefQuestionsRequest) (*oapi.ListIncidentDebriefQuestionsResponse, error) {
 	var resp oapi.ListIncidentDebriefQuestionsResponse
 
-	query := h.questions.Query()
+	query := h.db.Client(ctx).IncidentDebriefQuestion.Query()
 	if request.IncludeArchived {
 		ctx = schema.IncludeArchived(ctx)
 	}
@@ -167,7 +167,7 @@ func (h *incidentDebriefsHandler) CreateIncidentDebriefQuestion(ctx context.Cont
 
 	attr := request.Body.Attributes
 
-	query := h.questions.Create().
+	query := h.db.Client(ctx).IncidentDebriefQuestion.Create().
 		SetContent(attr.Content)
 
 	question, createErr := query.Save(ctx)
@@ -182,7 +182,7 @@ func (h *incidentDebriefsHandler) CreateIncidentDebriefQuestion(ctx context.Cont
 func (h *incidentDebriefsHandler) GetIncidentDebriefQuestion(ctx context.Context, request *oapi.GetIncidentDebriefQuestionRequest) (*oapi.GetIncidentDebriefQuestionResponse, error) {
 	var resp oapi.GetIncidentDebriefQuestionResponse
 
-	question, queryErr := h.questions.Get(ctx, request.Id)
+	question, queryErr := h.db.Client(ctx).IncidentDebriefQuestion.Get(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to query debrief question", queryErr)
 	}
@@ -197,7 +197,7 @@ func (h *incidentDebriefsHandler) UpdateIncidentDebriefQuestion(ctx context.Cont
 
 	attr := request.Body.Attributes
 
-	query := h.questions.UpdateOneID(request.Id).
+	query := h.db.Client(ctx).IncidentDebriefQuestion.UpdateOneID(request.Id).
 		SetNillableContent(attr.Content)
 
 	question, createErr := query.Save(ctx)
@@ -212,7 +212,7 @@ func (h *incidentDebriefsHandler) UpdateIncidentDebriefQuestion(ctx context.Cont
 func (h *incidentDebriefsHandler) ArchiveIncidentDebriefQuestion(ctx context.Context, request *oapi.ArchiveIncidentDebriefQuestionRequest) (*oapi.ArchiveIncidentDebriefQuestionResponse, error) {
 	var resp oapi.ArchiveIncidentDebriefQuestionResponse
 
-	delErr := h.questions.DeleteOneID(request.Id).Exec(ctx)
+	delErr := h.db.Client(ctx).IncidentDebriefQuestion.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
 		return nil, oapi.Error(ctx, "Failed to archive incident debrief question", delErr)
 	}

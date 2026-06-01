@@ -343,13 +343,13 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 		upsertBulk := tx.NormalizedEvent.MapCreateBulk(normalizedEvents, mapCreateEventFn).
 			OnConflict(upsertConflictColumns).
 			UpdateNewValues()
-		if upsertErr := upsertBulk.Exec(ctx); upsertErr != nil {
+		if upsertErr := upsertBulk.Exec(txCtx); upsertErr != nil {
 			return fmt.Errorf("upsert normalized events: %w", upsertErr)
 		}
 
 		queryEvents := tx.NormalizedEvent.Query().
 			Where(ne.ProviderEventRefIn(eventRefs.ToSlice()...))
-		evs, evsErr := queryEvents.All(ctx)
+		evs, evsErr := queryEvents.All(txCtx)
 		if evsErr != nil {
 			return fmt.Errorf("query normalized events: %w", evsErr)
 		}
@@ -365,7 +365,7 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 				},
 			}
 		}
-		insertRes, jobErr := s.jobService.InsertMany(ctx, params)
+		insertRes, jobErr := s.jobService.InsertMany(txCtx, params)
 		if jobErr != nil {
 			return fmt.Errorf("inserting project events: %w", jobErr)
 		}

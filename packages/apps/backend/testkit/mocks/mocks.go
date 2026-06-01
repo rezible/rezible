@@ -635,6 +635,74 @@ func (_m *MockProviderEventService) EXPECT() *MockProviderEventService_Expecter 
 	return &MockProviderEventService_Expecter{mock: &_m.Mock}
 }
 
+// GetEvent provides a mock function for the type MockProviderEventService
+func (_mock *MockProviderEventService) GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error) {
+	ret := _mock.Called(ctx, id)
+
+	if len(ret) == 0 {
+		panic("no return value specified for GetEvent")
+	}
+
+	var r0 *ent.NormalizedEvent
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) (*ent.NormalizedEvent, error)); ok {
+		return returnFunc(ctx, id)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID) *ent.NormalizedEvent); ok {
+		r0 = returnFunc(ctx, id)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.NormalizedEvent)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID) error); ok {
+		r1 = returnFunc(ctx, id)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockProviderEventService_GetEvent_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'GetEvent'
+type MockProviderEventService_GetEvent_Call struct {
+	*mock.Call
+}
+
+// GetEvent is a helper method to define mock.On call
+//   - ctx context.Context
+//   - id uuid.UUID
+func (_e *MockProviderEventService_Expecter) GetEvent(ctx interface{}, id interface{}) *MockProviderEventService_GetEvent_Call {
+	return &MockProviderEventService_GetEvent_Call{Call: _e.mock.On("GetEvent", ctx, id)}
+}
+
+func (_c *MockProviderEventService_GetEvent_Call) Run(run func(ctx context.Context, id uuid.UUID)) *MockProviderEventService_GetEvent_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderEventService_GetEvent_Call) Return(normalizedEvent *ent.NormalizedEvent, err error) *MockProviderEventService_GetEvent_Call {
+	_c.Call.Return(normalizedEvent, err)
+	return _c
+}
+
+func (_c *MockProviderEventService_GetEvent_Call) RunAndReturn(run func(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error)) *MockProviderEventService_GetEvent_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
 // Ingest provides a mock function for the type MockProviderEventService
 func (_mock *MockProviderEventService) Ingest(context1 context.Context, providerEvent rez.ProviderEvent) error {
 	ret := _mock.Called(context1, providerEvent)
@@ -688,6 +756,74 @@ func (_c *MockProviderEventService_Ingest_Call) Return(err error) *MockProviderE
 }
 
 func (_c *MockProviderEventService_Ingest_Call) RunAndReturn(run func(context1 context.Context, providerEvent rez.ProviderEvent) error) *MockProviderEventService_Ingest_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// ListEvents provides a mock function for the type MockProviderEventService
+func (_mock *MockProviderEventService) ListEvents(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error) {
+	ret := _mock.Called(ctx, params)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListEvents")
+	}
+
+	var r0 *ent.ListResult[ent.NormalizedEvent]
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)); ok {
+		return returnFunc(ctx, params)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ListEventsParams) *ent.ListResult[ent.NormalizedEvent]); ok {
+		r0 = returnFunc(ctx, params)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.ListResult[ent.NormalizedEvent])
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, rez.ListEventsParams) error); ok {
+		r1 = returnFunc(ctx, params)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockProviderEventService_ListEvents_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'ListEvents'
+type MockProviderEventService_ListEvents_Call struct {
+	*mock.Call
+}
+
+// ListEvents is a helper method to define mock.On call
+//   - ctx context.Context
+//   - params rez.ListEventsParams
+func (_e *MockProviderEventService_Expecter) ListEvents(ctx interface{}, params interface{}) *MockProviderEventService_ListEvents_Call {
+	return &MockProviderEventService_ListEvents_Call{Call: _e.mock.On("ListEvents", ctx, params)}
+}
+
+func (_c *MockProviderEventService_ListEvents_Call) Run(run func(ctx context.Context, params rez.ListEventsParams)) *MockProviderEventService_ListEvents_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 rez.ListEventsParams
+		if args[1] != nil {
+			arg1 = args[1].(rez.ListEventsParams)
+		}
+		run(
+			arg0,
+			arg1,
+		)
+	})
+	return _c
+}
+
+func (_c *MockProviderEventService_ListEvents_Call) Return(listResult *ent.ListResult[ent.NormalizedEvent], err error) *MockProviderEventService_ListEvents_Call {
+	_c.Call.Return(listResult, err)
+	return _c
+}
+
+func (_c *MockProviderEventService_ListEvents_Call) RunAndReturn(run func(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)) *MockProviderEventService_ListEvents_Call {
 	_c.Call.Return(run)
 	return _c
 }

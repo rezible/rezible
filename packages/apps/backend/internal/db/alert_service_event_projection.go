@@ -46,7 +46,7 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 
 	// TODO: use regular alert service update flow here instead
 
-	upsert := s.client.Alert.Create().
+	upsert := s.db.Client(ctx).Alert.Create().
 		SetKnowledgeEntityID(knowledgeEntity.ID).
 		SetTitle(attrs.Title).
 		SetDescription(attrs.Description).

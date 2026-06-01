@@ -14,15 +14,15 @@ import (
 )
 
 type SystemTopologyService struct {
-	db *ent.Client
+	db rez.Database
 }
 
-func NewSystemTopologyService(dbc *ent.Client) (*SystemTopologyService, error) {
-	return &SystemTopologyService{db: dbc}, nil
+func NewSystemTopologyService(db rez.Database) (*SystemTopologyService, error) {
+	return &SystemTopologyService{db: db}, nil
 }
 
 func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.ListSystemTopologyEntitiesParams) (*ent.ListResult[ent.KnowledgeEntity], error) {
-	query := s.db.KnowledgeEntity.Query().
+	query := s.db.Client(ctx).KnowledgeEntity.Query().
 		WithAliases().
 		WithSourceRelationships(func(q *ent.KnowledgeRelationshipQuery) {
 			q.Select(knr.FieldID, knr.FieldKind, knr.FieldSourceEntityID, knr.FieldTargetEntityID)
@@ -40,7 +40,7 @@ func (s *SystemTopologyService) ListEntities(ctx context.Context, params rez.Lis
 }
 
 func (s *SystemTopologyService) GetEntity(ctx context.Context, id uuid.UUID) (*ent.KnowledgeEntity, error) {
-	return s.db.KnowledgeEntity.Query().
+	return s.db.Client(ctx).KnowledgeEntity.Query().
 		Where(kne.ID(id)).
 		WithAliases().
 		WithSourceRelationships(func(q *ent.KnowledgeRelationshipQuery) {
@@ -53,7 +53,7 @@ func (s *SystemTopologyService) GetEntity(ctx context.Context, id uuid.UUID) (*e
 }
 
 func (s *SystemTopologyService) ListRelationships(ctx context.Context, params rez.ListSystemTopologyRelationshipsParams) (*ent.ListResult[ent.KnowledgeRelationship], error) {
-	query := s.db.KnowledgeRelationship.Query().
+	query := s.db.Client(ctx).KnowledgeRelationship.Query().
 		WithSourceEntity().
 		WithTargetEntity()
 	if len(params.Kinds) > 0 {
@@ -110,7 +110,7 @@ func (s *SystemTopologyService) GetNeighborhood(ctx context.Context, id uuid.UUI
 	for entityID := range entityIDs {
 		ids = append(ids, entityID)
 	}
-	entities, entityErr := s.db.KnowledgeEntity.Query().
+	entities, entityErr := s.db.Client(ctx).KnowledgeEntity.Query().
 		Where(kne.IDIn(ids...)).
 		WithAliases().
 		All(ctx)
@@ -130,7 +130,7 @@ func (s *SystemTopologyService) CreateSnapshot(ctx context.Context, params rez.C
 }
 
 func (s *SystemTopologyService) GetSnapshot(ctx context.Context, id uuid.UUID) (*ent.SystemTopologySnapshot, error) {
-	return s.db.SystemTopologySnapshot.Query().
+	return s.db.Client(ctx).SystemTopologySnapshot.Query().
 		Where(ts.ID(id)).
 		WithEntities().
 		WithRelationships(func(q *ent.SystemTopologySnapshotRelationshipQuery) {
@@ -144,7 +144,7 @@ func (s *SystemTopologyService) relationshipsTouching(ctx context.Context, entit
 	if len(entityIDs) == 0 {
 		return nil, nil
 	}
-	query := s.db.KnowledgeRelationship.Query().
+	query := s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.Or(knr.SourceEntityIDIn(entityIDs...), knr.TargetEntityIDIn(entityIDs...))).
 		WithSourceEntity().
 		WithTargetEntity()

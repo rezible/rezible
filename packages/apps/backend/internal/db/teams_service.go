@@ -12,23 +12,23 @@ import (
 )
 
 type TeamService struct {
-	db *ent.Client
+	db rez.Database
 }
 
-func NewTeamService(dbc *ent.Client) (*TeamService, error) {
+func NewTeamService(db rez.Database) (*TeamService, error) {
 	s := &TeamService{
-		db: dbc,
+		db: db,
 	}
 
 	return s, nil
 }
 
 func (s *TeamService) GetById(ctx context.Context, id uuid.UUID) (*ent.Team, error) {
-	return s.db.Team.Get(ctx, id)
+	return s.db.Client(ctx).Team.Get(ctx, id)
 }
 
 func (s *TeamService) List(ctx context.Context, p rez.ListTeamsParams) (ent.Teams, error) {
-	query := s.db.Team.Query()
+	query := s.db.Client(ctx).Team.Query()
 	if len(p.TeamIds) > 0 {
 		query = query.Where(team.IDIn(p.TeamIds...))
 	}

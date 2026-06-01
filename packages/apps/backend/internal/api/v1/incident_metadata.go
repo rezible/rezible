@@ -20,26 +20,14 @@ import (
 )
 
 type incidentMetadataHandler struct {
-	db        *ent.Client
+	db        rez.Database
 	incidents rez.IncidentService
-
-	fields     *ent.IncidentFieldClient
-	roles      *ent.IncidentRoleClient
-	severities *ent.IncidentSeverityClient
-	tags       *ent.IncidentTagClient
-	types      *ent.IncidentTypeClient
 }
 
-func newIncidentMetadataHandler(db *ent.Client, incidents rez.IncidentService) *incidentMetadataHandler {
+func newIncidentMetadataHandler(db rez.Database, incidents rez.IncidentService) *incidentMetadataHandler {
 	return &incidentMetadataHandler{
 		db:        db,
 		incidents: incidents,
-
-		fields:     db.IncidentField,
-		roles:      db.IncidentRole,
-		severities: db.IncidentSeverity,
-		tags:       db.IncidentTag,
-		types:      db.IncidentType,
 	}
 }
 
@@ -58,7 +46,7 @@ func (h *incidentMetadataHandler) GetIncidentMetadata(ctx context.Context, reque
 func (h *incidentMetadataHandler) ListIncidentSeverities(ctx context.Context, request *oapi.ListIncidentSeveritiesRequest) (*oapi.ListIncidentSeveritiesResponse, error) {
 	var resp oapi.ListIncidentSeveritiesResponse
 
-	query := h.severities.Query()
+	query := h.db.Client(ctx).IncidentSeverity.Query()
 	if request.IncludeArchived {
 		ctx = schema.IncludeArchived(ctx)
 	}
@@ -94,7 +82,7 @@ func (h *incidentMetadataHandler) CreateIncidentSeverity(ctx context.Context, re
 	var resp oapi.CreateIncidentSeverityResponse
 
 	attr := request.Body.Attributes
-	query := h.severities.Create().
+	query := h.db.Client(ctx).IncidentSeverity.Create().
 		SetName(attr.Name)
 
 	sev, createErr := query.Save(ctx)
@@ -109,7 +97,7 @@ func (h *incidentMetadataHandler) CreateIncidentSeverity(ctx context.Context, re
 func (h *incidentMetadataHandler) GetIncidentSeverity(ctx context.Context, request *oapi.GetIncidentSeverityRequest) (*oapi.GetIncidentSeverityResponse, error) {
 	var resp oapi.GetIncidentSeverityResponse
 
-	sev, queryErr := h.severities.Get(ctx, request.Id)
+	sev, queryErr := h.db.Client(ctx).IncidentSeverity.Get(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to get incident tag", queryErr)
 	}
@@ -122,7 +110,7 @@ func (h *incidentMetadataHandler) UpdateIncidentSeverity(ctx context.Context, re
 	var resp oapi.UpdateIncidentSeverityResponse
 
 	attr := request.Body.Attributes
-	query := h.severities.UpdateOneID(request.Id).
+	query := h.db.Client(ctx).IncidentSeverity.UpdateOneID(request.Id).
 		SetNillableName(attr.Name)
 
 	if attr.Archived != nil && (*attr.Archived == false) {
@@ -141,7 +129,7 @@ func (h *incidentMetadataHandler) UpdateIncidentSeverity(ctx context.Context, re
 func (h *incidentMetadataHandler) ArchiveIncidentSeverity(ctx context.Context, request *oapi.ArchiveIncidentSeverityRequest) (*oapi.ArchiveIncidentSeverityResponse, error) {
 	var resp oapi.ArchiveIncidentSeverityResponse
 
-	delErr := h.severities.DeleteOneID(request.Id).Exec(ctx)
+	delErr := h.db.Client(ctx).IncidentSeverity.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
 		return nil, oapi.Error(ctx, "Failed to archive incident severity", delErr)
 	}
@@ -152,7 +140,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentSeverity(ctx context.Context, r
 func (h *incidentMetadataHandler) ListIncidentTypes(ctx context.Context, request *oapi.ListIncidentTypesRequest) (*oapi.ListIncidentTypesResponse, error) {
 	var resp oapi.ListIncidentTypesResponse
 
-	query := h.types.Query()
+	query := h.db.Client(ctx).IncidentType.Query()
 	if request.IncludeArchived {
 		ctx = schema.IncludeArchived(ctx)
 	}
@@ -188,7 +176,7 @@ func (h *incidentMetadataHandler) CreateIncidentType(ctx context.Context, reques
 	var resp oapi.CreateIncidentTypeResponse
 
 	attr := request.Body.Attributes
-	query := h.types.Create().SetName(attr.Name)
+	query := h.db.Client(ctx).IncidentType.Create().SetName(attr.Name)
 	t, createErr := query.Save(ctx)
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "Failed to create incident type", createErr)
@@ -201,7 +189,7 @@ func (h *incidentMetadataHandler) CreateIncidentType(ctx context.Context, reques
 func (h *incidentMetadataHandler) GetIncidentType(ctx context.Context, request *oapi.GetIncidentTypeRequest) (*oapi.GetIncidentTypeResponse, error) {
 	var resp oapi.GetIncidentTypeResponse
 
-	t, queryErr := h.types.Get(ctx, request.Id)
+	t, queryErr := h.db.Client(ctx).IncidentType.Get(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to get incident type", queryErr)
 	}
@@ -214,7 +202,7 @@ func (h *incidentMetadataHandler) UpdateIncidentType(ctx context.Context, reques
 	var resp oapi.UpdateIncidentTypeResponse
 
 	attr := request.Body.Attributes
-	query := h.types.UpdateOneID(request.Id).
+	query := h.db.Client(ctx).IncidentType.UpdateOneID(request.Id).
 		SetNillableName(attr.Name)
 
 	if attr.Archived != nil && (*attr.Archived == false) {
@@ -233,7 +221,7 @@ func (h *incidentMetadataHandler) UpdateIncidentType(ctx context.Context, reques
 func (h *incidentMetadataHandler) ArchiveIncidentType(ctx context.Context, request *oapi.ArchiveIncidentTypeRequest) (*oapi.ArchiveIncidentTypeResponse, error) {
 	var resp oapi.ArchiveIncidentTypeResponse
 
-	delErr := h.types.DeleteOneID(request.Id).Exec(ctx)
+	delErr := h.db.Client(ctx).IncidentType.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
 		return nil, oapi.Error(ctx, "Failed to archive incident type", delErr)
 	}
@@ -244,7 +232,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentType(ctx context.Context, reque
 func (h *incidentMetadataHandler) ListIncidentRoles(ctx context.Context, request *oapi.ListIncidentRolesRequest) (*oapi.ListIncidentRolesResponse, error) {
 	var resp oapi.ListIncidentRolesResponse
 
-	query := h.roles.Query()
+	query := h.db.Client(ctx).IncidentRole.Query()
 
 	if true {
 		ctx = schema.IncludeArchived(ctx)
@@ -268,7 +256,7 @@ func (h *incidentMetadataHandler) CreateIncidentRole(ctx context.Context, reques
 
 	attr := request.Body.Attributes
 
-	query := h.roles.Create().
+	query := h.db.Client(ctx).IncidentRole.Create().
 		SetName(attr.Name).
 		SetRequired(attr.Required)
 
@@ -285,7 +273,7 @@ func (h *incidentMetadataHandler) GetIncidentRole(ctx context.Context, request *
 	var resp oapi.GetIncidentRoleResponse
 
 	ctx = schema.IncludeArchived(ctx)
-	role, queryErr := h.roles.Get(ctx, request.Id)
+	role, queryErr := h.db.Client(ctx).IncidentRole.Get(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to get incident role", queryErr)
 	}
@@ -298,7 +286,7 @@ func (h *incidentMetadataHandler) UpdateIncidentRole(ctx context.Context, reques
 	var resp oapi.UpdateIncidentRoleResponse
 
 	attr := request.Body.Attributes
-	query := h.roles.UpdateOneID(request.Id).
+	query := h.db.Client(ctx).IncidentRole.UpdateOneID(request.Id).
 		SetNillableName(attr.Name).
 		SetNillableRequired(attr.Required)
 
@@ -318,7 +306,7 @@ func (h *incidentMetadataHandler) UpdateIncidentRole(ctx context.Context, reques
 func (h *incidentMetadataHandler) ArchiveIncidentRole(ctx context.Context, request *oapi.ArchiveIncidentRoleRequest) (*oapi.ArchiveIncidentRoleResponse, error) {
 	var resp oapi.ArchiveIncidentRoleResponse
 
-	delErr := h.roles.DeleteOneID(request.Id).Exec(ctx)
+	delErr := h.db.Client(ctx).IncidentRole.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
 		return nil, oapi.Error(ctx, "Failed to archive incident role", delErr)
 	}
@@ -329,7 +317,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentRole(ctx context.Context, reque
 func (h *incidentMetadataHandler) ListIncidentTags(ctx context.Context, request *oapi.ListIncidentTagsRequest) (*oapi.ListIncidentTagsResponse, error) {
 	var resp oapi.ListIncidentTagsResponse
 
-	query := h.tags.Query()
+	query := h.db.Client(ctx).IncidentTag.Query()
 	if request.IncludeArchived {
 		ctx = schema.IncludeArchived(ctx)
 	}
@@ -365,7 +353,7 @@ func (h *incidentMetadataHandler) CreateIncidentTag(ctx context.Context, request
 	var resp oapi.CreateIncidentTagResponse
 
 	attr := request.Body.Attributes
-	query := h.tags.Create().SetValue(attr.Value)
+	query := h.db.Client(ctx).IncidentTag.Create().SetValue(attr.Value)
 	tag, createErr := query.Save(ctx)
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "Failed to create incident tag", createErr)
@@ -378,7 +366,7 @@ func (h *incidentMetadataHandler) CreateIncidentTag(ctx context.Context, request
 func (h *incidentMetadataHandler) GetIncidentTag(ctx context.Context, request *oapi.GetIncidentTagRequest) (*oapi.GetIncidentTagResponse, error) {
 	var resp oapi.GetIncidentTagResponse
 
-	tag, queryErr := h.tags.Get(ctx, request.Id)
+	tag, queryErr := h.db.Client(ctx).IncidentTag.Get(ctx, request.Id)
 	if queryErr != nil {
 		return nil, oapi.Error(ctx, "Failed to get incident tag", queryErr)
 	}
@@ -391,7 +379,7 @@ func (h *incidentMetadataHandler) UpdateIncidentTag(ctx context.Context, request
 	var resp oapi.UpdateIncidentTagResponse
 
 	attr := request.Body.Attributes
-	query := h.tags.UpdateOneID(request.Id).
+	query := h.db.Client(ctx).IncidentTag.UpdateOneID(request.Id).
 		SetNillableValue(attr.Value)
 
 	if attr.Archived != nil && (*attr.Archived == false) {
@@ -410,7 +398,7 @@ func (h *incidentMetadataHandler) UpdateIncidentTag(ctx context.Context, request
 func (h *incidentMetadataHandler) ArchiveIncidentTag(ctx context.Context, request *oapi.ArchiveIncidentTagRequest) (*oapi.ArchiveIncidentTagResponse, error) {
 	var resp oapi.ArchiveIncidentTagResponse
 
-	delErr := h.tags.DeleteOneID(request.Id).Exec(ctx)
+	delErr := h.db.Client(ctx).IncidentTag.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
 		return nil, oapi.Error(ctx, "Failed to archive incident tag", delErr)
 	}
@@ -421,7 +409,7 @@ func (h *incidentMetadataHandler) ArchiveIncidentTag(ctx context.Context, reques
 func (h *incidentMetadataHandler) ListIncidentFields(ctx context.Context, request *oapi.ListIncidentFieldsRequest) (*oapi.ListIncidentFieldsResponse, error) {
 	var resp oapi.ListIncidentFieldsResponse
 
-	query := h.fields.Query()
+	query := h.db.Client(ctx).IncidentField.Query()
 	if request.IncludeArchived {
 		ctx = schema.IncludeArchived(ctx)
 	}
@@ -447,27 +435,27 @@ func (h *incidentMetadataHandler) ListIncidentFields(ctx context.Context, reques
 func (h *incidentMetadataHandler) CreateIncidentField(ctx context.Context, request *oapi.CreateIncidentFieldRequest) (*oapi.CreateIncidentFieldResponse, error) {
 	var resp oapi.CreateIncidentFieldResponse
 
-	createFieldOptionsTx := func(tx *ent.Tx) error {
+	createFieldOptionsTx := func(txCtx context.Context, client *ent.Client) error {
 		attr := request.Body.Attributes
-		query := tx.IncidentField.Create().
+		query := client.IncidentField.Create().
 			SetName(attr.Name)
 
 		if attr.IncidentType != nil {
 			// TODO: check incident type
 		}
 
-		field, createErr := query.Save(ctx)
+		field, createErr := query.Save(txCtx)
 		if createErr != nil {
 			return fmt.Errorf("saving incident field: %w", createErr)
 		}
 
-		createQuery := tx.IncidentFieldOption.MapCreateBulk(attr.Options, func(c *ent.IncidentFieldOptionCreate, i int) {
+		createQuery := client.IncidentFieldOption.MapCreateBulk(attr.Options, func(c *ent.IncidentFieldOptionCreate, i int) {
 			opt := attr.Options[i]
 			c.SetType(incidentfieldoption.Type(opt.FieldOptionType)).
 				SetValue(opt.Value).
 				SetIncidentFieldID(field.ID)
 		})
-		opts, createOptsErr := createQuery.Save(ctx)
+		opts, createOptsErr := createQuery.Save(txCtx)
 		if createOptsErr != nil {
 			return fmt.Errorf("saving custom options: %w", createOptsErr)
 		}
@@ -476,7 +464,7 @@ func (h *incidentMetadataHandler) CreateIncidentField(ctx context.Context, reque
 		return nil
 	}
 
-	if txErr := ent.WithTx(ctx, h.db, createFieldOptionsTx); txErr != nil {
+	if txErr := h.db.WithTx(ctx, createFieldOptionsTx); txErr != nil {
 		return nil, oapi.Error(ctx, "Failed to create incident field", txErr)
 	}
 
@@ -487,7 +475,7 @@ func (h *incidentMetadataHandler) GetIncidentField(ctx context.Context, request 
 	var resp oapi.GetIncidentFieldResponse
 
 	ctx = schema.IncludeArchived(ctx)
-	field, queryErr := h.fields.Query().
+	field, queryErr := h.db.Client(ctx).IncidentField.Query().
 		Where(incidentfield.ID(request.Id)).
 		WithOptions().
 		Only(ctx)
@@ -499,8 +487,8 @@ func (h *incidentMetadataHandler) GetIncidentField(ctx context.Context, request 
 	return &resp, nil
 }
 
-func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx context.Context, fieldId uuid.UUID, reqOptions []oapi.UpdateIncidentFieldOptionAttributes) error {
-	currentOptions, optionsErr := tx.IncidentFieldOption.Query().
+func (h *incidentMetadataHandler) updateIncidentFieldOptions(ctx context.Context, fieldId uuid.UUID, reqOptions []oapi.UpdateIncidentFieldOptionAttributes) error {
+	currentOptions, optionsErr := h.db.Client(ctx).IncidentFieldOption.Query().
 		Where(incidentfieldoption.IncidentFieldID(fieldId)).
 		All(ctx)
 	if optionsErr != nil {
@@ -525,7 +513,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 
 	if curType != reqType {
 		//ctx = schema.IncludeArchived(ctx)
-		deleteOthers := tx.IncidentFieldOption.Delete().
+		deleteOthers := h.db.Client(ctx).IncidentFieldOption.Delete().
 			Where(incidentfieldoption.And(
 				incidentfieldoption.IncidentFieldID(fieldId),
 				incidentfieldoption.TypeNEQ(reqType)))
@@ -557,7 +545,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 		}
 		needsUpdate := opt.Value != cur.Value || o.Archived != (!cur.ArchiveTime.IsZero())
 		if needsUpdate {
-			update := tx.IncidentFieldOption.UpdateOneID(cur.ID).
+			update := h.db.Client(ctx).IncidentFieldOption.UpdateOneID(cur.ID).
 				SetType(opt.Type).
 				SetValue(opt.Value)
 			if o.Archived {
@@ -570,7 +558,7 @@ func (h *incidentMetadataHandler) updateIncidentFieldOptions(tx *ent.Tx, ctx con
 			}
 		}
 	}
-	create := tx.IncidentFieldOption.MapCreateBulk(newOptions, func(c *ent.IncidentFieldOptionCreate, i int) {
+	create := h.db.Client(ctx).IncidentFieldOption.MapCreateBulk(newOptions, func(c *ent.IncidentFieldOptionCreate, i int) {
 		opt := newOptions[i]
 		c.SetValue(opt.Value).
 			SetType(opt.Type).
@@ -587,40 +575,37 @@ func (h *incidentMetadataHandler) UpdateIncidentField(ctx context.Context, reque
 
 	attr := request.Body.Attributes
 
-	tx, txErr := h.db.BeginTx(ctx, nil)
+	txFn := func(ctx context.Context, tx *ent.Client) error {
+		query := tx.IncidentField.UpdateOneID(request.Id).
+			SetNillableName(attr.Name)
+
+		if attr.Archived != nil {
+			if *attr.Archived == false {
+				query.ClearArchiveTime()
+			} else {
+				query.SetArchiveTime(time.Now())
+			}
+		}
+
+		if attr.Options != nil {
+			updateOptionsErr := h.updateIncidentFieldOptions(ctx, request.Id, *attr.Options)
+			if updateOptionsErr != nil {
+				return updateOptionsErr
+			}
+		}
+
+		field, saveErr := query.Save(ctx)
+		if saveErr != nil {
+			return oapi.Error(ctx, "Failed to update incident field", saveErr)
+		}
+
+		resp.Body.Data = oapi.IncidentFieldFromEnt(field)
+		return nil
+	}
+	txErr := h.db.WithTx(ctx, txFn)
 	if txErr != nil {
 		return nil, oapi.Error(ctx, "Failed to start db transaction", txErr)
 	}
-	defer tx.Rollback()
-
-	query := tx.IncidentField.UpdateOneID(request.Id).
-		SetNillableName(attr.Name)
-
-	if attr.Archived != nil {
-		if *attr.Archived == false {
-			query.ClearArchiveTime()
-		} else {
-			query.SetArchiveTime(time.Now())
-		}
-	}
-
-	if attr.Options != nil {
-		updateOptionsErr := h.updateIncidentFieldOptions(tx, ctx, request.Id, *attr.Options)
-		if updateOptionsErr != nil {
-			return nil, updateOptionsErr
-		}
-	}
-
-	field, saveErr := query.Save(ctx)
-	if saveErr != nil {
-		return nil, oapi.Error(ctx, "Failed to update incident field", saveErr)
-	}
-
-	if commitErr := tx.Commit(); commitErr != nil {
-		return nil, oapi.Error(ctx, "Failed to create field", commitErr)
-	}
-
-	resp.Body.Data = oapi.IncidentFieldFromEnt(field)
 
 	return &resp, nil
 }
@@ -628,7 +613,7 @@ func (h *incidentMetadataHandler) UpdateIncidentField(ctx context.Context, reque
 func (h *incidentMetadataHandler) ArchiveIncidentField(ctx context.Context, request *oapi.ArchiveIncidentFieldRequest) (*oapi.ArchiveIncidentFieldResponse, error) {
 	var resp oapi.ArchiveIncidentFieldResponse
 
-	delErr := h.fields.DeleteOneID(request.Id).Exec(ctx)
+	delErr := h.db.Client(ctx).IncidentField.DeleteOneID(request.Id).Exec(ctx)
 	if delErr != nil {
 		return nil, oapi.Error(ctx, "Failed to archive incident field", delErr)
 	}

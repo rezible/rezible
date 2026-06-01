@@ -2,7 +2,6 @@ package apiv1
 
 import (
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -35,7 +34,7 @@ type Handler struct {
 var _ oapi.Handler = (*Handler)(nil)
 
 func NewHandler(
-	dbc *ent.Client,
+	db rez.Database,
 	alerts rez.AlertService,
 	orgs rez.OrganizationService,
 	users rez.UserService,
@@ -57,11 +56,11 @@ func NewHandler(
 		authSessionsHandler: newAuthSessionsHandler(orgs, users),
 		documentsHandler:    newDocumentsHandler(documents),
 		incidentDebriefsHandler: newIncidentDebriefsHandler(
-			dbc.IncidentDebriefQuestion, users, debriefs),
-		incidentTimelineHandler:   newIncidentTimelineHandler(dbc),
-		incidentMetadataHandler:   newIncidentMetadataHandler(dbc, incidents),
-		incidentMilestonesHandler: newIncidentMilestonesHandler(dbc),
-		tasksHandler:              newTasksHandler(dbc),
+			db, users, debriefs),
+		incidentTimelineHandler:   newIncidentTimelineHandler(db),
+		incidentMetadataHandler:   newIncidentMetadataHandler(db, incidents),
+		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
+		tasksHandler:              newTasksHandler(db),
 		incidentsHandler:          newIncidentsHandler(incidents),
 		integrationsHandler:       newIntegrationsHandler(integrations),
 		meetingsHandler:           newMeetingsHandler(),
@@ -73,9 +72,9 @@ func NewHandler(
 		organizationsHandler:      newOrganizationsHandler(orgs),
 		playbooksHandler:          newPlaybooksHandler(playbooks),
 		retrospectivesHandler:     newRetrospectivesHandler(users, incidents, retros, documents),
-		systemAnalysisHandler:     newSystemAnalysisHandler(dbc),
+		systemAnalysisHandler:     newSystemAnalysisHandler(db),
 		systemTopologyHandler:     newSystemTopologyHandler(topology),
-		teamsHandler:              newTeamsHandler(dbc.User, dbc.Team, dbc.TeamMembership),
+		teamsHandler:              newTeamsHandler(db),
 		usersHandler:              newUsersHandler(users),
 	}
 }

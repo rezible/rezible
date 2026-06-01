@@ -37,15 +37,15 @@ func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimes
 	jobs := mocks.NewMockJobService(s.T())
 	jobs.On("Insert", mock.Anything, mock.Anything, mock.Anything).Return(nil, nil).Once()
 
-	dbc := s.Client()
-	orgs, orgsErr := NewOrganizationService(dbc, jobs)
+	db := s.Database()
+	orgs, orgsErr := NewOrganizationService(db, jobs)
 	s.Require().NoError(orgsErr)
 
 	tenantCtx := s.SeedTenantContext()
 	setupErr := orgs.CompleteSetup(tenantCtx, s.SeedOrganization)
 	s.Require().NoError(setupErr)
 
-	updated, getErr := dbc.Organization.Get(tenantCtx, s.SeedOrganization.ID)
+	updated, getErr := db.Client(tenantCtx).Organization.Get(tenantCtx, s.SeedOrganization.ID)
 	s.Require().NoError(getErr)
 	s.False(updated.InitialSetupAt.IsZero())
 }

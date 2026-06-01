@@ -282,7 +282,7 @@ func (s *KnowledgeService) ResolveRelationship(ctx context.Context, rel *ent.Kno
 
 	resolved := existing
 	txFn := func(txCtx context.Context, tx *ent.Client) error {
-		savedRel, saveErr := s.SetRelationship(ctx, existingID, setRelationshipFn)
+		savedRel, saveErr := s.SetRelationship(txCtx, existingID, setRelationshipFn)
 		if saveErr != nil {
 			return fmt.Errorf("upsert relationship: %w", saveErr)
 		}
@@ -298,7 +298,7 @@ func (s *KnowledgeService) ResolveRelationship(ctx context.Context, rel *ent.Kno
 					SetObservedAt(lastObservedAt)
 				builders[i] = createEv
 			}
-			savedEvidence, evidenceErr := s.AddEvidence(ctx, builders...)
+			savedEvidence, evidenceErr := s.AddEvidence(txCtx, builders...)
 			if evidenceErr != nil {
 				return fmt.Errorf("record relationship evidence: %w", evidenceErr)
 			}
