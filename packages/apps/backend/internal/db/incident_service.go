@@ -115,33 +115,7 @@ func (s *IncidentService) Get(ctx context.Context, p predicate.Incident) (*ent.I
 	return s.incidentQuery(ctx, p, s.allQueryEdges).Only(ctx)
 }
 
-func (s *IncidentService) getIncidentEdgeMutationUpdateEvent(incidentId uuid.UUID, m ent.Mutation, v ent.Value) any {
-	op := m.Op()
-	isCreate := op.Is(ent.OpCreate)
-	isUpdate := op.Is(ent.OpUpdateOne)
-	if !(isCreate || isUpdate) {
-		return nil
-	}
-	if m.Type() == ent.TypeIncidentMilestone {
-		ms, ok := v.(*ent.IncidentMilestone)
-		if !ok {
-			slog.Warn("failed to cast value to ent.IncidentMilestone", "v", v)
-			return nil
-		}
-		return &rez.EventOnIncidentMilestoneUpdated{
-			IncidentId:  incidentId,
-			MilestoneId: ms.ID,
-			Created:     m.Op().Is(ent.OpCreate),
-		}
-	}
-	slog.Debug("maybe add update event",
-		"op", op.String(),
-		"type", m.Type(),
-	)
-	return nil
-}
-
-func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error) {
+func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMutation)) (*ent.Incident, error) {
 	var curr *ent.Incident
 	client := s.db.Client(ctx)
 	if id != uuid.Nil {
@@ -168,54 +142,56 @@ func (s *IncidentService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent
 		generatedUniqueSlug = incSlug
 	}
 
-	var updateEvents []any
-	var updated *ent.Incident
-	updateTx := func(txCtx context.Context, tx *ent.Client) error {
-		var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
-		if curr == nil {
-			mutator = tx.Incident.Create().SetID(uuid.New())
-		} else {
-			mutator = tx.Incident.UpdateOne(curr)
-		}
-
-		incidentMut := mutator.Mutation()
-		edgeMuts := setFn(incidentMut)
-		if generatedUniqueSlug != "" {
-			incidentMut.SetSlug(generatedUniqueSlug)
-		}
-
-		var saveErr error
-		updated, saveErr = mutator.Save(txCtx)
-		if saveErr != nil {
-			return fmt.Errorf("save incident: %w", saveErr)
-		}
-		incEvent := rez.EventOnIncidentUpdated{
-			Created:    isCreate,
-			IncidentId: updated.ID,
-		}
-		updateEvents = append(updateEvents, incEvent)
-
-		for _, edgeMut := range edgeMuts {
-			v, edgeErr := tx.Mutate(txCtx, edgeMut)
-			if edgeErr != nil {
-				return fmt.Errorf("edge mutation: %w", edgeErr)
-			}
-			updateEvents = append(updateEvents, s.getIncidentEdgeMutationUpdateEvent(updated.ID, edgeMut, v))
-		}
-
-		return nil
+	var mutator ent.EntityMutator[*ent.Incident, *ent.IncidentMutation]
+	if curr == nil {
+		mutator = client.Incident.Create().SetID(uuid.New())
+	} else {
+		mutator = client.Incident.UpdateOne(curr)
 	}
-	if txErr := s.db.WithTx(ctx, updateTx); txErr != nil {
-		return nil, fmt.Errorf("update: %w", txErr)
+	incidentMut := mutator.Mutation()
+	setFn(incidentMut)
+	if generatedUniqueSlug != "" {
+		incidentMut.SetSlug(generatedUniqueSlug)
+	}
+	updated, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save incident: %w", saveErr)
 	}
 
-	for _, ev := range updateEvents {
-		if pubEvErr := s.msgs.PublishEvent(ctx, ev); pubEvErr != nil {
-			slog.Error("failed to publish incident update event message", "error", pubEvErr)
-		}
+	updatedEvent := rez.EventOnIncidentUpdated{
+		Created:    isCreate,
+		IncidentId: updated.ID,
 	}
-
+	if pubEvErr := s.msgs.PublishEvent(ctx, updatedEvent); pubEvErr != nil {
+		slog.Error("failed to publish incident update event message", "error", pubEvErr)
+	}
 	return s.Get(ctx, incident.ID(updated.ID))
+}
+
+func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {
+	var mutator ent.EntityMutator[*ent.IncidentMilestone, *ent.IncidentMilestoneMutation]
+	client := s.db.Client(ctx)
+	if id == uuid.Nil {
+		mutator = client.IncidentMilestone.Create().SetID(uuid.New())
+	} else {
+		mutator = client.IncidentMilestone.UpdateOneID(id)
+	}
+	mut := mutator.Mutation()
+	setFn(mut)
+	updated, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save incident: %w", saveErr)
+	}
+
+	updatedEvent := rez.EventOnIncidentMilestoneUpdated{
+		IncidentId:  updated.IncidentID,
+		MilestoneId: updated.ID,
+		Created:     id == uuid.Nil,
+	}
+	if pubEvErr := s.msgs.PublishEvent(ctx, updatedEvent); pubEvErr != nil {
+		slog.Error("failed to publish incident milestone update event message", "error", pubEvErr)
+	}
+	return updated, nil
 }
 
 func (s *IncidentService) Archive(ctx context.Context, id uuid.UUID) error {
@@ -284,53 +260,6 @@ func (s *IncidentService) GetIncidentMilestone(ctx context.Context, id uuid.UUID
 		Where(im.ID(id)).
 		WithUser()
 	return query.Only(ctx)
-}
-
-func (s *IncidentService) SetIncidentMilestone(ctx context.Context, id uuid.UUID, setFn func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error) {
-	var curr *ent.IncidentMilestone
-	if id != uuid.Nil {
-		inc, getErr := s.db.Client(ctx).IncidentMilestone.Get(ctx, id)
-		if getErr != nil {
-			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
-		}
-		curr = inc
-	}
-
-	var updated *ent.IncidentMilestone
-	updateTx := func(txCtx context.Context, tx *ent.Client) error {
-		var mutator ent.EntityMutator[*ent.IncidentMilestone, *ent.IncidentMilestoneMutation]
-		if curr == nil {
-			mutator = tx.IncidentMilestone.Create().SetID(uuid.New())
-		} else {
-			mutator = tx.IncidentMilestone.UpdateOne(curr)
-		}
-
-		mut := mutator.Mutation()
-		setFn(mut)
-
-		var saveErr error
-		updated, saveErr = mutator.Save(txCtx)
-		if saveErr != nil {
-			return fmt.Errorf("save: %w", saveErr)
-		}
-
-		return nil
-	}
-
-	if txErr := s.db.WithTx(ctx, updateTx); txErr != nil {
-		return nil, fmt.Errorf("update: %w", txErr)
-	}
-
-	ev := &rez.EventOnIncidentMilestoneUpdated{
-		Created:     id == uuid.Nil,
-		MilestoneId: updated.ID,
-		IncidentId:  updated.IncidentID,
-	}
-	if pubErr := s.msgs.PublishEvent(ctx, ev); pubErr != nil {
-		slog.Error("failed to publish incident milestone updated message", "error", pubErr)
-	}
-
-	return updated, nil
 }
 
 func (s *IncidentService) ListIncidentTypes(ctx context.Context) ([]*ent.IncidentType, error) {

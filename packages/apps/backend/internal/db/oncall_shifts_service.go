@@ -25,10 +25,10 @@ import (
 type OncallShiftsService struct {
 	db           rez.Database
 	jobs         rez.JobService
-	integrations rez.IntegrationsService
+	integrations rez.IntegrationService
 }
 
-func NewOncallShiftsService(db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationsService) (*OncallShiftsService, error) {
+func NewOncallShiftsService(db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationService) (*OncallShiftsService, error) {
 	s := &OncallShiftsService{
 		db:           db,
 		jobs:         jobSvc,
@@ -378,20 +378,22 @@ func (s *OncallShiftsService) sendShiftHandover(ctx context.Context, ho *ent.Onc
 		return nil, fmt.Errorf("get pinned annotations: %w", annosErr)
 	}
 
-	chat, csErr := s.integrations.GetChatService(ctx)
-	if csErr != nil {
-		return nil, fmt.Errorf("failed to get chat service: %w", csErr)
-	}
+	/*
+		chat, csErr := s.integrations.GetChatService(ctx)
+		if csErr != nil {
+			return nil, fmt.Errorf("failed to get chat service: %w", csErr)
+		}
 
-	_, msgErr := chat.SendMessage(ctx, roster.ChatChannelID, &rez.ContentNode{})
-	if msgErr != nil {
-		return nil, fmt.Errorf("failed to send message: %w", msgErr)
-	}
+		_, msgErr := chat.SendMessage(ctx, roster.ChatChannelID, &rez.ContentNode{})
+		if msgErr != nil {
+			return nil, fmt.Errorf("failed to send message: %w", msgErr)
+		}
 
-	updated, updateErr := ho.Update().SetSentAt(time.Now()).Save(ctx)
-	if updateErr != nil {
-		return nil, fmt.Errorf("update handover sent_at time: %w", updateErr)
-	}
-
-	return updated, nil
+		updated, updateErr := ho.Update().SetSentAt(time.Now()).Save(ctx)
+		if updateErr != nil {
+			return nil, fmt.Errorf("update handover sent_at time: %w", updateErr)
+		}
+		return updated, nil
+	*/
+	return nil, fmt.Errorf("not implemented")
 }

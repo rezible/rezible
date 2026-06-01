@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -39,29 +38,15 @@ func (s *KnowledgeService) HandleEventProjection(ctx context.Context, ev *ent.No
 }
 
 type knowledgeEntityEventProjector struct {
-	event      *ent.NormalizedEvent
-	observedAt time.Time
-	knowledge  rez.KnowledgeService
+	event     *ent.NormalizedEvent
+	knowledge rez.KnowledgeService
 }
 
 func newKnowledgeEntityEventProjector(ev *ent.NormalizedEvent, knowledge rez.KnowledgeService) *knowledgeEntityEventProjector {
 	return &knowledgeEntityEventProjector{
-		event:      ev,
-		observedAt: observedAtForEvent(ev),
-		knowledge:  knowledge,
+		event:     ev,
+		knowledge: knowledge,
 	}
-}
-
-func observedAtForEvent(ev *ent.NormalizedEvent) time.Time {
-	observedAt := ev.OccurredAt
-	if observedAt.IsZero() {
-		if !ev.ReceivedAt.IsZero() {
-			observedAt = ev.ReceivedAt
-		} else {
-			observedAt = time.Now()
-		}
-	}
-	return observedAt
 }
 
 func (kp *knowledgeEntityEventProjector) projectEvent(ev *ent.NormalizedEvent) (*KnowledgeProjection, error) {
@@ -179,20 +164,22 @@ func (kp *knowledgeEntityEventProjector) saveProjectedRelationship(ctx context.C
 		return fmt.Errorf("alias resolved to nil entity id")
 	}
 
+	observedAt := observedAtForEvent(kp.event)
+
 	rel := &ent.KnowledgeRelationship{
 		SourceEntityID:  fromId,
 		TargetEntityID:  toId,
 		Kind:            proj.Kind,
 		DisplayName:     proj.DisplayName,
 		Description:     proj.Description,
-		FirstObservedAt: &kp.observedAt,
+		FirstObservedAt: new(observedAt),
 		Properties:      proj.Properties,
 	}
 	rel.Edges.Evidence = []*ent.KnowledgeEvidence{
 		{
 			EventID:    kp.event.ID,
 			Assertion:  proj.Assertion,
-			ObservedAt: kp.observedAt,
+			ObservedAt: observedAt,
 		},
 	}
 	_, saveErr := kp.knowledge.ResolveRelationship(ctx, rel)

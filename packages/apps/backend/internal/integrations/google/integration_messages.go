@@ -11,7 +11,7 @@ import (
 )
 
 type eventHandler struct {
-	integrations rez.IntegrationsService
+	integrations rez.IntegrationService
 	messages     rez.MessageService
 	incidents    rez.IncidentService
 }

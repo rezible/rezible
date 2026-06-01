@@ -9,10 +9,10 @@ import (
 )
 
 type integrationsHandler struct {
-	integrations rez.IntegrationsService
+	integrations rez.IntegrationService
 }
 
-func newIntegrationsHandler(integrations rez.IntegrationsService) *integrationsHandler {
+func newIntegrationsHandler(integrations rez.IntegrationService) *integrationsHandler {
 	return &integrationsHandler{
 		integrations: integrations,
 	}

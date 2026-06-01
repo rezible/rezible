@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
-	"slices"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -470,6 +469,7 @@ func (s *IntegrationsService) externalOptionsFromMaps(raw []map[string]any) []re
 	return result
 }
 
+/*
 func (s *IntegrationsService) getConfiguredIntegrationForDataKind(ctx context.Context, dataKind string) (rez.ConfiguredIntegration, error) {
 	var providers []string
 	for _, p := range s.reg.GetAvailable() {
@@ -524,6 +524,7 @@ func (s *IntegrationsService) GetVideoConferenceService(ctx context.Context) (re
 	}
 	return nil, rez.ErrNoConfiguredIntegrations
 }
+*/
 
 func (s *IntegrationsService) RequestDataSync(ctx context.Context, provider string, sources []string) error {
 	args := jobs.ProviderEventSyncJob{

@@ -68,14 +68,13 @@ func (s *IncidentServiceSuite) TestCreateIncidentWithMetadataRoundTrips() {
 	s.Require().NoError(err)
 
 	summary := "Customer requests are failing"
-	created, err := svc.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) []ent.Mutation {
+	created, err := svc.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) {
 		m.SetTitle("API outage")
 		m.SetSummary(summary)
 		m.SetSeverityID(severity.ID)
 		m.SetTypeID(incidentType.ID)
 		m.AddTagAssignmentIDs(tag.ID)
 		m.AddFieldSelectionIDs(option.ID)
-		return nil
 	})
 	s.Require().NoError(err)
 

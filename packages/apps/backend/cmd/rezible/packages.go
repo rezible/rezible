@@ -67,7 +67,7 @@ func provideDependencies(i do.Injector) {
 			do.MustInvoke[rez.DocumentsService](i),
 			do.MustInvoke[rez.DebriefService](i),
 			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.IntegrationsService](i),
+			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.ProviderEventService](i),
 			do.MustInvoke[rez.EventAnnotationsService](i),
 			do.MustInvoke[rez.OncallRostersService](i),
@@ -94,7 +94,7 @@ var provideIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (*slack.Integration, error) {
 		return slack.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.IntegrationsService](i),
+			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.EventAnnotationsService](i),
@@ -115,7 +115,7 @@ var provideIntegrations = do.Package(
 		return google.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.IntegrationsService](i),
+			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.EventAnnotationsService](i),
@@ -136,14 +136,14 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[*integrations.PackageRegistry](i))
 	}),
-	do.Bind[*db.IntegrationsService, rez.IntegrationsService](),
+	do.Bind[*db.IntegrationsService, rez.IntegrationService](),
 
 	do.Lazy(func(i do.Injector) (*db.ProviderEventService, error) {
 		return db.NewProviderEventService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IntegrationsService](i),
+			do.MustInvoke[rez.IntegrationService](i),
 		)
 	}),
 	do.Bind[*db.ProviderEventService, rez.ProviderEventService](),
@@ -199,7 +199,7 @@ var provideServices = do.Package(
 		return db.NewOncallShiftsService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IntegrationsService](i),
+			do.MustInvoke[rez.IntegrationService](i),
 		)
 	}),
 	do.Bind[*db.OncallShiftsService, rez.OncallShiftsService](),

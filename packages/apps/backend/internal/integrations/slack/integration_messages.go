@@ -16,9 +16,10 @@ import (
 
 type messageHandler struct {
 	appCfg       rez.AppConfig
+	db           rez.Database
 	messages     rez.MessageService
 	provEvents   rez.ProviderEventService
-	integrations rez.IntegrationsService
+	integrations rez.IntegrationService
 	incidents    rez.IncidentService
 }
 
@@ -27,6 +28,7 @@ func (i *Integration) makeMessageHandler(cfg rez.Config, msgs rez.MessageService
 		appCfg:       cfg.App,
 		messages:     msgs,
 		provEvents:   provEvents,
+		db:           i.db,
 		integrations: i.integrations,
 		incidents:    i.incidents,
 	}

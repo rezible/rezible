@@ -61,7 +61,7 @@ func commandErrorResponse(message string) *slack.Blocks {
 func (s *ChatService) handleIncidentCommand(ctx context.Context, cmd *slack.SlashCommand) (*slack.Blocks, error) {
 	// are we currently in an incident channel?
 	var channelIncidentId uuid.UUID
-	inc, incErr := s.incidents.Get(ctx, incident.ChatChannelID(cmd.ChannelID))
+	inc, incErr := s.ci.incidents.Get(ctx, incident.ChatChannelID(cmd.ChannelID))
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		slog.Error("unable to get incident by channel", "error", incErr)
 		return commandErrorResponse(incErr.Error()), nil

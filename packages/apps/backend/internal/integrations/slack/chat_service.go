@@ -16,28 +16,19 @@ type ChatService struct {
 	ci     *ConfiguredIntegration
 	client *slack.Client
 	logger *slog.Logger
-
-	integrations rez.IntegrationsService
-	users        rez.UserService
-	incidents    rez.IncidentService
-	annos        rez.EventAnnotationsService
 }
 
 func newChatService(ci *ConfiguredIntegration) *ChatService {
 	return &ChatService{
-		ci:           ci,
-		client:       slack.New(ci.accessToken()),
-		logger:       slog.Default().With("service", "slack.chat_service"),
-		users:        ci.users,
-		integrations: ci.integrations,
-		incidents:    ci.incidents,
-		annos:        ci.eventAnnos,
+		ci:     ci,
+		client: slack.New(ci.accessToken()),
+		logger: slog.Default().With("service", "slack.chat_service"),
 	}
 }
 
 func (s *ChatService) createUserContext(ctx context.Context, userChatId string) (context.Context, error) {
 	tenantCtx := execution.NewTenantContext(ctx, s.ci.intg.TenantID)
-	usr, usrErr := s.users.Get(tenantCtx, user.ChatID(userChatId))
+	usr, usrErr := s.ci.users.Get(tenantCtx, user.ChatID(userChatId))
 	if usrErr != nil {
 		s.logger.Error("failed to lookup chat user", "error", usrErr, "chat_id", userChatId)
 		return nil, fmt.Errorf("lookup user: %w", usrErr)

@@ -18,8 +18,10 @@ import (
 )
 
 type incidentUpdateProcessor struct {
-	logger    *slog.Logger
+	logger *slog.Logger
+
 	appCfg    rez.AppConfig
+	db        rez.Database
 	incidents rez.IncidentService
 	messages  rez.MessageService
 
@@ -52,6 +54,7 @@ func (h *messageHandler) newIncidentUpdateProcessor(ctx context.Context, inciden
 		chat:      newChatService(ci),
 		logger:    slog.Default().With("service", "slack.incident_updates"),
 		appCfg:    h.appCfg,
+		db:        h.db,
 		incidents: h.incidents,
 		messages:  h.messages,
 	}, nil
@@ -159,9 +162,8 @@ func (p *incidentUpdateProcessor) findConversationByName(ctx context.Context, cl
 }
 
 func (p *incidentUpdateProcessor) linkIncidentChannel(ctx context.Context, channelID string) error {
-	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
+	setFn := func(m *ent.IncidentMutation) {
 		m.SetChatChannelID(channelID)
-		return nil
 	}
 	if _, updateErr := p.incidents.Set(ctx, p.inc.ID, setFn); updateErr != nil {
 		return fmt.Errorf("set incident chatChannelID: %w", updateErr)

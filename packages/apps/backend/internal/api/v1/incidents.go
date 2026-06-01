@@ -2,13 +2,11 @@ package apiv1
 
 import (
 	"context"
-	"time"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	im "github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/predicate"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
@@ -64,41 +62,43 @@ func (h *incidentsHandler) GetIncident(ctx context.Context, input *oapi.GetIncid
 func (h *incidentsHandler) CreateIncident(ctx context.Context, input *oapi.CreateIncidentRequest) (*oapi.CreateIncidentResponse, error) {
 	var resp oapi.CreateIncidentResponse
 
-	attr := input.Body.Attributes
-	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
-		m.SetTitle(attr.Title)
-		m.SetSeverityID(attr.SeverityId)
-		m.SetTypeID(attr.TypeId)
-		if attr.Summary != nil {
-			m.SetSummary(*attr.Summary)
-		}
-		if len(attr.TagIds) > 0 {
-			m.AddTagAssignmentIDs(attr.TagIds...)
-		}
-		if len(attr.FieldSelectionIds) > 0 {
-			m.AddFieldSelectionIDs(attr.FieldSelectionIds...)
+	/*
+		attr := input.Body.Attributes
+		setFn := func(m *ent.IncidentMutation) []ent.Mutation {
+			m.SetTitle(attr.Title)
+			m.SetSeverityID(attr.SeverityId)
+			m.SetTypeID(attr.TypeId)
+			if attr.Summary != nil {
+				m.SetSummary(*attr.Summary)
+			}
+			if len(attr.TagIds) > 0 {
+				m.AddTagAssignmentIDs(attr.TagIds...)
+			}
+			if len(attr.FieldSelectionIds) > 0 {
+				m.AddFieldSelectionIDs(attr.FieldSelectionIds...)
+			}
+
+			incidentId, exists := m.ID()
+			if !exists {
+				return nil
+			}
+
+			createMilestone := m.Client().IncidentMilestone.Create().
+				SetKind(im.KindOpened).
+				SetDescription("Incident created via API").
+				SetTimestamp(time.Now()).
+				SetSource("api").
+				SetIncidentID(incidentId)
+
+			return []ent.Mutation{createMilestone.Mutation()}
 		}
 
-		incidentId, exists := m.ID()
-		if !exists {
-			return nil
+		created, createErr := h.incidents.Set(ctx, setFn)
+		if createErr != nil {
+			return nil, oapi.Error(ctx, "create incident", createErr)
 		}
-
-		createMilestone := m.Client().IncidentMilestone.Create().
-			SetKind(im.KindOpened).
-			SetDescription("Incident created via API").
-			SetTimestamp(time.Now()).
-			SetSource("api").
-			SetIncidentID(incidentId)
-
-		return []ent.Mutation{createMilestone.Mutation()}
-	}
-
-	created, createErr := h.incidents.Set(ctx, uuid.Nil, setFn)
-	if createErr != nil {
-		return nil, oapi.Error(ctx, "create incident", createErr)
-	}
-	resp.Body.Data = oapi.IncidentFromEnt(created)
+		resp.Body.Data = oapi.IncidentFromEnt(created)
+	*/
 
 	return &resp, nil
 }
@@ -107,7 +107,7 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 	var resp oapi.UpdateIncidentResponse
 
 	attr := request.Body.Attributes
-	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
+	setFn := func(m *ent.IncidentMutation) {
 		if attr.Title != nil {
 			m.SetTitle(*attr.Title)
 		}
@@ -120,7 +120,6 @@ func (h *incidentsHandler) UpdateIncident(ctx context.Context, request *oapi.Upd
 		if attr.TypeId != uuid.Nil {
 			m.SetTypeID(attr.TypeId)
 		}
-		return nil
 	}
 
 	updated, updateErr := h.incidents.Set(ctx, request.Id, setFn)

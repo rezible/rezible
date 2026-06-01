@@ -21,7 +21,7 @@ const integrationName = "slack"
 
 func MakeIntegration(
 	cfg rez.Config,
-	intgs rez.IntegrationsService,
+	intgs rez.IntegrationService,
 	incs rez.IncidentService,
 	users rez.UserService,
 	eventAnnos rez.EventAnnotationsService,
@@ -69,8 +69,9 @@ type Integration struct {
 	webhookHandler     http.Handler
 	socketModeListener *SocketModeListener
 
+	db           rez.Database
 	users        rez.UserService
-	integrations rez.IntegrationsService
+	integrations rez.IntegrationService
 	incidents    rez.IncidentService
 	eventAnnos   rez.EventAnnotationsService
 }
@@ -244,8 +245,9 @@ func (i *Integration) ValidateUserPreferences(prefs map[string]any) error {
 type ConfiguredIntegration struct {
 	intg *ent.Integration
 
+	db           rez.Database
 	users        rez.UserService
-	integrations rez.IntegrationsService
+	integrations rez.IntegrationService
 	incidents    rez.IncidentService
 	eventAnnos   rez.EventAnnotationsService
 }
@@ -253,6 +255,7 @@ type ConfiguredIntegration struct {
 func (i *Integration) makeConfiguredIntegration(intg *ent.Integration) *ConfiguredIntegration {
 	return &ConfiguredIntegration{
 		intg:         intg,
+		db:           i.db,
 		users:        i.users,
 		integrations: i.integrations,
 		incidents:    i.incidents,
@@ -348,10 +351,6 @@ func (ci *ConfiguredIntegration) GetAvailableDataKinds() map[string]bool {
 	}
 }
 
-func (ci *ConfiguredIntegration) MakeChatService(ctx context.Context) (rez.ChatService, error) {
-	return newChatService(ci), nil
-}
-
 type installIds struct {
 	TeamId       string `json:"teamId"`
 	EnterpriseId string `json:"enterpriseId,omitempty"`
@@ -368,7 +367,7 @@ func (i installIds) configValues() map[string]any {
 	return m
 }
 
-func lookupTenantIntegration(ctx context.Context, integrations rez.IntegrationsService, ids installIds) (*ConfiguredIntegration, error) {
+func lookupTenantIntegration(ctx context.Context, integrations rez.IntegrationService, ids installIds) (*ConfiguredIntegration, error) {
 	params := rez.ListIntegrationsParams{
 		Providers:    []string{integrationName},
 		ConfigValues: ids.configValues(),

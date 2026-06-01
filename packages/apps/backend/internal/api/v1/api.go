@@ -41,7 +41,7 @@ func NewHandler(
 	documents rez.DocumentsService,
 	debriefs rez.DebriefService,
 	incidents rez.IncidentService,
-	integrations rez.IntegrationsService,
+	integrations rez.IntegrationService,
 	provEvents rez.ProviderEventService,
 	eventAnnotations rez.EventAnnotationsService,
 	rosters rez.OncallRostersService,

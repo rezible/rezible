@@ -229,6 +229,18 @@ func (s *KnowledgeService) mergeProperties(existing, projected map[string]any, p
 	return merged
 }
 
+func observedAtForEvent(ev *ent.NormalizedEvent) time.Time {
+	observedAt := ev.OccurredAt
+	if observedAt.IsZero() {
+		if !ev.ReceivedAt.IsZero() {
+			observedAt = ev.ReceivedAt
+		} else {
+			observedAt = time.Now()
+		}
+	}
+	return observedAt
+}
+
 func (s *KnowledgeService) ResolveRelationship(ctx context.Context, rel *ent.KnowledgeRelationship) (*ent.KnowledgeRelationship, error) {
 	lookupExistingPred := knr.And(
 		knr.Kind(rel.Kind),

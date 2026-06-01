@@ -17,7 +17,7 @@ var supportedDataKinds = []string{"video_conference"}
 
 type Integration struct {
 	users        rez.UserService
-	integrations rez.IntegrationsService
+	integrations rez.IntegrationService
 	messages     rez.MessageService
 	incidents    rez.IncidentService
 	eventAnnos   rez.EventAnnotationsService
@@ -26,7 +26,7 @@ type Integration struct {
 func MakeIntegration(
 	cfg rez.Config,
 	users rez.UserService,
-	integrations rez.IntegrationsService,
+	integrations rez.IntegrationService,
 	messages rez.MessageService,
 	incidents rez.IncidentService,
 	eventAnnos rez.EventAnnotationsService,

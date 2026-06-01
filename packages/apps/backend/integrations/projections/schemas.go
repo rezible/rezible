@@ -1,6 +1,8 @@
 package projections
 
 import (
+	"time"
+
 	"github.com/rezible/rezible/ent"
 )
 
@@ -93,10 +95,11 @@ type (
 
 	// IncidentSubjectAttributes are the provider-neutral attributes persisted for incident observations.
 	IncidentSubjectAttributes struct {
-		Title       string `attr:"title" validate:"required"`
-		Summary     string `attr:"summary"`
-		SeverityRef string `attr:"severity_ref" validate:"required"`
-		TypeRef     string `attr:"type_ref" validate:"required"`
+		Title       string    `attr:"title" validate:"required"`
+		Summary     string    `attr:"summary"`
+		SeverityRef string    `attr:"severity_ref" validate:"required"`
+		TypeRef     string    `attr:"type_ref" validate:"required"`
+		OpenedAt    time.Time `attr:"opened_at"`
 	}
 )
 

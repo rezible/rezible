@@ -55,7 +55,7 @@ func (s *ChatService) makeAnnotationModalView(ctx context.Context, meta *annotat
 		ea.HasEventWith(ne.ProviderSubjectRef(meta.MsgId.String())),
 		ea.CreatorID(userId))
 
-	curr, currErr := s.annos.Lookup(ctx, lookupAnno)
+	curr, currErr := s.ci.eventAnnos.Lookup(ctx, lookupAnno)
 	if currErr != nil && !ent.IsNotFound(currErr) {
 		return nil, fmt.Errorf("failed to lookup existing event annotation: %w", currErr)
 	}
@@ -141,14 +141,14 @@ type incidentDetailsModalViewMetadata struct {
 func (s *ChatService) makeIncidentDetailsModalView(ctx context.Context, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
 	var curr *ent.Incident
 	if meta.IncidentId != uuid.Nil {
-		inc, incErr := s.incidents.Get(ctx, incident.ID(meta.IncidentId))
+		inc, incErr := s.ci.incidents.Get(ctx, incident.ID(meta.IncidentId))
 		if incErr != nil && !ent.IsNotFound(incErr) {
 			return nil, incErr
 		}
 		curr = inc
 	}
 
-	incMeta, incMetaErr := s.incidents.GetIncidentMetadata(ctx)
+	incMeta, incMetaErr := s.ci.incidents.GetIncidentMetadata(ctx)
 	if incMetaErr != nil {
 		return nil, fmt.Errorf("failed to get incident metadata: %w", incMetaErr)
 	}
@@ -187,7 +187,7 @@ type incidentMilestoneModalViewMetadata struct {
 }
 
 func (s *ChatService) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
-	inc, incErr := s.incidents.Get(ctx, incident.ID(meta.IncidentId))
+	inc, incErr := s.ci.incidents.Get(ctx, incident.ID(meta.IncidentId))
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		return nil, incErr
 	}

@@ -97,7 +97,7 @@ func (s *ChatService) handleAnnotationModalSubmission(ctx context.Context, ic *s
 	if annoErr != nil {
 		return fmt.Errorf("failed to get view annotation: %w", annoErr)
 	}
-	_, createErr := s.annos.SetAnnotation(ctx, anno)
+	_, createErr := s.ci.eventAnnos.SetAnnotation(ctx, anno)
 	if createErr != nil {
 		return fmt.Errorf("failed to create annotation: %w", createErr)
 	}
@@ -107,7 +107,7 @@ func (s *ChatService) handleAnnotationModalSubmission(ctx context.Context, ic *s
 func (s *ChatService) getIncidentModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentDetailsModalViewMetadata, error) {
 	var meta incidentDetailsModalViewMetadata
 	if ic.Type == slack.InteractionTypeBlockActions {
-		inc, incErr := s.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
+		inc, incErr := s.ci.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
 		if incErr != nil {
 			return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
 		}
@@ -156,45 +156,43 @@ func (s *ChatService) handleIncidentDetailsModalSubmission(ctx context.Context, 
 		return fmt.Errorf("getting modal view metadata: %w", metaErr)
 	}
 
-	creating := meta.IncidentId == uuid.Nil
 	state := ic.View.State
 	if state == nil {
 		return fmt.Errorf("missing incident details modal view state")
 	}
 
-	usr, userErr := s.users.Get(ctx, user.ChatID(meta.UserId))
+	usr, userErr := s.ci.users.Get(ctx, user.ChatID(meta.UserId))
 	if userErr != nil {
 		return fmt.Errorf("failed to get user: %w", userErr)
 	}
 
-	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
-		setIncidentDetailsModalInputMutationFields(m, state)
-
-		incidentId, exists := m.ID()
-		if !exists || !creating {
+	return s.ci.db.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
+		inc, incErr := s.ci.incidents.Set(ctx, meta.IncidentId, func(m *ent.IncidentMutation) {
+			setIncidentDetailsModalInputMutationFields(m, state)
+		})
+		if incErr != nil {
+			return fmt.Errorf("upsert incident from modal data: %w", incErr)
+		}
+		if inc.ID == meta.IncidentId { // updated existing
 			return nil
 		}
-		milestoneMeta := map[string]string{
-			"channel_id": meta.CommandChannelId,
-			"user_id":    meta.UserId,
+		_, msErr := s.ci.incidents.SetIncidentMilestone(ctx, uuid.Nil, func(m *ent.IncidentMilestoneMutation) {
+			m.SetKind(incidentmilestone.KindOpened)
+			m.SetDescription("Incident declared via slack")
+			m.SetTimestamp(time.Now())
+			m.SetSource(integrationName)
+			m.SetIncidentID(inc.ID)
+			m.SetUserID(usr.ID)
+			m.SetMetadata(map[string]string{
+				"channel_id": meta.CommandChannelId,
+				"user_id":    meta.UserId,
+			})
+		})
+		if msErr != nil {
+			return fmt.Errorf("incident milestone create: %w", msErr)
 		}
-		milestoneCreate := m.Client().IncidentMilestone.Create().
-			SetKind(incidentmilestone.KindOpened).
-			SetDescription("Incident declared via slack").
-			SetTimestamp(time.Now()).
-			SetSource(integrationName).
-			SetIncidentID(incidentId).
-			SetMetadata(milestoneMeta).
-			SetUserID(usr.ID).
-			Mutation()
-
-		return []ent.Mutation{milestoneCreate}
-	}
-	_, incErr := s.incidents.Set(ctx, meta.IncidentId, setFn)
-	if incErr != nil {
-		return fmt.Errorf("upsert incident from modal data: %w", incErr)
-	}
-	return nil
+		return nil
+	})
 }
 
 func (s *ChatService) getIncidentMilestoneModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentMilestoneModalViewMetadata, error) {
@@ -204,7 +202,7 @@ func (s *ChatService) getIncidentMilestoneModalViewMetadata(ctx context.Context,
 			return nil, fmt.Errorf("failed to unmarshal incident modal metadata: %w", jsonErr)
 		}
 	} else {
-		inc, incErr := s.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
+		inc, incErr := s.ci.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
 		if incErr != nil {
 			return nil, fmt.Errorf("unable to get incident by channel: %w", incErr)
 		}
@@ -222,7 +220,7 @@ func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context
 		return fmt.Errorf("getting modal view metadata: %w", metaErr)
 	}
 
-	usr, userErr := s.users.Get(ctx, user.ChatID(meta.UserId))
+	usr, userErr := s.ci.users.Get(ctx, user.ChatID(meta.UserId))
 	if userErr != nil {
 		return fmt.Errorf("failed to get user: %w", userErr)
 	}
@@ -239,7 +237,7 @@ func (s *ChatService) handleIncidentMilestoneModalSubmission(ctx context.Context
 		m.SetUserID(usr.ID)
 		setIncidentMilestoneModalInputMutationFields(m, state)
 	}
-	_, incErr := s.incidents.SetIncidentMilestone(ctx, uuid.Nil, setFn)
+	_, incErr := s.ci.incidents.SetIncidentMilestone(ctx, uuid.Nil, setFn)
 	if incErr != nil {
 		return fmt.Errorf("set milestone from modal data: %w", incErr)
 	}

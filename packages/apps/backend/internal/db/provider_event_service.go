@@ -33,7 +33,7 @@ type ProviderEventService struct {
 	eventProjectorsMu sync.RWMutex
 
 	jobService   rez.JobService
-	integrations rez.IntegrationsService
+	integrations rez.IntegrationService
 	telemetry    *providerEventTelemetry
 }
 
@@ -42,7 +42,7 @@ type eventProjector struct {
 	subjectKinds mapset.Set[projections.SubjectKind]
 }
 
-func NewProviderEventService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationsService) (*ProviderEventService, error) {
+func NewProviderEventService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationService) (*ProviderEventService, error) {
 	logger := ts.NewLogger(rez.NewLoggerOptions{PackageName: "provider_events"})
 	pe := &ProviderEventService{
 		logger:          logger,

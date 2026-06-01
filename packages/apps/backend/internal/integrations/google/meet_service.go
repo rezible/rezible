@@ -2,7 +2,6 @@ package google
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log/slog"
 
@@ -82,26 +81,28 @@ func (s *meetService) CreateIncidentVideoConference(ctx context.Context, inc *en
 		return confErr
 	}
 
-	metadata, jsonErr := json.Marshal(map[string]any{
-		"provider": integrationName,
-	})
-	if jsonErr != nil {
-		return fmt.Errorf("marshal metadata: %w", jsonErr)
-	}
+	/*
+		metadata, jsonErr := json.Marshal(map[string]any{
+			"provider": integrationName,
+		})
+		if jsonErr != nil {
+			return fmt.Errorf("marshal metadata: %w", jsonErr)
+		}
 
-	setFn := func(m *ent.IncidentMutation) []ent.Mutation {
-		conferenceCreate := m.Client().VideoConference.Create().
-			SetIncidentID(inc.ID).
-			SetProvider(integrationName).
-			SetJoinURL(url).
-			SetStatus(videoconference.StatusActive).
-			SetMetadata(metadata).
-			SetCreatedByIntegration(integrationName)
-		return []ent.Mutation{conferenceCreate.Mutation()}
-	}
-	if _, setErr := s.ci.incidents.Set(ctx, inc.ID, setFn); setErr != nil {
-		return fmt.Errorf("set incident conference: %w", setErr)
-	}
+		setFn := func(m *ent.IncidentMutation) []ent.Mutation {
+			conferenceCreate := m.Client().VideoConference.Create().
+				SetIncidentID(inc.ID).
+				SetProvider(integrationName).
+				SetJoinURL(url).
+				SetStatus(videoconference.StatusActive).
+				SetMetadata(metadata).
+				SetCreatedByIntegration(integrationName)
+			return []ent.Mutation{conferenceCreate.Mutation()}
+		}
+		if _, setErr := s.ci.incidents.Set(ctx, inc.ID, setFn); setErr != nil {
+			return fmt.Errorf("set incident conference: %w", setErr)
+		}
+	*/
 	slog.Debug("created incident conference",
 		"incident_id", inc.ID.String(),
 		"join_url", url,

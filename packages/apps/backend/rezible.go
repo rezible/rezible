@@ -158,7 +158,7 @@ type (
 		Provider string
 	}
 
-	IntegrationsService interface {
+	IntegrationService interface {
 		GetAvailable() []IntegrationPackage
 
 		Configure(ctx context.Context, params ConfigureIntegrationParams) (ConfiguredIntegration, error)
@@ -173,8 +173,6 @@ type (
 		StartOAuth2Flow(ctx context.Context, provider string, callbackPath string) (string, error)
 		SelectOAuth2Flow(ctx context.Context, provider string, params SelectIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
 		CompleteOAuth2Flow(ctx context.Context, provider string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
-
-		GetChatService(ctx context.Context) (ChatService, error)
 
 		RequestDataSync(ctx context.Context, provider string, sources []string) error
 		GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error)
@@ -434,7 +432,7 @@ type (
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[ent.Incident], error)
 		Query(context.Context, predicate.Incident, func(*ent.IncidentQuery)) (*ent.Incident, error)
 		Get(context.Context, predicate.Incident) (*ent.Incident, error)
-		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation) []ent.Mutation) (*ent.Incident, error)
+		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation)) (*ent.Incident, error)
 		Archive(context.Context, uuid.UUID) error
 
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
