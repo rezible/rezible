@@ -13,20 +13,20 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
 
-// IntegrationOAuthStateQuery is the builder for querying IntegrationOAuthState entities.
-type IntegrationOAuthStateQuery struct {
+// IntegrationUserInstallStateQuery is the builder for querying IntegrationUserInstallState entities.
+type IntegrationUserInstallStateQuery struct {
 	config
 	ctx        *QueryContext
-	order      []integrationoauthstate.OrderOption
+	order      []integrationuserinstallstate.OrderOption
 	inters     []Interceptor
-	predicates []predicate.IntegrationOAuthState
+	predicates []predicate.IntegrationUserInstallState
 	withTenant *TenantQuery
 	withUser   *UserQuery
 	modifiers  []func(*sql.Selector)
@@ -35,39 +35,39 @@ type IntegrationOAuthStateQuery struct {
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the IntegrationOAuthStateQuery builder.
-func (_q *IntegrationOAuthStateQuery) Where(ps ...predicate.IntegrationOAuthState) *IntegrationOAuthStateQuery {
+// Where adds a new predicate for the IntegrationUserInstallStateQuery builder.
+func (_q *IntegrationUserInstallStateQuery) Where(ps ...predicate.IntegrationUserInstallState) *IntegrationUserInstallStateQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *IntegrationOAuthStateQuery) Limit(limit int) *IntegrationOAuthStateQuery {
+func (_q *IntegrationUserInstallStateQuery) Limit(limit int) *IntegrationUserInstallStateQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *IntegrationOAuthStateQuery) Offset(offset int) *IntegrationOAuthStateQuery {
+func (_q *IntegrationUserInstallStateQuery) Offset(offset int) *IntegrationUserInstallStateQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *IntegrationOAuthStateQuery) Unique(unique bool) *IntegrationOAuthStateQuery {
+func (_q *IntegrationUserInstallStateQuery) Unique(unique bool) *IntegrationUserInstallStateQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *IntegrationOAuthStateQuery) Order(o ...integrationoauthstate.OrderOption) *IntegrationOAuthStateQuery {
+func (_q *IntegrationUserInstallStateQuery) Order(o ...integrationuserinstallstate.OrderOption) *IntegrationUserInstallStateQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *IntegrationOAuthStateQuery) QueryTenant() *TenantQuery {
+func (_q *IntegrationUserInstallStateQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -78,13 +78,13 @@ func (_q *IntegrationOAuthStateQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(integrationoauthstate.Table, integrationoauthstate.FieldID, selector),
+			sqlgraph.From(integrationuserinstallstate.Table, integrationuserinstallstate.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, integrationoauthstate.TenantTable, integrationoauthstate.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationuserinstallstate.TenantTable, integrationuserinstallstate.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IntegrationOAuthState
+		step.Edge.Schema = schemaConfig.IntegrationUserInstallState
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -92,7 +92,7 @@ func (_q *IntegrationOAuthStateQuery) QueryTenant() *TenantQuery {
 }
 
 // QueryUser chains the current query on the "user" edge.
-func (_q *IntegrationOAuthStateQuery) QueryUser() *UserQuery {
+func (_q *IntegrationUserInstallStateQuery) QueryUser() *UserQuery {
 	query := (&UserClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -103,34 +103,34 @@ func (_q *IntegrationOAuthStateQuery) QueryUser() *UserQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(integrationoauthstate.Table, integrationoauthstate.FieldID, selector),
+			sqlgraph.From(integrationuserinstallstate.Table, integrationuserinstallstate.FieldID, selector),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, integrationoauthstate.UserTable, integrationoauthstate.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationuserinstallstate.UserTable, integrationuserinstallstate.UserColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.IntegrationOAuthState
+		step.Edge.Schema = schemaConfig.IntegrationUserInstallState
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// First returns the first IntegrationOAuthState entity from the query.
-// Returns a *NotFoundError when no IntegrationOAuthState was found.
-func (_q *IntegrationOAuthStateQuery) First(ctx context.Context) (*IntegrationOAuthState, error) {
+// First returns the first IntegrationUserInstallState entity from the query.
+// Returns a *NotFoundError when no IntegrationUserInstallState was found.
+func (_q *IntegrationUserInstallStateQuery) First(ctx context.Context) (*IntegrationUserInstallState, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{integrationoauthstate.Label}
+		return nil, &NotFoundError{integrationuserinstallstate.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *IntegrationOAuthStateQuery) FirstX(ctx context.Context) *IntegrationOAuthState {
+func (_q *IntegrationUserInstallStateQuery) FirstX(ctx context.Context) *IntegrationUserInstallState {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,22 +138,22 @@ func (_q *IntegrationOAuthStateQuery) FirstX(ctx context.Context) *IntegrationOA
 	return node
 }
 
-// FirstID returns the first IntegrationOAuthState ID from the query.
-// Returns a *NotFoundError when no IntegrationOAuthState ID was found.
-func (_q *IntegrationOAuthStateQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first IntegrationUserInstallState ID from the query.
+// Returns a *NotFoundError when no IntegrationUserInstallState ID was found.
+func (_q *IntegrationUserInstallStateQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{integrationoauthstate.Label}
+		err = &NotFoundError{integrationuserinstallstate.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *IntegrationOAuthStateQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *IntegrationUserInstallStateQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,10 +161,10 @@ func (_q *IntegrationOAuthStateQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single IntegrationOAuthState entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one IntegrationOAuthState entity is found.
-// Returns a *NotFoundError when no IntegrationOAuthState entities are found.
-func (_q *IntegrationOAuthStateQuery) Only(ctx context.Context) (*IntegrationOAuthState, error) {
+// Only returns a single IntegrationUserInstallState entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one IntegrationUserInstallState entity is found.
+// Returns a *NotFoundError when no IntegrationUserInstallState entities are found.
+func (_q *IntegrationUserInstallStateQuery) Only(ctx context.Context) (*IntegrationUserInstallState, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -173,14 +173,14 @@ func (_q *IntegrationOAuthStateQuery) Only(ctx context.Context) (*IntegrationOAu
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{integrationoauthstate.Label}
+		return nil, &NotFoundError{integrationuserinstallstate.Label}
 	default:
-		return nil, &NotSingularError{integrationoauthstate.Label}
+		return nil, &NotSingularError{integrationuserinstallstate.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *IntegrationOAuthStateQuery) OnlyX(ctx context.Context) *IntegrationOAuthState {
+func (_q *IntegrationUserInstallStateQuery) OnlyX(ctx context.Context) *IntegrationUserInstallState {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -188,10 +188,10 @@ func (_q *IntegrationOAuthStateQuery) OnlyX(ctx context.Context) *IntegrationOAu
 	return node
 }
 
-// OnlyID is like Only, but returns the only IntegrationOAuthState ID in the query.
-// Returns a *NotSingularError when more than one IntegrationOAuthState ID is found.
+// OnlyID is like Only, but returns the only IntegrationUserInstallState ID in the query.
+// Returns a *NotSingularError when more than one IntegrationUserInstallState ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *IntegrationOAuthStateQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *IntegrationUserInstallStateQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -200,15 +200,15 @@ func (_q *IntegrationOAuthStateQuery) OnlyID(ctx context.Context) (id uuid.UUID,
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{integrationoauthstate.Label}
+		err = &NotFoundError{integrationuserinstallstate.Label}
 	default:
-		err = &NotSingularError{integrationoauthstate.Label}
+		err = &NotSingularError{integrationuserinstallstate.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *IntegrationOAuthStateQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *IntegrationUserInstallStateQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -216,18 +216,18 @@ func (_q *IntegrationOAuthStateQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of IntegrationOAuthStates.
-func (_q *IntegrationOAuthStateQuery) All(ctx context.Context) ([]*IntegrationOAuthState, error) {
+// All executes the query and returns a list of IntegrationUserInstallStates.
+func (_q *IntegrationUserInstallStateQuery) All(ctx context.Context) ([]*IntegrationUserInstallState, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*IntegrationOAuthState, *IntegrationOAuthStateQuery]()
-	return withInterceptors[[]*IntegrationOAuthState](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*IntegrationUserInstallState, *IntegrationUserInstallStateQuery]()
+	return withInterceptors[[]*IntegrationUserInstallState](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *IntegrationOAuthStateQuery) AllX(ctx context.Context) []*IntegrationOAuthState {
+func (_q *IntegrationUserInstallStateQuery) AllX(ctx context.Context) []*IntegrationUserInstallState {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -235,20 +235,20 @@ func (_q *IntegrationOAuthStateQuery) AllX(ctx context.Context) []*IntegrationOA
 	return nodes
 }
 
-// IDs executes the query and returns a list of IntegrationOAuthState IDs.
-func (_q *IntegrationOAuthStateQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of IntegrationUserInstallState IDs.
+func (_q *IntegrationUserInstallStateQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(integrationoauthstate.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(integrationuserinstallstate.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *IntegrationOAuthStateQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *IntegrationUserInstallStateQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -257,16 +257,16 @@ func (_q *IntegrationOAuthStateQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *IntegrationOAuthStateQuery) Count(ctx context.Context) (int, error) {
+func (_q *IntegrationUserInstallStateQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*IntegrationOAuthStateQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*IntegrationUserInstallStateQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *IntegrationOAuthStateQuery) CountX(ctx context.Context) int {
+func (_q *IntegrationUserInstallStateQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -275,7 +275,7 @@ func (_q *IntegrationOAuthStateQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *IntegrationOAuthStateQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *IntegrationUserInstallStateQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -288,7 +288,7 @@ func (_q *IntegrationOAuthStateQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *IntegrationOAuthStateQuery) ExistX(ctx context.Context) bool {
+func (_q *IntegrationUserInstallStateQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -296,18 +296,18 @@ func (_q *IntegrationOAuthStateQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the IntegrationOAuthStateQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the IntegrationUserInstallStateQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *IntegrationOAuthStateQuery) Clone() *IntegrationOAuthStateQuery {
+func (_q *IntegrationUserInstallStateQuery) Clone() *IntegrationUserInstallStateQuery {
 	if _q == nil {
 		return nil
 	}
-	return &IntegrationOAuthStateQuery{
+	return &IntegrationUserInstallStateQuery{
 		config:     _q.config,
 		ctx:        _q.ctx.Clone(),
-		order:      append([]integrationoauthstate.OrderOption{}, _q.order...),
+		order:      append([]integrationuserinstallstate.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.IntegrationOAuthState{}, _q.predicates...),
+		predicates: append([]predicate.IntegrationUserInstallState{}, _q.predicates...),
 		withTenant: _q.withTenant.Clone(),
 		withUser:   _q.withUser.Clone(),
 		// clone intermediate query.
@@ -319,7 +319,7 @@ func (_q *IntegrationOAuthStateQuery) Clone() *IntegrationOAuthStateQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IntegrationOAuthStateQuery) WithTenant(opts ...func(*TenantQuery)) *IntegrationOAuthStateQuery {
+func (_q *IntegrationUserInstallStateQuery) WithTenant(opts ...func(*TenantQuery)) *IntegrationUserInstallStateQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -330,7 +330,7 @@ func (_q *IntegrationOAuthStateQuery) WithTenant(opts ...func(*TenantQuery)) *In
 
 // WithUser tells the query-builder to eager-load the nodes that are connected to
 // the "user" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *IntegrationOAuthStateQuery) WithUser(opts ...func(*UserQuery)) *IntegrationOAuthStateQuery {
+func (_q *IntegrationUserInstallStateQuery) WithUser(opts ...func(*UserQuery)) *IntegrationUserInstallStateQuery {
 	query := (&UserClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -349,15 +349,15 @@ func (_q *IntegrationOAuthStateQuery) WithUser(opts ...func(*UserQuery)) *Integr
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.IntegrationOAuthState.Query().
-//		GroupBy(integrationoauthstate.FieldTenantID).
+//	client.IntegrationUserInstallState.Query().
+//		GroupBy(integrationuserinstallstate.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *IntegrationOAuthStateQuery) GroupBy(field string, fields ...string) *IntegrationOAuthStateGroupBy {
+func (_q *IntegrationUserInstallStateQuery) GroupBy(field string, fields ...string) *IntegrationUserInstallStateGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &IntegrationOAuthStateGroupBy{build: _q}
+	grbuild := &IntegrationUserInstallStateGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = integrationoauthstate.Label
+	grbuild.label = integrationuserinstallstate.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -371,23 +371,23 @@ func (_q *IntegrationOAuthStateQuery) GroupBy(field string, fields ...string) *I
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.IntegrationOAuthState.Query().
-//		Select(integrationoauthstate.FieldTenantID).
+//	client.IntegrationUserInstallState.Query().
+//		Select(integrationuserinstallstate.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *IntegrationOAuthStateQuery) Select(fields ...string) *IntegrationOAuthStateSelect {
+func (_q *IntegrationUserInstallStateQuery) Select(fields ...string) *IntegrationUserInstallStateSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &IntegrationOAuthStateSelect{IntegrationOAuthStateQuery: _q}
-	sbuild.label = integrationoauthstate.Label
+	sbuild := &IntegrationUserInstallStateSelect{IntegrationUserInstallStateQuery: _q}
+	sbuild.label = integrationuserinstallstate.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a IntegrationOAuthStateSelect configured with the given aggregations.
-func (_q *IntegrationOAuthStateQuery) Aggregate(fns ...AggregateFunc) *IntegrationOAuthStateSelect {
+// Aggregate returns a IntegrationUserInstallStateSelect configured with the given aggregations.
+func (_q *IntegrationUserInstallStateQuery) Aggregate(fns ...AggregateFunc) *IntegrationUserInstallStateSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *IntegrationOAuthStateQuery) prepareQuery(ctx context.Context) error {
+func (_q *IntegrationUserInstallStateQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -399,7 +399,7 @@ func (_q *IntegrationOAuthStateQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !integrationoauthstate.ValidColumn(f) {
+		if !integrationuserinstallstate.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -410,18 +410,18 @@ func (_q *IntegrationOAuthStateQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if integrationoauthstate.Policy == nil {
-		return errors.New("ent: uninitialized integrationoauthstate.Policy (forgotten import ent/runtime?)")
+	if integrationuserinstallstate.Policy == nil {
+		return errors.New("ent: uninitialized integrationuserinstallstate.Policy (forgotten import ent/runtime?)")
 	}
-	if err := integrationoauthstate.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := integrationuserinstallstate.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *IntegrationOAuthStateQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IntegrationOAuthState, error) {
+func (_q *IntegrationUserInstallStateQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*IntegrationUserInstallState, error) {
 	var (
-		nodes       = []*IntegrationOAuthState{}
+		nodes       = []*IntegrationUserInstallState{}
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withTenant != nil,
@@ -429,15 +429,15 @@ func (_q *IntegrationOAuthStateQuery) sqlAll(ctx context.Context, hooks ...query
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*IntegrationOAuthState).scanValues(nil, columns)
+		return (*IntegrationUserInstallState).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &IntegrationOAuthState{config: _q.config}
+		node := &IntegrationUserInstallState{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.IntegrationOAuthState
+	_spec.Node.Schema = _q.schemaConfig.IntegrationUserInstallState
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -453,22 +453,22 @@ func (_q *IntegrationOAuthStateQuery) sqlAll(ctx context.Context, hooks ...query
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *IntegrationOAuthState, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *IntegrationUserInstallState, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
 	if query := _q.withUser; query != nil {
 		if err := _q.loadUser(ctx, query, nodes, nil,
-			func(n *IntegrationOAuthState, e *User) { n.Edges.User = e }); err != nil {
+			func(n *IntegrationUserInstallState, e *User) { n.Edges.User = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *IntegrationOAuthStateQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IntegrationOAuthState, init func(*IntegrationOAuthState), assign func(*IntegrationOAuthState, *Tenant)) error {
+func (_q *IntegrationUserInstallStateQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*IntegrationUserInstallState, init func(*IntegrationUserInstallState), assign func(*IntegrationUserInstallState, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*IntegrationOAuthState)
+	nodeids := make(map[int][]*IntegrationUserInstallState)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -495,9 +495,9 @@ func (_q *IntegrationOAuthStateQuery) loadTenant(ctx context.Context, query *Ten
 	}
 	return nil
 }
-func (_q *IntegrationOAuthStateQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*IntegrationOAuthState, init func(*IntegrationOAuthState), assign func(*IntegrationOAuthState, *User)) error {
+func (_q *IntegrationUserInstallStateQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*IntegrationUserInstallState, init func(*IntegrationUserInstallState), assign func(*IntegrationUserInstallState, *User)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*IntegrationOAuthState)
+	nodeids := make(map[uuid.UUID][]*IntegrationUserInstallState)
 	for i := range nodes {
 		fk := nodes[i].UserID
 		if _, ok := nodeids[fk]; !ok {
@@ -525,9 +525,9 @@ func (_q *IntegrationOAuthStateQuery) loadUser(ctx context.Context, query *UserQ
 	return nil
 }
 
-func (_q *IntegrationOAuthStateQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *IntegrationUserInstallStateQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.IntegrationOAuthState
+	_spec.Node.Schema = _q.schemaConfig.IntegrationUserInstallState
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -539,8 +539,8 @@ func (_q *IntegrationOAuthStateQuery) sqlCount(ctx context.Context) (int, error)
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *IntegrationOAuthStateQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(integrationoauthstate.Table, integrationoauthstate.Columns, sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID))
+func (_q *IntegrationUserInstallStateQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(integrationuserinstallstate.Table, integrationuserinstallstate.Columns, sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -549,17 +549,17 @@ func (_q *IntegrationOAuthStateQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, integrationoauthstate.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, integrationuserinstallstate.FieldID)
 		for i := range fields {
-			if fields[i] != integrationoauthstate.FieldID {
+			if fields[i] != integrationuserinstallstate.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(integrationoauthstate.FieldTenantID)
+			_spec.Node.AddColumnOnce(integrationuserinstallstate.FieldTenantID)
 		}
 		if _q.withUser != nil {
-			_spec.Node.AddColumnOnce(integrationoauthstate.FieldUserID)
+			_spec.Node.AddColumnOnce(integrationuserinstallstate.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -585,12 +585,12 @@ func (_q *IntegrationOAuthStateQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *IntegrationOAuthStateQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *IntegrationUserInstallStateQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(integrationoauthstate.Table)
+	t1 := builder.Table(integrationuserinstallstate.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = integrationoauthstate.Columns
+		columns = integrationuserinstallstate.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -600,7 +600,7 @@ func (_q *IntegrationOAuthStateQuery) sqlQuery(ctx context.Context) *sql.Selecto
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.IntegrationOAuthState)
+	t1.Schema(_q.schemaConfig.IntegrationUserInstallState)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -624,33 +624,33 @@ func (_q *IntegrationOAuthStateQuery) sqlQuery(ctx context.Context) *sql.Selecto
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *IntegrationOAuthStateQuery) Modify(modifiers ...func(s *sql.Selector)) *IntegrationOAuthStateSelect {
+func (_q *IntegrationUserInstallStateQuery) Modify(modifiers ...func(s *sql.Selector)) *IntegrationUserInstallStateSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// IntegrationOAuthStateGroupBy is the group-by builder for IntegrationOAuthState entities.
-type IntegrationOAuthStateGroupBy struct {
+// IntegrationUserInstallStateGroupBy is the group-by builder for IntegrationUserInstallState entities.
+type IntegrationUserInstallStateGroupBy struct {
 	selector
-	build *IntegrationOAuthStateQuery
+	build *IntegrationUserInstallStateQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *IntegrationOAuthStateGroupBy) Aggregate(fns ...AggregateFunc) *IntegrationOAuthStateGroupBy {
+func (_g *IntegrationUserInstallStateGroupBy) Aggregate(fns ...AggregateFunc) *IntegrationUserInstallStateGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *IntegrationOAuthStateGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *IntegrationUserInstallStateGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IntegrationOAuthStateQuery, *IntegrationOAuthStateGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*IntegrationUserInstallStateQuery, *IntegrationUserInstallStateGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *IntegrationOAuthStateGroupBy) sqlScan(ctx context.Context, root *IntegrationOAuthStateQuery, v any) error {
+func (_g *IntegrationUserInstallStateGroupBy) sqlScan(ctx context.Context, root *IntegrationUserInstallStateQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -677,28 +677,28 @@ func (_g *IntegrationOAuthStateGroupBy) sqlScan(ctx context.Context, root *Integ
 	return sql.ScanSlice(rows, v)
 }
 
-// IntegrationOAuthStateSelect is the builder for selecting fields of IntegrationOAuthState entities.
-type IntegrationOAuthStateSelect struct {
-	*IntegrationOAuthStateQuery
+// IntegrationUserInstallStateSelect is the builder for selecting fields of IntegrationUserInstallState entities.
+type IntegrationUserInstallStateSelect struct {
+	*IntegrationUserInstallStateQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *IntegrationOAuthStateSelect) Aggregate(fns ...AggregateFunc) *IntegrationOAuthStateSelect {
+func (_s *IntegrationUserInstallStateSelect) Aggregate(fns ...AggregateFunc) *IntegrationUserInstallStateSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *IntegrationOAuthStateSelect) Scan(ctx context.Context, v any) error {
+func (_s *IntegrationUserInstallStateSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*IntegrationOAuthStateQuery, *IntegrationOAuthStateSelect](ctx, _s.IntegrationOAuthStateQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*IntegrationUserInstallStateQuery, *IntegrationUserInstallStateSelect](ctx, _s.IntegrationUserInstallStateQuery, _s, _s.inters, v)
 }
 
-func (_s *IntegrationOAuthStateSelect) sqlScan(ctx context.Context, root *IntegrationOAuthStateQuery, v any) error {
+func (_s *IntegrationUserInstallStateSelect) sqlScan(ctx context.Context, root *IntegrationUserInstallStateQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -720,7 +720,7 @@ func (_s *IntegrationOAuthStateSelect) sqlScan(ctx context.Context, root *Integr
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *IntegrationOAuthStateSelect) Modify(modifiers ...func(s *sql.Selector)) *IntegrationOAuthStateSelect {
+func (_s *IntegrationUserInstallStateSelect) Modify(modifiers ...func(s *sql.Selector)) *IntegrationUserInstallStateSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

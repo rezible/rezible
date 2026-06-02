@@ -33,7 +33,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
-	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -629,42 +629,34 @@ func init() {
 	integration.DefaultUpdatedAt = integrationDescUpdatedAt.Default.(func() time.Time)
 	// integration.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	integration.UpdateDefaultUpdatedAt = integrationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// integrationDescUserPreferences is the schema descriptor for user_preferences field.
-	integrationDescUserPreferences := integrationFields[5].Descriptor()
-	// integration.DefaultUserPreferences holds the default value on creation for the user_preferences field.
-	integration.DefaultUserPreferences = integrationDescUserPreferences.Default.(map[string]interface{})
 	// integrationDescID is the schema descriptor for id field.
 	integrationDescID := integrationFields[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.
 	integration.DefaultID = integrationDescID.Default.(func() uuid.UUID)
-	integrationoauthstateMixin := schema.IntegrationOAuthState{}.Mixin()
-	integrationoauthstate.Policy = privacy.NewPolicies(integrationoauthstateMixin[0], integrationoauthstateMixin[1], schema.IntegrationOAuthState{})
-	integrationoauthstate.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	integrationuserinstallstateMixin := schema.IntegrationUserInstallState{}.Mixin()
+	integrationuserinstallstate.Policy = privacy.NewPolicies(integrationuserinstallstateMixin[0], integrationuserinstallstateMixin[1], schema.IntegrationUserInstallState{})
+	integrationuserinstallstate.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := integrationoauthstate.Policy.EvalMutation(ctx, m); err != nil {
+			if err := integrationuserinstallstate.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	integrationoauthstateFields := schema.IntegrationOAuthState{}.Fields()
-	_ = integrationoauthstateFields
-	// integrationoauthstateDescUserID is the schema descriptor for user_id field.
-	integrationoauthstateDescUserID := integrationoauthstateFields[1].Descriptor()
-	// integrationoauthstate.DefaultUserID holds the default value on creation for the user_id field.
-	integrationoauthstate.DefaultUserID = integrationoauthstateDescUserID.Default.(func() uuid.UUID)
-	// integrationoauthstateDescSelectionOptions is the schema descriptor for selection_options field.
-	integrationoauthstateDescSelectionOptions := integrationoauthstateFields[4].Descriptor()
-	// integrationoauthstate.DefaultSelectionOptions holds the default value on creation for the selection_options field.
-	integrationoauthstate.DefaultSelectionOptions = integrationoauthstateDescSelectionOptions.Default.([]map[string]interface{})
-	// integrationoauthstateDescExpiresAt is the schema descriptor for expires_at field.
-	integrationoauthstateDescExpiresAt := integrationoauthstateFields[5].Descriptor()
-	// integrationoauthstate.DefaultExpiresAt holds the default value on creation for the expires_at field.
-	integrationoauthstate.DefaultExpiresAt = integrationoauthstateDescExpiresAt.Default.(func() time.Time)
-	// integrationoauthstateDescID is the schema descriptor for id field.
-	integrationoauthstateDescID := integrationoauthstateFields[0].Descriptor()
-	// integrationoauthstate.DefaultID holds the default value on creation for the id field.
-	integrationoauthstate.DefaultID = integrationoauthstateDescID.Default.(func() uuid.UUID)
+	integrationuserinstallstateFields := schema.IntegrationUserInstallState{}.Fields()
+	_ = integrationuserinstallstateFields
+	// integrationuserinstallstateDescUserID is the schema descriptor for user_id field.
+	integrationuserinstallstateDescUserID := integrationuserinstallstateFields[1].Descriptor()
+	// integrationuserinstallstate.DefaultUserID holds the default value on creation for the user_id field.
+	integrationuserinstallstate.DefaultUserID = integrationuserinstallstateDescUserID.Default.(func() uuid.UUID)
+	// integrationuserinstallstateDescInstallationTargets is the schema descriptor for installation_targets field.
+	integrationuserinstallstateDescInstallationTargets := integrationuserinstallstateFields[5].Descriptor()
+	// integrationuserinstallstate.DefaultInstallationTargets holds the default value on creation for the installation_targets field.
+	integrationuserinstallstate.DefaultInstallationTargets = integrationuserinstallstateDescInstallationTargets.Default.([]map[string]interface{})
+	// integrationuserinstallstateDescID is the schema descriptor for id field.
+	integrationuserinstallstateDescID := integrationuserinstallstateFields[0].Descriptor()
+	// integrationuserinstallstate.DefaultID holds the default value on creation for the id field.
+	integrationuserinstallstate.DefaultID = integrationuserinstallstateDescID.Default.(func() uuid.UUID)
 	knowledgeentityMixin := schema.KnowledgeEntity{}.Mixin()
 	knowledgeentity.Policy = privacy.NewPolicies(knowledgeentityMixin[0], knowledgeentityMixin[1], schema.KnowledgeEntity{})
 	knowledgeentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {

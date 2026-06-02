@@ -14,10 +14,10 @@ type incidentModalViewBuilder struct {
 	blocks   []slack.Block
 	incident *ent.Incident
 	metadata *incidentDetailsModalViewMetadata
-	prefs    incidentPreferences
+	prefs    UserSettingsIncidents
 }
 
-func newIncidentModalViewBuilder(curr *ent.Incident, meta *incidentDetailsModalViewMetadata, prefs incidentPreferences) *incidentModalViewBuilder {
+func newIncidentModalViewBuilder(curr *ent.Incident, meta *incidentDetailsModalViewMetadata, prefs UserSettingsIncidents) *incidentModalViewBuilder {
 	return &incidentModalViewBuilder{
 		blocks:   []slack.Block{},
 		incident: curr,

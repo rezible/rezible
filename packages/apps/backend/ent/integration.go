@@ -26,16 +26,16 @@ type Integration struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Provider holds the value of the "provider" field.
-	Provider string `json:"provider,omitempty"`
+	// IntegrationName holds the value of the "integration_name" field.
+	IntegrationName string `json:"integration_name,omitempty"`
 	// DisplayName holds the value of the "display_name" field.
 	DisplayName string `json:"display_name,omitempty"`
-	// ExternalRef holds the value of the "external_ref" field.
-	ExternalRef string `json:"external_ref,omitempty"`
-	// Config holds the value of the "config" field.
-	Config map[string]interface{} `json:"config,omitempty"`
-	// UserPreferences holds the value of the "user_preferences" field.
-	UserPreferences map[string]interface{} `json:"user_preferences,omitempty"`
+	// ExternalProviderRef holds the value of the "external_provider_ref" field.
+	ExternalProviderRef string `json:"external_provider_ref,omitempty"`
+	// InstallationConfig holds the value of the "installation_config" field.
+	InstallationConfig map[string]interface{} `json:"installation_config,omitempty"`
+	// UserSettings holds the value of the "user_settings" field.
+	UserSettings map[string]interface{} `json:"user_settings,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IntegrationQuery when eager-loading is set.
 	Edges        IntegrationEdges `json:"edges"`
@@ -67,11 +67,11 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case integration.FieldConfig, integration.FieldUserPreferences:
+		case integration.FieldInstallationConfig, integration.FieldUserSettings:
 			values[i] = new([]byte)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case integration.FieldProvider, integration.FieldDisplayName, integration.FieldExternalRef:
+		case integration.FieldIntegrationName, integration.FieldDisplayName, integration.FieldExternalProviderRef:
 			values[i] = new(sql.NullString)
 		case integration.FieldCreatedAt, integration.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -116,11 +116,11 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case integration.FieldProvider:
+		case integration.FieldIntegrationName:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider", values[i])
+				return fmt.Errorf("unexpected type %T for field integration_name", values[i])
 			} else if value.Valid {
-				_m.Provider = value.String
+				_m.IntegrationName = value.String
 			}
 		case integration.FieldDisplayName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -128,26 +128,26 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.DisplayName = value.String
 			}
-		case integration.FieldExternalRef:
+		case integration.FieldExternalProviderRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field external_ref", values[i])
+				return fmt.Errorf("unexpected type %T for field external_provider_ref", values[i])
 			} else if value.Valid {
-				_m.ExternalRef = value.String
+				_m.ExternalProviderRef = value.String
 			}
-		case integration.FieldConfig:
+		case integration.FieldInstallationConfig:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field config", values[i])
+				return fmt.Errorf("unexpected type %T for field installation_config", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Config); err != nil {
-					return fmt.Errorf("unmarshal field config: %w", err)
+				if err := json.Unmarshal(*value, &_m.InstallationConfig); err != nil {
+					return fmt.Errorf("unmarshal field installation_config: %w", err)
 				}
 			}
-		case integration.FieldUserPreferences:
+		case integration.FieldUserSettings:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field user_preferences", values[i])
+				return fmt.Errorf("unexpected type %T for field user_settings", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.UserPreferences); err != nil {
-					return fmt.Errorf("unmarshal field user_preferences: %w", err)
+				if err := json.Unmarshal(*value, &_m.UserSettings); err != nil {
+					return fmt.Errorf("unmarshal field user_settings: %w", err)
 				}
 			}
 		default:
@@ -200,20 +200,20 @@ func (_m *Integration) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("provider=")
-	builder.WriteString(_m.Provider)
+	builder.WriteString("integration_name=")
+	builder.WriteString(_m.IntegrationName)
 	builder.WriteString(", ")
 	builder.WriteString("display_name=")
 	builder.WriteString(_m.DisplayName)
 	builder.WriteString(", ")
-	builder.WriteString("external_ref=")
-	builder.WriteString(_m.ExternalRef)
+	builder.WriteString("external_provider_ref=")
+	builder.WriteString(_m.ExternalProviderRef)
 	builder.WriteString(", ")
-	builder.WriteString("config=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Config))
+	builder.WriteString("installation_config=")
+	builder.WriteString(fmt.Sprintf("%v", _m.InstallationConfig))
 	builder.WriteString(", ")
-	builder.WriteString("user_preferences=")
-	builder.WriteString(fmt.Sprintf("%v", _m.UserPreferences))
+	builder.WriteString("user_settings=")
+	builder.WriteString(fmt.Sprintf("%v", _m.UserSettings))
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -17,25 +17,20 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
-type WebhookHandler struct {
+type webhookHandler struct {
 	eventHandler  *EventHandler
 	signingSecret string
 }
 
-func MakeWebhookHandler(signingSecret string, evth *EventHandler) (http.Handler, error) {
-	if signingSecret == "" {
-		return nil, fmt.Errorf("slack.webhooks.signing_secret not set")
-	}
-
-	h := &WebhookHandler{
+func makeWebhookHandler(signingSecret string, evth *EventHandler) http.Handler {
+	h := &webhookHandler{
 		signingSecret: signingSecret,
 		eventHandler:  evth,
 	}
-
-	return h.Handler(), nil
+	return h.Handler()
 }
 
-func (l *WebhookHandler) Handler() *chi.Mux {
+func (l *webhookHandler) Handler() *chi.Mux {
 	r := chi.NewMux()
 	r.Use(middleware.Timeout(3 * time.Second))
 	r.Use(l.requestVerifierMiddleware)
@@ -54,7 +49,7 @@ var (
 	maxWebhookPayloadBytes = int64(4<<20 + 1) // 4 MB
 )
 
-func (l *WebhookHandler) requestVerifierMiddleware(next http.Handler) http.Handler {
+func (l *webhookHandler) requestVerifierMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		sv, svErr := slack.NewSecretsVerifier(r.Header, l.signingSecret)
 		if svErr != nil {
@@ -97,7 +92,7 @@ func (l *WebhookHandler) requestVerifierMiddleware(next http.Handler) http.Handl
 	})
 }
 
-func (l *WebhookHandler) onCommands(w http.ResponseWriter, r *http.Request) {
+func (l *webhookHandler) onCommands(w http.ResponseWriter, r *http.Request) {
 	cmd, parseErr := slack.SlashCommandParse(r)
 	if parseErr != nil {
 		slog.Error("failed to parse slash command", "error", parseErr)
@@ -112,7 +107,7 @@ func (l *WebhookHandler) onCommands(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (l *WebhookHandler) onInteraction(w http.ResponseWriter, r *http.Request) {
+func (l *webhookHandler) onInteraction(w http.ResponseWriter, r *http.Request) {
 	payload := r.PostFormValue("payload")
 	if payload == "" {
 		slog.Warn("empty interaction payload")
@@ -127,7 +122,7 @@ func (l *WebhookHandler) onInteraction(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (l *WebhookHandler) onOptions(w http.ResponseWriter, r *http.Request) {
+func (l *webhookHandler) onOptions(w http.ResponseWriter, r *http.Request) {
 	// TODO, not currently used
 	body := []byte("")
 	if handlerErr := l.eventHandler.OnOptions(r.Context(), body); handlerErr != nil {
@@ -138,7 +133,7 @@ func (l *WebhookHandler) onOptions(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (l *WebhookHandler) onEventsApi(w http.ResponseWriter, r *http.Request) {
+func (l *webhookHandler) onEventsApi(w http.ResponseWriter, r *http.Request) {
 	body, bodyErr := io.ReadAll(r.Body)
 	if bodyErr != nil {
 		slog.Error("failed to read webhook body", "error", bodyErr)
@@ -169,7 +164,7 @@ func (l *WebhookHandler) onEventsApi(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
-		handleErr = l.eventHandler.OnCallbackEvent(r.Context(), cb, body)
+		handleErr = l.eventHandler.OnEventsApiCallback(r.Context(), cb, body)
 	} else if evt.Type == slackevents.AppRateLimited {
 		handleErr = l.eventHandler.OnAppRateLimitedEvent(r.Context())
 	} else {
@@ -183,7 +178,7 @@ func (l *WebhookHandler) onEventsApi(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (l *WebhookHandler) handleUrlVerificationEvent(w http.ResponseWriter, body []byte) error {
+func (l *webhookHandler) handleUrlVerificationEvent(w http.ResponseWriter, body []byte) error {
 	var res *slackevents.ChallengeResponse
 	if jsonErr := json.Unmarshal(body, &res); jsonErr != nil {
 		return fmt.Errorf("unmarshal body: %w", jsonErr)

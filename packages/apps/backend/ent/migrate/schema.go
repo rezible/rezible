@@ -991,11 +991,11 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "provider", Type: field.TypeString},
+		{Name: "integration_name", Type: field.TypeString},
 		{Name: "display_name", Type: field.TypeString},
-		{Name: "external_ref", Type: field.TypeString},
-		{Name: "config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
-		{Name: "user_preferences", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "external_provider_ref", Type: field.TypeString},
+		{Name: "installation_config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "user_settings", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// IntegrationsTable holds the schema information for the "integrations" table.
@@ -1018,51 +1018,57 @@ var (
 				Columns: []*schema.Column{IntegrationsColumns[8]},
 			},
 			{
-				Name:    "integration_tenant_id_provider",
+				Name:    "integration_tenant_id_integration_name",
 				Unique:  false,
 				Columns: []*schema.Column{IntegrationsColumns[8], IntegrationsColumns[3]},
 			},
 			{
-				Name:    "integration_tenant_id_provider_external_ref",
+				Name:    "integration_tenant_id_integration_name_external_provider_ref",
 				Unique:  true,
 				Columns: []*schema.Column{IntegrationsColumns[8], IntegrationsColumns[3], IntegrationsColumns[5]},
 			},
 		},
 	}
-	// IntegrationOauthStatesColumns holds the columns for the "integration_oauth_states" table.
-	IntegrationOauthStatesColumns = []*schema.Column{
+	// IntegrationUserInstallStatesColumns holds the columns for the "integration_user_install_states" table.
+	IntegrationUserInstallStatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "state", Type: field.TypeString},
-		{Name: "provider", Type: field.TypeString},
-		{Name: "selection_options", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "integration_name", Type: field.TypeString},
+		{Name: "oauth_state", Type: field.TypeString, Nullable: true},
+		{Name: "install_target_selection_token", Type: field.TypeString, Nullable: true},
+		{Name: "installation_targets", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
 	}
-	// IntegrationOauthStatesTable holds the schema information for the "integration_oauth_states" table.
-	IntegrationOauthStatesTable = &schema.Table{
-		Name:       "integration_oauth_states",
-		Columns:    IntegrationOauthStatesColumns,
-		PrimaryKey: []*schema.Column{IntegrationOauthStatesColumns[0]},
+	// IntegrationUserInstallStatesTable holds the schema information for the "integration_user_install_states" table.
+	IntegrationUserInstallStatesTable = &schema.Table{
+		Name:       "integration_user_install_states",
+		Columns:    IntegrationUserInstallStatesColumns,
+		PrimaryKey: []*schema.Column{IntegrationUserInstallStatesColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "integration_oauth_states_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationOauthStatesColumns[5]},
+				Symbol:     "integration_user_install_states_tenants_tenant",
+				Columns:    []*schema.Column{IntegrationUserInstallStatesColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "integration_oauth_states_users_user",
-				Columns:    []*schema.Column{IntegrationOauthStatesColumns[6]},
+				Symbol:     "integration_user_install_states_users_user",
+				Columns:    []*schema.Column{IntegrationUserInstallStatesColumns[7]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "integrationoauthstate_tenant_id",
+				Name:    "integrationuserinstallstate_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationOauthStatesColumns[5]},
+				Columns: []*schema.Column{IntegrationUserInstallStatesColumns[6]},
+			},
+			{
+				Name:    "integrationuserinstallstate_tenant_id_user_id_integration_name",
+				Unique:  true,
+				Columns: []*schema.Column{IntegrationUserInstallStatesColumns[6], IntegrationUserInstallStatesColumns[7], IntegrationUserInstallStatesColumns[1]},
 			},
 		},
 	}
@@ -3137,7 +3143,7 @@ var (
 		IncidentTimelineEventTopologyContextsTable,
 		IncidentTypesTable,
 		IntegrationsTable,
-		IntegrationOauthStatesTable,
+		IntegrationUserInstallStatesTable,
 		KnowledgeEntitiesTable,
 		KnowledgeEntityAliasTable,
 		KnowledgeEvidencesTable,
@@ -3252,8 +3258,8 @@ func init() {
 	IncidentTimelineEventTopologyContextsTable.ForeignKeys[3].RefTable = SystemTopologySnapshotEntitiesTable
 	IncidentTypesTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationsTable.ForeignKeys[0].RefTable = TenantsTable
-	IntegrationOauthStatesTable.ForeignKeys[0].RefTable = TenantsTable
-	IntegrationOauthStatesTable.ForeignKeys[1].RefTable = UsersTable
+	IntegrationUserInstallStatesTable.ForeignKeys[0].RefTable = TenantsTable
+	IntegrationUserInstallStatesTable.ForeignKeys[1].RefTable = UsersTable
 	KnowledgeEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEntityAliasTable.ForeignKeys[0].RefTable = TenantsTable
 	KnowledgeEntityAliasTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable

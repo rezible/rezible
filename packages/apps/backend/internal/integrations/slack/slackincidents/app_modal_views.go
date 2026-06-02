@@ -44,17 +44,17 @@ type incidentDetailsModalViewMetadata struct {
 	IncidentId       uuid.UUID `json:"iid,omitempty"`
 }
 
-func (i *Integration) makeIncidentDetailsModalView(ctx context.Context, prefs incidentPreferences, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
+func (a *app) makeIncidentDetailsModalView(ctx context.Context, prefs UserSettingsIncidents, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
 	var curr *ent.Incident
 	if meta.IncidentId != uuid.Nil {
-		inc, incErr := i.incidents.Get(ctx, incident.ID(meta.IncidentId))
+		inc, incErr := a.incidents.Get(ctx, incident.ID(meta.IncidentId))
 		if incErr != nil && !ent.IsNotFound(incErr) {
 			return nil, incErr
 		}
 		curr = inc
 	}
 
-	incMeta, incMetaErr := i.incidents.GetIncidentMetadata(ctx)
+	incMeta, incMetaErr := a.incidents.GetIncidentMetadata(ctx)
 	if incMetaErr != nil {
 		return nil, fmt.Errorf("failed to get incident metadata: %w", incMetaErr)
 	}
@@ -92,8 +92,8 @@ type incidentMilestoneModalViewMetadata struct {
 	IncidentId uuid.UUID `json:"iid"`
 }
 
-func (i *Integration) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
-	inc, incErr := i.incidents.Get(ctx, incident.ID(meta.IncidentId))
+func (a *app) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
+	inc, incErr := a.incidents.Get(ctx, incident.ID(meta.IncidentId))
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		return nil, incErr
 	}

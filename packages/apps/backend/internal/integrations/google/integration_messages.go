@@ -23,7 +23,7 @@ func (i *Integration) registerMessageHandlers() error {
 		incidents:    i.incidents,
 	}
 	eventsErr := i.messages.AddEventHandlers(
-		rez.NewEventHandler("GoogleOnIncidentUpdate", mh.onIncidentUpdate))
+		rez.NewEventHandler("Google.OnIncidentUpdate", mh.onIncidentUpdate))
 	if eventsErr != nil {
 		return fmt.Errorf("events: %w", eventsErr)
 	}
@@ -35,9 +35,9 @@ func (i *Integration) registerMessageHandlers() error {
 	return nil
 }
 
-func (h *eventHandler) withConfiguredIntegration(ctx context.Context, fn func(*ConfiguredIntegration) error) error {
+func (h *eventHandler) withInstallation(ctx context.Context, fn func(*InstalledIntegration) error) error {
 	listParams := rez.ListIntegrationsParams{Providers: []string{integrationName}}
-	intgs, lookupErr := h.integrations.ListConfigured(ctx, listParams)
+	intgs, lookupErr := h.integrations.ListInstalled(ctx, listParams)
 	if lookupErr != nil {
 		if ent.IsNotFound(lookupErr) {
 			return nil
@@ -48,7 +48,7 @@ func (h *eventHandler) withConfiguredIntegration(ctx context.Context, fn func(*C
 		return nil
 	}
 	// TODO: handle multiple installations
-	if ci, ok := intgs[0].(*ConfiguredIntegration); ok {
+	if ci, ok := intgs[0].(*InstalledIntegration); ok {
 		return fn(ci)
 	}
 	return fmt.Errorf("invalid configured Integration: %w", lookupErr)
@@ -62,7 +62,7 @@ func (h *eventHandler) onIncidentUpdate(ctx context.Context, ev *rez.EventOnInci
 }
 
 func (h *eventHandler) onIncidentCreated(ctx context.Context, id uuid.UUID) error {
-	return h.withConfiguredIntegration(ctx, func(ci *ConfiguredIntegration) error {
+	return h.withInstallation(ctx, func(ci *InstalledIntegration) error {
 		if !ci.isVideoConferenceEnabled() {
 			return nil
 		}
@@ -75,7 +75,7 @@ type cmdCreateIncidentVideoConference struct {
 }
 
 func (h *eventHandler) createIncidentVideoConference(ctx context.Context, cmd *cmdCreateIncidentVideoConference) error {
-	return h.withConfiguredIntegration(ctx, func(ci *ConfiguredIntegration) error {
+	return h.withInstallation(ctx, func(ci *InstalledIntegration) error {
 		inc, incErr := h.incidents.Get(ctx, incident.ID(cmd.IncidentId))
 		if incErr != nil {
 			return fmt.Errorf("get incident: %w", incErr)

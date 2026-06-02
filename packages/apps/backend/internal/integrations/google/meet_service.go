@@ -19,15 +19,15 @@ var meetScopes = []string{
 }
 
 type meetService struct {
-	ci *ConfiguredIntegration
+	ii *InstalledIntegration
 }
 
-func newMeetService(ci *ConfiguredIntegration) *meetService {
-	return &meetService{ci: ci}
+func newMeetService(ci *InstalledIntegration) *meetService {
+	return &meetService{ii: ci}
 }
 
 func (s *meetService) makeClient(ctx context.Context) (*meet.Service, error) {
-	creds, credsErr := s.ci.getAuthCredentials()
+	creds, credsErr := s.ii.getAuthCredentials()
 	if credsErr != nil {
 		return nil, fmt.Errorf("failed to get auth credentials: %w", credsErr)
 	}

@@ -4,14 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
+	"github.com/go-viper/mapstructure/v2"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/stretchr/objx"
 	"google.golang.org/api/option"
 )
 
-const integrationName = "google"
+const (
+	integrationName = "google"
+	providerName    = "google"
+)
 
 var supportedDataKinds = []string{"video_conference"}
 
@@ -50,6 +52,14 @@ func (i *Integration) Name() string {
 	return integrationName
 }
 
+func (i *Integration) Provider() string {
+	return providerName
+}
+
+func (i *Integration) MaxInstalls() *int {
+	return nil
+}
+
 func (i *Integration) IsAvailable() (bool, error) {
 	// TODO: check config
 	return true, nil
@@ -59,106 +69,89 @@ func (i *Integration) SupportedDataKinds() []string {
 	return supportedDataKinds
 }
 
-func (i *Integration) OAuthConfigRequired() bool {
+func (i *Integration) OAuthInstallRequired() bool {
 	return false
 }
 
-func (i *Integration) ValidateUserConfig(cfg map[string]any) error {
-	return nil
+func (i *Integration) ValidateInstallationConfig(m map[string]any) (externalRef string, validationErr error) {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (i *Integration) ValidateUserPreferences(prefs map[string]any) error {
-	return nil
+func (i *Integration) ValidateUserSettings(m map[string]any) error {
+	//TODO implement me
+	panic("implement me")
 }
 
-func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
-	return i.newConfiguredIntegration(intg)
+func (i *Integration) GetInstalledIntegration(intg *ent.Integration) rez.InstalledIntegration {
+	return i.newInstalledIntegration(intg)
 }
 
-func (i *Integration) newConfiguredIntegration(intg *ent.Integration) *ConfiguredIntegration {
-	return &ConfiguredIntegration{intg: intg, incidents: i.incidents}
+func (i *Integration) newInstalledIntegration(intg *ent.Integration) *InstalledIntegration {
+	return &InstalledIntegration{intg: intg, incidents: i.incidents}
 }
 
-type ConfiguredIntegration struct {
+type InstalledIntegration struct {
 	intg      *ent.Integration
 	incidents rez.IncidentService
 }
 
-func (ci *ConfiguredIntegration) ID() uuid.UUID {
-	return ci.intg.ID
+func (ii *InstalledIntegration) Integration() *ent.Integration {
+	return ii.intg
 }
 
-func (ci *ConfiguredIntegration) Integration() *ent.Integration {
-	return ci.intg
+func (ii *InstalledIntegration) SanitizedInstallationConfig() map[string]any {
+	return ii.intg.InstallationConfig
 }
 
-func (ci *ConfiguredIntegration) Provider() string {
-	return ci.intg.Provider
-}
-
-func (ci *ConfiguredIntegration) DisplayName() string {
-	return ci.intg.DisplayName
-}
-
-func (ci *ConfiguredIntegration) ExternalRef() string {
-	return ci.intg.ExternalRef
-}
-
-func (ci *ConfiguredIntegration) GetSanitizedConfig() map[string]any {
-	return ci.config().Exclude([]string{})
-}
-
-func (ci *ConfiguredIntegration) GetUserPreferences() map[string]any {
-	return ci.userPreferences()
-}
-
-func (ci *ConfiguredIntegration) GetAvailableDataKinds() map[string]bool {
+func (ii *InstalledIntegration) GetCapabilities() map[string]bool {
 	return map[string]bool{
-		"video_conference": ci.isVideoConferenceEnabled(),
+		"video_conference": ii.isVideoConferenceEnabled(),
 	}
 }
 
-const (
-	configServiceAccountCredentials = "service_account_credentials"
-)
-
-func (ci *ConfiguredIntegration) config() objx.Map {
-	return objx.New(ci.intg.Config)
+type installationConfig struct {
+	ServiceAccountCredentials []byte
 }
 
-const (
-	userPreferenceEnableVideoConferencing = "video_conferencing"
-)
-
-func (ci *ConfiguredIntegration) userPreferences() objx.Map {
-	return objx.New(ci.intg.UserPreferences)
+type userSettings struct {
+	EnableVideoConference bool
 }
 
-func (ci *ConfiguredIntegration) getServiceAccountCredentials() []byte {
-	cfg := objx.New(ci.intg.Config)
-	if v := cfg.Get(configServiceAccountCredentials); !v.IsNil() {
-		if data, ok := v.Data().([]byte); ok {
-			return data
-		}
+func (ii *InstalledIntegration) config() (*installationConfig, error) {
+	var cfg installationConfig
+	if decErr := mapstructure.Decode(ii.intg.InstallationConfig, &cfg); decErr != nil {
+		return nil, decErr
 	}
-	return nil
+	return &cfg, nil
 }
 
-func (ci *ConfiguredIntegration) isVideoConferenceEnabled() bool {
-	if creds := ci.getServiceAccountCredentials(); creds == nil {
+func (ii *InstalledIntegration) userSettings() (*userSettings, error) {
+	var settings userSettings
+	if decErr := mapstructure.Decode(ii.intg.UserSettings, &settings); decErr != nil {
+		return nil, decErr
+	}
+	return &settings, nil
+}
+
+func (ii *InstalledIntegration) isVideoConferenceEnabled() bool {
+	if cfg, cfgErr := ii.config(); cfgErr != nil || cfg.ServiceAccountCredentials == nil {
 		return false
 	}
-	return ci.userPreferences().Get(userPreferenceEnableVideoConferencing).Bool()
+	if settings, settingsErr := ii.userSettings(); settingsErr != nil || !settings.EnableVideoConference {
+		return false
+	}
+	return true
 }
 
-func (ci *ConfiguredIntegration) getAuthCredentials() (option.ClientOption, error) {
-	creds := ci.getServiceAccountCredentials()
-	if creds == nil {
+func (ii *InstalledIntegration) getAuthCredentials() (option.ClientOption, error) {
+	cfg, cfgErr := ii.config()
+	if cfgErr != nil || cfg.ServiceAccountCredentials == nil {
 		return nil, fmt.Errorf("missing service account credentials")
 	}
-	return option.WithAuthCredentialsJSON(option.ServiceAccount, creds), nil
+	return option.WithAuthCredentialsJSON(option.ServiceAccount, cfg.ServiceAccountCredentials), nil
 }
 
-func (ci *ConfiguredIntegration) MakeVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error) {
-	return newMeetService(ci), nil
+func (ii *InstalledIntegration) MakeVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error) {
+	return newMeetService(ii), nil
 }

@@ -75,7 +75,7 @@ type ListEventsRequest struct {
 	From time.Time `query:"from"`
 	To   time.Time `query:"to"`
 }
-type ListEventsResponse PaginatedResponse[Event]
+type ListEventsResponse ListResponse[Event]
 
 var GetEvent = huma.Operation{
 	OperationID: "get-event",

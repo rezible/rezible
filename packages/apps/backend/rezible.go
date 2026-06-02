@@ -97,23 +97,20 @@ type (
 type (
 	IntegrationPackage interface {
 		Name() string
+		Provider() string
 		IsAvailable() (bool, error)
+		MaxInstalls() *int
 		SupportedDataKinds() []string
-		ValidateUserConfig(map[string]any) error
-		ValidateUserPreferences(map[string]any) error
-		OAuthConfigRequired() bool
-		GetConfiguredIntegration(*ent.Integration) ConfiguredIntegration
+		ValidateInstallationConfig(map[string]any) (externalRef string, validationErr error)
+		ValidateUserSettings(map[string]any) error
+		OAuthInstallRequired() bool
+		GetInstalledIntegration(*ent.Integration) InstalledIntegration
 	}
 
-	ConfiguredIntegration interface {
-		ID() uuid.UUID
+	InstalledIntegration interface {
 		Integration() *ent.Integration
-		Provider() string
-		DisplayName() string
-		ExternalRef() string
-		GetSanitizedConfig() map[string]any
-		GetUserPreferences() map[string]any
-		GetAvailableDataKinds() map[string]bool
+		SanitizedInstallationConfig() map[string]any
+		GetCapabilities() map[string]bool
 	}
 
 	ListIntegrationsParams struct {
@@ -123,30 +120,23 @@ type (
 		ConfigValues map[string]any
 	}
 
-	ConfigureIntegrationParams struct {
-		Provider    string
-		DisplayName string
-		ExternalRef string
-		Config      map[string]any
-		Preferences map[string]any
+	InstallIntegrationParams struct {
+		DisplayName        string
+		InstallationConfig map[string]any
+		UserSettings       map[string]any
 	}
 
-	CompleteIntegrationOAuth2Result struct {
-		Status         string
-		Configured     []ConfiguredIntegration
-		SelectionToken string
-		Options        []ExternalIntegrationOption
+	CompleteIntegrationOAuth2FlowResult struct {
+		InstallationTargetSelectionRequired bool
+		Installed                           []InstalledIntegration
+		InstallationTargetSelectionToken    string
+		InstallationTargetOptions           []IntegrationInstallationTarget
 	}
 
-	ExternalIntegrationOption struct {
-		ExternalRef string         `json:"externalRef"`
-		DisplayName string         `json:"displayName"`
-		Config      map[string]any `json:"config"`
-	}
-
-	SelectIntegrationOAuth2Params struct {
-		SelectionToken string
-		ExternalRefs   []string
+	IntegrationInstallationTarget struct {
+		ExternalRef        string
+		DisplayName        string
+		InstallationConfig map[string]any
 	}
 
 	CompleteIntegrationOAuth2Params struct {
@@ -155,28 +145,26 @@ type (
 		ClientVerifier *string
 	}
 
-	ListProviderDataSyncStatusParams struct {
-		Provider string
-	}
-
 	IntegrationService interface {
 		GetAvailable() []IntegrationPackage
 
-		Configure(ctx context.Context, params ConfigureIntegrationParams) (ConfiguredIntegration, error)
-		ListConfigured(ctx context.Context, params ListIntegrationsParams) ([]ConfiguredIntegration, error)
-		GetConfigured(ctx context.Context, id uuid.UUID) (ConfiguredIntegration, error)
-		UpdateConfiguredPreferences(ctx context.Context, id uuid.UUID, prefs map[string]any) (ConfiguredIntegration, error)
-		DeleteConfigured(ctx context.Context, id uuid.UUID) error
+		InstallNew(ctx context.Context, integrationName string, params InstallIntegrationParams) (InstalledIntegration, error)
+		InstallFromInstallationTargets(ctx context.Context, integrationName string, token string, externalRefs []string) ([]InstalledIntegration, error)
 
-		GetProviderEventProcessor(provider string) (ProviderEventProcessor, error)
-		GetProviderEventQueriers(ctx context.Context, provider string) ([]ProviderEventQuerier, error)
+		GetInstalled(ctx context.Context, id uuid.UUID) (InstalledIntegration, error)
+		LookupByRef(ctx context.Context, name string, providerRef string) (*ent.Integration, error)
+		ListInstalled(ctx context.Context, params ListIntegrationsParams) ([]InstalledIntegration, error)
+		UpdateInstalled(ctx context.Context, id uuid.UUID, prefs map[string]any) (InstalledIntegration, error)
+		DeleteInstalled(ctx context.Context, id uuid.UUID) error
 
-		StartOAuth2Flow(ctx context.Context, provider string, callbackPath string) (string, error)
-		SelectOAuth2Flow(ctx context.Context, provider string, params SelectIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
-		CompleteOAuth2Flow(ctx context.Context, provider string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2Result, error)
+		GetProviderEventProcessor(integrationName string) (ProviderEventProcessor, error)
+		GetProviderEventQueriers(ctx context.Context, integrationName string) ([]ProviderEventQuerier, error)
 
-		RequestDataSync(ctx context.Context, provider string, sources []string) error
-		GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error)
+		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
+		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2FlowResult, error)
+
+		RequestDataSync(ctx context.Context, integrationName string, sources []string) error
+		GetDataSyncStatus(ctx context.Context, integrationName string) (*ent.ListResult[ent.ProviderEventSyncRun], error)
 	}
 )
 

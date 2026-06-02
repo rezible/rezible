@@ -59,7 +59,7 @@ type UserEdges struct {
 	// EventAnnotations holds the value of the event_annotations edge.
 	EventAnnotations []*EventAnnotation `json:"event_annotations,omitempty"`
 	// IntegrationOauthStates holds the value of the integration_oauth_states edge.
-	IntegrationOauthStates []*IntegrationOAuthState `json:"integration_oauth_states,omitempty"`
+	IntegrationOauthStates []*IntegrationUserInstallState `json:"integration_oauth_states,omitempty"`
 	// Incidents holds the value of the incidents edge.
 	Incidents []*Incident `json:"incidents,omitempty"`
 	// IncidentMilestones holds the value of the incident_milestones edge.
@@ -167,7 +167,7 @@ func (e UserEdges) EventAnnotationsOrErr() ([]*EventAnnotation, error) {
 
 // IntegrationOauthStatesOrErr returns the IntegrationOauthStates value or an error if the edge
 // was not loaded in eager-loading.
-func (e UserEdges) IntegrationOauthStatesOrErr() ([]*IntegrationOAuthState, error) {
+func (e UserEdges) IntegrationOauthStatesOrErr() ([]*IntegrationUserInstallState, error) {
 	if e.loadedTypes[8] {
 		return e.IntegrationOauthStates, nil
 	}
@@ -404,7 +404,7 @@ func (_m *User) QueryEventAnnotations() *EventAnnotationQuery {
 }
 
 // QueryIntegrationOauthStates queries the "integration_oauth_states" edge of the User entity.
-func (_m *User) QueryIntegrationOauthStates() *IntegrationOAuthStateQuery {
+func (_m *User) QueryIntegrationOauthStates() *IntegrationUserInstallStateQuery {
 	return NewUserClient(_m.config).QueryIntegrationOauthStates(_m)
 }
 

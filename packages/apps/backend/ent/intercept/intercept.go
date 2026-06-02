@@ -34,7 +34,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
-	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -833,31 +833,31 @@ func (f TraverseIntegration) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.IntegrationQuery", q)
 }
 
-// The IntegrationOAuthStateFunc type is an adapter to allow the use of ordinary function as a Querier.
-type IntegrationOAuthStateFunc func(context.Context, *ent.IntegrationOAuthStateQuery) (ent.Value, error)
+// The IntegrationUserInstallStateFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IntegrationUserInstallStateFunc func(context.Context, *ent.IntegrationUserInstallStateQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f IntegrationOAuthStateFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.IntegrationOAuthStateQuery); ok {
+func (f IntegrationUserInstallStateFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IntegrationUserInstallStateQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IntegrationOAuthStateQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IntegrationUserInstallStateQuery", q)
 }
 
-// The TraverseIntegrationOAuthState type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseIntegrationOAuthState func(context.Context, *ent.IntegrationOAuthStateQuery) error
+// The TraverseIntegrationUserInstallState type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIntegrationUserInstallState func(context.Context, *ent.IntegrationUserInstallStateQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseIntegrationOAuthState) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseIntegrationUserInstallState) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseIntegrationOAuthState) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IntegrationOAuthStateQuery); ok {
+func (f TraverseIntegrationUserInstallState) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationUserInstallStateQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.IntegrationOAuthStateQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.IntegrationUserInstallStateQuery", q)
 }
 
 // The KnowledgeEntityFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1914,8 +1914,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentTypeQuery, predicate.IncidentType, incidenttype.OrderOption]{typ: ent.TypeIncidentType, tq: q}, nil
 	case *ent.IntegrationQuery:
 		return &query[*ent.IntegrationQuery, predicate.Integration, integration.OrderOption]{typ: ent.TypeIntegration, tq: q}, nil
-	case *ent.IntegrationOAuthStateQuery:
-		return &query[*ent.IntegrationOAuthStateQuery, predicate.IntegrationOAuthState, integrationoauthstate.OrderOption]{typ: ent.TypeIntegrationOAuthState, tq: q}, nil
+	case *ent.IntegrationUserInstallStateQuery:
+		return &query[*ent.IntegrationUserInstallStateQuery, predicate.IntegrationUserInstallState, integrationuserinstallstate.OrderOption]{typ: ent.TypeIntegrationUserInstallState, tq: q}, nil
 	case *ent.KnowledgeEntityQuery:
 		return &query[*ent.KnowledgeEntityQuery, predicate.KnowledgeEntity, knowledgeentity.OrderOption]{typ: ent.TypeKnowledgeEntity, tq: q}, nil
 	case *ent.KnowledgeEntityAliasQuery:

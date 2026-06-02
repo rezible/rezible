@@ -17,7 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -254,14 +254,14 @@ func (_u *UserUpdate) AddEventAnnotations(v ...*EventAnnotation) *UserUpdate {
 	return _u.AddEventAnnotationIDs(ids...)
 }
 
-// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationOAuthState entity by IDs.
+// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationUserInstallState entity by IDs.
 func (_u *UserUpdate) AddIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdate {
 	_u.mutation.AddIntegrationOauthStateIDs(ids...)
 	return _u
 }
 
-// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationOAuthState entity.
-func (_u *UserUpdate) AddIntegrationOauthStates(v ...*IntegrationOAuthState) *UserUpdate {
+// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationUserInstallState entity.
+func (_u *UserUpdate) AddIntegrationOauthStates(v ...*IntegrationUserInstallState) *UserUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -556,20 +556,20 @@ func (_u *UserUpdate) RemoveEventAnnotations(v ...*EventAnnotation) *UserUpdate 
 	return _u.RemoveEventAnnotationIDs(ids...)
 }
 
-// ClearIntegrationOauthStates clears all "integration_oauth_states" edges to the IntegrationOAuthState entity.
+// ClearIntegrationOauthStates clears all "integration_oauth_states" edges to the IntegrationUserInstallState entity.
 func (_u *UserUpdate) ClearIntegrationOauthStates() *UserUpdate {
 	_u.mutation.ClearIntegrationOauthStates()
 	return _u
 }
 
-// RemoveIntegrationOauthStateIDs removes the "integration_oauth_states" edge to IntegrationOAuthState entities by IDs.
+// RemoveIntegrationOauthStateIDs removes the "integration_oauth_states" edge to IntegrationUserInstallState entities by IDs.
 func (_u *UserUpdate) RemoveIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdate {
 	_u.mutation.RemoveIntegrationOauthStateIDs(ids...)
 	return _u
 }
 
-// RemoveIntegrationOauthStates removes "integration_oauth_states" edges to IntegrationOAuthState entities.
-func (_u *UserUpdate) RemoveIntegrationOauthStates(v ...*IntegrationOAuthState) *UserUpdate {
+// RemoveIntegrationOauthStates removes "integration_oauth_states" edges to IntegrationUserInstallState entities.
+func (_u *UserUpdate) RemoveIntegrationOauthStates(v ...*IntegrationUserInstallState) *UserUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -1216,10 +1216,10 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{user.IntegrationOauthStatesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IntegrationOAuthState
+		edge.Schema = _u.schemaConfig.IntegrationUserInstallState
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIntegrationOauthStatesIDs(); len(nodes) > 0 && !_u.mutation.IntegrationOauthStatesCleared() {
@@ -1230,10 +1230,10 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{user.IntegrationOauthStatesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IntegrationOAuthState
+		edge.Schema = _u.schemaConfig.IntegrationUserInstallState
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -1247,10 +1247,10 @@ func (_u *UserUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			Columns: []string{user.IntegrationOauthStatesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IntegrationOAuthState
+		edge.Schema = _u.schemaConfig.IntegrationUserInstallState
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -2036,14 +2036,14 @@ func (_u *UserUpdateOne) AddEventAnnotations(v ...*EventAnnotation) *UserUpdateO
 	return _u.AddEventAnnotationIDs(ids...)
 }
 
-// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationOAuthState entity by IDs.
+// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationUserInstallState entity by IDs.
 func (_u *UserUpdateOne) AddIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.AddIntegrationOauthStateIDs(ids...)
 	return _u
 }
 
-// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationOAuthState entity.
-func (_u *UserUpdateOne) AddIntegrationOauthStates(v ...*IntegrationOAuthState) *UserUpdateOne {
+// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationUserInstallState entity.
+func (_u *UserUpdateOne) AddIntegrationOauthStates(v ...*IntegrationUserInstallState) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -2338,20 +2338,20 @@ func (_u *UserUpdateOne) RemoveEventAnnotations(v ...*EventAnnotation) *UserUpda
 	return _u.RemoveEventAnnotationIDs(ids...)
 }
 
-// ClearIntegrationOauthStates clears all "integration_oauth_states" edges to the IntegrationOAuthState entity.
+// ClearIntegrationOauthStates clears all "integration_oauth_states" edges to the IntegrationUserInstallState entity.
 func (_u *UserUpdateOne) ClearIntegrationOauthStates() *UserUpdateOne {
 	_u.mutation.ClearIntegrationOauthStates()
 	return _u
 }
 
-// RemoveIntegrationOauthStateIDs removes the "integration_oauth_states" edge to IntegrationOAuthState entities by IDs.
+// RemoveIntegrationOauthStateIDs removes the "integration_oauth_states" edge to IntegrationUserInstallState entities by IDs.
 func (_u *UserUpdateOne) RemoveIntegrationOauthStateIDs(ids ...uuid.UUID) *UserUpdateOne {
 	_u.mutation.RemoveIntegrationOauthStateIDs(ids...)
 	return _u
 }
 
-// RemoveIntegrationOauthStates removes "integration_oauth_states" edges to IntegrationOAuthState entities.
-func (_u *UserUpdateOne) RemoveIntegrationOauthStates(v ...*IntegrationOAuthState) *UserUpdateOne {
+// RemoveIntegrationOauthStates removes "integration_oauth_states" edges to IntegrationUserInstallState entities.
+func (_u *UserUpdateOne) RemoveIntegrationOauthStates(v ...*IntegrationUserInstallState) *UserUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -3028,10 +3028,10 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Columns: []string{user.IntegrationOauthStatesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IntegrationOAuthState
+		edge.Schema = _u.schemaConfig.IntegrationUserInstallState
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := _u.mutation.RemovedIntegrationOauthStatesIDs(); len(nodes) > 0 && !_u.mutation.IntegrationOauthStatesCleared() {
@@ -3042,10 +3042,10 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Columns: []string{user.IntegrationOauthStatesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IntegrationOAuthState
+		edge.Schema = _u.schemaConfig.IntegrationUserInstallState
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -3059,10 +3059,10 @@ func (_u *UserUpdateOne) sqlSave(ctx context.Context) (_node *User, err error) {
 			Columns: []string{user.IntegrationOauthStatesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.IntegrationOAuthState
+		edge.Schema = _u.schemaConfig.IntegrationUserInstallState
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

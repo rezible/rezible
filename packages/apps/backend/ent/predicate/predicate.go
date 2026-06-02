@@ -84,8 +84,8 @@ type IncidentType func(*sql.Selector)
 // Integration is the predicate function for integration builders.
 type Integration func(*sql.Selector)
 
-// IntegrationOAuthState is the predicate function for integrationoauthstate builders.
-type IntegrationOAuthState func(*sql.Selector)
+// IntegrationUserInstallState is the predicate function for integrationuserinstallstate builders.
+type IntegrationUserInstallState func(*sql.Selector)
 
 // KnowledgeEntity is the predicate function for knowledgeentity builders.
 type KnowledgeEntity func(*sql.Selector)

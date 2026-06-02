@@ -309,16 +309,16 @@ func (f IntegrationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationMutation", m)
 }
 
-// The IntegrationOAuthStateFunc type is an adapter to allow the use of ordinary
-// function as IntegrationOAuthState mutator.
-type IntegrationOAuthStateFunc func(context.Context, *ent.IntegrationOAuthStateMutation) (ent.Value, error)
+// The IntegrationUserInstallStateFunc type is an adapter to allow the use of ordinary
+// function as IntegrationUserInstallState mutator.
+type IntegrationUserInstallStateFunc func(context.Context, *ent.IntegrationUserInstallStateMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f IntegrationOAuthStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.IntegrationOAuthStateMutation); ok {
+func (f IntegrationUserInstallStateFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IntegrationUserInstallStateMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationOAuthStateMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationUserInstallStateMutation", m)
 }
 
 // The KnowledgeEntityFunc type is an adapter to allow the use of ordinary

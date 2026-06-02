@@ -12,14 +12,14 @@ import (
 )
 
 func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
-	return newEventQuerier(&ConfiguredIntegration{intg: intg}), nil
+	return newEventQuerier(&InstalledIntegration{intg: intg}), nil
 }
 
 type eventQuerier struct {
-	ci *ConfiguredIntegration
+	ci *InstalledIntegration
 }
 
-func newEventQuerier(ci *ConfiguredIntegration) *eventQuerier {
+func newEventQuerier(ci *InstalledIntegration) *eventQuerier {
 	return &eventQuerier{ci: ci}
 }
 

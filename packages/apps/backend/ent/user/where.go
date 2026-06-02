@@ -735,19 +735,19 @@ func HasIntegrationOauthStates() predicate.User {
 			sqlgraph.Edge(sqlgraph.O2M, true, IntegrationOauthStatesTable, IntegrationOauthStatesColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IntegrationOAuthState
-		step.Edge.Schema = schemaConfig.IntegrationOAuthState
+		step.To.Schema = schemaConfig.IntegrationUserInstallState
+		step.Edge.Schema = schemaConfig.IntegrationUserInstallState
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasIntegrationOauthStatesWith applies the HasEdge predicate on the "integration_oauth_states" edge with a given conditions (other predicates).
-func HasIntegrationOauthStatesWith(preds ...predicate.IntegrationOAuthState) predicate.User {
+func HasIntegrationOauthStatesWith(preds ...predicate.IntegrationUserInstallState) predicate.User {
 	return predicate.User(func(s *sql.Selector) {
 		step := newIntegrationOauthStatesStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.IntegrationOAuthState
-		step.Edge.Schema = schemaConfig.IntegrationOAuthState
+		step.To.Schema = schemaConfig.IntegrationUserInstallState
+		step.Edge.Schema = schemaConfig.IntegrationUserInstallState
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

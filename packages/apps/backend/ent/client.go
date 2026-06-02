@@ -41,7 +41,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
-	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -140,8 +140,8 @@ type Client struct {
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
 	Integration *IntegrationClient
-	// IntegrationOAuthState is the client for interacting with the IntegrationOAuthState builders.
-	IntegrationOAuthState *IntegrationOAuthStateClient
+	// IntegrationUserInstallState is the client for interacting with the IntegrationUserInstallState builders.
+	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
 	// KnowledgeEntityAlias is the client for interacting with the KnowledgeEntityAlias builders.
@@ -253,7 +253,7 @@ func (c *Client) init() {
 	c.IncidentTimelineEventTopologyContext = NewIncidentTimelineEventTopologyContextClient(c.config)
 	c.IncidentType = NewIncidentTypeClient(c.config)
 	c.Integration = NewIntegrationClient(c.config)
-	c.IntegrationOAuthState = NewIntegrationOAuthStateClient(c.config)
+	c.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(c.config)
 	c.KnowledgeEntity = NewKnowledgeEntityClient(c.config)
 	c.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(c.config)
 	c.KnowledgeEvidence = NewKnowledgeEvidenceClient(c.config)
@@ -412,7 +412,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentTimelineEventTopologyContext:    NewIncidentTimelineEventTopologyContextClient(cfg),
 		IncidentType:                            NewIncidentTypeClient(cfg),
 		Integration:                             NewIntegrationClient(cfg),
-		IntegrationOAuthState:                   NewIntegrationOAuthStateClient(cfg),
+		IntegrationUserInstallState:             NewIntegrationUserInstallStateClient(cfg),
 		KnowledgeEntity:                         NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityAlias:                    NewKnowledgeEntityAliasClient(cfg),
 		KnowledgeEvidence:                       NewKnowledgeEvidenceClient(cfg),
@@ -495,7 +495,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentTimelineEventTopologyContext:    NewIncidentTimelineEventTopologyContextClient(cfg),
 		IncidentType:                            NewIncidentTypeClient(cfg),
 		Integration:                             NewIntegrationClient(cfg),
-		IntegrationOAuthState:                   NewIntegrationOAuthStateClient(cfg),
+		IntegrationUserInstallState:             NewIntegrationUserInstallStateClient(cfg),
 		KnowledgeEntity:                         NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityAlias:                    NewKnowledgeEntityAliasClient(cfg),
 		KnowledgeEvidence:                       NewKnowledgeEvidenceClient(cfg),
@@ -570,7 +570,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
-		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
+		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
@@ -599,7 +599,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
-		c.IntegrationOAuthState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
+		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
@@ -669,8 +669,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentType.mutate(ctx, m)
 	case *IntegrationMutation:
 		return c.Integration.mutate(ctx, m)
-	case *IntegrationOAuthStateMutation:
-		return c.IntegrationOAuthState.mutate(ctx, m)
+	case *IntegrationUserInstallStateMutation:
+		return c.IntegrationUserInstallState.mutate(ctx, m)
 	case *KnowledgeEntityMutation:
 		return c.KnowledgeEntity.mutate(ctx, m)
 	case *KnowledgeEntityAliasMutation:
@@ -6036,107 +6036,107 @@ func (c *IntegrationClient) mutate(ctx context.Context, m *IntegrationMutation) 
 	}
 }
 
-// IntegrationOAuthStateClient is a client for the IntegrationOAuthState schema.
-type IntegrationOAuthStateClient struct {
+// IntegrationUserInstallStateClient is a client for the IntegrationUserInstallState schema.
+type IntegrationUserInstallStateClient struct {
 	config
 }
 
-// NewIntegrationOAuthStateClient returns a client for the IntegrationOAuthState from the given config.
-func NewIntegrationOAuthStateClient(c config) *IntegrationOAuthStateClient {
-	return &IntegrationOAuthStateClient{config: c}
+// NewIntegrationUserInstallStateClient returns a client for the IntegrationUserInstallState from the given config.
+func NewIntegrationUserInstallStateClient(c config) *IntegrationUserInstallStateClient {
+	return &IntegrationUserInstallStateClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `integrationoauthstate.Hooks(f(g(h())))`.
-func (c *IntegrationOAuthStateClient) Use(hooks ...Hook) {
-	c.hooks.IntegrationOAuthState = append(c.hooks.IntegrationOAuthState, hooks...)
+// A call to `Use(f, g, h)` equals to `integrationuserinstallstate.Hooks(f(g(h())))`.
+func (c *IntegrationUserInstallStateClient) Use(hooks ...Hook) {
+	c.hooks.IntegrationUserInstallState = append(c.hooks.IntegrationUserInstallState, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `integrationoauthstate.Intercept(f(g(h())))`.
-func (c *IntegrationOAuthStateClient) Intercept(interceptors ...Interceptor) {
-	c.inters.IntegrationOAuthState = append(c.inters.IntegrationOAuthState, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `integrationuserinstallstate.Intercept(f(g(h())))`.
+func (c *IntegrationUserInstallStateClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IntegrationUserInstallState = append(c.inters.IntegrationUserInstallState, interceptors...)
 }
 
-// Create returns a builder for creating a IntegrationOAuthState entity.
-func (c *IntegrationOAuthStateClient) Create() *IntegrationOAuthStateCreate {
-	mutation := newIntegrationOAuthStateMutation(c.config, OpCreate)
-	return &IntegrationOAuthStateCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a IntegrationUserInstallState entity.
+func (c *IntegrationUserInstallStateClient) Create() *IntegrationUserInstallStateCreate {
+	mutation := newIntegrationUserInstallStateMutation(c.config, OpCreate)
+	return &IntegrationUserInstallStateCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of IntegrationOAuthState entities.
-func (c *IntegrationOAuthStateClient) CreateBulk(builders ...*IntegrationOAuthStateCreate) *IntegrationOAuthStateCreateBulk {
-	return &IntegrationOAuthStateCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of IntegrationUserInstallState entities.
+func (c *IntegrationUserInstallStateClient) CreateBulk(builders ...*IntegrationUserInstallStateCreate) *IntegrationUserInstallStateCreateBulk {
+	return &IntegrationUserInstallStateCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *IntegrationOAuthStateClient) MapCreateBulk(slice any, setFunc func(*IntegrationOAuthStateCreate, int)) *IntegrationOAuthStateCreateBulk {
+func (c *IntegrationUserInstallStateClient) MapCreateBulk(slice any, setFunc func(*IntegrationUserInstallStateCreate, int)) *IntegrationUserInstallStateCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &IntegrationOAuthStateCreateBulk{err: fmt.Errorf("calling to IntegrationOAuthStateClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &IntegrationUserInstallStateCreateBulk{err: fmt.Errorf("calling to IntegrationUserInstallStateClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*IntegrationOAuthStateCreate, rv.Len())
+	builders := make([]*IntegrationUserInstallStateCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &IntegrationOAuthStateCreateBulk{config: c.config, builders: builders}
+	return &IntegrationUserInstallStateCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for IntegrationOAuthState.
-func (c *IntegrationOAuthStateClient) Update() *IntegrationOAuthStateUpdate {
-	mutation := newIntegrationOAuthStateMutation(c.config, OpUpdate)
-	return &IntegrationOAuthStateUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for IntegrationUserInstallState.
+func (c *IntegrationUserInstallStateClient) Update() *IntegrationUserInstallStateUpdate {
+	mutation := newIntegrationUserInstallStateMutation(c.config, OpUpdate)
+	return &IntegrationUserInstallStateUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *IntegrationOAuthStateClient) UpdateOne(_m *IntegrationOAuthState) *IntegrationOAuthStateUpdateOne {
-	mutation := newIntegrationOAuthStateMutation(c.config, OpUpdateOne, withIntegrationOAuthState(_m))
-	return &IntegrationOAuthStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *IntegrationUserInstallStateClient) UpdateOne(_m *IntegrationUserInstallState) *IntegrationUserInstallStateUpdateOne {
+	mutation := newIntegrationUserInstallStateMutation(c.config, OpUpdateOne, withIntegrationUserInstallState(_m))
+	return &IntegrationUserInstallStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *IntegrationOAuthStateClient) UpdateOneID(id uuid.UUID) *IntegrationOAuthStateUpdateOne {
-	mutation := newIntegrationOAuthStateMutation(c.config, OpUpdateOne, withIntegrationOAuthStateID(id))
-	return &IntegrationOAuthStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *IntegrationUserInstallStateClient) UpdateOneID(id uuid.UUID) *IntegrationUserInstallStateUpdateOne {
+	mutation := newIntegrationUserInstallStateMutation(c.config, OpUpdateOne, withIntegrationUserInstallStateID(id))
+	return &IntegrationUserInstallStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for IntegrationOAuthState.
-func (c *IntegrationOAuthStateClient) Delete() *IntegrationOAuthStateDelete {
-	mutation := newIntegrationOAuthStateMutation(c.config, OpDelete)
-	return &IntegrationOAuthStateDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for IntegrationUserInstallState.
+func (c *IntegrationUserInstallStateClient) Delete() *IntegrationUserInstallStateDelete {
+	mutation := newIntegrationUserInstallStateMutation(c.config, OpDelete)
+	return &IntegrationUserInstallStateDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *IntegrationOAuthStateClient) DeleteOne(_m *IntegrationOAuthState) *IntegrationOAuthStateDeleteOne {
+func (c *IntegrationUserInstallStateClient) DeleteOne(_m *IntegrationUserInstallState) *IntegrationUserInstallStateDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *IntegrationOAuthStateClient) DeleteOneID(id uuid.UUID) *IntegrationOAuthStateDeleteOne {
-	builder := c.Delete().Where(integrationoauthstate.ID(id))
+func (c *IntegrationUserInstallStateClient) DeleteOneID(id uuid.UUID) *IntegrationUserInstallStateDeleteOne {
+	builder := c.Delete().Where(integrationuserinstallstate.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &IntegrationOAuthStateDeleteOne{builder}
+	return &IntegrationUserInstallStateDeleteOne{builder}
 }
 
-// Query returns a query builder for IntegrationOAuthState.
-func (c *IntegrationOAuthStateClient) Query() *IntegrationOAuthStateQuery {
-	return &IntegrationOAuthStateQuery{
+// Query returns a query builder for IntegrationUserInstallState.
+func (c *IntegrationUserInstallStateClient) Query() *IntegrationUserInstallStateQuery {
+	return &IntegrationUserInstallStateQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeIntegrationOAuthState},
+		ctx:    &QueryContext{Type: TypeIntegrationUserInstallState},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a IntegrationOAuthState entity by its id.
-func (c *IntegrationOAuthStateClient) Get(ctx context.Context, id uuid.UUID) (*IntegrationOAuthState, error) {
-	return c.Query().Where(integrationoauthstate.ID(id)).Only(ctx)
+// Get returns a IntegrationUserInstallState entity by its id.
+func (c *IntegrationUserInstallStateClient) Get(ctx context.Context, id uuid.UUID) (*IntegrationUserInstallState, error) {
+	return c.Query().Where(integrationuserinstallstate.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *IntegrationOAuthStateClient) GetX(ctx context.Context, id uuid.UUID) *IntegrationOAuthState {
+func (c *IntegrationUserInstallStateClient) GetX(ctx context.Context, id uuid.UUID) *IntegrationUserInstallState {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -6144,38 +6144,38 @@ func (c *IntegrationOAuthStateClient) GetX(ctx context.Context, id uuid.UUID) *I
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a IntegrationOAuthState.
-func (c *IntegrationOAuthStateClient) QueryTenant(_m *IntegrationOAuthState) *TenantQuery {
+// QueryTenant queries the tenant edge of a IntegrationUserInstallState.
+func (c *IntegrationUserInstallStateClient) QueryTenant(_m *IntegrationUserInstallState) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(integrationoauthstate.Table, integrationoauthstate.FieldID, id),
+			sqlgraph.From(integrationuserinstallstate.Table, integrationuserinstallstate.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, integrationoauthstate.TenantTable, integrationoauthstate.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationuserinstallstate.TenantTable, integrationuserinstallstate.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.IntegrationOAuthState
+		step.Edge.Schema = schemaConfig.IntegrationUserInstallState
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryUser queries the user edge of a IntegrationOAuthState.
-func (c *IntegrationOAuthStateClient) QueryUser(_m *IntegrationOAuthState) *UserQuery {
+// QueryUser queries the user edge of a IntegrationUserInstallState.
+func (c *IntegrationUserInstallStateClient) QueryUser(_m *IntegrationUserInstallState) *UserQuery {
 	query := (&UserClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(integrationoauthstate.Table, integrationoauthstate.FieldID, id),
+			sqlgraph.From(integrationuserinstallstate.Table, integrationuserinstallstate.FieldID, id),
 			sqlgraph.To(user.Table, user.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, integrationoauthstate.UserTable, integrationoauthstate.UserColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationuserinstallstate.UserTable, integrationuserinstallstate.UserColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.User
-		step.Edge.Schema = schemaConfig.IntegrationOAuthState
+		step.Edge.Schema = schemaConfig.IntegrationUserInstallState
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -6183,28 +6183,28 @@ func (c *IntegrationOAuthStateClient) QueryUser(_m *IntegrationOAuthState) *User
 }
 
 // Hooks returns the client hooks.
-func (c *IntegrationOAuthStateClient) Hooks() []Hook {
-	hooks := c.hooks.IntegrationOAuthState
-	return append(hooks[:len(hooks):len(hooks)], integrationoauthstate.Hooks[:]...)
+func (c *IntegrationUserInstallStateClient) Hooks() []Hook {
+	hooks := c.hooks.IntegrationUserInstallState
+	return append(hooks[:len(hooks):len(hooks)], integrationuserinstallstate.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *IntegrationOAuthStateClient) Interceptors() []Interceptor {
-	return c.inters.IntegrationOAuthState
+func (c *IntegrationUserInstallStateClient) Interceptors() []Interceptor {
+	return c.inters.IntegrationUserInstallState
 }
 
-func (c *IntegrationOAuthStateClient) mutate(ctx context.Context, m *IntegrationOAuthStateMutation) (Value, error) {
+func (c *IntegrationUserInstallStateClient) mutate(ctx context.Context, m *IntegrationUserInstallStateMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&IntegrationOAuthStateCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IntegrationUserInstallStateCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&IntegrationOAuthStateUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IntegrationUserInstallStateUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&IntegrationOAuthStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&IntegrationUserInstallStateUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&IntegrationOAuthStateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&IntegrationUserInstallStateDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown IntegrationOAuthState mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown IntegrationUserInstallState mutation op: %q", m.Op())
 	}
 }
 
@@ -13537,18 +13537,18 @@ func (c *UserClient) QueryEventAnnotations(_m *User) *EventAnnotationQuery {
 }
 
 // QueryIntegrationOauthStates queries the integration_oauth_states edge of a User.
-func (c *UserClient) QueryIntegrationOauthStates(_m *User) *IntegrationOAuthStateQuery {
-	query := (&IntegrationOAuthStateClient{config: c.config}).Query()
+func (c *UserClient) QueryIntegrationOauthStates(_m *User) *IntegrationUserInstallStateQuery {
+	query := (&IntegrationUserInstallStateClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(user.Table, user.FieldID, id),
-			sqlgraph.To(integrationoauthstate.Table, integrationoauthstate.FieldID),
+			sqlgraph.To(integrationuserinstallstate.Table, integrationuserinstallstate.FieldID),
 			sqlgraph.Edge(sqlgraph.O2M, true, user.IntegrationOauthStatesTable, user.IntegrationOauthStatesColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.IntegrationOAuthState
-		step.Edge.Schema = schemaConfig.IntegrationOAuthState
+		step.To.Schema = schemaConfig.IntegrationUserInstallState
+		step.Edge.Schema = schemaConfig.IntegrationUserInstallState
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -13991,7 +13991,7 @@ type (
 		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
 		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
 		IncidentTimelineEventTopologyContext, IncidentType, Integration,
-		IntegrationOAuthState, KnowledgeEntity, KnowledgeEntityAlias,
+		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
 		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
 		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
 		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
@@ -14010,7 +14010,7 @@ type (
 		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
 		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
 		IncidentTimelineEventTopologyContext, IncidentType, Integration,
-		IntegrationOAuthState, KnowledgeEntity, KnowledgeEntityAlias,
+		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
 		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
 		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
 		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
@@ -14060,7 +14060,7 @@ var (
 		IncidentTimelineEventTopologyContext:      tableSchemas[0],
 		IncidentType:                              tableSchemas[0],
 		Integration:                               tableSchemas[0],
-		IntegrationOAuthState:                     tableSchemas[0],
+		IntegrationUserInstallState:               tableSchemas[0],
 		KnowledgeEntity:                           tableSchemas[0],
 		KnowledgeEntityAlias:                      tableSchemas[0],
 		KnowledgeEvidence:                         tableSchemas[0],

@@ -273,7 +273,7 @@ var ListIncidentSeverities = huma.Operation{
 }
 
 type ListIncidentSeveritiesRequest ListRequest
-type ListIncidentSeveritiesResponse PaginatedResponse[IncidentSeverity]
+type ListIncidentSeveritiesResponse ListResponse[IncidentSeverity]
 
 var GetIncidentSeverity = huma.Operation{
 	OperationID: "get-incident-severity",
@@ -346,7 +346,7 @@ var ListIncidentTypes = huma.Operation{
 }
 
 type ListIncidentTypesRequest ListRequest
-type ListIncidentTypesResponse PaginatedResponse[IncidentType]
+type ListIncidentTypesResponse ListResponse[IncidentType]
 
 var GetIncidentType = huma.Operation{
 	OperationID: "get-incident-type",
@@ -416,7 +416,7 @@ var ListIncidentRoles = huma.Operation{
 }
 
 type ListIncidentRolesRequest ListRequest
-type ListIncidentRolesResponse PaginatedResponse[IncidentRole]
+type ListIncidentRolesResponse ListResponse[IncidentRole]
 
 var GetIncidentRole = huma.Operation{
 	OperationID: "get-incident-role",
@@ -490,7 +490,7 @@ var ListIncidentTags = huma.Operation{
 }
 
 type ListIncidentTagsRequest ListRequest
-type ListIncidentTagsResponse PaginatedResponse[IncidentTag]
+type ListIncidentTagsResponse ListResponse[IncidentTag]
 
 var GetIncidentTag = huma.Operation{
 	OperationID: "get-incident-tag",
@@ -561,7 +561,7 @@ var ListIncidentFields = huma.Operation{
 }
 
 type ListIncidentFieldsRequest ListRequest
-type ListIncidentFieldsResponse PaginatedResponse[IncidentField]
+type ListIncidentFieldsResponse ListResponse[IncidentField]
 
 var GetIncidentField = huma.Operation{
 	OperationID: "get-incident-field",

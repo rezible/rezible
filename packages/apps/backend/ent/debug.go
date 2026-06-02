@@ -212,12 +212,12 @@ func (c *IntegrationClient) Debug() *IntegrationClient {
 	return &IntegrationClient{config: cfg}
 }
 
-func (c *IntegrationOAuthStateClient) Debug() *IntegrationOAuthStateClient {
+func (c *IntegrationUserInstallStateClient) Debug() *IntegrationUserInstallStateClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &IntegrationOAuthStateClient{config: cfg}
+	return &IntegrationUserInstallStateClient{config: cfg}
 }
 
 func (c *KnowledgeEntityClient) Debug() *KnowledgeEntityClient {

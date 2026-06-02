@@ -1,16 +1,12 @@
 package github
 
 import (
-	"context"
-	"encoding/json"
 	"testing"
-	"time"
 
 	"github.com/google/go-github/v84/github"
 	rez "github.com/rezible/rezible"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/oauth2"
 )
 
 func makeIntegrationConfig() rez.IntegrationsConfigGithub {
@@ -40,314 +36,43 @@ func TestOAuth2Config(t *testing.T) {
 func TestExtractIntegrationOptionsFromToken(t *testing.T) {
 	intg := &Integration{
 		cfg: makeIntegrationConfig(),
-		listUserInstallations: func(_ context.Context, token string) ([]*github.Installation, error) {
-			assert.Equal(t, "access-token", token)
-			return []*github.Installation{
-				{
-					ID:      new(int64(456)),
-					AppID:   new(int64(123)),
-					Account: &github.User{Login: new("myorg")},
-				},
-			}, nil
+	}
+
+	installations := []*github.Installation{
+		{
+			ID:      new(int64(456)),
+			AppID:   new(int64(123)),
+			Account: &github.User{Login: new("myorg")},
 		},
 	}
 
-	options, err := intg.ExtractIntegrationOptionsFromToken(&oauth2.Token{AccessToken: "access-token"})
+	options, err := intg.makeInstallationTargetOptions(installations)
 
 	require.NoError(t, err)
 	require.Len(t, options, 1)
 	assert.Equal(t, "456", options[0].ExternalRef)
 	assert.Equal(t, "myorg", options[0].DisplayName)
-	assert.Equal(t, "myorg", options[0].Config[configOrg])
-	assert.Equal(t, int64(456), options[0].Config[configInstallationID])
+	assert.Equal(t, "myorg", options[0].InstallationConfig[configOrg])
+	assert.Equal(t, int64(456), options[0].InstallationConfig[configInstallationID])
 }
 
 func TestExtractIntegrationOptionsFromToken_NoInstallations(t *testing.T) {
-	intg := &Integration{
-		listUserInstallations: func(_ context.Context, _ string) ([]*github.Installation, error) {
-			return nil, nil
-		},
-	}
+	intg := &Integration{}
 
-	_, err := intg.ExtractIntegrationOptionsFromToken(&oauth2.Token{AccessToken: "access-token"})
-
+	_, err := intg.makeInstallationTargetOptions(nil)
 	require.Error(t, err)
 	assert.Contains(t, err.Error(), "no valid github app installations")
 }
 
 func TestExtractIntegrationOptionsFromToken_MultipleInstallations(t *testing.T) {
-	intg := &Integration{
-		listUserInstallations: func(_ context.Context, _ string) ([]*github.Installation, error) {
-			return []*github.Installation{
-				{ID: github.Ptr[int64](1), Account: &github.User{Login: github.Ptr("org-one")}},
-				{ID: github.Ptr[int64](2), Account: &github.User{Login: github.Ptr("org-two")}},
-			}, nil
-		},
+	intg := &Integration{}
+	installations := []*github.Installation{
+		{ID: new(int64(1)), Account: &github.User{Login: new("org-one")}},
+		{ID: new(int64(2)), Account: &github.User{Login: new("org-two")}},
 	}
-
-	options, err := intg.ExtractIntegrationOptionsFromToken(&oauth2.Token{AccessToken: "access-token"})
-
+	options, err := intg.makeInstallationTargetOptions(installations)
 	require.NoError(t, err)
 	require.Len(t, options, 2)
 	assert.Equal(t, "1", options[0].ExternalRef)
 	assert.Equal(t, "2", options[1].ExternalRef)
 }
-
-func makePushPayload(t *testing.T, after, fullName, ref, org string, installationID int64) []byte {
-	t.Helper()
-	ts := github.Timestamp{Time: time.Now()}
-	event := &github.PushEvent{
-		After: github.Ptr(after),
-		Ref:   github.Ptr(ref),
-		Repo: &github.PushEventRepository{
-			FullName: github.Ptr(fullName),
-			Owner:    &github.User{Login: github.Ptr(org)},
-		},
-		HeadCommit: &github.HeadCommit{
-			Timestamp: &ts,
-		},
-		Installation: &github.Installation{ID: github.Ptr(installationID)},
-	}
-	b, err := json.Marshal(event)
-	require.NoError(t, err)
-	return b
-}
-
-/*
-func TestPushProcessor_ValidPayload(t *testing.T) {
-	const (
-		org      = "myorg"
-		fullName = "myorg/myrepo"
-		after    = "abc123def456abc123def456abc123def456abc1"
-		ref      = "refs/heads/main"
-	)
-
-	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: org, installationID: "123"},
-	}
-	proc := &pushEventProcessor{services: svcs}
-
-	payload := makePushPayload(t, after, fullName, ref, org, 123)
-	events, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider:       integrationName,
-		ProviderSource: "push",
-		Payload:        payload,
-	})
-
-	require.NoError(t, err)
-	require.Len(t, events, 1)
-	ev := events[0]
-	assert.Equal(t, ne.KindChangeEventObserved, ev.Kind)
-	assert.NotEmpty(t, ev.ProviderSubjectRef)
-	assert.NotEmpty(t, ev.ProviderEventRef)
-	assert.NotEmpty(t, ev.Attributes)
-	assert.Equal(t, after, ev.ProviderEventRef)
-	assert.Equal(t, fmt.Sprintf("github:%s:%s", fullName, after), ev.ProviderSubjectRef)
-}
-
-func TestPushProcessor_BranchDeletion(t *testing.T) {
-	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: "org", installationID: "123"},
-	}
-	proc := &pushEventProcessor{services: svcs}
-
-	payload := makePushPayload(t, zeroSHA, "org/repo", "refs/heads/main", "org", 123)
-	events, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider:       integrationName,
-		ProviderSource: "push",
-		Payload:        payload,
-	})
-
-	require.NoError(t, err)
-	assert.Nil(t, events)
-}
-
-func TestPushProcessor_InvalidJSON(t *testing.T) {
-	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: "org", installationID: "123"},
-	}
-	proc := &pushEventProcessor{services: svcs}
-
-	_, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider:       integrationName,
-		ProviderSource: "push",
-		Payload:        []byte(`{invalid json`),
-	})
-
-	require.Error(t, err)
-}
-
-// --- PR event processor tests ---
-
-func makePRPayload(t *testing.T, prNum int, fullName, title, org string, installationID int64) []byte {
-	t.Helper()
-	ts := github.Timestamp{Time: time.Now()}
-	event := &github.PullRequestEvent{
-		PullRequest: &github.PullRequest{
-			Number:    github.Ptr(prNum),
-			Title:     github.Ptr(title),
-			CreatedAt: &ts,
-		},
-		Repo: &github.Repository{
-			FullName: github.Ptr(fullName),
-			Owner:    &github.User{Login: github.Ptr(org)},
-		},
-		Installation: &github.Installation{ID: github.Ptr(installationID)},
-	}
-	b, err := json.Marshal(event)
-	require.NoError(t, err)
-	return b
-}
-
-func TestPRProcessor_ValidPayload(t *testing.T) {
-	const (
-		org      = "myorg"
-		fullName = "myorg/myrepo"
-		prNum    = 42
-		title    = "My PR"
-	)
-
-	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: org, installationID: "123"},
-	}
-	proc := &pullRequestEventProcessor{services: svcs}
-
-	payload := makePRPayload(t, prNum, fullName, title, org, 123)
-	events, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider:       integrationName,
-		ProviderSource: "pull_request",
-		Payload:        payload,
-	})
-
-	require.NoError(t, err)
-	require.Len(t, events, 1)
-	ev := events[0]
-	assert.Equal(t, ne.KindChangeEventObserved, ev.Kind)
-	assert.NotEmpty(t, ev.ProviderSubjectRef)
-	assert.NotEmpty(t, ev.ProviderEventRef)
-	assert.NotEmpty(t, ev.Attributes)
-	assert.Equal(t, fmt.Sprintf("pr:%d", prNum), ev.ProviderEventRef)
-	assert.Equal(t, fmt.Sprintf("github:%s:pr:%d", fullName, prNum), ev.ProviderSubjectRef)
-}
-
-func TestPRProcessor_InvalidJSON(t *testing.T) {
-	svcs := &rez.Services{
-		Integrations: &mockIntegrationsService{org: "org", installationID: "123"},
-	}
-	proc := &pullRequestEventProcessor{services: svcs}
-
-	_, err := proc.Process(context.Background(), rez.ProviderEvent{
-		Provider:       integrationName,
-		ProviderSource: "pull_request",
-		Payload:        []byte(`{invalid json`),
-	})
-
-	require.Error(t, err)
-}
-
-// --- Webhook handler tests ---
-
-func makeWebhookRequest(t *testing.T, body, secret, event, delivery string) *http.Request {
-	t.Helper()
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(body))
-	req.Header.Set("X-GitHub-Event", event)
-	req.Header.Set("X-GitHub-Delivery", delivery)
-	if secret != "" {
-		mac := hmac.New(sha256.New, []byte(secret))
-		mac.Write([]byte(body))
-		req.Header.Set("X-Hub-Signature-256", "sha256="+hex.EncodeToString(mac.Sum(nil)))
-	}
-	return req
-}
-
-func TestWebhookHandler_ValidSignature(t *testing.T) {
-	const secret = "test-secret"
-	provEvs := mocks.NewMockProviderEventService(t)
-	provEvs.On("Ingest", mock.Anything, mock.Anything).Return((*rez.ProviderEventIngestResult)(nil), nil).Once()
-
-	h := newWebhookHandler(secret, &rez.Services{ProviderEvents: provEvs})
-	req := makeWebhookRequest(t, `{"action":"push"}`, secret, "push", "delivery-1")
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusOK, rec.Code)
-}
-
-func TestWebhookHandler_InvalidSignature(t *testing.T) {
-	const secret = "test-secret"
-	provEvs := mocks.NewMockProviderEventService(t)
-
-	h := newWebhookHandler(secret, &rez.Services{ProviderEvents: provEvs})
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(`{"action":"push"}`))
-	req.Header.Set("X-GitHub-Event", "push")
-	req.Header.Set("X-Hub-Signature-256", "sha256="+strings.Repeat("0", 64))
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusUnauthorized, rec.Code)
-}
-
-func TestWebhookHandler_EmptyBody(t *testing.T) {
-	provEvs := mocks.NewMockProviderEventService(t)
-
-	h := newWebhookHandler("", &rez.Services{ProviderEvents: provEvs})
-	req := httptest.NewRequest(http.MethodPost, "/", strings.NewReader(""))
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusBadRequest, rec.Code)
-}
-
-func TestWebhookHandler_CallsIngest(t *testing.T) {
-	const (
-		body     = `{"action":"push"}`
-		event    = "push"
-		delivery = "delivery-abc"
-	)
-
-	provEvs := mocks.NewMockProviderEventService(t)
-	provEvs.On("Ingest", mock.Anything, mock.MatchedBy(func(ev rez.ProviderEvent) bool {
-		return ev.Provider == integrationName &&
-			ev.ProviderSource == event &&
-			ev.ProviderSubjectRef == "github:push:delivery-abc" &&
-			string(ev.Payload) == body &&
-			ev.ProviderDeliveryRef == delivery
-	})).Return((*rez.ProviderEventIngestResult)(nil), nil).Once()
-
-	h := newWebhookHandler("", &rez.Services{ProviderEvents: provEvs})
-	req := makeWebhookRequest(t, body, "", event, delivery)
-	rec := httptest.NewRecorder()
-	h.ServeHTTP(rec, req)
-
-	assert.Equal(t, http.StatusOK, rec.Code)
-}
-
-// --- IsAvailable tests ---
-
-func TestIsAvailable_Disabled(t *testing.T) {
-	i := &Integration{cfg: Config{Enabled: false}}
-	available, err := i.IsAvailable()
-	require.NoError(t, err)
-	assert.False(t, available)
-}
-
-func TestIsAvailable_Enabled(t *testing.T) {
-	i := &Integration{cfg: Config{
-		Enabled: true,
-		App: struct {
-			AppID         int64  `cfg:"app_id"`
-			ClientID      string `cfg:"client_id"`
-			ClientSecret  string `cfg:"client_secret"`
-			PrivateKeyPEM string `cfg:"private_key_pem"`
-		}{
-			AppID:         123,
-			ClientID:      "cid",
-			ClientSecret:  "cs",
-			PrivateKeyPEM: "pem",
-		},
-	}}
-	available, err := i.IsAvailable()
-	require.NoError(t, err)
-	assert.True(t, available)
-}
-*/

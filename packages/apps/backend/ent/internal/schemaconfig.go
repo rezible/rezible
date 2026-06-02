@@ -42,7 +42,7 @@ type SchemaConfig struct {
 	IncidentTimelineEventTopologyContext      string // IncidentTimelineEventTopologyContext table.
 	IncidentType                              string // IncidentType table.
 	Integration                               string // Integration table.
-	IntegrationOAuthState                     string // IntegrationOAuthState table.
+	IntegrationUserInstallState               string // IntegrationUserInstallState table.
 	KnowledgeEntity                           string // KnowledgeEntity table.
 	KnowledgeEntityAlias                      string // KnowledgeEntityAlias table.
 	KnowledgeEvidence                         string // KnowledgeEvidence table.

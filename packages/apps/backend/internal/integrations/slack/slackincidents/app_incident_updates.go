@@ -27,39 +27,25 @@ type incidentUpdateProcessor struct {
 	messages  rez.MessageService
 
 	inc    *ent.Incident
-	prefs  incidentPreferences
+	prefs  UserSettingsIncidents
 	client *slack.Client
 }
 
-func (h *messageHandler) newIncidentUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
-	intgs, lookupErr := h.integrations.ListConfigured(ctx, rez.ListIntegrationsParams{Providers: []string{integrationName}})
-	if lookupErr != nil {
-		if ent.IsNotFound(lookupErr) {
-			return nil, nil
-		}
-		return nil, fmt.Errorf("getting configured Integration: %w", lookupErr)
-	}
-	// TODO: handle multiple installations
-	if len(intgs) == 0 {
-		return nil, nil
-	}
-	ci, ok := intgs[0].(*ConfiguredIntegration)
-	if !ok {
-		return nil, fmt.Errorf("failed to cast to *ConfiguredIntegration")
-	}
-	inc, incErr := h.incidents.Get(ctx, incident.ID(incidentId))
+func (a *app) newUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
+	inc, incErr := a.incidents.Get(ctx, incident.ID(incidentId))
 	if incErr != nil {
 		return nil, fmt.Errorf("get incident: %w", incErr)
 	}
+	prefs := defaultIncidentPreferences
 	return &incidentUpdateProcessor{
 		inc:       inc,
 		logger:    slog.Default().With("service", "slack.incident_updates"),
-		appCfg:    h.appCfg,
-		db:        h.db,
-		incidents: h.incidents,
-		messages:  h.messages,
+		appCfg:    a.appCfg,
+		db:        a.db,
+		incidents: a.incidents,
+		messages:  a.messages,
 		client:    nil,
-		prefs:     ci.getIncidentPreferences(),
+		prefs:     prefs,
 	}, nil
 }
 

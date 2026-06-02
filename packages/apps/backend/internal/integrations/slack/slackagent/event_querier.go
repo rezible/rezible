@@ -9,20 +9,26 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/slack-go/slack"
 )
 
 func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
-	return newEventQuerier(i.makeConfiguredIntegration(intg)), nil
+	return newEventQuerier(i.makeInstalledIntegration(intg))
 }
 
 type eventQuerier struct {
-	ci     *ConfiguredIntegration
+	ii     *InstalledIntegration
+	cfg    *slackintegration.InstallationConfig
 	client *slack.Client
 }
 
-func newEventQuerier(ci *ConfiguredIntegration) *eventQuerier {
-	return &eventQuerier{ci: ci, client: slack.New(ci.accessToken())}
+func newEventQuerier(ii *InstalledIntegration) (*eventQuerier, error) {
+	cfg, cfgErr := slackintegration.DecodeInstallationConfig(ii.intg)
+	if cfgErr != nil {
+		return nil, cfgErr
+	}
+	return &eventQuerier{ii: ii, cfg: cfg, client: slack.New(cfg.AccessToken)}, nil
 }
 
 func (q *eventQuerier) Provider() string {
@@ -61,10 +67,14 @@ func (q *eventQuerier) makeUserObservedPayload(u slack.User) ([]byte, error) {
 }
 
 func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	var teamId string
+	if q.cfg.Team != nil {
+		teamId = q.cfg.Team.Id
+	}
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		slackUsers, getErr := q.client.GetUsersContext(ctx,
 			slack.GetUsersOptionPresence(false),
-			slack.GetUsersOptionTeamID(q.ci.teamId()))
+			slack.GetUsersOptionTeamID(teamId))
 		if getErr != nil {
 			yield(nil, fmt.Errorf("slack get users err: %w", getErr))
 			return
@@ -87,7 +97,7 @@ func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string
 				Event: rez.ProviderEvent{
 					Provider:           integrationName,
 					ProviderSource:     sourceUsers,
-					ProviderEventRef:   fmt.Sprintf("%s:%s:%s", q.ci.teamId(), u.ID, u.Updated),
+					ProviderEventRef:   fmt.Sprintf("%s:%s:%s", teamId, u.ID, u.Updated),
 					ProviderSubjectRef: fmt.Sprintf("slack:%s", u.ID),
 					ReceivedAt:         time.Now(),
 					Payload:            payload,

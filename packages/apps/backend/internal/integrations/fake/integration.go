@@ -1,12 +1,14 @@
 package fakeprovider
 
 import (
-	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
 
-const integrationName = "fake"
+const (
+	integrationName = "fake"
+	providerName    = "fake"
+)
 
 type Integration struct {
 	available bool
@@ -22,6 +24,14 @@ func (i *Integration) Name() string {
 	return integrationName
 }
 
+func (i *Integration) Provider() string {
+	return providerName
+}
+
+func (i *Integration) MaxInstalls() *int {
+	return nil
+}
+
 func (i *Integration) IsAvailable() (bool, error) {
 	return i.available, nil
 }
@@ -32,55 +42,35 @@ func (i *Integration) SupportedDataKinds() []string {
 	return supportedDataKinds
 }
 
-func (i *Integration) OAuthConfigRequired() bool {
+func (i *Integration) OAuthInstallRequired() bool {
 	return false
 }
 
-func (i *Integration) ValidateUserConfig(cfg map[string]any) error {
+func (i *Integration) ValidateInstallationConfig(m map[string]any) (externalRef string, validationErr error) {
+	return "", nil
+}
+
+func (i *Integration) ValidateUserSettings(settings map[string]any) error {
 	return nil
 }
 
-func (i *Integration) ValidateUserPreferences(prefs map[string]any) error {
-	return nil
+func (i *Integration) GetInstalledIntegration(intg *ent.Integration) rez.InstalledIntegration {
+	return &InstalledIntegration{intg: intg}
 }
 
-func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.ConfiguredIntegration {
-	return &ConfiguredIntegration{intg: intg}
-}
-
-type ConfiguredIntegration struct {
+type InstalledIntegration struct {
 	intg *ent.Integration
 }
 
-func (ci *ConfiguredIntegration) ID() uuid.UUID {
-	return ci.intg.ID
+func (ii *InstalledIntegration) Integration() *ent.Integration {
+	return ii.intg
 }
 
-func (ci *ConfiguredIntegration) Integration() *ent.Integration {
-	return ci.intg
+func (ii *InstalledIntegration) SanitizedInstallationConfig() map[string]any {
+	return ii.intg.InstallationConfig
 }
 
-func (ci *ConfiguredIntegration) Provider() string {
-	return ci.intg.Provider
-}
-
-func (ci *ConfiguredIntegration) DisplayName() string {
-	return ci.intg.DisplayName
-}
-
-func (ci *ConfiguredIntegration) ExternalRef() string {
-	return ci.intg.ExternalRef
-}
-
-func (ci *ConfiguredIntegration) GetSanitizedConfig() map[string]any {
-	return ci.intg.Config
-}
-
-func (ci *ConfiguredIntegration) GetUserPreferences() map[string]any {
-	return ci.intg.UserPreferences
-}
-
-func (ci *ConfiguredIntegration) GetAvailableDataKinds() map[string]bool {
+func (ii *InstalledIntegration) GetCapabilities() map[string]bool {
 	return map[string]bool{}
 }
 

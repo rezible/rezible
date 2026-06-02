@@ -2,88 +2,98 @@ package slackintegration
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"time"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
+	"golang.org/x/oauth2"
 )
 
 type (
-	SlashCommandHandler        func(context.Context, *slack.SlashCommand) (*slack.Blocks, error)
-	EventsApiHandler           func(context.Context, *slackevents.EventsAPIEvent) error
-	InteractionCallbackHandler func(context.Context, *slack.InteractionCallback) error
+	SlashCommandHandler        func(context.Context, *ent.Integration, *slack.SlashCommand) (*slack.Blocks, error)
+	EventsApiHandler           func(context.Context, *ent.Integration, *slackevents.EventsAPIEvent) error
+	InteractionCallbackHandler func(context.Context, *ent.Integration, *slack.InteractionCallback) error
 )
 
 type Service struct {
 	integrationName string
+	cfg             rez.IntegrationsConfigSlackApp
 
-	eventHandler *EventHandler
-
+	msgs  rez.MessageService
 	intgs rez.IntegrationService
 	users rez.UserService
 
+	eventHandler *EventHandler
+	oauthHandler *oauthHandler
+
 	webhookHandler     http.Handler
-	socketModeListener *SocketModeListener
+	socketModeListener *socketModeListener
 
 	slashCommandHandlers        map[string]SlashCommandHandler
 	eventsApiHandler            EventsApiHandler
 	interactionCallbackHandlers map[slack.InteractionType]InteractionCallbackHandler
 }
 
-func NewService(name string, msgs rez.MessageService) (*Service, error) {
+type NewServiceParams struct {
+	AppConfig            rez.IntegrationsConfigSlackApp
+	IntegrationName      string
+	MessageService       rez.MessageService
+	ProviderEventService rez.ProviderEventService
+	OAuthScopes          []string
+
+	EventsApiHandler            EventsApiHandler
+	SlashCommandHandlers        map[string]SlashCommandHandler
+	InteractionCallbackHandlers map[slack.InteractionType]InteractionCallbackHandler
+}
+
+func NewService(p NewServiceParams) (*Service, error) {
+	cfg := p.AppConfig
 	s := &Service{
-		integrationName:             name,
+		integrationName:             p.IntegrationName,
+		cfg:                         cfg,
 		webhookHandler:              http.NotFoundHandler(),
-		slashCommandHandlers:        make(map[string]SlashCommandHandler),
-		interactionCallbackHandlers: make(map[slack.InteractionType]InteractionCallbackHandler),
-		eventsApiHandler: func(ctx context.Context, event *slackevents.EventsAPIEvent) error {
-			return nil
-		},
+		oauthHandler:                NewOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, p.OAuthScopes),
+		eventsApiHandler:            p.EventsApiHandler,
+		slashCommandHandlers:        p.SlashCommandHandlers,
+		interactionCallbackHandlers: p.InteractionCallbackHandlers,
 	}
 
-	evth, evthErr := MakeEventHandler(s, msgs)
-	if evthErr != nil {
-		return nil, fmt.Errorf("failed to make event handler: %w", evthErr)
+	if !cfg.Enabled {
+		return s, nil
 	}
-	s.eventHandler = evth
+
+	s.eventHandler = &EventHandler{
+		integrationName:           p.IntegrationName,
+		messages:                  p.MessageService,
+		respondEventTypes:         mapset.NewSet[slackevents.EventsAPIType](),
+		provEvents:                p.ProviderEventService,
+		publishProviderEventTypes: mapset.NewSet[slackevents.EventsAPIType](),
+	}
+
+	if p.AppConfig.EnableSocketMode {
+		s.socketModeListener = makeSocketModeListener(s.createSingleTenantClient(), s.eventHandler)
+	} else {
+		whSecret := p.AppConfig.WebhookSigningSecret
+		if whSecret == "" {
+			return nil, fmt.Errorf("webhook signing secret not set")
+		}
+		s.webhookHandler = makeWebhookHandler(whSecret, s.eventHandler)
+	}
 
 	return s, nil
 }
 
-func (s *Service) AddSlashCommandHandler(cmd string, handler SlashCommandHandler) {
-	s.slashCommandHandlers[cmd] = handler
-}
-
-func (s *Service) AddInteractionCallbackHandler(t slack.InteractionType, handler InteractionCallbackHandler) {
-	s.interactionCallbackHandlers[t] = handler
-}
-
-func (s *Service) SetEventsApiHandler(handler EventsApiHandler) {
-	s.eventsApiHandler = handler
-}
-
-func (s *Service) SetupWebhooks(secret string) error {
-	wh, whErr := MakeWebhookHandler(secret, s.eventHandler)
-	if whErr != nil {
-		return fmt.Errorf("webhook listener: %w", whErr)
-	}
-	s.webhookHandler = wh
-	return nil
-}
-
-func (s *Service) SetupSocketMode(client *slack.Client) error {
-	sml, smlErr := MakeSocketModeListener(client, s.eventHandler)
-	if smlErr != nil {
-		return fmt.Errorf("socketmode listener: %w", smlErr)
-	}
-	s.socketModeListener = sml
-	return nil
+func (s *Service) createSingleTenantClient() *slack.Client {
+	return slack.New(s.cfg.BotToken, slack.OptionAppLevelToken(s.cfg.AppToken))
 }
 
 func (s *Service) WebhookHandler() http.Handler {
@@ -104,90 +114,121 @@ func (s *Service) Shutdown(ctx context.Context) error {
 	return nil
 }
 
-// TODO: look up by some stable install id?
-
-func (s *Service) LookupIntegration(ctx context.Context, ids IntegrationInstallIds) (rez.ConfiguredIntegration, error) {
-	params := rez.ListIntegrationsParams{
-		Providers:    []string{s.integrationName},
-		ConfigValues: ids.configValues(),
-	}
-	if ids.TeamId != "" {
-		params.ExternalRefs = []string{ids.TeamId}
-	}
-	res, listErr := s.intgs.ListConfigured(execution.NewSystemContext(ctx), params)
-	if listErr != nil {
-		return nil, fmt.Errorf("listing configured integrations: %w", listErr)
-	}
-	return res[0], nil
+func (s *Service) registerMessageHandlers() error {
+	return errors.Join(
+		s.msgs.AddEventHandlers(
+			rez.NewEventHandler(s.integrationName+".slash_command", s.handleSlashCommand),
+			rez.NewEventHandler(s.integrationName+".interaction_callback", s.handleInteractionCallback),
+			rez.NewEventHandler(s.integrationName+".events_api_callback", s.handleEventsApiCallbackEvent),
+		),
+	)
 }
 
-func (s *Service) createUserContext(ctx context.Context, ids IntegrationInstallIds, userChatId string) (context.Context, error) {
-	ci, intgsErr := s.LookupIntegration(ctx, ids)
-	if intgsErr != nil {
-		return nil, fmt.Errorf("lookup integration: %w", intgsErr)
-	}
-	ctx = execution.NewTenantContext(ctx, ci.Integration().TenantID)
-	usr, usrErr := s.users.Get(ctx, user.ChatID(userChatId))
-	if usrErr != nil {
-		slog.Error("failed to lookup chat user", "error", usrErr, "chat_id", userChatId)
-		return nil, fmt.Errorf("lookup user: %w", usrErr)
-	}
-	return execution.NewUserAuthContext(ctx, *usr, time.Time{}), nil
+func (s *Service) OAuth2Config() *oauth2.Config {
+	return s.oauthHandler.OAuth2Config()
 }
 
-func (s *Service) handleEventsApiEvent(ctx context.Context, ev *slackevents.EventsAPIEvent) error {
-	ids := IntegrationInstallIds{
-		TeamId:       ev.TeamID,
-		EnterpriseId: ev.EnterpriseID,
+func (s *Service) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
+	return s.oauthHandler.ExtractInstallationTargetFromToken(t)
+}
+
+func (s *Service) createInstallationContext(ctx context.Context, ids IntegrationInstallIds) (*ent.Integration, context.Context, error) {
+	intg, lookupErr := s.intgs.LookupByRef(execution.NewSystemContext(ctx), s.integrationName, ids.asRef())
+	if lookupErr != nil {
+		return nil, ctx, fmt.Errorf("listing configured integrations: %w", lookupErr)
 	}
-	intg, intgsErr := s.LookupIntegration(ctx, ids)
+	ctx = execution.NewTenantContext(ctx, intg.TenantID)
+	return intg, ctx, nil
+}
+
+func (s *Service) handleEventsApiCallbackEvent(baseCtx context.Context, ev *handleEventsApiCallbackEvent) error {
+	if s.integrationName != ev.integrationName {
+		return nil
+	}
+	cb, parseErr := slackevents.ParseEvent(ev.Data, slackevents.OptionNoVerifyToken())
+	if parseErr != nil {
+		return fmt.Errorf("parse event: %w", parseErr)
+	}
+	installIds := IntegrationInstallIds{TeamId: cb.TeamID, EnterpriseId: cb.EnterpriseID}
+	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
 	if intgsErr != nil {
 		return fmt.Errorf("lookup integration: %w", intgsErr)
 	}
-	ctx = execution.NewTenantContext(ctx, intg.Integration().TenantID)
-
-	if err := s.eventsApiHandler(ctx, ev); err != nil {
+	if err := s.eventsApiHandler(ctx, intg, &cb); err != nil {
 		return fmt.Errorf("handle events api event: %w", err)
 	}
 	return nil
 }
 
-func (s *Service) handleInteractionCallback(ctx context.Context, ic *slack.InteractionCallback) error {
-	ids := IntegrationInstallIds{
-		TeamId:       ic.Team.ID,
-		EnterpriseId: ic.Enterprise.ID,
-	}
-	ctx, usrErr := s.createUserContext(ctx, ids, ic.User.ID)
+func (s *Service) createUserContext(ctx context.Context, userId string) (context.Context, error) {
+	usr, usrErr := s.users.Get(ctx, user.ChatID(userId))
 	if usrErr != nil {
-		return fmt.Errorf("failed to lookup user: %w", usrErr)
+		slog.ErrorContext(ctx, "failed to lookup chat user",
+			"error", usrErr,
+			"chat_id", userId,
+		)
+		return nil, fmt.Errorf("lookup user: %w", usrErr)
 	}
-
-	if handler, ok := s.interactionCallbackHandlers[ic.Type]; ok {
-		return handler(ctx, ic)
-	}
-	// log unhandled
-	slog.Warn("unknown interaction type")
-	return nil
+	return execution.NewUserAuthContext(ctx, *usr, time.Time{}), nil
 }
 
-func (s *Service) handleSlashCommand(baseCtx context.Context, cmd *slack.SlashCommand) error {
-	ids := IntegrationInstallIds{
-		TeamId:       cmd.TeamID,
-		EnterpriseId: cmd.EnterpriseID,
-	}
-	ctx, usrErr := s.createUserContext(baseCtx, ids, cmd.UserID)
-	if usrErr != nil {
-		return fmt.Errorf("failed to lookup user: %w", usrErr)
+func (s *Service) handleInteractionCallback(baseCtx context.Context, ev *interactionCallbackEvent) error {
+	if s.integrationName != ev.integrationName {
+		return nil
 	}
 
-	var response *slack.Blocks
-	var handlerErr error
-	handler, hasHandler := s.slashCommandHandlers[cmd.Command]
-	if hasHandler {
-		response, handlerErr = handler(ctx, cmd)
-	} else {
-		slog.Debug("unknown slack command, ignoring", "command", cmd.Command)
+	var ic slack.InteractionCallback
+	if err := ic.UnmarshalJSON(ev.Data); err != nil {
+		return fmt.Errorf("invalid interaction payload: %w", err)
 	}
+
+	handler, ok := s.interactionCallbackHandlers[ic.Type]
+	if !ok {
+		// log unhandled
+		slog.Warn("unhandled interaction type")
+		return nil
+	}
+
+	installIds := IntegrationInstallIds{TeamId: ic.Team.ID, EnterpriseId: ic.Enterprise.ID}
+	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
+	if intgsErr != nil {
+		return fmt.Errorf("lookup integration: %w", intgsErr)
+	}
+
+	var userErr error
+	ctx, userErr = s.createUserContext(ctx, ic.User.ID)
+	if userErr != nil {
+		return fmt.Errorf("lookup user: %w", userErr)
+	}
+
+	return handler(ctx, intg, &ic)
+}
+
+func (s *Service) handleSlashCommand(baseCtx context.Context, ev *slashCommandEvent) error {
+	if s.integrationName != ev.integrationName {
+		return nil
+	}
+
+	cmd := ev.Command
+	handler, hasHandler := s.slashCommandHandlers[cmd.Command]
+	if !hasHandler {
+		slog.Debug("unknown slack command, ignoring", "command", cmd.Command)
+		return nil
+	}
+
+	installIds := IntegrationInstallIds{TeamId: cmd.TeamID, EnterpriseId: cmd.EnterpriseID}
+	intg, ctx, intgsErr := s.createInstallationContext(baseCtx, installIds)
+	if intgsErr != nil {
+		return fmt.Errorf("lookup integration: %w", intgsErr)
+	}
+
+	var userErr error
+	ctx, userErr = s.createUserContext(ctx, cmd.UserID)
+	if userErr != nil {
+		return fmt.Errorf("lookup user: %w", userErr)
+	}
+
+	response, handlerErr := handler(ctx, intg, &cmd)
 	if handlerErr != nil {
 		return fmt.Errorf("handling command: %w", handlerErr)
 	}
@@ -197,56 +238,5 @@ func (s *Service) handleSlashCommand(baseCtx context.Context, cmd *slack.SlashCo
 		//	return fmt.Errorf("failed to post ephemeral message: %w", msgErr)
 		//}
 	}
-	return nil
-}
-
-func (s *Service) GetClient(ctx context.Context) *slack.Client {
-	return nil
-}
-
-func (s *Service) postMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
-	_, msgTs, msgErr := s.GetClient(ctx).PostMessageContext(ctx, channelId, msgOpts...)
-	return msgTs, msgErr
-}
-
-func (s *Service) postEphemeralMessage(ctx context.Context, channelId, userId string, msgOpts ...slack.MsgOption) (string, error) {
-	return s.GetClient(ctx).PostEphemeralContext(ctx, channelId, userId, msgOpts...)
-}
-
-func (s *Service) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) (string, error) {
-	blocks := ConvertContentToBlocks("", content)
-	return s.postMessage(ctx, channelId, slack.MsgOptionBlocks(blocks...))
-}
-
-func (s *Service) SendTextMessage(ctx context.Context, channelId string, text string) (string, error) {
-	return s.postMessage(ctx, channelId, slack.MsgOptionText(text, false))
-}
-
-func (s *Service) SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error) {
-	return s.postMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
-}
-
-func (s *Service) OpenModalView(ctx context.Context, triggerId string, viewReq slack.ModalViewRequest) error {
-	resp, respErr := s.GetClient(ctx).OpenViewContext(ctx, triggerId, viewReq)
-	if respErr != nil {
-		LogSlackViewErrorResponse(slog.Default(), respErr, resp)
-		return respErr
-	}
-	return nil
-}
-
-func (s *Service) OpenOrUpdateModal(ctx context.Context, ic *slack.InteractionCallback, view *slack.ModalViewRequest) error {
-	var viewResp *slack.ViewResponse
-	var respErr error
-	if ic.View.State == nil {
-		viewResp, respErr = s.GetClient(ctx).OpenViewContext(ctx, ic.TriggerID, *view)
-	} else {
-		viewResp, respErr = s.GetClient(ctx).UpdateViewContext(ctx, *view, "", ic.Hash, ic.View.ID)
-	}
-	if respErr != nil {
-		LogSlackViewErrorResponse(slog.Default(), respErr, viewResp)
-		return respErr
-	}
-
 	return nil
 }

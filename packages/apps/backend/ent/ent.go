@@ -38,7 +38,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
-	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/knowledgeevidence"
@@ -162,7 +162,7 @@ func checkColumn(t, c string) error {
 			incidenttimelineeventtopologycontext.Table:    incidenttimelineeventtopologycontext.ValidColumn,
 			incidenttype.Table:                            incidenttype.ValidColumn,
 			integration.Table:                             integration.ValidColumn,
-			integrationoauthstate.Table:                   integrationoauthstate.ValidColumn,
+			integrationuserinstallstate.Table:             integrationuserinstallstate.ValidColumn,
 			knowledgeentity.Table:                         knowledgeentity.ValidColumn,
 			knowledgeentityalias.Table:                    knowledgeentityalias.ValidColumn,
 			knowledgeevidence.Table:                       knowledgeevidence.ValidColumn,

@@ -95,6 +95,7 @@ var provideIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
 		return slackagent.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.UserService](i),
@@ -106,11 +107,13 @@ var provideIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
 		return slackincidents.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.EventAnnotationsService](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.ProviderEventService](i),
 		)
 	}),
 	do.Lazy(func(i do.Injector) (*fakeprovider.Integration, error) {

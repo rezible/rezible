@@ -202,7 +202,7 @@ var ListIncidentTimelineEvents = huma.Operation{
 }
 
 type ListIncidentTimelineEventsRequest ListIdRequest
-type ListIncidentTimelineEventsResponse PaginatedResponse[IncidentTimelineEvent]
+type ListIncidentTimelineEventsResponse ListResponse[IncidentTimelineEvent]
 
 var CreateIncidentTimelineEvent = huma.Operation{
 	OperationID: "create-incident-timeline-event",

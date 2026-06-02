@@ -64,8 +64,8 @@ type Tx struct {
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
 	Integration *IntegrationClient
-	// IntegrationOAuthState is the client for interacting with the IntegrationOAuthState builders.
-	IntegrationOAuthState *IntegrationOAuthStateClient
+	// IntegrationUserInstallState is the client for interacting with the IntegrationUserInstallState builders.
+	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
 	KnowledgeEntity *KnowledgeEntityClient
 	// KnowledgeEntityAlias is the client for interacting with the KnowledgeEntityAlias builders.
@@ -297,7 +297,7 @@ func (tx *Tx) init() {
 	tx.IncidentTimelineEventTopologyContext = NewIncidentTimelineEventTopologyContextClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.Integration = NewIntegrationClient(tx.config)
-	tx.IntegrationOAuthState = NewIntegrationOAuthStateClient(tx.config)
+	tx.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
 	tx.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(tx.config)
 	tx.KnowledgeEvidence = NewKnowledgeEvidenceClient(tx.config)

@@ -18,7 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/ent/integrationoauthstate"
+	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallscheduleparticipant"
@@ -241,14 +241,14 @@ func (_c *UserCreate) AddEventAnnotations(v ...*EventAnnotation) *UserCreate {
 	return _c.AddEventAnnotationIDs(ids...)
 }
 
-// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationOAuthState entity by IDs.
+// AddIntegrationOauthStateIDs adds the "integration_oauth_states" edge to the IntegrationUserInstallState entity by IDs.
 func (_c *UserCreate) AddIntegrationOauthStateIDs(ids ...uuid.UUID) *UserCreate {
 	_c.mutation.AddIntegrationOauthStateIDs(ids...)
 	return _c
 }
 
-// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationOAuthState entity.
-func (_c *UserCreate) AddIntegrationOauthStates(v ...*IntegrationOAuthState) *UserCreate {
+// AddIntegrationOauthStates adds the "integration_oauth_states" edges to the IntegrationUserInstallState entity.
+func (_c *UserCreate) AddIntegrationOauthStates(v ...*IntegrationUserInstallState) *UserCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -696,10 +696,10 @@ func (_c *UserCreate) createSpec() (*User, *sqlgraph.CreateSpec) {
 			Columns: []string{user.IntegrationOauthStatesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(integrationoauthstate.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(integrationuserinstallstate.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.IntegrationOAuthState
+		edge.Schema = _c.schemaConfig.IntegrationUserInstallState
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

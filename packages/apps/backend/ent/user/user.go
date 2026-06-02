@@ -123,10 +123,10 @@ const (
 	// EventAnnotationsColumn is the table column denoting the event_annotations relation/edge.
 	EventAnnotationsColumn = "creator_id"
 	// IntegrationOauthStatesTable is the table that holds the integration_oauth_states relation/edge.
-	IntegrationOauthStatesTable = "integration_oauth_states"
-	// IntegrationOauthStatesInverseTable is the table name for the IntegrationOAuthState entity.
-	// It exists in this package in order to avoid circular dependency with the "integrationoauthstate" package.
-	IntegrationOauthStatesInverseTable = "integration_oauth_states"
+	IntegrationOauthStatesTable = "integration_user_install_states"
+	// IntegrationOauthStatesInverseTable is the table name for the IntegrationUserInstallState entity.
+	// It exists in this package in order to avoid circular dependency with the "integrationuserinstallstate" package.
+	IntegrationOauthStatesInverseTable = "integration_user_install_states"
 	// IntegrationOauthStatesColumn is the table column denoting the integration_oauth_states relation/edge.
 	IntegrationOauthStatesColumn = "user_id"
 	// IncidentsTable is the table that holds the incidents relation/edge. The primary key declared below.

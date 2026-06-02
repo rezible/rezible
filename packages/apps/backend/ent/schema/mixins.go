@@ -23,7 +23,11 @@ import (
 	"github.com/rezible/rezible/ent/schema/rules"
 )
 
-var schemaTypeJsonB = map[string]string{dialect.Postgres: "jsonb"}
+func postgresSchemaType(schemaType string) map[string]string {
+	return map[string]string{dialect.Postgres: schemaType}
+}
+
+var schemaTypeJsonB = postgresSchemaType("jsonb")
 
 type BaseMixin struct {
 	mixin.Schema

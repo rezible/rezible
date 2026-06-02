@@ -13,9 +13,7 @@ type integrationsHandler struct {
 }
 
 func newIntegrationsHandler(integrations rez.IntegrationService) *integrationsHandler {
-	return &integrationsHandler{
-		integrations: integrations,
-	}
+	return &integrationsHandler{integrations: integrations}
 }
 
 func (h *integrationsHandler) ListAvailableIntegrations(ctx context.Context, req *oapi.ListAvailableIntegrationsRequest) (*oapi.ListAvailableIntegrationsResponse, error) {
@@ -30,18 +28,18 @@ func (h *integrationsHandler) ListAvailableIntegrations(ctx context.Context, req
 	return &resp, nil
 }
 
-func (h *integrationsHandler) ListConfiguredIntegrations(ctx context.Context, req *oapi.ListConfiguredIntegrationsRequest) (*oapi.ListConfiguredIntegrationsResponse, error) {
-	var resp oapi.ListConfiguredIntegrationsResponse
+func (h *integrationsHandler) ListInstalledIntegrations(ctx context.Context, req *oapi.ListInstalledIntegrationsRequest) (*oapi.ListInstalledIntegrationsResponse, error) {
+	var resp oapi.ListInstalledIntegrationsResponse
 
 	params := rez.ListIntegrationsParams{}
-	results, listErr := h.integrations.ListConfigured(ctx, params)
+	results, listErr := h.integrations.ListInstalled(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "failed to list integrations", listErr)
 	}
 
-	resp.Body.Data = make([]oapi.ConfiguredIntegration, len(results))
-	for i, ci := range results {
-		resp.Body.Data[i] = oapi.ConfiguredIntegrationFromConfig(ci)
+	resp.Body.Data = make([]oapi.InstalledIntegration, len(results))
+	for i, intg := range results {
+		resp.Body.Data[i] = oapi.InstalledIntegrationFromRez(intg)
 	}
 	resp.Body.Pagination = oapi.ResponsePagination{
 		Total: len(results),
@@ -50,52 +48,52 @@ func (h *integrationsHandler) ListConfiguredIntegrations(ctx context.Context, re
 	return &resp, nil
 }
 
-func (h *integrationsHandler) GetConfiguredIntegration(ctx context.Context, req *oapi.GetConfiguredIntegrationRequest) (*oapi.GetConfiguredIntegrationResponse, error) {
-	var resp oapi.GetConfiguredIntegrationResponse
+func (h *integrationsHandler) GetInstalledIntegration(ctx context.Context, req *oapi.GetInstalledIntegrationRequest) (*oapi.GetInstalledIntegrationResponse, error) {
+	var resp oapi.GetInstalledIntegrationResponse
 
-	ci, getErr := h.integrations.GetConfigured(ctx, req.Id)
+	intg, getErr := h.integrations.GetInstalled(ctx, req.Id)
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "failed to get integration", getErr)
 	}
-	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
+	resp.Body.Data = oapi.InstalledIntegrationFromRez(intg)
 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) ConfigureIntegration(ctx context.Context, req *oapi.ConfigureIntegrationRequest) (*oapi.ConfigureIntegrationResponse, error) {
-	var resp oapi.ConfigureIntegrationResponse
+func (h *integrationsHandler) CreateInstalledIntegration(ctx context.Context, req *oapi.CreateInstalledIntegrationRequest) (*oapi.CreateInstalledIntegrationResponse, error) {
+	var resp oapi.CreateInstalledIntegrationResponse
 
 	attr := req.Body.Attributes
-	ci, setErr := h.integrations.Configure(ctx, rez.ConfigureIntegrationParams{
-		Provider:    req.Name,
-		DisplayName: attr.DisplayName,
-		ExternalRef: attr.ExternalRef,
-		Config:      attr.Config,
-	})
-	if setErr != nil {
-		return nil, oapi.Error(ctx, "failed to configure integration", setErr)
+	params := rez.InstallIntegrationParams{
+		DisplayName:        attr.DisplayName,
+		InstallationConfig: attr.Config,
+		UserSettings:       attr.Preferences,
 	}
-	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
+	intg, installErr := h.integrations.InstallNew(ctx, req.Name, params)
+	if installErr != nil {
+		return nil, oapi.Error(ctx, "failed to install integration", installErr)
+	}
+	resp.Body.Data = oapi.InstalledIntegrationFromRez(intg)
 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) UpdateConfiguredIntegrationPreferences(ctx context.Context, req *oapi.UpdateConfiguredIntegrationPreferencesRequest) (*oapi.UpdateConfiguredIntegrationPreferencesResponse, error) {
-	var resp oapi.UpdateConfiguredIntegrationPreferencesResponse
+func (h *integrationsHandler) UpdateInstalledIntegration(ctx context.Context, req *oapi.UpdateInstalledIntegrationRequest) (*oapi.UpdateInstalledIntegrationResponse, error) {
+	var resp oapi.UpdateInstalledIntegrationResponse
 
-	ci, setErr := h.integrations.UpdateConfiguredPreferences(ctx, req.Id, req.Body.Attributes.Preferences)
+	intg, setErr := h.integrations.UpdateInstalled(ctx, req.Id, req.Body.Attributes.Preferences)
 	if setErr != nil {
 		return nil, oapi.Error(ctx, "failed to configure integration", setErr)
 	}
-	resp.Body.Data = oapi.ConfiguredIntegrationFromConfig(ci)
+	resp.Body.Data = oapi.InstalledIntegrationFromRez(intg)
 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) DeleteConfiguredIntegration(ctx context.Context, req *oapi.DeleteConfiguredIntegrationRequest) (*oapi.DeleteConfiguredIntegrationResponse, error) {
-	var resp oapi.DeleteConfiguredIntegrationResponse
+func (h *integrationsHandler) DeleteInstalledIntegration(ctx context.Context, req *oapi.DeleteInstalledIntegrationRequest) (*oapi.DeleteInstalledIntegrationResponse, error) {
+	var resp oapi.DeleteInstalledIntegrationResponse
 
-	if delErr := h.integrations.DeleteConfigured(ctx, req.Id); delErr != nil {
+	if delErr := h.integrations.DeleteInstalled(ctx, req.Id); delErr != nil {
 		return nil, oapi.Error(ctx, "failed to delete integration", delErr)
 	}
 
@@ -105,27 +103,28 @@ func (h *integrationsHandler) DeleteConfiguredIntegration(ctx context.Context, r
 func (h *integrationsHandler) StartIntegrationOAuthFlow(ctx context.Context, req *oapi.StartIntegrationOAuthFlowRequest) (*oapi.StartIntegrationOAuthFlowResponse, error) {
 	var resp oapi.StartIntegrationOAuthFlowResponse
 
-	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name, req.Body.Attributes.CallbackPath)
+	startFlowUrl, flowErr := h.integrations.StartOAuth2Flow(ctx, req.Name)
 	if flowErr != nil {
-		return nil, oapi.Error(ctx, "failed to start flow", flowErr)
+		return nil, oapi.Error(ctx, "failed to start oauth2 flow", flowErr)
 	}
 	resp.Body.Data = oapi.IntegrationOAuthFlow{FlowUrl: startFlowUrl}
 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) SelectIntegrationOAuthFlow(ctx context.Context, req *oapi.SelectIntegrationOAuthFlowRequest) (*oapi.SelectIntegrationOAuthFlowResponse, error) {
-	var resp oapi.SelectIntegrationOAuthFlowResponse
+func (h *integrationsHandler) SelectIntegrationInstallTargets(ctx context.Context, req *oapi.SelectIntegrationInstallTargetsRequest) (*oapi.SelectIntegrationInstallTargetsResponse, error) {
+	var resp oapi.SelectIntegrationInstallTargetsResponse
 
 	attr := req.Body.Attributes
-	result, selectErr := h.integrations.SelectOAuth2Flow(ctx, req.Name, rez.SelectIntegrationOAuth2Params{
-		SelectionToken: attr.SelectionToken,
-		ExternalRefs:   attr.ExternalRefs,
-	})
-	if selectErr != nil {
-		return nil, oapi.Error(ctx, "failed to select integration", selectErr)
+	results, installErr := h.integrations.InstallFromInstallationTargets(ctx, req.Name, attr.SelectionToken, attr.ExternalRefs)
+	if installErr != nil {
+		return nil, oapi.Error(ctx, "failed to install selected integrations", installErr)
 	}
-	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromCore(result)
+
+	resp.Body.Data = make([]oapi.InstalledIntegration, len(results))
+	for i, intg := range results {
+		resp.Body.Data[i] = oapi.InstalledIntegrationFromRez(intg)
+	}
 
 	return &resp, nil
 }
@@ -147,7 +146,7 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 	if completeErr != nil {
 		return nil, oapi.Error(ctx, "failed to complete integration", completeErr)
 	}
-	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromCore(result)
+	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromRez(result)
 
 	return &resp, nil
 }

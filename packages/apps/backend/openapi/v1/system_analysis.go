@@ -168,7 +168,7 @@ var ListSystemAnalysisNodes = huma.Operation{
 }
 
 type ListSystemAnalysisNodesRequest ListIdRequest
-type ListSystemAnalysisNodesResponse PaginatedResponse[SystemAnalysisNode]
+type ListSystemAnalysisNodesResponse ListResponse[SystemAnalysisNode]
 
 var GetSystemAnalysisNode = huma.Operation{
 	OperationID: "get-system-analysis-node",
@@ -220,7 +220,7 @@ var ListSystemAnalysisEdges = huma.Operation{
 }
 
 type ListSystemAnalysisEdgesRequest ListIdRequest
-type ListSystemAnalysisEdgesResponse PaginatedResponse[SystemAnalysisEdge]
+type ListSystemAnalysisEdgesResponse ListResponse[SystemAnalysisEdge]
 
 var AddSystemAnalysisEdge = huma.Operation{
 	OperationID: "add-system-analysis-edge",

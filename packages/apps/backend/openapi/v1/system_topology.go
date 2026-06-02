@@ -244,7 +244,7 @@ type ListSystemTopologyEntitiesRequest struct {
 	ProviderSource string   `query:"providerSource" required:"false"`
 	SubjectKind    string   `query:"subjectKind" required:"false"`
 }
-type ListSystemTopologyEntitiesResponse PaginatedResponse[SystemTopologyEntity]
+type ListSystemTopologyEntitiesResponse ListResponse[SystemTopologyEntity]
 
 var GetSystemTopologyEntity = huma.Operation{
 	OperationID: "get-system-topology-entity",
@@ -290,7 +290,7 @@ type ListSystemTopologyRelationshipsRequest struct {
 	SourceEntityId uuid.UUID `query:"sourceEntityId" required:"false"`
 	TargetEntityId uuid.UUID `query:"targetEntityId" required:"false"`
 }
-type ListSystemTopologyRelationshipsResponse PaginatedResponse[SystemTopologyRelationship]
+type ListSystemTopologyRelationshipsResponse ListResponse[SystemTopologyRelationship]
 
 var CreateSystemTopologySnapshot = huma.Operation{
 	OperationID: "create-system-topology-snapshot",

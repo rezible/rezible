@@ -13,22 +13,21 @@ import (
 	"github.com/slack-go/slack/socketmode"
 )
 
-type SocketModeListener struct {
+type socketModeListener struct {
 	client       *socketmode.Client
 	eventHandler *EventHandler
 	stopFn       func() error
 }
 
-func MakeSocketModeListener(client *slack.Client, evth *EventHandler) (*SocketModeListener, error) {
-	l := &SocketModeListener{
+func makeSocketModeListener(client *slack.Client, evth *EventHandler) *socketModeListener {
+	return &socketModeListener{
 		eventHandler: evth,
 		client:       socketmode.New(client),
 		stopFn:       func() error { return nil },
 	}
-	return l, nil
 }
 
-func (l *SocketModeListener) Start(baseCtx context.Context) error {
+func (l *socketModeListener) Start(baseCtx context.Context) error {
 	cancelCtx, cancel := context.WithCancel(baseCtx)
 
 	p := pool.New().
@@ -53,12 +52,12 @@ func (l *SocketModeListener) Start(baseCtx context.Context) error {
 	return nil
 }
 
-func (l *SocketModeListener) Shutdown(ctx context.Context) error {
+func (l *socketModeListener) Shutdown(ctx context.Context) error {
 	slog.Info("Stopping Slack socket mode listener")
 	return l.stopFn()
 }
 
-func (l *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
+func (l *socketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	defer func() {
 		if panicErr := recover(); panicErr != nil {
 			slog.Error("panic while handling socket mode event", "panic", panicErr)
@@ -76,7 +75,7 @@ func (l *SocketModeListener) runEventConsumerLoop(ctx context.Context) error {
 	}
 }
 
-func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
+func (l *socketModeListener) onEvent(ctx context.Context, evt *socketmode.Event) {
 	if evt.Request == nil || evt.Type == socketmode.EventTypeHello {
 		slog.Debug("ignoring socketmode event", "type", string(evt.Type))
 		return
@@ -103,21 +102,21 @@ func (l *SocketModeListener) onEvent(ctx context.Context, evt *socketmode.Event)
 	}
 }
 
-func (l *SocketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) error {
+func (l *socketModeListener) onSlashCommand(ctx context.Context, e *socketmode.Event) error {
 	if cmd, ok := e.Data.(slack.SlashCommand); ok {
 		return l.eventHandler.OnSlashCommand(ctx, cmd)
 	}
 	return fmt.Errorf("invalid SlashCommand data")
 }
 
-func (l *SocketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) error {
+func (l *socketModeListener) onEventsApi(ctx context.Context, e *socketmode.Event) error {
 	if evt, ok := e.Data.(slackevents.EventsAPIEvent); ok {
 		if evt.Type == slackevents.CallbackEvent {
 			cb, cbOk := evt.Data.(*slackevents.EventsAPICallbackEvent)
 			if !cbOk {
 				return fmt.Errorf("failed to cast callback event")
 			}
-			return l.eventHandler.OnCallbackEvent(ctx, cb, e.Request.Payload)
+			return l.eventHandler.OnEventsApiCallback(ctx, cb, e.Request.Payload)
 		} else if evt.Type == slackevents.AppRateLimited {
 			return l.eventHandler.OnAppRateLimitedEvent(ctx)
 		}

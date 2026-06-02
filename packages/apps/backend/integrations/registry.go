@@ -5,8 +5,6 @@ import (
 	"log/slog"
 	"net/http"
 
-	"golang.org/x/oauth2"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
@@ -27,7 +25,7 @@ func NewPackageRegistry(tel rez.TelemetryService) *PackageRegistry {
 func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
 	available, configErr := pkg.IsAvailable()
 	if !available {
-		nameAttr := slog.Any("name", pkg.Name())
+		nameAttr := slog.Any("name", pkg.Provider())
 		if configErr != nil {
 			errAttr := slog.Any("config_error", configErr.Error())
 			slog.Warn("integration config error", nameAttr, errAttr)
@@ -36,9 +34,9 @@ func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
 		}
 		return configErr
 	}
-	r.logger.Debug("loaded integration", "name", pkg.Name())
+	r.logger.Debug("loaded integration", "name", pkg.Provider())
 	r.availablePackages = append(r.availablePackages, pkg)
-	r.nameMap[pkg.Name()] = pkg
+	r.nameMap[pkg.Provider()] = pkg
 
 	return nil
 }
@@ -62,30 +60,10 @@ func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {
 	whs := make(map[string]http.Handler)
 	for _, pkg := range r.availablePackages {
 		if whPkg, hasWebhook := pkg.(IntegrationWithWebhookHandler); hasWebhook {
-			whs[pkg.Name()] = whPkg.WebhookHandler()
+			whs[pkg.Provider()] = whPkg.WebhookHandler()
 		}
 	}
 	return whs
-}
-
-type IntegrationWithOAuth2Flow interface {
-	OAuth2Config() *oauth2.Config
-	ExtractIntegrationOptionsFromToken(*oauth2.Token) ([]rez.ExternalIntegrationOption, error)
-}
-
-func (r *PackageRegistry) GetOAuthIntegration(name string) (IntegrationWithOAuth2Flow, error) {
-	ip, ipErr := r.GetPackage(name)
-	if ipErr != nil {
-		return nil, fmt.Errorf("invalid integration %s: %w", name, ipErr)
-	}
-	oauth2Intg, ok := ip.(IntegrationWithOAuth2Flow)
-	if !ok {
-		return nil, fmt.Errorf("oauth2 flow not supported for integration %s", name)
-	}
-	if oauth2Intg.OAuth2Config() == nil {
-		return nil, fmt.Errorf("nil integration oauth2 configuration")
-	}
-	return oauth2Intg, nil
 }
 
 func (r *PackageRegistry) GetProviderEventProcessors() map[string]rez.ProviderEventProcessor {
@@ -95,7 +73,7 @@ func (r *PackageRegistry) GetProviderEventProcessors() map[string]rez.ProviderEv
 	els := make(map[string]rez.ProviderEventProcessor)
 	for _, pkg := range r.availablePackages {
 		if procPkg, ok := pkg.(IntegrationWithProviderEventProcessor); ok {
-			els[pkg.Name()] = procPkg.MakeProviderEventProcessor()
+			els[pkg.Provider()] = procPkg.MakeProviderEventProcessor()
 		}
 	}
 	return els
@@ -105,9 +83,9 @@ func (r *PackageRegistry) GetProviderEventQuerier(intg *ent.Integration) (rez.Pr
 	type IntegrationWithProviderEventQuerier interface {
 		MakeProviderEventQuerier(*ent.Integration) (rez.ProviderEventQuerier, error)
 	}
-	pkg, valid := r.nameMap[intg.Provider]
+	pkg, valid := r.nameMap[intg.IntegrationName]
 	if !valid {
-		return nil, fmt.Errorf("unknown integration package: %s", intg.Provider)
+		return nil, fmt.Errorf("unknown integration package: %s", intg.IntegrationName)
 	}
 	if querierPkg, ok := pkg.(IntegrationWithProviderEventQuerier); ok {
 		return querierPkg.MakeProviderEventQuerier(intg)

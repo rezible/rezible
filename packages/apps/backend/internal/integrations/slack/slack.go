@@ -11,20 +11,18 @@ import (
 	"github.com/slack-go/slack"
 )
 
+const ProviderName = "slack"
+
 type IntegrationInstallIds struct {
-	TeamId       string `json:"teamId"`
-	EnterpriseId string `json:"enterpriseId,omitempty"`
+	TeamId       string
+	EnterpriseId string
 }
 
-func (i IntegrationInstallIds) configValues() map[string]any {
-	m := map[string]any{}
-	if i.TeamId != "" {
-		m["team.id"] = i.TeamId
+func (i IntegrationInstallIds) asRef() string {
+	if i.EnterpriseId == "" {
+		return i.TeamId
 	}
-	if i.EnterpriseId != "" {
-		m["enterprise.id"] = i.EnterpriseId
-	}
-	return m
+	return fmt.Sprintf("%s:%s", i.EnterpriseId, i.TeamId)
 }
 
 func GetAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {

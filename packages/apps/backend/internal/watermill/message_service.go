@@ -95,9 +95,6 @@ func (ms *MessageService) Start(ctx context.Context) error {
 }
 
 func (ms *MessageService) Shutdown(ctx context.Context) error {
-	if !ms.router.IsRunning() || ms.router.IsClosed() {
-		return nil
-	}
 	return ms.router.Close()
 }
 
@@ -209,18 +206,18 @@ func (ms *MessageService) setupCommandProcessor(pub message.Publisher, sub messa
 	return nil
 }
 
-func (ms *MessageService) SendCommand(ctx context.Context, cmd any) error {
-	return ms.cmdBus.Send(ctx, cmd)
-}
-
 func (ms *MessageService) AddCommandHandlers(handlers ...cqrs.CommandHandler) error {
 	return ms.cmdProc.AddHandlers(handlers...)
 }
 
-func (ms *MessageService) PublishEvent(ctx context.Context, ev any) error {
-	return ms.eventBus.Publish(ctx, ev)
+func (ms *MessageService) SendCommand(ctx context.Context, cmd any) error {
+	return ms.cmdBus.Send(ctx, cmd)
 }
 
 func (ms *MessageService) AddEventHandlers(handlers ...cqrs.EventHandler) error {
 	return ms.eventProc.AddHandlers(handlers...)
+}
+
+func (ms *MessageService) PublishEvent(ctx context.Context, ev any) error {
+	return ms.eventBus.Publish(ctx, ev)
 }

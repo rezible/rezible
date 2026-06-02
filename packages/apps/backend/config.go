@@ -114,6 +114,10 @@ type (
 		Google IntegrationsConfigGoogle `cfg:"google" validate:"omitempty"`
 	}
 	IntegrationsConfigSlack struct {
+		Agent     IntegrationsConfigSlackApp `cfg:"agent" validate:"omitempty"`
+		Incidents IntegrationsConfigSlackApp `cfg:"incidents" validate:"omitempty"`
+	}
+	IntegrationsConfigSlackApp struct {
 		Enabled bool `cfg:"enabled"`
 
 		OAuthClientId     string `cfg:"oauth_client_id" validate:"required_if=Enabled true"`

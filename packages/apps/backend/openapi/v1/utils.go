@@ -82,7 +82,7 @@ type (
 			Data T `json:"data"`
 		}
 	}
-	PaginatedResponse[T any] struct {
+	ListResponse[T any] struct {
 		Body struct {
 			Data       []T                `json:"data" nullable:"false"`
 			Pagination ResponsePagination `json:"pagination"`
@@ -95,8 +95,8 @@ type (
 	}
 )
 
-func ConvertListResult[T any, R any](result ent.ListResult[R], fn func(*R) T) PaginatedResponse[T] {
-	var resp PaginatedResponse[T]
+func ConvertListResult[T any, R any](result ent.ListResult[R], fn func(*R) T) ListResponse[T] {
+	var resp ListResponse[T]
 	resp.Body.Data = make([]T, len(result.Data))
 	for i, r := range result.Data {
 		resp.Body.Data[i] = fn(r)

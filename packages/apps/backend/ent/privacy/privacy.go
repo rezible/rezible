@@ -723,28 +723,28 @@ func (f IntegrationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationMutation", m)
 }
 
-// The IntegrationOAuthStateQueryRuleFunc type is an adapter to allow the use of ordinary
+// The IntegrationUserInstallStateQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type IntegrationOAuthStateQueryRuleFunc func(context.Context, *ent.IntegrationOAuthStateQuery) error
+type IntegrationUserInstallStateQueryRuleFunc func(context.Context, *ent.IntegrationUserInstallStateQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f IntegrationOAuthStateQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.IntegrationOAuthStateQuery); ok {
+func (f IntegrationUserInstallStateQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationUserInstallStateQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IntegrationOAuthStateQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IntegrationUserInstallStateQuery", q)
 }
 
-// The IntegrationOAuthStateMutationRuleFunc type is an adapter to allow the use of ordinary
+// The IntegrationUserInstallStateMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type IntegrationOAuthStateMutationRuleFunc func(context.Context, *ent.IntegrationOAuthStateMutation) error
+type IntegrationUserInstallStateMutationRuleFunc func(context.Context, *ent.IntegrationUserInstallStateMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f IntegrationOAuthStateMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.IntegrationOAuthStateMutation); ok {
+func (f IntegrationUserInstallStateMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.IntegrationUserInstallStateMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationOAuthStateMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationUserInstallStateMutation", m)
 }
 
 // The KnowledgeEntityQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1722,7 +1722,7 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IntegrationQuery:
 		return q.Filter(), nil
-	case *ent.IntegrationOAuthStateQuery:
+	case *ent.IntegrationUserInstallStateQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeEntityQuery:
 		return q.Filter(), nil
@@ -1855,7 +1855,7 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.IntegrationMutation:
 		return m.Filter(), nil
-	case *ent.IntegrationOAuthStateMutation:
+	case *ent.IntegrationUserInstallStateMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeEntityMutation:
 		return m.Filter(), nil

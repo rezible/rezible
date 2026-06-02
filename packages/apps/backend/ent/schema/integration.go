@@ -1,10 +1,7 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
-	"entgo.io/ent/dialect"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
@@ -28,52 +25,59 @@ func (Integration) Mixin() []ent.Mixin {
 func (Integration) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
-		field.String("provider"),
+		field.String("integration_name"),
 		field.String("display_name"),
-		field.String("external_ref"),
-		field.JSON("config", map[string]any{}).
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
-		field.JSON("user_preferences", map[string]any{}).
-			Optional().Default(map[string]any{}).
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
+		field.String("external_provider_ref"),
+		field.JSON("installation_config", map[string]any{}).
+			SchemaType(schemaTypeJsonB),
+		field.JSON("user_settings", map[string]any{}).
+			SchemaType(schemaTypeJsonB),
 	}
 }
 
 func (Integration) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "provider"),
-		index.Fields("tenant_id", "provider", "external_ref").Unique(),
+		index.Fields("tenant_id", "integration_name"),
+		index.Fields("tenant_id", "integration_name", "external_provider_ref").Unique(),
 	}
 }
 
-type IntegrationOAuthState struct {
+type IntegrationUserInstallState struct {
 	ent.Schema
 }
 
-func (IntegrationOAuthState) Mixin() []ent.Mixin {
+func (IntegrationUserInstallState) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (IntegrationOAuthState) Fields() []ent.Field {
+func (IntegrationUserInstallState) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.UUID("user_id", uuid.New()).Default(uuid.New),
-		field.String("state"),
-		field.String("provider"),
-		field.JSON("selection_options", []map[string]any{}).
+		field.String("integration_name"),
+		field.String("oauth_state").Optional(),
+		field.String("install_target_selection_token").Optional(),
+		field.JSON("installation_targets", []map[string]any{}).
 			Optional().Default([]map[string]any{}).
-			SchemaType(map[string]string{dialect.Postgres: "jsonb"}),
-		field.Time("expires_at").Default(func() time.Time {
-			return time.Now().Add(time.Minute * 10)
-		}),
+			SchemaType(schemaTypeJsonB),
+		field.Time("expires_at"),
 	}
 }
 
-func (IntegrationOAuthState) Edges() []ent.Edge {
+func (IntegrationUserInstallState) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "user_id", "integration_name").Unique(),
+	}
+}
+
+func (IntegrationUserInstallState) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("user", User.Type).Unique().Required().Field("user_id"),
+		edge.To("user", User.Type).
+			Unique().
+			Required().
+			Field("user_id"),
 	}
 }
