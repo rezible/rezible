@@ -1,52 +1,53 @@
 package slackagent
 
 import (
+	"github.com/slack-go/slack"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/internal/integrations/slack"
-	goslack "github.com/slack-go/slack"
 )
 
 type annotationModalBuilder struct {
-	blocks         []goslack.Block
+	blocks         []slack.Block
 	currAnnotation *ent.EventAnnotation
 	metadata       *annotationModalMetadata
 }
 
 func newAnnotationModalBuilder(curr *ent.EventAnnotation, meta *annotationModalMetadata) *annotationModalBuilder {
 	return &annotationModalBuilder{
-		blocks:         []goslack.Block{},
+		blocks:         []slack.Block{},
 		currAnnotation: curr,
 		metadata:       meta,
 	}
 }
 
-func (b *annotationModalBuilder) build() goslack.Blocks {
+func (b *annotationModalBuilder) build() slack.Blocks {
 	b.makeMessageDetailsBlocks()
 	b.makeNotesInputBlocks()
-	return goslack.Blocks{BlockSet: b.blocks}
+	return slack.Blocks{BlockSet: b.blocks}
 }
 
 func (b *annotationModalBuilder) makeMessageDetailsBlocks() {
 	msgTime := b.metadata.MsgId.GetTimestamp().Unix()
-	messageUserDetails := goslack.NewRichTextSection(
-		goslack.NewRichTextSectionUserElement(b.metadata.UserId, nil),
-		goslack.NewRichTextSectionDateElement(msgTime, " - {date_short_pretty} at {time}", nil, nil))
-	messageContentsDetails := goslack.NewRichTextSection(
-		goslack.NewRichTextSectionTextElement(b.metadata.MsgText, &goslack.RichTextSectionTextStyle{Italic: true}))
+	messageUserDetails := slack.NewRichTextSection(
+		slack.NewRichTextSectionUserElement(b.metadata.UserId, nil),
+		slack.NewRichTextSectionDateElement(msgTime, " - {date_short_pretty} at {time}", nil, nil))
+	messageContentsDetails := slack.NewRichTextSection(
+		slack.NewRichTextSectionTextElement(b.metadata.MsgText, &slack.RichTextSectionTextStyle{Italic: true}))
 
-	b.blocks = append(b.blocks, goslack.NewRichTextBlock("anno_msg", messageUserDetails, messageContentsDetails))
+	b.blocks = append(b.blocks, slack.NewRichTextBlock("anno_msg", messageUserDetails, messageContentsDetails))
 }
 
 func (b *annotationModalBuilder) makeNotesInputBlocks() {
-	inputBlock := goslack.NewPlainTextInputBlockElement(nil, "notes_input_text")
+	inputBlock := slack.NewPlainTextInputBlockElement(nil, "notes_input_text")
 	//inputBlock.WithMinLength(1)
-	inputHint := slack.PlainTextBlock("You can edit this later")
+	inputHint := slackintegration.PlainTextBlock("You can edit this later")
 	if b.currAnnotation != nil {
 		inputBlock.WithInitialValue(b.currAnnotation.Notes)
 		inputHint = nil
 	}
 
 	b.blocks = append(b.blocks,
-		goslack.NewDividerBlock(),
-		goslack.NewInputBlock("notes_input", slack.PlainTextBlock("Notes"), inputHint, inputBlock))
+		slack.NewDividerBlock(),
+		slack.NewInputBlock("notes_input", slackintegration.PlainTextBlock("Notes"), inputHint, inputBlock))
 }

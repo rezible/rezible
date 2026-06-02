@@ -2,7 +2,8 @@ package slackincidents
 
 import (
 	"github.com/google/uuid"
-	goslack "github.com/slack-go/slack"
+
+	"github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -10,7 +11,7 @@ import (
 )
 
 type incidentModalViewBuilder struct {
-	blocks   []goslack.Block
+	blocks   []slack.Block
 	incident *ent.Incident
 	metadata *incidentDetailsModalViewMetadata
 	prefs    incidentPreferences
@@ -18,14 +19,14 @@ type incidentModalViewBuilder struct {
 
 func newIncidentModalViewBuilder(curr *ent.Incident, meta *incidentDetailsModalViewMetadata, prefs incidentPreferences) *incidentModalViewBuilder {
 	return &incidentModalViewBuilder{
-		blocks:   []goslack.Block{},
+		blocks:   []slack.Block{},
 		incident: curr,
 		metadata: meta,
 		prefs:    prefs,
 	}
 }
 
-func (b *incidentModalViewBuilder) build(im *rez.IncidentMetadata) goslack.Blocks {
+func (b *incidentModalViewBuilder) build(im *rez.IncidentMetadata) slack.Blocks {
 	b.makeTitleInput()
 	b.makeSeveritySelect(im.Severities)
 	if b.incident != nil {
@@ -40,17 +41,17 @@ func (b *incidentModalViewBuilder) build(im *rez.IncidentMetadata) goslack.Block
 	if len(im.Fields) > 0 {
 		b.makeCustomFieldSelect(im.Fields)
 	}
-	return goslack.Blocks{BlockSet: b.blocks}
+	return slack.Blocks{BlockSet: b.blocks}
 }
 
 var (
-	incidentModalTitleIds    = slack.BlockActionIds{Block: "title", Input: "title_input"}
-	incidentModalSeverityIds = slack.BlockActionIds{Block: "incident_severity", Input: "severity_select"}
-	incidentModalTypeIds     = slack.BlockActionIds{Block: "incident_type", Input: "type_select"}
-	incidentModalTagIds      = slack.BlockActionIds{Block: "incident_tags", Input: "tags_select"}
+	incidentModalTitleIds    = slackintegration.BlockActionIds{Block: "title", Input: "title_input"}
+	incidentModalSeverityIds = slackintegration.BlockActionIds{Block: "incident_severity", Input: "severity_select"}
+	incidentModalTypeIds     = slackintegration.BlockActionIds{Block: "incident_type", Input: "type_select"}
+	incidentModalTagIds      = slackintegration.BlockActionIds{Block: "incident_tags", Input: "tags_select"}
 )
 
-func setIncidentDetailsModalInputMutationFields(m *ent.IncidentMutation, state *goslack.ViewState) {
+func setIncidentDetailsModalInputMutationFields(m *ent.IncidentMutation, state *slack.ViewState) {
 	m.SetTitle(incidentModalTitleIds.GetStateValue(state))
 
 	if sevId, sevErr := uuid.Parse(incidentModalSeverityIds.GetStateSelectedValue(state)); sevErr == nil {
@@ -61,7 +62,7 @@ func setIncidentDetailsModalInputMutationFields(m *ent.IncidentMutation, state *
 		m.SetTypeID(typeId)
 	}
 
-	if slack.GetViewStateBlockAction(state, incidentModalTagIds) != nil {
+	if slackintegration.GetViewStateBlockAction(state, incidentModalTagIds) != nil {
 		m.ClearTagAssignments()
 		for _, selectedTagId := range incidentModalTagIds.GetStateSelectedValues(state) {
 			if tagId, tagErr := uuid.Parse(selectedTagId); tagErr == nil {
@@ -87,65 +88,65 @@ func setIncidentDetailsModalInputMutationFields(m *ent.IncidentMutation, state *
 	}
 }
 
-func incidentModalFieldOptionIds(optId string) slack.BlockActionIds {
-	return slack.BlockActionIds{Block: "incident_field_" + optId, Input: "incident_field_select_" + optId}
+func incidentModalFieldOptionIds(optId string) slackintegration.BlockActionIds {
+	return slackintegration.BlockActionIds{Block: "incident_field_" + optId, Input: "incident_field_select_" + optId}
 }
 
 func (b *incidentModalViewBuilder) makeTitleInput() {
 	// Title input
-	titleInput := goslack.NewPlainTextInputBlockElement(nil, incidentModalTitleIds.Input)
+	titleInput := slack.NewPlainTextInputBlockElement(nil, incidentModalTitleIds.Input)
 	if b.incident != nil {
 		titleInput.WithInitialValue(b.incident.Title)
 	}
 	b.blocks = append(b.blocks,
-		goslack.NewInputBlock(incidentModalTitleIds.Block, slack.PlainTextBlock("Title"), nil, titleInput))
+		slack.NewInputBlock(incidentModalTitleIds.Block, slackintegration.PlainTextBlock("Title"), nil, titleInput))
 }
 
 func (b *incidentModalViewBuilder) makeOpenMilestoneModalButton() {
-	milestoneButtonText := slack.PlainTextBlock("Update Status")
-	milestoneButton := goslack.NewButtonBlockElement(actionCallbackIdIncidentMilestoneModalButton, "milestone", milestoneButtonText)
-	b.blocks = append(b.blocks, goslack.NewActionBlock("incident_actions", milestoneButton))
+	milestoneButtonText := slackintegration.PlainTextBlock("Update Status")
+	milestoneButton := slack.NewButtonBlockElement(actionCallbackIdIncidentMilestoneModalButton, "milestone", milestoneButtonText)
+	b.blocks = append(b.blocks, slack.NewActionBlock("incident_actions", milestoneButton))
 }
 
 func (b *incidentModalViewBuilder) makeSeveritySelect(sevs ent.IncidentSeverities) {
-	options := make([]*goslack.OptionBlockObject, len(sevs))
+	options := make([]*slack.OptionBlockObject, len(sevs))
 	initialOptIdx := 0
 	for i, sev := range sevs {
-		options[i] = goslack.NewOptionBlockObject(sev.ID.String(), slack.PlainTextBlock(sev.Name), slack.PlainTextBlock(sev.Description))
+		options[i] = slack.NewOptionBlockObject(sev.ID.String(), slackintegration.PlainTextBlock(sev.Name), slackintegration.PlainTextBlock(sev.Description))
 		if b.incident != nil && b.incident.SeverityID == sev.ID {
 			initialOptIdx = i
 		}
 	}
-	severitySelect := goslack.NewOptionsSelectBlockElement(goslack.OptTypeStatic, nil,
+	severitySelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil,
 		incidentModalSeverityIds.Input, options...)
 	if len(options) > 0 {
 		severitySelect.WithInitialOption(options[initialOptIdx])
 	}
 	b.blocks = append(b.blocks,
-		goslack.NewInputBlock(incidentModalSeverityIds.Block, slack.PlainTextBlock("Severity"), nil, severitySelect))
+		slack.NewInputBlock(incidentModalSeverityIds.Block, slackintegration.PlainTextBlock("Severity"), nil, severitySelect))
 }
 
 func (b *incidentModalViewBuilder) makeTypeSelect(types ent.IncidentTypes) {
-	options := make([]*goslack.OptionBlockObject, len(types))
+	options := make([]*slack.OptionBlockObject, len(types))
 	initialOptIdx := 0
 	for i, t := range types {
-		options[i] = goslack.NewOptionBlockObject(t.ID.String(), slack.PlainTextBlock(t.Name), nil)
+		options[i] = slack.NewOptionBlockObject(t.ID.String(), slackintegration.PlainTextBlock(t.Name), nil)
 		if b.incident != nil && b.incident.TypeID == t.ID {
 			initialOptIdx = i
 		}
 	}
-	typeSelect := goslack.NewOptionsSelectBlockElement(goslack.OptTypeStatic, nil,
+	typeSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil,
 		incidentModalTypeIds.Input, options...)
 	if len(options) > 0 {
 		typeSelect.WithInitialOption(options[initialOptIdx])
 	}
 	b.blocks = append(b.blocks,
-		goslack.NewInputBlock(incidentModalTypeIds.Block, slack.PlainTextBlock("Incident Type"), nil, typeSelect))
+		slack.NewInputBlock(incidentModalTypeIds.Block, slackintegration.PlainTextBlock("Incident Type"), nil, typeSelect))
 }
 
 func (b *incidentModalViewBuilder) makeTagsSelect(tags ent.IncidentTags) {
-	options := make([]*goslack.OptionBlockObject, len(tags))
-	initialOptions := make([]*goslack.OptionBlockObject, 0, len(tags))
+	options := make([]*slack.OptionBlockObject, len(tags))
+	initialOptions := make([]*slack.OptionBlockObject, 0, len(tags))
 	selectedTagIds := map[uuid.UUID]struct{}{}
 	if b.incident != nil {
 		for _, tag := range b.incident.Edges.TagAssignments {
@@ -157,29 +158,29 @@ func (b *incidentModalViewBuilder) makeTagsSelect(tags ent.IncidentTags) {
 		if tag.Key != "" {
 			label = tag.Key + ": " + tag.Value
 		}
-		options[i] = goslack.NewOptionBlockObject(tag.ID.String(), slack.PlainTextBlock(label), nil)
+		options[i] = slack.NewOptionBlockObject(tag.ID.String(), slackintegration.PlainTextBlock(label), nil)
 		if _, ok := selectedTagIds[tag.ID]; ok {
 			initialOptions = append(initialOptions, options[i])
 		}
 	}
 
-	tagSelect := goslack.NewOptionsMultiSelectBlockElement(goslack.OptTypeStatic, slack.PlainTextBlock("Select tags"),
+	tagSelect := slack.NewOptionsMultiSelectBlockElement(slack.OptTypeStatic, slackintegration.PlainTextBlock("Select tags"),
 		incidentModalTagIds.Input, options...)
 	if len(initialOptions) > 0 {
 		tagSelect.WithInitialOptions(initialOptions...)
 	}
 
 	b.blocks = append(b.blocks,
-		goslack.NewInputBlock(incidentModalTagIds.Block, slack.PlainTextBlock("Tags"), nil, tagSelect).WithOptional(true))
+		slack.NewInputBlock(incidentModalTagIds.Block, slackintegration.PlainTextBlock("Tags"), nil, tagSelect).WithOptional(true))
 }
 
 func (b *incidentModalViewBuilder) makeCustomFieldSelect(fields ent.IncidentFields) {
-	b.blocks = append(b.blocks, goslack.NewDividerBlock())
+	b.blocks = append(b.blocks, slack.NewDividerBlock())
 	for _, field := range fields {
-		fieldOptions := make([]*goslack.OptionBlockObject, len(field.Edges.Options))
+		fieldOptions := make([]*slack.OptionBlockObject, len(field.Edges.Options))
 		initialOptIdx := 0
 		for i, opt := range field.Edges.Options {
-			fieldOptions[i] = goslack.NewOptionBlockObject(opt.ID.String(), slack.PlainTextBlock(opt.Value), nil)
+			fieldOptions[i] = slack.NewOptionBlockObject(opt.ID.String(), slackintegration.PlainTextBlock(opt.Value), nil)
 			if b.incident == nil || len(b.incident.Edges.FieldSelections) == 0 {
 				continue
 			}
@@ -194,11 +195,11 @@ func (b *incidentModalViewBuilder) makeCustomFieldSelect(fields ent.IncidentFiel
 			}
 		}
 		ids := incidentModalFieldOptionIds(field.ID.String())
-		fieldOptionSelect := goslack.NewOptionsSelectBlockElement(goslack.OptTypeStatic, slack.PlainTextBlock("Select an option"), ids.Input, fieldOptions...)
+		fieldOptionSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, slackintegration.PlainTextBlock("Select an option"), ids.Input, fieldOptions...)
 		if len(fieldOptions) > 0 {
 			fieldOptionSelect.WithInitialOption(fieldOptions[initialOptIdx])
 		}
 		b.blocks = append(b.blocks,
-			goslack.NewInputBlock(ids.Block, slack.PlainTextBlock(field.Name), nil, fieldOptionSelect).WithOptional(true))
+			slack.NewInputBlock(ids.Block, slackintegration.PlainTextBlock(field.Name), nil, fieldOptionSelect).WithOptional(true))
 	}
 }

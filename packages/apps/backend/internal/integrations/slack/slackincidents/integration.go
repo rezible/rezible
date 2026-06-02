@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"net/http"
 
-	slackgo "github.com/slack-go/slack"
+	"github.com/google/uuid"
+	"github.com/stretchr/objx"
+	"golang.org/x/oauth2"
+
+	"github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/internal/integrations/slack"
-
-	"github.com/stretchr/objx"
-	"golang.org/x/oauth2"
-
-	"github.com/google/uuid"
 )
 
 const integrationName = "slack_incidents"
@@ -28,7 +27,7 @@ func MakeIntegration(
 	eventAnnos rez.EventAnnotationsService,
 	messages rez.MessageService,
 ) (*Integration, error) {
-	svc, svcErr := slack.NewService(integrationName, messages)
+	svc, svcErr := slackintegration.NewService(integrationName, messages)
 	if svcErr != nil {
 		return nil, fmt.Errorf("failed to initialize slack service: %w", svcErr)
 	}
@@ -46,12 +45,12 @@ func MakeIntegration(
 
 	svc.AddSlashCommandHandler("/incident", intg.handleIncidentCommand)
 
-	svc.AddInteractionCallbackHandler(slackgo.InteractionTypeMessageAction, intg.handleMessageActionInteraction)
-	svc.AddInteractionCallbackHandler(slackgo.InteractionTypeBlockActions, intg.handleBlockActionsInteraction)
-	svc.AddInteractionCallbackHandler(slackgo.InteractionTypeViewSubmission, intg.handleViewSubmissionInteraction)
+	svc.AddInteractionCallbackHandler(slack.InteractionTypeMessageAction, intg.handleMessageActionInteraction)
+	svc.AddInteractionCallbackHandler(slack.InteractionTypeBlockActions, intg.handleBlockActionsInteraction)
+	svc.AddInteractionCallbackHandler(slack.InteractionTypeViewSubmission, intg.handleViewSubmissionInteraction)
 
 	if slackCfg.EnableSocketMode {
-		smClient := slackgo.New(slackCfg.BotToken, slackgo.OptionAppLevelToken(slackCfg.AppToken))
+		smClient := slack.New(slackCfg.BotToken, slack.OptionAppLevelToken(slackCfg.AppToken))
 		if smErr := svc.SetupSocketMode(smClient); smErr != nil {
 			return nil, fmt.Errorf("failed to setup socket mode: %w", smErr)
 		}
@@ -68,7 +67,7 @@ type Integration struct {
 	cfg          rez.IntegrationsConfigSlack
 	oauth2Config *oauth2.Config
 
-	service *slack.Service
+	service *slackintegration.Service
 
 	db           rez.Database
 	users        rez.UserService
@@ -136,10 +135,6 @@ func (i *Integration) makeConfiguredIntegration(intg *ent.Integration) *Configur
 
 func (ci *ConfiguredIntegration) Integration() *ent.Integration {
 	return ci.intg
-}
-
-func (ci *ConfiguredIntegration) tenantContext(ctx context.Context) context.Context {
-	return execution.NewTenantContext(ctx, ci.intg.TenantID)
 }
 
 func (ci *ConfiguredIntegration) config() objx.Map {

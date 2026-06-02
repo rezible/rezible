@@ -6,9 +6,10 @@ import (
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	rez "github.com/rezible/rezible"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
+
+	rez "github.com/rezible/rezible"
 )
 
 func (i *Integration) OAuthConfigRequired() bool {

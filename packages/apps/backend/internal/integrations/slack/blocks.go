@@ -1,4 +1,4 @@
-package slack
+package slackintegration
 
 import (
 	"fmt"

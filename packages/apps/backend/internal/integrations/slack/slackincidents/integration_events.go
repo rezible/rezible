@@ -8,11 +8,13 @@ import (
 
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+
+	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
+
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/internal/integrations/slack"
-	goslack "github.com/slack-go/slack"
-	"github.com/slack-go/slack/slackevents"
 )
 
 var (
@@ -20,13 +22,13 @@ var (
 	incidentCommandsFormatted    = strings.Join(supportedIncidentSubcommands, ", ")
 )
 
-func (i *Integration) handleIncidentCommand(ctx context.Context, cmd *goslack.SlashCommand) (*goslack.Blocks, error) {
+func (i *Integration) handleIncidentCommand(ctx context.Context, cmd *slack.SlashCommand) (*slack.Blocks, error) {
 	// are we currently in an incident channel?
 	var channelIncidentId uuid.UUID
 	inc, incErr := i.incidents.Get(ctx, incident.ChatChannelID(cmd.ChannelID))
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		slog.Error("unable to get incident by channel", "error", incErr)
-		return slack.CommandErrorResponse(incErr.Error()), nil
+		return slackintegration.CommandErrorResponse(incErr.Error()), nil
 	} else if inc != nil {
 		channelIncidentId = inc.ID
 	}
@@ -47,21 +49,21 @@ func (i *Integration) handleIncidentCommand(ctx context.Context, cmd *goslack.Sl
 			meta.IncidentId = uuid.Nil
 		}
 		if subcmd == "update" && inc == nil {
-			return slack.CommandErrorResponse("Not in an incident channel"), nil
+			return slackintegration.CommandErrorResponse("Not in an incident channel"), nil
 		}
 		// TODO: load these properly
 		prefs := incidentPreferences{}
 		view, viewErr := i.makeIncidentDetailsModalView(ctx, prefs, &meta)
 		if viewErr != nil {
 			slog.Error("failed creating incident details view", "error", viewErr)
-			return slack.CommandErrorResponse("Failed to create incident details modal"), viewErr
+			return slackintegration.CommandErrorResponse("Failed to create incident details modal"), viewErr
 		}
 		if openModalErr := i.service.OpenModalView(ctx, cmd.TriggerID, *view); openModalErr != nil {
-			return slack.CommandErrorResponse("Failed to open incident details modal"), openModalErr
+			return slackintegration.CommandErrorResponse("Failed to open incident details modal"), openModalErr
 		}
 	} else if subcmd == "status" {
 		if inc == nil {
-			return slack.CommandErrorResponse("Not in an incident channel. Supported subcommands: " + incidentCommandsFormatted), nil
+			return slackintegration.CommandErrorResponse("Not in an incident channel. Supported subcommands: " + incidentCommandsFormatted), nil
 		}
 		meta := incidentMilestoneModalViewMetadata{
 			UserId:     cmd.UserID,
@@ -70,15 +72,15 @@ func (i *Integration) handleIncidentCommand(ctx context.Context, cmd *goslack.Sl
 		view, viewErr := i.makeIncidentMilestoneModalView(ctx, &meta)
 		if viewErr != nil {
 			slog.Error("failed creating incident milestone view", "error", viewErr)
-			return slack.CommandErrorResponse("Failed to create incident milestone view"), viewErr
+			return slackintegration.CommandErrorResponse("Failed to create incident milestone view"), viewErr
 		}
 		if openModalErr := i.service.OpenModalView(ctx, cmd.TriggerID, *view); openModalErr != nil {
-			return slack.CommandErrorResponse("Failed to open incident milestone view"), openModalErr
+			return slackintegration.CommandErrorResponse("Failed to open incident milestone view"), openModalErr
 		}
 	} else if subcmd == "help" {
 		// TODO
 	} else {
-		return slack.CommandErrorResponse(
+		return slackintegration.CommandErrorResponse(
 			fmt.Sprintf("Invalid incident command '%s'. Supported subcommands: %s", subcmd, incidentCommandsFormatted),
 		), nil
 	}
@@ -148,14 +150,14 @@ func (i *Integration) onUserHomeOpenedEvent(ctx context.Context, data *slackeven
 		return fmt.Errorf("failed to create user home view: %w", viewErr)
 	}
 
-	req := goslack.PublishViewContextRequest{
+	req := slack.PublishViewContextRequest{
 		UserID: data.User,
 		View:   *homeView,
 		Hash:   nil,
 	}
 	resp, publishErr := i.service.GetClient(ctx).PublishViewContext(ctx, req)
 	if publishErr != nil {
-		slack.LogSlackViewErrorResponse(slog.Default(), publishErr, resp)
+		slackintegration.LogSlackViewErrorResponse(slog.Default(), publishErr, resp)
 		return fmt.Errorf("failed to publish user home view: %w", publishErr)
 	}
 

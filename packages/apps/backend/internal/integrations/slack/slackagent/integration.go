@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/http"
 
-	slackgo "github.com/slack-go/slack"
-
 	"github.com/google/uuid"
 	"github.com/stretchr/objx"
 	"golang.org/x/oauth2"
+
+	"github.com/slack-go/slack"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -28,7 +28,7 @@ func MakeIntegration(
 	messages rez.MessageService,
 	provEvents rez.ProviderEventService,
 ) (*Integration, error) {
-	svc, svcErr := slack.NewService(integrationName, messages)
+	svc, svcErr := slackintegration.NewService(integrationName, messages)
 	if svcErr != nil {
 		return nil, fmt.Errorf("failed to initialize slack service: %w", svcErr)
 	}
@@ -45,7 +45,7 @@ func MakeIntegration(
 	}
 
 	if slackCfg.EnableSocketMode {
-		smClient := slackgo.New(slackCfg.BotToken, slackgo.OptionAppLevelToken(slackCfg.AppToken))
+		smClient := slack.New(slackCfg.BotToken, slack.OptionAppLevelToken(slackCfg.AppToken))
 		if smErr := svc.SetupSocketMode(smClient); smErr != nil {
 			return nil, fmt.Errorf("failed to setup socket mode: %w", smErr)
 		}
@@ -62,7 +62,7 @@ type Integration struct {
 	cfg          rez.IntegrationsConfigSlack
 	oauth2Config *oauth2.Config
 
-	service *slack.Service
+	service *slackintegration.Service
 
 	db           rez.Database
 	users        rez.UserService

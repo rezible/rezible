@@ -11,7 +11,7 @@ import (
 	"github.com/rezible/rezible/execution"
 
 	"github.com/rezible/rezible/internal/integrations/slack"
-	goslack "github.com/slack-go/slack"
+	"github.com/slack-go/slack"
 )
 
 const (
@@ -21,18 +21,18 @@ const (
 	viewCallbackIdUserHome               = "user_home"
 )
 
-func makeUserHomeView(ctx context.Context) (*goslack.HomeTabViewRequest, error) {
-	var blocks []goslack.Block
-	blocks = append(blocks, goslack.NewSectionBlock(slack.PlainTextBlock("Home Tab"), nil, nil))
+func makeUserHomeView(ctx context.Context) (*slack.HomeTabViewRequest, error) {
+	var blocks []slack.Block
+	blocks = append(blocks, slack.NewSectionBlock(slackintegration.PlainTextBlock("Home Tab"), nil, nil))
 	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, fmt.Errorf("no user context")
 	}
-	homeView := goslack.HomeTabViewRequest{
-		Type:            goslack.VTHomeTab,
+	homeView := slack.HomeTabViewRequest{
+		Type:            slack.VTHomeTab,
 		CallbackID:      viewCallbackIdUserHome,
 		PrivateMetadata: "foo",
-		Blocks:          goslack.Blocks{BlockSet: blocks},
+		Blocks:          slack.Blocks{BlockSet: blocks},
 		ExternalID:      userId.String(),
 	}
 	return &homeView, nil
@@ -44,7 +44,7 @@ type incidentDetailsModalViewMetadata struct {
 	IncidentId       uuid.UUID `json:"iid,omitempty"`
 }
 
-func (i *Integration) makeIncidentDetailsModalView(ctx context.Context, prefs incidentPreferences, meta *incidentDetailsModalViewMetadata) (*goslack.ModalViewRequest, error) {
+func (i *Integration) makeIncidentDetailsModalView(ctx context.Context, prefs incidentPreferences, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
 	var curr *ent.Incident
 	if meta.IncidentId != uuid.Nil {
 		inc, incErr := i.incidents.Get(ctx, incident.ID(meta.IncidentId))
@@ -74,12 +74,12 @@ func (i *Integration) makeIncidentDetailsModalView(ctx context.Context, prefs in
 		submitText = "Update"
 	}
 
-	view := &goslack.ModalViewRequest{
+	view := &slack.ModalViewRequest{
 		Type:            "modal",
 		CallbackID:      viewCallbackIdIncidentDetailsModal,
-		Title:           slack.PlainTextBlock(titleText),
-		Submit:          slack.PlainTextBlock(submitText),
-		Close:           slack.PlainTextBlock("Cancel"),
+		Title:           slackintegration.PlainTextBlock(titleText),
+		Submit:          slackintegration.PlainTextBlock(submitText),
+		Close:           slackintegration.PlainTextBlock("Cancel"),
 		PrivateMetadata: string(jsonMetadata),
 		Blocks:          blockSet,
 	}
@@ -92,7 +92,7 @@ type incidentMilestoneModalViewMetadata struct {
 	IncidentId uuid.UUID `json:"iid"`
 }
 
-func (i *Integration) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*goslack.ModalViewRequest, error) {
+func (i *Integration) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
 	inc, incErr := i.incidents.Get(ctx, incident.ID(meta.IncidentId))
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		return nil, incErr
@@ -106,12 +106,12 @@ func (i *Integration) makeIncidentMilestoneModalView(ctx context.Context, meta *
 		return nil, fmt.Errorf("failed to marshal metadata: %w", jsonErr)
 	}
 
-	view := &goslack.ModalViewRequest{
+	view := &slack.ModalViewRequest{
 		Type:            "modal",
 		CallbackID:      viewCallbackIdIncidentMilestoneModal,
-		Title:           slack.PlainTextBlock("Update Incident Status"),
-		Submit:          slack.PlainTextBlock("Save"),
-		Close:           slack.PlainTextBlock("Cancel"),
+		Title:           slackintegration.PlainTextBlock("Update Incident Status"),
+		Submit:          slackintegration.PlainTextBlock("Save"),
+		Close:           slackintegration.PlainTextBlock("Cancel"),
 		PrivateMetadata: string(jsonMetadata),
 		Blocks:          blockSet,
 	}

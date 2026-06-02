@@ -16,8 +16,6 @@ import (
 	"github.com/rezible/rezible/ent/user"
 )
 
-const ()
-
 func (i *Integration) handleMessageActionInteraction(ctx context.Context, ic *slack.InteractionCallback) error {
 
 	return fmt.Errorf("unknown message actions: %s", ic.CallbackID)

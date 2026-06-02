@@ -3,39 +3,39 @@ package slackincidents
 import (
 	"log/slog"
 
-	"github.com/rezible/rezible/internal/integrations/slack"
-	slackgo "github.com/slack-go/slack"
+	"github.com/slack-go/slack"
 
 	"github.com/rezible/rezible/ent"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rezible/rezible/internal/integrations/slack"
 )
 
 type incidentMilestoneModalViewBuilder struct {
-	blocks   []slackgo.Block
+	blocks   []slack.Block
 	incident *ent.Incident
 	metadata *incidentMilestoneModalViewMetadata
 }
 
 func newIncidentMilestoneModalViewBuilder(curr *ent.Incident, meta *incidentMilestoneModalViewMetadata) *incidentMilestoneModalViewBuilder {
 	return &incidentMilestoneModalViewBuilder{
-		blocks:   []slackgo.Block{},
+		blocks:   []slack.Block{},
 		incident: curr,
 		metadata: meta,
 	}
 }
 
-func (b *incidentMilestoneModalViewBuilder) build() slackgo.Blocks {
+func (b *incidentMilestoneModalViewBuilder) build() slack.Blocks {
 	b.makeMilestoneSelect()
 	b.makeNotesInput()
-	return slackgo.Blocks{BlockSet: b.blocks}
+	return slack.Blocks{BlockSet: b.blocks}
 }
 
 var (
-	incidentMilestoneModalKindIds  = slack.BlockActionIds{Block: "incident_milestone_kind", Input: "kind_select"}
-	incidentMilestoneModalNotesIds = slack.BlockActionIds{Block: "incident_milestone_notes", Input: "notes_input"}
+	incidentMilestoneModalKindIds  = slackintegration.BlockActionIds{Block: "incident_milestone_kind", Input: "kind_select"}
+	incidentMilestoneModalNotesIds = slackintegration.BlockActionIds{Block: "incident_milestone_notes", Input: "notes_input"}
 )
 
-func setIncidentMilestoneModalInputMutationFields(m *ent.IncidentMilestoneMutation, state *slackgo.ViewState) {
+func setIncidentMilestoneModalInputMutationFields(m *ent.IncidentMilestoneMutation, state *slack.ViewState) {
 	m.SetDescription(incidentMilestoneModalNotesIds.GetStateValue(state))
 
 	kindOpt := incidentMilestoneModalKindIds.GetStateSelectedValue(state)
@@ -48,23 +48,23 @@ func setIncidentMilestoneModalInputMutationFields(m *ent.IncidentMilestoneMutati
 }
 
 func (b *incidentMilestoneModalViewBuilder) makeMilestoneSelect() {
-	kindsOptions := []*slackgo.OptionBlockObject{
-		slackgo.NewOptionBlockObject(im.KindImpact.String(), slack.PlainTextBlock("Impact"), nil),
-		slackgo.NewOptionBlockObject(im.KindMitigation.String(), slack.PlainTextBlock("Mitigated"), nil),
-		slackgo.NewOptionBlockObject(im.KindResolution.String(), slack.PlainTextBlock("Resolved"), nil),
+	kindsOptions := []*slack.OptionBlockObject{
+		slack.NewOptionBlockObject(im.KindImpact.String(), slackintegration.PlainTextBlock("Impact"), nil),
+		slack.NewOptionBlockObject(im.KindMitigation.String(), slackintegration.PlainTextBlock("Mitigated"), nil),
+		slack.NewOptionBlockObject(im.KindResolution.String(), slackintegration.PlainTextBlock("Resolved"), nil),
 	}
 
-	kindsSelect := slackgo.NewOptionsSelectBlockElement(slackgo.OptTypeStatic, nil, incidentMilestoneModalKindIds.Input, kindsOptions...)
+	kindsSelect := slack.NewOptionsSelectBlockElement(slack.OptTypeStatic, nil, incidentMilestoneModalKindIds.Input, kindsOptions...)
 
 	initialOpt := kindsOptions[0]
 	kindsSelect.WithInitialOption(initialOpt)
 
 	b.blocks = append(b.blocks,
-		slackgo.NewInputBlock(incidentMilestoneModalKindIds.Block, slack.PlainTextBlock("Incident Status"), nil, kindsSelect))
+		slack.NewInputBlock(incidentMilestoneModalKindIds.Block, slackintegration.PlainTextBlock("Incident Status"), nil, kindsSelect))
 }
 
 func (b *incidentMilestoneModalViewBuilder) makeNotesInput() {
-	notesInput := slackgo.NewPlainTextInputBlockElement(nil, incidentMilestoneModalNotesIds.Input)
+	notesInput := slack.NewPlainTextInputBlockElement(nil, incidentMilestoneModalNotesIds.Input)
 	b.blocks = append(b.blocks,
-		slackgo.NewInputBlock(incidentMilestoneModalNotesIds.Block, slack.PlainTextBlock("Notes"), nil, notesInput))
+		slack.NewInputBlock(incidentMilestoneModalNotesIds.Block, slackintegration.PlainTextBlock("Notes"), nil, notesInput))
 }

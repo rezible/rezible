@@ -11,12 +11,11 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/slack-go/slack"
 
-	rezslack "github.com/rezible/rezible/internal/integrations/slack"
-
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
+	"github.com/rezible/rezible/internal/integrations/slack"
 )
 
 type incidentUpdateProcessor struct {
@@ -451,7 +450,7 @@ func (p *incidentUpdateProcessor) postIncidentConferenceMessage(ctx context.Cont
 }
 
 func (p *incidentUpdateProcessor) ensureIncidentChannelUsersAdded(ctx context.Context) error {
-	currIds, idsErr := rezslack.GetAllUsersInConversation(ctx, p.client, p.inc.ChatChannelID)
+	currIds, idsErr := slackintegration.GetAllUsersInConversation(ctx, p.client, p.inc.ChatChannelID)
 	if idsErr != nil {
 		return fmt.Errorf("failed to get current users in conversation: %w", idsErr)
 	}
