@@ -15,7 +15,7 @@ const (
 	providerName    = "github"
 )
 
-var supportedDataKinds = []string{"repositories", "change_events"}
+var supportedCapabilities = []string{"repositories", "change_events"}
 
 type Integration struct {
 	cfg            rez.IntegrationsConfigGithub
@@ -58,8 +58,8 @@ func (i *Integration) WebhookHandler() http.Handler {
 	return i.webhookHandler
 }
 
-func (i *Integration) SupportedDataKinds() []string {
-	return supportedDataKinds
+func (i *Integration) SupportedCapabilities() []string {
+	return supportedCapabilities
 }
 
 type installationConfig struct {

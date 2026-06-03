@@ -120,10 +120,10 @@ func (i *Integration) Shutdown(ctx context.Context) error {
 	return i.service.Shutdown(ctx)
 }
 
-var supportedDataKinds = []string{"chat", "users"}
+var supportedCapabilities = []string{"chat", "users"}
 
-func (i *Integration) SupportedDataKinds() []string {
-	return supportedDataKinds
+func (i *Integration) SupportedCapabilities() []string {
+	return supportedCapabilities
 }
 
 func (i *Integration) ValidateInstallationConfig(m map[string]any) (externalRef string, validationErr error) {

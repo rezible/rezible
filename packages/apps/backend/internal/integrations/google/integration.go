@@ -15,7 +15,7 @@ const (
 	providerName    = "google"
 )
 
-var supportedDataKinds = []string{"video_conference"}
+var supportedCapabilities = []string{"video_conference"}
 
 type Integration struct {
 	users        rez.UserService
@@ -65,8 +65,8 @@ func (i *Integration) IsAvailable() (bool, error) {
 	return true, nil
 }
 
-func (i *Integration) SupportedDataKinds() []string {
-	return supportedDataKinds
+func (i *Integration) SupportedCapabilities() []string {
+	return supportedCapabilities
 }
 
 func (i *Integration) OAuthInstallRequired() bool {

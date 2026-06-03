@@ -36,10 +36,10 @@ func (i *Integration) IsAvailable() (bool, error) {
 	return i.available, nil
 }
 
-var supportedDataKinds = []string{"alerts", "incidents", "system_topology"}
+var supportedCapabilities = []string{"alerts", "incidents", "system_topology"}
 
-func (i *Integration) SupportedDataKinds() []string {
-	return supportedDataKinds
+func (i *Integration) SupportedCapabilities() []string {
+	return supportedCapabilities
 }
 
 func (i *Integration) OAuthInstallRequired() bool {

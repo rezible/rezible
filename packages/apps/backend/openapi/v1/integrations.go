@@ -52,11 +52,11 @@ func (o operations) RegisterIntegrations(api huma.API) {
 
 type (
 	AvailableIntegration struct {
-		Name         string   `json:"name"`
-		Provider     string   `json:"provider"`
-		DataKinds    []string `json:"dataKinds"`
-		MaxInstalls  *int     `json:"maxInstalls,omitempty"`
-		OAuthInstall bool     `json:"oauthInstall"`
+		Name                  string   `json:"name"`
+		Provider              string   `json:"provider"`
+		SupportedCapabilities []string `json:"supportedCapabilities"`
+		MaxInstalls           *int     `json:"maxInstalls,omitempty"`
+		OAuthInstall          bool     `json:"oauthInstall"`
 	}
 
 	InstalledIntegration struct {
@@ -105,11 +105,11 @@ type (
 
 func AvailableIntegrationFromPackage(p rez.IntegrationPackage) AvailableIntegration {
 	return AvailableIntegration{
-		Name:         p.Name(),
-		Provider:     p.Provider(),
-		DataKinds:    p.SupportedDataKinds(),
-		OAuthInstall: p.OAuthInstallRequired(),
-		MaxInstalls:  p.MaxInstalls(),
+		Name:                  p.Name(),
+		Provider:              p.Provider(),
+		SupportedCapabilities: p.SupportedCapabilities(),
+		OAuthInstall:          p.OAuthInstallRequired(),
+		MaxInstalls:           p.MaxInstalls(),
 	}
 }
 

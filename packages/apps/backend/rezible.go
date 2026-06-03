@@ -110,7 +110,7 @@ type (
 		Provider() string
 		IsAvailable() (bool, error)
 		MaxInstalls() *int
-		SupportedDataKinds() []string
+		SupportedCapabilities() []string
 		ValidateInstallationConfig(map[string]any) (externalRef string, validationErr error)
 		ValidateUserSettings(map[string]any) error
 		OAuthInstallRequired() bool

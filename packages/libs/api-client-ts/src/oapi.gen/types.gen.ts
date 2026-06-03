@@ -120,11 +120,11 @@ export type AuthSession = {
 };
 
 export type AvailableIntegration = {
-    dataKinds: Array<string>;
     maxInstalls?: number;
     name: string;
     oauthInstall: boolean;
     provider: string;
+    supportedCapabilities: Array<string>;
 };
 
 export type CompleteIntegrationOAuthFlowRequestAttributes = {

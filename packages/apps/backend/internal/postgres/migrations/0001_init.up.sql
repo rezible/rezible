@@ -113,17 +113,33 @@ CREATE INDEX "incidenttype_tenant_id" ON "incident_types" ("tenant_id");
 -- create index "incidenttype_tenant_id_name" to table: "incident_types"
 CREATE UNIQUE INDEX "incidenttype_tenant_id_name" ON "incident_types" ("tenant_id", "name");
 -- create "integrations" table
-CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "display_name" character varying NOT NULL, "external_ref" character varying NOT NULL, "config" jsonb NOT NULL, "user_preferences" jsonb NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "integration_name" character varying NOT NULL, "display_name" character varying NOT NULL, "external_provider_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "integration_tenant_id" to table: "integrations"
 CREATE INDEX "integration_tenant_id" ON "integrations" ("tenant_id");
--- create index "integration_tenant_id_provider" to table: "integrations"
-CREATE INDEX "integration_tenant_id_provider" ON "integrations" ("tenant_id", "provider");
--- create index "integration_tenant_id_provider_external_ref" to table: "integrations"
-CREATE UNIQUE INDEX "integration_tenant_id_provider_external_ref" ON "integrations" ("tenant_id", "provider", "external_ref");
--- create "integration_oauth_states" table
-CREATE TABLE "integration_oauth_states" ("id" uuid NOT NULL, "state" character varying NOT NULL, "provider" character varying NOT NULL, "selection_options" jsonb NULL, "expires_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
--- create index "integrationoauthstate_tenant_id" to table: "integration_oauth_states"
-CREATE INDEX "integrationoauthstate_tenant_id" ON "integration_oauth_states" ("tenant_id");
+-- create index "integration_tenant_id_integration_name" to table: "integrations"
+CREATE INDEX "integration_tenant_id_integration_name" ON "integrations" ("tenant_id", "integration_name");
+-- create index "integration_tenant_id_integration_name_external_provider_ref" to table: "integrations"
+CREATE UNIQUE INDEX "integration_tenant_id_integration_name_external_provider_ref" ON "integrations" ("tenant_id", "integration_name", "external_provider_ref");
+-- create "integration_event_sync_cursors" table
+CREATE TABLE "integration_event_sync_cursors" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider_source" character varying NOT NULL, "cursor" character varying NULL, "last_synced_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "integrationeventsynccursor_tenant_id" to table: "integration_event_sync_cursors"
+CREATE INDEX "integrationeventsynccursor_tenant_id" ON "integration_event_sync_cursors" ("tenant_id");
+-- create index "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869" to table: "integration_event_sync_cursors"
+CREATE UNIQUE INDEX "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869" ON "integration_event_sync_cursors" ("tenant_id", "integration_id", "provider_source");
+-- create "integration_event_sync_runs" table
+CREATE TABLE "integration_event_sync_runs" ("id" uuid NOT NULL, "source_cursors" jsonb NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, "integration_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "integrationeventsyncrun_tenant_id" to table: "integration_event_sync_runs"
+CREATE INDEX "integrationeventsyncrun_tenant_id" ON "integration_event_sync_runs" ("tenant_id");
+-- create index "integrationeventsyncrun_tenant_id_integration_id_started_at" to table: "integration_event_sync_runs"
+CREATE INDEX "integrationeventsyncrun_tenant_id_integration_id_started_at" ON "integration_event_sync_runs" ("tenant_id", "integration_id", "started_at");
+-- create index "integrationeventsyncrun_tenant_id_status_started_at" to table: "integration_event_sync_runs"
+CREATE INDEX "integrationeventsyncrun_tenant_id_status_started_at" ON "integration_event_sync_runs" ("tenant_id", "status", "started_at");
+-- create "integration_user_install_states" table
+CREATE TABLE "integration_user_install_states" ("id" uuid NOT NULL, "integration_name" character varying NOT NULL, "oauth_state" character varying NULL, "installation_targets" jsonb NULL, "expires_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "integrationuserinstallstate_tenant_id" to table: "integration_user_install_states"
+CREATE INDEX "integrationuserinstallstate_tenant_id" ON "integration_user_install_states" ("tenant_id");
+-- create index "integrationuserinstallstate_tenant_id_user_id_integration_name" to table: "integration_user_install_states"
+CREATE UNIQUE INDEX "integrationuserinstallstate_tenant_id_user_id_integration_name" ON "integration_user_install_states" ("tenant_id", "user_id", "integration_name");
 -- create "knowledge_entities" table
 CREATE TABLE "knowledge_entities" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "display_name" character varying NOT NULL, "description" text NULL, "first_observed_at" timestamptz NULL, "last_observed_at" timestamptz NULL, "deleted_at" timestamptz NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "knowledgeentity_tenant_id" to table: "knowledge_entities"
@@ -258,20 +274,6 @@ CREATE UNIQUE INDEX "organizationrole_org_id_user_id" ON "organization_roles" ("
 CREATE TABLE "playbooks" ("id" uuid NOT NULL, "title" character varying NOT NULL, "content" bytea NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "playbook_tenant_id" to table: "playbooks"
 CREATE INDEX "playbook_tenant_id" ON "playbooks" ("tenant_id");
--- create "provider_event_sync_cursors" table
-CREATE TABLE "provider_event_sync_cursors" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "cursor" character varying NULL, "last_synced_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "providereventsynccursor_tenant_id" to table: "provider_event_sync_cursors"
-CREATE INDEX "providereventsynccursor_tenant_id" ON "provider_event_sync_cursors" ("tenant_id");
--- create index "providereventsynccursor_tenant_id_provider_provider_source" to table: "provider_event_sync_cursors"
-CREATE UNIQUE INDEX "providereventsynccursor_tenant_id_provider_provider_source" ON "provider_event_sync_cursors" ("tenant_id", "provider", "provider_source");
--- create "provider_event_sync_runs" table
-CREATE TABLE "provider_event_sync_runs" ("id" uuid NOT NULL, "provider" character varying NOT NULL, "source_cursors" jsonb NULL, "sync_reason" character varying NOT NULL DEFAULT 'manual', "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "status" character varying NOT NULL, "events_pulled" bigint NOT NULL DEFAULT 0, "events_ingested" bigint NOT NULL DEFAULT 0, "duplicates" bigint NOT NULL DEFAULT 0, "failure_message" character varying NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "providereventsyncrun_tenant_id" to table: "provider_event_sync_runs"
-CREATE INDEX "providereventsyncrun_tenant_id" ON "provider_event_sync_runs" ("tenant_id");
--- create index "providereventsyncrun_tenant_id_provider_started_at" to table: "provider_event_sync_runs"
-CREATE INDEX "providereventsyncrun_tenant_id_provider_started_at" ON "provider_event_sync_runs" ("tenant_id", "provider", "started_at");
--- create index "providereventsyncrun_tenant_id_status_started_at" to table: "provider_event_sync_runs"
-CREATE INDEX "providereventsyncrun_tenant_id_status_started_at" ON "provider_event_sync_runs" ("tenant_id", "status", "started_at");
 -- create "retrospectives" table
 CREATE TABLE "retrospectives" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "state" character varying NOT NULL, "document_id" uuid NOT NULL, "incident_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "system_analysis_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "retrospectives_document_id_key" to table: "retrospectives"
@@ -454,8 +456,12 @@ ALTER TABLE "incident_timeline_event_topology_contexts" ADD CONSTRAINT "incident
 ALTER TABLE "incident_types" ADD CONSTRAINT "incident_types_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "integrations" table
 ALTER TABLE "integrations" ADD CONSTRAINT "integrations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "integration_oauth_states" table
-ALTER TABLE "integration_oauth_states" ADD CONSTRAINT "integration_oauth_states_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_oauth_states_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
+-- modify "integration_event_sync_cursors" table
+ALTER TABLE "integration_event_sync_cursors" ADD CONSTRAINT "integration_event_sync_cursors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_event_sync_cursors_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE NO ACTION;
+-- modify "integration_event_sync_runs" table
+ALTER TABLE "integration_event_sync_runs" ADD CONSTRAINT "integration_event_sync_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_event_sync_runs_integrations_integration" FOREIGN KEY ("integration_id") REFERENCES "integrations" ("id") ON DELETE NO ACTION;
+-- modify "integration_user_install_states" table
+ALTER TABLE "integration_user_install_states" ADD CONSTRAINT "integration_user_install_states_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "integration_user_install_states_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_entities" table
 ALTER TABLE "knowledge_entities" ADD CONSTRAINT "knowledge_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "knowledge_entity_alias" table
@@ -494,10 +500,6 @@ ALTER TABLE "organizations" ADD CONSTRAINT "organizations_tenants_tenant" FOREIG
 ALTER TABLE "organization_roles" ADD CONSTRAINT "organization_roles_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_organizations_organization" FOREIGN KEY ("org_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_users_organization_role" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "playbooks" table
 ALTER TABLE "playbooks" ADD CONSTRAINT "playbooks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "provider_event_sync_cursors" table
-ALTER TABLE "provider_event_sync_cursors" ADD CONSTRAINT "provider_event_sync_cursors_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "provider_event_sync_runs" table
-ALTER TABLE "provider_event_sync_runs" ADD CONSTRAINT "provider_event_sync_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "retrospectives" table
 ALTER TABLE "retrospectives" ADD CONSTRAINT "retrospectives_documents_retrospective" FOREIGN KEY ("document_id") REFERENCES "documents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospectives_incidents_retrospective" FOREIGN KEY ("incident_id") REFERENCES "incidents" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospectives_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "retrospectives_system_analyses_retrospective" FOREIGN KEY ("system_analysis_id") REFERENCES "system_analyses" ("id") ON DELETE SET NULL;
 -- modify "retrospective_comments" table

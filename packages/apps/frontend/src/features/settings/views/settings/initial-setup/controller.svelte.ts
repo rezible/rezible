@@ -7,7 +7,7 @@ import { useIntegrationsController } from "$src/features/settings/lib/integratio
 type SetupStep = "org_name" | "required_integrations";
 const RequiredCapabilities = new Set(["chat", "users"]);
 
-const getEnabledDataKinds = (intg: InstalledIntegration) => 
+const getEnabledCapabilities = (intg: InstalledIntegration) => 
     Object.entries(intg.attributes.capabilities).
         filter(([_, enabled]) => (enabled)).
         map(([name, _]) => (name));
@@ -18,10 +18,17 @@ export class InitialSetupViewController {
 
     step = $state<SetupStep>("required_integrations");
 
-	installedCapabilities = $derived(new Set(this.integrations.installed.flatMap(getEnabledDataKinds)));
+    availableOptions = $derived(this.integrations.available.filter(intg => (!this.integrations.installationsByName.has(intg.name))));
+	installedCapabilities = $derived(new Set(this.integrations.installed.flatMap(getEnabledCapabilities)));
     remainingRequiredCapabilities = $derived(RequiredCapabilities.difference(this.installedCapabilities).values().toArray());
     availableIntegrationsForCapabilities = $derived.by(() => {
-        return new Map<string, AvailableIntegration[]>();
+        const capMap = new Map<string, AvailableIntegration[]>();
+        this.availableOptions.forEach(intg => {
+            intg.supportedCapabilities.forEach(cap => {
+                capMap.set(cap, [...(capMap.get(cap) || []), intg]);
+            });
+        });
+        return capMap;
     });
 
     canFinish = $derived.by(() => {
@@ -31,6 +38,7 @@ export class InitialSetupViewController {
     });
 
     constructor() {
+        $inspect(this.availableOptions);
         watch(() => this.canFinish, ok => {
             if (ok) this.doFinishOrganizationSetup();
         })

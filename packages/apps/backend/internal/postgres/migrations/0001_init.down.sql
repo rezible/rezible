@@ -56,10 +56,6 @@ ALTER TABLE "retrospective_reviews" DROP CONSTRAINT "retrospective_reviews_retro
 ALTER TABLE "retrospective_comments" DROP CONSTRAINT "retrospective_comments_retrospective_reviews_review", DROP CONSTRAINT "retrospective_comments_users_user", DROP CONSTRAINT "retrospective_comments_retrospectives_retrospective", DROP CONSTRAINT "retrospective_comments_tenants_tenant";
 -- reverse: modify "retrospectives" table
 ALTER TABLE "retrospectives" DROP CONSTRAINT "retrospectives_system_analyses_retrospective", DROP CONSTRAINT "retrospectives_tenants_tenant", DROP CONSTRAINT "retrospectives_incidents_retrospective", DROP CONSTRAINT "retrospectives_documents_retrospective";
--- reverse: modify "provider_event_sync_runs" table
-ALTER TABLE "provider_event_sync_runs" DROP CONSTRAINT "provider_event_sync_runs_tenants_tenant";
--- reverse: modify "provider_event_sync_cursors" table
-ALTER TABLE "provider_event_sync_cursors" DROP CONSTRAINT "provider_event_sync_cursors_tenants_tenant";
 -- reverse: modify "playbooks" table
 ALTER TABLE "playbooks" DROP CONSTRAINT "playbooks_tenants_tenant";
 -- reverse: modify "organization_roles" table
@@ -98,8 +94,12 @@ ALTER TABLE "knowledge_evidences" DROP CONSTRAINT "knowledge_evidences_normalize
 ALTER TABLE "knowledge_entity_alias" DROP CONSTRAINT "knowledge_entity_alias_knowledge_entities_entity", DROP CONSTRAINT "knowledge_entity_alias_tenants_tenant";
 -- reverse: modify "knowledge_entities" table
 ALTER TABLE "knowledge_entities" DROP CONSTRAINT "knowledge_entities_tenants_tenant";
--- reverse: modify "integration_oauth_states" table
-ALTER TABLE "integration_oauth_states" DROP CONSTRAINT "integration_oauth_states_users_user", DROP CONSTRAINT "integration_oauth_states_tenants_tenant";
+-- reverse: modify "integration_user_install_states" table
+ALTER TABLE "integration_user_install_states" DROP CONSTRAINT "integration_user_install_states_users_user", DROP CONSTRAINT "integration_user_install_states_tenants_tenant";
+-- reverse: modify "integration_event_sync_runs" table
+ALTER TABLE "integration_event_sync_runs" DROP CONSTRAINT "integration_event_sync_runs_integrations_integration", DROP CONSTRAINT "integration_event_sync_runs_tenants_tenant";
+-- reverse: modify "integration_event_sync_cursors" table
+ALTER TABLE "integration_event_sync_cursors" DROP CONSTRAINT "integration_event_sync_cursors_integrations_integration", DROP CONSTRAINT "integration_event_sync_cursors_tenants_tenant";
 -- reverse: modify "integrations" table
 ALTER TABLE "integrations" DROP CONSTRAINT "integrations_tenants_tenant";
 -- reverse: modify "incident_types" table
@@ -282,20 +282,6 @@ DROP INDEX "retrospectives_incident_id_key";
 DROP INDEX "retrospectives_document_id_key";
 -- reverse: create "retrospectives" table
 DROP TABLE "retrospectives";
--- reverse: create index "providereventsyncrun_tenant_id_status_started_at" to table: "provider_event_sync_runs"
-DROP INDEX "providereventsyncrun_tenant_id_status_started_at";
--- reverse: create index "providereventsyncrun_tenant_id_provider_started_at" to table: "provider_event_sync_runs"
-DROP INDEX "providereventsyncrun_tenant_id_provider_started_at";
--- reverse: create index "providereventsyncrun_tenant_id" to table: "provider_event_sync_runs"
-DROP INDEX "providereventsyncrun_tenant_id";
--- reverse: create "provider_event_sync_runs" table
-DROP TABLE "provider_event_sync_runs";
--- reverse: create index "providereventsynccursor_tenant_id_provider_provider_source" to table: "provider_event_sync_cursors"
-DROP INDEX "providereventsynccursor_tenant_id_provider_provider_source";
--- reverse: create index "providereventsynccursor_tenant_id" to table: "provider_event_sync_cursors"
-DROP INDEX "providereventsynccursor_tenant_id";
--- reverse: create "provider_event_sync_cursors" table
-DROP TABLE "provider_event_sync_cursors";
 -- reverse: create index "playbook_tenant_id" to table: "playbooks"
 DROP INDEX "playbook_tenant_id";
 -- reverse: create "playbooks" table
@@ -430,14 +416,30 @@ DROP INDEX "knowledgeentity_tenant_id_kind";
 DROP INDEX "knowledgeentity_tenant_id";
 -- reverse: create "knowledge_entities" table
 DROP TABLE "knowledge_entities";
--- reverse: create index "integrationoauthstate_tenant_id" to table: "integration_oauth_states"
-DROP INDEX "integrationoauthstate_tenant_id";
--- reverse: create "integration_oauth_states" table
-DROP TABLE "integration_oauth_states";
--- reverse: create index "integration_tenant_id_provider_external_ref" to table: "integrations"
-DROP INDEX "integration_tenant_id_provider_external_ref";
--- reverse: create index "integration_tenant_id_provider" to table: "integrations"
-DROP INDEX "integration_tenant_id_provider";
+-- reverse: create index "integrationuserinstallstate_tenant_id_user_id_integration_name" to table: "integration_user_install_states"
+DROP INDEX "integrationuserinstallstate_tenant_id_user_id_integration_name";
+-- reverse: create index "integrationuserinstallstate_tenant_id" to table: "integration_user_install_states"
+DROP INDEX "integrationuserinstallstate_tenant_id";
+-- reverse: create "integration_user_install_states" table
+DROP TABLE "integration_user_install_states";
+-- reverse: create index "integrationeventsyncrun_tenant_id_status_started_at" to table: "integration_event_sync_runs"
+DROP INDEX "integrationeventsyncrun_tenant_id_status_started_at";
+-- reverse: create index "integrationeventsyncrun_tenant_id_integration_id_started_at" to table: "integration_event_sync_runs"
+DROP INDEX "integrationeventsyncrun_tenant_id_integration_id_started_at";
+-- reverse: create index "integrationeventsyncrun_tenant_id" to table: "integration_event_sync_runs"
+DROP INDEX "integrationeventsyncrun_tenant_id";
+-- reverse: create "integration_event_sync_runs" table
+DROP TABLE "integration_event_sync_runs";
+-- reverse: create index "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869" to table: "integration_event_sync_cursors"
+DROP INDEX "integrationeventsynccursor_ten_914d3d8b389cb5d930bdf0bb43683869";
+-- reverse: create index "integrationeventsynccursor_tenant_id" to table: "integration_event_sync_cursors"
+DROP INDEX "integrationeventsynccursor_tenant_id";
+-- reverse: create "integration_event_sync_cursors" table
+DROP TABLE "integration_event_sync_cursors";
+-- reverse: create index "integration_tenant_id_integration_name_external_provider_ref" to table: "integrations"
+DROP INDEX "integration_tenant_id_integration_name_external_provider_ref";
+-- reverse: create index "integration_tenant_id_integration_name" to table: "integrations"
+DROP INDEX "integration_tenant_id_integration_name";
 -- reverse: create index "integration_tenant_id" to table: "integrations"
 DROP INDEX "integration_tenant_id";
 -- reverse: create "integrations" table

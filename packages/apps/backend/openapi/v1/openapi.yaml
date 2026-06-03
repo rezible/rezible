@@ -259,10 +259,6 @@ components:
     AvailableIntegration:
       additionalProperties: false
       properties:
-        dataKinds:
-          items:
-            type: string
-          type: array
         maxInstalls:
           format: int64
           type: integer
@@ -272,10 +268,14 @@ components:
           type: boolean
         provider:
           type: string
+        supportedCapabilities:
+          items:
+            type: string
+          type: array
       required:
         - name
         - provider
-        - dataKinds
+        - supportedCapabilities
         - oauthInstall
       type: object
     CompleteIntegrationOAuthFlowRequestAttributes:

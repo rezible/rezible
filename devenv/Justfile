@@ -28,7 +28,8 @@ dbName := "rez-"+branchId
 
 [doc("Setup development environment")]
 [arg("force", long="force", value="true")]
-@setup-workspace force="false":
+[arg("no-migrate", long="no-migrate", value="false")]
+@setup-workspace force="false" no-migrate="false":
     if [[ "{{workspace_setup}}" == "true" ]]; then \
       if [[ "{{force}}" == "false" ]]; then echo "{{alreadySetupErr}}"; exit 1; fi; \
       rm "{{workspace_env_file}}"; \
@@ -38,7 +39,9 @@ dbName := "rez-"+branchId
     docker compose up --wait
     sleep 1
     just _setup-workspace-db
-    cd .. && just backend::apply-migrations
+    if [[ "{{no-migrate}}" == "true" ]]; then \
+      cd .. && just backend::apply-migrations; \
+    fi
     just set-domains
 
 _write-workspace-env:

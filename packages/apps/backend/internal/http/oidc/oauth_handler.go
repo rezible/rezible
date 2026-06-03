@@ -20,8 +20,9 @@ const (
 )
 
 type oauthHandler struct {
-	cfg   rez.HttpAuthOidcConfig
-	codec *cookieCodec
+	cfg         rez.HttpAuthOidcConfig
+	redirectUrl string
+	codec       *cookieCodec
 
 	apiAudience     string
 	singleTenantOrg *ent.Organization
@@ -56,7 +57,7 @@ func (h *oauthHandler) ensureProvider(ctx context.Context) error {
 			ClientID:     h.cfg.ClientID,
 			ClientSecret: h.cfg.ClientSecret,
 			Scopes:       h.scopes(),
-			RedirectURL:  h.cfg.RedirectUrl,
+			RedirectURL:  h.redirectUrl,
 			Endpoint:     h.provider.Endpoint(),
 		}
 		h.accessTokenVerifier = h.provider.VerifierContext(ctx, &oidc.Config{ClientID: accessTokenAudience})

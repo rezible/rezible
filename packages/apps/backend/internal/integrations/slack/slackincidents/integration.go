@@ -138,7 +138,7 @@ func (i *Integration) Shutdown(ctx context.Context) error {
 	return i.service.Shutdown(ctx)
 }
 
-func (i *Integration) SupportedDataKinds() []string {
+func (i *Integration) SupportedCapabilities() []string {
 	return nil
 }
 
