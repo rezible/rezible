@@ -150,7 +150,7 @@ func runService[Entrypoint startable](ctx context.Context, r *commandRunner) err
 		servicesErr = poolErr
 	}
 	slog.Info("=== Stopping Services ===")
-	
+
 	if servicesErr != nil && !errors.Is(servicesErr, context.Canceled) {
 		return fmt.Errorf("run services: %s", servicesErr.Error())
 	}
