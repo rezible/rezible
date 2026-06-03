@@ -1,36 +1,32 @@
-import { finishOrganizationSetupMutation, type ConfiguredIntegration } from "$lib/api";
+import { finishOrganizationSetupMutation, type AvailableIntegration, type InstalledIntegration } from "$lib/api";
 import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { Context, watch } from "runed";
 import { createMutation } from "@tanstack/svelte-query";
-import { initIntegrationsController } from "$src/features/settings/lib/integrationsController.svelte";
+import { useIntegrationsController } from "$src/features/settings/lib/integrationsController.svelte";
 
 type SetupStep = "org_name" | "required_integrations";
-const RequiredDataKinds = new Set(["chat", "users"]);
+const RequiredCapabilities = new Set(["chat", "users"]);
 
-const getEnabledDataKinds = (intg: ConfiguredIntegration) => 
-    Object.entries(intg.attributes.dataKinds).
+const getEnabledDataKinds = (intg: InstalledIntegration) => 
+    Object.entries(intg.attributes.capabilities).
         filter(([_, enabled]) => (enabled)).
         map(([name, _]) => (name));
 
 export class InitialSetupViewController {
     session = useAuthSessionState();
+    private integrations = useIntegrationsController();
 
     step = $state<SetupStep>("required_integrations");
 
-    integrations = initIntegrationsController();
-
-	configuredDataKinds = $derived(new Set(this.integrations.configured.flatMap(getEnabledDataKinds)));
-    remainingRequiredDataKinds = $derived(RequiredDataKinds.difference(this.configuredDataKinds).values().toArray());
-    nextRequiredDataKind = $derived(this.remainingRequiredDataKinds.at(0));
-    availableDataKindIntegrations = $derived.by(() => {
-        const reqKind = this.nextRequiredDataKind;
-        if (!reqKind) return [];
-        return this.integrations.available.filter(intg => intg.dataKinds.includes(reqKind));
+	installedCapabilities = $derived(new Set(this.integrations.installed.flatMap(getEnabledDataKinds)));
+    remainingRequiredCapabilities = $derived(RequiredCapabilities.difference(this.installedCapabilities).values().toArray());
+    availableIntegrationsForCapabilities = $derived.by(() => {
+        return new Map<string, AvailableIntegration[]>();
     });
 
     canFinish = $derived.by(() => {
         if (!this.integrations) return false;
-        if (this.remainingRequiredDataKinds.length === 0) return true;
+        if (this.remainingRequiredCapabilities.length === 0) return true;
         return false;
     });
 
@@ -56,7 +52,7 @@ export class InitialSetupViewController {
         }
     }
 
-    loading = $derived(this.finishOrgSetupMut.isPending || this.integrations.loading);
+    loading = $derived(this.finishingSetup || this.integrations.loading);
 }
 
 const ctx = new Context<InitialSetupViewController>("InitialSetupViewController");

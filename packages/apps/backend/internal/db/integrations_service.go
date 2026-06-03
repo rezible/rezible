@@ -286,23 +286,19 @@ func (s *IntegrationsService) makeUserOAuthInstallationState(ctx context.Context
 	return oauthState, nil
 }
 
-func (s *IntegrationsService) updateUserInstallationStateWithOptions(ctx context.Context, id uuid.UUID, options []rez.IntegrationInstallationTarget) (string, error) {
-	// TODO: replace this with something actually random
-	selectionToken := uuid.New().String()
-
+func (s *IntegrationsService) updateUserInstallationStateWithOptions(ctx context.Context, id uuid.UUID, options []rez.IntegrationInstallationTarget) error {
 	targets, encErr := integrations.EncodeInstallationTargetOptions(options)
 	if encErr != nil {
-		return "", fmt.Errorf("encode installation targets: %w", encErr)
+		return fmt.Errorf("encode installation targets: %w", encErr)
 	}
 
 	update := s.db.Client(ctx).IntegrationUserInstallState.UpdateOneID(id).
-		SetInstallTargetSelectionToken(selectionToken).
 		SetInstallationTargets(targets).
 		SetExpiresAt(time.Now().Add(time.Minute * 10))
 	if updateErr := update.Exec(ctx); updateErr != nil {
-		return "", fmt.Errorf("update installation state: %w", updateErr)
+		return fmt.Errorf("update installation state: %w", updateErr)
 	}
-	return selectionToken, nil
+	return nil
 }
 
 func (s *IntegrationsService) lookupUserInstallationState(ctx context.Context, userId uuid.UUID, intgName string) (*ent.IntegrationUserInstallState, error) {
@@ -393,18 +389,41 @@ func (s *IntegrationsService) CompleteOAuth2Flow(ctx context.Context, integratio
 	if installState == nil {
 		return nil, fmt.Errorf("multiple integration options require installation state")
 	}
-	selectionToken, updateErr := s.updateUserInstallationStateWithOptions(ctx, installState.ID, options)
+
+	updateErr := s.updateUserInstallationStateWithOptions(ctx, installState.ID, options)
 	if updateErr != nil {
 		return nil, fmt.Errorf("failed to update user installation state: %w", updateErr)
 	}
 	return &rez.CompleteIntegrationOAuth2FlowResult{
 		InstallationTargetSelectionRequired: true,
-		InstallationTargetSelectionToken:    selectionToken,
 		InstallationTargetOptions:           options,
 	}, nil
 }
 
-func (s *IntegrationsService) InstallFromInstallationTargets(ctx context.Context, intgName string, token string, externalRefs []string) ([]rez.InstalledIntegration, error) {
+func (s *IntegrationsService) ListUserInstallationTargets(ctx context.Context) (map[string][]rez.IntegrationInstallationTarget, error) {
+	userId, ok := execution.GetContext(ctx).UserID()
+	if !ok {
+		return nil, rez.ErrAuthSessionMissing
+	}
+	query := s.db.Client(ctx).IntegrationUserInstallState.Query().
+		Where(iuis.UserID(userId)).
+		Where(iuis.InstallationTargetsNotNil())
+	states, queryErr := query.All(ctx)
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return nil, fmt.Errorf("query failed: %w", queryErr)
+	}
+	targets := make(map[string][]rez.IntegrationInstallationTarget)
+	for _, state := range states {
+		opts, optsErr := integrations.DecodeInstallationTargetOptions(state.InstallationTargets)
+		if optsErr != nil {
+			return nil, fmt.Errorf("decode installation targets: %w", optsErr)
+		}
+		targets[state.IntegrationName] = opts
+	}
+	return targets, nil
+}
+
+func (s *IntegrationsService) InstallFromUserInstallationTargets(ctx context.Context, intgName string, externalRefs []string) ([]rez.InstalledIntegration, error) {
 	userId, ok := execution.GetContext(ctx).UserID()
 	if !ok {
 		return nil, rez.ErrAuthSessionMissing
@@ -412,9 +431,6 @@ func (s *IntegrationsService) InstallFromInstallationTargets(ctx context.Context
 	state, stateErr := s.lookupUserInstallationState(ctx, userId, intgName)
 	if stateErr != nil {
 		return nil, fmt.Errorf("invalid state: %w", stateErr)
-	}
-	if state.InstallTargetSelectionToken != token {
-		return nil, fmt.Errorf("invalid installation token")
 	}
 	options, decodeErr := integrations.DecodeInstallationTargetOptions(state.InstallationTargets)
 	if decodeErr != nil {

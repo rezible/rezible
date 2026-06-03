@@ -119,6 +119,7 @@ type (
 
 	InstalledIntegration interface {
 		Integration() *ent.Integration
+		ProviderName() string
 		SanitizedInstallationConfig() map[string]any
 		GetCapabilities() map[string]bool
 	}
@@ -139,7 +140,6 @@ type (
 	CompleteIntegrationOAuth2FlowResult struct {
 		InstallationTargetSelectionRequired bool
 		Installed                           []InstalledIntegration
-		InstallationTargetSelectionToken    string
 		InstallationTargetOptions           []IntegrationInstallationTarget
 	}
 
@@ -159,7 +159,9 @@ type (
 		GetAvailable() []IntegrationPackage
 
 		InstallNew(ctx context.Context, integrationName string, params InstallIntegrationParams) (InstalledIntegration, error)
-		InstallFromInstallationTargets(ctx context.Context, integrationName string, token string, externalRefs []string) ([]InstalledIntegration, error)
+
+		ListUserInstallationTargets(ctx context.Context) (map[string][]IntegrationInstallationTarget, error)
+		InstallFromUserInstallationTargets(ctx context.Context, integrationName string, externalRefs []string) ([]InstalledIntegration, error)
 
 		GetInstalled(ctx context.Context, id uuid.UUID) (InstalledIntegration, error)
 		LookupByRef(ctx context.Context, name string, providerRef string) (*ent.Integration, error)

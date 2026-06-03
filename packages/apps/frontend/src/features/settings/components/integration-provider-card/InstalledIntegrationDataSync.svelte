@@ -1,44 +1,52 @@
 <script lang="ts">
+    import type { InstalledIntegration } from "$lib/api";
+
 	import { Badge } from "$components/ui/badge";
 	import { Button } from "$components/ui/button";
-	import { IntegrationDataSyncController, useIntegrationCardController } from "./controller.svelte";
 	import Spinner from "$components/ui/spinner/spinner.svelte";
 	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
 
-	const ctrl = useIntegrationCardController();
-    const syncCtrl = new IntegrationDataSyncController();
+	import { useAvailableIntegrationCardController } from "./availableIntegrationController.svelte";
+	import { InstalledIntegrationDataSyncController } from "./installedIntegrationController.svelte";
+
+	type Props = {
+		installation: InstalledIntegration;
+	};
+	const { installation }: Props = $props();
+    
+    const ctrl = new InstalledIntegrationDataSyncController(() => installation);
 </script>
 
-{#if !!syncCtrl.syncStatusError}
-    <InlineAlert error={syncCtrl.syncStatusError} dismissable={false} />
+{#if !!ctrl.syncStatusError}
+    <InlineAlert error={ctrl.syncStatusError} dismissable={false} />
 {/if}
 
 <div class="flex items-center justify-between gap-3 rounded-md border p-3 text-sm">
     <div class="flex min-w-0 items-center gap-2">
         <span class="text-muted-foreground">Data sync</span>
-        {#if syncCtrl.latestSyncStatusDisplay}
+        {#if ctrl.latestSyncStatusDisplay}
             <Badge
-                variant={syncCtrl.latestSyncStatusDisplay.variant}
-                class={syncCtrl.latestSyncStatusDisplay.class}
+                variant={ctrl.latestSyncStatusDisplay.variant}
+                class={ctrl.latestSyncStatusDisplay.class}
             >
-                {syncCtrl.latestSyncStatusDisplay.label}
+                {ctrl.latestSyncStatusDisplay.label}
             </Badge>
         {:else}
             <Badge variant="outline">No runs</Badge>
         {/if}
-        {#if syncCtrl.isSyncing}
+        {#if ctrl.isSyncing}
             <Spinner aria-label="Sync status updating" />
         {/if}
     </div>
     <div class="flex min-w-0 items-center gap-2">
         <Button
             onclick={() => {
-                syncCtrl.requestSync();
+                ctrl.requestSync();
             }}
             variant="outline"
-            disabled={!ctrl.hasConfigured || ctrl.loading || syncCtrl.isSyncing}
+            disabled={ctrl.disabled}
         >
-            {#if syncCtrl.isSyncing}
+            {#if ctrl.isSyncing}
                 <Spinner />
                 Syncing...
             {:else}

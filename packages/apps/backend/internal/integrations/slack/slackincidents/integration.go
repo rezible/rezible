@@ -162,6 +162,10 @@ func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
+func (ii *InstalledIntegration) ProviderName() string {
+	return slackintegration.ProviderName
+}
+
 func (ii *InstalledIntegration) config() (*slackintegration.InstallationConfig, error) {
 	return slackintegration.DecodeInstallationConfig(ii.intg)
 }

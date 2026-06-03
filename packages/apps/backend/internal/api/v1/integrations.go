@@ -112,23 +112,6 @@ func (h *integrationsHandler) StartIntegrationOAuthFlow(ctx context.Context, req
 	return &resp, nil
 }
 
-func (h *integrationsHandler) SelectIntegrationInstallTargets(ctx context.Context, req *oapi.SelectIntegrationInstallTargetsRequest) (*oapi.SelectIntegrationInstallTargetsResponse, error) {
-	var resp oapi.SelectIntegrationInstallTargetsResponse
-
-	attr := req.Body.Attributes
-	results, installErr := h.integrations.InstallFromInstallationTargets(ctx, req.Name, attr.SelectionToken, attr.ExternalRefs)
-	if installErr != nil {
-		return nil, oapi.Error(ctx, "failed to install selected integrations", installErr)
-	}
-
-	resp.Body.Data = make([]oapi.InstalledIntegration, len(results))
-	for i, intg := range results {
-		resp.Body.Data[i] = oapi.InstalledIntegrationFromRez(intg)
-	}
-
-	return &resp, nil
-}
-
 func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, req *oapi.CompleteIntegrationOAuthFlowRequest) (*oapi.CompleteIntegrationOAuthFlowResponse, error) {
 	var resp oapi.CompleteIntegrationOAuthFlowResponse
 
@@ -146,7 +129,40 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 	if completeErr != nil {
 		return nil, oapi.Error(ctx, "failed to complete integration", completeErr)
 	}
-	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromRez(result)
+	resp.Body.Data = oapi.IntegrationOAuthFlowResultFromRez(req.Name, result)
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) ListIntegrationInstallTargets(ctx context.Context, req *oapi.ListIntegrationInstallTargetsRequest) (*oapi.ListIntegrationInstallTargetsResponse, error) {
+	var resp oapi.ListIntegrationInstallTargetsResponse
+
+	targets, listErr := h.integrations.ListUserInstallationTargets(ctx)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "failed to list integration install targets", listErr)
+	}
+	resp.Body.Data = make([]oapi.IntegrationInstallTarget, 0)
+	for name, intgTargets := range targets {
+		resp.Body.Data = append(resp.Body.Data,
+			oapi.IntegrationInstallTargetOptionsFromRez(name, intgTargets)...)
+	}
+
+	return &resp, nil
+}
+
+func (h *integrationsHandler) InstallIntegrationTargets(ctx context.Context, req *oapi.InstallIntegrationTargetsRequest) (*oapi.InstallIntegrationTargetsResponse, error) {
+	var resp oapi.InstallIntegrationTargetsResponse
+
+	attr := req.Body.Attributes
+	results, installErr := h.integrations.InstallFromUserInstallationTargets(ctx, req.Name, attr.ExternalRefs)
+	if installErr != nil {
+		return nil, oapi.Error(ctx, "failed to install selected integrations", installErr)
+	}
+
+	resp.Body.Data = make([]oapi.InstalledIntegration, len(results))
+	for i, intg := range results {
+		resp.Body.Data[i] = oapi.InstalledIntegrationFromRez(intg)
+	}
 
 	return &resp, nil
 }

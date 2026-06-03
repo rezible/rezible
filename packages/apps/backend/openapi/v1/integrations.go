@@ -16,7 +16,8 @@ type IntegrationsHandler interface {
 	ListAvailableIntegrations(context.Context, *ListAvailableIntegrationsRequest) (*ListAvailableIntegrationsResponse, error)
 
 	CreateInstalledIntegration(context.Context, *CreateInstalledIntegrationRequest) (*CreateInstalledIntegrationResponse, error)
-	SelectIntegrationInstallTargets(context.Context, *SelectIntegrationInstallTargetsRequest) (*SelectIntegrationInstallTargetsResponse, error)
+	ListIntegrationInstallTargets(context.Context, *ListIntegrationInstallTargetsRequest) (*ListIntegrationInstallTargetsResponse, error)
+	InstallIntegrationTargets(context.Context, *InstallIntegrationTargetsRequest) (*InstallIntegrationTargetsResponse, error)
 
 	ListInstalledIntegrations(context.Context, *ListInstalledIntegrationsRequest) (*ListInstalledIntegrationsResponse, error)
 	UpdateInstalledIntegration(context.Context, *UpdateInstalledIntegrationRequest) (*UpdateInstalledIntegrationResponse, error)
@@ -34,9 +35,10 @@ func (o operations) RegisterIntegrations(api huma.API) {
 	huma.Register(api, ListAvailableIntegrations, o.ListAvailableIntegrations)
 
 	huma.Register(api, CreateInstalledIntegration, o.CreateInstalledIntegration)
-	huma.Register(api, SelectIntegrationInstallTargets, o.SelectIntegrationInstallTargets)
+	huma.Register(api, InstallIntegrationTargets, o.InstallIntegrationTargets)
 
 	huma.Register(api, StartIntegrationOAuthFlow, o.StartIntegrationOAuthFlow)
+	huma.Register(api, ListIntegrationInstallTargets, o.ListIntegrationInstallTargets)
 	huma.Register(api, CompleteIntegrationOAuthFlow, o.CompleteIntegrationOAuthFlow)
 
 	huma.Register(api, GetInstalledIntegration, o.GetInstalledIntegration)
@@ -64,6 +66,7 @@ type (
 
 	InstalledIntegrationAttributes struct {
 		IntegrationName string          `json:"integrationName"`
+		ProviderName    string          `json:"providerName"`
 		DisplayName     string          `json:"displayName"`
 		ExternalRef     string          `json:"externalRef"`
 		Config          map[string]any  `json:"config"`
@@ -72,15 +75,15 @@ type (
 	}
 
 	IntegrationOAuthInstallResult struct {
-		TargetSelectionRequired bool                             `json:"targetSelectionRequired"`
-		Installed               []InstalledIntegration           `json:"installed,omitempty"`
-		TargetSelectionToken    string                           `json:"targetSelectionToken,omitempty"`
-		InstallTargetOptions    []IntegrationInstallTargetOption `json:"installTargetOptions,omitempty"`
+		TargetSelectionRequired bool                       `json:"targetSelectionRequired"`
+		Installed               []InstalledIntegration     `json:"installed,omitempty"`
+		InstallTargetOptions    []IntegrationInstallTarget `json:"installTargetOptions,omitempty"`
 	}
 
-	IntegrationInstallTargetOption struct {
-		ExternalRef string `json:"externalRef"`
-		DisplayName string `json:"displayName"`
+	IntegrationInstallTarget struct {
+		IntegrationName string `json:"integrationName"`
+		ExternalRef     string `json:"externalRef"`
+		DisplayName     string `json:"displayName"`
 		//Config      map[string]any `json:"config"`
 	}
 
@@ -110,41 +113,45 @@ func AvailableIntegrationFromPackage(p rez.IntegrationPackage) AvailableIntegrat
 	}
 }
 
-func InstalledIntegrationFromRez(cfg rez.InstalledIntegration) InstalledIntegration {
-	intg := cfg.Integration()
+func InstalledIntegrationFromRez(ii rez.InstalledIntegration) InstalledIntegration {
+	intg := ii.Integration()
 	attrs := InstalledIntegrationAttributes{
 		IntegrationName: intg.IntegrationName,
+		ProviderName:    ii.ProviderName(),
 		DisplayName:     intg.DisplayName,
 		ExternalRef:     intg.ExternalProviderRef,
 		Settings:        intg.UserSettings,
-		Config:          cfg.SanitizedInstallationConfig(),
-		Capabilities:    cfg.GetCapabilities(),
+		Config:          ii.SanitizedInstallationConfig(),
+		Capabilities:    ii.GetCapabilities(),
 	}
 	return InstalledIntegration{Id: intg.ID, Attributes: attrs}
 }
 
-func IntegrationInstallTargetOptionFromRez(opt rez.IntegrationInstallationTarget) IntegrationInstallTargetOption {
-	return IntegrationInstallTargetOption{
-		ExternalRef: opt.ExternalRef,
-		DisplayName: opt.DisplayName,
+func IntegrationInstallTargetOptionsFromRez(intgName string, targets []rez.IntegrationInstallationTarget) []IntegrationInstallTarget {
+	res := make([]IntegrationInstallTarget, len(targets))
+	for i, t := range targets {
+		res[i] = IntegrationInstallTarget{
+			IntegrationName: intgName,
+			ExternalRef:     t.ExternalRef,
+			DisplayName:     t.DisplayName,
+		}
 	}
+	return res
 }
 
-func IntegrationOAuthFlowResultFromRez(result *rez.CompleteIntegrationOAuth2FlowResult) IntegrationOAuthInstallResult {
-	installed := make([]InstalledIntegration, len(result.Installed))
-	for i, ci := range result.Installed {
-		installed[i] = InstalledIntegrationFromRez(ci)
+func IntegrationOAuthFlowResultFromRez(intgName string, result *rez.CompleteIntegrationOAuth2FlowResult) IntegrationOAuthInstallResult {
+	res := IntegrationOAuthInstallResult{
+		TargetSelectionRequired: true,
 	}
-	options := make([]IntegrationInstallTargetOption, len(result.InstallationTargetOptions))
-	for i, opt := range result.InstallationTargetOptions {
-		options[i] = IntegrationInstallTargetOptionFromRez(opt)
+	if res.TargetSelectionRequired {
+		res.InstallTargetOptions = IntegrationInstallTargetOptionsFromRez(intgName, result.InstallationTargetOptions)
+	} else {
+		res.Installed = make([]InstalledIntegration, len(result.Installed))
+		for i, ci := range result.Installed {
+			res.Installed[i] = InstalledIntegrationFromRez(ci)
+		}
 	}
-	return IntegrationOAuthInstallResult{
-		TargetSelectionRequired: result.InstallationTargetSelectionRequired,
-		Installed:               installed,
-		TargetSelectionToken:    result.InstallationTargetSelectionToken,
-		InstallTargetOptions:    options,
-	}
+	return res
 }
 
 func IntegrationEventSyncRunFromEnt(r *ent.IntegrationEventSyncRun) IntegrationEventSyncRun {
@@ -187,6 +194,33 @@ type CreateInstalledIntegrationRequestAttributes struct {
 type CreateInstalledIntegrationRequest NameRequest[CreateInstalledIntegrationRequestAttributes]
 type CreateInstalledIntegrationResponse ItemResponse[InstalledIntegration]
 
+var ListIntegrationInstallTargets = huma.Operation{
+	OperationID: "list-integration-install-targets",
+	Method:      http.MethodGet,
+	Path:        "/integrations/install_targets",
+	Summary:     "List current unselected integration installation targets",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListIntegrationInstallTargetsRequest EmptyRequest
+type ListIntegrationInstallTargetsResponse ListResponse[IntegrationInstallTarget]
+
+var InstallIntegrationTargets = huma.Operation{
+	OperationID: "install-integration-targets",
+	Method:      http.MethodPost,
+	Path:        "/integrations/providers/{name}/install/targets",
+	Summary:     "Select installation targets for an Integration",
+	Tags:        integrationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type InstallIntegrationTargetsRequestAttributes struct {
+	ExternalRefs []string `json:"externalRefs"`
+}
+type InstallIntegrationTargetsRequest NameRequest[InstallIntegrationTargetsRequestAttributes]
+type InstallIntegrationTargetsResponse ListResponse[InstalledIntegration]
+
 var StartIntegrationOAuthFlow = huma.Operation{
 	OperationID: "start-integration-oauth-flow",
 	Method:      http.MethodPost,
@@ -195,22 +229,6 @@ var StartIntegrationOAuthFlow = huma.Operation{
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
-
-var SelectIntegrationInstallTargets = huma.Operation{
-	OperationID: "select-integration-install-targets",
-	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{name}/install/targets",
-	Summary:     "Select installation targets for an Integration",
-	Tags:        integrationsTags,
-	Errors:      ErrorCodes(),
-}
-
-type SelectIntegrationInstallTargetsRequestAttributes struct {
-	SelectionToken string   `json:"selectionToken"`
-	ExternalRefs   []string `json:"externalRefs"`
-}
-type SelectIntegrationInstallTargetsRequest NameRequest[SelectIntegrationInstallTargetsRequestAttributes]
-type SelectIntegrationInstallTargetsResponse ListResponse[InstalledIntegration]
 
 type StartIntegrationOAuthFlowRequest EmptyNameRequest
 type StartIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlow]

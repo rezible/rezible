@@ -101,6 +101,11 @@ func ConvertListResult[T any, R any](result ent.ListResult[R], fn func(*R) T) Li
 	for i, r := range result.Data {
 		resp.Body.Data[i] = fn(r)
 	}
+	resp.Body.Pagination = ResponsePagination{
+		Next:     nil,
+		Previous: nil,
+		Total:    result.Count,
+	}
 	return resp
 }
 

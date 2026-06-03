@@ -2872,6 +2872,51 @@ components:
         - archived
         - description
       type: object
+    InstallIntegrationTargetsRequestAttributes:
+      additionalProperties: false
+      properties:
+        externalRefs:
+          items:
+            type: string
+          type: array
+      required:
+        - externalRefs
+      type: object
+    InstallIntegrationTargetsRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/InstallIntegrationTargetsRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/InstallIntegrationTargetsRequestAttributes"
+      required:
+        - attributes
+      type: object
+    InstallIntegrationTargetsResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/InstallIntegrationTargetsResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/InstalledIntegration"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
     InstalledIntegration:
       additionalProperties: false
       properties:
@@ -2899,11 +2944,14 @@ components:
           type: string
         integrationName:
           type: string
+        providerName:
+          type: string
         settings:
           additionalProperties: {}
           type: object
       required:
         - integrationName
+        - providerName
         - displayName
         - externalRef
         - config
@@ -2944,14 +2992,17 @@ components:
         - startedAt
         - finishedAt
       type: object
-    IntegrationInstallTargetOption:
+    IntegrationInstallTarget:
       additionalProperties: false
       properties:
         displayName:
           type: string
         externalRef:
           type: string
+        integrationName:
+          type: string
       required:
+        - integrationName
         - externalRef
         - displayName
       type: object
@@ -2968,7 +3019,7 @@ components:
       properties:
         installTargetOptions:
           items:
-            $ref: "#/components/schemas/IntegrationInstallTargetOption"
+            $ref: "#/components/schemas/IntegrationInstallTarget"
           type: array
         installed:
           items:
@@ -2976,8 +3027,6 @@ components:
           type: array
         targetSelectionRequired:
           type: boolean
-        targetSelectionToken:
-          type: string
       required:
         - targetSelectionRequired
       type: object
@@ -3334,6 +3383,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/IntegrationEventSyncRun"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListIntegrationInstallTargetsResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListIntegrationInstallTargetsResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IntegrationInstallTarget"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4342,54 +4411,6 @@ components:
         - requester
         - reviewer
         - comment
-      type: object
-    SelectIntegrationInstallTargetsRequestAttributes:
-      additionalProperties: false
-      properties:
-        externalRefs:
-          items:
-            type: string
-          type: array
-        selectionToken:
-          type: string
-      required:
-        - selectionToken
-        - externalRefs
-      type: object
-    SelectIntegrationInstallTargetsRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/SelectIntegrationInstallTargetsRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/SelectIntegrationInstallTargetsRequestAttributes"
-      required:
-        - attributes
-      type: object
-    SelectIntegrationInstallTargetsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/SelectIntegrationInstallTargetsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/InstalledIntegration"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
       type: object
     SendOncallShiftHandoverAttributes:
       additionalProperties: false
@@ -9941,6 +9962,55 @@ paths:
       summary: Create an Incident Event
       tags:
         - Incident Timeline
+  /integrations/install_targets:
+    get:
+      operationId: list-integration-install-targets
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListIntegrationInstallTargetsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List current unselected integration installation targets
+      tags:
+        - Integrations
   /integrations/installed:
     get:
       operationId: list-installed-integrations
@@ -10436,7 +10506,7 @@ paths:
         - Integrations
   /integrations/providers/{name}/install/targets:
     post:
-      operationId: select-integration-install-targets
+      operationId: install-integration-targets
       parameters:
         - in: path
           name: name
@@ -10447,14 +10517,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/SelectIntegrationInstallTargetsRequestBody"
+              $ref: "#/components/schemas/InstallIntegrationTargetsRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/SelectIntegrationInstallTargetsResponseBody"
+                $ref: "#/components/schemas/InstallIntegrationTargetsResponseBody"
           description: OK
         "400":
           content:

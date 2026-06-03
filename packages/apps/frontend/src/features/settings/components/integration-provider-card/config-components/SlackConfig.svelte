@@ -2,12 +2,12 @@
 	import * as Alert from "$components/ui/alert";
 	import { Badge } from "$components/ui/badge";
 	import { Button } from "$src/components/ui/button";
-	import { useIntegrationCardController } from "../controller.svelte";
+	import { useAvailableIntegrationCardController } from "../availableIntegrationController.svelte";
 
-	const ctrl = useIntegrationCardController();
+	const ctrl = useAvailableIntegrationCardController();
 </script>
 
-{#if ctrl.editingConfigured}
+{#if ctrl.editingInstallation}
 	<span>edit</span>
 {:else}
 	<Alert.Root>

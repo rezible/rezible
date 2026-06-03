@@ -1,5 +1,13 @@
 import { page } from "$app/state";
-import { startIntegrationOauthFlowMutation, completeIntegrationOauthFlowMutation, selectIntegrationOauthFlowMutation, type ErrorModel, type ExternalIntegrationOption, listConfiguredIntegrationsOptions } from "$lib/api";
+import { 
+	listInstalledIntegrationsOptions,
+	startIntegrationOauthFlowMutation, 
+	completeIntegrationOauthFlowMutation, 
+	installIntegrationTargetsMutation,
+	type ErrorModel, 
+	type IntegrationInstallTarget,
+	listIntegrationInstallTargetsOptions,
+} from "$lib/api";
 import { clearQueryParams } from "$src/lib/utils";
 import { createMutation, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
@@ -13,8 +21,7 @@ export class IntegrationOAuthController {
         })
     }
 
-    name = $state<string>();
-
+    installingName = $state<string>();
     error = $state<ErrorModel>();
     private setError(err?: unknown) {
         if (!err) {
@@ -28,41 +35,29 @@ export class IntegrationOAuthController {
     }
 
     private queryClient = useQueryClient();
-    private async reloadConfigured() {
+    private async reloadInstalledIntegrations() {
         await tick();
-        this.queryClient.invalidateQueries(listConfiguredIntegrationsOptions());
+        this.queryClient.invalidateQueries(listInstalledIntegrationsOptions());
     }
 
-    private startOAuthFlowMut = createMutation(() => startIntegrationOauthFlowMutation({}));
-    private completeOAuthFlowMut = createMutation(() => ({
-        ...completeIntegrationOauthFlowMutation({}),
-        onSuccess: () => {
-            this.reloadConfigured();
-        },
-    }));
-    private selectOAuthFlowMut = createMutation(() => ({
-        ...selectIntegrationOauthFlowMutation({}),
-        onSuccess: () => {
-            this.reloadConfigured();
-        },
-    }));
+    private startOAuthFlowMut = createMutation(() => ({
+		...startIntegrationOauthFlowMutation({}),
+	}));
 
-    pending = $derived(this.startOAuthFlowMut.isPending ||
-            this.completeOAuthFlowMut.isPending ||
-            this.selectOAuthFlowMut.isPending);
-
-    async getStartFlowUrl(name: string, callbackPath: string) {
-        const resp = await this.startOAuthFlowMut.mutateAsync({
-            path: { name },
-            body: { attributes: { callbackPath } },
-        });
+    async getStartFlowUrl(name: string) {
+        const resp = await this.startOAuthFlowMut.mutateAsync({path: { name }});
         return new URL(resp.data.flow_url);
     }
 
-	selectionToken = $state<string>();
-	selectionOptions = $state<ExternalIntegrationOption[]>([]);
-	selectedExternalRefs = new SvelteSet<string>();
-	selectionRequired = $derived(!!this.selectionToken && this.selectionOptions.length > 0);
+    private completeOAuthFlowMut = createMutation(() => ({
+        ...completeIntegrationOauthFlowMutation({}),
+        onSuccess: () => {
+            this.reloadInstalledIntegrations();
+        },
+    }));
+
+    inFlow = $derived(this.startOAuthFlowMut.isPending ||
+            this.completeOAuthFlowMut.isPending);
 
 	private async checkOAuthCallback(params: URLSearchParams) {
 		if (this.completeOAuthFlowMut.isPending) return;
@@ -72,7 +67,7 @@ export class IntegrationOAuthController {
 		const state = params.get("state");
 
 		if (!name || !state || !code) return;
-        this.name = name;
+        this.installingName = name;
 
 		await clearQueryParams();
 
@@ -82,52 +77,11 @@ export class IntegrationOAuthController {
 				path: { name },
 				body: { attributes },
 			});
-			if (resp.data.status === "selection_required") {
-				if (!resp.data.selectionToken) {
-					console.error("no selection token returned for oauth response");
-				} else {
-					this.setSelection(resp.data.selectionToken, resp.data.options);
-				}
+			if (resp.data.targetSelectionRequired) {
+        		this.queryClient.invalidateQueries(listIntegrationInstallTargetsOptions());
 			} else {
-                this.name = undefined;
-				this.setSelection();
+                this.installingName = undefined;
 			}
-			this.setError();
-		} catch (e) {
-			this.setError(e);
-		}
-	}
-
-	toggleSelection(ref: string, selected: boolean) {
-		if (selected) {
-			this.selectedExternalRefs.add(ref);
-		} else {
-			this.selectedExternalRefs.delete(ref);
-		}
-	}
-
-	private setSelection(token?: string, options: ExternalIntegrationOption[] = []) {
-		this.selectionToken = token;
-		this.selectionOptions = options;
-		this.selectedExternalRefs.clear();
-		for (const option of options) {
-			this.selectedExternalRefs.add(option.externalRef);
-		}
-	}
-
-	async selectOAuthOptions() {
-		if (!this.name || !this.selectionToken || this.selectedExternalRefs.size === 0) return;
-		try {
-			const attributes = {
-				selectionToken: this.selectionToken,
-				externalRefs: [...this.selectedExternalRefs],
-			}
-			await this.selectOAuthFlowMut.mutateAsync({
-				path: { name: this.name },
-				body: { attributes },
-			});
-            this.name = undefined;
-			this.setSelection();
 			this.setError();
 		} catch (e) {
 			this.setError(e);

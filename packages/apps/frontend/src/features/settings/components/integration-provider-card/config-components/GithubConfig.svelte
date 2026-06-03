@@ -3,11 +3,11 @@
 	import { Badge } from "$components/ui/badge";
 	import { Button } from "$src/components/ui/button";
 	import RiGithubFill from "remixicon-svelte/icons/github-fill";
-	import { useIntegrationCardController } from "../controller.svelte";
+	import { useAvailableIntegrationCardController } from "../availableIntegrationController.svelte";
 
-	const ctrl = useIntegrationCardController();
+	const ctrl = useAvailableIntegrationCardController();
 
-	const ci = $derived(ctrl.editingConfigured);
+	const ci = $derived(ctrl.editingInstallation);
 	const installation = $derived.by(() => {
 		if (!ci) return;
 		const config = ci.attributes.config;

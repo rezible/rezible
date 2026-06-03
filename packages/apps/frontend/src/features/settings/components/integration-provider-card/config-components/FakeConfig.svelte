@@ -1,16 +1,15 @@
 <script lang="ts">
 	import * as Alert from "$components/ui/alert";
-	import Button from "$components/ui/button/button.svelte";
-	import { useIntegrationCardController } from "../controller.svelte";
+	import { useAvailableIntegrationCardController } from "../availableIntegrationController.svelte";
 	import { onMount } from "svelte";
 
-	const ctrl = useIntegrationCardController();
+	const ctrl = useAvailableIntegrationCardController();
 
     onMount(() => {
         ctrl.setConfig({
             displayName: "Fake Data Provider",
-            externalRef: "fake",
             config: {},
+            preferences: {},
         });
     })
 </script>

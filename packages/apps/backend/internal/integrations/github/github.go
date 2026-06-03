@@ -10,7 +10,10 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-const integrationName = "github"
+const (
+	integrationName = "github"
+	providerName    = "github"
+)
 
 var supportedDataKinds = []string{"repositories", "change_events"}
 
@@ -89,6 +92,10 @@ func (i *Integration) newInstalledIntegration(intg *ent.Integration) *InstalledI
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
+}
+
+func (ii *InstalledIntegration) ProviderName() string {
+	return providerName
 }
 
 const (
