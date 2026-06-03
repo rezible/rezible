@@ -33,6 +33,8 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationeventsynccursor"
+	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
@@ -53,8 +55,6 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
-	"github.com/rezible/rezible/ent/providereventsynccursor"
-	"github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -633,6 +633,78 @@ func init() {
 	integrationDescID := integrationFields[0].Descriptor()
 	// integration.DefaultID holds the default value on creation for the id field.
 	integration.DefaultID = integrationDescID.Default.(func() uuid.UUID)
+	integrationeventsynccursorMixin := schema.IntegrationEventSyncCursor{}.Mixin()
+	integrationeventsynccursor.Policy = privacy.NewPolicies(integrationeventsynccursorMixin[0], integrationeventsynccursorMixin[1], schema.IntegrationEventSyncCursor{})
+	integrationeventsynccursor.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := integrationeventsynccursor.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	integrationeventsynccursorMixinFields2 := integrationeventsynccursorMixin[2].Fields()
+	_ = integrationeventsynccursorMixinFields2
+	integrationeventsynccursorFields := schema.IntegrationEventSyncCursor{}.Fields()
+	_ = integrationeventsynccursorFields
+	// integrationeventsynccursorDescCreatedAt is the schema descriptor for created_at field.
+	integrationeventsynccursorDescCreatedAt := integrationeventsynccursorMixinFields2[0].Descriptor()
+	// integrationeventsynccursor.DefaultCreatedAt holds the default value on creation for the created_at field.
+	integrationeventsynccursor.DefaultCreatedAt = integrationeventsynccursorDescCreatedAt.Default.(func() time.Time)
+	// integrationeventsynccursorDescUpdatedAt is the schema descriptor for updated_at field.
+	integrationeventsynccursorDescUpdatedAt := integrationeventsynccursorMixinFields2[1].Descriptor()
+	// integrationeventsynccursor.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	integrationeventsynccursor.DefaultUpdatedAt = integrationeventsynccursorDescUpdatedAt.Default.(func() time.Time)
+	// integrationeventsynccursor.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	integrationeventsynccursor.UpdateDefaultUpdatedAt = integrationeventsynccursorDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// integrationeventsynccursorDescProviderSource is the schema descriptor for provider_source field.
+	integrationeventsynccursorDescProviderSource := integrationeventsynccursorFields[2].Descriptor()
+	// integrationeventsynccursor.ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
+	integrationeventsynccursor.ProviderSourceValidator = integrationeventsynccursorDescProviderSource.Validators[0].(func(string) error)
+	// integrationeventsynccursorDescLastSyncedAt is the schema descriptor for last_synced_at field.
+	integrationeventsynccursorDescLastSyncedAt := integrationeventsynccursorFields[4].Descriptor()
+	// integrationeventsynccursor.DefaultLastSyncedAt holds the default value on creation for the last_synced_at field.
+	integrationeventsynccursor.DefaultLastSyncedAt = integrationeventsynccursorDescLastSyncedAt.Default.(func() time.Time)
+	// integrationeventsynccursorDescID is the schema descriptor for id field.
+	integrationeventsynccursorDescID := integrationeventsynccursorFields[0].Descriptor()
+	// integrationeventsynccursor.DefaultID holds the default value on creation for the id field.
+	integrationeventsynccursor.DefaultID = integrationeventsynccursorDescID.Default.(func() uuid.UUID)
+	integrationeventsyncrunMixin := schema.IntegrationEventSyncRun{}.Mixin()
+	integrationeventsyncrun.Policy = privacy.NewPolicies(integrationeventsyncrunMixin[0], integrationeventsyncrunMixin[1], schema.IntegrationEventSyncRun{})
+	integrationeventsyncrun.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := integrationeventsyncrun.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	integrationeventsyncrunFields := schema.IntegrationEventSyncRun{}.Fields()
+	_ = integrationeventsyncrunFields
+	// integrationeventsyncrunDescSyncReason is the schema descriptor for sync_reason field.
+	integrationeventsyncrunDescSyncReason := integrationeventsyncrunFields[3].Descriptor()
+	// integrationeventsyncrun.DefaultSyncReason holds the default value on creation for the sync_reason field.
+	integrationeventsyncrun.DefaultSyncReason = integrationeventsyncrunDescSyncReason.Default.(string)
+	// integrationeventsyncrunDescStartedAt is the schema descriptor for started_at field.
+	integrationeventsyncrunDescStartedAt := integrationeventsyncrunFields[4].Descriptor()
+	// integrationeventsyncrun.DefaultStartedAt holds the default value on creation for the started_at field.
+	integrationeventsyncrun.DefaultStartedAt = integrationeventsyncrunDescStartedAt.Default.(func() time.Time)
+	// integrationeventsyncrunDescEventsPulled is the schema descriptor for events_pulled field.
+	integrationeventsyncrunDescEventsPulled := integrationeventsyncrunFields[7].Descriptor()
+	// integrationeventsyncrun.DefaultEventsPulled holds the default value on creation for the events_pulled field.
+	integrationeventsyncrun.DefaultEventsPulled = integrationeventsyncrunDescEventsPulled.Default.(int)
+	// integrationeventsyncrunDescEventsIngested is the schema descriptor for events_ingested field.
+	integrationeventsyncrunDescEventsIngested := integrationeventsyncrunFields[8].Descriptor()
+	// integrationeventsyncrun.DefaultEventsIngested holds the default value on creation for the events_ingested field.
+	integrationeventsyncrun.DefaultEventsIngested = integrationeventsyncrunDescEventsIngested.Default.(int)
+	// integrationeventsyncrunDescDuplicates is the schema descriptor for duplicates field.
+	integrationeventsyncrunDescDuplicates := integrationeventsyncrunFields[9].Descriptor()
+	// integrationeventsyncrun.DefaultDuplicates holds the default value on creation for the duplicates field.
+	integrationeventsyncrun.DefaultDuplicates = integrationeventsyncrunDescDuplicates.Default.(int)
+	// integrationeventsyncrunDescID is the schema descriptor for id field.
+	integrationeventsyncrunDescID := integrationeventsyncrunFields[0].Descriptor()
+	// integrationeventsyncrun.DefaultID holds the default value on creation for the id field.
+	integrationeventsyncrun.DefaultID = integrationeventsyncrunDescID.Default.(func() uuid.UUID)
 	integrationuserinstallstateMixin := schema.IntegrationUserInstallState{}.Mixin()
 	integrationuserinstallstate.Policy = privacy.NewPolicies(integrationuserinstallstateMixin[0], integrationuserinstallstateMixin[1], schema.IntegrationUserInstallState{})
 	integrationuserinstallstate.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1112,86 +1184,6 @@ func init() {
 	playbookDescID := playbookFields[0].Descriptor()
 	// playbook.DefaultID holds the default value on creation for the id field.
 	playbook.DefaultID = playbookDescID.Default.(func() uuid.UUID)
-	providereventsynccursorMixin := schema.ProviderEventSyncCursor{}.Mixin()
-	providereventsynccursor.Policy = privacy.NewPolicies(providereventsynccursorMixin[0], providereventsynccursorMixin[1], schema.ProviderEventSyncCursor{})
-	providereventsynccursor.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := providereventsynccursor.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	providereventsynccursorMixinFields2 := providereventsynccursorMixin[2].Fields()
-	_ = providereventsynccursorMixinFields2
-	providereventsynccursorFields := schema.ProviderEventSyncCursor{}.Fields()
-	_ = providereventsynccursorFields
-	// providereventsynccursorDescCreatedAt is the schema descriptor for created_at field.
-	providereventsynccursorDescCreatedAt := providereventsynccursorMixinFields2[0].Descriptor()
-	// providereventsynccursor.DefaultCreatedAt holds the default value on creation for the created_at field.
-	providereventsynccursor.DefaultCreatedAt = providereventsynccursorDescCreatedAt.Default.(func() time.Time)
-	// providereventsynccursorDescUpdatedAt is the schema descriptor for updated_at field.
-	providereventsynccursorDescUpdatedAt := providereventsynccursorMixinFields2[1].Descriptor()
-	// providereventsynccursor.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	providereventsynccursor.DefaultUpdatedAt = providereventsynccursorDescUpdatedAt.Default.(func() time.Time)
-	// providereventsynccursor.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	providereventsynccursor.UpdateDefaultUpdatedAt = providereventsynccursorDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// providereventsynccursorDescProvider is the schema descriptor for provider field.
-	providereventsynccursorDescProvider := providereventsynccursorFields[1].Descriptor()
-	// providereventsynccursor.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
-	providereventsynccursor.ProviderValidator = providereventsynccursorDescProvider.Validators[0].(func(string) error)
-	// providereventsynccursorDescProviderSource is the schema descriptor for provider_source field.
-	providereventsynccursorDescProviderSource := providereventsynccursorFields[2].Descriptor()
-	// providereventsynccursor.ProviderSourceValidator is a validator for the "provider_source" field. It is called by the builders before save.
-	providereventsynccursor.ProviderSourceValidator = providereventsynccursorDescProviderSource.Validators[0].(func(string) error)
-	// providereventsynccursorDescLastSyncedAt is the schema descriptor for last_synced_at field.
-	providereventsynccursorDescLastSyncedAt := providereventsynccursorFields[4].Descriptor()
-	// providereventsynccursor.DefaultLastSyncedAt holds the default value on creation for the last_synced_at field.
-	providereventsynccursor.DefaultLastSyncedAt = providereventsynccursorDescLastSyncedAt.Default.(func() time.Time)
-	// providereventsynccursorDescID is the schema descriptor for id field.
-	providereventsynccursorDescID := providereventsynccursorFields[0].Descriptor()
-	// providereventsynccursor.DefaultID holds the default value on creation for the id field.
-	providereventsynccursor.DefaultID = providereventsynccursorDescID.Default.(func() uuid.UUID)
-	providereventsyncrunMixin := schema.ProviderEventSyncRun{}.Mixin()
-	providereventsyncrun.Policy = privacy.NewPolicies(providereventsyncrunMixin[0], providereventsyncrunMixin[1], schema.ProviderEventSyncRun{})
-	providereventsyncrun.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := providereventsyncrun.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	providereventsyncrunFields := schema.ProviderEventSyncRun{}.Fields()
-	_ = providereventsyncrunFields
-	// providereventsyncrunDescProvider is the schema descriptor for provider field.
-	providereventsyncrunDescProvider := providereventsyncrunFields[1].Descriptor()
-	// providereventsyncrun.ProviderValidator is a validator for the "provider" field. It is called by the builders before save.
-	providereventsyncrun.ProviderValidator = providereventsyncrunDescProvider.Validators[0].(func(string) error)
-	// providereventsyncrunDescSyncReason is the schema descriptor for sync_reason field.
-	providereventsyncrunDescSyncReason := providereventsyncrunFields[3].Descriptor()
-	// providereventsyncrun.DefaultSyncReason holds the default value on creation for the sync_reason field.
-	providereventsyncrun.DefaultSyncReason = providereventsyncrunDescSyncReason.Default.(string)
-	// providereventsyncrunDescStartedAt is the schema descriptor for started_at field.
-	providereventsyncrunDescStartedAt := providereventsyncrunFields[4].Descriptor()
-	// providereventsyncrun.DefaultStartedAt holds the default value on creation for the started_at field.
-	providereventsyncrun.DefaultStartedAt = providereventsyncrunDescStartedAt.Default.(func() time.Time)
-	// providereventsyncrunDescEventsPulled is the schema descriptor for events_pulled field.
-	providereventsyncrunDescEventsPulled := providereventsyncrunFields[7].Descriptor()
-	// providereventsyncrun.DefaultEventsPulled holds the default value on creation for the events_pulled field.
-	providereventsyncrun.DefaultEventsPulled = providereventsyncrunDescEventsPulled.Default.(int)
-	// providereventsyncrunDescEventsIngested is the schema descriptor for events_ingested field.
-	providereventsyncrunDescEventsIngested := providereventsyncrunFields[8].Descriptor()
-	// providereventsyncrun.DefaultEventsIngested holds the default value on creation for the events_ingested field.
-	providereventsyncrun.DefaultEventsIngested = providereventsyncrunDescEventsIngested.Default.(int)
-	// providereventsyncrunDescDuplicates is the schema descriptor for duplicates field.
-	providereventsyncrunDescDuplicates := providereventsyncrunFields[9].Descriptor()
-	// providereventsyncrun.DefaultDuplicates holds the default value on creation for the duplicates field.
-	providereventsyncrun.DefaultDuplicates = providereventsyncrunDescDuplicates.Default.(int)
-	// providereventsyncrunDescID is the schema descriptor for id field.
-	providereventsyncrunDescID := providereventsyncrunFields[0].Descriptor()
-	// providereventsyncrun.DefaultID holds the default value on creation for the id field.
-	providereventsyncrun.DefaultID = providereventsyncrunDescID.Default.(func() uuid.UUID)
 	retrospectiveMixin := schema.Retrospective{}.Mixin()
 	retrospective.Policy = privacy.NewPolicies(retrospectiveMixin[0], retrospectiveMixin[1], schema.Retrospective{})
 	retrospective.Hooks[0] = func(next ent.Mutator) ent.Mutator {

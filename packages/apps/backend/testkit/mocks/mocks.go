@@ -675,7 +675,7 @@ func (_c *MockProviderEventService_ListEvents_Call) RunAndReturn(run func(ctx co
 }
 
 // RegisterProjectionHandler provides a mock function for the type MockProviderEventService
-func (_mock *MockProviderEventService) RegisterProjectionHandler(name string, h rez.ProviderEventProjectionHandler, kinds ...projections.SubjectKind) {
+func (_mock *MockProviderEventService) RegisterProjectionHandler(name string, h rez.EventProjectionHandler, kinds ...projections.SubjectKind) {
 	// projections.SubjectKind
 	_va := make([]interface{}, len(kinds))
 	for _i := range kinds {
@@ -695,22 +695,22 @@ type MockProviderEventService_RegisterProjectionHandler_Call struct {
 
 // RegisterProjectionHandler is a helper method to define mock.On call
 //   - name string
-//   - h rez.ProviderEventProjectionHandler
+//   - h rez.EventProjectionHandler
 //   - kinds ...projections.SubjectKind
 func (_e *MockProviderEventService_Expecter) RegisterProjectionHandler(name interface{}, h interface{}, kinds ...interface{}) *MockProviderEventService_RegisterProjectionHandler_Call {
 	return &MockProviderEventService_RegisterProjectionHandler_Call{Call: _e.mock.On("RegisterProjectionHandler",
 		append([]interface{}{name, h}, kinds...)...)}
 }
 
-func (_c *MockProviderEventService_RegisterProjectionHandler_Call) Run(run func(name string, h rez.ProviderEventProjectionHandler, kinds ...projections.SubjectKind)) *MockProviderEventService_RegisterProjectionHandler_Call {
+func (_c *MockProviderEventService_RegisterProjectionHandler_Call) Run(run func(name string, h rez.EventProjectionHandler, kinds ...projections.SubjectKind)) *MockProviderEventService_RegisterProjectionHandler_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 string
 		if args[0] != nil {
 			arg0 = args[0].(string)
 		}
-		var arg1 rez.ProviderEventProjectionHandler
+		var arg1 rez.EventProjectionHandler
 		if args[1] != nil {
-			arg1 = args[1].(rez.ProviderEventProjectionHandler)
+			arg1 = args[1].(rez.EventProjectionHandler)
 		}
 		var arg2 []projections.SubjectKind
 		variadicArgs := make([]projections.SubjectKind, len(args)-2)
@@ -734,13 +734,13 @@ func (_c *MockProviderEventService_RegisterProjectionHandler_Call) Return() *Moc
 	return _c
 }
 
-func (_c *MockProviderEventService_RegisterProjectionHandler_Call) RunAndReturn(run func(name string, h rez.ProviderEventProjectionHandler, kinds ...projections.SubjectKind)) *MockProviderEventService_RegisterProjectionHandler_Call {
+func (_c *MockProviderEventService_RegisterProjectionHandler_Call) RunAndReturn(run func(name string, h rez.EventProjectionHandler, kinds ...projections.SubjectKind)) *MockProviderEventService_RegisterProjectionHandler_Call {
 	_c.Run(run)
 	return _c
 }
 
 // SyncEvents provides a mock function for the type MockProviderEventService
-func (_mock *MockProviderEventService) SyncEvents(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSyncOptions rez.ProviderEventSyncOptions) error {
+func (_mock *MockProviderEventService) SyncEvents(context1 context.Context, providerEventQuerier rez.IntegrationEventQuerier, providerEventSyncOptions rez.IntegrationEventSyncOptions) error {
 	ret := _mock.Called(context1, providerEventQuerier, providerEventSyncOptions)
 
 	if len(ret) == 0 {
@@ -748,7 +748,7 @@ func (_mock *MockProviderEventService) SyncEvents(context1 context.Context, prov
 	}
 
 	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.ProviderEventQuerier, rez.ProviderEventSyncOptions) error); ok {
+	if returnFunc, ok := ret.Get(0).(func(context.Context, rez.IntegrationEventQuerier, rez.IntegrationEventSyncOptions) error); ok {
 		r0 = returnFunc(context1, providerEventQuerier, providerEventSyncOptions)
 	} else {
 		r0 = ret.Error(0)
@@ -763,25 +763,25 @@ type MockProviderEventService_SyncEvents_Call struct {
 
 // SyncEvents is a helper method to define mock.On call
 //   - context1 context.Context
-//   - providerEventQuerier rez.ProviderEventQuerier
-//   - providerEventSyncOptions rez.ProviderEventSyncOptions
+//   - providerEventQuerier rez.IntegrationEventQuerier
+//   - providerEventSyncOptions rez.IntegrationEventSyncOptions
 func (_e *MockProviderEventService_Expecter) SyncEvents(context1 interface{}, providerEventQuerier interface{}, providerEventSyncOptions interface{}) *MockProviderEventService_SyncEvents_Call {
 	return &MockProviderEventService_SyncEvents_Call{Call: _e.mock.On("SyncEvents", context1, providerEventQuerier, providerEventSyncOptions)}
 }
 
-func (_c *MockProviderEventService_SyncEvents_Call) Run(run func(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSyncOptions rez.ProviderEventSyncOptions)) *MockProviderEventService_SyncEvents_Call {
+func (_c *MockProviderEventService_SyncEvents_Call) Run(run func(context1 context.Context, providerEventQuerier rez.IntegrationEventQuerier, providerEventSyncOptions rez.IntegrationEventSyncOptions)) *MockProviderEventService_SyncEvents_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 rez.ProviderEventQuerier
+		var arg1 rez.IntegrationEventQuerier
 		if args[1] != nil {
-			arg1 = args[1].(rez.ProviderEventQuerier)
+			arg1 = args[1].(rez.IntegrationEventQuerier)
 		}
-		var arg2 rez.ProviderEventSyncOptions
+		var arg2 rez.IntegrationEventSyncOptions
 		if args[2] != nil {
-			arg2 = args[2].(rez.ProviderEventSyncOptions)
+			arg2 = args[2].(rez.IntegrationEventSyncOptions)
 		}
 		run(
 			arg0,
@@ -797,7 +797,7 @@ func (_c *MockProviderEventService_SyncEvents_Call) Return(err error) *MockProvi
 	return _c
 }
 
-func (_c *MockProviderEventService_SyncEvents_Call) RunAndReturn(run func(context1 context.Context, providerEventQuerier rez.ProviderEventQuerier, providerEventSyncOptions rez.ProviderEventSyncOptions) error) *MockProviderEventService_SyncEvents_Call {
+func (_c *MockProviderEventService_SyncEvents_Call) RunAndReturn(run func(context1 context.Context, providerEventQuerier rez.IntegrationEventQuerier, providerEventSyncOptions rez.IntegrationEventSyncOptions) error) *MockProviderEventService_SyncEvents_Call {
 	_c.Call.Return(run)
 	return _c
 }

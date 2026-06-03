@@ -41,6 +41,8 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationeventsynccursor"
+	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
@@ -61,8 +63,6 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
-	"github.com/rezible/rezible/ent/providereventsynccursor"
-	"github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -140,6 +140,10 @@ type Client struct {
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
 	Integration *IntegrationClient
+	// IntegrationEventSyncCursor is the client for interacting with the IntegrationEventSyncCursor builders.
+	IntegrationEventSyncCursor *IntegrationEventSyncCursorClient
+	// IntegrationEventSyncRun is the client for interacting with the IntegrationEventSyncRun builders.
+	IntegrationEventSyncRun *IntegrationEventSyncRunClient
 	// IntegrationUserInstallState is the client for interacting with the IntegrationUserInstallState builders.
 	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
@@ -180,10 +184,6 @@ type Client struct {
 	OrganizationRole *OrganizationRoleClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
-	// ProviderEventSyncCursor is the client for interacting with the ProviderEventSyncCursor builders.
-	ProviderEventSyncCursor *ProviderEventSyncCursorClient
-	// ProviderEventSyncRun is the client for interacting with the ProviderEventSyncRun builders.
-	ProviderEventSyncRun *ProviderEventSyncRunClient
 	// Retrospective is the client for interacting with the Retrospective builders.
 	Retrospective *RetrospectiveClient
 	// RetrospectiveComment is the client for interacting with the RetrospectiveComment builders.
@@ -253,6 +253,8 @@ func (c *Client) init() {
 	c.IncidentTimelineEventTopologyContext = NewIncidentTimelineEventTopologyContextClient(c.config)
 	c.IncidentType = NewIncidentTypeClient(c.config)
 	c.Integration = NewIntegrationClient(c.config)
+	c.IntegrationEventSyncCursor = NewIntegrationEventSyncCursorClient(c.config)
+	c.IntegrationEventSyncRun = NewIntegrationEventSyncRunClient(c.config)
 	c.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(c.config)
 	c.KnowledgeEntity = NewKnowledgeEntityClient(c.config)
 	c.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(c.config)
@@ -273,8 +275,6 @@ func (c *Client) init() {
 	c.Organization = NewOrganizationClient(c.config)
 	c.OrganizationRole = NewOrganizationRoleClient(c.config)
 	c.Playbook = NewPlaybookClient(c.config)
-	c.ProviderEventSyncCursor = NewProviderEventSyncCursorClient(c.config)
-	c.ProviderEventSyncRun = NewProviderEventSyncRunClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
 	c.RetrospectiveComment = NewRetrospectiveCommentClient(c.config)
 	c.RetrospectiveReview = NewRetrospectiveReviewClient(c.config)
@@ -412,6 +412,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentTimelineEventTopologyContext:    NewIncidentTimelineEventTopologyContextClient(cfg),
 		IncidentType:                            NewIncidentTypeClient(cfg),
 		Integration:                             NewIntegrationClient(cfg),
+		IntegrationEventSyncCursor:              NewIntegrationEventSyncCursorClient(cfg),
+		IntegrationEventSyncRun:                 NewIntegrationEventSyncRunClient(cfg),
 		IntegrationUserInstallState:             NewIntegrationUserInstallStateClient(cfg),
 		KnowledgeEntity:                         NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityAlias:                    NewKnowledgeEntityAliasClient(cfg),
@@ -432,8 +434,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Organization:                            NewOrganizationClient(cfg),
 		OrganizationRole:                        NewOrganizationRoleClient(cfg),
 		Playbook:                                NewPlaybookClient(cfg),
-		ProviderEventSyncCursor:                 NewProviderEventSyncCursorClient(cfg),
-		ProviderEventSyncRun:                    NewProviderEventSyncRunClient(cfg),
 		Retrospective:                           NewRetrospectiveClient(cfg),
 		RetrospectiveComment:                    NewRetrospectiveCommentClient(cfg),
 		RetrospectiveReview:                     NewRetrospectiveReviewClient(cfg),
@@ -495,6 +495,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentTimelineEventTopologyContext:    NewIncidentTimelineEventTopologyContextClient(cfg),
 		IncidentType:                            NewIncidentTypeClient(cfg),
 		Integration:                             NewIntegrationClient(cfg),
+		IntegrationEventSyncCursor:              NewIntegrationEventSyncCursorClient(cfg),
+		IntegrationEventSyncRun:                 NewIntegrationEventSyncRunClient(cfg),
 		IntegrationUserInstallState:             NewIntegrationUserInstallStateClient(cfg),
 		KnowledgeEntity:                         NewKnowledgeEntityClient(cfg),
 		KnowledgeEntityAlias:                    NewKnowledgeEntityAliasClient(cfg),
@@ -515,8 +517,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Organization:                            NewOrganizationClient(cfg),
 		OrganizationRole:                        NewOrganizationRoleClient(cfg),
 		Playbook:                                NewPlaybookClient(cfg),
-		ProviderEventSyncCursor:                 NewProviderEventSyncCursorClient(cfg),
-		ProviderEventSyncRun:                    NewProviderEventSyncRunClient(cfg),
 		Retrospective:                           NewRetrospectiveClient(cfg),
 		RetrospectiveComment:                    NewRetrospectiveCommentClient(cfg),
 		RetrospectiveReview:                     NewRetrospectiveReviewClient(cfg),
@@ -570,14 +570,14 @@ func (c *Client) Use(hooks ...Hook) {
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
+		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
 		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationRole, c.Playbook, c.ProviderEventSyncCursor,
-		c.ProviderEventSyncRun, c.Retrospective, c.RetrospectiveComment,
+		c.OrganizationRole, c.Playbook, c.Retrospective, c.RetrospectiveComment,
 		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisTopologyEdge,
 		c.SystemAnalysisTopologyNode, c.SystemTopologySnapshot,
 		c.SystemTopologySnapshotEntity, c.SystemTopologySnapshotRelationship, c.Task,
@@ -599,14 +599,14 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
+		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
 		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
 		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationRole, c.Playbook, c.ProviderEventSyncCursor,
-		c.ProviderEventSyncRun, c.Retrospective, c.RetrospectiveComment,
+		c.OrganizationRole, c.Playbook, c.Retrospective, c.RetrospectiveComment,
 		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisTopologyEdge,
 		c.SystemAnalysisTopologyNode, c.SystemTopologySnapshot,
 		c.SystemTopologySnapshotEntity, c.SystemTopologySnapshotRelationship, c.Task,
@@ -669,6 +669,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentType.mutate(ctx, m)
 	case *IntegrationMutation:
 		return c.Integration.mutate(ctx, m)
+	case *IntegrationEventSyncCursorMutation:
+		return c.IntegrationEventSyncCursor.mutate(ctx, m)
+	case *IntegrationEventSyncRunMutation:
+		return c.IntegrationEventSyncRun.mutate(ctx, m)
 	case *IntegrationUserInstallStateMutation:
 		return c.IntegrationUserInstallState.mutate(ctx, m)
 	case *KnowledgeEntityMutation:
@@ -709,10 +713,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OrganizationRole.mutate(ctx, m)
 	case *PlaybookMutation:
 		return c.Playbook.mutate(ctx, m)
-	case *ProviderEventSyncCursorMutation:
-		return c.ProviderEventSyncCursor.mutate(ctx, m)
-	case *ProviderEventSyncRunMutation:
-		return c.ProviderEventSyncRun.mutate(ctx, m)
 	case *RetrospectiveMutation:
 		return c.Retrospective.mutate(ctx, m)
 	case *RetrospectiveCommentMutation:
@@ -6036,6 +6036,350 @@ func (c *IntegrationClient) mutate(ctx context.Context, m *IntegrationMutation) 
 	}
 }
 
+// IntegrationEventSyncCursorClient is a client for the IntegrationEventSyncCursor schema.
+type IntegrationEventSyncCursorClient struct {
+	config
+}
+
+// NewIntegrationEventSyncCursorClient returns a client for the IntegrationEventSyncCursor from the given config.
+func NewIntegrationEventSyncCursorClient(c config) *IntegrationEventSyncCursorClient {
+	return &IntegrationEventSyncCursorClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `integrationeventsynccursor.Hooks(f(g(h())))`.
+func (c *IntegrationEventSyncCursorClient) Use(hooks ...Hook) {
+	c.hooks.IntegrationEventSyncCursor = append(c.hooks.IntegrationEventSyncCursor, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `integrationeventsynccursor.Intercept(f(g(h())))`.
+func (c *IntegrationEventSyncCursorClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IntegrationEventSyncCursor = append(c.inters.IntegrationEventSyncCursor, interceptors...)
+}
+
+// Create returns a builder for creating a IntegrationEventSyncCursor entity.
+func (c *IntegrationEventSyncCursorClient) Create() *IntegrationEventSyncCursorCreate {
+	mutation := newIntegrationEventSyncCursorMutation(c.config, OpCreate)
+	return &IntegrationEventSyncCursorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IntegrationEventSyncCursor entities.
+func (c *IntegrationEventSyncCursorClient) CreateBulk(builders ...*IntegrationEventSyncCursorCreate) *IntegrationEventSyncCursorCreateBulk {
+	return &IntegrationEventSyncCursorCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IntegrationEventSyncCursorClient) MapCreateBulk(slice any, setFunc func(*IntegrationEventSyncCursorCreate, int)) *IntegrationEventSyncCursorCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IntegrationEventSyncCursorCreateBulk{err: fmt.Errorf("calling to IntegrationEventSyncCursorClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IntegrationEventSyncCursorCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IntegrationEventSyncCursorCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IntegrationEventSyncCursor.
+func (c *IntegrationEventSyncCursorClient) Update() *IntegrationEventSyncCursorUpdate {
+	mutation := newIntegrationEventSyncCursorMutation(c.config, OpUpdate)
+	return &IntegrationEventSyncCursorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IntegrationEventSyncCursorClient) UpdateOne(_m *IntegrationEventSyncCursor) *IntegrationEventSyncCursorUpdateOne {
+	mutation := newIntegrationEventSyncCursorMutation(c.config, OpUpdateOne, withIntegrationEventSyncCursor(_m))
+	return &IntegrationEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IntegrationEventSyncCursorClient) UpdateOneID(id uuid.UUID) *IntegrationEventSyncCursorUpdateOne {
+	mutation := newIntegrationEventSyncCursorMutation(c.config, OpUpdateOne, withIntegrationEventSyncCursorID(id))
+	return &IntegrationEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IntegrationEventSyncCursor.
+func (c *IntegrationEventSyncCursorClient) Delete() *IntegrationEventSyncCursorDelete {
+	mutation := newIntegrationEventSyncCursorMutation(c.config, OpDelete)
+	return &IntegrationEventSyncCursorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IntegrationEventSyncCursorClient) DeleteOne(_m *IntegrationEventSyncCursor) *IntegrationEventSyncCursorDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IntegrationEventSyncCursorClient) DeleteOneID(id uuid.UUID) *IntegrationEventSyncCursorDeleteOne {
+	builder := c.Delete().Where(integrationeventsynccursor.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IntegrationEventSyncCursorDeleteOne{builder}
+}
+
+// Query returns a query builder for IntegrationEventSyncCursor.
+func (c *IntegrationEventSyncCursorClient) Query() *IntegrationEventSyncCursorQuery {
+	return &IntegrationEventSyncCursorQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIntegrationEventSyncCursor},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IntegrationEventSyncCursor entity by its id.
+func (c *IntegrationEventSyncCursorClient) Get(ctx context.Context, id uuid.UUID) (*IntegrationEventSyncCursor, error) {
+	return c.Query().Where(integrationeventsynccursor.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IntegrationEventSyncCursorClient) GetX(ctx context.Context, id uuid.UUID) *IntegrationEventSyncCursor {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IntegrationEventSyncCursor.
+func (c *IntegrationEventSyncCursorClient) QueryTenant(_m *IntegrationEventSyncCursor) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(integrationeventsynccursor.Table, integrationeventsynccursor.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationeventsynccursor.TenantTable, integrationeventsynccursor.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IntegrationEventSyncCursor
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIntegration queries the integration edge of a IntegrationEventSyncCursor.
+func (c *IntegrationEventSyncCursorClient) QueryIntegration(_m *IntegrationEventSyncCursor) *IntegrationQuery {
+	query := (&IntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(integrationeventsynccursor.Table, integrationeventsynccursor.FieldID, id),
+			sqlgraph.To(integration.Table, integration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationeventsynccursor.IntegrationTable, integrationeventsynccursor.IntegrationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Integration
+		step.Edge.Schema = schemaConfig.IntegrationEventSyncCursor
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IntegrationEventSyncCursorClient) Hooks() []Hook {
+	hooks := c.hooks.IntegrationEventSyncCursor
+	return append(hooks[:len(hooks):len(hooks)], integrationeventsynccursor.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IntegrationEventSyncCursorClient) Interceptors() []Interceptor {
+	return c.inters.IntegrationEventSyncCursor
+}
+
+func (c *IntegrationEventSyncCursorClient) mutate(ctx context.Context, m *IntegrationEventSyncCursorMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IntegrationEventSyncCursorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IntegrationEventSyncCursorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IntegrationEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IntegrationEventSyncCursorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IntegrationEventSyncCursor mutation op: %q", m.Op())
+	}
+}
+
+// IntegrationEventSyncRunClient is a client for the IntegrationEventSyncRun schema.
+type IntegrationEventSyncRunClient struct {
+	config
+}
+
+// NewIntegrationEventSyncRunClient returns a client for the IntegrationEventSyncRun from the given config.
+func NewIntegrationEventSyncRunClient(c config) *IntegrationEventSyncRunClient {
+	return &IntegrationEventSyncRunClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `integrationeventsyncrun.Hooks(f(g(h())))`.
+func (c *IntegrationEventSyncRunClient) Use(hooks ...Hook) {
+	c.hooks.IntegrationEventSyncRun = append(c.hooks.IntegrationEventSyncRun, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `integrationeventsyncrun.Intercept(f(g(h())))`.
+func (c *IntegrationEventSyncRunClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IntegrationEventSyncRun = append(c.inters.IntegrationEventSyncRun, interceptors...)
+}
+
+// Create returns a builder for creating a IntegrationEventSyncRun entity.
+func (c *IntegrationEventSyncRunClient) Create() *IntegrationEventSyncRunCreate {
+	mutation := newIntegrationEventSyncRunMutation(c.config, OpCreate)
+	return &IntegrationEventSyncRunCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IntegrationEventSyncRun entities.
+func (c *IntegrationEventSyncRunClient) CreateBulk(builders ...*IntegrationEventSyncRunCreate) *IntegrationEventSyncRunCreateBulk {
+	return &IntegrationEventSyncRunCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IntegrationEventSyncRunClient) MapCreateBulk(slice any, setFunc func(*IntegrationEventSyncRunCreate, int)) *IntegrationEventSyncRunCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IntegrationEventSyncRunCreateBulk{err: fmt.Errorf("calling to IntegrationEventSyncRunClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IntegrationEventSyncRunCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IntegrationEventSyncRunCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IntegrationEventSyncRun.
+func (c *IntegrationEventSyncRunClient) Update() *IntegrationEventSyncRunUpdate {
+	mutation := newIntegrationEventSyncRunMutation(c.config, OpUpdate)
+	return &IntegrationEventSyncRunUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IntegrationEventSyncRunClient) UpdateOne(_m *IntegrationEventSyncRun) *IntegrationEventSyncRunUpdateOne {
+	mutation := newIntegrationEventSyncRunMutation(c.config, OpUpdateOne, withIntegrationEventSyncRun(_m))
+	return &IntegrationEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IntegrationEventSyncRunClient) UpdateOneID(id uuid.UUID) *IntegrationEventSyncRunUpdateOne {
+	mutation := newIntegrationEventSyncRunMutation(c.config, OpUpdateOne, withIntegrationEventSyncRunID(id))
+	return &IntegrationEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IntegrationEventSyncRun.
+func (c *IntegrationEventSyncRunClient) Delete() *IntegrationEventSyncRunDelete {
+	mutation := newIntegrationEventSyncRunMutation(c.config, OpDelete)
+	return &IntegrationEventSyncRunDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IntegrationEventSyncRunClient) DeleteOne(_m *IntegrationEventSyncRun) *IntegrationEventSyncRunDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IntegrationEventSyncRunClient) DeleteOneID(id uuid.UUID) *IntegrationEventSyncRunDeleteOne {
+	builder := c.Delete().Where(integrationeventsyncrun.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IntegrationEventSyncRunDeleteOne{builder}
+}
+
+// Query returns a query builder for IntegrationEventSyncRun.
+func (c *IntegrationEventSyncRunClient) Query() *IntegrationEventSyncRunQuery {
+	return &IntegrationEventSyncRunQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIntegrationEventSyncRun},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IntegrationEventSyncRun entity by its id.
+func (c *IntegrationEventSyncRunClient) Get(ctx context.Context, id uuid.UUID) (*IntegrationEventSyncRun, error) {
+	return c.Query().Where(integrationeventsyncrun.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IntegrationEventSyncRunClient) GetX(ctx context.Context, id uuid.UUID) *IntegrationEventSyncRun {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IntegrationEventSyncRun.
+func (c *IntegrationEventSyncRunClient) QueryTenant(_m *IntegrationEventSyncRun) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(integrationeventsyncrun.Table, integrationeventsyncrun.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationeventsyncrun.TenantTable, integrationeventsyncrun.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IntegrationEventSyncRun
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIntegration queries the integration edge of a IntegrationEventSyncRun.
+func (c *IntegrationEventSyncRunClient) QueryIntegration(_m *IntegrationEventSyncRun) *IntegrationQuery {
+	query := (&IntegrationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(integrationeventsyncrun.Table, integrationeventsyncrun.FieldID, id),
+			sqlgraph.To(integration.Table, integration.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, integrationeventsyncrun.IntegrationTable, integrationeventsyncrun.IntegrationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Integration
+		step.Edge.Schema = schemaConfig.IntegrationEventSyncRun
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IntegrationEventSyncRunClient) Hooks() []Hook {
+	hooks := c.hooks.IntegrationEventSyncRun
+	return append(hooks[:len(hooks):len(hooks)], integrationeventsyncrun.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IntegrationEventSyncRunClient) Interceptors() []Interceptor {
+	return c.inters.IntegrationEventSyncRun
+}
+
+func (c *IntegrationEventSyncRunClient) mutate(ctx context.Context, m *IntegrationEventSyncRunMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IntegrationEventSyncRunCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IntegrationEventSyncRunUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IntegrationEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IntegrationEventSyncRunDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IntegrationEventSyncRun mutation op: %q", m.Op())
+	}
+}
+
 // IntegrationUserInstallStateClient is a client for the IntegrationUserInstallState schema.
 type IntegrationUserInstallStateClient struct {
 	config
@@ -9973,312 +10317,6 @@ func (c *PlaybookClient) mutate(ctx context.Context, m *PlaybookMutation) (Value
 	}
 }
 
-// ProviderEventSyncCursorClient is a client for the ProviderEventSyncCursor schema.
-type ProviderEventSyncCursorClient struct {
-	config
-}
-
-// NewProviderEventSyncCursorClient returns a client for the ProviderEventSyncCursor from the given config.
-func NewProviderEventSyncCursorClient(c config) *ProviderEventSyncCursorClient {
-	return &ProviderEventSyncCursorClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `providereventsynccursor.Hooks(f(g(h())))`.
-func (c *ProviderEventSyncCursorClient) Use(hooks ...Hook) {
-	c.hooks.ProviderEventSyncCursor = append(c.hooks.ProviderEventSyncCursor, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `providereventsynccursor.Intercept(f(g(h())))`.
-func (c *ProviderEventSyncCursorClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ProviderEventSyncCursor = append(c.inters.ProviderEventSyncCursor, interceptors...)
-}
-
-// Create returns a builder for creating a ProviderEventSyncCursor entity.
-func (c *ProviderEventSyncCursorClient) Create() *ProviderEventSyncCursorCreate {
-	mutation := newProviderEventSyncCursorMutation(c.config, OpCreate)
-	return &ProviderEventSyncCursorCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ProviderEventSyncCursor entities.
-func (c *ProviderEventSyncCursorClient) CreateBulk(builders ...*ProviderEventSyncCursorCreate) *ProviderEventSyncCursorCreateBulk {
-	return &ProviderEventSyncCursorCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ProviderEventSyncCursorClient) MapCreateBulk(slice any, setFunc func(*ProviderEventSyncCursorCreate, int)) *ProviderEventSyncCursorCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ProviderEventSyncCursorCreateBulk{err: fmt.Errorf("calling to ProviderEventSyncCursorClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ProviderEventSyncCursorCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ProviderEventSyncCursorCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ProviderEventSyncCursor.
-func (c *ProviderEventSyncCursorClient) Update() *ProviderEventSyncCursorUpdate {
-	mutation := newProviderEventSyncCursorMutation(c.config, OpUpdate)
-	return &ProviderEventSyncCursorUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ProviderEventSyncCursorClient) UpdateOne(_m *ProviderEventSyncCursor) *ProviderEventSyncCursorUpdateOne {
-	mutation := newProviderEventSyncCursorMutation(c.config, OpUpdateOne, withProviderEventSyncCursor(_m))
-	return &ProviderEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ProviderEventSyncCursorClient) UpdateOneID(id uuid.UUID) *ProviderEventSyncCursorUpdateOne {
-	mutation := newProviderEventSyncCursorMutation(c.config, OpUpdateOne, withProviderEventSyncCursorID(id))
-	return &ProviderEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ProviderEventSyncCursor.
-func (c *ProviderEventSyncCursorClient) Delete() *ProviderEventSyncCursorDelete {
-	mutation := newProviderEventSyncCursorMutation(c.config, OpDelete)
-	return &ProviderEventSyncCursorDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ProviderEventSyncCursorClient) DeleteOne(_m *ProviderEventSyncCursor) *ProviderEventSyncCursorDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProviderEventSyncCursorClient) DeleteOneID(id uuid.UUID) *ProviderEventSyncCursorDeleteOne {
-	builder := c.Delete().Where(providereventsynccursor.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ProviderEventSyncCursorDeleteOne{builder}
-}
-
-// Query returns a query builder for ProviderEventSyncCursor.
-func (c *ProviderEventSyncCursorClient) Query() *ProviderEventSyncCursorQuery {
-	return &ProviderEventSyncCursorQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeProviderEventSyncCursor},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ProviderEventSyncCursor entity by its id.
-func (c *ProviderEventSyncCursorClient) Get(ctx context.Context, id uuid.UUID) (*ProviderEventSyncCursor, error) {
-	return c.Query().Where(providereventsynccursor.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ProviderEventSyncCursorClient) GetX(ctx context.Context, id uuid.UUID) *ProviderEventSyncCursor {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a ProviderEventSyncCursor.
-func (c *ProviderEventSyncCursorClient) QueryTenant(_m *ProviderEventSyncCursor) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(providereventsynccursor.Table, providereventsynccursor.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, providereventsynccursor.TenantTable, providereventsynccursor.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.ProviderEventSyncCursor
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ProviderEventSyncCursorClient) Hooks() []Hook {
-	hooks := c.hooks.ProviderEventSyncCursor
-	return append(hooks[:len(hooks):len(hooks)], providereventsynccursor.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *ProviderEventSyncCursorClient) Interceptors() []Interceptor {
-	return c.inters.ProviderEventSyncCursor
-}
-
-func (c *ProviderEventSyncCursorClient) mutate(ctx context.Context, m *ProviderEventSyncCursorMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ProviderEventSyncCursorCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ProviderEventSyncCursorUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ProviderEventSyncCursorUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ProviderEventSyncCursorDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ProviderEventSyncCursor mutation op: %q", m.Op())
-	}
-}
-
-// ProviderEventSyncRunClient is a client for the ProviderEventSyncRun schema.
-type ProviderEventSyncRunClient struct {
-	config
-}
-
-// NewProviderEventSyncRunClient returns a client for the ProviderEventSyncRun from the given config.
-func NewProviderEventSyncRunClient(c config) *ProviderEventSyncRunClient {
-	return &ProviderEventSyncRunClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `providereventsyncrun.Hooks(f(g(h())))`.
-func (c *ProviderEventSyncRunClient) Use(hooks ...Hook) {
-	c.hooks.ProviderEventSyncRun = append(c.hooks.ProviderEventSyncRun, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `providereventsyncrun.Intercept(f(g(h())))`.
-func (c *ProviderEventSyncRunClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ProviderEventSyncRun = append(c.inters.ProviderEventSyncRun, interceptors...)
-}
-
-// Create returns a builder for creating a ProviderEventSyncRun entity.
-func (c *ProviderEventSyncRunClient) Create() *ProviderEventSyncRunCreate {
-	mutation := newProviderEventSyncRunMutation(c.config, OpCreate)
-	return &ProviderEventSyncRunCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ProviderEventSyncRun entities.
-func (c *ProviderEventSyncRunClient) CreateBulk(builders ...*ProviderEventSyncRunCreate) *ProviderEventSyncRunCreateBulk {
-	return &ProviderEventSyncRunCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ProviderEventSyncRunClient) MapCreateBulk(slice any, setFunc func(*ProviderEventSyncRunCreate, int)) *ProviderEventSyncRunCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ProviderEventSyncRunCreateBulk{err: fmt.Errorf("calling to ProviderEventSyncRunClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ProviderEventSyncRunCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ProviderEventSyncRunCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ProviderEventSyncRun.
-func (c *ProviderEventSyncRunClient) Update() *ProviderEventSyncRunUpdate {
-	mutation := newProviderEventSyncRunMutation(c.config, OpUpdate)
-	return &ProviderEventSyncRunUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ProviderEventSyncRunClient) UpdateOne(_m *ProviderEventSyncRun) *ProviderEventSyncRunUpdateOne {
-	mutation := newProviderEventSyncRunMutation(c.config, OpUpdateOne, withProviderEventSyncRun(_m))
-	return &ProviderEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ProviderEventSyncRunClient) UpdateOneID(id uuid.UUID) *ProviderEventSyncRunUpdateOne {
-	mutation := newProviderEventSyncRunMutation(c.config, OpUpdateOne, withProviderEventSyncRunID(id))
-	return &ProviderEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ProviderEventSyncRun.
-func (c *ProviderEventSyncRunClient) Delete() *ProviderEventSyncRunDelete {
-	mutation := newProviderEventSyncRunMutation(c.config, OpDelete)
-	return &ProviderEventSyncRunDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ProviderEventSyncRunClient) DeleteOne(_m *ProviderEventSyncRun) *ProviderEventSyncRunDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ProviderEventSyncRunClient) DeleteOneID(id uuid.UUID) *ProviderEventSyncRunDeleteOne {
-	builder := c.Delete().Where(providereventsyncrun.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ProviderEventSyncRunDeleteOne{builder}
-}
-
-// Query returns a query builder for ProviderEventSyncRun.
-func (c *ProviderEventSyncRunClient) Query() *ProviderEventSyncRunQuery {
-	return &ProviderEventSyncRunQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeProviderEventSyncRun},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ProviderEventSyncRun entity by its id.
-func (c *ProviderEventSyncRunClient) Get(ctx context.Context, id uuid.UUID) (*ProviderEventSyncRun, error) {
-	return c.Query().Where(providereventsyncrun.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ProviderEventSyncRunClient) GetX(ctx context.Context, id uuid.UUID) *ProviderEventSyncRun {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a ProviderEventSyncRun.
-func (c *ProviderEventSyncRunClient) QueryTenant(_m *ProviderEventSyncRun) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(providereventsyncrun.Table, providereventsyncrun.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, providereventsyncrun.TenantTable, providereventsyncrun.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.ProviderEventSyncRun
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ProviderEventSyncRunClient) Hooks() []Hook {
-	hooks := c.hooks.ProviderEventSyncRun
-	return append(hooks[:len(hooks):len(hooks)], providereventsyncrun.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *ProviderEventSyncRunClient) Interceptors() []Interceptor {
-	return c.inters.ProviderEventSyncRun
-}
-
-func (c *ProviderEventSyncRunClient) mutate(ctx context.Context, m *ProviderEventSyncRunMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ProviderEventSyncRunCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ProviderEventSyncRunUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ProviderEventSyncRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ProviderEventSyncRunDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown ProviderEventSyncRun mutation op: %q", m.Op())
-	}
-}
-
 // RetrospectiveClient is a client for the Retrospective schema.
 type RetrospectiveClient struct {
 	config
@@ -13991,14 +14029,15 @@ type (
 		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
 		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
 		IncidentTimelineEventTopologyContext, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
 		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
 		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
 		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
 		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
-		OrganizationRole, Playbook, ProviderEventSyncCursor, ProviderEventSyncRun,
-		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisTopologyEdge,
+		SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
@@ -14010,14 +14049,15 @@ type (
 		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
 		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
 		IncidentTimelineEventTopologyContext, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
 		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
 		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
 		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
 		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
-		OrganizationRole, Playbook, ProviderEventSyncCursor, ProviderEventSyncRun,
-		Retrospective, RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisTopologyEdge,
+		SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
 	}
@@ -14060,6 +14100,8 @@ var (
 		IncidentTimelineEventTopologyContext:      tableSchemas[0],
 		IncidentType:                              tableSchemas[0],
 		Integration:                               tableSchemas[0],
+		IntegrationEventSyncCursor:                tableSchemas[0],
+		IntegrationEventSyncRun:                   tableSchemas[0],
 		IntegrationUserInstallState:               tableSchemas[0],
 		KnowledgeEntity:                           tableSchemas[0],
 		KnowledgeEntityAlias:                      tableSchemas[0],
@@ -14083,8 +14125,6 @@ var (
 		OrganizationRole:                          tableSchemas[0],
 		Playbook:                                  tableSchemas[0],
 		PlaybookAlerts:                            tableSchemas[0],
-		ProviderEventSyncCursor:                   tableSchemas[0],
-		ProviderEventSyncRun:                      tableSchemas[0],
 		Retrospective:                             tableSchemas[0],
 		RetrospectiveComment:                      tableSchemas[0],
 		RetrospectiveReview:                       tableSchemas[0],

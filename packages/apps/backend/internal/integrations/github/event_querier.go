@@ -10,9 +10,10 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/integrations"
 )
 
-func (i *Integration) MakeProviderEventQuerier(cfg rez.IntegrationsConfigGithub, intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+func (i *Integration) MakeProviderEventQuerier(cfg rez.IntegrationsConfigGithub, intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
 	ii := i.newInstalledIntegration(intg)
 	client, clientErr := newAppClient(cfg, ii)
 	if clientErr != nil {
@@ -31,13 +32,13 @@ type eventQuerier struct {
 	client *githubClient
 }
 
-func (q *eventQuerier) Provider() string {
-	return integrationName
+func (q *eventQuerier) Integration() *ent.Integration {
+	return q.ii.intg
 }
 
-func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		if reposCursor, ok := req.SourceCursors[sourceRepositories]; ok || len(req.SourceCursors) == 0 {
+func (q *eventQuerier) PullEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
+	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+		if reposCursor, ok := integrations.GetSourceQueryCursor(cursors, sourceRepositories); ok {
 			for ev, evErr := range q.pullRepositoryEvents(ctx, reposCursor) {
 				yield(ev, evErr)
 			}
@@ -45,8 +46,8 @@ func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQuer
 	}
 }
 
-func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
+	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
 		repos, listErr := q.client.ListRepositories(ctx)
 		if listErr != nil {
 			yield(nil, listErr)
@@ -94,7 +95,7 @@ func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter str
 				deliveryRefID = fmt.Sprintf("%d", payload.ID)
 			}
 
-			res := &rez.ProviderEventQueryResult{
+			res := &rez.IntegrationEventQueryResult{
 				Event: rez.ProviderEvent{
 					Provider:           integrationName,
 					ProviderSource:     sourceRepositories,

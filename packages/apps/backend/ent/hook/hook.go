@@ -309,6 +309,30 @@ func (f IntegrationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value,
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationMutation", m)
 }
 
+// The IntegrationEventSyncCursorFunc type is an adapter to allow the use of ordinary
+// function as IntegrationEventSyncCursor mutator.
+type IntegrationEventSyncCursorFunc func(context.Context, *ent.IntegrationEventSyncCursorMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IntegrationEventSyncCursorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IntegrationEventSyncCursorMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationEventSyncCursorMutation", m)
+}
+
+// The IntegrationEventSyncRunFunc type is an adapter to allow the use of ordinary
+// function as IntegrationEventSyncRun mutator.
+type IntegrationEventSyncRunFunc func(context.Context, *ent.IntegrationEventSyncRunMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IntegrationEventSyncRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IntegrationEventSyncRunMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IntegrationEventSyncRunMutation", m)
+}
+
 // The IntegrationUserInstallStateFunc type is an adapter to allow the use of ordinary
 // function as IntegrationUserInstallState mutator.
 type IntegrationUserInstallStateFunc func(context.Context, *ent.IntegrationUserInstallStateMutation) (ent.Value, error)
@@ -547,30 +571,6 @@ func (f PlaybookFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 		return f(ctx, mv)
 	}
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.PlaybookMutation", m)
-}
-
-// The ProviderEventSyncCursorFunc type is an adapter to allow the use of ordinary
-// function as ProviderEventSyncCursor mutator.
-type ProviderEventSyncCursorFunc func(context.Context, *ent.ProviderEventSyncCursorMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ProviderEventSyncCursorFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ProviderEventSyncCursorMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderEventSyncCursorMutation", m)
-}
-
-// The ProviderEventSyncRunFunc type is an adapter to allow the use of ordinary
-// function as ProviderEventSyncRun mutator.
-type ProviderEventSyncRunFunc func(context.Context, *ent.ProviderEventSyncRunMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f ProviderEventSyncRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.ProviderEventSyncRunMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ProviderEventSyncRunMutation", m)
 }
 
 // The RetrospectiveFunc type is an adapter to allow the use of ordinary

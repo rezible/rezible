@@ -11,19 +11,20 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/providereventsyncrun"
+	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// ProviderEventSyncRun is the model entity for the ProviderEventSyncRun schema.
-type ProviderEventSyncRun struct {
+// IntegrationEventSyncRun is the model entity for the IntegrationEventSyncRun schema.
+type IntegrationEventSyncRun struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// Provider holds the value of the "provider" field.
-	Provider string `json:"provider,omitempty"`
+	// IntegrationID holds the value of the "integration_id" field.
+	IntegrationID uuid.UUID `json:"integration_id,omitempty"`
 	// SourceCursors holds the value of the "source_cursors" field.
 	SourceCursors map[string]string `json:"source_cursors,omitempty"`
 	// SyncReason holds the value of the "sync_reason" field.
@@ -33,7 +34,7 @@ type ProviderEventSyncRun struct {
 	// FinishedAt holds the value of the "finished_at" field.
 	FinishedAt *time.Time `json:"finished_at,omitempty"`
 	// Status holds the value of the "status" field.
-	Status providereventsyncrun.Status `json:"status,omitempty"`
+	Status integrationeventsyncrun.Status `json:"status,omitempty"`
 	// EventsPulled holds the value of the "events_pulled" field.
 	EventsPulled int `json:"events_pulled,omitempty"`
 	// EventsIngested holds the value of the "events_ingested" field.
@@ -43,23 +44,25 @@ type ProviderEventSyncRun struct {
 	// FailureMessage holds the value of the "failure_message" field.
 	FailureMessage string `json:"failure_message,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the ProviderEventSyncRunQuery when eager-loading is set.
-	Edges        ProviderEventSyncRunEdges `json:"edges"`
+	// The values are being populated by the IntegrationEventSyncRunQuery when eager-loading is set.
+	Edges        IntegrationEventSyncRunEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// ProviderEventSyncRunEdges holds the relations/edges for other nodes in the graph.
-type ProviderEventSyncRunEdges struct {
+// IntegrationEventSyncRunEdges holds the relations/edges for other nodes in the graph.
+type IntegrationEventSyncRunEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// Integration holds the value of the integration edge.
+	Integration *Integration `json:"integration,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
+	loadedTypes [2]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e ProviderEventSyncRunEdges) TenantOrErr() (*Tenant, error) {
+func (e IntegrationEventSyncRunEdges) TenantOrErr() (*Tenant, error) {
 	if e.Tenant != nil {
 		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
@@ -68,20 +71,31 @@ func (e ProviderEventSyncRunEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// IntegrationOrErr returns the Integration value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e IntegrationEventSyncRunEdges) IntegrationOrErr() (*Integration, error) {
+	if e.Integration != nil {
+		return e.Integration, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: integration.Label}
+	}
+	return nil, &NotLoadedError{edge: "integration"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
-func (*ProviderEventSyncRun) scanValues(columns []string) ([]any, error) {
+func (*IntegrationEventSyncRun) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case providereventsyncrun.FieldSourceCursors:
+		case integrationeventsyncrun.FieldSourceCursors:
 			values[i] = new([]byte)
-		case providereventsyncrun.FieldTenantID, providereventsyncrun.FieldEventsPulled, providereventsyncrun.FieldEventsIngested, providereventsyncrun.FieldDuplicates:
+		case integrationeventsyncrun.FieldTenantID, integrationeventsyncrun.FieldEventsPulled, integrationeventsyncrun.FieldEventsIngested, integrationeventsyncrun.FieldDuplicates:
 			values[i] = new(sql.NullInt64)
-		case providereventsyncrun.FieldProvider, providereventsyncrun.FieldSyncReason, providereventsyncrun.FieldStatus, providereventsyncrun.FieldFailureMessage:
+		case integrationeventsyncrun.FieldSyncReason, integrationeventsyncrun.FieldStatus, integrationeventsyncrun.FieldFailureMessage:
 			values[i] = new(sql.NullString)
-		case providereventsyncrun.FieldStartedAt, providereventsyncrun.FieldFinishedAt:
+		case integrationeventsyncrun.FieldStartedAt, integrationeventsyncrun.FieldFinishedAt:
 			values[i] = new(sql.NullTime)
-		case providereventsyncrun.FieldID:
+		case integrationeventsyncrun.FieldID, integrationeventsyncrun.FieldIntegrationID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -91,32 +105,32 @@ func (*ProviderEventSyncRun) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the ProviderEventSyncRun fields.
-func (_m *ProviderEventSyncRun) assignValues(columns []string, values []any) error {
+// to the IntegrationEventSyncRun fields.
+func (_m *IntegrationEventSyncRun) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case providereventsyncrun.FieldID:
+		case integrationeventsyncrun.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case providereventsyncrun.FieldTenantID:
+		case integrationeventsyncrun.FieldTenantID:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case providereventsyncrun.FieldProvider:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field provider", values[i])
-			} else if value.Valid {
-				_m.Provider = value.String
+		case integrationeventsyncrun.FieldIntegrationID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field integration_id", values[i])
+			} else if value != nil {
+				_m.IntegrationID = *value
 			}
-		case providereventsyncrun.FieldSourceCursors:
+		case integrationeventsyncrun.FieldSourceCursors:
 			if value, ok := values[i].(*[]byte); !ok {
 				return fmt.Errorf("unexpected type %T for field source_cursors", values[i])
 			} else if value != nil && len(*value) > 0 {
@@ -124,50 +138,50 @@ func (_m *ProviderEventSyncRun) assignValues(columns []string, values []any) err
 					return fmt.Errorf("unmarshal field source_cursors: %w", err)
 				}
 			}
-		case providereventsyncrun.FieldSyncReason:
+		case integrationeventsyncrun.FieldSyncReason:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field sync_reason", values[i])
 			} else if value.Valid {
 				_m.SyncReason = value.String
 			}
-		case providereventsyncrun.FieldStartedAt:
+		case integrationeventsyncrun.FieldStartedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field started_at", values[i])
 			} else if value.Valid {
 				_m.StartedAt = value.Time
 			}
-		case providereventsyncrun.FieldFinishedAt:
+		case integrationeventsyncrun.FieldFinishedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field finished_at", values[i])
 			} else if value.Valid {
 				_m.FinishedAt = new(time.Time)
 				*_m.FinishedAt = value.Time
 			}
-		case providereventsyncrun.FieldStatus:
+		case integrationeventsyncrun.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
-				_m.Status = providereventsyncrun.Status(value.String)
+				_m.Status = integrationeventsyncrun.Status(value.String)
 			}
-		case providereventsyncrun.FieldEventsPulled:
+		case integrationeventsyncrun.FieldEventsPulled:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field events_pulled", values[i])
 			} else if value.Valid {
 				_m.EventsPulled = int(value.Int64)
 			}
-		case providereventsyncrun.FieldEventsIngested:
+		case integrationeventsyncrun.FieldEventsIngested:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field events_ingested", values[i])
 			} else if value.Valid {
 				_m.EventsIngested = int(value.Int64)
 			}
-		case providereventsyncrun.FieldDuplicates:
+		case integrationeventsyncrun.FieldDuplicates:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
 				return fmt.Errorf("unexpected type %T for field duplicates", values[i])
 			} else if value.Valid {
 				_m.Duplicates = int(value.Int64)
 			}
-		case providereventsyncrun.FieldFailureMessage:
+		case integrationeventsyncrun.FieldFailureMessage:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field failure_message", values[i])
 			} else if value.Valid {
@@ -180,45 +194,50 @@ func (_m *ProviderEventSyncRun) assignValues(columns []string, values []any) err
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the ProviderEventSyncRun.
+// Value returns the ent.Value that was dynamically selected and assigned to the IntegrationEventSyncRun.
 // This includes values selected through modifiers, order, etc.
-func (_m *ProviderEventSyncRun) Value(name string) (ent.Value, error) {
+func (_m *IntegrationEventSyncRun) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryTenant queries the "tenant" edge of the ProviderEventSyncRun entity.
-func (_m *ProviderEventSyncRun) QueryTenant() *TenantQuery {
-	return NewProviderEventSyncRunClient(_m.config).QueryTenant(_m)
+// QueryTenant queries the "tenant" edge of the IntegrationEventSyncRun entity.
+func (_m *IntegrationEventSyncRun) QueryTenant() *TenantQuery {
+	return NewIntegrationEventSyncRunClient(_m.config).QueryTenant(_m)
 }
 
-// Update returns a builder for updating this ProviderEventSyncRun.
-// Note that you need to call ProviderEventSyncRun.Unwrap() before calling this method if this ProviderEventSyncRun
+// QueryIntegration queries the "integration" edge of the IntegrationEventSyncRun entity.
+func (_m *IntegrationEventSyncRun) QueryIntegration() *IntegrationQuery {
+	return NewIntegrationEventSyncRunClient(_m.config).QueryIntegration(_m)
+}
+
+// Update returns a builder for updating this IntegrationEventSyncRun.
+// Note that you need to call IntegrationEventSyncRun.Unwrap() before calling this method if this IntegrationEventSyncRun
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *ProviderEventSyncRun) Update() *ProviderEventSyncRunUpdateOne {
-	return NewProviderEventSyncRunClient(_m.config).UpdateOne(_m)
+func (_m *IntegrationEventSyncRun) Update() *IntegrationEventSyncRunUpdateOne {
+	return NewIntegrationEventSyncRunClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the ProviderEventSyncRun entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the IntegrationEventSyncRun entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *ProviderEventSyncRun) Unwrap() *ProviderEventSyncRun {
+func (_m *IntegrationEventSyncRun) Unwrap() *IntegrationEventSyncRun {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: ProviderEventSyncRun is not a transactional entity")
+		panic("ent: IntegrationEventSyncRun is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *ProviderEventSyncRun) String() string {
+func (_m *IntegrationEventSyncRun) String() string {
 	var builder strings.Builder
-	builder.WriteString("ProviderEventSyncRun(")
+	builder.WriteString("IntegrationEventSyncRun(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("provider=")
-	builder.WriteString(_m.Provider)
+	builder.WriteString("integration_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.IntegrationID))
 	builder.WriteString(", ")
 	builder.WriteString("source_cursors=")
 	builder.WriteString(fmt.Sprintf("%v", _m.SourceCursors))
@@ -252,5 +271,5 @@ func (_m *ProviderEventSyncRun) String() string {
 	return builder.String()
 }
 
-// ProviderEventSyncRuns is a parsable slice of ProviderEventSyncRun.
-type ProviderEventSyncRuns []*ProviderEventSyncRun
+// IntegrationEventSyncRuns is a parsable slice of IntegrationEventSyncRun.
+type IntegrationEventSyncRuns []*IntegrationEventSyncRun

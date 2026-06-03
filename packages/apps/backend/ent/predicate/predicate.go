@@ -84,6 +84,12 @@ type IncidentType func(*sql.Selector)
 // Integration is the predicate function for integration builders.
 type Integration func(*sql.Selector)
 
+// IntegrationEventSyncCursor is the predicate function for integrationeventsynccursor builders.
+type IntegrationEventSyncCursor func(*sql.Selector)
+
+// IntegrationEventSyncRun is the predicate function for integrationeventsyncrun builders.
+type IntegrationEventSyncRun func(*sql.Selector)
+
 // IntegrationUserInstallState is the predicate function for integrationuserinstallstate builders.
 type IntegrationUserInstallState func(*sql.Selector)
 
@@ -143,12 +149,6 @@ type OrganizationRole func(*sql.Selector)
 
 // Playbook is the predicate function for playbook builders.
 type Playbook func(*sql.Selector)
-
-// ProviderEventSyncCursor is the predicate function for providereventsynccursor builders.
-type ProviderEventSyncCursor func(*sql.Selector)
-
-// ProviderEventSyncRun is the predicate function for providereventsyncrun builders.
-type ProviderEventSyncRun func(*sql.Selector)
 
 // Retrospective is the predicate function for retrospective builders.
 type Retrospective func(*sql.Selector)

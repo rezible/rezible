@@ -38,6 +38,8 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationeventsynccursor"
+	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
@@ -59,8 +61,6 @@ import (
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/providereventsynccursor"
-	"github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -113,6 +113,8 @@ const (
 	TypeIncidentTimelineEventTopologyContext    = "IncidentTimelineEventTopologyContext"
 	TypeIncidentType                            = "IncidentType"
 	TypeIntegration                             = "Integration"
+	TypeIntegrationEventSyncCursor              = "IntegrationEventSyncCursor"
+	TypeIntegrationEventSyncRun                 = "IntegrationEventSyncRun"
 	TypeIntegrationUserInstallState             = "IntegrationUserInstallState"
 	TypeKnowledgeEntity                         = "KnowledgeEntity"
 	TypeKnowledgeEntityAlias                    = "KnowledgeEntityAlias"
@@ -133,8 +135,6 @@ const (
 	TypeOrganization                            = "Organization"
 	TypeOrganizationRole                        = "OrganizationRole"
 	TypePlaybook                                = "Playbook"
-	TypeProviderEventSyncCursor                 = "ProviderEventSyncCursor"
-	TypeProviderEventSyncRun                    = "ProviderEventSyncRun"
 	TypeRetrospective                           = "Retrospective"
 	TypeRetrospectiveComment                    = "RetrospectiveComment"
 	TypeRetrospectiveReview                     = "RetrospectiveReview"
@@ -22075,6 +22075,1921 @@ func (m *IntegrationMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Integration edge %s", name)
 }
 
+// IntegrationEventSyncCursorMutation represents an operation that mutates the IntegrationEventSyncCursor nodes in the graph.
+type IntegrationEventSyncCursorMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	created_at         *time.Time
+	updated_at         *time.Time
+	provider_source    *string
+	cursor             *string
+	last_synced_at     *time.Time
+	clearedFields      map[string]struct{}
+	tenant             *int
+	clearedtenant      bool
+	integration        *uuid.UUID
+	clearedintegration bool
+	done               bool
+	oldValue           func(context.Context) (*IntegrationEventSyncCursor, error)
+	predicates         []predicate.IntegrationEventSyncCursor
+}
+
+var _ ent.Mutation = (*IntegrationEventSyncCursorMutation)(nil)
+
+// integrationeventsynccursorOption allows management of the mutation configuration using functional options.
+type integrationeventsynccursorOption func(*IntegrationEventSyncCursorMutation)
+
+// newIntegrationEventSyncCursorMutation creates new mutation for the IntegrationEventSyncCursor entity.
+func newIntegrationEventSyncCursorMutation(c config, op Op, opts ...integrationeventsynccursorOption) *IntegrationEventSyncCursorMutation {
+	m := &IntegrationEventSyncCursorMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeIntegrationEventSyncCursor,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withIntegrationEventSyncCursorID sets the ID field of the mutation.
+func withIntegrationEventSyncCursorID(id uuid.UUID) integrationeventsynccursorOption {
+	return func(m *IntegrationEventSyncCursorMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *IntegrationEventSyncCursor
+		)
+		m.oldValue = func(ctx context.Context) (*IntegrationEventSyncCursor, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().IntegrationEventSyncCursor.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withIntegrationEventSyncCursor sets the old IntegrationEventSyncCursor of the mutation.
+func withIntegrationEventSyncCursor(node *IntegrationEventSyncCursor) integrationeventsynccursorOption {
+	return func(m *IntegrationEventSyncCursorMutation) {
+		m.oldValue = func(context.Context) (*IntegrationEventSyncCursor, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m IntegrationEventSyncCursorMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m IntegrationEventSyncCursorMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of IntegrationEventSyncCursor entities.
+func (m *IntegrationEventSyncCursorMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *IntegrationEventSyncCursorMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *IntegrationEventSyncCursorMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().IntegrationEventSyncCursor.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *IntegrationEventSyncCursorMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *IntegrationEventSyncCursorMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the IntegrationEventSyncCursor entity.
+// If the IntegrationEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncCursorMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *IntegrationEventSyncCursorMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *IntegrationEventSyncCursorMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *IntegrationEventSyncCursorMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the IntegrationEventSyncCursor entity.
+// If the IntegrationEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncCursorMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *IntegrationEventSyncCursorMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *IntegrationEventSyncCursorMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *IntegrationEventSyncCursorMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the IntegrationEventSyncCursor entity.
+// If the IntegrationEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncCursorMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *IntegrationEventSyncCursorMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (m *IntegrationEventSyncCursorMutation) SetIntegrationID(u uuid.UUID) {
+	m.integration = &u
+}
+
+// IntegrationID returns the value of the "integration_id" field in the mutation.
+func (m *IntegrationEventSyncCursorMutation) IntegrationID() (r uuid.UUID, exists bool) {
+	v := m.integration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntegrationID returns the old "integration_id" field's value of the IntegrationEventSyncCursor entity.
+// If the IntegrationEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncCursorMutation) OldIntegrationID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntegrationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntegrationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntegrationID: %w", err)
+	}
+	return oldValue.IntegrationID, nil
+}
+
+// ResetIntegrationID resets all changes to the "integration_id" field.
+func (m *IntegrationEventSyncCursorMutation) ResetIntegrationID() {
+	m.integration = nil
+}
+
+// SetProviderSource sets the "provider_source" field.
+func (m *IntegrationEventSyncCursorMutation) SetProviderSource(s string) {
+	m.provider_source = &s
+}
+
+// ProviderSource returns the value of the "provider_source" field in the mutation.
+func (m *IntegrationEventSyncCursorMutation) ProviderSource() (r string, exists bool) {
+	v := m.provider_source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldProviderSource returns the old "provider_source" field's value of the IntegrationEventSyncCursor entity.
+// If the IntegrationEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncCursorMutation) OldProviderSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldProviderSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
+	}
+	return oldValue.ProviderSource, nil
+}
+
+// ResetProviderSource resets all changes to the "provider_source" field.
+func (m *IntegrationEventSyncCursorMutation) ResetProviderSource() {
+	m.provider_source = nil
+}
+
+// SetCursor sets the "cursor" field.
+func (m *IntegrationEventSyncCursorMutation) SetCursor(s string) {
+	m.cursor = &s
+}
+
+// Cursor returns the value of the "cursor" field in the mutation.
+func (m *IntegrationEventSyncCursorMutation) Cursor() (r string, exists bool) {
+	v := m.cursor
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCursor returns the old "cursor" field's value of the IntegrationEventSyncCursor entity.
+// If the IntegrationEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncCursorMutation) OldCursor(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCursor is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCursor requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCursor: %w", err)
+	}
+	return oldValue.Cursor, nil
+}
+
+// ClearCursor clears the value of the "cursor" field.
+func (m *IntegrationEventSyncCursorMutation) ClearCursor() {
+	m.cursor = nil
+	m.clearedFields[integrationeventsynccursor.FieldCursor] = struct{}{}
+}
+
+// CursorCleared returns if the "cursor" field was cleared in this mutation.
+func (m *IntegrationEventSyncCursorMutation) CursorCleared() bool {
+	_, ok := m.clearedFields[integrationeventsynccursor.FieldCursor]
+	return ok
+}
+
+// ResetCursor resets all changes to the "cursor" field.
+func (m *IntegrationEventSyncCursorMutation) ResetCursor() {
+	m.cursor = nil
+	delete(m.clearedFields, integrationeventsynccursor.FieldCursor)
+}
+
+// SetLastSyncedAt sets the "last_synced_at" field.
+func (m *IntegrationEventSyncCursorMutation) SetLastSyncedAt(t time.Time) {
+	m.last_synced_at = &t
+}
+
+// LastSyncedAt returns the value of the "last_synced_at" field in the mutation.
+func (m *IntegrationEventSyncCursorMutation) LastSyncedAt() (r time.Time, exists bool) {
+	v := m.last_synced_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldLastSyncedAt returns the old "last_synced_at" field's value of the IntegrationEventSyncCursor entity.
+// If the IntegrationEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncCursorMutation) OldLastSyncedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldLastSyncedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldLastSyncedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldLastSyncedAt: %w", err)
+	}
+	return oldValue.LastSyncedAt, nil
+}
+
+// ResetLastSyncedAt resets all changes to the "last_synced_at" field.
+func (m *IntegrationEventSyncCursorMutation) ResetLastSyncedAt() {
+	m.last_synced_at = nil
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *IntegrationEventSyncCursorMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[integrationeventsynccursor.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *IntegrationEventSyncCursorMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *IntegrationEventSyncCursorMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *IntegrationEventSyncCursorMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearIntegration clears the "integration" edge to the Integration entity.
+func (m *IntegrationEventSyncCursorMutation) ClearIntegration() {
+	m.clearedintegration = true
+	m.clearedFields[integrationeventsynccursor.FieldIntegrationID] = struct{}{}
+}
+
+// IntegrationCleared reports if the "integration" edge to the Integration entity was cleared.
+func (m *IntegrationEventSyncCursorMutation) IntegrationCleared() bool {
+	return m.clearedintegration
+}
+
+// IntegrationIDs returns the "integration" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IntegrationID instead. It exists only for internal usage by the builders.
+func (m *IntegrationEventSyncCursorMutation) IntegrationIDs() (ids []uuid.UUID) {
+	if id := m.integration; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIntegration resets all changes to the "integration" edge.
+func (m *IntegrationEventSyncCursorMutation) ResetIntegration() {
+	m.integration = nil
+	m.clearedintegration = false
+}
+
+// Where appends a list predicates to the IntegrationEventSyncCursorMutation builder.
+func (m *IntegrationEventSyncCursorMutation) Where(ps ...predicate.IntegrationEventSyncCursor) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the IntegrationEventSyncCursorMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *IntegrationEventSyncCursorMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.IntegrationEventSyncCursor, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *IntegrationEventSyncCursorMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *IntegrationEventSyncCursorMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (IntegrationEventSyncCursor).
+func (m *IntegrationEventSyncCursorMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *IntegrationEventSyncCursorMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.tenant != nil {
+		fields = append(fields, integrationeventsynccursor.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, integrationeventsynccursor.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, integrationeventsynccursor.FieldUpdatedAt)
+	}
+	if m.integration != nil {
+		fields = append(fields, integrationeventsynccursor.FieldIntegrationID)
+	}
+	if m.provider_source != nil {
+		fields = append(fields, integrationeventsynccursor.FieldProviderSource)
+	}
+	if m.cursor != nil {
+		fields = append(fields, integrationeventsynccursor.FieldCursor)
+	}
+	if m.last_synced_at != nil {
+		fields = append(fields, integrationeventsynccursor.FieldLastSyncedAt)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *IntegrationEventSyncCursorMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case integrationeventsynccursor.FieldTenantID:
+		return m.TenantID()
+	case integrationeventsynccursor.FieldCreatedAt:
+		return m.CreatedAt()
+	case integrationeventsynccursor.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case integrationeventsynccursor.FieldIntegrationID:
+		return m.IntegrationID()
+	case integrationeventsynccursor.FieldProviderSource:
+		return m.ProviderSource()
+	case integrationeventsynccursor.FieldCursor:
+		return m.Cursor()
+	case integrationeventsynccursor.FieldLastSyncedAt:
+		return m.LastSyncedAt()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *IntegrationEventSyncCursorMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case integrationeventsynccursor.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case integrationeventsynccursor.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case integrationeventsynccursor.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case integrationeventsynccursor.FieldIntegrationID:
+		return m.OldIntegrationID(ctx)
+	case integrationeventsynccursor.FieldProviderSource:
+		return m.OldProviderSource(ctx)
+	case integrationeventsynccursor.FieldCursor:
+		return m.OldCursor(ctx)
+	case integrationeventsynccursor.FieldLastSyncedAt:
+		return m.OldLastSyncedAt(ctx)
+	}
+	return nil, fmt.Errorf("unknown IntegrationEventSyncCursor field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IntegrationEventSyncCursorMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case integrationeventsynccursor.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case integrationeventsynccursor.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case integrationeventsynccursor.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case integrationeventsynccursor.FieldIntegrationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntegrationID(v)
+		return nil
+	case integrationeventsynccursor.FieldProviderSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetProviderSource(v)
+		return nil
+	case integrationeventsynccursor.FieldCursor:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCursor(v)
+		return nil
+	case integrationeventsynccursor.FieldLastSyncedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetLastSyncedAt(v)
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncCursor field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *IntegrationEventSyncCursorMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *IntegrationEventSyncCursorMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IntegrationEventSyncCursorMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncCursor numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *IntegrationEventSyncCursorMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(integrationeventsynccursor.FieldCursor) {
+		fields = append(fields, integrationeventsynccursor.FieldCursor)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *IntegrationEventSyncCursorMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *IntegrationEventSyncCursorMutation) ClearField(name string) error {
+	switch name {
+	case integrationeventsynccursor.FieldCursor:
+		m.ClearCursor()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncCursor nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *IntegrationEventSyncCursorMutation) ResetField(name string) error {
+	switch name {
+	case integrationeventsynccursor.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case integrationeventsynccursor.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case integrationeventsynccursor.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case integrationeventsynccursor.FieldIntegrationID:
+		m.ResetIntegrationID()
+		return nil
+	case integrationeventsynccursor.FieldProviderSource:
+		m.ResetProviderSource()
+		return nil
+	case integrationeventsynccursor.FieldCursor:
+		m.ResetCursor()
+		return nil
+	case integrationeventsynccursor.FieldLastSyncedAt:
+		m.ResetLastSyncedAt()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncCursor field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *IntegrationEventSyncCursorMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.tenant != nil {
+		edges = append(edges, integrationeventsynccursor.EdgeTenant)
+	}
+	if m.integration != nil {
+		edges = append(edges, integrationeventsynccursor.EdgeIntegration)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *IntegrationEventSyncCursorMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case integrationeventsynccursor.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case integrationeventsynccursor.EdgeIntegration:
+		if id := m.integration; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *IntegrationEventSyncCursorMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *IntegrationEventSyncCursorMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *IntegrationEventSyncCursorMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedtenant {
+		edges = append(edges, integrationeventsynccursor.EdgeTenant)
+	}
+	if m.clearedintegration {
+		edges = append(edges, integrationeventsynccursor.EdgeIntegration)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *IntegrationEventSyncCursorMutation) EdgeCleared(name string) bool {
+	switch name {
+	case integrationeventsynccursor.EdgeTenant:
+		return m.clearedtenant
+	case integrationeventsynccursor.EdgeIntegration:
+		return m.clearedintegration
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *IntegrationEventSyncCursorMutation) ClearEdge(name string) error {
+	switch name {
+	case integrationeventsynccursor.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case integrationeventsynccursor.EdgeIntegration:
+		m.ClearIntegration()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncCursor unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *IntegrationEventSyncCursorMutation) ResetEdge(name string) error {
+	switch name {
+	case integrationeventsynccursor.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case integrationeventsynccursor.EdgeIntegration:
+		m.ResetIntegration()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncCursor edge %s", name)
+}
+
+// IntegrationEventSyncRunMutation represents an operation that mutates the IntegrationEventSyncRun nodes in the graph.
+type IntegrationEventSyncRunMutation struct {
+	config
+	op                 Op
+	typ                string
+	id                 *uuid.UUID
+	source_cursors     *map[string]string
+	sync_reason        *string
+	started_at         *time.Time
+	finished_at        *time.Time
+	status             *integrationeventsyncrun.Status
+	events_pulled      *int
+	addevents_pulled   *int
+	events_ingested    *int
+	addevents_ingested *int
+	duplicates         *int
+	addduplicates      *int
+	failure_message    *string
+	clearedFields      map[string]struct{}
+	tenant             *int
+	clearedtenant      bool
+	integration        *uuid.UUID
+	clearedintegration bool
+	done               bool
+	oldValue           func(context.Context) (*IntegrationEventSyncRun, error)
+	predicates         []predicate.IntegrationEventSyncRun
+}
+
+var _ ent.Mutation = (*IntegrationEventSyncRunMutation)(nil)
+
+// integrationeventsyncrunOption allows management of the mutation configuration using functional options.
+type integrationeventsyncrunOption func(*IntegrationEventSyncRunMutation)
+
+// newIntegrationEventSyncRunMutation creates new mutation for the IntegrationEventSyncRun entity.
+func newIntegrationEventSyncRunMutation(c config, op Op, opts ...integrationeventsyncrunOption) *IntegrationEventSyncRunMutation {
+	m := &IntegrationEventSyncRunMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeIntegrationEventSyncRun,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withIntegrationEventSyncRunID sets the ID field of the mutation.
+func withIntegrationEventSyncRunID(id uuid.UUID) integrationeventsyncrunOption {
+	return func(m *IntegrationEventSyncRunMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *IntegrationEventSyncRun
+		)
+		m.oldValue = func(ctx context.Context) (*IntegrationEventSyncRun, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().IntegrationEventSyncRun.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withIntegrationEventSyncRun sets the old IntegrationEventSyncRun of the mutation.
+func withIntegrationEventSyncRun(node *IntegrationEventSyncRun) integrationeventsyncrunOption {
+	return func(m *IntegrationEventSyncRunMutation) {
+		m.oldValue = func(context.Context) (*IntegrationEventSyncRun, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m IntegrationEventSyncRunMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m IntegrationEventSyncRunMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of IntegrationEventSyncRun entities.
+func (m *IntegrationEventSyncRunMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *IntegrationEventSyncRunMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *IntegrationEventSyncRunMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().IntegrationEventSyncRun.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *IntegrationEventSyncRunMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *IntegrationEventSyncRunMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetIntegrationID sets the "integration_id" field.
+func (m *IntegrationEventSyncRunMutation) SetIntegrationID(u uuid.UUID) {
+	m.integration = &u
+}
+
+// IntegrationID returns the value of the "integration_id" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) IntegrationID() (r uuid.UUID, exists bool) {
+	v := m.integration
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIntegrationID returns the old "integration_id" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldIntegrationID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIntegrationID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIntegrationID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIntegrationID: %w", err)
+	}
+	return oldValue.IntegrationID, nil
+}
+
+// ResetIntegrationID resets all changes to the "integration_id" field.
+func (m *IntegrationEventSyncRunMutation) ResetIntegrationID() {
+	m.integration = nil
+}
+
+// SetSourceCursors sets the "source_cursors" field.
+func (m *IntegrationEventSyncRunMutation) SetSourceCursors(value map[string]string) {
+	m.source_cursors = &value
+}
+
+// SourceCursors returns the value of the "source_cursors" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) SourceCursors() (r map[string]string, exists bool) {
+	v := m.source_cursors
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSourceCursors returns the old "source_cursors" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldSourceCursors(ctx context.Context) (v map[string]string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSourceCursors is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSourceCursors requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSourceCursors: %w", err)
+	}
+	return oldValue.SourceCursors, nil
+}
+
+// ClearSourceCursors clears the value of the "source_cursors" field.
+func (m *IntegrationEventSyncRunMutation) ClearSourceCursors() {
+	m.source_cursors = nil
+	m.clearedFields[integrationeventsyncrun.FieldSourceCursors] = struct{}{}
+}
+
+// SourceCursorsCleared returns if the "source_cursors" field was cleared in this mutation.
+func (m *IntegrationEventSyncRunMutation) SourceCursorsCleared() bool {
+	_, ok := m.clearedFields[integrationeventsyncrun.FieldSourceCursors]
+	return ok
+}
+
+// ResetSourceCursors resets all changes to the "source_cursors" field.
+func (m *IntegrationEventSyncRunMutation) ResetSourceCursors() {
+	m.source_cursors = nil
+	delete(m.clearedFields, integrationeventsyncrun.FieldSourceCursors)
+}
+
+// SetSyncReason sets the "sync_reason" field.
+func (m *IntegrationEventSyncRunMutation) SetSyncReason(s string) {
+	m.sync_reason = &s
+}
+
+// SyncReason returns the value of the "sync_reason" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) SyncReason() (r string, exists bool) {
+	v := m.sync_reason
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSyncReason returns the old "sync_reason" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldSyncReason(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSyncReason is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSyncReason requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSyncReason: %w", err)
+	}
+	return oldValue.SyncReason, nil
+}
+
+// ResetSyncReason resets all changes to the "sync_reason" field.
+func (m *IntegrationEventSyncRunMutation) ResetSyncReason() {
+	m.sync_reason = nil
+}
+
+// SetStartedAt sets the "started_at" field.
+func (m *IntegrationEventSyncRunMutation) SetStartedAt(t time.Time) {
+	m.started_at = &t
+}
+
+// StartedAt returns the value of the "started_at" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) StartedAt() (r time.Time, exists bool) {
+	v := m.started_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStartedAt returns the old "started_at" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldStartedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStartedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStartedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStartedAt: %w", err)
+	}
+	return oldValue.StartedAt, nil
+}
+
+// ResetStartedAt resets all changes to the "started_at" field.
+func (m *IntegrationEventSyncRunMutation) ResetStartedAt() {
+	m.started_at = nil
+}
+
+// SetFinishedAt sets the "finished_at" field.
+func (m *IntegrationEventSyncRunMutation) SetFinishedAt(t time.Time) {
+	m.finished_at = &t
+}
+
+// FinishedAt returns the value of the "finished_at" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) FinishedAt() (r time.Time, exists bool) {
+	v := m.finished_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFinishedAt returns the old "finished_at" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldFinishedAt(ctx context.Context) (v *time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
+	}
+	return oldValue.FinishedAt, nil
+}
+
+// ClearFinishedAt clears the value of the "finished_at" field.
+func (m *IntegrationEventSyncRunMutation) ClearFinishedAt() {
+	m.finished_at = nil
+	m.clearedFields[integrationeventsyncrun.FieldFinishedAt] = struct{}{}
+}
+
+// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
+func (m *IntegrationEventSyncRunMutation) FinishedAtCleared() bool {
+	_, ok := m.clearedFields[integrationeventsyncrun.FieldFinishedAt]
+	return ok
+}
+
+// ResetFinishedAt resets all changes to the "finished_at" field.
+func (m *IntegrationEventSyncRunMutation) ResetFinishedAt() {
+	m.finished_at = nil
+	delete(m.clearedFields, integrationeventsyncrun.FieldFinishedAt)
+}
+
+// SetStatus sets the "status" field.
+func (m *IntegrationEventSyncRunMutation) SetStatus(i integrationeventsyncrun.Status) {
+	m.status = &i
+}
+
+// Status returns the value of the "status" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) Status() (r integrationeventsyncrun.Status, exists bool) {
+	v := m.status
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldStatus returns the old "status" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldStatus(ctx context.Context) (v integrationeventsyncrun.Status, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldStatus requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
+	}
+	return oldValue.Status, nil
+}
+
+// ResetStatus resets all changes to the "status" field.
+func (m *IntegrationEventSyncRunMutation) ResetStatus() {
+	m.status = nil
+}
+
+// SetEventsPulled sets the "events_pulled" field.
+func (m *IntegrationEventSyncRunMutation) SetEventsPulled(i int) {
+	m.events_pulled = &i
+	m.addevents_pulled = nil
+}
+
+// EventsPulled returns the value of the "events_pulled" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) EventsPulled() (r int, exists bool) {
+	v := m.events_pulled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEventsPulled returns the old "events_pulled" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldEventsPulled(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEventsPulled is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEventsPulled requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEventsPulled: %w", err)
+	}
+	return oldValue.EventsPulled, nil
+}
+
+// AddEventsPulled adds i to the "events_pulled" field.
+func (m *IntegrationEventSyncRunMutation) AddEventsPulled(i int) {
+	if m.addevents_pulled != nil {
+		*m.addevents_pulled += i
+	} else {
+		m.addevents_pulled = &i
+	}
+}
+
+// AddedEventsPulled returns the value that was added to the "events_pulled" field in this mutation.
+func (m *IntegrationEventSyncRunMutation) AddedEventsPulled() (r int, exists bool) {
+	v := m.addevents_pulled
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetEventsPulled resets all changes to the "events_pulled" field.
+func (m *IntegrationEventSyncRunMutation) ResetEventsPulled() {
+	m.events_pulled = nil
+	m.addevents_pulled = nil
+}
+
+// SetEventsIngested sets the "events_ingested" field.
+func (m *IntegrationEventSyncRunMutation) SetEventsIngested(i int) {
+	m.events_ingested = &i
+	m.addevents_ingested = nil
+}
+
+// EventsIngested returns the value of the "events_ingested" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) EventsIngested() (r int, exists bool) {
+	v := m.events_ingested
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldEventsIngested returns the old "events_ingested" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldEventsIngested(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldEventsIngested is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldEventsIngested requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldEventsIngested: %w", err)
+	}
+	return oldValue.EventsIngested, nil
+}
+
+// AddEventsIngested adds i to the "events_ingested" field.
+func (m *IntegrationEventSyncRunMutation) AddEventsIngested(i int) {
+	if m.addevents_ingested != nil {
+		*m.addevents_ingested += i
+	} else {
+		m.addevents_ingested = &i
+	}
+}
+
+// AddedEventsIngested returns the value that was added to the "events_ingested" field in this mutation.
+func (m *IntegrationEventSyncRunMutation) AddedEventsIngested() (r int, exists bool) {
+	v := m.addevents_ingested
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetEventsIngested resets all changes to the "events_ingested" field.
+func (m *IntegrationEventSyncRunMutation) ResetEventsIngested() {
+	m.events_ingested = nil
+	m.addevents_ingested = nil
+}
+
+// SetDuplicates sets the "duplicates" field.
+func (m *IntegrationEventSyncRunMutation) SetDuplicates(i int) {
+	m.duplicates = &i
+	m.addduplicates = nil
+}
+
+// Duplicates returns the value of the "duplicates" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) Duplicates() (r int, exists bool) {
+	v := m.duplicates
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldDuplicates returns the old "duplicates" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldDuplicates(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldDuplicates is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldDuplicates requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldDuplicates: %w", err)
+	}
+	return oldValue.Duplicates, nil
+}
+
+// AddDuplicates adds i to the "duplicates" field.
+func (m *IntegrationEventSyncRunMutation) AddDuplicates(i int) {
+	if m.addduplicates != nil {
+		*m.addduplicates += i
+	} else {
+		m.addduplicates = &i
+	}
+}
+
+// AddedDuplicates returns the value that was added to the "duplicates" field in this mutation.
+func (m *IntegrationEventSyncRunMutation) AddedDuplicates() (r int, exists bool) {
+	v := m.addduplicates
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ResetDuplicates resets all changes to the "duplicates" field.
+func (m *IntegrationEventSyncRunMutation) ResetDuplicates() {
+	m.duplicates = nil
+	m.addduplicates = nil
+}
+
+// SetFailureMessage sets the "failure_message" field.
+func (m *IntegrationEventSyncRunMutation) SetFailureMessage(s string) {
+	m.failure_message = &s
+}
+
+// FailureMessage returns the value of the "failure_message" field in the mutation.
+func (m *IntegrationEventSyncRunMutation) FailureMessage() (r string, exists bool) {
+	v := m.failure_message
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldFailureMessage returns the old "failure_message" field's value of the IntegrationEventSyncRun entity.
+// If the IntegrationEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IntegrationEventSyncRunMutation) OldFailureMessage(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldFailureMessage is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldFailureMessage requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldFailureMessage: %w", err)
+	}
+	return oldValue.FailureMessage, nil
+}
+
+// ClearFailureMessage clears the value of the "failure_message" field.
+func (m *IntegrationEventSyncRunMutation) ClearFailureMessage() {
+	m.failure_message = nil
+	m.clearedFields[integrationeventsyncrun.FieldFailureMessage] = struct{}{}
+}
+
+// FailureMessageCleared returns if the "failure_message" field was cleared in this mutation.
+func (m *IntegrationEventSyncRunMutation) FailureMessageCleared() bool {
+	_, ok := m.clearedFields[integrationeventsyncrun.FieldFailureMessage]
+	return ok
+}
+
+// ResetFailureMessage resets all changes to the "failure_message" field.
+func (m *IntegrationEventSyncRunMutation) ResetFailureMessage() {
+	m.failure_message = nil
+	delete(m.clearedFields, integrationeventsyncrun.FieldFailureMessage)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *IntegrationEventSyncRunMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[integrationeventsyncrun.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *IntegrationEventSyncRunMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *IntegrationEventSyncRunMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *IntegrationEventSyncRunMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearIntegration clears the "integration" edge to the Integration entity.
+func (m *IntegrationEventSyncRunMutation) ClearIntegration() {
+	m.clearedintegration = true
+	m.clearedFields[integrationeventsyncrun.FieldIntegrationID] = struct{}{}
+}
+
+// IntegrationCleared reports if the "integration" edge to the Integration entity was cleared.
+func (m *IntegrationEventSyncRunMutation) IntegrationCleared() bool {
+	return m.clearedintegration
+}
+
+// IntegrationIDs returns the "integration" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IntegrationID instead. It exists only for internal usage by the builders.
+func (m *IntegrationEventSyncRunMutation) IntegrationIDs() (ids []uuid.UUID) {
+	if id := m.integration; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIntegration resets all changes to the "integration" edge.
+func (m *IntegrationEventSyncRunMutation) ResetIntegration() {
+	m.integration = nil
+	m.clearedintegration = false
+}
+
+// Where appends a list predicates to the IntegrationEventSyncRunMutation builder.
+func (m *IntegrationEventSyncRunMutation) Where(ps ...predicate.IntegrationEventSyncRun) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the IntegrationEventSyncRunMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *IntegrationEventSyncRunMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.IntegrationEventSyncRun, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *IntegrationEventSyncRunMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *IntegrationEventSyncRunMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (IntegrationEventSyncRun).
+func (m *IntegrationEventSyncRunMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *IntegrationEventSyncRunMutation) Fields() []string {
+	fields := make([]string, 0, 11)
+	if m.tenant != nil {
+		fields = append(fields, integrationeventsyncrun.FieldTenantID)
+	}
+	if m.integration != nil {
+		fields = append(fields, integrationeventsyncrun.FieldIntegrationID)
+	}
+	if m.source_cursors != nil {
+		fields = append(fields, integrationeventsyncrun.FieldSourceCursors)
+	}
+	if m.sync_reason != nil {
+		fields = append(fields, integrationeventsyncrun.FieldSyncReason)
+	}
+	if m.started_at != nil {
+		fields = append(fields, integrationeventsyncrun.FieldStartedAt)
+	}
+	if m.finished_at != nil {
+		fields = append(fields, integrationeventsyncrun.FieldFinishedAt)
+	}
+	if m.status != nil {
+		fields = append(fields, integrationeventsyncrun.FieldStatus)
+	}
+	if m.events_pulled != nil {
+		fields = append(fields, integrationeventsyncrun.FieldEventsPulled)
+	}
+	if m.events_ingested != nil {
+		fields = append(fields, integrationeventsyncrun.FieldEventsIngested)
+	}
+	if m.duplicates != nil {
+		fields = append(fields, integrationeventsyncrun.FieldDuplicates)
+	}
+	if m.failure_message != nil {
+		fields = append(fields, integrationeventsyncrun.FieldFailureMessage)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *IntegrationEventSyncRunMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case integrationeventsyncrun.FieldTenantID:
+		return m.TenantID()
+	case integrationeventsyncrun.FieldIntegrationID:
+		return m.IntegrationID()
+	case integrationeventsyncrun.FieldSourceCursors:
+		return m.SourceCursors()
+	case integrationeventsyncrun.FieldSyncReason:
+		return m.SyncReason()
+	case integrationeventsyncrun.FieldStartedAt:
+		return m.StartedAt()
+	case integrationeventsyncrun.FieldFinishedAt:
+		return m.FinishedAt()
+	case integrationeventsyncrun.FieldStatus:
+		return m.Status()
+	case integrationeventsyncrun.FieldEventsPulled:
+		return m.EventsPulled()
+	case integrationeventsyncrun.FieldEventsIngested:
+		return m.EventsIngested()
+	case integrationeventsyncrun.FieldDuplicates:
+		return m.Duplicates()
+	case integrationeventsyncrun.FieldFailureMessage:
+		return m.FailureMessage()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *IntegrationEventSyncRunMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case integrationeventsyncrun.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case integrationeventsyncrun.FieldIntegrationID:
+		return m.OldIntegrationID(ctx)
+	case integrationeventsyncrun.FieldSourceCursors:
+		return m.OldSourceCursors(ctx)
+	case integrationeventsyncrun.FieldSyncReason:
+		return m.OldSyncReason(ctx)
+	case integrationeventsyncrun.FieldStartedAt:
+		return m.OldStartedAt(ctx)
+	case integrationeventsyncrun.FieldFinishedAt:
+		return m.OldFinishedAt(ctx)
+	case integrationeventsyncrun.FieldStatus:
+		return m.OldStatus(ctx)
+	case integrationeventsyncrun.FieldEventsPulled:
+		return m.OldEventsPulled(ctx)
+	case integrationeventsyncrun.FieldEventsIngested:
+		return m.OldEventsIngested(ctx)
+	case integrationeventsyncrun.FieldDuplicates:
+		return m.OldDuplicates(ctx)
+	case integrationeventsyncrun.FieldFailureMessage:
+		return m.OldFailureMessage(ctx)
+	}
+	return nil, fmt.Errorf("unknown IntegrationEventSyncRun field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IntegrationEventSyncRunMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case integrationeventsyncrun.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case integrationeventsyncrun.FieldIntegrationID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIntegrationID(v)
+		return nil
+	case integrationeventsyncrun.FieldSourceCursors:
+		v, ok := value.(map[string]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSourceCursors(v)
+		return nil
+	case integrationeventsyncrun.FieldSyncReason:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSyncReason(v)
+		return nil
+	case integrationeventsyncrun.FieldStartedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStartedAt(v)
+		return nil
+	case integrationeventsyncrun.FieldFinishedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFinishedAt(v)
+		return nil
+	case integrationeventsyncrun.FieldStatus:
+		v, ok := value.(integrationeventsyncrun.Status)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetStatus(v)
+		return nil
+	case integrationeventsyncrun.FieldEventsPulled:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEventsPulled(v)
+		return nil
+	case integrationeventsyncrun.FieldEventsIngested:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetEventsIngested(v)
+		return nil
+	case integrationeventsyncrun.FieldDuplicates:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetDuplicates(v)
+		return nil
+	case integrationeventsyncrun.FieldFailureMessage:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetFailureMessage(v)
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncRun field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *IntegrationEventSyncRunMutation) AddedFields() []string {
+	var fields []string
+	if m.addevents_pulled != nil {
+		fields = append(fields, integrationeventsyncrun.FieldEventsPulled)
+	}
+	if m.addevents_ingested != nil {
+		fields = append(fields, integrationeventsyncrun.FieldEventsIngested)
+	}
+	if m.addduplicates != nil {
+		fields = append(fields, integrationeventsyncrun.FieldDuplicates)
+	}
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *IntegrationEventSyncRunMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	case integrationeventsyncrun.FieldEventsPulled:
+		return m.AddedEventsPulled()
+	case integrationeventsyncrun.FieldEventsIngested:
+		return m.AddedEventsIngested()
+	case integrationeventsyncrun.FieldDuplicates:
+		return m.AddedDuplicates()
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IntegrationEventSyncRunMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	case integrationeventsyncrun.FieldEventsPulled:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddEventsPulled(v)
+		return nil
+	case integrationeventsyncrun.FieldEventsIngested:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddEventsIngested(v)
+		return nil
+	case integrationeventsyncrun.FieldDuplicates:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddDuplicates(v)
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncRun numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *IntegrationEventSyncRunMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(integrationeventsyncrun.FieldSourceCursors) {
+		fields = append(fields, integrationeventsyncrun.FieldSourceCursors)
+	}
+	if m.FieldCleared(integrationeventsyncrun.FieldFinishedAt) {
+		fields = append(fields, integrationeventsyncrun.FieldFinishedAt)
+	}
+	if m.FieldCleared(integrationeventsyncrun.FieldFailureMessage) {
+		fields = append(fields, integrationeventsyncrun.FieldFailureMessage)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *IntegrationEventSyncRunMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *IntegrationEventSyncRunMutation) ClearField(name string) error {
+	switch name {
+	case integrationeventsyncrun.FieldSourceCursors:
+		m.ClearSourceCursors()
+		return nil
+	case integrationeventsyncrun.FieldFinishedAt:
+		m.ClearFinishedAt()
+		return nil
+	case integrationeventsyncrun.FieldFailureMessage:
+		m.ClearFailureMessage()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncRun nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *IntegrationEventSyncRunMutation) ResetField(name string) error {
+	switch name {
+	case integrationeventsyncrun.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case integrationeventsyncrun.FieldIntegrationID:
+		m.ResetIntegrationID()
+		return nil
+	case integrationeventsyncrun.FieldSourceCursors:
+		m.ResetSourceCursors()
+		return nil
+	case integrationeventsyncrun.FieldSyncReason:
+		m.ResetSyncReason()
+		return nil
+	case integrationeventsyncrun.FieldStartedAt:
+		m.ResetStartedAt()
+		return nil
+	case integrationeventsyncrun.FieldFinishedAt:
+		m.ResetFinishedAt()
+		return nil
+	case integrationeventsyncrun.FieldStatus:
+		m.ResetStatus()
+		return nil
+	case integrationeventsyncrun.FieldEventsPulled:
+		m.ResetEventsPulled()
+		return nil
+	case integrationeventsyncrun.FieldEventsIngested:
+		m.ResetEventsIngested()
+		return nil
+	case integrationeventsyncrun.FieldDuplicates:
+		m.ResetDuplicates()
+		return nil
+	case integrationeventsyncrun.FieldFailureMessage:
+		m.ResetFailureMessage()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncRun field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *IntegrationEventSyncRunMutation) AddedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.tenant != nil {
+		edges = append(edges, integrationeventsyncrun.EdgeTenant)
+	}
+	if m.integration != nil {
+		edges = append(edges, integrationeventsyncrun.EdgeIntegration)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *IntegrationEventSyncRunMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case integrationeventsyncrun.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case integrationeventsyncrun.EdgeIntegration:
+		if id := m.integration; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *IntegrationEventSyncRunMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 2)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *IntegrationEventSyncRunMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *IntegrationEventSyncRunMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 2)
+	if m.clearedtenant {
+		edges = append(edges, integrationeventsyncrun.EdgeTenant)
+	}
+	if m.clearedintegration {
+		edges = append(edges, integrationeventsyncrun.EdgeIntegration)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *IntegrationEventSyncRunMutation) EdgeCleared(name string) bool {
+	switch name {
+	case integrationeventsyncrun.EdgeTenant:
+		return m.clearedtenant
+	case integrationeventsyncrun.EdgeIntegration:
+		return m.clearedintegration
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *IntegrationEventSyncRunMutation) ClearEdge(name string) error {
+	switch name {
+	case integrationeventsyncrun.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case integrationeventsyncrun.EdgeIntegration:
+		m.ClearIntegration()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncRun unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *IntegrationEventSyncRunMutation) ResetEdge(name string) error {
+	switch name {
+	case integrationeventsyncrun.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case integrationeventsyncrun.EdgeIntegration:
+		m.ResetIntegration()
+		return nil
+	}
+	return fmt.Errorf("unknown IntegrationEventSyncRun edge %s", name)
+}
+
 // IntegrationUserInstallStateMutation represents an operation that mutates the IntegrationUserInstallState nodes in the graph.
 type IntegrationUserInstallStateMutation struct {
 	config
@@ -41410,1829 +43325,6 @@ func (m *PlaybookMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown Playbook edge %s", name)
-}
-
-// ProviderEventSyncCursorMutation represents an operation that mutates the ProviderEventSyncCursor nodes in the graph.
-type ProviderEventSyncCursorMutation struct {
-	config
-	op              Op
-	typ             string
-	id              *uuid.UUID
-	created_at      *time.Time
-	updated_at      *time.Time
-	provider        *string
-	provider_source *string
-	cursor          *string
-	last_synced_at  *time.Time
-	clearedFields   map[string]struct{}
-	tenant          *int
-	clearedtenant   bool
-	done            bool
-	oldValue        func(context.Context) (*ProviderEventSyncCursor, error)
-	predicates      []predicate.ProviderEventSyncCursor
-}
-
-var _ ent.Mutation = (*ProviderEventSyncCursorMutation)(nil)
-
-// providereventsynccursorOption allows management of the mutation configuration using functional options.
-type providereventsynccursorOption func(*ProviderEventSyncCursorMutation)
-
-// newProviderEventSyncCursorMutation creates new mutation for the ProviderEventSyncCursor entity.
-func newProviderEventSyncCursorMutation(c config, op Op, opts ...providereventsynccursorOption) *ProviderEventSyncCursorMutation {
-	m := &ProviderEventSyncCursorMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeProviderEventSyncCursor,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withProviderEventSyncCursorID sets the ID field of the mutation.
-func withProviderEventSyncCursorID(id uuid.UUID) providereventsynccursorOption {
-	return func(m *ProviderEventSyncCursorMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ProviderEventSyncCursor
-		)
-		m.oldValue = func(ctx context.Context) (*ProviderEventSyncCursor, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ProviderEventSyncCursor.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withProviderEventSyncCursor sets the old ProviderEventSyncCursor of the mutation.
-func withProviderEventSyncCursor(node *ProviderEventSyncCursor) providereventsynccursorOption {
-	return func(m *ProviderEventSyncCursorMutation) {
-		m.oldValue = func(context.Context) (*ProviderEventSyncCursor, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ProviderEventSyncCursorMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ProviderEventSyncCursorMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ProviderEventSyncCursor entities.
-func (m *ProviderEventSyncCursorMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ProviderEventSyncCursorMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ProviderEventSyncCursorMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ProviderEventSyncCursor.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *ProviderEventSyncCursorMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *ProviderEventSyncCursorMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the ProviderEventSyncCursor entity.
-// If the ProviderEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncCursorMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *ProviderEventSyncCursorMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *ProviderEventSyncCursorMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *ProviderEventSyncCursorMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the ProviderEventSyncCursor entity.
-// If the ProviderEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncCursorMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *ProviderEventSyncCursorMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *ProviderEventSyncCursorMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *ProviderEventSyncCursorMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the ProviderEventSyncCursor entity.
-// If the ProviderEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncCursorMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *ProviderEventSyncCursorMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetProvider sets the "provider" field.
-func (m *ProviderEventSyncCursorMutation) SetProvider(s string) {
-	m.provider = &s
-}
-
-// Provider returns the value of the "provider" field in the mutation.
-func (m *ProviderEventSyncCursorMutation) Provider() (r string, exists bool) {
-	v := m.provider
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProvider returns the old "provider" field's value of the ProviderEventSyncCursor entity.
-// If the ProviderEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncCursorMutation) OldProvider(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProvider requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
-	}
-	return oldValue.Provider, nil
-}
-
-// ResetProvider resets all changes to the "provider" field.
-func (m *ProviderEventSyncCursorMutation) ResetProvider() {
-	m.provider = nil
-}
-
-// SetProviderSource sets the "provider_source" field.
-func (m *ProviderEventSyncCursorMutation) SetProviderSource(s string) {
-	m.provider_source = &s
-}
-
-// ProviderSource returns the value of the "provider_source" field in the mutation.
-func (m *ProviderEventSyncCursorMutation) ProviderSource() (r string, exists bool) {
-	v := m.provider_source
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProviderSource returns the old "provider_source" field's value of the ProviderEventSyncCursor entity.
-// If the ProviderEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncCursorMutation) OldProviderSource(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProviderSource is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProviderSource requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProviderSource: %w", err)
-	}
-	return oldValue.ProviderSource, nil
-}
-
-// ResetProviderSource resets all changes to the "provider_source" field.
-func (m *ProviderEventSyncCursorMutation) ResetProviderSource() {
-	m.provider_source = nil
-}
-
-// SetCursor sets the "cursor" field.
-func (m *ProviderEventSyncCursorMutation) SetCursor(s string) {
-	m.cursor = &s
-}
-
-// Cursor returns the value of the "cursor" field in the mutation.
-func (m *ProviderEventSyncCursorMutation) Cursor() (r string, exists bool) {
-	v := m.cursor
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCursor returns the old "cursor" field's value of the ProviderEventSyncCursor entity.
-// If the ProviderEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncCursorMutation) OldCursor(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCursor is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCursor requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCursor: %w", err)
-	}
-	return oldValue.Cursor, nil
-}
-
-// ClearCursor clears the value of the "cursor" field.
-func (m *ProviderEventSyncCursorMutation) ClearCursor() {
-	m.cursor = nil
-	m.clearedFields[providereventsynccursor.FieldCursor] = struct{}{}
-}
-
-// CursorCleared returns if the "cursor" field was cleared in this mutation.
-func (m *ProviderEventSyncCursorMutation) CursorCleared() bool {
-	_, ok := m.clearedFields[providereventsynccursor.FieldCursor]
-	return ok
-}
-
-// ResetCursor resets all changes to the "cursor" field.
-func (m *ProviderEventSyncCursorMutation) ResetCursor() {
-	m.cursor = nil
-	delete(m.clearedFields, providereventsynccursor.FieldCursor)
-}
-
-// SetLastSyncedAt sets the "last_synced_at" field.
-func (m *ProviderEventSyncCursorMutation) SetLastSyncedAt(t time.Time) {
-	m.last_synced_at = &t
-}
-
-// LastSyncedAt returns the value of the "last_synced_at" field in the mutation.
-func (m *ProviderEventSyncCursorMutation) LastSyncedAt() (r time.Time, exists bool) {
-	v := m.last_synced_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldLastSyncedAt returns the old "last_synced_at" field's value of the ProviderEventSyncCursor entity.
-// If the ProviderEventSyncCursor object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncCursorMutation) OldLastSyncedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldLastSyncedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldLastSyncedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldLastSyncedAt: %w", err)
-	}
-	return oldValue.LastSyncedAt, nil
-}
-
-// ResetLastSyncedAt resets all changes to the "last_synced_at" field.
-func (m *ProviderEventSyncCursorMutation) ResetLastSyncedAt() {
-	m.last_synced_at = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *ProviderEventSyncCursorMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[providereventsynccursor.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *ProviderEventSyncCursorMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *ProviderEventSyncCursorMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *ProviderEventSyncCursorMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// Where appends a list predicates to the ProviderEventSyncCursorMutation builder.
-func (m *ProviderEventSyncCursorMutation) Where(ps ...predicate.ProviderEventSyncCursor) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ProviderEventSyncCursorMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ProviderEventSyncCursorMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ProviderEventSyncCursor, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ProviderEventSyncCursorMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ProviderEventSyncCursorMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (ProviderEventSyncCursor).
-func (m *ProviderEventSyncCursorMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ProviderEventSyncCursorMutation) Fields() []string {
-	fields := make([]string, 0, 7)
-	if m.tenant != nil {
-		fields = append(fields, providereventsynccursor.FieldTenantID)
-	}
-	if m.created_at != nil {
-		fields = append(fields, providereventsynccursor.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, providereventsynccursor.FieldUpdatedAt)
-	}
-	if m.provider != nil {
-		fields = append(fields, providereventsynccursor.FieldProvider)
-	}
-	if m.provider_source != nil {
-		fields = append(fields, providereventsynccursor.FieldProviderSource)
-	}
-	if m.cursor != nil {
-		fields = append(fields, providereventsynccursor.FieldCursor)
-	}
-	if m.last_synced_at != nil {
-		fields = append(fields, providereventsynccursor.FieldLastSyncedAt)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ProviderEventSyncCursorMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case providereventsynccursor.FieldTenantID:
-		return m.TenantID()
-	case providereventsynccursor.FieldCreatedAt:
-		return m.CreatedAt()
-	case providereventsynccursor.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case providereventsynccursor.FieldProvider:
-		return m.Provider()
-	case providereventsynccursor.FieldProviderSource:
-		return m.ProviderSource()
-	case providereventsynccursor.FieldCursor:
-		return m.Cursor()
-	case providereventsynccursor.FieldLastSyncedAt:
-		return m.LastSyncedAt()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ProviderEventSyncCursorMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case providereventsynccursor.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case providereventsynccursor.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case providereventsynccursor.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case providereventsynccursor.FieldProvider:
-		return m.OldProvider(ctx)
-	case providereventsynccursor.FieldProviderSource:
-		return m.OldProviderSource(ctx)
-	case providereventsynccursor.FieldCursor:
-		return m.OldCursor(ctx)
-	case providereventsynccursor.FieldLastSyncedAt:
-		return m.OldLastSyncedAt(ctx)
-	}
-	return nil, fmt.Errorf("unknown ProviderEventSyncCursor field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ProviderEventSyncCursorMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case providereventsynccursor.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case providereventsynccursor.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case providereventsynccursor.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case providereventsynccursor.FieldProvider:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProvider(v)
-		return nil
-	case providereventsynccursor.FieldProviderSource:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProviderSource(v)
-		return nil
-	case providereventsynccursor.FieldCursor:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCursor(v)
-		return nil
-	case providereventsynccursor.FieldLastSyncedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetLastSyncedAt(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncCursor field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ProviderEventSyncCursorMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ProviderEventSyncCursorMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ProviderEventSyncCursorMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown ProviderEventSyncCursor numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ProviderEventSyncCursorMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(providereventsynccursor.FieldCursor) {
-		fields = append(fields, providereventsynccursor.FieldCursor)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ProviderEventSyncCursorMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ProviderEventSyncCursorMutation) ClearField(name string) error {
-	switch name {
-	case providereventsynccursor.FieldCursor:
-		m.ClearCursor()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncCursor nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ProviderEventSyncCursorMutation) ResetField(name string) error {
-	switch name {
-	case providereventsynccursor.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case providereventsynccursor.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case providereventsynccursor.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case providereventsynccursor.FieldProvider:
-		m.ResetProvider()
-		return nil
-	case providereventsynccursor.FieldProviderSource:
-		m.ResetProviderSource()
-		return nil
-	case providereventsynccursor.FieldCursor:
-		m.ResetCursor()
-		return nil
-	case providereventsynccursor.FieldLastSyncedAt:
-		m.ResetLastSyncedAt()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncCursor field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ProviderEventSyncCursorMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.tenant != nil {
-		edges = append(edges, providereventsynccursor.EdgeTenant)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ProviderEventSyncCursorMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case providereventsynccursor.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ProviderEventSyncCursorMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ProviderEventSyncCursorMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ProviderEventSyncCursorMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedtenant {
-		edges = append(edges, providereventsynccursor.EdgeTenant)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ProviderEventSyncCursorMutation) EdgeCleared(name string) bool {
-	switch name {
-	case providereventsynccursor.EdgeTenant:
-		return m.clearedtenant
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ProviderEventSyncCursorMutation) ClearEdge(name string) error {
-	switch name {
-	case providereventsynccursor.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncCursor unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ProviderEventSyncCursorMutation) ResetEdge(name string) error {
-	switch name {
-	case providereventsynccursor.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncCursor edge %s", name)
-}
-
-// ProviderEventSyncRunMutation represents an operation that mutates the ProviderEventSyncRun nodes in the graph.
-type ProviderEventSyncRunMutation struct {
-	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	provider           *string
-	source_cursors     *map[string]string
-	sync_reason        *string
-	started_at         *time.Time
-	finished_at        *time.Time
-	status             *providereventsyncrun.Status
-	events_pulled      *int
-	addevents_pulled   *int
-	events_ingested    *int
-	addevents_ingested *int
-	duplicates         *int
-	addduplicates      *int
-	failure_message    *string
-	clearedFields      map[string]struct{}
-	tenant             *int
-	clearedtenant      bool
-	done               bool
-	oldValue           func(context.Context) (*ProviderEventSyncRun, error)
-	predicates         []predicate.ProviderEventSyncRun
-}
-
-var _ ent.Mutation = (*ProviderEventSyncRunMutation)(nil)
-
-// providereventsyncrunOption allows management of the mutation configuration using functional options.
-type providereventsyncrunOption func(*ProviderEventSyncRunMutation)
-
-// newProviderEventSyncRunMutation creates new mutation for the ProviderEventSyncRun entity.
-func newProviderEventSyncRunMutation(c config, op Op, opts ...providereventsyncrunOption) *ProviderEventSyncRunMutation {
-	m := &ProviderEventSyncRunMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeProviderEventSyncRun,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withProviderEventSyncRunID sets the ID field of the mutation.
-func withProviderEventSyncRunID(id uuid.UUID) providereventsyncrunOption {
-	return func(m *ProviderEventSyncRunMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *ProviderEventSyncRun
-		)
-		m.oldValue = func(ctx context.Context) (*ProviderEventSyncRun, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().ProviderEventSyncRun.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withProviderEventSyncRun sets the old ProviderEventSyncRun of the mutation.
-func withProviderEventSyncRun(node *ProviderEventSyncRun) providereventsyncrunOption {
-	return func(m *ProviderEventSyncRunMutation) {
-		m.oldValue = func(context.Context) (*ProviderEventSyncRun, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m ProviderEventSyncRunMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m ProviderEventSyncRunMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of ProviderEventSyncRun entities.
-func (m *ProviderEventSyncRunMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *ProviderEventSyncRunMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *ProviderEventSyncRunMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().ProviderEventSyncRun.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *ProviderEventSyncRunMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *ProviderEventSyncRunMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *ProviderEventSyncRunMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetProvider sets the "provider" field.
-func (m *ProviderEventSyncRunMutation) SetProvider(s string) {
-	m.provider = &s
-}
-
-// Provider returns the value of the "provider" field in the mutation.
-func (m *ProviderEventSyncRunMutation) Provider() (r string, exists bool) {
-	v := m.provider
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldProvider returns the old "provider" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldProvider(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldProvider is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldProvider requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldProvider: %w", err)
-	}
-	return oldValue.Provider, nil
-}
-
-// ResetProvider resets all changes to the "provider" field.
-func (m *ProviderEventSyncRunMutation) ResetProvider() {
-	m.provider = nil
-}
-
-// SetSourceCursors sets the "source_cursors" field.
-func (m *ProviderEventSyncRunMutation) SetSourceCursors(value map[string]string) {
-	m.source_cursors = &value
-}
-
-// SourceCursors returns the value of the "source_cursors" field in the mutation.
-func (m *ProviderEventSyncRunMutation) SourceCursors() (r map[string]string, exists bool) {
-	v := m.source_cursors
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSourceCursors returns the old "source_cursors" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldSourceCursors(ctx context.Context) (v map[string]string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSourceCursors is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSourceCursors requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSourceCursors: %w", err)
-	}
-	return oldValue.SourceCursors, nil
-}
-
-// ClearSourceCursors clears the value of the "source_cursors" field.
-func (m *ProviderEventSyncRunMutation) ClearSourceCursors() {
-	m.source_cursors = nil
-	m.clearedFields[providereventsyncrun.FieldSourceCursors] = struct{}{}
-}
-
-// SourceCursorsCleared returns if the "source_cursors" field was cleared in this mutation.
-func (m *ProviderEventSyncRunMutation) SourceCursorsCleared() bool {
-	_, ok := m.clearedFields[providereventsyncrun.FieldSourceCursors]
-	return ok
-}
-
-// ResetSourceCursors resets all changes to the "source_cursors" field.
-func (m *ProviderEventSyncRunMutation) ResetSourceCursors() {
-	m.source_cursors = nil
-	delete(m.clearedFields, providereventsyncrun.FieldSourceCursors)
-}
-
-// SetSyncReason sets the "sync_reason" field.
-func (m *ProviderEventSyncRunMutation) SetSyncReason(s string) {
-	m.sync_reason = &s
-}
-
-// SyncReason returns the value of the "sync_reason" field in the mutation.
-func (m *ProviderEventSyncRunMutation) SyncReason() (r string, exists bool) {
-	v := m.sync_reason
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldSyncReason returns the old "sync_reason" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldSyncReason(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldSyncReason is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldSyncReason requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldSyncReason: %w", err)
-	}
-	return oldValue.SyncReason, nil
-}
-
-// ResetSyncReason resets all changes to the "sync_reason" field.
-func (m *ProviderEventSyncRunMutation) ResetSyncReason() {
-	m.sync_reason = nil
-}
-
-// SetStartedAt sets the "started_at" field.
-func (m *ProviderEventSyncRunMutation) SetStartedAt(t time.Time) {
-	m.started_at = &t
-}
-
-// StartedAt returns the value of the "started_at" field in the mutation.
-func (m *ProviderEventSyncRunMutation) StartedAt() (r time.Time, exists bool) {
-	v := m.started_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStartedAt returns the old "started_at" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldStartedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStartedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStartedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStartedAt: %w", err)
-	}
-	return oldValue.StartedAt, nil
-}
-
-// ResetStartedAt resets all changes to the "started_at" field.
-func (m *ProviderEventSyncRunMutation) ResetStartedAt() {
-	m.started_at = nil
-}
-
-// SetFinishedAt sets the "finished_at" field.
-func (m *ProviderEventSyncRunMutation) SetFinishedAt(t time.Time) {
-	m.finished_at = &t
-}
-
-// FinishedAt returns the value of the "finished_at" field in the mutation.
-func (m *ProviderEventSyncRunMutation) FinishedAt() (r time.Time, exists bool) {
-	v := m.finished_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFinishedAt returns the old "finished_at" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldFinishedAt(ctx context.Context) (v *time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFinishedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFinishedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFinishedAt: %w", err)
-	}
-	return oldValue.FinishedAt, nil
-}
-
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (m *ProviderEventSyncRunMutation) ClearFinishedAt() {
-	m.finished_at = nil
-	m.clearedFields[providereventsyncrun.FieldFinishedAt] = struct{}{}
-}
-
-// FinishedAtCleared returns if the "finished_at" field was cleared in this mutation.
-func (m *ProviderEventSyncRunMutation) FinishedAtCleared() bool {
-	_, ok := m.clearedFields[providereventsyncrun.FieldFinishedAt]
-	return ok
-}
-
-// ResetFinishedAt resets all changes to the "finished_at" field.
-func (m *ProviderEventSyncRunMutation) ResetFinishedAt() {
-	m.finished_at = nil
-	delete(m.clearedFields, providereventsyncrun.FieldFinishedAt)
-}
-
-// SetStatus sets the "status" field.
-func (m *ProviderEventSyncRunMutation) SetStatus(pr providereventsyncrun.Status) {
-	m.status = &pr
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *ProviderEventSyncRunMutation) Status() (r providereventsyncrun.Status, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldStatus(ctx context.Context) (v providereventsyncrun.Status, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *ProviderEventSyncRunMutation) ResetStatus() {
-	m.status = nil
-}
-
-// SetEventsPulled sets the "events_pulled" field.
-func (m *ProviderEventSyncRunMutation) SetEventsPulled(i int) {
-	m.events_pulled = &i
-	m.addevents_pulled = nil
-}
-
-// EventsPulled returns the value of the "events_pulled" field in the mutation.
-func (m *ProviderEventSyncRunMutation) EventsPulled() (r int, exists bool) {
-	v := m.events_pulled
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEventsPulled returns the old "events_pulled" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldEventsPulled(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEventsPulled is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEventsPulled requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEventsPulled: %w", err)
-	}
-	return oldValue.EventsPulled, nil
-}
-
-// AddEventsPulled adds i to the "events_pulled" field.
-func (m *ProviderEventSyncRunMutation) AddEventsPulled(i int) {
-	if m.addevents_pulled != nil {
-		*m.addevents_pulled += i
-	} else {
-		m.addevents_pulled = &i
-	}
-}
-
-// AddedEventsPulled returns the value that was added to the "events_pulled" field in this mutation.
-func (m *ProviderEventSyncRunMutation) AddedEventsPulled() (r int, exists bool) {
-	v := m.addevents_pulled
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetEventsPulled resets all changes to the "events_pulled" field.
-func (m *ProviderEventSyncRunMutation) ResetEventsPulled() {
-	m.events_pulled = nil
-	m.addevents_pulled = nil
-}
-
-// SetEventsIngested sets the "events_ingested" field.
-func (m *ProviderEventSyncRunMutation) SetEventsIngested(i int) {
-	m.events_ingested = &i
-	m.addevents_ingested = nil
-}
-
-// EventsIngested returns the value of the "events_ingested" field in the mutation.
-func (m *ProviderEventSyncRunMutation) EventsIngested() (r int, exists bool) {
-	v := m.events_ingested
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldEventsIngested returns the old "events_ingested" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldEventsIngested(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldEventsIngested is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldEventsIngested requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldEventsIngested: %w", err)
-	}
-	return oldValue.EventsIngested, nil
-}
-
-// AddEventsIngested adds i to the "events_ingested" field.
-func (m *ProviderEventSyncRunMutation) AddEventsIngested(i int) {
-	if m.addevents_ingested != nil {
-		*m.addevents_ingested += i
-	} else {
-		m.addevents_ingested = &i
-	}
-}
-
-// AddedEventsIngested returns the value that was added to the "events_ingested" field in this mutation.
-func (m *ProviderEventSyncRunMutation) AddedEventsIngested() (r int, exists bool) {
-	v := m.addevents_ingested
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetEventsIngested resets all changes to the "events_ingested" field.
-func (m *ProviderEventSyncRunMutation) ResetEventsIngested() {
-	m.events_ingested = nil
-	m.addevents_ingested = nil
-}
-
-// SetDuplicates sets the "duplicates" field.
-func (m *ProviderEventSyncRunMutation) SetDuplicates(i int) {
-	m.duplicates = &i
-	m.addduplicates = nil
-}
-
-// Duplicates returns the value of the "duplicates" field in the mutation.
-func (m *ProviderEventSyncRunMutation) Duplicates() (r int, exists bool) {
-	v := m.duplicates
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDuplicates returns the old "duplicates" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldDuplicates(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDuplicates is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDuplicates requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDuplicates: %w", err)
-	}
-	return oldValue.Duplicates, nil
-}
-
-// AddDuplicates adds i to the "duplicates" field.
-func (m *ProviderEventSyncRunMutation) AddDuplicates(i int) {
-	if m.addduplicates != nil {
-		*m.addduplicates += i
-	} else {
-		m.addduplicates = &i
-	}
-}
-
-// AddedDuplicates returns the value that was added to the "duplicates" field in this mutation.
-func (m *ProviderEventSyncRunMutation) AddedDuplicates() (r int, exists bool) {
-	v := m.addduplicates
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ResetDuplicates resets all changes to the "duplicates" field.
-func (m *ProviderEventSyncRunMutation) ResetDuplicates() {
-	m.duplicates = nil
-	m.addduplicates = nil
-}
-
-// SetFailureMessage sets the "failure_message" field.
-func (m *ProviderEventSyncRunMutation) SetFailureMessage(s string) {
-	m.failure_message = &s
-}
-
-// FailureMessage returns the value of the "failure_message" field in the mutation.
-func (m *ProviderEventSyncRunMutation) FailureMessage() (r string, exists bool) {
-	v := m.failure_message
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldFailureMessage returns the old "failure_message" field's value of the ProviderEventSyncRun entity.
-// If the ProviderEventSyncRun object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ProviderEventSyncRunMutation) OldFailureMessage(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldFailureMessage is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldFailureMessage requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldFailureMessage: %w", err)
-	}
-	return oldValue.FailureMessage, nil
-}
-
-// ClearFailureMessage clears the value of the "failure_message" field.
-func (m *ProviderEventSyncRunMutation) ClearFailureMessage() {
-	m.failure_message = nil
-	m.clearedFields[providereventsyncrun.FieldFailureMessage] = struct{}{}
-}
-
-// FailureMessageCleared returns if the "failure_message" field was cleared in this mutation.
-func (m *ProviderEventSyncRunMutation) FailureMessageCleared() bool {
-	_, ok := m.clearedFields[providereventsyncrun.FieldFailureMessage]
-	return ok
-}
-
-// ResetFailureMessage resets all changes to the "failure_message" field.
-func (m *ProviderEventSyncRunMutation) ResetFailureMessage() {
-	m.failure_message = nil
-	delete(m.clearedFields, providereventsyncrun.FieldFailureMessage)
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *ProviderEventSyncRunMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[providereventsyncrun.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *ProviderEventSyncRunMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *ProviderEventSyncRunMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *ProviderEventSyncRunMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// Where appends a list predicates to the ProviderEventSyncRunMutation builder.
-func (m *ProviderEventSyncRunMutation) Where(ps ...predicate.ProviderEventSyncRun) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the ProviderEventSyncRunMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *ProviderEventSyncRunMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.ProviderEventSyncRun, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *ProviderEventSyncRunMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *ProviderEventSyncRunMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (ProviderEventSyncRun).
-func (m *ProviderEventSyncRunMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *ProviderEventSyncRunMutation) Fields() []string {
-	fields := make([]string, 0, 11)
-	if m.tenant != nil {
-		fields = append(fields, providereventsyncrun.FieldTenantID)
-	}
-	if m.provider != nil {
-		fields = append(fields, providereventsyncrun.FieldProvider)
-	}
-	if m.source_cursors != nil {
-		fields = append(fields, providereventsyncrun.FieldSourceCursors)
-	}
-	if m.sync_reason != nil {
-		fields = append(fields, providereventsyncrun.FieldSyncReason)
-	}
-	if m.started_at != nil {
-		fields = append(fields, providereventsyncrun.FieldStartedAt)
-	}
-	if m.finished_at != nil {
-		fields = append(fields, providereventsyncrun.FieldFinishedAt)
-	}
-	if m.status != nil {
-		fields = append(fields, providereventsyncrun.FieldStatus)
-	}
-	if m.events_pulled != nil {
-		fields = append(fields, providereventsyncrun.FieldEventsPulled)
-	}
-	if m.events_ingested != nil {
-		fields = append(fields, providereventsyncrun.FieldEventsIngested)
-	}
-	if m.duplicates != nil {
-		fields = append(fields, providereventsyncrun.FieldDuplicates)
-	}
-	if m.failure_message != nil {
-		fields = append(fields, providereventsyncrun.FieldFailureMessage)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *ProviderEventSyncRunMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case providereventsyncrun.FieldTenantID:
-		return m.TenantID()
-	case providereventsyncrun.FieldProvider:
-		return m.Provider()
-	case providereventsyncrun.FieldSourceCursors:
-		return m.SourceCursors()
-	case providereventsyncrun.FieldSyncReason:
-		return m.SyncReason()
-	case providereventsyncrun.FieldStartedAt:
-		return m.StartedAt()
-	case providereventsyncrun.FieldFinishedAt:
-		return m.FinishedAt()
-	case providereventsyncrun.FieldStatus:
-		return m.Status()
-	case providereventsyncrun.FieldEventsPulled:
-		return m.EventsPulled()
-	case providereventsyncrun.FieldEventsIngested:
-		return m.EventsIngested()
-	case providereventsyncrun.FieldDuplicates:
-		return m.Duplicates()
-	case providereventsyncrun.FieldFailureMessage:
-		return m.FailureMessage()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *ProviderEventSyncRunMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case providereventsyncrun.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case providereventsyncrun.FieldProvider:
-		return m.OldProvider(ctx)
-	case providereventsyncrun.FieldSourceCursors:
-		return m.OldSourceCursors(ctx)
-	case providereventsyncrun.FieldSyncReason:
-		return m.OldSyncReason(ctx)
-	case providereventsyncrun.FieldStartedAt:
-		return m.OldStartedAt(ctx)
-	case providereventsyncrun.FieldFinishedAt:
-		return m.OldFinishedAt(ctx)
-	case providereventsyncrun.FieldStatus:
-		return m.OldStatus(ctx)
-	case providereventsyncrun.FieldEventsPulled:
-		return m.OldEventsPulled(ctx)
-	case providereventsyncrun.FieldEventsIngested:
-		return m.OldEventsIngested(ctx)
-	case providereventsyncrun.FieldDuplicates:
-		return m.OldDuplicates(ctx)
-	case providereventsyncrun.FieldFailureMessage:
-		return m.OldFailureMessage(ctx)
-	}
-	return nil, fmt.Errorf("unknown ProviderEventSyncRun field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ProviderEventSyncRunMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case providereventsyncrun.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case providereventsyncrun.FieldProvider:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetProvider(v)
-		return nil
-	case providereventsyncrun.FieldSourceCursors:
-		v, ok := value.(map[string]string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSourceCursors(v)
-		return nil
-	case providereventsyncrun.FieldSyncReason:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetSyncReason(v)
-		return nil
-	case providereventsyncrun.FieldStartedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStartedAt(v)
-		return nil
-	case providereventsyncrun.FieldFinishedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFinishedAt(v)
-		return nil
-	case providereventsyncrun.FieldStatus:
-		v, ok := value.(providereventsyncrun.Status)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
-		return nil
-	case providereventsyncrun.FieldEventsPulled:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEventsPulled(v)
-		return nil
-	case providereventsyncrun.FieldEventsIngested:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetEventsIngested(v)
-		return nil
-	case providereventsyncrun.FieldDuplicates:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDuplicates(v)
-		return nil
-	case providereventsyncrun.FieldFailureMessage:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetFailureMessage(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncRun field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *ProviderEventSyncRunMutation) AddedFields() []string {
-	var fields []string
-	if m.addevents_pulled != nil {
-		fields = append(fields, providereventsyncrun.FieldEventsPulled)
-	}
-	if m.addevents_ingested != nil {
-		fields = append(fields, providereventsyncrun.FieldEventsIngested)
-	}
-	if m.addduplicates != nil {
-		fields = append(fields, providereventsyncrun.FieldDuplicates)
-	}
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *ProviderEventSyncRunMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case providereventsyncrun.FieldEventsPulled:
-		return m.AddedEventsPulled()
-	case providereventsyncrun.FieldEventsIngested:
-		return m.AddedEventsIngested()
-	case providereventsyncrun.FieldDuplicates:
-		return m.AddedDuplicates()
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *ProviderEventSyncRunMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	case providereventsyncrun.FieldEventsPulled:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddEventsPulled(v)
-		return nil
-	case providereventsyncrun.FieldEventsIngested:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddEventsIngested(v)
-		return nil
-	case providereventsyncrun.FieldDuplicates:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddDuplicates(v)
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncRun numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *ProviderEventSyncRunMutation) ClearedFields() []string {
-	var fields []string
-	if m.FieldCleared(providereventsyncrun.FieldSourceCursors) {
-		fields = append(fields, providereventsyncrun.FieldSourceCursors)
-	}
-	if m.FieldCleared(providereventsyncrun.FieldFinishedAt) {
-		fields = append(fields, providereventsyncrun.FieldFinishedAt)
-	}
-	if m.FieldCleared(providereventsyncrun.FieldFailureMessage) {
-		fields = append(fields, providereventsyncrun.FieldFailureMessage)
-	}
-	return fields
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *ProviderEventSyncRunMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *ProviderEventSyncRunMutation) ClearField(name string) error {
-	switch name {
-	case providereventsyncrun.FieldSourceCursors:
-		m.ClearSourceCursors()
-		return nil
-	case providereventsyncrun.FieldFinishedAt:
-		m.ClearFinishedAt()
-		return nil
-	case providereventsyncrun.FieldFailureMessage:
-		m.ClearFailureMessage()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncRun nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *ProviderEventSyncRunMutation) ResetField(name string) error {
-	switch name {
-	case providereventsyncrun.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case providereventsyncrun.FieldProvider:
-		m.ResetProvider()
-		return nil
-	case providereventsyncrun.FieldSourceCursors:
-		m.ResetSourceCursors()
-		return nil
-	case providereventsyncrun.FieldSyncReason:
-		m.ResetSyncReason()
-		return nil
-	case providereventsyncrun.FieldStartedAt:
-		m.ResetStartedAt()
-		return nil
-	case providereventsyncrun.FieldFinishedAt:
-		m.ResetFinishedAt()
-		return nil
-	case providereventsyncrun.FieldStatus:
-		m.ResetStatus()
-		return nil
-	case providereventsyncrun.FieldEventsPulled:
-		m.ResetEventsPulled()
-		return nil
-	case providereventsyncrun.FieldEventsIngested:
-		m.ResetEventsIngested()
-		return nil
-	case providereventsyncrun.FieldDuplicates:
-		m.ResetDuplicates()
-		return nil
-	case providereventsyncrun.FieldFailureMessage:
-		m.ResetFailureMessage()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncRun field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *ProviderEventSyncRunMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.tenant != nil {
-		edges = append(edges, providereventsyncrun.EdgeTenant)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *ProviderEventSyncRunMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case providereventsyncrun.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *ProviderEventSyncRunMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *ProviderEventSyncRunMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *ProviderEventSyncRunMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedtenant {
-		edges = append(edges, providereventsyncrun.EdgeTenant)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *ProviderEventSyncRunMutation) EdgeCleared(name string) bool {
-	switch name {
-	case providereventsyncrun.EdgeTenant:
-		return m.clearedtenant
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *ProviderEventSyncRunMutation) ClearEdge(name string) error {
-	switch name {
-	case providereventsyncrun.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncRun unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *ProviderEventSyncRunMutation) ResetEdge(name string) error {
-	switch name {
-	case providereventsyncrun.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	}
-	return fmt.Errorf("unknown ProviderEventSyncRun edge %s", name)
 }
 
 // RetrospectiveMutation represents an operation that mutates the Retrospective nodes in the graph.

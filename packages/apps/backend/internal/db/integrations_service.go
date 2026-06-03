@@ -11,9 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqljson"
 	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/google/uuid"
+	iesr "github.com/rezible/rezible/ent/integrationeventsyncrun"
 	iuis "github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/predicate"
-	pesr "github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/riverqueue/river"
 	"golang.org/x/oauth2"
 
@@ -148,31 +148,6 @@ func (s *IntegrationsService) DeleteInstalled(ctx context.Context, id uuid.UUID)
 	return deleteErr
 }
 
-func (s *IntegrationsService) GetProviderEventProcessor(provider string) (rez.ProviderEventProcessor, error) {
-	procs := s.reg.GetProviderEventProcessors()
-	proc, ok := procs[provider]
-	if !ok {
-		return nil, fmt.Errorf("provider %s not found", provider)
-	}
-	return proc, nil
-}
-
-func (s *IntegrationsService) GetProviderEventQueriers(ctx context.Context, provider string) ([]rez.ProviderEventQuerier, error) {
-	intgs, queryErr := s.db.Client(ctx).Integration.Query().Where(in.IntegrationName(provider)).All(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("failed to get integrations: %w", queryErr)
-	}
-	var queriers []rez.ProviderEventQuerier
-	for _, intg := range intgs {
-		q, qErr := s.reg.GetProviderEventQuerier(intg)
-		if qErr != nil {
-			return nil, fmt.Errorf("failed to get integration event queriers: %w", qErr)
-		}
-		queriers = append(queriers, q)
-	}
-	return queriers, nil
-}
-
 func (s *IntegrationsService) listQuery(ctx context.Context, p rez.ListIntegrationsParams) *ent.IntegrationQuery {
 	query := s.db.Client(ctx).Integration.Query()
 	if len(p.IDs) > 0 {
@@ -260,9 +235,9 @@ func (s *IntegrationsService) set(ctx context.Context, id uuid.UUID, setFn func(
 	// TODO: check updated fields?
 	shouldTriggerSync := s.jobs != nil
 	if shouldTriggerSync {
-		args := jobs.ProviderEventSyncJob{
-			Provider:   intg.IntegrationName,
-			SyncReason: "updated",
+		args := jobs.SyncIntegrationEventsArgs{
+			IntegrationId: intg.ID,
+			SyncReason:    "updated",
 		}
 		if _, jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {
 			slog.Error("failed to insert sync job", "error", jobErr)
@@ -485,68 +460,24 @@ func (s *IntegrationsService) installTargets(ctx context.Context, intgName strin
 	return installed, nil
 }
 
-/*
-func (s *IntegrationsService) getConfiguredIntegrationForDataKind(ctx context.Context, dataKind string) (rez.ConfiguredIntegration, error) {
-	var providers []string
-	for _, p := range s.reg.GetAvailable() {
-		if slices.Contains(p.SupportedDataKinds(), dataKind) {
-			providers = append(providers, p.Name())
-		}
+func (s *IntegrationsService) GetProviderEventProcessor(name string) (rez.ProviderEventProcessor, error) {
+	procs := s.reg.GetProviderEventProcessors()
+	proc, ok := procs[name]
+	if !ok {
+		return nil, fmt.Errorf("integration %s not found", name)
 	}
-	intgs, listErr := s.listIntegrations(ctx, rez.ListIntegrationsParams{Providers: providers})
-	if listErr != nil {
-		return nil, listErr
-	}
-	for _, intg := range intgs {
-		p, pErr := s.reg.GetPackage(intg.Provider)
-		if pErr != nil {
-			return nil, fmt.Errorf("get package %s: %w", intg.Provider, pErr)
-		}
-		ci := p.GetConfiguredIntegration(intg)
-		if ci.GetAvailableDataKinds()[dataKind] {
-			// TODO: return multiple?
-			return ci, nil
-		}
-	}
-	return nil, rez.ErrNoConfiguredIntegrations
+	return proc, nil
 }
 
-type IntegrationWithChatService interface {
-	MakeChatService(context.Context) (rez.ChatService, error)
+func (s *IntegrationsService) GetProviderEventQuerier(ctx context.Context, intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
+	return s.reg.GetProviderEventQuerier(intg)
 }
 
-func (s *IntegrationsService) GetChatService(ctx context.Context) (rez.ChatService, error) {
-	p, pErr := s.getConfiguredIntegrationForDataKind(ctx, "chat")
-	if pErr != nil {
-		return nil, pErr
-	}
-	if chatPackage, ok := p.(IntegrationWithChatService); ok {
-		return chatPackage.MakeChatService(ctx)
-	}
-	return nil, rez.ErrNoConfiguredIntegrations
-}
-
-type IntegrationWithVideoConference interface {
-	MakeVideoConferenceService(context.Context) (rez.VideoConferenceService, error)
-}
-
-func (s *IntegrationsService) GetVideoConferenceService(ctx context.Context) (rez.VideoConferenceService, error) {
-	p, pErr := s.getConfiguredIntegrationForDataKind(ctx, "video_conference")
-	if pErr != nil {
-		return nil, pErr
-	}
-	if vci, ok := p.(IntegrationWithVideoConference); ok {
-		return vci.MakeVideoConferenceService(ctx)
-	}
-	return nil, rez.ErrNoConfiguredIntegrations
-}
-*/
-
-func (s *IntegrationsService) RequestDataSync(ctx context.Context, provider string, sources []string) error {
-	args := jobs.ProviderEventSyncJob{
-		SyncReason: "manual",
-		Provider:   provider,
-		Sources:    sources,
+func (s *IntegrationsService) RequestIntegrationEventSync(ctx context.Context, id uuid.UUID, sources []string) error {
+	args := jobs.SyncIntegrationEventsArgs{
+		SyncReason:    "manual",
+		IntegrationId: id,
+		Sources:       sources,
 	}
 	opts := &river.InsertOpts{
 		UniqueOpts: river.UniqueOpts{
@@ -558,10 +489,10 @@ func (s *IntegrationsService) RequestDataSync(ctx context.Context, provider stri
 	return insertErr
 }
 
-func (s *IntegrationsService) GetDataSyncStatus(ctx context.Context, provider string) (*ent.ListResult[ent.ProviderEventSyncRun], error) {
-	query := s.db.Client(ctx).ProviderEventSyncRun.Query().
-		Where(pesr.Provider(provider)).
-		Order(pesr.ByStartedAt(sql.OrderDesc())).
+func (s *IntegrationsService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error) {
+	query := s.db.Client(ctx).IntegrationEventSyncRun.Query().
+		Where(iesr.IntegrationID(id)).
+		Order(iesr.ByStartedAt(sql.OrderDesc())).
 		Limit(5)
-	return ent.DoListQuery[ent.ProviderEventSyncRun, *ent.ProviderEventSyncRunQuery](ctx, query, ent.ListParams{Limit: 5})
+	return ent.DoListQuery[ent.IntegrationEventSyncRun, *ent.IntegrationEventSyncRunQuery](ctx, query, ent.ListParams{Limit: 5})
 }

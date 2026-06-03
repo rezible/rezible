@@ -3,6 +3,7 @@ package v1
 import (
 	"context"
 	"net/http"
+	"time"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -25,8 +26,8 @@ type IntegrationsHandler interface {
 	StartIntegrationOAuthFlow(context.Context, *StartIntegrationOAuthFlowRequest) (*StartIntegrationOAuthFlowResponse, error)
 	CompleteIntegrationOAuthFlow(context.Context, *CompleteIntegrationOAuthFlowRequest) (*CompleteIntegrationOAuthFlowResponse, error)
 
-	RequestIntegrationDataSync(context.Context, *RequestIntegrationDataSyncRequest) (*RequestIntegrationDataSyncResponse, error)
-	GetIntegrationDataSyncStatus(context.Context, *GetIntegrationDataSyncStatusRequest) (*GetIntegrationDataSyncStatusResponse, error)
+	RequestIntegrationEventSync(context.Context, *RequestIntegrationEventSyncRequest) (*RequestIntegrationEventSyncResponse, error)
+	ListIntegrationEventSyncRun(context.Context, *ListIntegrationEventSyncRunRequest) (*ListIntegrationEventSyncRunResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
@@ -43,8 +44,8 @@ func (o operations) RegisterIntegrations(api huma.API) {
 	huma.Register(api, UpdateInstalledIntegration, o.UpdateInstalledIntegration)
 	huma.Register(api, DeleteInstalledIntegration, o.DeleteInstalledIntegration)
 
-	huma.Register(api, RequestIntegrationDataSync, o.RequestIntegrationDataSync)
-	huma.Register(api, GetIntegrationDataSyncStatus, o.GetIntegrationDataSyncStatus)
+	huma.Register(api, RequestIntegrationEventSync, o.RequestIntegrationEventSync)
+	huma.Register(api, ListIntegrationEventSyncRuns, o.ListIntegrationEventSyncRun)
 }
 
 type (
@@ -87,13 +88,15 @@ type (
 		FlowUrl string `json:"flow_url"`
 	}
 
-	IntegrationProviderDataSyncStatus struct {
-		Id         uuid.UUID                                   `json:"id"`
-		Attributes IntegrationProviderDataSyncStatusAttributes `json:"attributes"`
+	IntegrationEventSyncRun struct {
+		Id         uuid.UUID                         `json:"id"`
+		Attributes IntegrationEventSyncRunAttributes `json:"attributes"`
 	}
 
-	IntegrationProviderDataSyncStatusAttributes struct {
-		Status string `json:"status" enum:"queued,started,complete,error"`
+	IntegrationEventSyncRunAttributes struct {
+		Status     string     `json:"status" enum:"queued,started,complete,error"`
+		StartedAt  time.Time  `json:"startedAt"`
+		FinishedAt *time.Time `json:"finishedAt"`
 	}
 )
 
@@ -144,11 +147,13 @@ func IntegrationOAuthFlowResultFromRez(result *rez.CompleteIntegrationOAuth2Flow
 	}
 }
 
-func IntegrationProviderDataSyncStatusFromEnt(res *ent.ProviderEventSyncRun) IntegrationProviderDataSyncStatus {
-	attrs := IntegrationProviderDataSyncStatusAttributes{
-		Status: res.Status.String(),
+func IntegrationEventSyncRunFromEnt(r *ent.IntegrationEventSyncRun) IntegrationEventSyncRun {
+	attrs := IntegrationEventSyncRunAttributes{
+		Status:     r.Status.String(),
+		StartedAt:  r.StartedAt,
+		FinishedAt: r.FinishedAt,
 	}
-	return IntegrationProviderDataSyncStatus{Id: res.ID, Attributes: attrs}
+	return IntegrationEventSyncRun{Id: r.ID, Attributes: attrs}
 }
 
 var integrationsTags = []string{"Integrations"}
@@ -278,29 +283,29 @@ var DeleteInstalledIntegration = huma.Operation{
 type DeleteInstalledIntegrationRequest EmptyIdRequest
 type DeleteInstalledIntegrationResponse EmptyResponse
 
-var RequestIntegrationDataSync = huma.Operation{
-	OperationID: "request-integration-data-sync",
+var RequestIntegrationEventSync = huma.Operation{
+	OperationID: "request-integration-event-sync",
 	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{name}/sync",
-	Summary:     "Request a manual data sync for an integration provider",
+	Path:        "/integrations/installed/{id}/sync",
+	Summary:     "Request a manual event sync for an integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type RequestIntegrationDataSyncRequestAttributes struct {
+type RequestIntegrationEventSyncRequestAttributes struct {
 	Sources []string `json:"sources,omitempty"`
 }
-type RequestIntegrationDataSyncRequest NameRequest[RequestIntegrationDataSyncRequestAttributes]
-type RequestIntegrationDataSyncResponse EmptyResponse
+type RequestIntegrationEventSyncRequest IdRequest[RequestIntegrationEventSyncRequestAttributes]
+type RequestIntegrationEventSyncResponse EmptyResponse
 
-var GetIntegrationDataSyncStatus = huma.Operation{
-	OperationID: "get-integration-data-sync-status",
+var ListIntegrationEventSyncRuns = huma.Operation{
+	OperationID: "list-integration-event-sync-runs",
 	Method:      http.MethodGet,
-	Path:        "/integrations/providers/{name}/sync",
-	Summary:     "Get data sync status for an integration provider",
+	Path:        "/integrations/installed/{id}/sync",
+	Summary:     "Get event sync runs for an integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetIntegrationDataSyncStatusRequest EmptyNameRequest
-type GetIntegrationDataSyncStatusResponse ListResponse[IntegrationProviderDataSyncStatus]
+type ListIntegrationEventSyncRunRequest EmptyIdRequest
+type ListIntegrationEventSyncRunResponse ListResponse[IntegrationEventSyncRun]

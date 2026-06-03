@@ -12,14 +12,14 @@ func (ProjectNormalizedEvent) Kind() string {
 	return "project-normalized-event"
 }
 
-type ProviderEventSyncJob struct {
-	SyncReason string   `json:"sync_reason,omitempty"`
-	Provider   string   `json:"provider"`
-	Sources    []string `json:"sources,omitempty"`
+type SyncIntegrationEventsArgs struct {
+	IntegrationId uuid.UUID `json:"integration_id"`
+	Sources       []string  `json:"sources"`
+	SyncReason    string    `json:"sync_reason,omitempty"`
 }
 
-func (ProviderEventSyncJob) Kind() string {
-	return "provider-event-sync"
+func (SyncIntegrationEventsArgs) Kind() string {
+	return "sync-integration-events"
 }
 
 type SendIncidentDebriefRequests struct {

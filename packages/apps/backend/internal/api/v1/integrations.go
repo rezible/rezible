@@ -151,26 +151,26 @@ func (h *integrationsHandler) CompleteIntegrationOAuthFlow(ctx context.Context, 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) RequestIntegrationDataSync(ctx context.Context, req *oapi.RequestIntegrationDataSyncRequest) (*oapi.RequestIntegrationDataSyncResponse, error) {
-	var resp oapi.RequestIntegrationDataSyncResponse
+func (h *integrationsHandler) RequestIntegrationEventSync(ctx context.Context, req *oapi.RequestIntegrationEventSyncRequest) (*oapi.RequestIntegrationEventSyncResponse, error) {
+	var resp oapi.RequestIntegrationEventSyncResponse
 
-	if requestErr := h.integrations.RequestDataSync(ctx, req.Name, req.Body.Attributes.Sources); requestErr != nil {
+	if requestErr := h.integrations.RequestIntegrationEventSync(ctx, req.Id, req.Body.Attributes.Sources); requestErr != nil {
 		return nil, oapi.Error(ctx, "failed to request integration data sync", requestErr)
 	}
 
 	return &resp, nil
 }
 
-func (h *integrationsHandler) GetIntegrationDataSyncStatus(ctx context.Context, req *oapi.GetIntegrationDataSyncStatusRequest) (*oapi.GetIntegrationDataSyncStatusResponse, error) {
-	var resp oapi.GetIntegrationDataSyncStatusResponse
+func (h *integrationsHandler) ListIntegrationEventSyncRun(ctx context.Context, req *oapi.ListIntegrationEventSyncRunRequest) (*oapi.ListIntegrationEventSyncRunResponse, error) {
+	var resp oapi.ListIntegrationEventSyncRunResponse
 
-	result, completeErr := h.integrations.GetDataSyncStatus(ctx, req.Name)
+	result, completeErr := h.integrations.ListIntegrationEventSyncRuns(ctx, req.Id)
 	if completeErr != nil {
 		return nil, oapi.Error(ctx, "failed to complete integration", completeErr)
 	}
-	resp.Body.Data = make([]oapi.IntegrationProviderDataSyncStatus, len(result.Data))
+	resp.Body.Data = make([]oapi.IntegrationEventSyncRun, len(result.Data))
 	for i, r := range result.Data {
-		resp.Body.Data[i] = oapi.IntegrationProviderDataSyncStatusFromEnt(r)
+		resp.Body.Data[i] = oapi.IntegrationEventSyncRunFromEnt(r)
 	}
 
 	return &resp, nil

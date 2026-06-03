@@ -212,6 +212,22 @@ func (c *IntegrationClient) Debug() *IntegrationClient {
 	return &IntegrationClient{config: cfg}
 }
 
+func (c *IntegrationEventSyncCursorClient) Debug() *IntegrationEventSyncCursorClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IntegrationEventSyncCursorClient{config: cfg}
+}
+
+func (c *IntegrationEventSyncRunClient) Debug() *IntegrationEventSyncRunClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IntegrationEventSyncRunClient{config: cfg}
+}
+
 func (c *IntegrationUserInstallStateClient) Debug() *IntegrationUserInstallStateClient {
 	if c.debug {
 		return c
@@ -370,22 +386,6 @@ func (c *PlaybookClient) Debug() *PlaybookClient {
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &PlaybookClient{config: cfg}
-}
-
-func (c *ProviderEventSyncCursorClient) Debug() *ProviderEventSyncCursorClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &ProviderEventSyncCursorClient{config: cfg}
-}
-
-func (c *ProviderEventSyncRunClient) Debug() *ProviderEventSyncRunClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &ProviderEventSyncRunClient{config: cfg}
 }
 
 func (c *RetrospectiveClient) Debug() *RetrospectiveClient {

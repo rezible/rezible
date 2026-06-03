@@ -723,6 +723,54 @@ func (f IntegrationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mut
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationMutation", m)
 }
 
+// The IntegrationEventSyncCursorQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type IntegrationEventSyncCursorQueryRuleFunc func(context.Context, *ent.IntegrationEventSyncCursorQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f IntegrationEventSyncCursorQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationEventSyncCursorQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IntegrationEventSyncCursorQuery", q)
+}
+
+// The IntegrationEventSyncCursorMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type IntegrationEventSyncCursorMutationRuleFunc func(context.Context, *ent.IntegrationEventSyncCursorMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f IntegrationEventSyncCursorMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.IntegrationEventSyncCursorMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationEventSyncCursorMutation", m)
+}
+
+// The IntegrationEventSyncRunQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type IntegrationEventSyncRunQueryRuleFunc func(context.Context, *ent.IntegrationEventSyncRunQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f IntegrationEventSyncRunQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationEventSyncRunQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.IntegrationEventSyncRunQuery", q)
+}
+
+// The IntegrationEventSyncRunMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type IntegrationEventSyncRunMutationRuleFunc func(context.Context, *ent.IntegrationEventSyncRunMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f IntegrationEventSyncRunMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.IntegrationEventSyncRunMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.IntegrationEventSyncRunMutation", m)
+}
+
 // The IntegrationUserInstallStateQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type IntegrationUserInstallStateQueryRuleFunc func(context.Context, *ent.IntegrationUserInstallStateQuery) error
@@ -1203,54 +1251,6 @@ func (f PlaybookMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutati
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.PlaybookMutation", m)
 }
 
-// The ProviderEventSyncCursorQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type ProviderEventSyncCursorQueryRuleFunc func(context.Context, *ent.ProviderEventSyncCursorQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f ProviderEventSyncCursorQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ProviderEventSyncCursorQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ProviderEventSyncCursorQuery", q)
-}
-
-// The ProviderEventSyncCursorMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type ProviderEventSyncCursorMutationRuleFunc func(context.Context, *ent.ProviderEventSyncCursorMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f ProviderEventSyncCursorMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.ProviderEventSyncCursorMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProviderEventSyncCursorMutation", m)
-}
-
-// The ProviderEventSyncRunQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type ProviderEventSyncRunQueryRuleFunc func(context.Context, *ent.ProviderEventSyncRunQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f ProviderEventSyncRunQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ProviderEventSyncRunQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.ProviderEventSyncRunQuery", q)
-}
-
-// The ProviderEventSyncRunMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type ProviderEventSyncRunMutationRuleFunc func(context.Context, *ent.ProviderEventSyncRunMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f ProviderEventSyncRunMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.ProviderEventSyncRunMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.ProviderEventSyncRunMutation", m)
-}
-
 // The RetrospectiveQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type RetrospectiveQueryRuleFunc func(context.Context, *ent.RetrospectiveQuery) error
@@ -1722,6 +1722,10 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.IntegrationQuery:
 		return q.Filter(), nil
+	case *ent.IntegrationEventSyncCursorQuery:
+		return q.Filter(), nil
+	case *ent.IntegrationEventSyncRunQuery:
+		return q.Filter(), nil
 	case *ent.IntegrationUserInstallStateQuery:
 		return q.Filter(), nil
 	case *ent.KnowledgeEntityQuery:
@@ -1761,10 +1765,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 	case *ent.OrganizationRoleQuery:
 		return q.Filter(), nil
 	case *ent.PlaybookQuery:
-		return q.Filter(), nil
-	case *ent.ProviderEventSyncCursorQuery:
-		return q.Filter(), nil
-	case *ent.ProviderEventSyncRunQuery:
 		return q.Filter(), nil
 	case *ent.RetrospectiveQuery:
 		return q.Filter(), nil
@@ -1855,6 +1855,10 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.IntegrationMutation:
 		return m.Filter(), nil
+	case *ent.IntegrationEventSyncCursorMutation:
+		return m.Filter(), nil
+	case *ent.IntegrationEventSyncRunMutation:
+		return m.Filter(), nil
 	case *ent.IntegrationUserInstallStateMutation:
 		return m.Filter(), nil
 	case *ent.KnowledgeEntityMutation:
@@ -1894,10 +1898,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.OrganizationRoleMutation:
 		return m.Filter(), nil
 	case *ent.PlaybookMutation:
-		return m.Filter(), nil
-	case *ent.ProviderEventSyncCursorMutation:
-		return m.Filter(), nil
-	case *ent.ProviderEventSyncRunMutation:
 		return m.Filter(), nil
 	case *ent.RetrospectiveMutation:
 		return m.Filter(), nil

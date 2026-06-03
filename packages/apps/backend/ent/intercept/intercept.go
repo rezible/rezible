@@ -34,6 +34,8 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationeventsynccursor"
+	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
@@ -55,8 +57,6 @@ import (
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/providereventsynccursor"
-	"github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -833,6 +833,60 @@ func (f TraverseIntegration) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.IntegrationQuery", q)
 }
 
+// The IntegrationEventSyncCursorFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IntegrationEventSyncCursorFunc func(context.Context, *ent.IntegrationEventSyncCursorQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IntegrationEventSyncCursorFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IntegrationEventSyncCursorQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IntegrationEventSyncCursorQuery", q)
+}
+
+// The TraverseIntegrationEventSyncCursor type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIntegrationEventSyncCursor func(context.Context, *ent.IntegrationEventSyncCursorQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIntegrationEventSyncCursor) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIntegrationEventSyncCursor) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationEventSyncCursorQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IntegrationEventSyncCursorQuery", q)
+}
+
+// The IntegrationEventSyncRunFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IntegrationEventSyncRunFunc func(context.Context, *ent.IntegrationEventSyncRunQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IntegrationEventSyncRunFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IntegrationEventSyncRunQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IntegrationEventSyncRunQuery", q)
+}
+
+// The TraverseIntegrationEventSyncRun type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIntegrationEventSyncRun func(context.Context, *ent.IntegrationEventSyncRunQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIntegrationEventSyncRun) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIntegrationEventSyncRun) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IntegrationEventSyncRunQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IntegrationEventSyncRunQuery", q)
+}
+
 // The IntegrationUserInstallStateFunc type is an adapter to allow the use of ordinary function as a Querier.
 type IntegrationUserInstallStateFunc func(context.Context, *ent.IntegrationUserInstallStateQuery) (ent.Value, error)
 
@@ -1373,60 +1427,6 @@ func (f TraversePlaybook) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.PlaybookQuery", q)
 }
 
-// The ProviderEventSyncCursorFunc type is an adapter to allow the use of ordinary function as a Querier.
-type ProviderEventSyncCursorFunc func(context.Context, *ent.ProviderEventSyncCursorQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f ProviderEventSyncCursorFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.ProviderEventSyncCursorQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ProviderEventSyncCursorQuery", q)
-}
-
-// The TraverseProviderEventSyncCursor type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseProviderEventSyncCursor func(context.Context, *ent.ProviderEventSyncCursorQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseProviderEventSyncCursor) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseProviderEventSyncCursor) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ProviderEventSyncCursorQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.ProviderEventSyncCursorQuery", q)
-}
-
-// The ProviderEventSyncRunFunc type is an adapter to allow the use of ordinary function as a Querier.
-type ProviderEventSyncRunFunc func(context.Context, *ent.ProviderEventSyncRunQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f ProviderEventSyncRunFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.ProviderEventSyncRunQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.ProviderEventSyncRunQuery", q)
-}
-
-// The TraverseProviderEventSyncRun type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseProviderEventSyncRun func(context.Context, *ent.ProviderEventSyncRunQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseProviderEventSyncRun) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseProviderEventSyncRun) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.ProviderEventSyncRunQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.ProviderEventSyncRunQuery", q)
-}
-
 // The RetrospectiveFunc type is an adapter to allow the use of ordinary function as a Querier.
 type RetrospectiveFunc func(context.Context, *ent.RetrospectiveQuery) (ent.Value, error)
 
@@ -1914,6 +1914,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentTypeQuery, predicate.IncidentType, incidenttype.OrderOption]{typ: ent.TypeIncidentType, tq: q}, nil
 	case *ent.IntegrationQuery:
 		return &query[*ent.IntegrationQuery, predicate.Integration, integration.OrderOption]{typ: ent.TypeIntegration, tq: q}, nil
+	case *ent.IntegrationEventSyncCursorQuery:
+		return &query[*ent.IntegrationEventSyncCursorQuery, predicate.IntegrationEventSyncCursor, integrationeventsynccursor.OrderOption]{typ: ent.TypeIntegrationEventSyncCursor, tq: q}, nil
+	case *ent.IntegrationEventSyncRunQuery:
+		return &query[*ent.IntegrationEventSyncRunQuery, predicate.IntegrationEventSyncRun, integrationeventsyncrun.OrderOption]{typ: ent.TypeIntegrationEventSyncRun, tq: q}, nil
 	case *ent.IntegrationUserInstallStateQuery:
 		return &query[*ent.IntegrationUserInstallStateQuery, predicate.IntegrationUserInstallState, integrationuserinstallstate.OrderOption]{typ: ent.TypeIntegrationUserInstallState, tq: q}, nil
 	case *ent.KnowledgeEntityQuery:
@@ -1954,10 +1958,6 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OrganizationRoleQuery, predicate.OrganizationRole, organizationrole.OrderOption]{typ: ent.TypeOrganizationRole, tq: q}, nil
 	case *ent.PlaybookQuery:
 		return &query[*ent.PlaybookQuery, predicate.Playbook, playbook.OrderOption]{typ: ent.TypePlaybook, tq: q}, nil
-	case *ent.ProviderEventSyncCursorQuery:
-		return &query[*ent.ProviderEventSyncCursorQuery, predicate.ProviderEventSyncCursor, providereventsynccursor.OrderOption]{typ: ent.TypeProviderEventSyncCursor, tq: q}, nil
-	case *ent.ProviderEventSyncRunQuery:
-		return &query[*ent.ProviderEventSyncRunQuery, predicate.ProviderEventSyncRun, providereventsyncrun.OrderOption]{typ: ent.TypeProviderEventSyncRun, tq: q}, nil
 	case *ent.RetrospectiveQuery:
 		return &query[*ent.RetrospectiveQuery, predicate.Retrospective, retrospective.OrderOption]{typ: ent.TypeRetrospective, tq: q}, nil
 	case *ent.RetrospectiveCommentQuery:

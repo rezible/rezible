@@ -64,6 +64,10 @@ type Tx struct {
 	IncidentType *IncidentTypeClient
 	// Integration is the client for interacting with the Integration builders.
 	Integration *IntegrationClient
+	// IntegrationEventSyncCursor is the client for interacting with the IntegrationEventSyncCursor builders.
+	IntegrationEventSyncCursor *IntegrationEventSyncCursorClient
+	// IntegrationEventSyncRun is the client for interacting with the IntegrationEventSyncRun builders.
+	IntegrationEventSyncRun *IntegrationEventSyncRunClient
 	// IntegrationUserInstallState is the client for interacting with the IntegrationUserInstallState builders.
 	IntegrationUserInstallState *IntegrationUserInstallStateClient
 	// KnowledgeEntity is the client for interacting with the KnowledgeEntity builders.
@@ -104,10 +108,6 @@ type Tx struct {
 	OrganizationRole *OrganizationRoleClient
 	// Playbook is the client for interacting with the Playbook builders.
 	Playbook *PlaybookClient
-	// ProviderEventSyncCursor is the client for interacting with the ProviderEventSyncCursor builders.
-	ProviderEventSyncCursor *ProviderEventSyncCursorClient
-	// ProviderEventSyncRun is the client for interacting with the ProviderEventSyncRun builders.
-	ProviderEventSyncRun *ProviderEventSyncRunClient
 	// Retrospective is the client for interacting with the Retrospective builders.
 	Retrospective *RetrospectiveClient
 	// RetrospectiveComment is the client for interacting with the RetrospectiveComment builders.
@@ -297,6 +297,8 @@ func (tx *Tx) init() {
 	tx.IncidentTimelineEventTopologyContext = NewIncidentTimelineEventTopologyContextClient(tx.config)
 	tx.IncidentType = NewIncidentTypeClient(tx.config)
 	tx.Integration = NewIntegrationClient(tx.config)
+	tx.IntegrationEventSyncCursor = NewIntegrationEventSyncCursorClient(tx.config)
+	tx.IntegrationEventSyncRun = NewIntegrationEventSyncRunClient(tx.config)
 	tx.IntegrationUserInstallState = NewIntegrationUserInstallStateClient(tx.config)
 	tx.KnowledgeEntity = NewKnowledgeEntityClient(tx.config)
 	tx.KnowledgeEntityAlias = NewKnowledgeEntityAliasClient(tx.config)
@@ -317,8 +319,6 @@ func (tx *Tx) init() {
 	tx.Organization = NewOrganizationClient(tx.config)
 	tx.OrganizationRole = NewOrganizationRoleClient(tx.config)
 	tx.Playbook = NewPlaybookClient(tx.config)
-	tx.ProviderEventSyncCursor = NewProviderEventSyncCursorClient(tx.config)
-	tx.ProviderEventSyncRun = NewProviderEventSyncRunClient(tx.config)
 	tx.Retrospective = NewRetrospectiveClient(tx.config)
 	tx.RetrospectiveComment = NewRetrospectiveCommentClient(tx.config)
 	tx.RetrospectiveReview = NewRetrospectiveReviewClient(tx.config)

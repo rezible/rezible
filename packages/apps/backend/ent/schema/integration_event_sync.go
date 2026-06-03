@@ -4,16 +4,17 @@ import (
 	"time"
 
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
-type ProviderEventSyncCursor struct {
+type IntegrationEventSyncCursor struct {
 	ent.Schema
 }
 
-func (ProviderEventSyncCursor) Mixin() []ent.Mixin {
+func (IntegrationEventSyncCursor) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
@@ -21,37 +22,46 @@ func (ProviderEventSyncCursor) Mixin() []ent.Mixin {
 	}
 }
 
-func (ProviderEventSyncCursor) Fields() []ent.Field {
+func (IntegrationEventSyncCursor) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.String("provider").NotEmpty(),
+		field.UUID("integration_id", uuid.UUID{}),
 		field.String("provider_source").NotEmpty(),
 		field.String("cursor").Optional(),
 		field.Time("last_synced_at").Default(time.Now),
 	}
 }
 
-func (ProviderEventSyncCursor) Indexes() []ent.Index {
+func (IntegrationEventSyncCursor) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "provider", "provider_source").Unique(),
+		index.Fields("tenant_id", "integration_id", "provider_source").Unique(),
 	}
 }
 
-type ProviderEventSyncRun struct {
+func (IntegrationEventSyncCursor) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("integration", Integration.Type).
+			Unique().
+			Required().
+			Field("integration_id"),
+	}
+}
+
+type IntegrationEventSyncRun struct {
 	ent.Schema
 }
 
-func (ProviderEventSyncRun) Mixin() []ent.Mixin {
+func (IntegrationEventSyncRun) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
 	}
 }
 
-func (ProviderEventSyncRun) Fields() []ent.Field {
+func (IntegrationEventSyncRun) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.String("provider").NotEmpty(),
+		field.UUID("integration_id", uuid.UUID{}),
 		field.JSON("source_cursors", map[string]string{}).Optional(),
 		field.String("sync_reason").Default("manual"),
 		field.Time("started_at").Default(time.Now),
@@ -64,9 +74,18 @@ func (ProviderEventSyncRun) Fields() []ent.Field {
 	}
 }
 
-func (ProviderEventSyncRun) Indexes() []ent.Index {
+func (IntegrationEventSyncRun) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "provider", "started_at"),
+		index.Fields("tenant_id", "integration_id", "started_at"),
 		index.Fields("tenant_id", "status", "started_at"),
+	}
+}
+
+func (IntegrationEventSyncRun) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("integration", Integration.Type).
+			Unique().
+			Required().
+			Field("integration_id"),
 	}
 }

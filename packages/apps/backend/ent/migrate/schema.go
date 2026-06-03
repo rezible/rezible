@@ -1029,6 +1029,101 @@ var (
 			},
 		},
 	}
+	// IntegrationEventSyncCursorsColumns holds the columns for the "integration_event_sync_cursors" table.
+	IntegrationEventSyncCursorsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "provider_source", Type: field.TypeString},
+		{Name: "cursor", Type: field.TypeString, Nullable: true},
+		{Name: "last_synced_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "integration_id", Type: field.TypeUUID},
+	}
+	// IntegrationEventSyncCursorsTable holds the schema information for the "integration_event_sync_cursors" table.
+	IntegrationEventSyncCursorsTable = &schema.Table{
+		Name:       "integration_event_sync_cursors",
+		Columns:    IntegrationEventSyncCursorsColumns,
+		PrimaryKey: []*schema.Column{IntegrationEventSyncCursorsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "integration_event_sync_cursors_tenants_tenant",
+				Columns:    []*schema.Column{IntegrationEventSyncCursorsColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "integration_event_sync_cursors_integrations_integration",
+				Columns:    []*schema.Column{IntegrationEventSyncCursorsColumns[7]},
+				RefColumns: []*schema.Column{IntegrationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "integrationeventsynccursor_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationEventSyncCursorsColumns[6]},
+			},
+			{
+				Name:    "integrationeventsynccursor_tenant_id_integration_id_provider_source",
+				Unique:  true,
+				Columns: []*schema.Column{IntegrationEventSyncCursorsColumns[6], IntegrationEventSyncCursorsColumns[7], IntegrationEventSyncCursorsColumns[3]},
+			},
+		},
+	}
+	// IntegrationEventSyncRunsColumns holds the columns for the "integration_event_sync_runs" table.
+	IntegrationEventSyncRunsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "source_cursors", Type: field.TypeJSON, Nullable: true},
+		{Name: "sync_reason", Type: field.TypeString, Default: "manual"},
+		{Name: "started_at", Type: field.TypeTime},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"success", "failed", "skipped"}},
+		{Name: "events_pulled", Type: field.TypeInt, Default: 0},
+		{Name: "events_ingested", Type: field.TypeInt, Default: 0},
+		{Name: "duplicates", Type: field.TypeInt, Default: 0},
+		{Name: "failure_message", Type: field.TypeString, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "integration_id", Type: field.TypeUUID},
+	}
+	// IntegrationEventSyncRunsTable holds the schema information for the "integration_event_sync_runs" table.
+	IntegrationEventSyncRunsTable = &schema.Table{
+		Name:       "integration_event_sync_runs",
+		Columns:    IntegrationEventSyncRunsColumns,
+		PrimaryKey: []*schema.Column{IntegrationEventSyncRunsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "integration_event_sync_runs_tenants_tenant",
+				Columns:    []*schema.Column{IntegrationEventSyncRunsColumns[10]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "integration_event_sync_runs_integrations_integration",
+				Columns:    []*schema.Column{IntegrationEventSyncRunsColumns[11]},
+				RefColumns: []*schema.Column{IntegrationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "integrationeventsyncrun_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationEventSyncRunsColumns[10]},
+			},
+			{
+				Name:    "integrationeventsyncrun_tenant_id_integration_id_started_at",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationEventSyncRunsColumns[10], IntegrationEventSyncRunsColumns[11], IntegrationEventSyncRunsColumns[3]},
+			},
+			{
+				Name:    "integrationeventsyncrun_tenant_id_status_started_at",
+				Unique:  false,
+				Columns: []*schema.Column{IntegrationEventSyncRunsColumns[10], IntegrationEventSyncRunsColumns[5], IntegrationEventSyncRunsColumns[3]},
+			},
+		},
+	}
 	// IntegrationUserInstallStatesColumns holds the columns for the "integration_user_install_states" table.
 	IntegrationUserInstallStatesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -1936,89 +2031,6 @@ var (
 				Name:    "playbook_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{PlaybooksColumns[3]},
-			},
-		},
-	}
-	// ProviderEventSyncCursorsColumns holds the columns for the "provider_event_sync_cursors" table.
-	ProviderEventSyncCursorsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "provider", Type: field.TypeString},
-		{Name: "provider_source", Type: field.TypeString},
-		{Name: "cursor", Type: field.TypeString, Nullable: true},
-		{Name: "last_synced_at", Type: field.TypeTime},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// ProviderEventSyncCursorsTable holds the schema information for the "provider_event_sync_cursors" table.
-	ProviderEventSyncCursorsTable = &schema.Table{
-		Name:       "provider_event_sync_cursors",
-		Columns:    ProviderEventSyncCursorsColumns,
-		PrimaryKey: []*schema.Column{ProviderEventSyncCursorsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "provider_event_sync_cursors_tenants_tenant",
-				Columns:    []*schema.Column{ProviderEventSyncCursorsColumns[7]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "providereventsynccursor_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{ProviderEventSyncCursorsColumns[7]},
-			},
-			{
-				Name:    "providereventsynccursor_tenant_id_provider_provider_source",
-				Unique:  true,
-				Columns: []*schema.Column{ProviderEventSyncCursorsColumns[7], ProviderEventSyncCursorsColumns[3], ProviderEventSyncCursorsColumns[4]},
-			},
-		},
-	}
-	// ProviderEventSyncRunsColumns holds the columns for the "provider_event_sync_runs" table.
-	ProviderEventSyncRunsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "provider", Type: field.TypeString},
-		{Name: "source_cursors", Type: field.TypeJSON, Nullable: true},
-		{Name: "sync_reason", Type: field.TypeString, Default: "manual"},
-		{Name: "started_at", Type: field.TypeTime},
-		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"success", "failed", "skipped"}},
-		{Name: "events_pulled", Type: field.TypeInt, Default: 0},
-		{Name: "events_ingested", Type: field.TypeInt, Default: 0},
-		{Name: "duplicates", Type: field.TypeInt, Default: 0},
-		{Name: "failure_message", Type: field.TypeString, Nullable: true},
-		{Name: "tenant_id", Type: field.TypeInt},
-	}
-	// ProviderEventSyncRunsTable holds the schema information for the "provider_event_sync_runs" table.
-	ProviderEventSyncRunsTable = &schema.Table{
-		Name:       "provider_event_sync_runs",
-		Columns:    ProviderEventSyncRunsColumns,
-		PrimaryKey: []*schema.Column{ProviderEventSyncRunsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "provider_event_sync_runs_tenants_tenant",
-				Columns:    []*schema.Column{ProviderEventSyncRunsColumns[11]},
-				RefColumns: []*schema.Column{TenantsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-		Indexes: []*schema.Index{
-			{
-				Name:    "providereventsyncrun_tenant_id",
-				Unique:  false,
-				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11]},
-			},
-			{
-				Name:    "providereventsyncrun_tenant_id_provider_started_at",
-				Unique:  false,
-				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11], ProviderEventSyncRunsColumns[1], ProviderEventSyncRunsColumns[4]},
-			},
-			{
-				Name:    "providereventsyncrun_tenant_id_status_started_at",
-				Unique:  false,
-				Columns: []*schema.Column{ProviderEventSyncRunsColumns[11], ProviderEventSyncRunsColumns[6], ProviderEventSyncRunsColumns[4]},
 			},
 		},
 	}
@@ -3143,6 +3155,8 @@ var (
 		IncidentTimelineEventTopologyContextsTable,
 		IncidentTypesTable,
 		IntegrationsTable,
+		IntegrationEventSyncCursorsTable,
+		IntegrationEventSyncRunsTable,
 		IntegrationUserInstallStatesTable,
 		KnowledgeEntitiesTable,
 		KnowledgeEntityAliasTable,
@@ -3163,8 +3177,6 @@ var (
 		OrganizationsTable,
 		OrganizationRolesTable,
 		PlaybooksTable,
-		ProviderEventSyncCursorsTable,
-		ProviderEventSyncRunsTable,
 		RetrospectivesTable,
 		RetrospectiveCommentsTable,
 		RetrospectiveReviewsTable,
@@ -3258,6 +3270,10 @@ func init() {
 	IncidentTimelineEventTopologyContextsTable.ForeignKeys[3].RefTable = SystemTopologySnapshotEntitiesTable
 	IncidentTypesTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationsTable.ForeignKeys[0].RefTable = TenantsTable
+	IntegrationEventSyncCursorsTable.ForeignKeys[0].RefTable = TenantsTable
+	IntegrationEventSyncCursorsTable.ForeignKeys[1].RefTable = IntegrationsTable
+	IntegrationEventSyncRunsTable.ForeignKeys[0].RefTable = TenantsTable
+	IntegrationEventSyncRunsTable.ForeignKeys[1].RefTable = IntegrationsTable
 	IntegrationUserInstallStatesTable.ForeignKeys[0].RefTable = TenantsTable
 	IntegrationUserInstallStatesTable.ForeignKeys[1].RefTable = UsersTable
 	KnowledgeEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
@@ -3300,8 +3316,6 @@ func init() {
 	OrganizationRolesTable.ForeignKeys[1].RefTable = OrganizationsTable
 	OrganizationRolesTable.ForeignKeys[2].RefTable = UsersTable
 	PlaybooksTable.ForeignKeys[0].RefTable = TenantsTable
-	ProviderEventSyncCursorsTable.ForeignKeys[0].RefTable = TenantsTable
-	ProviderEventSyncRunsTable.ForeignKeys[0].RefTable = TenantsTable
 	RetrospectivesTable.ForeignKeys[0].RefTable = DocumentsTable
 	RetrospectivesTable.ForeignKeys[1].RefTable = IncidentsTable
 	RetrospectivesTable.ForeignKeys[2].RefTable = TenantsTable

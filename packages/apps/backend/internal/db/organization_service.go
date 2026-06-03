@@ -81,7 +81,7 @@ func (s *OrganizationService) CompleteSetup(ctx context.Context, org *ent.Organi
 	if updateErr := update.Exec(ctx); updateErr != nil {
 		return fmt.Errorf("update: %w", updateErr)
 	}
-	args := jobs.ProviderEventSyncJob{
+	args := jobs.SyncIntegrationEventsArgs{
 		SyncReason: "inital_setup",
 	}
 	if _, jobErr := s.jobs.Insert(ctx, args, nil); jobErr != nil {

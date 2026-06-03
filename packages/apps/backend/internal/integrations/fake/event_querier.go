@@ -9,42 +9,43 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/integrations"
 )
 
-func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
 	return newEventQuerier(&InstalledIntegration{intg: intg}), nil
 }
 
 type eventQuerier struct {
-	ci *InstalledIntegration
+	ii *InstalledIntegration
 }
 
 func newEventQuerier(ci *InstalledIntegration) *eventQuerier {
-	return &eventQuerier{ci: ci}
+	return &eventQuerier{ii: ci}
 }
 
-func (q *eventQuerier) Provider() string {
-	return integrationName
+func (q *eventQuerier) Integration() *ent.Integration {
+	return q.ii.intg
 }
 
-func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		if incidentsCursor, shouldQuery := req.GetSourceCursor(sourceIncidents); shouldQuery {
-			for ev, evErr := range q.pullIncidentEvents(incidentsCursor) {
+func (q *eventQuerier) PullEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
+	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceIncidents); shouldQuery {
+			for ev, evErr := range q.pullIncidentEvents(cursor) {
 				if !yield(ev, evErr) {
 					return
 				}
 			}
 		}
-		if alertsCursor, shouldQuery := req.GetSourceCursor(sourceAlerts); shouldQuery {
-			for ev, evErr := range q.pullAlertEvents(alertsCursor) {
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceAlerts); shouldQuery {
+			for ev, evErr := range q.pullAlertEvents(cursor) {
 				if !yield(ev, evErr) {
 					return
 				}
 			}
 		}
-		if topologyCursor, shouldQuery := req.GetSourceCursor(sourceTopology); shouldQuery {
-			for ev, evErr := range q.pullTopologyEvents(topologyCursor) {
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceTopology); shouldQuery {
+			for ev, evErr := range q.pullTopologyEvents(cursor) {
 				if !yield(ev, evErr) {
 					return
 				}
@@ -117,8 +118,8 @@ func (p incidentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
 	return prov, nil
 }
 
-func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
+	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
 		for _, payload := range fakeIncidentEvents {
 			if cursor != "" && payload.ObservationID <= cursor {
 				continue
@@ -128,7 +129,7 @@ func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.Provider
 				yield(nil, fmt.Errorf("json marshal incident: %w", jsonErr))
 				return
 			}
-			res := &rez.ProviderEventQueryResult{
+			res := &rez.IntegrationEventQueryResult{
 				Event: rez.ProviderEvent{
 					Provider:           integrationName,
 					ProviderSource:     sourceIncidents,
@@ -224,8 +225,8 @@ var fakeAlertEvents = []alertObservedPayload{
 	},
 }
 
-func (q *eventQuerier) pullAlertEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+func (q *eventQuerier) pullAlertEvents(cursor string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
+	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
 		for _, payload := range fakeAlertEvents {
 			if cursor != "" && payload.InstanceRef <= cursor {
 				continue
@@ -235,7 +236,7 @@ func (q *eventQuerier) pullAlertEvents(cursor string) iter.Seq2[*rez.ProviderEve
 				yield(nil, fmt.Errorf("json marshal alert: %w", jsonErr))
 				return
 			}
-			res := &rez.ProviderEventQueryResult{
+			res := &rez.IntegrationEventQueryResult{
 				Event:             *ev,
 				SourceCursorAfter: new(payload.InstanceRef),
 			}

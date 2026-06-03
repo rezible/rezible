@@ -9,11 +9,12 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/integrations"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/slack-go/slack"
 )
 
-func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
 	return newEventQuerier(i.makeInstalledIntegration(intg))
 }
 
@@ -31,13 +32,13 @@ func newEventQuerier(ii *InstalledIntegration) (*eventQuerier, error) {
 	return &eventQuerier{ii: ii, cfg: cfg, client: slack.New(cfg.AccessToken)}, nil
 }
 
-func (q *eventQuerier) Provider() string {
-	return integrationName
+func (q *eventQuerier) Integration() *ent.Integration {
+	return q.ii.intg
 }
 
-func (q *eventQuerier) PullEvents(ctx context.Context, req rez.ProviderEventQueryRequest) iter.Seq2[*rez.ProviderEventQueryResult, error] {
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		if usersCursor, ok := req.SourceCursors[sourceUsers]; ok || len(req.SourceCursors) == 0 {
+func (q *eventQuerier) PullEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
+	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+		if usersCursor, ok := integrations.GetSourceQueryCursor(cursors, sourceUsers); ok {
 			for ev, evErr := range q.pullUserObservedEvents(ctx, usersCursor) {
 				if !yield(ev, evErr) {
 					return
@@ -66,12 +67,12 @@ func (q *eventQuerier) makeUserObservedPayload(u slack.User) ([]byte, error) {
 	return json.Marshal(payload)
 }
 
-func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
 	var teamId string
 	if q.cfg.Team != nil {
 		teamId = q.cfg.Team.Id
 	}
-	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
 		slackUsers, getErr := q.client.GetUsersContext(ctx,
 			slack.GetUsersOptionPresence(false),
 			slack.GetUsersOptionTeamID(teamId))
@@ -93,7 +94,7 @@ func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string
 				continue
 			}
 
-			res := &rez.ProviderEventQueryResult{
+			res := &rez.IntegrationEventQueryResult{
 				Event: rez.ProviderEvent{
 					Provider:           integrationName,
 					ProviderSource:     sourceUsers,

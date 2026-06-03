@@ -42,6 +42,8 @@ type SchemaConfig struct {
 	IncidentTimelineEventTopologyContext      string // IncidentTimelineEventTopologyContext table.
 	IncidentType                              string // IncidentType table.
 	Integration                               string // Integration table.
+	IntegrationEventSyncCursor                string // IntegrationEventSyncCursor table.
+	IntegrationEventSyncRun                   string // IntegrationEventSyncRun table.
 	IntegrationUserInstallState               string // IntegrationUserInstallState table.
 	KnowledgeEntity                           string // KnowledgeEntity table.
 	KnowledgeEntityAlias                      string // KnowledgeEntityAlias table.
@@ -65,8 +67,6 @@ type SchemaConfig struct {
 	OrganizationRole                          string // OrganizationRole table.
 	Playbook                                  string // Playbook table.
 	PlaybookAlerts                            string // Playbook-alerts->Alert table.
-	ProviderEventSyncCursor                   string // ProviderEventSyncCursor table.
-	ProviderEventSyncRun                      string // ProviderEventSyncRun table.
 	Retrospective                             string // Retrospective table.
 	RetrospectiveComment                      string // RetrospectiveComment table.
 	RetrospectiveReview                       string // RetrospectiveReview table.

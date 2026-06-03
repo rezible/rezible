@@ -152,14 +152,14 @@ type (
 		UpdateInstalled(ctx context.Context, id uuid.UUID, prefs map[string]any) (InstalledIntegration, error)
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error
 
-		GetProviderEventProcessor(integrationName string) (ProviderEventProcessor, error)
-		GetProviderEventQueriers(ctx context.Context, integrationName string) ([]ProviderEventQuerier, error)
-
 		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2FlowResult, error)
 
-		RequestDataSync(ctx context.Context, integrationName string, sources []string) error
-		GetDataSyncStatus(ctx context.Context, integrationName string) (*ent.ListResult[ent.ProviderEventSyncRun], error)
+		GetProviderEventProcessor(integrationName string) (ProviderEventProcessor, error)
+		GetProviderEventQuerier(context.Context, *ent.Integration) (IntegrationEventQuerier, error)
+
+		RequestIntegrationEventSync(ctx context.Context, id uuid.UUID, sources []string) error
+		ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error)
 	}
 )
 
@@ -179,26 +179,23 @@ type (
 		Process(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
 	}
 
-	ProviderEventQueryRequest struct {
-		SourceCursors map[string]string
+	IntegrationEventQuerier interface {
+		Integration() *ent.Integration
+		PullEvents(ctx context.Context, sourceCursors map[string]string) iter.Seq2[*IntegrationEventQueryResult, error]
 	}
 
-	ProviderEventQuerier interface {
-		Provider() string
-		PullEvents(context.Context, ProviderEventQueryRequest) iter.Seq2[*ProviderEventQueryResult, error]
-	}
-
-	ProviderEventQueryResult struct {
+	IntegrationEventQueryResult struct {
 		Event             ProviderEvent
 		SourceCursorAfter *string
 	}
 
-	ProviderEventSyncOptions struct {
-		SyncReason   string
-		QueryRequest ProviderEventQueryRequest
+	IntegrationEventSyncOptions struct {
+		SyncReason    string
+		Querier       IntegrationEventQuerier
+		SourceCursors map[string]string
 	}
 
-	ProviderEventProjectionHandler interface {
+	EventProjectionHandler interface {
 		HandleEventProjection(context.Context, *ent.NormalizedEvent) error
 	}
 
@@ -210,8 +207,8 @@ type (
 
 	ProviderEventService interface {
 		Ingest(context.Context, ProviderEvent) error
-		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
-		RegisterProjectionHandler(h ProviderEventProjectionHandler, kinds ...projections.SubjectKind)
+		SyncIntegrationEvents(context.Context, IntegrationEventSyncOptions) error
+		RegisterProjectionHandler(h EventProjectionHandler, kinds ...projections.SubjectKind)
 
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error)
 		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)
@@ -221,11 +218,6 @@ type (
 		Duplicate bool
 	}
 )
-
-func (req ProviderEventQueryRequest) GetSourceCursor(src string) (string, bool) {
-	cursor, exists := req.SourceCursors[src]
-	return cursor, exists || len(req.SourceCursors) == 0
-}
 
 type (
 	OrganizationService interface {

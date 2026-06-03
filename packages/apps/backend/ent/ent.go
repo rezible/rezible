@@ -38,6 +38,8 @@ import (
 	"github.com/rezible/rezible/ent/incidenttimelineeventtopologycontext"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/integration"
+	"github.com/rezible/rezible/ent/integrationeventsynccursor"
+	"github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/rezible/rezible/ent/integrationuserinstallstate"
 	"github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/knowledgeentityalias"
@@ -58,8 +60,6 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
-	"github.com/rezible/rezible/ent/providereventsynccursor"
-	"github.com/rezible/rezible/ent/providereventsyncrun"
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
@@ -162,6 +162,8 @@ func checkColumn(t, c string) error {
 			incidenttimelineeventtopologycontext.Table:    incidenttimelineeventtopologycontext.ValidColumn,
 			incidenttype.Table:                            incidenttype.ValidColumn,
 			integration.Table:                             integration.ValidColumn,
+			integrationeventsynccursor.Table:              integrationeventsynccursor.ValidColumn,
+			integrationeventsyncrun.Table:                 integrationeventsyncrun.ValidColumn,
 			integrationuserinstallstate.Table:             integrationuserinstallstate.ValidColumn,
 			knowledgeentity.Table:                         knowledgeentity.ValidColumn,
 			knowledgeentityalias.Table:                    knowledgeentityalias.ValidColumn,
@@ -182,8 +184,6 @@ func checkColumn(t, c string) error {
 			organization.Table:                            organization.ValidColumn,
 			organizationrole.Table:                        organizationrole.ValidColumn,
 			playbook.Table:                                playbook.ValidColumn,
-			providereventsynccursor.Table:                 providereventsynccursor.ValidColumn,
-			providereventsyncrun.Table:                    providereventsyncrun.ValidColumn,
 			retrospective.Table:                           retrospective.ValidColumn,
 			retrospectivecomment.Table:                    retrospectivecomment.ValidColumn,
 			retrospectivereview.Table:                     retrospectivereview.ValidColumn,

@@ -9,6 +9,11 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
+func GetSourceQueryCursor(cursors map[string]string, source string) (string, bool) {
+	sc, ok := cursors[source]
+	return sc, ok || len(cursors) == 0
+}
+
 type PackageRegistry struct {
 	logger            *slog.Logger
 	nameMap           map[string]rez.IntegrationPackage
@@ -79,9 +84,9 @@ func (r *PackageRegistry) GetProviderEventProcessors() map[string]rez.ProviderEv
 	return els
 }
 
-func (r *PackageRegistry) GetProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
+func (r *PackageRegistry) GetProviderEventQuerier(intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
 	type IntegrationWithProviderEventQuerier interface {
-		MakeProviderEventQuerier(*ent.Integration) (rez.ProviderEventQuerier, error)
+		MakeProviderEventQuerier(*ent.Integration) (rez.IntegrationEventQuerier, error)
 	}
 	pkg, valid := r.nameMap[intg.IntegrationName]
 	if !valid {
