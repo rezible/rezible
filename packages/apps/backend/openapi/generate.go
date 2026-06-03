@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	spec, specErr := oapiv1.GetSpec(false)
+	spec, specErr := oapiv1.MakeOpenApiSpec().YAML()
 	if specErr != nil {
 		log.Fatalf("failed to get spec: %v", specErr)
 	}

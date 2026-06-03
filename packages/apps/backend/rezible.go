@@ -35,11 +35,26 @@ type ConfigLoader interface {
 	LoadConfig(ctx context.Context) (*Config, []error)
 }
 
-type Database interface {
-	Client(context.Context) *ent.Client
-	WithTx(context.Context, func(context.Context, *ent.Client) error, ...ent.TxOption) error
-	Shutdown() error
-}
+type (
+	Database interface {
+		Client(context.Context) *ent.Client
+		WithTx(context.Context, func(context.Context, *ent.Client) error, ...ent.TxOption) error
+		Shutdown() error
+	}
+
+	MigrationService interface {
+		GetCurrentStatus(context.Context) (*MigrationStatus, error)
+		CreateSchemaMigration(ctx context.Context, name string) error
+		Run(ctx context.Context, direction string) error
+		UpdateChecksum() error
+	}
+
+	MigrationStatus struct {
+		CurrentVersion uint
+		LatestVersion  uint
+		Dirty          bool
+	}
+)
 
 type (
 	NewLoggerOptions struct {

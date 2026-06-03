@@ -2,14 +2,12 @@ package postgres
 
 import (
 	"context"
-	"database/sql"
 	"fmt"
 	"log/slog"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/jackc/pgx/v5/stdlib"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/river"
 )
@@ -55,10 +53,4 @@ func MakePgxPool(ctx context.Context, cfg rez.PostgresConfig, admin bool) (*pgxp
 		slog.Error("failed to ping postgres", "error", pingErr)
 	}
 	return pool, nil
-}
-
-func withDbFromPool(pool *pgxpool.Pool, fn func(db *sql.DB) error) error {
-	db := stdlib.OpenDBFromPool(pool)
-	defer closeDatabaseResource("db from pool", db)
-	return fn(db)
 }

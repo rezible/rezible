@@ -63,23 +63,31 @@ func (r *commandRunner) runServer(ctx context.Context) error {
 }
 
 func (r *commandRunner) runSchemaMigration(ctx context.Context, direction string) error {
-	ms := do.MustInvoke[*postgres.MigrationService](r.i)
+	ms := do.MustInvoke[rez.MigrationService](r.i)
 	return ms.Run(ctx, direction)
 }
 
 func (r *commandRunner) createSchemaMigration(ctx context.Context, name string) error {
-	ms := do.MustInvoke[*postgres.MigrationService](r.i)
+	ms := do.MustInvoke[rez.MigrationService](r.i)
 	return ms.CreateSchemaMigration(ctx, name)
 }
 
 func (r *commandRunner) updateMigrationChecksumFile() error {
-	return postgres.UpdateMigrationsChecksum()
+	ms := do.MustInvoke[rez.MigrationService](r.i)
+	return ms.UpdateChecksum()
 }
 
 func (r *commandRunner) printOpenApiSpec(asJson bool) error {
-	spec, specErr := oapiv1.GetSpec(asJson)
-	if specErr != nil {
-		return fmt.Errorf("failed to marshal OpenAPI spec: %w", specErr)
+	api := oapiv1.MakeOpenApiSpec()
+	var spec []byte
+	var marshalErr error
+	if asJson {
+		spec, marshalErr = api.MarshalJSON()
+	} else {
+		spec, marshalErr = api.YAML()
+	}
+	if marshalErr != nil {
+		return fmt.Errorf("failed to marshal OpenAPI spec: %w", marshalErr)
 	}
 	fmt.Printf("%s", spec)
 	return nil
@@ -186,9 +194,8 @@ func registerIntegrations(i do.Injector) error {
 }
 
 func declareServices(ctx context.Context, i do.Injector) {
-	do.Provide(i, func(i do.Injector) (*postgres.MigrationService, error) {
-		pgCfg := do.MustInvoke[rez.Config](i).Postgres
-		pgPool, poolErr := postgres.MakePgxPool(ctx, pgCfg, true)
+	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {
+		pgPool, poolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.Config](i).Postgres, true)
 		if poolErr != nil {
 			return nil, fmt.Errorf("making admin pgx pool: %w", poolErr)
 		}

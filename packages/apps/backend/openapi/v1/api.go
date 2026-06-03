@@ -70,14 +70,10 @@ func MakeApi(h Handler, middlewares ...openapi.Middleware) openapi.API {
 	return api
 }
 
-func makeNilApi() openapi.API {
-	return MakeApi(operations{})
+func MakeOpenApiSpec() *huma.OpenAPI {
+	return makeUnhandledApi().OpenAPI()
 }
 
-func GetSpec(jsonFmt bool) ([]byte, error) {
-	spec := makeNilApi().OpenAPI()
-	if jsonFmt {
-		return spec.MarshalJSON()
-	}
-	return spec.YAML()
+func makeUnhandledApi() openapi.API {
+	return MakeApi(operations{})
 }

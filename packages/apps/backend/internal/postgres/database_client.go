@@ -97,15 +97,17 @@ func applyTxOptions(tx *ent.Tx, opts ...ent.TxOption) {
 }
 
 func (dbc *DatabaseClient) RequireUpToDateMigrations(ctx context.Context) error {
-	status, statusErr := GetCurrentMigrationStatus(ctx, dbc.driver)
+	ms := &MigrationService{driver: dbc.driver}
+	status, statusErr := ms.GetCurrentStatus(ctx)
 	if statusErr != nil {
 		return fmt.Errorf("get current migration status: %w", statusErr)
 	}
+	fmtStatus := fmt.Sprintf("[current=%d latest=%d]", status.CurrentVersion, status.LatestVersion)
 	if status.Dirty {
-		return fmt.Errorf("database migrations are dirty: %s", status)
+		return fmt.Errorf("database migrations status is dirty: %s", fmtStatus)
 	}
-	if status.pending() {
-		return fmt.Errorf("database migrations are pending: %s", status)
+	if status.CurrentVersion < status.LatestVersion {
+		return fmt.Errorf("database migrations status is pending: %s", fmtStatus)
 	}
 	return nil
 }

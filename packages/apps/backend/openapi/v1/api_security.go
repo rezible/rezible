@@ -64,7 +64,7 @@ func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
 }
 
 func MakeSecurityMiddleware() openapi.Middleware {
-	api := makeNilApi()
+	api := makeUnhandledApi()
 	return func(c openapi.Context, next func(openapi.Context)) {
 		if authErr := verifyRequestAuthContext(c); authErr != nil {
 			statusErr := ConvertAuthStatusError(authErr)
