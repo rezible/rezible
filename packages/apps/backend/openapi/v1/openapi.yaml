@@ -263,19 +263,20 @@ components:
           items:
             type: string
           type: array
-        maxConfiguredAllowed:
-          default: 1
+        maxInstalls:
           format: int64
           type: integer
         name:
           type: string
-        oauthRequired:
+        oauthInstall:
           type: boolean
+        provider:
+          type: string
       required:
         - name
+        - provider
         - dataKinds
-        - maxConfiguredAllowed
-        - oauthRequired
+        - oauthInstall
       type: object
     CompleteIntegrationOAuthFlowRequestAttributes:
       additionalProperties: false
@@ -315,92 +316,9 @@ components:
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/IntegrationOAuthFlowResult"
+          $ref: "#/components/schemas/IntegrationOAuthInstallResult"
       required:
         - data
-      type: object
-    ConfigureIntegrationRequestAttributes:
-      additionalProperties: false
-      properties:
-        config:
-          additionalProperties: {}
-          type: object
-        displayName:
-          type: string
-        externalRef:
-          type: string
-      required:
-        - displayName
-        - externalRef
-        - config
-      type: object
-    ConfigureIntegrationRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ConfigureIntegrationRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/ConfigureIntegrationRequestAttributes"
-      required:
-        - attributes
-      type: object
-    ConfigureIntegrationResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ConfigureIntegrationResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/ConfiguredIntegration"
-      required:
-        - data
-      type: object
-    ConfiguredIntegration:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/ConfiguredIntegrationAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    ConfiguredIntegrationAttributes:
-      additionalProperties: false
-      properties:
-        config:
-          additionalProperties: {}
-          type: object
-        dataKinds:
-          additionalProperties:
-            type: boolean
-          type: object
-        displayName:
-          type: string
-        externalRef:
-          type: string
-        preferences:
-          additionalProperties: {}
-          type: object
-        provider:
-          type: string
-      required:
-        - provider
-        - displayName
-        - externalRef
-        - config
-        - preferences
-        - dataKinds
       type: object
     CreateEventAnnotationRequestAttributes:
       additionalProperties: false
@@ -865,6 +783,51 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IncidentType"
+      required:
+        - data
+      type: object
+    CreateInstalledIntegrationRequestAttributes:
+      additionalProperties: false
+      properties:
+        config:
+          additionalProperties: {}
+          type: object
+        displayName:
+          type: string
+        preferences:
+          additionalProperties: {}
+          type: object
+      required:
+        - config
+        - preferences
+      type: object
+    CreateInstalledIntegrationRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateInstalledIntegrationRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/CreateInstalledIntegrationRequestAttributes"
+      required:
+        - attributes
+      type: object
+    CreateInstalledIntegrationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/CreateInstalledIntegrationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/InstalledIntegration"
       required:
         - data
       type: object
@@ -1544,21 +1507,6 @@ components:
       required:
         - id
       type: object
-    ExternalIntegrationOption:
-      additionalProperties: false
-      properties:
-        config:
-          additionalProperties: {}
-          type: object
-        displayName:
-          type: string
-        externalRef:
-          type: string
-      required:
-        - externalRef
-        - displayName
-        - config
-      type: object
     ExternalTicket:
       additionalProperties: false
       properties:
@@ -1609,21 +1557,6 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/Alert"
-      required:
-        - data
-      type: object
-    GetConfiguredIntegrationResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetConfiguredIntegrationResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/ConfiguredIntegration"
       required:
         - data
       type: object
@@ -1837,25 +1770,20 @@ components:
       required:
         - data
       type: object
-    GetIntegrationDataSyncStatusResponseBody:
+    GetInstalledIntegrationResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/GetIntegrationDataSyncStatusResponseBody.json
+            - /v1/schemas/GetInstalledIntegrationResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          items:
-            $ref: "#/components/schemas/IntegrationProviderDataSyncStatus"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
+          $ref: "#/components/schemas/InstalledIntegration"
       required:
         - data
-        - pagination
       type: object
     GetMeetingScheduleResponseBody:
       additionalProperties: false
@@ -2944,48 +2872,66 @@ components:
         - archived
         - description
       type: object
-    IntegrationOAuthFlow:
-      additionalProperties: false
-      properties:
-        flow_url:
-          type: string
-      required:
-        - flow_url
-      type: object
-    IntegrationOAuthFlowResult:
-      additionalProperties: false
-      properties:
-        configured:
-          items:
-            $ref: "#/components/schemas/ConfiguredIntegration"
-          type: array
-        options:
-          items:
-            $ref: "#/components/schemas/ExternalIntegrationOption"
-          type: array
-        selectionToken:
-          type: string
-        status:
-          type: string
-      required:
-        - status
-        - configured
-        - options
-      type: object
-    IntegrationProviderDataSyncStatus:
+    InstalledIntegration:
       additionalProperties: false
       properties:
         attributes:
-          $ref: "#/components/schemas/IntegrationProviderDataSyncStatusAttributes"
+          $ref: "#/components/schemas/InstalledIntegrationAttributes"
         id:
           type: string
       required:
         - id
         - attributes
       type: object
-    IntegrationProviderDataSyncStatusAttributes:
+    InstalledIntegrationAttributes:
       additionalProperties: false
       properties:
+        capabilities:
+          additionalProperties:
+            type: boolean
+          type: object
+        config:
+          additionalProperties: {}
+          type: object
+        displayName:
+          type: string
+        externalRef:
+          type: string
+        integrationName:
+          type: string
+        settings:
+          additionalProperties: {}
+          type: object
+      required:
+        - integrationName
+        - displayName
+        - externalRef
+        - config
+        - settings
+        - capabilities
+      type: object
+    IntegrationEventSyncRun:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/IntegrationEventSyncRunAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    IntegrationEventSyncRunAttributes:
+      additionalProperties: false
+      properties:
+        finishedAt:
+          format: date-time
+          type:
+            - string
+            - "null"
+        startedAt:
+          format: date-time
+          type: string
         status:
           enum:
             - queued
@@ -2995,6 +2941,45 @@ components:
           type: string
       required:
         - status
+        - startedAt
+        - finishedAt
+      type: object
+    IntegrationInstallTargetOption:
+      additionalProperties: false
+      properties:
+        displayName:
+          type: string
+        externalRef:
+          type: string
+      required:
+        - externalRef
+        - displayName
+      type: object
+    IntegrationOAuthFlow:
+      additionalProperties: false
+      properties:
+        flow_url:
+          type: string
+      required:
+        - flow_url
+      type: object
+    IntegrationOAuthInstallResult:
+      additionalProperties: false
+      properties:
+        installTargetOptions:
+          items:
+            $ref: "#/components/schemas/IntegrationInstallTargetOption"
+          type: array
+        installed:
+          items:
+            $ref: "#/components/schemas/InstalledIntegration"
+          type: array
+        targetSelectionRequired:
+          type: boolean
+        targetSelectionToken:
+          type: string
+      required:
+        - targetSelectionRequired
       type: object
     ListAlertIncidentLinksResponseBody:
       additionalProperties: false
@@ -3049,26 +3034,6 @@ components:
         data:
           items:
             $ref: "#/components/schemas/AvailableIntegration"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListConfiguredIntegrationsResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListConfiguredIntegrationsResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/ConfiguredIntegration"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3329,6 +3294,46 @@ components:
         data:
           items:
             $ref: "#/components/schemas/Incident"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListInstalledIntegrationsResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListInstalledIntegrationsResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/InstalledIntegration"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListIntegrationEventSyncRunResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListIntegrationEventSyncRunResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/IntegrationEventSyncRun"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4191,7 +4196,7 @@ components:
         - data
         - pagination
       type: object
-    RequestIntegrationDataSyncRequestAttributes:
+    RequestIntegrationEventSyncRequestAttributes:
       additionalProperties: false
       properties:
         sources:
@@ -4199,18 +4204,18 @@ components:
             type: string
           type: array
       type: object
-    RequestIntegrationDataSyncRequestBody:
+    RequestIntegrationEventSyncRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/RequestIntegrationDataSyncRequestBody.json
+            - /v1/schemas/RequestIntegrationEventSyncRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/RequestIntegrationDataSyncRequestAttributes"
+          $ref: "#/components/schemas/RequestIntegrationEventSyncRequestAttributes"
       required:
         - attributes
       type: object
@@ -4338,7 +4343,7 @@ components:
         - reviewer
         - comment
       type: object
-    SelectIntegrationOAuthFlowRequestAttributes:
+    SelectIntegrationInstallTargetsRequestAttributes:
       additionalProperties: false
       properties:
         externalRefs:
@@ -4351,35 +4356,40 @@ components:
         - selectionToken
         - externalRefs
       type: object
-    SelectIntegrationOAuthFlowRequestBody:
+    SelectIntegrationInstallTargetsRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/SelectIntegrationOAuthFlowRequestBody.json
+            - /v1/schemas/SelectIntegrationInstallTargetsRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/SelectIntegrationOAuthFlowRequestAttributes"
+          $ref: "#/components/schemas/SelectIntegrationInstallTargetsRequestAttributes"
       required:
         - attributes
       type: object
-    SelectIntegrationOAuthFlowResponseBody:
+    SelectIntegrationInstallTargetsResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/SelectIntegrationOAuthFlowResponseBody.json
+            - /v1/schemas/SelectIntegrationInstallTargetsResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/IntegrationOAuthFlowResult"
+          items:
+            $ref: "#/components/schemas/InstalledIntegration"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
       required:
         - data
+        - pagination
       type: object
     SendOncallShiftHandoverAttributes:
       additionalProperties: false
@@ -4414,21 +4424,6 @@ components:
       required:
         - data
       type: object
-    StartIntegrationOAuthFlowRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/StartIntegrationOAuthFlowRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/StartOAuthFlowRequestAttributes"
-      required:
-        - attributes
-      type: object
     StartIntegrationOAuthFlowResponseBody:
       additionalProperties: false
       properties:
@@ -4443,14 +4438,6 @@ components:
           $ref: "#/components/schemas/IntegrationOAuthFlow"
       required:
         - data
-      type: object
-    StartOAuthFlowRequestAttributes:
-      additionalProperties: false
-      properties:
-        callbackPath:
-          type: string
-      required:
-        - callbackPath
       type: object
     SystemAnalysis:
       additionalProperties: false
@@ -4880,45 +4867,6 @@ components:
         - role
         - teamId
         - userId
-      type: object
-    UpdateConfiguredIntegrationPreferencesRequestAttributes:
-      additionalProperties: false
-      properties:
-        preferences:
-          additionalProperties: {}
-          type: object
-      required:
-        - preferences
-      type: object
-    UpdateConfiguredIntegrationPreferencesRequestBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateConfiguredIntegrationPreferencesRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/UpdateConfiguredIntegrationPreferencesRequestAttributes"
-      required:
-        - attributes
-      type: object
-    UpdateConfiguredIntegrationPreferencesResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/UpdateConfiguredIntegrationPreferencesResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/ConfiguredIntegration"
-      required:
-        - data
       type: object
     UpdateEventAnnotationRequestAttributes:
       additionalProperties: false
@@ -5396,6 +5344,45 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/IncidentType"
+      required:
+        - data
+      type: object
+    UpdateInstalledIntegrationRequestAttributes:
+      additionalProperties: false
+      properties:
+        preferences:
+          additionalProperties: {}
+          type: object
+      required:
+        - preferences
+      type: object
+    UpdateInstalledIntegrationRequestBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateInstalledIntegrationRequestBody.json
+          format: uri
+          readOnly: true
+          type: string
+        attributes:
+          $ref: "#/components/schemas/UpdateInstalledIntegrationRequestAttributes"
+      required:
+        - attributes
+      type: object
+    UpdateInstalledIntegrationResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/UpdateInstalledIntegrationResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/InstalledIntegration"
       required:
         - data
       type: object
@@ -9954,9 +9941,9 @@ paths:
       summary: Create an Incident Event
       tags:
         - Incident Timeline
-  /integrations/configured:
+  /integrations/installed:
     get:
-      operationId: list-configured-integrations
+      operationId: list-installed-integrations
       parameters:
         - explode: false
           in: query
@@ -9991,7 +9978,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ListConfiguredIntegrationsResponseBody"
+                $ref: "#/components/schemas/ListInstalledIntegrationsResponseBody"
           description: OK
         "400":
           content:
@@ -10029,12 +10016,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: List Integrations
+      summary: List Installed Integrations
       tags:
         - Integrations
-  /integrations/configured/{id}:
+  /integrations/installed/{id}:
     delete:
-      operationId: delete-integration
+      operationId: delete-installed-integration
       parameters:
         - in: path
           name: id
@@ -10084,7 +10071,7 @@ paths:
       tags:
         - Integrations
     get:
-      operationId: get-configured-integration
+      operationId: get-installed-integration
       parameters:
         - in: path
           name: id
@@ -10096,7 +10083,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetConfiguredIntegrationResponseBody"
+                $ref: "#/components/schemas/GetInstalledIntegrationResponseBody"
           description: OK
         "400":
           content:
@@ -10137,9 +10124,8 @@ paths:
       summary: Get an Integration
       tags:
         - Integrations
-  /integrations/configured/{id}/preferences:
-    post:
-      operationId: update-configured-integration-preferences
+    patch:
+      operationId: update-installed-integration
       parameters:
         - in: path
           name: id
@@ -10150,14 +10136,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateConfiguredIntegrationPreferencesRequestBody"
+              $ref: "#/components/schemas/UpdateInstalledIntegrationRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateConfiguredIntegrationPreferencesResponseBody"
+                $ref: "#/components/schemas/UpdateInstalledIntegrationResponseBody"
           description: OK
         "400":
           content:
@@ -10195,7 +10181,118 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Update Preferences for a Configured Integration
+      summary: Update an installed Integration
+      tags:
+        - Integrations
+  /integrations/installed/{id}/sync:
+    get:
+      operationId: list-integration-event-sync-runs
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListIntegrationEventSyncRunResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get event sync runs for an integration
+      tags:
+        - Integrations
+    post:
+      operationId: request-integration-event-sync
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestIntegrationEventSyncRequestBody"
+        required: true
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Request a manual event sync for an integration
       tags:
         - Integrations
   /integrations/providers:
@@ -10276,9 +10373,9 @@ paths:
       summary: List Available Integrations
       tags:
         - Integrations
-  /integrations/providers/{name}/configured:
+  /integrations/providers/{name}/install:
     post:
-      operationId: configure-integration
+      operationId: create-installed-integration
       parameters:
         - in: path
           name: name
@@ -10289,14 +10386,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/ConfigureIntegrationRequestBody"
+              $ref: "#/components/schemas/CreateInstalledIntegrationRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ConfigureIntegrationResponseBody"
+                $ref: "#/components/schemas/CreateInstalledIntegrationResponseBody"
           description: OK
         "400":
           content:
@@ -10334,7 +10431,68 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Create an Integration
+      summary: Install an Integration
+      tags:
+        - Integrations
+  /integrations/providers/{name}/install/targets:
+    post:
+      operationId: select-integration-install-targets
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SelectIntegrationInstallTargetsRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SelectIntegrationInstallTargetsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Select installation targets for an Integration
       tags:
         - Integrations
   /integrations/providers/{name}/oauth/complete:
@@ -10398,67 +10556,6 @@ paths:
       summary: Complete OAuth flow for an Integration
       tags:
         - Integrations
-  /integrations/providers/{name}/oauth/select:
-    post:
-      operationId: select-integration-oauth-flow
-      parameters:
-        - in: path
-          name: name
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SelectIntegrationOAuthFlowRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SelectIntegrationOAuthFlowResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Select OAuth installations for an Integration
-      tags:
-        - Integrations
   /integrations/providers/{name}/oauth/start:
     post:
       operationId: start-integration-oauth-flow
@@ -10468,12 +10565,6 @@ paths:
           required: true
           schema:
             type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/StartIntegrationOAuthFlowRequestBody"
-        required: true
       responses:
         "200":
           content:
@@ -10518,117 +10609,6 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Start OAuth flow for an Integration
-      tags:
-        - Integrations
-  /integrations/providers/{name}/sync:
-    get:
-      operationId: get-integration-data-sync-status
-      parameters:
-        - in: path
-          name: name
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetIntegrationDataSyncStatusResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get data sync status for an integration provider
-      tags:
-        - Integrations
-    post:
-      operationId: request-integration-data-sync
-      parameters:
-        - in: path
-          name: name
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RequestIntegrationDataSyncRequestBody"
-        required: true
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Request a manual data sync for an integration provider
       tags:
         - Integrations
   /meeting_schedules:
