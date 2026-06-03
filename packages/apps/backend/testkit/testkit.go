@@ -51,18 +51,17 @@ func (s *Suite) TearDownSuite() {
 }
 
 func (s *Suite) BeforeTest(suiteName, testName string) {
-	s.loadConfig()
+	// s.loadConfig()
 }
 
 func (s *Suite) loadConfig() {
-	cl := koanf.NewConfigLoader(koanf.ConfigLoaderOptions{
+	cfg, cfgErr := koanf.LoadConfig(s.T().Context(), koanf.Options{
 		LoadEnvironment: true,
 		Overrides:       s.opts.configOverrides,
 		SkipValidation:  true,
 	})
-	cfg, cfgErr := cl.LoadConfig(s.T().Context())
 	s.Require().NoError(cfgErr)
-	s.cfg = cfg
+	s.cfg = *cfg
 }
 
 func (s *Suite) Config() rez.Config { return s.cfg }

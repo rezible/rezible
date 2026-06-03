@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,36 +15,35 @@ func main() {
 	defer stop()
 
 	if runErr := makeCli().Run(ctx, os.Args); runErr != nil {
-		fmt.Printf("run error: %v\n", runErr)
-		os.Exit(1)
+		log.Fatalf("error: %v", runErr)
 	}
 }
 
 func makeCli() *cli.Command {
-	a := newApp()
+	r := makeServiceRunner()
 
 	return &cli.Command{
 		Name:  "rezible",
 		Usage: "backend server control",
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			return a.setup(ctx)
+			return r.setupContext(ctx)
 		},
-		After: func(_ context.Context, command *cli.Command) error {
-			return a.shutdown()
+		After: func(ctx context.Context, command *cli.Command) error {
+			return r.shutdown(ctx)
 		},
 		Commands: []*cli.Command{
 			{
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return a.serveHttp(ctx)
+					return r.runServer(ctx)
 				},
 			},
 			{
 				Name:  "print-config",
 				Usage: "print loaded configuration",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return a.printConfig()
+					return r.printConfig()
 				},
 			},
 			{
@@ -52,25 +51,13 @@ func makeCli() *cli.Command {
 				Usage: "Print the OpenAPI spec",
 				Flags: []cli.Flag{&cli.BoolFlag{Name: "json"}},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return a.printOpenApiSpec(cmd.Bool("json"))
+					return r.printOpenApiSpec(cmd.Bool("json"))
 				},
 			},
 			{
 				Name:  "migrations",
 				Usage: "database migrations control",
 				Commands: []*cli.Command{
-					{
-						Name:  "create",
-						Usage: "Create a new database migration",
-						Arguments: []cli.Argument{&cli.StringArg{
-							Name:      "name",
-							UsageText: "name of the migration",
-							Config:    cli.StringConfig{TrimSpace: true},
-						}},
-						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return a.createSchemaMigration(ctx, cmd.StringArg("name"))
-						},
-					},
 					{
 						Name:  "apply",
 						Usage: "Apply pending database migrations",
@@ -81,14 +68,26 @@ func makeCli() *cli.Command {
 							Config:    cli.StringConfig{TrimSpace: true},
 						}},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return a.applySchemaMigrations(ctx, cmd.StringArg("direction"))
+							return r.runSchemaMigration(ctx, cmd.StringArg("direction"))
+						},
+					},
+					{
+						Name:  "create",
+						Usage: "Create a new database migration",
+						Arguments: []cli.Argument{&cli.StringArg{
+							Name:      "name",
+							UsageText: "name of the migration",
+							Config:    cli.StringConfig{TrimSpace: true},
+						}},
+						Action: func(ctx context.Context, cmd *cli.Command) error {
+							return r.createSchemaMigration(ctx, cmd.StringArg("name"))
 						},
 					},
 					{
 						Name:  "update-checksum",
 						Usage: "Update the database migrations checksum file",
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return a.updateMigrationChecksumFile()
+							return r.updateMigrationChecksumFile()
 						},
 					},
 				},

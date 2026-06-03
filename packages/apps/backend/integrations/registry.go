@@ -25,7 +25,7 @@ func NewPackageRegistry(tel rez.TelemetryService) *PackageRegistry {
 func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
 	available, configErr := pkg.IsAvailable()
 	if !available {
-		nameAttr := slog.Any("name", pkg.Provider())
+		nameAttr := slog.Any("name", pkg.Name())
 		if configErr != nil {
 			errAttr := slog.Any("config_error", configErr.Error())
 			slog.Warn("integration config error", nameAttr, errAttr)
@@ -34,9 +34,9 @@ func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
 		}
 		return configErr
 	}
-	r.logger.Debug("loaded integration", "name", pkg.Provider())
+	r.logger.Debug("loaded integration", "name", pkg.Name())
 	r.availablePackages = append(r.availablePackages, pkg)
-	r.nameMap[pkg.Provider()] = pkg
+	r.nameMap[pkg.Name()] = pkg
 
 	return nil
 }
@@ -60,7 +60,7 @@ func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {
 	whs := make(map[string]http.Handler)
 	for _, pkg := range r.availablePackages {
 		if whPkg, hasWebhook := pkg.(IntegrationWithWebhookHandler); hasWebhook {
-			whs[pkg.Provider()] = whPkg.WebhookHandler()
+			whs[pkg.Name()] = whPkg.WebhookHandler()
 		}
 	}
 	return whs
@@ -73,7 +73,7 @@ func (r *PackageRegistry) GetProviderEventProcessors() map[string]rez.ProviderEv
 	els := make(map[string]rez.ProviderEventProcessor)
 	for _, pkg := range r.availablePackages {
 		if procPkg, ok := pkg.(IntegrationWithProviderEventProcessor); ok {
-			els[pkg.Provider()] = procPkg.MakeProviderEventProcessor()
+			els[pkg.Name()] = procPkg.MakeProviderEventProcessor()
 		}
 	}
 	return els

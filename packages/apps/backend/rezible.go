@@ -32,12 +32,7 @@ var (
 )
 
 type ConfigLoader interface {
-	LoadConfig(ctx context.Context) (Config, error)
-}
-
-type LifecycleService interface {
-	Start(context.Context) error
-	Shutdown(context.Context) error
+	LoadConfig(ctx context.Context) (*Config, []error)
 }
 
 type Database interface {
@@ -216,7 +211,7 @@ type (
 	ProviderEventService interface {
 		Ingest(context.Context, ProviderEvent) error
 		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventSyncOptions) error
-		RegisterProjectionHandler(name string, h ProviderEventProjectionHandler, kinds ...projections.SubjectKind)
+		RegisterProjectionHandler(h ProviderEventProjectionHandler, kinds ...projections.SubjectKind)
 
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error)
 		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)

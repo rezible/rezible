@@ -15,7 +15,6 @@ import (
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/schema"
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/migrations"
 
 	entmigrate "github.com/rezible/rezible/ent/migrate"
@@ -36,7 +35,7 @@ func UpdateMigrationsChecksum() error {
 	return nil
 }
 
-func CreateSchemaMigration(ctx context.Context, cfg rez.PostgresConfig, name string) error {
+func createSchemaMigration(ctx context.Context, pool *PgxPool, name string) error {
 	dir, dirErr := getGolangMigrateDir()
 	if dirErr != nil {
 		return fmt.Errorf("get golang migrate dir: %w", dirErr)
@@ -52,10 +51,6 @@ func CreateSchemaMigration(ctx context.Context, cfg rez.PostgresConfig, name str
 		schema.WithMigrationMode(schema.ModeInspect),
 		schema.WithFormatter(formatter),
 	}
-	pool, poolErr := MakePgxPool(ctx, cfg, true)
-	if poolErr != nil {
-		return fmt.Errorf("creating pgx pool: %w", poolErr)
-	}
 	return withDbFromPool(pool, func(db *sql.DB) error {
 		driver := entsql.OpenDB(dialect.Postgres, db)
 		mig, mErr := schema.NewMigrate(driver, opts...)
@@ -69,7 +64,7 @@ func CreateSchemaMigration(ctx context.Context, cfg rez.PostgresConfig, name str
 	})
 }
 
-func GetCurrentMigrationStatus(ctx context.Context, db *sql.DB) (*MigrationStatus, error) {
+func GetCurrentMigrationStatus(ctx context.Context, q dialect.ExecQuerier) (*MigrationStatus, error) {
 	var status MigrationStatus
 
 	latest, latestErr := migrations.GetLatestMigrationVersion()
@@ -78,12 +73,15 @@ func GetCurrentMigrationStatus(ctx context.Context, db *sql.DB) (*MigrationStatu
 	}
 	status.LatestVersion = latest
 
-	scanErr := db.QueryRowContext(ctx, `SELECT version, dirty FROM migrations LIMIT 1`).
-		Scan(&status.CurrentVersion, &status.Dirty)
-	if scanErr != nil && !errors.Is(scanErr, sql.ErrNoRows) {
-		fmt.Printf("error scanning migration status: %s\n", scanErr.Error())
-		return nil, fmt.Errorf("getting db migration status: %w", scanErr)
+	var rows sql.Rows
+	queryErr := q.Query(ctx, `SELECT version, dirty FROM rezible.migrations LIMIT 1`, nil, &rows)
+	if queryErr != nil && !errors.Is(queryErr, sql.ErrNoRows) {
+		return nil, fmt.Errorf("querying: %w", queryErr)
 	}
+	if scanErr := rows.Scan(&status.CurrentVersion, &status.Dirty); scanErr != nil {
+		return nil, fmt.Errorf("scanning rows: %w", scanErr)
+	}
+	closeDatabaseResource("migration status rows", &rows)
 
 	return &status, nil
 }

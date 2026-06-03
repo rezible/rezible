@@ -8,10 +8,10 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	rez "github.com/rezible/rezible"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/rivercontrib/otelriver"
 
 	"github.com/riverqueue/river"
-	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivertype"
 
 	"github.com/rezible/rezible/ent"
@@ -28,7 +28,7 @@ type JobService struct {
 	client *riverClient
 }
 
-func NewJobService(tel rez.TelemetryService, pool *pgxpool.Pool) (*JobService, error) {
+func NewJobService(pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, error) {
 	s := &JobService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{
 			PackageName: "river",

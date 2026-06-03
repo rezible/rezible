@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"reflect"
+	"strings"
 	"sync"
 	"time"
 
@@ -79,9 +81,10 @@ func (s *ProviderEventService) ListEvents(ctx context.Context, params rez.ListEv
 	return ent.DoListQuery[ent.NormalizedEvent, *ent.NormalizedEventQuery](ctx, query, params.ListParams)
 }
 
-func (s *ProviderEventService) RegisterProjectionHandler(name string, handler rez.ProviderEventProjectionHandler, kinds ...projections.SubjectKind) {
+func (s *ProviderEventService) RegisterProjectionHandler(handler rez.ProviderEventProjectionHandler, kinds ...projections.SubjectKind) {
 	s.eventProjectorsMu.Lock()
 	defer s.eventProjectorsMu.Unlock()
+	name, _ := strings.CutPrefix(reflect.TypeOf(handler).String(), "*")
 	slog.Debug("registered event projection handler", "name", name, "kinds", kinds)
 	s.eventProjectors[name] = eventProjector{
 		handler:      handler,

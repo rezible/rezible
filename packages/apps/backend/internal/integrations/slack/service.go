@@ -24,6 +24,12 @@ type (
 	InteractionCallbackHandler func(context.Context, *ent.Integration, *slack.InteractionCallback) error
 )
 
+type App interface {
+	EventsApiHandler() EventsApiHandler
+	SlashCommandHandlers() map[string]SlashCommandHandler
+	InteractionCallbackHandlers() map[slack.InteractionType]InteractionCallbackHandler
+}
+
 type Service struct {
 	integrationName string
 	cfg             rez.IntegrationsConfigSlackApp
@@ -49,10 +55,7 @@ type NewServiceParams struct {
 	MessageService       rez.MessageService
 	ProviderEventService rez.ProviderEventService
 	OAuthScopes          []string
-
-	EventsApiHandler            EventsApiHandler
-	SlashCommandHandlers        map[string]SlashCommandHandler
-	InteractionCallbackHandlers map[slack.InteractionType]InteractionCallbackHandler
+	App                  App
 }
 
 func NewService(p NewServiceParams) (*Service, error) {
@@ -62,9 +65,9 @@ func NewService(p NewServiceParams) (*Service, error) {
 		cfg:                         cfg,
 		webhookHandler:              http.NotFoundHandler(),
 		oauthHandler:                NewOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, p.OAuthScopes),
-		eventsApiHandler:            p.EventsApiHandler,
-		slashCommandHandlers:        p.SlashCommandHandlers,
-		interactionCallbackHandlers: p.InteractionCallbackHandlers,
+		eventsApiHandler:            p.App.EventsApiHandler(),
+		slashCommandHandlers:        p.App.SlashCommandHandlers(),
+		interactionCallbackHandlers: p.App.InteractionCallbackHandlers(),
 	}
 
 	if !cfg.Enabled {

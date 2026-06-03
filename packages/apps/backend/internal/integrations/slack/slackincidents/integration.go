@@ -32,14 +32,12 @@ func MakeIntegration(
 	}
 
 	svcParams := slackintegration.NewServiceParams{
-		AppConfig:                   cfg,
-		IntegrationName:             integrationName,
-		MessageService:              messages,
-		ProviderEventService:        provEvents,
-		OAuthScopes:                 oAuthScopes,
-		EventsApiHandler:            incApp.handleEventsApiEvent,
-		SlashCommandHandlers:        incApp.slashCommandHandlers(),
-		InteractionCallbackHandlers: incApp.interactionCallbackHandlers(),
+		AppConfig:            cfg,
+		IntegrationName:      integrationName,
+		MessageService:       messages,
+		ProviderEventService: provEvents,
+		OAuthScopes:          oAuthScopes,
+		App:                  incApp,
 	}
 	svc, svcErr := slackintegration.NewService(svcParams)
 	if svcErr != nil {
@@ -47,7 +45,7 @@ func MakeIntegration(
 	}
 
 	intg := &Integration{
-		cfg:          cfg,
+		enabled:      cfg.Enabled,
 		service:      svc,
 		users:        users,
 		integrations: intgs,
@@ -59,7 +57,7 @@ func MakeIntegration(
 }
 
 type Integration struct {
-	cfg rez.IntegrationsConfigSlackApp
+	enabled bool
 
 	service *slackintegration.Service
 
@@ -79,7 +77,7 @@ func (i *Integration) Provider() string {
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	return i.cfg.Enabled, nil
+	return i.enabled, nil
 }
 
 func (i *Integration) OAuthInstallRequired() bool {
@@ -144,10 +142,6 @@ func (i *Integration) SupportedDataKinds() []string {
 	return nil
 }
 
-func (i *Integration) GetConfiguredIntegration(intg *ent.Integration) rez.InstalledIntegration {
-	return i.makeInstalledIntegration(intg)
-}
-
 func (i *Integration) ValidateInstallationConfig(m map[string]any) (externalRef string, validationErr error) {
 	return "", nil
 }
@@ -157,28 +151,11 @@ func (i *Integration) ValidateUserSettings(m map[string]any) error {
 }
 
 func (i *Integration) GetInstalledIntegration(intg *ent.Integration) rez.InstalledIntegration {
-	return i.makeInstalledIntegration(intg)
+	return &InstalledIntegration{intg: intg}
 }
 
 type InstalledIntegration struct {
 	intg *ent.Integration
-
-	db           rez.Database
-	users        rez.UserService
-	integrations rez.IntegrationService
-	incidents    rez.IncidentService
-	eventAnnos   rez.EventAnnotationsService
-}
-
-func (i *Integration) makeInstalledIntegration(intg *ent.Integration) *InstalledIntegration {
-	return &InstalledIntegration{
-		intg:         intg,
-		db:           i.db,
-		users:        i.users,
-		integrations: i.integrations,
-		incidents:    i.incidents,
-		eventAnnos:   i.eventAnnos,
-	}
 }
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {

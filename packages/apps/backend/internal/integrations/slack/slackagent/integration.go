@@ -16,29 +16,23 @@ const integrationName = "slack_agent"
 func MakeIntegration(
 	appCfg rez.Config,
 	db rez.Database,
-	intgs rez.IntegrationService,
-	incs rez.IncidentService,
-	users rez.UserService,
 	eventAnnos rez.EventAnnotationsService,
 	messages rez.MessageService,
 	provEvents rez.ProviderEventService,
 ) (*Integration, error) {
-	cfg := appCfg.Integrations.Slack.Agent
-
 	agentApp, appErr := makeApp(appCfg, db, messages, eventAnnos)
 	if appErr != nil {
 		return nil, fmt.Errorf("make incident app: %w", appErr)
 	}
 
+	cfg := appCfg.Integrations.Slack.Agent
 	svcParams := slackintegration.NewServiceParams{
-		AppConfig:                   cfg,
-		IntegrationName:             integrationName,
-		MessageService:              messages,
-		ProviderEventService:        provEvents,
-		OAuthScopes:                 oAuthScopes,
-		EventsApiHandler:            agentApp.handleEventsApiEvent,
-		SlashCommandHandlers:        agentApp.slashCommandHandlers(),
-		InteractionCallbackHandlers: agentApp.interactionCallbackHandlers(),
+		AppConfig:            cfg,
+		IntegrationName:      integrationName,
+		MessageService:       messages,
+		ProviderEventService: provEvents,
+		OAuthScopes:          oAuthScopes,
+		App:                  agentApp,
 	}
 	svc, svcErr := slackintegration.NewService(svcParams)
 	if svcErr != nil {
@@ -46,25 +40,14 @@ func MakeIntegration(
 	}
 
 	return &Integration{
-		cfg:          cfg,
-		service:      svc,
-		users:        users,
-		integrations: intgs,
-		incidents:    incs,
-		eventAnnos:   eventAnnos,
+		enabled: cfg.Enabled,
+		service: svc,
 	}, nil
 }
 
 type Integration struct {
-	cfg rez.IntegrationsConfigSlackApp
-
+	enabled bool
 	service *slackintegration.Service
-
-	db           rez.Database
-	users        rez.UserService
-	integrations rez.IntegrationService
-	incidents    rez.IncidentService
-	eventAnnos   rez.EventAnnotationsService
 }
 
 func (i *Integration) Name() string {
@@ -80,7 +63,7 @@ func (i *Integration) MaxInstalls() *int {
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	return i.cfg.Enabled, nil
+	return i.enabled, nil
 }
 
 func (i *Integration) OAuthInstallRequired() bool {
@@ -156,24 +139,11 @@ func (i *Integration) GetInstalledIntegration(intg *ent.Integration) rez.Install
 }
 
 func (i *Integration) makeInstalledIntegration(intg *ent.Integration) *InstalledIntegration {
-	return &InstalledIntegration{
-		intg:         intg,
-		db:           i.db,
-		users:        i.users,
-		integrations: i.integrations,
-		incidents:    i.incidents,
-		eventAnnos:   i.eventAnnos,
-	}
+	return &InstalledIntegration{intg: intg}
 }
 
 type InstalledIntegration struct {
 	intg *ent.Integration
-
-	db           rez.Database
-	users        rez.UserService
-	integrations rez.IntegrationService
-	incidents    rez.IncidentService
-	eventAnnos   rez.EventAnnotationsService
 }
 
 func (ii *InstalledIntegration) Integration() *ent.Integration {

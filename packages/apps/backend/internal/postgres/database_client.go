@@ -26,8 +26,8 @@ type DatabaseClient struct {
 
 type PgxPool = pgxpool.Pool
 
-func NewPgxPoolDatabaseClient(pool *pgxpool.Pool) *DatabaseClient {
-	return newDatabaseClient(entpgx.NewPgxPoolDriver(pool))
+func NewPgxPoolDatabaseClient(pool *pgxpool.Pool) (*DatabaseClient, error) {
+	return newDatabaseClient(entpgx.NewPgxPoolDriver(pool)), nil
 }
 
 func NewStdDatabaseClient(db *sql.DB) *DatabaseClient {
@@ -96,9 +96,19 @@ func applyTxOptions(tx *ent.Tx, opts ...ent.TxOption) {
 	}
 }
 
-//func (dbc *DatabaseClient) RequireUpToDateMigrations(ctx context.Context) error {
-//	return NewMigrator().requireUpToDate(ctx)
-//}
+func (dbc *DatabaseClient) RequireUpToDateMigrations(ctx context.Context) error {
+	status, statusErr := GetCurrentMigrationStatus(ctx, dbc.driver)
+	if statusErr != nil {
+		return fmt.Errorf("get current migration status: %w", statusErr)
+	}
+	if status.Dirty {
+		return fmt.Errorf("database migrations are dirty: %s", status)
+	}
+	if status.pending() {
+		return fmt.Errorf("database migrations are pending: %s", status)
+	}
+	return nil
+}
 
 func closeDatabaseResource(name string, c io.Closer) {
 	if closeErr := c.Close(); closeErr != nil && !errors.Is(closeErr, sql.ErrConnDone) {

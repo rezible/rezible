@@ -1,17 +1,12 @@
 package rez
 
 import (
+	"cmp"
 	"os"
 	"time"
 )
 
 func DefaultConfig() Config {
-	envOr := func(key, fallback string) string {
-		if value := os.Getenv(key); value != "" {
-			return value
-		}
-		return fallback
-	}
 	return Config{
 		App: AppConfig{
 			FrontendUrl: "",
@@ -22,8 +17,8 @@ func DefaultConfig() Config {
 			},
 		},
 		HttpServer: HttpServerConfig{
-			Host:     envOr("HOST", "0.0.0.0"),
-			Port:     envOr("PORT", "7002"),
+			Host:     cmp.Or(os.Getenv("HOST"), "0.0.0.0"),
+			Port:     cmp.Or(os.Getenv("PORT"), "7002"),
 			BasePath: "",
 			Auth:     HttpAuthConfig{},
 			DocumentsProxy: HttpServerDocumentsProxyConfig{
@@ -37,7 +32,7 @@ func DefaultConfig() Config {
 			SSLMode:  "require",
 		},
 		Telemetry: TelemetryConfig{
-			ServiceName: envOr("OTEL_SERVICE_NAME", "rezible"),
+			ServiceName: cmp.Or(os.Getenv("OTEL_SERVICE_NAME"), "rezible"),
 			Logging: LoggingConfig{
 				Console: LoggingConsoleConfig{
 					Enabled: true,

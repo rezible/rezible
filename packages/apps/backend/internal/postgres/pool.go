@@ -14,25 +14,6 @@ import (
 	"github.com/rezible/rezible/internal/postgres/river"
 )
 
-func MakePgxPool(ctx context.Context, cfg rez.PostgresConfig, admin bool) (*pgxpool.Pool, error) {
-	parsedCfg, parseErr := pgxpool.ParseConfig(makeConnectionString(cfg, admin))
-	if parseErr != nil {
-		return nil, fmt.Errorf("parse: %w", parseErr)
-	}
-	parsedCfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
-		_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s, %s", SchemaName, river.SchemaName))
-		return err
-	}
-	pool, poolErr := pgxpool.NewWithConfig(ctx, parsedCfg)
-	if poolErr != nil {
-		return nil, fmt.Errorf("create: %w", poolErr)
-	}
-	if pingErr := pool.Ping(ctx); pingErr != nil {
-		slog.Error("failed to ping postgres", "error", pingErr)
-	}
-	return pool, nil
-}
-
 func makeConnectionString(cfg rez.PostgresConfig, admin bool) string {
 	role := cfg.AppRole
 	if admin {
@@ -55,6 +36,25 @@ func makeConnectionString(cfg rez.PostgresConfig, admin bool) string {
 	}
 
 	return strings.Join(dsn, " ")
+}
+
+func MakePgxPool(ctx context.Context, cfg rez.PostgresConfig, admin bool) (*pgxpool.Pool, error) {
+	parsedCfg, parseErr := pgxpool.ParseConfig(makeConnectionString(cfg, admin))
+	if parseErr != nil {
+		return nil, fmt.Errorf("parse: %w", parseErr)
+	}
+	parsedCfg.AfterConnect = func(ctx context.Context, conn *pgx.Conn) error {
+		_, err := conn.Exec(ctx, fmt.Sprintf("SET search_path TO %s, %s", SchemaName, river.SchemaName))
+		return err
+	}
+	pool, poolErr := pgxpool.NewWithConfig(ctx, parsedCfg)
+	if poolErr != nil {
+		return nil, fmt.Errorf("create: %w", poolErr)
+	}
+	if pingErr := pool.Ping(ctx); pingErr != nil {
+		slog.Error("failed to ping postgres", "error", pingErr)
+	}
+	return pool, nil
 }
 
 func withDbFromPool(pool *pgxpool.Pool, fn func(db *sql.DB) error) error {

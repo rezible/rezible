@@ -7,8 +7,6 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/jackc/pgx/v5/pgxpool"
-	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/migrations"
 	"github.com/rezible/rezible/internal/postgres/river"
 
@@ -31,59 +29,33 @@ var postgresMigrateConfig = &postgresmigrate.Config{
 }
 
 type MigrationService struct {
-	cfg  rez.PostgresConfig
-	pool *pgxpool.Pool
+	pool *PgxPool
 }
 
-func NewMigrationService(cfg rez.PostgresConfig) *MigrationService {
-	return &MigrationService{cfg: cfg}
+func NewMigrationService(pool *PgxPool) (*MigrationService, error) {
+	return &MigrationService{pool: pool}, nil
 }
 
-func (m *MigrationService) getPool(ctx context.Context) (*pgxpool.Pool, error) {
-	if m.pool == nil {
-		pool, poolErr := MakePgxPool(ctx, m.cfg, true)
-		if poolErr != nil {
-			return nil, poolErr
-		}
-		m.pool = pool
+func (m *MigrationService) Shutdown() {
+	fmt.Println("shutdown migration service")
+	if m.pool != nil {
+		m.pool.Close()
 	}
-	return m.pool, nil
 }
 
-func (m *MigrationService) requireUpToDate(ctx context.Context) error {
-	pool, poolErr := m.getPool(ctx)
-	if poolErr != nil {
-		return fmt.Errorf("get pool: %w", poolErr)
-	}
-	return withDbFromPool(pool, func(db *sql.DB) error {
-		status, statusErr := GetCurrentMigrationStatus(ctx, db)
-		if statusErr != nil {
-			return fmt.Errorf("get current migration status: %w", statusErr)
-		}
-		if status.Dirty {
-			return fmt.Errorf("database migrations are dirty: %s", status)
-		}
-		if status.pending() {
-			return fmt.Errorf("database migrations are pending: %s", status)
-		}
-		return nil
-	})
+func (m *MigrationService) CreateSchemaMigration(ctx context.Context, name string) error {
+	return createSchemaMigration(ctx, m.pool, name)
 }
 
 func (m *MigrationService) Run(ctx context.Context, direction string) error {
-	pool, poolErr := m.getPool(ctx)
-	if poolErr != nil {
-		return fmt.Errorf("get pool: %w", poolErr)
-	}
-
-	schemaErr := withDbFromPool(pool, func(db *sql.DB) error {
+	schemaErr := withDbFromPool(m.pool, func(db *sql.DB) error {
 		return m.runSchemaMigration(ctx, db, direction)
 	})
 	if schemaErr != nil && !errors.Is(schemaErr, migratelib.ErrNoChange) {
 		return fmt.Errorf("schema migration: %w", schemaErr)
 	}
 
-	riverErr := river.RunMigration(ctx, pool, direction)
+	riverErr := river.RunMigration(ctx, m.pool, direction)
 	if riverErr != nil {
 		return fmt.Errorf("river migration: %w", riverErr)
 	}

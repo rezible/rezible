@@ -17,10 +17,10 @@ import (
 type ConfigLoader struct {
 	loader    *koanf.Koanf
 	validator *validator.Validate
-	opts      ConfigLoaderOptions
+	opts      Options
 }
 
-type ConfigLoaderOptions struct {
+type Options struct {
 	LoadEnvironment     bool
 	Overrides           map[string]any
 	SkipValidation      bool
@@ -32,7 +32,11 @@ const (
 	structTag = "cfg"
 )
 
-func NewConfigLoader(opts ConfigLoaderOptions) *ConfigLoader {
+func LoadConfig(ctx context.Context, opts Options) (*rez.Config, error) {
+	return NewConfigLoader(opts).LoadConfig(ctx)
+}
+
+func NewConfigLoader(opts Options) *ConfigLoader {
 	return &ConfigLoader{
 		loader:    koanf.New(delim),
 		validator: validator.New(validator.WithRequiredStructEnabled()),
@@ -40,12 +44,12 @@ func NewConfigLoader(opts ConfigLoaderOptions) *ConfigLoader {
 	}
 }
 
-func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
+func (c *ConfigLoader) LoadConfig(ctx context.Context) (*rez.Config, error) {
 	cfg := rez.DefaultConfig()
 
 	if c.opts.LoadEnvironment {
 		if envErr := c.loadEnvironment(); envErr != nil {
-			return cfg, fmt.Errorf("failed to load env provider: %w", envErr)
+			return nil, fmt.Errorf("failed to load env provider: %w", envErr)
 		}
 	}
 
@@ -53,37 +57,26 @@ func (c *ConfigLoader) LoadConfig(ctx context.Context) (rez.Config, error) {
 		overrideLoader := koanf.New(delim)
 		for k, v := range c.opts.Overrides {
 			if ovrErr := overrideLoader.Set(k, v); ovrErr != nil {
-				return cfg, fmt.Errorf("failed to set override (%s=%s): %w", k, v, ovrErr)
+				return nil, fmt.Errorf("failed to set override (%s=%s): %w", k, v, ovrErr)
 			}
 		}
 		if mergeErr := c.loader.Merge(overrideLoader); mergeErr != nil {
-			return cfg, fmt.Errorf("failed to merge overrides: %w", mergeErr)
+			return nil, fmt.Errorf("failed to merge overrides: %w", mergeErr)
 		}
 	}
 
 	cfgErr := c.loader.UnmarshalWithConf("", &cfg, koanf.UnmarshalConf{Tag: structTag})
 	if cfgErr != nil {
-		return cfg, fmt.Errorf("unmarshal: %w", cfgErr)
+		return nil, fmt.Errorf("unmarshal: %w", cfgErr)
 	}
 
-	if c.opts.SkipValidation {
-		return cfg, nil
-	}
-
-	if validationErr := c.validator.StructCtx(ctx, cfg); validationErr != nil {
-		if errs, ok := errors.AsType[validator.ValidationErrors](validationErr); ok && len(errs) > 0 {
-			msgs := make([]string, len(errs))
-			for i, verr := range errs {
-				msgs[i] = fmt.Sprintf("[%d: %s]", i, verr)
-			}
-			if c.opts.LogValidationErrors {
-				slog.Error("validation errors:" + strings.Join(msgs, "; "))
-			} else {
-				return cfg, fmt.Errorf("validation: %s", strings.Join(msgs, " "))
-			}
+	if !c.opts.SkipValidation {
+		if validationErr := c.validateConfig(ctx, cfg); validationErr != nil {
+			return nil, fmt.Errorf("failed to validate config:\n%w", validationErr)
 		}
 	}
-	return cfg, nil
+
+	return &cfg, nil
 }
 
 func (c *ConfigLoader) loadEnvironment() error {
@@ -98,4 +91,20 @@ func (c *ConfigLoader) loadEnvironment() error {
 		},
 	})
 	return c.loader.Load(envProv, nil)
+}
+
+func (c *ConfigLoader) validateConfig(ctx context.Context, cfg rez.Config) error {
+	var validationErrs []error
+	if validationErr := c.validator.StructCtx(ctx, cfg); validationErr != nil {
+		if errs, ok := errors.AsType[validator.ValidationErrors](validationErr); ok && len(errs) > 0 {
+			for _, verr := range errs {
+				if c.opts.LogValidationErrors {
+					slog.Error("field error:" + verr.Error())
+				} else {
+					validationErrs = append(validationErrs, verr)
+				}
+			}
+		}
+	}
+	return errors.Join(validationErrs...)
 }

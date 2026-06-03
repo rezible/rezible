@@ -33,11 +33,15 @@ func (a *app) registerMessageHandlers() error {
 	return errors.Join()
 }
 
-func (a *app) slashCommandHandlers() map[string]slackintegration.SlashCommandHandler {
+func (a *app) EventsApiHandler() slackintegration.EventsApiHandler {
+	return a.handleEventsApiEvent
+}
+
+func (a *app) SlashCommandHandlers() map[string]slackintegration.SlashCommandHandler {
 	return map[string]slackintegration.SlashCommandHandler{}
 }
 
-func (a *app) interactionCallbackHandlers() map[slack.InteractionType]slackintegration.InteractionCallbackHandler {
+func (a *app) InteractionCallbackHandlers() map[slack.InteractionType]slackintegration.InteractionCallbackHandler {
 	return map[slack.InteractionType]slackintegration.InteractionCallbackHandler{
 		slack.InteractionTypeMessageAction:  a.handleMessageActionInteraction,
 		slack.InteractionTypeBlockActions:   a.handleBlockActionsInteraction,

@@ -1,8 +1,15 @@
 package main
 
 import (
+	"context"
+	"fmt"
+	"strings"
+
+	"github.com/samber/do/v2"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/integrations"
+	"github.com/rezible/rezible/integrations/projections"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
@@ -12,49 +19,84 @@ import (
 	"github.com/rezible/rezible/internal/integrations/google"
 	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
 	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
+	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
-	"github.com/samber/do/v2"
 )
 
-func provideDependencies(i do.Injector) {
+func registerIntegrations(i do.Injector) error {
+	pes := do.MustInvoke[rez.ProviderEventService](i)
+	pes.RegisterProjectionHandler(do.MustInvoke[*db.KnowledgeService](i),
+		projections.SubjectKindCodeForge,
+		projections.SubjectKindCodeChange,
+		projections.SubjectKindSystemComponent,
+		projections.SubjectKindSystemRelationship,
+	)
+	pes.RegisterProjectionHandler(do.MustInvoke[*db.UserService](i), projections.SubjectKindUser)
+	pes.RegisterProjectionHandler(do.MustInvoke[*db.IncidentService](i), projections.SubjectKindIncident)
+	pes.RegisterProjectionHandler(do.MustInvoke[*db.AlertService](i), projections.SubjectKindAlert)
+
+	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
+	for _, desc := range i.ListProvidedServices() {
+		svc := desc.Service
+		if strings.Contains(svc, "internal/integrations") {
+			if pkg, ok := do.MustInvokeNamed[any](i, svc).(rez.IntegrationPackage); ok {
+				if regErr := intgReg.RegisterPackage(pkg); regErr != nil {
+					return fmt.Errorf("failed to register integration package: %w", regErr)
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
+func declareServices(ctx context.Context, i do.Injector) {
 	do.Provide(i, func(i do.Injector) (*postgres.MigrationService, error) {
-		return postgres.NewMigrationService(do.MustInvoke[rez.Config](i).Postgres), nil
+		pgCfg := do.MustInvoke[rez.Config](i).Postgres
+		pool, poolErr := postgres.MakePgxPool(ctx, pgCfg, true)
+		if poolErr != nil {
+			return nil, fmt.Errorf("making admin pgx pool: %w", poolErr)
+		}
+		return postgres.NewMigrationService(pool)
 	})
 
-	do.Provide(i, func(i do.Injector) (*postgres.DatabaseClient, error) {
-		appPool := do.MustInvoke[*postgres.PgxPool](i)
-		return postgres.NewPgxPoolDatabaseClient(appPool), nil
+	do.Provide(i, func(i do.Injector) (*postgres.PgxPool, error) {
+		return postgres.MakePgxPool(ctx, do.MustInvoke[rez.Config](i).Postgres, false)
 	})
-	do.MustAs[*postgres.DatabaseClient, rez.Database](i)
 
-	do.Provide(i, func(i do.Injector) (*river.JobService, error) {
+	do.Provide(i, func(i do.Injector) (rez.Database, error) {
+		return postgres.NewPgxPoolDatabaseClient(do.MustInvoke[*postgres.PgxPool](i))
+	})
+
+	do.Provide(i, func(i do.Injector) (rez.TelemetryService, error) {
+		return opentelemetry.NewOpenTelemetryService(ctx, do.MustInvoke[rez.Config](i))
+	})
+
+	do.Provide(i, func(i do.Injector) (rez.JobService, error) {
 		return river.NewJobService(
-			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[*postgres.PgxPool](i),
+			do.MustInvoke[rez.TelemetryService](i),
 		)
 	})
-	do.MustAs[*river.JobService, rez.JobService](i)
 
-	do.Provide(i, func(i do.Injector) (*watermill.MessageService, error) {
+	do.Provide(i, func(i do.Injector) (rez.MessageService, error) {
 		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i))
 	})
-	do.MustAs[*watermill.MessageService, rez.MessageService](i)
 
 	do.Provide(i, func(i do.Injector) (*integrations.PackageRegistry, error) {
 		return integrations.NewPackageRegistry(do.MustInvoke[rez.TelemetryService](i)), nil
 	})
 
-	do.Provide(i, func(i do.Injector) (*oidc.AuthSessionService, error) {
+	do.Provide(i, func(i do.Injector) (http.UserAuthSessionService, error) {
 		return oidc.NewAuthSessionService(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),
 		)
 	})
-	do.MustAs[*oidc.AuthSessionService, http.UserAuthSessionService](i)
 
 	provideServices(i)
 	provideIntegrations(i)
@@ -96,9 +138,6 @@ var provideIntegrations = do.Package(
 		return slackagent.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.UserService](i),
 			do.MustInvoke[rez.EventAnnotationsService](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.ProviderEventService](i),
