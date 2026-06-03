@@ -722,7 +722,7 @@ func init() {
 	// integrationuserinstallstate.DefaultUserID holds the default value on creation for the user_id field.
 	integrationuserinstallstate.DefaultUserID = integrationuserinstallstateDescUserID.Default.(func() uuid.UUID)
 	// integrationuserinstallstateDescInstallationTargets is the schema descriptor for installation_targets field.
-	integrationuserinstallstateDescInstallationTargets := integrationuserinstallstateFields[5].Descriptor()
+	integrationuserinstallstateDescInstallationTargets := integrationuserinstallstateFields[4].Descriptor()
 	// integrationuserinstallstate.DefaultInstallationTargets holds the default value on creation for the installation_targets field.
 	integrationuserinstallstate.DefaultInstallationTargets = integrationuserinstallstateDescInstallationTargets.Default.([]map[string]interface{})
 	// integrationuserinstallstateDescID is the schema descriptor for id field.

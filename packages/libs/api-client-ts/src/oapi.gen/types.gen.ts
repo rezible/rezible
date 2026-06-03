@@ -1343,6 +1343,27 @@ export type IncidentTypeAttributes = {
     name: string;
 };
 
+export type InstallIntegrationTargetsRequestAttributes = {
+    externalRefs: Array<string>;
+};
+
+export type InstallIntegrationTargetsRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: InstallIntegrationTargetsRequestAttributes;
+};
+
+export type InstallIntegrationTargetsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<InstalledIntegration>;
+    pagination: ResponsePagination;
+};
+
 export type InstalledIntegration = {
     attributes: InstalledIntegrationAttributes;
     id: string;
@@ -1358,6 +1379,7 @@ export type InstalledIntegrationAttributes = {
     displayName: string;
     externalRef: string;
     integrationName: string;
+    providerName: string;
     settings: {
         [key: string]: unknown;
     };
@@ -1374,9 +1396,10 @@ export type IntegrationEventSyncRunAttributes = {
     status: 'queued' | 'started' | 'complete' | 'error';
 };
 
-export type IntegrationInstallTargetOption = {
+export type IntegrationInstallTarget = {
     displayName: string;
     externalRef: string;
+    integrationName: string;
 };
 
 export type IntegrationOAuthFlow = {
@@ -1384,10 +1407,9 @@ export type IntegrationOAuthFlow = {
 };
 
 export type IntegrationOAuthInstallResult = {
-    installTargetOptions?: Array<IntegrationInstallTargetOption>;
+    installTargetOptions?: Array<IntegrationInstallTarget>;
     installed?: Array<InstalledIntegration>;
     targetSelectionRequired: boolean;
-    targetSelectionToken?: string;
 };
 
 export type ListAlertIncidentLinksResponseBody = {
@@ -1549,6 +1571,15 @@ export type ListIntegrationEventSyncRunResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IntegrationEventSyncRun>;
+    pagination: ResponsePagination;
+};
+
+export type ListIntegrationInstallTargetsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IntegrationInstallTarget>;
     pagination: ResponsePagination;
 };
 
@@ -1961,28 +1992,6 @@ export type RetrospectiveReviewAttributes = {
     comment: ExpandableRetrospectiveCommentAttributes;
     requester: ExpandableUser;
     reviewer: ExpandableUser;
-};
-
-export type SelectIntegrationInstallTargetsRequestAttributes = {
-    externalRefs: Array<string>;
-    selectionToken: string;
-};
-
-export type SelectIntegrationInstallTargetsRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: SelectIntegrationInstallTargetsRequestAttributes;
-};
-
-export type SelectIntegrationInstallTargetsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<InstalledIntegration>;
-    pagination: ResponsePagination;
 };
 
 export type SendOncallShiftHandoverAttributes = {
@@ -5822,6 +5831,51 @@ export type CreateIncidentTimelineEventResponses = {
 
 export type CreateIncidentTimelineEventResponse = CreateIncidentTimelineEventResponses[keyof CreateIncidentTimelineEventResponses];
 
+export type ListIntegrationInstallTargetsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/integrations/install_targets';
+};
+
+export type ListIntegrationInstallTargetsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIntegrationInstallTargetsError = ListIntegrationInstallTargetsErrors[keyof ListIntegrationInstallTargetsErrors];
+
+export type ListIntegrationInstallTargetsResponses = {
+    /**
+     * OK
+     */
+    200: ListIntegrationInstallTargetsResponseBody;
+};
+
+export type ListIntegrationInstallTargetsResponse = ListIntegrationInstallTargetsResponses[keyof ListIntegrationInstallTargetsResponses];
+
 export type ListInstalledIntegrationsData = {
     body?: never;
     path?: never;
@@ -6204,8 +6258,8 @@ export type CreateInstalledIntegrationResponses = {
 
 export type CreateInstalledIntegrationResponse = CreateInstalledIntegrationResponses[keyof CreateInstalledIntegrationResponses];
 
-export type SelectIntegrationInstallTargetsData = {
-    body: SelectIntegrationInstallTargetsRequestBody;
+export type InstallIntegrationTargetsData = {
+    body: InstallIntegrationTargetsRequestBody;
     path: {
         name: string;
     };
@@ -6213,7 +6267,7 @@ export type SelectIntegrationInstallTargetsData = {
     url: '/integrations/providers/{name}/install/targets';
 };
 
-export type SelectIntegrationInstallTargetsErrors = {
+export type InstallIntegrationTargetsErrors = {
     /**
      * Bad Request
      */
@@ -6240,16 +6294,16 @@ export type SelectIntegrationInstallTargetsErrors = {
     500: ErrorModel;
 };
 
-export type SelectIntegrationInstallTargetsError = SelectIntegrationInstallTargetsErrors[keyof SelectIntegrationInstallTargetsErrors];
+export type InstallIntegrationTargetsError = InstallIntegrationTargetsErrors[keyof InstallIntegrationTargetsErrors];
 
-export type SelectIntegrationInstallTargetsResponses = {
+export type InstallIntegrationTargetsResponses = {
     /**
      * OK
      */
-    200: SelectIntegrationInstallTargetsResponseBody;
+    200: InstallIntegrationTargetsResponseBody;
 };
 
-export type SelectIntegrationInstallTargetsResponse = SelectIntegrationInstallTargetsResponses[keyof SelectIntegrationInstallTargetsResponses];
+export type InstallIntegrationTargetsResponse = InstallIntegrationTargetsResponses[keyof InstallIntegrationTargetsResponses];
 
 export type CompleteIntegrationOauthFlowData = {
     body: CompleteIntegrationOAuthFlowRequestBody;

@@ -77,11 +77,6 @@ func OauthState(v string) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldOauthState, v))
 }
 
-// InstallTargetSelectionToken applies equality check predicate on the "install_target_selection_token" field. It's identical to InstallTargetSelectionTokenEQ.
-func InstallTargetSelectionToken(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldInstallTargetSelectionToken, v))
-}
-
 // ExpiresAt applies equality check predicate on the "expires_at" field. It's identical to ExpiresAtEQ.
 func ExpiresAt(v time.Time) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldExpiresAt, v))
@@ -265,81 +260,6 @@ func OauthStateEqualFold(v string) predicate.IntegrationUserInstallState {
 // OauthStateContainsFold applies the ContainsFold predicate on the "oauth_state" field.
 func OauthStateContainsFold(v string) predicate.IntegrationUserInstallState {
 	return predicate.IntegrationUserInstallState(sql.FieldContainsFold(FieldOauthState, v))
-}
-
-// InstallTargetSelectionTokenEQ applies the EQ predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenEQ(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldEQ(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenNEQ applies the NEQ predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenNEQ(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldNEQ(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenIn applies the In predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenIn(vs ...string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldIn(FieldInstallTargetSelectionToken, vs...))
-}
-
-// InstallTargetSelectionTokenNotIn applies the NotIn predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenNotIn(vs ...string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldNotIn(FieldInstallTargetSelectionToken, vs...))
-}
-
-// InstallTargetSelectionTokenGT applies the GT predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenGT(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldGT(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenGTE applies the GTE predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenGTE(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldGTE(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenLT applies the LT predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenLT(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldLT(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenLTE applies the LTE predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenLTE(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldLTE(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenContains applies the Contains predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenContains(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldContains(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenHasPrefix applies the HasPrefix predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenHasPrefix(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldHasPrefix(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenHasSuffix applies the HasSuffix predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenHasSuffix(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldHasSuffix(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenIsNil applies the IsNil predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenIsNil() predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldIsNull(FieldInstallTargetSelectionToken))
-}
-
-// InstallTargetSelectionTokenNotNil applies the NotNil predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenNotNil() predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldNotNull(FieldInstallTargetSelectionToken))
-}
-
-// InstallTargetSelectionTokenEqualFold applies the EqualFold predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenEqualFold(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldEqualFold(FieldInstallTargetSelectionToken, v))
-}
-
-// InstallTargetSelectionTokenContainsFold applies the ContainsFold predicate on the "install_target_selection_token" field.
-func InstallTargetSelectionTokenContainsFold(v string) predicate.IntegrationUserInstallState {
-	return predicate.IntegrationUserInstallState(sql.FieldContainsFold(FieldInstallTargetSelectionToken, v))
 }
 
 // InstallationTargetsIsNil applies the IsNil predicate on the "installation_targets" field.

@@ -66,20 +66,6 @@ func (_c *IntegrationUserInstallStateCreate) SetNillableOauthState(v *string) *I
 	return _c
 }
 
-// SetInstallTargetSelectionToken sets the "install_target_selection_token" field.
-func (_c *IntegrationUserInstallStateCreate) SetInstallTargetSelectionToken(v string) *IntegrationUserInstallStateCreate {
-	_c.mutation.SetInstallTargetSelectionToken(v)
-	return _c
-}
-
-// SetNillableInstallTargetSelectionToken sets the "install_target_selection_token" field if the given value is not nil.
-func (_c *IntegrationUserInstallStateCreate) SetNillableInstallTargetSelectionToken(v *string) *IntegrationUserInstallStateCreate {
-	if v != nil {
-		_c.SetInstallTargetSelectionToken(*v)
-	}
-	return _c
-}
-
 // SetInstallationTargets sets the "installation_targets" field.
 func (_c *IntegrationUserInstallStateCreate) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateCreate {
 	_c.mutation.SetInstallationTargets(v)
@@ -239,10 +225,6 @@ func (_c *IntegrationUserInstallStateCreate) createSpec() (*IntegrationUserInsta
 		_spec.SetField(integrationuserinstallstate.FieldOauthState, field.TypeString, value)
 		_node.OauthState = value
 	}
-	if value, ok := _c.mutation.InstallTargetSelectionToken(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallTargetSelectionToken, field.TypeString, value)
-		_node.InstallTargetSelectionToken = value
-	}
 	if value, ok := _c.mutation.InstallationTargets(); ok {
 		_spec.SetField(integrationuserinstallstate.FieldInstallationTargets, field.TypeJSON, value)
 		_node.InstallationTargets = value
@@ -381,24 +363,6 @@ func (u *IntegrationUserInstallStateUpsert) ClearOauthState() *IntegrationUserIn
 	return u
 }
 
-// SetInstallTargetSelectionToken sets the "install_target_selection_token" field.
-func (u *IntegrationUserInstallStateUpsert) SetInstallTargetSelectionToken(v string) *IntegrationUserInstallStateUpsert {
-	u.Set(integrationuserinstallstate.FieldInstallTargetSelectionToken, v)
-	return u
-}
-
-// UpdateInstallTargetSelectionToken sets the "install_target_selection_token" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsert) UpdateInstallTargetSelectionToken() *IntegrationUserInstallStateUpsert {
-	u.SetExcluded(integrationuserinstallstate.FieldInstallTargetSelectionToken)
-	return u
-}
-
-// ClearInstallTargetSelectionToken clears the value of the "install_target_selection_token" field.
-func (u *IntegrationUserInstallStateUpsert) ClearInstallTargetSelectionToken() *IntegrationUserInstallStateUpsert {
-	u.SetNull(integrationuserinstallstate.FieldInstallTargetSelectionToken)
-	return u
-}
-
 // SetInstallationTargets sets the "installation_targets" field.
 func (u *IntegrationUserInstallStateUpsert) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpsert {
 	u.Set(integrationuserinstallstate.FieldInstallationTargets, v)
@@ -526,27 +490,6 @@ func (u *IntegrationUserInstallStateUpsertOne) UpdateOauthState() *IntegrationUs
 func (u *IntegrationUserInstallStateUpsertOne) ClearOauthState() *IntegrationUserInstallStateUpsertOne {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
 		s.ClearOauthState()
-	})
-}
-
-// SetInstallTargetSelectionToken sets the "install_target_selection_token" field.
-func (u *IntegrationUserInstallStateUpsertOne) SetInstallTargetSelectionToken(v string) *IntegrationUserInstallStateUpsertOne {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.SetInstallTargetSelectionToken(v)
-	})
-}
-
-// UpdateInstallTargetSelectionToken sets the "install_target_selection_token" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsertOne) UpdateInstallTargetSelectionToken() *IntegrationUserInstallStateUpsertOne {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.UpdateInstallTargetSelectionToken()
-	})
-}
-
-// ClearInstallTargetSelectionToken clears the value of the "install_target_selection_token" field.
-func (u *IntegrationUserInstallStateUpsertOne) ClearInstallTargetSelectionToken() *IntegrationUserInstallStateUpsertOne {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.ClearInstallTargetSelectionToken()
 	})
 }
 
@@ -849,27 +792,6 @@ func (u *IntegrationUserInstallStateUpsertBulk) UpdateOauthState() *IntegrationU
 func (u *IntegrationUserInstallStateUpsertBulk) ClearOauthState() *IntegrationUserInstallStateUpsertBulk {
 	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
 		s.ClearOauthState()
-	})
-}
-
-// SetInstallTargetSelectionToken sets the "install_target_selection_token" field.
-func (u *IntegrationUserInstallStateUpsertBulk) SetInstallTargetSelectionToken(v string) *IntegrationUserInstallStateUpsertBulk {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.SetInstallTargetSelectionToken(v)
-	})
-}
-
-// UpdateInstallTargetSelectionToken sets the "install_target_selection_token" field to the value that was provided on create.
-func (u *IntegrationUserInstallStateUpsertBulk) UpdateInstallTargetSelectionToken() *IntegrationUserInstallStateUpsertBulk {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.UpdateInstallTargetSelectionToken()
-	})
-}
-
-// ClearInstallTargetSelectionToken clears the value of the "install_target_selection_token" field.
-func (u *IntegrationUserInstallStateUpsertBulk) ClearInstallTargetSelectionToken() *IntegrationUserInstallStateUpsertBulk {
-	return u.Update(func(s *IntegrationUserInstallStateUpsert) {
-		s.ClearInstallTargetSelectionToken()
 	})
 }
 

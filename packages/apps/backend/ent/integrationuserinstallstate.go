@@ -29,8 +29,6 @@ type IntegrationUserInstallState struct {
 	IntegrationName string `json:"integration_name,omitempty"`
 	// OauthState holds the value of the "oauth_state" field.
 	OauthState string `json:"oauth_state,omitempty"`
-	// InstallTargetSelectionToken holds the value of the "install_target_selection_token" field.
-	InstallTargetSelectionToken string `json:"install_target_selection_token,omitempty"`
 	// InstallationTargets holds the value of the "installation_targets" field.
 	InstallationTargets []map[string]interface{} `json:"installation_targets,omitempty"`
 	// ExpiresAt holds the value of the "expires_at" field.
@@ -83,7 +81,7 @@ func (*IntegrationUserInstallState) scanValues(columns []string) ([]any, error) 
 			values[i] = new([]byte)
 		case integrationuserinstallstate.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case integrationuserinstallstate.FieldIntegrationName, integrationuserinstallstate.FieldOauthState, integrationuserinstallstate.FieldInstallTargetSelectionToken:
+		case integrationuserinstallstate.FieldIntegrationName, integrationuserinstallstate.FieldOauthState:
 			values[i] = new(sql.NullString)
 		case integrationuserinstallstate.FieldExpiresAt:
 			values[i] = new(sql.NullTime)
@@ -133,12 +131,6 @@ func (_m *IntegrationUserInstallState) assignValues(columns []string, values []a
 				return fmt.Errorf("unexpected type %T for field oauth_state", values[i])
 			} else if value.Valid {
 				_m.OauthState = value.String
-			}
-		case integrationuserinstallstate.FieldInstallTargetSelectionToken:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field install_target_selection_token", values[i])
-			} else if value.Valid {
-				_m.InstallTargetSelectionToken = value.String
 			}
 		case integrationuserinstallstate.FieldInstallationTargets:
 			if value, ok := values[i].(*[]byte); !ok {
@@ -211,9 +203,6 @@ func (_m *IntegrationUserInstallState) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("oauth_state=")
 	builder.WriteString(_m.OauthState)
-	builder.WriteString(", ")
-	builder.WriteString("install_target_selection_token=")
-	builder.WriteString(_m.InstallTargetSelectionToken)
 	builder.WriteString(", ")
 	builder.WriteString("installation_targets=")
 	builder.WriteString(fmt.Sprintf("%v", _m.InstallationTargets))

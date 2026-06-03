@@ -620,13 +620,12 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "IntegrationUserInstallState",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			integrationuserinstallstate.FieldTenantID:                    {Type: field.TypeInt, Column: integrationuserinstallstate.FieldTenantID},
-			integrationuserinstallstate.FieldUserID:                      {Type: field.TypeUUID, Column: integrationuserinstallstate.FieldUserID},
-			integrationuserinstallstate.FieldIntegrationName:             {Type: field.TypeString, Column: integrationuserinstallstate.FieldIntegrationName},
-			integrationuserinstallstate.FieldOauthState:                  {Type: field.TypeString, Column: integrationuserinstallstate.FieldOauthState},
-			integrationuserinstallstate.FieldInstallTargetSelectionToken: {Type: field.TypeString, Column: integrationuserinstallstate.FieldInstallTargetSelectionToken},
-			integrationuserinstallstate.FieldInstallationTargets:         {Type: field.TypeJSON, Column: integrationuserinstallstate.FieldInstallationTargets},
-			integrationuserinstallstate.FieldExpiresAt:                   {Type: field.TypeTime, Column: integrationuserinstallstate.FieldExpiresAt},
+			integrationuserinstallstate.FieldTenantID:            {Type: field.TypeInt, Column: integrationuserinstallstate.FieldTenantID},
+			integrationuserinstallstate.FieldUserID:              {Type: field.TypeUUID, Column: integrationuserinstallstate.FieldUserID},
+			integrationuserinstallstate.FieldIntegrationName:     {Type: field.TypeString, Column: integrationuserinstallstate.FieldIntegrationName},
+			integrationuserinstallstate.FieldOauthState:          {Type: field.TypeString, Column: integrationuserinstallstate.FieldOauthState},
+			integrationuserinstallstate.FieldInstallationTargets: {Type: field.TypeJSON, Column: integrationuserinstallstate.FieldInstallationTargets},
+			integrationuserinstallstate.FieldExpiresAt:           {Type: field.TypeTime, Column: integrationuserinstallstate.FieldExpiresAt},
 		},
 	}
 	graph.Nodes[29] = &sqlgraph.Node{
@@ -7829,11 +7828,6 @@ func (f *IntegrationUserInstallStateFilter) WhereIntegrationName(p entql.StringP
 // WhereOauthState applies the entql string predicate on the oauth_state field.
 func (f *IntegrationUserInstallStateFilter) WhereOauthState(p entql.StringP) {
 	f.Where(p.Field(integrationuserinstallstate.FieldOauthState))
-}
-
-// WhereInstallTargetSelectionToken applies the entql string predicate on the install_target_selection_token field.
-func (f *IntegrationUserInstallStateFilter) WhereInstallTargetSelectionToken(p entql.StringP) {
-	f.Where(p.Field(integrationuserinstallstate.FieldInstallTargetSelectionToken))
 }
 
 // WhereInstallationTargets applies the entql json.RawMessage predicate on the installation_targets field.

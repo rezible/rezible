@@ -1129,7 +1129,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "integration_name", Type: field.TypeString},
 		{Name: "oauth_state", Type: field.TypeString, Nullable: true},
-		{Name: "install_target_selection_token", Type: field.TypeString, Nullable: true},
 		{Name: "installation_targets", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "expires_at", Type: field.TypeTime},
 		{Name: "tenant_id", Type: field.TypeInt},
@@ -1143,13 +1142,13 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integration_user_install_states_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationUserInstallStatesColumns[6]},
+				Columns:    []*schema.Column{IntegrationUserInstallStatesColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "integration_user_install_states_users_user",
-				Columns:    []*schema.Column{IntegrationUserInstallStatesColumns[7]},
+				Columns:    []*schema.Column{IntegrationUserInstallStatesColumns[6]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1158,12 +1157,12 @@ var (
 			{
 				Name:    "integrationuserinstallstate_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationUserInstallStatesColumns[6]},
+				Columns: []*schema.Column{IntegrationUserInstallStatesColumns[5]},
 			},
 			{
 				Name:    "integrationuserinstallstate_tenant_id_user_id_integration_name",
 				Unique:  true,
-				Columns: []*schema.Column{IntegrationUserInstallStatesColumns[6], IntegrationUserInstallStatesColumns[7], IntegrationUserInstallStatesColumns[1]},
+				Columns: []*schema.Column{IntegrationUserInstallStatesColumns[5], IntegrationUserInstallStatesColumns[6], IntegrationUserInstallStatesColumns[1]},
 			},
 		},
 	}

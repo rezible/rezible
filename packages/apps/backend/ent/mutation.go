@@ -23993,23 +23993,22 @@ func (m *IntegrationEventSyncRunMutation) ResetEdge(name string) error {
 // IntegrationUserInstallStateMutation represents an operation that mutates the IntegrationUserInstallState nodes in the graph.
 type IntegrationUserInstallStateMutation struct {
 	config
-	op                             Op
-	typ                            string
-	id                             *uuid.UUID
-	integration_name               *string
-	oauth_state                    *string
-	install_target_selection_token *string
-	installation_targets           *[]map[string]interface{}
-	appendinstallation_targets     []map[string]interface{}
-	expires_at                     *time.Time
-	clearedFields                  map[string]struct{}
-	tenant                         *int
-	clearedtenant                  bool
-	user                           *uuid.UUID
-	cleareduser                    bool
-	done                           bool
-	oldValue                       func(context.Context) (*IntegrationUserInstallState, error)
-	predicates                     []predicate.IntegrationUserInstallState
+	op                         Op
+	typ                        string
+	id                         *uuid.UUID
+	integration_name           *string
+	oauth_state                *string
+	installation_targets       *[]map[string]interface{}
+	appendinstallation_targets []map[string]interface{}
+	expires_at                 *time.Time
+	clearedFields              map[string]struct{}
+	tenant                     *int
+	clearedtenant              bool
+	user                       *uuid.UUID
+	cleareduser                bool
+	done                       bool
+	oldValue                   func(context.Context) (*IntegrationUserInstallState, error)
+	predicates                 []predicate.IntegrationUserInstallState
 }
 
 var _ ent.Mutation = (*IntegrationUserInstallStateMutation)(nil)
@@ -24273,55 +24272,6 @@ func (m *IntegrationUserInstallStateMutation) ResetOauthState() {
 	delete(m.clearedFields, integrationuserinstallstate.FieldOauthState)
 }
 
-// SetInstallTargetSelectionToken sets the "install_target_selection_token" field.
-func (m *IntegrationUserInstallStateMutation) SetInstallTargetSelectionToken(s string) {
-	m.install_target_selection_token = &s
-}
-
-// InstallTargetSelectionToken returns the value of the "install_target_selection_token" field in the mutation.
-func (m *IntegrationUserInstallStateMutation) InstallTargetSelectionToken() (r string, exists bool) {
-	v := m.install_target_selection_token
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldInstallTargetSelectionToken returns the old "install_target_selection_token" field's value of the IntegrationUserInstallState entity.
-// If the IntegrationUserInstallState object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationUserInstallStateMutation) OldInstallTargetSelectionToken(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldInstallTargetSelectionToken is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldInstallTargetSelectionToken requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldInstallTargetSelectionToken: %w", err)
-	}
-	return oldValue.InstallTargetSelectionToken, nil
-}
-
-// ClearInstallTargetSelectionToken clears the value of the "install_target_selection_token" field.
-func (m *IntegrationUserInstallStateMutation) ClearInstallTargetSelectionToken() {
-	m.install_target_selection_token = nil
-	m.clearedFields[integrationuserinstallstate.FieldInstallTargetSelectionToken] = struct{}{}
-}
-
-// InstallTargetSelectionTokenCleared returns if the "install_target_selection_token" field was cleared in this mutation.
-func (m *IntegrationUserInstallStateMutation) InstallTargetSelectionTokenCleared() bool {
-	_, ok := m.clearedFields[integrationuserinstallstate.FieldInstallTargetSelectionToken]
-	return ok
-}
-
-// ResetInstallTargetSelectionToken resets all changes to the "install_target_selection_token" field.
-func (m *IntegrationUserInstallStateMutation) ResetInstallTargetSelectionToken() {
-	m.install_target_selection_token = nil
-	delete(m.clearedFields, integrationuserinstallstate.FieldInstallTargetSelectionToken)
-}
-
 // SetInstallationTargets sets the "installation_targets" field.
 func (m *IntegrationUserInstallStateMutation) SetInstallationTargets(value []map[string]interface{}) {
 	m.installation_targets = &value
@@ -24511,7 +24461,7 @@ func (m *IntegrationUserInstallStateMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntegrationUserInstallStateMutation) Fields() []string {
-	fields := make([]string, 0, 7)
+	fields := make([]string, 0, 6)
 	if m.tenant != nil {
 		fields = append(fields, integrationuserinstallstate.FieldTenantID)
 	}
@@ -24523,9 +24473,6 @@ func (m *IntegrationUserInstallStateMutation) Fields() []string {
 	}
 	if m.oauth_state != nil {
 		fields = append(fields, integrationuserinstallstate.FieldOauthState)
-	}
-	if m.install_target_selection_token != nil {
-		fields = append(fields, integrationuserinstallstate.FieldInstallTargetSelectionToken)
 	}
 	if m.installation_targets != nil {
 		fields = append(fields, integrationuserinstallstate.FieldInstallationTargets)
@@ -24549,8 +24496,6 @@ func (m *IntegrationUserInstallStateMutation) Field(name string) (ent.Value, boo
 		return m.IntegrationName()
 	case integrationuserinstallstate.FieldOauthState:
 		return m.OauthState()
-	case integrationuserinstallstate.FieldInstallTargetSelectionToken:
-		return m.InstallTargetSelectionToken()
 	case integrationuserinstallstate.FieldInstallationTargets:
 		return m.InstallationTargets()
 	case integrationuserinstallstate.FieldExpiresAt:
@@ -24572,8 +24517,6 @@ func (m *IntegrationUserInstallStateMutation) OldField(ctx context.Context, name
 		return m.OldIntegrationName(ctx)
 	case integrationuserinstallstate.FieldOauthState:
 		return m.OldOauthState(ctx)
-	case integrationuserinstallstate.FieldInstallTargetSelectionToken:
-		return m.OldInstallTargetSelectionToken(ctx)
 	case integrationuserinstallstate.FieldInstallationTargets:
 		return m.OldInstallationTargets(ctx)
 	case integrationuserinstallstate.FieldExpiresAt:
@@ -24614,13 +24557,6 @@ func (m *IntegrationUserInstallStateMutation) SetField(name string, value ent.Va
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetOauthState(v)
-		return nil
-	case integrationuserinstallstate.FieldInstallTargetSelectionToken:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetInstallTargetSelectionToken(v)
 		return nil
 	case integrationuserinstallstate.FieldInstallationTargets:
 		v, ok := value.([]map[string]interface{})
@@ -24672,9 +24608,6 @@ func (m *IntegrationUserInstallStateMutation) ClearedFields() []string {
 	if m.FieldCleared(integrationuserinstallstate.FieldOauthState) {
 		fields = append(fields, integrationuserinstallstate.FieldOauthState)
 	}
-	if m.FieldCleared(integrationuserinstallstate.FieldInstallTargetSelectionToken) {
-		fields = append(fields, integrationuserinstallstate.FieldInstallTargetSelectionToken)
-	}
 	if m.FieldCleared(integrationuserinstallstate.FieldInstallationTargets) {
 		fields = append(fields, integrationuserinstallstate.FieldInstallationTargets)
 	}
@@ -24694,9 +24627,6 @@ func (m *IntegrationUserInstallStateMutation) ClearField(name string) error {
 	switch name {
 	case integrationuserinstallstate.FieldOauthState:
 		m.ClearOauthState()
-		return nil
-	case integrationuserinstallstate.FieldInstallTargetSelectionToken:
-		m.ClearInstallTargetSelectionToken()
 		return nil
 	case integrationuserinstallstate.FieldInstallationTargets:
 		m.ClearInstallationTargets()
@@ -24720,9 +24650,6 @@ func (m *IntegrationUserInstallStateMutation) ResetField(name string) error {
 		return nil
 	case integrationuserinstallstate.FieldOauthState:
 		m.ResetOauthState()
-		return nil
-	case integrationuserinstallstate.FieldInstallTargetSelectionToken:
-		m.ResetInstallTargetSelectionToken()
 		return nil
 	case integrationuserinstallstate.FieldInstallationTargets:
 		m.ResetInstallationTargets()

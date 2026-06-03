@@ -59,7 +59,6 @@ func (IntegrationUserInstallState) Fields() []ent.Field {
 		field.UUID("user_id", uuid.New()).Default(uuid.New),
 		field.String("integration_name"),
 		field.String("oauth_state").Optional(),
-		field.String("install_target_selection_token").Optional(),
 		field.JSON("installation_targets", []map[string]any{}).
 			Optional().Default([]map[string]any{}).
 			SchemaType(schemaTypeJsonB),

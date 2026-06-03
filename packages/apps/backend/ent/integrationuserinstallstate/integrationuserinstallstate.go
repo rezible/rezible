@@ -22,8 +22,6 @@ const (
 	FieldIntegrationName = "integration_name"
 	// FieldOauthState holds the string denoting the oauth_state field in the database.
 	FieldOauthState = "oauth_state"
-	// FieldInstallTargetSelectionToken holds the string denoting the install_target_selection_token field in the database.
-	FieldInstallTargetSelectionToken = "install_target_selection_token"
 	// FieldInstallationTargets holds the string denoting the installation_targets field in the database.
 	FieldInstallationTargets = "installation_targets"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
@@ -57,7 +55,6 @@ var Columns = []string{
 	FieldUserID,
 	FieldIntegrationName,
 	FieldOauthState,
-	FieldInstallTargetSelectionToken,
 	FieldInstallationTargets,
 	FieldExpiresAt,
 }
@@ -114,11 +111,6 @@ func ByIntegrationName(opts ...sql.OrderTermOption) OrderOption {
 // ByOauthState orders the results by the oauth_state field.
 func ByOauthState(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOauthState, opts...).ToFunc()
-}
-
-// ByInstallTargetSelectionToken orders the results by the install_target_selection_token field.
-func ByInstallTargetSelectionToken(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldInstallTargetSelectionToken, opts...).ToFunc()
 }
 
 // ByExpiresAt orders the results by the expires_at field.

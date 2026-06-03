@@ -81,26 +81,6 @@ func (_u *IntegrationUserInstallStateUpdate) ClearOauthState() *IntegrationUserI
 	return _u
 }
 
-// SetInstallTargetSelectionToken sets the "install_target_selection_token" field.
-func (_u *IntegrationUserInstallStateUpdate) SetInstallTargetSelectionToken(v string) *IntegrationUserInstallStateUpdate {
-	_u.mutation.SetInstallTargetSelectionToken(v)
-	return _u
-}
-
-// SetNillableInstallTargetSelectionToken sets the "install_target_selection_token" field if the given value is not nil.
-func (_u *IntegrationUserInstallStateUpdate) SetNillableInstallTargetSelectionToken(v *string) *IntegrationUserInstallStateUpdate {
-	if v != nil {
-		_u.SetInstallTargetSelectionToken(*v)
-	}
-	return _u
-}
-
-// ClearInstallTargetSelectionToken clears the value of the "install_target_selection_token" field.
-func (_u *IntegrationUserInstallStateUpdate) ClearInstallTargetSelectionToken() *IntegrationUserInstallStateUpdate {
-	_u.mutation.ClearInstallTargetSelectionToken()
-	return _u
-}
-
 // SetInstallationTargets sets the "installation_targets" field.
 func (_u *IntegrationUserInstallStateUpdate) SetInstallationTargets(v []map[string]interface{}) *IntegrationUserInstallStateUpdate {
 	_u.mutation.SetInstallationTargets(v)
@@ -213,12 +193,6 @@ func (_u *IntegrationUserInstallStateUpdate) sqlSave(ctx context.Context) (_node
 	}
 	if _u.mutation.OauthStateCleared() {
 		_spec.ClearField(integrationuserinstallstate.FieldOauthState, field.TypeString)
-	}
-	if value, ok := _u.mutation.InstallTargetSelectionToken(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallTargetSelectionToken, field.TypeString, value)
-	}
-	if _u.mutation.InstallTargetSelectionTokenCleared() {
-		_spec.ClearField(integrationuserinstallstate.FieldInstallTargetSelectionToken, field.TypeString)
 	}
 	if value, ok := _u.mutation.InstallationTargets(); ok {
 		_spec.SetField(integrationuserinstallstate.FieldInstallationTargets, field.TypeJSON, value)
@@ -334,26 +308,6 @@ func (_u *IntegrationUserInstallStateUpdateOne) SetNillableOauthState(v *string)
 // ClearOauthState clears the value of the "oauth_state" field.
 func (_u *IntegrationUserInstallStateUpdateOne) ClearOauthState() *IntegrationUserInstallStateUpdateOne {
 	_u.mutation.ClearOauthState()
-	return _u
-}
-
-// SetInstallTargetSelectionToken sets the "install_target_selection_token" field.
-func (_u *IntegrationUserInstallStateUpdateOne) SetInstallTargetSelectionToken(v string) *IntegrationUserInstallStateUpdateOne {
-	_u.mutation.SetInstallTargetSelectionToken(v)
-	return _u
-}
-
-// SetNillableInstallTargetSelectionToken sets the "install_target_selection_token" field if the given value is not nil.
-func (_u *IntegrationUserInstallStateUpdateOne) SetNillableInstallTargetSelectionToken(v *string) *IntegrationUserInstallStateUpdateOne {
-	if v != nil {
-		_u.SetInstallTargetSelectionToken(*v)
-	}
-	return _u
-}
-
-// ClearInstallTargetSelectionToken clears the value of the "install_target_selection_token" field.
-func (_u *IntegrationUserInstallStateUpdateOne) ClearInstallTargetSelectionToken() *IntegrationUserInstallStateUpdateOne {
-	_u.mutation.ClearInstallTargetSelectionToken()
 	return _u
 }
 
@@ -499,12 +453,6 @@ func (_u *IntegrationUserInstallStateUpdateOne) sqlSave(ctx context.Context) (_n
 	}
 	if _u.mutation.OauthStateCleared() {
 		_spec.ClearField(integrationuserinstallstate.FieldOauthState, field.TypeString)
-	}
-	if value, ok := _u.mutation.InstallTargetSelectionToken(); ok {
-		_spec.SetField(integrationuserinstallstate.FieldInstallTargetSelectionToken, field.TypeString, value)
-	}
-	if _u.mutation.InstallTargetSelectionTokenCleared() {
-		_spec.ClearField(integrationuserinstallstate.FieldInstallTargetSelectionToken, field.TypeString)
 	}
 	if value, ok := _u.mutation.InstallationTargets(); ok {
 		_spec.SetField(integrationuserinstallstate.FieldInstallationTargets, field.TypeJSON, value)
