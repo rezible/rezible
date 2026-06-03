@@ -10,7 +10,6 @@ export dbAppUser := env("POSTGRES_APP_USER")
     just backend::install
     bun install
     -just dev::setup-workspace
-    just backend::apply-migrations
 
 [default]
 [doc("Run all services & dependencies using process-compose")]
@@ -39,6 +38,7 @@ dbName := "rez-"+branchId
     docker compose up --wait
     sleep 1
     just _setup-workspace-db
+    cd .. && just backend::apply-migrations
     just set-domains
 
 _write-workspace-env:

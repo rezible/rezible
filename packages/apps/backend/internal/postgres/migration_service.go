@@ -103,16 +103,20 @@ func (m *MigrationService) CreateSchemaMigration(ctx context.Context, name strin
 
 func (m *MigrationService) Run(ctx context.Context, direction string) error {
 	schemaErr := m.withDbFromPool(func(db *sql.DB) error {
+		slog.Info("Running ent schema migrations " + direction)
 		return m.runSchemaMigration(ctx, db, direction)
 	})
 	if schemaErr != nil && !errors.Is(schemaErr, migratelib.ErrNoChange) {
 		return fmt.Errorf("schema migration: %w", schemaErr)
 	}
 
+	slog.Info("Running river migrations " + direction)
 	riverErr := river.RunMigration(ctx, m.pool, direction)
 	if riverErr != nil {
 		return fmt.Errorf("river migration: %w", riverErr)
 	}
+
+	slog.Info("Migrations complete")
 
 	return nil
 }
