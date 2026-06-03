@@ -20,7 +20,7 @@ func main() {
 }
 
 func makeCli() *cli.Command {
-	r := makeServiceRunner()
+	r := makeCommandRunner()
 
 	return &cli.Command{
 		Name:  "rezible",
