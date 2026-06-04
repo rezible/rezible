@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Collapsible from "$components/ui/collapsible";
 	import * as Sidebar from "$components/ui/sidebar";
-	import Icon from "$src/components/icon/Icon.svelte";
+	import Icon from "$src/components/common/icon/Icon.svelte";
     import RiArrowRightSLine from 'remixicon-svelte/icons/arrow-right-s-line';
 	import { getActiveStatus, type SidebarItem } from "./sidebar";
 	import { page } from "$app/state";

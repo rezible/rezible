@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useAlertViewController } from "$features/alerts/views/alert";
-	import Avatar from "$components/avatar/Avatar.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import AlertMetrics from "./AlertMetrics.svelte";
 
 	const view = useAlertViewController();

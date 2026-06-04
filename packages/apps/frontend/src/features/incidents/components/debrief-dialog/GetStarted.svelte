@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
+	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
 	import {
 		getIncidentUserDebriefOptions,
 		updateIncidentDebriefMutation,

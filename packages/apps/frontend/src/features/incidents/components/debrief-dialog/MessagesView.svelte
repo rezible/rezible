@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { mdiAbacus } from "@mdi/js";
+	import { onMount } from "svelte";
 	import type { IncidentDebriefMessage } from "$lib/api";
 	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import PulseLoader from "$components/loading-indicator/PulseLoader.svelte";
-	import { onMount } from "svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
+	import MessageWaitingIndicator from "./MessageWaitingIndicator.svelte";
 
 	type Props = {
 		messages: IncidentDebriefMessage[];
@@ -45,7 +44,7 @@
 	{/each}
 	{#if waitingForResponse}
 		<div class="flex gap-4 w-2/3 items-center">
-			<PulseLoader />
+			<MessageWaitingIndicator />
 		</div>
 	{/if}
 </div>

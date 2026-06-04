@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import { type MeetingSession } from "$lib/api";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import SessionContent from "./SessionContent.svelte";
 	import { initMeetingSessionViewController } from "./controller.svelte";
 

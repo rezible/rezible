@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { mdiShape } from "@mdi/js";
-	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
+	import TiptapEditor from "$src/components/tiptap-editor/TiptapEditor.svelte";
 	import { createMutation } from "@tanstack/svelte-query";
 	import { onMount } from "svelte";
 	import {
@@ -13,10 +13,10 @@
 		type UpdateIncidentMilestoneAttributes,
 	} from "$lib/api";
 	import { type ZonedDateTime, fromAbsolute, getLocalTimeZone, parseAbsolute } from "@internationalized/date";
-	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
-	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
+	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
+	import DateTimePickerField from "$src/components/forms/date-time-field/DateTimePickerField.svelte";
 
-	import { createMentionEditor } from "$components/tiptap-editor/editors";
+	import { createMentionEditor } from "$src/components/tiptap-editor/editors";
 	import { getIconForIncidentMilestoneKind, getNextOrderedMilestone, getPreviousOrderedMilestone } from "./milestones";
 	import { useIncidentView } from "$features/incidents/views/incident";
 	import { watch } from "runed";

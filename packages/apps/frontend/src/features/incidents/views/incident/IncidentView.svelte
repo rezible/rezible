@@ -3,7 +3,7 @@
 	import type { IncidentViewRouteParam } from "$params/incidentView";
 	import { initIncidentViewController } from "./controller.svelte";
 
-	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
 	import PageActions from "./PageActions.svelte";
 	import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
 	import IncidentOverview from "./overview/IncidentOverview.svelte";

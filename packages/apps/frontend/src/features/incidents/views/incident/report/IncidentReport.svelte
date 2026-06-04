@@ -10,7 +10,7 @@
 
 	import type { AnnotationType } from "./field-editor/BubbleMenu.svelte";
 	import FieldEditorWrapper from "./field-editor/FieldEditorWrapper.svelte";
-	import LoadingIndicator from "$src/components/loading-indicator/LoadingIndicator.svelte";
+	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
 
 	const view = useIncidentView();
 	const sections = $derived(view.retrospective?.attributes.reportSections ?? []);

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiPlus } from "@mdi/js";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { Button } from "$components/ui/button";
 	import { useIncidentCreateDialog } from "$features/incidents/components/create-incident-dialog";
 

@@ -3,7 +3,7 @@
 	import { listTasksOptions, type ListTasksData, type Task } from "$lib/api";
 	import { mdiChevronRight } from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { useTeamViewController } from "$features/teams/views/team";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 

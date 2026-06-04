@@ -2,8 +2,8 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listMeetingSessionsOptions, type MeetingSchedule, type MeetingSession } from "$lib/api";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import Header from "$components/header/Header.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 
 	type Props = {
 		schedule: MeetingSchedule;

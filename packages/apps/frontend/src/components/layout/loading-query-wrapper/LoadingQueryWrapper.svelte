@@ -2,9 +2,8 @@
 	import type { Snippet } from "svelte";
 	import type { CreateQueryResult } from "@tanstack/svelte-query";
 	import type { ErrorModel } from "$lib/api";
-	import Card from "$components/card/Card.svelte";
-	import Header from "$components/header/Header.svelte";
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
+	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
+	import InlineAlert from "../error-alert/ErrorAlert.svelte";
 
 	type Props = {
 		query: CreateQueryResult<{ data: QueryResultData }, ErrorModel>;
@@ -15,6 +14,7 @@
 	const { query, view, loading, error }: Props = $props();
 </script>
 
+<!--
 {#snippet defaultErrorView(err: ErrorModel)}
 	{#if err.status}
 		<Card classes={{ root: "mb-2" }}>
@@ -37,6 +37,7 @@
 		<span>error: {query.error}</span>
 	{/if}
 {/snippet}
+-->
 
 {#if query.isLoading}
 	{#if loading}
@@ -48,7 +49,7 @@
 	{#if error}
 		{@render error(query.error as ErrorModel)}
 	{:else}
-		{@render defaultErrorView(query.error as ErrorModel)}
+		<InlineAlert error={query.error} />
 	{/if}
 {:else if query.isSuccess}
 	{@render view(query.data.data)}

@@ -1,11 +1,9 @@
 <script lang="ts">
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import Card from "$components/card/Card.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import type { OncallShift } from "$lib/api";
 	import { formatDistanceToNowStrict, isFuture, isPast, formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
 	import ShiftProgressCircle from "./ShiftProgressCircle.svelte";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import { cn } from "$lib/utils";
 	import { Button } from "$components/ui/button";

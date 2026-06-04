@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
-	import Icon from "$components/icon/Icon.svelte";
+	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import type { EventKind, EventsTableState } from "./eventsTableState.svelte";
 
 	type Props = {

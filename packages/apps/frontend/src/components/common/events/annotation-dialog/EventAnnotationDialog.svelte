@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import EventAnnotationForm from "./EventAnnotationForm.svelte";
 	import { useAnnotationDialogState } from "./dialogState.svelte";
 	import DialogTitle from "./DialogTitle.svelte";

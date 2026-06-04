@@ -2,7 +2,7 @@
 	import { Button } from "$components/ui/button";
 	import type { TeamMembershipAttributes } from "$lib/api";
 	import { useOrganizationSettingsViewController } from "../organizationSettingsController.svelte";
-	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
+	import InlineAlert from "$src/components/layout/error-alert/ErrorAlert.svelte";
 
 	const view = useOrganizationSettingsViewController();
 

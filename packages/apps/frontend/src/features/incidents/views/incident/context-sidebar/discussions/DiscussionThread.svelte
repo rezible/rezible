@@ -4,9 +4,9 @@
 	import type { RetrospectiveComment } from "$lib/api";
 	import type { JSONContent } from "@tiptap/core";
 	import { activeDiscussion } from "$features/incidents/views/incident/discussions.svelte";
-	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-	import Header from "$components/header/Header.svelte";
-	import { createDiscussionEditor } from "$components/tiptap-editor/editors";
+	import TiptapEditor, { Editor as SvelteEditor } from "$src/components/tiptap-editor/TiptapEditor.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
+	import { createDiscussionEditor } from "$src/components/tiptap-editor/editors";
 
 	type Props = {
 		discussion: RetrospectiveComment;

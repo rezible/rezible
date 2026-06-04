@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { Button } from "$components/ui/button";
-	import Card from "$components/card/Card.svelte";
-	import Header from "$components/header/Header.svelte";
+	import * as Card from "$components/ui/card";
 
 	const status = $derived(page.error?.status || "Unknown");
 	const message = $derived(page.error?.message || "Error");
@@ -11,12 +10,14 @@
 </script>
 
 <div class="w-full h-full grid place-items-center">
-	<div class="w-96">
-		<Card>
-			{#snippet header()}
-				<Header title="Error {status}" subheading={message} />
-			{/snippet}
+
+	<Card.Root class="gap-4 p-4 min-w-xs w-96">
+		<Card.Header class="p-0">
+            <Card.Title class="capitalize">Error {status}</Card.Title>
+			<Card.Description>{message}</Card.Description>
+		</Card.Header>
+		<Card.Action>
 			<Button href="/">Go Home</Button>
-		</Card>
-	</div>
+		</Card.Action>
+	</Card.Root>
 </div>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Card from "$components/ui/card";
 	import { Button } from "$components/ui/button";
-	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
+	import InlineAlert from "$src/components/layout/error-alert/ErrorAlert.svelte";
 	import Spinner from "$components/ui/spinner/spinner.svelte";
 
 	import { LoginViewController } from "./controller.svelte";

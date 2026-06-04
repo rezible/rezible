@@ -3,9 +3,9 @@
 	import { mdiArrowRight } from "@mdi/js";
 	import { type OncallShift } from "$lib/api";
 	import { cn } from "$lib/utils";
-	import Icon from "$components/icon/Icon.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { Button } from "$components/ui/button";
 
 	type Props = {

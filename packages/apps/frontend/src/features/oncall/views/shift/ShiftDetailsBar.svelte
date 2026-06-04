@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { isFuture } from "date-fns";
-	import Avatar from "$components/avatar/Avatar.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import { OncallShiftViewController } from "./controller.svelte";
 
 	const { view }: { view: OncallShiftViewController } = $props();

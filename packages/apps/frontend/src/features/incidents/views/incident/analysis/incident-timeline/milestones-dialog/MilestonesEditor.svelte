@@ -14,9 +14,9 @@
 	import MilestoneAttributesEditor from "./MilestoneAttributesEditor.svelte";
 	import { getIconForIncidentMilestoneKind, orderedMilestones } from "./milestones";
 
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 
 	const milestonesDialog = useMilestonesDialog();
 

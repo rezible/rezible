@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiAccount } from "@mdi/js";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 
 	type Props = {
 		dataValue: string;

@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { mdiPencil } from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { useIncidentView } from "$features/incidents/views/incident";
 
 	const view = useIncidentView();

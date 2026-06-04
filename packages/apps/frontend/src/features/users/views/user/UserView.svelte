@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import OncallStats from "./OncallStats.svelte";
 	import { initUserViewController } from "./controller.svelte";
 

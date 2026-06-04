@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { mdiChevronRight, mdiPencil } from "@mdi/js";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { Button } from "$components/ui/button";
 
 </script>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiChevronDown } from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import CreateMeetingDialog from "$features/meetings/components/create-meeting-dialog/CreateMeetingDialog.svelte";
 
 	let createOpen = $state(false);

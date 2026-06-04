@@ -11,7 +11,7 @@
 	import EChart, { type ChartProps } from "$components/viz/echart/EChart.svelte";
 	import { mdiFilter } from "@mdi/js";
 	import SectionCard from "./SectionCard.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { useOncallShiftViewController } from "$features/oncall/views/shift";
 
 	type Props = {

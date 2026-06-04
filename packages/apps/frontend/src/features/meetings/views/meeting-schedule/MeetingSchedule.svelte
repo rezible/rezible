@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { MeetingSchedule } from "$lib/api";
-	import Avatar from "$components/avatar/Avatar.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import ScheduleSessions from "./ScheduleSessions.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { Button } from "$components/ui/button";
 
 	type Props = { schedule: MeetingSchedule };

@@ -1,5 +1,5 @@
 import type { IncidentTimelineEventDecisionContext, IncidentTimelineEventAttributes, IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext, Incident } from "$lib/api";
-import { createMentionEditor } from "$components/tiptap-editor/editors";
+import { createMentionEditor } from "$src/components/tiptap-editor/editors";
 import type { Content } from "@tiptap/core";
 import {now, getLocalTimeZone, type ZonedDateTime, parseAbsoluteToLocal} from '@internationalized/date';
 import { Context } from "runed";

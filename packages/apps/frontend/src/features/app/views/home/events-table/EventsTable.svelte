@@ -2,11 +2,11 @@
 	import { watch } from "runed";
 	import { mdiFilter } from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import Header from "$components/header/Header.svelte";
-	import EventAnnotationDialog from "$components/events/annotation-dialog/EventAnnotationDialog.svelte";
-	import EventRow from "$components/events/EventRow.svelte";
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
-	import { AnnotationDialogState, setAnnotationDialogState } from "$components/events/annotation-dialog/dialogState.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
+	import EventAnnotationDialog from "$src/components/common/events/annotation-dialog/EventAnnotationDialog.svelte";
+	import EventRow from "$src/components/common/events/EventRow.svelte";
+	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
+	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/common/events/annotation-dialog/dialogState.svelte";
 	import { EventsTableState } from "./eventsTableState.svelte";
 	import type { EventAnnotation } from "$lib/api";
 	import EventsFilters from "./EventsFilters.svelte";

@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { mdiGhostOutline } from "@mdi/js";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 </script>
 
 <div class="flex flex-col h-fit border rounded-lg overflow-y-auto">

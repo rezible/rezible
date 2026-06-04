@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiCalendar } from "@mdi/js";
 	import { formatDate } from "date-fns";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { getEventTimeIcon } from "./events";
 	
 	type Props = {

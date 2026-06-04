@@ -9,9 +9,9 @@
 	import { v4 as uuidv4 } from "uuid";
 	import { SvelteMap } from "svelte/reactivity";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { mdiPlus } from "@mdi/js";
-	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
 	import { useIncidentAnalysis } from "$features/incidents/views/incident/analysis/controller.svelte";
 

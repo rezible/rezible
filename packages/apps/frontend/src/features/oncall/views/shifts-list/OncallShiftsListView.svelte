@@ -3,12 +3,12 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import { listOncallShiftsOptions, type ListOncallShiftsData, type OncallShift } from "$lib/api";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import FilterPage from "$components/filter-page/FilterPage.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import ShiftCard from "$features/oncall/components/shift-card/ShiftCard.svelte";
-	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
+	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
 	import { watch } from "runed";
-	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
+	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "Oncall Shifts", href: "/shifts" }]);
 

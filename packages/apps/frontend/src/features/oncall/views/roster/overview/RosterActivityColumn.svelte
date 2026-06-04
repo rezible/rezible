@@ -9,8 +9,8 @@
 		mdiArrowRight,
 	} from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import Header from "$components/header/Header.svelte";
-	import Icon from "$components/icon/Icon.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import type { User } from "$lib/api";
 	import { formatRelative } from "date-fns";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";

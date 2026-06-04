@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { v4 as uuidv4 } from "uuid";
-	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import {
 		listIncidentTimelineEventMetadataOptions,
 		type IncidentTimelineEventContributingFactor,

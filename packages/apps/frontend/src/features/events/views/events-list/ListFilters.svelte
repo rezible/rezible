@@ -2,8 +2,8 @@
 	import { mdiCalendarRange, mdiChevronDown } from "@mdi/js";
 	import { Button } from "$components/ui/button";
 	import type { DateRangeOption, EventKind, EventsListFiltersState } from "./filters.svelte";
-	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
-	import Icon from "$components/icon/Icon.svelte";
+	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 
 	type Props = {
 		filtersState: EventsListFiltersState;

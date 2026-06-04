@@ -1,5 +1,5 @@
 import { Context, watch, type Getter } from "runed";
-import type Avatar from "$components/avatar/Avatar.svelte";
+import type Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 import type { Component, ComponentProps } from "svelte";
 import { page } from "$app/state";
 import { afterNavigate, onNavigate } from "$app/navigation";

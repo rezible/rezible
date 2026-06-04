@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import TiptapEditor from "$components/tiptap-editor/TiptapEditor.svelte";
+	import TiptapEditor from "$src/components/tiptap-editor/TiptapEditor.svelte";
 	import { usePlaybookViewController } from "./controller.svelte";
-	import { createPlaybookEditor } from "$components/tiptap-editor/editors";
+	import { createPlaybookEditor } from "$src/components/tiptap-editor/editors";
 
 	const view = usePlaybookViewController();
 

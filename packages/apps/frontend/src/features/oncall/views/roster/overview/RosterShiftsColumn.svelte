@@ -1,9 +1,9 @@
 <script lang="ts">
 import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { listOncallShiftsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { mdiArrowRight } from "@mdi/js";
 	import ShiftCard from "$features/oncall/components/shift-card/ShiftCard.svelte";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";

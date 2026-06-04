@@ -13,7 +13,7 @@
 </script>
 
 <script lang="ts">
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import MetricComparisonLabel from "./MetricComparisonLabel.svelte";
 
 	const { title, subheading, value, outOf, small = false, format = "percentage", comparison }: InlineStatProps = $props();

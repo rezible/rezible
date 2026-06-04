@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { createEventAnnotationMutation } from "$lib/api";
 	import { createMutation } from "@tanstack/svelte-query";
-	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import { goto } from "$app/navigation";
 	
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { useOncallShiftViewController } from "$features/oncall/views/shift";
 
 	const view = useOncallShiftViewController();

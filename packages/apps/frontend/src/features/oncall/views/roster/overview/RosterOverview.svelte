@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { mdiChartBar } from "@mdi/js";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { getOncallRosterMetricsOptions } from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import RosterActivityColumn from "./RosterActivityColumn.svelte";
 	import RosterShiftsColumn from "./RosterShiftsColumn.svelte";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";

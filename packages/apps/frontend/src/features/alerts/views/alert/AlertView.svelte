@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
 	import { initAlertViewController } from "./controller.svelte";
 	import AlertOverview from "./overview/AlertOverview.svelte";
 	import AlertEvents from "./events/AlertEvents.svelte";

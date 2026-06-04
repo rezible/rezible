@@ -11,7 +11,7 @@
 
 <script lang="ts">
 	import { mdiArrowBottomRightThin, mdiArrowTopRightThin, mdiCircleMedium } from "@mdi/js";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 
 	type Props = {
 		metricValue: number;

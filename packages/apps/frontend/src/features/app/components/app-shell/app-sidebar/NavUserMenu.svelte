@@ -2,7 +2,7 @@
 	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 	import * as Sidebar from "$components/ui/sidebar";
 	import * as Avatar from "$components/ui/avatar";
-	import UserAvatar from "$components/avatar/Avatar.svelte";
+	import UserAvatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import * as DropdownMenu from "$components/ui/dropdown-menu";
 
 	import RiUserSettingsLine from "remixicon-svelte/icons/user-settings-line";

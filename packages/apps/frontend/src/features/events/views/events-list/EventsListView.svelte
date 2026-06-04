@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import FilterPage from "$components/filter-page/FilterPage.svelte";
+	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
 	import ListFilters from "./ListFilters.svelte";
-	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
-	import EventRow from "$components/events/EventRow.svelte";
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
-	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/events/annotation-dialog/dialogState.svelte";
-	import EventAnnotationDialog from "$src/components/events/annotation-dialog/EventAnnotationDialog.svelte";
+	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
+	import EventRow from "$src/components/common/events/EventRow.svelte";
+	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
+	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/common/events/annotation-dialog/dialogState.svelte";
+	import EventAnnotationDialog from "$src/components/common/events/annotation-dialog/EventAnnotationDialog.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { listEventsOptions } from "$lib/api";

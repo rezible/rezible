@@ -2,10 +2,10 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
 	import { listOncallRostersOptions, type ListOncallRostersData, type OncallRoster } from "$lib/api";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
-	import FilterPage from "$components/filter-page/FilterPage.svelte";
-	import SearchInput from "$components/search-input/SearchInput.svelte";
-	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
+	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
+	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
 	import RosterCard from "$features/oncall/components/roster-card/RosterCard.svelte";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 

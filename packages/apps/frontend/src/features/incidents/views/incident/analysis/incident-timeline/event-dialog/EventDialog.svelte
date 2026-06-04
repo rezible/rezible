@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { mdiMagicStaff } from "@mdi/js";
 	
-	import Icon from "$components/icon/Icon.svelte";
-	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
+	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import EventAttributesEditor from "./EventAttributesEditor.svelte";
 	import { useEventDialog } from "./controller.svelte";
 

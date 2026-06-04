@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { mdiChevronRight } from "@mdi/js";
 	import { listOncallShiftsOptions, type OncallShift } from "$lib/api";
 	import { formatDate, isFuture, isPast } from "date-fns";
 	import { getLocalTimeZone, parseAbsoluteToLocal } from "@internationalized/date";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { useOncallRosterViewController } from "$features/oncall/views/roster";
 
 	const view = useOncallRosterViewController();

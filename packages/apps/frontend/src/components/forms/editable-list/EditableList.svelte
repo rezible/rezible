@@ -1,4 +1,4 @@
-<script lang="ts">
+<script lang="ts" generics="T">
 	import { mdiCheck, mdiPencil, mdiPlus, mdiTrashCan } from "@mdi/js";
 
 	type Props = {
@@ -10,12 +10,13 @@
 	let { title, addLabel = "Add New", values = $bindable() }: Props = $props();
 
 	let editIdx = $state<number>();
-	let editValue = $state<string>("");
-	let newValue = $state<string>("");
+	let editValue = $state<string>();
+	let newValue = $state<string>();
 
 	const confirmAdd = () => {
+		if (!newValue) return;
 		values.push($state.snapshot(newValue));
-		newValue = "";
+		newValue = undefined;
 	};
 
 	const setEditing = (idx: number) => {
@@ -29,7 +30,7 @@
 	};
 
 	const confirmEdit = () => {
-		if (editIdx === undefined || editIdx < 0 || editIdx >= values.length) return;
+		if (editIdx === undefined || editIdx < 0 || editIdx >= values.length || !editValue) return;
 		values[editIdx] = $state.snapshot(editValue);
 		clearEditing();
 	}

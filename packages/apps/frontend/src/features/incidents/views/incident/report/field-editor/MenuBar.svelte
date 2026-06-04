@@ -13,7 +13,7 @@
 		mdiChevronDown,
 		mdiFormatListCheckbox,
 	} from "@mdi/js";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { Button } from "$components/ui/button";
 	import { activeEditor, activeStatus } from "../activeEditor.svelte";
 

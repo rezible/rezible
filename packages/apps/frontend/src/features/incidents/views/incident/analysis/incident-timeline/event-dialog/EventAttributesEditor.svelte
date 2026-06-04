@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Component } from "svelte";
 	import { mdiGraphOutline, mdiLayers, mdiLink, mdiStateMachine } from "@mdi/js";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 
 	import EventDetailsPanel from "./attribute-panels/EventDetails.svelte";
 	import DecisionContextPanel from "./attribute-panels/DecisionContext.svelte";

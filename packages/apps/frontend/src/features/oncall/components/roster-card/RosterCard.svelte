@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Avatar from "$components/avatar/Avatar.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import type { OncallRoster } from "$lib/api";
 	import { mdiChevronRight } from "@mdi/js";
 	import { Button } from "$components/ui/button";

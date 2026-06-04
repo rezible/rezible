@@ -1,10 +1,14 @@
-import { finishOrganizationSetupMutation, type AvailableIntegration, type InstalledIntegration } from "$lib/api";
-import { useAuthSessionState } from "$src/lib/auth-session.svelte";
 import { Context, watch } from "runed";
 import { createMutation } from "@tanstack/svelte-query";
-import { useIntegrationsController } from "$src/features/settings/lib/integrationsController.svelte";
 
-type SetupStep = "org_name" | "required_integrations";
+import { finishOrganizationSetupMutation, type AvailableIntegration, type InstalledIntegration } from "$lib/api";
+import { useAuthSessionState } from "$lib/auth-session.svelte";
+import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+
+type SetupStep = "org_details" | "required_capabilities";
+
+const setupSteps: SetupStep[] = ["org_details", "required_capabilities"];
+
 const RequiredCapabilities = new Set(["chat", "users"]);
 
 const getEnabledCapabilities = (intg: InstalledIntegration) => 
@@ -16,11 +20,12 @@ export class InitialSetupViewController {
     session = useAuthSessionState();
     private integrations = useIntegrationsController();
 
-    step = $state<SetupStep>("required_integrations");
+    private stepIdx = $state(0);
+    currentStep = $derived(setupSteps[Math.max(0, Math.min(setupSteps.length - 1, this.stepIdx))]);
 
-    availableOptions = $derived(this.integrations.available.filter(intg => (!this.integrations.installationsByName.has(intg.name))));
 	installedCapabilities = $derived(new Set(this.integrations.installed.flatMap(getEnabledCapabilities)));
     remainingRequiredCapabilities = $derived(RequiredCapabilities.difference(this.installedCapabilities).values().toArray());
+    availableOptions = $derived(this.integrations.available.filter(intg => (!this.integrations.installationsByName.has(intg.name))));
     availableIntegrationsForCapabilities = $derived.by(() => {
         const capMap = new Map<string, AvailableIntegration[]>();
         this.availableOptions.forEach(intg => {
@@ -38,10 +43,9 @@ export class InitialSetupViewController {
     });
 
     constructor() {
-        $inspect(this.availableOptions);
         watch(() => this.canFinish, ok => {
             if (ok) this.doFinishOrganizationSetup();
-        })
+        });
     }
 
     private finishingSetup = $state(false);

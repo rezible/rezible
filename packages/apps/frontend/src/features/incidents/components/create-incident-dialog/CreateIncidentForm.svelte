@@ -1,5 +1,5 @@
 <script lang="ts">
-	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
+	import InlineAlert from "$src/components/layout/error-alert/ErrorAlert.svelte";
 	import { Button } from "$components/ui/button";
 	import * as Dialog from "$components/ui/dialog";
 	import { Input } from "$components/ui/input";

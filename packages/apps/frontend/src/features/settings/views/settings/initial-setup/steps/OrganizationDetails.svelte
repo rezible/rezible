@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { useInitialSetupViewController } from "./controller.svelte";
-	import AvailableIntegrationCard from "$src/features/settings/components/integration-provider-card/AvailableIntegrationCard.svelte";
+	import { useInitialSetupViewController } from "../controller.svelte";
+	import AvailableIntegrationCard from "$features/settings/components/available-integration-card/AvailableIntegrationCard.svelte";
 
 	const ctrl = useInitialSetupViewController();
 

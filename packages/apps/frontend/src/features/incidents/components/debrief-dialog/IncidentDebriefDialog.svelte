@@ -3,7 +3,7 @@
 	import type { IncidentDebrief } from "$lib/api";
 	import { Button } from "$components/ui/button";
 	import IncidentDebriefView from "./IncidentDebriefView.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 
 	type Props = {
 		debrief: IncidentDebrief;

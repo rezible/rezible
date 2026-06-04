@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { ElementSize } from "runed";
 	import type { Snippet } from "svelte";
 

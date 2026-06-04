@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { createMutation } from "@tanstack/svelte-query";
-	import TiptapEditor, { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
+	import TiptapEditor, { Editor as SvelteEditor } from "$src/components/tiptap-editor/TiptapEditor.svelte";
 	import { draft } from "$features/incidents/views/incident/discussions.svelte";
-	import ConfirmChangeButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import ConfirmChangeButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import { createRetrospectiveCommentMutation, type RetrospectiveComment } from "$lib/api";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { createDiscussionEditor } from "$src/components/tiptap-editor/editors";
 
 	type Props = {

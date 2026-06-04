@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import TabbedViewContainer from "$components/tabbed-view-container/TabbedViewContainer.svelte";
+	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
 	import TeamOverview from "./overview/TeamOverview.svelte";
 	import TeamBacklogView from "./backlog/TeamBacklogView.svelte";
 	import TeamMeetings from "./meetings/TeamMeetings.svelte";

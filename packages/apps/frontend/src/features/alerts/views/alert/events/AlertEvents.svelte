@@ -1,7 +1,7 @@
 <script lang="ts">
-	import { AnnotationDialogState, setAnnotationDialogState } from "$components/events/annotation-dialog/dialogState.svelte";
-	import EventRow from "$components/events/EventRow.svelte";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import { AnnotationDialogState, setAnnotationDialogState } from "$src/components/common/events/annotation-dialog/dialogState.svelte";
+	import EventRow from "$src/components/common/events/EventRow.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import AlertEventsFilters from "./AlertEventsFilters.svelte";
 	import { AlertEventsViewController } from "./alertEventsViewController.svelte";
 	import type { Event } from "$lib/api";

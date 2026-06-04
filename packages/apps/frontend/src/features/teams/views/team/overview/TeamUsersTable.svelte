@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Avatar from "$components/avatar/Avatar.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import { listUsersOptions, type ListUsersData } from "$lib/api";
 	import { useTeamViewController } from "$features/teams/views/team";
 	import { createQuery } from "@tanstack/svelte-query";

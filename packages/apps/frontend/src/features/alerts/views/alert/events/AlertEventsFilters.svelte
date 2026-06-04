@@ -1,5 +1,5 @@
 <script lang="ts">
-	import RosterSelectField from "$src/components/roster-select-field/RosterSelectField.svelte";
+	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
 	import { mdiCalendarRange } from "@mdi/js";
 
 	type Props = {

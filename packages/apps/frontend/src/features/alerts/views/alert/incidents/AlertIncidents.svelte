@@ -1,5 +1,5 @@
 <script lang="ts">
-	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import AlertIncidentsFilters from "./AlertIncidentsFilters.svelte";
 	import { AlertIncidentsViewController } from "./alertIncidentsViewController.svelte";
 	import type { Incident } from "$lib/api";

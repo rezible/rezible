@@ -2,7 +2,7 @@
 	import type { Incident, IncidentAttributes } from "$lib/api";
 	import { mdiAccountGroup, mdiCalendarStart, mdiChevronRight, mdiLock, mdiTag } from "@mdi/js";
 	import { Badge } from "$components/ui/badge";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 
 	type Props = {
 		incident: Incident;

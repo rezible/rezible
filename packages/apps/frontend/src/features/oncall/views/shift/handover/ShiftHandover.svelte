@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { getOncallShiftHandoverOptions } from "$lib/api";
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
+	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
 
 	import { ShiftHandoverContent, ShiftHandoverEditorState } from "$src/features/oncall/components/shift-handover-content";
 

@@ -3,8 +3,8 @@
 	import { mdiSend, mdiPhoneForward } from "@mdi/js";
 	import { sendOncallShiftHandoverMutation } from "$lib/api";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import { useOncallShiftViewController } from "$features/oncall/views/shift";
 	import { ShiftHandoverEditorState } from "$features/oncall/components/shift-handover-content/state.svelte";
 

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { formatDuration } from "date-fns";
 	import MetricComparisonLabel, { type MetricComparison } from "./MetricComparisonLabel.svelte";
 

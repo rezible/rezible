@@ -1,11 +1,10 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import Avatar from "$components/avatar/Avatar.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import { getLocalTimeZone } from "@internationalized/date";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { listUsersOptions } from "$lib/api";
-	import Header from "$components/header/Header.svelte";
-	import Card from "$components/card/Card.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 
 	const usersQuery = createQuery(() => listUsersOptions());
 	const users = $derived(usersQuery.data?.data ?? []);
@@ -18,7 +17,8 @@
 		{#each users as usr}
 			{@const userTz = getLocalTimeZone()}
 			
-			<Card classes={{root: "border-surface-content/20 bg-neutral/30"}} 
+			<div class="border-surface-content/20 bg-neutral/30"
+				role="group"
 				onmouseenter={() => (hoveringTimezone = userTz)}
 				onmouseleave={() => (hoveringTimezone = undefined)}
 			>
@@ -48,7 +48,7 @@
 						</Button>
 					</div>
 				{/snippet}
-			</Card>
+				</div>
 		{:else}
 			<div class="text-surface-600 italic p-2">No users assigned to this roster</div>
 		{/each}

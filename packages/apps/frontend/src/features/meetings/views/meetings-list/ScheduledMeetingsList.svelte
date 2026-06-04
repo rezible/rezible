@@ -6,9 +6,9 @@
 		type MeetingScheduleTiming,
 	} from "$lib/api";
 	import { createQuery } from "@tanstack/svelte-query";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { addMinutes } from "date-fns";
-	import SectionHeader from "$components/section-header/SectionHeader.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 
 	let queryParams = $state<ListMeetingSchedulesData["query"]>({});
 	const query = createQuery(() => listMeetingSchedulesOptions({ query: { ...queryParams } }));
@@ -20,7 +20,7 @@
 </script>
 
 <div class="flex flex-col min-h-0 h-full">
-	<SectionHeader title="Your Meetings" />
+	<Header title="Your Meetings" />
 
 	<div class="flex-1 flex flex-col gap-2 overflow-y-auto">
 		<LoadingQueryWrapper {query}>

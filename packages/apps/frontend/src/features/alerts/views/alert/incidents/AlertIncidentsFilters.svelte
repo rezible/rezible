@@ -1,5 +1,5 @@
 <script lang="ts">
-	import RosterSelectField from "$components/roster-select-field/RosterSelectField.svelte";
+	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
 
 	type Props = {
 		rosterId?: string;

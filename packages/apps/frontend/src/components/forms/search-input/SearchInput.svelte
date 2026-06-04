@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { mdiMagnify } from "@mdi/js";
 	import type { ComponentProps } from "svelte";
 
 	type Props = {

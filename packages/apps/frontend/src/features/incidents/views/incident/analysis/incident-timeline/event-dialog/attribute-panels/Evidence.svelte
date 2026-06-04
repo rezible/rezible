@@ -3,9 +3,9 @@
 	import { v4 as uuidv4 } from "uuid";
 	import type { IncidentTimelineEventEvidence, IncidentTimelineEventEvidenceAttributes } from "$lib/api";
 	import { mdiPencil, mdiPlus, mdiSlack, mdiTrashCan, mdiWeb } from "@mdi/js";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { Button } from "$components/ui/button";
-	import ConfirmButtons from "$components/confirm-buttons/ConfirmButtons.svelte";
+	import ConfirmButtons from "$components/forms/confirm-buttons/ConfirmButtons.svelte";
 	import Slack from "./data-sources/Slack.svelte";
 	import Url from "./data-sources/Url.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";

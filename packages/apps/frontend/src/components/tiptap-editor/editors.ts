@@ -1,7 +1,7 @@
 import type { Content, EditorOptions } from "@tiptap/core";
-import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
+import { Editor as SvelteEditor } from "$src/components/tiptap-editor/TiptapEditor.svelte";
 import { configureBaseExtensions, configureUserMentionExtension, getHandoverExtensions, getDiscussionExtensions, getPlaybookExtensions } from "@rezible/tiptap-extensions";
-import { RezUserSuggestion } from "$components/tiptap-editor/user-suggestions/user-suggestion.svelte";
+import { RezUserSuggestion } from "$src/components/tiptap-editor/user-suggestions/user-suggestion.svelte";
 
 export const createMentionEditor = (content: Content, classes = "") => {
 	const baseExtensions = configureBaseExtensions(true);

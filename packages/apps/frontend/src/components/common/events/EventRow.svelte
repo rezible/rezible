@@ -2,8 +2,8 @@
 	import type { Event, EventAnnotation } from "$lib/api";
 	import { mdiPin, mdiPinOutline, mdiChatPlus, mdiMenuDown } from "@mdi/js";
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
-	import Avatar from "$components/avatar/Avatar.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
+	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import { useAnnotationDialogState } from "./annotation-dialog/dialogState.svelte";
 	import { getEventKindIcon } from "./events";
 	import EventTimeDate from "./EventTimeDate.svelte";

@@ -3,10 +3,10 @@
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { listSystemTopologyEntitiesOptions, type ListSystemTopologyEntitiesData, type SystemTopologyEntity } from "$lib/api";
 	import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-	import FilterPage from "$components/filter-page/FilterPage.svelte";
-	import SearchInput from "$components/search-input/SearchInput.svelte";
-	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
+	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
+	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import SystemTopologyEntityListItem from "./SystemTopologyEntityListItem.svelte";
 
 	setPageBreadcrumbs(() => [{ label: "Topology" }]);

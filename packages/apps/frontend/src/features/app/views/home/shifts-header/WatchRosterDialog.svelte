@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { createMutation, createQuery } from "@tanstack/svelte-query";
 	import { addWatchedOncallRosterMutation, listOncallRostersOptions } from "$lib/api";
-	import FormDialog from "$components/form-dialog/FormDialog.svelte";
 
 	type Props = {
 		open: boolean;
@@ -49,9 +48,10 @@
 	};
 </script>
 
+<!--
 <FormDialog title="Add Watched Roster" {open} {onClose} {onConfirm} {saveEnabled} {confirmText}>
 	<div class="w-full gap-2 p-2">
-		<!--SelectField
+		<SelectField
 			label="Name"
 			placeholder="Search Rosters"
 			bind:value
@@ -67,6 +67,7 @@
 					<Icon data={mdiMagnify} />
 				{/if}
 			</div>
-		</SelectField-->
+		</SelectField>
 	</div>
 </FormDialog>
+-->

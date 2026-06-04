@@ -2,7 +2,7 @@
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Badge } from "$components/ui/badge";
 	import * as Table from "$components/ui/table";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { listSystemTopologyRelationshipsOptions, type SystemTopologyRelationship } from "$lib/api";
 	import { useSystemTopologyEntityViewController } from "../controller.svelte";
 

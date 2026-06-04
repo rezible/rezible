@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 	import { listRetrospectiveCommentsOptions, type RetrospectiveComment } from "$lib/api";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 
 	import { draft } from "$features/incidents/views/incident/discussions.svelte";
 	import NewDiscussionDrafter from "./NewDiscussionDrafter.svelte";

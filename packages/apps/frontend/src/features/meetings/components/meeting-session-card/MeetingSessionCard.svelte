@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { MeetingSession } from "$lib/api";
 	import { Button } from "$components/ui/button";
-	import Card from "$components/card/Card.svelte";
-	import Header from "$components/header/Header.svelte";
+	import * as Card from "$components/ui/card";
+	import { resolve } from "$app/paths";
 
 	type Props = {
 		session: MeetingSession;
@@ -13,20 +13,24 @@
 	const start = $derived(session.attributes.startsAt);
 </script>
 
-<a href="/meetings/{scheduleId}/{session.id}">
-	<Card classes={{root: "w-full"}}>
-		{#snippet header()}
-			<Header title={session.attributes.title} />
-		{/snippet}
 
-		<div class="px-4">
-			<span>{start.toLocaleString()}</span>
+<Card.Root class="gap-4 p-4 min-w-xs">
+    <Card.Header class="p-0">
+        <div class="flex items-center justify-between gap-4 h-fit">
+            <div class="flex flex-col gap-2">
+                <Card.Title class="capitalize">{session.attributes.title}</Card.Title>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="px-4">
+					<span>{start.toLocaleString()}</span>
+				</div>
+            </div>
+        </div>
+    </Card.Header>
+
+	<Card.Action>
+		<div class="flex justify-end px-1">
+			<Button href={resolve("/meetings/sessions/[id]", session)}>View</Button>
 		</div>
-
-		{#snippet actions()}
-			<div class="flex justify-end px-1">
-				<Button>View</Button>
-			</div>
-		{/snippet}
-	</Card>
-</a>
+	</Card.Action>
+</Card.Root>

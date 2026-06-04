@@ -3,12 +3,12 @@
 
 	import * as Card from "$components/ui/card";
 	import { Button } from "$components/ui/button";
-	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
+	import InlineAlert from "$src/components/layout/error-alert/ErrorAlert.svelte";
 	import Spinner from "$components/ui/spinner/spinner.svelte";
 
 	import { initAvailableIntegrationCardController } from "./availableIntegrationController.svelte";
 	import InstalledIntegrationPanel from "./InstalledIntegrationPanel.svelte";
-	import IntegrationInstallTargetSelect from "./AvailableIntegrationInstallTargetSelect.svelte";
+	import IntegrationInstallTargetSelect from "./IntegrationInstallTargetSelect.svelte";
 
 	import RiCircleLine from "remixicon-svelte/icons/add-circle-line";
 

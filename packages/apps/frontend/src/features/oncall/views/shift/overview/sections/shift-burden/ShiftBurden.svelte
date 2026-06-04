@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { OncallShiftMetrics } from "$lib/api";
 	import MetricComparisonLabel from "$components/viz/MetricComparisonLabel.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	
 	import SectionCard from "../SectionCard.svelte";
 	import BurdenRadar from "./BurdenRadar.svelte";

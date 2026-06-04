@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { mdiMagnify, mdiExclamation, mdiBook, mdiBrain, mdiFlag } from "@mdi/js";
 	import { onMount } from "svelte";
-	import DateTimePickerField from "$components/date-time-field/DateTimePickerField.svelte";
+	import DateTimePickerField from "$src/components/forms/date-time-field/DateTimePickerField.svelte";
 	import { useEventDialogAttributes } from "./attributes.svelte";
 
 	const attributes = useEventDialogAttributes();

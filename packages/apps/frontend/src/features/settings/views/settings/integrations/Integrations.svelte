@@ -1,8 +1,8 @@
 <script lang="ts">
-	import LoadingIndicator from "$components/loading-indicator/LoadingIndicator.svelte";
-	import IntegrationProviderCard from "$src/features/settings/components/integration-provider-card/IntegrationProviderCard.svelte";
+	import LoadingIndicator from "$src/components/layout/loading-indicator/LoadingIndicator.svelte";
+	import AvailableIntegrationCard from "$src/features/settings/components/available-integration-card/AvailableIntegrationCard.svelte";
 	import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
-	import InlineAlert from "$components/inline-alert/InlineAlert.svelte";
+	import InlineAlert from "$src/components/layout/error-alert/ErrorAlert.svelte";
 	import { useIntegrationOAuthController } from "$src/features/settings/lib/integrationOAuthController.svelte";
 
 	const controller = useIntegrationsController();
@@ -26,7 +26,13 @@
 		<div class="grid gap-3 md:grid-cols-1">
 			{#each controller.availableByProvider as [provider, integrations]}
 				{#key provider}
-					<IntegrationProviderCard {provider} {integrations} />
+					<div class="border p-2">
+						<span>provider: {provider}</span>
+
+						{#each integrations as integration}
+							<AvailableIntegrationCard {integration} />
+						{/each}
+					</div>
 				{/key}
 			{/each}
 		</div>

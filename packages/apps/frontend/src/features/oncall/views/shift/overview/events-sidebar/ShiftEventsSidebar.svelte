@@ -3,7 +3,7 @@
 	import { Button } from "$components/ui/button";
 	import ShiftEventsHeatmap from "./ShiftEventsHeatmap.svelte";
 	import ShiftEventsList from "./ShiftEventsList.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 
 	let showFilters = $state(false);
 

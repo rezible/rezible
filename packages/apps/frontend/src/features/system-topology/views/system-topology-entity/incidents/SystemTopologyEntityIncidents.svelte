@@ -2,7 +2,7 @@
 	import { resolve } from "$app/paths";
 	import { createQuery } from "@tanstack/svelte-query";
 	import { Badge } from "$components/ui/badge";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import { listIncidentsOptions } from "$lib/api";
 
 	type Props = {

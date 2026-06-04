@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { type MeetingSession } from "$lib/api";
-	import LoadingQueryWrapper from "$components/loader/LoadingQueryWrapper.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
 	import MeetingSessionCard from "$features/meetings/components/meeting-session-card/MeetingSessionCard.svelte";
 	import { useAppShell } from "$lib/app-shell.svelte";
-	import FilterPage from "$components/filter-page/FilterPage.svelte";
-	import SearchInput from "$components/search-input/SearchInput.svelte";
-	import PaginatedListBox from "$components/paginated-listbox/PaginatedListBox.svelte";
+	import FilterPage from "$src/components/layout/filter-page/FilterPage.svelte";
+	import SearchInput from "$src/components/forms/search-input/SearchInput.svelte";
+	import PaginatedListBox from "$src/components/layout/paginated-listbox/PaginatedListBox.svelte";
 	import MeetingsPageActions from "./MeetingsListPageActions.svelte";
 	import { initMeetingsListViewController } from "./controller.svelte";
 

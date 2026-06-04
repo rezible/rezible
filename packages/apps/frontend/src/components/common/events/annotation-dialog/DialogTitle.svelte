@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import type { Event } from "$lib/api";
 	import { mdiCalendar, mdiClose, mdiPhoneAlert } from "@mdi/js";
 	import { useAnnotationDialogState } from "./dialogState.svelte";

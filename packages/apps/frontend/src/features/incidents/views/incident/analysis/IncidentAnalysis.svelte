@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import Icon from "$components/icon/Icon.svelte";
+	import Icon from "$components/common/icon/Icon.svelte";
 	import { mdiChevronDown, mdiChevronUp } from "@mdi/js";
 
 	import { initIncidentAnalysisController } from "./controller.svelte";

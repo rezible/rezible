@@ -1,18 +1,13 @@
 <script lang="ts">
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import Spinner from "$components/ui/spinner/spinner.svelte";
 	import Button from "$components/ui/button/button.svelte";
+	
 	import { initInitialSetupViewController } from "./controller.svelte";
-	import RequiredIntegrations from "./RequiredIntegrations.svelte";
-	import { onMount } from "svelte";
+	import OrganizationDetails from "./steps/OrganizationDetails.svelte";
+	import RequiredIntegrations from "./steps/RequiredCapabilities.svelte";
 
 	const ctrl = initInitialSetupViewController();
-
-	onMount(() => {
-		return () => {
-			console.log("unmount initial setup");
-		}
-	});
 </script>
 
 <div class="grid h-full w-full place-items-center">
@@ -22,7 +17,9 @@
 		{#if ctrl.loading}
 			<Spinner />
 		{:else}
-			{#if ctrl.step === "required_integrations"}
+			{#if ctrl.currentStep === "org_details"}
+				<OrganizationDetails />
+			{:else if ctrl.currentStep === "required_capabilities"}
 				<RequiredIntegrations />
 			{:else}
 				<Button href="/">Unknown state - go home</Button>

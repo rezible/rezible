@@ -3,7 +3,7 @@
 	import { formatDuration, minutesToHours, differenceInMinutes } from "date-fns";
 	import type { OncallShift } from "$lib/api";
 	import MetricCard from "$components/viz/MetricCard.svelte";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 	import { useUserViewController } from "./controller.svelte";
 
 	const view = useUserViewController();

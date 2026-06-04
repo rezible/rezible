@@ -5,7 +5,7 @@
 	import { mdiFilter } from "@mdi/js";
 	import SectionCard from "./SectionCard.svelte";
 	import { Button } from "$components/ui/button";
-	import Header from "$components/header/Header.svelte";
+	import Header from "$src/components/layout/header/Header.svelte";
 
 	type Props = {
 		metrics?: OncallShiftMetrics;

@@ -3,8 +3,8 @@
 	import { listPlaybooksOptions, type ListPlaybooksData, type Playbook } from "$lib/api";
 	import { QueryPaginatorState } from "$lib/paginator.svelte";
 	import { createQuery } from "@tanstack/svelte-query";
-	import LoadingQueryWrapper from "$src/components/loader/LoadingQueryWrapper.svelte";
-	import RosterSelectField from "$src/components/roster-select-field/RosterSelectField.svelte";
+	import LoadingQueryWrapper from "$src/components/layout/loading-query-wrapper/LoadingQueryWrapper.svelte";
+	import RosterSelectField from "$src/components/forms/roster-select-field/RosterSelectField.svelte";
 
 	const view = useAlertViewController();
 

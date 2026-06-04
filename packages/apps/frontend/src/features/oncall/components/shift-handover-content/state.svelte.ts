@@ -3,8 +3,8 @@ import { SvelteMap } from "svelte/reactivity";
 import { useDebounce, watch } from "runed";
 
 import type { Content, Editor } from "@tiptap/core";
-import { Editor as SvelteEditor } from "$components/tiptap-editor/TiptapEditor.svelte";
-import { createHandoverEditor } from "$components/tiptap-editor/editors";
+import { Editor as SvelteEditor } from "$src/components/tiptap-editor/TiptapEditor.svelte";
+import { createHandoverEditor } from "$src/components/tiptap-editor/editors";
 
 export type HandoverEditorSection = {
 	header: string;
