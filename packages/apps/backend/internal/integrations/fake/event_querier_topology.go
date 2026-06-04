@@ -7,7 +7,7 @@ import (
 	"time"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/integrations/projections"
+	"github.com/rezible/rezible/projections"
 )
 
 type fakeTopologyEvent struct {
@@ -38,13 +38,13 @@ func makeFakeTopologyEvents() []fakeTopologyEvent {
 	return events
 }
 
-func (q *eventQuerier) pullTopologyEvents(cursor string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
-	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+func (q *eventQuerier) pullTopologyEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, fakeEvent := range makeFakeTopologyEvents() {
 			if cursor != "" && fakeEvent.Cursor <= cursor {
 				continue
 			}
-			res := &rez.IntegrationEventQueryResult{
+			res := &rez.ProviderEventQueryResult{
 				SourceCursorAfter: new(fakeEvent.Cursor),
 			}
 			var prov *rez.ProviderEvent

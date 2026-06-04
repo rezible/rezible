@@ -9,7 +9,6 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/integrations/projections"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -105,6 +104,49 @@ type (
 )
 
 type (
+	ProviderEvent struct {
+		Provider           string
+		ProviderSource     string
+		ProviderEventRef   string
+		ProviderSubjectRef string
+		ReceivedAt         time.Time
+		Payload            []byte
+		ContentType        string
+		RequestMetadata    map[string]string
+	}
+
+	ProviderEventQueryResult struct {
+		Event             ProviderEvent
+		SourceCursorAfter *string
+	}
+
+	ProviderEventQuerier interface {
+		QueryProviderEvents(ctx context.Context, sourceCursors map[string]string) iter.Seq2[*ProviderEventQueryResult, error]
+	}
+
+	ProviderEventProcessor interface {
+		ProcessProviderEvent(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
+	}
+
+	NormalizedEventProjector interface {
+		HandleEventProjection(context.Context, *ent.NormalizedEvent) error
+	}
+
+	ProviderEventSyncResult struct {
+		SyncErrors         []error
+		SourceCursorsAfter map[string]string
+		EventsPulled       int
+		EventsIngested     int
+		NumDuplicates      int
+	}
+
+	ProviderEventPipelineService interface {
+		Ingest(context.Context, ProviderEvent) error
+		SyncEvents(ctx context.Context, q ProviderEventQuerier, sourceCursors map[string]string) ProviderEventSyncResult
+	}
+)
+
+type (
 	IntegrationPackage interface {
 		Name() string
 		Provider() string
@@ -172,54 +214,8 @@ type (
 		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)
 		CompleteOAuth2Flow(ctx context.Context, integrationName string, params CompleteIntegrationOAuth2Params) (*CompleteIntegrationOAuth2FlowResult, error)
 
-		GetProviderEventProcessor(integrationName string) (ProviderEventProcessor, error)
-		GetProviderEventQuerier(context.Context, *ent.Integration) (IntegrationEventQuerier, error)
-
 		RequestIntegrationEventSync(ctx context.Context, id uuid.UUID, sources []string) error
 		ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error)
-	}
-)
-
-type (
-	ProviderEvent struct {
-		Provider           string
-		ProviderSource     string
-		ProviderEventRef   string
-		ProviderSubjectRef string
-		ReceivedAt         time.Time
-		Payload            []byte
-		ContentType        string
-		RequestMetadata    map[string]string
-	}
-
-	ProviderEventProcessor interface {
-		Process(context.Context, ProviderEvent) (ent.NormalizedEvents, error)
-	}
-
-	IntegrationEventQuerier interface {
-		Integration() *ent.Integration
-		PullEvents(ctx context.Context, sourceCursors map[string]string) iter.Seq2[*IntegrationEventQueryResult, error]
-	}
-
-	IntegrationEventQueryResult struct {
-		Event             ProviderEvent
-		SourceCursorAfter *string
-	}
-
-	IntegrationEventSyncOptions struct {
-		SyncReason    string
-		Querier       IntegrationEventQuerier
-		SourceCursors map[string]string
-	}
-
-	EventProjectionHandler interface {
-		HandleEventProjection(context.Context, *ent.NormalizedEvent) error
-	}
-
-	ProviderEventPipelineService interface {
-		Ingest(context.Context, ProviderEvent) error
-		SyncIntegrationEvents(context.Context, IntegrationEventSyncOptions) error
-		RegisterProjectionHandler(h EventProjectionHandler, kinds ...projections.SubjectKind)
 	}
 )
 

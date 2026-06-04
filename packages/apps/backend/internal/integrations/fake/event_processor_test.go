@@ -7,7 +7,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/integrations/projections"
+	"github.com/rezible/rezible/projections"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,7 +20,7 @@ func processPayload(t *testing.T, ev convertablePayload) ent.NormalizedEvents {
 	provEvent, eventErr := ev.toEvent()
 	require.NoError(t, eventErr)
 	require.NotNil(t, provEvent)
-	events, procErr := (&eventProcessor{}).Process(t.Context(), *provEvent)
+	events, procErr := (&eventProcessor{event: provEvent}).process()
 	require.NoError(t, procErr)
 	return events
 }

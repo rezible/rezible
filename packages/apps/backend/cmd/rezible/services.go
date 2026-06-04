@@ -8,13 +8,11 @@ import (
 	"strings"
 	"time"
 
-	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/samber/do/v2"
 	"github.com/sourcegraph/conc/pool"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/integrations/projections"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
@@ -22,6 +20,7 @@ import (
 	fakeprovider "github.com/rezible/rezible/internal/integrations/fake"
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
 	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
 	"github.com/rezible/rezible/internal/opentelemetry"
@@ -29,6 +28,7 @@ import (
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/projections"
 )
 
 type startable interface {
@@ -105,19 +105,9 @@ func shutdownServices(baseCtx context.Context, i do.Injector) error {
 }
 
 func registerIntegrations(i do.Injector) error {
-	pes := do.MustInvoke[rez.ProviderEventPipelineService](i)
+	intgReg := integrations.DefaultPackageRegistry()
+	pipelineReg := projections.DefaultPipelineRegistry()
 
-	pes.RegisterProjectionHandler(do.MustInvoke[*db.KnowledgeService](i),
-		projections.SubjectKindCodeForge,
-		projections.SubjectKindCodeChange,
-		projections.SubjectKindSystemComponent,
-		projections.SubjectKindSystemRelationship,
-	)
-	pes.RegisterProjectionHandler(do.MustInvoke[*db.UserService](i), projections.SubjectKindUser)
-	pes.RegisterProjectionHandler(do.MustInvoke[*db.IncidentService](i), projections.SubjectKindIncident)
-	pes.RegisterProjectionHandler(do.MustInvoke[*db.AlertService](i), projections.SubjectKindAlert)
-
-	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
 	for _, desc := range i.ListProvidedServices() {
 		svc := desc.Service
 		if strings.Contains(svc, "internal/integrations") {
@@ -125,14 +115,35 @@ func registerIntegrations(i do.Injector) error {
 				if regErr := intgReg.RegisterPackage(pkg); regErr != nil {
 					return fmt.Errorf("failed to register integration package: %w", regErr)
 				}
+				if procPkg, isEventProcessor := pkg.(rez.ProviderEventProcessor); isEventProcessor {
+					pipelineReg.RegisterProviderEventProcessors(procPkg, pkg.Name())
+				}
 			}
 		}
 	}
+
+	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.KnowledgeService](i),
+		projections.SubjectKindCodeForge,
+		projections.SubjectKindCodeChange,
+		projections.SubjectKindSystemComponent,
+		projections.SubjectKindSystemRelationship,
+	)
+	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.UserService](i), projections.SubjectKindUser)
+	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.IncidentService](i), projections.SubjectKindIncident)
+	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.AlertService](i), projections.SubjectKindAlert)
 
 	return nil
 }
 
 func declareServices(ctx context.Context, i do.Injector) {
+	do.Provide(i, func(i do.Injector) (*projections.PipelineRegistry, error) {
+		return projections.DefaultPipelineRegistry(), nil
+	})
+
+	do.Provide(i, func(i do.Injector) (*integrations.PackageRegistry, error) {
+		return integrations.DefaultPackageRegistry(), nil
+	})
+
 	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {
 		pgPool, poolErr := postgres.MakePgxPool(ctx, do.MustInvoke[rez.Config](i).Postgres, true)
 		if poolErr != nil {
@@ -162,10 +173,6 @@ func declareServices(ctx context.Context, i do.Injector) {
 
 	do.Provide(i, func(i do.Injector) (rez.MessageService, error) {
 		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i))
-	})
-
-	do.Provide(i, func(i do.Injector) (*integrations.PackageRegistry, error) {
-		return integrations.NewPackageRegistry(do.MustInvoke[rez.TelemetryService](i)), nil
 	})
 
 	do.Provide(i, func(i do.Injector) (http.UserAuthSessionService, error) {
@@ -272,6 +279,16 @@ var provideIntegrations = do.Package(
 )
 
 var provideServices = do.Package(
+	do.Lazy(func(i do.Injector) (*db.ProviderEventPipelineService, error) {
+		return db.NewProviderEventPipelineService(
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[*projections.PipelineRegistry](i),
+		)
+	}),
+	do.Bind[*db.ProviderEventPipelineService, rez.ProviderEventPipelineService](),
+
 	do.Lazy(func(i do.Injector) (*db.KnowledgeService, error) {
 		return db.NewKnowledgeService(do.MustInvoke[rez.Database](i)), nil
 	}),
@@ -282,19 +299,11 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.Config](i).App,
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[*integrations.PackageRegistry](i))
-	}),
-	do.Bind[*db.IntegrationsService, rez.IntegrationService](),
-
-	do.Lazy(func(i do.Injector) (*db.ProviderEventService, error) {
-		return db.NewProviderEventService(
-			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.JobService](i),
-			do.MustInvoke[rez.IntegrationService](i),
+			do.MustInvoke[*integrations.PackageRegistry](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),
-	do.Bind[*db.ProviderEventService, rez.ProviderEventPipelineService](),
+	do.Bind[*db.IntegrationsService, rez.IntegrationService](),
 
 	do.Lazy(func(i do.Injector) (*db.OrganizationService, error) {
 		return db.NewOrganizationService(

@@ -7,7 +7,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/integrations/projections"
+	"github.com/rezible/rezible/projections"
 )
 
 const (

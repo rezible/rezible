@@ -14,7 +14,7 @@ import (
 	"github.com/slack-go/slack"
 )
 
-func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
+func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
 	return newEventQuerier(i.makeInstalledIntegration(intg))
 }
 
@@ -36,11 +36,11 @@ func (q *eventQuerier) Integration() *ent.Integration {
 	return q.ii.intg
 }
 
-func (q *eventQuerier) PullEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
-	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		if usersCursor, ok := integrations.GetSourceQueryCursor(cursors, sourceUsers); ok {
-			for ev, evErr := range q.pullUserObservedEvents(ctx, usersCursor) {
-				if !yield(ev, evErr) {
+			for ev, err := range q.pullUserObservedEvents(ctx, usersCursor) {
+				if !yield(ev, err) {
 					return
 				}
 			}
@@ -67,20 +67,20 @@ func (q *eventQuerier) makeUserObservedPayload(u slack.User) ([]byte, error) {
 	return json.Marshal(payload)
 }
 
-func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
+func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	var teamId string
 	if q.cfg.Team != nil {
 		teamId = q.cfg.Team.Id
 	}
-	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+	pullEvents := func() ([]rez.ProviderEvent, error) {
 		slackUsers, getErr := q.client.GetUsersContext(ctx,
 			slack.GetUsersOptionPresence(false),
 			slack.GetUsersOptionTeamID(teamId))
 		if getErr != nil {
-			yield(nil, fmt.Errorf("slack get users err: %w", getErr))
-			return
+			return nil, fmt.Errorf("slack get users err: %w", getErr)
 		}
 
+		var events []rez.ProviderEvent
 		for _, u := range slackUsers {
 			if u.IsBot || u.ID == "USLACKBOT" {
 				continue
@@ -88,25 +88,30 @@ func (q *eventQuerier) pullUserObservedEvents(ctx context.Context, cursor string
 
 			payload, payloadErr := q.makeUserObservedPayload(u)
 			if payloadErr != nil {
-				if !yield(nil, fmt.Errorf("make payload: %w", payloadErr)) {
-					return
-				}
-				continue
+				return nil, fmt.Errorf("make payload: %w", payloadErr)
 			}
 
-			res := &rez.IntegrationEventQueryResult{
-				Event: rez.ProviderEvent{
-					Provider:           integrationName,
-					ProviderSource:     sourceUsers,
-					ProviderEventRef:   fmt.Sprintf("%s:%s:%s", teamId, u.ID, u.Updated),
-					ProviderSubjectRef: fmt.Sprintf("slack:%s", u.ID),
-					ReceivedAt:         time.Now(),
-					Payload:            payload,
-					ContentType:        "application/json",
-				},
-			}
+			events = append(events, rez.ProviderEvent{
+				Provider:           integrationName,
+				ProviderSource:     sourceUsers,
+				ProviderEventRef:   fmt.Sprintf("%s:%s:%s", teamId, u.ID, u.Updated),
+				ProviderSubjectRef: fmt.Sprintf("slack:%s", u.ID),
+				ReceivedAt:         time.Now(),
+				Payload:            payload,
+				ContentType:        "application/json",
+			})
+		}
 
-			if !yield(res, nil) {
+		return events, nil
+	}
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+		events, eventsErr := pullEvents()
+		if eventsErr != nil {
+			yield(nil, eventsErr)
+			return
+		}
+		for _, event := range events {
+			if !yield(&rez.ProviderEventQueryResult{Event: event, SourceCursorAfter: nil}, nil) {
 				return
 			}
 		}

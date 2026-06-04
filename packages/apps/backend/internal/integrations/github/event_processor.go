@@ -10,16 +10,18 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/integrations/projections"
+	"github.com/rezible/rezible/projections"
 )
 
 const zeroSHA = "0000000000000000000000000000000000000000"
 
-func (i *Integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
-	return &eventProcessor{}
+func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	p := &eventProcessor{event: &prov}
+	return p.process()
 }
 
 type eventProcessor struct {
+	event *rez.ProviderEvent
 }
 
 const (
@@ -28,21 +30,22 @@ const (
 	sourceRepositories = "repositories"
 )
 
-func (p *eventProcessor) Process(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	switch prov.ProviderSource {
+func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
+	switch p.event.ProviderSource {
 	case sourcePushEvent:
-		return p.processPushEvent(prov)
+		return p.processPushEvent()
 	case sourcePullEvent:
-		return p.processPullRequest(prov)
+		return p.processPullRequest()
 	case sourceRepositories:
-		return p.processRepoObserved(prov)
+		return p.processRepoObserved()
+	default:
+		return nil, fmt.Errorf("unknown provider source: %s", p.event.ProviderSource)
 	}
-	return nil, fmt.Errorf("unknown provider source: %s", prov.ProviderSource)
 }
 
-func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p *eventProcessor) processPushEvent() (ent.NormalizedEvents, error) {
 	var event github.PushEvent
-	if err := json.Unmarshal(prov.Payload, &event); err != nil {
+	if err := json.Unmarshal(p.event.Payload, &event); err != nil {
 		return nil, fmt.Errorf("unmarshal push event: %w", err)
 	}
 
@@ -55,7 +58,7 @@ func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.Normalize
 		occurredAt = hc.GetTimestamp().Time
 	}
 
-	ProviderSubjectRef := prov.ProviderSubjectRef
+	ProviderSubjectRef := p.event.ProviderSubjectRef
 	if ProviderSubjectRef == "" {
 		ProviderSubjectRef = fmt.Sprintf("github:%s:%s", event.GetRepo().GetFullName(), event.GetAfter())
 	}
@@ -71,7 +74,7 @@ func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.Normalize
 	result := &ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourcePushEvent,
-		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderEventRef:   p.event.ProviderEventRef,
 		ActivityKind:       ne.ActivityKindObserved,
 		SubjectKind:        projections.SubjectKindCodeChange.String(),
 		ProviderSubjectRef: ProviderSubjectRef,
@@ -82,16 +85,16 @@ func (p *eventProcessor) processPushEvent(prov rez.ProviderEvent) (ent.Normalize
 	return ent.NormalizedEvents{result}, nil
 }
 
-func (p *eventProcessor) processPullRequest(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p *eventProcessor) processPullRequest() (ent.NormalizedEvents, error) {
 	var event github.PullRequestEvent
-	if err := json.Unmarshal(prov.Payload, &event); err != nil {
+	if err := json.Unmarshal(p.event.Payload, &event); err != nil {
 		return nil, fmt.Errorf("unmarshal pull_request event: %w", err)
 	}
 
 	pr := event.GetPullRequest()
 	prNum := pr.GetNumber()
 
-	ProviderSubjectRef := prov.ProviderSubjectRef
+	ProviderSubjectRef := p.event.ProviderSubjectRef
 	if ProviderSubjectRef == "" {
 		ProviderSubjectRef = fmt.Sprintf("github:%s:pr:%d", event.GetRepo().GetFullName(), prNum)
 	}
@@ -109,7 +112,7 @@ func (p *eventProcessor) processPullRequest(prov rez.ProviderEvent) (ent.Normali
 		ProviderSource:     sourcePullEvent,
 		ActivityKind:       ne.ActivityKindObserved,
 		SubjectKind:        projections.SubjectKindCodeChange.String(),
-		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderEventRef:   p.event.ProviderEventRef,
 		ProviderSubjectRef: ProviderSubjectRef,
 		OccurredAt:         pr.GetCreatedAt().Time,
 		Attributes:         encodedAttrs,
@@ -118,9 +121,9 @@ func (p *eventProcessor) processPullRequest(prov rez.ProviderEvent) (ent.Normali
 	return ent.NormalizedEvents{result}, nil
 }
 
-func (p *eventProcessor) processRepoObserved(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p *eventProcessor) processRepoObserved() (ent.NormalizedEvents, error) {
 	var payload githubRepositoryObservedPayload
-	if err := json.Unmarshal(prov.Payload, &payload); err != nil {
+	if err := json.Unmarshal(p.event.Payload, &payload); err != nil {
 		return nil, fmt.Errorf("unmarshal repository observed event: %w", err)
 	}
 	if payload.FullName == "" {
@@ -132,7 +135,7 @@ func (p *eventProcessor) processRepoObserved(prov rez.ProviderEvent) (ent.Normal
 		occurredAt = payload.CreatedAt
 	}
 	if occurredAt.IsZero() {
-		occurredAt = prov.ReceivedAt
+		occurredAt = p.event.ReceivedAt
 	}
 	if occurredAt.IsZero() {
 		occurredAt = time.Now().UTC()
@@ -153,10 +156,10 @@ func (p *eventProcessor) processRepoObserved(prov rez.ProviderEvent) (ent.Normal
 		ProviderSource:     sourceRepositories,
 		ActivityKind:       ne.ActivityKindObserved,
 		SubjectKind:        projections.SubjectKindCodeForge.String(),
-		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderEventRef:   p.event.ProviderEventRef,
 		ProviderSubjectRef: repositoryRef,
 		OccurredAt:         occurredAt,
-		ReceivedAt:         prov.ReceivedAt,
+		ReceivedAt:         p.event.ReceivedAt,
 		Attributes:         encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {

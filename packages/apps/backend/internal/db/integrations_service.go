@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/url"
@@ -26,14 +27,15 @@ import (
 )
 
 type IntegrationsService struct {
-	db   rez.Database
-	jobs rez.JobService
-	reg  *integrations.PackageRegistry
+	db             rez.Database
+	jobs           rez.JobService
+	reg            *integrations.PackageRegistry
+	eventsPipeline rez.ProviderEventPipelineService
 
 	oauthRedirectUrlBase *url.URL
 }
 
-func NewIntegrationsService(appCfg rez.AppConfig, db rez.Database, jobs rez.JobService, reg *integrations.PackageRegistry) (*IntegrationsService, error) {
+func NewIntegrationsService(appCfg rez.AppConfig, db rez.Database, jobSvc rez.JobService, reg *integrations.PackageRegistry, pep rez.ProviderEventPipelineService) (*IntegrationsService, error) {
 	callbackUrl, callbackUrlErr := url.JoinPath(appCfg.FrontendUrl, "/settings/integration-callback")
 	if callbackUrlErr != nil {
 		return nil, fmt.Errorf("invalid oauth callback url: %w", callbackUrlErr)
@@ -44,12 +46,15 @@ func NewIntegrationsService(appCfg rez.AppConfig, db rez.Database, jobs rez.JobS
 	}
 
 	s := &IntegrationsService{
-		db:   db,
-		jobs: jobs,
-		reg:  reg,
+		db:             db,
+		jobs:           jobSvc,
+		reg:            reg,
+		eventsPipeline: pep,
 
 		oauthRedirectUrlBase: redirectUrl,
 	}
+
+	jobs.RegisterWorkerFunc(s.HandleSyncIntegrationEventsJob)
 
 	return s, nil
 }
@@ -476,19 +481,6 @@ func (s *IntegrationsService) installTargets(ctx context.Context, intgName strin
 	return installed, nil
 }
 
-func (s *IntegrationsService) GetProviderEventProcessor(name string) (rez.ProviderEventProcessor, error) {
-	procs := s.reg.GetProviderEventProcessors()
-	proc, ok := procs[name]
-	if !ok {
-		return nil, fmt.Errorf("integration %s not found", name)
-	}
-	return proc, nil
-}
-
-func (s *IntegrationsService) GetProviderEventQuerier(ctx context.Context, intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
-	return s.reg.GetProviderEventQuerier(intg)
-}
-
 func (s *IntegrationsService) RequestIntegrationEventSync(ctx context.Context, id uuid.UUID, sources []string) error {
 	args := jobs.SyncIntegrationEventsArgs{
 		SyncReason:    "manual",
@@ -503,6 +495,51 @@ func (s *IntegrationsService) RequestIntegrationEventSync(ctx context.Context, i
 	}
 	_, insertErr := s.jobs.Insert(ctx, args, opts)
 	return insertErr
+}
+
+func (s *IntegrationsService) HandleSyncIntegrationEventsJob(ctx context.Context, args jobs.SyncIntegrationEventsArgs) error {
+	if args.IntegrationId == uuid.Nil {
+		// TODO: sync all installed?
+		return nil
+	}
+
+	intg, intgErr := s.GetInstalled(ctx, args.IntegrationId)
+	if intgErr != nil {
+		return fmt.Errorf("get installed integration: %w", intgErr)
+	}
+
+	querier, querierErr := s.reg.GetProviderEventQuerier(intg.Integration())
+	if querierErr != nil {
+		return fmt.Errorf("get provider event querier: %w", querierErr)
+	}
+
+	sourceCursors := map[string]string{}
+	for _, src := range args.Sources {
+		// TODO: look up cursors from last sync
+		sourceCursors[src] = ""
+	}
+
+	startedAt := time.Now().UTC()
+	res := s.eventsPipeline.SyncEvents(ctx, querier, sourceCursors)
+	saveRun := s.db.Client(ctx).IntegrationEventSyncRun.Create().
+		SetSyncReason(args.SyncReason).
+		SetIntegrationID(args.IntegrationId).
+		SetStartedAt(startedAt).
+		SetFinishedAt(time.Now().UTC()).
+		SetStatus(iesr.StatusSuccess).
+		SetSourceCursors(res.SourceCursorsAfter).
+		SetEventsPulled(res.EventsPulled).
+		SetEventsIngested(res.EventsIngested).
+		SetDuplicates(res.NumDuplicates)
+	if len(res.SyncErrors) > 0 {
+		saveRun.SetStatus(iesr.StatusFailed)
+		saveRun.SetFailureMessage(errors.Join(res.SyncErrors...).Error())
+	}
+	if saveRunErr := saveRun.Exec(ctx); saveRunErr != nil {
+		slog.ErrorContext(ctx, "failed to save integration event sync run", "err", saveRunErr)
+	}
+
+	return nil
 }
 
 func (s *IntegrationsService) ListIntegrationEventSyncRuns(ctx context.Context, id uuid.UUID) (*ent.ListResult[ent.IntegrationEventSyncRun], error) {

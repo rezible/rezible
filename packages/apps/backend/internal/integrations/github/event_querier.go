@@ -13,7 +13,7 @@ import (
 	"github.com/rezible/rezible/integrations"
 )
 
-func (i *Integration) MakeProviderEventQuerier(cfg rez.IntegrationsConfigGithub, intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
+func (i *Integration) MakeProviderEventQuerier(cfg rez.IntegrationsConfigGithub, intg *ent.Integration) (rez.ProviderEventQuerier, error) {
 	ii := i.newInstalledIntegration(intg)
 	client, clientErr := newAppClient(cfg, ii)
 	if clientErr != nil {
@@ -36,8 +36,8 @@ func (q *eventQuerier) Integration() *ent.Integration {
 	return q.ii.intg
 }
 
-func (q *eventQuerier) PullEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
-	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		if reposCursor, ok := integrations.GetSourceQueryCursor(cursors, sourceRepositories); ok {
 			for ev, evErr := range q.pullRepositoryEvents(ctx, reposCursor) {
 				yield(ev, evErr)
@@ -46,8 +46,8 @@ func (q *eventQuerier) PullEvents(ctx context.Context, cursors map[string]string
 	}
 }
 
-func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
-	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		repos, listErr := q.client.ListRepositories(ctx)
 		if listErr != nil {
 			yield(nil, listErr)
@@ -95,7 +95,7 @@ func (q *eventQuerier) pullRepositoryEvents(ctx context.Context, cursorAfter str
 				deliveryRefID = fmt.Sprintf("%d", payload.ID)
 			}
 
-			res := &rez.IntegrationEventQueryResult{
+			res := &rez.ProviderEventQueryResult{
 				Event: rez.ProviderEvent{
 					Provider:           integrationName,
 					ProviderSource:     sourceRepositories,

@@ -2,8 +2,8 @@ package integrations
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
+	"sync"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -15,31 +15,31 @@ func GetSourceQueryCursor(cursors map[string]string, source string) (string, boo
 }
 
 type PackageRegistry struct {
-	logger            *slog.Logger
+	pkgsMu            sync.RWMutex
 	nameMap           map[string]rez.IntegrationPackage
 	availablePackages []rez.IntegrationPackage
 }
 
-func NewPackageRegistry(tel rez.TelemetryService) *PackageRegistry {
+var packageRegistry = NewPackageRegistry()
+
+func NewPackageRegistry() *PackageRegistry {
 	return &PackageRegistry{
 		nameMap: make(map[string]rez.IntegrationPackage),
-		logger:  tel.NewLogger(rez.NewLoggerOptions{PackageName: "integrations"}),
 	}
 }
 
+func DefaultPackageRegistry() *PackageRegistry {
+	return packageRegistry
+}
+
 func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
+	r.pkgsMu.Lock()
+	defer r.pkgsMu.Unlock()
+
 	available, configErr := pkg.IsAvailable()
 	if !available {
-		nameAttr := slog.Any("name", pkg.Name())
-		if configErr != nil {
-			errAttr := slog.Any("config_error", configErr.Error())
-			slog.Warn("integration config error", nameAttr, errAttr)
-		} else {
-			slog.Info("integration not available", nameAttr)
-		}
 		return configErr
 	}
-	r.logger.Debug("loaded integration", "name", pkg.Name())
 	r.availablePackages = append(r.availablePackages, pkg)
 	r.nameMap[pkg.Name()] = pkg
 
@@ -71,22 +71,9 @@ func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {
 	return whs
 }
 
-func (r *PackageRegistry) GetProviderEventProcessors() map[string]rez.ProviderEventProcessor {
-	type IntegrationWithProviderEventProcessor interface {
-		MakeProviderEventProcessor() rez.ProviderEventProcessor
-	}
-	els := make(map[string]rez.ProviderEventProcessor)
-	for _, pkg := range r.availablePackages {
-		if procPkg, ok := pkg.(IntegrationWithProviderEventProcessor); ok {
-			els[pkg.Name()] = procPkg.MakeProviderEventProcessor()
-		}
-	}
-	return els
-}
-
-func (r *PackageRegistry) GetProviderEventQuerier(intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
+func (r *PackageRegistry) GetProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
 	type IntegrationWithProviderEventQuerier interface {
-		MakeProviderEventQuerier(*ent.Integration) (rez.IntegrationEventQuerier, error)
+		MakeProviderEventQuerier(*ent.Integration) (rez.ProviderEventQuerier, error)
 	}
 	pkg, valid := r.nameMap[intg.IntegrationName]
 	if !valid {

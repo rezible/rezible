@@ -11,15 +11,17 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/integrations/projections"
 	"github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/projections"
 )
 
-func (i *Integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
-	return &eventProcessor{}
+func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	p := &eventProcessor{event: &prov}
+	return p.process()
 }
 
 type eventProcessor struct {
+	event *rez.ProviderEvent
 }
 
 const (
@@ -27,20 +29,20 @@ const (
 	sourceEventsApiCallback = "events_api/callback"
 )
 
-func (p *eventProcessor) Process(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	switch prov.ProviderSource {
+func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
+	switch p.event.ProviderSource {
 	case sourceUsers:
-		return p.processUserObserved(prov)
+		return p.processUserObserved()
 	case sourceEventsApiCallback:
-		return p.processEventsApiCallback(prov)
+		return p.processEventsApiCallback()
 	default:
-		return nil, fmt.Errorf("unknown provider source: %s", prov.ProviderSource)
+		return nil, fmt.Errorf("unknown provider source: %s", p.event.ProviderSource)
 	}
 }
 
-func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p *eventProcessor) processUserObserved() (ent.NormalizedEvents, error) {
 	var payload userObservedPayload
-	if jsonErr := json.Unmarshal(prov.Payload, &payload); jsonErr != nil {
+	if jsonErr := json.Unmarshal(p.event.Payload, &payload); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal userObservedPayload: %w", jsonErr)
 	}
 
@@ -60,10 +62,10 @@ func (p *eventProcessor) processUserObserved(prov rez.ProviderEvent) (ent.Normal
 		ProviderSource:     sourceUsers,
 		ActivityKind:       ne.ActivityKindObserved,
 		SubjectKind:        projections.SubjectKindUser.String(),
-		ProviderSubjectRef: prov.ProviderSubjectRef,
-		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderSubjectRef: p.event.ProviderSubjectRef,
+		ProviderEventRef:   p.event.ProviderEventRef,
 		OccurredAt:         payload.UpdatedAt.Time(),
-		ReceivedAt:         prov.ReceivedAt,
+		ReceivedAt:         p.event.ReceivedAt,
 		Attributes:         encodedAttrs,
 	}
 
@@ -75,13 +77,13 @@ var processCallbackEventTypes = mapset.NewSet(
 	slackevents.Message,
 )
 
-func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	ev, parseErr := slackevents.ParseEvent(prov.Payload, slackevents.OptionNoVerifyToken())
+func (p *eventProcessor) processEventsApiCallback() (ent.NormalizedEvents, error) {
+	ev, parseErr := slackevents.ParseEvent(p.event.Payload, slackevents.OptionNoVerifyToken())
 	if parseErr != nil {
 		return nil, fmt.Errorf("parse event: %w", parseErr)
 	}
 
-	providerEventRef := prov.ProviderEventRef
+	providerEventRef := p.event.ProviderEventRef
 	if cb, ok := ev.Data.(*slackevents.EventsAPICallbackEvent); ok {
 		providerEventRef = cb.EventID
 	}
@@ -114,14 +116,14 @@ func (p *eventProcessor) processEventsApiCallback(prov rez.ProviderEvent) (ent.N
 		return nil, nil
 	}
 
-	occurredAt := slackintegration.TryConvertSlackTs(ts, slackintegration.TryConvertSlackTs(eventTS, prov.ReceivedAt))
+	occurredAt := slackintegration.TryConvertSlackTs(ts, slackintegration.TryConvertSlackTs(eventTS, p.event.ReceivedAt))
 
-	receivedAt := prov.ReceivedAt
+	receivedAt := p.event.ReceivedAt
 	if receivedAt.IsZero() {
 		receivedAt = occurredAt
 	}
 
-	ProviderSubjectRef := prov.ProviderSubjectRef
+	ProviderSubjectRef := p.event.ProviderSubjectRef
 	if ProviderSubjectRef == "" {
 		ProviderSubjectRef = fmt.Sprintf("slack:%s:%s:%s", ev.TeamID, attrs.ConversationExternalRef, ts)
 	}

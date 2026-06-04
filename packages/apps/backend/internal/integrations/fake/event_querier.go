@@ -12,7 +12,7 @@ import (
 	"github.com/rezible/rezible/integrations"
 )
 
-func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.IntegrationEventQuerier, error) {
+func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
 	return newEventQuerier(&InstalledIntegration{intg: intg}), nil
 }
 
@@ -28,8 +28,8 @@ func (q *eventQuerier) Integration() *ent.Integration {
 	return q.ii.intg
 }
 
-func (q *eventQuerier) PullEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
-	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceIncidents); shouldQuery {
 			for ev, evErr := range q.pullIncidentEvents(cursor) {
 				if !yield(ev, evErr) {
@@ -118,8 +118,8 @@ func (p incidentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
 	return prov, nil
 }
 
-func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
-	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, payload := range fakeIncidentEvents {
 			if cursor != "" && payload.ObservationID <= cursor {
 				continue
@@ -129,7 +129,7 @@ func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.Integrat
 				yield(nil, fmt.Errorf("json marshal incident: %w", jsonErr))
 				return
 			}
-			res := &rez.IntegrationEventQueryResult{
+			res := &rez.ProviderEventQueryResult{
 				Event: rez.ProviderEvent{
 					Provider:           integrationName,
 					ProviderSource:     sourceIncidents,
@@ -225,8 +225,8 @@ var fakeAlertEvents = []alertObservedPayload{
 	},
 }
 
-func (q *eventQuerier) pullAlertEvents(cursor string) iter.Seq2[*rez.IntegrationEventQueryResult, error] {
-	return func(yield func(*rez.IntegrationEventQueryResult, error) bool) {
+func (q *eventQuerier) pullAlertEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		for _, payload := range fakeAlertEvents {
 			if cursor != "" && payload.InstanceRef <= cursor {
 				continue
@@ -236,7 +236,7 @@ func (q *eventQuerier) pullAlertEvents(cursor string) iter.Seq2[*rez.Integration
 				yield(nil, fmt.Errorf("json marshal alert: %w", jsonErr))
 				return
 			}
-			res := &rez.IntegrationEventQueryResult{
+			res := &rez.ProviderEventQueryResult{
 				Event:             *ev,
 				SourceCursorAfter: new(payload.InstanceRef),
 			}

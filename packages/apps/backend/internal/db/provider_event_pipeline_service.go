@@ -5,15 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"reflect"
-	"strings"
-	"sync"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/google/uuid"
-	iesr "github.com/rezible/rezible/ent/integrationeventsyncrun"
 	"github.com/riverqueue/river"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -23,55 +18,33 @@ import (
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	neps "github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
 	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/integrations/projections"
 	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/projections"
 )
 
-type ProviderEventService struct {
-	logger *slog.Logger
-	db     rez.Database
-
-	eventProjectors   map[string]eventProjector
-	eventProjectorsMu sync.RWMutex
-
-	jobService   rez.JobService
-	integrations rez.IntegrationService
-	telemetry    *providerEventTelemetry
+type ProviderEventPipelineService struct {
+	logger     *slog.Logger
+	db         rez.Database
+	reg        *projections.PipelineRegistry
+	jobService rez.JobService
+	telemetry  *providerEventTelemetry
 }
 
-type eventProjector struct {
-	handler      rez.EventProjectionHandler
-	subjectKinds mapset.Set[projections.SubjectKind]
-}
-
-func NewProviderEventService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, intgs rez.IntegrationService) (*ProviderEventService, error) {
+func NewProviderEventPipelineService(ts rez.TelemetryService, db rez.Database, jobSvc rez.JobService, reg *projections.PipelineRegistry) (*ProviderEventPipelineService, error) {
 	logger := ts.NewLogger(rez.NewLoggerOptions{PackageName: "provider_events"})
-	pe := &ProviderEventService{
-		logger:          logger,
-		db:              db,
-		eventProjectors: make(map[string]eventProjector),
-		jobService:      jobSvc,
-		integrations:    intgs,
-		telemetry:       newProviderEventTelemetry(ts, logger),
+	pe := &ProviderEventPipelineService{
+		logger:     logger,
+		db:         db,
+		jobService: jobSvc,
+		reg:        reg,
+		telemetry:  newProviderEventTelemetry(ts, logger),
 	}
-	jobs.RegisterWorkerFunc(pe.HandleSyncIntegrationEventsJob)
 	jobs.RegisterWorkerFunc(pe.HandleProcessEventJob)
 	jobs.RegisterWorkerFunc(pe.HandleEventProjectionJob)
 	return pe, nil
 }
 
-func (s *ProviderEventService) RegisterProjectionHandler(handler rez.EventProjectionHandler, kinds ...projections.SubjectKind) {
-	s.eventProjectorsMu.Lock()
-	defer s.eventProjectorsMu.Unlock()
-	name, _ := strings.CutPrefix(reflect.TypeOf(handler).String(), "*")
-	slog.Debug("registered event projection handler", "name", name, "kinds", kinds)
-	s.eventProjectors[name] = eventProjector{
-		handler:      handler,
-		subjectKinds: mapset.NewSet(kinds...),
-	}
-}
-
-func (s *ProviderEventService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
+func (s *ProviderEventPipelineService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
 	res := s.ingest(ctx, ev)
 	s.telemetry.recordIngested(ctx, ev, res)
 	return res.error
@@ -82,7 +55,7 @@ type providerEventIngestResult struct {
 	error     error
 }
 
-func (s *ProviderEventService) ingest(ctx context.Context, ev rez.ProviderEvent) providerEventIngestResult {
+func (s *ProviderEventPipelineService) ingest(ctx context.Context, ev rez.ProviderEvent) providerEventIngestResult {
 	var res providerEventIngestResult
 	processArgs := processProviderEventArgs{Event: ev}
 	if validationErr := processArgs.validate(); validationErr != nil {
@@ -128,13 +101,13 @@ func (a processProviderEventArgs) validate() error {
 	return nil
 }
 
-func (s *ProviderEventService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
+func (s *ProviderEventPipelineService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
 	res := s.processProviderEvent(ctx, args.Event)
 	s.telemetry.recordProcessed(ctx, args.Event, res)
 	return res.error
 }
 
-func (s *ProviderEventService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
+func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
 	ev, queryErr := s.db.Client(ctx).NormalizedEvent.Get(ctx, args.EventId)
 	if queryErr != nil {
 		return fmt.Errorf("query normalized event: %w", queryErr)
@@ -152,62 +125,14 @@ func (s *ProviderEventService) HandleEventProjectionJob(ctx context.Context, arg
 	return nil
 }
 
-func (s *ProviderEventService) HandleSyncIntegrationEventsJob(ctx context.Context, args jobs.SyncIntegrationEventsArgs) error {
-	if args.IntegrationId == uuid.Nil {
-		// TODO: sync all installed?
-		return nil
-	}
-
-	intg, intgErr := s.integrations.GetInstalled(ctx, args.IntegrationId)
-	if intgErr != nil {
-		return fmt.Errorf("get installed integration: %w", intgErr)
-	}
-
-	querier, querierErr := s.integrations.GetProviderEventQuerier(ctx, intg.Integration())
-	if querierErr != nil {
-		return fmt.Errorf("get provider event querier: %w", querierErr)
-	}
-
-	sourceCursors := map[string]string{}
-	for _, src := range args.Sources {
-		// TODO: look up cursors from last sync
-		sourceCursors[src] = ""
-	}
-
-	return s.SyncIntegrationEvents(ctx, rez.IntegrationEventSyncOptions{
-		SyncReason:    args.SyncReason,
-		Querier:       querier,
-		SourceCursors: sourceCursors,
-	})
-}
-
-func (s *ProviderEventService) SyncIntegrationEvents(ctx context.Context, opts rez.IntegrationEventSyncOptions) error {
-	res := s.syncIntegrationEvents(ctx, opts.Querier, opts.SourceCursors)
-	s.saveSyncIntegrationEventsResult(ctx, opts.SyncReason, res)
-	return res.syncError
-}
-
-type integrationEventSyncResult struct {
-	syncError error
-
-	integrationId  uuid.UUID
-	sourceCursors  map[string]string
-	startedAt      time.Time
-	eventsPulled   int
-	eventsIngested int
-	duplicates     int
-}
-
-func (s *ProviderEventService) syncIntegrationEvents(ctx context.Context, querier rez.IntegrationEventQuerier, sourceCursors map[string]string) integrationEventSyncResult {
-	res := integrationEventSyncResult{
-		startedAt:     time.Now(),
-		integrationId: querier.Integration().ID,
-		sourceCursors: map[string]string{},
+func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, sourceCursors map[string]string) rez.ProviderEventSyncResult {
+	res := rez.ProviderEventSyncResult{
+		SourceCursorsAfter: sourceCursors,
 	}
 
 	const batchSize = 100
 
-	batch := make([]rez.IntegrationEventQueryResult, 0, batchSize)
+	batch := make([]rez.ProviderEventQueryResult, 0, batchSize)
 
 	flushBatch := func() bool {
 		if len(batch) == 0 {
@@ -223,40 +148,40 @@ func (s *ProviderEventService) syncIntegrationEvents(ctx context.Context, querie
 		}
 		results, insertErr := s.jobService.InsertMany(ctx, params)
 		if insertErr != nil {
-			res.syncError = fmt.Errorf("inserting process provider event jobs: %w", insertErr)
+			res.SyncErrors = append(res.SyncErrors, fmt.Errorf("inserting process provider event jobs: %w", insertErr))
 			return false
 		}
 		for i, result := range results {
 			if result != nil && result.UniqueSkippedAsDuplicate {
-				res.duplicates++
+				res.NumDuplicates++
 			} else {
-				res.eventsIngested++
+				res.EventsIngested++
 			}
 			if i < len(batch) {
 				batchItem := batch[i]
 				if batchItem.SourceCursorAfter != nil {
-					res.sourceCursors[batchItem.Event.ProviderSource] = *batchItem.SourceCursorAfter
+					res.SourceCursorsAfter[batchItem.Event.ProviderSource] = *batchItem.SourceCursorAfter
 				}
 			}
 		}
 		return true
 	}
 
-	for result, pullErr := range querier.PullEvents(ctx, sourceCursors) {
+	for result, pullErr := range querier.QueryProviderEvents(ctx, sourceCursors) {
 		if pullErr != nil {
-			res.syncError = fmt.Errorf("pulling events from querier: %w", pullErr)
+			res.SyncErrors = append(res.SyncErrors, fmt.Errorf("pulling events from querier: %w", pullErr))
 			break
 		}
 		if result == nil {
 			break
 		}
-		res.eventsPulled++
+		res.EventsPulled++
 		batch = append(batch, *result)
 		if len(batch) >= batchSize {
 			if flushOk := flushBatch(); !flushOk {
 				break
 			}
-			batch = make([]rez.IntegrationEventQueryResult, 0, batchSize)
+			batch = make([]rez.ProviderEventQueryResult, 0, batchSize)
 		}
 		if result.SourceCursorAfter == nil {
 			break
@@ -275,7 +200,7 @@ type processProviderEventResult struct {
 	insertProjectionDuplicates int
 }
 
-func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov rez.ProviderEvent) processProviderEventResult {
+func (s *ProviderEventPipelineService) processProviderEvent(ctx context.Context, prov rez.ProviderEvent) processProviderEventResult {
 	var res processProviderEventResult
 	if _, tenantOk := execution.GetContext(ctx).TenantID(); !tenantOk {
 		res.error = fmt.Errorf("tenant not found in context")
@@ -283,13 +208,13 @@ func (s *ProviderEventService) processProviderEvent(ctx context.Context, prov re
 	}
 
 	processStart := time.Now()
-	proc, getProcErr := s.integrations.GetProviderEventProcessor(prov.Provider)
-	if getProcErr != nil {
-		res.error = fmt.Errorf("get '%s' processor: %w", prov.Provider, getProcErr)
+	proc, ok := s.reg.GetProviderEventProcessor(prov.Provider)
+	if !ok {
+		res.error = fmt.Errorf("no event processors registered for provider '%s'", prov.Provider)
 		return res
 	}
 
-	normalizedEvents, procErr := proc.Process(ctx, prov)
+	normalizedEvents, procErr := proc.ProcessProviderEvent(ctx, prov)
 
 	res.processTime = time.Since(processStart)
 	res.normalizeCount = len(normalizedEvents)
@@ -373,7 +298,7 @@ type projectNormalizedEventResult struct {
 	handlerErrors map[string][]error
 }
 
-func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) projectNormalizedEventResult {
+func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) projectNormalizedEventResult {
 	res := projectNormalizedEventResult{
 		handlerErrors: make(map[string][]error),
 	}
@@ -381,10 +306,8 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 		res.handlerErrors[name] = append(res.handlerErrors[name], err)
 	}
 	kind := projections.SubjectKind(ev.SubjectKind)
-	for name, proj := range s.eventProjectors {
-		if !proj.subjectKinds.Contains(kind) {
-			continue
-		}
+
+	for name, projector := range s.reg.GetEventProjectorsForKind(kind) {
 		// query for existing projection status
 		queryStatus := s.db.Client(ctx).NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
@@ -411,7 +334,7 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 			}
 		}
 
-		projectionErr := proj.handler.HandleEventProjection(ctx, ev)
+		projectionErr := projector.HandleEventProjection(ctx, ev)
 
 		update := status.Update()
 		if projectionErr == nil {
@@ -431,26 +354,6 @@ func (s *ProviderEventService) projectNormalizedEvent(ctx context.Context, ev *e
 	}
 
 	return res
-}
-
-func (s *ProviderEventService) saveSyncIntegrationEventsResult(ctx context.Context, reason string, res integrationEventSyncResult) {
-	saveResult := s.db.Client(ctx).IntegrationEventSyncRun.Create().
-		SetSyncReason(reason).
-		SetIntegrationID(res.integrationId).
-		SetSourceCursors(res.sourceCursors).
-		SetEventsPulled(res.eventsPulled).
-		SetEventsIngested(res.eventsIngested).
-		SetDuplicates(res.duplicates).
-		SetStartedAt(res.startedAt).
-		SetFinishedAt(time.Now().UTC()).
-		SetStatus(iesr.StatusSuccess)
-	if res.syncError != nil {
-		saveResult.SetStatus(iesr.StatusFailed)
-		saveResult.SetFailureMessage(res.syncError.Error())
-	}
-	if saveRunErr := saveResult.Exec(ctx); saveRunErr != nil {
-		s.logger.ErrorContext(ctx, "failed to save provider events", "err", saveRunErr)
-	}
 }
 
 type providerEventTelemetry struct {

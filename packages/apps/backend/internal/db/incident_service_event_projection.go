@@ -10,7 +10,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
-	"github.com/rezible/rezible/integrations/projections"
+	"github.com/rezible/rezible/projections"
 )
 
 const (

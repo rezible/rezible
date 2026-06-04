@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/integrations/projections"
+	"github.com/rezible/rezible/projections"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

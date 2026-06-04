@@ -10,14 +10,17 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/integrations/projections"
+	"github.com/rezible/rezible/projections"
 )
 
-func (i *Integration) MakeProviderEventProcessor() rez.ProviderEventProcessor {
-	return &eventProcessor{}
+func (i *Integration) ProcessProviderEvent(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+	p := &eventProcessor{event: &prov}
+	return p.process()
+
 }
 
 type eventProcessor struct {
+	event *rez.ProviderEvent
 }
 
 const (
@@ -26,28 +29,28 @@ const (
 	sourceTopology  = "system_topology"
 )
 
-func (p *eventProcessor) Process(ctx context.Context, prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
-	switch prov.ProviderSource {
+func (p *eventProcessor) process() (ent.NormalizedEvents, error) {
+	switch p.event.ProviderSource {
 	case sourceAlerts:
-		return p.processAlert(prov)
+		return p.processAlert()
 	case sourceIncidents:
-		return p.processIncident(prov)
+		return p.processIncident()
 	case sourceTopology:
-		return p.processTopology(prov)
+		return p.processTopology()
 	default:
-		return nil, fmt.Errorf("unknown provider source: %s", prov.ProviderSource)
+		return nil, fmt.Errorf("unknown provider source: %s", p.event.ProviderSource)
 	}
 }
 
-func (p *eventProcessor) processAlert(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
 	var payload alertObservedPayload
-	if jsonErr := json.Unmarshal(prov.Payload, &payload); jsonErr != nil {
+	if jsonErr := json.Unmarshal(p.event.Payload, &payload); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal alert observed payload: %w", jsonErr)
 	}
 
 	occurredAt := payload.OccurredAt
 	if occurredAt.IsZero() {
-		occurredAt = prov.ReceivedAt
+		occurredAt = p.event.ReceivedAt
 	}
 	if occurredAt.IsZero() {
 		occurredAt = time.Now().UTC()
@@ -68,10 +71,10 @@ func (p *eventProcessor) processAlert(prov rez.ProviderEvent) (ent.NormalizedEve
 		ProviderSource:     sourceAlerts,
 		ActivityKind:       ne.ActivityKindObserved,
 		SubjectKind:        projections.SubjectKindAlert.String(),
-		ProviderSubjectRef: prov.ProviderSubjectRef,
-		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderSubjectRef: p.event.ProviderSubjectRef,
+		ProviderEventRef:   p.event.ProviderEventRef,
 		OccurredAt:         occurredAt,
-		ReceivedAt:         prov.ReceivedAt,
+		ReceivedAt:         p.event.ReceivedAt,
 		Attributes:         encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {
@@ -81,15 +84,15 @@ func (p *eventProcessor) processAlert(prov rez.ProviderEvent) (ent.NormalizedEve
 	return ent.NormalizedEvents{result}, nil
 }
 
-func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 	var payload incidentObservedPayload
-	if jsonErr := json.Unmarshal(prov.Payload, &payload); jsonErr != nil {
+	if jsonErr := json.Unmarshal(p.event.Payload, &payload); jsonErr != nil {
 		return nil, fmt.Errorf("unmarshal incident observed payload: %w", jsonErr)
 	}
 
 	occurredAt := payload.OccurredAt
 	if occurredAt.IsZero() {
-		occurredAt = prov.ReceivedAt
+		occurredAt = p.event.ReceivedAt
 	}
 	if occurredAt.IsZero() {
 		occurredAt = time.Now().UTC()
@@ -109,12 +112,12 @@ func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.Normalized
 	result := &ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceIncidents,
-		ProviderEventRef:   prov.ProviderEventRef,
+		ProviderEventRef:   p.event.ProviderEventRef,
 		ActivityKind:       ne.ActivityKindObserved,
 		SubjectKind:        projections.SubjectKindIncident.String(),
-		ProviderSubjectRef: prov.ProviderSubjectRef,
+		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		OccurredAt:         occurredAt,
-		ReceivedAt:         prov.ReceivedAt,
+		ReceivedAt:         p.event.ReceivedAt,
 		Attributes:         encodedAttrs,
 	}
 	if result.ReceivedAt.IsZero() {
@@ -124,24 +127,24 @@ func (p *eventProcessor) processIncident(prov rez.ProviderEvent) (ent.Normalized
 	return ent.NormalizedEvents{result}, nil
 }
 
-func (p *eventProcessor) processTopology(prov rez.ProviderEvent) (ent.NormalizedEvents, error) {
+func (p *eventProcessor) processTopology() (ent.NormalizedEvents, error) {
 	result := &ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceTopology,
-		ProviderEventRef:   prov.ProviderEventRef,
-		ProviderSubjectRef: prov.ProviderSubjectRef,
+		ProviderEventRef:   p.event.ProviderEventRef,
+		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ActivityKind:       ne.ActivityKindObserved,
-		ReceivedAt:         prov.ReceivedAt,
-		OccurredAt:         prov.ReceivedAt,
+		ReceivedAt:         p.event.ReceivedAt,
+		OccurredAt:         p.event.ReceivedAt,
 	}
 
-	eventErr := fmt.Errorf("unknown topology subject ref: %s", prov.ProviderSubjectRef)
-	if strings.HasPrefix(prov.ProviderSubjectRef, componentRefPrefix) {
+	eventErr := fmt.Errorf("unknown topology subject ref: %s", p.event.ProviderSubjectRef)
+	if strings.HasPrefix(p.event.ProviderSubjectRef, componentRefPrefix) {
 		result.SubjectKind = projections.SubjectKindSystemComponent.String()
-		result.Attributes, eventErr = getTopologyComponentAttributes(prov.Payload)
-	} else if strings.HasPrefix(prov.ProviderSubjectRef, relationshipRefPrefix) {
+		result.Attributes, eventErr = getTopologyComponentAttributes(p.event.Payload)
+	} else if strings.HasPrefix(p.event.ProviderSubjectRef, relationshipRefPrefix) {
 		result.SubjectKind = projections.SubjectKindSystemRelationship.String()
-		result.Attributes, eventErr = getTopologyRelationshipAttributes(prov.Payload)
+		result.Attributes, eventErr = getTopologyRelationshipAttributes(p.event.Payload)
 	}
 	return ent.NormalizedEvents{result}, eventErr
 }

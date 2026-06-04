@@ -39,7 +39,6 @@ type App interface {
 type AppService[A App] struct {
 	app             A
 	integrationName string
-	cfg             rez.IntegrationsConfigSlackApp
 
 	msgs  rez.MessageService
 	intgs rez.IntegrationService
@@ -60,7 +59,6 @@ func NewAppService[A App](app A, msgs rez.MessageService, eventPipeline rez.Prov
 	s := &AppService[A]{
 		app:                         app,
 		integrationName:             app.IntegrationName(),
-		cfg:                         app.AppConfig(),
 		eventsApiHandler:            app.EventsApiHandler(),
 		slashCommandHandlers:        app.SlashCommandHandlers(),
 		interactionCallbackHandlers: app.InteractionCallbackHandlers(),
@@ -79,7 +77,7 @@ func NewAppService[A App](app A, msgs rez.MessageService, eventPipeline rez.Prov
 		}
 	}
 
-	return s
+	return s, nil
 }
 
 func (s *AppService[A]) WebhookHandler() http.Handler {
