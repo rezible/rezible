@@ -1,25 +1,25 @@
 <script lang="ts">
 	import { useInitialSetupViewController } from "../controller.svelte";
-	import AvailableIntegrationCard from "$features/settings/components/available-integration-card/AvailableIntegrationCard.svelte";
 
 	const ctrl = useInitialSetupViewController();
-
-    const nextRequiredCapability = $derived(ctrl.remainingRequiredCapabilities.at(0));
-    const availableForRequired = $derived((!!nextRequiredCapability ? ctrl.availableIntegrationsForCapabilities.get(nextRequiredCapability) : []) || []);
-    // const availableOptions = $derived(availableForRequired.length > 0 ? availableForRequired : ctrl.availableOptions);
+	const org = $derived(ctrl.session.org);
 </script>
 
-<div class="flex gap-2">
-    <div class="flex flex-col gap-2">
-        <span>Capability: {nextRequiredCapability}</span>
-        {#each availableForRequired as integration}
-            {#key integration.name}
-                <AvailableIntegrationCard {integration} />
-            {/key}
-        {:else}
-            <div class="p-2 border-error-300 border-2">
-                <span>No integrations available for this capability</span>
-            </div>
-        {/each}
-    </div>
+<div class="flex flex-col gap-4">
+	<div class="space-y-1">
+		<h2 class="text-lg font-semibold">Organization details</h2>
+		<p class="text-sm text-muted-foreground">Confirm the workspace created for this organization.</p>
+	</div>
+
+	<dl class="grid gap-3 sm:grid-cols-2">
+		<div class="border border-border bg-background p-3">
+			<dt class="text-sm text-muted-foreground">Name</dt>
+			<dd class="mt-1 font-medium">{org?.attributes.name || "Organization"}</dd>
+		</div>
+
+		<div class="border border-border bg-background p-3">
+			<dt class="text-sm text-muted-foreground">Organization ID</dt>
+			<dd class="mt-1 truncate font-mono text-sm">{org?.id}</dd>
+		</div>
+	</dl>
 </div>

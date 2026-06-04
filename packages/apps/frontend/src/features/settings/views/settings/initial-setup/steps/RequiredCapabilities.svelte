@@ -4,22 +4,31 @@
 
 	const ctrl = useInitialSetupViewController();
 
-    const nextRequiredCapability = $derived(ctrl.remainingRequiredCapabilities.at(0));
-    const availableForRequired = $derived((!!nextRequiredCapability ? ctrl.availableIntegrationsForCapabilities.get(nextRequiredCapability) : []) || []);
-    // const availableOptions = $derived(availableForRequired.length > 0 ? availableForRequired : ctrl.availableOptions);
+	const nextRequiredCapability = $derived(ctrl.remainingRequiredCapabilities.at(0));
+	const availableForRequired = $derived(
+		(nextRequiredCapability ? ctrl.availableIntegrationsForCapabilities.get(nextRequiredCapability) : []) || [],
+	);
 </script>
 
-<div class="flex gap-2">
-    <div class="flex flex-col gap-2">
-        <span>Capability: {nextRequiredCapability}</span>
-        {#each availableForRequired as integration}
-            {#key integration.name}
-                <AvailableIntegrationCard {integration} />
-            {/key}
-        {:else}
-            <div class="p-2 border-error-300 border-2">
-                <span>No integrations available for this capability</span>
-            </div>
-        {/each}
-    </div>
+<div class="flex flex-col gap-4">
+	<div class="space-y-1">
+		<h2 class="text-lg font-semibold">Recommended integrations</h2>
+		{#if nextRequiredCapability}
+			<p class="text-sm text-muted-foreground">Configure an integration that provides {nextRequiredCapability} data.</p>
+		{:else}
+			<p class="text-sm text-muted-foreground">Required integration capabilities are configured.</p>
+		{/if}
+	</div>
+
+	{#if nextRequiredCapability}
+		<div class="flex flex-col gap-3">
+			{#each availableForRequired as integration (integration.name)}
+				<AvailableIntegrationCard {integration} />
+			{:else}
+				<div class="border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+					No integrations are available for {nextRequiredCapability}.
+				</div>
+			{/each}
+		</div>
+	{/if}
 </div>
