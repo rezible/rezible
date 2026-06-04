@@ -12,7 +12,6 @@ import (
 	"github.com/sourcegraph/conc/pool"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/integrations"
 	"github.com/rezible/rezible/integrations/projections"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
@@ -24,7 +23,6 @@ import (
 	"github.com/rezible/rezible/internal/integrations/google"
 	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
 	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
-	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/opentelemetry"
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
@@ -32,97 +30,23 @@ import (
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
 )
 
-type commandRunner struct {
-	i do.Injector
-}
-
-func makeCommandRunner() *commandRunner {
-	return &commandRunner{i: do.New()}
-}
-
-func (r *commandRunner) setupContext(ctx context.Context) (context.Context, error) {
-	ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
-
-	cfg, cfgErr := koanf.LoadConfig(ctx, koanf.Options{LoadEnvironment: true})
-	if cfgErr != nil {
-		return nil, fmt.Errorf("load config: %w", cfgErr)
-	}
-	do.ProvideValue(r.i, *cfg)
-	declareServices(ctx, r.i)
-
-	return ctx, nil
-}
-
-func (r *commandRunner) printConfig() error {
-	fmt.Printf("%+v\n", do.MustInvoke[rez.Config](r.i))
-	return nil
-}
-
-func (r *commandRunner) runServer(ctx context.Context) error {
-	return runService[*http.Server](ctx, r)
-}
-
-func (r *commandRunner) runSchemaMigration(ctx context.Context, direction string) error {
-	ms := do.MustInvoke[rez.MigrationService](r.i)
-	return ms.Run(ctx, direction)
-}
-
-func (r *commandRunner) createSchemaMigration(ctx context.Context, name string) error {
-	ms := do.MustInvoke[rez.MigrationService](r.i)
-	return ms.CreateSchemaMigration(ctx, name)
-}
-
-func (r *commandRunner) updateMigrationChecksumFile() error {
-	ms := do.MustInvoke[rez.MigrationService](r.i)
-	return ms.UpdateChecksum()
-}
-
-func (r *commandRunner) printOpenApiSpec(asJson bool) error {
-	api := oapiv1.MakeOpenApiSpec()
-	var spec []byte
-	var marshalErr error
-	if asJson {
-		spec, marshalErr = api.MarshalJSON()
-	} else {
-		spec, marshalErr = api.YAML()
-	}
-	if marshalErr != nil {
-		return fmt.Errorf("failed to marshal OpenAPI spec: %w", marshalErr)
-	}
-	fmt.Printf("%s", spec)
-	return nil
-}
-
-func (r *commandRunner) shutdown(baseCtx context.Context) error {
-	ctx, cancel := context.WithTimeout(context.WithoutCancel(baseCtx), 5*time.Second)
-	defer cancel()
-	shutdown := r.i.ShutdownWithContext(ctx)
-	var shutdownErr error
-	for sd, sErr := range shutdown.Errors {
-		if !errors.Is(sErr, context.Canceled) {
-			fmt.Printf("\n\t[%s] ERROR: %s\n", sd.Service, sErr.Error())
-			shutdownErr = errors.Join(shutdownErr, sErr)
-		}
-	}
-	return shutdownErr
-}
-
 type startable interface {
 	Start(context.Context) error
 }
 
-func runService[Entrypoint startable](ctx context.Context, r *commandRunner) error {
-	if initErr := registerIntegrations(r.i); initErr != nil {
+func runServicesFor[Entrypoint startable](ctx context.Context, i do.Injector) error {
+	if initErr := registerIntegrations(i); initErr != nil {
 		return fmt.Errorf("failed to initialize services: %w", initErr)
 	}
+
 	// invoke entrypoint service to load required service dependencies
-	es, srvErr := do.Invoke[Entrypoint](r.i)
+	es, srvErr := do.Invoke[Entrypoint](i)
 	if srvErr != nil {
 		return fmt.Errorf("failed to initialize %T: %v", es, srvErr)
 	}
 	var services []startable
-	for _, desc := range r.i.ListInvokedServices() {
-		s, invErr := do.InvokeNamed[any](r.i, desc.Service)
+	for _, desc := range i.ListInvokedServices() {
+		s, invErr := do.InvokeNamed[any](i, desc.Service)
 		if invErr != nil {
 			return fmt.Errorf("failed to invoke: %v", invErr)
 		}
@@ -163,6 +87,20 @@ func runService[Entrypoint startable](ctx context.Context, r *commandRunner) err
 		return fmt.Errorf("run services: %s", servicesErr.Error())
 	}
 	return nil
+}
+
+func shutdownServices(baseCtx context.Context, i do.Injector) error {
+	ctx, cancel := context.WithTimeout(context.WithoutCancel(baseCtx), 5*time.Second)
+	defer cancel()
+	shutdown := i.ShutdownWithContext(ctx)
+	var shutdownErr error
+	for sd, sErr := range shutdown.Errors {
+		if !errors.Is(sErr, context.Canceled) {
+			fmt.Printf("\n\t[%s] ERROR: %s\n", sd.Service, sErr.Error())
+			shutdownErr = errors.Join(shutdownErr, sErr)
+		}
+	}
+	return shutdownErr
 }
 
 func registerIntegrations(i do.Injector) error {

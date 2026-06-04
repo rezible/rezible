@@ -2,11 +2,18 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 
+	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/internal/http"
+	"github.com/rezible/rezible/internal/koanf"
+	oapiv1 "github.com/rezible/rezible/openapi/v1"
+	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 )
 
@@ -20,30 +27,38 @@ func main() {
 }
 
 func makeCli() *cli.Command {
-	r := makeCommandRunner()
+	i := do.New()
 
 	return &cli.Command{
 		Name:  "rezible",
 		Usage: "backend server control",
 		Before: func(ctx context.Context, command *cli.Command) (context.Context, error) {
-			return r.setupContext(ctx)
+			ctx = execution.NewRootContext(ctx, execution.KindAnonymous, execution.SourceCLI)
+			cfg, cfgErr := koanf.LoadConfig(ctx, koanf.Options{LoadEnvironment: true})
+			if cfgErr != nil {
+				return nil, fmt.Errorf("load config: %w", cfgErr)
+			}
+			do.ProvideValue(i, *cfg)
+			declareServices(ctx, i)
+			return ctx, nil
 		},
 		After: func(ctx context.Context, command *cli.Command) error {
-			return r.shutdown(ctx)
+			return shutdownServices(ctx, i)
 		},
 		Commands: []*cli.Command{
 			{
 				Name:  "serve",
 				Usage: "Run rezible server",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return r.runServer(ctx)
+					return runServicesFor[*http.Server](ctx, i)
 				},
 			},
 			{
 				Name:  "print-config",
 				Usage: "print loaded configuration",
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return r.printConfig()
+					fmt.Printf("%+v\n", do.MustInvoke[rez.Config](i))
+					return nil
 				},
 			},
 			{
@@ -51,7 +66,16 @@ func makeCli() *cli.Command {
 				Usage: "Print the OpenAPI spec",
 				Flags: []cli.Flag{&cli.BoolFlag{Name: "json"}},
 				Action: func(ctx context.Context, cmd *cli.Command) error {
-					return r.printOpenApiSpec(cmd.Bool("json"))
+					api := oapiv1.MakeOpenApiSpec()
+					marshalFn := api.YAML
+					if cmd.Bool("json") {
+						marshalFn = api.MarshalJSON
+					}
+					spec, marshalErr := marshalFn()
+					if spec != nil {
+						fmt.Printf("%s", spec)
+					}
+					return marshalErr
 				},
 			},
 			{
@@ -68,7 +92,8 @@ func makeCli() *cli.Command {
 							Config:    cli.StringConfig{TrimSpace: true},
 						}},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return r.runSchemaMigration(ctx, cmd.StringArg("direction"))
+							direction := cmd.StringArg("direction")
+							return do.MustInvoke[rez.MigrationService](i).Run(ctx, direction)
 						},
 					},
 					{
@@ -80,14 +105,15 @@ func makeCli() *cli.Command {
 							Config:    cli.StringConfig{TrimSpace: true},
 						}},
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return r.createSchemaMigration(ctx, cmd.StringArg("name"))
+							name := cmd.StringArg("name")
+							return do.MustInvoke[rez.MigrationService](i).CreateSchemaMigration(ctx, name)
 						},
 					},
 					{
 						Name:  "update-checksum",
 						Usage: "Update the database migrations checksum file",
 						Action: func(ctx context.Context, cmd *cli.Command) error {
-							return r.updateMigrationChecksumFile()
+							return do.MustInvoke[rez.MigrationService](i).UpdateChecksum()
 						},
 					},
 				},
