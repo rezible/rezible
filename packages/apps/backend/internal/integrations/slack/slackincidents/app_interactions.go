@@ -17,11 +17,11 @@ import (
 	"github.com/rezible/rezible/ent/incidentmilestone"
 )
 
-func (a *app) handleMessageActionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleMessageActionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
 	return fmt.Errorf("unknown message actions: %s", ic.CallbackID)
 }
 
-func (a *app) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
 	cw, cwErr := slackintegration.NewClientWrapper(ii)
 	if cwErr != nil {
 		return fmt.Errorf("failed to create client wrapper: %w", cwErr)
@@ -42,7 +42,7 @@ func (a *app) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integra
 	return fmt.Errorf("unknown block actions: %s", ic.CallbackID)
 }
 
-func (a *app) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
 	switch ic.View.CallbackID {
 	case viewCallbackIdIncidentDetailsModal:
 		return a.handleIncidentDetailsModalSubmission(ctx, ic)
@@ -52,7 +52,7 @@ func (a *app) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integ
 	return fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
 }
 
-func (a *app) getIncidentModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentDetailsModalViewMetadata, error) {
+func (a *App) getIncidentModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentDetailsModalViewMetadata, error) {
 	var meta incidentDetailsModalViewMetadata
 	if ic.Type == slack.InteractionTypeBlockActions {
 		inc, incErr := a.incidents.Get(ctx, incident.ChatChannelID(ic.Channel.ID))
@@ -74,7 +74,7 @@ func (a *app) getIncidentModalViewMetadata(ctx context.Context, ic *slack.Intera
 	return &meta, nil
 }
 
-func (a *app) handleIncidentDetailsModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
+func (a *App) handleIncidentDetailsModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
 	meta, metaErr := a.getIncidentModalViewMetadata(ctx, ic)
 	if metaErr != nil {
 		return fmt.Errorf("getting modal view metadata: %w", metaErr)
@@ -88,7 +88,7 @@ func (a *app) handleIncidentDetailsModalInteraction(ctx context.Context, cw *sla
 	return cw.OpenOrUpdateModal(ctx, ic, view)
 }
 
-func (a *app) handleIncidentMilestoneModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
+func (a *App) handleIncidentMilestoneModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
 	meta, metaErr := a.getIncidentMilestoneModalViewMetadata(ctx, ic)
 	if metaErr != nil {
 		return fmt.Errorf("getting modal view metadata: %w", metaErr)
@@ -100,7 +100,7 @@ func (a *app) handleIncidentMilestoneModalInteraction(ctx context.Context, cw *s
 	return cw.OpenOrUpdateModal(ctx, ic, view)
 }
 
-func (a *app) handleIncidentDetailsModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
+func (a *App) handleIncidentDetailsModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	meta, metaErr := a.getIncidentModalViewMetadata(ctx, ic)
 	if metaErr != nil {
 		return fmt.Errorf("getting modal view metadata: %w", metaErr)
@@ -145,7 +145,7 @@ func (a *app) handleIncidentDetailsModalSubmission(ctx context.Context, ic *slac
 	})
 }
 
-func (a *app) getIncidentMilestoneModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentMilestoneModalViewMetadata, error) {
+func (a *App) getIncidentMilestoneModalViewMetadata(ctx context.Context, ic *slack.InteractionCallback) (*incidentMilestoneModalViewMetadata, error) {
 	var meta incidentMilestoneModalViewMetadata
 	if ic.View.PrivateMetadata != "" {
 		if jsonErr := json.Unmarshal([]byte(ic.View.PrivateMetadata), &meta); jsonErr != nil {
@@ -164,7 +164,7 @@ func (a *app) getIncidentMilestoneModalViewMetadata(ctx context.Context, ic *sla
 	return &meta, nil
 }
 
-func (a *app) handleIncidentMilestoneModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
+func (a *App) handleIncidentMilestoneModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	meta, metaErr := a.getIncidentModalViewMetadata(ctx, ic)
 	if metaErr != nil {
 		return fmt.Errorf("getting modal view metadata: %w", metaErr)

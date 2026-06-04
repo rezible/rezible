@@ -16,10 +16,10 @@ import (
 
 type webhookHandler struct {
 	secret     string
-	provEvents rez.ProviderEventService
+	provEvents rez.ProviderEventPipelineService
 }
 
-func newWebhookHandler(secret string, provEvents rez.ProviderEventService) http.Handler {
+func newWebhookHandler(secret string, provEvents rez.ProviderEventPipelineService) http.Handler {
 	return &webhookHandler{secret: secret, provEvents: provEvents}
 }
 

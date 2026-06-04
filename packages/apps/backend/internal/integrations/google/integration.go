@@ -22,7 +22,7 @@ type Integration struct {
 	integrations rez.IntegrationService
 	messages     rez.MessageService
 	incidents    rez.IncidentService
-	eventAnnos   rez.EventAnnotationsService
+	events       rez.EventsService
 }
 
 func MakeIntegration(
@@ -31,14 +31,14 @@ func MakeIntegration(
 	integrations rez.IntegrationService,
 	messages rez.MessageService,
 	incidents rez.IncidentService,
-	eventAnnos rez.EventAnnotationsService,
+	events rez.EventsService,
 ) (*Integration, error) {
 	i := &Integration{
 		users:        users,
 		integrations: integrations,
 		messages:     messages,
 		incidents:    incidents,
-		eventAnnos:   eventAnnos,
+		events:       events,
 	}
 
 	if msgsErr := i.registerMessageHandlers(); msgsErr != nil {

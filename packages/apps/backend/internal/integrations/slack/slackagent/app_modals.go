@@ -45,7 +45,7 @@ type annotationModalMetadata struct {
 	AnnotationId uuid.UUID                  `json:"aid,omitempty"`
 }
 
-func (a *app) makeAnnotationModalView(ctx context.Context, meta *annotationModalMetadata) (*slack.ModalViewRequest, error) {
+func (a *App) makeAnnotationModalView(ctx context.Context, meta *annotationModalMetadata) (*slack.ModalViewRequest, error) {
 	userId, userOk := execution.GetContext(ctx).UserID()
 	if !userOk {
 		return nil, fmt.Errorf("no user context")
@@ -55,7 +55,7 @@ func (a *app) makeAnnotationModalView(ctx context.Context, meta *annotationModal
 		ea.HasEventWith(ne.ProviderSubjectRef(meta.MsgId.String())),
 		ea.CreatorID(userId))
 
-	curr, currErr := a.eventAnnos.Lookup(ctx, lookupAnno)
+	curr, currErr := a.events.QueryAnnotation(ctx, lookupAnno)
 	if currErr != nil && !ent.IsNotFound(currErr) {
 		return nil, fmt.Errorf("failed to lookup existing event annotation: %w", currErr)
 	}
@@ -90,7 +90,7 @@ func (a *app) makeAnnotationModalView(ctx context.Context, meta *annotationModal
 	}, nil
 }
 
-func (a *app) getAnnotationModalAnnotation(ctx context.Context, view slack.View) (*ent.EventAnnotation, error) {
+func (a *App) getAnnotationModalAnnotation(ctx context.Context, view slack.View) (*ent.EventAnnotation, error) {
 	var meta annotationModalMetadata
 	if jsonErr := json.Unmarshal([]byte(view.PrivateMetadata), &meta); jsonErr != nil {
 		return nil, fmt.Errorf("failed to unmarshal metadata: %w", jsonErr)

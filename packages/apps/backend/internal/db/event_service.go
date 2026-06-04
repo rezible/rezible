@@ -12,21 +12,40 @@ import (
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-type EventAnnotationsService struct {
-	db     rez.Database
-	events rez.ProviderEventService
+type EventService struct {
+	db rez.Database
 }
 
-func NewEventAnnotationsService(db rez.Database, events rez.ProviderEventService) (*EventAnnotationsService, error) {
-	s := &EventAnnotationsService{
-		db:     db,
-		events: events,
+func NewEventService(db rez.Database) (*EventService, error) {
+	s := &EventService{
+		db: db,
 	}
 
 	return s, nil
 }
 
-func (s *EventAnnotationsService) ListAnnotations(ctx context.Context, params rez.ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error) {
+func (s *EventService) GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error) {
+	return s.db.Client(ctx).NormalizedEvent.Get(ctx, id)
+}
+
+func (s *EventService) ListEvents(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error) {
+	query := s.db.Client(ctx).NormalizedEvent.Query()
+
+	query.Order(ne.ByOccurredAt(params.GetOrder()))
+	query.Where(params.Predicates...)
+
+	if params.WithAnnotations {
+		//query.WithAnnotations(func(q *ent.EventAnnotationQuery) {
+		//	if params.AnnotationRosterID != uuid.Nil {
+		//		q.Where(oncallannotation.RosterID(params.AnnotationRosterID))
+		//	}
+		//})
+	}
+
+	return ent.DoListQuery[ent.NormalizedEvent, *ent.NormalizedEventQuery](ctx, query, params.ListParams)
+}
+
+func (s *EventService) ListAnnotations(ctx context.Context, params rez.ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error) {
 	query := s.db.Client(ctx).EventAnnotation.Query()
 
 	if !params.From.IsZero() {
@@ -46,7 +65,7 @@ func (s *EventAnnotationsService) ListAnnotations(ctx context.Context, params re
 	return ent.DoListQuery[ent.EventAnnotation, *ent.EventAnnotationQuery](ctx, query, params.ListParams)
 }
 
-func (s *EventAnnotationsService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.EventAnnotation, error) {
+func (s *EventService) GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.EventAnnotation, error) {
 	return s.db.Client(ctx).EventAnnotation.Query().
 		Where(ea.ID(id)).
 		WithCreator().
@@ -54,14 +73,14 @@ func (s *EventAnnotationsService) GetAnnotation(ctx context.Context, id uuid.UUI
 		Only(ctx)
 }
 
-func (s *EventAnnotationsService) Lookup(ctx context.Context, pred predicate.EventAnnotation) (*ent.EventAnnotation, error) {
+func (s *EventService) QueryAnnotation(ctx context.Context, pred predicate.EventAnnotation) (*ent.EventAnnotation, error) {
 	query := s.db.Client(ctx).EventAnnotation.Query().
 		Where(pred).
 		WithEvent()
 	return query.Only(ctx)
 }
 
-func (s *EventAnnotationsService) SetAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error) {
+func (s *EventService) SetAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error) {
 	_, currErr := s.GetAnnotation(ctx, anno.ID)
 	if currErr != nil {
 		if ent.IsNotFound(currErr) {
@@ -80,7 +99,7 @@ func (s *EventAnnotationsService) SetAnnotation(ctx context.Context, anno *ent.E
 	return updated, nil
 }
 
-func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error) {
+func (s *EventService) createAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error) {
 	var created *ent.EventAnnotation
 	eventId := anno.EventID
 	if eventId == uuid.Nil && anno.Edges.Event != nil {
@@ -144,6 +163,6 @@ func (s *EventAnnotationsService) createAnnotation(ctx context.Context, anno *en
 	return created, nil
 }
 
-func (s *EventAnnotationsService) DeleteAnnotation(ctx context.Context, id uuid.UUID) error {
+func (s *EventService) DeleteAnnotation(ctx context.Context, id uuid.UUID) error {
 	return s.db.Client(ctx).EventAnnotation.DeleteOneID(id).Exec(ctx)
 }

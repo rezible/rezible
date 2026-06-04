@@ -2,7 +2,6 @@ package slackincidents
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/go-viper/mapstructure/v2"
@@ -14,58 +13,12 @@ import (
 
 const integrationName = "slack_incidents"
 
-func MakeIntegration(
-	appCfg rez.Config,
-	db rez.Database,
-	intgs rez.IntegrationService,
-	incidents rez.IncidentService,
-	users rez.UserService,
-	eventAnnos rez.EventAnnotationsService,
-	messages rez.MessageService,
-	provEvents rez.ProviderEventService,
-) (*Integration, error) {
-	cfg := appCfg.Integrations.Slack.Incidents
-
-	incApp, appErr := makeApp(appCfg, db, messages, incidents)
-	if appErr != nil {
-		return nil, fmt.Errorf("make incident app: %w", appErr)
-	}
-
-	svcParams := slackintegration.NewServiceParams{
-		AppConfig:            cfg,
-		IntegrationName:      integrationName,
-		MessageService:       messages,
-		ProviderEventService: provEvents,
-		OAuthScopes:          oAuthScopes,
-		App:                  incApp,
-	}
-	svc, svcErr := slackintegration.NewService(svcParams)
-	if svcErr != nil {
-		return nil, fmt.Errorf("failed to initialize slack service: %w", svcErr)
-	}
-
-	intg := &Integration{
-		enabled:      cfg.Enabled,
-		service:      svc,
-		users:        users,
-		integrations: intgs,
-		incidents:    incidents,
-		eventAnnos:   eventAnnos,
-	}
-
-	return intg, nil
+func MakeIntegration(svc *slackintegration.AppService[*App]) (*Integration, error) {
+	return &Integration{appSvc: svc}, nil
 }
 
 type Integration struct {
-	enabled bool
-
-	service *slackintegration.Service
-
-	db           rez.Database
-	users        rez.UserService
-	integrations rez.IntegrationService
-	incidents    rez.IncidentService
-	eventAnnos   rez.EventAnnotationsService
+	appSvc *slackintegration.AppService[*App]
 }
 
 func (i *Integration) Name() string {
@@ -77,7 +30,7 @@ func (i *Integration) Provider() string {
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	return i.enabled, nil
+	return i.appSvc.App().AppConfig().Enabled, nil
 }
 
 func (i *Integration) OAuthInstallRequired() bool {
@@ -85,41 +38,11 @@ func (i *Integration) OAuthInstallRequired() bool {
 }
 
 func (i *Integration) OAuth2Config() *oauth2.Config {
-	return i.service.OAuth2Config()
+	return i.appSvc.OAuth2Config()
 }
 
 func (i *Integration) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
-	return i.service.RetrieveInstallationTargetOptions(ctx, t)
-}
-
-var oAuthScopes = []string{
-	"app_mentions:read",
-	"assistant:write",
-	"channels:history",
-	"channels:join",
-	"channels:read",
-	"chat:write",
-	"chat:write.customize",
-	"chat:write.public",
-	"commands",
-	"groups:history",
-	"groups:read",
-	"im:history",
-	"im:read",
-	"im:write",
-	"im:write.topic",
-	"incoming-webhook",
-	"metadata.message:read",
-	"mpim:history",
-	"pins:read",
-	"reactions:read",
-	"usergroups:read",
-	"users.profile:read",
-	"users:read",
-	"users:read.email",
-	"channels:write.topic",
-	"channels:manage",
-	"channels:write.invites",
+	return i.appSvc.RetrieveInstallationTargetOptions(ctx, t)
 }
 
 func (i *Integration) MaxInstalls() *int {
@@ -127,15 +50,7 @@ func (i *Integration) MaxInstalls() *int {
 }
 
 func (i *Integration) WebhookHandler() http.Handler {
-	return i.service.WebhookHandler()
-}
-
-func (i *Integration) Start(ctx context.Context) error {
-	return i.service.Start(ctx)
-}
-
-func (i *Integration) Shutdown(ctx context.Context) error {
-	return i.service.Shutdown(ctx)
+	return i.appSvc.WebhookHandler()
 }
 
 func (i *Integration) SupportedCapabilities() []string {

@@ -19,7 +19,7 @@ var (
 	incidentCommandsFormatted    = strings.Join(supportedIncidentSubcommands, ", ")
 )
 
-func (a *app) handleIncidentCommand(ctx context.Context, ii *ent.Integration, cmd *slack.SlashCommand) (*slack.Blocks, error) {
+func (a *App) handleIncidentCommand(ctx context.Context, ii *ent.Integration, cmd *slack.SlashCommand) (*slack.Blocks, error) {
 	// are we currently in an incident channel?
 	var channelIncidentId uuid.UUID
 	inc, incErr := a.incidents.Get(ctx, incident.ChatChannelID(cmd.ChannelID))

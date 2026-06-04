@@ -13,14 +13,24 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
-type EventHandler struct {
+type appEventHandler struct {
 	integrationName string
 
-	provEvents                rez.ProviderEventService
-	publishProviderEventTypes mapset.Set[slackevents.EventsAPIType]
+	eventPipeline                          rez.ProviderEventPipelineService
+	providerEventPipelinePublishEventTypes mapset.Set[slackevents.EventsAPIType]
 
 	messages          rez.MessageService
 	respondEventTypes mapset.Set[slackevents.EventsAPIType]
+}
+
+func makeAppEventHandler(app App, msgs rez.MessageService, eventPipeline rez.ProviderEventPipelineService) *appEventHandler {
+	return &appEventHandler{
+		integrationName:                        app.IntegrationName(),
+		eventPipeline:                          eventPipeline,
+		providerEventPipelinePublishEventTypes: mapset.NewSet(app.PublishProviderEventPipelineEventTypes()...),
+		messages:                               msgs,
+		respondEventTypes:                      mapset.NewSet(app.RespondEventTypes()...),
+	}
 }
 
 type slashCommandEvent struct {
@@ -28,7 +38,7 @@ type slashCommandEvent struct {
 	Command         slack.SlashCommand
 }
 
-func (h *EventHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
+func (h *appEventHandler) OnSlashCommand(ctx context.Context, sc slack.SlashCommand) error {
 	return h.messages.PublishEvent(ctx, slashCommandEvent{
 		integrationName: h.integrationName,
 		Command:         sc,
@@ -40,7 +50,7 @@ type interactionCallbackEvent struct {
 	Data            []byte
 }
 
-func (h *EventHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
+func (h *appEventHandler) OnInteractionCallback(ctx context.Context, data []byte) error {
 	return h.messages.PublishEvent(ctx, interactionCallbackEvent{
 		integrationName: h.integrationName,
 		Data:            data,
@@ -52,7 +62,7 @@ type handleEventsApiCallbackEvent struct {
 	Data            []byte
 }
 
-func (h *EventHandler) OnEventsApiCallback(ctx context.Context, ev *slackevents.EventsAPICallbackEvent, data []byte) error {
+func (h *appEventHandler) OnEventsApiCallback(ctx context.Context, ev *slackevents.EventsAPICallbackEvent, data []byte) error {
 	if ev.InnerEvent == nil {
 		return nil
 	}
@@ -87,12 +97,12 @@ func (h *EventHandler) OnEventsApiCallback(ctx context.Context, ev *slackevents.
 	return nil
 }
 
-func (h *EventHandler) OnAppRateLimitedEvent(ctx context.Context) error {
+func (h *appEventHandler) OnAppRateLimitedEvent(ctx context.Context) error {
 	slog.Warn("slack app rate limited")
 	return nil
 }
 
-func (h *EventHandler) OnOptions(ctx context.Context, data []byte) error {
+func (h *appEventHandler) OnOptions(ctx context.Context, data []byte) error {
 	slog.Warn("not handling slack options event")
 	return nil
 }

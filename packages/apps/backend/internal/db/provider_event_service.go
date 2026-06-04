@@ -60,27 +60,6 @@ func NewProviderEventService(ts rez.TelemetryService, db rez.Database, jobSvc re
 	return pe, nil
 }
 
-func (s *ProviderEventService) GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error) {
-	return s.db.Client(ctx).NormalizedEvent.Get(ctx, id)
-}
-
-func (s *ProviderEventService) ListEvents(ctx context.Context, params rez.ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error) {
-	query := s.db.Client(ctx).NormalizedEvent.Query()
-
-	query.Order(ne.ByOccurredAt(params.GetOrder()))
-	query.Where(params.Predicates...)
-
-	if params.WithAnnotations {
-		//query.WithAnnotations(func(q *ent.EventAnnotationQuery) {
-		//	if params.AnnotationRosterID != uuid.Nil {
-		//		q.Where(oncallannotation.RosterID(params.AnnotationRosterID))
-		//	}
-		//})
-	}
-
-	return ent.DoListQuery[ent.NormalizedEvent, *ent.NormalizedEventQuery](ctx, query, params.ListParams)
-}
-
 func (s *ProviderEventService) RegisterProjectionHandler(handler rez.EventProjectionHandler, kinds ...projections.SubjectKind) {
 	s.eventProjectorsMu.Lock()
 	defer s.eventProjectorsMu.Unlock()

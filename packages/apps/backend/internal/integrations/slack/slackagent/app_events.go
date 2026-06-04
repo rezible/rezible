@@ -11,28 +11,39 @@ import (
 	"github.com/slack-go/slack/slackevents"
 )
 
-func (a *app) handleEventsApiEvent(ctx context.Context, ii *ent.Integration, ev *slackevents.EventsAPIEvent) error {
-	cw, cwErr := slackintegration.NewClientWrapper(ii)
-	if cwErr != nil {
-		return fmt.Errorf("failed to create client wrapper: %w", cwErr)
-	}
-
-	switch data := ev.InnerEvent.Data.(type) {
-	case *slackevents.AppHomeOpenedEvent:
-		return a.onUserHomeOpenedEvent(ctx, cw, data)
-	case *slackevents.AppMentionEvent:
-		return a.onMentionEvent(ctx, data)
-	case *slackevents.AssistantThreadStartedEvent:
-		return a.onAssistantThreadStartedEvent(ctx, data)
-	case *slackevents.MessageEvent:
-		return a.onMessageEvent(ctx, data)
-	default:
-		slog.Warn("unhandled slack callback event", "innerEventType", ev.InnerEvent.Type)
-		return nil
+func (a *App) RespondEventTypes() []slackevents.EventsAPIType {
+	return []slackevents.EventsAPIType{
+		slackevents.AppHomeOpened,
+		slackevents.AppMention,
+		slackevents.AssistantThreadStarted,
+		slackevents.Message,
 	}
 }
 
-func (a *app) onMentionEvent(ctx context.Context, data *slackevents.AppMentionEvent) error {
+func (a *App) EventsApiHandler() slackintegration.EventsApiHandler {
+	return func(ctx context.Context, ii *ent.Integration, ev *slackevents.EventsAPIEvent) error {
+		cw, cwErr := slackintegration.NewClientWrapper(ii)
+		if cwErr != nil {
+			return fmt.Errorf("failed to create client wrapper: %w", cwErr)
+		}
+
+		switch data := ev.InnerEvent.Data.(type) {
+		case *slackevents.AppHomeOpenedEvent:
+			return a.onUserHomeOpenedEvent(ctx, cw, data)
+		case *slackevents.AppMentionEvent:
+			return a.onMentionEvent(ctx, data)
+		case *slackevents.AssistantThreadStartedEvent:
+			return a.onAssistantThreadStartedEvent(ctx, data)
+		case *slackevents.MessageEvent:
+			return a.onMessageEvent(ctx, data)
+		default:
+			slog.Warn("unhandled slack callback event", "innerEventType", ev.InnerEvent.Type)
+			return nil
+		}
+	}
+}
+
+func (a *App) onMentionEvent(ctx context.Context, data *slackevents.AppMentionEvent) error {
 	replyTs := data.TimeStamp
 	if data.ThreadTimeStamp != "" {
 		replyTs = data.ThreadTimeStamp
@@ -43,7 +54,7 @@ func (a *app) onMentionEvent(ctx context.Context, data *slackevents.AppMentionEv
 	return nil
 }
 
-func (a *app) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
+func (a *App) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent) error {
 	//slog.Debug("message event", "message", data)
 	/*
 		threadTs := data.ThreadTimeStamp
@@ -60,12 +71,12 @@ func (a *app) onMessageEvent(ctx context.Context, data *slackevents.MessageEvent
 	return nil
 }
 
-func (a *app) onAssistantThreadStartedEvent(ctx context.Context, data *slackevents.AssistantThreadStartedEvent) error {
+func (a *App) onAssistantThreadStartedEvent(ctx context.Context, data *slackevents.AssistantThreadStartedEvent) error {
 	slog.Debug("assistant thread started")
 	return nil
 }
 
-func (a *app) onUserHomeOpenedEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppHomeOpenedEvent) error {
+func (a *App) onUserHomeOpenedEvent(ctx context.Context, cw *slackintegration.ClientWrapper, data *slackevents.AppHomeOpenedEvent) error {
 	homeView, viewErr := makeUserHomeView(ctx)
 	if viewErr != nil || homeView == nil {
 		return fmt.Errorf("failed to create user home view: %w", viewErr)

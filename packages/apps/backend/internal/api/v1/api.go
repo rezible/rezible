@@ -18,7 +18,6 @@ type Handler struct {
 	*integrationsHandler
 	*meetingsHandler
 	*eventsHandler
-	*eventAnnotationsHandler
 	*oncallMetricsHandler
 	*oncallRostersHandler
 	*oncallShiftsHandler
@@ -42,8 +41,7 @@ func NewHandler(
 	debriefs rez.DebriefService,
 	incidents rez.IncidentService,
 	integrations rez.IntegrationService,
-	provEvents rez.ProviderEventService,
-	eventAnnotations rez.EventAnnotationsService,
+	events rez.EventsService,
 	rosters rez.OncallRostersService,
 	shifts rez.OncallShiftsService,
 	oncallMetrics rez.OncallMetricsService,
@@ -64,8 +62,7 @@ func NewHandler(
 		incidentsHandler:          newIncidentsHandler(incidents),
 		integrationsHandler:       newIntegrationsHandler(integrations),
 		meetingsHandler:           newMeetingsHandler(),
-		eventsHandler:             newEventsHandler(provEvents),
-		eventAnnotationsHandler:   newEventAnnotationsHandler(eventAnnotations),
+		eventsHandler:             newEventsHandler(events),
 		oncallRostersHandler:      newOncallRostersHandler(users, incidents, rosters, shifts),
 		oncallShiftsHandler:       newOncallShiftsHandler(users, incidents, shifts),
 		oncallMetricsHandler:      newOncallMetricsHandler(oncallMetrics),

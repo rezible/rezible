@@ -23,7 +23,7 @@ type Integration struct {
 	webhookHandler http.Handler
 }
 
-func MakeIntegration(cfg rez.Config, provEvents rez.ProviderEventService) (*Integration, error) {
+func MakeIntegration(cfg rez.Config, provEvents rez.ProviderEventPipelineService) (*Integration, error) {
 	i := &Integration{
 		cfg:            cfg.Integrations.Github,
 		webhookHandler: http.NotFoundHandler(),

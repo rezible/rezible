@@ -44,7 +44,7 @@ type incidentDetailsModalViewMetadata struct {
 	IncidentId       uuid.UUID `json:"iid,omitempty"`
 }
 
-func (a *app) makeIncidentDetailsModalView(ctx context.Context, prefs UserSettingsIncidents, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
+func (a *App) makeIncidentDetailsModalView(ctx context.Context, prefs UserSettingsIncidents, meta *incidentDetailsModalViewMetadata) (*slack.ModalViewRequest, error) {
 	var curr *ent.Incident
 	if meta.IncidentId != uuid.Nil {
 		inc, incErr := a.incidents.Get(ctx, incident.ID(meta.IncidentId))
@@ -92,7 +92,7 @@ type incidentMilestoneModalViewMetadata struct {
 	IncidentId uuid.UUID `json:"iid"`
 }
 
-func (a *app) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
+func (a *App) makeIncidentMilestoneModalView(ctx context.Context, meta *incidentMilestoneModalViewMetadata) (*slack.ModalViewRequest, error) {
 	inc, incErr := a.incidents.Get(ctx, incident.ID(meta.IncidentId))
 	if incErr != nil && !ent.IsNotFound(incErr) {
 		return nil, incErr

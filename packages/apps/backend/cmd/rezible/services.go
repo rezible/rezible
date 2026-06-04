@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/samber/do/v2"
 	"github.com/sourcegraph/conc/pool"
 
@@ -104,7 +105,7 @@ func shutdownServices(baseCtx context.Context, i do.Injector) error {
 }
 
 func registerIntegrations(i do.Injector) error {
-	pes := do.MustInvoke[rez.ProviderEventService](i)
+	pes := do.MustInvoke[rez.ProviderEventPipelineService](i)
 
 	pes.RegisterProjectionHandler(do.MustInvoke[*db.KnowledgeService](i),
 		projections.SubjectKindCodeForge,
@@ -188,8 +189,7 @@ func declareServices(ctx context.Context, i do.Injector) {
 			do.MustInvoke[rez.DebriefService](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.ProviderEventService](i),
-			do.MustInvoke[rez.EventAnnotationsService](i),
+			do.MustInvoke[rez.EventsService](i),
 			do.MustInvoke[rez.OncallRostersService](i),
 			do.MustInvoke[rez.OncallShiftsService](i),
 			do.MustInvoke[rez.OncallMetricsService](i),
@@ -211,34 +211,13 @@ func declareServices(ctx context.Context, i do.Injector) {
 }
 
 var provideIntegrations = do.Package(
-	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
-		return slackagent.MakeIntegration(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.EventAnnotationsService](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.ProviderEventService](i),
-		)
-	}),
-	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
-		return slackincidents.MakeIntegration(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.IntegrationService](i),
-			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.UserService](i),
-			do.MustInvoke[rez.EventAnnotationsService](i),
-			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[rez.ProviderEventService](i),
-		)
-	}),
 	do.Lazy(func(i do.Injector) (*fakeprovider.Integration, error) {
 		return fakeprovider.MakeIntegration(do.MustInvoke[rez.Config](i)), nil
 	}),
 	do.Lazy(func(i do.Injector) (*github.Integration, error) {
 		return github.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.ProviderEventService](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),
 	do.Lazy(func(i do.Injector) (*google.Integration, error) {
@@ -248,8 +227,47 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.IntegrationService](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.EventAnnotationsService](i),
+			do.MustInvoke[rez.EventsService](i),
 		)
+	}),
+
+	do.Lazy(func(i do.Injector) (*slackintegration.AppService[*slackagent.App], error) {
+		app, appErr := slackagent.MakeApp(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.EventsService](i),
+		)
+		if appErr != nil {
+			return nil, appErr
+		}
+		return slackintegration.NewAppService(
+			app,
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
+		return slackagent.MakeIntegration(do.MustInvoke[*slackintegration.AppService[*slackagent.App]](i))
+	}),
+
+	do.Lazy(func(i do.Injector) (*slackintegration.AppService[*slackincidents.App], error) {
+		app, appErr := slackincidents.MakeApp(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.IncidentService](i),
+		)
+		if appErr != nil {
+			return nil, appErr
+		}
+		return slackintegration.NewAppService(app,
+			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+		)
+	}),
+	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
+		return slackincidents.MakeIntegration(do.MustInvoke[*slackintegration.AppService[*slackincidents.App]](i))
 	}),
 )
 
@@ -276,7 +294,7 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.IntegrationService](i),
 		)
 	}),
-	do.Bind[*db.ProviderEventService, rez.ProviderEventService](),
+	do.Bind[*db.ProviderEventService, rez.ProviderEventPipelineService](),
 
 	do.Lazy(func(i do.Injector) (*db.OrganizationService, error) {
 		return db.NewOrganizationService(
@@ -300,13 +318,12 @@ var provideServices = do.Package(
 	}),
 	do.Bind[*db.TeamService, rez.TeamService](),
 
-	do.Lazy(func(i do.Injector) (*db.EventAnnotationsService, error) {
-		return db.NewEventAnnotationsService(
+	do.Lazy(func(i do.Injector) (*db.EventService, error) {
+		return db.NewEventService(
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.ProviderEventService](i),
 		)
 	}),
-	do.Bind[*db.EventAnnotationsService, rez.EventAnnotationsService](),
+	do.Bind[*db.EventService, rez.EventsService](),
 
 	do.Lazy(func(i do.Injector) (*db.IncidentService, error) {
 		return db.NewIncidentService(

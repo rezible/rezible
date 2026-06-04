@@ -5,23 +5,22 @@ import (
 	"fmt"
 
 	rez "github.com/rezible/rezible"
-	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
-	"github.com/slack-go/slack"
+	"github.com/slack-go/slack/slackevents"
 )
 
-type app struct {
-	appCfg     rez.AppConfig
-	db         rez.Database
-	messages   rez.MessageService
-	eventAnnos rez.EventAnnotationsService
+type App struct {
+	cfg      rez.Config
+	db       rez.Database
+	messages rez.MessageService
+	events   rez.EventsService
 }
 
-func makeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, eventAnnos rez.EventAnnotationsService) (*app, error) {
-	h := &app{
-		appCfg:     cfg.App,
-		db:         db,
-		messages:   msgs,
-		eventAnnos: eventAnnos,
+func MakeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, events rez.EventsService) (*App, error) {
+	h := &App{
+		cfg:      cfg,
+		db:       db,
+		messages: msgs,
+		events:   events,
 	}
 	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
@@ -29,22 +28,50 @@ func makeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, eventAnno
 	return h, nil
 }
 
-func (a *app) registerMessageHandlers() error {
+func (a *App) registerMessageHandlers() error {
 	return errors.Join()
 }
 
-func (a *app) EventsApiHandler() slackintegration.EventsApiHandler {
-	return a.handleEventsApiEvent
+func (a *App) IntegrationName() string {
+	return integrationName
 }
 
-func (a *app) SlashCommandHandlers() map[string]slackintegration.SlashCommandHandler {
-	return map[string]slackintegration.SlashCommandHandler{}
+func (a *App) AppConfig() rez.IntegrationsConfigSlackApp {
+	return a.cfg.Integrations.Slack.Agent
 }
 
-func (a *app) InteractionCallbackHandlers() map[slack.InteractionType]slackintegration.InteractionCallbackHandler {
-	return map[slack.InteractionType]slackintegration.InteractionCallbackHandler{
-		slack.InteractionTypeMessageAction:  a.handleMessageActionInteraction,
-		slack.InteractionTypeBlockActions:   a.handleBlockActionsInteraction,
-		slack.InteractionTypeViewSubmission: a.handleViewSubmissionInteraction,
+func (a *App) PublishProviderEventPipelineEventTypes() []slackevents.EventsAPIType {
+	return []slackevents.EventsAPIType{}
+}
+
+func (a *App) OAuthScopes() []string {
+	return []string{
+		"app_mentions:read",
+		"assistant:write",
+		"channels:history",
+		"channels:join",
+		"channels:read",
+		"chat:write",
+		"chat:write.customize",
+		"chat:write.public",
+		"commands",
+		"groups:history",
+		"groups:read",
+		"im:history",
+		"im:read",
+		"im:write",
+		"im:write.topic",
+		"incoming-webhook",
+		"metadata.message:read",
+		"mpim:history",
+		"pins:read",
+		"reactions:read",
+		"usergroups:read",
+		"users.profile:read",
+		"users:read",
+		"users:read.email",
+		"channels:write.topic",
+		"channels:manage",
+		"channels:write.invites",
 	}
 }

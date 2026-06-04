@@ -2,7 +2,6 @@ package slackagent
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	rez "github.com/rezible/rezible"
@@ -13,41 +12,12 @@ import (
 
 const integrationName = "slack_agent"
 
-func MakeIntegration(
-	appCfg rez.Config,
-	db rez.Database,
-	eventAnnos rez.EventAnnotationsService,
-	messages rez.MessageService,
-	provEvents rez.ProviderEventService,
-) (*Integration, error) {
-	agentApp, appErr := makeApp(appCfg, db, messages, eventAnnos)
-	if appErr != nil {
-		return nil, fmt.Errorf("make incident app: %w", appErr)
-	}
-
-	cfg := appCfg.Integrations.Slack.Agent
-	svcParams := slackintegration.NewServiceParams{
-		AppConfig:            cfg,
-		IntegrationName:      integrationName,
-		MessageService:       messages,
-		ProviderEventService: provEvents,
-		OAuthScopes:          oAuthScopes,
-		App:                  agentApp,
-	}
-	svc, svcErr := slackintegration.NewService(svcParams)
-	if svcErr != nil {
-		return nil, fmt.Errorf("failed to initialize slack service: %w", svcErr)
-	}
-
-	return &Integration{
-		enabled: cfg.Enabled,
-		service: svc,
-	}, nil
+func MakeIntegration(svc *slackintegration.AppService[*App]) (*Integration, error) {
+	return &Integration{appSvc: svc}, nil
 }
 
 type Integration struct {
-	enabled bool
-	service *slackintegration.Service
+	appSvc *slackintegration.AppService[*App]
 }
 
 func (i *Integration) Name() string {
@@ -63,7 +33,7 @@ func (i *Integration) MaxInstalls() *int {
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	return i.enabled, nil
+	return i.appSvc.App().AppConfig().Enabled, nil
 }
 
 func (i *Integration) OAuthInstallRequired() bool {
@@ -71,53 +41,15 @@ func (i *Integration) OAuthInstallRequired() bool {
 }
 
 func (i *Integration) WebhookHandler() http.Handler {
-	return i.service.WebhookHandler()
+	return i.appSvc.WebhookHandler()
 }
 
 func (i *Integration) OAuth2Config() *oauth2.Config {
-	return i.service.OAuth2Config()
+	return i.appSvc.OAuth2Config()
 }
 
 func (i *Integration) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
-	return i.service.RetrieveInstallationTargetOptions(ctx, t)
-}
-
-var oAuthScopes = []string{
-	"app_mentions:read",
-	"assistant:write",
-	"channels:history",
-	"channels:join",
-	"channels:read",
-	"chat:write",
-	"chat:write.customize",
-	"chat:write.public",
-	"commands",
-	"groups:history",
-	"groups:read",
-	"im:history",
-	"im:read",
-	"im:write",
-	"im:write.topic",
-	"incoming-webhook",
-	"metadata.message:read",
-	"mpim:history",
-	"pins:read",
-	"reactions:read",
-	"usergroups:read",
-	"users.profile:read",
-	"users:read",
-	"users:read.email",
-	"channels:write.topic",
-	"channels:manage",
-	"channels:write.invites",
-}
-
-func (i *Integration) Start(ctx context.Context) error {
-	return i.service.Start(ctx)
-}
-
-func (i *Integration) Shutdown(ctx context.Context) error {
-	return i.service.Shutdown(ctx)
+	return i.appSvc.RetrieveInstallationTargetOptions(ctx, t)
 }
 
 var supportedCapabilities = []string{"chat", "users"}

@@ -31,7 +31,7 @@ type incidentUpdateProcessor struct {
 	client *slack.Client
 }
 
-func (a *app) newUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
+func (a *App) newUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
 	inc, incErr := a.incidents.Get(ctx, incident.ID(incidentId))
 	if incErr != nil {
 		return nil, fmt.Errorf("get incident: %w", incErr)
@@ -40,7 +40,7 @@ func (a *app) newUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*in
 	return &incidentUpdateProcessor{
 		inc:       inc,
 		logger:    slog.Default().With("service", "slack.incident_updates"),
-		appCfg:    a.appCfg,
+		appCfg:    a.cfg.App,
 		db:        a.db,
 		incidents: a.incidents,
 		messages:  a.messages,

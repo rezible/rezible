@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"time"
 
-	mapset "github.com/deckarep/golang-set/v2"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
@@ -25,12 +24,20 @@ type (
 )
 
 type App interface {
+	IntegrationName() string
+	AppConfig() rez.IntegrationsConfigSlackApp
+	OAuthScopes() []string
+
 	EventsApiHandler() EventsApiHandler
 	SlashCommandHandlers() map[string]SlashCommandHandler
 	InteractionCallbackHandlers() map[slack.InteractionType]InteractionCallbackHandler
+
+	PublishProviderEventPipelineEventTypes() []slackevents.EventsAPIType
+	RespondEventTypes() []slackevents.EventsAPIType
 }
 
-type Service struct {
+type AppService[A App] struct {
+	app             A
 	integrationName string
 	cfg             rez.IntegrationsConfigSlackApp
 
@@ -38,7 +45,6 @@ type Service struct {
 	intgs rez.IntegrationService
 	users rez.UserService
 
-	eventHandler *EventHandler
 	oauthHandler *oauthHandler
 
 	webhookHandler     http.Handler
@@ -49,75 +55,56 @@ type Service struct {
 	interactionCallbackHandlers map[slack.InteractionType]InteractionCallbackHandler
 }
 
-type NewServiceParams struct {
-	AppConfig            rez.IntegrationsConfigSlackApp
-	IntegrationName      string
-	MessageService       rez.MessageService
-	ProviderEventService rez.ProviderEventService
-	OAuthScopes          []string
-	App                  App
-}
-
-func NewService(p NewServiceParams) (*Service, error) {
-	cfg := p.AppConfig
-	s := &Service{
-		integrationName:             p.IntegrationName,
-		cfg:                         cfg,
+func NewAppService[A App](app A, msgs rez.MessageService, eventPipeline rez.ProviderEventPipelineService) (*AppService[A], error) {
+	cfg := app.AppConfig()
+	s := &AppService[A]{
+		app:                         app,
+		integrationName:             app.IntegrationName(),
+		cfg:                         app.AppConfig(),
+		eventsApiHandler:            app.EventsApiHandler(),
+		slashCommandHandlers:        app.SlashCommandHandlers(),
+		interactionCallbackHandlers: app.InteractionCallbackHandlers(),
 		webhookHandler:              http.NotFoundHandler(),
-		oauthHandler:                NewOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, p.OAuthScopes),
-		eventsApiHandler:            p.App.EventsApiHandler(),
-		slashCommandHandlers:        p.App.SlashCommandHandlers(),
-		interactionCallbackHandlers: p.App.InteractionCallbackHandlers(),
+		oauthHandler:                NewOAuthHandler(cfg.OAuthClientId, cfg.OAuthClientSecret, app.OAuthScopes()),
 	}
 
-	if !cfg.Enabled {
-		return s, nil
-	}
+	if cfg.Enabled {
+		eventHandler := makeAppEventHandler(app, msgs, eventPipeline)
 
-	s.eventHandler = &EventHandler{
-		integrationName:           p.IntegrationName,
-		messages:                  p.MessageService,
-		respondEventTypes:         mapset.NewSet[slackevents.EventsAPIType](),
-		provEvents:                p.ProviderEventService,
-		publishProviderEventTypes: mapset.NewSet[slackevents.EventsAPIType](),
-	}
-
-	if p.AppConfig.EnableSocketMode {
-		s.socketModeListener = makeSocketModeListener(s.createSingleTenantClient(), s.eventHandler)
-	} else {
-		whSecret := p.AppConfig.WebhookSigningSecret
-		if whSecret == "" {
-			return nil, fmt.Errorf("webhook signing secret not set")
+		if cfg.EnableSocketMode {
+			socketModeClient := slack.New(cfg.BotToken, slack.OptionAppLevelToken(cfg.AppToken))
+			s.socketModeListener = makeSocketModeListener(socketModeClient, eventHandler)
+		} else {
+			s.webhookHandler = makeWebhookHandler(cfg.WebhookSigningSecret, eventHandler)
 		}
-		s.webhookHandler = makeWebhookHandler(whSecret, s.eventHandler)
 	}
 
-	return s, nil
+	return s
 }
 
-func (s *Service) createSingleTenantClient() *slack.Client {
-	return slack.New(s.cfg.BotToken, slack.OptionAppLevelToken(s.cfg.AppToken))
-}
-
-func (s *Service) WebhookHandler() http.Handler {
+func (s *AppService[A]) WebhookHandler() http.Handler {
 	return s.webhookHandler
 }
 
-func (s *Service) Start(ctx context.Context) error {
+func (s *AppService[A]) Start(ctx context.Context) error {
 	if s.socketModeListener != nil {
 		return s.socketModeListener.Start(ctx)
 	}
 	return nil
 }
 
-func (s *Service) Shutdown(ctx context.Context) error {
+func (s *AppService[A]) Shutdown(ctx context.Context) error {
 	if s.socketModeListener != nil {
 		return s.socketModeListener.Shutdown(ctx)
 	}
 	return nil
 }
 
-func (s *Service) registerMessageHandlers() error {
+func (s *AppService[A]) App() A {
+	return s.app
+}
+
+func (s *AppService[A]) registerMessageHandlers() error {
 	return errors.Join(
 		s.msgs.AddEventHandlers(
 			rez.NewEventHandler(s.integrationName+".slash_command", s.handleSlashCommand),
@@ -127,15 +114,15 @@ func (s *Service) registerMessageHandlers() error {
 	)
 }
 
-func (s *Service) OAuth2Config() *oauth2.Config {
+func (s *AppService[A]) OAuth2Config() *oauth2.Config {
 	return s.oauthHandler.OAuth2Config()
 }
 
-func (s *Service) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
+func (s *AppService[A]) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
 	return s.oauthHandler.ExtractInstallationTargetFromToken(t)
 }
 
-func (s *Service) createInstallationContext(ctx context.Context, ids IntegrationInstallIds) (*ent.Integration, context.Context, error) {
+func (s *AppService[A]) createInstallationContext(ctx context.Context, ids IntegrationInstallIds) (*ent.Integration, context.Context, error) {
 	intg, lookupErr := s.intgs.LookupByRef(execution.NewSystemContext(ctx), s.integrationName, ids.asRef())
 	if lookupErr != nil {
 		return nil, ctx, fmt.Errorf("listing configured integrations: %w", lookupErr)
@@ -144,7 +131,7 @@ func (s *Service) createInstallationContext(ctx context.Context, ids Integration
 	return intg, ctx, nil
 }
 
-func (s *Service) handleEventsApiCallbackEvent(baseCtx context.Context, ev *handleEventsApiCallbackEvent) error {
+func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev *handleEventsApiCallbackEvent) error {
 	if s.integrationName != ev.integrationName {
 		return nil
 	}
@@ -163,7 +150,7 @@ func (s *Service) handleEventsApiCallbackEvent(baseCtx context.Context, ev *hand
 	return nil
 }
 
-func (s *Service) createUserContext(ctx context.Context, userId string) (context.Context, error) {
+func (s *AppService[A]) createUserContext(ctx context.Context, userId string) (context.Context, error) {
 	usr, usrErr := s.users.Get(ctx, user.ChatID(userId))
 	if usrErr != nil {
 		slog.ErrorContext(ctx, "failed to lookup chat user",
@@ -175,7 +162,7 @@ func (s *Service) createUserContext(ctx context.Context, userId string) (context
 	return execution.NewUserAuthContext(ctx, *usr, time.Time{}), nil
 }
 
-func (s *Service) handleInteractionCallback(baseCtx context.Context, ev *interactionCallbackEvent) error {
+func (s *AppService[A]) handleInteractionCallback(baseCtx context.Context, ev *interactionCallbackEvent) error {
 	if s.integrationName != ev.integrationName {
 		return nil
 	}
@@ -207,7 +194,7 @@ func (s *Service) handleInteractionCallback(baseCtx context.Context, ev *interac
 	return handler(ctx, intg, &ic)
 }
 
-func (s *Service) handleSlashCommand(baseCtx context.Context, ev *slashCommandEvent) error {
+func (s *AppService[A]) handleSlashCommand(baseCtx context.Context, ev *slashCommandEvent) error {
 	if s.integrationName != ev.integrationName {
 		return nil
 	}

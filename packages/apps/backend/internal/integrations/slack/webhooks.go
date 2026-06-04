@@ -18,11 +18,11 @@ import (
 )
 
 type webhookHandler struct {
-	eventHandler  *EventHandler
+	eventHandler  *appEventHandler
 	signingSecret string
 }
 
-func makeWebhookHandler(signingSecret string, evth *EventHandler) http.Handler {
+func makeWebhookHandler(signingSecret string, evth *appEventHandler) http.Handler {
 	h := &webhookHandler{
 		signingSecret: signingSecret,
 		eventHandler:  evth,

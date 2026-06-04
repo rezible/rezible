@@ -216,23 +216,47 @@ type (
 		HandleEventProjection(context.Context, *ent.NormalizedEvent) error
 	}
 
+	ProviderEventPipelineService interface {
+		Ingest(context.Context, ProviderEvent) error
+		SyncIntegrationEvents(context.Context, IntegrationEventSyncOptions) error
+		RegisterProjectionHandler(h EventProjectionHandler, kinds ...projections.SubjectKind)
+	}
+)
+
+type (
+	ExpandAnnotationsParams struct {
+		WithCreator       bool
+		WithRoster        bool
+		WithAlertFeedback bool
+		WithEvent         bool
+	}
+
+	ListAnnotationsParams struct {
+		ent.ListParams
+		From     time.Time
+		To       time.Time
+		UserIds  []uuid.UUID
+		EventIds []uuid.UUID
+		Expand   ExpandAnnotationsParams
+	}
+
 	ListEventsParams struct {
 		ent.ListParams
 		Predicates      []predicate.NormalizedEvent
 		WithAnnotations bool
 	}
 
-	ProviderEventService interface {
-		Ingest(context.Context, ProviderEvent) error
-		SyncIntegrationEvents(context.Context, IntegrationEventSyncOptions) error
-		RegisterProjectionHandler(h EventProjectionHandler, kinds ...projections.SubjectKind)
-
+	EventsService interface {
 		GetEvent(ctx context.Context, id uuid.UUID) (*ent.NormalizedEvent, error)
 		ListEvents(ctx context.Context, params ListEventsParams) (*ent.ListResult[ent.NormalizedEvent], error)
-	}
 
-	ProviderEventIngestResult struct {
-		Duplicate bool
+		ListAnnotations(ctx context.Context, params ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error)
+
+		QueryAnnotation(context.Context, predicate.EventAnnotation) (*ent.EventAnnotation, error)
+
+		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.EventAnnotation, error)
+		SetAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error)
+		DeleteAnnotation(ctx context.Context, id uuid.UUID) error
 	}
 )
 
@@ -485,34 +509,6 @@ type (
 		ListComments(context.Context, ListRetrospectiveCommentsParams) ([]*ent.RetrospectiveComment, error)
 		GetComment(context.Context, uuid.UUID) (*ent.RetrospectiveComment, error)
 		SetComment(context.Context, *ent.RetrospectiveComment) (*ent.RetrospectiveComment, error)
-	}
-)
-
-type (
-	ExpandAnnotationsParams struct {
-		WithCreator       bool
-		WithRoster        bool
-		WithAlertFeedback bool
-		WithEvent         bool
-	}
-
-	ListAnnotationsParams struct {
-		ent.ListParams
-		From     time.Time
-		To       time.Time
-		UserIds  []uuid.UUID
-		EventIds []uuid.UUID
-		Expand   ExpandAnnotationsParams
-	}
-
-	EventAnnotationsService interface {
-		ListAnnotations(ctx context.Context, params ListAnnotationsParams) (*ent.ListResult[ent.EventAnnotation], error)
-
-		Lookup(context.Context, predicate.EventAnnotation) (*ent.EventAnnotation, error)
-
-		GetAnnotation(ctx context.Context, id uuid.UUID) (*ent.EventAnnotation, error)
-		SetAnnotation(ctx context.Context, anno *ent.EventAnnotation) (*ent.EventAnnotation, error)
-		DeleteAnnotation(ctx context.Context, id uuid.UUID) error
 	}
 )
 

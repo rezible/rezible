@@ -12,11 +12,23 @@ import (
 	"github.com/rezible/rezible/internal/integrations/slack"
 )
 
+func (a *App) SlashCommandHandlers() map[string]slackintegration.SlashCommandHandler {
+	return map[string]slackintegration.SlashCommandHandler{}
+}
+
+func (a *App) InteractionCallbackHandlers() map[slack.InteractionType]slackintegration.InteractionCallbackHandler {
+	return map[slack.InteractionType]slackintegration.InteractionCallbackHandler{
+		slack.InteractionTypeMessageAction:  a.handleMessageActionInteraction,
+		slack.InteractionTypeBlockActions:   a.handleBlockActionsInteraction,
+		slack.InteractionTypeViewSubmission: a.handleViewSubmissionInteraction,
+	}
+}
+
 const (
 	createAnnotationActionCallbackID = "create_annotation"
 )
 
-func (a *app) handleMessageActionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleMessageActionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
 	cw, cwErr := slackintegration.NewClientWrapper(ii)
 	if cwErr != nil {
 		return fmt.Errorf("failed to create client wrapper: %w", cwErr)
@@ -29,7 +41,7 @@ func (a *app) handleMessageActionInteraction(ctx context.Context, ii *ent.Integr
 	return fmt.Errorf("unknown message actions: %s", ic.CallbackID)
 }
 
-func (a *app) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
 	for _, action := range ic.ActionCallback.BlockActions {
 		switch action.ActionID {
 		//case actionCallbackIdIncidentDetailsModalButton:
@@ -43,7 +55,7 @@ func (a *app) handleBlockActionsInteraction(ctx context.Context, ii *ent.Integra
 	return fmt.Errorf("unknown block actions: %s", ic.CallbackID)
 }
 
-func (a *app) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
+func (a *App) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integration, ic *slack.InteractionCallback) error {
 	switch ic.View.CallbackID {
 	case viewCallbackIdAnnotationModal:
 		return a.handleAnnotationModalSubmission(ctx, ic)
@@ -51,7 +63,7 @@ func (a *app) handleViewSubmissionInteraction(ctx context.Context, ii *ent.Integ
 	return fmt.Errorf("unknown view submission: %s", ic.View.CallbackID)
 }
 
-func (a *app) handleAnnotationModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
+func (a *App) handleAnnotationModalInteraction(ctx context.Context, cw *slackintegration.ClientWrapper, ic *slack.InteractionCallback) error {
 	meta := &annotationModalMetadata{
 		UserId:  ic.User.ID,
 		MsgId:   slackintegration.MessageId(fmt.Sprintf("%s_%s", ic.Channel.ID, ic.Message.Timestamp)),
@@ -69,12 +81,12 @@ func (a *app) handleAnnotationModalInteraction(ctx context.Context, cw *slackint
 	return cw.OpenOrUpdateModal(ctx, ic, view)
 }
 
-func (a *app) handleAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
+func (a *App) handleAnnotationModalSubmission(ctx context.Context, ic *slack.InteractionCallback) error {
 	anno, annoErr := a.getAnnotationModalAnnotation(ctx, ic.View)
 	if annoErr != nil {
 		return fmt.Errorf("failed to get view annotation: %w", annoErr)
 	}
-	_, createErr := a.eventAnnos.SetAnnotation(ctx, anno)
+	_, createErr := a.events.SetAnnotation(ctx, anno)
 	if createErr != nil {
 		return fmt.Errorf("failed to create annotation: %w", createErr)
 	}

@@ -15,11 +15,11 @@ import (
 
 type socketModeListener struct {
 	client       *socketmode.Client
-	eventHandler *EventHandler
+	eventHandler *appEventHandler
 	stopFn       func() error
 }
 
-func makeSocketModeListener(client *slack.Client, evth *EventHandler) *socketModeListener {
+func makeSocketModeListener(client *slack.Client, evth *appEventHandler) *socketModeListener {
 	return &socketModeListener{
 		eventHandler: evth,
 		client:       socketmode.New(client),
