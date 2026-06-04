@@ -37,7 +37,6 @@ func NewAuthSessionService(cfg rez.Config, orgs rez.OrganizationService, users r
 			return nil, fmt.Errorf("oauth redirect url: %w", pathError)
 		}
 	}
-	slog.Debug("Using OAuth Redirect URL: " + oauthRedirectUrl)
 
 	codec, codecErr := newCookieCodec(cfg.HttpServer.Auth.SessionSecret)
 	if codecErr != nil {

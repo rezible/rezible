@@ -4,12 +4,13 @@ export dbPort := env("POSTGRES_PORT")
 export dbAdminUser := env("POSTGRES_ADMIN_USER")
 export dbAppUser := env("POSTGRES_APP_USER")
 
-[doc("Setup the workspace & install dependencies")]
+[doc("Install dependencies & start services")]
 [working-directory("..")]
 @setup:
     just backend::install
     bun install
-    -just dev::setup-workspace
+    -just dev::setup-workspace --force
+    just backend::apply-migrations
 
 [default]
 [doc("Run all services & dependencies using process-compose")]
@@ -33,7 +34,7 @@ dbName := "rez-"+branchId
     if [[ "{{workspace_setup}}" == "true" ]]; then \
       if [[ "{{force}}" == "false" ]]; then echo "{{alreadySetupErr}}"; exit 1; fi; \
       rm "{{workspace_env_file}}"; \
-      docker compose down -v postgres; \
+      docker compose down --remove-orphans -v postgres; \
     fi
     just _write-workspace-env
     docker compose up --wait

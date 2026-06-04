@@ -12,6 +12,6 @@
 <AlertDialogPrimitive.Title
 	bind:ref
 	data-slot="alert-dialog-title"
-	class={cn("font-heading text-sm font-medium sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2", className)}
+	class={cn("font-heading text-base font-medium sm:group-data-[size=default]/alert-dialog-content:group-has-data-[slot=alert-dialog-media]/alert-dialog-content:col-start-2", className)}
 	{...restProps}
 />

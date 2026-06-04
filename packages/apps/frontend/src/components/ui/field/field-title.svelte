@@ -13,7 +13,7 @@
 <div
 	bind:this={ref}
 	data-slot="field-label"
-	class={cn("font-heading gap-2 text-xs/relaxed group-data-[disabled=true]/field:opacity-50 flex w-fit items-center leading-snug", className)}
+	class={cn("font-heading gap-2 text-sm/relaxed group-data-[disabled=true]/field:opacity-50 flex w-fit items-center leading-snug", className)}
 	{...restProps}
 >
 	{@render children?.()}

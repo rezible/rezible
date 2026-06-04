@@ -29,7 +29,7 @@
 		// focus
 		"focus:border-ring focus:ring-ring/50 focus:relative",
 		// inner spans
-		"[&>span]:text-xs [&>span]:opacity-70",
+		"[&>span]:text-sm [&>span]:opacity-70",
 		className
 	)}
 	{...restProps}
