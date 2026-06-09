@@ -43,7 +43,7 @@ func (s *OrganizationService) SyncFromAuthProvider(ctx context.Context, po ent.O
 	}
 
 	var updated *ent.Organization
-	updateTx := func(txCtx context.Context, tx *ent.Client) error {
+	updateTx := func(ctx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.Organization, *ent.OrganizationMutation]
 		if existing != nil {
 			mutator = tx.Organization.UpdateOne(existing)

@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
@@ -30,6 +31,8 @@ func NewUserService(db rez.Database, orgs rez.OrganizationService, knowledge rez
 }
 
 func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organization, pu ent.User) (*ent.User, error) {
+	// TODO: wrap this all in a transaction
+
 	org, orgErr := s.orgs.SyncFromAuthProvider(ctx, po)
 	if orgErr != nil {
 		return nil, fmt.Errorf("sync organization: %w", orgErr)
@@ -53,7 +56,31 @@ func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organizat
 		m.SetName(pu.Name)
 		m.SetTimezone(pu.Timezone)
 	}
-	return s.Set(ctx, userId, syncAuthDetailsFn)
+	usr, setErr := s.Set(ctx, userId, syncAuthDetailsFn)
+	if setErr != nil {
+		return nil, fmt.Errorf("set user: %w", setErr)
+	}
+
+	if org.InitialSetupAt.IsZero() {
+		roles, rolesErr := org.QueryRoles().All(ctx)
+		if rolesErr != nil {
+			return nil, fmt.Errorf("query roles: %w", rolesErr)
+		}
+
+		var hasAdmin bool
+		for _, role := range roles {
+			if role.Role == organizationrole.RoleAdmin {
+				hasAdmin = true
+				break
+			}
+		}
+
+		if !hasAdmin {
+			// TODO: create initial admin user role
+		}
+	}
+
+	return usr, nil
 }
 
 func (s *UserService) Get(ctx context.Context, p predicate.User) (*ent.User, error) {
