@@ -30,13 +30,47 @@ func (Organization) Fields() []ent.Field {
 
 func (Organization) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("auth_provider_id").Unique(),
+		index.Fields("tenant_id", "auth_provider_id").Unique(),
 	}
 }
 
 func (Organization) Edges() []ent.Edge {
 	return []ent.Edge{
+		edge.From("preferences", OrganizationPreferences.Type).Ref("organization"),
 		edge.From("roles", OrganizationRole.Type).Ref("organization"),
+	}
+}
+
+type OrganizationPreferences struct {
+	ent.Schema
+}
+
+func (OrganizationPreferences) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (OrganizationPreferences) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("org_id", uuid.UUID{}),
+	}
+}
+
+func (OrganizationPreferences) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("organization", Organization.Type).
+			Required().
+			Unique().
+			Field("org_id"),
+	}
+}
+
+func (OrganizationPreferences) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "org_id").Unique(),
 	}
 }
 

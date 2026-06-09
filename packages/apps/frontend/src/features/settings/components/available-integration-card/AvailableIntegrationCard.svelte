@@ -26,7 +26,7 @@
     <Card.Header class="p-0">
         <div class="flex items-center justify-between gap-4 h-fit">
             <div class="flex flex-col gap-2">
-                <Card.Title class="capitalize">{integration.name}</Card.Title>
+                <Card.Title class="">{integration.name}</Card.Title>
             </div>
             <div class="flex items-center gap-2">
                 <Button

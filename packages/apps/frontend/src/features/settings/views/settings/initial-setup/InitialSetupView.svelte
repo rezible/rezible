@@ -1,35 +1,37 @@
 <script lang="ts">
-	import Header from "$src/components/layout/header/Header.svelte";
+	import Header from "$components/layout/header/Header.svelte";
 	import Spinner from "$components/ui/spinner/spinner.svelte";
 	import Stepper from "$components/layout/stepper/Stepper.svelte";
 	import { StepperController } from "$components/layout/stepper/stepper.svelte";
 
 	import { initInitialSetupViewController } from "./controller.svelte";
 	import OrganizationDetails from "./steps/OrganizationDetails.svelte";
-	import Preferences from "./steps/Preferences.svelte";
-	import RequiredIntegrations from "./steps/RequiredCapabilities.svelte";
+	import WorkspacePreferences from "./steps/WorkspacePreferences.svelte";
+	import RequiredCapabilities from "./steps/RequiredCapabilities.svelte";
 
 	const ctrl = initInitialSetupViewController();
 
 	const stepper = new StepperController({
 		steps: [
 			{
-				label: "Organization",
-				description: "Name and workspace details",
+				label: "Details",
+				description: "Organization and project details",
 				component: OrganizationDetails,
+				onNext: () => ctrl.onOrgDetailsNext(),
 				canContinue: () => ctrl.canContinueOrgDetails,
 			},
 			{
 				label: "Preferences",
-				description: "Default workspace settings",
-				component: Preferences,
-				canContinue: () => ctrl.canContinuePreferences,
+				description: "Choose workspace behaviour",
+				component: WorkspacePreferences,
+				onNext: () => ctrl.onWorkspacePreferencesNext(),
+				canContinue: () => ctrl.canContinueWorkspacePrefs,
 			},
 			{
 				label: "Integrations",
-				description: "Recommended data sources",
-				component: RequiredIntegrations,
-				canContinue: () => ctrl.canFinish,
+				description: "Configure recommended integrations",
+				component: RequiredCapabilities,
+				canContinue: () => ctrl.canContinueCapabilities,
 			},
 		],
 		onFinish: () => ctrl.doFinishOrganizationSetup(),
@@ -38,7 +40,7 @@
 
 <div class="grid h-full w-full place-items-center">
 	<div class="flex w-full max-w-4xl flex-col gap-4 border border-border bg-background p-4">
-		<Header title="Quick Setup" classes={{ root: "gap-2", title: "text-2xl" }} />
+		<Header title="Initial Setup" classes={{ root: "gap-2", title: "text-2xl" }} />
 
 		{#if ctrl.loading}
 			<Spinner />

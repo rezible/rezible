@@ -259,6 +259,10 @@ components:
     AvailableIntegration:
       additionalProperties: false
       properties:
+        description:
+          type: string
+        displayName:
+          type: string
         maxInstalls:
           format: int64
           type: integer
@@ -274,6 +278,8 @@ components:
           type: array
       required:
         - name
+        - displayName
+        - description
         - provider
         - supportedCapabilities
         - oauthInstall

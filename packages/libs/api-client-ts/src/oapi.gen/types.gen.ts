@@ -120,6 +120,8 @@ export type AuthSession = {
 };
 
 export type AvailableIntegration = {
+    description: string;
+    displayName: string;
     maxInstalls?: number;
     name: string;
     oauthInstall: boolean;

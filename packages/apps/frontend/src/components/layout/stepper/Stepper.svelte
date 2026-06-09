@@ -2,19 +2,20 @@
 	import { Button } from "$components/ui/button";
 	import { Progress } from "$components/ui/progress";
 	import { cn } from "$lib/utils";
+	import { Spinner } from "$src/components/ui/spinner";
 	import type { StepperController } from "./stepper.svelte";
 
-	type Props = {
-		controller: StepperController;
-	};
-
+    type Props = {
+        controller: StepperController;
+    }
 	const { controller }: Props = $props();
 
-	const ActiveComponent = $derived(controller.currentStep?.component);
 </script>
 
-<div class="flex w-full max-w-3xl flex-col gap-4">
-	<div class="flex flex-col gap-3">
+<div class={cn("flex w-full gap-4 flex-col")}>
+	<div class={cn("flex flex-col gap-3 w-full")}>
+		<Progress value={controller.progress} />
+        
 		<ol class="flex flex-col gap-2 sm:flex-row" aria-label="Setup progress">
 			{#each controller.steps as step, i (step.key)}
 				{@const isActive = i === controller.currentIndex}
@@ -28,7 +29,7 @@
 					>
 						<span
 							class={cn(
-								"grid size-7 shrink-0 place-items-center border text-sm font-medium",
+								"grid size-8 shrink-0 place-items-center border text-sm font-medium",
 								isActive && "border-primary bg-primary text-primary-foreground",
 								isCompleted && "border-primary text-primary",
 								!isActive && !isCompleted && "border-border bg-muted text-muted-foreground",
@@ -53,36 +54,27 @@
 				</li>
 			{/each}
 		</ol>
-
-		<Progress value={controller.progress} />
 	</div>
 
-	<section class="min-h-0 border border-border bg-card p-4 text-card-foreground">
-		{#if ActiveComponent}
-			<ActiveComponent />
-		{/if}
-	</section>
+    <div class="flex flex-col gap-4">
+        <section class="min-h-0 border border-border bg-card p-4 text-card-foreground">
+            {#if !!controller.currentComponent}
+                <controller.currentComponent />
+            {/if}
+        </section>
 
-	{#if controller.error}
-		<p class="text-sm text-destructive" role="alert">{controller.error}</p>
-	{/if}
+        {#if controller.errorMessage}
+            <p class="text-sm text-destructive" role="alert">{controller.errorMessage}</p>
+        {/if}
 
-	<div class="flex items-center justify-between gap-3">
-		<span class="text-sm text-muted-foreground">
-			Step {controller.currentIndex + 1} of {controller.steps.length}
-		</span>
-
-		<div class="flex items-center gap-2">
-			<Button variant="outline" onclick={controller.back} disabled={!controller.canGoBack}>Back</Button>
-			<Button onclick={controller.next} disabled={!controller.canContinue}>
-				{#if controller.pending}
-					Saving
-				{:else if controller.isLast}
-					Finish
-				{:else}
-					Next
-				{/if}
-			</Button>
-		</div>
-	</div>
+        <div class="flex self-end items-center gap-2">
+            <Button variant="outline" onclick={() => {controller.back()}} disabled={!controller.canGoBack}>Back</Button>
+            <Button onclick={() => {controller.next()}} disabled={!controller.canContinue}>
+                {#if controller.pending}
+                    <Spinner />
+                {/if}
+                {controller.continueButtonText}
+            </Button>
+        </div>
+    </div>
 </div>

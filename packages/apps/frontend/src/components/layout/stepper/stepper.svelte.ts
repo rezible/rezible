@@ -20,46 +20,47 @@ export type StepperConfig = {
 	onFinish?: StepperAction;
 };
 
-const messageFromError = (err: unknown) => {
-	if (err instanceof Error && err.message) return err.message;
-	if (typeof err === "string" && err) return err;
-	return "Something went wrong. Try again.";
-};
-
 export class StepperController {
 	steps = $state.raw<StepperStepState[]>([]);
 
-	private currentIndexState = $state(0);
 	private onFinish?: StepperAction;
+	private currentIndexState = $state(0);
+
+    private setCurrentIndex(idx: number) {
+		this.errorMessage = undefined;
+        this.currentIndexState = Math.max(0, Math.min(idx, this.steps.length - 1))
+    }
 
 	pending = $state(false);
-	error = $state<string>();
+	errorMessage = $state<string>();
 
 	currentIndex = $derived(this.currentIndexState);
-	currentStep = $derived(this.steps[this.currentIndexState]);
-	isFirst = $derived(this.currentIndexState === 0);
-	isLast = $derived(this.currentIndexState === this.steps.length - 1);
+	progress = $derived(this.steps.length === 0 ? 0 : ((this.currentIndex + 1) / this.steps.length) * 100);
+
+	private isFirst = $derived(this.currentIndex === 0);
+	private isLast = $derived(this.currentIndex === this.steps.length - 1);
+
+    private currentStep = $derived(this.steps[this.currentIndex]);
+    currentComponent = $derived(this.currentStep.component);
+
 	canGoBack = $derived(!this.pending && !this.isFirst);
-	progress = $derived(this.steps.length === 0 ? 0 : ((this.currentIndexState + 1) / this.steps.length) * 100);
 	canContinue = $derived.by(() => {
 		if (this.pending || !this.currentStep) return false;
 		return this.currentStep.canContinue?.() ?? true;
 	});
+    continueButtonText = $derived(this.pending ? "Saving" : (this.isLast ? "Finish" : "Next"));
 
 	constructor(cfg: StepperConfig) {
 		if (cfg.steps.length === 0) {
 			throw new Error("StepperController requires at least one step");
 		}
 
-		this.steps = cfg.steps.map((step, index) => ({
-			...step,
-			key: `${index}:${step.label}`,
-		}));
+		this.steps = cfg.steps.map((step, index) => ({ ...step, key: `${index}:${step.label}` }));
 		this.onFinish = cfg.onFinish;
-		this.currentIndexState = Math.max(0, Math.min(cfg.initialStepIndex ?? 0, cfg.steps.length - 1));
+        this.setCurrentIndex(cfg.initialStepIndex ?? 0);
 	}
 
-	next = async () => {
+	async next() {
 		if (!this.canContinue) return;
 
 		if (this.isLast) {
@@ -70,31 +71,27 @@ export class StepperController {
 		const step = this.currentStep;
 		await this.runTransition(async () => {
 			await step.onNext?.();
-			this.currentIndexState = Math.min(this.currentIndexState + 1, this.steps.length - 1);
+            this.setCurrentIndex(this.currentIndex + 1);
 		});
 	};
 
-	back = () => {
+	back() {
 		if (!this.canGoBack) return;
-		this.error = undefined;
-		this.currentIndexState = Math.max(this.currentIndexState - 1, 0);
+        this.setCurrentIndex(this.currentIndex - 1);
 	};
 
-	goTo = (index: number) => {
+	goTo(index: number) {
 		if (this.pending) return;
 		if (index < 0 || index > this.currentIndexState) return;
-
-		this.error = undefined;
-		this.currentIndexState = index;
+        this.setCurrentIndex(index);
 	};
 
-	reset = () => {
+	reset() {
 		if (this.pending) return;
-		this.error = undefined;
-		this.currentIndexState = 0;
+        this.setCurrentIndex(0);
 	};
 
-	private finish = async () => {
+	private async finish() {
 		if (!this.canContinue) return;
 
 		const step = this.currentStep;
@@ -104,14 +101,17 @@ export class StepperController {
 		});
 	};
 
-	private runTransition = async (action: StepperAction) => {
+	private async runTransition(action: StepperAction) {
 		this.pending = true;
-		this.error = undefined;
+		this.errorMessage = undefined;
 
 		try {
 			await action();
 		} catch (err) {
-			this.error = messageFromError(err);
+            let errMsg = "";
+            if (err instanceof Error) errMsg = err.message;
+            if (typeof err === "string") errMsg = err;
+			this.errorMessage = !!errMsg ? errMsg : "Something went wrong. Try again.";
 		} finally {
 			this.pending = false;
 		}

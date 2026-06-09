@@ -25,6 +25,14 @@ func (i *Integration) Name() string {
 	return integrationName
 }
 
+func (i *Integration) DisplayName() string {
+	return integrationName
+}
+
+func (i *Integration) Description() string {
+	return integrationName
+}
+
 func (i *Integration) Provider() string {
 	return slackintegration.ProviderName
 }

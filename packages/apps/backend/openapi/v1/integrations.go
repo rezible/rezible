@@ -53,6 +53,8 @@ func (o operations) RegisterIntegrations(api huma.API) {
 type (
 	AvailableIntegration struct {
 		Name                  string   `json:"name"`
+		DisplayName           string   `json:"displayName"`
+		Description           string   `json:"description"`
 		Provider              string   `json:"provider"`
 		SupportedCapabilities []string `json:"supportedCapabilities"`
 		MaxInstalls           *int     `json:"maxInstalls,omitempty"`
@@ -106,6 +108,8 @@ type (
 func AvailableIntegrationFromPackage(p rez.IntegrationPackage) AvailableIntegration {
 	return AvailableIntegration{
 		Name:                  p.Name(),
+		DisplayName:           p.DisplayName(),
+		Description:           p.Description(),
 		Provider:              p.Provider(),
 		SupportedCapabilities: p.SupportedCapabilities(),
 		OAuthInstall:          p.OAuthInstallRequired(),

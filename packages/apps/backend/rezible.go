@@ -149,6 +149,8 @@ type (
 type (
 	IntegrationPackage interface {
 		Name() string
+		DisplayName() string
+		Description() string
 		Provider() string
 		IsAvailable() (bool, error)
 		MaxInstalls() *int
