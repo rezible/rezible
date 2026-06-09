@@ -2559,6 +2559,7 @@ export type UpdateOncallShiftHandoverTemplateResponseBody = {
 
 export type UpdateOrganizationDetailsRequestAttributes = {
     name?: string;
+    preferences?: OrganizationPreferences;
 };
 
 export type UpdateOrganizationRequestBody = {
@@ -7851,7 +7852,7 @@ export type GetOrganizationResponses = {
 
 export type GetOrganizationResponse = GetOrganizationResponses[keyof GetOrganizationResponses];
 
-export type UpdateOrganizationDetailsData = {
+export type UpdateOrganizationData = {
     body: UpdateOrganizationRequestBody;
     path: {
         id: string;
@@ -7860,7 +7861,7 @@ export type UpdateOrganizationDetailsData = {
     url: '/organizations/{id}';
 };
 
-export type UpdateOrganizationDetailsErrors = {
+export type UpdateOrganizationErrors = {
     /**
      * Bad Request
      */
@@ -7887,16 +7888,16 @@ export type UpdateOrganizationDetailsErrors = {
     500: ErrorModel;
 };
 
-export type UpdateOrganizationDetailsError = UpdateOrganizationDetailsErrors[keyof UpdateOrganizationDetailsErrors];
+export type UpdateOrganizationError = UpdateOrganizationErrors[keyof UpdateOrganizationErrors];
 
-export type UpdateOrganizationDetailsResponses = {
+export type UpdateOrganizationResponses = {
     /**
      * OK
      */
     200: UpdateOrganizationResponseBody;
 };
 
-export type UpdateOrganizationDetailsResponse = UpdateOrganizationDetailsResponses[keyof UpdateOrganizationDetailsResponses];
+export type UpdateOrganizationResponse = UpdateOrganizationResponses[keyof UpdateOrganizationResponses];
 
 export type FinishOrganizationSetupData = {
     body?: never;

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // OrganizationUpdate is the builder for updating Organization entities.
@@ -77,6 +78,20 @@ func (_u *OrganizationUpdate) SetNillableInitialSetupAt(v *time.Time) *Organizat
 // ClearInitialSetupAt clears the value of the "initial_setup_at" field.
 func (_u *OrganizationUpdate) ClearInitialSetupAt() *OrganizationUpdate {
 	_u.mutation.ClearInitialSetupAt()
+	return _u
+}
+
+// SetPreferences sets the "preferences" field.
+func (_u *OrganizationUpdate) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpdate {
+	_u.mutation.SetPreferences(v)
+	return _u
+}
+
+// SetNillablePreferences sets the "preferences" field if the given value is not nil.
+func (_u *OrganizationUpdate) SetNillablePreferences(v *schematypes.OrganizationPreferences) *OrganizationUpdate {
+	if v != nil {
+		_u.SetPreferences(*v)
+	}
 	return _u
 }
 
@@ -185,6 +200,9 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if _u.mutation.InitialSetupAtCleared() {
 		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.Preferences(); ok {
+		_spec.SetField(organization.FieldPreferences, field.TypeJSON, value)
 	}
 	if _u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -303,6 +321,20 @@ func (_u *OrganizationUpdateOne) SetNillableInitialSetupAt(v *time.Time) *Organi
 // ClearInitialSetupAt clears the value of the "initial_setup_at" field.
 func (_u *OrganizationUpdateOne) ClearInitialSetupAt() *OrganizationUpdateOne {
 	_u.mutation.ClearInitialSetupAt()
+	return _u
+}
+
+// SetPreferences sets the "preferences" field.
+func (_u *OrganizationUpdateOne) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpdateOne {
+	_u.mutation.SetPreferences(v)
+	return _u
+}
+
+// SetNillablePreferences sets the "preferences" field if the given value is not nil.
+func (_u *OrganizationUpdateOne) SetNillablePreferences(v *schematypes.OrganizationPreferences) *OrganizationUpdateOne {
+	if v != nil {
+		_u.SetPreferences(*v)
+	}
 	return _u
 }
 
@@ -441,6 +473,9 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 	}
 	if _u.mutation.InitialSetupAtCleared() {
 		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
+	}
+	if value, ok := _u.mutation.Preferences(); ok {
+		_spec.SetField(organization.FieldPreferences, field.TypeJSON, value)
 	}
 	if _u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{

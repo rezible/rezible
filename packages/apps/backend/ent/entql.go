@@ -985,6 +985,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			organization.FieldAuthProviderID: {Type: field.TypeString, Column: organization.FieldAuthProviderID},
 			organization.FieldName:           {Type: field.TypeString, Column: organization.FieldName},
 			organization.FieldInitialSetupAt: {Type: field.TypeTime, Column: organization.FieldInitialSetupAt},
+			organization.FieldPreferences:    {Type: field.TypeJSON, Column: organization.FieldPreferences},
 		},
 	}
 	graph.Nodes[46] = &sqlgraph.Node{
@@ -10034,6 +10035,11 @@ func (f *OrganizationFilter) WhereName(p entql.StringP) {
 // WhereInitialSetupAt applies the entql time.Time predicate on the initial_setup_at field.
 func (f *OrganizationFilter) WhereInitialSetupAt(p entql.TimeP) {
 	f.Where(p.Field(organization.FieldInitialSetupAt))
+}
+
+// WherePreferences applies the entql json.RawMessage predicate on the preferences field.
+func (f *OrganizationFilter) WherePreferences(p entql.BytesP) {
+	f.Where(p.Field(organization.FieldPreferences))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

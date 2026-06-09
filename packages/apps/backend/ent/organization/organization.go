@@ -22,6 +22,8 @@ const (
 	FieldName = "name"
 	// FieldInitialSetupAt holds the string denoting the initial_setup_at field in the database.
 	FieldInitialSetupAt = "initial_setup_at"
+	// FieldPreferences holds the string denoting the preferences field in the database.
+	FieldPreferences = "preferences"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
@@ -51,6 +53,7 @@ var Columns = []string{
 	FieldAuthProviderID,
 	FieldName,
 	FieldInitialSetupAt,
+	FieldPreferences,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

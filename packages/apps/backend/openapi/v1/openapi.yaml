@@ -5577,6 +5577,8 @@ components:
       properties:
         name:
           type: string
+        preferences:
+          $ref: "#/components/schemas/OrganizationPreferences"
       type: object
     UpdateOrganizationRequestBody:
       additionalProperties: false
@@ -12545,7 +12547,7 @@ paths:
       tags:
         - Organizations
     patch:
-      operationId: update-organization-details
+      operationId: update-organization
       parameters:
         - in: path
           name: id
@@ -12601,7 +12603,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Update Organization Details
+      summary: Update Organization
       tags:
         - Organizations
   /organizations/{id}/setup:

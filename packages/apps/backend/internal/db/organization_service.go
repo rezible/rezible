@@ -54,7 +54,8 @@ func (s *OrganizationService) SyncFromAuthProvider(ctx context.Context, po ent.O
 			}
 			mutator = tx.Organization.Create().
 				SetTenantID(tnt.ID).
-				SetAuthProviderID(po.AuthProviderID)
+				SetAuthProviderID(po.AuthProviderID).
+				SetPreferences(ent.OrganizationPreferences{})
 			ctx = execution.NewTenantContext(ctx, tnt.ID)
 		}
 

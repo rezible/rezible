@@ -64,6 +64,7 @@ import (
 	"github.com/rezible/rezible/ent/retrospective"
 	"github.com/rezible/rezible/ent/retrospectivecomment"
 	"github.com/rezible/rezible/ent/retrospectivereview"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/systemanalysis"
 	"github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	"github.com/rezible/rezible/ent/systemanalysistopologynode"
@@ -41367,6 +41368,7 @@ type OrganizationMutation struct {
 	auth_provider_id *string
 	name             *string
 	initial_setup_at *time.Time
+	preferences      *schematypes.OrganizationPreferences
 	clearedFields    map[string]struct{}
 	tenant           *int
 	clearedtenant    bool
@@ -41639,6 +41641,42 @@ func (m *OrganizationMutation) ResetInitialSetupAt() {
 	delete(m.clearedFields, organization.FieldInitialSetupAt)
 }
 
+// SetPreferences sets the "preferences" field.
+func (m *OrganizationMutation) SetPreferences(sp schematypes.OrganizationPreferences) {
+	m.preferences = &sp
+}
+
+// Preferences returns the value of the "preferences" field in the mutation.
+func (m *OrganizationMutation) Preferences() (r schematypes.OrganizationPreferences, exists bool) {
+	v := m.preferences
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPreferences returns the old "preferences" field's value of the Organization entity.
+// If the Organization object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *OrganizationMutation) OldPreferences(ctx context.Context) (v schematypes.OrganizationPreferences, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPreferences is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPreferences requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPreferences: %w", err)
+	}
+	return oldValue.Preferences, nil
+}
+
+// ResetPreferences resets all changes to the "preferences" field.
+func (m *OrganizationMutation) ResetPreferences() {
+	m.preferences = nil
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *OrganizationMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -41754,7 +41792,7 @@ func (m *OrganizationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *OrganizationMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, organization.FieldTenantID)
 	}
@@ -41766,6 +41804,9 @@ func (m *OrganizationMutation) Fields() []string {
 	}
 	if m.initial_setup_at != nil {
 		fields = append(fields, organization.FieldInitialSetupAt)
+	}
+	if m.preferences != nil {
+		fields = append(fields, organization.FieldPreferences)
 	}
 	return fields
 }
@@ -41783,6 +41824,8 @@ func (m *OrganizationMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case organization.FieldInitialSetupAt:
 		return m.InitialSetupAt()
+	case organization.FieldPreferences:
+		return m.Preferences()
 	}
 	return nil, false
 }
@@ -41800,6 +41843,8 @@ func (m *OrganizationMutation) OldField(ctx context.Context, name string) (ent.V
 		return m.OldName(ctx)
 	case organization.FieldInitialSetupAt:
 		return m.OldInitialSetupAt(ctx)
+	case organization.FieldPreferences:
+		return m.OldPreferences(ctx)
 	}
 	return nil, fmt.Errorf("unknown Organization field %s", name)
 }
@@ -41836,6 +41881,13 @@ func (m *OrganizationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetInitialSetupAt(v)
+		return nil
+	case organization.FieldPreferences:
+		v, ok := value.(schematypes.OrganizationPreferences)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPreferences(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Organization field %s", name)
@@ -41909,6 +41961,9 @@ func (m *OrganizationMutation) ResetField(name string) error {
 		return nil
 	case organization.FieldInitialSetupAt:
 		m.ResetInitialSetupAt()
+		return nil
+	case organization.FieldPreferences:
+		m.ResetPreferences()
 		return nil
 	}
 	return fmt.Errorf("unknown Organization field %s", name)

@@ -42,6 +42,9 @@ func OrganizationFromEnt(org *ent.Organization) Organization {
 	attr := OrganizationAttributes{
 		Name:          org.Name,
 		SetupRequired: org.InitialSetupAt.IsZero(),
+		Preferences: OrganizationPreferences{
+			EnableIncidentManagement: org.Preferences.EnableIncidentManagement,
+		},
 	}
 
 	return Organization{Id: org.ID, Attributes: attr}
@@ -62,10 +65,10 @@ type GetOrganizationRequest EmptyIdRequest
 type GetOrganizationResponse ItemResponse[Organization]
 
 var UpdateOrganization = huma.Operation{
-	OperationID: "update-organization-details",
+	OperationID: "update-organization",
 	Method:      http.MethodPatch,
 	Path:        "/organizations/{id}",
-	Summary:     "Update Organization Details",
+	Summary:     "Update Organization",
 	Tags:        organizationsTags,
 	Errors:      ErrorCodes(),
 }

@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -27,6 +29,8 @@ type Organization struct {
 	Name string `json:"name,omitempty"`
 	// InitialSetupAt holds the value of the "initial_setup_at" field.
 	InitialSetupAt time.Time `json:"initial_setup_at,omitempty"`
+	// Preferences holds the value of the "preferences" field.
+	Preferences schematypes.OrganizationPreferences `json:"preferences,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OrganizationQuery when eager-loading is set.
 	Edges        OrganizationEdges `json:"edges"`
@@ -69,6 +73,8 @@ func (*Organization) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case organization.FieldPreferences:
+			values[i] = new([]byte)
 		case organization.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case organization.FieldAuthProviderID, organization.FieldName:
@@ -121,6 +127,14 @@ func (_m *Organization) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field initial_setup_at", values[i])
 			} else if value.Valid {
 				_m.InitialSetupAt = value.Time
+			}
+		case organization.FieldPreferences:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field preferences", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Preferences); err != nil {
+					return fmt.Errorf("unmarshal field preferences: %w", err)
+				}
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -179,6 +193,9 @@ func (_m *Organization) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("initial_setup_at=")
 	builder.WriteString(_m.InitialSetupAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	builder.WriteString("preferences=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Preferences))
 	builder.WriteByte(')')
 	return builder.String()
 }

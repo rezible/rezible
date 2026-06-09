@@ -1,7 +1,7 @@
 import { Context, watch } from "runed";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 
-import { finishOrganizationSetupMutation, getOrganizationOptions, getOrganizationPreferencesOptions, updateOrganizationDetailsMutation, updateOrganizationPreferencesMutation, type AvailableIntegration, type InstalledIntegration, type Organization, type OrganizationPreferences, type UpdateOrganizationPreferencesRequestAttributes } from "$lib/api";
+import { finishOrganizationSetupMutation, getOrganizationOptions, updateOrganizationMutation, type AvailableIntegration, type InstalledIntegration, type Organization, type OrganizationPreferences } from "$lib/api";
 import { useAuthSessionState } from "$lib/auth-session.svelte";
 import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 
@@ -28,15 +28,15 @@ export class InitialSetupViewController {
 
 	private orgId = $derived(this.session.org?.id);
 
-	private orgDetailsQuery = createQuery(() => ({ 
-		...getOrganizationOptions({ path: { id: this.orgId || "" }}),
+	private orgDetailsQuery = createQuery(() => ({
+		...getOrganizationOptions({ path: { id: this.orgId || "" } }),
 		enabled: !!this.orgId,
 	}));
 	private orgDetailsQueryData = $derived(this.orgDetailsQuery.data?.data);
-	
+
 	orgDetails = $state(makeOrgDetails());
-	private updateOrgDetailsMut = createMutation(() => ({
-		...updateOrganizationDetailsMutation(),
+	private updateOrgMut = createMutation(() => ({
+		...updateOrganizationMutation(),
 		onSuccess: () => {
 			this.orgDetailsQuery.refetch();
 		}
@@ -46,11 +46,14 @@ export class InitialSetupViewController {
 	async onOrgDetailsNext() {
 		if (!this.orgId) return;
 		// check anything changed
-		if (this.orgDetailsQueryData?.attributes.name === this.orgDetails.name) return;
-		
-		await this.updateOrgDetailsMut.mutateAsync({
+		const currAttrs = this.orgDetailsQueryData?.attributes;
+		if (!!currAttrs) {
+			if (currAttrs.name === this.orgDetails.name) return;
+		}
+
+		await this.updateOrgMut.mutateAsync({
 			path: { id: this.orgId },
-			body: { 
+			body: {
 				attributes: {
 					name: this.orgDetails.name,
 				}
@@ -58,32 +61,23 @@ export class InitialSetupViewController {
 		})
 	};
 
-	private orgPrefsQuery = createQuery(() => ({ 
-		...getOrganizationPreferencesOptions({ path: { id: this.orgId || "" }}),
-		enabled: !!this.orgId && this.canContinueOrgDetails,
-	}));
-	private orgPrefsQueryData = $derived(this.orgPrefsQuery.data?.data);
-
-	canContinueOrgPrefs = $derived(!!this.orgId && this.orgPrefsQuery.isSuccess);
+	canContinueOrgPrefs = $derived(!!this.orgId);
 
 	orgPrefs = $state<OrganizationPreferences>({ enableIncidentManagement: false });
-	private updateOrgPrefsMut = createMutation(() => ({
-		...updateOrganizationPreferencesMutation(),
-		onSuccess: () => {
-			this.orgPrefsQuery.refetch();
-		}
-	}));
 
 	async onOrganizationPreferencesNext() {
 		if (!this.orgId) return;
 		// check anything changed
-		if (this.orgPrefsQueryData?.enableIncidentManagement === this.orgPrefs.enableIncidentManagement) return;
+		const currPrefs = this.orgDetailsQueryData?.attributes.preferences;
+		if (!!currPrefs) {
+			if (currPrefs.enableIncidentManagement === this.orgPrefs.enableIncidentManagement) return;
+		}
 
-		await this.updateOrgPrefsMut.mutateAsync({
-			path: {id: this.orgId},
-			body: { 
+		await this.updateOrgMut.mutateAsync({
+			path: { id: this.orgId },
+			body: {
 				attributes: {
-					enableIncidentManagement: this.orgPrefs.enableIncidentManagement,
+					preferences: this.orgPrefs,
 				}
 			}
 		})
@@ -126,10 +120,9 @@ export class InitialSetupViewController {
 
 	constructor() {
 		watch(() => this.orgDetailsQueryData, org => {
-			if (org) this.orgDetails = makeOrgDetails(org);
-		});
-		watch(() => this.orgPrefsQueryData, prefs => {
-			if (prefs) this.orgPrefs = $state.snapshot(prefs);
+			if (!org) return;
+			this.orgDetails = makeOrgDetails(org);
+			this.orgPrefs = org.attributes.preferences;
 		});
 	}
 

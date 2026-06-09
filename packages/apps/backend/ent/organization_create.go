@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationrole"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -55,6 +56,12 @@ func (_c *OrganizationCreate) SetNillableInitialSetupAt(v *time.Time) *Organizat
 	if v != nil {
 		_c.SetInitialSetupAt(*v)
 	}
+	return _c
+}
+
+// SetPreferences sets the "preferences" field.
+func (_c *OrganizationCreate) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationCreate {
+	_c.mutation.SetPreferences(v)
 	return _c
 }
 
@@ -150,6 +157,9 @@ func (_c *OrganizationCreate) check() error {
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Organization.name"`)}
 	}
+	if _, ok := _c.mutation.Preferences(); !ok {
+		return &ValidationError{Name: "preferences", err: errors.New(`ent: missing required field "Organization.preferences"`)}
+	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Organization.tenant"`)}
 	}
@@ -201,6 +211,10 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.InitialSetupAt(); ok {
 		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
 		_node.InitialSetupAt = value
+	}
+	if value, ok := _c.mutation.Preferences(); ok {
+		_spec.SetField(organization.FieldPreferences, field.TypeJSON, value)
+		_node.Preferences = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -331,6 +345,18 @@ func (u *OrganizationUpsert) ClearInitialSetupAt() *OrganizationUpsert {
 	return u
 }
 
+// SetPreferences sets the "preferences" field.
+func (u *OrganizationUpsert) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpsert {
+	u.Set(organization.FieldPreferences, v)
+	return u
+}
+
+// UpdatePreferences sets the "preferences" field to the value that was provided on create.
+func (u *OrganizationUpsert) UpdatePreferences() *OrganizationUpsert {
+	u.SetExcluded(organization.FieldPreferences)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -428,6 +454,20 @@ func (u *OrganizationUpsertOne) UpdateInitialSetupAt() *OrganizationUpsertOne {
 func (u *OrganizationUpsertOne) ClearInitialSetupAt() *OrganizationUpsertOne {
 	return u.Update(func(s *OrganizationUpsert) {
 		s.ClearInitialSetupAt()
+	})
+}
+
+// SetPreferences sets the "preferences" field.
+func (u *OrganizationUpsertOne) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetPreferences(v)
+	})
+}
+
+// UpdatePreferences sets the "preferences" field to the value that was provided on create.
+func (u *OrganizationUpsertOne) UpdatePreferences() *OrganizationUpsertOne {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdatePreferences()
 	})
 }
 
@@ -695,6 +735,20 @@ func (u *OrganizationUpsertBulk) UpdateInitialSetupAt() *OrganizationUpsertBulk 
 func (u *OrganizationUpsertBulk) ClearInitialSetupAt() *OrganizationUpsertBulk {
 	return u.Update(func(s *OrganizationUpsert) {
 		s.ClearInitialSetupAt()
+	})
+}
+
+// SetPreferences sets the "preferences" field.
+func (u *OrganizationUpsertBulk) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.SetPreferences(v)
+	})
+}
+
+// UpdatePreferences sets the "preferences" field to the value that was provided on create.
+func (u *OrganizationUpsertBulk) UpdatePreferences() *OrganizationUpsertBulk {
+	return u.Update(func(s *OrganizationUpsert) {
+		s.UpdatePreferences()
 	})
 }
 

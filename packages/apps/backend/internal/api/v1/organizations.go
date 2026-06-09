@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
@@ -33,11 +34,20 @@ func (h *organizationsHandler) UpdateOrganization(ctx context.Context, req *oapi
 
 	attrs := req.Body.Attributes
 
+	var prefs *ent.OrganizationPreferences
+	if attrs.Preferences != nil {
+		prefs = &ent.OrganizationPreferences{
+			EnableIncidentManagement: attrs.Preferences.EnableIncidentManagement,
+		}
+	}
+
 	org, orgErr := h.orgs.Get(ctx, organization.ID(req.Id))
 	if orgErr != nil {
 		return nil, oapi.Error(ctx, "failed to fetch organization", orgErr)
 	}
-	update := org.Update().SetNillableName(attrs.Name)
+	update := org.Update().
+		SetNillableName(attrs.Name).
+		SetNillablePreferences(prefs)
 	org, orgErr = update.Save(ctx)
 	if orgErr != nil {
 		return nil, oapi.Error(ctx, "failed to update organization", orgErr)

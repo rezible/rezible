@@ -1931,6 +1931,7 @@ var (
 		{Name: "auth_provider_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
 		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
+		{Name: "preferences", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// OrganizationsTable holds the schema information for the "organizations" table.
@@ -1941,7 +1942,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "organizations_tenants_tenant",
-				Columns:    []*schema.Column{OrganizationsColumns[4]},
+				Columns:    []*schema.Column{OrganizationsColumns[5]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1950,12 +1951,12 @@ var (
 			{
 				Name:    "organization_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{OrganizationsColumns[4]},
+				Columns: []*schema.Column{OrganizationsColumns[5]},
 			},
 			{
 				Name:    "organization_tenant_id_auth_provider_id",
 				Unique:  true,
-				Columns: []*schema.Column{OrganizationsColumns[4], OrganizationsColumns[1]},
+				Columns: []*schema.Column{OrganizationsColumns[5], OrganizationsColumns[1]},
 			},
 		},
 	}

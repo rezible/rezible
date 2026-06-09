@@ -1,6 +1,13 @@
 package ent
 
-import vc "github.com/rezible/rezible/ent/videoconference"
+import (
+	"github.com/rezible/rezible/ent/schema/schematypes"
+	vc "github.com/rezible/rezible/ent/videoconference"
+)
+
+// TODO: codegen this?
+
+type OrganizationPreferences = schematypes.OrganizationPreferences
 
 func (ims IncidentMilestones) GetLatest() *IncidentMilestone {
 	if len(ims) == 0 {
