@@ -6,7 +6,7 @@
 
 	import { initInitialSetupViewController } from "./controller.svelte";
 	import OrganizationDetails from "./steps/OrganizationDetails.svelte";
-	import WorkspacePreferences from "./steps/WorkspacePreferences.svelte";
+	import OrganizationPreferences from "./steps/OrganizationPreferences.svelte";
 	import RequiredCapabilities from "./steps/RequiredCapabilities.svelte";
 
 	const ctrl = initInitialSetupViewController();
@@ -23,9 +23,9 @@
 			{
 				label: "Preferences",
 				description: "Choose workspace behaviour",
-				component: WorkspacePreferences,
-				onNext: () => ctrl.onWorkspacePreferencesNext(),
-				canContinue: () => ctrl.canContinueWorkspacePrefs,
+				component: OrganizationPreferences,
+				onNext: () => ctrl.onOrganizationPreferencesNext(),
+				canContinue: () => ctrl.canContinueOrgPrefs,
 			},
 			{
 				label: "Integrations",

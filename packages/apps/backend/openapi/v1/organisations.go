@@ -11,11 +11,13 @@ import (
 
 type OrganizationsHandler interface {
 	GetOrganization(context.Context, *GetOrganizationRequest) (*GetOrganizationResponse, error)
+	UpdateOrganization(context.Context, *UpdateOrganizationRequest) (*UpdateOrganizationResponse, error)
 	FinishOrganizationSetup(context.Context, *FinishOrganizationSetupRequest) (*FinishOrganizationSetupResponse, error)
 }
 
 func (o operations) RegisterOrganizations(api huma.API) {
 	huma.Register(api, GetOrganization, o.GetOrganization)
+	huma.Register(api, UpdateOrganization, o.UpdateOrganization)
 	huma.Register(api, FinishOrganizationSetup, o.FinishOrganizationSetup)
 }
 
@@ -26,8 +28,13 @@ type (
 	}
 
 	OrganizationAttributes struct {
-		Name          string `json:"name"`
-		SetupRequired bool   `json:"setupRequired"`
+		Name          string                  `json:"name"`
+		SetupRequired bool                    `json:"setupRequired"`
+		Preferences   OrganizationPreferences `json:"preferences"`
+	}
+
+	OrganizationPreferences struct {
+		EnableIncidentManagement bool `json:"enableIncidentManagement"`
 	}
 )
 
@@ -37,10 +44,7 @@ func OrganizationFromEnt(org *ent.Organization) Organization {
 		SetupRequired: org.InitialSetupAt.IsZero(),
 	}
 
-	return Organization{
-		Id:         org.ID,
-		Attributes: attr,
-	}
+	return Organization{Id: org.ID, Attributes: attr}
 }
 
 var organizationsTags = []string{"Organizations"}
@@ -56,6 +60,22 @@ var GetOrganization = huma.Operation{
 
 type GetOrganizationRequest EmptyIdRequest
 type GetOrganizationResponse ItemResponse[Organization]
+
+var UpdateOrganization = huma.Operation{
+	OperationID: "update-organization-details",
+	Method:      http.MethodPatch,
+	Path:        "/organizations/{id}",
+	Summary:     "Update Organization Details",
+	Tags:        organizationsTags,
+	Errors:      ErrorCodes(),
+}
+
+type UpdateOrganizationDetailsRequestAttributes struct {
+	Name        *string                  `json:"name,omitempty"`
+	Preferences *OrganizationPreferences `json:"preferences,omitempty"`
+}
+type UpdateOrganizationRequest IdRequest[UpdateOrganizationDetailsRequestAttributes]
+type UpdateOrganizationResponse ItemResponse[Organization]
 
 var FinishOrganizationSetup = huma.Operation{
 	OperationID: "finish-organization-setup",

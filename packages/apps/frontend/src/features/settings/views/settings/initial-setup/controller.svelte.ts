@@ -1,7 +1,7 @@
 import { Context, watch } from "runed";
-import { createMutation } from "@tanstack/svelte-query";
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 
-import { finishOrganizationSetupMutation, type AvailableIntegration, type InstalledIntegration, type Organization } from "$lib/api";
+import { finishOrganizationSetupMutation, getOrganizationOptions, getOrganizationPreferencesOptions, updateOrganizationDetailsMutation, updateOrganizationPreferencesMutation, type AvailableIntegration, type InstalledIntegration, type Organization, type OrganizationPreferences, type UpdateOrganizationPreferencesRequestAttributes } from "$lib/api";
 import { useAuthSessionState } from "$lib/auth-session.svelte";
 import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 
@@ -14,14 +14,6 @@ const makeOrgDetails = (org?: Organization): OrgDetails => {
 	return { name: org.attributes.name };
 };
 
-type WorkspacePreferences = {
-	enableIncidentManagement: boolean;
-}
-
-const makeWorkspacePreferences = (): WorkspacePreferences => {
-	return { enableIncidentManagement: true };
-}
-
 const RequiredCapabilities = new Set(["chat", "users"]);
 
 const mapEnabledCapabilityNames = (intg: InstalledIntegration) => {
@@ -30,48 +22,71 @@ const mapEnabledCapabilityNames = (intg: InstalledIntegration) => {
 		.map(([name, _]) => name)
 }
 
-const settingsEqual = (a: any, b: any) => {
-	return JSON.stringify(a) === JSON.stringify(b)
-}
-
 export class InitialSetupViewController {
 	private session = useAuthSessionState();
 	private integrations = useIntegrationsController();
 
-	constructor() {
-		watch(() => this.session.org, org => {
-			if (org) this.orgDetails = makeOrgDetails(org);
-		})
-	}
+	private orgId = $derived(this.session.org?.id);
 
-	private sessionOrgDetails = $derived(makeOrgDetails(this.session.org));
+	private orgDetailsQuery = createQuery(() => ({ 
+		...getOrganizationOptions({ path: { id: this.orgId || "" }}),
+		enabled: !!this.orgId,
+	}));
+	private orgDetailsQueryData = $derived(this.orgDetailsQuery.data?.data);
+	
 	orgDetails = $state(makeOrgDetails());
-
-	canContinueOrgDetails = $derived(true);
+	private updateOrgDetailsMut = createMutation(() => ({
+		...updateOrganizationDetailsMutation(),
+		onSuccess: () => {
+			this.orgDetailsQuery.refetch();
+		}
+	}));
+	canContinueOrgDetails = $derived(this.orgDetailsQuery.isSuccess);
 
 	async onOrgDetailsNext() {
-		if (settingsEqual(this.sessionOrgDetails, this.orgDetails)) {
-			return;
-		}
-		console.log("update org details");
-		return new Promise<void>((res, rej) => {
-			setTimeout(() => {res()}, 1000);
-		});
+		if (!this.orgId) return;
+		// check anything changed
+		if (this.orgDetailsQueryData?.attributes.name === this.orgDetails.name) return;
+		
+		await this.updateOrgDetailsMut.mutateAsync({
+			path: { id: this.orgId },
+			body: { 
+				attributes: {
+					name: this.orgDetails.name,
+				}
+			}
+		})
 	};
 
-	private sessionWorkspacePrefs = $derived(makeWorkspacePreferences());
-	workspacePrefs = $state(makeWorkspacePreferences());
+	private orgPrefsQuery = createQuery(() => ({ 
+		...getOrganizationPreferencesOptions({ path: { id: this.orgId || "" }}),
+		enabled: !!this.orgId && this.canContinueOrgDetails,
+	}));
+	private orgPrefsQueryData = $derived(this.orgPrefsQuery.data?.data);
 
-	canContinueWorkspacePrefs = $derived(true);
+	canContinueOrgPrefs = $derived(!!this.orgId && this.orgPrefsQuery.isSuccess);
 
-	async onWorkspacePreferencesNext() {
-		if (settingsEqual(this.sessionWorkspacePrefs, this.workspacePrefs)) {
-			return;
+	orgPrefs = $state<OrganizationPreferences>({ enableIncidentManagement: false });
+	private updateOrgPrefsMut = createMutation(() => ({
+		...updateOrganizationPreferencesMutation(),
+		onSuccess: () => {
+			this.orgPrefsQuery.refetch();
 		}
-		console.log("update preferences");
-		return new Promise<void>((res, rej) => {
-			setTimeout(() => {res()}, 1000);
-		});
+	}));
+
+	async onOrganizationPreferencesNext() {
+		if (!this.orgId) return;
+		// check anything changed
+		if (this.orgPrefsQueryData?.enableIncidentManagement === this.orgPrefs.enableIncidentManagement) return;
+
+		await this.updateOrgPrefsMut.mutateAsync({
+			path: {id: this.orgId},
+			body: { 
+				attributes: {
+					enableIncidentManagement: this.orgPrefs.enableIncidentManagement,
+				}
+			}
+		})
 	}
 
 	remainingRequiredCapabilities = $derived.by(() => {
@@ -91,17 +106,16 @@ export class InitialSetupViewController {
 
 	canContinueCapabilities = $derived(this.remainingRequiredCapabilities.length === 0);
 
-	canFinish = $derived(this.canContinueOrgDetails && this.canContinueWorkspacePrefs && this.canContinueCapabilities);
+	canFinish = $derived(this.canContinueOrgDetails && this.canContinueOrgPrefs && this.canContinueCapabilities);
 
 	private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
 	private finishing = $state(false);
 	async doFinishOrganizationSetup() {
 		if (this.finishOrgSetupMut.isPending) return;
-		const id = this.session.org?.id;
-		if (!id) return;
+		if (!this.orgId) return;
 		this.finishing = true;
 		try {
-			await this.finishOrgSetupMut.mutateAsync({ path: { id } });
+			await this.finishOrgSetupMut.mutateAsync({ path: { id: this.orgId } });
 			this.session.refetch();
 		} catch (e) {
 			console.error("failed to finish setup", e);
@@ -109,6 +123,16 @@ export class InitialSetupViewController {
 			throw e;
 		}
 	}
+
+	constructor() {
+		watch(() => this.orgDetailsQueryData, org => {
+			if (org) this.orgDetails = makeOrgDetails(org);
+		});
+		watch(() => this.orgPrefsQueryData, prefs => {
+			if (prefs) this.orgPrefs = $state.snapshot(prefs);
+		});
+	}
+
 
 	loading = $derived(this.finishing || this.integrations.loading);
 }

@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type Organization struct {
@@ -25,6 +26,8 @@ func (Organization) Fields() []ent.Field {
 		field.String("auth_provider_id"),
 		field.String("name"),
 		field.Time("initial_setup_at").Optional(),
+		field.JSON("preferences", schematypes.OrganizationPreferences{}).
+			SchemaType(schemaTypeJsonB),
 	}
 }
 

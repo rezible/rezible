@@ -1914,7 +1914,12 @@ export type Organization = {
 
 export type OrganizationAttributes = {
     name: string;
+    preferences: OrganizationPreferences;
     setupRequired: boolean;
+};
+
+export type OrganizationPreferences = {
+    enableIncidentManagement: boolean;
 };
 
 export type Playbook = {
@@ -2550,6 +2555,26 @@ export type UpdateOncallShiftHandoverTemplateResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftHandoverTemplate;
+};
+
+export type UpdateOrganizationDetailsRequestAttributes = {
+    name?: string;
+};
+
+export type UpdateOrganizationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: UpdateOrganizationDetailsRequestAttributes;
+};
+
+export type UpdateOrganizationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Organization;
 };
 
 export type UpdatePlaybookAttributes = {
@@ -7825,6 +7850,53 @@ export type GetOrganizationResponses = {
 };
 
 export type GetOrganizationResponse = GetOrganizationResponses[keyof GetOrganizationResponses];
+
+export type UpdateOrganizationDetailsData = {
+    body: UpdateOrganizationRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/organizations/{id}';
+};
+
+export type UpdateOrganizationDetailsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateOrganizationDetailsError = UpdateOrganizationDetailsErrors[keyof UpdateOrganizationDetailsErrors];
+
+export type UpdateOrganizationDetailsResponses = {
+    /**
+     * OK
+     */
+    200: UpdateOrganizationResponseBody;
+};
+
+export type UpdateOrganizationDetailsResponse = UpdateOrganizationDetailsResponses[keyof UpdateOrganizationDetailsResponses];
 
 export type FinishOrganizationSetupData = {
     body?: never;

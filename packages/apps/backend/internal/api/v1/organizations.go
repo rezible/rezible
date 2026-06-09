@@ -16,10 +16,10 @@ func newOrganizationsHandler(orgs rez.OrganizationService) *organizationsHandler
 	return &organizationsHandler{orgs: orgs}
 }
 
-func (h *organizationsHandler) GetOrganization(ctx context.Context, request *oapi.GetOrganizationRequest) (*oapi.GetOrganizationResponse, error) {
+func (h *organizationsHandler) GetOrganization(ctx context.Context, req *oapi.GetOrganizationRequest) (*oapi.GetOrganizationResponse, error) {
 	var resp oapi.GetOrganizationResponse
 
-	org, orgErr := h.orgs.Get(ctx, organization.ID(request.Id))
+	org, orgErr := h.orgs.Get(ctx, organization.ID(req.Id))
 	if orgErr != nil {
 		return nil, oapi.Error(ctx, "failed to fetch organization", orgErr)
 	}
@@ -28,10 +28,29 @@ func (h *organizationsHandler) GetOrganization(ctx context.Context, request *oap
 	return &resp, nil
 }
 
-func (h *organizationsHandler) FinishOrganizationSetup(ctx context.Context, request *oapi.FinishOrganizationSetupRequest) (*oapi.FinishOrganizationSetupResponse, error) {
+func (h *organizationsHandler) UpdateOrganization(ctx context.Context, req *oapi.UpdateOrganizationRequest) (*oapi.UpdateOrganizationResponse, error) {
+	var resp oapi.UpdateOrganizationResponse
+
+	attrs := req.Body.Attributes
+
+	org, orgErr := h.orgs.Get(ctx, organization.ID(req.Id))
+	if orgErr != nil {
+		return nil, oapi.Error(ctx, "failed to fetch organization", orgErr)
+	}
+	update := org.Update().SetNillableName(attrs.Name)
+	org, orgErr = update.Save(ctx)
+	if orgErr != nil {
+		return nil, oapi.Error(ctx, "failed to update organization", orgErr)
+	}
+	resp.Body.Data = oapi.OrganizationFromEnt(org)
+
+	return &resp, nil
+}
+
+func (h *organizationsHandler) FinishOrganizationSetup(ctx context.Context, req *oapi.FinishOrganizationSetupRequest) (*oapi.FinishOrganizationSetupResponse, error) {
 	var resp oapi.FinishOrganizationSetupResponse
 
-	org, orgErr := h.orgs.Get(ctx, organization.ID(request.Id))
+	org, orgErr := h.orgs.Get(ctx, organization.ID(req.Id))
 	if orgErr != nil {
 		return nil, oapi.Error(ctx, "failed to fetch organization", orgErr)
 	}
