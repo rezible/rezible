@@ -37,11 +37,13 @@ type Organization struct {
 type OrganizationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
+	// Preferences holds the value of the preferences edge.
+	Preferences []*OrganizationPreferences `json:"preferences,omitempty"`
 	// Roles holds the value of the roles edge.
 	Roles []*OrganizationRole `json:"roles,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -55,10 +57,19 @@ func (e OrganizationEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
+// PreferencesOrErr returns the Preferences value or an error if the edge
+// was not loaded in eager-loading.
+func (e OrganizationEdges) PreferencesOrErr() ([]*OrganizationPreferences, error) {
+	if e.loadedTypes[1] {
+		return e.Preferences, nil
+	}
+	return nil, &NotLoadedError{edge: "preferences"}
+}
+
 // RolesOrErr returns the Roles value or an error if the edge
 // was not loaded in eager-loading.
 func (e OrganizationEdges) RolesOrErr() ([]*OrganizationRole, error) {
-	if e.loadedTypes[1] {
+	if e.loadedTypes[2] {
 		return e.Roles, nil
 	}
 	return nil, &NotLoadedError{edge: "roles"}
@@ -138,6 +149,11 @@ func (_m *Organization) Value(name string) (ent.Value, error) {
 // QueryTenant queries the "tenant" edge of the Organization entity.
 func (_m *Organization) QueryTenant() *TenantQuery {
 	return NewOrganizationClient(_m.config).QueryTenant(_m)
+}
+
+// QueryPreferences queries the "preferences" edge of the Organization entity.
+func (_m *Organization) QueryPreferences() *OrganizationPreferencesQuery {
+	return NewOrganizationClient(_m.config).QueryPreferences(_m)
 }
 
 // QueryRoles queries the "roles" edge of the Organization entity.

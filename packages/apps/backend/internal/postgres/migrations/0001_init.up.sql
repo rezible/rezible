@@ -260,8 +260,14 @@ CREATE INDEX "oncallshiftmetrics_tenant_id" ON "oncall_shift_metrics" ("tenant_i
 CREATE TABLE "organizations" ("id" uuid NOT NULL, "auth_provider_id" character varying NOT NULL, "name" character varying NOT NULL, "initial_setup_at" timestamptz NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "organization_tenant_id" to table: "organizations"
 CREATE INDEX "organization_tenant_id" ON "organizations" ("tenant_id");
--- create index "organization_auth_provider_id" to table: "organizations"
-CREATE UNIQUE INDEX "organization_auth_provider_id" ON "organizations" ("auth_provider_id");
+-- create index "organization_tenant_id_auth_provider_id" to table: "organizations"
+CREATE UNIQUE INDEX "organization_tenant_id_auth_provider_id" ON "organizations" ("tenant_id", "auth_provider_id");
+-- create "organization_preferences" table
+CREATE TABLE "organization_preferences" ("id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "org_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "organizationpreferences_tenant_id" to table: "organization_preferences"
+CREATE INDEX "organizationpreferences_tenant_id" ON "organization_preferences" ("tenant_id");
+-- create index "organizationpreferences_tenant_id_org_id" to table: "organization_preferences"
+CREATE UNIQUE INDEX "organizationpreferences_tenant_id_org_id" ON "organization_preferences" ("tenant_id", "org_id");
 -- create "organization_roles" table
 CREATE TABLE "organization_roles" ("id" uuid NOT NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "org_id" uuid NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "organization_roles_user_id_key" to table: "organization_roles"
@@ -496,6 +502,8 @@ ALTER TABLE "oncall_shift_handovers" ADD CONSTRAINT "oncall_shift_handovers_onca
 ALTER TABLE "oncall_shift_metrics" ADD CONSTRAINT "oncall_shift_metrics_oncall_shifts_metrics" FOREIGN KEY ("shift_id") REFERENCES "oncall_shifts" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "oncall_shift_metrics_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "organizations" table
 ALTER TABLE "organizations" ADD CONSTRAINT "organizations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "organization_preferences" table
+ALTER TABLE "organization_preferences" ADD CONSTRAINT "organization_preferences_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_preferences_organizations_organization" FOREIGN KEY ("org_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION;
 -- modify "organization_roles" table
 ALTER TABLE "organization_roles" ADD CONSTRAINT "organization_roles_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_organizations_organization" FOREIGN KEY ("org_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_users_organization_role" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "playbooks" table

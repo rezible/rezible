@@ -1953,9 +1953,47 @@ var (
 				Columns: []*schema.Column{OrganizationsColumns[4]},
 			},
 			{
-				Name:    "organization_auth_provider_id",
+				Name:    "organization_tenant_id_auth_provider_id",
 				Unique:  true,
-				Columns: []*schema.Column{OrganizationsColumns[1]},
+				Columns: []*schema.Column{OrganizationsColumns[4], OrganizationsColumns[1]},
+			},
+		},
+	}
+	// OrganizationPreferencesColumns holds the columns for the "organization_preferences" table.
+	OrganizationPreferencesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "org_id", Type: field.TypeUUID},
+	}
+	// OrganizationPreferencesTable holds the schema information for the "organization_preferences" table.
+	OrganizationPreferencesTable = &schema.Table{
+		Name:       "organization_preferences",
+		Columns:    OrganizationPreferencesColumns,
+		PrimaryKey: []*schema.Column{OrganizationPreferencesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "organization_preferences_tenants_tenant",
+				Columns:    []*schema.Column{OrganizationPreferencesColumns[1]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "organization_preferences_organizations_organization",
+				Columns:    []*schema.Column{OrganizationPreferencesColumns[2]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "organizationpreferences_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OrganizationPreferencesColumns[1]},
+			},
+			{
+				Name:    "organizationpreferences_tenant_id_org_id",
+				Unique:  true,
+				Columns: []*schema.Column{OrganizationPreferencesColumns[1], OrganizationPreferencesColumns[2]},
 			},
 		},
 	}
@@ -3174,6 +3212,7 @@ var (
 		OncallShiftHandoversTable,
 		OncallShiftMetricsTable,
 		OrganizationsTable,
+		OrganizationPreferencesTable,
 		OrganizationRolesTable,
 		PlaybooksTable,
 		RetrospectivesTable,
@@ -3311,6 +3350,8 @@ func init() {
 	OncallShiftMetricsTable.ForeignKeys[0].RefTable = OncallShiftsTable
 	OncallShiftMetricsTable.ForeignKeys[1].RefTable = TenantsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = TenantsTable
+	OrganizationPreferencesTable.ForeignKeys[0].RefTable = TenantsTable
+	OrganizationPreferencesTable.ForeignKeys[1].RefTable = OrganizationsTable
 	OrganizationRolesTable.ForeignKeys[0].RefTable = TenantsTable
 	OrganizationRolesTable.ForeignKeys[1].RefTable = OrganizationsTable
 	OrganizationRolesTable.ForeignKeys[2].RefTable = UsersTable

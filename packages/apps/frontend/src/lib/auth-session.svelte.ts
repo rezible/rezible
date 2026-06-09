@@ -76,10 +76,12 @@ const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSe
 
 export class AuthSessionState {
 	private query = createQuery(() => getCurrentAuthSessionOptions());
-	private parsedResponse = $derived(parseUserAuthSessionQueryResponse(this.query));
-
 	private loaded = $derived(this.query.isFetched);
+
+	private parsedResponse = $derived(parseUserAuthSessionQueryResponse(this.query));
+	
 	error = $derived(this.parsedResponse.error);
+
 	private session = $derived(this.parsedResponse.session);
 	user = $derived(this.session?.user);
 	org = $derived(this.session?.organization);

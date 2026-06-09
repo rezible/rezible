@@ -64,6 +64,7 @@ type SchemaConfig struct {
 	OncallShiftHandoverPinnedAnnotations      string // OncallShiftHandover-pinned_annotations->EventAnnotation table.
 	OncallShiftMetrics                        string // OncallShiftMetrics table.
 	Organization                              string // Organization table.
+	OrganizationPreferences                   string // OrganizationPreferences table.
 	OrganizationRole                          string // OrganizationRole table.
 	Playbook                                  string // Playbook table.
 	PlaybookAlerts                            string // Playbook-alerts->Alert table.

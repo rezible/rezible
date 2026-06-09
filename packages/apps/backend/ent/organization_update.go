@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -80,6 +81,21 @@ func (_u *OrganizationUpdate) ClearInitialSetupAt() *OrganizationUpdate {
 	return _u
 }
 
+// AddPreferenceIDs adds the "preferences" edge to the OrganizationPreferences entity by IDs.
+func (_u *OrganizationUpdate) AddPreferenceIDs(ids ...uuid.UUID) *OrganizationUpdate {
+	_u.mutation.AddPreferenceIDs(ids...)
+	return _u
+}
+
+// AddPreferences adds the "preferences" edges to the OrganizationPreferences entity.
+func (_u *OrganizationUpdate) AddPreferences(v ...*OrganizationPreferences) *OrganizationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPreferenceIDs(ids...)
+}
+
 // AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
 func (_u *OrganizationUpdate) AddRoleIDs(ids ...uuid.UUID) *OrganizationUpdate {
 	_u.mutation.AddRoleIDs(ids...)
@@ -98,6 +114,27 @@ func (_u *OrganizationUpdate) AddRoles(v ...*OrganizationRole) *OrganizationUpda
 // Mutation returns the OrganizationMutation object of the builder.
 func (_u *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return _u.mutation
+}
+
+// ClearPreferences clears all "preferences" edges to the OrganizationPreferences entity.
+func (_u *OrganizationUpdate) ClearPreferences() *OrganizationUpdate {
+	_u.mutation.ClearPreferences()
+	return _u
+}
+
+// RemovePreferenceIDs removes the "preferences" edge to OrganizationPreferences entities by IDs.
+func (_u *OrganizationUpdate) RemovePreferenceIDs(ids ...uuid.UUID) *OrganizationUpdate {
+	_u.mutation.RemovePreferenceIDs(ids...)
+	return _u
+}
+
+// RemovePreferences removes "preferences" edges to OrganizationPreferences entities.
+func (_u *OrganizationUpdate) RemovePreferences(v ...*OrganizationPreferences) *OrganizationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePreferenceIDs(ids...)
 }
 
 // ClearRoles clears all "roles" edges to the OrganizationRole entity.
@@ -185,6 +222,54 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 	}
 	if _u.mutation.InitialSetupAtCleared() {
 		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
+	}
+	if _u.mutation.PreferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPreferencesIDs(); len(nodes) > 0 && !_u.mutation.PreferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PreferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -306,6 +391,21 @@ func (_u *OrganizationUpdateOne) ClearInitialSetupAt() *OrganizationUpdateOne {
 	return _u
 }
 
+// AddPreferenceIDs adds the "preferences" edge to the OrganizationPreferences entity by IDs.
+func (_u *OrganizationUpdateOne) AddPreferenceIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
+	_u.mutation.AddPreferenceIDs(ids...)
+	return _u
+}
+
+// AddPreferences adds the "preferences" edges to the OrganizationPreferences entity.
+func (_u *OrganizationUpdateOne) AddPreferences(v ...*OrganizationPreferences) *OrganizationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddPreferenceIDs(ids...)
+}
+
 // AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
 func (_u *OrganizationUpdateOne) AddRoleIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
 	_u.mutation.AddRoleIDs(ids...)
@@ -324,6 +424,27 @@ func (_u *OrganizationUpdateOne) AddRoles(v ...*OrganizationRole) *OrganizationU
 // Mutation returns the OrganizationMutation object of the builder.
 func (_u *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return _u.mutation
+}
+
+// ClearPreferences clears all "preferences" edges to the OrganizationPreferences entity.
+func (_u *OrganizationUpdateOne) ClearPreferences() *OrganizationUpdateOne {
+	_u.mutation.ClearPreferences()
+	return _u
+}
+
+// RemovePreferenceIDs removes the "preferences" edge to OrganizationPreferences entities by IDs.
+func (_u *OrganizationUpdateOne) RemovePreferenceIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
+	_u.mutation.RemovePreferenceIDs(ids...)
+	return _u
+}
+
+// RemovePreferences removes "preferences" edges to OrganizationPreferences entities.
+func (_u *OrganizationUpdateOne) RemovePreferences(v ...*OrganizationPreferences) *OrganizationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemovePreferenceIDs(ids...)
 }
 
 // ClearRoles clears all "roles" edges to the OrganizationRole entity.
@@ -441,6 +562,54 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 	}
 	if _u.mutation.InitialSetupAtCleared() {
 		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
+	}
+	if _u.mutation.PreferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedPreferencesIDs(); len(nodes) > 0 && !_u.mutation.PreferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PreferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
