@@ -58,7 +58,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -134,7 +133,6 @@ const (
 	TypeOncallShiftHandover                     = "OncallShiftHandover"
 	TypeOncallShiftMetrics                      = "OncallShiftMetrics"
 	TypeOrganization                            = "Organization"
-	TypeOrganizationPreferences                 = "OrganizationPreferences"
 	TypeOrganizationRole                        = "OrganizationRole"
 	TypePlaybook                                = "Playbook"
 	TypeRetrospective                           = "Retrospective"
@@ -41363,24 +41361,21 @@ func (m *OncallShiftMetricsMutation) ResetEdge(name string) error {
 // OrganizationMutation represents an operation that mutates the Organization nodes in the graph.
 type OrganizationMutation struct {
 	config
-	op                 Op
-	typ                string
-	id                 *uuid.UUID
-	auth_provider_id   *string
-	name               *string
-	initial_setup_at   *time.Time
-	clearedFields      map[string]struct{}
-	tenant             *int
-	clearedtenant      bool
-	preferences        map[uuid.UUID]struct{}
-	removedpreferences map[uuid.UUID]struct{}
-	clearedpreferences bool
-	roles              map[uuid.UUID]struct{}
-	removedroles       map[uuid.UUID]struct{}
-	clearedroles       bool
-	done               bool
-	oldValue           func(context.Context) (*Organization, error)
-	predicates         []predicate.Organization
+	op               Op
+	typ              string
+	id               *uuid.UUID
+	auth_provider_id *string
+	name             *string
+	initial_setup_at *time.Time
+	clearedFields    map[string]struct{}
+	tenant           *int
+	clearedtenant    bool
+	roles            map[uuid.UUID]struct{}
+	removedroles     map[uuid.UUID]struct{}
+	clearedroles     bool
+	done             bool
+	oldValue         func(context.Context) (*Organization, error)
+	predicates       []predicate.Organization
 }
 
 var _ ent.Mutation = (*OrganizationMutation)(nil)
@@ -41671,60 +41666,6 @@ func (m *OrganizationMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// AddPreferenceIDs adds the "preferences" edge to the OrganizationPreferences entity by ids.
-func (m *OrganizationMutation) AddPreferenceIDs(ids ...uuid.UUID) {
-	if m.preferences == nil {
-		m.preferences = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.preferences[ids[i]] = struct{}{}
-	}
-}
-
-// ClearPreferences clears the "preferences" edge to the OrganizationPreferences entity.
-func (m *OrganizationMutation) ClearPreferences() {
-	m.clearedpreferences = true
-}
-
-// PreferencesCleared reports if the "preferences" edge to the OrganizationPreferences entity was cleared.
-func (m *OrganizationMutation) PreferencesCleared() bool {
-	return m.clearedpreferences
-}
-
-// RemovePreferenceIDs removes the "preferences" edge to the OrganizationPreferences entity by IDs.
-func (m *OrganizationMutation) RemovePreferenceIDs(ids ...uuid.UUID) {
-	if m.removedpreferences == nil {
-		m.removedpreferences = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.preferences, ids[i])
-		m.removedpreferences[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedPreferences returns the removed IDs of the "preferences" edge to the OrganizationPreferences entity.
-func (m *OrganizationMutation) RemovedPreferencesIDs() (ids []uuid.UUID) {
-	for id := range m.removedpreferences {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// PreferencesIDs returns the "preferences" edge IDs in the mutation.
-func (m *OrganizationMutation) PreferencesIDs() (ids []uuid.UUID) {
-	for id := range m.preferences {
-		ids = append(ids, id)
-	}
-	return
-}
-
-// ResetPreferences resets all changes to the "preferences" edge.
-func (m *OrganizationMutation) ResetPreferences() {
-	m.preferences = nil
-	m.clearedpreferences = false
-	m.removedpreferences = nil
-}
-
 // AddRoleIDs adds the "roles" edge to the OrganizationRole entity by ids.
 func (m *OrganizationMutation) AddRoleIDs(ids ...uuid.UUID) {
 	if m.roles == nil {
@@ -41975,12 +41916,9 @@ func (m *OrganizationMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *OrganizationMutation) AddedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.tenant != nil {
 		edges = append(edges, organization.EdgeTenant)
-	}
-	if m.preferences != nil {
-		edges = append(edges, organization.EdgePreferences)
 	}
 	if m.roles != nil {
 		edges = append(edges, organization.EdgeRoles)
@@ -41996,12 +41934,6 @@ func (m *OrganizationMutation) AddedIDs(name string) []ent.Value {
 		if id := m.tenant; id != nil {
 			return []ent.Value{*id}
 		}
-	case organization.EdgePreferences:
-		ids := make([]ent.Value, 0, len(m.preferences))
-		for id := range m.preferences {
-			ids = append(ids, id)
-		}
-		return ids
 	case organization.EdgeRoles:
 		ids := make([]ent.Value, 0, len(m.roles))
 		for id := range m.roles {
@@ -42014,10 +41946,7 @@ func (m *OrganizationMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *OrganizationMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 3)
-	if m.removedpreferences != nil {
-		edges = append(edges, organization.EdgePreferences)
-	}
+	edges := make([]string, 0, 2)
 	if m.removedroles != nil {
 		edges = append(edges, organization.EdgeRoles)
 	}
@@ -42028,12 +41957,6 @@ func (m *OrganizationMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *OrganizationMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case organization.EdgePreferences:
-		ids := make([]ent.Value, 0, len(m.removedpreferences))
-		for id := range m.removedpreferences {
-			ids = append(ids, id)
-		}
-		return ids
 	case organization.EdgeRoles:
 		ids := make([]ent.Value, 0, len(m.removedroles))
 		for id := range m.removedroles {
@@ -42046,12 +41969,9 @@ func (m *OrganizationMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *OrganizationMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 3)
+	edges := make([]string, 0, 2)
 	if m.clearedtenant {
 		edges = append(edges, organization.EdgeTenant)
-	}
-	if m.clearedpreferences {
-		edges = append(edges, organization.EdgePreferences)
 	}
 	if m.clearedroles {
 		edges = append(edges, organization.EdgeRoles)
@@ -42065,8 +41985,6 @@ func (m *OrganizationMutation) EdgeCleared(name string) bool {
 	switch name {
 	case organization.EdgeTenant:
 		return m.clearedtenant
-	case organization.EdgePreferences:
-		return m.clearedpreferences
 	case organization.EdgeRoles:
 		return m.clearedroles
 	}
@@ -42091,516 +42009,11 @@ func (m *OrganizationMutation) ResetEdge(name string) error {
 	case organization.EdgeTenant:
 		m.ResetTenant()
 		return nil
-	case organization.EdgePreferences:
-		m.ResetPreferences()
-		return nil
 	case organization.EdgeRoles:
 		m.ResetRoles()
 		return nil
 	}
 	return fmt.Errorf("unknown Organization edge %s", name)
-}
-
-// OrganizationPreferencesMutation represents an operation that mutates the OrganizationPreferences nodes in the graph.
-type OrganizationPreferencesMutation struct {
-	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	clearedFields       map[string]struct{}
-	tenant              *int
-	clearedtenant       bool
-	organization        *uuid.UUID
-	clearedorganization bool
-	done                bool
-	oldValue            func(context.Context) (*OrganizationPreferences, error)
-	predicates          []predicate.OrganizationPreferences
-}
-
-var _ ent.Mutation = (*OrganizationPreferencesMutation)(nil)
-
-// organizationpreferencesOption allows management of the mutation configuration using functional options.
-type organizationpreferencesOption func(*OrganizationPreferencesMutation)
-
-// newOrganizationPreferencesMutation creates new mutation for the OrganizationPreferences entity.
-func newOrganizationPreferencesMutation(c config, op Op, opts ...organizationpreferencesOption) *OrganizationPreferencesMutation {
-	m := &OrganizationPreferencesMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeOrganizationPreferences,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withOrganizationPreferencesID sets the ID field of the mutation.
-func withOrganizationPreferencesID(id uuid.UUID) organizationpreferencesOption {
-	return func(m *OrganizationPreferencesMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *OrganizationPreferences
-		)
-		m.oldValue = func(ctx context.Context) (*OrganizationPreferences, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().OrganizationPreferences.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withOrganizationPreferences sets the old OrganizationPreferences of the mutation.
-func withOrganizationPreferences(node *OrganizationPreferences) organizationpreferencesOption {
-	return func(m *OrganizationPreferencesMutation) {
-		m.oldValue = func(context.Context) (*OrganizationPreferences, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m OrganizationPreferencesMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m OrganizationPreferencesMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of OrganizationPreferences entities.
-func (m *OrganizationPreferencesMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *OrganizationPreferencesMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *OrganizationPreferencesMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().OrganizationPreferences.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetTenantID sets the "tenant_id" field.
-func (m *OrganizationPreferencesMutation) SetTenantID(i int) {
-	m.tenant = &i
-}
-
-// TenantID returns the value of the "tenant_id" field in the mutation.
-func (m *OrganizationPreferencesMutation) TenantID() (r int, exists bool) {
-	v := m.tenant
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldTenantID returns the old "tenant_id" field's value of the OrganizationPreferences entity.
-// If the OrganizationPreferences object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OrganizationPreferencesMutation) OldTenantID(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldTenantID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
-	}
-	return oldValue.TenantID, nil
-}
-
-// ResetTenantID resets all changes to the "tenant_id" field.
-func (m *OrganizationPreferencesMutation) ResetTenantID() {
-	m.tenant = nil
-}
-
-// SetOrgID sets the "org_id" field.
-func (m *OrganizationPreferencesMutation) SetOrgID(u uuid.UUID) {
-	m.organization = &u
-}
-
-// OrgID returns the value of the "org_id" field in the mutation.
-func (m *OrganizationPreferencesMutation) OrgID() (r uuid.UUID, exists bool) {
-	v := m.organization
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldOrgID returns the old "org_id" field's value of the OrganizationPreferences entity.
-// If the OrganizationPreferences object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OrganizationPreferencesMutation) OldOrgID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOrgID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOrgID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOrgID: %w", err)
-	}
-	return oldValue.OrgID, nil
-}
-
-// ResetOrgID resets all changes to the "org_id" field.
-func (m *OrganizationPreferencesMutation) ResetOrgID() {
-	m.organization = nil
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (m *OrganizationPreferencesMutation) ClearTenant() {
-	m.clearedtenant = true
-	m.clearedFields[organizationpreferences.FieldTenantID] = struct{}{}
-}
-
-// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
-func (m *OrganizationPreferencesMutation) TenantCleared() bool {
-	return m.clearedtenant
-}
-
-// TenantIDs returns the "tenant" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TenantID instead. It exists only for internal usage by the builders.
-func (m *OrganizationPreferencesMutation) TenantIDs() (ids []int) {
-	if id := m.tenant; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTenant resets all changes to the "tenant" edge.
-func (m *OrganizationPreferencesMutation) ResetTenant() {
-	m.tenant = nil
-	m.clearedtenant = false
-}
-
-// SetOrganizationID sets the "organization" edge to the Organization entity by id.
-func (m *OrganizationPreferencesMutation) SetOrganizationID(id uuid.UUID) {
-	m.organization = &id
-}
-
-// ClearOrganization clears the "organization" edge to the Organization entity.
-func (m *OrganizationPreferencesMutation) ClearOrganization() {
-	m.clearedorganization = true
-	m.clearedFields[organizationpreferences.FieldOrgID] = struct{}{}
-}
-
-// OrganizationCleared reports if the "organization" edge to the Organization entity was cleared.
-func (m *OrganizationPreferencesMutation) OrganizationCleared() bool {
-	return m.clearedorganization
-}
-
-// OrganizationID returns the "organization" edge ID in the mutation.
-func (m *OrganizationPreferencesMutation) OrganizationID() (id uuid.UUID, exists bool) {
-	if m.organization != nil {
-		return *m.organization, true
-	}
-	return
-}
-
-// OrganizationIDs returns the "organization" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// OrganizationID instead. It exists only for internal usage by the builders.
-func (m *OrganizationPreferencesMutation) OrganizationIDs() (ids []uuid.UUID) {
-	if id := m.organization; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetOrganization resets all changes to the "organization" edge.
-func (m *OrganizationPreferencesMutation) ResetOrganization() {
-	m.organization = nil
-	m.clearedorganization = false
-}
-
-// Where appends a list predicates to the OrganizationPreferencesMutation builder.
-func (m *OrganizationPreferencesMutation) Where(ps ...predicate.OrganizationPreferences) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// WhereP appends storage-level predicates to the OrganizationPreferencesMutation builder. Using this method,
-// users can use type-assertion to append predicates that do not depend on any generated package.
-func (m *OrganizationPreferencesMutation) WhereP(ps ...func(*sql.Selector)) {
-	p := make([]predicate.OrganizationPreferences, len(ps))
-	for i := range ps {
-		p[i] = ps[i]
-	}
-	m.Where(p...)
-}
-
-// Op returns the operation name.
-func (m *OrganizationPreferencesMutation) Op() Op {
-	return m.op
-}
-
-// SetOp allows setting the mutation operation.
-func (m *OrganizationPreferencesMutation) SetOp(op Op) {
-	m.op = op
-}
-
-// Type returns the node type of this mutation (OrganizationPreferences).
-func (m *OrganizationPreferencesMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *OrganizationPreferencesMutation) Fields() []string {
-	fields := make([]string, 0, 2)
-	if m.tenant != nil {
-		fields = append(fields, organizationpreferences.FieldTenantID)
-	}
-	if m.organization != nil {
-		fields = append(fields, organizationpreferences.FieldOrgID)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *OrganizationPreferencesMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case organizationpreferences.FieldTenantID:
-		return m.TenantID()
-	case organizationpreferences.FieldOrgID:
-		return m.OrgID()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *OrganizationPreferencesMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case organizationpreferences.FieldTenantID:
-		return m.OldTenantID(ctx)
-	case organizationpreferences.FieldOrgID:
-		return m.OldOrgID(ctx)
-	}
-	return nil, fmt.Errorf("unknown OrganizationPreferences field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *OrganizationPreferencesMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case organizationpreferences.FieldTenantID:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetTenantID(v)
-		return nil
-	case organizationpreferences.FieldOrgID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetOrgID(v)
-		return nil
-	}
-	return fmt.Errorf("unknown OrganizationPreferences field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *OrganizationPreferencesMutation) AddedFields() []string {
-	var fields []string
-	return fields
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *OrganizationPreferencesMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	}
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *OrganizationPreferencesMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown OrganizationPreferences numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *OrganizationPreferencesMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *OrganizationPreferencesMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *OrganizationPreferencesMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown OrganizationPreferences nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *OrganizationPreferencesMutation) ResetField(name string) error {
-	switch name {
-	case organizationpreferences.FieldTenantID:
-		m.ResetTenantID()
-		return nil
-	case organizationpreferences.FieldOrgID:
-		m.ResetOrgID()
-		return nil
-	}
-	return fmt.Errorf("unknown OrganizationPreferences field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *OrganizationPreferencesMutation) AddedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.tenant != nil {
-		edges = append(edges, organizationpreferences.EdgeTenant)
-	}
-	if m.organization != nil {
-		edges = append(edges, organizationpreferences.EdgeOrganization)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *OrganizationPreferencesMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case organizationpreferences.EdgeTenant:
-		if id := m.tenant; id != nil {
-			return []ent.Value{*id}
-		}
-	case organizationpreferences.EdgeOrganization:
-		if id := m.organization; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *OrganizationPreferencesMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 2)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *OrganizationPreferencesMutation) RemovedIDs(name string) []ent.Value {
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *OrganizationPreferencesMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 2)
-	if m.clearedtenant {
-		edges = append(edges, organizationpreferences.EdgeTenant)
-	}
-	if m.clearedorganization {
-		edges = append(edges, organizationpreferences.EdgeOrganization)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *OrganizationPreferencesMutation) EdgeCleared(name string) bool {
-	switch name {
-	case organizationpreferences.EdgeTenant:
-		return m.clearedtenant
-	case organizationpreferences.EdgeOrganization:
-		return m.clearedorganization
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *OrganizationPreferencesMutation) ClearEdge(name string) error {
-	switch name {
-	case organizationpreferences.EdgeTenant:
-		m.ClearTenant()
-		return nil
-	case organizationpreferences.EdgeOrganization:
-		m.ClearOrganization()
-		return nil
-	}
-	return fmt.Errorf("unknown OrganizationPreferences unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *OrganizationPreferencesMutation) ResetEdge(name string) error {
-	switch name {
-	case organizationpreferences.EdgeTenant:
-		m.ResetTenant()
-		return nil
-	case organizationpreferences.EdgeOrganization:
-		m.ResetOrganization()
-		return nil
-	}
-	return fmt.Errorf("unknown OrganizationPreferences edge %s", name)
 }
 
 // OrganizationRoleMutation represents an operation that mutates the OrganizationRole nodes in the graph.

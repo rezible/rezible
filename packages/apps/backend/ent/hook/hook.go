@@ -549,18 +549,6 @@ func (f OrganizationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OrganizationMutation", m)
 }
 
-// The OrganizationPreferencesFunc type is an adapter to allow the use of ordinary
-// function as OrganizationPreferences mutator.
-type OrganizationPreferencesFunc func(context.Context, *ent.OrganizationPreferencesMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f OrganizationPreferencesFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.OrganizationPreferencesMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.OrganizationPreferencesMutation", m)
-}
-
 // The OrganizationRoleFunc type is an adapter to allow the use of ordinary
 // function as OrganizationRole mutator.
 type OrganizationRoleFunc func(context.Context, *ent.OrganizationRoleMutation) (ent.Value, error)

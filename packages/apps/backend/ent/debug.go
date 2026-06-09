@@ -372,14 +372,6 @@ func (c *OrganizationClient) Debug() *OrganizationClient {
 	return &OrganizationClient{config: cfg}
 }
 
-func (c *OrganizationPreferencesClient) Debug() *OrganizationPreferencesClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &OrganizationPreferencesClient{config: cfg}
-}
-
 func (c *OrganizationRoleClient) Debug() *OrganizationRoleClient {
 	if c.debug {
 		return c

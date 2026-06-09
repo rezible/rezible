@@ -1203,30 +1203,6 @@ func (f OrganizationMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mu
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OrganizationMutation", m)
 }
 
-// The OrganizationPreferencesQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type OrganizationPreferencesQueryRuleFunc func(context.Context, *ent.OrganizationPreferencesQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f OrganizationPreferencesQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.OrganizationPreferencesQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.OrganizationPreferencesQuery", q)
-}
-
-// The OrganizationPreferencesMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type OrganizationPreferencesMutationRuleFunc func(context.Context, *ent.OrganizationPreferencesMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f OrganizationPreferencesMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.OrganizationPreferencesMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.OrganizationPreferencesMutation", m)
-}
-
 // The OrganizationRoleQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type OrganizationRoleQueryRuleFunc func(context.Context, *ent.OrganizationRoleQuery) error
@@ -1786,8 +1762,6 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.OrganizationQuery:
 		return q.Filter(), nil
-	case *ent.OrganizationPreferencesQuery:
-		return q.Filter(), nil
 	case *ent.OrganizationRoleQuery:
 		return q.Filter(), nil
 	case *ent.PlaybookQuery:
@@ -1920,8 +1894,6 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.OncallShiftMetricsMutation:
 		return m.Filter(), nil
 	case *ent.OrganizationMutation:
-		return m.Filter(), nil
-	case *ent.OrganizationPreferencesMutation:
 		return m.Filter(), nil
 	case *ent.OrganizationRoleMutation:
 		return m.Filter(), nil

@@ -61,7 +61,6 @@ import (
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -181,8 +180,6 @@ type Client struct {
 	OncallShiftMetrics *OncallShiftMetricsClient
 	// Organization is the client for interacting with the Organization builders.
 	Organization *OrganizationClient
-	// OrganizationPreferences is the client for interacting with the OrganizationPreferences builders.
-	OrganizationPreferences *OrganizationPreferencesClient
 	// OrganizationRole is the client for interacting with the OrganizationRole builders.
 	OrganizationRole *OrganizationRoleClient
 	// Playbook is the client for interacting with the Playbook builders.
@@ -276,7 +273,6 @@ func (c *Client) init() {
 	c.OncallShiftHandover = NewOncallShiftHandoverClient(c.config)
 	c.OncallShiftMetrics = NewOncallShiftMetricsClient(c.config)
 	c.Organization = NewOrganizationClient(c.config)
-	c.OrganizationPreferences = NewOrganizationPreferencesClient(c.config)
 	c.OrganizationRole = NewOrganizationRoleClient(c.config)
 	c.Playbook = NewPlaybookClient(c.config)
 	c.Retrospective = NewRetrospectiveClient(c.config)
@@ -436,7 +432,6 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		OncallShiftHandover:                     NewOncallShiftHandoverClient(cfg),
 		OncallShiftMetrics:                      NewOncallShiftMetricsClient(cfg),
 		Organization:                            NewOrganizationClient(cfg),
-		OrganizationPreferences:                 NewOrganizationPreferencesClient(cfg),
 		OrganizationRole:                        NewOrganizationRoleClient(cfg),
 		Playbook:                                NewPlaybookClient(cfg),
 		Retrospective:                           NewRetrospectiveClient(cfg),
@@ -520,7 +515,6 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		OncallShiftHandover:                     NewOncallShiftHandoverClient(cfg),
 		OncallShiftMetrics:                      NewOncallShiftMetricsClient(cfg),
 		Organization:                            NewOrganizationClient(cfg),
-		OrganizationPreferences:                 NewOrganizationPreferencesClient(cfg),
 		OrganizationRole:                        NewOrganizationRoleClient(cfg),
 		Playbook:                                NewPlaybookClient(cfg),
 		Retrospective:                           NewRetrospectiveClient(cfg),
@@ -583,12 +577,11 @@ func (c *Client) Use(hooks ...Hook) {
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
-		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
-		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
-		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
-		c.Tenant, c.Ticket, c.User, c.VideoConference,
+		c.OrganizationRole, c.Playbook, c.Retrospective, c.RetrospectiveComment,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisTopologyEdge,
+		c.SystemAnalysisTopologyNode, c.SystemTopologySnapshot,
+		c.SystemTopologySnapshotEntity, c.SystemTopologySnapshotRelationship, c.Task,
+		c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -613,12 +606,11 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
 		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
 		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
-		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
-		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
-		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
-		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
-		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
-		c.Tenant, c.Ticket, c.User, c.VideoConference,
+		c.OrganizationRole, c.Playbook, c.Retrospective, c.RetrospectiveComment,
+		c.RetrospectiveReview, c.SystemAnalysis, c.SystemAnalysisTopologyEdge,
+		c.SystemAnalysisTopologyNode, c.SystemTopologySnapshot,
+		c.SystemTopologySnapshotEntity, c.SystemTopologySnapshotRelationship, c.Task,
+		c.Team, c.TeamMembership, c.Tenant, c.Ticket, c.User, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -717,8 +709,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.OncallShiftMetrics.mutate(ctx, m)
 	case *OrganizationMutation:
 		return c.Organization.mutate(ctx, m)
-	case *OrganizationPreferencesMutation:
-		return c.OrganizationPreferences.mutate(ctx, m)
 	case *OrganizationRoleMutation:
 		return c.OrganizationRole.mutate(ctx, m)
 	case *PlaybookMutation:
@@ -9919,25 +9909,6 @@ func (c *OrganizationClient) QueryTenant(_m *Organization) *TenantQuery {
 	return query
 }
 
-// QueryPreferences queries the preferences edge of a Organization.
-func (c *OrganizationClient) QueryPreferences(_m *Organization) *OrganizationPreferencesQuery {
-	query := (&OrganizationPreferencesClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organization.Table, organization.FieldID, id),
-			sqlgraph.To(organizationpreferences.Table, organizationpreferences.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, organization.PreferencesTable, organization.PreferencesColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.OrganizationPreferences
-		step.Edge.Schema = schemaConfig.OrganizationPreferences
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryRoles queries the roles edge of a Organization.
 func (c *OrganizationClient) QueryRoles(_m *Organization) *OrganizationRoleQuery {
 	query := (&OrganizationRoleClient{config: c.config}).Query()
@@ -9980,178 +9951,6 @@ func (c *OrganizationClient) mutate(ctx context.Context, m *OrganizationMutation
 		return (&OrganizationDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Organization mutation op: %q", m.Op())
-	}
-}
-
-// OrganizationPreferencesClient is a client for the OrganizationPreferences schema.
-type OrganizationPreferencesClient struct {
-	config
-}
-
-// NewOrganizationPreferencesClient returns a client for the OrganizationPreferences from the given config.
-func NewOrganizationPreferencesClient(c config) *OrganizationPreferencesClient {
-	return &OrganizationPreferencesClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `organizationpreferences.Hooks(f(g(h())))`.
-func (c *OrganizationPreferencesClient) Use(hooks ...Hook) {
-	c.hooks.OrganizationPreferences = append(c.hooks.OrganizationPreferences, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `organizationpreferences.Intercept(f(g(h())))`.
-func (c *OrganizationPreferencesClient) Intercept(interceptors ...Interceptor) {
-	c.inters.OrganizationPreferences = append(c.inters.OrganizationPreferences, interceptors...)
-}
-
-// Create returns a builder for creating a OrganizationPreferences entity.
-func (c *OrganizationPreferencesClient) Create() *OrganizationPreferencesCreate {
-	mutation := newOrganizationPreferencesMutation(c.config, OpCreate)
-	return &OrganizationPreferencesCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of OrganizationPreferences entities.
-func (c *OrganizationPreferencesClient) CreateBulk(builders ...*OrganizationPreferencesCreate) *OrganizationPreferencesCreateBulk {
-	return &OrganizationPreferencesCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *OrganizationPreferencesClient) MapCreateBulk(slice any, setFunc func(*OrganizationPreferencesCreate, int)) *OrganizationPreferencesCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &OrganizationPreferencesCreateBulk{err: fmt.Errorf("calling to OrganizationPreferencesClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*OrganizationPreferencesCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &OrganizationPreferencesCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for OrganizationPreferences.
-func (c *OrganizationPreferencesClient) Update() *OrganizationPreferencesUpdate {
-	mutation := newOrganizationPreferencesMutation(c.config, OpUpdate)
-	return &OrganizationPreferencesUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *OrganizationPreferencesClient) UpdateOne(_m *OrganizationPreferences) *OrganizationPreferencesUpdateOne {
-	mutation := newOrganizationPreferencesMutation(c.config, OpUpdateOne, withOrganizationPreferences(_m))
-	return &OrganizationPreferencesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *OrganizationPreferencesClient) UpdateOneID(id uuid.UUID) *OrganizationPreferencesUpdateOne {
-	mutation := newOrganizationPreferencesMutation(c.config, OpUpdateOne, withOrganizationPreferencesID(id))
-	return &OrganizationPreferencesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for OrganizationPreferences.
-func (c *OrganizationPreferencesClient) Delete() *OrganizationPreferencesDelete {
-	mutation := newOrganizationPreferencesMutation(c.config, OpDelete)
-	return &OrganizationPreferencesDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *OrganizationPreferencesClient) DeleteOne(_m *OrganizationPreferences) *OrganizationPreferencesDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *OrganizationPreferencesClient) DeleteOneID(id uuid.UUID) *OrganizationPreferencesDeleteOne {
-	builder := c.Delete().Where(organizationpreferences.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &OrganizationPreferencesDeleteOne{builder}
-}
-
-// Query returns a query builder for OrganizationPreferences.
-func (c *OrganizationPreferencesClient) Query() *OrganizationPreferencesQuery {
-	return &OrganizationPreferencesQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeOrganizationPreferences},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a OrganizationPreferences entity by its id.
-func (c *OrganizationPreferencesClient) Get(ctx context.Context, id uuid.UUID) (*OrganizationPreferences, error) {
-	return c.Query().Where(organizationpreferences.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *OrganizationPreferencesClient) GetX(ctx context.Context, id uuid.UUID) *OrganizationPreferences {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTenant queries the tenant edge of a OrganizationPreferences.
-func (c *OrganizationPreferencesClient) QueryTenant(_m *OrganizationPreferences) *TenantQuery {
-	query := (&TenantClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organizationpreferences.Table, organizationpreferences.FieldID, id),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, organizationpreferences.TenantTable, organizationpreferences.TenantColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.OrganizationPreferences
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryOrganization queries the organization edge of a OrganizationPreferences.
-func (c *OrganizationPreferencesClient) QueryOrganization(_m *OrganizationPreferences) *OrganizationQuery {
-	query := (&OrganizationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organizationpreferences.Table, organizationpreferences.FieldID, id),
-			sqlgraph.To(organization.Table, organization.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, organizationpreferences.OrganizationTable, organizationpreferences.OrganizationColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Organization
-		step.Edge.Schema = schemaConfig.OrganizationPreferences
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *OrganizationPreferencesClient) Hooks() []Hook {
-	hooks := c.hooks.OrganizationPreferences
-	return append(hooks[:len(hooks):len(hooks)], organizationpreferences.Hooks[:]...)
-}
-
-// Interceptors returns the client interceptors.
-func (c *OrganizationPreferencesClient) Interceptors() []Interceptor {
-	return c.inters.OrganizationPreferences
-}
-
-func (c *OrganizationPreferencesClient) mutate(ctx context.Context, m *OrganizationPreferencesMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&OrganizationPreferencesCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&OrganizationPreferencesUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&OrganizationPreferencesUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&OrganizationPreferencesDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown OrganizationPreferences mutation op: %q", m.Op())
 	}
 }
 
@@ -14236,9 +14035,9 @@ type (
 		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
 		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
 		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
-		OrganizationPreferences, OrganizationRole, Playbook, Retrospective,
-		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisTopologyEdge,
+		SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
@@ -14256,9 +14055,9 @@ type (
 		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
 		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
 		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
-		OrganizationPreferences, OrganizationRole, Playbook, Retrospective,
-		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
+		OrganizationRole, Playbook, Retrospective, RetrospectiveComment,
+		RetrospectiveReview, SystemAnalysis, SystemAnalysisTopologyEdge,
+		SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
 	}
@@ -14323,7 +14122,6 @@ var (
 		OncallShiftHandoverPinnedAnnotations:      tableSchemas[0],
 		OncallShiftMetrics:                        tableSchemas[0],
 		Organization:                              tableSchemas[0],
-		OrganizationPreferences:                   tableSchemas[0],
 		OrganizationRole:                          tableSchemas[0],
 		Playbook:                                  tableSchemas[0],
 		PlaybookAlerts:                            tableSchemas[0],
