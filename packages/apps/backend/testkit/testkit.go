@@ -1,9 +1,11 @@
 package testkit
 
 import (
+	"cmp"
 	"context"
 	"database/sql"
 	"fmt"
+	"os"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/internal/postgres/migrations"
@@ -54,12 +56,33 @@ func (s *Suite) BeforeTest(suiteName, testName string) {
 	// s.loadConfig()
 }
 
+func getEnvOr(key, fallback string) string {
+	return cmp.Or(os.Getenv(key), fallback)
+}
+
 func (s *Suite) loadConfig() {
-	cfg, cfgErr := koanf.LoadConfig(s.T().Context(), koanf.Options{
+	pgAdminUser := getEnvOr("POSTGRES_ADMIN_USER", "postgres")
+	pgAppUser := getEnvOr("POSTGRES_APP_USER", "rez_app")
+	overrides := map[string]any{
+		"postgres.host":                getEnvOr("POSTGRES_HOST", "localhost"),
+		"postgres.port":                getEnvOr("POSTGRES_PORT", "7010"),
+		"postgres.database":            getEnvOr("POSTGRES_APP_DB", "rezible-main"),
+		"postgres.role_admin.name":     pgAdminUser,
+		"postgres.role_admin.password": pgAdminUser,
+		"postgres.role_app.name":       pgAppUser,
+		"postgres.role_app.password":   pgAppUser,
+		"postgres.sslmode":             "disable",
+	}
+	for k, v := range s.opts.configOverrides {
+		overrides[k] = v
+	}
+
+	opts := koanf.Options{
 		LoadEnvironment: true,
-		Overrides:       s.opts.configOverrides,
 		SkipValidation:  true,
-	})
+		Overrides:       overrides,
+	}
+	cfg, cfgErr := koanf.LoadConfig(s.T().Context(), opts)
 	s.Require().NoError(cfgErr)
 	s.cfg = *cfg
 }
@@ -122,7 +145,7 @@ func (m *testDbMigrator) Migrate(ctx context.Context, db *sql.DB, config pgtestd
 		ALTER ROLE %[2]s SET search_path TO %[1]s;`
 	setupQuery := fmt.Sprintf(setupDbQueryTemplate, postgres.SchemaName, config.TestRole.Username)
 	if _, setupErr := db.ExecContext(ctx, setupQuery); setupErr != nil {
-		return fmt.Errorf("setup schema setupQuery: %s", setupErr)
+		return fmt.Errorf("setup schema (query=[%s]): %w", setupQuery, setupErr)
 	}
 	return m.gm.Migrate(ctx, db, config)
 }

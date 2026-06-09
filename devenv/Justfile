@@ -4,6 +4,15 @@ export dbPort := env("POSTGRES_PORT")
 export dbAdminUser := env("POSTGRES_ADMIN_USER")
 export dbAppUser := env("POSTGRES_APP_USER")
 
+workspace_env_file := join(parent_directory(source_directory()), ".env.workspace")
+postgresContainerId := `docker compose ps -q postgres`
+workspace_setup := path_exists(workspace_env_file)
+
+alreadySetupErr := "workspace already set up - run with --force to override"
+
+branchId := replace_regex(`git branch --show-current`, "[^a-z0-9]", "")
+dbName := "rezible-"+branchId
+
 [doc("Install dependencies & start services")]
 [working-directory("..")]
 @setup:
@@ -18,15 +27,6 @@ export dbAppUser := env("POSTGRES_APP_USER")
 @start:
     process-compose -f {{source_dir() / "process-compose.yaml"}}
 
-workspace_env_file := join(parent_directory(source_directory()), ".env.workspace")
-postgresContainerId := `docker compose ps -q postgres`
-workspace_setup := path_exists(workspace_env_file)
-
-alreadySetupErr := "workspace already set up - run with --force to override"
-
-branchId := replace_regex(`git branch --show-current`, "[^a-z0-9]", "")
-dbName := "rez-"+branchId
-
 [doc("Setup development environment")]
 [arg("force", long="force", value="true")]
 [arg("no-migrate", long="no-migrate", value="false")]
@@ -39,7 +39,7 @@ dbName := "rez-"+branchId
     just _write-workspace-env
     docker compose up --wait
     sleep 1
-    just _setup-workspace-db
+    just setup-workspace-db
     if [[ "{{no-migrate}}" == "true" ]]; then \
       cd .. && just backend::apply-migrations; \
     fi
@@ -61,7 +61,7 @@ test-db:
         console.log(`query: (${adminConn})`, await adminPg.unsafe(`SELECT 1`));
     })()
 
-_setup-workspace-db:
+setup-workspace-db:
     #!/usr/bin/env bun
     import { SQL } from "bun";
     (async () => {
