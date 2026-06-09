@@ -7,16 +7,18 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"golang.org/x/oauth2"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
 	oapiv1 "github.com/rezible/rezible/openapi/v1"
-	"golang.org/x/oauth2"
 )
 
 type AuthSessionService struct {
@@ -82,6 +84,7 @@ func (s *AuthSessionService) Handler() http.Handler {
 }
 
 const (
+	appCookieName       = oapiv1.AppCookieName
 	authStateCookieName = "rez_auth_state"
 )
 
@@ -151,7 +154,7 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 		ExpiresAt: info.expiresAt,
 	}
 
-	if cookieErr := s.writeCookie(w, oapiv1.AppCookieName, sess, time.Until(sess.ExpiresAt)); cookieErr != nil {
+	if cookieErr := s.writeCookie(w, appCookieName, sess, time.Until(sess.ExpiresAt)); cookieErr != nil {
 		return "", errWriteAuthSession
 	}
 
@@ -161,32 +164,41 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 func (s *AuthSessionService) ExecutionContextMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			authedReq, authErr := s.setRequestExecutionContext(r)
-			if authErr == nil {
+			if authedReq := s.authenticateRequest(w, r); authedReq != nil {
 				next.ServeHTTP(w, authedReq)
-				return
-			}
-			apiErr := oapiv1.ConvertAuthStatusError(authErr)
-			w.WriteHeader(apiErr.GetStatus())
-			if respErr := json.NewEncoder(w).Encode(apiErr); respErr != nil {
-				slog.Warn("failed to write api error response", "error", respErr)
 			}
 		})
 	}
 }
 
-func (s *AuthSessionService) setRequestExecutionContext(r *http.Request) (*http.Request, error) {
-	if apiToken := oapiv1.GetRequestApiTokenValue(r); apiToken != "" {
-		return nil, rez.ErrAuthSessionInvalid
-	}
-	if appCookie := oapiv1.GetRequestAppCookieValue(r); appCookie != "" {
-		execCtx, authErr := s.authenticateAppCookie(r.Context(), appCookie)
-		if authErr != nil {
-			return nil, authErr
+func (s *AuthSessionService) authenticateRequest(w http.ResponseWriter, r *http.Request) *http.Request {
+	authErr := rez.ErrAuthSessionMissing
+
+	if appCookie, cookieErr := r.Cookie(appCookieName); cookieErr == nil {
+		authCtx, cookieAuthErr := s.authenticateAppCookie(r.Context(), appCookie.Value)
+		if authCtx != nil && cookieAuthErr == nil {
+			return r.WithContext(authCtx)
 		}
-		return r.WithContext(execCtx), nil
+		authErr = cookieErr
 	}
-	return nil, rez.ErrAuthSessionMissing
+
+	var bearerToken string
+	if split := strings.Split(r.Header.Get("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
+		bearerToken = split[1]
+	}
+	if bearerToken != "" {
+		authErr = rez.ErrAuthSessionInvalid
+	}
+
+	apiErr := oapiv1.ConvertAuthStatusError(authErr)
+
+	w.WriteHeader(apiErr.GetStatus())
+	respErr := json.NewEncoder(w).Encode(apiErr)
+	if respErr != nil {
+		slog.Warn("failed to write api error response", "error", respErr)
+	}
+
+	return nil
 }
 
 func (s *AuthSessionService) authenticateAppCookie(ctx context.Context, appCookie string) (context.Context, error) {
@@ -211,7 +223,7 @@ func (s *AuthSessionService) authenticateAppCookie(ctx context.Context, appCooki
 }
 
 func (s *AuthSessionService) handleLogout(w http.ResponseWriter, r *http.Request) (string, error) {
-	s.clearCookie(w, oapiv1.AppCookieName)
+	s.clearCookie(w, appCookieName)
 	return "/login", nil
 }
 

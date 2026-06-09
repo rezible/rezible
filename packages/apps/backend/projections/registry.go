@@ -15,17 +15,11 @@ type PipelineRegistry struct {
 	eventProjectorsMu sync.RWMutex
 }
 
-var pipelineRegistry = NewPipelineRegistry()
-
 func NewPipelineRegistry() *PipelineRegistry {
 	return &PipelineRegistry{
 		eventProcessors: make(map[string]rez.ProviderEventProcessor),
 		eventProjectors: make(map[SubjectKind]map[string]rez.NormalizedEventProjector),
 	}
-}
-
-func DefaultPipelineRegistry() *PipelineRegistry {
-	return pipelineRegistry
 }
 
 func (r *PipelineRegistry) RegisterProviderEventProcessors(processor rez.ProviderEventProcessor, providers ...string) {

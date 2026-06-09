@@ -3,7 +3,6 @@ package v1
 import (
 	"errors"
 	"log/slog"
-	"net/http"
 	"strings"
 
 	"github.com/danielgtaylor/huma/v2"
@@ -140,20 +139,6 @@ func verifyRequestAuthContext(c huma.Context) error {
 	}
 
 	return nil
-}
-
-func GetRequestAppCookieValue(r *http.Request) string {
-	if cookie, cookieErr := r.Cookie(AppCookieName); cookieErr == nil {
-		return cookie.Value
-	}
-	return ""
-}
-
-func GetRequestApiTokenValue(r *http.Request) string {
-	if split := strings.Split(r.Header.Get("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
-		return split[1]
-	}
-	return ""
 }
 
 func ConvertAuthStatusError(err error) huma.StatusError {

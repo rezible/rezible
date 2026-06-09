@@ -105,8 +105,8 @@ func shutdownServices(baseCtx context.Context, i do.Injector) error {
 }
 
 func registerIntegrations(i do.Injector) error {
-	intgReg := integrations.DefaultPackageRegistry()
-	pipelineReg := projections.DefaultPipelineRegistry()
+	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
+	pipelineReg := do.MustInvoke[*projections.PipelineRegistry](i)
 
 	for _, desc := range i.ListProvidedServices() {
 		svc := desc.Service
@@ -137,11 +137,11 @@ func registerIntegrations(i do.Injector) error {
 
 func declareServices(ctx context.Context, i do.Injector) {
 	do.Provide(i, func(i do.Injector) (*projections.PipelineRegistry, error) {
-		return projections.DefaultPipelineRegistry(), nil
+		return projections.NewPipelineRegistry(), nil
 	})
 
 	do.Provide(i, func(i do.Injector) (*integrations.PackageRegistry, error) {
-		return integrations.DefaultPackageRegistry(), nil
+		return integrations.NewPackageRegistry(), nil
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {
