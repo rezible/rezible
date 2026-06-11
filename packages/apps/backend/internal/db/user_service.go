@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -62,7 +63,9 @@ func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organizat
 	}
 
 	if org.InitialSetupAt.IsZero() {
-		roles, rolesErr := org.QueryRoles().All(ctx)
+		queryOrgRoles := s.db.Client(ctx).OrganizationRole.Query().
+			Where(organizationrole.OrgID(org.ID))
+		roles, rolesErr := queryOrgRoles.All(ctx)
 		if rolesErr != nil {
 			return nil, fmt.Errorf("query roles: %w", rolesErr)
 		}
@@ -76,6 +79,7 @@ func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organizat
 		}
 
 		if !hasAdmin {
+			slog.DebugContext(ctx, "org has no admin role")
 			// TODO: create initial admin user role
 		}
 	}

@@ -1,8 +1,8 @@
 <script lang="ts">
 	import * as Alert from "$components/ui/alert";
-	import { useAvailableIntegrationCardController } from "../availableIntegrationController.svelte";
+	import { useConfigureIntegrationDialogController } from "../controller.svelte";
 
-	const ctrl = useAvailableIntegrationCardController();
+	const ctrl = useConfigureIntegrationDialogController();
 </script>
 
 <Alert.Root>

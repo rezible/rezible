@@ -2,10 +2,10 @@
 	import * as Alert from "$components/ui/alert";
 	import { Input } from "$components/ui/input";
 	import { Label } from "$components/ui/label";
-	import { Switch } from "$components/ui/switch";
-	import { useAvailableIntegrationCardController, type ConfigRequestAttributes } from "../availableIntegrationController.svelte";
 
-	const ctrl = useAvailableIntegrationCardController();
+	import { useConfigureIntegrationDialogController } from "../controller.svelte";
+
+	const ctrl = useConfigureIntegrationDialogController();
 
 	let svcAccParseError = $state<string>();
 	let svcAccFileName = $state<string>();
@@ -29,7 +29,7 @@
 </script>
 
 <div class="flex flex-col gap-3">
-	{#if !!ctrl.editingInstallation}
+	{#if !!ctrl.installation}
 		<!--div class="flex items-center justify-between rounded-md border p-3">
 			<div class="flex flex-col gap-1">
 				<Label for="google-video-conference-toggle">Enable incident video conferences</Label>

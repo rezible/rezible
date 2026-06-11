@@ -1,11 +1,11 @@
 <script lang="ts">
 	import { Button } from "$components/ui/button";
-	import { useAvailableIntegrationCardController } from "./availableIntegrationController.svelte";
-	import Spinner from "$src/components/ui/spinner/spinner.svelte";
+	import Spinner from "$components/ui/spinner/spinner.svelte";
 	import { Checkbox } from "$components/ui/checkbox";
-	import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
+    
+	import { useConfigureIntegrationDialogController } from "./controller.svelte";
 
-    const ctrl = useAvailableIntegrationCardController();
+    const ctrl = useConfigureIntegrationDialogController();
 </script>
 
 

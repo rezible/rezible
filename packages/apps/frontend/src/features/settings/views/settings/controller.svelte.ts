@@ -21,9 +21,11 @@ export class SettingsViewController {
     viewParam = $derived(convertSettingsViewParam(page.params.view));
 
     constructor() {
-        initIntegrationOAuthController();
         initIntegrationsController();
+        initIntegrationOAuthController();
+
         this.preventInitialSetupNavigation();
+        
         setPageBreadcrumbs(() => ([
             { label: "Settings", href: "/settings" },
             { label: viewParamLabel(this.viewParam), href: `/settings/${this.viewParam ?? ""}` }

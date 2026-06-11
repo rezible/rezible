@@ -145,7 +145,7 @@ func IntegrationInstallTargetOptionsFromRez(intgName string, targets []rez.Integ
 
 func IntegrationOAuthFlowResultFromRez(intgName string, result *rez.CompleteIntegrationOAuth2FlowResult) IntegrationOAuthInstallResult {
 	res := IntegrationOAuthInstallResult{
-		TargetSelectionRequired: true,
+		TargetSelectionRequired: result.InstallationTargetSelectionRequired,
 	}
 	if res.TargetSelectionRequired {
 		res.InstallTargetOptions = IntegrationInstallTargetOptionsFromRez(intgName, result.InstallationTargetOptions)

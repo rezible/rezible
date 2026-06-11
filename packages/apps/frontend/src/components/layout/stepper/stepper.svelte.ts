@@ -1,3 +1,4 @@
+import { watch, type Getter } from "runed";
 import type { Component } from "svelte";
 
 type StepperAction = () => void | Promise<void>;
@@ -6,7 +7,7 @@ export type StepperStep = {
 	label: string;
 	description?: string;
 	component: Component;
-	canContinue?: () => boolean;
+	canContinue?: Getter<boolean>;
 	onNext?: StepperAction;
 };
 
@@ -16,7 +17,7 @@ type StepperStepState = StepperStep & {
 
 export type StepperConfig = {
 	steps: StepperStep[];
-	initialStepIndex?: number;
+	initialStepIndex?: Getter<number>;
 	onFinish?: StepperAction;
 };
 
@@ -57,7 +58,10 @@ export class StepperController {
 
 		this.steps = cfg.steps.map((step, index) => ({ ...step, key: `${index}:${step.label}` }));
 		this.onFinish = cfg.onFinish;
-        this.setCurrentIndex(cfg.initialStepIndex ?? 0);
+
+		if (cfg.initialStepIndex) {
+			watch(cfg.initialStepIndex, idx => {this.setCurrentIndex(idx)});
+		}
 	}
 
 	async next() {

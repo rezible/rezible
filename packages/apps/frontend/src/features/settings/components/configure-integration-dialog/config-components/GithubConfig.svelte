@@ -1,13 +1,13 @@
 <script lang="ts">
 	import * as Alert from "$components/ui/alert";
 	import { Badge } from "$components/ui/badge";
-	import { Button } from "$src/components/ui/button";
+	import { Button } from "$components/ui/button";
 	import RiGithubFill from "remixicon-svelte/icons/github-fill";
-	import { useAvailableIntegrationCardController } from "../availableIntegrationController.svelte";
+	import { useConfigureIntegrationDialogController } from "../controller.svelte";
 
-	const ctrl = useAvailableIntegrationCardController();
+	const ctrl = useConfigureIntegrationDialogController();
 
-	const ci = $derived(ctrl.editingInstallation);
+	const ci = $derived(ctrl.installation);
 	const installation = $derived.by(() => {
 		if (!ci) return;
 		const config = ci.attributes.config;

@@ -6,8 +6,7 @@
 	import Spinner from "$components/ui/spinner/spinner.svelte";
 	import InlineAlert from "$src/components/layout/error-alert/ErrorAlert.svelte";
 
-	import { useAvailableIntegrationCardController } from "./availableIntegrationController.svelte";
-	import { InstalledIntegrationDataSyncController } from "./installedIntegrationController.svelte";
+	import { InstalledIntegrationDataSyncController } from "./availableIntegrationController.svelte";
 
 	type Props = {
 		installation: InstalledIntegration;

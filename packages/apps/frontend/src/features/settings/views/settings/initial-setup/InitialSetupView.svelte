@@ -2,41 +2,14 @@
 	import Header from "$components/layout/header/Header.svelte";
 	import Spinner from "$components/ui/spinner/spinner.svelte";
 	import Stepper from "$components/layout/stepper/Stepper.svelte";
-	import { StepperController } from "$components/layout/stepper/stepper.svelte";
 
 	import { initInitialSetupViewController } from "./controller.svelte";
-	import OrganizationDetails from "./steps/OrganizationDetails.svelte";
-	import OrganizationPreferences from "./steps/OrganizationPreferences.svelte";
-	import RequiredCapabilities from "./steps/RequiredCapabilities.svelte";
-
+	import IntegrationInstallDialog from "$features/settings/components/configure-integration-dialog/ConfigureIntegrationDialog.svelte";
+	
 	const ctrl = initInitialSetupViewController();
-
-	const stepper = new StepperController({
-		steps: [
-			{
-				label: "Details",
-				description: "Organization and project details",
-				component: OrganizationDetails,
-				onNext: () => ctrl.onOrgDetailsNext(),
-				canContinue: () => ctrl.canContinueOrgDetails,
-			},
-			{
-				label: "Preferences",
-				description: "Choose workspace behaviour",
-				component: OrganizationPreferences,
-				onNext: () => ctrl.onOrganizationPreferencesNext(),
-				canContinue: () => ctrl.canContinueOrgPrefs,
-			},
-			{
-				label: "Integrations",
-				description: "Configure recommended integrations",
-				component: RequiredCapabilities,
-				canContinue: () => ctrl.canContinueCapabilities,
-			},
-		],
-		onFinish: () => ctrl.doFinishOrganizationSetup(),
-	});
 </script>
+
+<IntegrationInstallDialog />
 
 <div class="grid h-full w-full place-items-center">
 	<div class="flex w-full max-w-4xl flex-col gap-4 border border-border bg-background p-4">
@@ -45,7 +18,7 @@
 		{#if ctrl.loading}
 			<Spinner />
 		{:else}
-			<Stepper controller={stepper} />
+			<Stepper controller={ctrl.stepper} />
 		{/if}
 	</div>
 </div>

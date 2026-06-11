@@ -1,19 +1,19 @@
 <script lang="ts">
 	import * as Alert from "$components/ui/alert";
-	import { Badge } from "$components/ui/badge";
-	import { Button } from "$src/components/ui/button";
-	import { useAvailableIntegrationCardController } from "../availableIntegrationController.svelte";
+	import { Button } from "$components/ui/button";
+	
+	import { useConfigureIntegrationDialogController } from "../controller.svelte";
 
-	const ctrl = useAvailableIntegrationCardController();
+	const ctrl = useConfigureIntegrationDialogController();
 </script>
 
-{#if ctrl.editingInstallation}
+{#if ctrl.installation}
 	<span>edit</span>
 {:else}
 	<Alert.Root>
 		<Alert.Title>Connect Slack</Alert.Title>
 		<Alert.Description>
-			Sign in with Slack to connect the workspace and grant chat/user data access.
+			Sign in with Slack to install the app.
 		</Alert.Description>
 	</Alert.Root>
 

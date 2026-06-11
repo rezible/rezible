@@ -1,37 +1,15 @@
 import { Context, watch, type Getter } from "runed";
-import type { Component } from "svelte";
 
-import { createMutation, createQuery } from "@tanstack/svelte-query";
 import {
 	type ErrorModel,
 	type AvailableIntegration,
 	type InstalledIntegration,
-	type IntegrationEventSyncRun,
-	listIntegrationEventSyncRunsOptions,
 	requestIntegrationEventSyncMutation,
-	type CreateInstalledIntegrationRequestBody,
-	type IntegrationInstallTarget,
 } from "$lib/api";
+import { createMutation } from "@tanstack/svelte-query";
 
-import { resolve } from "$app/paths";
-import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+import { getEnabledCapabilties, useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
-
-import SlackConfig from "./config-components/SlackConfig.svelte";
-import PlaceholderConfig from "./config-components/PlaceholderConfig.svelte";
-import GoogleConfig from "./config-components/GoogleConfig.svelte";
-import GithubConfig from "./config-components/GithubConfig.svelte";
-import FakeConfig from "./config-components/FakeConfig.svelte";
-import { SvelteSet } from "svelte/reactivity";
-
-const configs: Record<string, Component> = {
-	slack: SlackConfig,
-	google: GoogleConfig,
-	github: GithubConfig,
-	fake: FakeConfig,
-};
-
-export type ConfigRequestAttributes = CreateInstalledIntegrationRequestBody["attributes"];
 
 export class AvailableIntegrationCardController {
 	integrations = useIntegrationsController();
@@ -39,122 +17,143 @@ export class AvailableIntegrationCardController {
 
 	private integration = $state<AvailableIntegration>();
 
-	constructor(integrationFn: Getter<AvailableIntegration>) {
-		watch(integrationFn, (intg) => {
-			this.integration = intg;
-		});
+	constructor(integrationFn: Getter<AvailableIntegration | undefined>) {
+		watch(integrationFn, (intg) => {this.integration = intg});
+		
 	}
 
 	name = $derived(this.integration?.name);
-	ConfigComponent = $derived(this.name && this.name in configs ? configs[this.name] : PlaceholderConfig);
+	displayName = $derived(this.integration?.displayName || "");
+	description = $derived(this.integration?.description || "");
+	provider = $derived(this.integration?.provider);
+	supportedCapabilities = $derived(this.integration?.supportedCapabilities ?? []);
 
 	installations = $derived<InstalledIntegration[]>(
 		this.integrations.installationsByName.get(this.name || "") ?? []);
 	hasInstalled = $derived(this.installations.length > 0);
-
-	capabilities = $derived.by<Record<string, boolean>>(() => {
-		const result: Record<string, boolean> = {};
-		for (const installation of this.installations) {
-			for (const [cap, enabled] of Object.entries(installation.attributes.capabilities)) {
-				result[cap] = result[cap] || enabled;
-			}
-		}
-		return result;
-	});
-	enabledCapabilities = $derived(
-		Object.entries(this.capabilities)
-			.filter(([_, enabled]) => !!enabled)
-			.map(([name, _]) => name) ?? []
+	maxInstallsReached = $derived(
+		typeof this.integration?.maxInstalls === "number" && this.installations.length >= this.integration.maxInstalls
 	);
+	canInstall = $derived(!this.maxInstallsReached);
 
-	configError = $state<ErrorModel>();
-	private setConfigError(err?: unknown) {
-		if (!err) {
-			this.configError = undefined;
-			return;
-		}
-		this.configError = {
-			title: "Integration Setup Failed",
-			detail: err instanceof Error ? err.message : "An unknown issue occurred",
-		};
-	}
+	enabledCapabilities = $derived(getEnabledCapabilties(this.installations));
 
-	isInstallPending = $derived(!!this.name && this.integrations.installingName === this.name);
-	isOAuthPending = $derived(this.oauth.inFlow && this.oauth.installingName === this.name);
-
-	loading = $derived(this.isOAuthPending || this.isInstallPending);
-
-	editingInstallation = $state<InstalledIntegration>();
-	configAttrs = $state<ConfigRequestAttributes>();
-	showConfig = $state(false);
-
-	startConfig(ii?: InstalledIntegration) {
-		if (this.loading || !this.name || !this.integration) return;
-		this.editingInstallation = ii;
-		this.showConfig = true;
-	}
-
-	setConfig(attrs: ConfigRequestAttributes) {
-		this.configAttrs = attrs;
-	}
-	hasChanges = $derived(!!this.configAttrs);
-
-	updateConfig(updateFn: (attrs?: ConfigRequestAttributes) => ConfigRequestAttributes) {
-		this.configAttrs = updateFn(this.configAttrs);
-	}
-
-	clearConfig() {
-		this.showConfig = false;
-		this.configAttrs = undefined;
-		this.editingInstallation = undefined;
-	}
-
-	async saveConfig() {
-		if (!this.name || !this.hasChanges || !this.configAttrs) return;
-		try {
-			await this.integrations.installNew(this.name, this.configAttrs);
-			this.clearConfig();
-			this.setConfigError();
-		} catch (e) {
-			this.setConfigError(e);
-		}
-	}
-
-	async startOAuthFlow() {
-		if (this.loading || !this.name) return;
-		try {
-			const flowUrl = await this.oauth.getStartFlowUrl(this.name);
-			window.location.assign(flowUrl);
-		} catch (e) {
-			this.setConfigError(e);
-		}
-	}
-
-	installTargetOptions = $derived(this.integrations.installationTargetsByName.get(this.name ?? ""));
-	installationTargetSelectionRequired = $derived(!!this.installTargetOptions && this.installTargetOptions.length > 0);
-	selectedInstallTargetExternalRefs = new SvelteSet<string>();
-
-	toggleInstallationTargetSelection(ref: string, selected: boolean) {
-		if (selected) {
-			this.selectedInstallTargetExternalRefs.add(ref);
-		} else {
-			this.selectedInstallTargetExternalRefs.delete(ref);
-		}
-	}
-
-	async confirmSelectedInstallationTargets() {
-		if (!this.name || this.integrations.installingName || this.selectedInstallTargetExternalRefs.size === 0) return;
-		const refs = [...this.selectedInstallTargetExternalRefs];
-		try {
-			await this.integrations.installFromTargets(this.name, refs);
-			this.selectedInstallTargetExternalRefs.clear();
-		} catch (e) {
-			
+	openConfigDialog(installation?: InstalledIntegration) {
+		this.integrations.configureDialogParams = {
+			integration: $state.snapshot(this.integration),
+			installation: $state.snapshot(installation),
 		}
 	}
 }
 
 const ctx = new Context<AvailableIntegrationCardController>("AvailableIntegrationCardController");
-export const initAvailableIntegrationCardController = (fn: Getter<AvailableIntegration>) =>
+export const initAvailableIntegrationCardController = (fn: Getter<AvailableIntegration | undefined>) =>
 	ctx.set(new AvailableIntegrationCardController(fn));
 export const useAvailableIntegrationCardController = () => ctx.get();
+
+
+type SyncStatusDisplay = {
+	label: string;
+	variant: "default" | "secondary" | "destructive" | "outline";
+	class?: string;
+};
+
+const syncStatusDisplays: Record<string, SyncStatusDisplay> = {
+	queued: { label: "Queued", variant: "outline" },
+	started: { label: "Started", variant: "secondary", class: "text-blue-700" },
+	complete: { label: "Complete", variant: "secondary", class: "text-green-700" },
+	success: { label: "Success", variant: "secondary", class: "text-green-700" },
+	error: { label: "Error", variant: "destructive" },
+	failed: { label: "Failed", variant: "destructive" },
+	skipped: { label: "Skipped", variant: "outline" },
+};
+
+const pollAfterRequestMs = 10_000;
+const pollIntervalMs = 3_000;
+
+export class InstalledIntegrationDataSyncController {
+	private ctrl = useAvailableIntegrationCardController();
+
+	private installation = $state<InstalledIntegration>();
+	constructor(fn: Getter<InstalledIntegration>) {
+		watch(fn, (intg) => {this.installation = intg});
+	}
+	id = $derived(this.installation?.id);
+
+	private syncRequestPolling = $state(false);
+	private syncPollTimeout: ReturnType<typeof setTimeout> | undefined;
+	private syncRequestError = $state<ErrorModel>();
+
+    syncStatusError = $derived(
+		(this.syncRequestError/* ?? this.syncStatusQuery.error*/) as ErrorModel | undefined
+	);
+    latestSyncStatusDisplay = $derived<SyncStatusDisplay | undefined>(
+		/*this.formatSyncStatus(this.latestSyncStatus)*/
+        undefined
+	);
+	isSyncing = $derived(false);
+
+	private requestDataSyncMutation = createMutation(() => ({
+		...requestIntegrationEventSyncMutation(),
+		onSuccess: async () => {
+			this.syncRequestError = undefined;
+		},
+		onError: (err) => {
+			this.syncRequestError = err;
+		},
+	}));
+
+	async requestSync() {
+		const id = this.id;
+		if (!id || !this.ctrl.hasInstalled || this.requestDataSyncMutation.isPending) return;
+		await this.requestDataSyncMutation.mutateAsync({
+			path: { id },
+			body: { attributes: {} },
+		});
+	};
+
+    disabled = $derived(this.requestDataSyncMutation.isPending);
+    /*
+	private syncStatusQueryOptions = $derived(
+		listIntegrationEventSyncRunsOptions({
+			path: { id: this.id ?? "" },
+		})
+	);
+	private syncStatusQuery = createQuery(() => ({
+		...this.syncStatusQueryOptions,
+		enabled: !!this.ctrl.name && this.ctrl.hasInstalled,
+		refetchInterval: this.syncRequestPolling ? pollIntervalMs : false,
+	}));
+
+	syncStatusRuns = $derived<IntegrationProviderDataSyncStatus[]>(this.syncStatusQuery.data?.data ?? []);
+	syncStatusError = $derived(
+		(this.syncRequestError ?? this.syncStatusQuery.error) as ErrorModel | undefined
+	);
+	latestSyncStatus = $derived<string | undefined>(this.syncStatusRuns[0]?.attributes.status);
+	latestSyncStatusDisplay = $derived<SyncStatusDisplay | undefined>(
+		this.formatSyncStatus(this.latestSyncStatus)
+	);
+	isSyncing = $derived(this.requestDataSyncMutation.isPending || this.syncRequestPolling);
+
+	private formatSyncStatus(status?: string): SyncStatusDisplay | undefined {
+		if (!status) return undefined;
+		return syncStatusDisplays[status] ?? { label: status, variant: "outline" };
+	}
+
+	private startSyncStatusPolling() {
+		this.syncRequestPolling = true;
+		if (this.syncPollTimeout) {
+			clearTimeout(this.syncPollTimeout);
+		}
+		this.syncPollTimeout = setTimeout(() => {
+			this.syncRequestPolling = false;
+			this.syncPollTimeout = undefined;
+		}, pollAfterRequestMs);
+	}
+
+	async refetchSyncStatus() {
+		this.syncRequestError = undefined;
+		await this.syncStatusQuery.refetch();
+	}
+    */
+}

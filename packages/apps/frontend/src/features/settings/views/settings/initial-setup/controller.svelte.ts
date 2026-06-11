@@ -3,7 +3,13 @@ import { createMutation, createQuery } from "@tanstack/svelte-query";
 
 import { finishOrganizationSetupMutation, getOrganizationOptions, updateOrganizationMutation, type AvailableIntegration, type InstalledIntegration, type Organization, type OrganizationPreferences } from "$lib/api";
 import { useAuthSessionState } from "$lib/auth-session.svelte";
-import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+import { getEnabledCapabilties, useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+
+import { StepperController } from "$components/layout/stepper/stepper.svelte";
+
+import OrganizationDetailsStep from "./steps/OrganizationDetails.svelte";
+import OrganizationPreferencesStep from "./steps/OrganizationPreferences.svelte";
+import InstallIntegrationsStep from "./steps/InstallIntegrations.svelte";
 
 type OrgDetails = {
 	name: string;
@@ -15,12 +21,6 @@ const makeOrgDetails = (org?: Organization): OrgDetails => {
 };
 
 const RequiredCapabilities = new Set(["chat", "users"]);
-
-const mapEnabledCapabilityNames = (intg: InstalledIntegration) => {
-	return Object.entries(intg.attributes.capabilities)
-		.filter(([_, enabled]) => enabled)
-		.map(([name, _]) => name)
-}
 
 export class InitialSetupViewController {
 	private session = useAuthSessionState();
@@ -35,6 +35,15 @@ export class InitialSetupViewController {
 	private orgDetailsQueryData = $derived(this.orgDetailsQuery.data?.data);
 
 	orgDetails = $state(makeOrgDetails());
+	
+	constructor() {
+		watch(() => this.orgDetailsQueryData, org => {
+			if (!org) return;
+			this.orgDetails = makeOrgDetails(org);
+			this.orgPrefs = org.attributes.preferences;
+		});
+	}
+
 	private updateOrgMut = createMutation(() => ({
 		...updateOrganizationMutation(),
 		onSuccess: () => {
@@ -83,10 +92,8 @@ export class InitialSetupViewController {
 		})
 	}
 
-	remainingRequiredCapabilities = $derived.by(() => {
-		const enabledInstalled = new Set(this.integrations.installed.flatMap(mapEnabledCapabilityNames));
-		return RequiredCapabilities.difference(enabledInstalled).values().toArray()
-	});
+	private installedEnabledCapabilities = $derived(new Set(getEnabledCapabilties(this.integrations.installed)));
+	remainingRequiredCapabilities = $derived(RequiredCapabilities.difference(this.installedEnabledCapabilities).values().toArray());
 	availableOptions = $derived(this.integrations.available.filter((intg) => !this.integrations.installationsByName.has(intg.name)));
 	availableIntegrationsForCapabilities = $derived.by(() => {
 		const capMap = new Map<string, AvailableIntegration[]>();
@@ -98,9 +105,44 @@ export class InitialSetupViewController {
 		return capMap;
 	});
 
-	canContinueCapabilities = $derived(this.remainingRequiredCapabilities.length === 0);
+	canContinueIntegrations = $derived(true);
+	integrationsContinueButtonText = $derived(
+		this.remainingRequiredCapabilities.length === 0 ? "Finish setup" : "Skip for now"
+	);
 
-	canFinish = $derived(this.canContinueOrgDetails && this.canContinueOrgPrefs && this.canContinueCapabilities);
+	canFinish = $derived(this.canContinueOrgDetails && this.canContinueOrgPrefs);
+
+	lastCompletedStepIdx = $derived.by(() => {
+
+		return 0;
+	})
+
+	stepper = new StepperController({
+		initialStepIndex: () => this.lastCompletedStepIdx,
+		steps: [
+			{
+				label: "Details",
+				description: "Organization and project details",
+				component: OrganizationDetailsStep,
+				onNext: () => this.onOrgDetailsNext(),
+				canContinue: () => this.canContinueOrgDetails,
+			},
+			{
+				label: "Preferences",
+				description: "Choose workspace behaviour",
+				component: OrganizationPreferencesStep,
+				onNext: () => this.onOrganizationPreferencesNext(),
+				canContinue: () => this.canContinueOrgPrefs,
+			},
+			{
+				label: "Integrations",
+				description: "Install recommended integrations",
+				component: InstallIntegrationsStep,
+				canContinue: () => this.canContinueIntegrations,
+			},
+		],
+		onFinish: () => this.doFinishOrganizationSetup(),
+	});
 
 	private finishOrgSetupMut = createMutation(() => finishOrganizationSetupMutation());
 	private finishing = $state(false);
@@ -117,15 +159,6 @@ export class InitialSetupViewController {
 			throw e;
 		}
 	}
-
-	constructor() {
-		watch(() => this.orgDetailsQueryData, org => {
-			if (!org) return;
-			this.orgDetails = makeOrgDetails(org);
-			this.orgPrefs = org.attributes.preferences;
-		});
-	}
-
 
 	loading = $derived(this.finishing || this.integrations.loading);
 }

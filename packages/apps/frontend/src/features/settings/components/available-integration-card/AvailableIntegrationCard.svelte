@@ -3,73 +3,59 @@
 
 	import * as Card from "$components/ui/card";
 	import { Button } from "$components/ui/button";
-	import InlineAlert from "$src/components/layout/error-alert/ErrorAlert.svelte";
-	import Spinner from "$components/ui/spinner/spinner.svelte";
+	import { Badge } from "$components/ui/badge";
 
 	import { initAvailableIntegrationCardController } from "./availableIntegrationController.svelte";
-	import InstalledIntegrationPanel from "./InstalledIntegrationPanel.svelte";
-	import IntegrationInstallTargetSelect from "./IntegrationInstallTargetSelect.svelte";
 
 	import RiCircleLine from "remixicon-svelte/icons/add-circle-line";
+	import InstalledIntegrationPanel from "./InstalledIntegrationPanel.svelte";
 
 	type Props = {
 		integration: AvailableIntegration;
+		showInstalledDetails?: boolean;
 	};
-	const { integration }: Props = $props();
+	const { integration, showInstalledDetails = true }: Props = $props();
 
 	const ctrl = initAvailableIntegrationCardController(() => integration);
-
-	const showContent = $derived(!!ctrl.configError || ctrl.installationTargetSelectionRequired || ctrl.hasInstalled || ctrl.showConfig);
 </script>
 
-<Card.Root class="gap-4 p-4 min-w-xs">
-    <Card.Header class="p-0">
-        <div class="flex items-center justify-between gap-4 h-fit">
-            <div class="flex flex-col gap-2">
-                <Card.Title class="">{integration.name}</Card.Title>
-            </div>
-            <div class="flex items-center gap-2">
-                <Button
-                    onclick={() => {ctrl.startConfig()}}
-                    variant="outline"
-                    disabled={ctrl.loading}
-                >
-                    Connect {ctrl.hasInstalled ? "another" : ""}
-                    <RiCircleLine />
-                </Button>
-            </div>
-        </div>
-    </Card.Header>
+<Card.Root class="min-w-xs gap-3 p-4">
+	<Card.Header class="p-0">
+		<div class="flex items-start justify-between gap-4">
+			<div class="flex min-w-0 flex-col gap-2">
+				<div class="flex flex-wrap items-center gap-2">
+					<Card.Title class="truncate">{ctrl.displayName}</Card.Title>
+					{#if ctrl.hasInstalled}
+						<Badge variant="secondary">{ctrl.installations.length} connected</Badge>
+					{/if}
+					{#if ctrl.supportedCapabilities.length > 0}
+						<div class="flex flex-wrap gap-1">
+							{#each ctrl.supportedCapabilities as capability (capability)}
+								<Badge variant="outline">{capability}</Badge>
+							{/each}
+						</div>
+					{/if}
+				</div>
+				{#if ctrl.description}
+					<Card.Description>{ctrl.description}</Card.Description>
+				{/if}
+			</div>
+			<Button
+				onclick={() => ctrl.openConfigDialog()}
+				variant="outline"
+				disabled={ctrl.maxInstallsReached}
+			>
+				<RiCircleLine />
+				{ctrl.hasInstalled ? "Connect another" : "Connect"}
+			</Button>
+		</div>
+	</Card.Header>
 
-    <Card.Content class="p-0 flex flex-col gap-3 {showContent ? '' : 'hidden'}">
-        {#if !!ctrl.configError}
-            <InlineAlert bind:error={ctrl.configError} />
-        {/if}
-
-        {#if ctrl.installationTargetSelectionRequired}
-            <IntegrationInstallTargetSelect />
-        {:else if ctrl.showConfig}
-            <ctrl.ConfigComponent />
-
-            <div class="flex flex-wrap gap-2">
-                <Button disabled={!ctrl.hasChanges || ctrl.loading} onclick={() => ctrl.saveConfig()}>
-                    {#if ctrl.loading}
-                        <Spinner />
-                        Saving...
-                    {:else}
-                        Save
-                    {/if}
-                </Button>
-                <Button disabled={ctrl.loading} onclick={() => ctrl.clearConfig()}>Cancel</Button>
-            </div>
-        {:else if ctrl.hasInstalled}
-            <div class="flex flex-col gap-2">
-                {#each ctrl.installations as installation (installation.id)}
-                    <InstalledIntegrationPanel {installation} />
-                {/each}
-            </div>
-        {:else}
-            <span>No connections configured</span>
-        {/if}
-    </Card.Content>
+	{#if showInstalledDetails && ctrl.hasInstalled}
+		<Card.Content class="flex flex-col gap-2 p-0">
+			{#each ctrl.installations as installation (installation.id)}
+				<InstalledIntegrationPanel {installation} openConfigDialog={() => {ctrl.openConfigDialog(installation)}} />
+			{/each}
+		</Card.Content>
+	{/if}
 </Card.Root>

@@ -1,18 +1,15 @@
 <script lang="ts">
 	import { Badge } from "$components/ui/badge";
-	import { Button } from "$components/ui/button";
-	import { useAvailableIntegrationCardController } from "./availableIntegrationController.svelte";
 
     import type { InstalledIntegration } from "$lib/api";
-	import { initInstalledIntegrationCardController } from "./installedIntegrationController.svelte";
+	import Button from "$components/ui/button/button.svelte";
 	import InstalledIntegrationDataSync from "./InstalledIntegrationDataSync.svelte";
 
 	type Props = {
 		installation: InstalledIntegration;
+        openConfigDialog: () => void;
 	};
-	const { installation }: Props = $props();
-
-    const ctrl = initInstalledIntegrationCardController(() => installation);
+	const { installation, openConfigDialog }: Props = $props();
 
     const attrs = $derived(installation.attributes);
     const enabledCapabilities = $derived(Object.entries(attrs.capabilities).filter(([, enabled]) => enabled));
@@ -30,5 +27,6 @@
             {/each}
         </div>
     </div>
+    <Button onclick={openConfigDialog}>Edit</Button>
     <InstalledIntegrationDataSync {installation} />
 </div>

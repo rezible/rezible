@@ -1,9 +1,9 @@
 <script lang="ts">
-	import * as Alert from "$components/ui/alert";
-	import { useAvailableIntegrationCardController } from "../availableIntegrationController.svelte";
 	import { onMount } from "svelte";
+	import * as Alert from "$components/ui/alert";
+	import { useConfigureIntegrationDialogController } from "../controller.svelte";
 
-	const ctrl = useAvailableIntegrationCardController();
+	const ctrl = useConfigureIntegrationDialogController();
 
     onMount(() => {
         ctrl.setConfig({

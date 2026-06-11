@@ -14,12 +14,25 @@ import { useAuthSessionState } from "$lib/auth-session.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { SvelteMap } from "svelte/reactivity";
+import { type ConfigureIntegrationDialogParams } from "../components/configure-integration-dialog/controller.svelte";
+
+export const getEnabledCapabilties = (installed: InstalledIntegration[]) =>
+	installed.flatMap(intg => Object.entries(intg.attributes.capabilities)
+		.filter(([_, enabled]) => enabled)
+		.map(([name, _]) => name));
 
 export class IntegrationsController {
 	session = useAuthSessionState();
 
+	configureDialogParams = $state.raw<ConfigureIntegrationDialogParams>();
+
+	openConfigureDialog(integration: AvailableIntegration, installation?: InstalledIntegration) {
+		this.configureDialogParams = {integration, installation};
+	}
+
 	private listAvailableQuery = createQuery(() => listAvailableIntegrationsOptions());
 	available = $derived(this.listAvailableQuery.data?.data || []);
+	availableByName = $derived(new Map(this.available.map(a => [a.name, a])));
 	availableByProvider = $derived.by(() => {
 		const grouped = new SvelteMap<string, AvailableIntegration[]>();
 		for (const intg of this.available) {
@@ -41,10 +54,6 @@ export class IntegrationsController {
 		return grouped;
 	});
 
-	refetchInstalled() {
-		this.listInstalledQuery.refetch();
-	}
-
 	private listInstallTargetsQuery = createQuery(() => listIntegrationInstallTargetsOptions());
 	private installationTargets = $derived(this.listInstallTargetsQuery.data?.data || []);
 	installationTargetsByName = $derived.by(() => {
@@ -58,33 +67,27 @@ export class IntegrationsController {
 
 	private installMut = createMutation(() => ({
 		...createInstalledIntegrationMutation({}),
-		onSuccess: () => {
-			this.refetchInstalled();
-		},
+		onSuccess: () => {this.listInstalledQuery.refetch()},
 	}));
 
     private selectIntegrationInstallTargetMut = createMutation(() => ({
         ...installIntegrationTargetsMutation({}),
         onSuccess: () => {
-            this.refetchInstalled();
+            this.listInstalledQuery.refetch();
+			this.listInstallTargetsQuery.refetch();
         },
     }));
 
-	installingName = $derived(this.installMut.variables?.path?.name 
-		|| this.selectIntegrationInstallTargetMut.variables?.path.name);
-	private installationErr = $derived(this.installMut.error 
-		|| this.selectIntegrationInstallTargetMut.error);
-	isInstalling = $derived(this.installMut.isPending 
-		|| this.selectIntegrationInstallTargetMut.isPending);
-
-	installError = $derived(this.installationErr?.detail || this.installationErr?.title || "");
+	installingName = $derived(this.installMut.variables?.path?.name || this.selectIntegrationInstallTargetMut.variables?.path.name);
+	installationErr = $derived(this.installMut.error || this.selectIntegrationInstallTargetMut.error);
+	installationPending = $derived(this.installMut.isPending || this.selectIntegrationInstallTargetMut.isPending);
 
 	async installNew(name: string, attributes: CreateInstalledIntegrationRequestBody["attributes"]) {
 		await this.installMut.mutateAsync({path: { name }, body: { attributes }});
 	}
 
 	async installFromTargets(name: string, externalRefs: string[]) {
-		if (this.isInstalling || externalRefs.length === 0) return;
+		if (this.installationPending || externalRefs.length === 0) return;
 		try {
 			const attributes = { externalRefs }
 			await this.selectIntegrationInstallTargetMut.mutateAsync({
@@ -97,13 +100,8 @@ export class IntegrationsController {
 		}
 	}
 
-	errorFor(name: string) {
-		if (this.installingName !== name) return "";
-		return this.installError;
-	}
-
-	loading = $derived(this.listAvailableQuery.isPending || this.listInstalledQuery.isPending);
-	error = $derived((this.listAvailableQuery.error ?? this.listInstalledQuery.error) as ErrorModel | null);
+	loading = $derived(this.listAvailableQuery.isPending || this.listInstalledQuery.isPending || this.listInstallTargetsQuery.isPending);
+	error = $derived((this.listAvailableQuery.error ?? this.listInstalledQuery.error ?? this.listInstallTargetsQuery.error) as ErrorModel | null);
 }
 
 const ctx = new Context<IntegrationsController>("IntegrationsController");
