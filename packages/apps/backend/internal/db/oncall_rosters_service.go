@@ -85,8 +85,3 @@ func (s *OncallRostersService) ListSchedules(ctx context.Context, params rez.Lis
 
 	return ent.DoListQuery[ent.OncallSchedule, *ent.OncallScheduleQuery](ctx, query, params.ListParams)
 }
-
-func (s *OncallRostersService) GetCurrentOncallForComponent(ctx context.Context, componentID uuid.UUID) ([]*ent.User, error) {
-	// TODO: Implement logic to get current oncall users for a component's linked roster(s)
-	return []*ent.User{}, nil
-}

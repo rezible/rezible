@@ -10,6 +10,8 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
 	afb "github.com/rezible/rezible/ent/alertfeedback"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 )
 
@@ -98,6 +100,57 @@ func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertM
 }
 
 func (s *AlertService) GetActiveAlertsForComponents(ctx context.Context, componentIDs []uuid.UUID) ([]*ent.Alert, error) {
-	// TODO: Implement actual alert correlation logic for components
-	return []*ent.Alert{}, nil
+	if len(componentIDs) == 0 {
+		return []*ent.Alert{}, nil
+	}
+
+	query := s.db.Client(ctx).KnowledgeRelationship.Query().
+		Where(knr.Or(
+			knr.SourceEntityIDIn(componentIDs...),
+			knr.TargetEntityIDIn(componentIDs...),
+		)).
+		WithSourceEntity().
+		WithTargetEntity()
+	relationships, relErr := query.All(ctx)
+	if relErr != nil {
+		return nil, fmt.Errorf("query component alert relationships: %w", relErr)
+	}
+
+	componentSet := make(map[uuid.UUID]struct{}, len(componentIDs))
+	for _, id := range componentIDs {
+		componentSet[id] = struct{}{}
+	}
+	alertEntityIDs := make([]uuid.UUID, 0)
+	seenAlertEntityIDs := make(map[uuid.UUID]struct{})
+	addAlertEntity := func(entity *ent.KnowledgeEntity) {
+		if entity == nil || entity.Kind != knowledgeKindAlert {
+			return
+		}
+		if _, seen := seenAlertEntityIDs[entity.ID]; seen {
+			return
+		}
+		seenAlertEntityIDs[entity.ID] = struct{}{}
+		alertEntityIDs = append(alertEntityIDs, entity.ID)
+	}
+	for _, rel := range relationships {
+		_, sourceIsComponent := componentSet[rel.SourceEntityID]
+		_, targetIsComponent := componentSet[rel.TargetEntityID]
+		if sourceIsComponent {
+			addAlertEntity(rel.Edges.TargetEntity)
+		}
+		if targetIsComponent {
+			addAlertEntity(rel.Edges.SourceEntity)
+		}
+	}
+	if len(alertEntityIDs) == 0 {
+		return []*ent.Alert{}, nil
+	}
+
+	alerts, alertsErr := s.db.Client(ctx).Alert.Query().
+		Where(alert.HasKnowledgeEntityWith(kne.IDIn(alertEntityIDs...))).
+		All(ctx)
+	if alertsErr != nil {
+		return nil, fmt.Errorf("query active alerts: %w", alertsErr)
+	}
+	return alerts, nil
 }

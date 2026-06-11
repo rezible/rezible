@@ -1,15 +1,222 @@
 package db
 
 import (
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/uuid"
+	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
+	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
+	knev "github.com/rezible/rezible/ent/knowledgeevidence"
+	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/testkit"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
+
+type KnowledgeServiceProjectionSuite struct {
+	testkit.Suite
+}
+
+func TestKnowledgeServiceProjectionSuite(t *testing.T) {
+	suite.Run(t, &KnowledgeServiceProjectionSuite{Suite: testkit.NewSuite()})
+}
+
+func (s *KnowledgeServiceProjectionSuite) newKnowledgeService() *KnowledgeService {
+	return NewKnowledgeService(s.Database())
+}
+
+func (s *KnowledgeServiceProjectionSuite) createNormalizedEvent(subjectKind projections.SubjectKind, providerSubjectRef string, occurredAt time.Time, attrs map[string]any) *ent.NormalizedEvent {
+	ctx := s.SeedTenantContext()
+	ev, err := s.Client(ctx).NormalizedEvent.Create().
+		SetProvider("test").
+		SetProviderSource("projection").
+		SetProviderEventRef("event-" + uuid.NewString()).
+		SetProviderSubjectRef(providerSubjectRef).
+		SetActivityKind(ne.ActivityKindObserved).
+		SetSubjectKind(subjectKind.String()).
+		SetOccurredAt(occurredAt).
+		SetReceivedAt(occurredAt.Add(time.Minute)).
+		SetAttributes(attrs).
+		Save(ctx)
+	s.Require().NoError(err)
+	return ev
+}
+
+func (s *KnowledgeServiceProjectionSuite) mustEncodeAttrs(attrs any) map[string]any {
+	encoded, err := projections.EncodeAttributes(attrs)
+	s.Require().NoError(err)
+	return encoded
+}
+
+func (s *KnowledgeServiceProjectionSuite) TestCodeChangeProjectionPersistsEvidenceAndIsIdempotent() {
+	ctx := s.SeedTenantContext()
+	svc := s.newKnowledgeService()
+	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	attrs := s.mustEncodeAttrs(projections.CodeChangeSubjectAttributes{
+		RepositoryExternalRef: "repo-1",
+		DisplayName:           "main@abc123",
+	})
+	ev := s.createNormalizedEvent(projections.SubjectKindCodeChange, "change-1", occurredAt, attrs)
+
+	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+
+	entities, err := s.Client(ctx).KnowledgeEntity.Query().
+		Where(kne.KindIn(knowledgeKindCodeChange, knowledgeKindCodeRepository)).
+		All(ctx)
+	s.Require().NoError(err)
+	s.Len(entities, 2)
+
+	relationships, err := s.Client(ctx).KnowledgeRelationship.Query().
+		Where(knr.Kind(relationshipKindTouched)).
+		All(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(relationships, 1)
+	s.True(relationships[0].FirstObservedAt.Equal(occurredAt))
+	s.True(relationships[0].LastObservedAt.Equal(occurredAt))
+
+	evidence, err := s.Client(ctx).KnowledgeEvidence.Query().All(ctx)
+	s.Require().NoError(err)
+	s.Len(evidence, 3)
+	for _, item := range evidence {
+		s.Equal(ev.ID, item.EventID)
+		s.True(item.ObservedAt.Equal(occurredAt))
+		s.NotEmpty(item.SubjectType)
+	}
+
+	relationshipEvidence, err := s.Client(ctx).KnowledgeEvidence.Query().
+		Where(knev.SubjectTypeEQ(knev.SubjectTypeRelationship)).
+		Only(ctx)
+	s.Require().NoError(err)
+	s.Require().NotNil(relationshipEvidence.RelationshipID)
+	s.Equal(relationships[0].ID, *relationshipEvidence.RelationshipID)
+	s.Equal(assertionCodeChangeTouchedRepository, relationshipEvidence.Assertion)
+}
+
+func (s *KnowledgeServiceProjectionSuite) TestEntityProjectionRecordsChangedEvidenceWhenPropertiesChange() {
+	ctx := s.SeedTenantContext()
+	svc := s.newKnowledgeService()
+
+	subjectRef := "repo-2"
+
+	firstAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	firstAttrs := s.mustEncodeAttrs(projections.CodeForgeSubjectAttributes{
+		DisplayName: "repo-2",
+		URL:         "https://example.test/repo-2",
+	})
+	first := s.createNormalizedEvent(projections.SubjectKindCodeForge, subjectRef, firstAt, firstAttrs)
+	s.Require().NoError(svc.HandleEventProjection(ctx, first))
+
+	secondAt := firstAt.Add(time.Hour)
+	secondAttrs := s.mustEncodeAttrs(projections.CodeForgeSubjectAttributes{
+		DisplayName: "repo-2 renamed",
+		URL:         "https://example.test/repo-2-renamed",
+	})
+	second := s.createNormalizedEvent(projections.SubjectKindCodeForge, subjectRef, secondAt, secondAttrs)
+	s.Require().NoError(svc.HandleEventProjection(ctx, second))
+
+	dbc := s.Client(ctx)
+	queryAlias := dbc.KnowledgeEntityAlias.Query().
+		Where(knea.ProviderSubjectRef(subjectRef)).
+		WithEntity()
+	alias, aliasErr := queryAlias.Only(ctx)
+	s.Require().NoError(aliasErr)
+
+	entity := alias.Edges.Entity
+	s.Require().NotNil(entity)
+	s.Equal("repo-2 renamed", entity.DisplayName)
+	s.True(entity.FirstObservedAt.Equal(firstAt))
+	s.True(entity.LastObservedAt.Equal(secondAt))
+
+	queryEvidence := s.Client(ctx).KnowledgeEvidence.Query().
+		Where(knev.EntityID(entity.ID)).
+		Order(ent.Asc(knev.FieldObservedAt))
+	evidence, evidenceErr := queryEvidence.All(ctx)
+	s.Require().NoError(evidenceErr)
+	s.Require().Len(evidence, 2)
+	s.Equal(knev.EvidenceKindObserved, evidence[0].EvidenceKind)
+	s.Equal(knev.EvidenceKindChanged, evidence[1].EvidenceKind)
+}
+
+func (s *KnowledgeServiceProjectionSuite) TestPlaceholderRepositoryIsEnrichedByRepositoryObservation() {
+	ctx := s.SeedTenantContext()
+	svc := s.newKnowledgeService()
+	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	change := s.createNormalizedEvent(projections.SubjectKindCodeChange, "change-2", occurredAt, s.mustEncodeAttrs(projections.CodeChangeSubjectAttributes{
+		RepositoryExternalRef: "repo-3",
+		DisplayName:           "main@def456",
+	}))
+	repo := s.createNormalizedEvent(projections.SubjectKindCodeForge, "repo-3", occurredAt.Add(time.Hour), s.mustEncodeAttrs(projections.CodeForgeSubjectAttributes{
+		DisplayName: "Repository Three",
+		URL:         "https://example.test/repo-3",
+	}))
+
+	s.Require().NoError(svc.HandleEventProjection(ctx, change))
+	s.Require().NoError(svc.HandleEventProjection(ctx, repo))
+
+	alias, err := s.Client(ctx).KnowledgeEntityAlias.Query().
+		Where(knea.ProviderSubjectRef("repo-3")).
+		WithEntity().
+		Only(ctx)
+	s.Require().NoError(err)
+	s.Require().NotNil(alias.Edges.Entity)
+	s.Equal("Repository Three", alias.Edges.Entity.DisplayName)
+	s.Equal("https://example.test/repo-3", alias.Edges.Entity.Properties["url"])
+}
+
+func (s *KnowledgeServiceProjectionSuite) TestAliasConflictFailsLoudly() {
+	ctx := s.SeedTenantContext()
+	svc := s.newKnowledgeService()
+	first, err := s.Client(ctx).KnowledgeEntity.Create().
+		SetKind("service").
+		SetDisplayName("Service A").
+		Save(ctx)
+	s.Require().NoError(err)
+	second, err := s.Client(ctx).KnowledgeEntity.Create().
+		SetKind("service").
+		SetDisplayName("Service B").
+		Save(ctx)
+	s.Require().NoError(err)
+	_, err = s.Client(ctx).KnowledgeEntityAlias.Create().
+		SetEntityID(first.ID).
+		SetProvider("test").
+		SetProviderSubjectRef("service-a").
+		Save(ctx)
+	s.Require().NoError(err)
+	_, err = s.Client(ctx).KnowledgeEntityAlias.Create().
+		SetEntityID(second.ID).
+		SetProvider("test").
+		SetProviderSubjectRef("service-b").
+		Save(ctx)
+	s.Require().NoError(err)
+
+	attrs := s.mustEncodeAttrs(projections.SystemComponentSubjectAttributes{
+		ExternalRef: "service-a",
+		Kind:        "service",
+		DisplayName: "Service A",
+	})
+	ev := s.createNormalizedEvent(projections.SubjectKindSystemComponent, "service-a", time.Now().UTC(), attrs)
+
+	proj := rez.ProjectedKnowledgeEntity{
+		Kind:              "service",
+		DisplayName:       "Service A",
+		EvidenceAssertion: assertionSystemComponentExists,
+		AliasRefs: []ent.KnowledgeEntityAliasRef{
+			{Provider: "test", ProviderSubjectRef: "service-a"},
+			{Provider: "test", ProviderSubjectRef: "service-b"},
+		},
+	}
+	_, err = svc.ResolveProjectedEntity(ctx, ev, proj)
+	s.Require().Error(err)
+	s.True(strings.Contains(err.Error(), "different entities"))
+}
 
 func TestProjectCodeForgeObservedMapsToRepositoryFactEvidence(t *testing.T) {
 	attrs := projections.CodeForgeSubjectAttributes{
@@ -35,10 +242,10 @@ func TestProjectCodeForgeObservedMapsToRepositoryFactEvidence(t *testing.T) {
 
 	entity := result.Entities[0]
 	assert.Equal(t, knowledgeKindCodeRepository, entity.Kind)
-	assert.Equal(t, assertionCodeRepositoryExists, entity.Assertion)
+	assert.Equal(t, assertionCodeRepositoryExists, entity.EvidenceAssertion)
 	assert.Equal(t, "myorg/api", entity.DisplayName)
-	require.Len(t, entity.Aliases, 1)
-	assert.Equal(t, proj.makeEntityRef(ev, ""), entity.Aliases[0])
+	require.Len(t, entity.AliasRefs, 1)
+	assert.Equal(t, ev.MakeEntityAliasRef(), entity.AliasRefs[0])
 }
 
 func TestProjectCodeChangeEventObservedMapsChangeRepositoryRelationshipEvidence(t *testing.T) {
@@ -62,17 +269,17 @@ func TestProjectCodeChangeEventObservedMapsChangeRepositoryRelationshipEvidence(
 
 	require.Len(t, result.Entities, 2)
 	assert.Equal(t, knowledgeKindCodeChange, result.Entities[0].Kind)
-	assert.Equal(t, assertionCodeChangeObserved, result.Entities[0].Assertion)
+	assert.Equal(t, assertionCodeChangeObserved, result.Entities[0].EvidenceAssertion)
 	assert.Equal(t, knowledgeKindCodeRepository, result.Entities[1].Kind)
-	assert.Equal(t, assertionCodeRepositoryExists, result.Entities[1].Assertion)
+	assert.Equal(t, assertionCodeRepositoryExists, result.Entities[1].EvidenceAssertion)
 	assert.True(t, result.Entities[1].IsPlaceholder)
 
 	require.Len(t, result.Relationships, 1)
 	rel := result.Relationships[0]
 	assert.Equal(t, relationshipKindTouched, rel.Kind)
-	assert.Equal(t, assertionCodeChangeTouchedRepository, rel.Assertion)
-	assert.Equal(t, result.Entities[0].Aliases[0], rel.FromAlias)
-	assert.Equal(t, result.Entities[1].Aliases[0], rel.ToAlias)
+	assert.Equal(t, assertionCodeChangeTouchedRepository, rel.EvidenceAssertion)
+	assert.Equal(t, result.Entities[0].AliasRefs[0], rel.FromAliasRef)
+	assert.Equal(t, result.Entities[1].AliasRefs[0], rel.ToAliasRef)
 }
 
 func TestProjectorObservedAtPrefersOccurredAt(t *testing.T) {
@@ -80,7 +287,7 @@ func TestProjectorObservedAtPrefersOccurredAt(t *testing.T) {
 	receivedAt := occurredAt.Add(time.Hour)
 	ev := &ent.NormalizedEvent{OccurredAt: occurredAt, ReceivedAt: receivedAt}
 
-	assert.Equal(t, occurredAt, observedAtForEvent(ev))
+	assert.Equal(t, occurredAt, ev.DeriveObservedAt())
 }
 
 func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
@@ -111,12 +318,12 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 	assert.Empty(t, result.Relationships)
 	entity := result.Entities[0]
 	assert.Equal(t, attrs.Kind, entity.Kind)
-	assert.Equal(t, assertionSystemComponentExists, entity.Assertion)
+	assert.Equal(t, assertionSystemComponentExists, entity.EvidenceAssertion)
 	assert.Equal(t, attrs.DisplayName, entity.DisplayName)
 	assert.Equal(t, attrs.Description, entity.Description)
 	assert.Equal(t, attrs.Properties["criticality"], entity.Properties["criticality"])
-	require.Len(t, entity.Aliases, 1)
-	assert.Equal(t, proj.makeEntityRef(ev, ""), entity.Aliases[0])
+	require.Len(t, entity.AliasRefs, 1)
+	assert.Equal(t, ev.MakeEntityAliasRef(), entity.AliasRefs[0])
 }
 
 func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t *testing.T) {
@@ -159,9 +366,9 @@ func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t
 	require.Len(t, result.Relationships, 1)
 	relationship := result.Relationships[0]
 	assert.Equal(t, "calls", relationship.Kind)
-	assert.Equal(t, assertionSystemRelationshipExists, relationship.Assertion)
+	assert.Equal(t, assertionSystemRelationshipExists, relationship.EvidenceAssertion)
 	assert.Equal(t, "Checkout Service calls Search API", relationship.DisplayName)
-	assert.Equal(t, result.Entities[0].Aliases[0], relationship.FromAlias)
-	assert.Equal(t, result.Entities[1].Aliases[0], relationship.ToAlias)
+	assert.Equal(t, result.Entities[0].AliasRefs[0], relationship.FromAliasRef)
+	assert.Equal(t, result.Entities[1].AliasRefs[0], relationship.ToAliasRef)
 	assert.Equal(t, true, relationship.Properties["critical_path"])
 }

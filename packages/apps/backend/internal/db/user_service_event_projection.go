@@ -29,27 +29,24 @@ func (s *UserService) HandleEventProjection(ctx context.Context, event *ent.Norm
 
 func (s *UserService) handleUserEventProjection(ctx context.Context, ue *projections.UserEvent) error {
 	attrs := ue.Attributes
-	entityParams := rez.ResolveKnowledgeEntityParams{
-		Event:             ue.Event,
+	projKnowledgeEntity := rez.ProjectedKnowledgeEntity{
 		EvidenceAssertion: assertionUserProfileObserved,
-		Entity: &ent.KnowledgeEntity{
-			Kind:        knowledgeKindUser,
-			DisplayName: attrs.Name,
-		},
-		Aliases: []*ent.KnowledgeEntityAlias{
+		Kind:              knowledgeKindUser,
+		DisplayName:       attrs.Name,
+		AliasRefs: []ent.KnowledgeEntityAliasRef{
 			{Provider: ue.Event.Provider, ProviderSubjectRef: ue.Event.ProviderSubjectRef},
 		},
 	}
-	knoEnt, knowledgeErr := s.knowledge.ResolveEntity(ctx, entityParams)
+	keId, knowledgeErr := s.knowledge.ResolveProjectedEntity(ctx, ue.Event, projKnowledgeEntity)
 	if knowledgeErr != nil {
 		return fmt.Errorf("resolve user knowledge entity: %w", knowledgeErr)
 	}
 
 	// TODO: use regular user service update flow here instead
 
-	linked, linkedErr := s.db.Client(ctx).User.Query().
-		Where(user.KnowledgeEntityID(knoEnt.ID)).
-		Only(ctx)
+	queryLinked := s.db.Client(ctx).User.Query().
+		Where(user.KnowledgeEntityID(keId))
+	linked, linkedErr := queryLinked.Only(ctx)
 	if linkedErr != nil && !ent.IsNotFound(linkedErr) {
 		return fmt.Errorf("query linked user: %w", linkedErr)
 	}
@@ -72,7 +69,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 	if emailUser != nil {
 		if userID != uuid.Nil && userID != emailUser.ID {
 			return fmt.Errorf("knowledge entity %s is linked to user %s but email %q belongs to user %s",
-				knoEnt.ID,
+				keId,
 				userID,
 				attrs.Email,
 				emailUser.ID,
@@ -87,7 +84,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 	} else {
 		mut = s.db.Client(ctx).User.UpdateOneID(userID).Mutation()
 	}
-	mut.SetKnowledgeEntityID(knoEnt.ID)
+	mut.SetKnowledgeEntityID(keId)
 	mut.SetName(attrs.Name)
 	mut.SetEmail(attrs.Email)
 	mut.SetChatID(attrs.ChatId)

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"reflect"
 	"testing"
@@ -37,7 +38,7 @@ func TestProviderEventPipelineServiceSuite(t *testing.T) {
 	suite.Run(t, &ProviderEventPipelineServiceSuite{Suite: testkit.NewSuite()})
 }
 
-func (s *ProviderEventPipelineServiceSuite) newPipelineService(jobSvc rez.JobService, projector *pipelineTestProjector) *ProviderEventPipelineService {
+func (s *ProviderEventPipelineServiceSuite) newPipelineService(jobSvc rez.JobService, projector rez.NormalizedEventProjector) *ProviderEventPipelineService {
 	reg := projections.NewPipelineRegistry()
 	reg.RegisterProviderEventProcessors(pipelineTestProcessor{}, pipelineTestProvider)
 	reg.RegisterEventProjector(projector, pipelineTestSubjectKind)
@@ -70,6 +71,23 @@ func (s *ProviderEventPipelineServiceSuite) makeTestUser(ctx context.Context) *e
 	user, err := create.Save(ctx)
 	s.Require().NoError(err)
 	return user
+}
+
+func (s *ProviderEventPipelineServiceSuite) createPipelineNormalizedEvent(ctx context.Context) *ent.NormalizedEvent {
+	ev := s.makeTestEvent()
+	normalized, err := s.Client(ctx).NormalizedEvent.Create().
+		SetProvider(ev.Provider).
+		SetProviderSource(ev.ProviderSource).
+		SetProviderEventRef("normalized-" + uuid.NewString()).
+		SetProviderSubjectRef(ev.ProviderSubjectRef).
+		SetActivityKind(ne.ActivityKindObserved).
+		SetSubjectKind(pipelineTestSubjectKind.String()).
+		SetOccurredAt(ev.ReceivedAt.Add(-time.Minute)).
+		SetReceivedAt(ev.ReceivedAt).
+		SetAttributes(map[string]any{"summary": "processed " + ev.ProviderSubjectRef}).
+		Save(ctx)
+	s.Require().NoError(err)
+	return normalized
 }
 
 func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd() {
@@ -172,6 +190,47 @@ func (s *ProviderEventPipelineServiceSuite) TestProcessProviderEventUpsertsNorma
 	s.Equal(1, count)
 }
 
+func (s *ProviderEventPipelineServiceSuite) TestProjectionSkipsSucceededStatus() {
+	ctx := s.SeedTenantContext()
+	projector := &countingPipelineProjector{}
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
+	ev := s.createPipelineNormalizedEvent(ctx)
+
+	_, err := s.Client(ctx).NormalizedEventProjectionStatus.Create().
+		SetNormalizedEventID(ev.ID).
+		SetHandlerName(reflect.TypeOf(projector).String()).
+		SetStatus(neps.StatusSucceeded).
+		Save(ctx)
+	s.Require().NoError(err)
+
+	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
+	s.Equal(0, projector.calls)
+}
+
+func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjectorWrites() {
+	ctx := s.SeedTenantContext()
+	creator := s.makeTestUser(ctx)
+	projector := &rollbackPipelineProjector{db: s.Database(), creatorID: creator.ID}
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
+	ev := s.createPipelineNormalizedEvent(ctx)
+
+	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
+
+	count, err := s.Client(ctx).EventAnnotation.Query().
+		Where(eventannotation.EventID(ev.ID)).
+		Count(ctx)
+	s.Require().NoError(err)
+	s.Equal(0, count)
+
+	status, err := s.Client(ctx).NormalizedEventProjectionStatus.Query().
+		Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(reflect.TypeOf(projector).String())).
+		Only(ctx)
+	s.Require().NoError(err)
+	s.Equal(neps.StatusFailed, status.Status)
+	s.NotEmpty(status.LastError)
+	s.NotNil(status.FailedAt)
+}
+
 type pipelineTestProcessor struct{}
 
 func (pipelineTestProcessor) ProcessProviderEvent(_ context.Context, ev rez.ProviderEvent) (ent.NormalizedEvents, error) {
@@ -206,4 +265,32 @@ func (p *pipelineTestProjector) HandleEventProjection(ctx context.Context, ev *e
 		SetTags([]string{"pipeline-test"}).
 		Save(ctx)
 	return err
+}
+
+type countingPipelineProjector struct {
+	calls int
+}
+
+func (p *countingPipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) error {
+	p.calls++
+	return nil
+}
+
+type rollbackPipelineProjector struct {
+	db        rez.Database
+	creatorID uuid.UUID
+}
+
+func (p *rollbackPipelineProjector) HandleEventProjection(ctx context.Context, ev *ent.NormalizedEvent) error {
+	_, err := p.db.Client(ctx).EventAnnotation.Create().
+		SetEventID(ev.ID).
+		SetCreatorID(p.creatorID).
+		SetMinutesOccupied(1).
+		SetNotes("should roll back").
+		SetTags([]string{"rollback"}).
+		Save(ctx)
+	if err != nil {
+		return err
+	}
+	return errors.New("projection failed after write")
 }

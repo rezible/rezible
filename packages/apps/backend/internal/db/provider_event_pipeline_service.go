@@ -334,7 +334,9 @@ func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Contex
 			}
 		}
 
-		projectionErr := projector.HandleEventProjection(ctx, ev)
+		projectionErr := s.db.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
+			return projector.HandleEventProjection(txCtx, ev)
+		})
 
 		update := status.Update()
 		if projectionErr == nil {

@@ -28,18 +28,15 @@ func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.Nor
 
 func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *projections.AlertEvent) error {
 	attrs := ae.Attributes
-	entityParams := rez.ResolveKnowledgeEntityParams{
-		Event:             ae.Event,
+	projKnowledgeEntity := rez.ProjectedKnowledgeEntity{
 		EvidenceAssertion: assertionAlertDefinitionObserved,
-		Entity: &ent.KnowledgeEntity{
-			Kind:        knowledgeKindAlert,
-			DisplayName: attrs.Title,
-		},
-		Aliases: []*ent.KnowledgeEntityAlias{
+		Kind:              knowledgeKindAlert,
+		DisplayName:       attrs.Title,
+		AliasRefs: []ent.KnowledgeEntityAliasRef{
 			{Provider: ae.Event.Provider, ProviderSubjectRef: ae.Event.ProviderSubjectRef},
 		},
 	}
-	knowledgeEntity, saveKnowledgeErr := s.knowledge.ResolveEntity(ctx, entityParams)
+	keId, saveKnowledgeErr := s.knowledge.ResolveProjectedEntity(ctx, ae.Event, projKnowledgeEntity)
 	if saveKnowledgeErr != nil {
 		return fmt.Errorf("save projected entity: %w", saveKnowledgeErr)
 	}
@@ -47,7 +44,7 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 	// TODO: use regular alert service update flow here instead
 
 	upsert := s.db.Client(ctx).Alert.Create().
-		SetKnowledgeEntityID(knowledgeEntity.ID).
+		SetKnowledgeEntityID(keId).
 		SetTitle(attrs.Title).
 		SetDescription(attrs.Description).
 		SetDefinition(attrs.Definition).

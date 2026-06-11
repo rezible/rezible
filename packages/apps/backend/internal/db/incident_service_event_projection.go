@@ -31,26 +31,22 @@ func (s *IncidentService) HandleEventProjection(ctx context.Context, event *ent.
 
 func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie *projections.IncidentEvent) error {
 	attrs := ie.Attributes
-
-	entityParams := rez.ResolveKnowledgeEntityParams{
-		Event:             ie.Event,
-		EvidenceAssertion: assertionIncidentObserved,
-		Entity: &ent.KnowledgeEntity{
-			Kind:        knowledgeKindIncident,
-			DisplayName: attrs.Title,
-		},
-		Aliases: []*ent.KnowledgeEntityAlias{
-			{Provider: ie.Event.Provider, ProviderSubjectRef: ie.Event.ProviderSubjectRef},
-		},
+	openedAt := attrs.OpenedAt
+	if openedAt.IsZero() {
+		openedAt = ie.Event.DeriveObservedAt()
 	}
 
+	knowledgeEntity := rez.ProjectedKnowledgeEntity{
+		Kind:              knowledgeKindIncident,
+		DisplayName:       attrs.Title,
+		EvidenceAssertion: assertionIncidentObserved,
+		AliasRefs:         []ent.KnowledgeEntityAliasRef{ie.Event.MakeEntityAliasRef()},
+	}
 	return s.db.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
-		knowledgeEntity, knowledgeErr := s.knowledge.ResolveEntity(ctx, entityParams)
+		knowledgeEntityId, knowledgeErr := s.knowledge.ResolveProjectedEntity(ctx, ie.Event, knowledgeEntity)
 		if knowledgeErr != nil {
 			return fmt.Errorf("resolve incident knowledge entity: %w", knowledgeErr)
 		}
-
-		// TODO: use regular incident service update flow here instead
 
 		sevId, severityErr := s.saveProjectedIncidentSeverity(ctx, attrs)
 		if severityErr != nil {
@@ -62,38 +58,37 @@ func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie 
 			return fmt.Errorf("upsert incident type: %w", typeErr)
 		}
 
-		updateCount, updateErr := s.db.Client(ctx).Incident.Update().
-			Where(incident.KnowledgeEntityID(knowledgeEntity.ID)).
-			SetTitle(attrs.Title).
-			SetSummary(attrs.Summary).
-			SetSeverityID(sevId).
-			SetTypeID(typeId).
-			Save(ctx)
-		if updateErr != nil {
-			return fmt.Errorf("update incident: %w", updateErr)
-		}
-		if updateCount > 1 {
-			return fmt.Errorf("expected at most one incident for knowledge entity %s, updated %d",
-				knowledgeEntity.ID, updateCount)
-		}
-		if updateCount == 1 {
-			return nil
+		queryExisting := s.db.Client(ctx).Incident.Query().
+			Where(incident.KnowledgeEntityID(knowledgeEntityId))
+		existing, existingErr := queryExisting.Only(ctx)
+		if existingErr != nil && !ent.IsNotFound(existingErr) {
+			return fmt.Errorf("query existing incident: %w", existingErr)
 		}
 
-		incidentSlug, slugErr := s.generateIncidentSlug(ctx, attrs.OpenedAt)
-		if slugErr != nil {
-			return fmt.Errorf("generate incident slug: %w", slugErr)
+		id := uuid.Nil
+		if existing != nil {
+			// TODO: helper method on attributes struct?
+			if existing.Title == attrs.Title &&
+				existing.Summary == attrs.Summary &&
+				existing.SeverityID == sevId &&
+				existing.TypeID == typeId {
+				return nil
+			}
+			id = existing.ID
 		}
-		if _, createErr := s.db.Client(ctx).Incident.Create().
-			SetKnowledgeEntityID(knowledgeEntity.ID).
-			SetSlug(incidentSlug).
-			SetTitle(attrs.Title).
-			SetSummary(attrs.Summary).
-			SetOpenedAt(attrs.OpenedAt).
-			SetSeverityID(sevId).
-			SetTypeID(typeId).
-			Save(ctx); createErr != nil {
-			return fmt.Errorf("create incident: %w", createErr)
+
+		setFn := func(m *ent.IncidentMutation) {
+			m.SetKnowledgeEntityID(knowledgeEntityId)
+			m.SetTitle(attrs.Title)
+			m.SetSummary(attrs.Summary)
+			m.SetSeverityID(sevId)
+			m.SetTypeID(typeId)
+			if !openedAt.IsZero() {
+				m.SetOpenedAt(openedAt)
+			}
+		}
+		if _, setErr := s.Set(ctx, id, setFn); setErr != nil {
+			return fmt.Errorf("set incident: %w", setErr)
 		}
 
 		return nil

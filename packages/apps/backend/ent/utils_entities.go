@@ -1,6 +1,10 @@
 package ent
 
 import (
+	"time"
+
+	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
+	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/schema/schematypes"
 	vc "github.com/rezible/rezible/ent/videoconference"
 )
@@ -54,4 +58,27 @@ func (ie IncidentEdges) GetPrimaryVideoConference() *VideoConference {
 		return nil
 	}
 	return VideoConferences(conferences).GetPrimary()
+}
+
+func (ev *NormalizedEvent) DeriveObservedAt() time.Time {
+	if !ev.OccurredAt.IsZero() {
+		return ev.OccurredAt
+	}
+	if !ev.ReceivedAt.IsZero() {
+		return ev.ReceivedAt
+	}
+	return time.Now()
+}
+
+func (ev *NormalizedEvent) MakeEntityAliasRef() KnowledgeEntityAliasRef {
+	return KnowledgeEntityAliasRef{Provider: ev.Provider, ProviderSubjectRef: ev.ProviderSubjectRef}
+}
+
+type KnowledgeEntityAliasRef struct {
+	Provider           string
+	ProviderSubjectRef string
+}
+
+func (ref KnowledgeEntityAliasRef) Predicate() predicate.KnowledgeEntityAlias {
+	return knea.And(knea.Provider(ref.Provider), knea.ProviderSubjectRef(ref.ProviderSubjectRef))
 }

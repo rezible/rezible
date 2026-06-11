@@ -282,23 +282,39 @@ type (
 )
 
 type (
-	ResolveKnowledgeEntityParams struct {
+	ProjectedKnowledgeEntity struct {
 		IsPlaceholder     bool
-		Event             *ent.NormalizedEvent
-		Entity            *ent.KnowledgeEntity
-		Aliases           []*ent.KnowledgeEntityAlias
+		Kind              string
+		DisplayName       string
+		Description       string
+		Properties        map[string]any
+		AliasRefs         []ent.KnowledgeEntityAliasRef
 		EvidenceAssertion string
 	}
+
+	ProjectedKnowledgeRelationship struct {
+		Kind              string
+		DisplayName       string
+		Description       string
+		Properties        map[string]any
+		FromAliasRef      ent.KnowledgeEntityAliasRef
+		ToAliasRef        ent.KnowledgeEntityAliasRef
+		EvidenceAssertion string
+	}
+
 	KnowledgeService interface {
 		GetEntity(context.Context, predicate.KnowledgeEntity) (*ent.KnowledgeEntity, error)
-		ResolveEntity(context.Context, ResolveKnowledgeEntityParams) (*ent.KnowledgeEntity, error)
 		SetEntity(context.Context, uuid.UUID, func(*ent.KnowledgeEntityMutation)) (*ent.KnowledgeEntity, error)
+		LookupEntityIDFromAliasRefs(ctx context.Context, refs ...ent.KnowledgeEntityAliasRef) (uuid.UUID, error)
 
+		ResolveProjectedEntity(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeEntity) (uuid.UUID, error)
+		ResolveProjectedRelationship(context.Context, *ent.NormalizedEvent, ProjectedKnowledgeRelationship) (uuid.UUID, error)
+
+		GetEntityAlias(context.Context, predicate.KnowledgeEntityAlias) (*ent.KnowledgeEntityAlias, error)
 		SetEntityAlias(context.Context, uuid.UUID, func(*ent.KnowledgeEntityAliasMutation)) (*ent.KnowledgeEntityAlias, error)
-		ResolveEntityAliases(context.Context, ...*ent.KnowledgeEntityAlias) ([]*ent.KnowledgeEntityAlias, error)
 
+		GetRelationship(context.Context, predicate.KnowledgeRelationship) (*ent.KnowledgeRelationship, error)
 		SetRelationship(context.Context, uuid.UUID, func(*ent.KnowledgeRelationshipMutation)) (*ent.KnowledgeRelationship, error)
-		ResolveRelationship(context.Context, *ent.KnowledgeRelationship) (*ent.KnowledgeRelationship, error)
 
 		AddEvidence(context.Context, ...*ent.KnowledgeEvidenceCreate) ([]*ent.KnowledgeEvidence, error)
 	}
@@ -528,8 +544,6 @@ type (
 		GetRosterByScheduleId(ctx context.Context, scheduleId uuid.UUID) (*ent.OncallRoster, error)
 
 		ListSchedules(ctx context.Context, params ListOncallSchedulesParams) (*ent.ListResult[ent.OncallSchedule], error)
-
-		GetCurrentOncallForComponent(context.Context, uuid.UUID) ([]*ent.User, error)
 	}
 
 	ListOncallShiftsParams struct {
