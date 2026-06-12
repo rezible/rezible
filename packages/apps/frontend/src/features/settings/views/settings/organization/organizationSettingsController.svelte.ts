@@ -11,7 +11,7 @@ import {
 	updateTeamMembershipMutation,
 	updateTeamsMutation,
 } from "$lib/api";
-import { useAuthSessionState } from "$src/lib/auth-session.svelte";
+import { useUserSessionState } from "$src/lib/user-session.svelte";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { SvelteMap } from "svelte/reactivity";
@@ -20,7 +20,7 @@ type SectionName = "teams" | "memberships" | "users";
 type TeamRole = TeamMembership["attributes"]["role"];
 
 export class OrganizationSettingsViewController {
-	session = useAuthSessionState();
+	session = useUserSessionState();
 	queryClient = useQueryClient();
 
 	selectedTeamId = $state<string>();

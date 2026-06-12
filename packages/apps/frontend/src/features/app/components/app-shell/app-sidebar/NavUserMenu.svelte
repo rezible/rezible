@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
+	import { useUserSessionState } from "$src/lib/user-session.svelte";
 	import * as Sidebar from "$components/ui/sidebar";
 	import * as Avatar from "$components/ui/avatar";
 	import UserAvatar from "$components/common/entity-avatar/EntityAvatar.svelte";
@@ -10,7 +10,7 @@
 	import RiLogoutBoxRLine from "remixicon-svelte/icons/logout-box-r-line";
 	import RiExpandUpDownLine from "remixicon-svelte/icons/expand-up-down-line";
 
-	const auth = useAuthSessionState();
+	const auth = useUserSessionState();
 	const user = $derived(auth.user);
 </script>
 

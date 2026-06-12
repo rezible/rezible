@@ -7,7 +7,7 @@ import (
 
 type Handler struct {
 	*alertsHandler
-	*authSessionsHandler
+	*userSessionsHandler
 	*documentsHandler
 	*tasksHandler
 	*incidentsHandler
@@ -50,11 +50,10 @@ func NewHandler(
 	topology rez.SystemTopologyService,
 ) *Handler {
 	return &Handler{
-		alertsHandler:       newAlertsHandler(alerts),
-		authSessionsHandler: newAuthSessionsHandler(orgs, users),
-		documentsHandler:    newDocumentsHandler(documents),
-		incidentDebriefsHandler: newIncidentDebriefsHandler(
-			db, users, debriefs),
+		alertsHandler:             newAlertsHandler(alerts),
+		userSessionsHandler:       newUserSessionsHandler(orgs, users),
+		documentsHandler:          newDocumentsHandler(documents),
+		incidentDebriefsHandler:   newIncidentDebriefsHandler(db, users, debriefs),
 		incidentTimelineHandler:   newIncidentTimelineHandler(db),
 		incidentMetadataHandler:   newIncidentMetadataHandler(db, incidents),
 		incidentMilestonesHandler: newIncidentMilestonesHandler(db),

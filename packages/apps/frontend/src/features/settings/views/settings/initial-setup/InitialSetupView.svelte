@@ -11,6 +11,7 @@
 
 <IntegrationInstallDialog />
 
+
 <div class="grid h-full w-full place-items-center">
 	<div class="flex w-full max-w-4xl flex-col gap-4 border border-border bg-background p-4">
 		<Header title="Initial Setup" classes={{ root: "gap-2", title: "text-2xl" }} />

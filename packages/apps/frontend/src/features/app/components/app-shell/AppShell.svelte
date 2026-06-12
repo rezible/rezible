@@ -6,7 +6,7 @@
 	import PageHeader from "./PageHeader.svelte";
 
 	import { initAppShell } from "$lib/app-shell.svelte";
-	import { initAuthSessionState } from "$src/lib/auth-session.svelte";
+	import { initUserSessionState } from "$lib/user-session.svelte";
 	import { initUserOncallInformationState } from "$lib/userOncall.svelte";
 	import { Spinner } from "$src/components/ui/spinner";
 	import IncidentCreateDialog, {
@@ -16,7 +16,7 @@
 	const { children } = $props();
 
 	const shell = initAppShell();
-	const auth = initAuthSessionState();
+	const sess = initUserSessionState();
 	initUserOncallInformationState();
 	initIncidentCreateDialogController();
 </script>
@@ -27,13 +27,13 @@
 
 <ModeWatcher />
 
-{#if auth.ready}
+{#if sess.ready}
 	<Sidebar.Provider>
-		{#if auth.isSetup}
+		{#if sess.isSetup}
 			<AppSidebar variant="sidebar" />
 		{/if}
 		<main class="antialiased flex flex-col flex-1 min-w-0 min-h-0 h-dvh overflow-hidden">
-			{#if auth.isSetup}
+			{#if sess.isSetup}
 				<div class="flex w-full justify-between items-center h-11 bg-surface-200 border-b px-1">
 					<PageHeader />
 				</div>

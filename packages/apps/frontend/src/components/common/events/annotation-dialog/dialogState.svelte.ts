@@ -1,4 +1,4 @@
-import { useAuthSessionState } from "$src/lib/auth-session.svelte";
+import { useUserSessionState } from "$src/lib/user-session.svelte";
 import { createEventAnnotationMutation, updateEventAnnotationMutation, type Event, type EventAnnotation } from "$lib/api";
 import { useUserOncallInformation } from "$lib/userOncall.svelte";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
@@ -51,7 +51,7 @@ type DialogOptions = {
 	onClosed?: OnCloseFn;
 }
 export class AnnotationDialogState {
-	private session = useAuthSessionState();
+	private session = useUserSessionState();
 
 	event = $state<Event>();
 	annotation = $state<EventAnnotation>();

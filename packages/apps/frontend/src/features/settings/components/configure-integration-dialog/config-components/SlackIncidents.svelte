@@ -1,10 +1,21 @@
 <script lang="ts">
 	import * as Alert from "$components/ui/alert";
 	import { Button } from "$components/ui/button";
+	import { watchOnce } from "runed";
 	
 	import { useConfigureIntegrationDialogController } from "../controller.svelte";
 
 	const ctrl = useConfigureIntegrationDialogController();
+
+	watchOnce(() => ctrl.installation, inst => {
+        const cfg = {
+            displayName: "Slack Incident Management",
+            config: {},
+            preferences: {},
+        };
+        ctrl.setConfig(cfg, true);
+		console.log("install", inst);
+	});
 </script>
 
 {#if ctrl.installation}

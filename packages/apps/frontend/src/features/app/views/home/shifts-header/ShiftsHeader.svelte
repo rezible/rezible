@@ -2,12 +2,12 @@
 	import { mdiPlus } from "@mdi/js";
 	import { Button } from "$components/ui/button";
 	import { type OncallShift } from "$lib/api";
-	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
+	import { useUserSessionState } from "$src/lib/user-session.svelte";
 	import ActiveShiftCard from "./ActiveShiftCard.svelte";
 	import WatchRosterDialog from "./WatchRosterDialog.svelte";
 	import { useUserOncallInformation } from "$lib/userOncall.svelte";
 
-	const session = useAuthSessionState();
+	const session = useUserSessionState();
 	const userId = $derived(session.user?.id);
 	const oncallInfo = useUserOncallInformation();
 

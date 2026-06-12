@@ -36,13 +36,9 @@ type IntegrationsService struct {
 }
 
 func NewIntegrationsService(appCfg rez.AppConfig, db rez.Database, jobSvc rez.JobService, reg *integrations.PackageRegistry, pep rez.ProviderEventPipelineService) (*IntegrationsService, error) {
-	callbackUrl, callbackUrlErr := url.JoinPath(appCfg.FrontendDomain, "/settings/integration-callback")
-	if callbackUrlErr != nil {
-		return nil, fmt.Errorf("invalid oauth callback url: %w", callbackUrlErr)
-	}
-	redirectUrl, urlErr := url.Parse(callbackUrl)
-	if urlErr != nil {
-		return nil, fmt.Errorf("invalid oauth redirect url: %w", urlErr)
+	redirectUrl, redirectUrlErr := appCfg.GetFrontendUrl("/settings/integration-callback")
+	if redirectUrlErr != nil {
+		return nil, fmt.Errorf("invalid oauth callback url: %w", redirectUrlErr)
 	}
 
 	s := &IntegrationsService{
@@ -269,26 +265,21 @@ func (s *IntegrationsService) deleteUserInstallationState(ctx context.Context, u
 
 func (s *IntegrationsService) makeUserOAuthInstallationState(ctx context.Context, userId uuid.UUID, intgName string) (string, error) {
 	// TODO: replace this with something actually random
-	oauthState := uuid.New().String()
+	state := uuid.New().String()
 	createFreshStateFn := func(ctx context.Context, client *ent.Client) error {
 		if delErr := s.deleteUserInstallationState(ctx, userId, intgName); delErr != nil {
 			return fmt.Errorf("delete existing user install state: %w", delErr)
 		}
-		state := uuid.New().String()
 
 		create := client.IntegrationUserInstallState.Create().
 			SetUserID(userId).
-			SetOauthState(state).
 			SetIntegrationName(intgName).
+			SetOauthState(state).
 			SetExpiresAt(time.Now().Add(time.Minute * 10))
 
 		return create.Exec(ctx)
 	}
-	if txErr := s.db.WithTx(ctx, createFreshStateFn); txErr != nil {
-		return "", txErr
-	}
-
-	return oauthState, nil
+	return state, s.db.WithTx(ctx, createFreshStateFn)
 }
 
 func (s *IntegrationsService) updateUserInstallationStateWithOptions(ctx context.Context, id uuid.UUID, options []rez.IntegrationInstallationTarget) error {
@@ -505,12 +496,17 @@ func (s *IntegrationsService) HandleSyncIntegrationEventsJob(ctx context.Context
 
 	intg, intgErr := s.GetInstalled(ctx, args.IntegrationId)
 	if intgErr != nil {
+		slog.WarnContext(ctx, "failed to get installed integration")
+		if ent.IsNotFound(intgErr) {
+			return nil
+		}
 		return fmt.Errorf("get installed integration: %w", intgErr)
 	}
 
 	querier, querierErr := s.reg.GetProviderEventQuerier(intg.Integration())
-	if querierErr != nil {
-		return fmt.Errorf("get provider event querier: %w", querierErr)
+	if querierErr != nil || querier == nil {
+		slog.WarnContext(ctx, "failed to get integration event querier", "error", querierErr)
+		return nil
 	}
 
 	sourceCursors := map[string]string{}

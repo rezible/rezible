@@ -53,11 +53,11 @@ func (i *Integration) Name() string {
 }
 
 func (i *Integration) DisplayName() string {
-	return integrationName
+	return "Google Workspace"
 }
 
 func (i *Integration) Description() string {
-	return integrationName
+	return "Interact with Google Workspace services"
 }
 
 func (i *Integration) Provider() string {

@@ -7,7 +7,7 @@ import (
 
 const (
 	integrationName = "fake"
-	providerName    = "fake"
+	providerName    = "rezible"
 )
 
 type Integration struct {
@@ -25,11 +25,11 @@ func (i *Integration) Name() string {
 }
 
 func (i *Integration) DisplayName() string {
-	return integrationName
+	return "Faker"
 }
 
 func (i *Integration) Description() string {
-	return integrationName
+	return "Provides fake data for testing purposes"
 }
 
 func (i *Integration) Provider() string {

@@ -11,13 +11,16 @@
 
 	const integration = $derived(ctrl.integration);
 
+	const toTitleCase = (s: string) => s.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+
 	const title = $derived.by(() => {
 		if (!integration) return;
-		if (ctrl.installPending) return "Select Installation Option";
-		if (ctrl.oauthPending) return "Redirecting to " + integration.provider;
-		if (ctrl.installation) return "Configure Installation";
-		if (integration.oauthInstall) return "Continue to install";
-		return "Install";
+		const name = toTitleCase(integration.displayName);
+		const provider = toTitleCase(integration.provider);
+		if (ctrl.installPending) return `Select Option to Install ${name}`;
+		if (ctrl.oauthPending) return `Continuing with ${provider}`;
+		if (ctrl.installation) return `Configure ${name} Installation`;
+		return `Install ${name} Integration`;
 	});
 </script>
 
@@ -27,9 +30,8 @@
 			<Dialog.Header>
 				<div class="flex flex-col gap-2 pr-8">
 					<div class="flex flex-wrap items-center gap-2">
-						<Dialog.Title>{title} {integration.displayName}</Dialog.Title>
+						<Dialog.Title>{title}</Dialog.Title>
 					</div>
-					<Dialog.Description>{integration.description}</Dialog.Description>
 				</div>
 			</Dialog.Header>
 
@@ -37,7 +39,7 @@
 				{#if ctrl.installationTargetSelectionRequired}
 					<IntegrationInstallTargetSelect />
 				{:else if ctrl.oauthError}
-					<InlineAlert error={ctrl.oauthError} onDismiss={() => ctrl.oauth.clearFlow()} />
+					<InlineAlert error={ctrl.oauthError} onDismiss={() => ctrl.integrations.oauth.clearFlow()} />
 				{:else if ctrl.oauthPending}
 					<Spinner />
 				{:else}

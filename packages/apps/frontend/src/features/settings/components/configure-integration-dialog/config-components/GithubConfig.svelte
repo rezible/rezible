@@ -4,6 +4,7 @@
 	import { Button } from "$components/ui/button";
 	import RiGithubFill from "remixicon-svelte/icons/github-fill";
 	import { useConfigureIntegrationDialogController } from "../controller.svelte";
+	import { watchOnce } from "runed";
 
 	const ctrl = useConfigureIntegrationDialogController();
 
@@ -18,6 +19,16 @@
 				: ci.attributes.externalRef;
 		return { id: ci.id, org, installationId };
 	})
+
+	watchOnce(() => ctrl.installation, inst => {
+        const cfg = {
+            displayName: "Github",
+            config: {},
+            preferences: {},
+        };
+        ctrl.setConfig(cfg, true);
+		console.log("install", inst);
+	});
 </script>
 
 {#if installation}

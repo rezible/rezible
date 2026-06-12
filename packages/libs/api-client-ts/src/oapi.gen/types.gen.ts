@@ -113,12 +113,6 @@ export type AlertMetrics = {
     triggers: number;
 };
 
-export type AuthSession = {
-    expiresAt: string;
-    organization: Organization;
-    user: User;
-};
-
 export type AvailableIntegration = {
     description: string;
     displayName: string;
@@ -759,14 +753,6 @@ export type GetAlertResponseBody = {
     data: Alert;
 };
 
-export type GetCurrentAuthSessionResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: AuthSession;
-};
-
 export type GetDocumentAccessResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1061,6 +1047,14 @@ export type GetUserResponseBody = {
      */
     readonly $schema?: string;
     data: User;
+};
+
+export type GetUserSessionResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: UserSession;
 };
 
 export type Incident = {
@@ -2788,6 +2782,12 @@ export type UserOncallInformation = {
     watchingRosters: Array<OncallRoster>;
 };
 
+export type UserSession = {
+    expiresAt: string;
+    organization: Organization;
+    user: User;
+};
+
 export type VideoConference = {
     attributes: VideoConferenceAttributes;
     id: string;
@@ -3007,51 +3007,6 @@ export type GetAlertMetricsResponses = {
 };
 
 export type GetAlertMetricsResponse = GetAlertMetricsResponses[keyof GetAlertMetricsResponses];
-
-export type GetCurrentAuthSessionData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/auth_session/current';
-};
-
-export type GetCurrentAuthSessionErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetCurrentAuthSessionError = GetCurrentAuthSessionErrors[keyof GetCurrentAuthSessionErrors];
-
-export type GetCurrentAuthSessionResponses = {
-    /**
-     * OK
-     */
-    200: GetCurrentAuthSessionResponseBody;
-};
-
-export type GetCurrentAuthSessionResponse = GetCurrentAuthSessionResponses[keyof GetCurrentAuthSessionResponses];
 
 export type ListUserNotificationsData = {
     body?: never;
@@ -10157,6 +10112,51 @@ export type UpdateTeamsResponses = {
 };
 
 export type UpdateTeamsResponse = UpdateTeamsResponses[keyof UpdateTeamsResponses];
+
+export type GetUserSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/user_session';
+};
+
+export type GetUserSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetUserSessionError = GetUserSessionErrors[keyof GetUserSessionErrors];
+
+export type GetUserSessionResponses = {
+    /**
+     * OK
+     */
+    200: GetUserSessionResponseBody;
+};
+
+export type GetUserSessionResponse = GetUserSessionResponses[keyof GetUserSessionResponses];
 
 export type DeleteUserNotificationData = {
     body?: never;

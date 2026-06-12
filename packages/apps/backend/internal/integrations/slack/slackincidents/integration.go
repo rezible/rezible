@@ -26,11 +26,11 @@ func (i *Integration) Name() string {
 }
 
 func (i *Integration) DisplayName() string {
-	return integrationName
+	return "Slack Incident Management"
 }
 
 func (i *Integration) Description() string {
-	return integrationName
+	return "Manage Rezible Incidents in Slack"
 }
 
 func (i *Integration) Provider() string {

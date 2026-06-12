@@ -4,6 +4,7 @@
 	import { Label } from "$components/ui/label";
 
 	import { useConfigureIntegrationDialogController } from "../controller.svelte";
+	import { watchOnce } from "runed";
 
 	const ctrl = useConfigureIntegrationDialogController();
 
@@ -26,6 +27,16 @@
 			svcAccParseError = "Could not parse JSON file. Check that this is a valid service account credentials file.";
 		}
 	};
+
+	watchOnce(() => ctrl.installation, inst => {
+        const cfg = {
+            displayName: "Google",
+            config: {},
+            preferences: {},
+        };
+        ctrl.setConfig(cfg, true);
+		console.log("install", inst);
+	});
 </script>
 
 <div class="flex flex-col gap-3">

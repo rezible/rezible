@@ -65,7 +65,7 @@ func (s *UserService) SyncFromAuthProvider(ctx context.Context, pu ent.User, po 
 		if existing == nil {
 			createAdminRole := tx.OrganizationRole.Create().
 				SetRole(organizationrole.RoleAdmin).
-				SetUserID(usr.ID).
+				SetUserID(saved.ID).
 				SetOrganizationID(org.ID)
 			if createRoleErr := createAdminRole.Exec(ctx); createRoleErr != nil {
 				return fmt.Errorf("create admin role: %w", createRoleErr)

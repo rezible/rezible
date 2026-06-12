@@ -1,9 +1,9 @@
 <script lang="ts">
-	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
+	import { useUserSessionState } from "$src/lib/user-session.svelte";
 	import { cn } from "$lib/utils";
     import * as Sidebar from "$components/ui/sidebar";
 
-	const session = useAuthSessionState();
+	const session = useUserSessionState();
     const sidebar = Sidebar.useSidebar();
     const preloadHome = $derived(session.error ? "tap" : "hover");
 </script>

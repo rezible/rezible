@@ -4,15 +4,15 @@
 	import LoadingIndicator from "$components/layout/loading-indicator/LoadingIndicator.svelte";
 
 	import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
-	import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
-	import AvailableIntegrationCard from "$features/settings/components/available-integration-card/AvailableIntegrationCard.svelte";
+	import IntegrationProviderCard from "$features/settings/components/integration-provider-card/IntegrationProviderCard.svelte";
 	import IntegrationInstallDialog from "$features/settings/components/configure-integration-dialog/ConfigureIntegrationDialog.svelte";
+	import IntegrationDataSyncDialog from "$features/settings/components/integration-datasync-dialog/IntegrationDataSyncDialog.svelte";
 
 	const controller = useIntegrationsController();
-	const oauth = useIntegrationOAuthController();
 </script>
 
 <IntegrationInstallDialog />
+<IntegrationDataSyncDialog />
 
 <div class="flex flex-col gap-4 p-1">
 	{#if controller.loading}
@@ -22,31 +22,11 @@
 		</div>
 	{:else if controller.error}
 		<InlineAlert error={controller.error} />
-	{:else if oauth.inFlow}
-		<div class="flex items-center gap-2 text-sm text-muted-foreground">
-			<LoadingIndicator />
-		</div>
 	{:else}
 		<div class="flex flex-col gap-4">
-			{#each controller.availableByProvider as [provider, integrations]}
+			{#each controller.availableProviders as provider}
 				{#key provider}
-					<section class="flex flex-col gap-3 border border-border p-4">
-						<div class="flex items-center justify-between gap-3">
-							<div class="min-w-0">
-								<h2 class="truncate text-base font-semibold capitalize">{provider}</h2>
-								<p class="text-sm text-muted-foreground">
-									{integrations.length} {integrations.length === 1 ? "integration" : "integrations"} available
-								</p>
-							</div>
-							<Badge variant="outline" class="capitalize">{provider}</Badge>
-						</div>
-
-						<div class="grid gap-3">
-							{#each integrations as integration}
-								<AvailableIntegrationCard {integration} />
-							{/each}
-						</div>
-					</section>
+					<IntegrationProviderCard {provider} />
 				{/key}
 			{/each}
 		</div>

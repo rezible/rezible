@@ -1,12 +1,13 @@
 import { navigating, page } from "$app/state";
 import {
 	type User,
-	getCurrentAuthSessionOptions,
+	getUserSessionOptions,
 	type ErrorModel,
 	type Organization,
-	type GetCurrentAuthSessionResponseBody,
+	type GetUserSessionResponseBody,
+	type UserSession,
 } from "$lib/api";
-import { parseAbsoluteToLocal } from "@internationalized/date";
+import { parseAbsoluteToLocal, ZonedDateTime, now, getLocalTimeZone } from "@internationalized/date";
 import { createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { onMount, tick } from "svelte";
@@ -14,50 +15,44 @@ import { beforeNavigate, goto } from "$app/navigation";
 import type { RouteId } from "$app/types";
 import { resolve } from "$app/paths";
 
-export enum AuthSessionErrorCategory {
+export enum ApiAuthErrorCategory {
 	NoSession = "auth_session_missing",
 	SessionExpired = "auth_session_expired",
 	SessionInvalid = "auth_session_invalid",
 	ServerError = "server_error",
 	Unknown = "unknown",
 };
-const authErrCategories = Object.values(AuthSessionErrorCategory);
+const authErrCategories = Object.values(ApiAuthErrorCategory);
 
-const parseAuthSessionQueryResponseError = (err: ErrorModel): AuthSessionErrorCategory => {
+const parseUserSessionResponseError = (err: ErrorModel): ApiAuthErrorCategory => {
 	if (err.status === 401) {
-		const mappedCategory = err.detail as AuthSessionErrorCategory;
+		const mappedCategory = err.detail as ApiAuthErrorCategory;
 		if (authErrCategories.includes(mappedCategory)) {
 			return mappedCategory;
 		}
 	} else if (!err.status || err.status >= 500) {
-		return AuthSessionErrorCategory.ServerError;
+		return ApiAuthErrorCategory.ServerError;
 	}
-	return AuthSessionErrorCategory.Unknown;
+	return ApiAuthErrorCategory.Unknown;
 };
 
-type AuthSession = {
-	expiresAt: Date;
-	user: User;
-	organization: Organization;
-};
-
-type AuthSessionQueryResult = CreateQueryResult<GetCurrentAuthSessionResponseBody, ErrorModel>;
+type AuthSessionQueryResult = CreateQueryResult<GetUserSessionResponseBody, ErrorModel>;
 type ParsedAuthSessionQueryResult = {
-	session?: AuthSession,
-	error?: AuthSessionErrorCategory,
+	session?: Omit<UserSession, "expiresAt"> & { expiresAt: ZonedDateTime },
+	error?: ApiAuthErrorCategory,
 };
-const parseUserAuthSessionQueryResponse = ({data: body, error}: AuthSessionQueryResult): ParsedAuthSessionQueryResult => {
+const parseUserSessionQueryResponse = ({data: body, error}: AuthSessionQueryResult): ParsedAuthSessionQueryResult => {
+	let res: ParsedAuthSessionQueryResult = {};
 	if (!!error) {
-		return {error: parseAuthSessionQueryResponseError(error)};
+		res.error = parseUserSessionResponseError(error);
 	} else if (!!body) {
-		const session: AuthSession = {
+		res.session = {
 			user: body.data.user,
 			organization: body.data.organization,
-			expiresAt: parseAbsoluteToLocal(body.data.expiresAt).toDate(),
-		}
-		return {session};
+			expiresAt: parseAbsoluteToLocal(body.data.expiresAt),
+		};
 	}
-	return {};
+	return res;
 };
 
 const LoginRoute = resolve("/login");
@@ -74,15 +69,16 @@ const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSe
 	return isLoginRoute ? "/" : null;
 }
 
-export class AuthSessionState {
-	private query = createQuery(() => getCurrentAuthSessionOptions());
+export class UserSessionState {
+	private query = createQuery(() => getUserSessionOptions());
 	private loaded = $derived(this.query.isFetched);
 
-	private parsedResponse = $derived(parseUserAuthSessionQueryResponse(this.query));
+	private parsedResponse = $derived(parseUserSessionQueryResponse(this.query));
 	
 	error = $derived(this.parsedResponse.error);
 
 	private session = $derived(this.parsedResponse.session);
+	private sessionExpiresAt = $derived(!!this.session ? this.session.expiresAt.toDate() : null);
 	user = $derived(this.session?.user);
 	org = $derived(this.session?.organization);
 
@@ -125,22 +121,16 @@ export class AuthSessionState {
 
 	ready = $derived(this.loaded && !this.signingOut && !this.redirectTo);
 
-	// private refreshSessionMut = createMutation(() => ({
-	// 	...refreshAuthSessionMutation(),
-	// 	onSuccess: () => {
-	// 		console.log("auth session refreshed");
-	// 		this.refetch();
-	// 	}
-	// }));
 	private startSessionExpiryCheck() {
 		const CheckIntervalMs = 10_000;
 		const checkExpiry = () => {
 			// if (!this.session || this.refreshSessionMut.isPending) return;
-			if (!this.session) return;
-			const timeLeft = this.session.expiresAt.valueOf() - new Date(Date.now()).valueOf();
+			if (!this.sessionExpiresAt) return;
+			const timeLeft = this.sessionExpiresAt.valueOf() - Date.now();
 			if (timeLeft <= 0) {
 				// TODO: handle this better
-				this.refetch();
+				// this.refetch();
+				console.log("user auth session expired");
 			} else if (timeLeft <= CheckIntervalMs * 100) {
 				console.log("auth session expiring soon", timeLeft);
 				// this.refreshSessionMut.mutate({});
@@ -153,6 +143,6 @@ export class AuthSessionState {
 	};
 };
 
-const ctx = new Context<AuthSessionState>("AuthSessionState");
-export const initAuthSessionState = () => ctx.set(new AuthSessionState());
-export const useAuthSessionState = () => ctx.get();
+const ctx = new Context<UserSessionState>("UserSessionState");
+export const initUserSessionState = () => ctx.set(new UserSessionState());
+export const useUserSessionState = () => ctx.get();

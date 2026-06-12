@@ -241,21 +241,6 @@ components:
         - docsAvailable
         - docsNeedsUpdate
       type: object
-    AuthSession:
-      additionalProperties: false
-      properties:
-        expiresAt:
-          format: date-time
-          type: string
-        organization:
-          $ref: "#/components/schemas/Organization"
-        user:
-          $ref: "#/components/schemas/User"
-      required:
-        - expiresAt
-        - organization
-        - user
-      type: object
     AvailableIntegration:
       additionalProperties: false
       properties:
@@ -1566,21 +1551,6 @@ components:
       required:
         - data
       type: object
-    GetCurrentAuthSessionResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetCurrentAuthSessionResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/AuthSession"
-      required:
-        - data
-      type: object
     GetDocumentAccessResponseBody:
       additionalProperties: false
       properties:
@@ -2133,6 +2103,21 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/User"
+      required:
+        - data
+      type: object
+    GetUserSessionResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetUserSessionResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/UserSession"
       required:
         - data
       type: object
@@ -6012,6 +5997,21 @@ components:
         - upcomingShifts
         - pastShifts
       type: object
+    UserSession:
+      additionalProperties: false
+      properties:
+        expiresAt:
+          format: date-time
+          type: string
+        organization:
+          $ref: "#/components/schemas/Organization"
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - user
+        - organization
+        - expiresAt
+      type: object
     VideoConference:
       additionalProperties: false
       properties:
@@ -6360,55 +6360,6 @@ paths:
       summary: Get Alert Metrics
       tags:
         - Alerts
-  /auth_session/current:
-    get:
-      operationId: get-current-auth-session
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetCurrentAuthSessionResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get the current Auth Session
-      tags:
-        - Auth Sessions
   /auth_session/notifications:
     get:
       operationId: list-user-notifications
@@ -6486,7 +6437,7 @@ paths:
           description: Internal Server Error
       summary: List Notifications for the Current User
       tags:
-        - Auth Sessions
+        - User Session
   /debrief_questions:
     get:
       operationId: list-debrief-questions
@@ -15601,6 +15552,55 @@ paths:
       summary: Update a Team
       tags:
         - Teams
+  /user_session:
+    get:
+      operationId: get-user-session
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetUserSessionResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get the current User Session
+      tags:
+        - User Session
   /user_session/notifications/{id}:
     delete:
       operationId: delete-user-notification
@@ -15651,7 +15651,7 @@ paths:
           description: Internal Server Error
       summary: Delete a Notification for the Current User
       tags:
-        - Auth Sessions
+        - User Session
   /users:
     get:
       operationId: list-users

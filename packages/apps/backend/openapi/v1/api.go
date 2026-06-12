@@ -13,7 +13,7 @@ const VersionPrefix = "/v1"
 type Handler interface {
 	// GetMiddleware() []Middleware
 
-	AuthSessionsHandler
+	UserSessionsHandler
 	OrganizationsHandler
 	UsersHandler
 	TeamsHandler

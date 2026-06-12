@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { useInitialSetupViewController } from "../controller.svelte";
-	import AvailableIntegrationCard from "$features/settings/components/available-integration-card/AvailableIntegrationCard.svelte";
+	import IntegrationProviderCard from "$features/settings/components/integration-provider-card/IntegrationProviderCard.svelte";
 
 	const ctrl = useInitialSetupViewController();
 
@@ -24,7 +24,7 @@
 	{#if nextRequired}
 		<div class="flex flex-col gap-3">
 			{#each availableForRequired as integration (integration.name)}
-				<AvailableIntegrationCard {integration} showInstalledDetails={false} />
+				<IntegrationProviderCard provider={integration.provider} onlyName={integration.name} showInstalledDetails={false} />
 			{:else}
 				<div class="border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
 					No integrations are available for {nextRequired}. You can finish setup and add integrations later.

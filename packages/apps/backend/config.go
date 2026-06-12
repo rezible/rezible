@@ -4,7 +4,6 @@ import (
 	"cmp"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -79,7 +78,11 @@ type (
 )
 
 func (a AppConfig) GetFrontendUrl(paths ...string) (*url.URL, error) {
-	return url.Parse("https://" + a.FrontendDomain + url.PathEscape(strings.Join(paths, "/")))
+	fePath, pathErr := url.JoinPath("/", paths...)
+	if pathErr != nil {
+		return nil, pathErr
+	}
+	return url.Parse("https://" + a.FrontendDomain + fePath)
 }
 
 type (

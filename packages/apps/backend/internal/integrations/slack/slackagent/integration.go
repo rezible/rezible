@@ -25,11 +25,11 @@ func (i *Integration) Name() string {
 }
 
 func (i *Integration) DisplayName() string {
-	return integrationName
+	return "Slack Agent"
 }
 
 func (i *Integration) Description() string {
-	return integrationName
+	return "Rezible Slack Agent"
 }
 
 func (i *Integration) Provider() string {

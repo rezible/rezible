@@ -10,10 +10,8 @@ import {
 } from "$lib/api";
 
 import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
-import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
 
 import SlackAgent from "./config-components/SlackAgent.svelte";
-import PlaceholderConfig from "./config-components/PlaceholderConfig.svelte";
 import GoogleConfig from "./config-components/GoogleConfig.svelte";
 import GithubConfig from "./config-components/GithubConfig.svelte";
 import FakeConfig from "./config-components/FakeConfig.svelte";
@@ -36,38 +34,25 @@ export type ConfigureIntegrationDialogParams = {
 
 export class ConfigureIntegrationDialogController {
 	integrations = useIntegrationsController();
-	oauth = useIntegrationOAuthController();
-
-	private oauthTarget = $derived.by(() => {
-		if (!this.oauth.inFlowForName) return; 
-		return this.integrations.availableByName.get(this.oauth.inFlowForName);
-	});
-	constructor() {
-		watch(() => this.oauthTarget, oauthIntegration => {
-			if (!oauthIntegration) return;
-			console.log("opening dialog for oauth target", oauthIntegration);
-			this.integrations.openConfigureDialog(oauthIntegration);
-		});
-	}
 
 	private params = $derived(this.integrations.configureDialogParams);
     integration = $derived(this.params?.integration);
     installation = $derived(this.params?.installation);
 
     name = $derived(this.integration?.name);
-    ConfigComponent = $derived((!!this.name && this.name in configs) ? (configs[this.name] ?? PlaceholderConfig) : undefined);
+    ConfigComponent = $derived((!!this.name && this.name in configs) ? configs[this.name] : undefined);
 
 	async startOAuthFlow() {
 		if (this.loading || !this.name) return;
 		try {
-			await this.oauth.startFlowFor(this.name);
+			await this.integrations.oauth.startFlowFor(this.name);
 		} catch (e) {
 			this.setConfigError(e);
 		}
 	}
 
-	oauthPending = $derived(this.oauth.inFlowForName === this.name);
-    oauthError = $derived(this.oauthPending ? this.oauth.error : undefined);
+	oauthPending = $derived(this.integrations.oauth.inFlowForName === this.name);
+    oauthError = $derived(this.oauthPending ? this.integrations.oauth.error : undefined);
 
 	configError = $state<ErrorModel>();
 
@@ -82,9 +67,10 @@ export class ConfigureIntegrationDialogController {
 		};
 	}
 
-	installPending = $derived(!!this.name && this.integrations.installingName === this.name);
+	installPending = $derived(this.integrations.installationPending && this.integrations.installingName === this.name);
 
 	configAttrs = $state<ConfigRequestAttributes>();
+	configValid = $state(false);
 
     isOpen = $derived(!!this.integration);
 
@@ -99,13 +85,14 @@ export class ConfigureIntegrationDialogController {
 
 	close() {
 		this.integrations.configureDialogParams = undefined;
+		this.configAttrs = undefined;
+		this.configValid = false;
 	}
 
-	setConfig(attrs: ConfigRequestAttributes) {
+	setConfig(attrs: ConfigRequestAttributes, valid: boolean) {
 		this.configAttrs = attrs;
+		this.configValid = valid;
 	}
-
-	configValid = $derived(!!this.configAttrs);
 
 	async saveConfig() {
 		if (!this.name || !this.configValid || !this.configAttrs) return;

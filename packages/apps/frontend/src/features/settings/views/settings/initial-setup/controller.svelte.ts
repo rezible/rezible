@@ -2,7 +2,7 @@ import { Context, watch } from "runed";
 import { createMutation, createQuery } from "@tanstack/svelte-query";
 
 import { updateOrganizationPreferencesMutation, type AvailableIntegration, type OrganizationAttributes, type OrganizationPreferences, type UpdateOrganizationPreferencesRequestAttributes } from "$lib/api";
-import { useAuthSessionState } from "$lib/auth-session.svelte";
+import { useUserSessionState } from "$src/lib/user-session.svelte";
 import { getEnabledCapabilties, useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 
 import { StepperController } from "$components/layout/stepper/stepper.svelte";
@@ -17,7 +17,7 @@ export type ConfigureOrganizationOptions = {
 }
 
 export class InitialSetupViewController {
-	private session = useAuthSessionState();
+	private session = useUserSessionState();
 	private integrations = useIntegrationsController();
 
 	orgName = $derived(this.session.org?.attributes.name);

@@ -43,15 +43,15 @@ func (i *Integration) Name() string {
 }
 
 func (i *Integration) DisplayName() string {
-	return integrationName
+	return "Github"
 }
 
 func (i *Integration) Description() string {
-	return integrationName
+	return "Watch for change events & extract repository information"
 }
 
 func (i *Integration) Provider() string {
-	return "github"
+	return providerName
 }
 
 func (i *Integration) MaxInstalls() *int {

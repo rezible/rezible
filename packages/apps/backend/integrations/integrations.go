@@ -79,7 +79,7 @@ func (r *PackageRegistry) GetProviderEventQuerier(intg *ent.Integration) (rez.Pr
 	if querierPkg, ok := pkg.(IntegrationWithProviderEventQuerier); ok {
 		return querierPkg.MakeProviderEventQuerier(intg)
 	}
-	return nil, nil
+	return nil, fmt.Errorf("integration does not provide an event querier")
 }
 
 type IntegrationWithOAuth2Flow interface {

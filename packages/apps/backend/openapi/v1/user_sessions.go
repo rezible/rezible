@@ -9,25 +9,25 @@ import (
 	"github.com/google/uuid"
 )
 
-type AuthSessionsHandler interface {
-	GetCurrentAuthSession(context.Context, *GetCurrentAuthSessionRequest) (*GetCurrentAuthSessionResponse, error)
+type UserSessionsHandler interface {
+	GetUserSession(context.Context, *GetUserSessionRequest) (*GetUserSessionResponse, error)
 
 	ListNotifications(context.Context, *ListNotificationsRequest) (*ListNotificationsResponse, error)
 	DeleteNotification(context.Context, *DeleteNotificationRequest) (*DeleteNotificationResponse, error)
 }
 
-func (o operations) RegisterAuthSessions(api huma.API) {
-	huma.Register(api, GetCurrentAuthSession, o.GetCurrentAuthSession)
+func (o operations) RegisterUserSessions(api huma.API) {
+	huma.Register(api, GetUserSession, o.GetUserSession)
 
 	huma.Register(api, ListNotifications, o.ListNotifications)
 	huma.Register(api, DeleteNotification, o.DeleteNotification)
 }
 
 type (
-	AuthSession struct {
-		ExpiresAt    time.Time    `json:"expiresAt"`
-		Organization Organization `json:"organization"`
+	UserSession struct {
 		User         User         `json:"user"`
+		Organization Organization `json:"organization"`
+		ExpiresAt    time.Time    `json:"expiresAt"`
 	}
 
 	UserNotification struct {
@@ -42,26 +42,26 @@ type (
 
 // Operations
 
-var authSessionsTags = []string{"Auth Sessions"}
+var userSessionsTags = []string{"User Session"}
 
-var GetCurrentAuthSession = huma.Operation{
-	OperationID: "get-current-auth-session",
+var GetUserSession = huma.Operation{
+	OperationID: "get-user-session",
 	Method:      http.MethodGet,
-	Path:        "/auth_session/current",
-	Summary:     "Get the current Auth Session",
-	Tags:        authSessionsTags,
+	Path:        "/user_session",
+	Summary:     "Get the current User Session",
+	Tags:        userSessionsTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetCurrentAuthSessionRequest EmptyRequest
-type GetCurrentAuthSessionResponse ItemResponse[AuthSession]
+type GetUserSessionRequest EmptyRequest
+type GetUserSessionResponse ItemResponse[UserSession]
 
 var ListNotifications = huma.Operation{
 	OperationID: "list-user-notifications",
 	Method:      http.MethodGet,
 	Path:        "/auth_session/notifications",
 	Summary:     "List Notifications for the Current User",
-	Tags:        authSessionsTags,
+	Tags:        userSessionsTags,
 	Errors:      ErrorCodes(),
 }
 
@@ -73,7 +73,7 @@ var DeleteNotification = huma.Operation{
 	Method:      http.MethodDelete,
 	Path:        "/user_session/notifications/{id}",
 	Summary:     "Delete a Notification for the Current User",
-	Tags:        authSessionsTags,
+	Tags:        userSessionsTags,
 	Errors:      ErrorCodes(),
 }
 

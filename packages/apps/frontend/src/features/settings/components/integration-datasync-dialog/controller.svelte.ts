@@ -1,56 +1,11 @@
-import { Context, watch, type Getter } from "runed";
+import { Context } from "runed";
 
 import {
 	type ErrorModel,
-	type AvailableIntegration,
-	type InstalledIntegration,
 	requestIntegrationEventSyncMutation,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
-
-import { getEnabledCapabilties, useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
-import { useIntegrationOAuthController } from "$features/settings/lib/integrationOAuthController.svelte";
-
-export class AvailableIntegrationCardController {
-	integrations = useIntegrationsController();
-	oauth = useIntegrationOAuthController();
-
-	private integration = $state<AvailableIntegration>();
-
-	constructor(integrationFn: Getter<AvailableIntegration | undefined>) {
-		watch(integrationFn, (intg) => {this.integration = intg});
-		
-	}
-
-	name = $derived(this.integration?.name);
-	displayName = $derived(this.integration?.displayName || "");
-	description = $derived(this.integration?.description || "");
-	provider = $derived(this.integration?.provider);
-	supportedCapabilities = $derived(this.integration?.supportedCapabilities ?? []);
-
-	installations = $derived<InstalledIntegration[]>(
-		this.integrations.installationsByName.get(this.name || "") ?? []);
-	hasInstalled = $derived(this.installations.length > 0);
-	maxInstallsReached = $derived(
-		typeof this.integration?.maxInstalls === "number" && this.installations.length >= this.integration.maxInstalls
-	);
-	canInstall = $derived(!this.maxInstallsReached);
-
-	enabledCapabilities = $derived(getEnabledCapabilties(this.installations));
-
-	openConfigDialog(installation?: InstalledIntegration) {
-		this.integrations.configureDialogParams = {
-			integration: $state.snapshot(this.integration),
-			installation: $state.snapshot(installation),
-		}
-	}
-}
-
-const ctx = new Context<AvailableIntegrationCardController>("AvailableIntegrationCardController");
-export const initAvailableIntegrationCardController = (fn: Getter<AvailableIntegration | undefined>) =>
-	ctx.set(new AvailableIntegrationCardController(fn));
-export const useAvailableIntegrationCardController = () => ctx.get();
-
+import { useIntegrationsController } from "../../lib/integrationsController.svelte";
 
 type SyncStatusDisplay = {
 	label: string;
@@ -71,14 +26,17 @@ const syncStatusDisplays: Record<string, SyncStatusDisplay> = {
 const pollAfterRequestMs = 10_000;
 const pollIntervalMs = 3_000;
 
-export class InstalledIntegrationDataSyncController {
-	private ctrl = useAvailableIntegrationCardController();
+export class IntegrationDataSyncController {
+	private ctrl = useIntegrationsController();
 
-	private installation = $state<InstalledIntegration>();
-	constructor(fn: Getter<InstalledIntegration>) {
-		watch(fn, (intg) => {this.installation = intg});
-	}
+	installation = $derived(this.ctrl.dataSyncDialogInstallation);
+	isOpen = $derived(!!this.installation);
+
 	id = $derived(this.installation?.id);
+
+	setOpen(open: boolean) {
+		if (!open) this.ctrl.dataSyncDialogInstallation = undefined;
+	}
 
 	private syncRequestPolling = $state(false);
 	private syncPollTimeout: ReturnType<typeof setTimeout> | undefined;
@@ -105,7 +63,7 @@ export class InstalledIntegrationDataSyncController {
 
 	async requestSync() {
 		const id = this.id;
-		if (!id || !this.ctrl.hasInstalled || this.requestDataSyncMutation.isPending) return;
+		if (!id || this.requestDataSyncMutation.isPending) return;
 		await this.requestDataSyncMutation.mutateAsync({
 			path: { id },
 			body: { attributes: {} },
@@ -157,3 +115,7 @@ export class InstalledIntegrationDataSyncController {
 	}
     */
 }
+
+const dataSyncCtx = new Context<IntegrationDataSyncController>("IntegrationDataSyncController");
+export const initIntegrationDataSyncController = () => dataSyncCtx.set(new IntegrationDataSyncController());
+export const useIntegrationDataSyncController = () => dataSyncCtx.get();

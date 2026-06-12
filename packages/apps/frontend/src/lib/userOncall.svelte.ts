@@ -1,10 +1,10 @@
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { getUserOncallInformationOptions } from "./api";
-import { useAuthSessionState } from "./auth-session.svelte";
+import { useUserSessionState } from "./user-session.svelte";
 import { Context } from "runed";
 
 export class UserOncallInformationState {
-	private session = useAuthSessionState();
+	private session = useUserSessionState();
 	private queryClient = useQueryClient();
 
 	private userId = $derived(this.session.user?.id || "");

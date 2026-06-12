@@ -11,17 +11,17 @@ import (
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
-type authSessionsHandler struct {
+type userSessionsHandler struct {
 	orgs  rez.OrganizationService
 	users rez.UserService
 }
 
-func newAuthSessionsHandler(orgs rez.OrganizationService, users rez.UserService) *authSessionsHandler {
-	return &authSessionsHandler{orgs: orgs, users: users}
+func newUserSessionsHandler(orgs rez.OrganizationService, users rez.UserService) *userSessionsHandler {
+	return &userSessionsHandler{orgs: orgs, users: users}
 }
 
-func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *oapi.GetCurrentAuthSessionRequest) (*oapi.GetCurrentAuthSessionResponse, error) {
-	var resp oapi.GetCurrentAuthSessionResponse
+func (h *userSessionsHandler) GetUserSession(ctx context.Context, req *oapi.GetUserSessionRequest) (*oapi.GetUserSessionResponse, error) {
+	var resp oapi.GetUserSessionResponse
 
 	exec := execution.GetContext(ctx)
 	userId, userOk := exec.UserID()
@@ -39,16 +39,16 @@ func (h *authSessionsHandler) GetCurrentAuthSession(ctx context.Context, input *
 		return nil, oapi.Error(ctx, "failed to get organization", orgErr)
 	}
 
-	resp.Body.Data = oapi.AuthSession{
-		ExpiresAt:    exec.Auth.ExpiresAt,
+	resp.Body.Data = oapi.UserSession{
 		User:         oapi.UserFromEnt(u),
 		Organization: oapi.OrganizationFromEnt(org),
+		ExpiresAt:    exec.Auth.ExpiresAt,
 	}
 
 	return &resp, nil
 }
 
-func (h *authSessionsHandler) ListNotifications(ctx context.Context, request *oapi.ListNotificationsRequest) (*oapi.ListNotificationsResponse, error) {
+func (h *userSessionsHandler) ListNotifications(ctx context.Context, req *oapi.ListNotificationsRequest) (*oapi.ListNotificationsResponse, error) {
 	var resp oapi.ListNotificationsResponse
 
 	// TODO: fetch from db
@@ -69,7 +69,7 @@ func (h *authSessionsHandler) ListNotifications(ctx context.Context, request *oa
 	return &resp, nil
 }
 
-func (h *authSessionsHandler) DeleteNotification(ctx context.Context, request *oapi.DeleteNotificationRequest) (*oapi.DeleteNotificationResponse, error) {
+func (h *userSessionsHandler) DeleteNotification(ctx context.Context, req *oapi.DeleteNotificationRequest) (*oapi.DeleteNotificationResponse, error) {
 	var resp oapi.DeleteNotificationResponse
 
 	// TODO: delete from db

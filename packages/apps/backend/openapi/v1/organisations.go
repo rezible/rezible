@@ -38,8 +38,9 @@ type (
 
 func OrganizationFromEnt(org *ent.Organization) Organization {
 	attr := OrganizationAttributes{
-		Name:        org.Name,
-		Preferences: OrganizationPreferencesFromEnt(org.Edges.Preferences),
+		Name:          org.Name,
+		SetupRequired: org.Edges.Preferences == nil || org.Edges.Preferences.InitialSetupAt.IsZero(),
+		Preferences:   OrganizationPreferencesFromEnt(org.Edges.Preferences),
 	}
 
 	return Organization{Id: org.ID, Attributes: attr}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import type { IncidentDebriefMessage } from "$lib/api";
-	import { useAuthSessionState } from "$src/lib/auth-session.svelte";
+	import { useUserSessionState } from "$src/lib/user-session.svelte";
 	import Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 	import MessageWaitingIndicator from "./MessageWaitingIndicator.svelte";
 
@@ -11,7 +11,7 @@
 	}
 	let { messages, waitingForResponse }: Props = $props();
 
-	const session = useAuthSessionState();
+	const session = useUserSessionState();
 
 	let container = $state<HTMLElement>();
 	const scrollToLatestMessage = () => {

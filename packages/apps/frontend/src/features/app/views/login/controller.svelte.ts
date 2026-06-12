@@ -1,18 +1,18 @@
 import z from "zod";
 import { goto } from "$app/navigation";
-import { useAuthSessionState, AuthSessionErrorCategory } from "$src/lib/auth-session.svelte";
+import { useUserSessionState, ApiAuthErrorCategory } from "$src/lib/user-session.svelte";
 import type { ErrorModel } from "$lib/api";
 import { page } from "$app/state";
 
-const authSessionErrorDisplayText: Record<AuthSessionErrorCategory, string> = {
-    [AuthSessionErrorCategory.NoSession]: "",
-    [AuthSessionErrorCategory.SessionExpired]: "Your session has expired",
-    [AuthSessionErrorCategory.SessionInvalid]: "Your session is invalid",
-    [AuthSessionErrorCategory.ServerError]: "Something went wrong while authenticating you",
-    [AuthSessionErrorCategory.Unknown]: "Something went wrong while authenticating you",
+const authSessionErrorDisplayText: Record<ApiAuthErrorCategory, string> = {
+    [ApiAuthErrorCategory.NoSession]: "",
+    [ApiAuthErrorCategory.SessionExpired]: "Your session has expired",
+    [ApiAuthErrorCategory.SessionInvalid]: "Your session is invalid",
+    [ApiAuthErrorCategory.ServerError]: "Something went wrong while authenticating you",
+    [ApiAuthErrorCategory.Unknown]: "Something went wrong while authenticating you",
 };
-const transformAuthSessionError = (cat?: AuthSessionErrorCategory) => {
-    if (!cat || cat === AuthSessionErrorCategory.NoSession) return;
+const transformAuthSessionError = (cat?: ApiAuthErrorCategory) => {
+    if (!cat || cat === ApiAuthErrorCategory.NoSession) return;
     const title = "Auth Session Invalid";
     const detail = authSessionErrorDisplayText[cat] || "Unknown";
     return { title, detail } as ErrorModel;
@@ -34,13 +34,13 @@ const transformLoginErrorCode = (code: string | null) => {
 };
 
 export class LoginViewController {
-    private session = useAuthSessionState();
+    private session = useUserSessionState();
 
     loaded = $state(false);
 	inFlow = $state(false);
 
 	authSessionError = $derived(transformAuthSessionError(this.session.error));
-	showLogout = $derived(this.session.error === AuthSessionErrorCategory.SessionInvalid);
+	showLogout = $derived(this.session.error === ApiAuthErrorCategory.SessionInvalid);
 
 	loginError = $state<ErrorModel>();
     constructor() {
