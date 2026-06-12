@@ -53,6 +53,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/retrospective"
@@ -1152,6 +1153,26 @@ func init() {
 	organizationDescID := organizationFields[0].Descriptor()
 	// organization.DefaultID holds the default value on creation for the id field.
 	organization.DefaultID = organizationDescID.Default.(func() uuid.UUID)
+	organizationpreferencesMixin := schema.OrganizationPreferences{}.Mixin()
+	organizationpreferences.Policy = privacy.NewPolicies(organizationpreferencesMixin[0], organizationpreferencesMixin[1], schema.OrganizationPreferences{})
+	organizationpreferences.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := organizationpreferences.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	organizationpreferencesFields := schema.OrganizationPreferences{}.Fields()
+	_ = organizationpreferencesFields
+	// organizationpreferencesDescEnableIncidentManagement is the schema descriptor for enable_incident_management field.
+	organizationpreferencesDescEnableIncidentManagement := organizationpreferencesFields[3].Descriptor()
+	// organizationpreferences.DefaultEnableIncidentManagement holds the default value on creation for the enable_incident_management field.
+	organizationpreferences.DefaultEnableIncidentManagement = organizationpreferencesDescEnableIncidentManagement.Default.(bool)
+	// organizationpreferencesDescID is the schema descriptor for id field.
+	organizationpreferencesDescID := organizationpreferencesFields[0].Descriptor()
+	// organizationpreferences.DefaultID holds the default value on creation for the id field.
+	organizationpreferences.DefaultID = organizationpreferencesDescID.Default.(func() uuid.UUID)
 	organizationroleMixin := schema.OrganizationRole{}.Mixin()
 	organizationrole.Policy = privacy.NewPolicies(organizationroleMixin[0], organizationroleMixin[1], schema.OrganizationRole{})
 	organizationrole.Hooks[0] = func(next ent.Mutator) ent.Mutator {

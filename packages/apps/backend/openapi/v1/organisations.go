@@ -11,14 +11,12 @@ import (
 
 type OrganizationsHandler interface {
 	GetOrganization(context.Context, *GetOrganizationRequest) (*GetOrganizationResponse, error)
-	UpdateOrganization(context.Context, *UpdateOrganizationRequest) (*UpdateOrganizationResponse, error)
-	FinishOrganizationSetup(context.Context, *FinishOrganizationSetupRequest) (*FinishOrganizationSetupResponse, error)
+	UpdateOrganizationPreferences(context.Context, *UpdateOrganizationPreferencesRequest) (*UpdateOrganizationPreferencesResponse, error)
 }
 
 func (o operations) RegisterOrganizations(api huma.API) {
 	huma.Register(api, GetOrganization, o.GetOrganization)
-	huma.Register(api, UpdateOrganization, o.UpdateOrganization)
-	huma.Register(api, FinishOrganizationSetup, o.FinishOrganizationSetup)
+	huma.Register(api, UpdateOrganizationPreferences, o.UpdateOrganizationPreferences)
 }
 
 type (
@@ -40,14 +38,20 @@ type (
 
 func OrganizationFromEnt(org *ent.Organization) Organization {
 	attr := OrganizationAttributes{
-		Name:          org.Name,
-		SetupRequired: org.InitialSetupAt.IsZero(),
-		Preferences: OrganizationPreferences{
-			EnableIncidentManagement: org.Preferences.EnableIncidentManagement,
-		},
+		Name:        org.Name,
+		Preferences: OrganizationPreferencesFromEnt(org.Edges.Preferences),
 	}
 
 	return Organization{Id: org.ID, Attributes: attr}
+}
+
+func OrganizationPreferencesFromEnt(prefs *ent.OrganizationPreferences) OrganizationPreferences {
+	if prefs == nil {
+		return OrganizationPreferences{}
+	}
+	return OrganizationPreferences{
+		EnableIncidentManagement: prefs.EnableIncidentManagement,
+	}
 }
 
 var organizationsTags = []string{"Organizations"}
@@ -64,30 +68,18 @@ var GetOrganization = huma.Operation{
 type GetOrganizationRequest EmptyIdRequest
 type GetOrganizationResponse ItemResponse[Organization]
 
-var UpdateOrganization = huma.Operation{
-	OperationID: "update-organization",
+var UpdateOrganizationPreferences = huma.Operation{
+	OperationID: "update-organization-preferences",
 	Method:      http.MethodPatch,
-	Path:        "/organizations/{id}",
-	Summary:     "Update Organization",
+	Path:        "/organizations/{id}/preferences",
+	Summary:     "Update Organization Preferences",
 	Tags:        organizationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type UpdateOrganizationDetailsRequestAttributes struct {
-	Name        *string                  `json:"name,omitempty"`
-	Preferences *OrganizationPreferences `json:"preferences,omitempty"`
+type UpdateOrganizationPreferencesRequestAttributes struct {
+	InitialSetupComplete     *bool `json:"initialSetupComplete,omitempty"`
+	EnableIncidentManagement *bool `json:"enableIncidentManagement,omitempty"`
 }
-type UpdateOrganizationRequest IdRequest[UpdateOrganizationDetailsRequestAttributes]
-type UpdateOrganizationResponse ItemResponse[Organization]
-
-var FinishOrganizationSetup = huma.Operation{
-	OperationID: "finish-organization-setup",
-	Method:      http.MethodPost,
-	Path:        "/organizations/{id}/setup",
-	Summary:     "Finish initial org setup",
-	Tags:        organizationsTags,
-	Errors:      ErrorCodes(),
-}
-
-type FinishOrganizationSetupRequest EmptyIdRequest
-type FinishOrganizationSetupResponse EmptyResponse
+type UpdateOrganizationPreferencesRequest IdRequest[UpdateOrganizationPreferencesRequestAttributes]
+type UpdateOrganizationPreferencesResponse ItemResponse[OrganizationPreferences]

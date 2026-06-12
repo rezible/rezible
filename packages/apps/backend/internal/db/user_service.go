@@ -30,65 +30,52 @@ func NewUserService(db rez.Database, orgs rez.OrganizationService, knowledge rez
 	return s, nil
 }
 
-func (s *UserService) SyncFromAuthProvider(ctx context.Context, po ent.Organization, pu ent.User) (*ent.User, error) {
-	// TODO: wrap this all in a transaction
-
-	org, orgErr := s.orgs.SyncFromAuthProvider(ctx, po)
-	if orgErr != nil {
-		return nil, fmt.Errorf("sync organization: %w", orgErr)
-	}
-	ctx = execution.NewTenantContext(ctx, org.TenantID)
-
-	existing, getErr := s.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
-	if getErr != nil && !ent.IsNotFound(getErr) {
-		return nil, fmt.Errorf("query existing: %w", getErr)
-	}
-
-	var userId uuid.UUID
-	if existing != nil {
-		// TODO: check if should sync every time
-		// if !AlwaysSyncAuthDetails { return existing, nil }
-		userId = existing.ID
-	}
-	syncAuthDetailsFn := func(m *ent.UserMutation) {
-		m.SetAuthProviderID(pu.AuthProviderID)
-		m.SetEmail(pu.Email)
-		m.SetName(pu.Name)
-		m.SetTimezone(pu.Timezone)
-	}
-	usr, setErr := s.Set(ctx, userId, syncAuthDetailsFn)
-	if setErr != nil {
-		return nil, fmt.Errorf("set user: %w", setErr)
-	}
-
-	if org.InitialSetupAt.IsZero() {
-		queryOrgRoles := s.db.Client(ctx).OrganizationRole.Query().
-			Where(organizationrole.OrganizationID(org.ID))
-		roles, rolesErr := queryOrgRoles.All(ctx)
-		if rolesErr != nil {
-			return nil, fmt.Errorf("query roles: %w", rolesErr)
+func (s *UserService) SyncFromAuthProvider(ctx context.Context, pu ent.User, po ent.Organization) (*ent.User, error) {
+	var usr *ent.User
+	return usr, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		org, orgErr := s.orgs.SyncFromAuthProvider(ctx, po)
+		if orgErr != nil {
+			return fmt.Errorf("sync organization: %w", orgErr)
 		}
+		ctx = execution.NewTenantContext(ctx, org.TenantID)
 
-		var hasAdmin bool
-		for _, role := range roles {
-			if role.Role == organizationrole.RoleAdmin {
-				hasAdmin = true
-				break
+		var userId uuid.UUID
+		existing, getErr := s.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
+		if getErr != nil && !ent.IsNotFound(getErr) {
+			return fmt.Errorf("query existing: %w", getErr)
+		} else if existing != nil {
+			if existing.Email == pu.Email && existing.Name == pu.Name {
+				usr = existing.Unwrap()
+				return nil
 			}
+			userId = existing.ID
 		}
 
-		if !hasAdmin {
-			createAdminRole := s.db.Client(ctx).OrganizationRole.Create().
+		syncAuthDetailsFn := func(m *ent.UserMutation) {
+			m.SetAuthProviderID(pu.AuthProviderID)
+			m.SetEmail(pu.Email)
+			m.SetName(pu.Name)
+			m.SetTimezone(pu.Timezone)
+		}
+		saved, setErr := s.Set(ctx, userId, syncAuthDetailsFn)
+		if setErr != nil {
+			return fmt.Errorf("set user: %w", setErr)
+		}
+
+		if existing == nil {
+			createAdminRole := tx.OrganizationRole.Create().
 				SetRole(organizationrole.RoleAdmin).
 				SetUserID(usr.ID).
 				SetOrganizationID(org.ID)
 			if createRoleErr := createAdminRole.Exec(ctx); createRoleErr != nil {
-				return nil, fmt.Errorf("create admin role: %w", createRoleErr)
+				return fmt.Errorf("create admin role: %w", createRoleErr)
 			}
 		}
-	}
 
-	return usr, nil
+		usr = saved.Unwrap()
+
+		return nil
+	})
 }
 
 func (s *UserService) Get(ctx context.Context, p predicate.User) (*ent.User, error) {

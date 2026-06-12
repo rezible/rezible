@@ -262,7 +262,7 @@ type (
 	OrganizationService interface {
 		SyncFromAuthProvider(context.Context, ent.Organization) (*ent.Organization, error)
 		Get(context.Context, predicate.Organization) (*ent.Organization, error)
-		CompleteSetup(context.Context, *ent.Organization) error
+		SetPreferences(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)
 	}
 )
 
@@ -273,7 +273,7 @@ type (
 	}
 
 	UserService interface {
-		SyncFromAuthProvider(context.Context, ent.Organization, ent.User) (*ent.User, error)
+		SyncFromAuthProvider(context.Context, ent.User, ent.Organization) (*ent.User, error)
 
 		Get(context.Context, predicate.User) (*ent.User, error)
 		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)

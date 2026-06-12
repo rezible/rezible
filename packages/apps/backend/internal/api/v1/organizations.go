@@ -2,6 +2,7 @@ package apiv1
 
 import (
 	"context"
+	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -29,46 +30,22 @@ func (h *organizationsHandler) GetOrganization(ctx context.Context, req *oapi.Ge
 	return &resp, nil
 }
 
-func (h *organizationsHandler) UpdateOrganization(ctx context.Context, req *oapi.UpdateOrganizationRequest) (*oapi.UpdateOrganizationResponse, error) {
-	var resp oapi.UpdateOrganizationResponse
+func (h *organizationsHandler) UpdateOrganizationPreferences(ctx context.Context, req *oapi.UpdateOrganizationPreferencesRequest) (*oapi.UpdateOrganizationPreferencesResponse, error) {
+	var resp oapi.UpdateOrganizationPreferencesResponse
 
 	attrs := req.Body.Attributes
-
-	var prefs *ent.OrganizationPreferences
-	if attrs.Preferences != nil {
-		prefs = &ent.OrganizationPreferences{
-			EnableIncidentManagement: attrs.Preferences.EnableIncidentManagement,
+	prefs, prefsErr := h.orgs.SetPreferences(ctx, req.Id, func(m *ent.OrganizationPreferencesMutation) {
+		if attrs.InitialSetupComplete != nil {
+			m.SetInitialSetupAt(time.Now().UTC())
 		}
+		if attrs.EnableIncidentManagement != nil {
+			m.SetEnableIncidentManagement(*attrs.EnableIncidentManagement)
+		}
+	})
+	if prefsErr != nil {
+		return nil, oapi.Error(ctx, "failed to update", prefsErr)
 	}
-
-	org, orgErr := h.orgs.Get(ctx, organization.ID(req.Id))
-	if orgErr != nil {
-		return nil, oapi.Error(ctx, "failed to fetch organization", orgErr)
-	}
-	update := org.Update().
-		SetNillableName(attrs.Name).
-		SetNillablePreferences(prefs)
-	org, orgErr = update.Save(ctx)
-	if orgErr != nil {
-		return nil, oapi.Error(ctx, "failed to update organization", orgErr)
-	}
-	resp.Body.Data = oapi.OrganizationFromEnt(org)
-
-	return &resp, nil
-}
-
-func (h *organizationsHandler) FinishOrganizationSetup(ctx context.Context, req *oapi.FinishOrganizationSetupRequest) (*oapi.FinishOrganizationSetupResponse, error) {
-	var resp oapi.FinishOrganizationSetupResponse
-
-	org, orgErr := h.orgs.Get(ctx, organization.ID(req.Id))
-	if orgErr != nil {
-		return nil, oapi.Error(ctx, "failed to fetch organization", orgErr)
-	}
-
-	completeErr := h.orgs.CompleteSetup(ctx, org)
-	if completeErr != nil {
-		return nil, oapi.Error(ctx, "failed to finish setup", completeErr)
-	}
+	resp.Body.Data = oapi.OrganizationPreferencesFromEnt(prefs)
 
 	return &resp, nil
 }

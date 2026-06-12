@@ -1930,8 +1930,6 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "auth_provider_id", Type: field.TypeString},
 		{Name: "name", Type: field.TypeString},
-		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
-		{Name: "preferences", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 	}
 	// OrganizationsTable holds the schema information for the "organizations" table.
@@ -1942,7 +1940,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "organizations_tenants_tenant",
-				Columns:    []*schema.Column{OrganizationsColumns[5]},
+				Columns:    []*schema.Column{OrganizationsColumns[3]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1951,19 +1949,54 @@ var (
 			{
 				Name:    "organization_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{OrganizationsColumns[5]},
+				Columns: []*schema.Column{OrganizationsColumns[3]},
 			},
 			{
 				Name:    "organization_tenant_id_auth_provider_id",
 				Unique:  true,
-				Columns: []*schema.Column{OrganizationsColumns[5], OrganizationsColumns[1]},
+				Columns: []*schema.Column{OrganizationsColumns[3], OrganizationsColumns[1]},
+			},
+		},
+	}
+	// OrganizationPreferencesColumns holds the columns for the "organization_preferences" table.
+	OrganizationPreferencesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "initial_setup_at", Type: field.TypeTime, Nullable: true},
+		{Name: "enable_incident_management", Type: field.TypeBool, Default: false},
+		{Name: "organization_id", Type: field.TypeUUID, Unique: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// OrganizationPreferencesTable holds the schema information for the "organization_preferences" table.
+	OrganizationPreferencesTable = &schema.Table{
+		Name:       "organization_preferences",
+		Columns:    OrganizationPreferencesColumns,
+		PrimaryKey: []*schema.Column{OrganizationPreferencesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "organization_preferences_organizations_preferences",
+				Columns:    []*schema.Column{OrganizationPreferencesColumns[3]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "organization_preferences_tenants_tenant",
+				Columns:    []*schema.Column{OrganizationPreferencesColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "organizationpreferences_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{OrganizationPreferencesColumns[4]},
 			},
 		},
 	}
 	// OrganizationRolesColumns holds the columns for the "organization_roles" table.
 	OrganizationRolesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
+		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "organization_id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID, Unique: true},
@@ -2000,9 +2033,9 @@ var (
 				Columns: []*schema.Column{OrganizationRolesColumns[2]},
 			},
 			{
-				Name:    "organizationrole_organization_id_user_id",
+				Name:    "organizationrole_tenant_id_organization_id_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{OrganizationRolesColumns[3], OrganizationRolesColumns[4]},
+				Columns: []*schema.Column{OrganizationRolesColumns[2], OrganizationRolesColumns[3], OrganizationRolesColumns[4]},
 			},
 		},
 	}
@@ -3175,6 +3208,7 @@ var (
 		OncallShiftHandoversTable,
 		OncallShiftMetricsTable,
 		OrganizationsTable,
+		OrganizationPreferencesTable,
 		OrganizationRolesTable,
 		PlaybooksTable,
 		RetrospectivesTable,
@@ -3312,6 +3346,8 @@ func init() {
 	OncallShiftMetricsTable.ForeignKeys[0].RefTable = OncallShiftsTable
 	OncallShiftMetricsTable.ForeignKeys[1].RefTable = TenantsTable
 	OrganizationsTable.ForeignKeys[0].RefTable = TenantsTable
+	OrganizationPreferencesTable.ForeignKeys[0].RefTable = OrganizationsTable
+	OrganizationPreferencesTable.ForeignKeys[1].RefTable = TenantsTable
 	OrganizationRolesTable.ForeignKeys[0].RefTable = TenantsTable
 	OrganizationRolesTable.ForeignKeys[1].RefTable = OrganizationsTable
 	OrganizationRolesTable.ForeignKeys[2].RefTable = UsersTable

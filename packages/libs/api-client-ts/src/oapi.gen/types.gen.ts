@@ -2557,25 +2557,25 @@ export type UpdateOncallShiftHandoverTemplateResponseBody = {
     data: OncallShiftHandoverTemplate;
 };
 
-export type UpdateOrganizationDetailsRequestAttributes = {
-    name?: string;
-    preferences?: OrganizationPreferences;
+export type UpdateOrganizationPreferencesRequestAttributes = {
+    enableIncidentManagement?: boolean;
+    initialSetupComplete?: boolean;
 };
 
-export type UpdateOrganizationRequestBody = {
+export type UpdateOrganizationPreferencesRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateOrganizationDetailsRequestAttributes;
+    attributes: UpdateOrganizationPreferencesRequestAttributes;
 };
 
-export type UpdateOrganizationResponseBody = {
+export type UpdateOrganizationPreferencesResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Organization;
+    data: OrganizationPreferences;
 };
 
 export type UpdatePlaybookAttributes = {
@@ -7852,16 +7852,16 @@ export type GetOrganizationResponses = {
 
 export type GetOrganizationResponse = GetOrganizationResponses[keyof GetOrganizationResponses];
 
-export type UpdateOrganizationData = {
-    body: UpdateOrganizationRequestBody;
+export type UpdateOrganizationPreferencesData = {
+    body: UpdateOrganizationPreferencesRequestBody;
     path: {
         id: string;
     };
     query?: never;
-    url: '/organizations/{id}';
+    url: '/organizations/{id}/preferences';
 };
 
-export type UpdateOrganizationErrors = {
+export type UpdateOrganizationPreferencesErrors = {
     /**
      * Bad Request
      */
@@ -7888,63 +7888,16 @@ export type UpdateOrganizationErrors = {
     500: ErrorModel;
 };
 
-export type UpdateOrganizationError = UpdateOrganizationErrors[keyof UpdateOrganizationErrors];
+export type UpdateOrganizationPreferencesError = UpdateOrganizationPreferencesErrors[keyof UpdateOrganizationPreferencesErrors];
 
-export type UpdateOrganizationResponses = {
+export type UpdateOrganizationPreferencesResponses = {
     /**
      * OK
      */
-    200: UpdateOrganizationResponseBody;
+    200: UpdateOrganizationPreferencesResponseBody;
 };
 
-export type UpdateOrganizationResponse = UpdateOrganizationResponses[keyof UpdateOrganizationResponses];
-
-export type FinishOrganizationSetupData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/organizations/{id}/setup';
-};
-
-export type FinishOrganizationSetupErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type FinishOrganizationSetupError = FinishOrganizationSetupErrors[keyof FinishOrganizationSetupErrors];
-
-export type FinishOrganizationSetupResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type FinishOrganizationSetupResponse = FinishOrganizationSetupResponses[keyof FinishOrganizationSetupResponses];
+export type UpdateOrganizationPreferencesResponse = UpdateOrganizationPreferencesResponses[keyof UpdateOrganizationPreferencesResponses];
 
 export type ListPlaybooksData = {
     body?: never;

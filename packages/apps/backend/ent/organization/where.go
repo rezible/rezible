@@ -3,8 +3,6 @@
 package organization
 
 import (
-	"time"
-
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
@@ -70,11 +68,6 @@ func AuthProviderID(v string) predicate.Organization {
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
 func Name(v string) predicate.Organization {
 	return predicate.Organization(sql.FieldEQ(FieldName, v))
-}
-
-// InitialSetupAt applies equality check predicate on the "initial_setup_at" field. It's identical to InitialSetupAtEQ.
-func InitialSetupAt(v time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldEQ(FieldInitialSetupAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -227,56 +220,6 @@ func NameContainsFold(v string) predicate.Organization {
 	return predicate.Organization(sql.FieldContainsFold(FieldName, v))
 }
 
-// InitialSetupAtEQ applies the EQ predicate on the "initial_setup_at" field.
-func InitialSetupAtEQ(v time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldEQ(FieldInitialSetupAt, v))
-}
-
-// InitialSetupAtNEQ applies the NEQ predicate on the "initial_setup_at" field.
-func InitialSetupAtNEQ(v time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldNEQ(FieldInitialSetupAt, v))
-}
-
-// InitialSetupAtIn applies the In predicate on the "initial_setup_at" field.
-func InitialSetupAtIn(vs ...time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldIn(FieldInitialSetupAt, vs...))
-}
-
-// InitialSetupAtNotIn applies the NotIn predicate on the "initial_setup_at" field.
-func InitialSetupAtNotIn(vs ...time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldNotIn(FieldInitialSetupAt, vs...))
-}
-
-// InitialSetupAtGT applies the GT predicate on the "initial_setup_at" field.
-func InitialSetupAtGT(v time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldGT(FieldInitialSetupAt, v))
-}
-
-// InitialSetupAtGTE applies the GTE predicate on the "initial_setup_at" field.
-func InitialSetupAtGTE(v time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldGTE(FieldInitialSetupAt, v))
-}
-
-// InitialSetupAtLT applies the LT predicate on the "initial_setup_at" field.
-func InitialSetupAtLT(v time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldLT(FieldInitialSetupAt, v))
-}
-
-// InitialSetupAtLTE applies the LTE predicate on the "initial_setup_at" field.
-func InitialSetupAtLTE(v time.Time) predicate.Organization {
-	return predicate.Organization(sql.FieldLTE(FieldInitialSetupAt, v))
-}
-
-// InitialSetupAtIsNil applies the IsNil predicate on the "initial_setup_at" field.
-func InitialSetupAtIsNil() predicate.Organization {
-	return predicate.Organization(sql.FieldIsNull(FieldInitialSetupAt))
-}
-
-// InitialSetupAtNotNil applies the NotNil predicate on the "initial_setup_at" field.
-func InitialSetupAtNotNil() predicate.Organization {
-	return predicate.Organization(sql.FieldNotNull(FieldInitialSetupAt))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.Organization {
 	return predicate.Organization(func(s *sql.Selector) {
@@ -327,6 +270,35 @@ func HasRolesWith(preds ...predicate.OrganizationRole) predicate.Organization {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.OrganizationRole
 		step.Edge.Schema = schemaConfig.OrganizationRole
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasPreferences applies the HasEdge predicate on the "preferences" edge.
+func HasPreferences() predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, PreferencesTable, PreferencesColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OrganizationPreferences
+		step.Edge.Schema = schemaConfig.OrganizationPreferences
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPreferencesWith applies the HasEdge predicate on the "preferences" edge with a given conditions (other predicates).
+func HasPreferencesWith(preds ...predicate.OrganizationPreferences) predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := newPreferencesStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.OrganizationPreferences
+		step.Edge.Schema = schemaConfig.OrganizationPreferences
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

@@ -2,8 +2,6 @@ package testkit
 
 import (
 	"github.com/google/uuid"
-
-	"github.com/rezible/rezible/ent"
 )
 
 func (s *Suite) SeedTestEntities() {
@@ -22,7 +20,6 @@ func (s *Suite) SeedTestEntities() {
 	org, orgErr := client.Organization.Create().
 		SetName("Test Organization").
 		SetAuthProviderID(uuid.NewString()).
-		SetPreferences(ent.OrganizationPreferences{}).
 		Save(ctx)
 	s.Require().NoError(orgErr, "failed to create organization")
 	s.SeedOrganization = org

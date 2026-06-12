@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -14,9 +13,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 // OrganizationUpdate is the builder for updating Organization entities.
@@ -61,40 +60,6 @@ func (_u *OrganizationUpdate) SetNillableName(v *string) *OrganizationUpdate {
 	return _u
 }
 
-// SetInitialSetupAt sets the "initial_setup_at" field.
-func (_u *OrganizationUpdate) SetInitialSetupAt(v time.Time) *OrganizationUpdate {
-	_u.mutation.SetInitialSetupAt(v)
-	return _u
-}
-
-// SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
-func (_u *OrganizationUpdate) SetNillableInitialSetupAt(v *time.Time) *OrganizationUpdate {
-	if v != nil {
-		_u.SetInitialSetupAt(*v)
-	}
-	return _u
-}
-
-// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (_u *OrganizationUpdate) ClearInitialSetupAt() *OrganizationUpdate {
-	_u.mutation.ClearInitialSetupAt()
-	return _u
-}
-
-// SetPreferences sets the "preferences" field.
-func (_u *OrganizationUpdate) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpdate {
-	_u.mutation.SetPreferences(v)
-	return _u
-}
-
-// SetNillablePreferences sets the "preferences" field if the given value is not nil.
-func (_u *OrganizationUpdate) SetNillablePreferences(v *schematypes.OrganizationPreferences) *OrganizationUpdate {
-	if v != nil {
-		_u.SetPreferences(*v)
-	}
-	return _u
-}
-
 // AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
 func (_u *OrganizationUpdate) AddRoleIDs(ids ...uuid.UUID) *OrganizationUpdate {
 	_u.mutation.AddRoleIDs(ids...)
@@ -108,6 +73,25 @@ func (_u *OrganizationUpdate) AddRoles(v ...*OrganizationRole) *OrganizationUpda
 		ids[i] = v[i].ID
 	}
 	return _u.AddRoleIDs(ids...)
+}
+
+// SetPreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID.
+func (_u *OrganizationUpdate) SetPreferencesID(id uuid.UUID) *OrganizationUpdate {
+	_u.mutation.SetPreferencesID(id)
+	return _u
+}
+
+// SetNillablePreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID if the given value is not nil.
+func (_u *OrganizationUpdate) SetNillablePreferencesID(id *uuid.UUID) *OrganizationUpdate {
+	if id != nil {
+		_u = _u.SetPreferencesID(*id)
+	}
+	return _u
+}
+
+// SetPreferences sets the "preferences" edge to the OrganizationPreferences entity.
+func (_u *OrganizationUpdate) SetPreferences(v *OrganizationPreferences) *OrganizationUpdate {
+	return _u.SetPreferencesID(v.ID)
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
@@ -134,6 +118,12 @@ func (_u *OrganizationUpdate) RemoveRoles(v ...*OrganizationRole) *OrganizationU
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRoleIDs(ids...)
+}
+
+// ClearPreferences clears the "preferences" edge to the OrganizationPreferences entity.
+func (_u *OrganizationUpdate) ClearPreferences() *OrganizationUpdate {
+	_u.mutation.ClearPreferences()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -195,15 +185,6 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.InitialSetupAt(); ok {
-		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
-	}
-	if _u.mutation.InitialSetupAtCleared() {
-		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.Preferences(); ok {
-		_spec.SetField(organization.FieldPreferences, field.TypeJSON, value)
-	}
 	if _u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -247,6 +228,37 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 			},
 		}
 		edge.Schema = _u.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PreferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PreferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -304,40 +316,6 @@ func (_u *OrganizationUpdateOne) SetNillableName(v *string) *OrganizationUpdateO
 	return _u
 }
 
-// SetInitialSetupAt sets the "initial_setup_at" field.
-func (_u *OrganizationUpdateOne) SetInitialSetupAt(v time.Time) *OrganizationUpdateOne {
-	_u.mutation.SetInitialSetupAt(v)
-	return _u
-}
-
-// SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
-func (_u *OrganizationUpdateOne) SetNillableInitialSetupAt(v *time.Time) *OrganizationUpdateOne {
-	if v != nil {
-		_u.SetInitialSetupAt(*v)
-	}
-	return _u
-}
-
-// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (_u *OrganizationUpdateOne) ClearInitialSetupAt() *OrganizationUpdateOne {
-	_u.mutation.ClearInitialSetupAt()
-	return _u
-}
-
-// SetPreferences sets the "preferences" field.
-func (_u *OrganizationUpdateOne) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpdateOne {
-	_u.mutation.SetPreferences(v)
-	return _u
-}
-
-// SetNillablePreferences sets the "preferences" field if the given value is not nil.
-func (_u *OrganizationUpdateOne) SetNillablePreferences(v *schematypes.OrganizationPreferences) *OrganizationUpdateOne {
-	if v != nil {
-		_u.SetPreferences(*v)
-	}
-	return _u
-}
-
 // AddRoleIDs adds the "roles" edge to the OrganizationRole entity by IDs.
 func (_u *OrganizationUpdateOne) AddRoleIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
 	_u.mutation.AddRoleIDs(ids...)
@@ -351,6 +329,25 @@ func (_u *OrganizationUpdateOne) AddRoles(v ...*OrganizationRole) *OrganizationU
 		ids[i] = v[i].ID
 	}
 	return _u.AddRoleIDs(ids...)
+}
+
+// SetPreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID.
+func (_u *OrganizationUpdateOne) SetPreferencesID(id uuid.UUID) *OrganizationUpdateOne {
+	_u.mutation.SetPreferencesID(id)
+	return _u
+}
+
+// SetNillablePreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID if the given value is not nil.
+func (_u *OrganizationUpdateOne) SetNillablePreferencesID(id *uuid.UUID) *OrganizationUpdateOne {
+	if id != nil {
+		_u = _u.SetPreferencesID(*id)
+	}
+	return _u
+}
+
+// SetPreferences sets the "preferences" edge to the OrganizationPreferences entity.
+func (_u *OrganizationUpdateOne) SetPreferences(v *OrganizationPreferences) *OrganizationUpdateOne {
+	return _u.SetPreferencesID(v.ID)
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
@@ -377,6 +374,12 @@ func (_u *OrganizationUpdateOne) RemoveRoles(v ...*OrganizationRole) *Organizati
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveRoleIDs(ids...)
+}
+
+// ClearPreferences clears the "preferences" edge to the OrganizationPreferences entity.
+func (_u *OrganizationUpdateOne) ClearPreferences() *OrganizationUpdateOne {
+	_u.mutation.ClearPreferences()
+	return _u
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
@@ -468,15 +471,6 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 	if value, ok := _u.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.InitialSetupAt(); ok {
-		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
-	}
-	if _u.mutation.InitialSetupAtCleared() {
-		_spec.ClearField(organization.FieldInitialSetupAt, field.TypeTime)
-	}
-	if value, ok := _u.mutation.Preferences(); ok {
-		_spec.SetField(organization.FieldPreferences, field.TypeJSON, value)
-	}
 	if _u.mutation.RolesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -520,6 +514,37 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 			},
 		}
 		edge.Schema = _u.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.PreferencesCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.PreferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.OrganizationPreferences
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

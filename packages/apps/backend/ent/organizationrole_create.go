@@ -50,14 +50,6 @@ func (_c *OrganizationRoleCreate) SetRole(v organizationrole.Role) *Organization
 	return _c
 }
 
-// SetNillableRole sets the "role" field if the given value is not nil.
-func (_c *OrganizationRoleCreate) SetNillableRole(v *organizationrole.Role) *OrganizationRoleCreate {
-	if v != nil {
-		_c.SetRole(*v)
-	}
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *OrganizationRoleCreate) SetID(v uuid.UUID) *OrganizationRoleCreate {
 	_c.mutation.SetID(v)
@@ -124,10 +116,6 @@ func (_c *OrganizationRoleCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (_c *OrganizationRoleCreate) defaults() error {
-	if _, ok := _c.mutation.Role(); !ok {
-		v := organizationrole.DefaultRole
-		_c.mutation.SetRole(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if organizationrole.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized organizationrole.DefaultID (forgotten import ent/runtime?)")

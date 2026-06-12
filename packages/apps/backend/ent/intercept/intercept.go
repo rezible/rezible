@@ -54,6 +54,7 @@ import (
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
@@ -1373,6 +1374,33 @@ func (f TraverseOrganization) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.OrganizationQuery", q)
 }
 
+// The OrganizationPreferencesFunc type is an adapter to allow the use of ordinary function as a Querier.
+type OrganizationPreferencesFunc func(context.Context, *ent.OrganizationPreferencesQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f OrganizationPreferencesFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.OrganizationPreferencesQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.OrganizationPreferencesQuery", q)
+}
+
+// The TraverseOrganizationPreferences type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseOrganizationPreferences func(context.Context, *ent.OrganizationPreferencesQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseOrganizationPreferences) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseOrganizationPreferences) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.OrganizationPreferencesQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.OrganizationPreferencesQuery", q)
+}
+
 // The OrganizationRoleFunc type is an adapter to allow the use of ordinary function as a Querier.
 type OrganizationRoleFunc func(context.Context, *ent.OrganizationRoleQuery) (ent.Value, error)
 
@@ -1954,6 +1982,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.OncallShiftMetricsQuery, predicate.OncallShiftMetrics, oncallshiftmetrics.OrderOption]{typ: ent.TypeOncallShiftMetrics, tq: q}, nil
 	case *ent.OrganizationQuery:
 		return &query[*ent.OrganizationQuery, predicate.Organization, organization.OrderOption]{typ: ent.TypeOrganization, tq: q}, nil
+	case *ent.OrganizationPreferencesQuery:
+		return &query[*ent.OrganizationPreferencesQuery, predicate.OrganizationPreferences, organizationpreferences.OrderOption]{typ: ent.TypeOrganizationPreferences, tq: q}, nil
 	case *ent.OrganizationRoleQuery:
 		return &query[*ent.OrganizationRoleQuery, predicate.OrganizationRole, organizationrole.OrderOption]{typ: ent.TypeOrganizationRole, tq: q}, nil
 	case *ent.PlaybookQuery:

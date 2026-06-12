@@ -3,16 +3,14 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/organization"
-	"github.com/rezible/rezible/ent/schema/schematypes"
+	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -27,10 +25,6 @@ type Organization struct {
 	AuthProviderID string `json:"auth_provider_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
-	// InitialSetupAt holds the value of the "initial_setup_at" field.
-	InitialSetupAt time.Time `json:"initial_setup_at,omitempty"`
-	// Preferences holds the value of the "preferences" field.
-	Preferences schematypes.OrganizationPreferences `json:"preferences,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the OrganizationQuery when eager-loading is set.
 	Edges        OrganizationEdges `json:"edges"`
@@ -43,9 +37,11 @@ type OrganizationEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// Roles holds the value of the roles edge.
 	Roles []*OrganizationRole `json:"roles,omitempty"`
+	// Preferences holds the value of the preferences edge.
+	Preferences *OrganizationPreferences `json:"preferences,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [3]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -68,19 +64,26 @@ func (e OrganizationEdges) RolesOrErr() ([]*OrganizationRole, error) {
 	return nil, &NotLoadedError{edge: "roles"}
 }
 
+// PreferencesOrErr returns the Preferences value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OrganizationEdges) PreferencesOrErr() (*OrganizationPreferences, error) {
+	if e.Preferences != nil {
+		return e.Preferences, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: organizationpreferences.Label}
+	}
+	return nil, &NotLoadedError{edge: "preferences"}
+}
+
 // scanValues returns the types for scanning values from sql.Rows.
 func (*Organization) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case organization.FieldPreferences:
-			values[i] = new([]byte)
 		case organization.FieldTenantID:
 			values[i] = new(sql.NullInt64)
 		case organization.FieldAuthProviderID, organization.FieldName:
 			values[i] = new(sql.NullString)
-		case organization.FieldInitialSetupAt:
-			values[i] = new(sql.NullTime)
 		case organization.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
@@ -122,20 +125,6 @@ func (_m *Organization) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Name = value.String
 			}
-		case organization.FieldInitialSetupAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field initial_setup_at", values[i])
-			} else if value.Valid {
-				_m.InitialSetupAt = value.Time
-			}
-		case organization.FieldPreferences:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field preferences", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Preferences); err != nil {
-					return fmt.Errorf("unmarshal field preferences: %w", err)
-				}
-			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -157,6 +146,11 @@ func (_m *Organization) QueryTenant() *TenantQuery {
 // QueryRoles queries the "roles" edge of the Organization entity.
 func (_m *Organization) QueryRoles() *OrganizationRoleQuery {
 	return NewOrganizationClient(_m.config).QueryRoles(_m)
+}
+
+// QueryPreferences queries the "preferences" edge of the Organization entity.
+func (_m *Organization) QueryPreferences() *OrganizationPreferencesQuery {
+	return NewOrganizationClient(_m.config).QueryPreferences(_m)
 }
 
 // Update returns a builder for updating this Organization.
@@ -190,12 +184,6 @@ func (_m *Organization) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)
-	builder.WriteString(", ")
-	builder.WriteString("initial_setup_at=")
-	builder.WriteString(_m.InitialSetupAt.Format(time.ANSIC))
-	builder.WriteString(", ")
-	builder.WriteString("preferences=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Preferences))
 	builder.WriteByte(')')
 	return builder.String()
 }

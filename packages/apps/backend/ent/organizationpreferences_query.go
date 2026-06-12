@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -17,60 +16,58 @@ import (
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// OrganizationQuery is the builder for querying Organization entities.
-type OrganizationQuery struct {
+// OrganizationPreferencesQuery is the builder for querying OrganizationPreferences entities.
+type OrganizationPreferencesQuery struct {
 	config
-	ctx             *QueryContext
-	order           []organization.OrderOption
-	inters          []Interceptor
-	predicates      []predicate.Organization
-	withTenant      *TenantQuery
-	withRoles       *OrganizationRoleQuery
-	withPreferences *OrganizationPreferencesQuery
-	modifiers       []func(*sql.Selector)
+	ctx              *QueryContext
+	order            []organizationpreferences.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.OrganizationPreferences
+	withTenant       *TenantQuery
+	withOrganization *OrganizationQuery
+	modifiers        []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the OrganizationQuery builder.
-func (_q *OrganizationQuery) Where(ps ...predicate.Organization) *OrganizationQuery {
+// Where adds a new predicate for the OrganizationPreferencesQuery builder.
+func (_q *OrganizationPreferencesQuery) Where(ps ...predicate.OrganizationPreferences) *OrganizationPreferencesQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *OrganizationQuery) Limit(limit int) *OrganizationQuery {
+func (_q *OrganizationPreferencesQuery) Limit(limit int) *OrganizationPreferencesQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *OrganizationQuery) Offset(offset int) *OrganizationQuery {
+func (_q *OrganizationPreferencesQuery) Offset(offset int) *OrganizationPreferencesQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *OrganizationQuery) Unique(unique bool) *OrganizationQuery {
+func (_q *OrganizationPreferencesQuery) Unique(unique bool) *OrganizationPreferencesQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *OrganizationQuery) Order(o ...organization.OrderOption) *OrganizationQuery {
+func (_q *OrganizationPreferencesQuery) Order(o ...organizationpreferences.OrderOption) *OrganizationPreferencesQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *OrganizationQuery) QueryTenant() *TenantQuery {
+func (_q *OrganizationPreferencesQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -81,62 +78,12 @@ func (_q *OrganizationQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(organization.Table, organization.FieldID, selector),
+			sqlgraph.From(organizationpreferences.Table, organizationpreferences.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, organization.TenantTable, organization.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, organizationpreferences.TenantTable, organizationpreferences.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.Organization
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryRoles chains the current query on the "roles" edge.
-func (_q *OrganizationQuery) QueryRoles() *OrganizationRoleQuery {
-	query := (&OrganizationRoleClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organization.Table, organization.FieldID, selector),
-			sqlgraph.To(organizationrole.Table, organizationrole.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, organization.RolesTable, organization.RolesColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.OrganizationRole
-		step.Edge.Schema = schemaConfig.OrganizationRole
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryPreferences chains the current query on the "preferences" edge.
-func (_q *OrganizationQuery) QueryPreferences() *OrganizationPreferencesQuery {
-	query := (&OrganizationPreferencesClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(organization.Table, organization.FieldID, selector),
-			sqlgraph.To(organizationpreferences.Table, organizationpreferences.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, organization.PreferencesTable, organization.PreferencesColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.OrganizationPreferences
 		step.Edge.Schema = schemaConfig.OrganizationPreferences
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -144,21 +91,46 @@ func (_q *OrganizationQuery) QueryPreferences() *OrganizationPreferencesQuery {
 	return query
 }
 
-// First returns the first Organization entity from the query.
-// Returns a *NotFoundError when no Organization was found.
-func (_q *OrganizationQuery) First(ctx context.Context) (*Organization, error) {
+// QueryOrganization chains the current query on the "organization" edge.
+func (_q *OrganizationPreferencesQuery) QueryOrganization() *OrganizationQuery {
+	query := (&OrganizationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organizationpreferences.Table, organizationpreferences.FieldID, selector),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, organizationpreferences.OrganizationTable, organizationpreferences.OrganizationColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.Organization
+		step.Edge.Schema = schemaConfig.OrganizationPreferences
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// First returns the first OrganizationPreferences entity from the query.
+// Returns a *NotFoundError when no OrganizationPreferences was found.
+func (_q *OrganizationPreferencesQuery) First(ctx context.Context) (*OrganizationPreferences, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{organization.Label}
+		return nil, &NotFoundError{organizationpreferences.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *OrganizationQuery) FirstX(ctx context.Context) *Organization {
+func (_q *OrganizationPreferencesQuery) FirstX(ctx context.Context) *OrganizationPreferences {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -166,22 +138,22 @@ func (_q *OrganizationQuery) FirstX(ctx context.Context) *Organization {
 	return node
 }
 
-// FirstID returns the first Organization ID from the query.
-// Returns a *NotFoundError when no Organization ID was found.
-func (_q *OrganizationQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first OrganizationPreferences ID from the query.
+// Returns a *NotFoundError when no OrganizationPreferences ID was found.
+func (_q *OrganizationPreferencesQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{organization.Label}
+		err = &NotFoundError{organizationpreferences.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *OrganizationQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *OrganizationPreferencesQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -189,10 +161,10 @@ func (_q *OrganizationQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// Only returns a single Organization entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one Organization entity is found.
-// Returns a *NotFoundError when no Organization entities are found.
-func (_q *OrganizationQuery) Only(ctx context.Context) (*Organization, error) {
+// Only returns a single OrganizationPreferences entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one OrganizationPreferences entity is found.
+// Returns a *NotFoundError when no OrganizationPreferences entities are found.
+func (_q *OrganizationPreferencesQuery) Only(ctx context.Context) (*OrganizationPreferences, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -201,14 +173,14 @@ func (_q *OrganizationQuery) Only(ctx context.Context) (*Organization, error) {
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{organization.Label}
+		return nil, &NotFoundError{organizationpreferences.Label}
 	default:
-		return nil, &NotSingularError{organization.Label}
+		return nil, &NotSingularError{organizationpreferences.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *OrganizationQuery) OnlyX(ctx context.Context) *Organization {
+func (_q *OrganizationPreferencesQuery) OnlyX(ctx context.Context) *OrganizationPreferences {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -216,10 +188,10 @@ func (_q *OrganizationQuery) OnlyX(ctx context.Context) *Organization {
 	return node
 }
 
-// OnlyID is like Only, but returns the only Organization ID in the query.
-// Returns a *NotSingularError when more than one Organization ID is found.
+// OnlyID is like Only, but returns the only OrganizationPreferences ID in the query.
+// Returns a *NotSingularError when more than one OrganizationPreferences ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *OrganizationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *OrganizationPreferencesQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -228,15 +200,15 @@ func (_q *OrganizationQuery) OnlyID(ctx context.Context) (id uuid.UUID, err erro
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{organization.Label}
+		err = &NotFoundError{organizationpreferences.Label}
 	default:
-		err = &NotSingularError{organization.Label}
+		err = &NotSingularError{organizationpreferences.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *OrganizationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *OrganizationPreferencesQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -244,18 +216,18 @@ func (_q *OrganizationQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	return id
 }
 
-// All executes the query and returns a list of Organizations.
-func (_q *OrganizationQuery) All(ctx context.Context) ([]*Organization, error) {
+// All executes the query and returns a list of OrganizationPreferencesSlice.
+func (_q *OrganizationPreferencesQuery) All(ctx context.Context) ([]*OrganizationPreferences, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*Organization, *OrganizationQuery]()
-	return withInterceptors[[]*Organization](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*OrganizationPreferences, *OrganizationPreferencesQuery]()
+	return withInterceptors[[]*OrganizationPreferences](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *OrganizationQuery) AllX(ctx context.Context) []*Organization {
+func (_q *OrganizationPreferencesQuery) AllX(ctx context.Context) []*OrganizationPreferences {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -263,20 +235,20 @@ func (_q *OrganizationQuery) AllX(ctx context.Context) []*Organization {
 	return nodes
 }
 
-// IDs executes the query and returns a list of Organization IDs.
-func (_q *OrganizationQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of OrganizationPreferences IDs.
+func (_q *OrganizationPreferencesQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(organization.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(organizationpreferences.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *OrganizationQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *OrganizationPreferencesQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -285,16 +257,16 @@ func (_q *OrganizationQuery) IDsX(ctx context.Context) []uuid.UUID {
 }
 
 // Count returns the count of the given query.
-func (_q *OrganizationQuery) Count(ctx context.Context) (int, error) {
+func (_q *OrganizationPreferencesQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*OrganizationQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*OrganizationPreferencesQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *OrganizationQuery) CountX(ctx context.Context) int {
+func (_q *OrganizationPreferencesQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -303,7 +275,7 @@ func (_q *OrganizationQuery) CountX(ctx context.Context) int {
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *OrganizationQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *OrganizationPreferencesQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -316,7 +288,7 @@ func (_q *OrganizationQuery) Exist(ctx context.Context) (bool, error) {
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *OrganizationQuery) ExistX(ctx context.Context) bool {
+func (_q *OrganizationPreferencesQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -324,21 +296,20 @@ func (_q *OrganizationQuery) ExistX(ctx context.Context) bool {
 	return exist
 }
 
-// Clone returns a duplicate of the OrganizationQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the OrganizationPreferencesQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *OrganizationQuery) Clone() *OrganizationQuery {
+func (_q *OrganizationPreferencesQuery) Clone() *OrganizationPreferencesQuery {
 	if _q == nil {
 		return nil
 	}
-	return &OrganizationQuery{
-		config:          _q.config,
-		ctx:             _q.ctx.Clone(),
-		order:           append([]organization.OrderOption{}, _q.order...),
-		inters:          append([]Interceptor{}, _q.inters...),
-		predicates:      append([]predicate.Organization{}, _q.predicates...),
-		withTenant:      _q.withTenant.Clone(),
-		withRoles:       _q.withRoles.Clone(),
-		withPreferences: _q.withPreferences.Clone(),
+	return &OrganizationPreferencesQuery{
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]organizationpreferences.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.OrganizationPreferences{}, _q.predicates...),
+		withTenant:       _q.withTenant.Clone(),
+		withOrganization: _q.withOrganization.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -348,7 +319,7 @@ func (_q *OrganizationQuery) Clone() *OrganizationQuery {
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *OrganizationQuery) WithTenant(opts ...func(*TenantQuery)) *OrganizationQuery {
+func (_q *OrganizationPreferencesQuery) WithTenant(opts ...func(*TenantQuery)) *OrganizationPreferencesQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -357,25 +328,14 @@ func (_q *OrganizationQuery) WithTenant(opts ...func(*TenantQuery)) *Organizatio
 	return _q
 }
 
-// WithRoles tells the query-builder to eager-load the nodes that are connected to
-// the "roles" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *OrganizationQuery) WithRoles(opts ...func(*OrganizationRoleQuery)) *OrganizationQuery {
-	query := (&OrganizationRoleClient{config: _q.config}).Query()
+// WithOrganization tells the query-builder to eager-load the nodes that are connected to
+// the "organization" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *OrganizationPreferencesQuery) WithOrganization(opts ...func(*OrganizationQuery)) *OrganizationPreferencesQuery {
+	query := (&OrganizationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withRoles = query
-	return _q
-}
-
-// WithPreferences tells the query-builder to eager-load the nodes that are connected to
-// the "preferences" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *OrganizationQuery) WithPreferences(opts ...func(*OrganizationPreferencesQuery)) *OrganizationQuery {
-	query := (&OrganizationPreferencesClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withPreferences = query
+	_q.withOrganization = query
 	return _q
 }
 
@@ -389,15 +349,15 @@ func (_q *OrganizationQuery) WithPreferences(opts ...func(*OrganizationPreferenc
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.Organization.Query().
-//		GroupBy(organization.FieldTenantID).
+//	client.OrganizationPreferences.Query().
+//		GroupBy(organizationpreferences.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *OrganizationQuery) GroupBy(field string, fields ...string) *OrganizationGroupBy {
+func (_q *OrganizationPreferencesQuery) GroupBy(field string, fields ...string) *OrganizationPreferencesGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &OrganizationGroupBy{build: _q}
+	grbuild := &OrganizationPreferencesGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = organization.Label
+	grbuild.label = organizationpreferences.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -411,23 +371,23 @@ func (_q *OrganizationQuery) GroupBy(field string, fields ...string) *Organizati
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.Organization.Query().
-//		Select(organization.FieldTenantID).
+//	client.OrganizationPreferences.Query().
+//		Select(organizationpreferences.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *OrganizationQuery) Select(fields ...string) *OrganizationSelect {
+func (_q *OrganizationPreferencesQuery) Select(fields ...string) *OrganizationPreferencesSelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &OrganizationSelect{OrganizationQuery: _q}
-	sbuild.label = organization.Label
+	sbuild := &OrganizationPreferencesSelect{OrganizationPreferencesQuery: _q}
+	sbuild.label = organizationpreferences.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a OrganizationSelect configured with the given aggregations.
-func (_q *OrganizationQuery) Aggregate(fns ...AggregateFunc) *OrganizationSelect {
+// Aggregate returns a OrganizationPreferencesSelect configured with the given aggregations.
+func (_q *OrganizationPreferencesQuery) Aggregate(fns ...AggregateFunc) *OrganizationPreferencesSelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *OrganizationQuery) prepareQuery(ctx context.Context) error {
+func (_q *OrganizationPreferencesQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -439,7 +399,7 @@ func (_q *OrganizationQuery) prepareQuery(ctx context.Context) error {
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !organization.ValidColumn(f) {
+		if !organizationpreferences.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -450,35 +410,34 @@ func (_q *OrganizationQuery) prepareQuery(ctx context.Context) error {
 		}
 		_q.sql = prev
 	}
-	if organization.Policy == nil {
-		return errors.New("ent: uninitialized organization.Policy (forgotten import ent/runtime?)")
+	if organizationpreferences.Policy == nil {
+		return errors.New("ent: uninitialized organizationpreferences.Policy (forgotten import ent/runtime?)")
 	}
-	if err := organization.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := organizationpreferences.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Organization, error) {
+func (_q *OrganizationPreferencesQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OrganizationPreferences, error) {
 	var (
-		nodes       = []*Organization{}
+		nodes       = []*OrganizationPreferences{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [2]bool{
 			_q.withTenant != nil,
-			_q.withRoles != nil,
-			_q.withPreferences != nil,
+			_q.withOrganization != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*Organization).scanValues(nil, columns)
+		return (*OrganizationPreferences).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &Organization{config: _q.config}
+		node := &OrganizationPreferences{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.Organization
+	_spec.Node.Schema = _q.schemaConfig.OrganizationPreferences
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -494,29 +453,22 @@ func (_q *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *Organization, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *OrganizationPreferences, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withRoles; query != nil {
-		if err := _q.loadRoles(ctx, query, nodes,
-			func(n *Organization) { n.Edges.Roles = []*OrganizationRole{} },
-			func(n *Organization, e *OrganizationRole) { n.Edges.Roles = append(n.Edges.Roles, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withPreferences; query != nil {
-		if err := _q.loadPreferences(ctx, query, nodes, nil,
-			func(n *Organization, e *OrganizationPreferences) { n.Edges.Preferences = e }); err != nil {
+	if query := _q.withOrganization; query != nil {
+		if err := _q.loadOrganization(ctx, query, nodes, nil,
+			func(n *OrganizationPreferences, e *Organization) { n.Edges.Organization = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *OrganizationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Organization, init func(*Organization), assign func(*Organization, *Tenant)) error {
+func (_q *OrganizationPreferencesQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*OrganizationPreferences, init func(*OrganizationPreferences), assign func(*OrganizationPreferences, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*Organization)
+	nodeids := make(map[int][]*OrganizationPreferences)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -543,67 +495,39 @@ func (_q *OrganizationQuery) loadTenant(ctx context.Context, query *TenantQuery,
 	}
 	return nil
 }
-func (_q *OrganizationQuery) loadRoles(ctx context.Context, query *OrganizationRoleQuery, nodes []*Organization, init func(*Organization), assign func(*Organization, *OrganizationRole)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Organization)
+func (_q *OrganizationPreferencesQuery) loadOrganization(ctx context.Context, query *OrganizationQuery, nodes []*OrganizationPreferences, init func(*OrganizationPreferences), assign func(*OrganizationPreferences, *Organization)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OrganizationPreferences)
 	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
+		fk := nodes[i].OrganizationID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
 		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
 	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(organizationrole.FieldOrganizationID)
+	if len(ids) == 0 {
+		return nil
 	}
-	query.Where(predicate.OrganizationRole(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(organization.RolesColumn), fks...))
-	}))
+	query.Where(organization.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.OrganizationID
-		node, ok := nodeids[fk]
+		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "organization_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "organization_id" returned %v`, n.ID)
 		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *OrganizationQuery) loadPreferences(ctx context.Context, query *OrganizationPreferencesQuery, nodes []*Organization, init func(*Organization), assign func(*Organization, *OrganizationPreferences)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*Organization)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(organizationpreferences.FieldOrganizationID)
-	}
-	query.Where(predicate.OrganizationPreferences(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(organization.PreferencesColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.OrganizationID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "organization_id" returned %v for node %v`, fk, n.ID)
+		for i := range nodes {
+			assign(nodes[i], n)
 		}
-		assign(node, n)
 	}
 	return nil
 }
 
-func (_q *OrganizationQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *OrganizationPreferencesQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.Organization
+	_spec.Node.Schema = _q.schemaConfig.OrganizationPreferences
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -615,8 +539,8 @@ func (_q *OrganizationQuery) sqlCount(ctx context.Context) (int, error) {
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *OrganizationQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(organization.Table, organization.Columns, sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID))
+func (_q *OrganizationPreferencesQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(organizationpreferences.Table, organizationpreferences.Columns, sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -625,14 +549,17 @@ func (_q *OrganizationQuery) querySpec() *sqlgraph.QuerySpec {
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, organization.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, organizationpreferences.FieldID)
 		for i := range fields {
-			if fields[i] != organization.FieldID {
+			if fields[i] != organizationpreferences.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(organization.FieldTenantID)
+			_spec.Node.AddColumnOnce(organizationpreferences.FieldTenantID)
+		}
+		if _q.withOrganization != nil {
+			_spec.Node.AddColumnOnce(organizationpreferences.FieldOrganizationID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -658,12 +585,12 @@ func (_q *OrganizationQuery) querySpec() *sqlgraph.QuerySpec {
 	return _spec
 }
 
-func (_q *OrganizationQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *OrganizationPreferencesQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(organization.Table)
+	t1 := builder.Table(organizationpreferences.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = organization.Columns
+		columns = organizationpreferences.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -673,7 +600,7 @@ func (_q *OrganizationQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.Organization)
+	t1.Schema(_q.schemaConfig.OrganizationPreferences)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -697,33 +624,33 @@ func (_q *OrganizationQuery) sqlQuery(ctx context.Context) *sql.Selector {
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *OrganizationQuery) Modify(modifiers ...func(s *sql.Selector)) *OrganizationSelect {
+func (_q *OrganizationPreferencesQuery) Modify(modifiers ...func(s *sql.Selector)) *OrganizationPreferencesSelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// OrganizationGroupBy is the group-by builder for Organization entities.
-type OrganizationGroupBy struct {
+// OrganizationPreferencesGroupBy is the group-by builder for OrganizationPreferences entities.
+type OrganizationPreferencesGroupBy struct {
 	selector
-	build *OrganizationQuery
+	build *OrganizationPreferencesQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *OrganizationGroupBy) Aggregate(fns ...AggregateFunc) *OrganizationGroupBy {
+func (_g *OrganizationPreferencesGroupBy) Aggregate(fns ...AggregateFunc) *OrganizationPreferencesGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *OrganizationGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *OrganizationPreferencesGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OrganizationQuery, *OrganizationGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*OrganizationPreferencesQuery, *OrganizationPreferencesGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *OrganizationGroupBy) sqlScan(ctx context.Context, root *OrganizationQuery, v any) error {
+func (_g *OrganizationPreferencesGroupBy) sqlScan(ctx context.Context, root *OrganizationPreferencesQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -750,28 +677,28 @@ func (_g *OrganizationGroupBy) sqlScan(ctx context.Context, root *OrganizationQu
 	return sql.ScanSlice(rows, v)
 }
 
-// OrganizationSelect is the builder for selecting fields of Organization entities.
-type OrganizationSelect struct {
-	*OrganizationQuery
+// OrganizationPreferencesSelect is the builder for selecting fields of OrganizationPreferences entities.
+type OrganizationPreferencesSelect struct {
+	*OrganizationPreferencesQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *OrganizationSelect) Aggregate(fns ...AggregateFunc) *OrganizationSelect {
+func (_s *OrganizationPreferencesSelect) Aggregate(fns ...AggregateFunc) *OrganizationPreferencesSelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *OrganizationSelect) Scan(ctx context.Context, v any) error {
+func (_s *OrganizationPreferencesSelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*OrganizationQuery, *OrganizationSelect](ctx, _s.OrganizationQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*OrganizationPreferencesQuery, *OrganizationPreferencesSelect](ctx, _s.OrganizationPreferencesQuery, _s, _s.inters, v)
 }
 
-func (_s *OrganizationSelect) sqlScan(ctx context.Context, root *OrganizationQuery, v any) error {
+func (_s *OrganizationPreferencesSelect) sqlScan(ctx context.Context, root *OrganizationPreferencesQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -793,7 +720,7 @@ func (_s *OrganizationSelect) sqlScan(ctx context.Context, root *OrganizationQue
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *OrganizationSelect) Modify(modifiers ...func(s *sql.Selector)) *OrganizationSelect {
+func (_s *OrganizationPreferencesSelect) Modify(modifiers ...func(s *sql.Selector)) *OrganizationPreferencesSelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

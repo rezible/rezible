@@ -5572,41 +5572,41 @@ components:
       required:
         - data
       type: object
-    UpdateOrganizationDetailsRequestAttributes:
+    UpdateOrganizationPreferencesRequestAttributes:
       additionalProperties: false
       properties:
-        name:
-          type: string
-        preferences:
-          $ref: "#/components/schemas/OrganizationPreferences"
+        enableIncidentManagement:
+          type: boolean
+        initialSetupComplete:
+          type: boolean
       type: object
-    UpdateOrganizationRequestBody:
+    UpdateOrganizationPreferencesRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateOrganizationRequestBody.json
+            - /v1/schemas/UpdateOrganizationPreferencesRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/UpdateOrganizationDetailsRequestAttributes"
+          $ref: "#/components/schemas/UpdateOrganizationPreferencesRequestAttributes"
       required:
         - attributes
       type: object
-    UpdateOrganizationResponseBody:
+    UpdateOrganizationPreferencesResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/UpdateOrganizationResponseBody.json
+            - /v1/schemas/UpdateOrganizationPreferencesResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/Organization"
+          $ref: "#/components/schemas/OrganizationPreferences"
       required:
         - data
       type: object
@@ -12546,8 +12546,9 @@ paths:
       summary: Get Organization
       tags:
         - Organizations
+  /organizations/{id}/preferences:
     patch:
-      operationId: update-organization
+      operationId: update-organization-preferences
       parameters:
         - in: path
           name: id
@@ -12558,14 +12559,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/UpdateOrganizationRequestBody"
+              $ref: "#/components/schemas/UpdateOrganizationPreferencesRequestBody"
         required: true
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UpdateOrganizationResponseBody"
+                $ref: "#/components/schemas/UpdateOrganizationPreferencesResponseBody"
           description: OK
         "400":
           content:
@@ -12603,58 +12604,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Update Organization
-      tags:
-        - Organizations
-  /organizations/{id}/setup:
-    post:
-      operationId: finish-organization-setup
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: No Content
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Finish initial org setup
+      summary: Update Organization Preferences
       tags:
         - Organizations
   /playbooks:

@@ -20,14 +20,12 @@ const (
 	FieldAuthProviderID = "auth_provider_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
-	// FieldInitialSetupAt holds the string denoting the initial_setup_at field in the database.
-	FieldInitialSetupAt = "initial_setup_at"
-	// FieldPreferences holds the string denoting the preferences field in the database.
-	FieldPreferences = "preferences"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeRoles holds the string denoting the roles edge name in mutations.
 	EdgeRoles = "roles"
+	// EdgePreferences holds the string denoting the preferences edge name in mutations.
+	EdgePreferences = "preferences"
 	// Table holds the table name of the organization in the database.
 	Table = "organizations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -44,6 +42,13 @@ const (
 	RolesInverseTable = "organization_roles"
 	// RolesColumn is the table column denoting the roles relation/edge.
 	RolesColumn = "organization_id"
+	// PreferencesTable is the table that holds the preferences relation/edge.
+	PreferencesTable = "organization_preferences"
+	// PreferencesInverseTable is the table name for the OrganizationPreferences entity.
+	// It exists in this package in order to avoid circular dependency with the "organizationpreferences" package.
+	PreferencesInverseTable = "organization_preferences"
+	// PreferencesColumn is the table column denoting the preferences relation/edge.
+	PreferencesColumn = "organization_id"
 )
 
 // Columns holds all SQL columns for organization fields.
@@ -52,8 +57,6 @@ var Columns = []string{
 	FieldTenantID,
 	FieldAuthProviderID,
 	FieldName,
-	FieldInitialSetupAt,
-	FieldPreferences,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -101,11 +104,6 @@ func ByName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldName, opts...).ToFunc()
 }
 
-// ByInitialSetupAt orders the results by the initial_setup_at field.
-func ByInitialSetupAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldInitialSetupAt, opts...).ToFunc()
-}
-
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -126,6 +124,13 @@ func ByRoles(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newRolesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByPreferencesField orders the results by preferences field.
+func ByPreferencesField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPreferencesStep(), sql.OrderByField(field, opts...))
+	}
+}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -138,5 +143,12 @@ func newRolesStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(RolesInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, true, RolesTable, RolesColumn),
+	)
+}
+func newPreferencesStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PreferencesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, PreferencesTable, PreferencesColumn),
 	)
 }

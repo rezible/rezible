@@ -6,7 +6,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 )
 
 type Organization struct {
@@ -25,9 +24,6 @@ func (Organization) Fields() []ent.Field {
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("auth_provider_id"),
 		field.String("name"),
-		field.Time("initial_setup_at").Optional(),
-		field.JSON("preferences", schematypes.OrganizationPreferences{}).
-			SchemaType(schemaTypeJsonB),
 	}
 }
 
@@ -40,6 +36,38 @@ func (Organization) Indexes() []ent.Index {
 func (Organization) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("roles", OrganizationRole.Type).Ref("organization"),
+		edge.To("preferences", OrganizationPreferences.Type).
+			Unique(),
+	}
+}
+
+type OrganizationPreferences struct {
+	ent.Schema
+}
+
+func (OrganizationPreferences) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (OrganizationPreferences) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("organization_id", uuid.UUID{}),
+		field.Time("initial_setup_at").Optional(),
+		field.Bool("enable_incident_management").Default(false),
+	}
+}
+
+func (OrganizationPreferences) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("organization", Organization.Type).
+			Ref("preferences").
+			Unique().
+			Required().
+			Field("organization_id"),
 	}
 }
 
@@ -59,7 +87,7 @@ func (OrganizationRole) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("organization_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
-		field.Enum("role").Values("admin", "member").Default("member"),
+		field.Enum("role").Values("admin", "member"),
 	}
 }
 
@@ -79,6 +107,6 @@ func (OrganizationRole) Edges() []ent.Edge {
 
 func (OrganizationRole) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("organization_id", "user_id").Unique(),
+		index.Fields("tenant_id", "organization_id", "user_id").Unique(),
 	}
 }

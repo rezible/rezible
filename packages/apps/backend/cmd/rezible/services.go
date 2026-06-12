@@ -178,7 +178,6 @@ func declareServices(ctx context.Context, i do.Injector) {
 	do.Provide(i, func(i do.Injector) (http.UserAuthSessionService, error) {
 		return oidc.NewAuthSessionService(
 			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.OrganizationService](i),
 			do.MustInvoke[rez.UserService](i),
 		)
 	})
@@ -309,7 +308,7 @@ var provideServices = do.Package(
 		return db.NewOrganizationService(
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
-		)
+		), nil
 	}),
 	do.Bind[*db.OrganizationService, rez.OrganizationService](),
 

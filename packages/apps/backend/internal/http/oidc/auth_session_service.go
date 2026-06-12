@@ -22,7 +22,6 @@ import (
 )
 
 type AuthSessionService struct {
-	orgs  rez.OrganizationService
 	users rez.UserService
 
 	cookiePath string
@@ -30,7 +29,7 @@ type AuthSessionService struct {
 	oauth      *oauthHandler
 }
 
-func NewAuthSessionService(cfg rez.Config, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
+func NewAuthSessionService(cfg rez.Config, users rez.UserService) (*AuthSessionService, error) {
 	oauthRedirectUrl := cfg.HttpServer.Auth.Oidc.RedirectUrl
 	if oauthRedirectUrl == "" {
 		feRedirectUrl, urlErr := cfg.App.GetFrontendUrl(cfg.App.FrontendApiPath, "/auth/callback")
@@ -64,7 +63,6 @@ func NewAuthSessionService(cfg rez.Config, orgs rez.OrganizationService, users r
 	}
 
 	s := &AuthSessionService{
-		orgs:       orgs,
 		users:      users,
 		cookiePath: cfg.App.FrontendApiPath,
 		codec:      codec,
@@ -143,7 +141,7 @@ func (s *AuthSessionService) handleCallback(w http.ResponseWriter, r *http.Reque
 		return "", errCallbackExchange
 	}
 
-	usr, usrErr := s.users.SyncFromAuthProvider(r.Context(), info.org, info.user)
+	usr, usrErr := s.users.SyncFromAuthProvider(r.Context(), info.user, info.org)
 	if usrErr != nil {
 		slog.Debug("user auth sync", "error", usrErr)
 		return "", errIdentitySync

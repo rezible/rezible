@@ -627,63 +627,6 @@ func (_m *MockOrganizationService) EXPECT() *MockOrganizationService_Expecter {
 	return &MockOrganizationService_Expecter{mock: &_m.Mock}
 }
 
-// CompleteSetup provides a mock function for the type MockOrganizationService
-func (_mock *MockOrganizationService) CompleteSetup(context1 context.Context, organization *ent.Organization) error {
-	ret := _mock.Called(context1, organization)
-
-	if len(ret) == 0 {
-		panic("no return value specified for CompleteSetup")
-	}
-
-	var r0 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, *ent.Organization) error); ok {
-		r0 = returnFunc(context1, organization)
-	} else {
-		r0 = ret.Error(0)
-	}
-	return r0
-}
-
-// MockOrganizationService_CompleteSetup_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'CompleteSetup'
-type MockOrganizationService_CompleteSetup_Call struct {
-	*mock.Call
-}
-
-// CompleteSetup is a helper method to define mock.On call
-//   - context1 context.Context
-//   - organization *ent.Organization
-func (_e *MockOrganizationService_Expecter) CompleteSetup(context1 interface{}, organization interface{}) *MockOrganizationService_CompleteSetup_Call {
-	return &MockOrganizationService_CompleteSetup_Call{Call: _e.mock.On("CompleteSetup", context1, organization)}
-}
-
-func (_c *MockOrganizationService_CompleteSetup_Call) Run(run func(context1 context.Context, organization *ent.Organization)) *MockOrganizationService_CompleteSetup_Call {
-	_c.Call.Run(func(args mock.Arguments) {
-		var arg0 context.Context
-		if args[0] != nil {
-			arg0 = args[0].(context.Context)
-		}
-		var arg1 *ent.Organization
-		if args[1] != nil {
-			arg1 = args[1].(*ent.Organization)
-		}
-		run(
-			arg0,
-			arg1,
-		)
-	})
-	return _c
-}
-
-func (_c *MockOrganizationService_CompleteSetup_Call) Return(err error) *MockOrganizationService_CompleteSetup_Call {
-	_c.Call.Return(err)
-	return _c
-}
-
-func (_c *MockOrganizationService_CompleteSetup_Call) RunAndReturn(run func(context1 context.Context, organization *ent.Organization) error) *MockOrganizationService_CompleteSetup_Call {
-	_c.Call.Return(run)
-	return _c
-}
-
 // Get provides a mock function for the type MockOrganizationService
 func (_mock *MockOrganizationService) Get(context1 context.Context, organization predicate.Organization) (*ent.Organization, error) {
 	ret := _mock.Called(context1, organization)
@@ -748,6 +691,80 @@ func (_c *MockOrganizationService_Get_Call) Return(organization1 *ent.Organizati
 }
 
 func (_c *MockOrganizationService_Get_Call) RunAndReturn(run func(context1 context.Context, organization predicate.Organization) (*ent.Organization, error)) *MockOrganizationService_Get_Call {
+	_c.Call.Return(run)
+	return _c
+}
+
+// SetPreferences provides a mock function for the type MockOrganizationService
+func (_mock *MockOrganizationService) SetPreferences(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error) {
+	ret := _mock.Called(ctx, orgId, setFn)
+
+	if len(ret) == 0 {
+		panic("no return value specified for SetPreferences")
+	}
+
+	var r0 *ent.OrganizationPreferences
+	var r1 error
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)); ok {
+		return returnFunc(ctx, orgId, setFn)
+	}
+	if returnFunc, ok := ret.Get(0).(func(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) *ent.OrganizationPreferences); ok {
+		r0 = returnFunc(ctx, orgId, setFn)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*ent.OrganizationPreferences)
+		}
+	}
+	if returnFunc, ok := ret.Get(1).(func(context.Context, uuid.UUID, func(*ent.OrganizationPreferencesMutation)) error); ok {
+		r1 = returnFunc(ctx, orgId, setFn)
+	} else {
+		r1 = ret.Error(1)
+	}
+	return r0, r1
+}
+
+// MockOrganizationService_SetPreferences_Call is a *mock.Call that shadows Run/Return methods with type explicit version for method 'SetPreferences'
+type MockOrganizationService_SetPreferences_Call struct {
+	*mock.Call
+}
+
+// SetPreferences is a helper method to define mock.On call
+//   - ctx context.Context
+//   - orgId uuid.UUID
+//   - setFn func(*ent.OrganizationPreferencesMutation)
+func (_e *MockOrganizationService_Expecter) SetPreferences(ctx interface{}, orgId interface{}, setFn interface{}) *MockOrganizationService_SetPreferences_Call {
+	return &MockOrganizationService_SetPreferences_Call{Call: _e.mock.On("SetPreferences", ctx, orgId, setFn)}
+}
+
+func (_c *MockOrganizationService_SetPreferences_Call) Run(run func(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation))) *MockOrganizationService_SetPreferences_Call {
+	_c.Call.Run(func(args mock.Arguments) {
+		var arg0 context.Context
+		if args[0] != nil {
+			arg0 = args[0].(context.Context)
+		}
+		var arg1 uuid.UUID
+		if args[1] != nil {
+			arg1 = args[1].(uuid.UUID)
+		}
+		var arg2 func(*ent.OrganizationPreferencesMutation)
+		if args[2] != nil {
+			arg2 = args[2].(func(*ent.OrganizationPreferencesMutation))
+		}
+		run(
+			arg0,
+			arg1,
+			arg2,
+		)
+	})
+	return _c
+}
+
+func (_c *MockOrganizationService_SetPreferences_Call) Return(organizationPreferences *ent.OrganizationPreferences, err error) *MockOrganizationService_SetPreferences_Call {
+	_c.Call.Return(organizationPreferences, err)
+	return _c
+}
+
+func (_c *MockOrganizationService_SetPreferences_Call) RunAndReturn(run func(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)) *MockOrganizationService_SetPreferences_Call {
 	_c.Call.Return(run)
 	return _c
 }
@@ -1058,8 +1075,8 @@ func (_c *MockUserService_Set_Call) RunAndReturn(run func(context1 context.Conte
 }
 
 // SyncFromAuthProvider provides a mock function for the type MockUserService
-func (_mock *MockUserService) SyncFromAuthProvider(context1 context.Context, organization ent.Organization, user ent.User) (*ent.User, error) {
-	ret := _mock.Called(context1, organization, user)
+func (_mock *MockUserService) SyncFromAuthProvider(context1 context.Context, user ent.User, organization ent.Organization) (*ent.User, error) {
+	ret := _mock.Called(context1, user, organization)
 
 	if len(ret) == 0 {
 		panic("no return value specified for SyncFromAuthProvider")
@@ -1067,18 +1084,18 @@ func (_mock *MockUserService) SyncFromAuthProvider(context1 context.Context, org
 
 	var r0 *ent.User
 	var r1 error
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ent.Organization, ent.User) (*ent.User, error)); ok {
-		return returnFunc(context1, organization, user)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ent.User, ent.Organization) (*ent.User, error)); ok {
+		return returnFunc(context1, user, organization)
 	}
-	if returnFunc, ok := ret.Get(0).(func(context.Context, ent.Organization, ent.User) *ent.User); ok {
-		r0 = returnFunc(context1, organization, user)
+	if returnFunc, ok := ret.Get(0).(func(context.Context, ent.User, ent.Organization) *ent.User); ok {
+		r0 = returnFunc(context1, user, organization)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*ent.User)
 		}
 	}
-	if returnFunc, ok := ret.Get(1).(func(context.Context, ent.Organization, ent.User) error); ok {
-		r1 = returnFunc(context1, organization, user)
+	if returnFunc, ok := ret.Get(1).(func(context.Context, ent.User, ent.Organization) error); ok {
+		r1 = returnFunc(context1, user, organization)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -1092,25 +1109,25 @@ type MockUserService_SyncFromAuthProvider_Call struct {
 
 // SyncFromAuthProvider is a helper method to define mock.On call
 //   - context1 context.Context
-//   - organization ent.Organization
 //   - user ent.User
-func (_e *MockUserService_Expecter) SyncFromAuthProvider(context1 interface{}, organization interface{}, user interface{}) *MockUserService_SyncFromAuthProvider_Call {
-	return &MockUserService_SyncFromAuthProvider_Call{Call: _e.mock.On("SyncFromAuthProvider", context1, organization, user)}
+//   - organization ent.Organization
+func (_e *MockUserService_Expecter) SyncFromAuthProvider(context1 interface{}, user interface{}, organization interface{}) *MockUserService_SyncFromAuthProvider_Call {
+	return &MockUserService_SyncFromAuthProvider_Call{Call: _e.mock.On("SyncFromAuthProvider", context1, user, organization)}
 }
 
-func (_c *MockUserService_SyncFromAuthProvider_Call) Run(run func(context1 context.Context, organization ent.Organization, user ent.User)) *MockUserService_SyncFromAuthProvider_Call {
+func (_c *MockUserService_SyncFromAuthProvider_Call) Run(run func(context1 context.Context, user ent.User, organization ent.Organization)) *MockUserService_SyncFromAuthProvider_Call {
 	_c.Call.Run(func(args mock.Arguments) {
 		var arg0 context.Context
 		if args[0] != nil {
 			arg0 = args[0].(context.Context)
 		}
-		var arg1 ent.Organization
+		var arg1 ent.User
 		if args[1] != nil {
-			arg1 = args[1].(ent.Organization)
+			arg1 = args[1].(ent.User)
 		}
-		var arg2 ent.User
+		var arg2 ent.Organization
 		if args[2] != nil {
-			arg2 = args[2].(ent.User)
+			arg2 = args[2].(ent.Organization)
 		}
 		run(
 			arg0,
@@ -1126,7 +1143,7 @@ func (_c *MockUserService_SyncFromAuthProvider_Call) Return(user1 *ent.User, err
 	return _c
 }
 
-func (_c *MockUserService_SyncFromAuthProvider_Call) RunAndReturn(run func(context1 context.Context, organization ent.Organization, user ent.User) (*ent.User, error)) *MockUserService_SyncFromAuthProvider_Call {
+func (_c *MockUserService_SyncFromAuthProvider_Call) RunAndReturn(run func(context1 context.Context, user ent.User, organization ent.Organization) (*ent.User, error)) *MockUserService_SyncFromAuthProvider_Call {
 	_c.Call.Return(run)
 	return _c
 }

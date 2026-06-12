@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
@@ -14,8 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/organizationrole"
-	"github.com/rezible/rezible/ent/schema/schematypes"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -42,26 +41,6 @@ func (_c *OrganizationCreate) SetAuthProviderID(v string) *OrganizationCreate {
 // SetName sets the "name" field.
 func (_c *OrganizationCreate) SetName(v string) *OrganizationCreate {
 	_c.mutation.SetName(v)
-	return _c
-}
-
-// SetInitialSetupAt sets the "initial_setup_at" field.
-func (_c *OrganizationCreate) SetInitialSetupAt(v time.Time) *OrganizationCreate {
-	_c.mutation.SetInitialSetupAt(v)
-	return _c
-}
-
-// SetNillableInitialSetupAt sets the "initial_setup_at" field if the given value is not nil.
-func (_c *OrganizationCreate) SetNillableInitialSetupAt(v *time.Time) *OrganizationCreate {
-	if v != nil {
-		_c.SetInitialSetupAt(*v)
-	}
-	return _c
-}
-
-// SetPreferences sets the "preferences" field.
-func (_c *OrganizationCreate) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationCreate {
-	_c.mutation.SetPreferences(v)
 	return _c
 }
 
@@ -97,6 +76,25 @@ func (_c *OrganizationCreate) AddRoles(v ...*OrganizationRole) *OrganizationCrea
 		ids[i] = v[i].ID
 	}
 	return _c.AddRoleIDs(ids...)
+}
+
+// SetPreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID.
+func (_c *OrganizationCreate) SetPreferencesID(id uuid.UUID) *OrganizationCreate {
+	_c.mutation.SetPreferencesID(id)
+	return _c
+}
+
+// SetNillablePreferencesID sets the "preferences" edge to the OrganizationPreferences entity by ID if the given value is not nil.
+func (_c *OrganizationCreate) SetNillablePreferencesID(id *uuid.UUID) *OrganizationCreate {
+	if id != nil {
+		_c = _c.SetPreferencesID(*id)
+	}
+	return _c
+}
+
+// SetPreferences sets the "preferences" edge to the OrganizationPreferences entity.
+func (_c *OrganizationCreate) SetPreferences(v *OrganizationPreferences) *OrganizationCreate {
+	return _c.SetPreferencesID(v.ID)
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
@@ -157,9 +155,6 @@ func (_c *OrganizationCreate) check() error {
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Organization.name"`)}
 	}
-	if _, ok := _c.mutation.Preferences(); !ok {
-		return &ValidationError{Name: "preferences", err: errors.New(`ent: missing required field "Organization.preferences"`)}
-	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Organization.tenant"`)}
 	}
@@ -208,14 +203,6 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
-	if value, ok := _c.mutation.InitialSetupAt(); ok {
-		_spec.SetField(organization.FieldInitialSetupAt, field.TypeTime, value)
-		_node.InitialSetupAt = value
-	}
-	if value, ok := _c.mutation.Preferences(); ok {
-		_spec.SetField(organization.FieldPreferences, field.TypeJSON, value)
-		_node.Preferences = value
-	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -246,6 +233,23 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 			},
 		}
 		edge.Schema = _c.schemaConfig.OrganizationRole
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.PreferencesIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   organization.PreferencesTable,
+			Columns: []string{organization.PreferencesColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationpreferences.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.OrganizationPreferences
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -327,36 +331,6 @@ func (u *OrganizationUpsert) UpdateName() *OrganizationUpsert {
 	return u
 }
 
-// SetInitialSetupAt sets the "initial_setup_at" field.
-func (u *OrganizationUpsert) SetInitialSetupAt(v time.Time) *OrganizationUpsert {
-	u.Set(organization.FieldInitialSetupAt, v)
-	return u
-}
-
-// UpdateInitialSetupAt sets the "initial_setup_at" field to the value that was provided on create.
-func (u *OrganizationUpsert) UpdateInitialSetupAt() *OrganizationUpsert {
-	u.SetExcluded(organization.FieldInitialSetupAt)
-	return u
-}
-
-// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (u *OrganizationUpsert) ClearInitialSetupAt() *OrganizationUpsert {
-	u.SetNull(organization.FieldInitialSetupAt)
-	return u
-}
-
-// SetPreferences sets the "preferences" field.
-func (u *OrganizationUpsert) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpsert {
-	u.Set(organization.FieldPreferences, v)
-	return u
-}
-
-// UpdatePreferences sets the "preferences" field to the value that was provided on create.
-func (u *OrganizationUpsert) UpdatePreferences() *OrganizationUpsert {
-	u.SetExcluded(organization.FieldPreferences)
-	return u
-}
-
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -433,41 +407,6 @@ func (u *OrganizationUpsertOne) SetName(v string) *OrganizationUpsertOne {
 func (u *OrganizationUpsertOne) UpdateName() *OrganizationUpsertOne {
 	return u.Update(func(s *OrganizationUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetInitialSetupAt sets the "initial_setup_at" field.
-func (u *OrganizationUpsertOne) SetInitialSetupAt(v time.Time) *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.SetInitialSetupAt(v)
-	})
-}
-
-// UpdateInitialSetupAt sets the "initial_setup_at" field to the value that was provided on create.
-func (u *OrganizationUpsertOne) UpdateInitialSetupAt() *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdateInitialSetupAt()
-	})
-}
-
-// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (u *OrganizationUpsertOne) ClearInitialSetupAt() *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.ClearInitialSetupAt()
-	})
-}
-
-// SetPreferences sets the "preferences" field.
-func (u *OrganizationUpsertOne) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.SetPreferences(v)
-	})
-}
-
-// UpdatePreferences sets the "preferences" field to the value that was provided on create.
-func (u *OrganizationUpsertOne) UpdatePreferences() *OrganizationUpsertOne {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdatePreferences()
 	})
 }
 
@@ -714,41 +653,6 @@ func (u *OrganizationUpsertBulk) SetName(v string) *OrganizationUpsertBulk {
 func (u *OrganizationUpsertBulk) UpdateName() *OrganizationUpsertBulk {
 	return u.Update(func(s *OrganizationUpsert) {
 		s.UpdateName()
-	})
-}
-
-// SetInitialSetupAt sets the "initial_setup_at" field.
-func (u *OrganizationUpsertBulk) SetInitialSetupAt(v time.Time) *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.SetInitialSetupAt(v)
-	})
-}
-
-// UpdateInitialSetupAt sets the "initial_setup_at" field to the value that was provided on create.
-func (u *OrganizationUpsertBulk) UpdateInitialSetupAt() *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdateInitialSetupAt()
-	})
-}
-
-// ClearInitialSetupAt clears the value of the "initial_setup_at" field.
-func (u *OrganizationUpsertBulk) ClearInitialSetupAt() *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.ClearInitialSetupAt()
-	})
-}
-
-// SetPreferences sets the "preferences" field.
-func (u *OrganizationUpsertBulk) SetPreferences(v schematypes.OrganizationPreferences) *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.SetPreferences(v)
-	})
-}
-
-// UpdatePreferences sets the "preferences" field to the value that was provided on create.
-func (u *OrganizationUpsertBulk) UpdatePreferences() *OrganizationUpsertBulk {
-	return u.Update(func(s *OrganizationUpsert) {
-		s.UpdatePreferences()
 	})
 }
 
