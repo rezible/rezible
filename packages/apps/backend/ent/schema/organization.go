@@ -57,7 +57,7 @@ func (OrganizationRole) Mixin() []ent.Mixin {
 func (OrganizationRole) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("org_id", uuid.UUID{}),
+		field.UUID("organization_id", uuid.UUID{}),
 		field.UUID("user_id", uuid.UUID{}),
 		field.Enum("role").Values("admin", "member").Default("member"),
 	}
@@ -68,7 +68,7 @@ func (OrganizationRole) Edges() []ent.Edge {
 		edge.To("organization", Organization.Type).
 			Required().
 			Unique().
-			Field("org_id"),
+			Field("organization_id"),
 		edge.From("user", User.Type).
 			Ref("organization_role").
 			Required().
@@ -79,6 +79,6 @@ func (OrganizationRole) Edges() []ent.Edge {
 
 func (OrganizationRole) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("org_id", "user_id").Unique(),
+		index.Fields("organization_id", "user_id").Unique(),
 	}
 }

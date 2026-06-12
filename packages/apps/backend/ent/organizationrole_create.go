@@ -32,9 +32,9 @@ func (_c *OrganizationRoleCreate) SetTenantID(v int) *OrganizationRoleCreate {
 	return _c
 }
 
-// SetOrgID sets the "org_id" field.
-func (_c *OrganizationRoleCreate) SetOrgID(v uuid.UUID) *OrganizationRoleCreate {
-	_c.mutation.SetOrgID(v)
+// SetOrganizationID sets the "organization_id" field.
+func (_c *OrganizationRoleCreate) SetOrganizationID(v uuid.UUID) *OrganizationRoleCreate {
+	_c.mutation.SetOrganizationID(v)
 	return _c
 }
 
@@ -75,12 +75,6 @@ func (_c *OrganizationRoleCreate) SetNillableID(v *uuid.UUID) *OrganizationRoleC
 // SetTenant sets the "tenant" edge to the Tenant entity.
 func (_c *OrganizationRoleCreate) SetTenant(v *Tenant) *OrganizationRoleCreate {
 	return _c.SetTenantID(v.ID)
-}
-
-// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
-func (_c *OrganizationRoleCreate) SetOrganizationID(id uuid.UUID) *OrganizationRoleCreate {
-	_c.mutation.SetOrganizationID(id)
-	return _c
 }
 
 // SetOrganization sets the "organization" edge to the Organization entity.
@@ -149,8 +143,8 @@ func (_c *OrganizationRoleCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "OrganizationRole.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.OrgID(); !ok {
-		return &ValidationError{Name: "org_id", err: errors.New(`ent: missing required field "OrganizationRole.org_id"`)}
+	if _, ok := _c.mutation.OrganizationID(); !ok {
+		return &ValidationError{Name: "organization_id", err: errors.New(`ent: missing required field "OrganizationRole.organization_id"`)}
 	}
 	if _, ok := _c.mutation.UserID(); !ok {
 		return &ValidationError{Name: "user_id", err: errors.New(`ent: missing required field "OrganizationRole.user_id"`)}
@@ -246,7 +240,7 @@ func (_c *OrganizationRoleCreate) createSpec() (*OrganizationRole, *sqlgraph.Cre
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.OrgID = nodes[0]
+		_node.OrganizationID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
@@ -319,15 +313,15 @@ type (
 	}
 )
 
-// SetOrgID sets the "org_id" field.
-func (u *OrganizationRoleUpsert) SetOrgID(v uuid.UUID) *OrganizationRoleUpsert {
-	u.Set(organizationrole.FieldOrgID, v)
+// SetOrganizationID sets the "organization_id" field.
+func (u *OrganizationRoleUpsert) SetOrganizationID(v uuid.UUID) *OrganizationRoleUpsert {
+	u.Set(organizationrole.FieldOrganizationID, v)
 	return u
 }
 
-// UpdateOrgID sets the "org_id" field to the value that was provided on create.
-func (u *OrganizationRoleUpsert) UpdateOrgID() *OrganizationRoleUpsert {
-	u.SetExcluded(organizationrole.FieldOrgID)
+// UpdateOrganizationID sets the "organization_id" field to the value that was provided on create.
+func (u *OrganizationRoleUpsert) UpdateOrganizationID() *OrganizationRoleUpsert {
+	u.SetExcluded(organizationrole.FieldOrganizationID)
 	return u
 }
 
@@ -406,17 +400,17 @@ func (u *OrganizationRoleUpsertOne) Update(set func(*OrganizationRoleUpsert)) *O
 	return u
 }
 
-// SetOrgID sets the "org_id" field.
-func (u *OrganizationRoleUpsertOne) SetOrgID(v uuid.UUID) *OrganizationRoleUpsertOne {
+// SetOrganizationID sets the "organization_id" field.
+func (u *OrganizationRoleUpsertOne) SetOrganizationID(v uuid.UUID) *OrganizationRoleUpsertOne {
 	return u.Update(func(s *OrganizationRoleUpsert) {
-		s.SetOrgID(v)
+		s.SetOrganizationID(v)
 	})
 }
 
-// UpdateOrgID sets the "org_id" field to the value that was provided on create.
-func (u *OrganizationRoleUpsertOne) UpdateOrgID() *OrganizationRoleUpsertOne {
+// UpdateOrganizationID sets the "organization_id" field to the value that was provided on create.
+func (u *OrganizationRoleUpsertOne) UpdateOrganizationID() *OrganizationRoleUpsertOne {
 	return u.Update(func(s *OrganizationRoleUpsert) {
-		s.UpdateOrgID()
+		s.UpdateOrganizationID()
 	})
 }
 
@@ -666,17 +660,17 @@ func (u *OrganizationRoleUpsertBulk) Update(set func(*OrganizationRoleUpsert)) *
 	return u
 }
 
-// SetOrgID sets the "org_id" field.
-func (u *OrganizationRoleUpsertBulk) SetOrgID(v uuid.UUID) *OrganizationRoleUpsertBulk {
+// SetOrganizationID sets the "organization_id" field.
+func (u *OrganizationRoleUpsertBulk) SetOrganizationID(v uuid.UUID) *OrganizationRoleUpsertBulk {
 	return u.Update(func(s *OrganizationRoleUpsert) {
-		s.SetOrgID(v)
+		s.SetOrganizationID(v)
 	})
 }
 
-// UpdateOrgID sets the "org_id" field to the value that was provided on create.
-func (u *OrganizationRoleUpsertBulk) UpdateOrgID() *OrganizationRoleUpsertBulk {
+// UpdateOrganizationID sets the "organization_id" field to the value that was provided on create.
+func (u *OrganizationRoleUpsertBulk) UpdateOrganizationID() *OrganizationRoleUpsertBulk {
 	return u.Update(func(s *OrganizationRoleUpsert) {
-		s.UpdateOrgID()
+		s.UpdateOrganizationID()
 	})
 }
 

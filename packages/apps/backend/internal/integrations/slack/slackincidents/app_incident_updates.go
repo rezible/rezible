@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 	"strings"
 
 	mapset "github.com/deckarep/golang-set/v2"
@@ -21,14 +22,14 @@ import (
 type incidentUpdateProcessor struct {
 	logger *slog.Logger
 
-	appCfg    rez.AppConfig
 	db        rez.Database
 	incidents rez.IncidentService
 	messages  rez.MessageService
 
-	inc    *ent.Incident
-	prefs  UserSettingsIncidents
-	client *slack.Client
+	inc         *ent.Incident
+	incidentUrl *url.URL
+	prefs       UserSettingsIncidents
+	client      *slack.Client
 }
 
 func (a *App) newUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
@@ -36,16 +37,20 @@ func (a *App) newUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*in
 	if incErr != nil {
 		return nil, fmt.Errorf("get incident: %w", incErr)
 	}
+	incUrl, incUrlErr := a.cfg.App.GetFrontendUrl("incidents", inc.Slug)
+	if incUrlErr != nil {
+		return nil, fmt.Errorf("incident url: %w", incUrlErr)
+	}
 	prefs := defaultIncidentPreferences
 	return &incidentUpdateProcessor{
-		inc:       inc,
-		logger:    slog.Default().With("service", "slack.incident_updates"),
-		appCfg:    a.cfg.App,
-		db:        a.db,
-		incidents: a.incidents,
-		messages:  a.messages,
-		client:    nil,
-		prefs:     prefs,
+		inc:         inc,
+		logger:      slog.Default().With("service", "slack.incident_updates"),
+		incidentUrl: incUrl,
+		db:          a.db,
+		incidents:   a.incidents,
+		messages:    a.messages,
+		client:      nil,
+		prefs:       prefs,
 	}, nil
 }
 
@@ -267,9 +272,10 @@ func (p *incidentUpdateProcessor) postIncidentAnnouncement(ctx context.Context) 
 		return fmt.Errorf("failed to get announcement channel: %w", chanErr)
 	}
 
-	builder := newIncidentAnnouncementMessageBuilder(p.appCfg.FrontendUrl, p.inc)
+	builder := newIncidentAnnouncementMessageBuilder(p.inc, p.incidentUrl)
+	msgBlocks := slack.MsgOptionBlocks(builder.build()...)
 
-	_, _, postErr := p.client.PostMessageContext(ctx, announcementChannelId, slack.MsgOptionBlocks(builder.build()...))
+	_, _, postErr := p.client.PostMessageContext(ctx, announcementChannelId, msgBlocks)
 	if postErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", postErr)
 	}
@@ -304,12 +310,12 @@ func (p *incidentUpdateProcessor) updateIncidentChannel(ctx context.Context) err
 }
 
 func (p *incidentUpdateProcessor) updateIncidentChannelPinnedDetailsMessage(ctx context.Context) error {
-	builder := newIncidentDetailsMessageBuilder(p.appCfg.FrontendUrl, p.inc)
-
 	pins, _, pinsErr := p.client.ListPinsContext(ctx, p.inc.ChatChannelID)
 	if pinsErr != nil {
 		return fmt.Errorf("failed to list pins: %w", pinsErr)
 	}
+
+	builder := newIncidentDetailsMessageBuilder(p.inc, p.incidentUrl)
 	var existingMsgTs string
 	for _, pin := range pins {
 		if pin.Message != nil && builder.isDetailsMessage(pin.Message) {
@@ -317,8 +323,7 @@ func (p *incidentUpdateProcessor) updateIncidentChannelPinnedDetailsMessage(ctx 
 			break
 		}
 	}
-
-	msgOpts := slack.MsgOptionBlocks(builder.build()...)
+	msgOpts := builder.makeMessageBlocks()
 
 	if existingMsgTs != "" {
 		_, _, _, updateErr := p.client.UpdateMessageContext(ctx, p.inc.ChatChannelID, existingMsgTs, msgOpts)
@@ -385,7 +390,7 @@ func (p *incidentUpdateProcessor) ensureIncidentChannelBookmarks(ctx context.Con
 	if !hasDetails {
 		_, addErr := p.client.AddBookmark(p.inc.ChatChannelID, slack.AddBookmarkParameters{
 			Title: detailsTitle,
-			Link:  fmt.Sprintf("%s/incidents/%s", p.appCfg.FrontendUrl, p.inc.Slug),
+			Link:  p.incidentUrl.String(),
 			Type:  "link",
 		})
 		if addErr != nil {

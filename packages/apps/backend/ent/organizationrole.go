@@ -22,8 +22,8 @@ type OrganizationRole struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
-	// OrgID holds the value of the "org_id" field.
-	OrgID uuid.UUID `json:"org_id,omitempty"`
+	// OrganizationID holds the value of the "organization_id" field.
+	OrganizationID uuid.UUID `json:"organization_id,omitempty"`
 	// UserID holds the value of the "user_id" field.
 	UserID uuid.UUID `json:"user_id,omitempty"`
 	// Role holds the value of the "role" field.
@@ -89,7 +89,7 @@ func (*OrganizationRole) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case organizationrole.FieldRole:
 			values[i] = new(sql.NullString)
-		case organizationrole.FieldID, organizationrole.FieldOrgID, organizationrole.FieldUserID:
+		case organizationrole.FieldID, organizationrole.FieldOrganizationID, organizationrole.FieldUserID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -118,11 +118,11 @@ func (_m *OrganizationRole) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case organizationrole.FieldOrgID:
+		case organizationrole.FieldOrganizationID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field org_id", values[i])
+				return fmt.Errorf("unexpected type %T for field organization_id", values[i])
 			} else if value != nil {
-				_m.OrgID = *value
+				_m.OrganizationID = *value
 			}
 		case organizationrole.FieldUserID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
@@ -190,8 +190,8 @@ func (_m *OrganizationRole) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("org_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.OrgID))
+	builder.WriteString("organization_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.OrganizationID))
 	builder.WriteString(", ")
 	builder.WriteString("user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.UserID))

@@ -43,7 +43,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "organizationrole" package.
 	RolesInverseTable = "organization_roles"
 	// RolesColumn is the table column denoting the roles relation/edge.
-	RolesColumn = "org_id"
+	RolesColumn = "organization_id"
 )
 
 // Columns holds all SQL columns for organization fields.

@@ -36,7 +36,7 @@ type IntegrationsService struct {
 }
 
 func NewIntegrationsService(appCfg rez.AppConfig, db rez.Database, jobSvc rez.JobService, reg *integrations.PackageRegistry, pep rez.ProviderEventPipelineService) (*IntegrationsService, error) {
-	callbackUrl, callbackUrlErr := url.JoinPath(appCfg.FrontendUrl, "/settings/integration-callback")
+	callbackUrl, callbackUrlErr := url.JoinPath(appCfg.FrontendDomain, "/settings/integration-callback")
 	if callbackUrlErr != nil {
 		return nil, fmt.Errorf("invalid oauth callback url: %w", callbackUrlErr)
 	}

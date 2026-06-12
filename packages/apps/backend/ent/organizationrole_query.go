@@ -545,7 +545,7 @@ func (_q *OrganizationRoleQuery) loadOrganization(ctx context.Context, query *Or
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*OrganizationRole)
 	for i := range nodes {
-		fk := nodes[i].OrgID
+		fk := nodes[i].OrganizationID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -562,7 +562,7 @@ func (_q *OrganizationRoleQuery) loadOrganization(ctx context.Context, query *Or
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "org_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "organization_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -634,7 +634,7 @@ func (_q *OrganizationRoleQuery) querySpec() *sqlgraph.QuerySpec {
 			_spec.Node.AddColumnOnce(organizationrole.FieldTenantID)
 		}
 		if _q.withOrganization != nil {
-			_spec.Node.AddColumnOnce(organizationrole.FieldOrgID)
+			_spec.Node.AddColumnOnce(organizationrole.FieldOrganizationID)
 		}
 		if _q.withUser != nil {
 			_spec.Node.AddColumnOnce(organizationrole.FieldUserID)

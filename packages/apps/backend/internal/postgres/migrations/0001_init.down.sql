@@ -286,8 +286,8 @@ DROP TABLE "retrospectives";
 DROP INDEX "playbook_tenant_id";
 -- reverse: create "playbooks" table
 DROP TABLE "playbooks";
--- reverse: create index "organizationrole_org_id_user_id" to table: "organization_roles"
-DROP INDEX "organizationrole_org_id_user_id";
+-- reverse: create index "organizationrole_organization_id_user_id" to table: "organization_roles"
+DROP INDEX "organizationrole_organization_id_user_id";
 -- reverse: create index "organizationrole_tenant_id" to table: "organization_roles"
 DROP INDEX "organizationrole_tenant_id";
 -- reverse: create index "organization_roles_user_id_key" to table: "organization_roles"

@@ -60,9 +60,9 @@ func TenantID(v int) predicate.OrganizationRole {
 	return predicate.OrganizationRole(sql.FieldEQ(FieldTenantID, v))
 }
 
-// OrgID applies equality check predicate on the "org_id" field. It's identical to OrgIDEQ.
-func OrgID(v uuid.UUID) predicate.OrganizationRole {
-	return predicate.OrganizationRole(sql.FieldEQ(FieldOrgID, v))
+// OrganizationID applies equality check predicate on the "organization_id" field. It's identical to OrganizationIDEQ.
+func OrganizationID(v uuid.UUID) predicate.OrganizationRole {
+	return predicate.OrganizationRole(sql.FieldEQ(FieldOrganizationID, v))
 }
 
 // UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
@@ -90,24 +90,24 @@ func TenantIDNotIn(vs ...int) predicate.OrganizationRole {
 	return predicate.OrganizationRole(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// OrgIDEQ applies the EQ predicate on the "org_id" field.
-func OrgIDEQ(v uuid.UUID) predicate.OrganizationRole {
-	return predicate.OrganizationRole(sql.FieldEQ(FieldOrgID, v))
+// OrganizationIDEQ applies the EQ predicate on the "organization_id" field.
+func OrganizationIDEQ(v uuid.UUID) predicate.OrganizationRole {
+	return predicate.OrganizationRole(sql.FieldEQ(FieldOrganizationID, v))
 }
 
-// OrgIDNEQ applies the NEQ predicate on the "org_id" field.
-func OrgIDNEQ(v uuid.UUID) predicate.OrganizationRole {
-	return predicate.OrganizationRole(sql.FieldNEQ(FieldOrgID, v))
+// OrganizationIDNEQ applies the NEQ predicate on the "organization_id" field.
+func OrganizationIDNEQ(v uuid.UUID) predicate.OrganizationRole {
+	return predicate.OrganizationRole(sql.FieldNEQ(FieldOrganizationID, v))
 }
 
-// OrgIDIn applies the In predicate on the "org_id" field.
-func OrgIDIn(vs ...uuid.UUID) predicate.OrganizationRole {
-	return predicate.OrganizationRole(sql.FieldIn(FieldOrgID, vs...))
+// OrganizationIDIn applies the In predicate on the "organization_id" field.
+func OrganizationIDIn(vs ...uuid.UUID) predicate.OrganizationRole {
+	return predicate.OrganizationRole(sql.FieldIn(FieldOrganizationID, vs...))
 }
 
-// OrgIDNotIn applies the NotIn predicate on the "org_id" field.
-func OrgIDNotIn(vs ...uuid.UUID) predicate.OrganizationRole {
-	return predicate.OrganizationRole(sql.FieldNotIn(FieldOrgID, vs...))
+// OrganizationIDNotIn applies the NotIn predicate on the "organization_id" field.
+func OrganizationIDNotIn(vs ...uuid.UUID) predicate.OrganizationRole {
+	return predicate.OrganizationRole(sql.FieldNotIn(FieldOrganizationID, vs...))
 }
 
 // UserIDEQ applies the EQ predicate on the "user_id" field.

@@ -1,8 +1,8 @@
 set shell := ["bash", "-uc"]
 
 export APP__DEBUG_MODE := "true"
-export APP__FRONTEND_URL := env("APP_URL")
-export APP__API_URL := env("API_URL")
+export APP__FRONTEND_DOMAIN := env("APP_DOMAIN")
+export APP__API_DOMAIN := env("API_DOMAIN")
 export APP__SINGLETENANT__ENABLED := "true"
 
 export HTTP__PORT := env("BACKEND_PORT")

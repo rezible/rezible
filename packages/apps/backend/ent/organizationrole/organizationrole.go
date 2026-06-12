@@ -18,8 +18,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldOrgID holds the string denoting the org_id field in the database.
-	FieldOrgID = "org_id"
+	// FieldOrganizationID holds the string denoting the organization_id field in the database.
+	FieldOrganizationID = "organization_id"
 	// FieldUserID holds the string denoting the user_id field in the database.
 	FieldUserID = "user_id"
 	// FieldRole holds the string denoting the role field in the database.
@@ -45,7 +45,7 @@ const (
 	// It exists in this package in order to avoid circular dependency with the "organization" package.
 	OrganizationInverseTable = "organizations"
 	// OrganizationColumn is the table column denoting the organization relation/edge.
-	OrganizationColumn = "org_id"
+	OrganizationColumn = "organization_id"
 	// UserTable is the table that holds the user relation/edge.
 	UserTable = "organization_roles"
 	// UserInverseTable is the table name for the User entity.
@@ -59,7 +59,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldOrgID,
+	FieldOrganizationID,
 	FieldUserID,
 	FieldRole,
 }
@@ -125,9 +125,9 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByOrgID orders the results by the org_id field.
-func ByOrgID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldOrgID, opts...).ToFunc()
+// ByOrganizationID orders the results by the organization_id field.
+func ByOrganizationID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldOrganizationID, opts...).ToFunc()
 }
 
 // ByUserID orders the results by the user_id field.

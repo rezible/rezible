@@ -2,8 +2,8 @@ package slackincidents
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
-	"text/template"
 
 	"github.com/rezible/rezible/ent"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
@@ -17,22 +17,25 @@ const (
 )
 
 type incidentDetailsMessageBuilder struct {
-	appUrl   string
-	blocks   []slack.Block
-	incident *ent.Incident
+	incident    *ent.Incident
+	incidentUrl *url.URL
+	blocks      []slack.Block
 }
 
-var incidentDetailsTemplate = template.Template{}
-
-func newIncidentDetailsMessageBuilder(appUrl string, inc *ent.Incident) *incidentDetailsMessageBuilder {
+func newIncidentDetailsMessageBuilder(inc *ent.Incident, incUrl *url.URL) *incidentDetailsMessageBuilder {
 	return &incidentDetailsMessageBuilder{
-		appUrl:   appUrl,
-		blocks:   []slack.Block{},
-		incident: inc,
+		incident:    inc,
+		incidentUrl: incUrl,
+		blocks:      make([]slack.Block, 0),
 	}
 }
 
+func (b *incidentDetailsMessageBuilder) makeMessageBlocks() slack.MsgOption {
+	return slack.MsgOptionBlocks(b.build()...)
+}
+
 func (b *incidentDetailsMessageBuilder) build() []slack.Block {
+	b.blocks = make([]slack.Block, 0)
 	b.makeDetailsText()
 	b.makeActions()
 	return b.blocks
@@ -94,7 +97,6 @@ func (b *incidentDetailsMessageBuilder) latestUpdateSummary() string {
 }
 
 func (b *incidentDetailsMessageBuilder) makeDetailsText() {
-	webLink := fmt.Sprintf("%s/incidents/%s", b.appUrl, b.incident.Slug)
 	sev := b.incident.Edges.Severity
 	detailsText := fmt.Sprintf(
 		"*Incident Details*\n*Title:* %s\n*Severity:* %s\n*Status:* %s\n*Roles:*\n%s\n*Latest Update:* %s\n*Web:* %s",
@@ -103,7 +105,7 @@ func (b *incidentDetailsMessageBuilder) makeDetailsText() {
 		b.currentStatus(),
 		b.roleSummary(),
 		b.latestUpdateSummary(),
-		webLink,
+		b.incidentUrl.String(),
 	)
 
 	if vc := b.incident.Edges.GetPrimaryVideoConference(); vc != nil {
@@ -122,16 +124,16 @@ func (b *incidentDetailsMessageBuilder) makeActions() {
 }
 
 type incidentAnnouncementMessageBuilder struct {
-	blocks   []slack.Block
 	incident *ent.Incident
 	builder  *incidentDetailsMessageBuilder
+	blocks   []slack.Block
 }
 
-func newIncidentAnnouncementMessageBuilder(appUrl string, inc *ent.Incident) *incidentAnnouncementMessageBuilder {
+func newIncidentAnnouncementMessageBuilder(inc *ent.Incident, incUrl *url.URL) *incidentAnnouncementMessageBuilder {
 	return &incidentAnnouncementMessageBuilder{
-		blocks:   []slack.Block{},
 		incident: inc,
-		builder:  newIncidentDetailsMessageBuilder(appUrl, inc),
+		builder:  newIncidentDetailsMessageBuilder(inc, incUrl),
+		blocks:   []slack.Block{},
 	}
 }
 

@@ -508,7 +508,7 @@ func (_q *OrganizationQuery) loadRoles(ctx context.Context, query *OrganizationR
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(organizationrole.FieldOrgID)
+		query.ctx.AppendFieldOnce(organizationrole.FieldOrganizationID)
 	}
 	query.Where(predicate.OrganizationRole(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(organization.RolesColumn), fks...))
@@ -518,10 +518,10 @@ func (_q *OrganizationQuery) loadRoles(ctx context.Context, query *OrganizationR
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.OrgID
+		fk := n.OrganizationID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "org_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "organization_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

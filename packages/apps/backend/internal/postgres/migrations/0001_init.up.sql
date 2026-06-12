@@ -263,13 +263,13 @@ CREATE INDEX "organization_tenant_id" ON "organizations" ("tenant_id");
 -- create index "organization_tenant_id_auth_provider_id" to table: "organizations"
 CREATE UNIQUE INDEX "organization_tenant_id_auth_provider_id" ON "organizations" ("tenant_id", "auth_provider_id");
 -- create "organization_roles" table
-CREATE TABLE "organization_roles" ("id" uuid NOT NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "org_id" uuid NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "organization_roles" ("id" uuid NOT NULL, "role" character varying NOT NULL DEFAULT 'member', "tenant_id" bigint NOT NULL, "organization_id" uuid NOT NULL, "user_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "organization_roles_user_id_key" to table: "organization_roles"
 CREATE UNIQUE INDEX "organization_roles_user_id_key" ON "organization_roles" ("user_id");
 -- create index "organizationrole_tenant_id" to table: "organization_roles"
 CREATE INDEX "organizationrole_tenant_id" ON "organization_roles" ("tenant_id");
--- create index "organizationrole_org_id_user_id" to table: "organization_roles"
-CREATE UNIQUE INDEX "organizationrole_org_id_user_id" ON "organization_roles" ("org_id", "user_id");
+-- create index "organizationrole_organization_id_user_id" to table: "organization_roles"
+CREATE UNIQUE INDEX "organizationrole_organization_id_user_id" ON "organization_roles" ("organization_id", "user_id");
 -- create "playbooks" table
 CREATE TABLE "playbooks" ("id" uuid NOT NULL, "title" character varying NOT NULL, "content" bytea NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "playbook_tenant_id" to table: "playbooks"
@@ -497,7 +497,7 @@ ALTER TABLE "oncall_shift_metrics" ADD CONSTRAINT "oncall_shift_metrics_oncall_s
 -- modify "organizations" table
 ALTER TABLE "organizations" ADD CONSTRAINT "organizations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "organization_roles" table
-ALTER TABLE "organization_roles" ADD CONSTRAINT "organization_roles_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_organizations_organization" FOREIGN KEY ("org_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_users_organization_role" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
+ALTER TABLE "organization_roles" ADD CONSTRAINT "organization_roles_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_organizations_organization" FOREIGN KEY ("organization_id") REFERENCES "organizations" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "organization_roles_users_organization_role" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "playbooks" table
 ALTER TABLE "playbooks" ADD CONSTRAINT "playbooks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "retrospectives" table

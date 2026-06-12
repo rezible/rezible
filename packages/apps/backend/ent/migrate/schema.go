@@ -1965,7 +1965,7 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "role", Type: field.TypeEnum, Enums: []string{"admin", "member"}, Default: "member"},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "org_id", Type: field.TypeUUID},
+		{Name: "organization_id", Type: field.TypeUUID},
 		{Name: "user_id", Type: field.TypeUUID, Unique: true},
 	}
 	// OrganizationRolesTable holds the schema information for the "organization_roles" table.
@@ -2000,7 +2000,7 @@ var (
 				Columns: []*schema.Column{OrganizationRolesColumns[2]},
 			},
 			{
-				Name:    "organizationrole_org_id_user_id",
+				Name:    "organizationrole_organization_id_user_id",
 				Unique:  true,
 				Columns: []*schema.Column{OrganizationRolesColumns[3], OrganizationRolesColumns[4]},
 			},

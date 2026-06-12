@@ -999,10 +999,10 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 		Type: "OrganizationRole",
 		Fields: map[string]*sqlgraph.FieldSpec{
-			organizationrole.FieldTenantID: {Type: field.TypeInt, Column: organizationrole.FieldTenantID},
-			organizationrole.FieldOrgID:    {Type: field.TypeUUID, Column: organizationrole.FieldOrgID},
-			organizationrole.FieldUserID:   {Type: field.TypeUUID, Column: organizationrole.FieldUserID},
-			organizationrole.FieldRole:     {Type: field.TypeEnum, Column: organizationrole.FieldRole},
+			organizationrole.FieldTenantID:       {Type: field.TypeInt, Column: organizationrole.FieldTenantID},
+			organizationrole.FieldOrganizationID: {Type: field.TypeUUID, Column: organizationrole.FieldOrganizationID},
+			organizationrole.FieldUserID:         {Type: field.TypeUUID, Column: organizationrole.FieldUserID},
+			organizationrole.FieldRole:           {Type: field.TypeEnum, Column: organizationrole.FieldRole},
 		},
 	}
 	graph.Nodes[47] = &sqlgraph.Node{
@@ -10115,9 +10115,9 @@ func (f *OrganizationRoleFilter) WhereTenantID(p entql.IntP) {
 	f.Where(p.Field(organizationrole.FieldTenantID))
 }
 
-// WhereOrgID applies the entql [16]byte predicate on the org_id field.
-func (f *OrganizationRoleFilter) WhereOrgID(p entql.ValueP) {
-	f.Where(p.Field(organizationrole.FieldOrgID))
+// WhereOrganizationID applies the entql [16]byte predicate on the organization_id field.
+func (f *OrganizationRoleFilter) WhereOrganizationID(p entql.ValueP) {
+	f.Where(p.Field(organizationrole.FieldOrganizationID))
 }
 
 // WhereUserID applies the entql [16]byte predicate on the user_id field.

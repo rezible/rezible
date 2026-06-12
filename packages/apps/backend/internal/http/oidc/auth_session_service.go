@@ -33,11 +33,11 @@ type AuthSessionService struct {
 func NewAuthSessionService(cfg rez.Config, orgs rez.OrganizationService, users rez.UserService) (*AuthSessionService, error) {
 	oauthRedirectUrl := cfg.HttpServer.Auth.Oidc.RedirectUrl
 	if oauthRedirectUrl == "" {
-		var pathError error
-		oauthRedirectUrl, pathError = url.JoinPath(cfg.App.FrontendUrl, "/api/auth/callback")
-		if pathError != nil {
-			return nil, fmt.Errorf("oauth redirect url: %w", pathError)
+		feRedirectUrl, urlErr := cfg.App.GetFrontendUrl(cfg.App.FrontendApiPath, "/auth/callback")
+		if urlErr != nil {
+			return nil, fmt.Errorf("oauth redirect url: %w", urlErr)
 		}
+		oauthRedirectUrl = feRedirectUrl.String()
 	}
 
 	codec, codecErr := newCookieCodec(cfg.HttpServer.Auth.SessionSecret)
@@ -45,7 +45,7 @@ func NewAuthSessionService(cfg rez.Config, orgs rez.OrganizationService, users r
 		return nil, fmt.Errorf("cookie codec: %w", codecErr)
 	}
 
-	apiAudience := cfg.App.ApiUrl
+	apiAudience := cfg.App.ApiDomain
 	if apiAudience == "" {
 		return nil, fmt.Errorf("no api url configured, can't verify token audience")
 	}
@@ -66,7 +66,7 @@ func NewAuthSessionService(cfg rez.Config, orgs rez.OrganizationService, users r
 	s := &AuthSessionService{
 		orgs:       orgs,
 		users:      users,
-		cookiePath: "/api",
+		cookiePath: cfg.App.FrontendApiPath,
 		codec:      codec,
 		oauth:      oauth,
 	}

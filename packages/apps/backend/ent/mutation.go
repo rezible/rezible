@@ -42230,13 +42230,13 @@ func (m *OrganizationRoleMutation) ResetTenantID() {
 	m.tenant = nil
 }
 
-// SetOrgID sets the "org_id" field.
-func (m *OrganizationRoleMutation) SetOrgID(u uuid.UUID) {
+// SetOrganizationID sets the "organization_id" field.
+func (m *OrganizationRoleMutation) SetOrganizationID(u uuid.UUID) {
 	m.organization = &u
 }
 
-// OrgID returns the value of the "org_id" field in the mutation.
-func (m *OrganizationRoleMutation) OrgID() (r uuid.UUID, exists bool) {
+// OrganizationID returns the value of the "organization_id" field in the mutation.
+func (m *OrganizationRoleMutation) OrganizationID() (r uuid.UUID, exists bool) {
 	v := m.organization
 	if v == nil {
 		return
@@ -42244,25 +42244,25 @@ func (m *OrganizationRoleMutation) OrgID() (r uuid.UUID, exists bool) {
 	return *v, true
 }
 
-// OldOrgID returns the old "org_id" field's value of the OrganizationRole entity.
+// OldOrganizationID returns the old "organization_id" field's value of the OrganizationRole entity.
 // If the OrganizationRole object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *OrganizationRoleMutation) OldOrgID(ctx context.Context) (v uuid.UUID, err error) {
+func (m *OrganizationRoleMutation) OldOrganizationID(ctx context.Context) (v uuid.UUID, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldOrgID is only allowed on UpdateOne operations")
+		return v, errors.New("OldOrganizationID is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldOrgID requires an ID field in the mutation")
+		return v, errors.New("OldOrganizationID requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldOrgID: %w", err)
+		return v, fmt.Errorf("querying old value for OldOrganizationID: %w", err)
 	}
-	return oldValue.OrgID, nil
+	return oldValue.OrganizationID, nil
 }
 
-// ResetOrgID resets all changes to the "org_id" field.
-func (m *OrganizationRoleMutation) ResetOrgID() {
+// ResetOrganizationID resets all changes to the "organization_id" field.
+func (m *OrganizationRoleMutation) ResetOrganizationID() {
 	m.organization = nil
 }
 
@@ -42365,28 +42365,15 @@ func (m *OrganizationRoleMutation) ResetTenant() {
 	m.clearedtenant = false
 }
 
-// SetOrganizationID sets the "organization" edge to the Organization entity by id.
-func (m *OrganizationRoleMutation) SetOrganizationID(id uuid.UUID) {
-	m.organization = &id
-}
-
 // ClearOrganization clears the "organization" edge to the Organization entity.
 func (m *OrganizationRoleMutation) ClearOrganization() {
 	m.clearedorganization = true
-	m.clearedFields[organizationrole.FieldOrgID] = struct{}{}
+	m.clearedFields[organizationrole.FieldOrganizationID] = struct{}{}
 }
 
 // OrganizationCleared reports if the "organization" edge to the Organization entity was cleared.
 func (m *OrganizationRoleMutation) OrganizationCleared() bool {
 	return m.clearedorganization
-}
-
-// OrganizationID returns the "organization" edge ID in the mutation.
-func (m *OrganizationRoleMutation) OrganizationID() (id uuid.UUID, exists bool) {
-	if m.organization != nil {
-		return *m.organization, true
-	}
-	return
 }
 
 // OrganizationIDs returns the "organization" edge IDs in the mutation.
@@ -42471,7 +42458,7 @@ func (m *OrganizationRoleMutation) Fields() []string {
 		fields = append(fields, organizationrole.FieldTenantID)
 	}
 	if m.organization != nil {
-		fields = append(fields, organizationrole.FieldOrgID)
+		fields = append(fields, organizationrole.FieldOrganizationID)
 	}
 	if m.user != nil {
 		fields = append(fields, organizationrole.FieldUserID)
@@ -42489,8 +42476,8 @@ func (m *OrganizationRoleMutation) Field(name string) (ent.Value, bool) {
 	switch name {
 	case organizationrole.FieldTenantID:
 		return m.TenantID()
-	case organizationrole.FieldOrgID:
-		return m.OrgID()
+	case organizationrole.FieldOrganizationID:
+		return m.OrganizationID()
 	case organizationrole.FieldUserID:
 		return m.UserID()
 	case organizationrole.FieldRole:
@@ -42506,8 +42493,8 @@ func (m *OrganizationRoleMutation) OldField(ctx context.Context, name string) (e
 	switch name {
 	case organizationrole.FieldTenantID:
 		return m.OldTenantID(ctx)
-	case organizationrole.FieldOrgID:
-		return m.OldOrgID(ctx)
+	case organizationrole.FieldOrganizationID:
+		return m.OldOrganizationID(ctx)
 	case organizationrole.FieldUserID:
 		return m.OldUserID(ctx)
 	case organizationrole.FieldRole:
@@ -42528,12 +42515,12 @@ func (m *OrganizationRoleMutation) SetField(name string, value ent.Value) error 
 		}
 		m.SetTenantID(v)
 		return nil
-	case organizationrole.FieldOrgID:
+	case organizationrole.FieldOrganizationID:
 		v, ok := value.(uuid.UUID)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetOrgID(v)
+		m.SetOrganizationID(v)
 		return nil
 	case organizationrole.FieldUserID:
 		v, ok := value.(uuid.UUID)
@@ -42604,8 +42591,8 @@ func (m *OrganizationRoleMutation) ResetField(name string) error {
 	case organizationrole.FieldTenantID:
 		m.ResetTenantID()
 		return nil
-	case organizationrole.FieldOrgID:
-		m.ResetOrgID()
+	case organizationrole.FieldOrganizationID:
+		m.ResetOrganizationID()
 		return nil
 	case organizationrole.FieldUserID:
 		m.ResetUserID()

@@ -2,15 +2,19 @@ package rez
 
 import (
 	"cmp"
+	"net/url"
 	"os"
+	"strings"
 	"time"
 )
 
 func DefaultConfig() Config {
 	return Config{
 		App: AppConfig{
-			FrontendUrl: "",
-			ApiUrl:      "",
+			DebugMode:       false,
+			FrontendDomain:  "",
+			FrontendApiPath: "/api",
+			ApiDomain:       "",
 			SingleTenant: AppSingleTenantConfig{
 				Enabled: false,
 				OrgName: "Default",
@@ -62,16 +66,21 @@ type Config struct {
 
 type (
 	AppConfig struct {
-		DebugMode    bool                  `cfg:"debug_mode"`
-		FrontendUrl  string                `cfg:"frontend_url" validate:"required"`
-		ApiUrl       string                `cfg:"api_url" validate:"required"`
-		SingleTenant AppSingleTenantConfig `cfg:"singletenant"`
+		DebugMode       bool                  `cfg:"debug_mode"`
+		FrontendDomain  string                `cfg:"frontend_domain" validate:"required"`
+		FrontendApiPath string                `cfg:"frontend_api_path" default:"/api"`
+		ApiDomain       string                `cfg:"api_domain" validate:"required"`
+		SingleTenant    AppSingleTenantConfig `cfg:"singletenant"`
 	}
 	AppSingleTenantConfig struct {
 		Enabled bool   `cfg:"enabled"`
 		OrgName string `cfg:"default_org_name"`
 	}
 )
+
+func (a AppConfig) GetFrontendUrl(paths ...string) (*url.URL, error) {
+	return url.Parse("https://" + a.FrontendDomain + url.PathEscape(strings.Join(paths, "/")))
+}
 
 type (
 	HttpServerConfig struct {

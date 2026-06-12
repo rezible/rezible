@@ -32,16 +32,16 @@ func (_u *OrganizationRoleUpdate) Where(ps ...predicate.OrganizationRole) *Organ
 	return _u
 }
 
-// SetOrgID sets the "org_id" field.
-func (_u *OrganizationRoleUpdate) SetOrgID(v uuid.UUID) *OrganizationRoleUpdate {
-	_u.mutation.SetOrgID(v)
+// SetOrganizationID sets the "organization_id" field.
+func (_u *OrganizationRoleUpdate) SetOrganizationID(v uuid.UUID) *OrganizationRoleUpdate {
+	_u.mutation.SetOrganizationID(v)
 	return _u
 }
 
-// SetNillableOrgID sets the "org_id" field if the given value is not nil.
-func (_u *OrganizationRoleUpdate) SetNillableOrgID(v *uuid.UUID) *OrganizationRoleUpdate {
+// SetNillableOrganizationID sets the "organization_id" field if the given value is not nil.
+func (_u *OrganizationRoleUpdate) SetNillableOrganizationID(v *uuid.UUID) *OrganizationRoleUpdate {
 	if v != nil {
-		_u.SetOrgID(*v)
+		_u.SetOrganizationID(*v)
 	}
 	return _u
 }
@@ -71,12 +71,6 @@ func (_u *OrganizationRoleUpdate) SetNillableRole(v *organizationrole.Role) *Org
 	if v != nil {
 		_u.SetRole(*v)
 	}
-	return _u
-}
-
-// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
-func (_u *OrganizationRoleUpdate) SetOrganizationID(id uuid.UUID) *OrganizationRoleUpdate {
-	_u.mutation.SetOrganizationID(id)
 	return _u
 }
 
@@ -260,16 +254,16 @@ type OrganizationRoleUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetOrgID sets the "org_id" field.
-func (_u *OrganizationRoleUpdateOne) SetOrgID(v uuid.UUID) *OrganizationRoleUpdateOne {
-	_u.mutation.SetOrgID(v)
+// SetOrganizationID sets the "organization_id" field.
+func (_u *OrganizationRoleUpdateOne) SetOrganizationID(v uuid.UUID) *OrganizationRoleUpdateOne {
+	_u.mutation.SetOrganizationID(v)
 	return _u
 }
 
-// SetNillableOrgID sets the "org_id" field if the given value is not nil.
-func (_u *OrganizationRoleUpdateOne) SetNillableOrgID(v *uuid.UUID) *OrganizationRoleUpdateOne {
+// SetNillableOrganizationID sets the "organization_id" field if the given value is not nil.
+func (_u *OrganizationRoleUpdateOne) SetNillableOrganizationID(v *uuid.UUID) *OrganizationRoleUpdateOne {
 	if v != nil {
-		_u.SetOrgID(*v)
+		_u.SetOrganizationID(*v)
 	}
 	return _u
 }
@@ -299,12 +293,6 @@ func (_u *OrganizationRoleUpdateOne) SetNillableRole(v *organizationrole.Role) *
 	if v != nil {
 		_u.SetRole(*v)
 	}
-	return _u
-}
-
-// SetOrganizationID sets the "organization" edge to the Organization entity by ID.
-func (_u *OrganizationRoleUpdateOne) SetOrganizationID(id uuid.UUID) *OrganizationRoleUpdateOne {
-	_u.mutation.SetOrganizationID(id)
 	return _u
 }
 
