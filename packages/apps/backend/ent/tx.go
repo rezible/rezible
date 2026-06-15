@@ -44,6 +44,8 @@ type Tx struct {
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
 	IncidentFieldOption *IncidentFieldOptionClient
+	// IncidentImpact is the client for interacting with the IncidentImpact builders.
+	IncidentImpact *IncidentImpactClient
 	// IncidentLink is the client for interacting with the IncidentLink builders.
 	IncidentLink *IncidentLinkClient
 	// IncidentMilestone is the client for interacting with the IncidentMilestone builders.
@@ -295,6 +297,7 @@ func (tx *Tx) init() {
 	tx.IncidentDebriefSuggestion = NewIncidentDebriefSuggestionClient(tx.config)
 	tx.IncidentField = NewIncidentFieldClient(tx.config)
 	tx.IncidentFieldOption = NewIncidentFieldOptionClient(tx.config)
+	tx.IncidentImpact = NewIncidentImpactClient(tx.config)
 	tx.IncidentLink = NewIncidentLinkClient(tx.config)
 	tx.IncidentMilestone = NewIncidentMilestoneClient(tx.config)
 	tx.IncidentRole = NewIncidentRoleClient(tx.config)

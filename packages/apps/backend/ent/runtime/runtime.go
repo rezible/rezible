@@ -23,6 +23,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
@@ -449,6 +450,34 @@ func init() {
 	incidentfieldoptionDescID := incidentfieldoptionFields[0].Descriptor()
 	// incidentfieldoption.DefaultID holds the default value on creation for the id field.
 	incidentfieldoption.DefaultID = incidentfieldoptionDescID.Default.(func() uuid.UUID)
+	incidentimpactMixin := schema.IncidentImpact{}.Mixin()
+	incidentimpact.Policy = privacy.NewPolicies(incidentimpactMixin[0], incidentimpactMixin[1], schema.IncidentImpact{})
+	incidentimpact.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := incidentimpact.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	incidentimpactMixinFields2 := incidentimpactMixin[2].Fields()
+	_ = incidentimpactMixinFields2
+	incidentimpactFields := schema.IncidentImpact{}.Fields()
+	_ = incidentimpactFields
+	// incidentimpactDescCreatedAt is the schema descriptor for created_at field.
+	incidentimpactDescCreatedAt := incidentimpactMixinFields2[0].Descriptor()
+	// incidentimpact.DefaultCreatedAt holds the default value on creation for the created_at field.
+	incidentimpact.DefaultCreatedAt = incidentimpactDescCreatedAt.Default.(func() time.Time)
+	// incidentimpactDescUpdatedAt is the schema descriptor for updated_at field.
+	incidentimpactDescUpdatedAt := incidentimpactMixinFields2[1].Descriptor()
+	// incidentimpact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	incidentimpact.DefaultUpdatedAt = incidentimpactDescUpdatedAt.Default.(func() time.Time)
+	// incidentimpact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	incidentimpact.UpdateDefaultUpdatedAt = incidentimpactDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// incidentimpactDescID is the schema descriptor for id field.
+	incidentimpactDescID := incidentimpactFields[0].Descriptor()
+	// incidentimpact.DefaultID holds the default value on creation for the id field.
+	incidentimpact.DefaultID = incidentimpactDescID.Default.(func() uuid.UUID)
 	incidentlinkMixin := schema.IncidentLink{}.Mixin()
 	incidentlink.Policy = privacy.NewPolicies(incidentlinkMixin[0], incidentlinkMixin[1], schema.IncidentLink{})
 	incidentlink.Hooks[0] = func(next ent.Mutator) ent.Mutator {

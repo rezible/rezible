@@ -28,6 +28,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
@@ -107,6 +108,7 @@ const (
 	TypeIncidentDebriefSuggestion               = "IncidentDebriefSuggestion"
 	TypeIncidentField                           = "IncidentField"
 	TypeIncidentFieldOption                     = "IncidentFieldOption"
+	TypeIncidentImpact                          = "IncidentImpact"
 	TypeIncidentLink                            = "IncidentLink"
 	TypeIncidentMilestone                       = "IncidentMilestone"
 	TypeIncidentRole                            = "IncidentRole"
@@ -7962,6 +7964,9 @@ type IncidentMutation struct {
 	tag_assignments          map[uuid.UUID]struct{}
 	removedtag_assignments   map[uuid.UUID]struct{}
 	clearedtag_assignments   bool
+	impacts                  map[uuid.UUID]struct{}
+	removedimpacts           map[uuid.UUID]struct{}
+	clearedimpacts           bool
 	debriefs                 map[uuid.UUID]struct{}
 	removeddebriefs          map[uuid.UUID]struct{}
 	cleareddebriefs          bool
@@ -9100,6 +9105,60 @@ func (m *IncidentMutation) ResetTagAssignments() {
 	m.removedtag_assignments = nil
 }
 
+// AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by ids.
+func (m *IncidentMutation) AddImpactIDs(ids ...uuid.UUID) {
+	if m.impacts == nil {
+		m.impacts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.impacts[ids[i]] = struct{}{}
+	}
+}
+
+// ClearImpacts clears the "impacts" edge to the IncidentImpact entity.
+func (m *IncidentMutation) ClearImpacts() {
+	m.clearedimpacts = true
+}
+
+// ImpactsCleared reports if the "impacts" edge to the IncidentImpact entity was cleared.
+func (m *IncidentMutation) ImpactsCleared() bool {
+	return m.clearedimpacts
+}
+
+// RemoveImpactIDs removes the "impacts" edge to the IncidentImpact entity by IDs.
+func (m *IncidentMutation) RemoveImpactIDs(ids ...uuid.UUID) {
+	if m.removedimpacts == nil {
+		m.removedimpacts = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.impacts, ids[i])
+		m.removedimpacts[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedImpacts returns the removed IDs of the "impacts" edge to the IncidentImpact entity.
+func (m *IncidentMutation) RemovedImpactsIDs() (ids []uuid.UUID) {
+	for id := range m.removedimpacts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ImpactsIDs returns the "impacts" edge IDs in the mutation.
+func (m *IncidentMutation) ImpactsIDs() (ids []uuid.UUID) {
+	for id := range m.impacts {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetImpacts resets all changes to the "impacts" edge.
+func (m *IncidentMutation) ResetImpacts() {
+	m.impacts = nil
+	m.clearedimpacts = false
+	m.removedimpacts = nil
+}
+
 // AddDebriefIDs adds the "debriefs" edge to the IncidentDebrief entity by ids.
 func (m *IncidentMutation) AddDebriefIDs(ids ...uuid.UUID) {
 	if m.debriefs == nil {
@@ -9697,7 +9756,7 @@ func (m *IncidentMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *IncidentMutation) AddedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 19)
 	if m.tenant != nil {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -9736,6 +9795,9 @@ func (m *IncidentMutation) AddedEdges() []string {
 	}
 	if m.tag_assignments != nil {
 		edges = append(edges, incident.EdgeTagAssignments)
+	}
+	if m.impacts != nil {
+		edges = append(edges, incident.EdgeImpacts)
 	}
 	if m.debriefs != nil {
 		edges = append(edges, incident.EdgeDebriefs)
@@ -9827,6 +9889,12 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeImpacts:
+		ids := make([]ent.Value, 0, len(m.impacts))
+		for id := range m.impacts {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeDebriefs:
 		ids := make([]ent.Value, 0, len(m.debriefs))
 		for id := range m.debriefs {
@@ -9863,7 +9931,7 @@ func (m *IncidentMutation) AddedIDs(name string) []ent.Value {
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *IncidentMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 19)
 	if m.removedmilestones != nil {
 		edges = append(edges, incident.EdgeMilestones)
 	}
@@ -9887,6 +9955,9 @@ func (m *IncidentMutation) RemovedEdges() []string {
 	}
 	if m.removedtag_assignments != nil {
 		edges = append(edges, incident.EdgeTagAssignments)
+	}
+	if m.removedimpacts != nil {
+		edges = append(edges, incident.EdgeImpacts)
 	}
 	if m.removeddebriefs != nil {
 		edges = append(edges, incident.EdgeDebriefs)
@@ -9958,6 +10029,12 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 			ids = append(ids, id)
 		}
 		return ids
+	case incident.EdgeImpacts:
+		ids := make([]ent.Value, 0, len(m.removedimpacts))
+		for id := range m.removedimpacts {
+			ids = append(ids, id)
+		}
+		return ids
 	case incident.EdgeDebriefs:
 		ids := make([]ent.Value, 0, len(m.removeddebriefs))
 		for id := range m.removeddebriefs {
@@ -9994,7 +10071,7 @@ func (m *IncidentMutation) RemovedIDs(name string) []ent.Value {
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *IncidentMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 18)
+	edges := make([]string, 0, 19)
 	if m.clearedtenant {
 		edges = append(edges, incident.EdgeTenant)
 	}
@@ -10033,6 +10110,9 @@ func (m *IncidentMutation) ClearedEdges() []string {
 	}
 	if m.clearedtag_assignments {
 		edges = append(edges, incident.EdgeTagAssignments)
+	}
+	if m.clearedimpacts {
+		edges = append(edges, incident.EdgeImpacts)
 	}
 	if m.cleareddebriefs {
 		edges = append(edges, incident.EdgeDebriefs)
@@ -10082,6 +10162,8 @@ func (m *IncidentMutation) EdgeCleared(name string) bool {
 		return m.clearedtasks
 	case incident.EdgeTagAssignments:
 		return m.clearedtag_assignments
+	case incident.EdgeImpacts:
+		return m.clearedimpacts
 	case incident.EdgeDebriefs:
 		return m.cleareddebriefs
 	case incident.EdgeReviewSessions:
@@ -10161,6 +10243,9 @@ func (m *IncidentMutation) ResetEdge(name string) error {
 		return nil
 	case incident.EdgeTagAssignments:
 		m.ResetTagAssignments()
+		return nil
+	case incident.EdgeImpacts:
+		m.ResetImpacts()
 		return nil
 	case incident.EdgeDebriefs:
 		m.ResetDebriefs()
@@ -14793,6 +14878,852 @@ func (m *IncidentFieldOptionMutation) ResetEdge(name string) error {
 		return nil
 	}
 	return fmt.Errorf("unknown IncidentFieldOption edge %s", name)
+}
+
+// IncidentImpactMutation represents an operation that mutates the IncidentImpact nodes in the graph.
+type IncidentImpactMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	created_at              *time.Time
+	updated_at              *time.Time
+	source                  *string
+	note                    *string
+	clearedFields           map[string]struct{}
+	tenant                  *int
+	clearedtenant           bool
+	incident                *uuid.UUID
+	clearedincident         bool
+	knowledge_entity        *uuid.UUID
+	clearedknowledge_entity bool
+	done                    bool
+	oldValue                func(context.Context) (*IncidentImpact, error)
+	predicates              []predicate.IncidentImpact
+}
+
+var _ ent.Mutation = (*IncidentImpactMutation)(nil)
+
+// incidentimpactOption allows management of the mutation configuration using functional options.
+type incidentimpactOption func(*IncidentImpactMutation)
+
+// newIncidentImpactMutation creates new mutation for the IncidentImpact entity.
+func newIncidentImpactMutation(c config, op Op, opts ...incidentimpactOption) *IncidentImpactMutation {
+	m := &IncidentImpactMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeIncidentImpact,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withIncidentImpactID sets the ID field of the mutation.
+func withIncidentImpactID(id uuid.UUID) incidentimpactOption {
+	return func(m *IncidentImpactMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *IncidentImpact
+		)
+		m.oldValue = func(ctx context.Context) (*IncidentImpact, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().IncidentImpact.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withIncidentImpact sets the old IncidentImpact of the mutation.
+func withIncidentImpact(node *IncidentImpact) incidentimpactOption {
+	return func(m *IncidentImpactMutation) {
+		m.oldValue = func(context.Context) (*IncidentImpact, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m IncidentImpactMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m IncidentImpactMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of IncidentImpact entities.
+func (m *IncidentImpactMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *IncidentImpactMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *IncidentImpactMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().IncidentImpact.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetTenantID sets the "tenant_id" field.
+func (m *IncidentImpactMutation) SetTenantID(i int) {
+	m.tenant = &i
+}
+
+// TenantID returns the value of the "tenant_id" field in the mutation.
+func (m *IncidentImpactMutation) TenantID() (r int, exists bool) {
+	v := m.tenant
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTenantID returns the old "tenant_id" field's value of the IncidentImpact entity.
+// If the IncidentImpact object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentImpactMutation) OldTenantID(ctx context.Context) (v int, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTenantID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTenantID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTenantID: %w", err)
+	}
+	return oldValue.TenantID, nil
+}
+
+// ResetTenantID resets all changes to the "tenant_id" field.
+func (m *IncidentImpactMutation) ResetTenantID() {
+	m.tenant = nil
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *IncidentImpactMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *IncidentImpactMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the IncidentImpact entity.
+// If the IncidentImpact object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentImpactMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *IncidentImpactMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *IncidentImpactMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *IncidentImpactMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the IncidentImpact entity.
+// If the IncidentImpact object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentImpactMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *IncidentImpactMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetIncidentID sets the "incident_id" field.
+func (m *IncidentImpactMutation) SetIncidentID(u uuid.UUID) {
+	m.incident = &u
+}
+
+// IncidentID returns the value of the "incident_id" field in the mutation.
+func (m *IncidentImpactMutation) IncidentID() (r uuid.UUID, exists bool) {
+	v := m.incident
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldIncidentID returns the old "incident_id" field's value of the IncidentImpact entity.
+// If the IncidentImpact object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentImpactMutation) OldIncidentID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldIncidentID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldIncidentID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldIncidentID: %w", err)
+	}
+	return oldValue.IncidentID, nil
+}
+
+// ResetIncidentID resets all changes to the "incident_id" field.
+func (m *IncidentImpactMutation) ResetIncidentID() {
+	m.incident = nil
+}
+
+// SetKnowledgeEntityID sets the "knowledge_entity_id" field.
+func (m *IncidentImpactMutation) SetKnowledgeEntityID(u uuid.UUID) {
+	m.knowledge_entity = &u
+}
+
+// KnowledgeEntityID returns the value of the "knowledge_entity_id" field in the mutation.
+func (m *IncidentImpactMutation) KnowledgeEntityID() (r uuid.UUID, exists bool) {
+	v := m.knowledge_entity
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldKnowledgeEntityID returns the old "knowledge_entity_id" field's value of the IncidentImpact entity.
+// If the IncidentImpact object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentImpactMutation) OldKnowledgeEntityID(ctx context.Context) (v uuid.UUID, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldKnowledgeEntityID is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldKnowledgeEntityID requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldKnowledgeEntityID: %w", err)
+	}
+	return oldValue.KnowledgeEntityID, nil
+}
+
+// ResetKnowledgeEntityID resets all changes to the "knowledge_entity_id" field.
+func (m *IncidentImpactMutation) ResetKnowledgeEntityID() {
+	m.knowledge_entity = nil
+}
+
+// SetSource sets the "source" field.
+func (m *IncidentImpactMutation) SetSource(s string) {
+	m.source = &s
+}
+
+// Source returns the value of the "source" field in the mutation.
+func (m *IncidentImpactMutation) Source() (r string, exists bool) {
+	v := m.source
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldSource returns the old "source" field's value of the IncidentImpact entity.
+// If the IncidentImpact object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentImpactMutation) OldSource(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldSource is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldSource requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldSource: %w", err)
+	}
+	return oldValue.Source, nil
+}
+
+// ClearSource clears the value of the "source" field.
+func (m *IncidentImpactMutation) ClearSource() {
+	m.source = nil
+	m.clearedFields[incidentimpact.FieldSource] = struct{}{}
+}
+
+// SourceCleared returns if the "source" field was cleared in this mutation.
+func (m *IncidentImpactMutation) SourceCleared() bool {
+	_, ok := m.clearedFields[incidentimpact.FieldSource]
+	return ok
+}
+
+// ResetSource resets all changes to the "source" field.
+func (m *IncidentImpactMutation) ResetSource() {
+	m.source = nil
+	delete(m.clearedFields, incidentimpact.FieldSource)
+}
+
+// SetNote sets the "note" field.
+func (m *IncidentImpactMutation) SetNote(s string) {
+	m.note = &s
+}
+
+// Note returns the value of the "note" field in the mutation.
+func (m *IncidentImpactMutation) Note() (r string, exists bool) {
+	v := m.note
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldNote returns the old "note" field's value of the IncidentImpact entity.
+// If the IncidentImpact object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *IncidentImpactMutation) OldNote(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldNote is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldNote requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldNote: %w", err)
+	}
+	return oldValue.Note, nil
+}
+
+// ClearNote clears the value of the "note" field.
+func (m *IncidentImpactMutation) ClearNote() {
+	m.note = nil
+	m.clearedFields[incidentimpact.FieldNote] = struct{}{}
+}
+
+// NoteCleared returns if the "note" field was cleared in this mutation.
+func (m *IncidentImpactMutation) NoteCleared() bool {
+	_, ok := m.clearedFields[incidentimpact.FieldNote]
+	return ok
+}
+
+// ResetNote resets all changes to the "note" field.
+func (m *IncidentImpactMutation) ResetNote() {
+	m.note = nil
+	delete(m.clearedFields, incidentimpact.FieldNote)
+}
+
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (m *IncidentImpactMutation) ClearTenant() {
+	m.clearedtenant = true
+	m.clearedFields[incidentimpact.FieldTenantID] = struct{}{}
+}
+
+// TenantCleared reports if the "tenant" edge to the Tenant entity was cleared.
+func (m *IncidentImpactMutation) TenantCleared() bool {
+	return m.clearedtenant
+}
+
+// TenantIDs returns the "tenant" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TenantID instead. It exists only for internal usage by the builders.
+func (m *IncidentImpactMutation) TenantIDs() (ids []int) {
+	if id := m.tenant; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetTenant resets all changes to the "tenant" edge.
+func (m *IncidentImpactMutation) ResetTenant() {
+	m.tenant = nil
+	m.clearedtenant = false
+}
+
+// ClearIncident clears the "incident" edge to the Incident entity.
+func (m *IncidentImpactMutation) ClearIncident() {
+	m.clearedincident = true
+	m.clearedFields[incidentimpact.FieldIncidentID] = struct{}{}
+}
+
+// IncidentCleared reports if the "incident" edge to the Incident entity was cleared.
+func (m *IncidentImpactMutation) IncidentCleared() bool {
+	return m.clearedincident
+}
+
+// IncidentIDs returns the "incident" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// IncidentID instead. It exists only for internal usage by the builders.
+func (m *IncidentImpactMutation) IncidentIDs() (ids []uuid.UUID) {
+	if id := m.incident; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetIncident resets all changes to the "incident" edge.
+func (m *IncidentImpactMutation) ResetIncident() {
+	m.incident = nil
+	m.clearedincident = false
+}
+
+// ClearKnowledgeEntity clears the "knowledge_entity" edge to the KnowledgeEntity entity.
+func (m *IncidentImpactMutation) ClearKnowledgeEntity() {
+	m.clearedknowledge_entity = true
+	m.clearedFields[incidentimpact.FieldKnowledgeEntityID] = struct{}{}
+}
+
+// KnowledgeEntityCleared reports if the "knowledge_entity" edge to the KnowledgeEntity entity was cleared.
+func (m *IncidentImpactMutation) KnowledgeEntityCleared() bool {
+	return m.clearedknowledge_entity
+}
+
+// KnowledgeEntityIDs returns the "knowledge_entity" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// KnowledgeEntityID instead. It exists only for internal usage by the builders.
+func (m *IncidentImpactMutation) KnowledgeEntityIDs() (ids []uuid.UUID) {
+	if id := m.knowledge_entity; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetKnowledgeEntity resets all changes to the "knowledge_entity" edge.
+func (m *IncidentImpactMutation) ResetKnowledgeEntity() {
+	m.knowledge_entity = nil
+	m.clearedknowledge_entity = false
+}
+
+// Where appends a list predicates to the IncidentImpactMutation builder.
+func (m *IncidentImpactMutation) Where(ps ...predicate.IncidentImpact) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// WhereP appends storage-level predicates to the IncidentImpactMutation builder. Using this method,
+// users can use type-assertion to append predicates that do not depend on any generated package.
+func (m *IncidentImpactMutation) WhereP(ps ...func(*sql.Selector)) {
+	p := make([]predicate.IncidentImpact, len(ps))
+	for i := range ps {
+		p[i] = ps[i]
+	}
+	m.Where(p...)
+}
+
+// Op returns the operation name.
+func (m *IncidentImpactMutation) Op() Op {
+	return m.op
+}
+
+// SetOp allows setting the mutation operation.
+func (m *IncidentImpactMutation) SetOp(op Op) {
+	m.op = op
+}
+
+// Type returns the node type of this mutation (IncidentImpact).
+func (m *IncidentImpactMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *IncidentImpactMutation) Fields() []string {
+	fields := make([]string, 0, 7)
+	if m.tenant != nil {
+		fields = append(fields, incidentimpact.FieldTenantID)
+	}
+	if m.created_at != nil {
+		fields = append(fields, incidentimpact.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, incidentimpact.FieldUpdatedAt)
+	}
+	if m.incident != nil {
+		fields = append(fields, incidentimpact.FieldIncidentID)
+	}
+	if m.knowledge_entity != nil {
+		fields = append(fields, incidentimpact.FieldKnowledgeEntityID)
+	}
+	if m.source != nil {
+		fields = append(fields, incidentimpact.FieldSource)
+	}
+	if m.note != nil {
+		fields = append(fields, incidentimpact.FieldNote)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *IncidentImpactMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case incidentimpact.FieldTenantID:
+		return m.TenantID()
+	case incidentimpact.FieldCreatedAt:
+		return m.CreatedAt()
+	case incidentimpact.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case incidentimpact.FieldIncidentID:
+		return m.IncidentID()
+	case incidentimpact.FieldKnowledgeEntityID:
+		return m.KnowledgeEntityID()
+	case incidentimpact.FieldSource:
+		return m.Source()
+	case incidentimpact.FieldNote:
+		return m.Note()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *IncidentImpactMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case incidentimpact.FieldTenantID:
+		return m.OldTenantID(ctx)
+	case incidentimpact.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case incidentimpact.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case incidentimpact.FieldIncidentID:
+		return m.OldIncidentID(ctx)
+	case incidentimpact.FieldKnowledgeEntityID:
+		return m.OldKnowledgeEntityID(ctx)
+	case incidentimpact.FieldSource:
+		return m.OldSource(ctx)
+	case incidentimpact.FieldNote:
+		return m.OldNote(ctx)
+	}
+	return nil, fmt.Errorf("unknown IncidentImpact field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IncidentImpactMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case incidentimpact.FieldTenantID:
+		v, ok := value.(int)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTenantID(v)
+		return nil
+	case incidentimpact.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case incidentimpact.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case incidentimpact.FieldIncidentID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetIncidentID(v)
+		return nil
+	case incidentimpact.FieldKnowledgeEntityID:
+		v, ok := value.(uuid.UUID)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetKnowledgeEntityID(v)
+		return nil
+	case incidentimpact.FieldSource:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetSource(v)
+		return nil
+	case incidentimpact.FieldNote:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetNote(v)
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentImpact field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *IncidentImpactMutation) AddedFields() []string {
+	var fields []string
+	return fields
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *IncidentImpactMutation) AddedField(name string) (ent.Value, bool) {
+	switch name {
+	}
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *IncidentImpactMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown IncidentImpact numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *IncidentImpactMutation) ClearedFields() []string {
+	var fields []string
+	if m.FieldCleared(incidentimpact.FieldSource) {
+		fields = append(fields, incidentimpact.FieldSource)
+	}
+	if m.FieldCleared(incidentimpact.FieldNote) {
+		fields = append(fields, incidentimpact.FieldNote)
+	}
+	return fields
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *IncidentImpactMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *IncidentImpactMutation) ClearField(name string) error {
+	switch name {
+	case incidentimpact.FieldSource:
+		m.ClearSource()
+		return nil
+	case incidentimpact.FieldNote:
+		m.ClearNote()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentImpact nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *IncidentImpactMutation) ResetField(name string) error {
+	switch name {
+	case incidentimpact.FieldTenantID:
+		m.ResetTenantID()
+		return nil
+	case incidentimpact.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case incidentimpact.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case incidentimpact.FieldIncidentID:
+		m.ResetIncidentID()
+		return nil
+	case incidentimpact.FieldKnowledgeEntityID:
+		m.ResetKnowledgeEntityID()
+		return nil
+	case incidentimpact.FieldSource:
+		m.ResetSource()
+		return nil
+	case incidentimpact.FieldNote:
+		m.ResetNote()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentImpact field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *IncidentImpactMutation) AddedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.tenant != nil {
+		edges = append(edges, incidentimpact.EdgeTenant)
+	}
+	if m.incident != nil {
+		edges = append(edges, incidentimpact.EdgeIncident)
+	}
+	if m.knowledge_entity != nil {
+		edges = append(edges, incidentimpact.EdgeKnowledgeEntity)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *IncidentImpactMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case incidentimpact.EdgeTenant:
+		if id := m.tenant; id != nil {
+			return []ent.Value{*id}
+		}
+	case incidentimpact.EdgeIncident:
+		if id := m.incident; id != nil {
+			return []ent.Value{*id}
+		}
+	case incidentimpact.EdgeKnowledgeEntity:
+		if id := m.knowledge_entity; id != nil {
+			return []ent.Value{*id}
+		}
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *IncidentImpactMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 3)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *IncidentImpactMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *IncidentImpactMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 3)
+	if m.clearedtenant {
+		edges = append(edges, incidentimpact.EdgeTenant)
+	}
+	if m.clearedincident {
+		edges = append(edges, incidentimpact.EdgeIncident)
+	}
+	if m.clearedknowledge_entity {
+		edges = append(edges, incidentimpact.EdgeKnowledgeEntity)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *IncidentImpactMutation) EdgeCleared(name string) bool {
+	switch name {
+	case incidentimpact.EdgeTenant:
+		return m.clearedtenant
+	case incidentimpact.EdgeIncident:
+		return m.clearedincident
+	case incidentimpact.EdgeKnowledgeEntity:
+		return m.clearedknowledge_entity
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *IncidentImpactMutation) ClearEdge(name string) error {
+	switch name {
+	case incidentimpact.EdgeTenant:
+		m.ClearTenant()
+		return nil
+	case incidentimpact.EdgeIncident:
+		m.ClearIncident()
+		return nil
+	case incidentimpact.EdgeKnowledgeEntity:
+		m.ClearKnowledgeEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentImpact unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *IncidentImpactMutation) ResetEdge(name string) error {
+	switch name {
+	case incidentimpact.EdgeTenant:
+		m.ResetTenant()
+		return nil
+	case incidentimpact.EdgeIncident:
+		m.ResetIncident()
+		return nil
+	case incidentimpact.EdgeKnowledgeEntity:
+		m.ResetKnowledgeEntity()
+		return nil
+	}
+	return fmt.Errorf("unknown IncidentImpact edge %s", name)
 }
 
 // IncidentLinkMutation represents an operation that mutates the IncidentLink nodes in the graph.

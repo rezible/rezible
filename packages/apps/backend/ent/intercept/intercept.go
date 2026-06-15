@@ -24,6 +24,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
@@ -565,6 +566,33 @@ func (f TraverseIncidentFieldOption) Traverse(ctx context.Context, q ent.Query) 
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentFieldOptionQuery", q)
+}
+
+// The IncidentImpactFunc type is an adapter to allow the use of ordinary function as a Querier.
+type IncidentImpactFunc func(context.Context, *ent.IncidentImpactQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f IncidentImpactFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.IncidentImpactQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.IncidentImpactQuery", q)
+}
+
+// The TraverseIncidentImpact type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseIncidentImpact func(context.Context, *ent.IncidentImpactQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseIncidentImpact) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseIncidentImpact) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.IncidentImpactQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.IncidentImpactQuery", q)
 }
 
 // The IncidentLinkFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2006,6 +2034,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.IncidentFieldQuery, predicate.IncidentField, incidentfield.OrderOption]{typ: ent.TypeIncidentField, tq: q}, nil
 	case *ent.IncidentFieldOptionQuery:
 		return &query[*ent.IncidentFieldOptionQuery, predicate.IncidentFieldOption, incidentfieldoption.OrderOption]{typ: ent.TypeIncidentFieldOption, tq: q}, nil
+	case *ent.IncidentImpactQuery:
+		return &query[*ent.IncidentImpactQuery, predicate.IncidentImpact, incidentimpact.OrderOption]{typ: ent.TypeIncidentImpact, tq: q}, nil
 	case *ent.IncidentLinkQuery:
 		return &query[*ent.IncidentLinkQuery, predicate.IncidentLink, incidentlink.OrderOption]{typ: ent.TypeIncidentLink, tq: q}, nil
 	case *ent.IncidentMilestoneQuery:

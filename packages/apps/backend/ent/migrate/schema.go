@@ -661,6 +661,65 @@ var (
 			},
 		},
 	}
+	// IncidentImpactsColumns holds the columns for the "incident_impacts" table.
+	IncidentImpactsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "source", Type: field.TypeString, Nullable: true},
+		{Name: "note", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "incident_id", Type: field.TypeUUID},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID},
+	}
+	// IncidentImpactsTable holds the schema information for the "incident_impacts" table.
+	IncidentImpactsTable = &schema.Table{
+		Name:       "incident_impacts",
+		Columns:    IncidentImpactsColumns,
+		PrimaryKey: []*schema.Column{IncidentImpactsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "incident_impacts_tenants_tenant",
+				Columns:    []*schema.Column{IncidentImpactsColumns[5]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_impacts_incidents_incident",
+				Columns:    []*schema.Column{IncidentImpactsColumns[6]},
+				RefColumns: []*schema.Column{IncidentsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "incident_impacts_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{IncidentImpactsColumns[7]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "incidentimpact_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentImpactsColumns[5]},
+			},
+			{
+				Name:    "incidentimpact_tenant_id_incident_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentImpactsColumns[5], IncidentImpactsColumns[6]},
+			},
+			{
+				Name:    "incidentimpact_tenant_id_knowledge_entity_id",
+				Unique:  false,
+				Columns: []*schema.Column{IncidentImpactsColumns[5], IncidentImpactsColumns[7]},
+			},
+			{
+				Name:    "incidentimpact_tenant_id_incident_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{IncidentImpactsColumns[5], IncidentImpactsColumns[6], IncidentImpactsColumns[7]},
+			},
+		},
+	}
 	// IncidentLinksColumns holds the columns for the "incident_links" table.
 	IncidentLinksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -3338,6 +3397,7 @@ var (
 		IncidentDebriefSuggestionsTable,
 		IncidentFieldsTable,
 		IncidentFieldOptionsTable,
+		IncidentImpactsTable,
 		IncidentLinksTable,
 		IncidentMilestonesTable,
 		IncidentRolesTable,
@@ -3445,6 +3505,9 @@ func init() {
 	IncidentFieldsTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentFieldOptionsTable.ForeignKeys[0].RefTable = IncidentFieldsTable
 	IncidentFieldOptionsTable.ForeignKeys[1].RefTable = TenantsTable
+	IncidentImpactsTable.ForeignKeys[0].RefTable = TenantsTable
+	IncidentImpactsTable.ForeignKeys[1].RefTable = IncidentsTable
+	IncidentImpactsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	IncidentLinksTable.ForeignKeys[0].RefTable = TenantsTable
 	IncidentLinksTable.ForeignKeys[1].RefTable = IncidentsTable
 	IncidentLinksTable.ForeignKeys[2].RefTable = IncidentsTable

@@ -10,8 +10,10 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	ifo "github.com/rezible/rezible/ent/incidentfieldoption"
+	ii "github.com/rezible/rezible/ent/incidentimpact"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	inctype "github.com/rezible/rezible/ent/incidenttype"
+	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/projections"
 	"github.com/rezible/rezible/testkit"
@@ -73,6 +75,26 @@ func (s *IncidentServiceSuite) createIncidentProjectionEvent(subjectRef string, 
 		Save(ctx)
 	s.Require().NoError(err)
 	return ev
+}
+
+func (s *IncidentServiceSuite) createBasicIncident(ctx context.Context, svc *IncidentService, title string) *ent.Incident {
+	client := s.Client(ctx)
+	severity, err := client.IncidentSeverity.Create().
+		SetName("SEV-" + uuid.NewString()).
+		SetRank(1).
+		Save(ctx)
+	s.Require().NoError(err)
+	incidentType, err := client.IncidentType.Create().
+		SetName("Type-" + uuid.NewString()).
+		Save(ctx)
+	s.Require().NoError(err)
+	inc, err := svc.Set(ctx, uuid.Nil, func(m *ent.IncidentMutation) {
+		m.SetTitle(title)
+		m.SetSeverityID(severity.ID)
+		m.SetTypeID(incidentType.ID)
+	})
+	s.Require().NoError(err)
+	return inc
 }
 
 func (s *IncidentServiceSuite) TestCreateIncidentWithMetadataRoundTrips() {
@@ -189,4 +211,134 @@ func (s *IncidentServiceSuite) TestIncidentProjectionPublishesCreateChangeAndSki
 		Count(ctx)
 	s.Require().NoError(err)
 	s.Equal(1, typeCount)
+}
+
+func (s *IncidentServiceSuite) TestSetIncidentImpactsSelectOrCreateAndReplacesLinks() {
+	ctx := s.SeedTenantContext()
+	svc := s.newService()
+	inc := s.createBasicIncident(ctx, svc, "Checkout outage")
+
+	impacts, err := svc.SetIncidentImpacts(ctx, rez.SetIncidentImpactsParams{
+		IncidentID: inc.ID,
+		Impacts: []rez.IncidentImpactInput{
+			{
+				Kind:        "functionality",
+				DisplayName: "order_checkout",
+				Description: "Customers cannot complete checkout.",
+				Source:      "responder",
+				Note:        "Reported by support.",
+			},
+		},
+	})
+	s.Require().NoError(err)
+	s.Require().Len(impacts, 1)
+	s.Equal("responder", impacts[0].Source)
+	s.Equal("order_checkout", impacts[0].Edges.KnowledgeEntity.DisplayName)
+
+	serviceEntity, err := s.Client(ctx).KnowledgeEntity.Create().
+		SetKind("service").
+		SetDisplayName("billing").
+		Save(ctx)
+	s.Require().NoError(err)
+
+	impacts, err = svc.SetIncidentImpacts(ctx, rez.SetIncidentImpactsParams{
+		IncidentID: inc.ID,
+		Impacts: []rez.IncidentImpactInput{
+			{
+				KnowledgeEntityID: serviceEntity.ID,
+				Source:            "responder",
+			},
+		},
+	})
+	s.Require().NoError(err)
+	s.Require().Len(impacts, 1)
+	s.Equal(serviceEntity.ID, impacts[0].KnowledgeEntityID)
+
+	count, err := s.Client(ctx).IncidentImpact.Query().
+		Where(ii.IncidentID(inc.ID)).
+		Count(ctx)
+	s.Require().NoError(err)
+	s.Equal(1, count)
+}
+
+func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenceAndFunctionalityDependencies() {
+	ctx := s.SeedTenantContext()
+	svc := s.newService()
+	inc := s.createBasicIncident(ctx, svc, "Checkout failures")
+	now := time.Now().UTC()
+
+	serviceEntity, err := s.Client(ctx).KnowledgeEntity.Create().
+		SetKind("service").
+		SetDisplayName("billing").
+		Save(ctx)
+	s.Require().NoError(err)
+	functionalityEntity, err := s.Client(ctx).KnowledgeEntity.Create().
+		SetKind("functionality").
+		SetDisplayName("order_checkout").
+		Save(ctx)
+	s.Require().NoError(err)
+	alertEntity, err := s.Client(ctx).KnowledgeEntity.Create().
+		SetKind(knowledgeKindAlert).
+		SetDisplayName("Billing errors high").
+		Save(ctx)
+	s.Require().NoError(err)
+	_, err = s.Client(ctx).Alert.Create().
+		SetKnowledgeEntityID(alertEntity.ID).
+		SetTitle("Billing errors high").
+		SetDescription("5xx rate above threshold").
+		Save(ctx)
+	s.Require().NoError(err)
+	_, err = s.Client(ctx).KnowledgeRelationship.Create().
+		SetSourceEntityID(alertEntity.ID).
+		SetTargetEntityID(serviceEntity.ID).
+		SetKind("alerts_component").
+		SetDisplayName("alert targets service").
+		SetLastObservedAt(now).
+		Save(ctx)
+	s.Require().NoError(err)
+	_, err = s.Client(ctx).KnowledgeRelationship.Create().
+		SetSourceEntityID(functionalityEntity.ID).
+		SetTargetEntityID(serviceEntity.ID).
+		SetKind(relationshipFunctionalityDependsOnComponent).
+		SetDisplayName("checkout depends on billing").
+		SetLastObservedAt(now).
+		Save(ctx)
+	s.Require().NoError(err)
+
+	event, err := s.Client(ctx).NormalizedEvent.Create().
+		SetProvider("test").
+		SetProviderSource("alerts").
+		SetProviderEventRef("alert-" + uuid.NewString()).
+		SetProviderSubjectRef("billing-errors").
+		SetActivityKind(ne.ActivityKindObserved).
+		SetSubjectKind(projections.SubjectKindAlert.String()).
+		SetOccurredAt(now).
+		SetReceivedAt(now).
+		SetAttributes(map[string]any{}).
+		Save(ctx)
+	s.Require().NoError(err)
+	_, err = s.Client(ctx).KnowledgeEvidence.Create().
+		SetSubjectType(knev.SubjectTypeEntity).
+		SetEntityID(alertEntity.ID).
+		SetEventID(event.ID).
+		SetAssertion(assertionAlertDefinitionObserved).
+		SetEvidenceKind(knev.EvidenceKindObserved).
+		SetObservedAt(now).
+		Save(ctx)
+	s.Require().NoError(err)
+
+	pack, err := svc.GetIncidentContextPack(ctx, inc.ID)
+	s.Require().NoError(err)
+	s.Empty(pack.ExplicitImpacts)
+	s.Require().Len(pack.ActiveAlerts, 1)
+	s.Equal("Billing errors high", pack.ActiveAlerts[0].Title)
+
+	byID := map[uuid.UUID]rez.IncidentContextEntity{}
+	for _, entity := range pack.InferredImpacts {
+		byID[entity.ID] = entity
+	}
+	s.Contains(byID, serviceEntity.ID)
+	s.Contains(byID, functionalityEntity.ID)
+	s.Contains(byID[serviceEntity.ID].Signals, "recent_alert_relationship")
+	s.Contains(byID[functionalityEntity.ID].Signals, "functionality_dependency")
 }

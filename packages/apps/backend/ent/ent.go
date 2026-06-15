@@ -28,6 +28,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
@@ -156,6 +157,7 @@ func checkColumn(t, c string) error {
 			incidentdebriefsuggestion.Table:               incidentdebriefsuggestion.ValidColumn,
 			incidentfield.Table:                           incidentfield.ValidColumn,
 			incidentfieldoption.Table:                     incidentfieldoption.ValidColumn,
+			incidentimpact.Table:                          incidentimpact.ValidColumn,
 			incidentlink.Table:                            incidentlink.ValidColumn,
 			incidentmilestone.Table:                       incidentmilestone.ValidColumn,
 			incidentrole.Table:                            incidentrole.ValidColumn,

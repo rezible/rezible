@@ -68,6 +68,8 @@ func (Incident) Edges() []ent.Edge {
 		edge.To("field_selections", IncidentFieldOption.Type),
 		edge.To("tasks", Task.Type),
 		edge.To("tag_assignments", IncidentTag.Type),
+		edge.From("impacts", IncidentImpact.Type).
+			Ref("incident"),
 		edge.To("debriefs", IncidentDebrief.Type),
 		edge.To("review_sessions", MeetingSession.Type),
 		edge.To("video_conferences", VideoConference.Type),
@@ -89,8 +91,8 @@ func (IncidentLink) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("incident_id", uuid.UUID{}),
 		field.UUID("linked_incident_id", uuid.UUID{}),
-		field.String("description").Optional(),
 		field.Enum("link_type").Values("parent", "child", "similar"),
+		field.String("description").Optional(),
 	}
 }
 

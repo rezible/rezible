@@ -7,13 +7,14 @@ import (
 	"log/slog"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/rezible/rezible/jobs"
 )
 
@@ -42,22 +43,24 @@ type AgentService struct {
 	db           rez.Database
 	jobs         rez.JobService
 	msgs         rez.MessageService
+	incidents    rez.IncidentService
 	modelFactory LanguageModelFactory
 	workflows    map[agentrun.WorkflowKind]agentWorkflow
 }
 
-func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService) (*AgentService, error) {
+func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, incidents rez.IncidentService) (*AgentService, error) {
 	s := &AgentService{
 		cfg:          cfg.AI,
 		logger:       tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
 		db:           db,
 		jobs:         jobSvc,
 		msgs:         msgSvc,
+		incidents:    incidents,
 		modelFactory: newLanguageModelFactory(cfg.AI),
 		workflows:    make(map[agentrun.WorkflowKind]agentWorkflow),
 	}
 
-	s.registerWorkflow(stubWorkflow{kind: agentrun.WorkflowKindIncidentContextPack})
+	s.registerWorkflow(&incidentContextPackWorkflow{incidents: incidents, modelFactory: s.modelFactory})
 	s.registerWorkflow(stubWorkflow{kind: agentrun.WorkflowKindAlertInvestigation})
 	s.registerWorkflow(stubWorkflow{kind: agentrun.WorkflowKindRetrospectiveAnalysis})
 
@@ -65,15 +68,88 @@ func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, 
 		return s.RunWorkflow(ctx, args.AgentRunID)
 	})
 
+	if handlersErr := s.registerMessageHandlers(); handlersErr != nil {
+		return nil, handlersErr
+	}
+
 	return s, nil
+}
+
+func (s *AgentService) registerMessageHandlers() error {
+	eventsErr := s.msgs.AddEventHandlers(
+		rez.NewEventHandler("adk.AgentService.OnIncidentUpdated", s.onIncidentUpdated),
+		rez.NewEventHandler("adk.AgentService.OnIncidentImpactsUpdated", s.onIncidentImpactsUpdated),
+	)
+	return errors.Join(eventsErr)
 }
 
 func (s *AgentService) registerWorkflow(w agentWorkflow) {
 	s.workflows[w.Kind()] = w
 }
 
+func (s *AgentService) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
+	return s.requestIncidentContextPackRun(ctx, ev.IncidentId, "incident_updated")
+}
+
+func (s *AgentService) onIncidentImpactsUpdated(ctx context.Context, ev *rez.EventOnIncidentImpactsUpdated) error {
+	return s.requestIncidentContextPackRun(ctx, ev.IncidentId, "incident_impacts_updated")
+}
+
+func (s *AgentService) requestIncidentContextPackRun(ctx context.Context, incidentID uuid.UUID, trigger string) error {
+	if !s.cfg.Enabled || incidentID == uuid.Nil {
+		return nil
+	}
+	bucket := time.Now().UTC().Truncate(5 * time.Minute).Format(time.RFC3339)
+	_, reqErr := s.RequestRun(ctx, rez.AgentRunRequest{
+		WorkflowKind:   agentrun.WorkflowKindIncidentContextPack,
+		IdempotencyKey: fmt.Sprintf("incident-context-pack:auto:%s:%s", incidentID, bucket),
+		SubjectKind:    "incident",
+		SubjectID:      incidentID,
+		Metadata: map[string]any{
+			"trigger": trigger,
+			"bucket":  bucket,
+		},
+	})
+	if reqErr != nil {
+		return fmt.Errorf("request incident context pack run: %w", reqErr)
+	}
+	return nil
+}
+
 func (s *AgentService) GetRun(ctx context.Context, id uuid.UUID) (*ent.AgentRun, error) {
 	return s.db.Client(ctx).AgentRun.Get(ctx, id)
+}
+
+func (s *AgentService) ListRuns(ctx context.Context, params rez.ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error) {
+	query := s.db.Client(ctx).AgentRun.Query().
+		Order(agentrun.ByUpdatedAt(sql.OrderDesc()))
+	if params.WorkflowKind != "" {
+		query.Where(agentrun.WorkflowKindEQ(params.WorkflowKind))
+	}
+	if params.Status != "" {
+		query.Where(agentrun.StatusEQ(params.Status))
+	}
+	if params.SubjectKind != "" {
+		query.Where(agentrun.SubjectKind(params.SubjectKind))
+	}
+	if params.SubjectID != uuid.Nil {
+		query.Where(agentrun.SubjectID(params.SubjectID))
+	}
+	return ent.DoListQuery[ent.AgentRun, *ent.AgentRunQuery](ctx, query, params.ListParams)
+}
+
+func (s *AgentService) ListRunArtifacts(ctx context.Context, id uuid.UUID) ([]*ent.AgentRunArtifact, error) {
+	if _, getErr := s.GetRun(ctx, id); getErr != nil {
+		return nil, fmt.Errorf("get agent run: %w", getErr)
+	}
+	artifacts, queryErr := s.db.Client(ctx).AgentRunArtifact.Query().
+		Where(agentrunartifact.AgentRunID(id)).
+		Order(agentrunartifact.ByCreatedAt(sql.OrderAsc())).
+		All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("query agent run artifacts: %w", queryErr)
+	}
+	return artifacts, nil
 }
 
 func (s *AgentService) RequestRun(ctx context.Context, params rez.AgentRunRequest) (*ent.AgentRun, error) {
@@ -241,7 +317,7 @@ func (s *AgentService) completeRun(ctx context.Context, run *ent.AgentRun, resul
 					SetPayload(artifact.Payload).
 					SetRedacted(artifact.Redacted)
 			}
-			createErr := tx.AgentRunArtifact.CreateBulk(builders...).Exec(ctx)
+			createErr := tx.AgentRunArtifact.CreateBulk(builders...).Exec(txCtx)
 			if createErr != nil {
 				return fmt.Errorf("create agent run artifact: %w", createErr)
 			}

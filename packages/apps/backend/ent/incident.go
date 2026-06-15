@@ -79,6 +79,8 @@ type IncidentEdges struct {
 	Tasks []*Task `json:"tasks,omitempty"`
 	// TagAssignments holds the value of the tag_assignments edge.
 	TagAssignments []*IncidentTag `json:"tag_assignments,omitempty"`
+	// Impacts holds the value of the impacts edge.
+	Impacts []*IncidentImpact `json:"impacts,omitempty"`
 	// Debriefs holds the value of the debriefs edge.
 	Debriefs []*IncidentDebrief `json:"debriefs,omitempty"`
 	// ReviewSessions holds the value of the review_sessions edge.
@@ -91,7 +93,7 @@ type IncidentEdges struct {
 	IncidentLinks []*IncidentLink `json:"incident_links,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [18]bool
+	loadedTypes [19]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -221,10 +223,19 @@ func (e IncidentEdges) TagAssignmentsOrErr() ([]*IncidentTag, error) {
 	return nil, &NotLoadedError{edge: "tag_assignments"}
 }
 
+// ImpactsOrErr returns the Impacts value or an error if the edge
+// was not loaded in eager-loading.
+func (e IncidentEdges) ImpactsOrErr() ([]*IncidentImpact, error) {
+	if e.loadedTypes[13] {
+		return e.Impacts, nil
+	}
+	return nil, &NotLoadedError{edge: "impacts"}
+}
+
 // DebriefsOrErr returns the Debriefs value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
-	if e.loadedTypes[13] {
+	if e.loadedTypes[14] {
 		return e.Debriefs, nil
 	}
 	return nil, &NotLoadedError{edge: "debriefs"}
@@ -233,7 +244,7 @@ func (e IncidentEdges) DebriefsOrErr() ([]*IncidentDebrief, error) {
 // ReviewSessionsOrErr returns the ReviewSessions value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) ReviewSessionsOrErr() ([]*MeetingSession, error) {
-	if e.loadedTypes[14] {
+	if e.loadedTypes[15] {
 		return e.ReviewSessions, nil
 	}
 	return nil, &NotLoadedError{edge: "review_sessions"}
@@ -242,7 +253,7 @@ func (e IncidentEdges) ReviewSessionsOrErr() ([]*MeetingSession, error) {
 // VideoConferencesOrErr returns the VideoConferences value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
-	if e.loadedTypes[15] {
+	if e.loadedTypes[16] {
 		return e.VideoConferences, nil
 	}
 	return nil, &NotLoadedError{edge: "video_conferences"}
@@ -251,7 +262,7 @@ func (e IncidentEdges) VideoConferencesOrErr() ([]*VideoConference, error) {
 // UserRolesOrErr returns the UserRoles value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) UserRolesOrErr() ([]*IncidentRoleAssignment, error) {
-	if e.loadedTypes[16] {
+	if e.loadedTypes[17] {
 		return e.UserRoles, nil
 	}
 	return nil, &NotLoadedError{edge: "user_roles"}
@@ -260,7 +271,7 @@ func (e IncidentEdges) UserRolesOrErr() ([]*IncidentRoleAssignment, error) {
 // IncidentLinksOrErr returns the IncidentLinks value or an error if the edge
 // was not loaded in eager-loading.
 func (e IncidentEdges) IncidentLinksOrErr() ([]*IncidentLink, error) {
-	if e.loadedTypes[17] {
+	if e.loadedTypes[18] {
 		return e.IncidentLinks, nil
 	}
 	return nil, &NotLoadedError{edge: "incident_links"}
@@ -445,6 +456,11 @@ func (_m *Incident) QueryTasks() *TaskQuery {
 // QueryTagAssignments queries the "tag_assignments" edge of the Incident entity.
 func (_m *Incident) QueryTagAssignments() *IncidentTagQuery {
 	return NewIncidentClient(_m.config).QueryTagAssignments(_m)
+}
+
+// QueryImpacts queries the "impacts" edge of the Incident entity.
+func (_m *Incident) QueryImpacts() *IncidentImpactQuery {
+	return NewIncidentClient(_m.config).QueryImpacts(_m)
 }
 
 // QueryDebriefs queries the "debriefs" edge of the Incident entity.

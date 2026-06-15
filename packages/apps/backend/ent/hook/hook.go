@@ -189,6 +189,18 @@ func (f IncidentFieldOptionFunc) Mutate(ctx context.Context, m ent.Mutation) (en
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentFieldOptionMutation", m)
 }
 
+// The IncidentImpactFunc type is an adapter to allow the use of ordinary
+// function as IncidentImpact mutator.
+type IncidentImpactFunc func(context.Context, *ent.IncidentImpactMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f IncidentImpactFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.IncidentImpactMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.IncidentImpactMutation", m)
+}
+
 // The IncidentLinkFunc type is an adapter to allow the use of ordinary
 // function as IncidentLink mutator.
 type IncidentLinkFunc func(context.Context, *ent.IncidentLinkMutation) (ent.Value, error)

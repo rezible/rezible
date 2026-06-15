@@ -31,6 +31,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebriefsuggestion"
 	"github.com/rezible/rezible/ent/incidentfield"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentrole"
@@ -124,6 +125,8 @@ type Client struct {
 	IncidentField *IncidentFieldClient
 	// IncidentFieldOption is the client for interacting with the IncidentFieldOption builders.
 	IncidentFieldOption *IncidentFieldOptionClient
+	// IncidentImpact is the client for interacting with the IncidentImpact builders.
+	IncidentImpact *IncidentImpactClient
 	// IncidentLink is the client for interacting with the IncidentLink builders.
 	IncidentLink *IncidentLinkClient
 	// IncidentMilestone is the client for interacting with the IncidentMilestone builders.
@@ -255,6 +258,7 @@ func (c *Client) init() {
 	c.IncidentDebriefSuggestion = NewIncidentDebriefSuggestionClient(c.config)
 	c.IncidentField = NewIncidentFieldClient(c.config)
 	c.IncidentFieldOption = NewIncidentFieldOptionClient(c.config)
+	c.IncidentImpact = NewIncidentImpactClient(c.config)
 	c.IncidentLink = NewIncidentLinkClient(c.config)
 	c.IncidentMilestone = NewIncidentMilestoneClient(c.config)
 	c.IncidentRole = NewIncidentRoleClient(c.config)
@@ -418,6 +422,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		IncidentDebriefSuggestion:               NewIncidentDebriefSuggestionClient(cfg),
 		IncidentField:                           NewIncidentFieldClient(cfg),
 		IncidentFieldOption:                     NewIncidentFieldOptionClient(cfg),
+		IncidentImpact:                          NewIncidentImpactClient(cfg),
 		IncidentLink:                            NewIncidentLinkClient(cfg),
 		IncidentMilestone:                       NewIncidentMilestoneClient(cfg),
 		IncidentRole:                            NewIncidentRoleClient(cfg),
@@ -505,6 +510,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		IncidentDebriefSuggestion:               NewIncidentDebriefSuggestionClient(cfg),
 		IncidentField:                           NewIncidentFieldClient(cfg),
 		IncidentFieldOption:                     NewIncidentFieldOptionClient(cfg),
+		IncidentImpact:                          NewIncidentImpactClient(cfg),
 		IncidentLink:                            NewIncidentLinkClient(cfg),
 		IncidentMilestone:                       NewIncidentMilestoneClient(cfg),
 		IncidentRole:                            NewIncidentRoleClient(cfg),
@@ -590,17 +596,18 @@ func (c *Client) Use(hooks ...Hook) {
 		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
 		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
-		c.IncidentSeverity, c.IncidentTag, c.IncidentTimelineEvent,
-		c.IncidentTimelineEventContext, c.IncidentTimelineEventContributingFactor,
-		c.IncidentTimelineEventEvidence, c.IncidentTimelineEventTopologyContext,
-		c.IncidentType, c.Integration, c.IntegrationEventSyncCursor,
-		c.IntegrationEventSyncRun, c.IntegrationUserInstallState, c.KnowledgeEntity,
-		c.KnowledgeEntityAlias, c.KnowledgeEvidence, c.KnowledgeRelationship,
-		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
-		c.NormalizedEventProjectionStatus, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
+		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
+		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
+		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
+		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
+		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
+		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
@@ -620,17 +627,18 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.AlertMetrics, c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident,
 		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
-		c.IncidentSeverity, c.IncidentTag, c.IncidentTimelineEvent,
-		c.IncidentTimelineEventContext, c.IncidentTimelineEventContributingFactor,
-		c.IncidentTimelineEventEvidence, c.IncidentTimelineEventTopologyContext,
-		c.IncidentType, c.Integration, c.IntegrationEventSyncCursor,
-		c.IntegrationEventSyncRun, c.IntegrationUserInstallState, c.KnowledgeEntity,
-		c.KnowledgeEntityAlias, c.KnowledgeEvidence, c.KnowledgeRelationship,
-		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
-		c.NormalizedEventProjectionStatus, c.OncallHandoverTemplate, c.OncallRoster,
-		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
-		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
+		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
+		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
+		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
+		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
+		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
+		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
+		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
+		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
+		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
+		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
@@ -675,6 +683,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.IncidentField.mutate(ctx, m)
 	case *IncidentFieldOptionMutation:
 		return c.IncidentFieldOption.mutate(ctx, m)
+	case *IncidentImpactMutation:
+		return c.IncidentImpact.mutate(ctx, m)
 	case *IncidentLinkMutation:
 		return c.IncidentLink.mutate(ctx, m)
 	case *IncidentMilestoneMutation:
@@ -2754,6 +2764,25 @@ func (c *IncidentClient) QueryTagAssignments(_m *Incident) *IncidentTagQuery {
 	return query
 }
 
+// QueryImpacts queries the impacts edge of a Incident.
+func (c *IncidentClient) QueryImpacts(_m *Incident) *IncidentImpactQuery {
+	query := (&IncidentImpactClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, id),
+			sqlgraph.To(incidentimpact.Table, incidentimpact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.ImpactsTable, incident.ImpactsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.IncidentImpact
+		step.Edge.Schema = schemaConfig.IncidentImpact
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryDebriefs queries the debriefs edge of a Incident.
 func (c *IncidentClient) QueryDebriefs(_m *Incident) *IncidentDebriefQuery {
 	query := (&IncidentDebriefClient{config: c.config}).Query()
@@ -4115,6 +4144,197 @@ func (c *IncidentFieldOptionClient) mutate(ctx context.Context, m *IncidentField
 		return (&IncidentFieldOptionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown IncidentFieldOption mutation op: %q", m.Op())
+	}
+}
+
+// IncidentImpactClient is a client for the IncidentImpact schema.
+type IncidentImpactClient struct {
+	config
+}
+
+// NewIncidentImpactClient returns a client for the IncidentImpact from the given config.
+func NewIncidentImpactClient(c config) *IncidentImpactClient {
+	return &IncidentImpactClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `incidentimpact.Hooks(f(g(h())))`.
+func (c *IncidentImpactClient) Use(hooks ...Hook) {
+	c.hooks.IncidentImpact = append(c.hooks.IncidentImpact, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `incidentimpact.Intercept(f(g(h())))`.
+func (c *IncidentImpactClient) Intercept(interceptors ...Interceptor) {
+	c.inters.IncidentImpact = append(c.inters.IncidentImpact, interceptors...)
+}
+
+// Create returns a builder for creating a IncidentImpact entity.
+func (c *IncidentImpactClient) Create() *IncidentImpactCreate {
+	mutation := newIncidentImpactMutation(c.config, OpCreate)
+	return &IncidentImpactCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of IncidentImpact entities.
+func (c *IncidentImpactClient) CreateBulk(builders ...*IncidentImpactCreate) *IncidentImpactCreateBulk {
+	return &IncidentImpactCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *IncidentImpactClient) MapCreateBulk(slice any, setFunc func(*IncidentImpactCreate, int)) *IncidentImpactCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &IncidentImpactCreateBulk{err: fmt.Errorf("calling to IncidentImpactClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*IncidentImpactCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &IncidentImpactCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for IncidentImpact.
+func (c *IncidentImpactClient) Update() *IncidentImpactUpdate {
+	mutation := newIncidentImpactMutation(c.config, OpUpdate)
+	return &IncidentImpactUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *IncidentImpactClient) UpdateOne(_m *IncidentImpact) *IncidentImpactUpdateOne {
+	mutation := newIncidentImpactMutation(c.config, OpUpdateOne, withIncidentImpact(_m))
+	return &IncidentImpactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *IncidentImpactClient) UpdateOneID(id uuid.UUID) *IncidentImpactUpdateOne {
+	mutation := newIncidentImpactMutation(c.config, OpUpdateOne, withIncidentImpactID(id))
+	return &IncidentImpactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for IncidentImpact.
+func (c *IncidentImpactClient) Delete() *IncidentImpactDelete {
+	mutation := newIncidentImpactMutation(c.config, OpDelete)
+	return &IncidentImpactDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *IncidentImpactClient) DeleteOne(_m *IncidentImpact) *IncidentImpactDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *IncidentImpactClient) DeleteOneID(id uuid.UUID) *IncidentImpactDeleteOne {
+	builder := c.Delete().Where(incidentimpact.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &IncidentImpactDeleteOne{builder}
+}
+
+// Query returns a query builder for IncidentImpact.
+func (c *IncidentImpactClient) Query() *IncidentImpactQuery {
+	return &IncidentImpactQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeIncidentImpact},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a IncidentImpact entity by its id.
+func (c *IncidentImpactClient) Get(ctx context.Context, id uuid.UUID) (*IncidentImpact, error) {
+	return c.Query().Where(incidentimpact.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *IncidentImpactClient) GetX(ctx context.Context, id uuid.UUID) *IncidentImpact {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a IncidentImpact.
+func (c *IncidentImpactClient) QueryTenant(_m *IncidentImpact) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentimpact.Table, incidentimpact.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentimpact.TenantTable, incidentimpact.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.IncidentImpact
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryIncident queries the incident edge of a IncidentImpact.
+func (c *IncidentImpactClient) QueryIncident(_m *IncidentImpact) *IncidentQuery {
+	query := (&IncidentClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentimpact.Table, incidentimpact.FieldID, id),
+			sqlgraph.To(incident.Table, incident.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentimpact.IncidentTable, incidentimpact.IncidentColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Incident
+		step.Edge.Schema = schemaConfig.IncidentImpact
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity queries the knowledge_entity edge of a IncidentImpact.
+func (c *IncidentImpactClient) QueryKnowledgeEntity(_m *IncidentImpact) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incidentimpact.Table, incidentimpact.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, incidentimpact.KnowledgeEntityTable, incidentimpact.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.IncidentImpact
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *IncidentImpactClient) Hooks() []Hook {
+	hooks := c.hooks.IncidentImpact
+	return append(hooks[:len(hooks):len(hooks)], incidentimpact.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *IncidentImpactClient) Interceptors() []Interceptor {
+	return c.inters.IncidentImpact
+}
+
+func (c *IncidentImpactClient) mutate(ctx context.Context, m *IncidentImpactMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&IncidentImpactCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&IncidentImpactUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&IncidentImpactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&IncidentImpactDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown IncidentImpact mutation op: %q", m.Op())
 	}
 }
 
@@ -14804,9 +15024,9 @@ type (
 		AgentRun, AgentRunArtifact, AgentRunFeedback, Alert, AlertFeedback, Document,
 		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
 		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentField, IncidentFieldOption, IncidentLink, IncidentMilestone,
-		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
-		IncidentTimelineEvent, IncidentTimelineEventContext,
+		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
+		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
+		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
 		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
 		IncidentTimelineEventTopologyContext, IncidentType, Integration,
 		IntegrationEventSyncCursor, IntegrationEventSyncRun,
@@ -14825,12 +15045,12 @@ type (
 		AgentRun, AgentRunArtifact, AgentRunFeedback, Alert, AlertFeedback,
 		AlertMetrics, Document, DocumentAccess, EventAnnotation, Incident,
 		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
-		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
-		IncidentTimelineEventTopologyContext, IncidentType, Integration,
-		IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
+		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
+		IncidentSeverity, IncidentTag, IncidentTimelineEvent,
+		IncidentTimelineEventContext, IncidentTimelineEventContributingFactor,
+		IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext,
+		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
 		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
 		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
@@ -14871,6 +15091,7 @@ var (
 		IncidentDebriefSuggestion:                 tableSchemas[0],
 		IncidentField:                             tableSchemas[0],
 		IncidentFieldOption:                       tableSchemas[0],
+		IncidentImpact:                            tableSchemas[0],
 		IncidentLink:                              tableSchemas[0],
 		IncidentMilestone:                         tableSchemas[0],
 		IncidentRole:                              tableSchemas[0],

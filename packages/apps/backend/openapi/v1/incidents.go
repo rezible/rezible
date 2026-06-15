@@ -17,6 +17,10 @@ type IncidentsHandler interface {
 	GetIncident(context.Context, *GetIncidentRequest) (*GetIncidentResponse, error)
 	UpdateIncident(context.Context, *UpdateIncidentRequest) (*UpdateIncidentResponse, error)
 	ArchiveIncident(context.Context, *ArchiveIncidentRequest) (*ArchiveIncidentResponse, error)
+	ListIncidentImpacts(context.Context, *ListIncidentImpactsRequest) (*ListIncidentImpactsResponse, error)
+	SetIncidentImpacts(context.Context, *SetIncidentImpactsRequest) (*SetIncidentImpactsResponse, error)
+	GetIncidentContextPack(context.Context, *GetIncidentContextPackRequest) (*GetIncidentContextPackResponse, error)
+	RequestIncidentContextPackAgentRun(context.Context, *RequestIncidentContextPackAgentRunRequest) (*RequestIncidentContextPackAgentRunResponse, error)
 }
 
 func (o operations) RegisterIncidents(api huma.API) {
@@ -25,6 +29,10 @@ func (o operations) RegisterIncidents(api huma.API) {
 	huma.Register(api, GetIncident, o.GetIncident)
 	huma.Register(api, UpdateIncident, o.UpdateIncident)
 	huma.Register(api, ArchiveIncident, o.ArchiveIncident)
+	huma.Register(api, ListIncidentImpacts, o.ListIncidentImpacts)
+	huma.Register(api, SetIncidentImpacts, o.SetIncidentImpacts)
+	huma.Register(api, GetIncidentContextPack, o.GetIncidentContextPack)
+	huma.Register(api, RequestIncidentContextPackAgentRun, o.RequestIncidentContextPackAgentRun)
 }
 
 type (

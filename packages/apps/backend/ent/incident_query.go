@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
@@ -55,6 +56,7 @@ type IncidentQuery struct {
 	withFieldSelections  *IncidentFieldOptionQuery
 	withTasks            *TaskQuery
 	withTagAssignments   *IncidentTagQuery
+	withImpacts          *IncidentImpactQuery
 	withDebriefs         *IncidentDebriefQuery
 	withReviewSessions   *MeetingSessionQuery
 	withVideoConferences *VideoConferenceQuery
@@ -422,6 +424,31 @@ func (_q *IncidentQuery) QueryTagAssignments() *IncidentTagQuery {
 	return query
 }
 
+// QueryImpacts chains the current query on the "impacts" edge.
+func (_q *IncidentQuery) QueryImpacts() *IncidentImpactQuery {
+	query := (&IncidentImpactClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(incident.Table, incident.FieldID, selector),
+			sqlgraph.To(incidentimpact.Table, incidentimpact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, incident.ImpactsTable, incident.ImpactsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.IncidentImpact
+		step.Edge.Schema = schemaConfig.IncidentImpact
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
 // QueryDebriefs chains the current query on the "debriefs" edge.
 func (_q *IncidentQuery) QueryDebriefs() *IncidentDebriefQuery {
 	query := (&IncidentDebriefClient{config: _q.config}).Query()
@@ -752,6 +779,7 @@ func (_q *IncidentQuery) Clone() *IncidentQuery {
 		withFieldSelections:  _q.withFieldSelections.Clone(),
 		withTasks:            _q.withTasks.Clone(),
 		withTagAssignments:   _q.withTagAssignments.Clone(),
+		withImpacts:          _q.withImpacts.Clone(),
 		withDebriefs:         _q.withDebriefs.Clone(),
 		withReviewSessions:   _q.withReviewSessions.Clone(),
 		withVideoConferences: _q.withVideoConferences.Clone(),
@@ -907,6 +935,17 @@ func (_q *IncidentQuery) WithTagAssignments(opts ...func(*IncidentTagQuery)) *In
 	return _q
 }
 
+// WithImpacts tells the query-builder to eager-load the nodes that are connected to
+// the "impacts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *IncidentQuery) WithImpacts(opts ...func(*IncidentImpactQuery)) *IncidentQuery {
+	query := (&IncidentImpactClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withImpacts = query
+	return _q
+}
+
 // WithDebriefs tells the query-builder to eager-load the nodes that are connected to
 // the "debriefs" edge. The optional arguments are used to configure the query builder of the edge.
 func (_q *IncidentQuery) WithDebriefs(opts ...func(*IncidentDebriefQuery)) *IncidentQuery {
@@ -1046,7 +1085,7 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 	var (
 		nodes       = []*Incident{}
 		_spec       = _q.querySpec()
-		loadedTypes = [18]bool{
+		loadedTypes = [19]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withSeverity != nil,
@@ -1060,6 +1099,7 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 			_q.withFieldSelections != nil,
 			_q.withTasks != nil,
 			_q.withTagAssignments != nil,
+			_q.withImpacts != nil,
 			_q.withDebriefs != nil,
 			_q.withReviewSessions != nil,
 			_q.withVideoConferences != nil,
@@ -1179,6 +1219,13 @@ func (_q *IncidentQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Inc
 		if err := _q.loadTagAssignments(ctx, query, nodes,
 			func(n *Incident) { n.Edges.TagAssignments = []*IncidentTag{} },
 			func(n *Incident, e *IncidentTag) { n.Edges.TagAssignments = append(n.Edges.TagAssignments, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withImpacts; query != nil {
+		if err := _q.loadImpacts(ctx, query, nodes,
+			func(n *Incident) { n.Edges.Impacts = []*IncidentImpact{} },
+			func(n *Incident, e *IncidentImpact) { n.Edges.Impacts = append(n.Edges.Impacts, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -1731,6 +1778,36 @@ func (_q *IncidentQuery) loadTagAssignments(ctx context.Context, query *Incident
 		for kn := range nodes {
 			assign(kn, n)
 		}
+	}
+	return nil
+}
+func (_q *IncidentQuery) loadImpacts(ctx context.Context, query *IncidentImpactQuery, nodes []*Incident, init func(*Incident), assign func(*Incident, *IncidentImpact)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Incident)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(incidentimpact.FieldIncidentID)
+	}
+	query.Where(predicate.IncidentImpact(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(incident.ImpactsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.IncidentID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "incident_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
 	}
 	return nil
 }

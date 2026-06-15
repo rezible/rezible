@@ -132,6 +132,14 @@ func (c *IncidentFieldOptionClient) Debug() *IncidentFieldOptionClient {
 	return &IncidentFieldOptionClient{config: cfg}
 }
 
+func (c *IncidentImpactClient) Debug() *IncidentImpactClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &IncidentImpactClient{config: cfg}
+}
+
 func (c *IncidentLinkClient) Debug() *IncidentLinkClient {
 	if c.debug {
 		return c

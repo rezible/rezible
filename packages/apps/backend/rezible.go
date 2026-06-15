@@ -418,9 +418,19 @@ type (
 		Metadata       map[string]any
 	}
 
+	ListAgentRunsParams struct {
+		ent.ListParams
+		WorkflowKind agentrun.WorkflowKind
+		Status       agentrun.Status
+		SubjectKind  string
+		SubjectID    uuid.UUID
+	}
+
 	AgentService interface {
 		RequestRun(context.Context, AgentRunRequest) (*ent.AgentRun, error)
 		GetRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
+		ListRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error)
+		ListRunArtifacts(context.Context, uuid.UUID) ([]*ent.AgentRunArtifact, error)
 		RunWorkflow(context.Context, uuid.UUID) error
 	}
 
@@ -496,12 +506,89 @@ type (
 		OpenedBefore time.Time
 	}
 
+	IncidentImpactInput struct {
+		KnowledgeEntityID uuid.UUID
+		Kind              string
+		DisplayName       string
+		Description       string
+		Source            string
+		Note              string
+	}
+
+	SetIncidentImpactsParams struct {
+		IncidentID uuid.UUID
+		Impacts    []IncidentImpactInput
+	}
+
+	IncidentContextEvidenceRef struct {
+		Kind        string
+		ID          uuid.UUID
+		Description string
+		ObservedAt  time.Time
+	}
+
+	IncidentContextEntity struct {
+		ID          uuid.UUID
+		Kind        string
+		DisplayName string
+		Description string
+		Score       float64
+		Signals     []string
+		Evidence    []IncidentContextEvidenceRef
+	}
+
+	IncidentContextAlert struct {
+		ID                uuid.UUID
+		KnowledgeEntityID uuid.UUID
+		Title             string
+		Description       string
+		ObservedAt        time.Time
+		RelatedEntityIDs  []uuid.UUID
+		Evidence          []IncidentContextEvidenceRef
+	}
+
+	IncidentContextEvidence struct {
+		ID             uuid.UUID
+		EventID        uuid.UUID
+		EntityID       *uuid.UUID
+		RelationshipID *uuid.UUID
+		SubjectType    string
+		Assertion      string
+		EvidenceKind   string
+		ObservedAt     time.Time
+		Description    string
+	}
+
+	IncidentContextRelatedIncident struct {
+		ID        uuid.UUID
+		Slug      string
+		Title     string
+		OpenedAt  time.Time
+		Signals   []string
+		EntityIDs []uuid.UUID
+	}
+
+	IncidentContextPack struct {
+		IncidentID           uuid.UUID
+		GeneratedAt          time.Time
+		ExplicitImpacts      []IncidentContextEntity
+		InferredImpacts      []IncidentContextEntity
+		ActiveAlerts         []IncidentContextAlert
+		RecentEvidence       []IncidentContextEvidence
+		RelatedIncidents     []IncidentContextRelatedIncident
+		RetrievalLimitations []string
+	}
+
 	IncidentService interface {
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[ent.Incident], error)
 		Query(context.Context, predicate.Incident, func(*ent.IncidentQuery)) (*ent.Incident, error)
 		Get(context.Context, predicate.Incident) (*ent.Incident, error)
 		Set(context.Context, uuid.UUID, func(*ent.IncidentMutation)) (*ent.Incident, error)
 		Archive(context.Context, uuid.UUID) error
+
+		ListIncidentImpacts(context.Context, uuid.UUID) ([]*ent.IncidentImpact, error)
+		SetIncidentImpacts(context.Context, SetIncidentImpactsParams) ([]*ent.IncidentImpact, error)
+		GetIncidentContextPack(context.Context, uuid.UUID) (*IncidentContextPack, error)
 
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)
@@ -525,6 +612,10 @@ type (
 		Created     bool
 		IncidentId  uuid.UUID
 		MilestoneId uuid.UUID
+	}
+
+	EventOnIncidentImpactsUpdated struct {
+		IncidentId uuid.UUID
 	}
 )
 

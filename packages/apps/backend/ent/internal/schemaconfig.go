@@ -32,6 +32,7 @@ type SchemaConfig struct {
 	IncidentDebriefSuggestion                 string // IncidentDebriefSuggestion table.
 	IncidentField                             string // IncidentField table.
 	IncidentFieldOption                       string // IncidentFieldOption table.
+	IncidentImpact                            string // IncidentImpact table.
 	IncidentLink                              string // IncidentLink table.
 	IncidentMilestone                         string // IncidentMilestone table.
 	IncidentRole                              string // IncidentRole table.

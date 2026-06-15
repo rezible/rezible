@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
@@ -350,6 +351,21 @@ func (_u *IncidentUpdate) AddTagAssignments(v ...*IncidentTag) *IncidentUpdate {
 	return _u.AddTagAssignmentIDs(ids...)
 }
 
+// AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by IDs.
+func (_u *IncidentUpdate) AddImpactIDs(ids ...uuid.UUID) *IncidentUpdate {
+	_u.mutation.AddImpactIDs(ids...)
+	return _u
+}
+
+// AddImpacts adds the "impacts" edges to the IncidentImpact entity.
+func (_u *IncidentUpdate) AddImpacts(v ...*IncidentImpact) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddImpactIDs(ids...)
+}
+
 // AddDebriefIDs adds the "debriefs" edge to the IncidentDebrief entity by IDs.
 func (_u *IncidentUpdate) AddDebriefIDs(ids ...uuid.UUID) *IncidentUpdate {
 	_u.mutation.AddDebriefIDs(ids...)
@@ -620,6 +636,27 @@ func (_u *IncidentUpdate) RemoveTagAssignments(v ...*IncidentTag) *IncidentUpdat
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTagAssignmentIDs(ids...)
+}
+
+// ClearImpacts clears all "impacts" edges to the IncidentImpact entity.
+func (_u *IncidentUpdate) ClearImpacts() *IncidentUpdate {
+	_u.mutation.ClearImpacts()
+	return _u
+}
+
+// RemoveImpactIDs removes the "impacts" edge to IncidentImpact entities by IDs.
+func (_u *IncidentUpdate) RemoveImpactIDs(ids ...uuid.UUID) *IncidentUpdate {
+	_u.mutation.RemoveImpactIDs(ids...)
+	return _u
+}
+
+// RemoveImpacts removes "impacts" edges to IncidentImpact entities.
+func (_u *IncidentUpdate) RemoveImpacts(v ...*IncidentImpact) *IncidentUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveImpactIDs(ids...)
 }
 
 // ClearDebriefs clears all "debriefs" edges to the IncidentDebrief entity.
@@ -1357,6 +1394,54 @@ func (_u *IncidentUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ImpactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.ImpactsTable,
+			Columns: []string{incident.ImpactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentimpact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentImpact
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedImpactsIDs(); len(nodes) > 0 && !_u.mutation.ImpactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.ImpactsTable,
+			Columns: []string{incident.ImpactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentimpact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentImpact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ImpactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.ImpactsTable,
+			Columns: []string{incident.ImpactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentimpact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentImpact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _u.mutation.DebriefsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -1925,6 +2010,21 @@ func (_u *IncidentUpdateOne) AddTagAssignments(v ...*IncidentTag) *IncidentUpdat
 	return _u.AddTagAssignmentIDs(ids...)
 }
 
+// AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by IDs.
+func (_u *IncidentUpdateOne) AddImpactIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.AddImpactIDs(ids...)
+	return _u
+}
+
+// AddImpacts adds the "impacts" edges to the IncidentImpact entity.
+func (_u *IncidentUpdateOne) AddImpacts(v ...*IncidentImpact) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddImpactIDs(ids...)
+}
+
 // AddDebriefIDs adds the "debriefs" edge to the IncidentDebrief entity by IDs.
 func (_u *IncidentUpdateOne) AddDebriefIDs(ids ...uuid.UUID) *IncidentUpdateOne {
 	_u.mutation.AddDebriefIDs(ids...)
@@ -2195,6 +2295,27 @@ func (_u *IncidentUpdateOne) RemoveTagAssignments(v ...*IncidentTag) *IncidentUp
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveTagAssignmentIDs(ids...)
+}
+
+// ClearImpacts clears all "impacts" edges to the IncidentImpact entity.
+func (_u *IncidentUpdateOne) ClearImpacts() *IncidentUpdateOne {
+	_u.mutation.ClearImpacts()
+	return _u
+}
+
+// RemoveImpactIDs removes the "impacts" edge to IncidentImpact entities by IDs.
+func (_u *IncidentUpdateOne) RemoveImpactIDs(ids ...uuid.UUID) *IncidentUpdateOne {
+	_u.mutation.RemoveImpactIDs(ids...)
+	return _u
+}
+
+// RemoveImpacts removes "impacts" edges to IncidentImpact entities.
+func (_u *IncidentUpdateOne) RemoveImpacts(v ...*IncidentImpact) *IncidentUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveImpactIDs(ids...)
 }
 
 // ClearDebriefs clears all "debriefs" edges to the IncidentDebrief entity.
@@ -2957,6 +3078,54 @@ func (_u *IncidentUpdateOne) sqlSave(ctx context.Context) (_node *Incident, err 
 			},
 		}
 		edge.Schema = _u.schemaConfig.IncidentTagAssignments
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ImpactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.ImpactsTable,
+			Columns: []string{incident.ImpactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentimpact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentImpact
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedImpactsIDs(); len(nodes) > 0 && !_u.mutation.ImpactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.ImpactsTable,
+			Columns: []string{incident.ImpactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentimpact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentImpact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ImpactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.ImpactsTable,
+			Columns: []string{incident.ImpactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentimpact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.IncidentImpact
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentfieldoption"
+	"github.com/rezible/rezible/ent/incidentimpact"
 	"github.com/rezible/rezible/ent/incidentlink"
 	"github.com/rezible/rezible/ent/incidentmilestone"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
@@ -325,6 +326,21 @@ func (_c *IncidentCreate) AddTagAssignments(v ...*IncidentTag) *IncidentCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddTagAssignmentIDs(ids...)
+}
+
+// AddImpactIDs adds the "impacts" edge to the IncidentImpact entity by IDs.
+func (_c *IncidentCreate) AddImpactIDs(ids ...uuid.UUID) *IncidentCreate {
+	_c.mutation.AddImpactIDs(ids...)
+	return _c
+}
+
+// AddImpacts adds the "impacts" edges to the IncidentImpact entity.
+func (_c *IncidentCreate) AddImpacts(v ...*IncidentImpact) *IncidentCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddImpactIDs(ids...)
 }
 
 // AddDebriefIDs adds the "debriefs" edge to the IncidentDebrief entity by IDs.
@@ -797,6 +813,23 @@ func (_c *IncidentCreate) createSpec() (*Incident, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.IncidentTagAssignments
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ImpactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   incident.ImpactsTable,
+			Columns: []string{incident.ImpactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(incidentimpact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.IncidentImpact
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

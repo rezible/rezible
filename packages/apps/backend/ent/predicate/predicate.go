@@ -54,6 +54,9 @@ type IncidentField func(*sql.Selector)
 // IncidentFieldOption is the predicate function for incidentfieldoption builders.
 type IncidentFieldOption func(*sql.Selector)
 
+// IncidentImpact is the predicate function for incidentimpact builders.
+type IncidentImpact func(*sql.Selector)
+
 // IncidentLink is the predicate function for incidentlink builders.
 type IncidentLink func(*sql.Selector)
 

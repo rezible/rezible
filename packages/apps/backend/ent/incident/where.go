@@ -979,6 +979,35 @@ func HasTagAssignmentsWith(preds ...predicate.IncidentTag) predicate.Incident {
 	})
 }
 
+// HasImpacts applies the HasEdge predicate on the "impacts" edge.
+func HasImpacts() predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, ImpactsTable, ImpactsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentImpact
+		step.Edge.Schema = schemaConfig.IncidentImpact
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasImpactsWith applies the HasEdge predicate on the "impacts" edge with a given conditions (other predicates).
+func HasImpactsWith(preds ...predicate.IncidentImpact) predicate.Incident {
+	return predicate.Incident(func(s *sql.Selector) {
+		step := newImpactsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.IncidentImpact
+		step.Edge.Schema = schemaConfig.IncidentImpact
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasDebriefs applies the HasEdge predicate on the "debriefs" edge.
 func HasDebriefs() predicate.Incident {
 	return predicate.Incident(func(s *sql.Selector) {

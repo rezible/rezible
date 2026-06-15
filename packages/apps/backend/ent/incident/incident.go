@@ -64,6 +64,8 @@ const (
 	EdgeTasks = "tasks"
 	// EdgeTagAssignments holds the string denoting the tag_assignments edge name in mutations.
 	EdgeTagAssignments = "tag_assignments"
+	// EdgeImpacts holds the string denoting the impacts edge name in mutations.
+	EdgeImpacts = "impacts"
 	// EdgeDebriefs holds the string denoting the debriefs edge name in mutations.
 	EdgeDebriefs = "debriefs"
 	// EdgeReviewSessions holds the string denoting the review_sessions edge name in mutations.
@@ -156,6 +158,13 @@ const (
 	// TagAssignmentsInverseTable is the table name for the IncidentTag entity.
 	// It exists in this package in order to avoid circular dependency with the "incidenttag" package.
 	TagAssignmentsInverseTable = "incident_tags"
+	// ImpactsTable is the table that holds the impacts relation/edge.
+	ImpactsTable = "incident_impacts"
+	// ImpactsInverseTable is the table name for the IncidentImpact entity.
+	// It exists in this package in order to avoid circular dependency with the "incidentimpact" package.
+	ImpactsInverseTable = "incident_impacts"
+	// ImpactsColumn is the table column denoting the impacts relation/edge.
+	ImpactsColumn = "incident_id"
 	// DebriefsTable is the table that holds the debriefs relation/edge.
 	DebriefsTable = "incident_debriefs"
 	// DebriefsInverseTable is the table name for the IncidentDebrief entity.
@@ -465,6 +474,20 @@ func ByTagAssignments(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
+// ByImpactsCount orders the results by impacts count.
+func ByImpactsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newImpactsStep(), opts...)
+	}
+}
+
+// ByImpacts orders the results by impacts terms.
+func ByImpacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newImpactsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByDebriefsCount orders the results by debriefs count.
 func ByDebriefsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -623,6 +646,13 @@ func newTagAssignmentsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TagAssignmentsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2M, false, TagAssignmentsTable, TagAssignmentsPrimaryKey...),
+	)
+}
+func newImpactsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ImpactsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ImpactsTable, ImpactsColumn),
 	)
 }
 func newDebriefsStep() *sqlgraph.Step {

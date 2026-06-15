@@ -128,6 +128,8 @@ ALTER TABLE "incident_roles" DROP CONSTRAINT "incident_roles_tenants_tenant";
 ALTER TABLE "incident_milestones" DROP CONSTRAINT "incident_milestones_users_incident_milestones", DROP CONSTRAINT "incident_milestones_tenants_tenant", DROP CONSTRAINT "incident_milestones_incidents_milestones";
 -- reverse: modify "incident_links" table
 ALTER TABLE "incident_links" DROP CONSTRAINT "incident_links_incidents_linked_incident", DROP CONSTRAINT "incident_links_incidents_incident", DROP CONSTRAINT "incident_links_tenants_tenant";
+-- reverse: modify "incident_impacts" table
+ALTER TABLE "incident_impacts" DROP CONSTRAINT "incident_impacts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "incident_impacts_incidents_incident", DROP CONSTRAINT "incident_impacts_tenants_tenant";
 -- reverse: modify "incident_field_options" table
 ALTER TABLE "incident_field_options" DROP CONSTRAINT "incident_field_options_tenants_tenant", DROP CONSTRAINT "incident_field_options_incident_fields_options";
 -- reverse: modify "incident_fields" table
@@ -518,6 +520,16 @@ DROP INDEX "incidentlink_incident_id_linked_incident_id";
 DROP INDEX "incidentlink_tenant_id";
 -- reverse: create "incident_links" table
 DROP TABLE "incident_links";
+-- reverse: create index "incidentimpact_tenant_id_incident_id_knowledge_entity_id" to table: "incident_impacts"
+DROP INDEX "incidentimpact_tenant_id_incident_id_knowledge_entity_id";
+-- reverse: create index "incidentimpact_tenant_id_knowledge_entity_id" to table: "incident_impacts"
+DROP INDEX "incidentimpact_tenant_id_knowledge_entity_id";
+-- reverse: create index "incidentimpact_tenant_id_incident_id" to table: "incident_impacts"
+DROP INDEX "incidentimpact_tenant_id_incident_id";
+-- reverse: create index "incidentimpact_tenant_id" to table: "incident_impacts"
+DROP INDEX "incidentimpact_tenant_id";
+-- reverse: create "incident_impacts" table
+DROP TABLE "incident_impacts";
 -- reverse: create index "incidentfieldoption_tenant_id" to table: "incident_field_options"
 DROP INDEX "incidentfieldoption_tenant_id";
 -- reverse: create "incident_field_options" table

@@ -77,6 +77,46 @@ export type AddWatchedOncallRosterResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type AgentRun = {
+    attributes: AgentRunAttributes;
+    id: string;
+};
+
+export type AgentRunArtifact = {
+    attributes: AgentRunArtifactAttributes;
+    id: string;
+};
+
+export type AgentRunArtifactAttributes = {
+    createdAt: string;
+    kind: string;
+    name: string;
+    payload: {
+        [key: string]: unknown;
+    };
+    redacted: boolean;
+};
+
+export type AgentRunAttributes = {
+    completedAt?: string;
+    errorCode?: string;
+    errorMessage?: string;
+    failedAt?: string;
+    idempotencyKey: string;
+    modelMetadata?: {
+        [key: string]: unknown;
+    };
+    queuedAt: string;
+    startedAt?: string;
+    status: string;
+    subjectId?: string;
+    subjectKind?: string;
+    triggerMetadata?: {
+        [key: string]: unknown;
+    };
+    workflowKind: string;
+};
+
 export type Alert = {
     attributes: AlertAttributes;
     id: string;
@@ -737,6 +777,14 @@ export type GetAdjacentOncallShiftsResponseBody = {
     data: OncallShiftsAdjacent;
 };
 
+export type GetAgentRunResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AgentRun;
+};
+
 export type GetAlertMetricsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -767,6 +815,14 @@ export type GetEventResponseBody = {
      */
     readonly $schema?: string;
     data: Event;
+};
+
+export type GetIncidentContextPackResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IncidentContextPack;
 };
 
 export type GetIncidentDebriefQuestionResponseBody = {
@@ -1091,6 +1147,65 @@ export type IncidentChatChannel = {
     url: string;
 };
 
+export type IncidentContextAlert = {
+    description?: string;
+    evidence: Array<IncidentContextEvidenceRef>;
+    id: string;
+    knowledgeEntityId: string;
+    observedAt: string;
+    relatedEntityIds: Array<string>;
+    title: string;
+};
+
+export type IncidentContextEntity = {
+    description?: string;
+    displayName: string;
+    evidence: Array<IncidentContextEvidenceRef>;
+    id: string;
+    kind: string;
+    score: number;
+    signals: Array<string>;
+};
+
+export type IncidentContextEvidence = {
+    assertion: string;
+    description?: string;
+    entityId?: string;
+    eventId: string;
+    evidenceKind: string;
+    id: string;
+    observedAt: string;
+    relationshipId?: string;
+    subjectType: string;
+};
+
+export type IncidentContextEvidenceRef = {
+    description?: string;
+    id: string;
+    kind: string;
+    observedAt: string;
+};
+
+export type IncidentContextPack = {
+    activeAlerts: Array<IncidentContextAlert>;
+    explicitImpacts: Array<IncidentContextEntity>;
+    generatedAt: string;
+    incidentId: string;
+    inferredImpacts: Array<IncidentContextEntity>;
+    recentEvidence: Array<IncidentContextEvidence>;
+    relatedIncidents: Array<IncidentContextRelatedIncident>;
+    retrievalLimitations: Array<string>;
+};
+
+export type IncidentContextRelatedIncident = {
+    entityIds: Array<string>;
+    id: string;
+    openedAt: string;
+    signals: Array<string>;
+    slug: string;
+    title: string;
+};
+
 export type IncidentDebrief = {
     attributes: IncidentDebriefAttributes;
     id: string;
@@ -1162,6 +1277,17 @@ export type IncidentFieldSelection = {
     fieldId: string;
     fieldName: string;
     option: IncidentFieldOption;
+};
+
+export type IncidentImpact = {
+    attributes: IncidentImpactAttributes;
+    id: string;
+};
+
+export type IncidentImpactAttributes = {
+    knowledgeEntity: IncidentContextEntity;
+    note?: string;
+    source?: string;
 };
 
 export type IncidentLink = {
@@ -1408,6 +1534,24 @@ export type IntegrationOAuthInstallResult = {
     targetSelectionRequired: boolean;
 };
 
+export type ListAgentRunArtifactsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentRunArtifact>;
+    pagination: ResponsePagination;
+};
+
+export type ListAgentRunsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentRun>;
+    pagination: ResponsePagination;
+};
+
 export type ListAlertIncidentLinksResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1486,6 +1630,15 @@ export type ListIncidentFieldsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IncidentField>;
+    pagination: ResponsePagination;
+};
+
+export type ListIncidentImpactsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentImpact>;
     pagination: ResponsePagination;
 };
 
@@ -1935,6 +2088,14 @@ export type RemoveWatchedOncallRosterResponseBody = {
     pagination: ResponsePagination;
 };
 
+export type RequestIncidentContextPackAgentRunResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AgentRun;
+};
+
 export type RequestIntegrationEventSyncRequestAttributes = {
     sources?: Array<string>;
 };
@@ -2013,6 +2174,36 @@ export type SendOncallShiftHandoverResponseBody = {
      */
     readonly $schema?: string;
     data: OncallShiftHandover;
+};
+
+export type SetIncidentImpactAttributes = {
+    description?: string;
+    displayName?: string;
+    kind?: string;
+    knowledgeEntityId?: string;
+    note?: string;
+    source?: string;
+};
+
+export type SetIncidentImpactsAttributes = {
+    impacts: Array<SetIncidentImpactAttributes>;
+};
+
+export type SetIncidentImpactsRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: SetIncidentImpactsAttributes;
+};
+
+export type SetIncidentImpactsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IncidentImpact>;
+    pagination: ResponsePagination;
 };
 
 export type StartIntegrationOAuthFlowResponseBody = {
@@ -2806,6 +2997,154 @@ export type VideoConferenceAttributes = {
     provider: string;
     status: string;
 };
+
+export type ListAgentRunsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        workflowKind?: string;
+        status?: string;
+        subjectKind?: string;
+        subjectId?: string;
+    };
+    url: '/agent-runs';
+};
+
+export type ListAgentRunsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentRunsError = ListAgentRunsErrors[keyof ListAgentRunsErrors];
+
+export type ListAgentRunsResponses = {
+    /**
+     * OK
+     */
+    200: ListAgentRunsResponseBody;
+};
+
+export type ListAgentRunsResponse = ListAgentRunsResponses[keyof ListAgentRunsResponses];
+
+export type GetAgentRunData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/agent-runs/{id}';
+};
+
+export type GetAgentRunErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetAgentRunError = GetAgentRunErrors[keyof GetAgentRunErrors];
+
+export type GetAgentRunResponses = {
+    /**
+     * OK
+     */
+    200: GetAgentRunResponseBody;
+};
+
+export type GetAgentRunResponse = GetAgentRunResponses[keyof GetAgentRunResponses];
+
+export type ListAgentRunArtifactsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/agent-runs/{id}/artifacts';
+};
+
+export type ListAgentRunArtifactsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentRunArtifactsError = ListAgentRunArtifactsErrors[keyof ListAgentRunArtifactsErrors];
+
+export type ListAgentRunArtifactsResponses = {
+    /**
+     * OK
+     */
+    200: ListAgentRunArtifactsResponseBody;
+};
+
+export type ListAgentRunArtifactsResponse = ListAgentRunArtifactsResponses[keyof ListAgentRunArtifactsResponses];
 
 export type ListAlertsData = {
     body?: never;
@@ -5574,6 +5913,100 @@ export type UpdateIncidentResponses = {
 
 export type UpdateIncidentResponse = UpdateIncidentResponses[keyof UpdateIncidentResponses];
 
+export type GetIncidentContextPackData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}/context-pack';
+};
+
+export type GetIncidentContextPackErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIncidentContextPackError = GetIncidentContextPackErrors[keyof GetIncidentContextPackErrors];
+
+export type GetIncidentContextPackResponses = {
+    /**
+     * OK
+     */
+    200: GetIncidentContextPackResponseBody;
+};
+
+export type GetIncidentContextPackResponse = GetIncidentContextPackResponses[keyof GetIncidentContextPackResponses];
+
+export type RequestIncidentContextPackAgentRunData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}/context-pack/agent-runs';
+};
+
+export type RequestIncidentContextPackAgentRunErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RequestIncidentContextPackAgentRunError = RequestIncidentContextPackAgentRunErrors[keyof RequestIncidentContextPackAgentRunErrors];
+
+export type RequestIncidentContextPackAgentRunResponses = {
+    /**
+     * OK
+     */
+    200: RequestIncidentContextPackAgentRunResponseBody;
+};
+
+export type RequestIncidentContextPackAgentRunResponse = RequestIncidentContextPackAgentRunResponses[keyof RequestIncidentContextPackAgentRunResponses];
+
 export type GetIncidentUserDebriefData = {
     body?: never;
     path: {
@@ -5620,6 +6053,100 @@ export type GetIncidentUserDebriefResponses = {
 };
 
 export type GetIncidentUserDebriefResponse = GetIncidentUserDebriefResponses[keyof GetIncidentUserDebriefResponses];
+
+export type ListIncidentImpactsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}/impacts';
+};
+
+export type ListIncidentImpactsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIncidentImpactsError = ListIncidentImpactsErrors[keyof ListIncidentImpactsErrors];
+
+export type ListIncidentImpactsResponses = {
+    /**
+     * OK
+     */
+    200: ListIncidentImpactsResponseBody;
+};
+
+export type ListIncidentImpactsResponse = ListIncidentImpactsResponses[keyof ListIncidentImpactsResponses];
+
+export type SetIncidentImpactsData = {
+    body: SetIncidentImpactsRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/incidents/{id}/impacts';
+};
+
+export type SetIncidentImpactsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type SetIncidentImpactsError = SetIncidentImpactsErrors[keyof SetIncidentImpactsErrors];
+
+export type SetIncidentImpactsResponses = {
+    /**
+     * OK
+     */
+    200: SetIncidentImpactsResponseBody;
+};
+
+export type SetIncidentImpactsResponse = SetIncidentImpactsResponses[keyof SetIncidentImpactsResponses];
 
 export type ListIncidentMilestonesData = {
     body?: never;
