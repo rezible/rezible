@@ -16,6 +16,9 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentrunartifact"
+	"github.com/rezible/rezible/ent/agentrunfeedback"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/document"
@@ -89,6 +92,12 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
+	// AgentRun is the client for interacting with the AgentRun builders.
+	AgentRun *AgentRunClient
+	// AgentRunArtifact is the client for interacting with the AgentRunArtifact builders.
+	AgentRunArtifact *AgentRunArtifactClient
+	// AgentRunFeedback is the client for interacting with the AgentRunFeedback builders.
+	AgentRunFeedback *AgentRunFeedbackClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -230,6 +239,9 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
+	c.AgentRun = NewAgentRunClient(c.config)
+	c.AgentRunArtifact = NewAgentRunArtifactClient(c.config)
+	c.AgentRunFeedback = NewAgentRunFeedbackClient(c.config)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
@@ -390,6 +402,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:                                     ctx,
 		config:                                  cfg,
+		AgentRun:                                NewAgentRunClient(cfg),
+		AgentRunArtifact:                        NewAgentRunArtifactClient(cfg),
+		AgentRunFeedback:                        NewAgentRunFeedbackClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
 		AlertFeedback:                           NewAlertFeedbackClient(cfg),
 		AlertMetrics:                            NewAlertMetricsClient(cfg),
@@ -474,6 +489,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:                                     ctx,
 		config:                                  cfg,
+		AgentRun:                                NewAgentRunClient(cfg),
+		AgentRunArtifact:                        NewAgentRunArtifactClient(cfg),
+		AgentRunFeedback:                        NewAgentRunFeedbackClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
 		AlertFeedback:                           NewAlertFeedbackClient(cfg),
 		AlertMetrics:                            NewAlertMetricsClient(cfg),
@@ -545,7 +563,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Alert.
+//		AgentRun.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -568,21 +586,21 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Alert, c.AlertFeedback, c.Document, c.DocumentAccess, c.EventAnnotation,
-		c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
-		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
-		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
-		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
-		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
-		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
-		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.AgentRun, c.AgentRunArtifact, c.AgentRunFeedback, c.Alert, c.AlertFeedback,
+		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
+		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
+		c.IncidentSeverity, c.IncidentTag, c.IncidentTimelineEvent,
+		c.IncidentTimelineEventContext, c.IncidentTimelineEventContributingFactor,
+		c.IncidentTimelineEventEvidence, c.IncidentTimelineEventTopologyContext,
+		c.IncidentType, c.Integration, c.IntegrationEventSyncCursor,
+		c.IntegrationEventSyncRun, c.IntegrationUserInstallState, c.KnowledgeEntity,
+		c.KnowledgeEntityAlias, c.KnowledgeEvidence, c.KnowledgeRelationship,
+		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
+		c.NormalizedEventProjectionStatus, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
@@ -598,21 +616,21 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Alert, c.AlertFeedback, c.AlertMetrics, c.Document, c.DocumentAccess,
-		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
-		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
-		c.IncidentFieldOption, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
-		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
-		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
-		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
-		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
-		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
-		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.AgentRun, c.AgentRunArtifact, c.AgentRunFeedback, c.Alert, c.AlertFeedback,
+		c.AlertMetrics, c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident,
+		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
+		c.IncidentLink, c.IncidentMilestone, c.IncidentRole, c.IncidentRoleAssignment,
+		c.IncidentSeverity, c.IncidentTag, c.IncidentTimelineEvent,
+		c.IncidentTimelineEventContext, c.IncidentTimelineEventContributingFactor,
+		c.IncidentTimelineEventEvidence, c.IncidentTimelineEventTopologyContext,
+		c.IncidentType, c.Integration, c.IntegrationEventSyncCursor,
+		c.IntegrationEventSyncRun, c.IntegrationUserInstallState, c.KnowledgeEntity,
+		c.KnowledgeEntityAlias, c.KnowledgeEvidence, c.KnowledgeRelationship,
+		c.MeetingSchedule, c.MeetingSession, c.NormalizedEvent,
+		c.NormalizedEventProjectionStatus, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
@@ -627,6 +645,12 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
+	case *AgentRunMutation:
+		return c.AgentRun.mutate(ctx, m)
+	case *AgentRunArtifactMutation:
+		return c.AgentRunArtifact.mutate(ctx, m)
+	case *AgentRunFeedbackMutation:
+		return c.AgentRunFeedback.mutate(ctx, m)
 	case *AlertMutation:
 		return c.Alert.mutate(ctx, m)
 	case *AlertFeedbackMutation:
@@ -757,6 +781,560 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.VideoConference.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
+	}
+}
+
+// AgentRunClient is a client for the AgentRun schema.
+type AgentRunClient struct {
+	config
+}
+
+// NewAgentRunClient returns a client for the AgentRun from the given config.
+func NewAgentRunClient(c config) *AgentRunClient {
+	return &AgentRunClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agentrun.Hooks(f(g(h())))`.
+func (c *AgentRunClient) Use(hooks ...Hook) {
+	c.hooks.AgentRun = append(c.hooks.AgentRun, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `agentrun.Intercept(f(g(h())))`.
+func (c *AgentRunClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AgentRun = append(c.inters.AgentRun, interceptors...)
+}
+
+// Create returns a builder for creating a AgentRun entity.
+func (c *AgentRunClient) Create() *AgentRunCreate {
+	mutation := newAgentRunMutation(c.config, OpCreate)
+	return &AgentRunCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentRun entities.
+func (c *AgentRunClient) CreateBulk(builders ...*AgentRunCreate) *AgentRunCreateBulk {
+	return &AgentRunCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AgentRunClient) MapCreateBulk(slice any, setFunc func(*AgentRunCreate, int)) *AgentRunCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AgentRunCreateBulk{err: fmt.Errorf("calling to AgentRunClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AgentRunCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AgentRunCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentRun.
+func (c *AgentRunClient) Update() *AgentRunUpdate {
+	mutation := newAgentRunMutation(c.config, OpUpdate)
+	return &AgentRunUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentRunClient) UpdateOne(_m *AgentRun) *AgentRunUpdateOne {
+	mutation := newAgentRunMutation(c.config, OpUpdateOne, withAgentRun(_m))
+	return &AgentRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentRunClient) UpdateOneID(id uuid.UUID) *AgentRunUpdateOne {
+	mutation := newAgentRunMutation(c.config, OpUpdateOne, withAgentRunID(id))
+	return &AgentRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentRun.
+func (c *AgentRunClient) Delete() *AgentRunDelete {
+	mutation := newAgentRunMutation(c.config, OpDelete)
+	return &AgentRunDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AgentRunClient) DeleteOne(_m *AgentRun) *AgentRunDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AgentRunClient) DeleteOneID(id uuid.UUID) *AgentRunDeleteOne {
+	builder := c.Delete().Where(agentrun.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentRunDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentRun.
+func (c *AgentRunClient) Query() *AgentRunQuery {
+	return &AgentRunQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAgentRun},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AgentRun entity by its id.
+func (c *AgentRunClient) Get(ctx context.Context, id uuid.UUID) (*AgentRun, error) {
+	return c.Query().Where(agentrun.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentRunClient) GetX(ctx context.Context, id uuid.UUID) *AgentRun {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a AgentRun.
+func (c *AgentRunClient) QueryTenant(_m *AgentRun) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrun.TenantTable, agentrun.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AgentRun
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryArtifacts queries the artifacts edge of a AgentRun.
+func (c *AgentRunClient) QueryArtifacts(_m *AgentRun) *AgentRunArtifactQuery {
+	query := (&AgentRunArtifactClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
+			sqlgraph.To(agentrunartifact.Table, agentrunartifact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.ArtifactsTable, agentrun.ArtifactsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunArtifact
+		step.Edge.Schema = schemaConfig.AgentRunArtifact
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFeedback queries the feedback edge of a AgentRun.
+func (c *AgentRunClient) QueryFeedback(_m *AgentRun) *AgentRunFeedbackQuery {
+	query := (&AgentRunFeedbackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
+			sqlgraph.To(agentrunfeedback.Table, agentrunfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.FeedbackTable, agentrun.FeedbackColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunFeedback
+		step.Edge.Schema = schemaConfig.AgentRunFeedback
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentRunClient) Hooks() []Hook {
+	hooks := c.hooks.AgentRun
+	return append(hooks[:len(hooks):len(hooks)], agentrun.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AgentRunClient) Interceptors() []Interceptor {
+	return c.inters.AgentRun
+}
+
+func (c *AgentRunClient) mutate(ctx context.Context, m *AgentRunMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AgentRunCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AgentRunUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AgentRunUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AgentRunDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AgentRun mutation op: %q", m.Op())
+	}
+}
+
+// AgentRunArtifactClient is a client for the AgentRunArtifact schema.
+type AgentRunArtifactClient struct {
+	config
+}
+
+// NewAgentRunArtifactClient returns a client for the AgentRunArtifact from the given config.
+func NewAgentRunArtifactClient(c config) *AgentRunArtifactClient {
+	return &AgentRunArtifactClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agentrunartifact.Hooks(f(g(h())))`.
+func (c *AgentRunArtifactClient) Use(hooks ...Hook) {
+	c.hooks.AgentRunArtifact = append(c.hooks.AgentRunArtifact, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `agentrunartifact.Intercept(f(g(h())))`.
+func (c *AgentRunArtifactClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AgentRunArtifact = append(c.inters.AgentRunArtifact, interceptors...)
+}
+
+// Create returns a builder for creating a AgentRunArtifact entity.
+func (c *AgentRunArtifactClient) Create() *AgentRunArtifactCreate {
+	mutation := newAgentRunArtifactMutation(c.config, OpCreate)
+	return &AgentRunArtifactCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentRunArtifact entities.
+func (c *AgentRunArtifactClient) CreateBulk(builders ...*AgentRunArtifactCreate) *AgentRunArtifactCreateBulk {
+	return &AgentRunArtifactCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AgentRunArtifactClient) MapCreateBulk(slice any, setFunc func(*AgentRunArtifactCreate, int)) *AgentRunArtifactCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AgentRunArtifactCreateBulk{err: fmt.Errorf("calling to AgentRunArtifactClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AgentRunArtifactCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AgentRunArtifactCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentRunArtifact.
+func (c *AgentRunArtifactClient) Update() *AgentRunArtifactUpdate {
+	mutation := newAgentRunArtifactMutation(c.config, OpUpdate)
+	return &AgentRunArtifactUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentRunArtifactClient) UpdateOne(_m *AgentRunArtifact) *AgentRunArtifactUpdateOne {
+	mutation := newAgentRunArtifactMutation(c.config, OpUpdateOne, withAgentRunArtifact(_m))
+	return &AgentRunArtifactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentRunArtifactClient) UpdateOneID(id uuid.UUID) *AgentRunArtifactUpdateOne {
+	mutation := newAgentRunArtifactMutation(c.config, OpUpdateOne, withAgentRunArtifactID(id))
+	return &AgentRunArtifactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentRunArtifact.
+func (c *AgentRunArtifactClient) Delete() *AgentRunArtifactDelete {
+	mutation := newAgentRunArtifactMutation(c.config, OpDelete)
+	return &AgentRunArtifactDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AgentRunArtifactClient) DeleteOne(_m *AgentRunArtifact) *AgentRunArtifactDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AgentRunArtifactClient) DeleteOneID(id uuid.UUID) *AgentRunArtifactDeleteOne {
+	builder := c.Delete().Where(agentrunartifact.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentRunArtifactDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentRunArtifact.
+func (c *AgentRunArtifactClient) Query() *AgentRunArtifactQuery {
+	return &AgentRunArtifactQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAgentRunArtifact},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AgentRunArtifact entity by its id.
+func (c *AgentRunArtifactClient) Get(ctx context.Context, id uuid.UUID) (*AgentRunArtifact, error) {
+	return c.Query().Where(agentrunartifact.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentRunArtifactClient) GetX(ctx context.Context, id uuid.UUID) *AgentRunArtifact {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a AgentRunArtifact.
+func (c *AgentRunArtifactClient) QueryTenant(_m *AgentRunArtifact) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunartifact.Table, agentrunartifact.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunartifact.TenantTable, agentrunartifact.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AgentRunArtifact
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentRun queries the agent_run edge of a AgentRunArtifact.
+func (c *AgentRunArtifactClient) QueryAgentRun(_m *AgentRunArtifact) *AgentRunQuery {
+	query := (&AgentRunClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunartifact.Table, agentrunartifact.FieldID, id),
+			sqlgraph.To(agentrun.Table, agentrun.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunartifact.AgentRunTable, agentrunartifact.AgentRunColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRun
+		step.Edge.Schema = schemaConfig.AgentRunArtifact
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentRunArtifactClient) Hooks() []Hook {
+	hooks := c.hooks.AgentRunArtifact
+	return append(hooks[:len(hooks):len(hooks)], agentrunartifact.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AgentRunArtifactClient) Interceptors() []Interceptor {
+	return c.inters.AgentRunArtifact
+}
+
+func (c *AgentRunArtifactClient) mutate(ctx context.Context, m *AgentRunArtifactMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AgentRunArtifactCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AgentRunArtifactUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AgentRunArtifactUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AgentRunArtifactDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AgentRunArtifact mutation op: %q", m.Op())
+	}
+}
+
+// AgentRunFeedbackClient is a client for the AgentRunFeedback schema.
+type AgentRunFeedbackClient struct {
+	config
+}
+
+// NewAgentRunFeedbackClient returns a client for the AgentRunFeedback from the given config.
+func NewAgentRunFeedbackClient(c config) *AgentRunFeedbackClient {
+	return &AgentRunFeedbackClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agentrunfeedback.Hooks(f(g(h())))`.
+func (c *AgentRunFeedbackClient) Use(hooks ...Hook) {
+	c.hooks.AgentRunFeedback = append(c.hooks.AgentRunFeedback, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `agentrunfeedback.Intercept(f(g(h())))`.
+func (c *AgentRunFeedbackClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AgentRunFeedback = append(c.inters.AgentRunFeedback, interceptors...)
+}
+
+// Create returns a builder for creating a AgentRunFeedback entity.
+func (c *AgentRunFeedbackClient) Create() *AgentRunFeedbackCreate {
+	mutation := newAgentRunFeedbackMutation(c.config, OpCreate)
+	return &AgentRunFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentRunFeedback entities.
+func (c *AgentRunFeedbackClient) CreateBulk(builders ...*AgentRunFeedbackCreate) *AgentRunFeedbackCreateBulk {
+	return &AgentRunFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AgentRunFeedbackClient) MapCreateBulk(slice any, setFunc func(*AgentRunFeedbackCreate, int)) *AgentRunFeedbackCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AgentRunFeedbackCreateBulk{err: fmt.Errorf("calling to AgentRunFeedbackClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AgentRunFeedbackCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AgentRunFeedbackCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentRunFeedback.
+func (c *AgentRunFeedbackClient) Update() *AgentRunFeedbackUpdate {
+	mutation := newAgentRunFeedbackMutation(c.config, OpUpdate)
+	return &AgentRunFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentRunFeedbackClient) UpdateOne(_m *AgentRunFeedback) *AgentRunFeedbackUpdateOne {
+	mutation := newAgentRunFeedbackMutation(c.config, OpUpdateOne, withAgentRunFeedback(_m))
+	return &AgentRunFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentRunFeedbackClient) UpdateOneID(id uuid.UUID) *AgentRunFeedbackUpdateOne {
+	mutation := newAgentRunFeedbackMutation(c.config, OpUpdateOne, withAgentRunFeedbackID(id))
+	return &AgentRunFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentRunFeedback.
+func (c *AgentRunFeedbackClient) Delete() *AgentRunFeedbackDelete {
+	mutation := newAgentRunFeedbackMutation(c.config, OpDelete)
+	return &AgentRunFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AgentRunFeedbackClient) DeleteOne(_m *AgentRunFeedback) *AgentRunFeedbackDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AgentRunFeedbackClient) DeleteOneID(id uuid.UUID) *AgentRunFeedbackDeleteOne {
+	builder := c.Delete().Where(agentrunfeedback.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentRunFeedbackDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentRunFeedback.
+func (c *AgentRunFeedbackClient) Query() *AgentRunFeedbackQuery {
+	return &AgentRunFeedbackQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAgentRunFeedback},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AgentRunFeedback entity by its id.
+func (c *AgentRunFeedbackClient) Get(ctx context.Context, id uuid.UUID) (*AgentRunFeedback, error) {
+	return c.Query().Where(agentrunfeedback.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentRunFeedbackClient) GetX(ctx context.Context, id uuid.UUID) *AgentRunFeedback {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a AgentRunFeedback.
+func (c *AgentRunFeedbackClient) QueryTenant(_m *AgentRunFeedback) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunfeedback.Table, agentrunfeedback.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfeedback.TenantTable, agentrunfeedback.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AgentRunFeedback
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAgentRun queries the agent_run edge of a AgentRunFeedback.
+func (c *AgentRunFeedbackClient) QueryAgentRun(_m *AgentRunFeedback) *AgentRunQuery {
+	query := (&AgentRunClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunfeedback.Table, agentrunfeedback.FieldID, id),
+			sqlgraph.To(agentrun.Table, agentrun.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfeedback.AgentRunTable, agentrunfeedback.AgentRunColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRun
+		step.Edge.Schema = schemaConfig.AgentRunFeedback
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a AgentRunFeedback.
+func (c *AgentRunFeedbackClient) QueryUser(_m *AgentRunFeedback) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunfeedback.Table, agentrunfeedback.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfeedback.UserTable, agentrunfeedback.UserColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.AgentRunFeedback
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentRunFeedbackClient) Hooks() []Hook {
+	hooks := c.hooks.AgentRunFeedback
+	return append(hooks[:len(hooks):len(hooks)], agentrunfeedback.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AgentRunFeedbackClient) Interceptors() []Interceptor {
+	return c.inters.AgentRunFeedback
+}
+
+func (c *AgentRunFeedbackClient) mutate(ctx context.Context, m *AgentRunFeedbackMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AgentRunFeedbackCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AgentRunFeedbackUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AgentRunFeedbackUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AgentRunFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AgentRunFeedback mutation op: %q", m.Op())
 	}
 }
 
@@ -14223,11 +14801,12 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Alert, AlertFeedback, Document, DocumentAccess, EventAnnotation, Incident,
-		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
+		AgentRun, AgentRunArtifact, AgentRunFeedback, Alert, AlertFeedback, Document,
+		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
+		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
+		IncidentField, IncidentFieldOption, IncidentLink, IncidentMilestone,
+		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
+		IncidentTimelineEvent, IncidentTimelineEventContext,
 		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
 		IncidentTimelineEventTopologyContext, IncidentType, Integration,
 		IntegrationEventSyncCursor, IntegrationEventSyncRun,
@@ -14243,8 +14822,9 @@ type (
 		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
 	}
 	inters struct {
-		Alert, AlertFeedback, AlertMetrics, Document, DocumentAccess, EventAnnotation,
-		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		AgentRun, AgentRunArtifact, AgentRunFeedback, Alert, AlertFeedback,
+		AlertMetrics, Document, DocumentAccess, EventAnnotation, Incident,
+		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
 		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentLink,
 		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
 		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
@@ -14267,6 +14847,9 @@ type (
 var (
 	// DefaultSchemaConfig represents the default schema names for all tables as defined in ent/schema.
 	DefaultSchemaConfig = SchemaConfig{
+		AgentRun:                              tableSchemas[0],
+		AgentRunArtifact:                      tableSchemas[0],
+		AgentRunFeedback:                      tableSchemas[0],
 		Alert:                                 tableSchemas[0],
 		AlertFeedback:                         tableSchemas[0],
 		AlertMetrics:                          tableSchemas[0],

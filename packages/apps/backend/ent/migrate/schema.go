@@ -8,6 +8,166 @@ import (
 )
 
 var (
+	// AgentRunsColumns holds the columns for the "agent_runs" table.
+	AgentRunsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "workflow_kind", Type: field.TypeEnum, Enums: []string{"incident_context_pack", "alert_investigation", "retrospective_analysis"}},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"queued", "running", "succeeded", "failed"}, Default: "queued"},
+		{Name: "idempotency_key", Type: field.TypeString},
+		{Name: "subject_kind", Type: field.TypeString, Nullable: true},
+		{Name: "subject_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "trigger_metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "model_metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "error_code", Type: field.TypeString, Nullable: true},
+		{Name: "error_message", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "queued_at", Type: field.TypeTime},
+		{Name: "started_at", Type: field.TypeTime, Nullable: true},
+		{Name: "completed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "failed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "tenant_id", Type: field.TypeInt},
+	}
+	// AgentRunsTable holds the schema information for the "agent_runs" table.
+	AgentRunsTable = &schema.Table{
+		Name:       "agent_runs",
+		Columns:    AgentRunsColumns,
+		PrimaryKey: []*schema.Column{AgentRunsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_runs_tenants_tenant",
+				Columns:    []*schema.Column{AgentRunsColumns[16]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentrun_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunsColumns[16]},
+			},
+			{
+				Name:    "agentrun_tenant_id_workflow_kind_idempotency_key",
+				Unique:  true,
+				Columns: []*schema.Column{AgentRunsColumns[16], AgentRunsColumns[3], AgentRunsColumns[5]},
+			},
+			{
+				Name:    "agentrun_tenant_id_status_updated_at",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunsColumns[16], AgentRunsColumns[4], AgentRunsColumns[2]},
+			},
+			{
+				Name:    "agentrun_tenant_id_subject_kind_subject_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunsColumns[16], AgentRunsColumns[6], AgentRunsColumns[7]},
+			},
+		},
+	}
+	// AgentRunArtifactsColumns holds the columns for the "agent_run_artifacts" table.
+	AgentRunArtifactsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"context", "result", "tool", "model"}},
+		{Name: "name", Type: field.TypeString},
+		{Name: "payload", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "redacted", Type: field.TypeBool, Default: false},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "agent_run_id", Type: field.TypeUUID},
+	}
+	// AgentRunArtifactsTable holds the schema information for the "agent_run_artifacts" table.
+	AgentRunArtifactsTable = &schema.Table{
+		Name:       "agent_run_artifacts",
+		Columns:    AgentRunArtifactsColumns,
+		PrimaryKey: []*schema.Column{AgentRunArtifactsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_run_artifacts_tenants_tenant",
+				Columns:    []*schema.Column{AgentRunArtifactsColumns[7]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_run_artifacts_agent_runs_agent_run",
+				Columns:    []*schema.Column{AgentRunArtifactsColumns[8]},
+				RefColumns: []*schema.Column{AgentRunsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentrunartifact_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunArtifactsColumns[7]},
+			},
+			{
+				Name:    "agentrunartifact_tenant_id_agent_run_id_kind",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunArtifactsColumns[7], AgentRunArtifactsColumns[8], AgentRunArtifactsColumns[3]},
+			},
+			{
+				Name:    "agentrunartifact_tenant_id_agent_run_id_name",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunArtifactsColumns[7], AgentRunArtifactsColumns[8], AgentRunArtifactsColumns[4]},
+			},
+		},
+	}
+	// AgentRunFeedbacksColumns holds the columns for the "agent_run_feedbacks" table.
+	AgentRunFeedbacksColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "rating", Type: field.TypeInt, Nullable: true},
+		{Name: "comment", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "agent_run_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// AgentRunFeedbacksTable holds the schema information for the "agent_run_feedbacks" table.
+	AgentRunFeedbacksTable = &schema.Table{
+		Name:       "agent_run_feedbacks",
+		Columns:    AgentRunFeedbacksColumns,
+		PrimaryKey: []*schema.Column{AgentRunFeedbacksColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_run_feedbacks_tenants_tenant",
+				Columns:    []*schema.Column{AgentRunFeedbacksColumns[6]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_run_feedbacks_agent_runs_agent_run",
+				Columns:    []*schema.Column{AgentRunFeedbacksColumns[7]},
+				RefColumns: []*schema.Column{AgentRunsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_run_feedbacks_users_user",
+				Columns:    []*schema.Column{AgentRunFeedbacksColumns[8]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agentrunfeedback_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunFeedbacksColumns[6]},
+			},
+			{
+				Name:    "agentrunfeedback_tenant_id_agent_run_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunFeedbacksColumns[6], AgentRunFeedbacksColumns[7]},
+			},
+			{
+				Name:    "agentrunfeedback_tenant_id_user_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentRunFeedbacksColumns[6], AgentRunFeedbacksColumns[8]},
+			},
+		},
+	}
 	// AlertsColumns holds the columns for the "alerts" table.
 	AlertsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -3163,6 +3323,9 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		AgentRunsTable,
+		AgentRunArtifactsTable,
+		AgentRunFeedbacksTable,
 		AlertsTable,
 		AlertFeedbacksTable,
 		DocumentsTable,
@@ -3245,6 +3408,12 @@ var (
 )
 
 func init() {
+	AgentRunsTable.ForeignKeys[0].RefTable = TenantsTable
+	AgentRunArtifactsTable.ForeignKeys[0].RefTable = TenantsTable
+	AgentRunArtifactsTable.ForeignKeys[1].RefTable = AgentRunsTable
+	AgentRunFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
+	AgentRunFeedbacksTable.ForeignKeys[1].RefTable = AgentRunsTable
+	AgentRunFeedbacksTable.ForeignKeys[2].RefTable = UsersTable
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	AlertsTable.ForeignKeys[2].RefTable = OncallRostersTable

@@ -12,6 +12,12 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AgentRun is the client for interacting with the AgentRun builders.
+	AgentRun *AgentRunClient
+	// AgentRunArtifact is the client for interacting with the AgentRunArtifact builders.
+	AgentRunArtifact *AgentRunArtifactClient
+	// AgentRunFeedback is the client for interacting with the AgentRunFeedback builders.
+	AgentRunFeedback *AgentRunFeedbackClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -273,6 +279,9 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AgentRun = NewAgentRunClient(tx.config)
+	tx.AgentRunArtifact = NewAgentRunArtifactClient(tx.config)
+	tx.AgentRunFeedback = NewAgentRunFeedbackClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
@@ -347,7 +356,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Alert.QueryXXX(), the query will be executed
+// applies a query, for example: AgentRun.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

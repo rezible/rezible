@@ -1,3 +1,29 @@
+-- create "agent_runs" table
+CREATE TABLE "agent_runs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "workflow_kind" character varying NOT NULL, "status" character varying NOT NULL DEFAULT 'queued', "idempotency_key" character varying NOT NULL, "subject_kind" character varying NULL, "subject_id" uuid NULL, "trigger_metadata" jsonb NULL, "model_metadata" jsonb NULL, "error_code" character varying NULL, "error_message" text NULL, "queued_at" timestamptz NOT NULL, "started_at" timestamptz NULL, "completed_at" timestamptz NULL, "failed_at" timestamptz NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+-- create index "agentrun_tenant_id" to table: "agent_runs"
+CREATE INDEX "agentrun_tenant_id" ON "agent_runs" ("tenant_id");
+-- create index "agentrun_tenant_id_workflow_kind_idempotency_key" to table: "agent_runs"
+CREATE UNIQUE INDEX "agentrun_tenant_id_workflow_kind_idempotency_key" ON "agent_runs" ("tenant_id", "workflow_kind", "idempotency_key");
+-- create index "agentrun_tenant_id_status_updated_at" to table: "agent_runs"
+CREATE INDEX "agentrun_tenant_id_status_updated_at" ON "agent_runs" ("tenant_id", "status", "updated_at");
+-- create index "agentrun_tenant_id_subject_kind_subject_id" to table: "agent_runs"
+CREATE INDEX "agentrun_tenant_id_subject_kind_subject_id" ON "agent_runs" ("tenant_id", "subject_kind", "subject_id");
+-- create "agent_run_artifacts" table
+CREATE TABLE "agent_run_artifacts" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "name" character varying NOT NULL, "payload" jsonb NULL, "redacted" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "agentrunartifact_tenant_id" to table: "agent_run_artifacts"
+CREATE INDEX "agentrunartifact_tenant_id" ON "agent_run_artifacts" ("tenant_id");
+-- create index "agentrunartifact_tenant_id_agent_run_id_kind" to table: "agent_run_artifacts"
+CREATE INDEX "agentrunartifact_tenant_id_agent_run_id_kind" ON "agent_run_artifacts" ("tenant_id", "agent_run_id", "kind");
+-- create index "agentrunartifact_tenant_id_agent_run_id_name" to table: "agent_run_artifacts"
+CREATE INDEX "agentrunartifact_tenant_id_agent_run_id_name" ON "agent_run_artifacts" ("tenant_id", "agent_run_id", "name");
+-- create "agent_run_feedbacks" table
+CREATE TABLE "agent_run_feedbacks" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "rating" bigint NULL, "comment" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, "user_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "agentrunfeedback_tenant_id" to table: "agent_run_feedbacks"
+CREATE INDEX "agentrunfeedback_tenant_id" ON "agent_run_feedbacks" ("tenant_id");
+-- create index "agentrunfeedback_tenant_id_agent_run_id" to table: "agent_run_feedbacks"
+CREATE INDEX "agentrunfeedback_tenant_id_agent_run_id" ON "agent_run_feedbacks" ("tenant_id", "agent_run_id");
+-- create index "agentrunfeedback_tenant_id_user_id" to table: "agent_run_feedbacks"
+CREATE INDEX "agentrunfeedback_tenant_id_user_id" ON "agent_run_feedbacks" ("tenant_id", "user_id");
 -- create "alerts" table
 CREATE TABLE "alerts" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, "roster_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "alert_tenant_id" to table: "alerts"
@@ -412,6 +438,12 @@ CREATE TABLE "task_tickets" ("task_id" uuid NOT NULL, "ticket_id" uuid NOT NULL,
 CREATE TABLE "team_oncall_rosters" ("team_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("team_id", "oncall_roster_id"));
 -- create "user_watched_oncall_rosters" table
 CREATE TABLE "user_watched_oncall_rosters" ("user_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("user_id", "oncall_roster_id"));
+-- modify "agent_runs" table
+ALTER TABLE "agent_runs" ADD CONSTRAINT "agent_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
+-- modify "agent_run_artifacts" table
+ALTER TABLE "agent_run_artifacts" ADD CONSTRAINT "agent_run_artifacts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_artifacts_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION;
+-- modify "agent_run_feedbacks" table
+ALTER TABLE "agent_run_feedbacks" ADD CONSTRAINT "agent_run_feedbacks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_feedbacks_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_feedbacks_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL;
 -- modify "alerts" table
 ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "alerts_oncall_rosters_alerts" FOREIGN KEY ("roster_id") REFERENCES "oncall_rosters" ("id") ON DELETE SET NULL;
 -- modify "alert_feedbacks" table

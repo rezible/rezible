@@ -6,6 +6,15 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AgentRun is the predicate function for agentrun builders.
+type AgentRun func(*sql.Selector)
+
+// AgentRunArtifact is the predicate function for agentrunartifact builders.
+type AgentRunArtifact func(*sql.Selector)
+
+// AgentRunFeedback is the predicate function for agentrunfeedback builders.
+type AgentRunFeedback func(*sql.Selector)
+
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)
 

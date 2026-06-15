@@ -9,6 +9,7 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -406,10 +407,46 @@ type (
 	}
 )
 
-//type (
-//	AiAgentService interface {
-//	}
-//)
+type (
+	AgentWorkflowKind string
+
+	AgentRunRequest struct {
+		WorkflowKind   agentrun.WorkflowKind
+		IdempotencyKey string
+		SubjectKind    string
+		SubjectID      uuid.UUID
+		Metadata       map[string]any
+	}
+
+	AgentService interface {
+		RequestRun(context.Context, AgentRunRequest) (*ent.AgentRun, error)
+		GetRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
+		RunWorkflow(context.Context, uuid.UUID) error
+	}
+
+	EventOnAgentRunQueued struct {
+		AgentRunID   uuid.UUID
+		WorkflowKind agentrun.WorkflowKind
+		SubjectKind  string
+	}
+
+	EventOnAgentRunStarted struct {
+		AgentRunID   uuid.UUID
+		WorkflowKind agentrun.WorkflowKind
+	}
+
+	EventOnAgentRunCompleted struct {
+		AgentRunID   uuid.UUID
+		WorkflowKind agentrun.WorkflowKind
+	}
+
+	EventOnAgentRunFailed struct {
+		AgentRunID   uuid.UUID
+		WorkflowKind agentrun.WorkflowKind
+		ErrorCode    string
+		ErrorMessage string
+	}
+)
 
 type (
 	ListAlertsParams struct {

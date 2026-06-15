@@ -8,6 +8,9 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentrunartifact"
+	"github.com/rezible/rezible/ent/agentrunfeedback"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
@@ -130,6 +133,87 @@ func (f TraverseFunc) Traverse(ctx context.Context, q ent.Query) error {
 		return err
 	}
 	return f(ctx, query)
+}
+
+// The AgentRunFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentRunFunc func(context.Context, *ent.AgentRunQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentRunFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentRunQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentRunQuery", q)
+}
+
+// The TraverseAgentRun type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentRun func(context.Context, *ent.AgentRunQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentRun) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentRun) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentRunQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunQuery", q)
+}
+
+// The AgentRunArtifactFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentRunArtifactFunc func(context.Context, *ent.AgentRunArtifactQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentRunArtifactFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentRunArtifactQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentRunArtifactQuery", q)
+}
+
+// The TraverseAgentRunArtifact type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentRunArtifact func(context.Context, *ent.AgentRunArtifactQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentRunArtifact) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentRunArtifact) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentRunArtifactQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunArtifactQuery", q)
+}
+
+// The AgentRunFeedbackFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentRunFeedbackFunc func(context.Context, *ent.AgentRunFeedbackQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentRunFeedbackFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentRunFeedbackQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentRunFeedbackQuery", q)
+}
+
+// The TraverseAgentRunFeedback type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentRunFeedback func(context.Context, *ent.AgentRunFeedbackQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentRunFeedback) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentRunFeedback) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentRunFeedbackQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunFeedbackQuery", q)
 }
 
 // The AlertFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1890,6 +1974,12 @@ func (f TraverseVideoConference) Traverse(ctx context.Context, q ent.Query) erro
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
+	case *ent.AgentRunQuery:
+		return &query[*ent.AgentRunQuery, predicate.AgentRun, agentrun.OrderOption]{typ: ent.TypeAgentRun, tq: q}, nil
+	case *ent.AgentRunArtifactQuery:
+		return &query[*ent.AgentRunArtifactQuery, predicate.AgentRunArtifact, agentrunartifact.OrderOption]{typ: ent.TypeAgentRunArtifact, tq: q}, nil
+	case *ent.AgentRunFeedbackQuery:
+		return &query[*ent.AgentRunFeedbackQuery, predicate.AgentRunFeedback, agentrunfeedback.OrderOption]{typ: ent.TypeAgentRunFeedback, tq: q}, nil
 	case *ent.AlertQuery:
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
 	case *ent.AlertFeedbackQuery:

@@ -2,34 +2,46 @@ package adk
 
 import (
 	"context"
+	"fmt"
+
+	"google.golang.org/adk/model"
+	"google.golang.org/adk/model/gemini"
+	"google.golang.org/genai"
 
 	rez "github.com/rezible/rezible"
-	"google.golang.org/adk/model"
 )
 
-type AnthropicConfig struct {
-	ApiKey string `cfg:"api_key"`
+type LanguageModelFactory interface {
+	Model(context.Context) (model.LLM, error)
+	ModelMetadata() map[string]any
 }
 
-func getConfigModels(ctx context.Context) ([]model.LLM, error) {
-	var models []model.LLM
-
-	return models, nil
+type configLanguageModelFactory struct {
+	cfg rez.AiConfig
 }
 
-func newClaudeLanguageModel(ctx context.Context, cl rez.ConfigLoader) (model.LLM, error) {
-	//var cfg AnthropicConfig
-	//if cfgErr := cl.Unmarshal("anthropic", &cfg); cfgErr != nil {
-	//	return nil, fmt.Errorf("anthropic config: %w", cfgErr)
-	//}
+func newLanguageModelFactory(cfg rez.AiConfig) LanguageModelFactory {
+	return &configLanguageModelFactory{cfg: cfg}
+}
 
-	//claudeCfg := &claude.Config{
-	//	APIKey: cfg.ApiKey,
-	//}
-	//m, mErr := claude.NewChatModel(ctx, claudeCfg)
-	//if mErr != nil {
-	//	return nil, fmt.Errorf("new anthropic model: %w", mErr)
-	//}
-	//return m, nil
-	return nil, nil
+func (f *configLanguageModelFactory) ModelMetadata() map[string]any {
+	return map[string]any{
+		"provider": f.cfg.Provider,
+		"model":    f.cfg.Model,
+	}
+}
+
+func (f *configLanguageModelFactory) Model(ctx context.Context) (model.LLM, error) {
+	if !f.cfg.Enabled {
+		return nil, fmt.Errorf("agent model provider disabled")
+	}
+	switch f.cfg.Provider {
+	case "gemini":
+		if f.cfg.Gemini.APIKey == "" {
+			return nil, fmt.Errorf("gemini api key is required")
+		}
+		return gemini.NewModel(ctx, f.cfg.Model, &genai.ClientConfig{APIKey: f.cfg.Gemini.APIKey})
+	default:
+		return nil, fmt.Errorf("unsupported agent model provider %q", f.cfg.Provider)
+	}
 }

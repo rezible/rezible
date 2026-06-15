@@ -71,3 +71,37 @@ type GenerateShiftMetrics struct {
 func (GenerateShiftMetrics) Kind() string {
 	return "generate-shift-metrics"
 }
+
+type RunAgentWorkflow struct {
+	AgentRunID uuid.UUID `json:"agent_run_id"`
+}
+
+func (RunAgentWorkflow) Kind() string {
+	return "run-agent-workflow"
+}
+
+type CreateIncidentContextPack struct {
+	IncidentID uuid.UUID `json:"incident_id"`
+}
+
+func (CreateIncidentContextPack) Kind() string {
+	return "create-incident-context-pack"
+}
+
+type InvestigateAlert struct {
+	AlertID         uuid.UUID `json:"alert_id"`
+	AlertInstanceID uuid.UUID `json:"alert_instance_id,omitempty"`
+}
+
+func (InvestigateAlert) Kind() string {
+	return "investigate-alert"
+}
+
+type AnalyzeIncidentRetrospective struct {
+	IncidentID      uuid.UUID `json:"incident_id"`
+	RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
+}
+
+func (AnalyzeIncidentRetrospective) Kind() string {
+	return "analyze-incident-retrospective"
+}

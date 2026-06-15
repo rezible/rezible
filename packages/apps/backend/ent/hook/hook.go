@@ -9,6 +9,42 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
+// The AgentRunFunc type is an adapter to allow the use of ordinary
+// function as AgentRun mutator.
+type AgentRunFunc func(context.Context, *ent.AgentRunMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunMutation", m)
+}
+
+// The AgentRunArtifactFunc type is an adapter to allow the use of ordinary
+// function as AgentRunArtifact mutator.
+type AgentRunArtifactFunc func(context.Context, *ent.AgentRunArtifactMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentRunArtifactFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunArtifactMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunArtifactMutation", m)
+}
+
+// The AgentRunFeedbackFunc type is an adapter to allow the use of ordinary
+// function as AgentRunFeedback mutator.
+type AgentRunFeedbackFunc func(context.Context, *ent.AgentRunFeedbackMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentRunFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunFeedbackMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunFeedbackMutation", m)
+}
+
 // The AlertFunc type is an adapter to allow the use of ordinary
 // function as Alert mutator.
 type AlertFunc func(context.Context, *ent.AlertMutation) (ent.Value, error)

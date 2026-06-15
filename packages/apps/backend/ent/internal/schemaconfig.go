@@ -7,6 +7,9 @@ import "context"
 // SchemaConfig represents alternative schema names for all tables
 // that can be passed at runtime.
 type SchemaConfig struct {
+	AgentRun                                  string // AgentRun table.
+	AgentRunArtifact                          string // AgentRunArtifact table.
+	AgentRunFeedback                          string // AgentRunFeedback table.
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.
 	AlertMetrics                              string // AlertMetrics table.

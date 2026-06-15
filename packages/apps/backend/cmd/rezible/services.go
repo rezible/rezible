@@ -13,6 +13,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/integrations"
+	rezadk "github.com/rezible/rezible/internal/adk"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
@@ -411,4 +412,15 @@ var provideServices = do.Package(
 		)
 	}),
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
+
+	do.Lazy(func(i do.Injector) (*rezadk.AgentService, error) {
+		return rezadk.NewAgentService(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.TelemetryService](i),
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.JobService](i),
+			do.MustInvoke[rez.MessageService](i),
+		)
+	}),
+	do.Bind[*rezadk.AgentService, rez.AgentService](),
 )

@@ -111,6 +111,78 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The AgentRunQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentRunQueryRuleFunc func(context.Context, *ent.AgentRunQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentRunQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentRunQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentRunQuery", q)
+}
+
+// The AgentRunMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentRunMutationRuleFunc func(context.Context, *ent.AgentRunMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentRunMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentRunMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentRunMutation", m)
+}
+
+// The AgentRunArtifactQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentRunArtifactQueryRuleFunc func(context.Context, *ent.AgentRunArtifactQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentRunArtifactQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentRunArtifactQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentRunArtifactQuery", q)
+}
+
+// The AgentRunArtifactMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentRunArtifactMutationRuleFunc func(context.Context, *ent.AgentRunArtifactMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentRunArtifactMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentRunArtifactMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentRunArtifactMutation", m)
+}
+
+// The AgentRunFeedbackQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentRunFeedbackQueryRuleFunc func(context.Context, *ent.AgentRunFeedbackQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentRunFeedbackQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentRunFeedbackQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentRunFeedbackQuery", q)
+}
+
+// The AgentRunFeedbackMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentRunFeedbackMutationRuleFunc func(context.Context, *ent.AgentRunFeedbackMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentRunFeedbackMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentRunFeedbackMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentRunFeedbackMutation", m)
+}
+
 // The AlertQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AlertQueryRuleFunc func(context.Context, *ent.AlertQuery) error
@@ -1694,6 +1766,12 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
+	case *ent.AgentRunQuery:
+		return q.Filter(), nil
+	case *ent.AgentRunArtifactQuery:
+		return q.Filter(), nil
+	case *ent.AgentRunFeedbackQuery:
+		return q.Filter(), nil
 	case *ent.AlertQuery:
 		return q.Filter(), nil
 	case *ent.AlertFeedbackQuery:
@@ -1831,6 +1909,12 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
+	case *ent.AgentRunMutation:
+		return m.Filter(), nil
+	case *ent.AgentRunArtifactMutation:
+		return m.Filter(), nil
+	case *ent.AgentRunFeedbackMutation:
+		return m.Filter(), nil
 	case *ent.AlertMutation:
 		return m.Filter(), nil
 	case *ent.AlertFeedbackMutation:
