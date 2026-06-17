@@ -210,5 +210,8 @@ type Ticket func(*sql.Selector)
 // User is the predicate function for user builders.
 type User func(*sql.Selector)
 
+// UserAuthSession is the predicate function for userauthsession builders.
+type UserAuthSession func(*sql.Selector)
+
 // VideoConference is the predicate function for videoconference builders.
 type VideoConference func(*sql.Selector)

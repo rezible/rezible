@@ -2,6 +2,8 @@ package oidc
 
 import (
 	"context"
+	"crypto/rand"
+	"encoding/base64"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -22,7 +24,9 @@ const (
 type oauthHandler struct {
 	cfg         rez.HttpAuthOidcConfig
 	redirectUrl string
-	codec       *cookieCodec
+
+	authStateCookiePath string
+	codec               *cookieCodec
 
 	apiAudience     string
 	singleTenantOrg *ent.Organization
@@ -73,15 +77,19 @@ type AuthFlowState struct {
 	ReturnTo     string `json:"return_to"`
 }
 
-func (h *oauthHandler) createAuthRedirect(r *http.Request) (string, *AuthFlowState, error) {
+func createRandomValue() string {
+	buf := make([]byte, 32)
+	_, _ = rand.Read(buf)
+	return base64.RawURLEncoding.EncodeToString(buf)
+}
+
+func (h *oauthHandler) createAuthRedirect(w http.ResponseWriter, r *http.Request) (string, error) {
 	if cfgErr := h.ensureProvider(r.Context()); cfgErr != nil {
-		return "", nil, cfgErr
+		return "", cfgErr
 	}
 
-	state, nonce, randErr := createRandomValues()
-	if randErr != nil {
-		return "", nil, randErr
-	}
+	state := createRandomValue()
+	nonce := createRandomValue()
 
 	q := r.URL.Query()
 	returnTo := q.Get("return_to")
@@ -89,7 +97,7 @@ func (h *oauthHandler) createAuthRedirect(r *http.Request) (string, *AuthFlowSta
 		returnTo = "/"
 	}
 	if !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
-		return "", nil, fmt.Errorf("invalid return_to")
+		return "", fmt.Errorf("invalid return_to")
 	}
 	// TODO: encode this as the oauth state itself? (instead of a cookie)
 	vs := &AuthFlowState{
@@ -104,31 +112,51 @@ func (h *oauthHandler) createAuthRedirect(r *http.Request) (string, *AuthFlowSta
 		oauth2.S256ChallengeOption(vs.CodeVerifier),
 		h.resourceOption,
 	}
-	return h.oauthCfg.AuthCodeURL(state, opts...), vs, nil
+
+	if cookieErr := h.writeAuthStateCookie(w, vs, 10*time.Minute); cookieErr != nil {
+		slog.Debug("Failed to write auth state cookie", "error", cookieErr)
+		return "", errWriteAuthState
+	}
+
+	return h.oauthCfg.AuthCodeURL(state, opts...), nil
 }
 
-func (h *oauthHandler) doCallbackExchange(r *http.Request, s AuthFlowState) (*userAuthInfo, error) {
+func (h *oauthHandler) doCallbackExchange(w http.ResponseWriter, r *http.Request) (*userAuthInfo, string, error) {
+	var as AuthFlowState
+	stateCookie, readCookieErr := r.Cookie(authStateCookieName)
+	if stateCookie == nil || readCookieErr != nil {
+		return nil, "", errReadAuthState
+	}
+	if decodeErr := h.codec.decode(stateCookie.Value, &as); decodeErr != nil {
+		return nil, "", errReadAuthState
+	}
+	h.clearAuthStateCookie(w)
+
 	q := r.URL.Query()
 	code := q.Get("code")
 	if code == "" {
-		return nil, fmt.Errorf("missing code")
+		return nil, "", fmt.Errorf("missing code")
 	}
-	if q.Get("state") != s.State {
-		return nil, fmt.Errorf("invalid state")
+	if q.Get("state") != as.State {
+		return nil, "", fmt.Errorf("invalid state")
 	}
 	ctx := r.Context()
 	if cfgErr := h.ensureProvider(ctx); cfgErr != nil {
-		return nil, cfgErr
+		return nil, "", cfgErr
 	}
 	token, exchangeErr := h.oauthCfg.Exchange(ctx, code,
-		oauth2.VerifierOption(s.CodeVerifier), h.resourceOption)
+		oauth2.VerifierOption(as.CodeVerifier), h.resourceOption)
 	if exchangeErr != nil {
-		return nil, fmt.Errorf("token exchange failed: %w", exchangeErr)
+		return nil, "", fmt.Errorf("token exchange failed: %w", exchangeErr)
 	}
 	if !token.Valid() {
-		return nil, fmt.Errorf("invalid token")
+		return nil, "", fmt.Errorf("invalid token")
 	}
-	return h.extractTokenInfo(ctx, token, s.Nonce)
+	info, infoErr := h.extractTokenInfo(ctx, token, as.Nonce)
+	if infoErr != nil {
+		return nil, "", fmt.Errorf("info: %w", infoErr)
+	}
+	return info, as.ReturnTo, nil
 }
 
 func (h *oauthHandler) refreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
@@ -211,4 +239,35 @@ func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, no
 	}
 
 	return info, nil
+}
+
+const authStateCookieName = "rez_auth_state"
+
+func (h *oauthHandler) writeAuthStateCookie(w http.ResponseWriter, value any, maxAge time.Duration) error {
+	encoded, encErr := h.codec.encode(value)
+	if encErr != nil {
+		return fmt.Errorf("encode value: %w", encErr)
+	}
+	http.SetCookie(w, &http.Cookie{
+		Name:     authStateCookieName,
+		Value:    encoded,
+		Path:     h.authStateCookiePath,
+		MaxAge:   int(maxAge.Seconds()),
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+	return nil
+}
+
+func (h *oauthHandler) clearAuthStateCookie(w http.ResponseWriter) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     authStateCookieName,
+		Value:    "",
+		Path:     h.authStateCookiePath,
+		MaxAge:   -1,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
 }

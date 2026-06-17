@@ -21,10 +21,10 @@ const (
 	FieldIncidentID = "incident_id"
 	// FieldLinkedIncidentID holds the string denoting the linked_incident_id field in the database.
 	FieldLinkedIncidentID = "linked_incident_id"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
 	// FieldLinkType holds the string denoting the link_type field in the database.
 	FieldLinkType = "link_type"
+	// FieldDescription holds the string denoting the description field in the database.
+	FieldDescription = "description"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeIncident holds the string denoting the incident edge name in mutations.
@@ -62,8 +62,8 @@ var Columns = []string{
 	FieldTenantID,
 	FieldIncidentID,
 	FieldLinkedIncidentID,
-	FieldDescription,
 	FieldLinkType,
+	FieldDescription,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -133,14 +133,14 @@ func ByLinkedIncidentID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLinkedIncidentID, opts...).ToFunc()
 }
 
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
 // ByLinkType orders the results by the link_type field.
 func ByLinkType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldLinkType, opts...).ToFunc()
+}
+
+// ByDescription orders the results by the description field.
+func ByDescription(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDescription, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

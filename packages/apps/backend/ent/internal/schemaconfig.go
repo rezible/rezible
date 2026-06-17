@@ -92,6 +92,7 @@ type SchemaConfig struct {
 	UserTeams                                 string // User-teams->Team table.
 	UserWatchedOncallRosters                  string // User-watched_oncall_rosters->OncallRoster table.
 	UserIncidents                             string // User-incidents->Incident table.
+	UserAuthSession                           string // UserAuthSession table.
 	VideoConference                           string // VideoConference table.
 }
 

@@ -8,7 +8,6 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 )
@@ -35,9 +34,7 @@ func newCookieCodec(secret []byte) (*cookieCodec, error) {
 		return nil, fmt.Errorf("gcm: %w", gcmErr)
 	}
 
-	return &cookieCodec{
-		aead: aead,
-	}, nil
+	return &cookieCodec{aead: aead}, nil
 }
 
 func (c *cookieCodec) encode(v any) (string, error) {
@@ -76,21 +73,4 @@ func (c *cookieCodec) decode(encoded string, dst any) error {
 	}
 
 	return json.Unmarshal(plaintext, dst)
-}
-
-func randomURLSafe(n int) (string, error) {
-	b := make([]byte, n)
-	if _, randErr := rand.Read(b); randErr != nil {
-		return "", randErr
-	}
-	return base64.RawURLEncoding.EncodeToString(b), nil
-}
-
-func createRandomValues() (string, string, error) {
-	state, stateErr := randomURLSafe(32)
-	nonce, nonceErr := randomURLSafe(32)
-	if randErr := errors.Join(stateErr, nonceErr); randErr != nil {
-		return "", "", fmt.Errorf("creating random state: %w", randErr)
-	}
-	return state, nonce, nil
 }

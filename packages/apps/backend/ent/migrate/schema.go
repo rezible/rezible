@@ -723,8 +723,8 @@ var (
 	// IncidentLinksColumns holds the columns for the "incident_links" table.
 	IncidentLinksColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "link_type", Type: field.TypeEnum, Enums: []string{"parent", "child", "similar"}},
+		{Name: "description", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "incident_id", Type: field.TypeUUID},
 		{Name: "linked_incident_id", Type: field.TypeUUID},
@@ -2969,6 +2969,47 @@ var (
 			},
 		},
 	}
+	// UserAuthSessionsColumns holds the columns for the "user_auth_sessions" table.
+	UserAuthSessionsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "user_id", Type: field.TypeUUID},
+		{Name: "organization_id", Type: field.TypeUUID},
+	}
+	// UserAuthSessionsTable holds the schema information for the "user_auth_sessions" table.
+	UserAuthSessionsTable = &schema.Table{
+		Name:       "user_auth_sessions",
+		Columns:    UserAuthSessionsColumns,
+		PrimaryKey: []*schema.Column{UserAuthSessionsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "user_auth_sessions_tenants_tenant",
+				Columns:    []*schema.Column{UserAuthSessionsColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "user_auth_sessions_users_user",
+				Columns:    []*schema.Column{UserAuthSessionsColumns[3]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "user_auth_sessions_organizations_organization",
+				Columns:    []*schema.Column{UserAuthSessionsColumns[4]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "userauthsession_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{UserAuthSessionsColumns[2]},
+			},
+		},
+	}
 	// VideoConferencesColumns holds the columns for the "video_conferences" table.
 	VideoConferencesColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -3449,6 +3490,7 @@ var (
 		TenantsTable,
 		TicketsTable,
 		UsersTable,
+		UserAuthSessionsTable,
 		VideoConferencesTable,
 		IncidentFieldSelectionsTable,
 		IncidentTagAssignmentsTable,
@@ -3626,6 +3668,9 @@ func init() {
 	TicketsTable.ForeignKeys[0].RefTable = TenantsTable
 	UsersTable.ForeignKeys[0].RefTable = TenantsTable
 	UsersTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
+	UserAuthSessionsTable.ForeignKeys[0].RefTable = TenantsTable
+	UserAuthSessionsTable.ForeignKeys[1].RefTable = UsersTable
+	UserAuthSessionsTable.ForeignKeys[2].RefTable = OrganizationsTable
 	VideoConferencesTable.ForeignKeys[0].RefTable = IncidentsTable
 	VideoConferencesTable.ForeignKeys[1].RefTable = MeetingSessionsTable
 	VideoConferencesTable.ForeignKeys[2].RefTable = TenantsTable

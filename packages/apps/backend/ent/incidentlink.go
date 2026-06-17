@@ -25,10 +25,10 @@ type IncidentLink struct {
 	IncidentID uuid.UUID `json:"incident_id,omitempty"`
 	// LinkedIncidentID holds the value of the "linked_incident_id" field.
 	LinkedIncidentID uuid.UUID `json:"linked_incident_id,omitempty"`
-	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
 	// LinkType holds the value of the "link_type" field.
 	LinkType incidentlink.LinkType `json:"link_type,omitempty"`
+	// Description holds the value of the "description" field.
+	Description string `json:"description,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the IncidentLinkQuery when eager-loading is set.
 	Edges        IncidentLinkEdges `json:"edges"`
@@ -88,7 +88,7 @@ func (*IncidentLink) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case incidentlink.FieldID, incidentlink.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case incidentlink.FieldDescription, incidentlink.FieldLinkType:
+		case incidentlink.FieldLinkType, incidentlink.FieldDescription:
 			values[i] = new(sql.NullString)
 		case incidentlink.FieldIncidentID, incidentlink.FieldLinkedIncidentID:
 			values[i] = new(uuid.UUID)
@@ -131,17 +131,17 @@ func (_m *IncidentLink) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.LinkedIncidentID = *value
 			}
-		case incidentlink.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				_m.Description = value.String
-			}
 		case incidentlink.FieldLinkType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field link_type", values[i])
 			} else if value.Valid {
 				_m.LinkType = incidentlink.LinkType(value.String)
+			}
+		case incidentlink.FieldDescription:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field description", values[i])
+			} else if value.Valid {
+				_m.Description = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -203,11 +203,11 @@ func (_m *IncidentLink) String() string {
 	builder.WriteString("linked_incident_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.LinkedIncidentID))
 	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(_m.Description)
-	builder.WriteString(", ")
 	builder.WriteString("link_type=")
 	builder.WriteString(fmt.Sprintf("%v", _m.LinkType))
+	builder.WriteString(", ")
+	builder.WriteString("description=")
+	builder.WriteString(_m.Description)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -7,11 +7,9 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/execution"
 )
 
 type UserService struct {
@@ -30,15 +28,9 @@ func NewUserService(db rez.Database, orgs rez.OrganizationService, knowledge rez
 	return s, nil
 }
 
-func (s *UserService) SyncFromAuthProvider(ctx context.Context, pu ent.User, po ent.Organization) (*ent.User, error) {
+func (s *UserService) SyncFromAuthProvider(ctx context.Context, pu ent.User) (*ent.User, error) {
 	var usr *ent.User
 	return usr, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		org, orgErr := s.orgs.SyncFromAuthProvider(ctx, po)
-		if orgErr != nil {
-			return fmt.Errorf("sync organization: %w", orgErr)
-		}
-		ctx = execution.NewTenantContext(ctx, org.TenantID)
-
 		var userId uuid.UUID
 		existing, getErr := s.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
 		if getErr != nil && !ent.IsNotFound(getErr) {
@@ -62,15 +54,15 @@ func (s *UserService) SyncFromAuthProvider(ctx context.Context, pu ent.User, po 
 			return fmt.Errorf("set user: %w", setErr)
 		}
 
-		if existing == nil {
-			createAdminRole := tx.OrganizationRole.Create().
-				SetRole(organizationrole.RoleAdmin).
-				SetUserID(saved.ID).
-				SetOrganizationID(org.ID)
-			if createRoleErr := createAdminRole.Exec(ctx); createRoleErr != nil {
-				return fmt.Errorf("create admin role: %w", createRoleErr)
-			}
-		}
+		//if existing == nil {
+		//	createAdminRole := tx.OrganizationRole.Create().
+		//		SetRole(organizationrole.RoleAdmin).
+		//		SetUserID(saved.ID).
+		//		SetOrganizationID(org.ID)
+		//	if createRoleErr := createAdminRole.Exec(ctx); createRoleErr != nil {
+		//		return fmt.Errorf("create admin role: %w", createRoleErr)
+		//	}
+		//}
 
 		usr = saved.Unwrap()
 

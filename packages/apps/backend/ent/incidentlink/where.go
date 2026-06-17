@@ -135,6 +135,26 @@ func LinkedIncidentIDNotIn(vs ...uuid.UUID) predicate.IncidentLink {
 	return predicate.IncidentLink(sql.FieldNotIn(FieldLinkedIncidentID, vs...))
 }
 
+// LinkTypeEQ applies the EQ predicate on the "link_type" field.
+func LinkTypeEQ(v LinkType) predicate.IncidentLink {
+	return predicate.IncidentLink(sql.FieldEQ(FieldLinkType, v))
+}
+
+// LinkTypeNEQ applies the NEQ predicate on the "link_type" field.
+func LinkTypeNEQ(v LinkType) predicate.IncidentLink {
+	return predicate.IncidentLink(sql.FieldNEQ(FieldLinkType, v))
+}
+
+// LinkTypeIn applies the In predicate on the "link_type" field.
+func LinkTypeIn(vs ...LinkType) predicate.IncidentLink {
+	return predicate.IncidentLink(sql.FieldIn(FieldLinkType, vs...))
+}
+
+// LinkTypeNotIn applies the NotIn predicate on the "link_type" field.
+func LinkTypeNotIn(vs ...LinkType) predicate.IncidentLink {
+	return predicate.IncidentLink(sql.FieldNotIn(FieldLinkType, vs...))
+}
+
 // DescriptionEQ applies the EQ predicate on the "description" field.
 func DescriptionEQ(v string) predicate.IncidentLink {
 	return predicate.IncidentLink(sql.FieldEQ(FieldDescription, v))
@@ -208,26 +228,6 @@ func DescriptionEqualFold(v string) predicate.IncidentLink {
 // DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
 func DescriptionContainsFold(v string) predicate.IncidentLink {
 	return predicate.IncidentLink(sql.FieldContainsFold(FieldDescription, v))
-}
-
-// LinkTypeEQ applies the EQ predicate on the "link_type" field.
-func LinkTypeEQ(v LinkType) predicate.IncidentLink {
-	return predicate.IncidentLink(sql.FieldEQ(FieldLinkType, v))
-}
-
-// LinkTypeNEQ applies the NEQ predicate on the "link_type" field.
-func LinkTypeNEQ(v LinkType) predicate.IncidentLink {
-	return predicate.IncidentLink(sql.FieldNEQ(FieldLinkType, v))
-}
-
-// LinkTypeIn applies the In predicate on the "link_type" field.
-func LinkTypeIn(vs ...LinkType) predicate.IncidentLink {
-	return predicate.IncidentLink(sql.FieldIn(FieldLinkType, vs...))
-}
-
-// LinkTypeNotIn applies the NotIn predicate on the "link_type" field.
-func LinkTypeNotIn(vs ...LinkType) predicate.IncidentLink {
-	return predicate.IncidentLink(sql.FieldNotIn(FieldLinkType, vs...))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

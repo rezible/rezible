@@ -548,6 +548,14 @@ func (c *UserClient) Debug() *UserClient {
 	return &UserClient{config: cfg}
 }
 
+func (c *UserAuthSessionClient) Debug() *UserAuthSessionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &UserAuthSessionClient{config: cfg}
+}
+
 func (c *VideoConferenceClient) Debug() *VideoConferenceClient {
 	if c.debug {
 		return c

@@ -28,6 +28,8 @@ ALTER TABLE "incident_tag_assignments" DROP CONSTRAINT "incident_tag_assignments
 ALTER TABLE "incident_field_selections" DROP CONSTRAINT "incident_field_selections_incident_field_option_id", DROP CONSTRAINT "incident_field_selections_incident_id";
 -- reverse: modify "video_conferences" table
 ALTER TABLE "video_conferences" DROP CONSTRAINT "video_conferences_tenants_tenant", DROP CONSTRAINT "video_conferences_meeting_sessions_video_conference", DROP CONSTRAINT "video_conferences_incidents_video_conferences";
+-- reverse: modify "user_auth_sessions" table
+ALTER TABLE "user_auth_sessions" DROP CONSTRAINT "user_auth_sessions_organizations_organization", DROP CONSTRAINT "user_auth_sessions_users_user", DROP CONSTRAINT "user_auth_sessions_tenants_tenant";
 -- reverse: modify "users" table
 ALTER TABLE "users" DROP CONSTRAINT "users_knowledge_entities_knowledge_entity", DROP CONSTRAINT "users_tenants_tenant";
 -- reverse: modify "tickets" table
@@ -198,6 +200,10 @@ DROP INDEX "videoconference_tenant_id";
 DROP INDEX "video_conferences_meeting_session_id_key";
 -- reverse: create "video_conferences" table
 DROP TABLE "video_conferences";
+-- reverse: create index "userauthsession_tenant_id" to table: "user_auth_sessions"
+DROP INDEX "userauthsession_tenant_id";
+-- reverse: create "user_auth_sessions" table
+DROP TABLE "user_auth_sessions";
 -- reverse: create index "user_tenant_id_email" to table: "users"
 DROP INDEX "user_tenant_id_email";
 -- reverse: create index "user_auth_provider_id" to table: "users"

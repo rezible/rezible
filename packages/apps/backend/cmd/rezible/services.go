@@ -17,7 +17,6 @@ import (
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/http"
-	"github.com/rezible/rezible/internal/http/oidc"
 	fakeprovider "github.com/rezible/rezible/internal/integrations/fake"
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
@@ -176,13 +175,6 @@ func declareServices(ctx context.Context, i do.Injector) {
 		return watermill.NewMessageService(do.MustInvoke[rez.TelemetryService](i))
 	})
 
-	do.Provide(i, func(i do.Injector) (http.UserAuthSessionService, error) {
-		return oidc.NewAuthSessionService(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.UserService](i),
-		)
-	})
-
 	provideServices(i)
 	provideIntegrations(i)
 
@@ -211,7 +203,7 @@ func declareServices(ctx context.Context, i do.Injector) {
 		return http.NewServer(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.TelemetryService](i),
-			do.MustInvoke[http.UserAuthSessionService](i),
+			do.MustInvoke[rez.AuthSessionService](i),
 			do.MustInvoke[oapiv1.Handler](i),
 			do.MustInvoke[*integrations.PackageRegistry](i).GetWebhookHandlers(),
 		)
@@ -334,6 +326,15 @@ var provideServices = do.Package(
 		)
 	}),
 	do.Bind[*db.EventService, rez.EventsService](),
+
+	do.Lazy(func(i do.Injector) (*db.AuthSessionService, error) {
+		return db.NewAuthSessionService(
+			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.OrganizationService](i),
+			do.MustInvoke[rez.UserService](i),
+		), nil
+	}),
+	do.Bind[*db.AuthSessionService, rez.AuthSessionService](),
 
 	do.Lazy(func(i do.Injector) (*db.IncidentService, error) {
 		return db.NewIncidentService(

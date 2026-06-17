@@ -148,6 +148,8 @@ type Tx struct {
 	Ticket *TicketClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserAuthSession is the client for interacting with the UserAuthSession builders.
+	UserAuthSession *UserAuthSessionClient
 	// VideoConference is the client for interacting with the VideoConference builders.
 	VideoConference *VideoConferenceClient
 
@@ -349,6 +351,7 @@ func (tx *Tx) init() {
 	tx.Tenant = NewTenantClient(tx.config)
 	tx.Ticket = NewTicketClient(tx.config)
 	tx.User = NewUserClient(tx.config)
+	tx.UserAuthSession = NewUserAuthSessionClient(tx.config)
 	tx.VideoConference = NewVideoConferenceClient(tx.config)
 }
 

@@ -80,6 +80,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -209,6 +210,7 @@ func checkColumn(t, c string) error {
 			tenant.Table:                                  tenant.ValidColumn,
 			ticket.Table:                                  ticket.ValidColumn,
 			user.Table:                                    user.ValidColumn,
+			userauthsession.Table:                         userauthsession.ValidColumn,
 			videoconference.Table:                         videoconference.ValidColumn,
 		})
 	})

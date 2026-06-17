@@ -83,6 +83,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/ent/videoconference"
 
 	"github.com/rezible/rezible/ent/internal"
@@ -229,6 +230,8 @@ type Client struct {
 	Ticket *TicketClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
+	// UserAuthSession is the client for interacting with the UserAuthSession builders.
+	UserAuthSession *UserAuthSessionClient
 	// VideoConference is the client for interacting with the VideoConference builders.
 	VideoConference *VideoConferenceClient
 }
@@ -310,6 +313,7 @@ func (c *Client) init() {
 	c.Tenant = NewTenantClient(c.config)
 	c.Ticket = NewTicketClient(c.config)
 	c.User = NewUserClient(c.config)
+	c.UserAuthSession = NewUserAuthSessionClient(c.config)
 	c.VideoConference = NewVideoConferenceClient(c.config)
 }
 
@@ -474,6 +478,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Tenant:                                  NewTenantClient(cfg),
 		Ticket:                                  NewTicketClient(cfg),
 		User:                                    NewUserClient(cfg),
+		UserAuthSession:                         NewUserAuthSessionClient(cfg),
 		VideoConference:                         NewVideoConferenceClient(cfg),
 	}, nil
 }
@@ -562,6 +567,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Tenant:                                  NewTenantClient(cfg),
 		Ticket:                                  NewTicketClient(cfg),
 		User:                                    NewUserClient(cfg),
+		UserAuthSession:                         NewUserAuthSessionClient(cfg),
 		VideoConference:                         NewVideoConferenceClient(cfg),
 	}, nil
 }
@@ -613,7 +619,7 @@ func (c *Client) Use(hooks ...Hook) {
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
 		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
 		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
-		c.Tenant, c.Ticket, c.User, c.VideoConference,
+		c.Tenant, c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
 	} {
 		n.Use(hooks...)
 	}
@@ -644,7 +650,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
 		c.SystemTopologySnapshot, c.SystemTopologySnapshotEntity,
 		c.SystemTopologySnapshotRelationship, c.Task, c.Team, c.TeamMembership,
-		c.Tenant, c.Ticket, c.User, c.VideoConference,
+		c.Tenant, c.Ticket, c.User, c.UserAuthSession, c.VideoConference,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -787,6 +793,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Ticket.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
+	case *UserAuthSessionMutation:
+		return c.UserAuthSession.mutate(ctx, m)
 	case *VideoConferenceMutation:
 		return c.VideoConference.mutate(ctx, m)
 	default:
@@ -14827,6 +14835,197 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 	}
 }
 
+// UserAuthSessionClient is a client for the UserAuthSession schema.
+type UserAuthSessionClient struct {
+	config
+}
+
+// NewUserAuthSessionClient returns a client for the UserAuthSession from the given config.
+func NewUserAuthSessionClient(c config) *UserAuthSessionClient {
+	return &UserAuthSessionClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `userauthsession.Hooks(f(g(h())))`.
+func (c *UserAuthSessionClient) Use(hooks ...Hook) {
+	c.hooks.UserAuthSession = append(c.hooks.UserAuthSession, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `userauthsession.Intercept(f(g(h())))`.
+func (c *UserAuthSessionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.UserAuthSession = append(c.inters.UserAuthSession, interceptors...)
+}
+
+// Create returns a builder for creating a UserAuthSession entity.
+func (c *UserAuthSessionClient) Create() *UserAuthSessionCreate {
+	mutation := newUserAuthSessionMutation(c.config, OpCreate)
+	return &UserAuthSessionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of UserAuthSession entities.
+func (c *UserAuthSessionClient) CreateBulk(builders ...*UserAuthSessionCreate) *UserAuthSessionCreateBulk {
+	return &UserAuthSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *UserAuthSessionClient) MapCreateBulk(slice any, setFunc func(*UserAuthSessionCreate, int)) *UserAuthSessionCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &UserAuthSessionCreateBulk{err: fmt.Errorf("calling to UserAuthSessionClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*UserAuthSessionCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &UserAuthSessionCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for UserAuthSession.
+func (c *UserAuthSessionClient) Update() *UserAuthSessionUpdate {
+	mutation := newUserAuthSessionMutation(c.config, OpUpdate)
+	return &UserAuthSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *UserAuthSessionClient) UpdateOne(_m *UserAuthSession) *UserAuthSessionUpdateOne {
+	mutation := newUserAuthSessionMutation(c.config, OpUpdateOne, withUserAuthSession(_m))
+	return &UserAuthSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *UserAuthSessionClient) UpdateOneID(id uuid.UUID) *UserAuthSessionUpdateOne {
+	mutation := newUserAuthSessionMutation(c.config, OpUpdateOne, withUserAuthSessionID(id))
+	return &UserAuthSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for UserAuthSession.
+func (c *UserAuthSessionClient) Delete() *UserAuthSessionDelete {
+	mutation := newUserAuthSessionMutation(c.config, OpDelete)
+	return &UserAuthSessionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *UserAuthSessionClient) DeleteOne(_m *UserAuthSession) *UserAuthSessionDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *UserAuthSessionClient) DeleteOneID(id uuid.UUID) *UserAuthSessionDeleteOne {
+	builder := c.Delete().Where(userauthsession.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &UserAuthSessionDeleteOne{builder}
+}
+
+// Query returns a query builder for UserAuthSession.
+func (c *UserAuthSessionClient) Query() *UserAuthSessionQuery {
+	return &UserAuthSessionQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeUserAuthSession},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a UserAuthSession entity by its id.
+func (c *UserAuthSessionClient) Get(ctx context.Context, id uuid.UUID) (*UserAuthSession, error) {
+	return c.Query().Where(userauthsession.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *UserAuthSessionClient) GetX(ctx context.Context, id uuid.UUID) *UserAuthSession {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a UserAuthSession.
+func (c *UserAuthSessionClient) QueryTenant(_m *UserAuthSession) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userauthsession.Table, userauthsession.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, userauthsession.TenantTable, userauthsession.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.UserAuthSession
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a UserAuthSession.
+func (c *UserAuthSessionClient) QueryUser(_m *UserAuthSession) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userauthsession.Table, userauthsession.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, userauthsession.UserTable, userauthsession.UserColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.User
+		step.Edge.Schema = schemaConfig.UserAuthSession
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryOrganization queries the organization edge of a UserAuthSession.
+func (c *UserAuthSessionClient) QueryOrganization(_m *UserAuthSession) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(userauthsession.Table, userauthsession.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, userauthsession.OrganizationTable, userauthsession.OrganizationColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Organization
+		step.Edge.Schema = schemaConfig.UserAuthSession
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *UserAuthSessionClient) Hooks() []Hook {
+	hooks := c.hooks.UserAuthSession
+	return append(hooks[:len(hooks):len(hooks)], userauthsession.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *UserAuthSessionClient) Interceptors() []Interceptor {
+	return c.inters.UserAuthSession
+}
+
+func (c *UserAuthSessionClient) mutate(ctx context.Context, m *UserAuthSessionMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&UserAuthSessionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&UserAuthSessionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&UserAuthSessionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&UserAuthSessionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown UserAuthSession mutation op: %q", m.Op())
+	}
+}
+
 // VideoConferenceClient is a client for the VideoConference schema.
 type VideoConferenceClient struct {
 	config
@@ -15039,7 +15238,8 @@ type (
 		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
-		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Hook
+		TeamMembership, Tenant, Ticket, User, UserAuthSession,
+		VideoConference []ent.Hook
 	}
 	inters struct {
 		AgentRun, AgentRunArtifact, AgentRunFeedback, Alert, AlertFeedback,
@@ -15060,7 +15260,8 @@ type (
 		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
 		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
 		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
-		TeamMembership, Tenant, Ticket, User, VideoConference []ent.Interceptor
+		TeamMembership, Tenant, Ticket, User, UserAuthSession,
+		VideoConference []ent.Interceptor
 	}
 )
 
@@ -15149,6 +15350,7 @@ var (
 		Ticket:                                    tableSchemas[0],
 		User:                                      tableSchemas[0],
 		UserWatchedOncallRosters:                  tableSchemas[0],
+		UserAuthSession:                           tableSchemas[0],
 		VideoConference:                           tableSchemas[0],
 	}
 	tableSchemas = [...]string{"rezible"}

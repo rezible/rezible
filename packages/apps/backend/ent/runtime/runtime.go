@@ -76,6 +76,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/ent/videoconference"
 
 	"entgo.io/ent"
@@ -1645,6 +1646,22 @@ func init() {
 	userDescID := userFields[0].Descriptor()
 	// user.DefaultID holds the default value on creation for the id field.
 	user.DefaultID = userDescID.Default.(func() uuid.UUID)
+	userauthsessionMixin := schema.UserAuthSession{}.Mixin()
+	userauthsession.Policy = privacy.NewPolicies(userauthsessionMixin[0], userauthsessionMixin[1], schema.UserAuthSession{})
+	userauthsession.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := userauthsession.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	userauthsessionFields := schema.UserAuthSession{}.Fields()
+	_ = userauthsessionFields
+	// userauthsessionDescID is the schema descriptor for id field.
+	userauthsessionDescID := userauthsessionFields[0].Descriptor()
+	// userauthsession.DefaultID holds the default value on creation for the id field.
+	userauthsession.DefaultID = userauthsessionDescID.Default.(func() uuid.UUID)
 	videoconferenceMixin := schema.VideoConference{}.Mixin()
 	videoconference.Policy = privacy.NewPolicies(videoconferenceMixin[0], videoconferenceMixin[1], schema.VideoConference{})
 	videoconference.Hooks[0] = func(next ent.Mutator) ent.Mutator {

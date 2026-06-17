@@ -1731,6 +1731,30 @@ func (f UserMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) 
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.UserMutation", m)
 }
 
+// The UserAuthSessionQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type UserAuthSessionQueryRuleFunc func(context.Context, *ent.UserAuthSessionQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f UserAuthSessionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.UserAuthSessionQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.UserAuthSessionQuery", q)
+}
+
+// The UserAuthSessionMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type UserAuthSessionMutationRuleFunc func(context.Context, *ent.UserAuthSessionMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f UserAuthSessionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.UserAuthSessionMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.UserAuthSessionMutation", m)
+}
+
 // The VideoConferenceQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type VideoConferenceQueryRuleFunc func(context.Context, *ent.VideoConferenceQuery) error
@@ -1926,6 +1950,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.UserQuery:
 		return q.Filter(), nil
+	case *ent.UserAuthSessionQuery:
+		return q.Filter(), nil
 	case *ent.VideoConferenceQuery:
 		return q.Filter(), nil
 	default:
@@ -2068,6 +2094,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.TicketMutation:
 		return m.Filter(), nil
 	case *ent.UserMutation:
+		return m.Filter(), nil
+	case *ent.UserAuthSessionMutation:
 		return m.Filter(), nil
 	case *ent.VideoConferenceMutation:
 		return m.Filter(), nil

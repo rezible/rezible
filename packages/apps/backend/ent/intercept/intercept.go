@@ -77,6 +77,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/ent/videoconference"
 )
 
@@ -1972,6 +1973,33 @@ func (f TraverseUser) Traverse(ctx context.Context, q ent.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *ent.UserQuery", q)
 }
 
+// The UserAuthSessionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type UserAuthSessionFunc func(context.Context, *ent.UserAuthSessionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f UserAuthSessionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.UserAuthSessionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.UserAuthSessionQuery", q)
+}
+
+// The TraverseUserAuthSession type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseUserAuthSession func(context.Context, *ent.UserAuthSessionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseUserAuthSession) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseUserAuthSession) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.UserAuthSessionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.UserAuthSessionQuery", q)
+}
+
 // The VideoConferenceFunc type is an adapter to allow the use of ordinary function as a Querier.
 type VideoConferenceFunc func(context.Context, *ent.VideoConferenceQuery) (ent.Value, error)
 
@@ -2138,6 +2166,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.TicketQuery, predicate.Ticket, ticket.OrderOption]{typ: ent.TypeTicket, tq: q}, nil
 	case *ent.UserQuery:
 		return &query[*ent.UserQuery, predicate.User, user.OrderOption]{typ: ent.TypeUser, tq: q}, nil
+	case *ent.UserAuthSessionQuery:
+		return &query[*ent.UserAuthSessionQuery, predicate.UserAuthSession, userauthsession.OrderOption]{typ: ent.TypeUserAuthSession, tq: q}, nil
 	case *ent.VideoConferenceQuery:
 		return &query[*ent.VideoConferenceQuery, predicate.VideoConference, videoconference.OrderOption]{typ: ent.TypeVideoConference, tq: q}, nil
 	default:

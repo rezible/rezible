@@ -42,6 +42,12 @@ func (_c *IncidentLinkCreate) SetLinkedIncidentID(v uuid.UUID) *IncidentLinkCrea
 	return _c
 }
 
+// SetLinkType sets the "link_type" field.
+func (_c *IncidentLinkCreate) SetLinkType(v incidentlink.LinkType) *IncidentLinkCreate {
+	_c.mutation.SetLinkType(v)
+	return _c
+}
+
 // SetDescription sets the "description" field.
 func (_c *IncidentLinkCreate) SetDescription(v string) *IncidentLinkCreate {
 	_c.mutation.SetDescription(v)
@@ -53,12 +59,6 @@ func (_c *IncidentLinkCreate) SetNillableDescription(v *string) *IncidentLinkCre
 	if v != nil {
 		_c.SetDescription(*v)
 	}
-	return _c
-}
-
-// SetLinkType sets the "link_type" field.
-func (_c *IncidentLinkCreate) SetLinkType(v incidentlink.LinkType) *IncidentLinkCreate {
-	_c.mutation.SetLinkType(v)
 	return _c
 }
 
@@ -165,13 +165,13 @@ func (_c *IncidentLinkCreate) createSpec() (*IncidentLink, *sqlgraph.CreateSpec)
 	)
 	_spec.Schema = _c.schemaConfig.IncidentLink
 	_spec.OnConflict = _c.conflict
-	if value, ok := _c.mutation.Description(); ok {
-		_spec.SetField(incidentlink.FieldDescription, field.TypeString, value)
-		_node.Description = value
-	}
 	if value, ok := _c.mutation.LinkType(); ok {
 		_spec.SetField(incidentlink.FieldLinkType, field.TypeEnum, value)
 		_node.LinkType = value
+	}
+	if value, ok := _c.mutation.Description(); ok {
+		_spec.SetField(incidentlink.FieldDescription, field.TypeString, value)
+		_node.Description = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -303,6 +303,18 @@ func (u *IncidentLinkUpsert) UpdateLinkedIncidentID() *IncidentLinkUpsert {
 	return u
 }
 
+// SetLinkType sets the "link_type" field.
+func (u *IncidentLinkUpsert) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpsert {
+	u.Set(incidentlink.FieldLinkType, v)
+	return u
+}
+
+// UpdateLinkType sets the "link_type" field to the value that was provided on create.
+func (u *IncidentLinkUpsert) UpdateLinkType() *IncidentLinkUpsert {
+	u.SetExcluded(incidentlink.FieldLinkType)
+	return u
+}
+
 // SetDescription sets the "description" field.
 func (u *IncidentLinkUpsert) SetDescription(v string) *IncidentLinkUpsert {
 	u.Set(incidentlink.FieldDescription, v)
@@ -318,18 +330,6 @@ func (u *IncidentLinkUpsert) UpdateDescription() *IncidentLinkUpsert {
 // ClearDescription clears the value of the "description" field.
 func (u *IncidentLinkUpsert) ClearDescription() *IncidentLinkUpsert {
 	u.SetNull(incidentlink.FieldDescription)
-	return u
-}
-
-// SetLinkType sets the "link_type" field.
-func (u *IncidentLinkUpsert) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpsert {
-	u.Set(incidentlink.FieldLinkType, v)
-	return u
-}
-
-// UpdateLinkType sets the "link_type" field to the value that was provided on create.
-func (u *IncidentLinkUpsert) UpdateLinkType() *IncidentLinkUpsert {
-	u.SetExcluded(incidentlink.FieldLinkType)
 	return u
 }
 
@@ -406,6 +406,20 @@ func (u *IncidentLinkUpsertOne) UpdateLinkedIncidentID() *IncidentLinkUpsertOne 
 	})
 }
 
+// SetLinkType sets the "link_type" field.
+func (u *IncidentLinkUpsertOne) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpsertOne {
+	return u.Update(func(s *IncidentLinkUpsert) {
+		s.SetLinkType(v)
+	})
+}
+
+// UpdateLinkType sets the "link_type" field to the value that was provided on create.
+func (u *IncidentLinkUpsertOne) UpdateLinkType() *IncidentLinkUpsertOne {
+	return u.Update(func(s *IncidentLinkUpsert) {
+		s.UpdateLinkType()
+	})
+}
+
 // SetDescription sets the "description" field.
 func (u *IncidentLinkUpsertOne) SetDescription(v string) *IncidentLinkUpsertOne {
 	return u.Update(func(s *IncidentLinkUpsert) {
@@ -424,20 +438,6 @@ func (u *IncidentLinkUpsertOne) UpdateDescription() *IncidentLinkUpsertOne {
 func (u *IncidentLinkUpsertOne) ClearDescription() *IncidentLinkUpsertOne {
 	return u.Update(func(s *IncidentLinkUpsert) {
 		s.ClearDescription()
-	})
-}
-
-// SetLinkType sets the "link_type" field.
-func (u *IncidentLinkUpsertOne) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpsertOne {
-	return u.Update(func(s *IncidentLinkUpsert) {
-		s.SetLinkType(v)
-	})
-}
-
-// UpdateLinkType sets the "link_type" field to the value that was provided on create.
-func (u *IncidentLinkUpsertOne) UpdateLinkType() *IncidentLinkUpsertOne {
-	return u.Update(func(s *IncidentLinkUpsert) {
-		s.UpdateLinkType()
 	})
 }
 
@@ -679,6 +679,20 @@ func (u *IncidentLinkUpsertBulk) UpdateLinkedIncidentID() *IncidentLinkUpsertBul
 	})
 }
 
+// SetLinkType sets the "link_type" field.
+func (u *IncidentLinkUpsertBulk) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpsertBulk {
+	return u.Update(func(s *IncidentLinkUpsert) {
+		s.SetLinkType(v)
+	})
+}
+
+// UpdateLinkType sets the "link_type" field to the value that was provided on create.
+func (u *IncidentLinkUpsertBulk) UpdateLinkType() *IncidentLinkUpsertBulk {
+	return u.Update(func(s *IncidentLinkUpsert) {
+		s.UpdateLinkType()
+	})
+}
+
 // SetDescription sets the "description" field.
 func (u *IncidentLinkUpsertBulk) SetDescription(v string) *IncidentLinkUpsertBulk {
 	return u.Update(func(s *IncidentLinkUpsert) {
@@ -697,20 +711,6 @@ func (u *IncidentLinkUpsertBulk) UpdateDescription() *IncidentLinkUpsertBulk {
 func (u *IncidentLinkUpsertBulk) ClearDescription() *IncidentLinkUpsertBulk {
 	return u.Update(func(s *IncidentLinkUpsert) {
 		s.ClearDescription()
-	})
-}
-
-// SetLinkType sets the "link_type" field.
-func (u *IncidentLinkUpsertBulk) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpsertBulk {
-	return u.Update(func(s *IncidentLinkUpsert) {
-		s.SetLinkType(v)
-	})
-}
-
-// UpdateLinkType sets the "link_type" field to the value that was provided on create.
-func (u *IncidentLinkUpsertBulk) UpdateLinkType() *IncidentLinkUpsertBulk {
-	return u.Update(func(s *IncidentLinkUpsert) {
-		s.UpdateLinkType()
 	})
 }
 

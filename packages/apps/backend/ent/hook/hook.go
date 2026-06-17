@@ -813,6 +813,18 @@ func (f UserFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error)
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserMutation", m)
 }
 
+// The UserAuthSessionFunc type is an adapter to allow the use of ordinary
+// function as UserAuthSession mutator.
+type UserAuthSessionFunc func(context.Context, *ent.UserAuthSessionMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f UserAuthSessionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.UserAuthSessionMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.UserAuthSessionMutation", m)
+}
+
 // The VideoConferenceFunc type is an adapter to allow the use of ordinary
 // function as VideoConference mutator.
 type VideoConferenceFunc func(context.Context, *ent.VideoConferenceMutation) (ent.Value, error)

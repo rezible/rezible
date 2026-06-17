@@ -268,13 +268,22 @@ type (
 )
 
 type (
+	AuthSessionService interface {
+		SyncFromAuthProvider(context.Context, ent.User, ent.Organization) (*ent.UserAuthSession, error)
+		CreateExecutionContext(ctx context.Context, sess *ent.UserAuthSession) (context.Context, error)
+		LookupSession(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
+		DeleteSession(context.Context, uuid.UUID) error
+	}
+)
+
+type (
 	ListUsersParams = struct {
 		ent.ListParams
 		TeamID uuid.UUID
 	}
 
 	UserService interface {
-		SyncFromAuthProvider(context.Context, ent.User, ent.Organization) (*ent.User, error)
+		SyncFromAuthProvider(context.Context, ent.User) (*ent.User, error)
 
 		Get(context.Context, predicate.User) (*ent.User, error)
 		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)

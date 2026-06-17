@@ -59,6 +59,20 @@ func (_u *IncidentLinkUpdate) SetNillableLinkedIncidentID(v *uuid.UUID) *Inciden
 	return _u
 }
 
+// SetLinkType sets the "link_type" field.
+func (_u *IncidentLinkUpdate) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpdate {
+	_u.mutation.SetLinkType(v)
+	return _u
+}
+
+// SetNillableLinkType sets the "link_type" field if the given value is not nil.
+func (_u *IncidentLinkUpdate) SetNillableLinkType(v *incidentlink.LinkType) *IncidentLinkUpdate {
+	if v != nil {
+		_u.SetLinkType(*v)
+	}
+	return _u
+}
+
 // SetDescription sets the "description" field.
 func (_u *IncidentLinkUpdate) SetDescription(v string) *IncidentLinkUpdate {
 	_u.mutation.SetDescription(v)
@@ -76,20 +90,6 @@ func (_u *IncidentLinkUpdate) SetNillableDescription(v *string) *IncidentLinkUpd
 // ClearDescription clears the value of the "description" field.
 func (_u *IncidentLinkUpdate) ClearDescription() *IncidentLinkUpdate {
 	_u.mutation.ClearDescription()
-	return _u
-}
-
-// SetLinkType sets the "link_type" field.
-func (_u *IncidentLinkUpdate) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpdate {
-	_u.mutation.SetLinkType(v)
-	return _u
-}
-
-// SetNillableLinkType sets the "link_type" field if the given value is not nil.
-func (_u *IncidentLinkUpdate) SetNillableLinkType(v *incidentlink.LinkType) *IncidentLinkUpdate {
-	if v != nil {
-		_u.SetLinkType(*v)
-	}
 	return _u
 }
 
@@ -184,14 +184,14 @@ func (_u *IncidentLinkUpdate) sqlSave(ctx context.Context) (_node int, err error
 			}
 		}
 	}
+	if value, ok := _u.mutation.LinkType(); ok {
+		_spec.SetField(incidentlink.FieldLinkType, field.TypeEnum, value)
+	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentlink.FieldDescription, field.TypeString, value)
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentlink.FieldDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.LinkType(); ok {
-		_spec.SetField(incidentlink.FieldLinkType, field.TypeEnum, value)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -307,6 +307,20 @@ func (_u *IncidentLinkUpdateOne) SetNillableLinkedIncidentID(v *uuid.UUID) *Inci
 	return _u
 }
 
+// SetLinkType sets the "link_type" field.
+func (_u *IncidentLinkUpdateOne) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpdateOne {
+	_u.mutation.SetLinkType(v)
+	return _u
+}
+
+// SetNillableLinkType sets the "link_type" field if the given value is not nil.
+func (_u *IncidentLinkUpdateOne) SetNillableLinkType(v *incidentlink.LinkType) *IncidentLinkUpdateOne {
+	if v != nil {
+		_u.SetLinkType(*v)
+	}
+	return _u
+}
+
 // SetDescription sets the "description" field.
 func (_u *IncidentLinkUpdateOne) SetDescription(v string) *IncidentLinkUpdateOne {
 	_u.mutation.SetDescription(v)
@@ -324,20 +338,6 @@ func (_u *IncidentLinkUpdateOne) SetNillableDescription(v *string) *IncidentLink
 // ClearDescription clears the value of the "description" field.
 func (_u *IncidentLinkUpdateOne) ClearDescription() *IncidentLinkUpdateOne {
 	_u.mutation.ClearDescription()
-	return _u
-}
-
-// SetLinkType sets the "link_type" field.
-func (_u *IncidentLinkUpdateOne) SetLinkType(v incidentlink.LinkType) *IncidentLinkUpdateOne {
-	_u.mutation.SetLinkType(v)
-	return _u
-}
-
-// SetNillableLinkType sets the "link_type" field if the given value is not nil.
-func (_u *IncidentLinkUpdateOne) SetNillableLinkType(v *incidentlink.LinkType) *IncidentLinkUpdateOne {
-	if v != nil {
-		_u.SetLinkType(*v)
-	}
 	return _u
 }
 
@@ -462,14 +462,14 @@ func (_u *IncidentLinkUpdateOne) sqlSave(ctx context.Context) (_node *IncidentLi
 			}
 		}
 	}
+	if value, ok := _u.mutation.LinkType(); ok {
+		_spec.SetField(incidentlink.FieldLinkType, field.TypeEnum, value)
+	}
 	if value, ok := _u.mutation.Description(); ok {
 		_spec.SetField(incidentlink.FieldDescription, field.TypeString, value)
 	}
 	if _u.mutation.DescriptionCleared() {
 		_spec.ClearField(incidentlink.FieldDescription, field.TypeString)
-	}
-	if value, ok := _u.mutation.LinkType(); ok {
-		_spec.SetField(incidentlink.FieldLinkType, field.TypeEnum, value)
 	}
 	if _u.mutation.IncidentCleared() {
 		edge := &sqlgraph.EdgeSpec{

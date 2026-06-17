@@ -72,6 +72,7 @@ import (
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/ticket"
 	"github.com/rezible/rezible/ent/user"
+	"github.com/rezible/rezible/ent/userauthsession"
 	"github.com/rezible/rezible/ent/videoconference"
 
 	"entgo.io/ent/dialect/sql"
@@ -82,7 +83,7 @@ import (
 
 // schemaGraph holds a representation of ent/schema at runtime.
 var schemaGraph = func() *sqlgraph.Schema {
-	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 69)}
+	graph := &sqlgraph.Schema{Nodes: make([]*sqlgraph.Node, 70)}
 	graph.Nodes[0] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   agentrun.Table,
@@ -431,8 +432,8 @@ var schemaGraph = func() *sqlgraph.Schema {
 			incidentlink.FieldTenantID:         {Type: field.TypeInt, Column: incidentlink.FieldTenantID},
 			incidentlink.FieldIncidentID:       {Type: field.TypeUUID, Column: incidentlink.FieldIncidentID},
 			incidentlink.FieldLinkedIncidentID: {Type: field.TypeUUID, Column: incidentlink.FieldLinkedIncidentID},
-			incidentlink.FieldDescription:      {Type: field.TypeString, Column: incidentlink.FieldDescription},
 			incidentlink.FieldLinkType:         {Type: field.TypeEnum, Column: incidentlink.FieldLinkType},
+			incidentlink.FieldDescription:      {Type: field.TypeString, Column: incidentlink.FieldDescription},
 		},
 	}
 	graph.Nodes[18] = &sqlgraph.Node{
@@ -1412,6 +1413,23 @@ var schemaGraph = func() *sqlgraph.Schema {
 		},
 	}
 	graph.Nodes[68] = &sqlgraph.Node{
+		NodeSpec: sqlgraph.NodeSpec{
+			Table:   userauthsession.Table,
+			Columns: userauthsession.Columns,
+			ID: &sqlgraph.FieldSpec{
+				Type:   field.TypeUUID,
+				Column: userauthsession.FieldID,
+			},
+		},
+		Type: "UserAuthSession",
+		Fields: map[string]*sqlgraph.FieldSpec{
+			userauthsession.FieldTenantID:       {Type: field.TypeInt, Column: userauthsession.FieldTenantID},
+			userauthsession.FieldUserID:         {Type: field.TypeUUID, Column: userauthsession.FieldUserID},
+			userauthsession.FieldOrganizationID: {Type: field.TypeUUID, Column: userauthsession.FieldOrganizationID},
+			userauthsession.FieldExpiresAt:      {Type: field.TypeTime, Column: userauthsession.FieldExpiresAt},
+		},
+	}
+	graph.Nodes[69] = &sqlgraph.Node{
 		NodeSpec: sqlgraph.NodeSpec{
 			Table:   videoconference.Table,
 			Columns: videoconference.Columns,
@@ -4611,6 +4629,42 @@ var schemaGraph = func() *sqlgraph.Schema {
 		&sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
+			Table:   userauthsession.TenantTable,
+			Columns: []string{userauthsession.TenantColumn},
+			Bidi:    false,
+		},
+		"UserAuthSession",
+		"Tenant",
+	)
+	graph.MustAddE(
+		"user",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   userauthsession.UserTable,
+			Columns: []string{userauthsession.UserColumn},
+			Bidi:    false,
+		},
+		"UserAuthSession",
+		"User",
+	)
+	graph.MustAddE(
+		"organization",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   userauthsession.OrganizationTable,
+			Columns: []string{userauthsession.OrganizationColumn},
+			Bidi:    false,
+		},
+		"UserAuthSession",
+		"Organization",
+	)
+	graph.MustAddE(
+		"tenant",
+		&sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
 			Table:   videoconference.TenantTable,
 			Columns: []string{videoconference.TenantColumn},
 			Bidi:    false,
@@ -6959,14 +7013,14 @@ func (f *IncidentLinkFilter) WhereLinkedIncidentID(p entql.ValueP) {
 	f.Where(p.Field(incidentlink.FieldLinkedIncidentID))
 }
 
-// WhereDescription applies the entql string predicate on the description field.
-func (f *IncidentLinkFilter) WhereDescription(p entql.StringP) {
-	f.Where(p.Field(incidentlink.FieldDescription))
-}
-
 // WhereLinkType applies the entql string predicate on the link_type field.
 func (f *IncidentLinkFilter) WhereLinkType(p entql.StringP) {
 	f.Where(p.Field(incidentlink.FieldLinkType))
+}
+
+// WhereDescription applies the entql string predicate on the description field.
+func (f *IncidentLinkFilter) WhereDescription(p entql.StringP) {
+	f.Where(p.Field(incidentlink.FieldDescription))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.
@@ -13293,6 +13347,108 @@ func (f *UserFilter) WhereHasRoleAssignmentsWith(preds ...predicate.IncidentRole
 }
 
 // addPredicate implements the predicateAdder interface.
+func (_q *UserAuthSessionQuery) addPredicate(pred func(s *sql.Selector)) {
+	_q.predicates = append(_q.predicates, pred)
+}
+
+// Filter returns a Filter implementation to apply filters on the UserAuthSessionQuery builder.
+func (_q *UserAuthSessionQuery) Filter() *UserAuthSessionFilter {
+	return &UserAuthSessionFilter{config: _q.config, predicateAdder: _q}
+}
+
+// addPredicate implements the predicateAdder interface.
+func (m *UserAuthSessionMutation) addPredicate(pred func(s *sql.Selector)) {
+	m.predicates = append(m.predicates, pred)
+}
+
+// Filter returns an entql.Where implementation to apply filters on the UserAuthSessionMutation builder.
+func (m *UserAuthSessionMutation) Filter() *UserAuthSessionFilter {
+	return &UserAuthSessionFilter{config: m.config, predicateAdder: m}
+}
+
+// UserAuthSessionFilter provides a generic filtering capability at runtime for UserAuthSessionQuery.
+type UserAuthSessionFilter struct {
+	predicateAdder
+	config
+}
+
+// Where applies the entql predicate on the query filter.
+func (f *UserAuthSessionFilter) Where(p entql.P) {
+	f.addPredicate(func(s *sql.Selector) {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[68].Type, p, s); err != nil {
+			s.AddError(err)
+		}
+	})
+}
+
+// WhereID applies the entql [16]byte predicate on the id field.
+func (f *UserAuthSessionFilter) WhereID(p entql.ValueP) {
+	f.Where(p.Field(userauthsession.FieldID))
+}
+
+// WhereTenantID applies the entql int predicate on the tenant_id field.
+func (f *UserAuthSessionFilter) WhereTenantID(p entql.IntP) {
+	f.Where(p.Field(userauthsession.FieldTenantID))
+}
+
+// WhereUserID applies the entql [16]byte predicate on the user_id field.
+func (f *UserAuthSessionFilter) WhereUserID(p entql.ValueP) {
+	f.Where(p.Field(userauthsession.FieldUserID))
+}
+
+// WhereOrganizationID applies the entql [16]byte predicate on the organization_id field.
+func (f *UserAuthSessionFilter) WhereOrganizationID(p entql.ValueP) {
+	f.Where(p.Field(userauthsession.FieldOrganizationID))
+}
+
+// WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
+func (f *UserAuthSessionFilter) WhereExpiresAt(p entql.TimeP) {
+	f.Where(p.Field(userauthsession.FieldExpiresAt))
+}
+
+// WhereHasTenant applies a predicate to check if query has an edge tenant.
+func (f *UserAuthSessionFilter) WhereHasTenant() {
+	f.Where(entql.HasEdge("tenant"))
+}
+
+// WhereHasTenantWith applies a predicate to check if query has an edge tenant with a given conditions (other predicates).
+func (f *UserAuthSessionFilter) WhereHasTenantWith(preds ...predicate.Tenant) {
+	f.Where(entql.HasEdgeWith("tenant", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasUser applies a predicate to check if query has an edge user.
+func (f *UserAuthSessionFilter) WhereHasUser() {
+	f.Where(entql.HasEdge("user"))
+}
+
+// WhereHasUserWith applies a predicate to check if query has an edge user with a given conditions (other predicates).
+func (f *UserAuthSessionFilter) WhereHasUserWith(preds ...predicate.User) {
+	f.Where(entql.HasEdgeWith("user", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// WhereHasOrganization applies a predicate to check if query has an edge organization.
+func (f *UserAuthSessionFilter) WhereHasOrganization() {
+	f.Where(entql.HasEdge("organization"))
+}
+
+// WhereHasOrganizationWith applies a predicate to check if query has an edge organization with a given conditions (other predicates).
+func (f *UserAuthSessionFilter) WhereHasOrganizationWith(preds ...predicate.Organization) {
+	f.Where(entql.HasEdgeWith("organization", sqlgraph.WrapFunc(func(s *sql.Selector) {
+		for _, p := range preds {
+			p(s)
+		}
+	})))
+}
+
+// addPredicate implements the predicateAdder interface.
 func (_q *VideoConferenceQuery) addPredicate(pred func(s *sql.Selector)) {
 	_q.predicates = append(_q.predicates, pred)
 }
@@ -13321,7 +13477,7 @@ type VideoConferenceFilter struct {
 // Where applies the entql predicate on the query filter.
 func (f *VideoConferenceFilter) Where(p entql.P) {
 	f.addPredicate(func(s *sql.Selector) {
-		if err := schemaGraph.EvalP(schemaGraph.Nodes[68].Type, p, s); err != nil {
+		if err := schemaGraph.EvalP(schemaGraph.Nodes[69].Type, p, s); err != nil {
 			s.AddError(err)
 		}
 	})
