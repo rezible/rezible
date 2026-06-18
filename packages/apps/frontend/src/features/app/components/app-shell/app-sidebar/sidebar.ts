@@ -1,12 +1,13 @@
 import type { RouteId } from "$app/types";
+import type { Component } from "svelte";
 
 export type SidebarItem = {
     label: string;
-    icon?: string;
+    icon?: Component;
     route: RouteId;
     subItems?: {
         label: string;
-        icon?: string;
+        icon?: Component;
         route: RouteId;
     }[];
 };

@@ -3,14 +3,13 @@
 	import Spinner from "$components/ui/spinner/spinner.svelte";
 	import Stepper from "$components/layout/stepper/Stepper.svelte";
 
-	import { initInitialSetupViewController } from "./controller.svelte";
+	import { initInitialSetupController } from "./initialSetupController.svelte";
 	import IntegrationInstallDialog from "$features/settings/components/configure-integration-dialog/ConfigureIntegrationDialog.svelte";
 	
-	const ctrl = initInitialSetupViewController();
+	const ctrl = initInitialSetupController();
 </script>
 
 <IntegrationInstallDialog />
-
 
 <div class="grid h-full w-full place-items-center">
 	<div class="flex w-full max-w-4xl flex-col gap-4 border border-border bg-background p-4">

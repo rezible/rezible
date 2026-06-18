@@ -1,22 +1,50 @@
 import { Context, watch } from "runed";
-import { createMutation, createQuery } from "@tanstack/svelte-query";
+import { createMutation } from "@tanstack/svelte-query";
 
-import { updateOrganizationPreferencesMutation, type AvailableIntegration, type OrganizationAttributes, type OrganizationPreferences, type UpdateOrganizationPreferencesRequestAttributes } from "$lib/api";
+import { updateOrganizationPreferencesMutation, type AvailableIntegration, type InstalledIntegration, type OrganizationPreferences } from "$lib/api";
 import { useUserSessionState } from "$src/lib/user-session.svelte";
-import { getEnabledCapabilties, useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 
 import { StepperController } from "$components/layout/stepper/stepper.svelte";
 
 import OrganizationSetupStep from "./steps/OrganizationSetup.svelte";
 import InstallIntegrationsStep from "./steps/InstallIntegrations.svelte";
 
-const RequiredCapabilities = new Set(["chat", "users"]);
+const chatIntegrations = new Set<string>(["slack_agent"]);
+const incidentManagementIntegrations = new Set<string>([]);
+const getAvailableNames = (av: AvailableIntegration[], names: Set<string>) => av.filter(a => names.has(a.name));
+
+export type IntegrationCapabilitySuggestion = {
+	label: string;
+	available: AvailableIntegration[];
+};
+
+const makeSuggestedIntegrations = (prefs: OrganizationPreferences, available: AvailableIntegration[], installed: InstalledIntegration[]) => {
+	const suggestions: IntegrationCapabilitySuggestion[] = [];
+	const installedNames = new Set(installed.map(intg => intg.attributes.integrationName));
+
+	if (installedNames.isDisjointFrom(chatIntegrations)) {
+		suggestions.push({
+			label: "Chat",
+			available: getAvailableNames(available, chatIntegrations),
+		});
+	};
+
+	if (!prefs.enableIncidentManagement && installedNames.isDisjointFrom(incidentManagementIntegrations)) {
+		suggestions.push({
+			label: "Incident Management",
+			available: getAvailableNames(available, incidentManagementIntegrations),
+		});
+	};
+
+	return suggestions;
+}
 
 export type ConfigureOrganizationOptions = {
 	enableIncidentManagement: boolean;
 }
 
-export class InitialSetupViewController {
+export class InitialSetupController {
 	private session = useUserSessionState();
 	private integrations = useIntegrationsController();
 
@@ -63,28 +91,18 @@ export class InitialSetupViewController {
 		})
 	};
 
-	private installedEnabledCapabilities = $derived(new Set(getEnabledCapabilties(this.integrations.installed)));
-	remainingRequiredCapabilities = $derived(RequiredCapabilities.difference(this.installedEnabledCapabilities).values().toArray());
-	availableOptions = $derived(this.integrations.available.filter((intg) => !this.integrations.installationsByName.has(intg.name)));
-	availableIntegrationsForCapabilities = $derived.by(() => {
-		const capMap = new Map<string, AvailableIntegration[]>();
-		this.availableOptions.forEach((intg) => {
-			intg.supportedCapabilities.forEach((cap) => {
-				capMap.set(cap, [...(capMap.get(cap) || []), intg]);
-			});
-		});
-		return capMap;
-	});
+	integrationSuggestions = $derived(makeSuggestedIntegrations(this.orgPrefs, this.integrations.available, this.integrations.installed))
 
 	canContinueIntegrations = $derived(true);
 	integrationsContinueButtonText = $derived(
-		this.remainingRequiredCapabilities.length === 0 ? "Finish setup" : "Skip for now"
+		this.integrationSuggestions.length === 0 ? "Finish setup" : "Skip for now"
 	);
 
 	canFinish = $derived(this.canContinueOrg && this.canContinueIntegrations);
 
 	lastCompletedStepIdx = $derived.by(() => {
-
+		// if (this.integrationSuggestions.length === 0) return 1;
+		if (!!this.currOrgPrefs) return 1;
 		return 0;
 	})
 
@@ -130,6 +148,6 @@ export class InitialSetupViewController {
 	loading = $derived(this.finishing || this.integrations.loading);
 }
 
-const ctx = new Context<InitialSetupViewController>("InitialSetupViewController");
-export const initInitialSetupViewController = () => ctx.set(new InitialSetupViewController());
-export const useInitialSetupViewController = () => ctx.get();
+const ctx = new Context<InitialSetupController>("InitialSetupController");
+export const initInitialSetupController = () => ctx.set(new InitialSetupController());
+export const useInitialSetupController = () => ctx.get();

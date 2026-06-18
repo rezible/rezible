@@ -26,9 +26,9 @@ type (
 	}
 
 	OrganizationAttributes struct {
-		Name          string                  `json:"name"`
-		SetupRequired bool                    `json:"setupRequired"`
-		Preferences   OrganizationPreferences `json:"preferences"`
+		Name          string                   `json:"name"`
+		SetupRequired bool                     `json:"setupRequired"`
+		Preferences   *OrganizationPreferences `json:"preferences"`
 	}
 
 	OrganizationPreferences struct {
@@ -40,7 +40,9 @@ func OrganizationFromEnt(org *ent.Organization) Organization {
 	attr := OrganizationAttributes{
 		Name:          org.Name,
 		SetupRequired: org.Edges.Preferences == nil || org.Edges.Preferences.InitialSetupAt.IsZero(),
-		Preferences:   OrganizationPreferencesFromEnt(org.Edges.Preferences),
+	}
+	if org.Edges.Preferences != nil {
+		attr.Preferences = new(OrganizationPreferencesFromEnt(org.Edges.Preferences))
 	}
 
 	return Organization{Id: org.ID, Attributes: attr}

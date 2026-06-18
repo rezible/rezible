@@ -14,7 +14,6 @@
     const intgs = useIntegrationsController();
 
     const attrs = $derived(installation.attributes);
-    const enabledCapabilities = $derived(Object.entries(attrs.capabilities).filter(([, enabled]) => enabled));
 </script>
 
 <div class="flex flex-col gap-2 p-3 rounded-md border">

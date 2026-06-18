@@ -52,13 +52,12 @@ func (o operations) RegisterIntegrations(api huma.API) {
 
 type (
 	AvailableIntegration struct {
-		Name                  string   `json:"name"`
-		DisplayName           string   `json:"displayName"`
-		Description           string   `json:"description"`
-		Provider              string   `json:"provider"`
-		SupportedCapabilities []string `json:"supportedCapabilities"`
-		MaxInstalls           *int     `json:"maxInstalls,omitempty"`
-		OAuthInstall          bool     `json:"oauthInstall"`
+		Name         string `json:"name"`
+		DisplayName  string `json:"displayName"`
+		Description  string `json:"description"`
+		Provider     string `json:"provider"`
+		MaxInstalls  *int   `json:"maxInstalls,omitempty"`
+		OAuthInstall bool   `json:"oauthInstall"`
 	}
 
 	InstalledIntegration struct {
@@ -67,13 +66,12 @@ type (
 	}
 
 	InstalledIntegrationAttributes struct {
-		IntegrationName string          `json:"integrationName"`
-		ProviderName    string          `json:"providerName"`
-		DisplayName     string          `json:"displayName"`
-		ExternalRef     string          `json:"externalRef"`
-		Config          map[string]any  `json:"config"`
-		Settings        map[string]any  `json:"settings"`
-		Capabilities    map[string]bool `json:"capabilities"`
+		IntegrationName string         `json:"integrationName"`
+		ProviderName    string         `json:"providerName"`
+		DisplayName     string         `json:"displayName"`
+		ExternalRef     string         `json:"externalRef"`
+		Config          map[string]any `json:"config"`
+		Settings        map[string]any `json:"settings"`
 	}
 
 	IntegrationOAuthInstallResult struct {
@@ -107,13 +105,12 @@ type (
 
 func AvailableIntegrationFromPackage(p rez.IntegrationPackage) AvailableIntegration {
 	return AvailableIntegration{
-		Name:                  p.Name(),
-		DisplayName:           p.DisplayName(),
-		Description:           p.Description(),
-		Provider:              p.Provider(),
-		SupportedCapabilities: p.SupportedCapabilities(),
-		OAuthInstall:          p.OAuthInstallRequired(),
-		MaxInstalls:           p.MaxInstalls(),
+		Name:         p.Name(),
+		DisplayName:  p.DisplayName(),
+		Description:  p.Description(),
+		Provider:     p.Provider(),
+		OAuthInstall: p.OAuthInstallRequired(),
+		MaxInstalls:  p.MaxInstalls(),
 	}
 }
 
@@ -126,7 +123,6 @@ func InstalledIntegrationFromRez(ii rez.InstalledIntegration) InstalledIntegrati
 		ExternalRef:     intg.ExternalProviderRef,
 		Settings:        intg.UserSettings,
 		Config:          ii.SanitizedInstallationConfig(),
-		Capabilities:    ii.GetCapabilities(),
 	}
 	return InstalledIntegration{Id: intg.ID, Attributes: attrs}
 }

@@ -11,7 +11,7 @@
 	const pageActionsProps = $derived.by(() => (propsFn()));
 </script>
 
-<div class="flex items-center gap-2">
+<div class="flex items-center gap-2 text-lg">
     <Sidebar.Trigger size="icon-lg" />  
     <Breadcrumb.Root>
         <Breadcrumb.List>

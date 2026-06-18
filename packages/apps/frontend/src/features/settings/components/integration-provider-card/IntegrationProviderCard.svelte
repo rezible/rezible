@@ -5,13 +5,14 @@
 	import { initIntegrationProviderCardController } from "./controller.svelte";
 	import RiCircleLine from "remixicon-svelte/icons/add-circle-line";
 	import InstalledIntegrationPanel from "./InstalledIntegrationPanel.svelte";
+	import { cn } from "$src/lib/utils";
 
 	type Props = {
 		provider: string;
 		onlyName?: string;
-		showInstalledDetails?: boolean;
+		compact?: boolean;
 	};
-	const { provider, onlyName, showInstalledDetails = true }: Props = $props();
+	const { provider, onlyName, compact = false }: Props = $props();
 
 	const ctrl = initIntegrationProviderCardController(() => provider);
 	const available = $derived(!!onlyName ? ctrl.available.filter(a => a.name === onlyName) : ctrl.available);
@@ -19,30 +20,28 @@
 
 {#each available as integration (integration.name)}
 	{@const installations = ctrl.integrations.installationsByName.get(integration.name) || []}
-	<Card.Root class="min-w-xs gap-3 p-4">
+	<Card.Root class={cn("min-w-xs gap-3", compact ? "p-2" : "p-4")}>
 		<Card.Header class="p-0">
-			<div class="flex items-start justify-between gap-4">
-				<div class="flex min-w-0 flex-col gap-2">
-					<Card.Title class="truncate">{integration.displayName}</Card.Title>
-					<Card.Description>{integration.description}</Card.Description>
-				</div>
-					<Button
-						onclick={() => ctrl.integrations.openConfigureDialog(integration)}
-						variant="outline"
-						disabled={integration.maxInstalls !== undefined && integration.maxInstalls <= installations.length}
-					>
-						{installations.length > 0 ? "Install another" : "Install"}
-						<RiCircleLine />
-					</Button>
-			</div>
+			<Card.Title class="truncate">{integration.displayName}</Card.Title>
+			<Card.Description>{integration.description}</Card.Description>
+			<Card.Action>
+				<Button
+					onclick={() => ctrl.integrations.openConfigureDialog(integration)}
+					variant="outline"
+					disabled={integration.maxInstalls !== undefined && integration.maxInstalls <= installations.length}
+				>
+					{installations.length > 0 ? "Install another" : "Install"}
+					<RiCircleLine />
+				</Button>
+			</Card.Action>
 		</Card.Header>
 
 		{#if installations.length > 0}
-		<Card.Content class="flex flex-col gap-2 p-0">
-			{#each installations as installation (installation.id)}
-				<InstalledIntegrationPanel {installation} openConfigDialog={() => {ctrl.integrations.openConfigureDialog(integration, installation)}} />
-			{/each}
-		</Card.Content>
+			<Card.Content class="flex flex-col gap-2 p-0">
+				{#each installations as installation (installation.id)}
+					<InstalledIntegrationPanel {installation} openConfigDialog={() => {ctrl.integrations.openConfigureDialog(integration, installation)}} />
+				{/each}
+			</Card.Content>
 		{/if}
 	</Card.Root>
 {/each}

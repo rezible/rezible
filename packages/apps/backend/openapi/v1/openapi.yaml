@@ -342,16 +342,11 @@ components:
           type: boolean
         provider:
           type: string
-        supportedCapabilities:
-          items:
-            type: string
-          type: array
       required:
         - name
         - displayName
         - description
         - provider
-        - supportedCapabilities
         - oauthInstall
       type: object
     CompleteIntegrationOAuthFlowRequestAttributes:
@@ -3237,10 +3232,6 @@ components:
     InstalledIntegrationAttributes:
       additionalProperties: false
       properties:
-        capabilities:
-          additionalProperties:
-            type: boolean
-          type: object
         config:
           additionalProperties: {}
           type: object
@@ -3262,7 +3253,6 @@ components:
         - externalRef
         - config
         - settings
-        - capabilities
       type: object
     IntegrationEventSyncRun:
       additionalProperties: false

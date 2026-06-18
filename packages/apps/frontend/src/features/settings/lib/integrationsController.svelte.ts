@@ -2,8 +2,6 @@ import {
 	listAvailableIntegrationsOptions,
 	listInstalledIntegrationsOptions,
 	createInstalledIntegrationMutation,
-	startIntegrationOauthFlowMutation, 
-	completeIntegrationOauthFlowMutation,
 	type CreateInstalledIntegrationRequestBody,
 	type InstalledIntegration,
 	type ErrorModel,
@@ -14,8 +12,6 @@ import {
 	type IntegrationOAuthInstallResult,
 } from "$lib/api";
 
-import { page } from "$app/state";
-import { clearQueryParams } from "$lib/utils";
 import { useUserSessionState } from "$lib/user-session.svelte";
 
 import { SvelteMap } from "svelte/reactivity";
@@ -23,84 +19,7 @@ import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 
 import { type ConfigureIntegrationDialogParams } from "../components/configure-integration-dialog/controller.svelte";
-import { tick } from "svelte";
-
-export class IntegrationOAuthController {
-    inFlowForName = $state<string>();
-    error = $state<ErrorModel>();
-
-	private onSuccess: (res: IntegrationOAuthInstallResult) => void;
-
-    constructor(onSuccess: (res: IntegrationOAuthInstallResult) => void) {
-		this.onSuccess = onSuccess;
-        watch(() => page.url.search, search => {
-            this.checkOAuthCallback(new URLSearchParams(search));
-        });
-    }
-
-    private setError(err: unknown) {
-        this.error = {
-            title: "Integration Setup Failed",
-            detail: err instanceof Error ? err.message : "An unknown issue occurred",
-        };
-    };
-
-    clearFlow() {
-        this.inFlowForName = undefined;
-        this.error = undefined;
-    }
-
-    private startOAuthFlowMut = createMutation(() => ({
-		...startIntegrationOauthFlowMutation({}),
-	}));
-
-    async startFlowFor(name: string) {
-        this.inFlowForName = name;
-        const resp = await this.startOAuthFlowMut.mutateAsync({path: { name }});
-        window.location.assign(new URL(resp.data.flow_url));
-    }
-
-    private completeOAuthFlowMut = createMutation(() => ({
-        ...completeIntegrationOauthFlowMutation({}),
-        onSuccess: async ({data}) => {
-			await tick();
-			this.onSuccess?.(data);
-        },
-    }));
-
-	private async checkOAuthCallback(params: URLSearchParams) {
-		const name = params.get("name");
-		const code = params.get("code");
-		const state = params.get("state");
-
-		if (this.completeOAuthFlowMut.isPending) return;
-		if (!name || !state || !code) return;
-
-        this.inFlowForName = name;
-
-		await clearQueryParams();
-
-		try {
-			const attributes = { state, code };
-			await this.completeOAuthFlowMut.mutateAsync({
-				path: { name },
-				body: { attributes },
-			});
-			this.error = undefined;
-		} catch (e) {
-			this.setError(e);
-		} finally {
-            this.inFlowForName = undefined;
-        }
-	}
-
-    inFlow = $derived(this.startOAuthFlowMut.isPending || this.completeOAuthFlowMut.isPending);
-};
-
-export const getEnabledCapabilties = (installed: InstalledIntegration[]) =>
-	installed.flatMap(intg => Object.entries(intg.attributes.capabilities)
-		.filter(([_, enabled]) => enabled)
-		.map(([name, _]) => name));
+import { IntegrationOAuthController } from "./integrationsOAuthController.svelte";
 
 export class IntegrationsController {
 	oauth = new IntegrationOAuthController(res => {this.onOAuthResult(res)});;

@@ -21,8 +21,6 @@ export class IntegrationProviderCardController {
 	}
 
 	single = $derived(this.available.length === 1 ? this.available.at(0) : undefined);
-	
-	// supportedCapabilities = $derived(this.integration?.supportedCapabilities ?? []);
 
 	installations = $derived<Map<string, InstalledIntegration[]>>(
 		new Map(this.available.map(a => [a.name, this.integrations.installationsByName.get(a.name) ?? []])));
@@ -30,8 +28,6 @@ export class IntegrationProviderCardController {
 	// 	typeof this.integration?.maxInstalls === "number" && this.installations.length >= this.integration.maxInstalls
 	// );
 	// canInstall = $derived(!this.maxInstallsReached);
-
-	// enabledCapabilities = $derived(getEnabledCapabilties(this.installations));
 }
 
 const ctx = new Context<IntegrationProviderCardController>("IntegrationProviderCardController");

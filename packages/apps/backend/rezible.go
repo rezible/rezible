@@ -155,7 +155,6 @@ type (
 		Provider() string
 		IsAvailable() (bool, error)
 		MaxInstalls() *int
-		SupportedCapabilities() []string
 		ValidateInstallationConfig(map[string]any) (externalRef string, validationErr error)
 		ValidateUserSettings(map[string]any) error
 		OAuthInstallRequired() bool
@@ -166,7 +165,6 @@ type (
 		Integration() *ent.Integration
 		ProviderName() string
 		SanitizedInstallationConfig() map[string]any
-		GetCapabilities() map[string]bool
 	}
 
 	ListIntegrationsParams struct {

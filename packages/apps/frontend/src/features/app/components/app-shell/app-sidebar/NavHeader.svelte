@@ -17,20 +17,10 @@
                     data-sveltekit-preload-data={preloadHome} 
                     data-sveltekit-preload-code={preloadHome}
                 >
-                    <img src="/images/logo.svg" alt="logo" class={cn("fill-neutral", sidebar.open ? "size-10" : "size-8")} />
+                    <img src="/images/logo.svg" alt="logo" class={cn("fill-neutral size-10")} />
                     <span data-open={sidebar.open ? true : undefined} class="hidden data-open:inline">Rezible</span>
                 </a>
             {/snippet}
         </Sidebar.MenuButton>
     </Sidebar.MenuItem>
 </Sidebar.Menu>
-
-<!-- <nav class={cn("flex-1 items-center justify-between flex", sidebar.open ? "h-16 max-h-16" : "flex-col")}>
-    <a href="/" class="text-2xl flex items-center gap-2 flex-1 h-10" 
-        data-sveltekit-preload-data={preloadHome} 
-        data-sveltekit-preload-code={preloadHome}
-    >
-        <img src="/images/logo.svg" alt="logo" class={cn("fill-neutral", sidebar.open ? "size-10" : "size-6")} />
-        <span class={cn(sidebar.open ? "" : "hidden")}>Rezible</span>
-    </a>
-</nav> -->

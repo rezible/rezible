@@ -8,7 +8,6 @@ export const clearQueryParams = async () => {
 	const empty = new URL(page.url);
 	empty.search = "";
 	replaceState(empty, page.state);
-	console.log("clear query params", empty);
 	await tick();
 }
 

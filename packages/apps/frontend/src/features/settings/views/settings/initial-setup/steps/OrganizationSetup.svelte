@@ -1,9 +1,9 @@
 <script lang="ts">
-	import CheckboxCard from "$components/forms/checkbox-card/CheckboxCard.svelte";
 	import { onMount } from "svelte";
-	import { useInitialSetupViewController } from "../controller.svelte";
+	import CheckboxCard from "$components/forms/checkbox-card/CheckboxCard.svelte";
+	import { useInitialSetupController } from "../initialSetupController.svelte";
 
-	const ctrl = useInitialSetupViewController();
+	const ctrl = useInitialSetupController();
 
 	onMount(() => {
 		ctrl.orgPrefsValid = true;

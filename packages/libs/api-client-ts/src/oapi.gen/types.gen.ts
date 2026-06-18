@@ -160,7 +160,6 @@ export type AvailableIntegration = {
     name: string;
     oauthInstall: boolean;
     provider: string;
-    supportedCapabilities: Array<string>;
 };
 
 export type CompleteIntegrationOAuthFlowRequestAttributes = {
@@ -1492,9 +1491,6 @@ export type InstalledIntegration = {
 };
 
 export type InstalledIntegrationAttributes = {
-    capabilities: {
-        [key: string]: boolean;
-    };
     config: {
         [key: string]: unknown;
     };

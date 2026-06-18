@@ -67,7 +67,7 @@ func (s *AuthSessionService) CreateFromUserAuth(ctx context.Context, ps *rez.Use
 
 func (s *AuthSessionService) syncAuthProviderOrg(ctx context.Context, c *ent.Client, po *ent.Organization) (*ent.Organization, error) {
 	existing, lookupErr := s.orgs.Get(ctx, organization.AuthProviderID(po.AuthProviderID))
-	if lookupErr != nil {
+	if lookupErr != nil && !ent.IsNotFound(lookupErr) {
 		return nil, fmt.Errorf("lookup organization: %w", lookupErr)
 	}
 
@@ -97,7 +97,7 @@ func (s *AuthSessionService) syncAuthProviderOrg(ctx context.Context, c *ent.Cli
 
 func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.User) (*ent.User, error) {
 	existing, lookupErr := s.users.Get(ctx, user.AuthProviderID(pu.AuthProviderID))
-	if lookupErr != nil {
+	if lookupErr != nil && !ent.IsNotFound(lookupErr) {
 		return nil, fmt.Errorf("lookup user: %w", lookupErr)
 	}
 

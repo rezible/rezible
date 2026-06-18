@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as Collapsible from "$components/ui/collapsible";
 	import * as Sidebar from "$components/ui/sidebar";
-	import Icon from "$src/components/common/icon/Icon.svelte";
     import RiArrowRightSLine from 'remixicon-svelte/icons/arrow-right-s-line';
 	import { getActiveStatus, type SidebarItem } from "./sidebar";
 	import { page } from "$app/state";
@@ -11,6 +10,7 @@
     };
     const { item }: Props = $props();
 
+    const sidebar = Sidebar.useSidebar();
     const status = $derived(getActiveStatus(page.route.id, item));
     const anyActiveSubItems = $derived(status.subItemsActive.values().some(Boolean));
     const isActive = $derived((status.active && !anyActiveSubItems) ? true : undefined);
@@ -21,10 +21,12 @@
         <Sidebar.MenuButton {isActive} tooltipContent={item.label}>
             {#snippet child({ props })}
                 <a href={item.route} {...props}>
-                    {#if item.icon}
-                        <Icon data={item.icon} />
+                    {#if !!item.icon && typeof item.icon === "function"}
+                        <item.icon />
                     {/if}
-                    {item.label}
+                    {#if sidebar.state !== "collapsed"}
+                        {item.label}
+                    {/if}
                 </a>
             {/snippet}
         </Sidebar.MenuButton>
@@ -39,7 +41,7 @@
                             {#snippet child({ props })}
                                 <a href={item.route} {...props}>
                                     {#if item.icon}
-                                        <Icon data={item.icon} />
+                                        <item.icon />
                                     {/if}
                                     {item.label}
                                     <RiArrowRightSLine class="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
