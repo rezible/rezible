@@ -117,7 +117,7 @@ func (s *AuthSessionService) syncAuthProviderUser(ctx context.Context, pu *ent.U
 	})
 }
 
-func (s *AuthSessionService) CreateFromApiToken(ctx context.Context, token string) (*ent.UserAuthSession, error) {
+func (s *AuthSessionService) CreateFromToken(ctx context.Context, token string) (*ent.UserAuthSession, error) {
 	return nil, fmt.Errorf("not supported")
 }
 

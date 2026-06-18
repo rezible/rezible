@@ -4,33 +4,48 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"net/url"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	da "github.com/rezible/rezible/ent/documentaccess"
-	"github.com/rezible/rezible/execution"
 )
 
 type DocumentsService struct {
 	db    rez.Database
+	sess  rez.AuthSessionService
 	teams rez.TeamService
+
+	documentsServerUrl  *url.URL
+	editorSessionSecret []byte
 }
 
-func NewDocumentsService(db rez.Database, teams rez.TeamService) (*DocumentsService, error) {
+func NewDocumentsService(cfg rez.Config, db rez.Database, sess rez.AuthSessionService, teams rez.TeamService) (*DocumentsService, error) {
+	srvUrl, urlErr := url.Parse(cfg.Documents.ServerUrl)
+	if urlErr != nil {
+		return nil, fmt.Errorf("server url: %w", urlErr)
+	}
 	svc := &DocumentsService{
-		db:    db,
-		teams: teams,
+		db:                  db,
+		sess:                sess,
+		teams:               teams,
+		documentsServerUrl:  srvUrl,
+		editorSessionSecret: []byte(cfg.Documents.EditorSessionSecret),
 	}
 
 	return svc, nil
 }
 
-func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUID) (*ent.DocumentAccess, error) {
-	userID, userOK := execution.GetContext(ctx).UserID()
-	if !userOK {
-		return nil, rez.ErrAuthSessionMissing
+func (s *DocumentsService) CreateDocumentEditorSession(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*rez.DocumentSession, error) {
+	sess := &rez.DocumentSession{
+		ServerUrl: s.documentsServerUrl,
+		Token:     "foobar",
 	}
+	return sess, nil
+}
+
+func (s *DocumentsService) GetUserDocumentAccess(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*ent.DocumentAccess, error) {
 	doc, docErr := s.GetDocument(ctx, docId)
 	if docErr != nil {
 		return nil, fmt.Errorf("get document: %w", docErr)
@@ -38,7 +53,7 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 	if !doc.AccessRestricted {
 		defaultAccess := &ent.DocumentAccess{
 			DocumentID: docId,
-			UserID:     userID,
+			UserID:     userId,
 			CanView:    true,
 			CanEdit:    true,
 			CanManage:  true,
@@ -62,7 +77,7 @@ func (s *DocumentsService) GetDocumentAccess(ctx context.Context, docId uuid.UUI
 			return acc, nil
 		}
 	*/
-	bestAccess, accessesErr := s.getBestDocumentAccess(ctx, docId, userID)
+	bestAccess, accessesErr := s.getBestDocumentAccess(ctx, docId, userId)
 	if accessesErr != nil {
 		return nil, fmt.Errorf("failed to get document accesses: %w", accessesErr)
 	}
@@ -126,22 +141,12 @@ func (s *DocumentsService) GetDocument(ctx context.Context, id uuid.UUID) (*ent.
 	return s.db.Client(ctx).Document.Get(ctx, id)
 }
 
-type documentMutator interface {
-	Save(ctx context.Context) (*ent.Document, error)
-	Mutation() *ent.DocumentMutation
-}
-
 func (s *DocumentsService) SetDocument(ctx context.Context, id uuid.UUID, setFn func(*ent.DocumentMutation)) (*ent.Document, error) {
-	var mutator documentMutator
-	isNew := id == uuid.Nil
-	if isNew {
+	var mutator ent.EntityMutator[*ent.Document, *ent.DocumentMutation]
+	if id == uuid.Nil {
 		mutator = s.db.Client(ctx).Document.Create().SetID(uuid.New())
 	} else {
-		curr, getErr := s.db.Client(ctx).Document.Get(ctx, id)
-		if getErr != nil {
-			return nil, fmt.Errorf("fetch existing incident: %w", getErr)
-		}
-		mutator = s.db.Client(ctx).Document.UpdateOne(curr)
+		mutator = s.db.Client(ctx).Document.UpdateOneID(id)
 	}
 
 	mut := mutator.Mutation()

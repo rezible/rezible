@@ -39,8 +39,8 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSession
 	s.router.Use(s.makeRequestLoggerMiddleware())
 
 	var documentsProxyUrl *url.URL
-	if s.cfg.DocumentsProxy.Enabled {
-		proxyUrl, parseErr := url.Parse("ws://" + s.cfg.DocumentsProxy.ProxyHost)
+	if cfg.Documents.Proxy.Enabled {
+		proxyUrl, parseErr := url.Parse("ws://" + cfg.Documents.Proxy.Host)
 		if parseErr != nil {
 			return nil, fmt.Errorf("failed to parse documents_proxy.proxy_host: %w", parseErr)
 		}

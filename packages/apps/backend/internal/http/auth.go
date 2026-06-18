@@ -61,7 +61,7 @@ func (s *Server) makeApiRequestAuthenticator(authSess rez.AuthSessionService, ac
 		}
 
 		if split := strings.Split(r.Header.Get("Authorization"), " "); len(split) == 2 && split[0] == "Bearer" {
-			return authSess.CreateFromApiToken(r.Context(), split[1])
+			return authSess.CreateFromToken(r.Context(), split[1])
 		}
 
 		return nil, rez.ErrAuthSessionMissing

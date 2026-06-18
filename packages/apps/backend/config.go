@@ -30,8 +30,12 @@ func DefaultConfig() Config {
 			Port:     cmp.Or(os.Getenv("PORT"), "7002"),
 			BasePath: "",
 			Auth:     HttpAuthConfig{},
-			DocumentsProxy: HttpServerDocumentsProxyConfig{
-				ProxyHost: "localhost:7002",
+		},
+		Documents: DocumentsConfig{
+			ServerUrl: "http://localhost:7002",
+			Proxy: DocumentsConfigServerProxy{
+				Enabled: false,
+				Host:    "localhost:7002",
 			},
 		},
 		Postgres: PostgresConfig{
@@ -65,6 +69,7 @@ type Config struct {
 	App          AppConfig          `cfg:"app"`
 	AI           AiConfig           `cfg:"ai"`
 	HttpServer   HttpServerConfig   `cfg:"http"`
+	Documents    DocumentsConfig    `cfg:"documents"`
 	Integrations IntegrationsConfig `cfg:"integrations"`
 	Postgres     PostgresConfig     `cfg:"postgres"`
 	Telemetry    TelemetryConfig    `cfg:"telemetry"`
@@ -112,13 +117,6 @@ type (
 		BasePath string `cfg:"base_path"`
 
 		Auth HttpAuthConfig `cfg:"auth"`
-
-		DocumentsProxy HttpServerDocumentsProxyConfig `cfg:"documents_proxy"`
-	}
-
-	HttpServerDocumentsProxyConfig struct {
-		Enabled   bool   `cfg:"enabled"`
-		ProxyHost string `cfg:"proxy_host"`
 	}
 
 	HttpAuthConfig struct {
@@ -131,6 +129,19 @@ type (
 		ClientID     string `cfg:"client_id" validate:"required"`
 		ClientSecret string `cfg:"client_secret" validate:"required"`
 		RedirectUrl  string `cfg:"redirect_url"`
+	}
+)
+
+type (
+	DocumentsConfig struct {
+		ServerUrl           string                     `cfg:"server_url" validate:"required"`
+		EditorSessionSecret string                     `cfg:"editor_session_secret" validate:"len=32"`
+		Proxy               DocumentsConfigServerProxy `cfg:"proxy"`
+	}
+
+	DocumentsConfigServerProxy struct {
+		Enabled bool   `cfg:"enabled"`
+		Host    string `cfg:"host"`
 	}
 )
 

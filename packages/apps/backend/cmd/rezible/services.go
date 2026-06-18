@@ -409,7 +409,9 @@ var provideServices = do.Package(
 
 	do.Lazy(func(i do.Injector) (*db.DocumentsService, error) {
 		return db.NewDocumentsService(
+			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.AuthSessionService](i),
 			do.MustInvoke[rez.TeamService](i),
 		)
 	}),

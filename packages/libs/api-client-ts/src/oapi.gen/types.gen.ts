@@ -666,6 +666,11 @@ export type DocumentAccess = {
     canView: boolean;
 };
 
+export type DocumentSession = {
+    serverUrl: string;
+    token: string;
+};
+
 export type ErrorDetail = {
     /**
      * Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'
@@ -2082,6 +2087,14 @@ export type RemoveWatchedOncallRosterResponseBody = {
     readonly $schema?: string;
     data: Array<OncallRoster>;
     pagination: ResponsePagination;
+};
+
+export type RequestDocumentSessionResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: DocumentSession;
 };
 
 export type RequestIncidentContextPackAgentRunResponseBody = {
@@ -3675,6 +3688,53 @@ export type GetDocumentAccessResponses = {
 };
 
 export type GetDocumentAccessResponse = GetDocumentAccessResponses[keyof GetDocumentAccessResponses];
+
+export type RequestDocumentEditorSessionData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/documents/{id}/session';
+};
+
+export type RequestDocumentEditorSessionErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RequestDocumentEditorSessionError = RequestDocumentEditorSessionErrors[keyof RequestDocumentEditorSessionErrors];
+
+export type RequestDocumentEditorSessionResponses = {
+    /**
+     * OK
+     */
+    200: RequestDocumentSessionResponseBody;
+};
+
+export type RequestDocumentEditorSessionResponse = RequestDocumentEditorSessionResponses[keyof RequestDocumentEditorSessionResponses];
 
 export type ListEventAnnotationsData = {
     body?: never;

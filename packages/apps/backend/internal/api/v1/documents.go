@@ -5,6 +5,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/execution"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -16,10 +17,30 @@ func newDocumentsHandler(documents rez.DocumentsService) *documentsHandler {
 	return &documentsHandler{documents}
 }
 
+func (h *documentsHandler) RequestDocumentSession(ctx context.Context, req *oapi.RequestDocumentSessionRequest) (*oapi.RequestDocumentSessionResponse, error) {
+	var resp oapi.RequestDocumentSessionResponse
+
+	userId, userOK := execution.GetContext(ctx).UserID()
+	if !userOK {
+		return nil, oapi.Error(ctx, "no user", rez.ErrAuthSessionMissing)
+	}
+	ds, dsErr := h.documents.CreateDocumentEditorSession(ctx, req.Id, userId)
+	if dsErr != nil {
+		return nil, oapi.Error(ctx, "create session", dsErr)
+	}
+	resp.Body.Data = oapi.DocumentSessionFromRez(ds)
+
+	return &resp, nil
+}
+
 func (h *documentsHandler) GetDocumentAccess(ctx context.Context, request *oapi.GetDocumentAccessRequest) (*oapi.GetDocumentAccessResponse, error) {
 	var resp oapi.GetDocumentAccessResponse
 
-	docAccess, docErr := h.documents.GetDocumentAccess(ctx, request.Id)
+	userId, userOK := execution.GetContext(ctx).UserID()
+	if !userOK {
+		return nil, oapi.Error(ctx, "no user", rez.ErrAuthSessionMissing)
+	}
+	docAccess, docErr := h.documents.GetUserDocumentAccess(ctx, request.Id, userId)
 	if docErr != nil {
 		return nil, oapi.Error(ctx, "get access", docErr)
 	}

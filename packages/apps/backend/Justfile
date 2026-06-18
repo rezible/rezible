@@ -5,13 +5,14 @@ export APP__FRONTEND_DOMAIN := env("APP_DOMAIN")
 export APP__API_DOMAIN := env("API_DOMAIN")
 export APP__SINGLETENANT__ENABLED := "true"
 
+export DOCUMENTS__EDITOR_SESSION_SECRET := "superduuuuuuuuuuuuuuuuupersecret"
+export DOCUMENTS__PROXY__ENABLED := "true"
+
 export HTTP__PORT := env("BACKEND_PORT")
 export HTTP__AUTH__SESSION_SECRET := "superduuuuuuuuuuuuuuuuupersecret"
 export HTTP__AUTH__OIDC__ISSUER := env("AUTH_URL")
 export HTTP__AUTH__OIDC__CLIENT_ID := "test-client"
 export HTTP__AUTH__OIDC__CLIENT_SECRET := "superdupersecret"
-export HTTP__DOCUMENTS_PROXY__ENABLED := "true"
-export HTTP__DOCUMENTS_PROXY__PROXY_PATH := "/documents"
 
 export POSTGRES__HOST := "localhost"
 export POSTGRES__PORT := env("POSTGRES_PORT")

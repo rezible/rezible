@@ -1404,6 +1404,17 @@ components:
         - canEdit
         - canManage
       type: object
+    DocumentSession:
+      additionalProperties: false
+      properties:
+        serverUrl:
+          type: string
+        token:
+          type: string
+      required:
+        - token
+        - serverUrl
+      type: object
     ErrorDetail:
       additionalProperties: false
       properties:
@@ -4632,6 +4643,21 @@ components:
         - data
         - pagination
       type: object
+    RequestDocumentSessionResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/RequestDocumentSessionResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/DocumentSession"
+      required:
+        - data
+      type: object
     RequestIncidentContextPackAgentRunResponseBody:
       additionalProperties: false
       properties:
@@ -7437,6 +7463,61 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Get user access for a document
+      tags:
+        - documents
+  /documents/{id}/session:
+    post:
+      operationId: request-document-editor-session
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestDocumentSessionResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Request a session for a document
       tags:
         - documents
   /event_annotations:
