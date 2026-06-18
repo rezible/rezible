@@ -111,7 +111,7 @@ func (ms *MessageService) restoreMessageAccessScope(fn message.HandlerFunc) mess
 			return fn(msg)
 		}
 
-		exec, decodeErr := execution.RestoreFrom([]byte(encodedExec))
+		exec, decodeErr := execution.DecodeContext([]byte(encodedExec))
 		if decodeErr != nil {
 			return nil, fmt.Errorf("restoring execution context: %w", decodeErr)
 		}

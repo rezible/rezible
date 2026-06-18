@@ -8,10 +8,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/jobs"
 )
 
@@ -31,52 +29,23 @@ func (s *OrganizationService) Get(ctx context.Context, p predicate.Organization)
 	return query.Only(ctx)
 }
 
-func (s *OrganizationService) getByAuthProviderId(ctx context.Context, authId string) (*ent.Organization, error) {
-	query := s.db.Client(ctx).Organization.Query().
-		Where(organization.AuthProviderID(authId)).
-		WithPreferences()
-	return query.Only(ctx)
-}
-
-func (s *OrganizationService) SyncFromAuthProvider(ctx context.Context, po ent.Organization) (*ent.Organization, error) {
-	var org *ent.Organization
-	return org, s.db.WithTx(execution.NewSystemContext(ctx), func(ctx context.Context, tx *ent.Client) error {
-		existing, getErr := s.getByAuthProviderId(ctx, po.AuthProviderID)
-		if getErr != nil && !ent.IsNotFound(getErr) {
-			return fmt.Errorf("fetch existing: %w", getErr)
-		}
-		if existing != nil {
-			if po.Name == existing.Name {
-				org = existing
-				return nil
-			}
-			ctx = execution.NewTenantContext(ctx, existing.TenantID)
-		}
-
+func (s *OrganizationService) Set(ctx context.Context, id uuid.UUID, setFn func(*ent.OrganizationMutation)) (*ent.Organization, error) {
+	var res *ent.Organization
+	return res, s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
 		var mutator ent.EntityMutator[*ent.Organization, *ent.OrganizationMutation]
-		if existing != nil {
-			mutator = tx.Organization.UpdateOne(existing)
+		if id == uuid.Nil {
+			mutator = tx.Organization.Create()
 		} else {
-			tnt, tntErr := tx.Tenant.Create().Save(ctx)
-			if tntErr != nil {
-				return fmt.Errorf("create tenant: %w", tntErr)
-			}
-			mutator = tx.Organization.Create().
-				SetTenantID(tnt.ID).
-				SetAuthProviderID(po.AuthProviderID)
-			ctx = execution.NewTenantContext(ctx, tnt.ID)
+			mutator = tx.Organization.UpdateOneID(id)
 		}
 
-		m := mutator.Mutation()
-		m.SetName(po.Name)
+		setFn(mutator.Mutation())
 
 		saved, saveErr := mutator.Save(ctx)
 		if saveErr != nil {
-			return fmt.Errorf("save org: %w", saveErr)
+			return fmt.Errorf("save: %w", saveErr)
 		}
-
-		org = saved
-
+		res = saved.Unwrap()
 		return nil
 	})
 }

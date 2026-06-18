@@ -24,7 +24,7 @@ func TestEncodeDecodeRoundTrip(t *testing.T) {
 	encoded, encErr := exec.Encode()
 	require.NoError(t, encErr)
 
-	decoded, restErr := RestoreFrom(encoded)
+	decoded, restErr := DecodeContext(encoded)
 	require.NoError(t, restErr)
 	require.Equal(t, exec, decoded)
 }

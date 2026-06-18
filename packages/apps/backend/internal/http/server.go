@@ -22,70 +22,96 @@ import (
 )
 
 type Server struct {
-	cfg               rez.HttpServerConfig
-	router            *chi.Mux
-	logger            *slog.Logger
-	httpServer        *http.Server
-	documentsProxyUrl *url.URL
+	cfg        rez.HttpServerConfig
+	router     *chi.Mux
+	logger     *slog.Logger
+	httpServer *http.Server
 }
 
 func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSessionService, oapiV1Handler oapiv1.Handler, webhookHandlers map[string]http.Handler) (*Server, error) {
 	s := Server{
 		cfg:    cfg.HttpServer,
-		router: chi.NewRouter(),
 		logger: slog.Default().WithGroup("http"),
 	}
 
+	s.router = chi.NewRouter()
+	s.router.Use(s.makeSetRootExecutionContextMiddleware())
+	s.router.Use(s.makeRequestLoggerMiddleware())
+
+	var documentsProxyUrl *url.URL
 	if s.cfg.DocumentsProxy.Enabled {
 		proxyUrl, parseErr := url.Parse("ws://" + s.cfg.DocumentsProxy.ProxyHost)
 		if parseErr != nil {
 			return nil, fmt.Errorf("failed to parse documents_proxy.proxy_host: %w", parseErr)
 		}
-		s.documentsProxyUrl = proxyUrl
+		documentsProxyUrl = proxyUrl
 	}
 
-	s.router.Use(s.makeSetRootExecutionContextMiddleware())
-	s.router.Use(s.makeRequestLoggerMiddleware())
+	asc := newAppAuthSessionCookie(oapiv1.AppCookieName, cfg.App.FrontendApiPath)
 
-	apiHandler, apiErr := s.makeOpenApiAdapter(ts, oapiV1Handler)
-	if apiErr != nil {
-		return nil, fmt.Errorf("api adapter: %w", apiErr)
-	}
+	handler := chi.NewRouter()
+
+	handler.Get("/health", s.makeHealthCheckHandler())
 
 	webhooksHandler := chi.NewMux()
 	for route, wh := range webhookHandlers {
 		webhooksHandler.Mount(ensureSlashPrefix(route), wh)
 	}
+	handler.Mount("/webhooks", webhooksHandler)
 
-	appCookie := oapiv1.NewAppCookie(cfg.App.FrontendApiPath)
-
-	oidcAuthHandler, authErr := oidc.NewUserAuthHandler(cfg, authSess, appCookie)
+	oidcAuthHandler, authErr := oidc.NewUserAuthHandler(cfg, authSess, asc)
 	if authErr != nil {
 		return nil, fmt.Errorf("user auth: %w", authErr)
 	}
+	handler.Mount("/auth", oidcAuthHandler)
 
-	ra := newRequestAuthenticator(authSess, appCookie)
-	requestMw := chi.Middlewares{ra.middleware}
+	api := s.makeOpenApi(ts, oapiV1Handler)
 
-	handler := s.makeRequestHandler(requestMw, oidcAuthHandler, apiHandler, webhooksHandler)
+	// api routes with auth check
+	handler.Group(func(ar chi.Router) {
+		ar.Use(s.makeApiRequestAuthenticator(authSess, asc))
+		ar.Mount(oapiv1.VersionPrefix, api.Adapter())
+		if documentsProxyUrl != nil {
+			ar.Handle("/documents", s.makeDocumentsProxyHandler(documentsProxyUrl))
+		}
+	})
 
-	basePath := s.cfg.BasePath
-	s.router.Mount(ensureSlashPrefix(basePath), http.StripPrefix(basePath, handler))
+	s.router.Mount(ensureSlashPrefix(s.cfg.BasePath), http.StripPrefix(s.cfg.BasePath, handler))
 
 	return &s, nil
 }
 
-func (s *Server) makeOpenApiAdapter(ts rez.TelemetryService, v1h oapiv1.Handler) (openapi.Adapter, error) {
-	verifyAuth := oapiv1.MakeAuthContextVerifier()
-	userAuthMw := func(c openapi.Context, next func(openapi.Context)) {
-		if ok := verifyAuth(c); ok {
-			next(c)
+func (s *Server) makeOpenApi(ts rez.TelemetryService, v1h oapiv1.Handler) openapi.API {
+	checkMethodOptionsFn := func(ctx context.Context, methods oapiv1.RequestSecurityMethods) error {
+		exec := execution.GetContext(ctx)
+		if exec.IsAnonymous() {
+			return rez.ErrAuthSessionMissing
 		}
+
+		if exec.Auth.TokenID != nil { // authed from token
+			// TODO
+			return rez.ErrAuthSessionInvalid
+		}
+
+		if exec.Auth.UserID != nil {
+			if !methods.AppCookie.Allowed {
+				return rez.ErrAuthSessionInvalid
+			}
+			for _, scopes := range methods.AppCookie.RequiredScopeSets {
+				// TODO: check scopes
+				slog.Debug("check required scopes", "scope", scopes)
+			}
+			return nil
+		}
+
+		// no auth context
+		slog.WarnContext(ctx, "api request missing execution auth ctx?")
+		return rez.ErrAuthSessionMissing
 	}
 
-	api := oapiv1.MakeApi(v1h, userAuthMw, oapiv1.MakeAPITelemetryMiddleware(ts))
-
-	return api.Adapter(), nil
+	return oapiv1.MakeApi(v1h,
+		oapiv1.MakeRequestMethodSecurityMiddleware(checkMethodOptionsFn),
+		oapiv1.MakeAPITelemetryMiddleware(ts))
 }
 
 func (s *Server) makeSetRootExecutionContextMiddleware() func(http.Handler) http.Handler {
@@ -106,25 +132,6 @@ func (s *Server) makeRequestLoggerMiddleware() func(http.Handler) http.Handler {
 		WithSpanID:       true,
 		WithTraceID:      true,
 	})
-}
-
-func (s *Server) makeRequestHandler(mw chi.Middlewares, auth http.Handler, api http.Handler, webhooks http.Handler) http.Handler {
-	r := chi.NewRouter()
-
-	r.Get("/health", s.makeHealthCheckHandler())
-	r.Mount("/webhooks", webhooks)
-	r.Mount("/auth", auth)
-
-	// routes requiring auth session
-	r.Group(func(ar chi.Router) {
-		ar.Use(mw...)
-		ar.Mount(oapiv1.VersionPrefix, api)
-		if s.documentsProxyUrl != nil {
-			ar.Handle("/documents", s.makeDocumentsProxyHandler(s.documentsProxyUrl))
-		}
-	})
-
-	return r
 }
 
 func ensureSlashPrefix(s string) string {

@@ -20,8 +20,6 @@ func newCookieCodec(secret []byte) (*cookieCodec, error) {
 	if len(secret) < 32 {
 		return nil, fmt.Errorf("secret must be at least 32 bytes")
 	}
-
-	// Derive fixed 32-byte AES-256 key from config secret.
 	key := sha256.Sum256(secret)
 
 	block, cipherErr := aes.NewCipher(key[:])
@@ -62,7 +60,7 @@ func (c *cookieCodec) decode(encoded string, dst any) error {
 
 	nonceSize := c.aead.NonceSize()
 	if len(raw) < nonceSize {
-		return fmt.Errorf("invalid cookie payload")
+		return fmt.Errorf("invalid payload")
 	}
 
 	nonce := raw[:nonceSize]

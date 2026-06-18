@@ -38,6 +38,41 @@ type oauthHandler struct {
 	idTokenVerifier     *oidc.IDTokenVerifier
 }
 
+func newOAuthHandler(cfg rez.Config) (*oauthHandler, error) {
+	oauthRedirectUrl := cfg.HttpServer.Auth.Oidc.RedirectUrl
+	if oauthRedirectUrl == "" {
+		feRedirectUrl, urlErr := cfg.App.GetFrontendUrl(cfg.App.FrontendApiPath, "/auth/callback")
+		if urlErr != nil {
+			return nil, fmt.Errorf("oauth redirect url: %w", urlErr)
+		}
+		oauthRedirectUrl = feRedirectUrl.String()
+	}
+
+	codec, codecErr := newCookieCodec(cfg.HttpServer.Auth.SessionSecret)
+	if codecErr != nil {
+		return nil, fmt.Errorf("cookie codec: %w", codecErr)
+	}
+
+	apiAudience := cfg.App.ApiDomain
+	if apiAudience == "" {
+		return nil, fmt.Errorf("no api url configured, can't verify token audience")
+	}
+	h := &oauthHandler{
+		cfg:            cfg.HttpServer.Auth.Oidc,
+		redirectUrl:    oauthRedirectUrl,
+		codec:          codec,
+		apiAudience:    apiAudience,
+		resourceOption: oauth2.SetAuthURLParam("resource", apiAudience),
+	}
+	if cfg.App.SingleTenant.Enabled {
+		h.singleTenantOrg = &ent.Organization{
+			AuthProviderID: "default",
+			Name:           cfg.App.SingleTenant.OrgName,
+		}
+	}
+	return h, nil
+}
+
 func (h *oauthHandler) scopes() []string {
 	scopes := []string{oidc.ScopeOpenID, oidc.ScopeOfflineAccess, "profile", "email"}
 	if h.singleTenantOrg == nil {
@@ -83,6 +118,8 @@ func createRandomValue() string {
 	return base64.RawURLEncoding.EncodeToString(buf)
 }
 
+var authFlowWindow = 10 * time.Minute
+
 func (h *oauthHandler) createAuthRedirect(w http.ResponseWriter, r *http.Request) (string, error) {
 	if cfgErr := h.ensureProvider(r.Context()); cfgErr != nil {
 		return "", cfgErr
@@ -99,38 +136,35 @@ func (h *oauthHandler) createAuthRedirect(w http.ResponseWriter, r *http.Request
 	if !strings.HasPrefix(returnTo, "/") || strings.HasPrefix(returnTo, "//") {
 		return "", fmt.Errorf("invalid return_to")
 	}
-	// TODO: encode this as the oauth state itself? (instead of a cookie)
+
+	verifier := oauth2.GenerateVerifier()
 	vs := &AuthFlowState{
 		State:        state,
 		Nonce:        nonce,
-		CodeVerifier: oauth2.GenerateVerifier(),
+		CodeVerifier: verifier,
 		ReturnTo:     returnTo,
 	}
 
-	opts := []oauth2.AuthCodeOption{
-		oidc.Nonce(nonce),
-		oauth2.S256ChallengeOption(vs.CodeVerifier),
-		h.resourceOption,
-	}
-
-	if cookieErr := h.writeAuthStateCookie(w, vs, 10*time.Minute); cookieErr != nil {
-		slog.Debug("Failed to write auth state cookie", "error", cookieErr)
+	encState, encErr := h.codec.encode(vs)
+	if encErr != nil {
+		slog.Debug("Failed to encode auth state cookie value", "error", encErr)
 		return "", errWriteAuthState
 	}
+	h.setAuthStateCookie(w, encState, int(authFlowWindow.Seconds()))
 
+	opts := []oauth2.AuthCodeOption{
+		oidc.Nonce(nonce),
+		oauth2.S256ChallengeOption(verifier),
+		h.resourceOption,
+	}
 	return h.oauthCfg.AuthCodeURL(state, opts...), nil
 }
 
-func (h *oauthHandler) doCallbackExchange(w http.ResponseWriter, r *http.Request) (*userAuthInfo, string, error) {
-	var as AuthFlowState
-	stateCookie, readCookieErr := r.Cookie(authStateCookieName)
-	if stateCookie == nil || readCookieErr != nil {
+func (h *oauthHandler) doCallbackExchange(w http.ResponseWriter, r *http.Request) (*rez.UserAuthProviderSession, string, error) {
+	as, stateErr := h.readAndClearAuthStateCookie(w, r)
+	if stateErr != nil {
 		return nil, "", errReadAuthState
 	}
-	if decodeErr := h.codec.decode(stateCookie.Value, &as); decodeErr != nil {
-		return nil, "", errReadAuthState
-	}
-	h.clearAuthStateCookie(w)
 
 	q := r.URL.Query()
 	code := q.Get("code")
@@ -140,23 +174,51 @@ func (h *oauthHandler) doCallbackExchange(w http.ResponseWriter, r *http.Request
 	if q.Get("state") != as.State {
 		return nil, "", fmt.Errorf("invalid state")
 	}
+
 	ctx := r.Context()
 	if cfgErr := h.ensureProvider(ctx); cfgErr != nil {
 		return nil, "", cfgErr
 	}
-	token, exchangeErr := h.oauthCfg.Exchange(ctx, code,
-		oauth2.VerifierOption(as.CodeVerifier), h.resourceOption)
+	token, exchangeErr := h.oauthCfg.Exchange(ctx, code, oauth2.VerifierOption(as.CodeVerifier), h.resourceOption)
 	if exchangeErr != nil {
 		return nil, "", fmt.Errorf("token exchange failed: %w", exchangeErr)
 	}
 	if !token.Valid() {
 		return nil, "", fmt.Errorf("invalid token")
 	}
-	info, infoErr := h.extractTokenInfo(ctx, token, as.Nonce)
-	if infoErr != nil {
-		return nil, "", fmt.Errorf("info: %w", infoErr)
+
+	sess, sessErr := h.extractSessionClaims(ctx, token, as.Nonce)
+	if sessErr != nil {
+		return nil, "", fmt.Errorf("sess: %w", sessErr)
 	}
-	return info, as.ReturnTo, nil
+	return sess, as.ReturnTo, nil
+}
+
+const authStateCookieName = "rez_auth_state"
+
+func (h *oauthHandler) setAuthStateCookie(w http.ResponseWriter, value string, maxAge int) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     authStateCookieName,
+		Value:    value,
+		Path:     h.authStateCookiePath,
+		MaxAge:   maxAge,
+		HttpOnly: true,
+		Secure:   true,
+		SameSite: http.SameSiteLaxMode,
+	})
+}
+
+func (h *oauthHandler) readAndClearAuthStateCookie(w http.ResponseWriter, r *http.Request) (*AuthFlowState, error) {
+	var as AuthFlowState
+	stateCookie, readCookieErr := r.Cookie(authStateCookieName)
+	if stateCookie == nil || readCookieErr != nil {
+		return nil, errReadAuthState
+	}
+	if decodeErr := h.codec.decode(stateCookie.Value, &as); decodeErr != nil {
+		return nil, fmt.Errorf("decode state: %w", decodeErr)
+	}
+	h.setAuthStateCookie(w, "", -1)
+	return &as, nil
 }
 
 func (h *oauthHandler) refreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
@@ -190,7 +252,7 @@ type idTokenClaims struct {
 	OrgName string `json:"org_name"`
 }
 
-func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, nonce string) (*userAuthInfo, error) {
+func (h *oauthHandler) extractSessionClaims(ctx context.Context, t *oauth2.Token, nonce string) (*rez.UserAuthProviderSession, error) {
 	at, atErr := h.accessTokenVerifier.Verify(ctx, t.AccessToken)
 	if atErr != nil {
 		return nil, fmt.Errorf("access token verification failed: %w", atErr)
@@ -220,14 +282,14 @@ func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, no
 		return nil, rez.ErrAuthSessionInvalid
 	}
 
-	info := &userAuthInfo{
-		expiresAt: at.Expiry,
-		user: ent.User{
+	sess := &rez.UserAuthProviderSession{
+		ExpiresAt: at.Expiry,
+		User: ent.User{
 			AuthProviderID: idClaims.Sub,
 			Email:          idClaims.Email,
 			Name:           idClaims.Name,
 		},
-		org: ent.Organization{
+		Org: ent.Organization{
 			AuthProviderID: atClaims.OrganizationId,
 			Name:           atClaims.OrganizationName,
 		},
@@ -235,39 +297,8 @@ func (h *oauthHandler) extractTokenInfo(ctx context.Context, t *oauth2.Token, no
 
 	if h.singleTenantOrg != nil {
 		slog.Debug("using single tenant organization")
-		info.org = *h.singleTenantOrg
+		sess.Org = *h.singleTenantOrg
 	}
 
-	return info, nil
-}
-
-const authStateCookieName = "rez_auth_state"
-
-func (h *oauthHandler) writeAuthStateCookie(w http.ResponseWriter, value any, maxAge time.Duration) error {
-	encoded, encErr := h.codec.encode(value)
-	if encErr != nil {
-		return fmt.Errorf("encode value: %w", encErr)
-	}
-	http.SetCookie(w, &http.Cookie{
-		Name:     authStateCookieName,
-		Value:    encoded,
-		Path:     h.authStateCookiePath,
-		MaxAge:   int(maxAge.Seconds()),
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	})
-	return nil
-}
-
-func (h *oauthHandler) clearAuthStateCookie(w http.ResponseWriter) {
-	http.SetCookie(w, &http.Cookie{
-		Name:     authStateCookieName,
-		Value:    "",
-		Path:     h.authStateCookiePath,
-		MaxAge:   -1,
-		HttpOnly: true,
-		Secure:   true,
-		SameSite: http.SameSiteLaxMode,
-	})
+	return sess, nil
 }

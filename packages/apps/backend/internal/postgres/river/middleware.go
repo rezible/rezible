@@ -47,7 +47,7 @@ func (m *accessContextMiddleware) Work(ctx context.Context, job *rivertype.JobRo
 		return fmt.Errorf("failed to unmarshal job metadata: %w", jsonErr)
 	}
 	if len(meta.EncodedExecutionContext) > 0 {
-		exec, decodeErr := execution.RestoreFrom(meta.EncodedExecutionContext)
+		exec, decodeErr := execution.DecodeContext(meta.EncodedExecutionContext)
 		if decodeErr != nil {
 			return fmt.Errorf("invalid execution context for job: %w", decodeErr)
 		}

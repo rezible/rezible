@@ -49,12 +49,12 @@ func (c Context) IsAnonymous() bool {
 	return c.ActorKind == KindAnonymous
 }
 
-func (c Context) IsUser() bool {
-	return c.ActorKind == KindUser
-}
-
 func (c Context) IsSystem() bool {
 	return c.ActorKind == KindSystem
+}
+
+func (c Context) IsUser() bool {
+	return c.ActorKind == KindUser
 }
 
 func (c Context) TenantID() (int, bool) {
@@ -85,6 +85,13 @@ func SetContext(ctx context.Context, exec Context) context.Context {
 	return context.WithValue(ctx, ctxKey{}, exec)
 }
 
+func GetContext(ctx context.Context) Context {
+	if exec, ok := getContext(ctx); ok {
+		return exec
+	}
+	return newRootContext(KindAnonymous, SourceInternal)
+}
+
 func getContext(ctx context.Context) (Context, bool) {
 	exec, ok := ctx.Value(ctxKey{}).(Context)
 	return exec, ok
@@ -97,6 +104,12 @@ func newRootContext(kind ActorKind, source SourceKind) Context {
 			Source: source,
 		},
 	}
+}
+
+func NewRootContext(ctx context.Context, kind ActorKind, source SourceKind) context.Context {
+	c := newInternalContext(ctx, kind)
+	c.Provenance.Source = source
+	return SetContext(ctx, c)
 }
 
 func newInternalContext(ctx context.Context, kind ActorKind) Context {
@@ -114,38 +127,27 @@ func newInternalContext(ctx context.Context, kind ActorKind) Context {
 	return c
 }
 
-func GetContext(ctx context.Context) Context {
-	if exec, ok := getContext(ctx); ok {
-		return exec
-	}
-	return newRootContext(KindAnonymous, SourceInternal)
-}
-
-func NewRootContext(ctx context.Context, kind ActorKind, source SourceKind) context.Context {
-	c := newInternalContext(ctx, kind)
-	c.Provenance.Source = source
+func NewSystemContext(ctx context.Context) context.Context {
+	c := newInternalContext(ctx, KindSystem)
 	return SetContext(ctx, c)
 }
 
-func NewSystemContext(ctx context.Context) context.Context {
-	return SetContext(ctx, newInternalContext(ctx, KindSystem))
-}
-
 func NewTenantContext(ctx context.Context, tenantID int) context.Context {
-	c := newInternalContext(ctx, KindSystem)
+	c := GetContext(ctx)
+	c.ActorKind = KindSystem
 	c.Auth = Auth{
 		TenantID: &tenantID,
 	}
 	return SetContext(ctx, c)
 }
 
-func NewUserAuthContext(ctx context.Context, u ent.User, expiresAt time.Time) context.Context {
+func NewUserContext(ctx context.Context, sess *ent.UserAuthSession) context.Context {
 	c := GetContext(ctx)
 	c.ActorKind = KindUser
 	c.Auth = Auth{
-		TenantID:  &u.TenantID,
-		UserID:    &u.ID,
-		ExpiresAt: expiresAt,
+		TenantID:  &sess.TenantID,
+		UserID:    &sess.UserID,
+		ExpiresAt: sess.ExpiresAt,
 	}
 	return SetContext(ctx, c)
 }
@@ -184,7 +186,7 @@ func (c Context) Encode() ([]byte, error) {
 	})
 }
 
-func RestoreFrom(encoded []byte) (Context, error) {
+func DecodeContext(encoded []byte) (Context, error) {
 	var payload encodedContext
 	if err := json.Unmarshal(encoded, &payload); err != nil {
 		return Context{}, fmt.Errorf("unmarshal execution context: %w", err)

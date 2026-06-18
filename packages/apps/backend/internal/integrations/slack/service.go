@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -157,7 +156,11 @@ func (s *AppService[A]) createUserContext(ctx context.Context, userId string) (c
 		)
 		return nil, fmt.Errorf("lookup user: %w", usrErr)
 	}
-	return execution.NewUserAuthContext(ctx, *usr, time.Time{}), nil
+	sess := &ent.UserAuthSession{
+		TenantID: usr.TenantID,
+		UserID:   usr.ID,
+	}
+	return execution.NewUserContext(ctx, sess), nil
 }
 
 func (s *AppService[A]) handleInteractionCallback(baseCtx context.Context, ev *interactionCallbackEvent) error {

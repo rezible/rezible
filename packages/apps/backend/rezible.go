@@ -261,18 +261,9 @@ type (
 
 type (
 	OrganizationService interface {
-		SyncFromAuthProvider(context.Context, ent.Organization) (*ent.Organization, error)
 		Get(context.Context, predicate.Organization) (*ent.Organization, error)
+		Set(context.Context, uuid.UUID, func(*ent.OrganizationMutation)) (*ent.Organization, error)
 		SetPreferences(ctx context.Context, orgId uuid.UUID, setFn func(*ent.OrganizationPreferencesMutation)) (*ent.OrganizationPreferences, error)
-	}
-)
-
-type (
-	AuthSessionService interface {
-		SyncFromAuthProvider(context.Context, ent.User, ent.Organization) (*ent.UserAuthSession, error)
-		CreateExecutionContext(ctx context.Context, sess *ent.UserAuthSession) (context.Context, error)
-		LookupSession(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
-		DeleteSession(context.Context, uuid.UUID) error
 	}
 )
 
@@ -283,11 +274,24 @@ type (
 	}
 
 	UserService interface {
-		SyncFromAuthProvider(context.Context, ent.User) (*ent.User, error)
-
 		Get(context.Context, predicate.User) (*ent.User, error)
 		Set(context.Context, uuid.UUID, func(*ent.UserMutation)) (*ent.User, error)
 		List(context.Context, ListUsersParams) ([]*ent.User, error)
+	}
+)
+
+type (
+	UserAuthProviderSession struct {
+		User      ent.User
+		Org       ent.Organization
+		ExpiresAt time.Time
+	}
+	AuthSessionService interface {
+		CreateFromUserAuth(context.Context, *UserAuthProviderSession) (*ent.UserAuthSession, error)
+		CreateFromApiToken(context.Context, string) (*ent.UserAuthSession, error)
+
+		Get(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
+		DeleteSession(context.Context, uuid.UUID) error
 	}
 )
 
