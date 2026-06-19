@@ -1,4 +1,4 @@
-package fakeprovider
+package demoprovider
 
 import (
 	rez "github.com/rezible/rezible"
@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	integrationName = "fake"
+	integrationName = "demo"
 	providerName    = "rezible"
 )
 
@@ -25,11 +25,11 @@ func (i *Integration) Name() string {
 }
 
 func (i *Integration) DisplayName() string {
-	return "Faker"
+	return "Demo Data Provider"
 }
 
 func (i *Integration) Description() string {
-	return "Provides fake data for testing purposes"
+	return "Provides demo data for testing purposes"
 }
 
 func (i *Integration) Provider() string {
@@ -42,12 +42,6 @@ func (i *Integration) MaxInstalls() *int {
 
 func (i *Integration) IsAvailable() (bool, error) {
 	return i.available, nil
-}
-
-var supportedCapabilities = []string{"alerts", "incidents", "system_topology"}
-
-func (i *Integration) SupportedCapabilities() []string {
-	return supportedCapabilities
 }
 
 func (i *Integration) OAuthInstallRequired() bool {
@@ -80,10 +74,6 @@ func (ii *InstalledIntegration) ProviderName() string {
 
 func (ii *InstalledIntegration) SanitizedInstallationConfig() map[string]any {
 	return ii.intg.InstallationConfig
-}
-
-func (ii *InstalledIntegration) GetCapabilities() map[string]bool {
-	return map[string]bool{}
 }
 
 type IntegrationConfig struct{}

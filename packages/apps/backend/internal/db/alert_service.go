@@ -123,7 +123,7 @@ func (s *AlertService) GetActiveAlertsForComponents(ctx context.Context, compone
 	alertEntityIDs := make([]uuid.UUID, 0)
 	seenAlertEntityIDs := make(map[uuid.UUID]struct{})
 	addAlertEntity := func(entity *ent.KnowledgeEntity) {
-		if entity == nil || entity.Kind != knowledgeKindAlert {
+		if entity == nil || entity.Kind != knowledgeEntityKindAlert {
 			return
 		}
 		if _, seen := seenAlertEntityIDs[entity.ID]; seen {

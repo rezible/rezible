@@ -1,4 +1,4 @@
-package fakeprovider
+package demoprovider
 
 import (
 	"context"
@@ -10,6 +10,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/integrations"
+	"github.com/rezible/rezible/projections"
 )
 
 func (i *Integration) MakeProviderEventQuerier(intg *ent.Integration) (rez.ProviderEventQuerier, error) {
@@ -24,12 +25,29 @@ func newEventQuerier(ci *InstalledIntegration) *eventQuerier {
 	return &eventQuerier{ii: ci}
 }
 
-func (q *eventQuerier) Integration() *ent.Integration {
-	return q.ii.intg
-}
-
 func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceTopology); shouldQuery {
+			for ev, evErr := range q.pullTopologyEvents(cursor) {
+				if !yield(ev, evErr) {
+					return
+				}
+			}
+		}
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceUsers); shouldQuery {
+			for ev, evErr := range q.pullUserEvents(cursor) {
+				if !yield(ev, evErr) {
+					return
+				}
+			}
+		}
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceCodeRepos); shouldQuery {
+			for ev, evErr := range q.pullCodeRepositoryEvents(cursor) {
+				if !yield(ev, evErr) {
+					return
+				}
+			}
+		}
 		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceIncidents); shouldQuery {
 			for ev, evErr := range q.pullIncidentEvents(cursor) {
 				if !yield(ev, evErr) {
@@ -44,8 +62,29 @@ func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors map[stri
 				}
 			}
 		}
-		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceTopology); shouldQuery {
-			for ev, evErr := range q.pullTopologyEvents(cursor) {
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceCodeChanges); shouldQuery {
+			for ev, evErr := range q.pullCodeChangeEvents(cursor) {
+				if !yield(ev, evErr) {
+					return
+				}
+			}
+		}
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceChatMessages); shouldQuery {
+			for ev, evErr := range q.pullChatMessageEvents(cursor) {
+				if !yield(ev, evErr) {
+					return
+				}
+			}
+		}
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourcePlaybooks); shouldQuery {
+			for ev, evErr := range q.pullPlaybookEvents(cursor) {
+				if !yield(ev, evErr) {
+					return
+				}
+			}
+		}
+		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceIncidentImpacts); shouldQuery {
+			for ev, evErr := range q.pullIncidentImpactEvents(cursor) {
 				if !yield(ev, evErr) {
 					return
 				}
@@ -54,7 +93,7 @@ func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors map[stri
 	}
 }
 
-var fakeIncidentEvents = []incidentObservedPayload{
+var demoIncidentEvents = []incidentObservedPayload{
 	{
 		ExternalID:    "checkout-search-timeouts",
 		Title:         "Checkout search lookups timing out",
@@ -70,7 +109,7 @@ var fakeIncidentEvents = []incidentObservedPayload{
 		Summary:       "The catalog search index failed to refresh after the nightly product import.",
 		SeverityRef:   "SEV-2",
 		TypeRef:       "Data Freshness",
-		OccurredAt:    time.Date(2026, 5, 13, 2, 30, 0, 0, time.UTC),
+		OccurredAt:    time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC),
 		ObservationID: "catalog-search-stale-results-observed",
 	},
 	{
@@ -95,11 +134,11 @@ type incidentObservedPayload struct {
 }
 
 func (p incidentObservedPayload) getEventRef() string {
-	return "fake:incidents:" + p.ObservationID
+	return "demo:incidents:" + p.ObservationID
 }
 
 func (p incidentObservedPayload) getSubjectRef() string {
-	return "fake:incidents:" + p.ExternalID
+	return "demo:incident:" + p.ExternalID
 }
 
 func (p incidentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
@@ -120,7 +159,7 @@ func (p incidentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
 
 func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		for _, payload := range fakeIncidentEvents {
+		for _, payload := range demoIncidentEvents {
 			if cursor != "" && payload.ObservationID <= cursor {
 				continue
 			}
@@ -133,8 +172,8 @@ func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.Provider
 				Event: rez.ProviderEvent{
 					Provider:           integrationName,
 					ProviderSource:     sourceIncidents,
-					ProviderEventRef:   fmt.Sprintf("fake:%s:%s", sourceIncidents, payload.ObservationID),
-					ProviderSubjectRef: fmt.Sprintf("fake:incident:%s", payload.ExternalID),
+					ProviderEventRef:   fmt.Sprintf("demo:%s:%s", sourceIncidents, payload.ObservationID),
+					ProviderSubjectRef: fmt.Sprintf("demo:incident:%s", payload.ExternalID),
 					ReceivedAt:         payload.OccurredAt,
 					Payload:            payloadBytes,
 					ContentType:        "application/json",
@@ -150,20 +189,21 @@ func (q *eventQuerier) pullIncidentEvents(cursor string) iter.Seq2[*rez.Provider
 }
 
 type alertObservedPayload struct {
-	ExternalID  string    `json:"external_id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description,omitempty"`
-	Definition  string    `json:"definition,omitempty"`
-	OccurredAt  time.Time `json:"occurred_at"`
-	InstanceRef string    `json:"instance_ref"`
+	ExternalID      string                         `json:"external_id"`
+	Title           string                         `json:"title"`
+	Description     string                         `json:"description,omitempty"`
+	Definition      string                         `json:"definition,omitempty"`
+	OccurredAt      time.Time                      `json:"occurred_at"`
+	InstanceRef     string                         `json:"instance_ref"`
+	RelatedEntities []projections.RelatedEntityRef `json:"related_entities,omitempty"`
 }
 
 func (p alertObservedPayload) getEventRef() string {
-	return "fake:alerts:" + p.InstanceRef
+	return "demo:alerts:" + p.InstanceRef
 }
 
 func (p alertObservedPayload) getSubjectRef() string {
-	return "fake:alert:" + p.ExternalID
+	return "demo:alert:" + p.ExternalID
 }
 
 func (p alertObservedPayload) toEvent() (*rez.ProviderEvent, error) {
@@ -182,22 +222,24 @@ func (p alertObservedPayload) toEvent() (*rez.ProviderEvent, error) {
 	return prov, nil
 }
 
-var fakeAlertEvents = []alertObservedPayload{
+var demoAlertEvents = []alertObservedPayload{
 	{
-		ExternalID:  "search-api-latency",
-		Title:       "Search API response time high",
-		Description: "p95 latency for the search API is above 2 seconds.",
-		Definition:  "avg(last_5m):p95:search.api.response_time > 2000",
-		OccurredAt:  time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
-		InstanceRef: "search-api-latency-20260512T091500Z",
+		ExternalID:      "search-api-latency",
+		Title:           "Search API response time high",
+		Description:     "p95 latency for the search API is above 2 seconds.",
+		Definition:      "avg(last_5m):p95:search.api.response_time > 2000",
+		OccurredAt:      time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
+		InstanceRef:     "search-api-latency-20260512T091500Z",
+		RelatedEntities: []projections.RelatedEntityRef{relatedComponent("search_api", "service", "Search API"), relatedComponent("checkout_service", "service", "Checkout Listener")},
 	},
 	{
-		ExternalID:  "elasticsearch-cpu-critical",
-		Title:       "Elasticsearch cluster CPU critical",
-		Description: "Primary search cluster CPU is above 95 percent.",
-		Definition:  "avg(last_5m):avg:elasticsearch.cpu.utilization > 95",
-		OccurredAt:  time.Date(2026, 5, 12, 9, 28, 0, 0, time.UTC),
-		InstanceRef: "elasticsearch-cpu-critical-20260512T092800Z",
+		ExternalID:      "elasticsearch-cpu-critical",
+		Title:           "Elasticsearch cluster CPU critical",
+		Description:     "Primary search cluster CPU is above 95 percent.",
+		Definition:      "avg(last_5m):avg:elasticsearch.cpu.utilization > 95",
+		OccurredAt:      time.Date(2026, 5, 12, 9, 28, 0, 0, time.UTC),
+		InstanceRef:     "elasticsearch-cpu-critical-20260512T092800Z",
+		RelatedEntities: []projections.RelatedEntityRef{relatedComponent("elasticsearch_catalog", "search_cluster", "Elasticsearch Catalog"), relatedComponent("search_api", "service", "Search API")},
 	},
 	{
 		ExternalID:  "search-index-build-failed",
@@ -227,7 +269,7 @@ var fakeAlertEvents = []alertObservedPayload{
 
 func (q *eventQuerier) pullAlertEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		for _, payload := range fakeAlertEvents {
+		for _, payload := range demoAlertEvents {
 			if cursor != "" && payload.InstanceRef <= cursor {
 				continue
 			}

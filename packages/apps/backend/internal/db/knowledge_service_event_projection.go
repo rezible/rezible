@@ -13,12 +13,17 @@ const (
 	assertionCodeRepositoryExists        = "code_repository_exists"
 	assertionCodeChangeObserved          = "code_change_observed"
 	assertionCodeChangeTouchedRepository = "code_change_touched_repository"
+	assertionCodeChangeRelatedEntity     = "code_change_related_entity"
+	assertionChatMessageObserved         = "chat_message_observed"
+	assertionChatMessageRelatedEntity    = "chat_message_related_entity"
 	assertionSystemComponentExists       = "system_component_exists"
 	assertionSystemRelationshipExists    = "system_relationship_exists"
 
 	knowledgeKindCodeRepository = "code_repository"
 	knowledgeKindCodeChange     = "code_change"
+	knowledgeKindChatMessage    = "chat_message"
 	relationshipKindTouched     = "touched_repository"
+	relationshipKindRelatedTo   = "related_to"
 )
 
 func (s *KnowledgeService) HandleEventProjection(ctx context.Context, ev *ent.NormalizedEvent) error {
@@ -51,6 +56,13 @@ func newKnowledgeEntityEventProjector(ev *ent.NormalizedEvent, knowledge rez.Kno
 func (kp *knowledgeEntityEventProjector) projectEvent(ev *ent.NormalizedEvent) (*KnowledgeProjection, error) {
 	var decErr error
 	switch projections.SubjectKind(ev.SubjectKind) {
+	case projections.SubjectKindChatMessage:
+		{
+			var obs *projections.ChatMessage
+			if obs, decErr = projections.DecodeChatMessageEvent(ev); decErr == nil {
+				return kp.projectChatMessageEvent(obs), decErr
+			}
+		}
 	case projections.SubjectKindCodeForge:
 		{
 			var obs *projections.CodeForgeEvent
@@ -164,7 +176,67 @@ func (kp *knowledgeEntityEventProjector) projectCodeChangeEvent(pe *projections.
 		}
 		relationships = append(relationships, repoChangeRelationship)
 	}
+	for _, related := range attrs.RelatedEntities {
+		relatedAlias := kp.makeExternalEntityAliasRef(pe.Event, related.ExternalRef)
+		entities = append(entities, rez.ProjectedKnowledgeEntity{
+			Kind:              related.Kind,
+			EvidenceAssertion: assertionSystemComponentExists,
+			DisplayName:       related.DisplayName,
+			Properties:        map[string]any{"external_ref": related.ExternalRef},
+			AliasRefs:         []ent.KnowledgeEntityAliasRef{relatedAlias},
+			IsPlaceholder:     true,
+		})
+		relationships = append(relationships, rez.ProjectedKnowledgeRelationship{
+			Kind:              relationshipKindRelatedTo,
+			EvidenceAssertion: assertionCodeChangeRelatedEntity,
+			DisplayName:       "code change related to " + related.DisplayName,
+			Properties:        map[string]any{"related_external_ref": related.ExternalRef},
+			FromAliasRef:      changeEventAliasRef,
+			ToAliasRef:        relatedAlias,
+		})
+	}
 
+	return &KnowledgeProjection{
+		Entities:      entities,
+		Relationships: relationships,
+	}
+}
+
+func (kp *knowledgeEntityEventProjector) projectChatMessageEvent(pe *projections.ChatMessage) *KnowledgeProjection {
+	attrs := pe.Attributes
+	messageAlias := pe.Event.MakeEntityAliasRef()
+	messageEntity := rez.ProjectedKnowledgeEntity{
+		Kind:              knowledgeKindChatMessage,
+		EvidenceAssertion: assertionChatMessageObserved,
+		DisplayName:       attrs.Body,
+		Properties:        pe.Event.Attributes,
+		AliasRefs:         []ent.KnowledgeEntityAliasRef{messageAlias},
+	}
+	entities := []rez.ProjectedKnowledgeEntity{messageEntity}
+	relationships := make([]rez.ProjectedKnowledgeRelationship, 0, len(attrs.RelatedEntities))
+	for _, related := range attrs.RelatedEntities {
+		relatedAlias := kp.makeExternalEntityAliasRef(pe.Event, related.ExternalRef)
+		entities = append(entities, rez.ProjectedKnowledgeEntity{
+			Kind:              related.Kind,
+			EvidenceAssertion: assertionSystemComponentExists,
+			DisplayName:       related.DisplayName,
+			Properties:        map[string]any{"external_ref": related.ExternalRef},
+			AliasRefs:         []ent.KnowledgeEntityAliasRef{relatedAlias},
+			IsPlaceholder:     true,
+		})
+		relationships = append(relationships, rez.ProjectedKnowledgeRelationship{
+			Kind:              relationshipKindRelatedTo,
+			EvidenceAssertion: assertionChatMessageRelatedEntity,
+			DisplayName:       "chat message related to " + related.DisplayName,
+			Properties: map[string]any{
+				"conversation_external_ref": attrs.ConversationExternalRef,
+				"sender_external_ref":       attrs.SenderExternalRef,
+				"related_external_ref":      related.ExternalRef,
+			},
+			FromAliasRef: messageAlias,
+			ToAliasRef:   relatedAlias,
+		})
+	}
 	return &KnowledgeProjection{
 		Entities:      entities,
 		Relationships: relationships,

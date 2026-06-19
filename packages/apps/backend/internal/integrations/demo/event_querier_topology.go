@@ -1,36 +1,35 @@
-package fakeprovider
+package demoprovider
 
 import (
 	"encoding/json"
 	"fmt"
 	"iter"
-	"time"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/projections"
 )
 
-type fakeTopologyEvent struct {
+type demoTopologyEvent struct {
 	Cursor              string
 	ComponentPayload    *topologyComponentObservedPayload
 	RelationshipPayload *topologyRelationshipObservedPayload
 }
 
-func makeFakeTopologyEvents() []fakeTopologyEvent {
-	fakeComponents := makeFakeTopologyComponents()
-	fakeRels := makeFakeTopologyRelationships(fakeComponents)
+func makeDemoTopologyEvents() []demoTopologyEvent {
+	demoComponents := makeDemoTopologyComponents()
+	demoRels := makeDemoTopologyRelationships(demoComponents)
 
-	events := make([]fakeTopologyEvent, 0, len(fakeComponents)+len(fakeRels))
-	for i, payload := range fakeComponents {
-		events = append(events, fakeTopologyEvent{
+	events := make([]demoTopologyEvent, 0, len(demoComponents)+len(demoRels))
+	for i, payload := range demoComponents {
+		events = append(events, demoTopologyEvent{
 			Cursor:           fmt.Sprintf("component:%03d:%s", i+1, payload.ExternalRef),
 			ComponentPayload: &payload,
 		})
 	}
-	for i, payload := range fakeRels {
+	for i, payload := range demoRels {
 		payload.Properties["source_external_ref"] = payload.SourceExternalRef
 		payload.Properties["target_external_ref"] = payload.TargetExternalRef
-		events = append(events, fakeTopologyEvent{
+		events = append(events, demoTopologyEvent{
 			Cursor:              fmt.Sprintf("relationship:%03d:%s", i+1, payload.ExternalRef),
 			RelationshipPayload: &payload,
 		})
@@ -40,19 +39,19 @@ func makeFakeTopologyEvents() []fakeTopologyEvent {
 
 func (q *eventQuerier) pullTopologyEvents(cursor string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
-		for _, fakeEvent := range makeFakeTopologyEvents() {
-			if cursor != "" && fakeEvent.Cursor <= cursor {
+		for _, demoEvent := range makeDemoTopologyEvents() {
+			if cursor != "" && demoEvent.Cursor <= cursor {
 				continue
 			}
 			res := &rez.ProviderEventQueryResult{
-				SourceCursorAfter: new(fakeEvent.Cursor),
+				SourceCursorAfter: new(demoEvent.Cursor),
 			}
 			var prov *rez.ProviderEvent
 			provErr := fmt.Errorf("no embedded payload")
-			if fakeEvent.ComponentPayload != nil {
-				prov, provErr = fakeEvent.ComponentPayload.toEvent()
-			} else if fakeEvent.RelationshipPayload != nil {
-				prov, provErr = fakeEvent.RelationshipPayload.toEvent()
+			if demoEvent.ComponentPayload != nil {
+				prov, provErr = demoEvent.ComponentPayload.toEvent()
+			} else if demoEvent.RelationshipPayload != nil {
+				prov, provErr = demoEvent.RelationshipPayload.toEvent()
 			}
 			if prov != nil {
 				res.Event = *prov
@@ -72,14 +71,14 @@ type topologyComponentObservedPayload struct {
 	Properties  map[string]any `json:"properties,omitempty"`
 }
 
-const componentRefPrefix = "fake:topology:component:"
+const componentRefPrefix = "demo:component:"
 
 func (p topologyComponentObservedPayload) getEventRef() string {
-	return componentRefPrefix + p.ExternalRef
+	return "demo:topology:" + p.ExternalRef
 }
 
 func (p topologyComponentObservedPayload) getSubjectRef() string {
-	return componentRefPrefix + p.ExternalRef
+	return p.ExternalRef
 }
 
 func (p topologyComponentObservedPayload) toEvent() (*rez.ProviderEvent, error) {
@@ -92,7 +91,7 @@ func (p topologyComponentObservedPayload) toEvent() (*rez.ProviderEvent, error) 
 		ProviderSource:     sourceTopology,
 		ProviderEventRef:   p.getEventRef(),
 		ProviderSubjectRef: p.getSubjectRef(),
-		ReceivedAt:         time.Now(),
+		ReceivedAt:         demoObservedAt,
 		Payload:            enc,
 	}
 	return prov, nil
@@ -116,7 +115,7 @@ func componentRef(id string) string {
 	return componentRefPrefix + id
 }
 
-func makeFakeTopologyComponents() []topologyComponentObservedPayload {
+func makeDemoTopologyComponents() []topologyComponentObservedPayload {
 	component := func(id string, kind string, displayName string, description string, properties map[string]any) topologyComponentObservedPayload {
 		props := map[string]any{
 			"external_ref": componentRef(id),
@@ -186,14 +185,14 @@ type topologyRelationshipObservedPayload struct {
 	Properties        map[string]any `json:"properties,omitempty"`
 }
 
-const relationshipRefPrefix = "fake:topology:relationship:"
+const relationshipRefPrefix = "demo:relationship:"
 
 func (p topologyRelationshipObservedPayload) getEventRef() string {
-	return relationshipRefPrefix + p.ExternalRef
+	return "demo:topology:" + p.ExternalRef
 }
 
 func (p topologyRelationshipObservedPayload) getSubjectRef() string {
-	return relationshipRefPrefix + p.ExternalRef
+	return p.ExternalRef
 }
 
 func (p topologyRelationshipObservedPayload) toEvent() (*rez.ProviderEvent, error) {
@@ -206,7 +205,7 @@ func (p topologyRelationshipObservedPayload) toEvent() (*rez.ProviderEvent, erro
 		ProviderSource:     sourceTopology,
 		ProviderEventRef:   p.getEventRef(),
 		ProviderSubjectRef: p.getSubjectRef(),
-		ReceivedAt:         time.Now(),
+		ReceivedAt:         demoObservedAt,
 		Payload:            enc,
 	}
 	return prov, nil
@@ -232,7 +231,7 @@ func getTopologyRelationshipAttributes(payload []byte) (projections.EventAttribu
 	})
 }
 
-func makeFakeTopologyRelationships(cmps []topologyComponentObservedPayload) []topologyRelationshipObservedPayload {
+func makeDemoTopologyRelationships(cmps []topologyComponentObservedPayload) []topologyRelationshipObservedPayload {
 	mustTopologyComponent := func(id string) topologyComponentObservedPayload {
 		ref := componentRef(id)
 		for _, c := range cmps {
@@ -240,13 +239,13 @@ func makeFakeTopologyRelationships(cmps []topologyComponentObservedPayload) []to
 				return c
 			}
 		}
-		panic(fmt.Sprintf("unknown fake topology component: %s", id))
+		panic(fmt.Sprintf("unknown demo topology component: %s", id))
 	}
 
 	rel := func(sourceID string, kind string, targetID string, displayName string) topologyRelationshipObservedPayload {
 		source := mustTopologyComponent(sourceID)
 		target := mustTopologyComponent(targetID)
-		externalRef := fmt.Sprintf("fake:relationship:%s:%s:%s", sourceID, kind, targetID)
+		externalRef := fmt.Sprintf("demo:relationship:%s:%s:%s", sourceID, kind, targetID)
 		return topologyRelationshipObservedPayload{
 			ExternalRef:       externalRef,
 			Kind:              kind,

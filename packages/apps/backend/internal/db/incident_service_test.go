@@ -261,6 +261,54 @@ func (s *IncidentServiceSuite) TestSetIncidentImpactsSelectOrCreateAndReplacesLi
 	s.Equal(1, count)
 }
 
+func (s *IncidentServiceSuite) TestIncidentImpactProjectionLinksProjectedIncidentToEntity() {
+	ctx := s.SeedTenantContext()
+	var events []rez.EventOnIncidentUpdated
+	svc := s.newServiceCapturingEvents(&events)
+	openedAt := time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC)
+	incidentEvent := s.createIncidentProjectionEvent("demo:incident:checkout-search-timeouts", openedAt, projections.IncidentSubjectAttributes{
+		Title:       "Checkout search lookups timing out",
+		Summary:     "Checkout requests are timing out.",
+		SeverityRef: "SEV-1",
+		TypeRef:     "Customer Impact",
+		OpenedAt:    openedAt,
+	})
+	s.Require().NoError(svc.HandleEventProjection(ctx, incidentEvent))
+
+	encoded, err := projections.EncodeAttributes(projections.IncidentImpactSubjectAttributes{
+		IncidentExternalRef: "demo:incident:checkout-search-timeouts",
+		EntityExternalRef:   "demo:component:search_api",
+		EntityKind:          "service",
+		EntityDisplayName:   "Search API",
+		Source:              "demo",
+		Note:                "Search API blocks checkout enrichment.",
+	})
+	s.Require().NoError(err)
+	impactEvent, err := s.Client(ctx).NormalizedEvent.Create().
+		SetProvider("test").
+		SetProviderSource("incident_impacts").
+		SetProviderEventRef("impact-event-" + uuid.NewString()).
+		SetProviderSubjectRef("demo:incident_impact:checkout-search").
+		SetActivityKind(ne.ActivityKindObserved).
+		SetSubjectKind(projections.SubjectKindIncidentImpact.String()).
+		SetOccurredAt(openedAt.Add(time.Minute)).
+		SetReceivedAt(openedAt.Add(time.Minute)).
+		SetAttributes(encoded).
+		Save(ctx)
+	s.Require().NoError(err)
+
+	s.Require().NoError(svc.HandleEventProjection(ctx, impactEvent))
+	s.Require().NoError(svc.HandleEventProjection(ctx, impactEvent))
+
+	impacts, err := s.Client(ctx).IncidentImpact.Query().
+		WithKnowledgeEntity().
+		All(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(impacts, 1)
+	s.Equal("demo", impacts[0].Source)
+	s.Equal("Search API", impacts[0].Edges.KnowledgeEntity.DisplayName)
+}
+
 func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenceAndFunctionalityDependencies() {
 	ctx := s.SeedTenantContext()
 	svc := s.newService()
@@ -278,7 +326,7 @@ func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenc
 		Save(ctx)
 	s.Require().NoError(err)
 	alertEntity, err := s.Client(ctx).KnowledgeEntity.Create().
-		SetKind(knowledgeKindAlert).
+		SetKind(knowledgeEntityKindAlert).
 		SetDisplayName("Billing errors high").
 		Save(ctx)
 	s.Require().NoError(err)

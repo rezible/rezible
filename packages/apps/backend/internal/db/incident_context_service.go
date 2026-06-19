@@ -256,7 +256,7 @@ func (s *IncidentService) GetIncidentContextPack(ctx context.Context, incidentID
 			if _, isAlert := alertEntitySet[rel.TargetEntityID]; isAlert {
 				related = rel.Edges.SourceEntity
 			}
-			if related == nil || related.Kind == knowledgeKindAlert {
+			if related == nil || related.Kind == knowledgeEntityKindAlert {
 				continue
 			}
 			addCandidate(related, 50, "recent_alert_relationship", rez.IncidentContextEvidenceRef{
@@ -313,7 +313,7 @@ func (s *IncidentService) queryRecentAlertEvidence(ctx context.Context, since ti
 	refsByEntityID := make(map[uuid.UUID][]rez.IncidentContextEvidenceRef)
 	for _, ev := range evidence {
 		entity := ev.Edges.Entity
-		if entity == nil || entity.Kind != knowledgeKindAlert {
+		if entity == nil || entity.Kind != knowledgeEntityKindAlert {
 			continue
 		}
 		if _, ok := seen[entity.ID]; !ok {

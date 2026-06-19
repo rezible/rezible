@@ -282,6 +282,74 @@ func TestProjectCodeChangeEventObservedMapsChangeRepositoryRelationshipEvidence(
 	assert.Equal(t, result.Entities[1].AliasRefs[0], rel.ToAliasRef)
 }
 
+func TestProjectCodeChangeEventMapsRelatedEntities(t *testing.T) {
+	attrs := projections.CodeChangeSubjectAttributes{
+		RepositoryExternalRef: "myorg/api",
+		DisplayName:           "PR #1 tune retries",
+		RelatedEntities: []projections.RelatedEntityRef{
+			{
+				ExternalRef: "demo:component:search_api",
+				Kind:        "service",
+				DisplayName: "Search API",
+			},
+		},
+	}
+	ev := &ent.NormalizedEvent{
+		ID:                 uuid.New(),
+		Provider:           "demo",
+		ProviderSource:     "code_changes",
+		ProviderSubjectRef: "demo:code_change:pr-1",
+		SubjectKind:        projections.SubjectKindCodeChange.String(),
+	}
+	var encodeAttrsErr error
+	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
+	require.NoError(t, encodeAttrsErr)
+
+	proj := newKnowledgeEntityEventProjector(ev, nil)
+	result := proj.projectCodeChangeEvent(&projections.CodeChangeEvent{Event: ev, Attributes: attrs})
+
+	require.Len(t, result.Entities, 3)
+	require.Len(t, result.Relationships, 2)
+	related := result.Relationships[1]
+	assert.Equal(t, relationshipKindRelatedTo, related.Kind)
+	assert.Equal(t, assertionCodeChangeRelatedEntity, related.EvidenceAssertion)
+	assert.Equal(t, "demo:component:search_api", related.ToAliasRef.ProviderSubjectRef)
+}
+
+func TestProjectChatMessageEventMapsRelatedEntityEvidence(t *testing.T) {
+	attrs := projections.ChatMessageAttributes{
+		ConversationExternalRef: "#inc-checkout",
+		Body:                    "Search API latency moved after the retry policy change.",
+		SenderExternalRef:       "demo:user:ava",
+		RelatedEntities: []projections.RelatedEntityRef{
+			{
+				ExternalRef: "demo:component:search_api",
+				Kind:        "service",
+				DisplayName: "Search API",
+			},
+		},
+	}
+	ev := &ent.NormalizedEvent{
+		ID:                 uuid.New(),
+		Provider:           "demo",
+		ProviderSource:     "chat_messages",
+		ProviderSubjectRef: "demo:chat_message:1",
+		SubjectKind:        projections.SubjectKindChatMessage.String(),
+	}
+	var encodeAttrsErr error
+	ev.Attributes, encodeAttrsErr = projections.EncodeAttributes(attrs)
+	require.NoError(t, encodeAttrsErr)
+
+	proj := newKnowledgeEntityEventProjector(ev, nil)
+	result := proj.projectChatMessageEvent(&projections.ChatMessage{Event: ev, Attributes: attrs})
+
+	require.Len(t, result.Entities, 2)
+	require.Len(t, result.Relationships, 1)
+	assert.Equal(t, knowledgeKindChatMessage, result.Entities[0].Kind)
+	assert.Equal(t, assertionChatMessageRelatedEntity, result.Relationships[0].EvidenceAssertion)
+	assert.Equal(t, "demo:component:search_api", result.Relationships[0].ToAliasRef.ProviderSubjectRef)
+}
+
 func TestProjectorObservedAtPrefersOccurredAt(t *testing.T) {
 	occurredAt := time.Date(2026, 5, 11, 10, 0, 0, 0, time.UTC)
 	receivedAt := occurredAt.Add(time.Hour)
@@ -292,7 +360,7 @@ func TestProjectorObservedAtPrefersOccurredAt(t *testing.T) {
 
 func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 	attrs := projections.SystemComponentSubjectAttributes{
-		ExternalRef: "fake:component:search_api",
+		ExternalRef: "demo:component:search_api",
 		Kind:        "service",
 		DisplayName: "Search API",
 		Description: "Product search query API.",
@@ -302,9 +370,9 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 	}
 	ev := &ent.NormalizedEvent{
 		ID:                 uuid.New(),
-		Provider:           "fake",
+		Provider:           "demo",
 		ProviderSource:     "system_topology",
-		ProviderSubjectRef: "fake:component:search_api",
+		ProviderSubjectRef: "demo:component:search_api",
 		SubjectKind:        projections.SubjectKindSystemComponent.String(),
 	}
 	var encodeAttrsErr error
@@ -328,13 +396,13 @@ func TestProjectSystemComponentObservedMapsToEntityEvidence(t *testing.T) {
 
 func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t *testing.T) {
 	attrs := projections.SystemRelationshipSubjectAttributes{
-		ExternalRef:       "fake:relationship:checkout_service:calls:search_api",
+		ExternalRef:       "demo:relationship:checkout_service:calls:search_api",
 		Kind:              "calls",
 		DisplayName:       "Checkout Service calls Search API",
-		SourceExternalRef: "fake:component:checkout_service",
+		SourceExternalRef: "demo:component:checkout_service",
 		SourceKind:        "service",
 		SourceDisplayName: "Checkout Service",
-		TargetExternalRef: "fake:component:search_api",
+		TargetExternalRef: "demo:component:search_api",
 		TargetKind:        "service",
 		TargetDisplayName: "Search API",
 		Properties: map[string]any{
@@ -343,9 +411,9 @@ func TestProjectSystemRelationshipObservedMapsEndpointsAndRelationshipEvidence(t
 	}
 	ev := &ent.NormalizedEvent{
 		ID:                 uuid.New(),
-		Provider:           "fake",
+		Provider:           "demo",
 		ProviderSource:     "system_topology",
-		ProviderSubjectRef: "fake:relationship:checkout_service:calls:search_api",
+		ProviderSubjectRef: "demo:relationship:checkout_service:calls:search_api",
 		SubjectKind:        projections.SubjectKindSystemRelationship.String(),
 	}
 	var encodeAttrsErr error

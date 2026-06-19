@@ -98,13 +98,46 @@ func (s *AlertServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvidence(
 	s.Equal(2, evidenceCount)
 }
 
+func (s *AlertServiceSuite) TestAlertProjectionLinksRelatedEntities() {
+	ctx := s.SeedTenantContext()
+	svc, err := NewAlertService(s.Database(), NewKnowledgeService(s.Database()))
+	s.Require().NoError(err)
+
+	attrs := projections.AlertSubjectAttributes{
+		Title:       "Search latency high",
+		Description: "p95 latency above threshold",
+		Definition:  "latency > 2000",
+		RelatedEntities: []projections.RelatedEntityRef{
+			{
+				ExternalRef: "demo:component:search_api",
+				Kind:        "service",
+				DisplayName: "Search API",
+			},
+		},
+	}
+	ev := s.createAlertProjectionEvent("demo:alert:search-api-latency", attrs)
+
+	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+
+	relationships, err := s.Client(ctx).KnowledgeRelationship.Query().
+		Where().
+		WithSourceEntity().
+		WithTargetEntity().
+		All(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(relationships, 1)
+	s.Equal(relationshipKindRelatedTo, relationships[0].Kind)
+	s.Equal(knowledgeEntityKindAlert, relationships[0].Edges.SourceEntity.Kind)
+	s.Equal("Search API", relationships[0].Edges.TargetEntity.DisplayName)
+}
+
 func (s *AlertServiceSuite) TestGetActiveAlertsForComponentsReturnsGraphCorrelatedAlerts() {
 	ctx := s.SeedTenantContext()
 	svc := &AlertService{db: s.Database()}
 	component := s.createKnowledgeEntity("service", "Search API")
-	alertEntity := s.createKnowledgeEntity(knowledgeKindAlert, "Search latency alert")
+	alertEntity := s.createKnowledgeEntity(knowledgeEntityKindAlert, "Search latency alert")
 	alert := s.createAlertForEntity(alertEntity, "Search latency high")
-	unrelatedEntity := s.createKnowledgeEntity(knowledgeKindAlert, "Unrelated alert")
+	unrelatedEntity := s.createKnowledgeEntity(knowledgeEntityKindAlert, "Unrelated alert")
 	s.createAlertForEntity(unrelatedEntity, "Unrelated")
 
 	_, err := s.Client(ctx).KnowledgeRelationship.Create().
@@ -135,7 +168,7 @@ func (s *AlertServiceSuite) TestGetActiveAlertsForComponentsExcludesUnrelatedAnd
 		Save(otherTenant)
 	s.Require().NoError(err)
 	otherAlertEntity, err := s.Client(otherTenant).KnowledgeEntity.Create().
-		SetKind(knowledgeKindAlert).
+		SetKind(knowledgeEntityKindAlert).
 		SetDisplayName("Other tenant alert").
 		Save(otherTenant)
 	s.Require().NoError(err)

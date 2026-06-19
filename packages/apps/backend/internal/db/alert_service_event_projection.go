@@ -12,7 +12,8 @@ import (
 
 const (
 	assertionAlertDefinitionObserved = "alert_definition_observed"
-	knowledgeKindAlert               = "alert"
+	assertionAlertRelatedEntity      = "alert_related_entity"
+	knowledgeEntityKindAlert         = "alert"
 )
 
 func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
@@ -30,7 +31,7 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 	attrs := ae.Attributes
 	projKnowledgeEntity := rez.ProjectedKnowledgeEntity{
 		EvidenceAssertion: assertionAlertDefinitionObserved,
-		Kind:              knowledgeKindAlert,
+		Kind:              knowledgeEntityKindAlert,
 		DisplayName:       attrs.Title,
 		AliasRefs: []ent.KnowledgeEntityAliasRef{
 			{Provider: ae.Event.Provider, ProviderSubjectRef: ae.Event.ProviderSubjectRef},
@@ -52,6 +53,39 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 		UpdateNewValues()
 	if _, saveErr := upsert.ID(ctx); saveErr != nil {
 		return fmt.Errorf("upsert alert: %w", saveErr)
+	}
+
+	alertAlias := ae.Event.MakeEntityAliasRef()
+
+	for _, related := range attrs.RelatedEntities {
+		relatedAlias := ent.KnowledgeEntityAliasRef{
+			Provider:           ae.Event.Provider,
+			ProviderSubjectRef: related.ExternalRef,
+		}
+		projRelatedEnt := rez.ProjectedKnowledgeEntity{
+			EvidenceAssertion: assertionSystemComponentExists,
+			Kind:              related.Kind,
+			DisplayName:       related.DisplayName,
+			Properties:        map[string]any{"external_ref": related.ExternalRef},
+			AliasRefs:         []ent.KnowledgeEntityAliasRef{relatedAlias},
+			IsPlaceholder:     true,
+		}
+		if _, entErr := s.knowledge.ResolveProjectedEntity(ctx, ae.Event, projRelatedEnt); entErr != nil {
+			return fmt.Errorf("resolve related entity: %w", entErr)
+		}
+		projRelatedRel := rez.ProjectedKnowledgeRelationship{
+			Kind:              relationshipKindRelatedTo,
+			EvidenceAssertion: assertionAlertRelatedEntity,
+			DisplayName:       "alert related to " + related.DisplayName,
+			Properties: map[string]any{
+				"related_external_ref": related.ExternalRef,
+			},
+			FromAliasRef: alertAlias,
+			ToAliasRef:   relatedAlias,
+		}
+		if _, relErr := s.knowledge.ResolveProjectedRelationship(ctx, ae.Event, projRelatedRel); relErr != nil {
+			return fmt.Errorf("resolve related relationship: %w", relErr)
+		}
 	}
 
 	return nil

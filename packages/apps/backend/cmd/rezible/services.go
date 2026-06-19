@@ -17,7 +17,7 @@ import (
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
-	fakeprovider "github.com/rezible/rezible/internal/integrations/fake"
+	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
@@ -123,14 +123,19 @@ func registerIntegrations(i do.Injector) error {
 	}
 
 	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.KnowledgeService](i),
+		projections.SubjectKindChatMessage,
 		projections.SubjectKindCodeForge,
 		projections.SubjectKindCodeChange,
 		projections.SubjectKindSystemComponent,
 		projections.SubjectKindSystemRelationship,
 	)
 	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.UserService](i), projections.SubjectKindUser)
-	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.IncidentService](i), projections.SubjectKindIncident)
+	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.IncidentService](i),
+		projections.SubjectKindIncident,
+		projections.SubjectKindIncidentImpact,
+	)
 	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.AlertService](i), projections.SubjectKindAlert)
+	pipelineReg.RegisterEventProjector(do.MustInvoke[*db.PlaybookService](i), projections.SubjectKindPlaybook)
 
 	return nil
 }
@@ -211,8 +216,8 @@ func declareServices(ctx context.Context, i do.Injector) {
 }
 
 var provideIntegrations = do.Package(
-	do.Lazy(func(i do.Injector) (*fakeprovider.Integration, error) {
-		return fakeprovider.MakeIntegration(do.MustInvoke[rez.Config](i)), nil
+	do.Lazy(func(i do.Injector) (*demoprovider.Integration, error) {
+		return demoprovider.MakeIntegration(do.MustInvoke[rez.Config](i)), nil
 	}),
 	do.Lazy(func(i do.Injector) (*github.Integration, error) {
 		return github.MakeIntegration(

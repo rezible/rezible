@@ -20,16 +20,23 @@ func (k SubjectKind) Matches(ev *ent.NormalizedEvent) bool {
 
 const SubjectKindChatMessage SubjectKind = "chat_message"
 
+type RelatedEntityRef struct {
+	ExternalRef string `attr:"external_ref" validate:"required"`
+	Kind        string `attr:"kind" validate:"required"`
+	DisplayName string `attr:"display_name" validate:"required"`
+}
+
 type (
 	// ChatMessage is a normalized chat message observed from a messaging provider.
 	ChatMessage = Event[ChatMessageAttributes]
 
 	// ChatMessageAttributes are the provider-neutral attributes persisted for chat message events.
 	ChatMessageAttributes struct {
-		ConversationExternalRef string `attr:"conversation_external_ref" validate:"required"`
-		Body                    string `attr:"body" validate:"required"`
-		SenderExternalRef       string `attr:"sender_external_ref"`
-		ThreadExternalRef       string `attr:"thread_external_ref"`
+		ConversationExternalRef string             `attr:"conversation_external_ref" validate:"required"`
+		Body                    string             `attr:"body" validate:"required"`
+		SenderExternalRef       string             `attr:"sender_external_ref"`
+		ThreadExternalRef       string             `attr:"thread_external_ref"`
+		RelatedEntities         []RelatedEntityRef `attr:"related_entities"`
 	}
 )
 
@@ -59,8 +66,9 @@ type (
 
 	// CodeChangeSubjectAttributes are the provider-neutral attributes persisted for code change events.
 	CodeChangeSubjectAttributes struct {
-		RepositoryExternalRef string `attr:"repository_external_ref" validate:"required"`
-		DisplayName           string `attr:"display_name" validate:"required"`
+		RepositoryExternalRef string             `attr:"repository_external_ref" validate:"required"`
+		DisplayName           string             `attr:"display_name" validate:"required"`
+		RelatedEntities       []RelatedEntityRef `attr:"related_entities"`
 	}
 )
 
@@ -115,9 +123,10 @@ type (
 
 	// AlertSubjectAttributes are the provider-neutral attributes persisted for alert observations.
 	AlertSubjectAttributes struct {
-		Title       string `attr:"title" validate:"required"`
-		Description string `attr:"description"`
-		Definition  string `attr:"definition"`
+		Title           string             `attr:"title" validate:"required"`
+		Description     string             `attr:"description"`
+		Definition      string             `attr:"definition"`
+		RelatedEntities []RelatedEntityRef `attr:"related_entities"`
 	}
 )
 
@@ -125,6 +134,41 @@ const SubjectKindAlert SubjectKind = "Alert"
 
 func DecodeAlertEvent(ev *ent.NormalizedEvent) (*AlertEvent, error) {
 	return DecodeSubjectAttributes[AlertSubjectAttributes](ev)
+}
+
+type (
+	PlaybookEvent = Event[PlaybookSubjectAttributes]
+
+	PlaybookSubjectAttributes struct {
+		Title         string   `attr:"title" validate:"required"`
+		Content       string   `attr:"content" validate:"required"`
+		RelatedAlerts []string `attr:"related_alerts"`
+	}
+)
+
+const SubjectKindPlaybook SubjectKind = "Playbook"
+
+func DecodePlaybookEvent(ev *ent.NormalizedEvent) (*PlaybookEvent, error) {
+	return DecodeSubjectAttributes[PlaybookSubjectAttributes](ev)
+}
+
+type (
+	IncidentImpactEvent = Event[IncidentImpactSubjectAttributes]
+
+	IncidentImpactSubjectAttributes struct {
+		IncidentExternalRef string `attr:"incident_external_ref" validate:"required"`
+		EntityExternalRef   string `attr:"entity_external_ref" validate:"required"`
+		EntityKind          string `attr:"entity_kind" validate:"required"`
+		EntityDisplayName   string `attr:"entity_display_name" validate:"required"`
+		Source              string `attr:"source"`
+		Note                string `attr:"note"`
+	}
+)
+
+const SubjectKindIncidentImpact SubjectKind = "IncidentImpact"
+
+func DecodeIncidentImpactEvent(ev *ent.NormalizedEvent) (*IncidentImpactEvent, error) {
+	return DecodeSubjectAttributes[IncidentImpactSubjectAttributes](ev)
 }
 
 type (

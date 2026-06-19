@@ -14,11 +14,11 @@ import { useIntegrationsController } from "$features/settings/lib/integrationsCo
 import SlackAgent from "./config-components/SlackAgent.svelte";
 import GoogleConfig from "./config-components/GoogleConfig.svelte";
 import GithubConfig from "./config-components/GithubConfig.svelte";
-import FakeConfig from "./config-components/FakeConfig.svelte";
+import DemoConfig from "./config-components/DemoConfig.svelte";
 import SlackIncidents from "./config-components/SlackIncidents.svelte";
 
 const configs: Record<string, Component> = {
-	"fake": FakeConfig,
+	"demo": DemoConfig,
 	"slack_agent": SlackAgent,
 	"slack_incidents": SlackIncidents,
 	"google": GoogleConfig,

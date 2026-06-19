@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/playbook"
+	"github.com/rezible/rezible/projections"
 )
 
 type PlaybookService struct {
@@ -60,4 +62,68 @@ func (s *PlaybookService) SetPlaybook(ctx context.Context, playbook *ent.Playboo
 			SetContent(playbook.Content)
 	}
 	return q.Save(ctx)
+}
+
+func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
+	if !projections.SubjectKindPlaybook.Matches(event) {
+		return nil
+	}
+	decoded, validationErr := projections.DecodePlaybookEvent(event)
+	if validationErr != nil || decoded == nil {
+		return fmt.Errorf("invalid event: %w", validationErr)
+	}
+	attrs := decoded.Attributes
+
+	dbc := s.db.Client(ctx)
+
+	queryExisting := dbc.Playbook.Query().
+		Where(playbook.Title(attrs.Title))
+	existing, queryErr := queryExisting.Only(ctx)
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return fmt.Errorf("query playbook: %w", queryErr)
+	}
+
+	alertIDs := make([]uuid.UUID, 0, len(attrs.RelatedAlerts))
+	/*
+		for _, alertRef := range attrs.RelatedAlerts {
+			queryAlias := dbc.KnowledgeEntityAlias.Query().
+				Where(knea.Provider(event.Provider), knea.ProviderSubjectRef(alertRef))
+
+			alias, aliasErr := queryAlias.Only(ctx)
+			if aliasErr != nil && !ent.IsNotFound(aliasErr) {
+				return fmt.Errorf("query alert alias: %w", aliasErr)
+			}
+			if alias == nil {
+				continue
+			}
+			queryAlert := dbc.Alert.Query().
+				Where(alert.KnowledgeEntityID(alias.EntityID))
+			a, alertErr := queryAlert.Only(ctx)
+			if alertErr != nil && !ent.IsNotFound(alertErr) {
+				return fmt.Errorf("query related alert: %w", alertErr)
+			}
+			if a != nil {
+				alertIDs = append(alertIDs, a.ID)
+			}
+		}
+	*/
+
+	var mutator ent.EntityMutator[*ent.Playbook, *ent.PlaybookMutation]
+	if existing == nil {
+		mutator = dbc.Playbook.Create()
+	} else {
+		mutator = existing.Update()
+	}
+
+	m := mutator.Mutation()
+	m.SetTitle(attrs.Title)
+	m.SetContent([]byte(attrs.Content))
+	if len(alertIDs) > 0 {
+		m.AddAlertIDs(alertIDs...)
+	}
+
+	if _, saveErr := mutator.Save(ctx); saveErr != nil {
+		return fmt.Errorf("save playbook: %w", saveErr)
+	}
+	return nil
 }

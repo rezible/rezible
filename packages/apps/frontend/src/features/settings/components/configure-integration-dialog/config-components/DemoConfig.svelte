@@ -6,7 +6,7 @@
 
     onMount(() => {
         const cfg = {
-            displayName: "Fake Data Provider",
+            displayName: "Demo Data Provider",
             config: {},
             preferences: {},
         };
