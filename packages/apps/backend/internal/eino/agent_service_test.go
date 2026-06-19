@@ -1,4 +1,4 @@
-package adk
+package eino
 
 import (
 	"context"
@@ -36,7 +36,7 @@ func (s *AgentServiceSuite) newService(jobSvc rez.JobService, msgSvc rez.Message
 		db:           s.Database(),
 		jobs:         jobSvc,
 		msgs:         msgSvc,
-		modelFactory: newLanguageModelFactory(cfg.AI),
+		modelFactory: newChatModelFactory(cfg.AI),
 		workflows: map[agentrun.WorkflowKind]agentWorkflow{
 			agentrun.WorkflowKindIncidentContextPack:   stubWorkflow{kind: agentrun.WorkflowKindIncidentContextPack},
 			agentrun.WorkflowKindAlertInvestigation:    stubWorkflow{kind: agentrun.WorkflowKindAlertInvestigation},

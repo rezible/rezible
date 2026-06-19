@@ -1,4 +1,4 @@
-package adk
+package eino
 
 import (
 	"context"
@@ -15,7 +15,7 @@ import (
 
 type incidentContextPackWorkflow struct {
 	incidents    rez.IncidentService
-	modelFactory LanguageModelFactory
+	modelFactory ChatModelFactory
 }
 
 type incidentContextPackSynthesis struct {
@@ -53,22 +53,8 @@ func (w *incidentContextPackWorkflow) Validate(_ context.Context, run *ent.Agent
 	return nil
 }
 
-func (w *incidentContextPackWorkflow) Run(ctx context.Context, run *ent.AgentRun) (*AgentWorkflowResult, error) {
-	pack, packErr := w.incidents.GetIncidentContextPack(ctx, *run.SubjectID)
-	if packErr != nil {
-		return nil, fmt.Errorf("get incident context pack: %w", packErr)
-	}
-
-	packPayload, packPayloadErr := toArtifactPayload(pack)
-	if packPayloadErr != nil {
-		return nil, packPayloadErr
-	}
-
-	promptBytes, promptErr := json.MarshalIndent(pack, "", "  ")
-	if promptErr != nil {
-		return nil, fmt.Errorf("marshal context pack prompt: %w", promptErr)
-	}
-	instruction := strings.TrimSpace(`
+var (
+	incidentContextPackInstruction = strings.TrimSpace(`
 You are Rezible's live incident context-pack agent.
 Use only the supplied JSON context. Produce concise JSON with this schema:
 {
@@ -80,7 +66,32 @@ Use only the supplied JSON context. Produce concise JSON with this schema:
 }
 Do not invent systems, incidents, alerts, or evidence that are not present in the context.
 `)
-	out, runErr := runAgentOnce(ctx, w.modelFactory, "incident-context-pack", instruction, string(promptBytes), nil)
+)
+
+func (w *incidentContextPackWorkflow) Run(ctx context.Context, run *ent.AgentRun) (*AgentWorkflowResult, error) {
+	var artifacts []AgentRunArtifact
+
+	pack, packErr := w.incidents.GetIncidentContextPack(ctx, *run.SubjectID)
+	if packErr != nil {
+		return nil, fmt.Errorf("get incident context pack: %w", packErr)
+	}
+
+	packPayload, packPayloadErr := toArtifactPayload(pack)
+	if packPayloadErr != nil {
+		return nil, packPayloadErr
+	}
+	artifacts = append(artifacts, AgentRunArtifact{
+		Kind:    agentrunartifact.KindContext,
+		Name:    "retrieval_context",
+		Payload: packPayload,
+	})
+
+	promptBytes, promptErr := json.MarshalIndent(pack, "", "  ")
+	if promptErr != nil {
+		return nil, fmt.Errorf("marshal context pack prompt: %w", promptErr)
+	}
+
+	out, runErr := runModelOnce(ctx, w.modelFactory, "incident-context-pack", incidentContextPackInstruction, string(promptBytes))
 	if runErr != nil {
 		return nil, fmt.Errorf("run context pack agent: %w", runErr)
 	}
@@ -89,41 +100,18 @@ Do not invent systems, incidents, alerts, or evidence that are not present in th
 	if parseErr := json.Unmarshal([]byte(extractJSON(out.Text)), &synthesis); parseErr != nil {
 		return nil, fmt.Errorf("parse context pack synthesis: %w", parseErr)
 	}
+
 	synthesisPayload, synthesisPayloadErr := toArtifactPayload(synthesis)
 	if synthesisPayloadErr != nil {
 		return nil, synthesisPayloadErr
 	}
+	artifacts = append(artifacts, AgentRunArtifact{
+		Kind:    agentrunartifact.KindResult,
+		Name:    "context_pack_synthesis",
+		Payload: synthesisPayload,
+	})
 
-	return &AgentWorkflowResult{
-		Artifacts: []AgentRunArtifact{
-			{
-				Kind:    agentrunartifact.KindContext,
-				Name:    "retrieval_context",
-				Payload: packPayload,
-			},
-			{
-				Kind: agentrunartifact.KindTool,
-				Name: "retrieval_trace",
-				Payload: map[string]any{
-					"retrieval": "incident_service_context_pack",
-					"signals":   []string{"explicit_incident_impact", "recent_alert_relationship", "functionality_dependency"},
-				},
-			},
-			{
-				Kind: agentrunartifact.KindTool,
-				Name: "evidence",
-				Payload: map[string]any{
-					"recentEvidence": packPayload["recentEvidence"],
-					"activeAlerts":   packPayload["activeAlerts"],
-				},
-			},
-			{
-				Kind:    agentrunartifact.KindResult,
-				Name:    "context_pack_synthesis",
-				Payload: synthesisPayload,
-			},
-		},
-	}, nil
+	return &AgentWorkflowResult{Artifacts: artifacts}, nil
 }
 
 func toArtifactPayload(v any) (map[string]any, error) {

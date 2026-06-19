@@ -1,4 +1,4 @@
-package adk
+package eino
 
 import (
 	"context"
@@ -44,7 +44,7 @@ type AgentService struct {
 	jobs         rez.JobService
 	msgs         rez.MessageService
 	incidents    rez.IncidentService
-	modelFactory LanguageModelFactory
+	modelFactory ChatModelFactory
 	workflows    map[agentrun.WorkflowKind]agentWorkflow
 }
 
@@ -56,7 +56,7 @@ func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, 
 		jobs:         jobSvc,
 		msgs:         msgSvc,
 		incidents:    incidents,
-		modelFactory: newLanguageModelFactory(cfg.AI),
+		modelFactory: newChatModelFactory(cfg.AI),
 		workflows:    make(map[agentrun.WorkflowKind]agentWorkflow),
 	}
 
@@ -77,8 +77,8 @@ func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, 
 
 func (s *AgentService) registerMessageHandlers() error {
 	eventsErr := s.msgs.AddEventHandlers(
-		rez.NewEventHandler("adk.AgentService.OnIncidentUpdated", s.onIncidentUpdated),
-		rez.NewEventHandler("adk.AgentService.OnIncidentImpactsUpdated", s.onIncidentImpactsUpdated),
+		rez.NewEventHandler("eino.AgentService.OnIncidentUpdated", s.onIncidentUpdated),
+		rez.NewEventHandler("eino.AgentService.OnIncidentImpactsUpdated", s.onIncidentImpactsUpdated),
 	)
 	return errors.Join(eventsErr)
 }
@@ -139,17 +139,17 @@ func (s *AgentService) ListRuns(ctx context.Context, params rez.ListAgentRunsPar
 }
 
 func (s *AgentService) ListRunArtifacts(ctx context.Context, id uuid.UUID) ([]*ent.AgentRunArtifact, error) {
-	if _, getErr := s.GetRun(ctx, id); getErr != nil {
-		return nil, fmt.Errorf("get agent run: %w", getErr)
-	}
-	artifacts, queryErr := s.db.Client(ctx).AgentRunArtifact.Query().
+	queryArtifacts := s.db.Client(ctx).AgentRunArtifact.Query().
 		Where(agentrunartifact.AgentRunID(id)).
-		Order(agentrunartifact.ByCreatedAt(sql.OrderAsc())).
-		All(ctx)
-	if queryErr != nil {
-		return nil, fmt.Errorf("query agent run artifacts: %w", queryErr)
-	}
-	return artifacts, nil
+		Order(agentrunartifact.ByCreatedAt(sql.OrderAsc()))
+	return queryArtifacts.All(ctx)
+}
+
+var insertAgentRunRequestJobOpts = &river.InsertOpts{
+	UniqueOpts: river.UniqueOpts{
+		ByArgs:  true,
+		ByState: jobs.UniqueStateNonCompleted,
+	},
 }
 
 func (s *AgentService) RequestRun(ctx context.Context, params rez.AgentRunRequest) (*ent.AgentRun, error) {
@@ -201,9 +201,18 @@ func (s *AgentService) RequestRun(ctx context.Context, params rez.AgentRunReques
 			return runErr
 		}
 		run = res.Unwrap()
-		if reqErr := s.enqueueAgentRunRequest(ctx, run); reqErr != nil {
-			return fmt.Errorf("enqueue request: %w", reqErr)
+
+		_, jobErr := s.jobs.Insert(ctx, jobs.RunAgentWorkflow{AgentRunID: run.ID}, insertAgentRunRequestJobOpts)
+		if jobErr != nil {
+			return fmt.Errorf("enqueue agent workflow: %w", jobErr)
 		}
+
+		s.publishEvent(ctx, rez.EventOnAgentRunQueued{
+			AgentRunID:   run.ID,
+			WorkflowKind: run.WorkflowKind,
+			SubjectKind:  run.SubjectKind,
+		})
+
 		return nil
 	})
 }
@@ -219,28 +228,6 @@ func (s *AgentService) getRunRequestIdempotencyKey(params rez.AgentRunRequest) (
 		return params.SubjectKind, nil
 	}
 	return fmt.Sprintf("%s:%s:%s", params.WorkflowKind, params.SubjectKind, params.SubjectID), nil
-}
-
-var insertAgentRunRequestJobOpts = &river.InsertOpts{
-	UniqueOpts: river.UniqueOpts{
-		ByArgs:  true,
-		ByState: jobs.UniqueStateNonCompleted,
-	},
-}
-
-func (s *AgentService) enqueueAgentRunRequest(ctx context.Context, run *ent.AgentRun) error {
-	_, jobErr := s.jobs.Insert(ctx, jobs.RunAgentWorkflow{AgentRunID: run.ID}, insertAgentRunRequestJobOpts)
-	if jobErr != nil {
-		return fmt.Errorf("enqueue agent workflow: %w", jobErr)
-	}
-
-	s.publishEvent(ctx, rez.EventOnAgentRunQueued{
-		AgentRunID:   run.ID,
-		WorkflowKind: run.WorkflowKind,
-		SubjectKind:  run.SubjectKind,
-	})
-
-	return nil
 }
 
 func (s *AgentService) RunWorkflow(ctx context.Context, id uuid.UUID) error {
