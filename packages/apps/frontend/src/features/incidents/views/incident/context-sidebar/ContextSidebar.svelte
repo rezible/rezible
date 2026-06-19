@@ -2,17 +2,12 @@
 	import { fly } from 'svelte/transition';
 	import { mdiCircleMedium } from "@mdi/js";
 	import Icon from "$components/common/icon/Icon.svelte";
-	import { useIncidentView } from "$features/incidents/views/incident";
 	import { WebSocketStatus } from "@hocuspocus/provider";
 	import ComponentSelector from "./add-component-drawer/ComponentSelector.svelte";
 	import Header from "$src/components/layout/header/Header.svelte";
-	import { IncidentCollaborationController } from '$features/incidents/views/incident/collaboration.svelte';
+	import { useIncidentCollaboration } from '../collaboration.svelte';
 
-	type Props = {
-		collab: IncidentCollaborationController;
-	}
-	const { collab }: Props = $props();
-	const view = useIncidentView();
+	const collab = useIncidentCollaboration();
 
 	const ctxColor = $derived.by(() => {
 		if (collab.error) return "fill-danger";

@@ -2,35 +2,16 @@ import { getIncidentOptions, getRetrospectiveOptions } from "$lib/api";
 import { getLocalTimeZone } from "@internationalized/date";
 import { createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
-import { initIncidentCollaborationController } from "./collaboration.svelte";
-import { onMount } from "svelte";
 
 export class IncidentViewController {
 	queryClient = useQueryClient();
 
-	collab = initIncidentCollaborationController();
-
 	slug = $state<string>(null!);
 
 	constructor(slugFn: Getter<string>) {
-		onMount(() => {
-			return () => {
-				this.cleanup();
-			}
-		});
-
 		watch(slugFn, slug => {
 			this.slug = slug;
 		});
-
-
-		watch(() => this.documentId, documentId => { 
-			this.collab.connect(documentId);
-		});
-	}
-
-	private cleanup() {
-		this.collab.cleanup();
 	}
 
 	private incidentQueryOptions = $derived(getIncidentOptions({ path: { id: this.slug } }));

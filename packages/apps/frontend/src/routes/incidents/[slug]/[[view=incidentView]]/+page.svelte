@@ -6,4 +6,4 @@
 	const { data } = $props();
 </script>
 
-<IncidentView slug={data.slug} routeParam={convertIncidentViewParam(page.params.view)} />
+<IncidentView slug={data.slug} param={convertIncidentViewParam(page.params.view)} />

@@ -667,6 +667,7 @@ export type DocumentAccess = {
 };
 
 export type DocumentSession = {
+    name: string;
     serverUrl: string;
     token: string;
 };

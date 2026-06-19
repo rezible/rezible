@@ -1407,11 +1407,14 @@ components:
     DocumentSession:
       additionalProperties: false
       properties:
+        name:
+          type: string
         serverUrl:
           type: string
         token:
           type: string
       required:
+        - name
         - token
         - serverUrl
       type: object

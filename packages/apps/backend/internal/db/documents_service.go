@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/url"
+	"time"
+
+	"aidanwoods.dev/go-paseto"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
@@ -17,8 +20,8 @@ type DocumentsService struct {
 	sess  rez.AuthSessionService
 	teams rez.TeamService
 
-	documentsServerUrl  *url.URL
-	editorSessionSecret []byte
+	documentsServerUrl     *url.URL
+	editorSessionSecretKey paseto.V4AsymmetricSecretKey
 }
 
 func NewDocumentsService(cfg rez.Config, db rez.Database, sess rez.AuthSessionService, teams rez.TeamService) (*DocumentsService, error) {
@@ -27,20 +30,42 @@ func NewDocumentsService(cfg rez.Config, db rez.Database, sess rez.AuthSessionSe
 		return nil, fmt.Errorf("server url: %w", urlErr)
 	}
 	svc := &DocumentsService{
-		db:                  db,
-		sess:                sess,
-		teams:               teams,
-		documentsServerUrl:  srvUrl,
-		editorSessionSecret: []byte(cfg.Documents.EditorSessionSecret),
+		db:                     db,
+		sess:                   sess,
+		teams:                  teams,
+		documentsServerUrl:     srvUrl,
+		editorSessionSecretKey: paseto.NewV4AsymmetricSecretKey(),
 	}
 
 	return svc, nil
 }
 
 func (s *DocumentsService) CreateDocumentEditorSession(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*rez.DocumentSession, error) {
+	access, accessErr := s.GetUserDocumentAccess(ctx, docId, userId)
+	if accessErr != nil {
+		return nil, fmt.Errorf("get document access: %w", accessErr)
+	}
+
+	if !access.CanView && !access.CanEdit && !access.CanManage {
+		return nil, fmt.Errorf("no access")
+	}
+
+	now := time.Now()
+	token := paseto.NewToken()
+	token.SetIssuedAt(now)
+	token.SetNotBefore(now)
+	token.SetExpiration(now.Add(time.Hour))
+	token.SetString("document_id", docId.String())
+	token.SetString("user_id", userId.String())
+	token.SetString("can_edit", fmt.Sprintf("%t", access.CanEdit))
+	token.SetString("can_manage", fmt.Sprintf("%t", access.CanManage))
+
+	tokenStr := token.V4Sign(s.editorSessionSecretKey, nil)
+
 	sess := &rez.DocumentSession{
-		ServerUrl: s.documentsServerUrl,
-		Token:     "foobar",
+		DocumentName: docId.String(),
+		ServerUrl:    s.documentsServerUrl,
+		Token:        tokenStr,
 	}
 	return sess, nil
 }

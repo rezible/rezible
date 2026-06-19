@@ -413,8 +413,9 @@ type (
 	ContentNode = prosemirror.Node
 
 	DocumentSession struct {
-		ServerUrl *url.URL
-		Token     string
+		ServerUrl    *url.URL
+		DocumentName string
+		Token        string
 	}
 
 	DocumentsService interface {

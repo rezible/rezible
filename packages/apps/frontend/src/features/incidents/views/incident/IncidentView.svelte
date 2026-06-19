@@ -9,15 +9,18 @@
 	import IncidentOverview from "./overview/IncidentOverview.svelte";
 	import IncidentAnalysis from "./analysis/IncidentAnalysis.svelte";
 	import IncidentReport from "./report/IncidentReport.svelte";
+	import { initIncidentCollaborationController } from "./collaboration.svelte";
 
 	type Props = {
 		slug: string;
-		routeParam: IncidentViewRouteParam;
+		param: IncidentViewRouteParam;
 	};
-	const { slug, routeParam }: Props = $props();
-	const view = initIncidentViewController(() => slug);
+	const { slug, param }: Props = $props();
 
-	const incidentTitle = $derived(view.incident?.attributes.title);
+	const controller = initIncidentViewController(() => slug);
+	initIncidentCollaborationController(() => controller.documentId);
+
+	const incidentTitle = $derived(controller.incident?.attributes.title);
 
 	const breadcrumbs = $derived<PageBreadcrumb[]>([
 		{ label: "Incidents", path: "/incidents" }, 
@@ -38,4 +41,4 @@
 	]}
 />
 
-<ContextSidebar collab={view.collab} />
+<ContextSidebar />

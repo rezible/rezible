@@ -42,6 +42,7 @@ type (
 	}
 
 	DocumentSession struct {
+		Name      string `json:"name"`
 		Token     string `json:"token"`
 		ServerUrl string `json:"serverUrl"`
 	}
@@ -65,6 +66,7 @@ func DocumentAccessFromEnt(acc *ent.DocumentAccess) DocumentAccess {
 
 func DocumentSessionFromRez(ds *rez.DocumentSession) DocumentSession {
 	return DocumentSession{
+		Name:      ds.DocumentName,
 		Token:     ds.Token,
 		ServerUrl: ds.ServerUrl.String(),
 	}
