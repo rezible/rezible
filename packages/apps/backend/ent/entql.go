@@ -1427,6 +1427,7 @@ var schemaGraph = func() *sqlgraph.Schema {
 			userauthsession.FieldUserID:         {Type: field.TypeUUID, Column: userauthsession.FieldUserID},
 			userauthsession.FieldOrganizationID: {Type: field.TypeUUID, Column: userauthsession.FieldOrganizationID},
 			userauthsession.FieldExpiresAt:      {Type: field.TypeTime, Column: userauthsession.FieldExpiresAt},
+			userauthsession.FieldScopes:         {Type: field.TypeJSON, Column: userauthsession.FieldScopes},
 		},
 	}
 	graph.Nodes[69] = &sqlgraph.Node{
@@ -13404,6 +13405,11 @@ func (f *UserAuthSessionFilter) WhereOrganizationID(p entql.ValueP) {
 // WhereExpiresAt applies the entql time.Time predicate on the expires_at field.
 func (f *UserAuthSessionFilter) WhereExpiresAt(p entql.TimeP) {
 	f.Where(p.Field(userauthsession.FieldExpiresAt))
+}
+
+// WhereScopes applies the entql json.RawMessage predicate on the scopes field.
+func (f *UserAuthSessionFilter) WhereScopes(p entql.BytesP) {
+	f.Where(p.Field(userauthsession.FieldScopes))
 }
 
 // WhereHasTenant applies a predicate to check if query has an edge tenant.

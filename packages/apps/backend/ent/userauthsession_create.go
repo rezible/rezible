@@ -51,6 +51,12 @@ func (_c *UserAuthSessionCreate) SetExpiresAt(v time.Time) *UserAuthSessionCreat
 	return _c
 }
 
+// SetScopes sets the "scopes" field.
+func (_c *UserAuthSessionCreate) SetScopes(v []string) *UserAuthSessionCreate {
+	_c.mutation.SetScopes(v)
+	return _c
+}
+
 // SetID sets the "id" field.
 func (_c *UserAuthSessionCreate) SetID(v uuid.UUID) *UserAuthSessionCreate {
 	_c.mutation.SetID(v)
@@ -190,6 +196,10 @@ func (_c *UserAuthSessionCreate) createSpec() (*UserAuthSession, *sqlgraph.Creat
 	if value, ok := _c.mutation.ExpiresAt(); ok {
 		_spec.SetField(userauthsession.FieldExpiresAt, field.TypeTime, value)
 		_node.ExpiresAt = value
+	}
+	if value, ok := _c.mutation.Scopes(); ok {
+		_spec.SetField(userauthsession.FieldScopes, field.TypeJSON, value)
+		_node.Scopes = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -333,6 +343,24 @@ func (u *UserAuthSessionUpsert) UpdateExpiresAt() *UserAuthSessionUpsert {
 	return u
 }
 
+// SetScopes sets the "scopes" field.
+func (u *UserAuthSessionUpsert) SetScopes(v []string) *UserAuthSessionUpsert {
+	u.Set(userauthsession.FieldScopes, v)
+	return u
+}
+
+// UpdateScopes sets the "scopes" field to the value that was provided on create.
+func (u *UserAuthSessionUpsert) UpdateScopes() *UserAuthSessionUpsert {
+	u.SetExcluded(userauthsession.FieldScopes)
+	return u
+}
+
+// ClearScopes clears the value of the "scopes" field.
+func (u *UserAuthSessionUpsert) ClearScopes() *UserAuthSessionUpsert {
+	u.SetNull(userauthsession.FieldScopes)
+	return u
+}
+
 // UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
 // Using this option is equivalent to using:
 //
@@ -423,6 +451,27 @@ func (u *UserAuthSessionUpsertOne) SetExpiresAt(v time.Time) *UserAuthSessionUps
 func (u *UserAuthSessionUpsertOne) UpdateExpiresAt() *UserAuthSessionUpsertOne {
 	return u.Update(func(s *UserAuthSessionUpsert) {
 		s.UpdateExpiresAt()
+	})
+}
+
+// SetScopes sets the "scopes" field.
+func (u *UserAuthSessionUpsertOne) SetScopes(v []string) *UserAuthSessionUpsertOne {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.SetScopes(v)
+	})
+}
+
+// UpdateScopes sets the "scopes" field to the value that was provided on create.
+func (u *UserAuthSessionUpsertOne) UpdateScopes() *UserAuthSessionUpsertOne {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.UpdateScopes()
+	})
+}
+
+// ClearScopes clears the value of the "scopes" field.
+func (u *UserAuthSessionUpsertOne) ClearScopes() *UserAuthSessionUpsertOne {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.ClearScopes()
 	})
 }
 
@@ -683,6 +732,27 @@ func (u *UserAuthSessionUpsertBulk) SetExpiresAt(v time.Time) *UserAuthSessionUp
 func (u *UserAuthSessionUpsertBulk) UpdateExpiresAt() *UserAuthSessionUpsertBulk {
 	return u.Update(func(s *UserAuthSessionUpsert) {
 		s.UpdateExpiresAt()
+	})
+}
+
+// SetScopes sets the "scopes" field.
+func (u *UserAuthSessionUpsertBulk) SetScopes(v []string) *UserAuthSessionUpsertBulk {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.SetScopes(v)
+	})
+}
+
+// UpdateScopes sets the "scopes" field to the value that was provided on create.
+func (u *UserAuthSessionUpsertBulk) UpdateScopes() *UserAuthSessionUpsertBulk {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.UpdateScopes()
+	})
+}
+
+// ClearScopes clears the value of the "scopes" field.
+func (u *UserAuthSessionUpsertBulk) ClearScopes() *UserAuthSessionUpsertBulk {
+	return u.Update(func(s *UserAuthSessionUpsert) {
+		s.ClearScopes()
 	})
 }
 

@@ -22,6 +22,8 @@ const (
 	FieldOrganizationID = "organization_id"
 	// FieldExpiresAt holds the string denoting the expires_at field in the database.
 	FieldExpiresAt = "expires_at"
+	// FieldScopes holds the string denoting the scopes field in the database.
+	FieldScopes = "scopes"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeUser holds the string denoting the user edge name in mutations.
@@ -60,6 +62,7 @@ var Columns = []string{
 	FieldUserID,
 	FieldOrganizationID,
 	FieldExpiresAt,
+	FieldScopes,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

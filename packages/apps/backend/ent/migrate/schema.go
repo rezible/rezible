@@ -2973,6 +2973,7 @@ var (
 	UserAuthSessionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "expires_at", Type: field.TypeTime},
+		{Name: "scopes", Type: field.TypeJSON, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "organization_id", Type: field.TypeUUID},
@@ -2985,19 +2986,19 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "user_auth_sessions_tenants_tenant",
-				Columns:    []*schema.Column{UserAuthSessionsColumns[2]},
+				Columns:    []*schema.Column{UserAuthSessionsColumns[3]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "user_auth_sessions_users_user",
-				Columns:    []*schema.Column{UserAuthSessionsColumns[3]},
+				Columns:    []*schema.Column{UserAuthSessionsColumns[4]},
 				RefColumns: []*schema.Column{UsersColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
 				Symbol:     "user_auth_sessions_organizations_organization",
-				Columns:    []*schema.Column{UserAuthSessionsColumns[4]},
+				Columns:    []*schema.Column{UserAuthSessionsColumns[5]},
 				RefColumns: []*schema.Column{OrganizationsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -3006,7 +3007,7 @@ var (
 			{
 				Name:    "userauthsession_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{UserAuthSessionsColumns[2]},
+				Columns: []*schema.Column{UserAuthSessionsColumns[3]},
 			},
 		},
 	}

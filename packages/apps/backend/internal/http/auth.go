@@ -95,8 +95,7 @@ func (s *Server) makeApiRequestAuthenticator(authSess rez.AuthSessionService, ac
 				return
 			}
 
-			authReq := r.WithContext(execution.NewUserContext(r.Context(), sess))
-			next.ServeHTTP(w, authReq)
+			next.ServeHTTP(w, r.WithContext(execution.NewUserContext(r.Context(), sess)))
 		})
 	}
 }

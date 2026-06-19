@@ -411,7 +411,7 @@ CREATE UNIQUE INDEX "user_auth_provider_id" ON "users" ("auth_provider_id");
 -- create index "user_tenant_id_email" to table: "users"
 CREATE UNIQUE INDEX "user_tenant_id_email" ON "users" ("tenant_id", "email");
 -- create "user_auth_sessions" table
-CREATE TABLE "user_auth_sessions" ("id" uuid NOT NULL, "expires_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, "organization_id" uuid NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "user_auth_sessions" ("id" uuid NOT NULL, "expires_at" timestamptz NOT NULL, "scopes" jsonb NULL, "tenant_id" bigint NOT NULL, "user_id" uuid NOT NULL, "organization_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "userauthsession_tenant_id" to table: "user_auth_sessions"
 CREATE INDEX "userauthsession_tenant_id" ON "user_auth_sessions" ("tenant_id");
 -- create "video_conferences" table

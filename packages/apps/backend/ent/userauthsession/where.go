@@ -177,6 +177,16 @@ func ExpiresAtLTE(v time.Time) predicate.UserAuthSession {
 	return predicate.UserAuthSession(sql.FieldLTE(FieldExpiresAt, v))
 }
 
+// ScopesIsNil applies the IsNil predicate on the "scopes" field.
+func ScopesIsNil() predicate.UserAuthSession {
+	return predicate.UserAuthSession(sql.FieldIsNull(FieldScopes))
+}
+
+// ScopesNotNil applies the NotNil predicate on the "scopes" field.
+func ScopesNotNil() predicate.UserAuthSession {
+	return predicate.UserAuthSession(sql.FieldNotNull(FieldScopes))
+}
+
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.UserAuthSession {
 	return predicate.UserAuthSession(func(s *sql.Selector) {

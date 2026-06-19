@@ -58,8 +58,8 @@ func makeConfig() openapi.Config {
 		//},
 	}
 	cfg.Info.Description = "Rezible API Specification"
-	cfg.Security = ApiSecurityMethods
-	cfg.Components.SecuritySchemes = GetDefaultSecuritySchemes()
+	cfg.Security = DefaultSecurityMethods
+	cfg.Components.SecuritySchemes = MethodSecuritySchemes()
 
 	return cfg
 }

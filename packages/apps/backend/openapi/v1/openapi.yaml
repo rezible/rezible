@@ -1407,6 +1407,17 @@ components:
     DocumentSession:
       additionalProperties: false
       properties:
+        access:
+          $ref: "#/components/schemas/DocumentAccess"
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - user
+        - access
+      type: object
+    DocumentSessionAuth:
+      additionalProperties: false
+      properties:
         name:
           type: string
         serverUrl:
@@ -1660,18 +1671,18 @@ components:
       required:
         - data
       type: object
-    GetDocumentAccessResponseBody:
+    GetDocumentSessionResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/GetDocumentAccessResponseBody.json
+            - /v1/schemas/GetDocumentSessionResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/DocumentAccess"
+          $ref: "#/components/schemas/DocumentSession"
       required:
         - data
       type: object
@@ -4646,18 +4657,18 @@ components:
         - data
         - pagination
       type: object
-    RequestDocumentSessionResponseBody:
+    RequestDocumentSessionAuthResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/RequestDocumentSessionResponseBody.json
+            - /v1/schemas/RequestDocumentSessionAuthResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/DocumentSession"
+          $ref: "#/components/schemas/DocumentSessionAuth"
       required:
         - data
       type: object
@@ -6529,6 +6540,10 @@ components:
       in: cookie
       name: rez_auth_session
       type: openIdConnect
+    session-token:
+      bearerFormat: paseto
+      scheme: bearer
+      type: http
 info:
   description: Rezible API Specification
   title: Rezible API
@@ -7413,9 +7428,9 @@ paths:
       summary: Update an Incident Debrief Question
       tags:
         - Incident Debriefs
-  /documents/{id}/access:
-    post:
-      operationId: get-document-access
+  /documents/{id}/session:
+    get:
+      operationId: get-document-session
       parameters:
         - in: path
           name: id
@@ -7427,7 +7442,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/GetDocumentAccessResponseBody"
+                $ref: "#/components/schemas/GetDocumentSessionResponseBody"
           description: OK
         "400":
           content:
@@ -7465,12 +7480,15 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
-      summary: Get user access for a document
+      security:
+        - session-token:
+            - documents:*
+      summary: Get document session
       tags:
         - documents
-  /documents/{id}/session:
+  /documents/{id}/session/new:
     post:
-      operationId: request-document-editor-session
+      operationId: request-document-session-auth
       parameters:
         - in: path
           name: id
@@ -7482,7 +7500,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/RequestDocumentSessionResponseBody"
+                $ref: "#/components/schemas/RequestDocumentSessionAuthResponseBody"
           description: OK
         "400":
           content:

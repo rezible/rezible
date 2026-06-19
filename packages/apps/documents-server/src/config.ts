@@ -2,8 +2,8 @@ export type Config = {
 	name: string;
 	host: string;
 	port: number;
-	apiUrl: string;
 	dbUrl: string;
+	sessionTokenSecretKey: Uint8Array;
 }
 
 const loadDbUrl = () => {
@@ -22,6 +22,21 @@ const loadDbUrl = () => {
 	return `postgresql://${pgRole}:${pgPassword}@${pgHost}:${pgPort}/${pgDatabase}?sslmode=${pgSslMode}`
 }
 
+export const pasetoLocalKeyFromHex = (hex: string): Uint8Array => {
+	if (!/^[0-9a-fA-F]{64}$/.test(hex)) {
+		throw new Error("document session token key must be 64 hex characters");
+	}
+	const bytes = new Uint8Array(hex.length / 2);
+	for (let i = 0; i < bytes.length; i += 1) {
+		bytes[i] = Number.parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+	}
+	const prefix = new TextEncoder().encode("k4.local.");
+	const key = new Uint8Array(prefix.length + bytes.length);
+	key.set(prefix);
+	key.set(bytes, prefix.length);
+	return key;
+};
+
 export const loadConfig = (): Config => {
 	const name = process.env.NAME ?? "documents-server";
 
@@ -29,8 +44,9 @@ export const loadConfig = (): Config => {
 	let port = Number.parseInt(process.env.PORT ?? "7002", 10);
 	if (port < 1024) port = 7003;
 
-	const apiUrl = process.env.API_URL ?? "";
 	const dbUrl = loadDbUrl();
 
-	return { name, host, port, apiUrl, dbUrl };
+	const sessionTokenSecretKey = pasetoLocalKeyFromHex(process.env.DOCUMENTS__SESSION_TOKEN_SECRET_HEX ?? "");
+
+	return { name, host, port, dbUrl, sessionTokenSecretKey };
 }

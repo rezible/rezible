@@ -17,32 +17,27 @@ var (
 	ErrDomainNotAllowed   = huma.Error403Forbidden("domain_not_allowed")
 )
 
-type SecurityScheme = huma.SecurityScheme
-
-type SecurityMethods = []map[string][]string
+type (
+	SecurityScheme        = huma.SecurityScheme
+	SecurityMethodOptions = []map[string][]string
+)
 
 const (
-	SecurityMethodAppCookie = "app-cookie"
-	SecurityMethodApiToken  = "api-token"
+	SecurityMethodAppCookie          = "app-cookie"
+	SecurityMethodApiToken           = "api-token"
+	SecurityMethodScopedSessionToken = "session-token"
 
 	AppCookieName = "rez_auth_session"
 )
 
 var (
-	ApiSecurityMethods = SecurityMethods{
+	DefaultSecurityMethods = SecurityMethodOptions{
 		{SecurityMethodAppCookie: {}},
 		{SecurityMethodApiToken: {}},
 	}
-	SecurityMethodCookieOnly = SecurityMethods{
-		{SecurityMethodAppCookie: {}},
-	}
-	SecurityMethodApiTokenOnly = SecurityMethods{
-		{SecurityMethodApiToken: {}},
-	}
-	ExplicitNoSecurity = SecurityMethods{}
 )
 
-func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
+func MethodSecuritySchemes() map[string]*SecurityScheme {
 	appCookieSecurityScheme := &SecurityScheme{
 		Name: AppCookieName,
 		Type: "openIdConnect",
@@ -53,22 +48,20 @@ func GetDefaultSecuritySchemes() map[string]*SecurityScheme {
 		Scheme:       "bearer",
 		BearerFormat: "JWT",
 	}
+	sessionTokenSecurityScheme := &SecurityScheme{
+		Type:         "http",
+		Scheme:       "bearer",
+		BearerFormat: "paseto",
+	}
 	return map[string]*SecurityScheme{
-		SecurityMethodAppCookie: appCookieSecurityScheme,
-		SecurityMethodApiToken:  apiTokenSecurityScheme,
+		SecurityMethodAppCookie:          appCookieSecurityScheme,
+		SecurityMethodApiToken:           apiTokenSecurityScheme,
+		SecurityMethodScopedSessionToken: sessionTokenSecurityScheme,
 	}
 }
 
 type (
-	RequestSecurityMethods struct {
-		ApiToken  MethodSecurityOption
-		AppCookie MethodSecurityOption
-	}
-	MethodSecurityOption struct {
-		Allowed           bool
-		RequiredScopeSets [][]string
-	}
-	MethodSecurityCheckFn func(context.Context, RequestSecurityMethods) error
+	MethodSecurityCheckFn func(context.Context, SecurityMethodOptions) error
 )
 
 func MakeRequestMethodSecurityMiddleware(checkFn MethodSecurityCheckFn) func(c huma.Context, next func(huma.Context)) {
@@ -83,29 +76,14 @@ func MakeRequestMethodSecurityMiddleware(checkFn MethodSecurityCheckFn) func(c h
 		opSecurity := c.Operation().Security
 
 		if opSecurity != nil && len(opSecurity) == 0 {
-			// explicitly no security required
 			next(c)
 			return
 		}
-
 		if opSecurity == nil {
-			// default security methods
-			opSecurity = ApiSecurityMethods
+			opSecurity = DefaultSecurityMethods
 		}
 
-		var sec RequestSecurityMethods
-		for _, methodScopes := range opSecurity {
-			if scopes, allowed := methodScopes[SecurityMethodApiToken]; allowed {
-				sec.ApiToken.Allowed = true
-				sec.ApiToken.RequiredScopeSets = append(sec.ApiToken.RequiredScopeSets, scopes)
-			}
-			if scopes, allowed := methodScopes[SecurityMethodAppCookie]; allowed {
-				sec.AppCookie.Allowed = true
-				sec.AppCookie.RequiredScopeSets = append(sec.AppCookie.RequiredScopeSets, scopes)
-			}
-		}
-
-		if checkErr := checkFn(c.Context(), sec); checkErr != nil {
+		if checkErr := checkFn(c.Context(), opSecurity); checkErr != nil {
 			writeAuthError(c, checkErr)
 		} else {
 			next(c)

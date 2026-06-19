@@ -288,7 +288,6 @@ type (
 	AuthSessionService interface {
 		CreateFromUserAuth(context.Context, *UserAuthProviderSession) (*ent.UserAuthSession, error)
 		CreateFromToken(context.Context, string) (*ent.UserAuthSession, error)
-
 		Get(context.Context, uuid.UUID) (*ent.UserAuthSession, error)
 		DeleteSession(context.Context, uuid.UUID) error
 	}
@@ -412,7 +411,7 @@ type (
 type (
 	ContentNode = prosemirror.Node
 
-	DocumentSession struct {
+	DocumentSessionAuth struct {
 		ServerUrl    *url.URL
 		DocumentName string
 		Token        string
@@ -422,7 +421,7 @@ type (
 		GetDocument(context.Context, uuid.UUID) (*ent.Document, error)
 		SetDocument(context.Context, uuid.UUID, func(*ent.DocumentMutation)) (*ent.Document, error)
 		GetUserDocumentAccess(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*ent.DocumentAccess, error)
-		CreateDocumentEditorSession(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*DocumentSession, error)
+		CreateDocumentEditorSessionAuth(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*DocumentSessionAuth, error)
 	}
 )
 

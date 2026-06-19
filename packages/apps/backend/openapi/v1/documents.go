@@ -12,15 +12,15 @@ import (
 )
 
 type DocumentsHandler interface {
-	RequestDocumentSession(context.Context, *RequestDocumentSessionRequest) (*RequestDocumentSessionResponse, error)
-	GetDocumentAccess(context.Context, *GetDocumentAccessRequest) (*GetDocumentAccessResponse, error)
+	RequestDocumentSessionAuth(context.Context, *RequestDocumentSessionAuthRequest) (*RequestDocumentSessionAuthResponse, error)
+	GetDocumentSession(context.Context, *GetDocumentSessionRequest) (*GetDocumentSessionResponse, error)
 	LoadDocument(context.Context, *LoadDocumentRequest) (*LoadDocumentResponse, error)
 	UpdateDocument(context.Context, *UpdateDocumentRequest) (*UpdateDocumentResponse, error)
 }
 
 func (o operations) RegisterDocuments(api huma.API) {
-	huma.Register(api, RequestDocumentSession, o.RequestDocumentSession)
-	huma.Register(api, GetDocumentAccess, o.GetDocumentAccess)
+	huma.Register(api, RequestDocumentSessionAuth, o.RequestDocumentSessionAuth)
+	huma.Register(api, GetDocumentSession, o.GetDocumentSession)
 	//huma.Register(api, LoadDocument, o.LoadDocument)
 	//huma.Register(api, UpdateDocument, o.UpdateDocument)
 }
@@ -35,13 +35,17 @@ type (
 		Content string `json:"content"`
 	}
 
+	DocumentSession struct {
+		User   User           `json:"user"`
+		Access DocumentAccess `json:"access"`
+	}
 	DocumentAccess struct {
 		CanView   bool `json:"canView"`
 		CanEdit   bool `json:"canEdit"`
 		CanManage bool `json:"canManage"`
 	}
 
-	DocumentSession struct {
+	DocumentSessionAuth struct {
 		Name      string `json:"name"`
 		Token     string `json:"token"`
 		ServerUrl string `json:"serverUrl"`
@@ -55,48 +59,50 @@ func DocumentFromEnt(doc *ent.Document) Document {
 	return Document{Id: doc.ID, Attributes: attrs}
 }
 
-func DocumentAccessFromEnt(acc *ent.DocumentAccess) DocumentAccess {
-	da := DocumentAccess{
-		CanView:   acc.CanView,
-		CanEdit:   acc.CanEdit,
-		CanManage: acc.CanManage,
-	}
-	return da
-}
-
-func DocumentSessionFromRez(ds *rez.DocumentSession) DocumentSession {
-	return DocumentSession{
+func DocumentSessionAuthFromRez(ds *rez.DocumentSessionAuth) DocumentSessionAuth {
+	return DocumentSessionAuth{
 		Name:      ds.DocumentName,
 		Token:     ds.Token,
 		ServerUrl: ds.ServerUrl.String(),
 	}
 }
 
+func DocumentAccessFromEnt(acc *ent.DocumentAccess) DocumentAccess {
+	return DocumentAccess{
+		CanView:   acc.CanView,
+		CanEdit:   acc.CanEdit,
+		CanManage: acc.CanManage,
+	}
+}
+
 var documentsTags = []string{"documents"}
 
-var RequestDocumentSession = huma.Operation{
-	OperationID: "request-document-editor-session",
+var RequestDocumentSessionAuth = huma.Operation{
+	OperationID: "request-document-session-auth",
 	Method:      http.MethodPost,
-	Path:        "/documents/{id}/session",
+	Path:        "/documents/{id}/session/new",
 	Summary:     "Request a session for a document",
 	Tags:        documentsTags,
 	Errors:      ErrorCodes(),
 }
 
-type RequestDocumentSessionRequest EmptyIdRequest
-type RequestDocumentSessionResponse ItemResponse[DocumentSession]
+type RequestDocumentSessionAuthRequest EmptyIdRequest
+type RequestDocumentSessionAuthResponse ItemResponse[DocumentSessionAuth]
 
-var GetDocumentAccess = huma.Operation{
-	OperationID: "get-document-access",
-	Method:      http.MethodPost,
-	Path:        "/documents/{id}/access",
-	Summary:     "Get user access for a document",
+var GetDocumentSession = huma.Operation{
+	OperationID: "get-document-session",
+	Method:      http.MethodGet,
+	Path:        "/documents/{id}/session",
+	Summary:     "Get document session",
 	Tags:        documentsTags,
 	Errors:      ErrorCodes(),
+	Security: SecurityMethodOptions{
+		{SecurityMethodScopedSessionToken: {"documents:*"}},
+	},
 }
 
-type GetDocumentAccessRequest EmptyIdRequest
-type GetDocumentAccessResponse ItemResponse[DocumentAccess]
+type GetDocumentSessionRequest EmptyIdRequest
+type GetDocumentSessionResponse ItemResponse[DocumentSession]
 
 var LoadDocument = huma.Operation{
 	OperationID: "load-document",

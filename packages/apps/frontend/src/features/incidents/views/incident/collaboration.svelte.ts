@@ -3,8 +3,8 @@ import {
 	WebSocketStatus,
 	type StatesArray,
 } from "@hocuspocus/provider";
-import type { DocumentSession } from "@rezible/api-client-ts";
-import { requestDocumentEditorSessionMutation } from "@rezible/api-client-ts/svelte-query";
+import type { DocumentSessionAuth } from "@rezible/api-client-ts";
+import { requestDocumentSessionAuthMutation } from "@rezible/api-client-ts/svelte-query";
 import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
 import { onMount } from "svelte";
@@ -26,12 +26,12 @@ export class IncidentCollaborationController {
 		});
 	}
 
-	private createProvider(sess: DocumentSession) {
-		console.log("creating collaboration provider", sess);
+	private createProvider({serverUrl, token, name}: DocumentSessionAuth) {
+		console.log("creating collaboration provider");
 		this.provider = new HocuspocusProvider({
-			url: sess.serverUrl,
-			token: sess.token,
-			name: sess.name,
+			url: serverUrl,
+			token: token,
+			name: name,
 			onAwarenessChange: ({states}) => {
 				this.awareness = states;
 			},
@@ -49,17 +49,17 @@ export class IncidentCollaborationController {
 		});
 	}
 
-	private requestSessionMut = createMutation(() => ({
-		...requestDocumentEditorSessionMutation(),
-		onSuccess: ({data: sess}) => {
-			this.createProvider(sess);
+	private requestSessionAuthMut = createMutation(() => ({
+		...requestDocumentSessionAuthMutation(),
+		onSuccess: ({data: auth}) => {
+			this.createProvider(auth);
 		}
 	}));
 
 	async connect(id?: string) {
 		this.cleanup();
-		if (!!id && id !== this.requestSessionMut.variables?.path.id) {
-			this.requestSessionMut.mutate({path: {id}});
+		if (!!id && id !== this.requestSessionAuthMut.variables?.path.id) {
+			this.requestSessionAuthMut.mutate({path: {id}});
 		}
 	};
 

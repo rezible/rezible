@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"entgo.io/ent/dialect/sql/sqljson"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
@@ -72,6 +73,24 @@ func (_u *UserAuthSessionUpdate) SetNillableExpiresAt(v *time.Time) *UserAuthSes
 	if v != nil {
 		_u.SetExpiresAt(*v)
 	}
+	return _u
+}
+
+// SetScopes sets the "scopes" field.
+func (_u *UserAuthSessionUpdate) SetScopes(v []string) *UserAuthSessionUpdate {
+	_u.mutation.SetScopes(v)
+	return _u
+}
+
+// AppendScopes appends value to the "scopes" field.
+func (_u *UserAuthSessionUpdate) AppendScopes(v []string) *UserAuthSessionUpdate {
+	_u.mutation.AppendScopes(v)
+	return _u
+}
+
+// ClearScopes clears the value of the "scopes" field.
+func (_u *UserAuthSessionUpdate) ClearScopes() *UserAuthSessionUpdate {
+	_u.mutation.ClearScopes()
 	return _u
 }
 
@@ -163,6 +182,17 @@ func (_u *UserAuthSessionUpdate) sqlSave(ctx context.Context) (_node int, err er
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(userauthsession.FieldExpiresAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.Scopes(); ok {
+		_spec.SetField(userauthsession.FieldScopes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedScopes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, userauthsession.FieldScopes, value)
+		})
+	}
+	if _u.mutation.ScopesCleared() {
+		_spec.ClearField(userauthsession.FieldScopes, field.TypeJSON)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -292,6 +322,24 @@ func (_u *UserAuthSessionUpdateOne) SetNillableExpiresAt(v *time.Time) *UserAuth
 	return _u
 }
 
+// SetScopes sets the "scopes" field.
+func (_u *UserAuthSessionUpdateOne) SetScopes(v []string) *UserAuthSessionUpdateOne {
+	_u.mutation.SetScopes(v)
+	return _u
+}
+
+// AppendScopes appends value to the "scopes" field.
+func (_u *UserAuthSessionUpdateOne) AppendScopes(v []string) *UserAuthSessionUpdateOne {
+	_u.mutation.AppendScopes(v)
+	return _u
+}
+
+// ClearScopes clears the value of the "scopes" field.
+func (_u *UserAuthSessionUpdateOne) ClearScopes() *UserAuthSessionUpdateOne {
+	_u.mutation.ClearScopes()
+	return _u
+}
+
 // SetUser sets the "user" edge to the User entity.
 func (_u *UserAuthSessionUpdateOne) SetUser(v *User) *UserAuthSessionUpdateOne {
 	return _u.SetUserID(v.ID)
@@ -410,6 +458,17 @@ func (_u *UserAuthSessionUpdateOne) sqlSave(ctx context.Context) (_node *UserAut
 	}
 	if value, ok := _u.mutation.ExpiresAt(); ok {
 		_spec.SetField(userauthsession.FieldExpiresAt, field.TypeTime, value)
+	}
+	if value, ok := _u.mutation.Scopes(); ok {
+		_spec.SetField(userauthsession.FieldScopes, field.TypeJSON, value)
+	}
+	if value, ok := _u.mutation.AppendedScopes(); ok {
+		_spec.AddModifier(func(u *sql.UpdateBuilder) {
+			sqljson.Append(u, userauthsession.FieldScopes, value)
+		})
+	}
+	if _u.mutation.ScopesCleared() {
+		_spec.ClearField(userauthsession.FieldScopes, field.TypeJSON)
 	}
 	if _u.mutation.UserCleared() {
 		edge := &sqlgraph.EdgeSpec{

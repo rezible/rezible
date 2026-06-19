@@ -667,6 +667,11 @@ export type DocumentAccess = {
 };
 
 export type DocumentSession = {
+    access: DocumentAccess;
+    user: User;
+};
+
+export type DocumentSessionAuth = {
     name: string;
     serverUrl: string;
     token: string;
@@ -806,12 +811,12 @@ export type GetAlertResponseBody = {
     data: Alert;
 };
 
-export type GetDocumentAccessResponseBody = {
+export type GetDocumentSessionResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: DocumentAccess;
+    data: DocumentSession;
 };
 
 export type GetEventResponseBody = {
@@ -2090,12 +2095,12 @@ export type RemoveWatchedOncallRosterResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type RequestDocumentSessionResponseBody = {
+export type RequestDocumentSessionAuthResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: DocumentSession;
+    data: DocumentSessionAuth;
 };
 
 export type RequestIncidentContextPackAgentRunResponseBody = {
@@ -3643,54 +3648,7 @@ export type UpdateDebriefQuestionResponses = {
 
 export type UpdateDebriefQuestionResponse = UpdateDebriefQuestionResponses[keyof UpdateDebriefQuestionResponses];
 
-export type GetDocumentAccessData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/documents/{id}/access';
-};
-
-export type GetDocumentAccessErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetDocumentAccessError = GetDocumentAccessErrors[keyof GetDocumentAccessErrors];
-
-export type GetDocumentAccessResponses = {
-    /**
-     * OK
-     */
-    200: GetDocumentAccessResponseBody;
-};
-
-export type GetDocumentAccessResponse = GetDocumentAccessResponses[keyof GetDocumentAccessResponses];
-
-export type RequestDocumentEditorSessionData = {
+export type GetDocumentSessionData = {
     body?: never;
     path: {
         id: string;
@@ -3699,7 +3657,7 @@ export type RequestDocumentEditorSessionData = {
     url: '/documents/{id}/session';
 };
 
-export type RequestDocumentEditorSessionErrors = {
+export type GetDocumentSessionErrors = {
     /**
      * Bad Request
      */
@@ -3726,16 +3684,63 @@ export type RequestDocumentEditorSessionErrors = {
     500: ErrorModel;
 };
 
-export type RequestDocumentEditorSessionError = RequestDocumentEditorSessionErrors[keyof RequestDocumentEditorSessionErrors];
+export type GetDocumentSessionError = GetDocumentSessionErrors[keyof GetDocumentSessionErrors];
 
-export type RequestDocumentEditorSessionResponses = {
+export type GetDocumentSessionResponses = {
     /**
      * OK
      */
-    200: RequestDocumentSessionResponseBody;
+    200: GetDocumentSessionResponseBody;
 };
 
-export type RequestDocumentEditorSessionResponse = RequestDocumentEditorSessionResponses[keyof RequestDocumentEditorSessionResponses];
+export type GetDocumentSessionResponse = GetDocumentSessionResponses[keyof GetDocumentSessionResponses];
+
+export type RequestDocumentSessionAuthData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/documents/{id}/session/new';
+};
+
+export type RequestDocumentSessionAuthErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RequestDocumentSessionAuthError = RequestDocumentSessionAuthErrors[keyof RequestDocumentSessionAuthErrors];
+
+export type RequestDocumentSessionAuthResponses = {
+    /**
+     * OK
+     */
+    200: RequestDocumentSessionAuthResponseBody;
+};
+
+export type RequestDocumentSessionAuthResponse = RequestDocumentSessionAuthResponses[keyof RequestDocumentSessionAuthResponses];
 
 export type ListEventAnnotationsData = {
     body?: never;

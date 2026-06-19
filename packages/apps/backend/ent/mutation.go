@@ -62631,6 +62631,8 @@ type UserAuthSessionMutation struct {
 	typ                 string
 	id                  *uuid.UUID
 	expires_at          *time.Time
+	scopes              *[]string
+	appendscopes        []string
 	clearedFields       map[string]struct{}
 	tenant              *int
 	clearedtenant       bool
@@ -62891,6 +62893,71 @@ func (m *UserAuthSessionMutation) ResetExpiresAt() {
 	m.expires_at = nil
 }
 
+// SetScopes sets the "scopes" field.
+func (m *UserAuthSessionMutation) SetScopes(s []string) {
+	m.scopes = &s
+	m.appendscopes = nil
+}
+
+// Scopes returns the value of the "scopes" field in the mutation.
+func (m *UserAuthSessionMutation) Scopes() (r []string, exists bool) {
+	v := m.scopes
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldScopes returns the old "scopes" field's value of the UserAuthSession entity.
+// If the UserAuthSession object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *UserAuthSessionMutation) OldScopes(ctx context.Context) (v []string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldScopes is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldScopes requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldScopes: %w", err)
+	}
+	return oldValue.Scopes, nil
+}
+
+// AppendScopes adds s to the "scopes" field.
+func (m *UserAuthSessionMutation) AppendScopes(s []string) {
+	m.appendscopes = append(m.appendscopes, s...)
+}
+
+// AppendedScopes returns the list of values that were appended to the "scopes" field in this mutation.
+func (m *UserAuthSessionMutation) AppendedScopes() ([]string, bool) {
+	if len(m.appendscopes) == 0 {
+		return nil, false
+	}
+	return m.appendscopes, true
+}
+
+// ClearScopes clears the value of the "scopes" field.
+func (m *UserAuthSessionMutation) ClearScopes() {
+	m.scopes = nil
+	m.appendscopes = nil
+	m.clearedFields[userauthsession.FieldScopes] = struct{}{}
+}
+
+// ScopesCleared returns if the "scopes" field was cleared in this mutation.
+func (m *UserAuthSessionMutation) ScopesCleared() bool {
+	_, ok := m.clearedFields[userauthsession.FieldScopes]
+	return ok
+}
+
+// ResetScopes resets all changes to the "scopes" field.
+func (m *UserAuthSessionMutation) ResetScopes() {
+	m.scopes = nil
+	m.appendscopes = nil
+	delete(m.clearedFields, userauthsession.FieldScopes)
+}
+
 // ClearTenant clears the "tenant" edge to the Tenant entity.
 func (m *UserAuthSessionMutation) ClearTenant() {
 	m.clearedtenant = true
@@ -63006,7 +63073,7 @@ func (m *UserAuthSessionMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *UserAuthSessionMutation) Fields() []string {
-	fields := make([]string, 0, 4)
+	fields := make([]string, 0, 5)
 	if m.tenant != nil {
 		fields = append(fields, userauthsession.FieldTenantID)
 	}
@@ -63018,6 +63085,9 @@ func (m *UserAuthSessionMutation) Fields() []string {
 	}
 	if m.expires_at != nil {
 		fields = append(fields, userauthsession.FieldExpiresAt)
+	}
+	if m.scopes != nil {
+		fields = append(fields, userauthsession.FieldScopes)
 	}
 	return fields
 }
@@ -63035,6 +63105,8 @@ func (m *UserAuthSessionMutation) Field(name string) (ent.Value, bool) {
 		return m.OrganizationID()
 	case userauthsession.FieldExpiresAt:
 		return m.ExpiresAt()
+	case userauthsession.FieldScopes:
+		return m.Scopes()
 	}
 	return nil, false
 }
@@ -63052,6 +63124,8 @@ func (m *UserAuthSessionMutation) OldField(ctx context.Context, name string) (en
 		return m.OldOrganizationID(ctx)
 	case userauthsession.FieldExpiresAt:
 		return m.OldExpiresAt(ctx)
+	case userauthsession.FieldScopes:
+		return m.OldScopes(ctx)
 	}
 	return nil, fmt.Errorf("unknown UserAuthSession field %s", name)
 }
@@ -63089,6 +63163,13 @@ func (m *UserAuthSessionMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetExpiresAt(v)
 		return nil
+	case userauthsession.FieldScopes:
+		v, ok := value.([]string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetScopes(v)
+		return nil
 	}
 	return fmt.Errorf("unknown UserAuthSession field %s", name)
 }
@@ -63121,7 +63202,11 @@ func (m *UserAuthSessionMutation) AddField(name string, value ent.Value) error {
 // ClearedFields returns all nullable fields that were cleared during this
 // mutation.
 func (m *UserAuthSessionMutation) ClearedFields() []string {
-	return nil
+	var fields []string
+	if m.FieldCleared(userauthsession.FieldScopes) {
+		fields = append(fields, userauthsession.FieldScopes)
+	}
+	return fields
 }
 
 // FieldCleared returns a boolean indicating if a field with the given name was
@@ -63134,6 +63219,11 @@ func (m *UserAuthSessionMutation) FieldCleared(name string) bool {
 // ClearField clears the value of the field with the given name. It returns an
 // error if the field is not defined in the schema.
 func (m *UserAuthSessionMutation) ClearField(name string) error {
+	switch name {
+	case userauthsession.FieldScopes:
+		m.ClearScopes()
+		return nil
+	}
 	return fmt.Errorf("unknown UserAuthSession nullable field %s", name)
 }
 
@@ -63152,6 +63242,9 @@ func (m *UserAuthSessionMutation) ResetField(name string) error {
 		return nil
 	case userauthsession.FieldExpiresAt:
 		m.ResetExpiresAt()
+		return nil
+	case userauthsession.FieldScopes:
+		m.ResetScopes()
 		return nil
 	}
 	return fmt.Errorf("unknown UserAuthSession field %s", name)

@@ -32,7 +32,8 @@ func DefaultConfig() Config {
 			Auth:     HttpAuthConfig{},
 		},
 		Documents: DocumentsConfig{
-			ServerUrl: "http://localhost:7002",
+			ServerUrl:             "http://localhost:7002",
+			SessionTokenSecretHex: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
 			Proxy: DocumentsConfigServerProxy{
 				Enabled: false,
 				Host:    "localhost:7002",
@@ -134,9 +135,9 @@ type (
 
 type (
 	DocumentsConfig struct {
-		ServerUrl           string                     `cfg:"server_url" validate:"required"`
-		EditorSessionSecret string                     `cfg:"editor_session_secret" validate:"len=32"`
-		Proxy               DocumentsConfigServerProxy `cfg:"proxy"`
+		ServerUrl             string                     `cfg:"server_url" validate:"required"`
+		SessionTokenSecretHex string                     `cfg:"session_token_secret_hex" validate:"len=64"`
+		Proxy                 DocumentsConfigServerProxy `cfg:"proxy"`
 	}
 
 	DocumentsConfigServerProxy struct {

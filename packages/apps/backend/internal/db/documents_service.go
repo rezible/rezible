@@ -8,45 +8,61 @@ import (
 	"time"
 
 	"aidanwoods.dev/go-paseto"
-
 	"github.com/google/uuid"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	da "github.com/rezible/rezible/ent/documentaccess"
+	"github.com/rezible/rezible/execution"
 )
 
 type DocumentsService struct {
 	db    rez.Database
-	sess  rez.AuthSessionService
 	teams rez.TeamService
 
-	documentsServerUrl     *url.URL
-	editorSessionSecretKey paseto.V4AsymmetricSecretKey
+	documentsServerUrl *url.URL
+	sessionSecretKey   paseto.V4SymmetricKey
 }
 
-func NewDocumentsService(cfg rez.Config, db rez.Database, sess rez.AuthSessionService, teams rez.TeamService) (*DocumentsService, error) {
+const documentEditorSessionTokenAssertion = "rezible.documents.editor-session"
+
+func NewDocumentsService(cfg rez.Config, db rez.Database, teams rez.TeamService) (*DocumentsService, error) {
 	srvUrl, urlErr := url.Parse(cfg.Documents.ServerUrl)
 	if urlErr != nil {
 		return nil, fmt.Errorf("server url: %w", urlErr)
 	}
+	sessionKey, keyErr := paseto.V4SymmetricKeyFromHex(cfg.Documents.SessionTokenSecretHex)
+	if keyErr != nil {
+		return nil, fmt.Errorf("session key: %w", keyErr)
+	}
 	svc := &DocumentsService{
-		db:                     db,
-		sess:                   sess,
-		teams:                  teams,
-		documentsServerUrl:     srvUrl,
-		editorSessionSecretKey: paseto.NewV4AsymmetricSecretKey(),
+		db:                 db,
+		teams:              teams,
+		documentsServerUrl: srvUrl,
+		sessionSecretKey:   sessionKey,
 	}
 
 	return svc, nil
 }
 
-func (s *DocumentsService) CreateDocumentEditorSession(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*rez.DocumentSession, error) {
+func (s *DocumentsService) CreateDocumentEditorSessionAuth(ctx context.Context, docId uuid.UUID, userId uuid.UUID) (*rez.DocumentSessionAuth, error) {
 	access, accessErr := s.GetUserDocumentAccess(ctx, docId, userId)
 	if accessErr != nil {
 		return nil, fmt.Errorf("get document access: %w", accessErr)
 	}
+	if access == nil {
+		return nil, fmt.Errorf("no document access for document id %s", docId)
+	}
 
-	if !access.CanView && !access.CanEdit && !access.CanManage {
+	var accessScope string
+	if access.CanManage {
+		accessScope = "manage"
+	} else if access.CanEdit {
+		accessScope = "edit"
+	} else if access.CanView {
+		accessScope = "view"
+	}
+	if accessScope == "" {
 		return nil, fmt.Errorf("no access")
 	}
 
@@ -54,15 +70,19 @@ func (s *DocumentsService) CreateDocumentEditorSession(ctx context.Context, docI
 	token := paseto.NewToken()
 	token.SetIssuedAt(now)
 	token.SetNotBefore(now)
-	token.SetExpiration(now.Add(time.Hour))
+	token.SetExpiration(now.Add(time.Minute * 15))
+	token.SetIssuer("rezible-backend")
+	token.SetAudience("rezible-documents-server")
+	token.SetSubject(userId.String())
+	token.SetJti(uuid.NewString())
+	token.SetString("tenant_id", fmt.Sprintf("%d", access.TenantID))
 	token.SetString("document_id", docId.String())
 	token.SetString("user_id", userId.String())
-	token.SetString("can_edit", fmt.Sprintf("%t", access.CanEdit))
-	token.SetString("can_manage", fmt.Sprintf("%t", access.CanManage))
+	token.SetString("can_edit", fmt.Sprintf("%t", access.CanEdit || access.CanManage))
 
-	tokenStr := token.V4Sign(s.editorSessionSecretKey, nil)
+	tokenStr := token.V4Encrypt(s.sessionSecretKey, nil)
 
-	sess := &rez.DocumentSession{
+	sess := &rez.DocumentSessionAuth{
 		DocumentName: docId.String(),
 		ServerUrl:    s.documentsServerUrl,
 		Token:        tokenStr,
@@ -76,7 +96,12 @@ func (s *DocumentsService) GetUserDocumentAccess(ctx context.Context, docId uuid
 		return nil, fmt.Errorf("get document: %w", docErr)
 	}
 	if !doc.AccessRestricted {
+		tenantId, tenantOk := execution.GetContext(ctx).TenantID()
+		if !tenantOk {
+			return nil, nil
+		}
 		defaultAccess := &ent.DocumentAccess{
+			TenantID:   tenantId,
 			DocumentID: docId,
 			UserID:     userId,
 			CanView:    true,

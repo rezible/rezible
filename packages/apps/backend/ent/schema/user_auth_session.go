@@ -24,6 +24,7 @@ func (UserAuthSession) Fields() []ent.Field {
 		field.UUID("user_id", uuid.New()),
 		field.UUID("organization_id", uuid.New()),
 		field.Time("expires_at"),
+		field.Strings("scopes").Optional(),
 	}
 }
 

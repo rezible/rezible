@@ -20,9 +20,9 @@ type (
 
 	Auth struct {
 		TenantID            *int       `json:"tenant_id,omitempty"`
-		TokenID             *uuid.UUID `json:"token_id,omitempty"`
 		UserID              *uuid.UUID `json:"user_id,omitempty"`
 		ImpersonatingUserID *uuid.UUID `json:"impersonating_user_id,omitempty"`
+		Scopes              []string   `json:"scopes,omitempty"`
 		ExpiresAt           time.Time  `json:"exp"`
 	}
 

@@ -55,7 +55,7 @@ func NewHandler(
 		alertsHandler:             newAlertsHandler(alerts),
 		agentRunsHandler:          newAgentRunsHandler(agents),
 		userSessionsHandler:       newUserSessionsHandler(orgs, users),
-		documentsHandler:          newDocumentsHandler(documents),
+		documentsHandler:          newDocumentsHandler(documents, users),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db, users, debriefs),
 		incidentTimelineHandler:   newIncidentTimelineHandler(db),
 		incidentMetadataHandler:   newIncidentMetadataHandler(db, incidents),

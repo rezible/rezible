@@ -411,7 +411,6 @@ var provideServices = do.Package(
 		return db.NewDocumentsService(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
-			do.MustInvoke[rez.AuthSessionService](i),
 			do.MustInvoke[rez.TeamService](i),
 		)
 	}),

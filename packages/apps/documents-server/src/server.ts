@@ -1,4 +1,3 @@
-import type { IncomingHttpHeaders } from "http";
 import type {
 	Extension,
 	onAuthenticatePayload,
@@ -12,12 +11,8 @@ import { Database } from "@hocuspocus/extension-database";
 import pg from "pg";
 import { emptyDocument } from "./transformer";
 
-import { client, getCurrentAuthSession, getDocumentAccess, type User, type Options } from "@rezible/api-client-ts";
-import type {Config} from "./config.ts";
-
-const tenantIdHeader = "x-rez-tenant-id";
-const authCookieName = "rez_access_token";
-const reqSecurity: Options["security"] = [{ scheme: 'bearer', type: 'http' }];
+import { decrypt } from "paseto-ts/v4";
+import type { Config } from "./config.ts";
 
 const docsTableName = "documents";
 
@@ -33,72 +28,61 @@ const upsertDocumentQuery = `
 
 type AuthSessionContext = {
 	tenantId: string;
-	user: User;
-	expiresAt: string;
+	userId: string;
+	documentId: string;
+	canEdit: boolean;
 };
 const getTenantId = (data: {context: any}) => (data.context as AuthSessionContext).tenantId;
+
+type DocumentEditorSessionClaims = {
+	user_id: string;
+	tenant_id: string;
+	document_id: string;
+	can_edit: boolean;
+};
+
+export const decryptDocumentEditorSessionToken = (key: Uint8Array, token: string, documentName: string): AuthSessionContext => {
+	const { payload } = decrypt<DocumentEditorSessionClaims>(key, token);
+
+	return {
+		tenantId: String(payload.tenant_id),
+		userId: payload.sub || payload.user_id,
+		documentId: payload.document_id,
+		canEdit: payload.can_edit,
+	};
+};
 
 export class DocumentsServerExtension implements Extension {
 	extensionName = "Rezible Documents Server";
 	database: Database;
 	dbPool: pg.Pool;
+	sessionTokenKey: Uint8Array;
 
-	constructor({ apiUrl, dbUrl }: Config) {
-		client.setConfig({
-			baseUrl: `${apiUrl}/v1`,
-			headers: {
-				["X-Rez-DocumentsServer"]: true,
-			}
-		});
-
+	constructor({ dbUrl, sessionTokenSecretKey }: Config) {
 		this.dbPool = new pg.Pool({connectionString: dbUrl});
 		this.database = new Database({
 			fetch: data => this.fetchDocument(data), 
 			store: data => this.storeDocument(data),
 		});
+		this.sessionTokenKey = sessionTokenSecretKey;
 	}
 
 	async onDestroy(data: onDestroyPayload): Promise<void> {
 		await this.dbPool?.end();
 	}
 
-	getRequestAuth(data: {requestHeaders: IncomingHttpHeaders}): {auth: string, security: Options["security"]} {
-		const authToken = data.requestHeaders.cookie
-			?.split(';')
-			.find(c => c.trim().startsWith(`${authCookieName}=`))
-			?.split("=")
-			.at(1);
-		if (!authToken) throw new Error('missing or invalid auth token');
-		return {auth: authToken, security: reqSecurity};
-	}
-
 	async onAuthenticate(data: onAuthenticatePayload): Promise<AuthSessionContext> {
-		const tenantId = data.request.headers[tenantIdHeader];
-		if (!tenantId || Array.isArray(tenantId)) {
-			throw new Error("invalid auth headers");
+		if (!data.token) {
+			throw new Error("missing document session token");
 		}
-
-		const authRes = await getCurrentAuthSession(this.getRequestAuth(data));
-		if (authRes.error) {
-			throw new Error("failed to check auth session");
-		};
-		const user = authRes.data.data.user;
-		const expiresAt = authRes.data.data.expiresAt;
-
-		const res = await getDocumentAccess({
-			...this.getRequestAuth(data),
-			path: { id: data.documentName },
-		});
-        if (res.error) {
-			throw new Error("Failed to get access: " + JSON.stringify(res.error));
-		};
+		const session = decryptDocumentEditorSessionToken(this.sessionTokenKey, data.token, data.documentName);
 
 		data.connectionConfig = {
 			isAuthenticated: true,
-			readOnly: !res.data.data.canEdit,
+			readOnly: !session.canEdit,
 		};
 
-		return {tenantId, user, expiresAt};
+		return session;
 	}
 
 	private async fetchDocument(data: fetchPayload) {

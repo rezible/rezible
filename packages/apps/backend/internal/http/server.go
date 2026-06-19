@@ -81,27 +81,50 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSession
 	return &s, nil
 }
 
+func authScopesSatisfied(authScopes []string, secOpts oapiv1.SecurityMethodOptions) bool {
+	authParts := make(map[string][]string)
+	for _, scope := range authScopes {
+		parts := strings.Split(scope, ":")
+		if len(parts) == 2 || len(parts) == 3 {
+			authParts[parts[0]] = parts[1:]
+		} else {
+			slog.Warn("invalid auth scope", "scope", scope)
+		}
+	}
+	for _, opt := range secOpts {
+		for method, scopes := range opt {
+			slog.Debug("check api method scopes", "method", method, "scopes", scopes)
+			for _, scope := range scopes {
+				methodParts := strings.Split(scope, ":")
+				if len(methodParts) != 2 && len(methodParts) != 3 {
+					slog.Warn("invalid api security method scope",
+						"method", method, "scope", scope)
+					continue
+				}
+				subParts, ok := authParts[methodParts[0]]
+				if !ok {
+					continue
+				}
+				// TODO: check subParts
+				slog.Debug("check scope sub parts", "subParts", subParts)
+				return true
+			}
+		}
+	}
+	return false
+}
+
 func (s *Server) makeOpenApi(ts rez.TelemetryService, v1h oapiv1.Handler) openapi.API {
-	checkMethodOptionsFn := func(ctx context.Context, methods oapiv1.RequestSecurityMethods) error {
-		exec := execution.GetContext(ctx)
-		if exec.IsAnonymous() {
+	checkMethodOptionsFn := func(ctx context.Context, secOpts oapiv1.SecurityMethodOptions) error {
+		ec := execution.GetContext(ctx)
+		if ec.IsAnonymous() {
 			return rez.ErrAuthSessionMissing
 		}
 
-		if exec.Auth.TokenID != nil { // authed from token
-			// TODO
-			return rez.ErrAuthSessionInvalid
-		}
-
-		if exec.Auth.UserID != nil {
-			if !methods.AppCookie.Allowed {
+		if len(ec.Auth.Scopes) > 0 {
+			if !authScopesSatisfied(ec.Auth.Scopes, secOpts) {
 				return rez.ErrAuthSessionInvalid
 			}
-			for _, scopes := range methods.AppCookie.RequiredScopeSets {
-				// TODO: check scopes
-				slog.Debug("check required scopes", "scope", scopes)
-			}
-			return nil
 		}
 
 		// no auth context
@@ -147,7 +170,7 @@ func (s *Server) makeDocumentsProxyHandler(serverUrl *url.URL) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			exec := execution.GetContext(r.Context())
 			tenantId, tenantOk := exec.TenantID()
-			if exec.IsAnonymous() || exec.Auth.TokenID != nil || !tenantOk {
+			if exec.IsAnonymous() || !tenantOk {
 				http.Error(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 				return
 			}
