@@ -57,7 +57,7 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 
 	alertAlias := ae.Event.MakeEntityAliasRef()
 
-	for _, related := range attrs.RelatedEntities {
+	for _, related := range projections.SortRelatedEntityRefs(attrs.RelatedEntities) {
 		relatedAlias := ent.KnowledgeEntityAliasRef{
 			Provider:           ae.Event.Provider,
 			ProviderSubjectRef: related.ExternalRef,

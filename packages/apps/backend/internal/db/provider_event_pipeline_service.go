@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"runtime/debug"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -255,7 +254,10 @@ func (s *ProviderEventPipelineService) processProviderEvent(ctx context.Context,
 					EventId: ev.ID,
 				},
 				InsertOpts: &river.InsertOpts{
-					//UniqueOpts: river.UniqueOpts{ByArgs: true},
+					UniqueOpts: river.UniqueOpts{
+						ByArgs:  true,
+						ByState: jobs.UniqueStateNonCompleted,
+					},
 				},
 			}
 		}
@@ -312,18 +314,22 @@ func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Contex
 }
 
 func (s *ProviderEventPipelineService) runEventProjector(ctx context.Context, ev *ent.NormalizedEvent, projector rez.NormalizedEventProjector) error {
-	return s.db.WithTx(ctx, func(ctx context.Context, _ *ent.Client) (err error) {
+	txErr := s.db.WithTx(ctx, func(ctx context.Context, _ *ent.Client) (err error) {
 		defer func() {
 			if v := recover(); v != nil {
-				slog.WarnContext(ctx, "event projection panic",
-					"error", fmt.Sprintf("%+v", v),
-					"stack", string(debug.Stack()),
-					"event", ev.ID.String())
+				//slog.WarnContext(ctx, "event projection panic",
+				//	"error", fmt.Sprintf("%+v", v),
+				//	"stack", string(debug.Stack()),
+				//	"event", ev.ID.String())
 				err = fmt.Errorf("projector panic: %v", v)
 			}
 		}()
 		return projector.HandleEventProjection(ctx, ev)
 	})
+	if s.db.IsTransientError(txErr) {
+		return projections.Retryable(txErr)
+	}
+	return txErr
 }
 
 type eventProjectionResult struct {

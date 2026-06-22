@@ -122,6 +122,9 @@ func (s *ProviderEventPipelineServiceSuite) TestIngestProcessAndProjectEndToEnd(
 		InsertMany(mock.Anything, mock.Anything).
 		RunAndReturn(func(_ context.Context, params []river.InsertManyParams) ([]*rivertype.JobInsertResult, error) {
 			s.Require().Len(params, 1)
+			s.Require().NotNil(params[0].InsertOpts)
+			s.True(params[0].InsertOpts.UniqueOpts.ByArgs)
+			s.Equal(jobs.UniqueStateNonCompleted, params[0].InsertOpts.UniqueOpts.ByState)
 
 			var ok bool
 			capturedProjectArgs, ok = params[0].Args.(jobs.ProjectNormalizedEvent)
@@ -273,6 +276,26 @@ func (s *ProviderEventPipelineServiceSuite) TestRetryableProjectionFailureReturn
 	s.Contains(status.LastError, "dependency not ready")
 }
 
+func (s *ProviderEventPipelineServiceSuite) TestTransientDatabaseProjectionFailureReturnsRetryableError() {
+	ctx := s.SeedTenantContext()
+	transientErr := errors.New("database deadlock")
+	projector := &transientDatabasePipelineProjector{err: transientErr}
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
+	svc.db = transientDatabase{Database: s.Database(), transientErr: transientErr}
+	ev := s.createPipelineNormalizedEvent(ctx)
+
+	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
+	s.Require().Error(err)
+	s.True(projections.IsRetryable(err))
+
+	status, err := s.Client(ctx).NormalizedEventProjectionStatus.Query().
+		Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(reflect.TypeOf(projector).String())).
+		Only(ctx)
+	s.Require().NoError(err)
+	s.Equal(neps.StatusFailed, status.Status)
+	s.Contains(status.LastError, "database deadlock")
+}
+
 func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicMarksStatusFailed() {
 	ctx := s.SeedTenantContext()
 	projector := &panicPipelineProjector{}
@@ -286,7 +309,7 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicMarksStatusFailed
 		Only(ctx)
 	s.Require().NoError(err)
 	s.Equal(neps.StatusFailed, status.Status)
-	s.Contains(status.LastError, "projection panic: boom")
+	s.Contains(status.LastError, "projector panic: boom")
 	s.NotNil(status.FailedAt)
 }
 
@@ -358,6 +381,23 @@ type retryablePipelineProjector struct{}
 
 func (p *retryablePipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) error {
 	return projections.Retryable(errors.New("dependency not ready"))
+}
+
+type transientDatabase struct {
+	rez.Database
+	transientErr error
+}
+
+func (d transientDatabase) IsTransientError(err error) bool {
+	return errors.Is(err, d.transientErr)
+}
+
+type transientDatabasePipelineProjector struct {
+	err error
+}
+
+func (p *transientDatabasePipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) error {
+	return p.err
 }
 
 type panicPipelineProjector struct{}

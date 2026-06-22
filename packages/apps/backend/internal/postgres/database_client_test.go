@@ -4,8 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/testkit"
 	"github.com/stretchr/testify/suite"
@@ -164,4 +166,53 @@ func (s *DatabaseClientSuite) TestWithTxRollsBackOnPanic() {
 	before := s.tenantCount(ctx)
 	s.PanicsWithValue(panicErr, panicFn)
 	s.Equal(before, s.tenantCount(ctx))
+}
+
+func (s *DatabaseClientSuite) TestAcquireTxLocksRequiresTransaction() {
+	ctx := s.SeedTenantContext()
+
+	err := s.Database().AcquireTxLocks(ctx, "test", "a")
+
+	s.Require().Error(err)
+	s.Contains(err.Error(), "no active transaction")
+}
+
+func (s *DatabaseClientSuite) TestAcquireTxLocksWorksInsideTransaction() {
+	ctx := s.SeedTenantContext()
+
+	err := s.Database().WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
+		return s.Database().AcquireTxLocks(txCtx, "test", "b", "a", "a")
+	})
+
+	s.Require().NoError(err)
+}
+
+func (s *DatabaseClientSuite) TestAcquireTxLocksSortsOppositeInputOrder() {
+	ctx := s.SeedTenantContext()
+	var wg sync.WaitGroup
+	errs := make(chan error, 2)
+	lockFn := func(keys ...string) {
+		defer wg.Done()
+		err := s.Database().WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
+			return s.Database().AcquireTxLocks(txCtx, "test", keys...)
+		})
+		errs <- err
+	}
+
+	wg.Add(2)
+	go lockFn("b", "a")
+	go lockFn("a", "b")
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		s.Require().NoError(err)
+	}
+}
+
+func (s *DatabaseClientSuite) TestIsTransientErrorClassifiesPostgresConcurrencyErrors() {
+	s.True(s.Database().IsTransientError(&pgconn.PgError{Code: "40P01"}))
+	s.True(s.Database().IsTransientError(fmt.Errorf("wrapped: %w", &pgconn.PgError{Code: "40001"})))
+	s.False(s.Database().IsTransientError(&pgconn.PgError{Code: "23505"}))
+	s.False(s.Database().IsTransientError(errors.New("plain error")))
 }

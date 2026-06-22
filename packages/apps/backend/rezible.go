@@ -40,6 +40,8 @@ type (
 	Database interface {
 		Client(context.Context) *ent.Client
 		WithTx(context.Context, func(context.Context, *ent.Client) error, ...ent.TxOption) error
+		AcquireTxLocks(context.Context, string, ...string) error
+		IsTransientError(error) bool
 		Shutdown() error
 	}
 

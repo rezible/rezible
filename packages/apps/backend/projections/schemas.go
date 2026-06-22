@@ -8,24 +8,6 @@ import (
 
 const attributeFieldNameTag = "json"
 
-type SubjectKind string
-
-func (k SubjectKind) String() string {
-	return string(k)
-}
-
-func (k SubjectKind) Matches(ev *ent.NormalizedEvent) bool {
-	return SubjectKind(ev.SubjectKind) == k
-}
-
-const SubjectKindChatMessage SubjectKind = "chat_message"
-
-type RelatedEntityRef struct {
-	ExternalRef string `json:"external_ref" validate:"required"`
-	Kind        string `json:"kind" validate:"required"`
-	DisplayName string `json:"display_name" validate:"required"`
-}
-
 type (
 	// ChatMessage is a normalized chat message observed from a messaging provider.
 	ChatMessage = Event[ChatMessageAttributes]

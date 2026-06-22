@@ -77,3 +77,7 @@ type KnowledgeEntityAliasRef struct {
 func (ref KnowledgeEntityAliasRef) Predicate() predicate.KnowledgeEntityAlias {
 	return knea.And(knea.Provider(ref.Provider), knea.ProviderSubjectRef(ref.ProviderSubjectRef))
 }
+
+func (ref KnowledgeEntityAliasRef) SortKey() string {
+	return ref.Provider + "\x1f" + ref.ProviderSubjectRef
+}

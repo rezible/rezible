@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"sort"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	rez "github.com/rezible/rezible"
@@ -47,6 +49,48 @@ func (dbc *DatabaseClient) Client(ctx context.Context) *ent.Client {
 		return tx.Client()
 	}
 	return dbc.client
+}
+
+func (dbc *DatabaseClient) AcquireTxLocks(ctx context.Context, namespace string, keys ...string) error {
+	if ent.TxFromContext(ctx) == nil {
+		return fmt.Errorf("no active transaction")
+	}
+	if namespace == "" {
+		return fmt.Errorf("namespace is required")
+	}
+
+	tenantScope := "tenant:system"
+	if tenantId, tenantOk := execution.GetContext(ctx).TenantID(); tenantOk {
+		tenantScope = fmt.Sprintf("tenant:%d", tenantId)
+	}
+
+	lockKeys := make([]string, 0, len(keys))
+	seen := make(map[string]struct{}, len(keys))
+	for _, key := range keys {
+		lockKey := namespace + "\x1f" + tenantScope + "\x1f" + key
+		if _, exists := seen[lockKey]; !exists {
+			seen[lockKey] = struct{}{}
+			lockKeys = append(lockKeys, lockKey)
+		}
+	}
+	sort.Strings(lockKeys)
+
+	for _, key := range lockKeys {
+		if lockErr := ent.ExecTx(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", key); lockErr != nil {
+			return fmt.Errorf("acquire transaction lock: %w", lockErr)
+		}
+	}
+	return nil
+}
+
+func (dbc *DatabaseClient) IsTransientError(err error) bool {
+	if err == nil {
+		return false
+	}
+	if pgErr, ok := errors.AsType[*pgconn.PgError](err); ok {
+		return pgErr.Code == "40P01" || pgErr.Code == "40001"
+	}
+	return false
 }
 
 func (dbc *DatabaseClient) WithTx(ctx context.Context, fn func(txCtx context.Context, tx *ent.Client) error, opts ...ent.TxOption) error {

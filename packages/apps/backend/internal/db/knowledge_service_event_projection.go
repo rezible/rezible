@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 	"fmt"
+	"slices"
+	"strings"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -96,19 +98,49 @@ func (kp *knowledgeEntityEventProjector) projectEvent(ev *ent.NormalizedEvent) (
 }
 
 func (kp *knowledgeEntityEventProjector) saveProjection(ctx context.Context, result *KnowledgeProjection) error {
-	for _, projEnt := range result.Entities {
+	for _, projEnt := range sortProjectedKnowledgeEntities(result.Entities) {
 		_, saveErr := kp.knowledge.ResolveProjectedEntity(ctx, kp.event, projEnt)
 		if saveErr != nil {
 			return fmt.Errorf("save projected entity: %w", saveErr)
 		}
 	}
-	for _, projRel := range result.Relationships {
+
+	for _, projRel := range sortProjectedKnowledgeRelationships(result.Relationships) {
 		_, saveErr := kp.knowledge.ResolveProjectedRelationship(ctx, kp.event, projRel)
 		if saveErr != nil {
 			return fmt.Errorf("save projected relationship: %w", saveErr)
 		}
 	}
 	return nil
+}
+
+func sortProjectedKnowledgeEntities(entities []rez.ProjectedKnowledgeEntity) []rez.ProjectedKnowledgeEntity {
+	sortedEntities := append([]rez.ProjectedKnowledgeEntity(nil), entities...)
+	slices.SortStableFunc(sortedEntities, func(left, right rez.ProjectedKnowledgeEntity) int {
+		leftKey := knowledgeEntitySortKey(left)
+		rightKey := knowledgeEntitySortKey(right)
+		if leftKey != rightKey {
+			return strings.Compare(leftKey, rightKey)
+		}
+		if left.Kind != right.Kind {
+			return strings.Compare(left.Kind, right.Kind)
+		}
+		return strings.Compare(left.DisplayName, right.DisplayName)
+	})
+	return sortedEntities
+}
+
+func sortProjectedKnowledgeRelationships(relationships []rez.ProjectedKnowledgeRelationship) []rez.ProjectedKnowledgeRelationship {
+	sortedRelationships := append([]rez.ProjectedKnowledgeRelationship(nil), relationships...)
+	slices.SortStableFunc(sortedRelationships, func(left, right rez.ProjectedKnowledgeRelationship) int {
+		leftKey := left.FromAliasRef.SortKey() + "\x1f" + left.ToAliasRef.SortKey()
+		rightKey := right.FromAliasRef.SortKey() + "\x1f" + right.ToAliasRef.SortKey()
+		if leftKey != rightKey {
+			return strings.Compare(leftKey, rightKey)
+		}
+		return strings.Compare(left.Kind, right.Kind)
+	})
+	return sortedRelationships
 }
 
 // Event projections

@@ -79,6 +79,18 @@ func ExtractPgxTx(txClient *Tx) (pgx.Tx, error) {
 	return pgxDrvTx.PGXTransaction(), nil
 }
 
+func ExecTx(ctx context.Context, query string, args ...any) error {
+	txClient := TxFromContext(ctx)
+	if txClient == nil {
+		return errors.New("ent: no transaction in context")
+	}
+	txDrv, drvOk := txClient.config.driver.(*txDriver)
+	if !drvOk {
+		return errors.New("ent: tx does not support driver")
+	}
+	return txDrv.Exec(ctx, query, args, nil)
+}
+
 type ListResult[T any] struct {
 	Data  []*T
 	Count int

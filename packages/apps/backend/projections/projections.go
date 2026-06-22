@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"slices"
 	"strings"
 	"time"
 
@@ -144,4 +145,36 @@ func validateAttributes[A any](attrs A) error {
 		}
 	}
 	return nil
+}
+
+type SubjectKind string
+
+func (k SubjectKind) String() string {
+	return string(k)
+}
+
+func (k SubjectKind) Matches(ev *ent.NormalizedEvent) bool {
+	return SubjectKind(ev.SubjectKind) == k
+}
+
+const SubjectKindChatMessage SubjectKind = "chat_message"
+
+type RelatedEntityRef struct {
+	ExternalRef string `json:"external_ref" validate:"required"`
+	Kind        string `json:"kind" validate:"required"`
+	DisplayName string `json:"display_name" validate:"required"`
+}
+
+func SortRelatedEntityRefs(refs []RelatedEntityRef) []RelatedEntityRef {
+	sortedRefs := append([]RelatedEntityRef(nil), refs...)
+	slices.SortStableFunc(sortedRefs, func(left, right RelatedEntityRef) int {
+		if left.ExternalRef != right.ExternalRef {
+			return strings.Compare(left.ExternalRef, right.ExternalRef)
+		}
+		if left.Kind != right.Kind {
+			return strings.Compare(left.Kind, right.Kind)
+		}
+		return strings.Compare(left.DisplayName, right.DisplayName)
+	})
+	return sortedRefs
 }

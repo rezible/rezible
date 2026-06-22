@@ -68,3 +68,16 @@ func TestDecodeWithRejectsUnknownAttributes(t *testing.T) {
 	require.Error(t, err)
 	assert.ErrorContains(t, err, "invalid keys")
 }
+
+func TestSortRelatedEntityRefs(t *testing.T) {
+	refs := []RelatedEntityRef{
+		{ExternalRef: "demo:component:search_api", Kind: "service", DisplayName: "Search API"},
+		{ExternalRef: "demo:component:elasticsearch_catalog", Kind: "search_cluster", DisplayName: "Elasticsearch Catalog"},
+	}
+
+	sortedRefs := SortRelatedEntityRefs(refs)
+
+	assert.Equal(t, "demo:component:elasticsearch_catalog", sortedRefs[0].ExternalRef)
+	assert.Equal(t, "demo:component:search_api", sortedRefs[1].ExternalRef)
+	assert.Equal(t, "demo:component:search_api", refs[0].ExternalRef)
+}

@@ -2,6 +2,7 @@ package db
 
 import (
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -216,6 +217,109 @@ func (s *KnowledgeServiceProjectionSuite) TestAliasConflictFailsLoudly() {
 	_, err = svc.ResolveProjectedEntity(ctx, ev, proj)
 	s.Require().Error(err)
 	s.True(strings.Contains(err.Error(), "different entities"))
+}
+
+func (s *KnowledgeServiceProjectionSuite) TestSortProjectedKnowledgeEntities() {
+	entities := []rez.ProjectedKnowledgeEntity{
+		{
+			Kind:        "service",
+			DisplayName: "Search API",
+			AliasRefs: []ent.KnowledgeEntityAliasRef{{
+				Provider:           "demo",
+				ProviderSubjectRef: "demo:component:search_api",
+			}},
+		},
+		{
+			Kind:        "search_cluster",
+			DisplayName: "Elasticsearch Catalog",
+			AliasRefs: []ent.KnowledgeEntityAliasRef{{
+				Provider:           "demo",
+				ProviderSubjectRef: "demo:component:elasticsearch_catalog",
+			}},
+		},
+	}
+
+	sortedEntities := sortProjectedKnowledgeEntities(entities)
+
+	s.Require().Equal("Search API", entities[0].DisplayName)
+	s.Require().Equal("Elasticsearch Catalog", sortedEntities[0].DisplayName)
+	s.Require().Equal("Search API", sortedEntities[1].DisplayName)
+}
+
+func (s *KnowledgeServiceProjectionSuite) TestConcurrentProjectionWithOppositeEntityOrderDoesNotDuplicateEntities() {
+	ctx := s.SeedTenantContext()
+	svc := s.newKnowledgeService()
+	occurredAt := time.Date(2026, 6, 1, 10, 0, 0, 0, time.UTC)
+	firstAttrs := s.mustEncodeAttrs(projections.CodeChangeSubjectAttributes{
+		RepositoryExternalRef: "repo-" + uuid.NewString(),
+		DisplayName:           "first",
+	})
+	first := s.createNormalizedEvent(projections.SubjectKindCodeChange, "change-"+uuid.NewString(), occurredAt, firstAttrs)
+
+	secondAttrs := s.mustEncodeAttrs(projections.CodeChangeSubjectAttributes{
+		RepositoryExternalRef: "repo-" + uuid.NewString(),
+		DisplayName:           "second",
+	})
+	second := s.createNormalizedEvent(projections.SubjectKindCodeChange, "change-"+uuid.NewString(), occurredAt, secondAttrs)
+	refA := "demo:component:concurrent-a-" + uuid.NewString()
+	refB := "demo:component:concurrent-b-" + uuid.NewString()
+	projectedEntity := func(ref, kind, displayName string) rez.ProjectedKnowledgeEntity {
+		return rez.ProjectedKnowledgeEntity{
+			Kind:              kind,
+			DisplayName:       displayName,
+			EvidenceAssertion: assertionSystemComponentExists,
+			Properties:        map[string]any{"external_ref": ref},
+			AliasRefs: []ent.KnowledgeEntityAliasRef{{
+				Provider:           "demo",
+				ProviderSubjectRef: ref,
+			}},
+			IsPlaceholder: true,
+		}
+	}
+	firstProjection := &KnowledgeProjection{
+		Entities: []rez.ProjectedKnowledgeEntity{
+			projectedEntity(refA, "service", "Concurrent A"),
+			projectedEntity(refB, "search_cluster", "Concurrent B"),
+		},
+	}
+	secondProjection := &KnowledgeProjection{
+		Entities: []rez.ProjectedKnowledgeEntity{
+			projectedEntity(refB, "search_cluster", "Concurrent B"),
+			projectedEntity(refA, "service", "Concurrent A"),
+		},
+	}
+
+	start := make(chan struct{})
+	var wg sync.WaitGroup
+	errs := make(chan error, 2)
+	runProjection := func(ev *ent.NormalizedEvent, projection *KnowledgeProjection) {
+		defer wg.Done()
+		<-start
+		errs <- newKnowledgeEntityEventProjector(ev, svc).saveProjection(ctx, projection)
+	}
+
+	wg.Add(2)
+	go runProjection(first, firstProjection)
+	go runProjection(second, secondProjection)
+	close(start)
+	wg.Wait()
+	close(errs)
+
+	for err := range errs {
+		s.Require().NoError(err)
+	}
+
+	aliases, err := s.Client(ctx).KnowledgeEntityAlias.Query().
+		Where(knea.ProviderSubjectRefIn(refA, refB)).
+		All(ctx)
+	s.Require().NoError(err)
+	s.Require().Len(aliases, 2)
+
+	entityIDs := map[uuid.UUID]struct{}{}
+	for _, alias := range aliases {
+		entityIDs[alias.EntityID] = struct{}{}
+	}
+	s.Len(entityIDs, 2)
 }
 
 func TestProjectCodeForgeObservedMapsToRepositoryFactEvidence(t *testing.T) {
