@@ -122,7 +122,7 @@ func (s *IntegrationsService) InstallNew(ctx context.Context, intgName string, p
 	return p.GetInstalledIntegration(intg), nil
 }
 
-func (s *IntegrationsService) UpdateInstalled(ctx context.Context, id uuid.UUID, settings map[string]any) (rez.InstalledIntegration, error) {
+func (s *IntegrationsService) UpdateInstalled(ctx context.Context, id uuid.UUID, params rez.UpdateIntegrationParams) (rez.InstalledIntegration, error) {
 	curr, currErr := s.getById(ctx, id)
 	if currErr != nil {
 		return nil, fmt.Errorf("failed to get integration: %w", currErr)
@@ -131,11 +131,16 @@ func (s *IntegrationsService) UpdateInstalled(ctx context.Context, id uuid.UUID,
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", curr.IntegrationName, pErr)
 	}
-	if settingsErr := p.ValidateUserSettings(settings); settingsErr != nil {
+	if settingsErr := p.ValidateUserSettings(params.UserSettings); settingsErr != nil {
 		return nil, fmt.Errorf("invalid user settings: %w", settingsErr)
 	}
+	displayName := params.DisplayName
+	if displayName == "" {
+		displayName = curr.DisplayName
+	}
 	setFn := func(m *ent.IntegrationMutation) {
-		m.SetUserSettings(settings)
+		m.SetDisplayName(displayName)
+		m.SetUserSettings(params.UserSettings)
 	}
 	intg, setErr := s.set(ctx, id, setFn)
 	if setErr != nil {

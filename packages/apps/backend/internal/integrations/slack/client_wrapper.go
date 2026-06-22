@@ -31,26 +31,26 @@ func (w *ClientWrapper) Client() *slack.Client {
 	return w.client
 }
 
-func (w *ClientWrapper) postMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
+func (w *ClientWrapper) PostMessage(ctx context.Context, channelId string, msgOpts ...slack.MsgOption) (string, error) {
 	_, msgTs, msgErr := w.client.PostMessageContext(ctx, channelId, msgOpts...)
 	return msgTs, msgErr
 }
 
-func (w *ClientWrapper) postEphemeralMessage(ctx context.Context, channelId, userId string, msgOpts ...slack.MsgOption) (string, error) {
+func (w *ClientWrapper) PostEphemeralMessage(ctx context.Context, channelId, userId string, msgOpts ...slack.MsgOption) (string, error) {
 	return w.client.PostEphemeralContext(ctx, channelId, userId, msgOpts...)
 }
 
 func (w *ClientWrapper) SendMessage(ctx context.Context, channelId string, content *rez.ContentNode) (string, error) {
 	blocks := ConvertContentToBlocks("", content)
-	return w.postMessage(ctx, channelId, slack.MsgOptionBlocks(blocks...))
+	return w.PostMessage(ctx, channelId, slack.MsgOptionBlocks(blocks...))
 }
 
 func (w *ClientWrapper) SendTextMessage(ctx context.Context, channelId string, text string) (string, error) {
-	return w.postMessage(ctx, channelId, slack.MsgOptionText(text, false))
+	return w.PostMessage(ctx, channelId, slack.MsgOptionText(text, false))
 }
 
 func (w *ClientWrapper) SendReply(ctx context.Context, channelId string, threadId string, text string) (string, error) {
-	return w.postMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
+	return w.PostMessage(ctx, channelId, slack.MsgOptionText(text, false), slack.MsgOptionTS(threadId))
 }
 
 func (w *ClientWrapper) OpenModalView(ctx context.Context, triggerId string, viewReq slack.ModalViewRequest) error {

@@ -45,8 +45,9 @@ func NewJobService(pool *pgxpool.Pool, tel rez.TelemetryService) (*JobService, e
 	})
 
 	cfg := &river.Config{
-		Schema: SchemaName,
-		Logger: s.logger,
+		Schema:      SchemaName,
+		Logger:      s.logger,
+		MaxAttempts: 3,
 		Middleware: []rivertype.Middleware{
 			telemetryMiddleware,
 			&accessContextMiddleware{},

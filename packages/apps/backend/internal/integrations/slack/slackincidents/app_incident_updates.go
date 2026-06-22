@@ -29,10 +29,10 @@ type incidentUpdateProcessor struct {
 	inc         *ent.Incident
 	incidentUrl *url.URL
 	prefs       UserSettingsIncidents
-	client      *slack.Client
+	client      *slackintegration.ClientWrapper
 }
 
-func (a *App) newUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
+func (a *App) newUpdateProcessor(ctx context.Context, client *slackintegration.ClientWrapper, incidentId uuid.UUID) (*incidentUpdateProcessor, error) {
 	inc, incErr := a.incidents.Get(ctx, incident.ID(incidentId))
 	if incErr != nil {
 		return nil, fmt.Errorf("get incident: %w", incErr)
@@ -49,7 +49,7 @@ func (a *App) newUpdateProcessor(ctx context.Context, incidentId uuid.UUID) (*in
 		db:          a.db,
 		incidents:   a.incidents,
 		messages:    a.messages,
-		client:      nil,
+		client:      client,
 		prefs:       prefs,
 	}, nil
 }
@@ -106,7 +106,7 @@ func (p *incidentUpdateProcessor) sendIncidentMilestoneMessage(ctx context.Conte
 			slack.NewTextBlockObject("mrkdwn", fmt.Sprintf("Note: %s", ms.Description), false, false),
 		))
 	}
-	_, msgTs, msgErr := p.client.PostMessageContext(ctx, p.inc.ChatChannelID, slack.MsgOptionBlocks(blocks...))
+	msgTs, msgErr := p.client.PostMessage(ctx, p.inc.ChatChannelID, slack.MsgOptionBlocks(blocks...))
 	if msgErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", msgErr)
 	}
@@ -139,7 +139,7 @@ func (p *incidentUpdateProcessor) findConversationByName(ctx context.Context, ch
 		Types:           []string{"public_channel"},
 	}
 	for {
-		channels, cursor, listErr := p.client.GetConversationsContext(ctx, params)
+		channels, cursor, listErr := p.client.Client().GetConversationsContext(ctx, params)
 		if listErr != nil {
 			return nil, fmt.Errorf("list conversations: %w", listErr)
 		}
@@ -175,7 +175,7 @@ func (p *incidentUpdateProcessor) createIncidentChannel(ctx context.Context) err
 		IsPrivate:   false,
 	}
 
-	channel, createErr := p.client.CreateConversationContext(ctx, createParams)
+	channel, createErr := p.client.Client().CreateConversationContext(ctx, createParams)
 	if createErr != nil {
 		nameAlreadyTaken := strings.Contains(createErr.Error(), "name_taken")
 		if !nameAlreadyTaken {
@@ -251,7 +251,7 @@ func (p *incidentUpdateProcessor) sendUserCreatedChannelMessage(ctx context.Cont
 	}
 	// send message to user that created incident
 	msgText := fmt.Sprintf("Incident created: <#%s>", p.inc.ChatChannelID)
-	_, sendErr := p.client.PostEphemeralContext(ctx, channelId, userId, slack.MsgOptionText(msgText, false))
+	_, sendErr := p.client.PostEphemeralMessage(ctx, channelId, userId, slack.MsgOptionText(msgText, false))
 	if sendErr != nil {
 		return fmt.Errorf("failed to send confirmation message: %w", sendErr)
 	}
@@ -275,7 +275,7 @@ func (p *incidentUpdateProcessor) postIncidentAnnouncement(ctx context.Context) 
 	builder := newIncidentAnnouncementMessageBuilder(p.inc, p.incidentUrl)
 	msgBlocks := slack.MsgOptionBlocks(builder.build()...)
 
-	_, _, postErr := p.client.PostMessageContext(ctx, announcementChannelId, msgBlocks)
+	_, postErr := p.client.PostMessage(ctx, announcementChannelId, msgBlocks)
 	if postErr != nil {
 		return fmt.Errorf("failed to post announcement message: %w", postErr)
 	}
@@ -310,7 +310,8 @@ func (p *incidentUpdateProcessor) updateIncidentChannel(ctx context.Context) err
 }
 
 func (p *incidentUpdateProcessor) updateIncidentChannelPinnedDetailsMessage(ctx context.Context) error {
-	pins, _, pinsErr := p.client.ListPinsContext(ctx, p.inc.ChatChannelID)
+	client := p.client.Client()
+	pins, _, pinsErr := client.ListPinsContext(ctx, p.inc.ChatChannelID)
 	if pinsErr != nil {
 		return fmt.Errorf("failed to list pins: %w", pinsErr)
 	}
@@ -326,14 +327,14 @@ func (p *incidentUpdateProcessor) updateIncidentChannelPinnedDetailsMessage(ctx 
 	msgOpts := builder.makeMessageBlocks()
 
 	if existingMsgTs != "" {
-		_, _, _, updateErr := p.client.UpdateMessageContext(ctx, p.inc.ChatChannelID, existingMsgTs, msgOpts)
+		_, _, _, updateErr := client.UpdateMessageContext(ctx, p.inc.ChatChannelID, existingMsgTs, msgOpts)
 		if updateErr != nil {
 			return fmt.Errorf("update message: %w", updateErr)
 		}
 		return nil
 	}
 
-	_, msgTs, postErr := p.client.PostMessageContext(ctx, p.inc.ChatChannelID, msgOpts)
+	_, msgTs, postErr := client.PostMessageContext(ctx, p.inc.ChatChannelID, msgOpts)
 	if postErr != nil {
 		return fmt.Errorf("post message: %w", postErr)
 	}
@@ -341,7 +342,7 @@ func (p *incidentUpdateProcessor) updateIncidentChannelPinnedDetailsMessage(ctx 
 		Channel:   p.inc.ChatChannelID,
 		Timestamp: msgTs,
 	}
-	if pinErr := p.client.AddPinContext(ctx, p.inc.ChatChannelID, pinItemRef); pinErr != nil {
+	if pinErr := client.AddPinContext(ctx, p.inc.ChatChannelID, pinItemRef); pinErr != nil {
 		return fmt.Errorf("pin message: %w", pinErr)
 	}
 
@@ -349,7 +350,8 @@ func (p *incidentUpdateProcessor) updateIncidentChannelPinnedDetailsMessage(ctx 
 }
 
 func (p *incidentUpdateProcessor) updateIncidentChannelTopic(ctx context.Context) error {
-	info, infoErr := p.client.GetConversationInfoContext(ctx, &slack.GetConversationInfoInput{
+	client := p.client.Client()
+	info, infoErr := client.GetConversationInfoContext(ctx, &slack.GetConversationInfoInput{
 		ChannelID:     p.inc.ChatChannelID,
 		IncludeLocale: true,
 	})
@@ -359,7 +361,7 @@ func (p *incidentUpdateProcessor) updateIncidentChannelTopic(ctx context.Context
 
 	topic := fmt.Sprintf("[%s] %s", p.inc.Edges.Severity.Name, p.inc.Title)
 	if info.Topic.Value != topic {
-		_, setErr := p.client.SetTopicOfConversationContext(ctx, p.inc.ChatChannelID, topic)
+		_, setErr := client.SetTopicOfConversationContext(ctx, p.inc.ChatChannelID, topic)
 		if setErr != nil {
 			return fmt.Errorf("failed to set channel topic: %w", setErr)
 		}
@@ -369,7 +371,8 @@ func (p *incidentUpdateProcessor) updateIncidentChannelTopic(ctx context.Context
 }
 
 func (p *incidentUpdateProcessor) ensureIncidentChannelBookmarks(ctx context.Context) (bool, error) {
-	bookmarks, listErr := p.client.ListBookmarksContext(ctx, p.inc.ChatChannelID)
+	client := p.client.Client()
+	bookmarks, listErr := client.ListBookmarksContext(ctx, p.inc.ChatChannelID)
 	if listErr != nil {
 		return false, fmt.Errorf("failed to list bookmarks: %w", listErr)
 	}
@@ -388,7 +391,7 @@ func (p *incidentUpdateProcessor) ensureIncidentChannelBookmarks(ctx context.Con
 	}
 
 	if !hasDetails {
-		_, addErr := p.client.AddBookmark(p.inc.ChatChannelID, slack.AddBookmarkParameters{
+		_, addErr := client.AddBookmark(p.inc.ChatChannelID, slack.AddBookmarkParameters{
 			Title: detailsTitle,
 			Link:  p.incidentUrl.String(),
 			Type:  "link",
@@ -402,7 +405,7 @@ func (p *incidentUpdateProcessor) ensureIncidentChannelBookmarks(ctx context.Con
 	primaryConf := p.inc.Edges.GetPrimaryVideoConference()
 	if primaryConf != nil {
 		if confBookmarkIndex == -1 {
-			_, addErr := p.client.AddBookmark(p.inc.ChatChannelID, slack.AddBookmarkParameters{
+			_, addErr := client.AddBookmark(p.inc.ChatChannelID, slack.AddBookmarkParameters{
 				Title: conferenceTitle,
 				Link:  primaryConf.JoinURL,
 				Emoji: ":video_camera:",
@@ -413,7 +416,7 @@ func (p *incidentUpdateProcessor) ensureIncidentChannelBookmarks(ctx context.Con
 			}
 			conferenceUpdated = true
 		} else if bm := bookmarks[confBookmarkIndex]; bm.Link != primaryConf.JoinURL {
-			_, editErr := p.client.EditBookmark(p.inc.ChatChannelID, bm.ID, slack.EditBookmarkParameters{
+			_, editErr := client.EditBookmark(p.inc.ChatChannelID, bm.ID, slack.EditBookmarkParameters{
 				Link: primaryConf.JoinURL,
 			})
 			if editErr != nil {
@@ -435,7 +438,7 @@ func (p *incidentUpdateProcessor) postIncidentConferenceMessage(ctx context.Cont
 		false,
 		false,
 	)
-	_, _, msgErr := p.client.PostMessageContext(ctx, p.inc.ChatChannelID,
+	_, msgErr := p.client.PostMessage(ctx, p.inc.ChatChannelID,
 		slack.MsgOptionBlocks(slack.NewSectionBlock(textBlock, nil, nil)))
 	return msgErr
 }
@@ -474,7 +477,7 @@ func (p *incidentUpdateProcessor) ensureIncidentChannelUsersAdded(ctx context.Co
 		return nil
 	}
 
-	_, invErr := p.client.InviteUsersToConversationContext(ctx, p.inc.ChatChannelID, missingIds.ToSlice()...)
+	_, invErr := p.client.Client().InviteUsersToConversationContext(ctx, p.inc.ChatChannelID, missingIds.ToSlice()...)
 	if invErr != nil {
 		p.logger.Error("failed to add users to incident channel", "error", invErr)
 		return invErr

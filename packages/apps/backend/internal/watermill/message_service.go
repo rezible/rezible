@@ -108,6 +108,7 @@ func (ms *MessageService) makePubSub(name string) (message.Publisher, message.Su
 	}
 	gcPubSub := gochannel.NewGoChannel(gcCfg, ms.logger)
 
+	pub = gcPubSub
 	sub = gcPubSub
 
 	var pubDecorationErr error

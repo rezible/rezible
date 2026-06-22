@@ -38,29 +38,29 @@ type (
 )
 
 type AgentService struct {
-	cfg          rez.AiConfig
-	logger       *slog.Logger
-	db           rez.Database
-	jobs         rez.JobService
-	msgs         rez.MessageService
-	incidents    rez.IncidentService
-	modelFactory ChatModelFactory
-	workflows    map[agentrun.WorkflowKind]agentWorkflow
+	cfg       rez.AiConfig
+	logger    *slog.Logger
+	db        rez.Database
+	jobs      rez.JobService
+	msgs      rez.MessageService
+	incidents rez.IncidentService
+	modelProv ModelProvider
+	workflows map[agentrun.WorkflowKind]agentWorkflow
 }
 
 func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, incidents rez.IncidentService) (*AgentService, error) {
 	s := &AgentService{
-		cfg:          cfg.AI,
-		logger:       tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
-		db:           db,
-		jobs:         jobSvc,
-		msgs:         msgSvc,
-		incidents:    incidents,
-		modelFactory: newChatModelFactory(cfg.AI),
-		workflows:    make(map[agentrun.WorkflowKind]agentWorkflow),
+		cfg:       cfg.AI,
+		logger:    tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
+		db:        db,
+		jobs:      jobSvc,
+		msgs:      msgSvc,
+		incidents: incidents,
+		modelProv: newChatModelProvider(cfg.AI),
+		workflows: make(map[agentrun.WorkflowKind]agentWorkflow),
 	}
 
-	s.registerWorkflow(&incidentContextPackWorkflow{incidents: incidents, modelFactory: s.modelFactory})
+	s.registerWorkflow(&incidentContextPackWorkflow{incidents: incidents, modelFactory: s.modelProv})
 	s.registerWorkflow(stubWorkflow{kind: agentrun.WorkflowKindAlertInvestigation})
 	s.registerWorkflow(stubWorkflow{kind: agentrun.WorkflowKindRetrospectiveAnalysis})
 
@@ -85,35 +85,6 @@ func (s *AgentService) registerMessageHandlers() error {
 
 func (s *AgentService) registerWorkflow(w agentWorkflow) {
 	s.workflows[w.Kind()] = w
-}
-
-func (s *AgentService) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
-	return s.requestIncidentContextPackRun(ctx, ev.IncidentId, "incident_updated")
-}
-
-func (s *AgentService) onIncidentImpactsUpdated(ctx context.Context, ev *rez.EventOnIncidentImpactsUpdated) error {
-	return s.requestIncidentContextPackRun(ctx, ev.IncidentId, "incident_impacts_updated")
-}
-
-func (s *AgentService) requestIncidentContextPackRun(ctx context.Context, incidentID uuid.UUID, trigger string) error {
-	if !s.cfg.Enabled || incidentID == uuid.Nil {
-		return nil
-	}
-	bucket := time.Now().UTC().Truncate(5 * time.Minute).Format(time.RFC3339)
-	_, reqErr := s.RequestRun(ctx, rez.AgentRunRequest{
-		WorkflowKind:   agentrun.WorkflowKindIncidentContextPack,
-		IdempotencyKey: fmt.Sprintf("incident-context-pack:auto:%s:%s", incidentID, bucket),
-		SubjectKind:    "incident",
-		SubjectID:      incidentID,
-		Metadata: map[string]any{
-			"trigger": trigger,
-			"bucket":  bucket,
-		},
-	})
-	if reqErr != nil {
-		return fmt.Errorf("request incident context pack run: %w", reqErr)
-	}
-	return nil
 }
 
 func (s *AgentService) GetRun(ctx context.Context, id uuid.UUID) (*ent.AgentRun, error) {
@@ -178,7 +149,7 @@ func (s *AgentService) RequestRun(ctx context.Context, params rez.AgentRunReques
 			SetStatus(agentrun.StatusQueued).
 			SetIdempotencyKey(runKey).
 			SetTriggerMetadata(params.Metadata).
-			SetModelMetadata(s.modelFactory.ModelMetadata()).
+			SetModelMetadata(s.modelProv.ModelMetadata()).
 			SetQueuedAt(time.Now().UTC())
 		if params.SubjectKind != "" {
 			create.SetSubjectKind(params.SubjectKind)

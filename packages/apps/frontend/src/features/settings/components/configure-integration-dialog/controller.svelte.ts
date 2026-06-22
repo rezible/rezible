@@ -1,12 +1,12 @@
 import { Context, watch } from "runed";
-import type { Component } from "svelte";
 import { SvelteSet } from "svelte/reactivity";
 
 import {
-	type ErrorModel,
 	type AvailableIntegration,
+	type CreateInstalledIntegrationRequestAttributes,
+	type ErrorModel,
 	type InstalledIntegration,
-	type CreateInstalledIntegrationRequestBody,
+	type UpdateInstalledIntegrationRequestAttributes,
 } from "$lib/api";
 
 import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
@@ -16,31 +16,52 @@ import GoogleConfig from "./config-components/GoogleConfig.svelte";
 import GithubConfig from "./config-components/GithubConfig.svelte";
 import DemoConfig from "./config-components/DemoConfig.svelte";
 import SlackIncidents from "./config-components/SlackIncidents.svelte";
+import type { Component } from "svelte";
+
+type ConfigMap = Record<string, unknown>;
 
 const configs: Record<string, Component> = {
-	"demo": DemoConfig,
-	"slack_agent": SlackAgent,
-	"slack_incidents": SlackIncidents,
-	"google": GoogleConfig,
-	"github": GithubConfig,
+	demo: DemoConfig,
+	slack_agent: SlackAgent,
+	slack_incidents: SlackIncidents,
+	google: GoogleConfig,
+	github: GithubConfig,
 };
 
-export type ConfigRequestAttributes = CreateInstalledIntegrationRequestBody["attributes"];
-
 export type ConfigureIntegrationDialogParams = {
-    integration?: AvailableIntegration;
-    installation?: InstalledIntegration;
-}
+	integration?: AvailableIntegration;
+	installation?: InstalledIntegration;
+};
 
 export class ConfigureIntegrationDialogController {
 	integrations = useIntegrationsController();
 
 	private params = $derived(this.integrations.configureDialogParams);
-    integration = $derived(this.params?.integration);
-    installation = $derived(this.params?.installation);
+	integration = $derived(this.params?.integration);
+	installation = $derived(this.params?.installation);
 
-    name = $derived(this.integration?.name);
-    ConfigComponent = $derived((!!this.name && this.name in configs) ? configs[this.name] : undefined);
+	name = $derived(this.integration?.name);
+	ConfigComponent = $derived(!!this.name && this.name in configs ? configs[this.name] : undefined);
+	isEditMode = $derived(!!this.installation);
+	isInstallMode = $derived(!this.isEditMode);
+
+	displayName = $state("");
+	preferences = $state.raw<ConfigMap>({});
+	installConfig = $state.raw<ConfigMap>({});
+	preferencesValid = $state(true);
+	installConfigValid = $state(true);
+	private displayNameValid = $derived(this.displayName.trim().length > 0);
+	configValid = $derived(
+		this.displayNameValid && this.preferencesValid && (this.isEditMode || this.installConfigValid)
+	);
+
+	constructor() {
+		this.resetDraft(this.params);
+		watch(
+			() => this.params,
+			(params) => this.resetDraft(params)
+		);
+	}
 
 	async startOAuthFlow() {
 		if (this.loading || !this.name) return;
@@ -52,9 +73,9 @@ export class ConfigureIntegrationDialogController {
 	}
 
 	oauthPending = $derived(this.integrations.oauth.inFlowForName === this.name);
-    oauthError = $derived(this.oauthPending ? this.integrations.oauth.error : undefined);
+	oauthError = $derived(this.oauthPending ? this.integrations.oauth.error : undefined);
 
-	configError = $state<ErrorModel>();
+	configError = $state.raw<ErrorModel>();
 
 	private setConfigError(err?: unknown) {
 		if (!err) {
@@ -67,38 +88,67 @@ export class ConfigureIntegrationDialogController {
 		};
 	}
 
-	installPending = $derived(this.integrations.installationPending && this.integrations.installingName === this.name);
+	installPending = $derived(
+		this.integrations.installationPending && this.integrations.installingName === this.name
+	);
 
-	configAttrs = $state<ConfigRequestAttributes>();
-	configValid = $state(false);
+	private resetDraft(params?: ConfigureIntegrationDialogParams) {
+		this.displayName =
+			params?.installation?.attributes.displayName ?? params?.integration?.displayName ?? "";
+		this.preferences = params?.installation?.attributes.settings ?? {};
+		this.installConfig = {};
+		this.preferencesValid = true;
+		this.installConfigValid = true;
+		this.setConfigError();
+	}
 
-    isOpen = $derived(!!this.integration);
+	setDisplayName(displayName: string) {
+		this.displayName = displayName;
+	}
+
+	setPreferences(preferences: ConfigMap, valid = true) {
+		this.preferences = preferences;
+		this.preferencesValid = valid;
+	}
+
+	setInstallConfig(config: ConfigMap, valid = true) {
+		if (!this.isInstallMode) return;
+		this.installConfig = config;
+		this.installConfigValid = valid;
+	}
+
+	isOpen = $derived(!!this.integration);
 
 	setOpen(open: boolean) {
 		if (!open && !this.oauthPending) this.close();
 	}
 
 	open(params: ConfigureIntegrationDialogParams) {
-		if (this.loading || !this.name || !this.integration) return;
+		if (this.loading) return;
 		this.integrations.configureDialogParams = params;
 	}
 
 	close() {
 		this.integrations.configureDialogParams = undefined;
-		this.configAttrs = undefined;
-		this.configValid = false;
-	}
-
-	setConfig(attrs: ConfigRequestAttributes, valid: boolean) {
-		this.configAttrs = attrs;
-		this.configValid = valid;
 	}
 
 	async saveConfig() {
-		if (!this.name || !this.configValid || !this.configAttrs) return;
+		if (!this.name || !this.configValid) return;
 		try {
-			await this.integrations.installNew(this.name, this.configAttrs);
-			// this.clearConfig();
+			if (!!this.installation) {
+				const attributes: UpdateInstalledIntegrationRequestAttributes = {
+					displayName: this.displayName.trim(),
+					preferences: this.preferences,
+				};
+				await this.integrations.updateInstallation(this.installation.id, attributes);
+			} else {
+				const attributes: CreateInstalledIntegrationRequestAttributes = {
+					displayName: this.displayName.trim(),
+					config: this.installConfig,
+					preferences: this.preferences,
+				};
+				await this.integrations.installNew(this.name, attributes);
+			}
 			this.setConfigError();
 		} catch (e) {
 			this.setConfigError(e);
@@ -106,7 +156,9 @@ export class ConfigureIntegrationDialogController {
 	}
 
 	installTargetOptions = $derived(this.integrations.installationTargetsByName.get(this.name ?? ""));
-	installationTargetSelectionRequired = $derived(!!this.installTargetOptions && this.installTargetOptions.length > 0);
+	installationTargetSelectionRequired = $derived(
+		!!this.installTargetOptions && this.installTargetOptions.length > 0
+	);
 	selectedInstallTargetExternalRefs = new SvelteSet<string>();
 
 	toggleInstallationTargetSelection(ref: string, selected: boolean) {
@@ -118,19 +170,23 @@ export class ConfigureIntegrationDialogController {
 	}
 
 	async confirmSelectedInstallationTargets() {
-		if (!this.name || this.integrations.installingName || this.selectedInstallTargetExternalRefs.size === 0) return;
+		if (
+			!this.name ||
+			this.integrations.installingName ||
+			this.selectedInstallTargetExternalRefs.size === 0
+		)
+			return;
 		const refs = [...this.selectedInstallTargetExternalRefs];
 		try {
 			await this.integrations.installFromTargets(this.name, refs);
 			this.selectedInstallTargetExternalRefs.clear();
-		} catch (e) {
-			
-		}
+		} catch {}
 	}
 
 	loading = $derived(this.oauthPending || this.installPending);
 }
 
 const ctx = new Context<ConfigureIntegrationDialogController>("ConfigureIntegrationDialogController");
-export const initConfigureIntegrationDialogController = () => ctx.set(new ConfigureIntegrationDialogController());
+export const initConfigureIntegrationDialogController = () =>
+	ctx.set(new ConfigureIntegrationDialogController());
 export const useConfigureIntegrationDialogController = () => ctx.get();

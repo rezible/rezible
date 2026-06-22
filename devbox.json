@@ -21,10 +21,10 @@
     "BACKEND_PORT": "7001",
     "API_DOMAIN": "api.dev.rezible.com",
     "API_URL": "https://api.dev.rezible.com",
-    "GRAFANA_PORT": "7012",
     "POSTGRES_PORT": "7010",
     "POSTGRES_ADMIN_USER": "postgres",
     "POSTGRES_APP_USER": "rez_app",
+    "GRAFANA_PORT": "7012",
     "DOCUMENTS__SESSION_TOKEN_SECRET_HEX": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f"
   },
   "shell": {

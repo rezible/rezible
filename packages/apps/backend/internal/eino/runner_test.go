@@ -61,11 +61,11 @@ func TestRunModelOnceRequiresContent(t *testing.T) {
 }
 
 func TestChatModelFactoryConfigValidation(t *testing.T) {
-	disabled := newChatModelFactory(rez.AiConfig{Enabled: false})
+	disabled := newChatModelProvider(rez.AiConfig{Enabled: false})
 	_, disabledErr := disabled.Model(context.Background())
 	require.ErrorContains(t, disabledErr, "disabled")
 
-	missingKey := newChatModelFactory(rez.AiConfig{
+	missingKey := newChatModelProvider(rez.AiConfig{
 		Enabled:  true,
 		Provider: "gemini",
 		Model:    "gemini-2.5-flash",

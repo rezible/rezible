@@ -2,7 +2,7 @@ import {
 	listAvailableIntegrationsOptions,
 	listInstalledIntegrationsOptions,
 	createInstalledIntegrationMutation,
-	type CreateInstalledIntegrationRequestBody,
+	type CreateInstalledIntegrationRequestAttributes,
 	type InstalledIntegration,
 	type ErrorModel,
 	listIntegrationInstallTargetsOptions,
@@ -10,6 +10,8 @@ import {
 	type AvailableIntegration,
 	installIntegrationTargetsMutation,
 	type IntegrationOAuthInstallResult,
+	updateInstalledIntegrationMutation,
+	type UpdateInstalledIntegrationRequestAttributes,
 } from "$lib/api";
 
 import { useUserSessionState } from "$lib/user-session.svelte";
@@ -91,12 +93,23 @@ export class IntegrationsController {
 		if (integration) this.openConfigureDialog(integration, installed);
 	}
 
+	private onInstallationsMutated(installation?: InstalledIntegration) {
+		const dialogParams = $state.snapshot(this.configureDialogParams);
+		this.refetchInstalled();
+		if (!!dialogParams?.integration) this.openConfigureDialog(dialogParams.integration, installation);
+	}
+
 	private installMut = createMutation(() => ({
 		...createInstalledIntegrationMutation({}),
 		onSuccess: ({data}) => {
-			const dialogParams = $state.snapshot(this.configureDialogParams);
-			this.refetchInstalled();
-			if (!!dialogParams?.integration) this.openConfigureDialog(dialogParams.integration, data);
+			this.onInstallationsMutated(data);
+		},
+	}));
+
+	private updateInstalledMut = createMutation(() => ({
+		...updateInstalledIntegrationMutation({}),
+		onSuccess: ({data}) => {
+			this.onInstallationsMutated(data);
 		},
 	}));
 
@@ -112,8 +125,12 @@ export class IntegrationsController {
 	installingName = $derived(this.installMut.variables?.path?.name || this.selectIntegrationInstallTargetMut.variables?.path.name);
 	installationErr = $derived(this.installMut.error || this.selectIntegrationInstallTargetMut.error);
 
-	async installNew(name: string, attributes: CreateInstalledIntegrationRequestBody["attributes"]) {
+	async installNew(name: string, attributes: CreateInstalledIntegrationRequestAttributes) {
 		await this.installMut.mutateAsync({path: { name }, body: { attributes }});
+	}
+
+	async updateInstallation(id: string, attributes: UpdateInstalledIntegrationRequestAttributes) {
+		await this.updateInstalledMut.mutateAsync({path: { id }, body: { attributes }});
 	}
 
 	async installFromTargets(name: string, externalRefs: string[]) {

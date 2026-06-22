@@ -207,6 +207,30 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionSkipsSucceededStatus()
 	s.Equal(0, projector.calls)
 }
 
+func (s *ProviderEventPipelineServiceSuite) TestProjectionRetriesPendingStatus() {
+	ctx := s.SeedTenantContext()
+	projector := &countingPipelineProjector{}
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
+	ev := s.createPipelineNormalizedEvent(ctx)
+
+	_, err := s.Client(ctx).NormalizedEventProjectionStatus.Create().
+		SetNormalizedEventID(ev.ID).
+		SetHandlerName(reflect.TypeOf(projector).String()).
+		SetStatus(neps.StatusPending).
+		Save(ctx)
+	s.Require().NoError(err)
+
+	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
+	s.Equal(1, projector.calls)
+
+	status, err := s.Client(ctx).NormalizedEventProjectionStatus.Query().
+		Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(reflect.TypeOf(projector).String())).
+		Only(ctx)
+	s.Require().NoError(err)
+	s.Equal(neps.StatusSucceeded, status.Status)
+	s.NotNil(status.LastAttemptedAt)
+}
+
 func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjectorWrites() {
 	ctx := s.SeedTenantContext()
 	creator := s.makeTestUser(ctx)
@@ -228,6 +252,41 @@ func (s *ProviderEventPipelineServiceSuite) TestProjectionFailureRollsBackProjec
 	s.Require().NoError(err)
 	s.Equal(neps.StatusFailed, status.Status)
 	s.NotEmpty(status.LastError)
+	s.NotNil(status.FailedAt)
+}
+
+func (s *ProviderEventPipelineServiceSuite) TestRetryableProjectionFailureReturnsError() {
+	ctx := s.SeedTenantContext()
+	projector := &retryablePipelineProjector{}
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
+	ev := s.createPipelineNormalizedEvent(ctx)
+
+	err := svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID})
+	s.Require().Error(err)
+	s.True(projections.IsRetryable(err))
+
+	status, err := s.Client(ctx).NormalizedEventProjectionStatus.Query().
+		Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(reflect.TypeOf(projector).String())).
+		Only(ctx)
+	s.Require().NoError(err)
+	s.Equal(neps.StatusFailed, status.Status)
+	s.Contains(status.LastError, "dependency not ready")
+}
+
+func (s *ProviderEventPipelineServiceSuite) TestProjectionPanicMarksStatusFailed() {
+	ctx := s.SeedTenantContext()
+	projector := &panicPipelineProjector{}
+	svc := s.newPipelineService(mocks.NewMockJobService(s.T()), projector)
+	ev := s.createPipelineNormalizedEvent(ctx)
+
+	s.Require().NoError(svc.HandleEventProjectionJob(ctx, jobs.ProjectNormalizedEvent{EventId: ev.ID}))
+
+	status, err := s.Client(ctx).NormalizedEventProjectionStatus.Query().
+		Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(reflect.TypeOf(projector).String())).
+		Only(ctx)
+	s.Require().NoError(err)
+	s.Equal(neps.StatusFailed, status.Status)
+	s.Contains(status.LastError, "projection panic: boom")
 	s.NotNil(status.FailedAt)
 }
 
@@ -293,4 +352,16 @@ func (p *rollbackPipelineProjector) HandleEventProjection(ctx context.Context, e
 		return err
 	}
 	return errors.New("projection failed after write")
+}
+
+type retryablePipelineProjector struct{}
+
+func (p *retryablePipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) error {
+	return projections.Retryable(errors.New("dependency not ready"))
+}
+
+type panicPipelineProjector struct{}
+
+func (p *panicPipelineProjector) HandleEventProjection(context.Context, *ent.NormalizedEvent) error {
+	panic("boom")
 }

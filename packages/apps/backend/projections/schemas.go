@@ -6,7 +6,7 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-const attributeFieldNameTag = "attr"
+const attributeFieldNameTag = "json"
 
 type SubjectKind string
 
@@ -21,9 +21,9 @@ func (k SubjectKind) Matches(ev *ent.NormalizedEvent) bool {
 const SubjectKindChatMessage SubjectKind = "chat_message"
 
 type RelatedEntityRef struct {
-	ExternalRef string `attr:"external_ref" validate:"required"`
-	Kind        string `attr:"kind" validate:"required"`
-	DisplayName string `attr:"display_name" validate:"required"`
+	ExternalRef string `json:"external_ref" validate:"required"`
+	Kind        string `json:"kind" validate:"required"`
+	DisplayName string `json:"display_name" validate:"required"`
 }
 
 type (
@@ -32,11 +32,11 @@ type (
 
 	// ChatMessageAttributes are the provider-neutral attributes persisted for chat message events.
 	ChatMessageAttributes struct {
-		ConversationExternalRef string             `attr:"conversation_external_ref" validate:"required"`
-		Body                    string             `attr:"body" validate:"required"`
-		SenderExternalRef       string             `attr:"sender_external_ref"`
-		ThreadExternalRef       string             `attr:"thread_external_ref"`
-		RelatedEntities         []RelatedEntityRef `attr:"related_entities"`
+		ConversationExternalRef string             `json:"conversation_external_ref" validate:"required"`
+		Body                    string             `json:"body" validate:"required"`
+		SenderExternalRef       string             `json:"sender_external_ref"`
+		ThreadExternalRef       string             `json:"thread_external_ref"`
+		RelatedEntities         []RelatedEntityRef `json:"related_entities"`
 	}
 )
 
@@ -49,8 +49,8 @@ type (
 
 	// CodeForgeSubjectAttributes are the provider-neutral attributes persisted for repository observations.
 	CodeForgeSubjectAttributes struct {
-		DisplayName string `attr:"display_name" validate:"required"`
-		URL         string `attr:"url"`
+		DisplayName string `json:"display_name" validate:"required"`
+		URL         string `json:"url"`
 	}
 )
 
@@ -66,9 +66,9 @@ type (
 
 	// CodeChangeSubjectAttributes are the provider-neutral attributes persisted for code change events.
 	CodeChangeSubjectAttributes struct {
-		RepositoryExternalRef string             `attr:"repository_external_ref" validate:"required"`
-		DisplayName           string             `attr:"display_name" validate:"required"`
-		RelatedEntities       []RelatedEntityRef `attr:"related_entities"`
+		RepositoryExternalRef string             `json:"repository_external_ref" validate:"required"`
+		DisplayName           string             `json:"display_name" validate:"required"`
+		RelatedEntities       []RelatedEntityRef `json:"related_entities"`
 	}
 )
 
@@ -84,10 +84,10 @@ type (
 
 	// UserSubjectAttributes are the provider-neutral attributes persisted for user observations.
 	UserSubjectAttributes struct {
-		Name     string `attr:"name" validate:"required"`
-		Email    string `attr:"email" validate:"required"`
-		ChatId   string `attr:"chat_id"`
-		Timezone string `attr:"timezone"`
+		Name     string `json:"name" validate:"required"`
+		Email    string `json:"email" validate:"required"`
+		ChatId   string `json:"chat_id"`
+		Timezone string `json:"timezone"`
 	}
 )
 
@@ -103,11 +103,11 @@ type (
 
 	// IncidentSubjectAttributes are the provider-neutral attributes persisted for incident observations.
 	IncidentSubjectAttributes struct {
-		Title       string    `attr:"title" validate:"required"`
-		Summary     string    `attr:"summary"`
-		SeverityRef string    `attr:"severity_ref" validate:"required"`
-		TypeRef     string    `attr:"type_ref" validate:"required"`
-		OpenedAt    time.Time `attr:"opened_at"`
+		Title       string    `json:"title" validate:"required"`
+		Summary     string    `json:"summary"`
+		SeverityRef string    `json:"severity_ref" validate:"required"`
+		TypeRef     string    `json:"type_ref" validate:"required"`
+		OpenedAt    time.Time `json:"opened_at"`
 	}
 )
 
@@ -123,10 +123,10 @@ type (
 
 	// AlertSubjectAttributes are the provider-neutral attributes persisted for alert observations.
 	AlertSubjectAttributes struct {
-		Title           string             `attr:"title" validate:"required"`
-		Description     string             `attr:"description"`
-		Definition      string             `attr:"definition"`
-		RelatedEntities []RelatedEntityRef `attr:"related_entities"`
+		Title           string             `json:"title" validate:"required"`
+		Description     string             `json:"description"`
+		Definition      string             `json:"definition"`
+		RelatedEntities []RelatedEntityRef `json:"related_entities"`
 	}
 )
 
@@ -140,9 +140,9 @@ type (
 	PlaybookEvent = Event[PlaybookSubjectAttributes]
 
 	PlaybookSubjectAttributes struct {
-		Title         string   `attr:"title" validate:"required"`
-		Content       string   `attr:"content" validate:"required"`
-		RelatedAlerts []string `attr:"related_alerts"`
+		Title         string   `json:"title" validate:"required"`
+		Content       string   `json:"content" validate:"required"`
+		RelatedAlerts []string `json:"related_alerts"`
 	}
 )
 
@@ -156,12 +156,12 @@ type (
 	IncidentImpactEvent = Event[IncidentImpactSubjectAttributes]
 
 	IncidentImpactSubjectAttributes struct {
-		IncidentExternalRef string `attr:"incident_external_ref" validate:"required"`
-		EntityExternalRef   string `attr:"entity_external_ref" validate:"required"`
-		EntityKind          string `attr:"entity_kind" validate:"required"`
-		EntityDisplayName   string `attr:"entity_display_name" validate:"required"`
-		Source              string `attr:"source"`
-		Note                string `attr:"note"`
+		IncidentExternalRef string `json:"incident_external_ref" validate:"required"`
+		EntityExternalRef   string `json:"entity_external_ref" validate:"required"`
+		EntityKind          string `json:"entity_kind" validate:"required"`
+		EntityDisplayName   string `json:"entity_display_name" validate:"required"`
+		Source              string `json:"source"`
+		Note                string `json:"note"`
 	}
 )
 
@@ -177,11 +177,11 @@ type (
 
 	// SystemComponentSubjectAttributes are the provider-neutral attributes persisted for system component observations.
 	SystemComponentSubjectAttributes struct {
-		ExternalRef string         `attr:"external_ref" validate:"required"`
-		Kind        string         `attr:"kind" validate:"required"`
-		DisplayName string         `attr:"display_name" validate:"required"`
-		Description string         `attr:"description"`
-		Properties  map[string]any `attr:"properties"`
+		ExternalRef string         `json:"external_ref" validate:"required"`
+		Kind        string         `json:"kind" validate:"required"`
+		DisplayName string         `json:"display_name" validate:"required"`
+		Description string         `json:"description"`
+		Properties  map[string]any `json:"properties"`
 	}
 )
 
@@ -197,17 +197,17 @@ type (
 
 	// SystemRelationshipSubjectAttributes are the provider-neutral attributes persisted for system relationship observations.
 	SystemRelationshipSubjectAttributes struct {
-		ExternalRef       string         `attr:"external_ref" validate:"required"`
-		Kind              string         `attr:"kind" validate:"required"`
-		DisplayName       string         `attr:"display_name"`
-		Description       string         `attr:"description"`
-		SourceExternalRef string         `attr:"source_external_ref" validate:"required"`
-		SourceKind        string         `attr:"source_kind" validate:"required"`
-		SourceDisplayName string         `attr:"source_display_name" validate:"required"`
-		TargetExternalRef string         `attr:"target_external_ref" validate:"required"`
-		TargetKind        string         `attr:"target_kind" validate:"required"`
-		TargetDisplayName string         `attr:"target_display_name" validate:"required"`
-		Properties        map[string]any `attr:"properties"`
+		ExternalRef       string         `json:"external_ref" validate:"required"`
+		Kind              string         `json:"kind" validate:"required"`
+		DisplayName       string         `json:"display_name"`
+		Description       string         `json:"description"`
+		SourceExternalRef string         `json:"source_external_ref" validate:"required"`
+		SourceKind        string         `json:"source_kind" validate:"required"`
+		SourceDisplayName string         `json:"source_display_name" validate:"required"`
+		TargetExternalRef string         `json:"target_external_ref" validate:"required"`
+		TargetKind        string         `json:"target_kind" validate:"required"`
+		TargetDisplayName string         `json:"target_display_name" validate:"required"`
+		Properties        map[string]any `json:"properties"`
 	}
 )
 

@@ -4,30 +4,19 @@
 	import { Button } from "$components/ui/button";
 	import RiGithubFill from "remixicon-svelte/icons/github-fill";
 	import { useConfigureIntegrationDialogController } from "../controller.svelte";
-	import { watchOnce } from "runed";
 
 	const ctrl = useConfigureIntegrationDialogController();
 
-	const ci = $derived(ctrl.installation);
 	const installation = $derived.by(() => {
-		if (!ci) return;
-		const config = ci.attributes.config;
-		const org = typeof config.org === "string" ? config.org : ci.attributes.displayName;
+		const curr = ctrl.installation;
+		if (!curr) return;
+		const config = curr.attributes.config;
+		const org = typeof config.org === "string" ? config.org : curr.attributes.displayName;
 		const installationId =
 			typeof config.installation_id === "number" || typeof config.installation_id === "string"
 				? String(config.installation_id)
-				: ci.attributes.externalRef;
-		return { id: ci.id, org, installationId };
-	})
-
-	watchOnce(() => ctrl.installation, inst => {
-        const cfg = {
-            displayName: "Github",
-            config: {},
-            preferences: {},
-        };
-        ctrl.setConfig(cfg, true);
-		console.log("install", inst);
+				: curr.attributes.externalRef;
+		return { org, installationId };
 	});
 </script>
 
@@ -44,7 +33,7 @@
 	<Alert.Root>
 		<Alert.Title>Connect GitHub</Alert.Title>
 		<Alert.Description>
-			Sign in with Slack to install the GitHub app and grant repository/change event access.
+			Sign in with GitHub to install the GitHub app and grant repository/change event access.
 		</Alert.Description>
 	</Alert.Root>
 
@@ -57,11 +46,11 @@
 			class="w-fit h-fit cursor-pointer p-0"
 		>
 			<span
-			class="inline-flex h-10 items-center gap-2 rounded-md bg-foreground px-4 text-sm font-medium text-background"
-		>
-			<RiGithubFill class="size-5" />
-			Connect GitHub
-		</span>
+				class="inline-flex h-10 items-center gap-2 rounded-md bg-foreground px-4 text-sm font-medium text-background"
+			>
+				<RiGithubFill class="size-5" />
+				Connect GitHub
+			</span>
 		</Button>
 	</div>
 {/if}

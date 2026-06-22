@@ -20,7 +20,7 @@ func DefaultConfig() Config {
 			},
 		},
 		AI: AiConfig{
-			Enabled:               true,
+			Enabled:               false,
 			Provider:              "gemini",
 			Model:                 "gemini-2.5-flash",
 			StoreRawModelPayloads: false,

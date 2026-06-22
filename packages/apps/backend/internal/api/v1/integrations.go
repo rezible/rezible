@@ -81,7 +81,12 @@ func (h *integrationsHandler) CreateInstalledIntegration(ctx context.Context, re
 func (h *integrationsHandler) UpdateInstalledIntegration(ctx context.Context, req *oapi.UpdateInstalledIntegrationRequest) (*oapi.UpdateInstalledIntegrationResponse, error) {
 	var resp oapi.UpdateInstalledIntegrationResponse
 
-	intg, setErr := h.integrations.UpdateInstalled(ctx, req.Id, req.Body.Attributes.Preferences)
+	attr := req.Body.Attributes
+	params := rez.UpdateIntegrationParams{
+		DisplayName:  attr.DisplayName,
+		UserSettings: attr.Preferences,
+	}
+	intg, setErr := h.integrations.UpdateInstalled(ctx, req.Id, params)
 	if setErr != nil {
 		return nil, oapi.Error(ctx, "failed to configure integration", setErr)
 	}

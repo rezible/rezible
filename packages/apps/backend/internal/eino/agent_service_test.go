@@ -31,12 +31,12 @@ func (s *AgentServiceSuite) newService(jobSvc rez.JobService, msgSvc rez.Message
 	cfg.AI.Model = "gemini-2.5-flash"
 	cfg.AI.StoreRawModelPayloads = false
 	return &AgentService{
-		cfg:          cfg.AI,
-		logger:       slog.Default(),
-		db:           s.Database(),
-		jobs:         jobSvc,
-		msgs:         msgSvc,
-		modelFactory: newChatModelFactory(cfg.AI),
+		cfg:       cfg.AI,
+		logger:    slog.Default(),
+		db:        s.Database(),
+		jobs:      jobSvc,
+		msgs:      msgSvc,
+		modelProv: newChatModelProvider(cfg.AI),
 		workflows: map[agentrun.WorkflowKind]agentWorkflow{
 			agentrun.WorkflowKindIncidentContextPack:   stubWorkflow{kind: agentrun.WorkflowKindIncidentContextPack},
 			agentrun.WorkflowKindAlertInvestigation:    stubWorkflow{kind: agentrun.WorkflowKindAlertInvestigation},

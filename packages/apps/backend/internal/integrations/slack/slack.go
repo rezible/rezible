@@ -25,12 +25,13 @@ func (i IntegrationInstallIds) asRef() string {
 	return fmt.Sprintf("%s:%s", i.EnterpriseId, i.TeamId)
 }
 
-func GetAllUsersInConversation(ctx context.Context, client *slack.Client, convId string) ([]string, error) {
+func GetAllUsersInConversation(ctx context.Context, cw *ClientWrapper, convId string) ([]string, error) {
 	params := &slack.GetUsersInConversationParameters{
 		ChannelID: convId,
 		Limit:     100,
 	}
 	var allIds []string
+	client := cw.Client()
 	for {
 		ids, cursor, getErr := client.GetUsersInConversationContext(ctx, params)
 		if getErr != nil {

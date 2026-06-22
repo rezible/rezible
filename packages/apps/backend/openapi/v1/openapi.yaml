@@ -5854,6 +5854,8 @@ components:
     UpdateInstalledIntegrationRequestAttributes:
       additionalProperties: false
       properties:
+        displayName:
+          type: string
         preferences:
           additionalProperties: {}
           type: object

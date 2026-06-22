@@ -181,6 +181,11 @@ type (
 		UserSettings       map[string]any
 	}
 
+	UpdateIntegrationParams struct {
+		DisplayName  string
+		UserSettings map[string]any
+	}
+
 	CompleteIntegrationOAuth2FlowResult struct {
 		InstallationTargetSelectionRequired bool
 		Installed                           []InstalledIntegration
@@ -210,7 +215,7 @@ type (
 		GetInstalled(ctx context.Context, id uuid.UUID) (InstalledIntegration, error)
 		LookupByRef(ctx context.Context, name string, providerRef string) (*ent.Integration, error)
 		ListInstalled(ctx context.Context, params ListIntegrationsParams) ([]InstalledIntegration, error)
-		UpdateInstalled(ctx context.Context, id uuid.UUID, prefs map[string]any) (InstalledIntegration, error)
+		UpdateInstalled(ctx context.Context, id uuid.UUID, params UpdateIntegrationParams) (InstalledIntegration, error)
 		DeleteInstalled(ctx context.Context, id uuid.UUID) error
 
 		StartOAuth2Flow(ctx context.Context, integrationName string) (string, error)

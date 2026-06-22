@@ -1,31 +1,21 @@
 <script lang="ts">
 	import * as Alert from "$components/ui/alert";
 	import { Button } from "$components/ui/button";
-	import { watchOnce } from "runed";
-	
+
 	import { useConfigureIntegrationDialogController } from "../controller.svelte";
 
 	const ctrl = useConfigureIntegrationDialogController();
-
-	watchOnce(() => ctrl.installation, inst => {
-        const cfg = {
-            displayName: "Slack Incident Management",
-            config: {},
-            preferences: {},
-        };
-        ctrl.setConfig(cfg, true);
-		console.log("install", inst);
-	});
 </script>
 
 {#if ctrl.installation}
-	<span>edit</span>
+	<Alert.Root>
+		<Alert.Title>Slack Incident Management connected</Alert.Title>
+		<Alert.Description>Workspace access is configured via OAuth.</Alert.Description>
+	</Alert.Root>
 {:else}
 	<Alert.Root>
 		<Alert.Title>Connect Slack</Alert.Title>
-		<Alert.Description>
-			Sign in with Slack to install the app.
-		</Alert.Description>
+		<Alert.Description>Sign in with Slack to install the app.</Alert.Description>
 	</Alert.Root>
 
 	<div class="place-self-center">

@@ -224,22 +224,28 @@ func (p alertObservedPayload) toEvent() (*rez.ProviderEvent, error) {
 
 var demoAlertEvents = []alertObservedPayload{
 	{
-		ExternalID:      "search-api-latency",
-		Title:           "Search API response time high",
-		Description:     "p95 latency for the search API is above 2 seconds.",
-		Definition:      "avg(last_5m):p95:search.api.response_time > 2000",
-		OccurredAt:      time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
-		InstanceRef:     "search-api-latency-20260512T091500Z",
-		RelatedEntities: []projections.RelatedEntityRef{relatedComponent("search_api", "service", "Search API"), relatedComponent("checkout_service", "service", "Checkout Listener")},
+		ExternalID:  "search-api-latency",
+		Title:       "Search API response time high",
+		Description: "p95 latency for the search API is above 2 seconds.",
+		Definition:  "avg(last_5m):p95:search.api.response_time > 2000",
+		OccurredAt:  time.Date(2026, 5, 12, 9, 15, 0, 0, time.UTC),
+		InstanceRef: "search-api-latency-20260512T091500Z",
+		RelatedEntities: []projections.RelatedEntityRef{
+			relatedComponent("search_api", "service", "Search API"),
+			relatedComponent("checkout_service", "service", "Checkout Listener"),
+		},
 	},
 	{
-		ExternalID:      "elasticsearch-cpu-critical",
-		Title:           "Elasticsearch cluster CPU critical",
-		Description:     "Primary search cluster CPU is above 95 percent.",
-		Definition:      "avg(last_5m):avg:elasticsearch.cpu.utilization > 95",
-		OccurredAt:      time.Date(2026, 5, 12, 9, 28, 0, 0, time.UTC),
-		InstanceRef:     "elasticsearch-cpu-critical-20260512T092800Z",
-		RelatedEntities: []projections.RelatedEntityRef{relatedComponent("elasticsearch_catalog", "search_cluster", "Elasticsearch Catalog"), relatedComponent("search_api", "service", "Search API")},
+		ExternalID:  "elasticsearch-cpu-critical",
+		Title:       "Elasticsearch cluster CPU critical",
+		Description: "Primary search cluster CPU is above 95 percent.",
+		Definition:  "avg(last_5m):avg:elasticsearch.cpu.utilization > 95",
+		OccurredAt:  time.Date(2026, 5, 12, 9, 28, 0, 0, time.UTC),
+		InstanceRef: "elasticsearch-cpu-critical-20260512T092800Z",
+		RelatedEntities: []projections.RelatedEntityRef{
+			relatedComponent("elasticsearch_catalog", "search_cluster", "Elasticsearch Catalog"),
+			relatedComponent("search_api", "service", "Search API"),
+		},
 	},
 	{
 		ExternalID:  "search-index-build-failed",

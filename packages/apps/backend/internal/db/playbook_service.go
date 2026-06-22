@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/alert"
+	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/projections"
 )
@@ -84,29 +86,27 @@ func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.
 	}
 
 	alertIDs := make([]uuid.UUID, 0, len(attrs.RelatedAlerts))
-	/*
-		for _, alertRef := range attrs.RelatedAlerts {
-			queryAlias := dbc.KnowledgeEntityAlias.Query().
-				Where(knea.Provider(event.Provider), knea.ProviderSubjectRef(alertRef))
+	for _, alertRef := range attrs.RelatedAlerts {
+		queryAlias := dbc.KnowledgeEntityAlias.Query().
+			Where(knea.Provider(event.Provider), knea.ProviderSubjectRef(alertRef))
 
-			alias, aliasErr := queryAlias.Only(ctx)
-			if aliasErr != nil && !ent.IsNotFound(aliasErr) {
-				return fmt.Errorf("query alert alias: %w", aliasErr)
-			}
-			if alias == nil {
-				continue
-			}
-			queryAlert := dbc.Alert.Query().
-				Where(alert.KnowledgeEntityID(alias.EntityID))
-			a, alertErr := queryAlert.Only(ctx)
-			if alertErr != nil && !ent.IsNotFound(alertErr) {
-				return fmt.Errorf("query related alert: %w", alertErr)
-			}
-			if a != nil {
-				alertIDs = append(alertIDs, a.ID)
-			}
+		alias, aliasErr := queryAlias.Only(ctx)
+		if aliasErr != nil && !ent.IsNotFound(aliasErr) {
+			return fmt.Errorf("query alert alias: %w", aliasErr)
 		}
-	*/
+		if alias == nil {
+			continue
+		}
+		queryAlert := dbc.Alert.Query().
+			Where(alert.KnowledgeEntityID(alias.EntityID))
+		a, alertErr := queryAlert.Only(ctx)
+		if alertErr != nil && !ent.IsNotFound(alertErr) {
+			return fmt.Errorf("query related alert: %w", alertErr)
+		}
+		if a != nil {
+			alertIDs = append(alertIDs, a.ID)
+		}
+	}
 
 	var mutator ent.EntityMutator[*ent.Playbook, *ent.PlaybookMutation]
 	if existing == nil {

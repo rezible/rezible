@@ -2655,6 +2655,7 @@ export type UpdateIncidentTypeResponseBody = {
 };
 
 export type UpdateInstalledIntegrationRequestAttributes = {
+    displayName?: string;
     preferences: {
         [key: string]: unknown;
     };

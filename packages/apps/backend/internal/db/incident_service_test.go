@@ -213,6 +213,46 @@ func (s *IncidentServiceSuite) TestIncidentProjectionPublishesCreateChangeAndSki
 	s.Equal(1, typeCount)
 }
 
+func (s *IncidentServiceSuite) TestIncidentProjectionAcceptsLegacyEmptyOpenedAtObject() {
+	ctx := s.SeedTenantContext()
+	var events []rez.EventOnIncidentUpdated
+	svc := s.newServiceCapturingEvents(&events)
+	occurredAt := time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC)
+	ev, err := s.Client(ctx).NormalizedEvent.Create().
+		SetProvider("demo").
+		SetProviderSource("incidents").
+		SetProviderEventRef("demo:incidents:checkout-search-timeouts-observed").
+		SetProviderSubjectRef("demo:incident:checkout-search-timeouts").
+		SetActivityKind(ne.ActivityKindObserved).
+		SetSubjectKind(projections.SubjectKindIncident.String()).
+		SetOccurredAt(occurredAt).
+		SetReceivedAt(occurredAt).
+		SetAttributes(map[string]any{
+			"title":        "Checkout search lookups timing out",
+			"summary":      "Checkout requests that need product search enrichment are timing out for a subset of customers.",
+			"type_ref":     "Customer Impact",
+			"opened_at":    map[string]any{},
+			"severity_ref": "SEV-1",
+		}).
+		Save(ctx)
+	s.Require().NoError(err)
+
+	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+	s.Require().Len(events, 1)
+
+	entityID, err := svc.knowledge.LookupEntityIDFromAliasRefs(ctx, ent.KnowledgeEntityAliasRef{
+		Provider:           "demo",
+		ProviderSubjectRef: "demo:incident:checkout-search-timeouts",
+	})
+	s.Require().NoError(err)
+	created, err := s.Client(ctx).Incident.Query().
+		Where(incident.KnowledgeEntityID(entityID)).
+		Only(ctx)
+	s.Require().NoError(err)
+	s.True(created.OpenedAt.Equal(occurredAt))
+	s.Contains(created.Slug, "260512-")
+}
+
 func (s *IncidentServiceSuite) TestSetIncidentImpactsSelectOrCreateAndReplacesLinks() {
 	ctx := s.SeedTenantContext()
 	svc := s.newService()
@@ -307,6 +347,40 @@ func (s *IncidentServiceSuite) TestIncidentImpactProjectionLinksProjectedInciden
 	s.Require().Len(impacts, 1)
 	s.Equal("demo", impacts[0].Source)
 	s.Equal("Search API", impacts[0].Edges.KnowledgeEntity.DisplayName)
+}
+
+func (s *IncidentServiceSuite) TestIncidentImpactProjectionMissingIncidentAliasIsRetryable() {
+	ctx := s.SeedTenantContext()
+	var events []rez.EventOnIncidentUpdated
+	svc := s.newServiceCapturingEvents(&events)
+	openedAt := time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC)
+
+	encoded, err := projections.EncodeAttributes(projections.IncidentImpactSubjectAttributes{
+		IncidentExternalRef: "demo:incident:missing",
+		EntityExternalRef:   "demo:component:search_api",
+		EntityKind:          "service",
+		EntityDisplayName:   "Search API",
+		Source:              "demo",
+		Note:                "Search API blocks checkout enrichment.",
+	})
+	s.Require().NoError(err)
+	impactEvent, err := s.Client(ctx).NormalizedEvent.Create().
+		SetProvider("demo").
+		SetProviderSource("incident_impacts").
+		SetProviderEventRef("impact-event-" + uuid.NewString()).
+		SetProviderSubjectRef("demo:incident_impact:checkout-search").
+		SetActivityKind(ne.ActivityKindObserved).
+		SetSubjectKind(projections.SubjectKindIncidentImpact.String()).
+		SetOccurredAt(openedAt.Add(time.Minute)).
+		SetReceivedAt(openedAt.Add(time.Minute)).
+		SetAttributes(encoded).
+		Save(ctx)
+	s.Require().NoError(err)
+
+	err = svc.HandleEventProjection(ctx, impactEvent)
+	s.Require().Error(err)
+	s.True(projections.IsRetryable(err))
+	s.ErrorContains(err, "incident entity alias not found: demo:incident:missing")
 }
 
 func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenceAndFunctionalityDependencies() {

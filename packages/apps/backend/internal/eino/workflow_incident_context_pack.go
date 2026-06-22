@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunartifact"
 
@@ -13,9 +15,35 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
+func (s *AgentService) onIncidentUpdated(ctx context.Context, ev *rez.EventOnIncidentUpdated) error {
+	return s.requestIncidentContextPackRun(ctx, ev.IncidentId, "incident_updated")
+}
+
+func (s *AgentService) onIncidentImpactsUpdated(ctx context.Context, ev *rez.EventOnIncidentImpactsUpdated) error {
+	return s.requestIncidentContextPackRun(ctx, ev.IncidentId, "incident_impacts_updated")
+}
+
+func (s *AgentService) requestIncidentContextPackRun(ctx context.Context, incidentID uuid.UUID, trigger string) error {
+	if !s.cfg.Enabled || incidentID == uuid.Nil {
+		return nil
+	}
+	bucket := time.Now().UTC().Truncate(5 * time.Minute).Format(time.RFC3339)
+	_, reqErr := s.RequestRun(ctx, rez.AgentRunRequest{
+		WorkflowKind:   agentrun.WorkflowKindIncidentContextPack,
+		IdempotencyKey: fmt.Sprintf("incident-context-pack:auto:%s:%s", incidentID, bucket),
+		SubjectKind:    "incident",
+		SubjectID:      incidentID,
+		Metadata: map[string]any{
+			"trigger": trigger,
+			"bucket":  bucket,
+		},
+	})
+	return reqErr
+}
+
 type incidentContextPackWorkflow struct {
 	incidents    rez.IncidentService
-	modelFactory ChatModelFactory
+	modelFactory ModelProvider
 }
 
 type incidentContextPackSynthesis struct {

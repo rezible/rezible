@@ -117,6 +117,7 @@ func authScopesSatisfied(authScopes []string, secOpts oapiv1.SecurityMethodOptio
 func (s *Server) makeOpenApi(ts rez.TelemetryService, v1h oapiv1.Handler) openapi.API {
 	checkMethodOptionsFn := func(ctx context.Context, secOpts oapiv1.SecurityMethodOptions) error {
 		ec := execution.GetContext(ctx)
+
 		if ec.IsAnonymous() {
 			return rez.ErrAuthSessionMissing
 		}
@@ -127,9 +128,7 @@ func (s *Server) makeOpenApi(ts rez.TelemetryService, v1h oapiv1.Handler) openap
 			}
 		}
 
-		// no auth context
-		slog.WarnContext(ctx, "api request missing execution auth ctx?")
-		return rez.ErrAuthSessionMissing
+		return nil
 	}
 
 	return oapiv1.MakeApi(v1h,

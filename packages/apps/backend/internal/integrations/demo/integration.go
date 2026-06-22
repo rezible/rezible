@@ -37,7 +37,7 @@ func (i *Integration) Provider() string {
 }
 
 func (i *Integration) MaxInstalls() *int {
-	return nil
+	return new(1)
 }
 
 func (i *Integration) IsAvailable() (bool, error) {

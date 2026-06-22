@@ -7,6 +7,8 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/integration"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
@@ -103,8 +105,30 @@ func (a *App) InteractionCallbackHandlers() map[slack.InteractionType]slackinteg
 	}
 }
 
+func (a *App) getEnabledIntegrationClient(ctx context.Context) (*slackintegration.ClientWrapper, error) {
+	// TODO: cache?
+	queryInstall := a.db.Client(ctx).Integration.Query().
+		Where(integration.IntegrationName(integrationName))
+	intg, intgErr := queryInstall.All(ctx)
+	if intgErr != nil && !ent.IsNotFound(intgErr) {
+		return nil, fmt.Errorf("failed to query: %w", intgErr)
+	}
+	// TODO: check preferences for workspace
+	if len(intg) == 0 {
+		return nil, nil
+	}
+	return slackintegration.NewClientWrapper(intg[0])
+}
+
 func (a *App) withIncidentUpdateProcessor(ctx context.Context, id uuid.UUID, fn func(*incidentUpdateProcessor) error) error {
-	p, procErr := a.newUpdateProcessor(ctx, id)
+	client, clientErr := a.getEnabledIntegrationClient(ctx)
+	if clientErr != nil {
+		return fmt.Errorf("get incident management client: %w", clientErr)
+	}
+	if client == nil {
+		return nil
+	}
+	p, procErr := a.newUpdateProcessor(ctx, client, id)
 	if procErr != nil {
 		return fmt.Errorf("creating incident update processor: %w", procErr)
 	}

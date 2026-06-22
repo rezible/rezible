@@ -3,6 +3,8 @@
 	import { Button } from "$components/ui/button";
 	import InlineAlert from "$components/layout/error-alert/ErrorAlert.svelte";
 	import Spinner from "$components/ui/spinner/spinner.svelte";
+	import { Input } from "$components/ui/input";
+	import { Label } from "$components/ui/label";
 
 	import IntegrationInstallTargetSelect from "./IntegrationInstallTargetSelect.svelte";
 	import { initConfigureIntegrationDialogController } from "./controller.svelte";
@@ -11,7 +13,7 @@
 
 	const integration = $derived(ctrl.integration);
 
-	const toTitleCase = (s: string) => s.toLowerCase().replace(/\b\w/g, s => s.toUpperCase());
+	const toTitleCase = (s: string) => s.toLowerCase().replace(/\b\w/g, (s) => s.toUpperCase());
 
 	const title = $derived.by(() => {
 		if (!integration) return;
@@ -24,7 +26,7 @@
 	});
 </script>
 
-<Dialog.Root bind:open={() => ctrl.isOpen, o => ctrl.setOpen(o)}>
+<Dialog.Root bind:open={() => ctrl.isOpen, (o) => ctrl.setOpen(o)}>
 	<Dialog.Content class="max-h-[min(720px,calc(100vh-2rem))] overflow-y-auto sm:max-w-2xl">
 		{#if !!integration}
 			<Dialog.Header>
@@ -39,22 +41,41 @@
 				{#if ctrl.installationTargetSelectionRequired}
 					<IntegrationInstallTargetSelect />
 				{:else if ctrl.oauthError}
-					<InlineAlert error={ctrl.oauthError} onDismiss={() => ctrl.integrations.oauth.clearFlow()} />
+					<InlineAlert
+						error={ctrl.oauthError}
+						onDismiss={() => ctrl.integrations.oauth.clearFlow()}
+					/>
 				{:else if ctrl.oauthPending}
 					<Spinner />
 				{:else}
 					{#if ctrl.configError}
 						<InlineAlert error={ctrl.configError} />
 					{/if}
+					<div class="space-y-2">
+						<Label for="integration-display-name">Display name</Label>
+						<Input
+							id="integration-display-name"
+							value={ctrl.displayName}
+							oninput={(e) => ctrl.setDisplayName(e.currentTarget.value)}
+						/>
+					</div>
 					<ctrl.ConfigComponent />
 				{/if}
 			</div>
 		{/if}
 
-		{#if ctrl.isOpen && !ctrl.integration?.oauthInstall && !ctrl.oauthPending}
+		{#if ctrl.isOpen && (ctrl.isEditMode || !ctrl.integration?.oauthInstall) && !ctrl.oauthPending}
 			<Dialog.Footer>
 				<div class="flex flex-wrap gap-2 items-center">
-					<Button variant="outline" disabled={ctrl.loading} onclick={() => {ctrl.setOpen(false)}}>Cancel</Button>
+					<Button
+						variant="outline"
+						disabled={ctrl.loading}
+						onclick={() => {
+							ctrl.setOpen(false);
+						}}
+					>
+						Cancel
+					</Button>
 					<Button disabled={!ctrl.configValid || ctrl.loading} onclick={() => ctrl.saveConfig()}>
 						{#if ctrl.loading}
 							<Spinner />

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"runtime/debug"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -122,7 +123,7 @@ func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Cont
 		)
 	}
 
-	return nil
+	return res.retryableError()
 }
 
 func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, sourceCursors map[string]string) rez.ProviderEventSyncResult {
@@ -298,6 +299,18 @@ type projectNormalizedEventResult struct {
 	handlerErrors map[string][]error
 }
 
+func (r projectNormalizedEventResult) retryableError() error {
+	errs := make([]error, 0, len(r.handlerErrors))
+	for name, handlerErrs := range r.handlerErrors {
+		for _, handlerErr := range handlerErrs {
+			if projections.IsRetryable(handlerErr) {
+				errs = append(errs, fmt.Errorf("%s: %w", name, handlerErr))
+			}
+		}
+	}
+	return errors.Join(errs...)
+}
+
 func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) projectNormalizedEventResult {
 	res := projectNormalizedEventResult{
 		handlerErrors: make(map[string][]error),
@@ -306,35 +319,49 @@ func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Contex
 		res.handlerErrors[name] = append(res.handlerErrors[name], err)
 	}
 	kind := projections.SubjectKind(ev.SubjectKind)
-
+	client := s.db.Client(ctx)
 	for name, projector := range s.reg.GetEventProjectorsForKind(kind) {
 		// query for existing projection status
-		queryStatus := s.db.Client(ctx).NormalizedEventProjectionStatus.Query().
+		queryStatus := client.NormalizedEventProjectionStatus.Query().
 			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
 		status, statusErr := queryStatus.Only(ctx)
 		if statusErr != nil && !ent.IsNotFound(statusErr) {
 			appendHandlerErr(name, fmt.Errorf("query projection status: %w", statusErr))
 			continue
 		}
+		attemptedAt := time.Now().UTC()
+		var pendingMut ent.EntityMutator[*ent.NormalizedEventProjectionStatus, *ent.NormalizedEventProjectionStatusMutation]
 		if status != nil {
-			// don't project if this is in progress or already succeeded
-			if status.Status == neps.StatusSucceeded || status.Status == neps.StatusPending {
+			if status.Status == neps.StatusSucceeded {
 				continue
 			}
+			pendingMut = status.Update().
+				ClearFailedAt().
+				ClearLastError()
 		} else {
-			setPendingStatus := s.db.Client(ctx).NormalizedEventProjectionStatus.Create().
-				SetStatus(neps.StatusPending).
+			pendingMut = client.NormalizedEventProjectionStatus.Create().
 				SetNormalizedEventID(ev.ID).
-				SetHandlerName(name).
-				SetLastAttemptedAt(time.Now().UTC())
-			status, statusErr = setPendingStatus.Save(ctx)
-			if statusErr != nil {
-				appendHandlerErr(name, fmt.Errorf("mark projection pending: %w", statusErr))
-				continue
-			}
+				SetHandlerName(name)
+		}
+		m := pendingMut.Mutation()
+		m.SetStatus(neps.StatusPending)
+		m.SetLastAttemptedAt(attemptedAt)
+		status, statusErr = pendingMut.Save(ctx)
+		if statusErr != nil {
+			appendHandlerErr(name, fmt.Errorf("mark projection pending: %w", statusErr))
+			continue
 		}
 
-		projectionErr := s.db.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) error {
+		projectionErr := s.db.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) (err error) {
+			defer func() {
+				if v := recover(); v != nil {
+					slog.WarnContext(txCtx, "event projection panic",
+						"error", fmt.Sprintf("%+v", v),
+						"stack", string(debug.Stack()),
+						"event", ev.ID.String())
+					err = fmt.Errorf("projection panic: %v", v)
+				}
+			}()
 			return projector.HandleEventProjection(txCtx, ev)
 		})
 

@@ -20,20 +20,22 @@
 
 {#each available as integration (integration.name)}
 	{@const installations = ctrl.integrations.installationsByName.get(integration.name) || []}
+	{@const canInstallAnother = !integration.maxInstalls || (installations.length < integration.maxInstalls)}
 	<Card.Root class={cn("min-w-xs gap-3", compact ? "p-2" : "p-4")}>
 		<Card.Header class="p-0">
 			<Card.Title class="truncate">{integration.displayName}</Card.Title>
 			<Card.Description>{integration.description}</Card.Description>
+			{#if canInstallAnother}
 			<Card.Action>
 				<Button
 					onclick={() => ctrl.integrations.openConfigureDialog(integration)}
 					variant="outline"
-					disabled={integration.maxInstalls !== undefined && integration.maxInstalls <= installations.length}
 				>
 					{installations.length > 0 ? "Install another" : "Install"}
 					<RiCircleLine />
 				</Button>
 			</Card.Action>
+			{/if}
 		</Card.Header>
 
 		{#if installations.length > 0}

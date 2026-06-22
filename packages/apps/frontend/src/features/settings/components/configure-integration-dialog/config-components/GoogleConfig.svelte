@@ -2,18 +2,35 @@
 	import * as Alert from "$components/ui/alert";
 	import { Input } from "$components/ui/input";
 	import { Label } from "$components/ui/label";
+	import { Switch } from "$components/ui/switch";
+	import { onMount } from "svelte";
 
 	import { useConfigureIntegrationDialogController } from "../controller.svelte";
-	import { watchOnce } from "runed";
 
 	const ctrl = useConfigureIntegrationDialogController();
 
+	const attrs = $derived(ctrl.installation?.attributes);
+
 	let svcAccParseError = $state<string>();
 	let svcAccFileName = $state<string>();
+	let videoConferenceEnabled = $state(Boolean(ctrl.preferences.EnableVideoConference));
+
+	const updateVideoConferencePreference = (enabled: boolean) => {
+		videoConferenceEnabled = enabled;
+		ctrl.setPreferences({ EnableVideoConference: enabled });
+	};
+
+	onMount(() => {
+		updateVideoConferencePreference(videoConferenceEnabled);
+		if (ctrl.isInstallMode) {
+			ctrl.setInstallConfig({}, false);
+		}
+	});
 
 	const loadServiceAccountFile = async (file: File) => {
 		svcAccParseError = undefined;
 		svcAccFileName = undefined;
+		ctrl.setInstallConfig({}, false);
 		try {
 			const fileData = await file.text();
 			const parsed = JSON.parse(fileData);
@@ -22,51 +39,35 @@
 				return;
 			}
 			svcAccFileName = file.name;
-			console.log("parsed", parsed);
+			ctrl.setInstallConfig({ ServiceAccountCredentials: fileData }, true);
 		} catch {
-			svcAccParseError = "Could not parse JSON file. Check that this is a valid service account credentials file.";
+			svcAccParseError =
+				"Could not parse JSON file. Check that this is a valid service account credentials file.";
 		}
 	};
-
-	watchOnce(() => ctrl.installation, inst => {
-        const cfg = {
-            displayName: "Google",
-            config: {},
-            preferences: {},
-        };
-        ctrl.setConfig(cfg, true);
-		console.log("install", inst);
-	});
 </script>
 
 <div class="flex flex-col gap-3">
 	{#if !!ctrl.installation}
-		<!--div class="flex items-center justify-between rounded-md border p-3">
-			<div class="flex flex-col gap-1">
-				<Label for="google-video-conference-toggle">Enable incident video conferences</Label>
-				<p class="text-sm text-muted-foreground">Creates Google Meet links for incidents when supported.</p>
-			</div>
-			<Switch
-				id="google-video-conference-toggle"
-				checked={videoConferenceEnabled}
-				onCheckedChange={onVideoConferenceChange}
-			/>
-		</div-->
+		<Alert.Root>
+			<Alert.Title>Google Workspace connected</Alert.Title>
+			<Alert.Description>{attrs?.externalRef}</Alert.Description>
+		</Alert.Root>
 	{:else}
 		<div class="space-y-2">
 			<Label for="google-service-account-file">Service account credentials</Label>
 			<div
 				role="region"
 				class="rounded-md border border-dashed p-4 text-sm transition-colors [&.is-dragging]:border-primary [&.is-dragging]:bg-accent"
-				ondragover={e => {
+				ondragover={(e) => {
 					e.preventDefault();
 					e.currentTarget.classList.add("is-dragging");
 				}}
-				ondragleave={e => {
+				ondragleave={(e) => {
 					e.preventDefault();
 					e.currentTarget.classList.remove("is-dragging");
 				}}
-				ondrop={e => {
+				ondrop={(e) => {
 					e.preventDefault();
 					e.currentTarget.classList.remove("is-dragging");
 					const file = e.dataTransfer?.files.item(0);
@@ -79,7 +80,7 @@
 						id="google-service-account-file"
 						type="file"
 						accept=".json,application/json"
-						onchange={e => {
+						onchange={(e) => {
 							e.preventDefault();
 							const file = e.currentTarget.files?.item(0);
 							if (!!file) loadServiceAccountFile(file);
@@ -99,4 +100,18 @@
 			</Alert.Root>
 		{/if}
 	{/if}
+
+	<div class="flex items-center justify-between rounded-md border p-3">
+		<div class="flex flex-col gap-1">
+			<Label for="google-video-conference-toggle">Enable incident video conferences</Label>
+			<p class="text-sm text-muted-foreground">
+				Creates Google Meet links for incidents when supported.
+			</p>
+		</div>
+		<Switch
+			id="google-video-conference-toggle"
+			checked={videoConferenceEnabled}
+			onCheckedChange={(checked) => updateVideoConferencePreference(checked)}
+		/>
+	</div>
 </div>

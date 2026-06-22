@@ -11,20 +11,20 @@ import (
 	rez "github.com/rezible/rezible"
 )
 
-type ChatModelFactory interface {
+type ModelProvider interface {
 	Model(context.Context) (einomodel.BaseChatModel, error)
 	ModelMetadata() map[string]any
 }
 
-type configChatModelFactory struct {
+type configChatModel struct {
 	cfg rez.AiConfig
 }
 
-func newChatModelFactory(cfg rez.AiConfig) ChatModelFactory {
-	return &configChatModelFactory{cfg: cfg}
+func newChatModelProvider(cfg rez.AiConfig) ModelProvider {
+	return &configChatModel{cfg: cfg}
 }
 
-func (f *configChatModelFactory) ModelMetadata() map[string]any {
+func (f *configChatModel) ModelMetadata() map[string]any {
 	return map[string]any{
 		"provider": f.cfg.Provider,
 		"model":    f.cfg.Model,
@@ -32,7 +32,7 @@ func (f *configChatModelFactory) ModelMetadata() map[string]any {
 	}
 }
 
-func (f *configChatModelFactory) Model(ctx context.Context) (einomodel.BaseChatModel, error) {
+func (f *configChatModel) Model(ctx context.Context) (einomodel.BaseChatModel, error) {
 	if !f.cfg.Enabled {
 		return nil, fmt.Errorf("agent model provider disabled")
 	}

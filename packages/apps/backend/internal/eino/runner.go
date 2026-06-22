@@ -16,7 +16,7 @@ type modelRunOutput struct {
 	Text string
 }
 
-func runModelOnce(ctx context.Context, modelFactory ChatModelFactory, name, instruction, userInput string) (*modelRunOutput, error) {
+func runModelOnce(ctx context.Context, modelFactory ModelProvider, name, instruction, userInput string) (*modelRunOutput, error) {
 	chatModel, modelErr := modelFactory.Model(ctx)
 	if modelErr != nil {
 		return nil, modelErr

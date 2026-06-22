@@ -111,17 +111,17 @@ func (s *IncidentService) handleIncidentImpactEventProjection(ctx context.Contex
 	}
 	incidentID, incidentLookupErr := s.knowledge.LookupEntityIDFromAliasRefs(ctx, incidentAliasRef)
 	if incidentLookupErr != nil {
-		return fmt.Errorf("lookup incident entity alias: %w", incidentLookupErr)
+		return projections.Retryable(fmt.Errorf("lookup incident entity alias: %w", incidentLookupErr))
 	}
 	if incidentID == uuid.Nil {
-		return fmt.Errorf("incident entity alias not found: %s", attrs.IncidentExternalRef)
+		return projections.Retryable(fmt.Errorf("incident entity alias not found: %s", attrs.IncidentExternalRef))
 	}
 
 	queryIncident := s.db.Client(ctx).Incident.Query().
 		Where(incident.KnowledgeEntityID(incidentID))
 	inc, incErr := queryIncident.Only(ctx)
 	if incErr != nil {
-		return fmt.Errorf("query incident for impact: %w", incErr)
+		return projections.Retryable(fmt.Errorf("query incident for impact: %w", incErr))
 	}
 
 	projEnt := rez.ProjectedKnowledgeEntity{

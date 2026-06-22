@@ -284,6 +284,7 @@ var UpdateInstalledIntegration = huma.Operation{
 }
 
 type UpdateInstalledIntegrationRequestAttributes struct {
+	DisplayName string         `json:"displayName,omitempty"`
 	Preferences map[string]any `json:"preferences"`
 }
 type UpdateInstalledIntegrationRequest IdRequest[UpdateInstalledIntegrationRequestAttributes]
