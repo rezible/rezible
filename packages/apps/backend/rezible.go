@@ -167,6 +167,7 @@ type (
 	InstalledIntegration interface {
 		Integration() *ent.Integration
 		ProviderName() string
+		DisplayName() string
 		SanitizedInstallationConfig() map[string]any
 	}
 
@@ -178,13 +179,11 @@ type (
 	}
 
 	InstallIntegrationParams struct {
-		DisplayName        string
 		InstallationConfig map[string]any
 		UserSettings       map[string]any
 	}
 
 	UpdateIntegrationParams struct {
-		DisplayName  string
 		UserSettings map[string]any
 	}
 

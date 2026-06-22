@@ -51,14 +51,6 @@
 					{#if ctrl.configError}
 						<InlineAlert error={ctrl.configError} />
 					{/if}
-					<div class="space-y-2">
-						<Label for="integration-display-name">Display name</Label>
-						<Input
-							id="integration-display-name"
-							value={ctrl.displayName}
-							oninput={(e) => ctrl.setDisplayName(e.currentTarget.value)}
-						/>
-					</div>
 					<ctrl.ConfigComponent />
 				{/if}
 			</div>
@@ -76,7 +68,7 @@
 					>
 						Cancel
 					</Button>
-					<Button disabled={!ctrl.configValid || ctrl.loading} onclick={() => ctrl.saveConfig()}>
+					<Button disabled={!ctrl.hasChanged || !ctrl.configValid || ctrl.loading} onclick={() => ctrl.saveConfig()}>
 						{#if ctrl.loading}
 							<Spinner />
 							{ctrl.installation ? "Sav" : "Install"}ing...

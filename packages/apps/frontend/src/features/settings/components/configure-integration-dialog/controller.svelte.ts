@@ -42,18 +42,19 @@ export class ConfigureIntegrationDialogController {
 
 	name = $derived(this.integration?.name);
 	ConfigComponent = $derived(!!this.name && this.name in configs ? configs[this.name] : undefined);
+
 	isEditMode = $derived(!!this.installation);
 	isInstallMode = $derived(!this.isEditMode);
 
-	displayName = $state("");
-	preferences = $state.raw<ConfigMap>({});
+	userSettings = $state.raw<ConfigMap>({});
+	userSettingsValid = $state(false);
+
 	installConfig = $state.raw<ConfigMap>({});
-	preferencesValid = $state(true);
-	installConfigValid = $state(true);
-	private displayNameValid = $derived(this.displayName.trim().length > 0);
-	configValid = $derived(
-		this.displayNameValid && this.preferencesValid && (this.isEditMode || this.installConfigValid)
-	);
+	installConfigValid = $state(false);
+
+	configValid = $derived(this.userSettingsValid && (this.isEditMode || this.installConfigValid));
+
+	hasChanged = $derived(this.isInstallMode || (this.userSettingsValid));
 
 	constructor() {
 		this.resetDraft(this.params);
@@ -93,22 +94,18 @@ export class ConfigureIntegrationDialogController {
 	);
 
 	private resetDraft(params?: ConfigureIntegrationDialogParams) {
-		this.displayName =
-			params?.installation?.attributes.displayName ?? params?.integration?.displayName ?? "";
-		this.preferences = params?.installation?.attributes.settings ?? {};
+		this.userSettings = params?.installation?.attributes.settings ?? {};
+		this.userSettingsValid = false;
+
 		this.installConfig = {};
-		this.preferencesValid = true;
-		this.installConfigValid = true;
+		this.installConfigValid = false;
+		
 		this.setConfigError();
 	}
 
-	setDisplayName(displayName: string) {
-		this.displayName = displayName;
-	}
-
-	setPreferences(preferences: ConfigMap, valid = true) {
-		this.preferences = preferences;
-		this.preferencesValid = valid;
+	setUserSettings(settings: ConfigMap, valid = true) {
+		this.userSettings = settings;
+		this.userSettingsValid = valid;
 	}
 
 	setInstallConfig(config: ConfigMap, valid = true) {
@@ -137,15 +134,13 @@ export class ConfigureIntegrationDialogController {
 		try {
 			if (!!this.installation) {
 				const attributes: UpdateInstalledIntegrationRequestAttributes = {
-					displayName: this.displayName.trim(),
-					preferences: this.preferences,
+					userSettings: this.userSettings,
 				};
 				await this.integrations.updateInstallation(this.installation.id, attributes);
 			} else {
 				const attributes: CreateInstalledIntegrationRequestAttributes = {
-					displayName: this.displayName.trim(),
 					config: this.installConfig,
-					preferences: this.preferences,
+					userSettings: this.userSettings,
 				};
 				await this.integrations.installNew(this.name, attributes);
 			}

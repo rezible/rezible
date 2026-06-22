@@ -24,8 +24,6 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldIntegrationName holds the string denoting the integration_name field in the database.
 	FieldIntegrationName = "integration_name"
-	// FieldDisplayName holds the string denoting the display_name field in the database.
-	FieldDisplayName = "display_name"
 	// FieldExternalProviderRef holds the string denoting the external_provider_ref field in the database.
 	FieldExternalProviderRef = "external_provider_ref"
 	// FieldInstallationConfig holds the string denoting the installation_config field in the database.
@@ -52,7 +50,6 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldIntegrationName,
-	FieldDisplayName,
 	FieldExternalProviderRef,
 	FieldInstallationConfig,
 	FieldUserSettings,
@@ -112,11 +109,6 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByIntegrationName orders the results by the integration_name field.
 func ByIntegrationName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldIntegrationName, opts...).ToFunc()
-}
-
-// ByDisplayName orders the results by the display_name field.
-func ByDisplayName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDisplayName, opts...).ToFunc()
 }
 
 // ByExternalProviderRef orders the results by the external_provider_ref field.

@@ -1211,7 +1211,6 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "integration_name", Type: field.TypeString},
-		{Name: "display_name", Type: field.TypeString},
 		{Name: "external_provider_ref", Type: field.TypeString},
 		{Name: "installation_config", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "user_settings", Type: field.TypeJSON, SchemaType: map[string]string{"postgres": "jsonb"}},
@@ -1225,7 +1224,7 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "integrations_tenants_tenant",
-				Columns:    []*schema.Column{IntegrationsColumns[8]},
+				Columns:    []*schema.Column{IntegrationsColumns[7]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
@@ -1234,17 +1233,17 @@ var (
 			{
 				Name:    "integration_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[8]},
+				Columns: []*schema.Column{IntegrationsColumns[7]},
 			},
 			{
 				Name:    "integration_tenant_id_integration_name",
 				Unique:  false,
-				Columns: []*schema.Column{IntegrationsColumns[8], IntegrationsColumns[3]},
+				Columns: []*schema.Column{IntegrationsColumns[7], IntegrationsColumns[3]},
 			},
 			{
 				Name:    "integration_tenant_id_integration_name_external_provider_ref",
 				Unique:  true,
-				Columns: []*schema.Column{IntegrationsColumns[8], IntegrationsColumns[3], IntegrationsColumns[5]},
+				Columns: []*schema.Column{IntegrationsColumns[7], IntegrationsColumns[3], IntegrationsColumns[4]},
 			},
 		},
 	}

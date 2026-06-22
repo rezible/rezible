@@ -22,30 +22,28 @@
 			</Dialog.Header>
 
 			<div class="flex flex-col gap-4">
-                {#if !!ctrl.syncStatusError}
-                    <InlineAlert error={ctrl.syncStatusError} dismissable={false} />
+                {#if !!ctrl.syncRunsError}
+                    <InlineAlert error={ctrl.syncRunsError} dismissable={false} />
                 {/if}
 
-                {#if ctrl.latestSyncStatusDisplay}
+                {#if ctrl.latestSyncRunDisplay}
                     <Badge
-                        variant={ctrl.latestSyncStatusDisplay.variant}
-                        class={ctrl.latestSyncStatusDisplay.class}
+                        variant={ctrl.latestSyncRunDisplay.variant}
+                        class={ctrl.latestSyncRunDisplay.class}
                     >
-                        {ctrl.latestSyncStatusDisplay.label}
+                        {ctrl.latestSyncRunDisplay.label}
                     </Badge>
                 {:else}
                     <Badge variant="outline">No runs</Badge>
                 {/if}
-                {#if ctrl.isSyncing}
+                {#if ctrl.isLoading}
                     <Spinner aria-label="Sync status updating" />
                 {/if}
 			</div>
 
             <div class="flex min-w-0 items-center gap-2">
                 <Button
-                    onclick={() => {
-                        ctrl.requestSync();
-                    }}
+                    onclick={() => {ctrl.requestSync()}}
                     variant="outline"
                     disabled={ctrl.disabled}
                 >

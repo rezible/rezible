@@ -863,14 +863,12 @@ components:
         config:
           additionalProperties: {}
           type: object
-        displayName:
-          type: string
-        preferences:
+        userSettings:
           additionalProperties: {}
           type: object
       required:
         - config
-        - preferences
+        - userSettings
       type: object
     CreateInstalledIntegrationRequestBody:
       additionalProperties: false
@@ -5854,13 +5852,11 @@ components:
     UpdateInstalledIntegrationRequestAttributes:
       additionalProperties: false
       properties:
-        displayName:
-          type: string
-        preferences:
+        userSettings:
           additionalProperties: {}
           type: object
       required:
-        - preferences
+        - userSettings
       type: object
     UpdateInstalledIntegrationRequestBody:
       additionalProperties: false

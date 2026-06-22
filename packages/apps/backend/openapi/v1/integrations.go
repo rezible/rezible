@@ -119,7 +119,7 @@ func InstalledIntegrationFromRez(ii rez.InstalledIntegration) InstalledIntegrati
 	attrs := InstalledIntegrationAttributes{
 		IntegrationName: intg.IntegrationName,
 		ProviderName:    ii.ProviderName(),
-		DisplayName:     intg.DisplayName,
+		DisplayName:     ii.DisplayName(),
 		ExternalRef:     intg.ExternalProviderRef,
 		Settings:        intg.UserSettings,
 		Config:          ii.SanitizedInstallationConfig(),
@@ -187,9 +187,8 @@ var CreateInstalledIntegration = huma.Operation{
 }
 
 type CreateInstalledIntegrationRequestAttributes struct {
-	DisplayName string         `json:"displayName,omitempty"`
-	Config      map[string]any `json:"config"`
-	Preferences map[string]any `json:"preferences"`
+	Config       map[string]any `json:"config"`
+	UserSettings map[string]any `json:"userSettings"`
 }
 type CreateInstalledIntegrationRequest NameRequest[CreateInstalledIntegrationRequestAttributes]
 type CreateInstalledIntegrationResponse ItemResponse[InstalledIntegration]
@@ -284,8 +283,7 @@ var UpdateInstalledIntegration = huma.Operation{
 }
 
 type UpdateInstalledIntegrationRequestAttributes struct {
-	DisplayName string         `json:"displayName,omitempty"`
-	Preferences map[string]any `json:"preferences"`
+	UserSettings map[string]any `json:"userSettings"`
 }
 type UpdateInstalledIntegrationRequest IdRequest[UpdateInstalledIntegrationRequestAttributes]
 type UpdateInstalledIntegrationResponse ItemResponse[InstalledIntegration]

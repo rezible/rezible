@@ -28,8 +28,6 @@ type Integration struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// IntegrationName holds the value of the "integration_name" field.
 	IntegrationName string `json:"integration_name,omitempty"`
-	// DisplayName holds the value of the "display_name" field.
-	DisplayName string `json:"display_name,omitempty"`
 	// ExternalProviderRef holds the value of the "external_provider_ref" field.
 	ExternalProviderRef string `json:"external_provider_ref,omitempty"`
 	// InstallationConfig holds the value of the "installation_config" field.
@@ -71,7 +69,7 @@ func (*Integration) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case integration.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case integration.FieldIntegrationName, integration.FieldDisplayName, integration.FieldExternalProviderRef:
+		case integration.FieldIntegrationName, integration.FieldExternalProviderRef:
 			values[i] = new(sql.NullString)
 		case integration.FieldCreatedAt, integration.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -121,12 +119,6 @@ func (_m *Integration) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field integration_name", values[i])
 			} else if value.Valid {
 				_m.IntegrationName = value.String
-			}
-		case integration.FieldDisplayName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field display_name", values[i])
-			} else if value.Valid {
-				_m.DisplayName = value.String
 			}
 		case integration.FieldExternalProviderRef:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -202,9 +194,6 @@ func (_m *Integration) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("integration_name=")
 	builder.WriteString(_m.IntegrationName)
-	builder.WriteString(", ")
-	builder.WriteString("display_name=")
-	builder.WriteString(_m.DisplayName)
 	builder.WriteString(", ")
 	builder.WriteString("external_provider_ref=")
 	builder.WriteString(_m.ExternalProviderRef)

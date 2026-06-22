@@ -149,7 +149,7 @@ CREATE INDEX "incidenttype_tenant_id" ON "incident_types" ("tenant_id");
 -- create index "incidenttype_tenant_id_name" to table: "incident_types"
 CREATE UNIQUE INDEX "incidenttype_tenant_id_name" ON "incident_types" ("tenant_id", "name");
 -- create "integrations" table
-CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "integration_name" character varying NOT NULL, "display_name" character varying NOT NULL, "external_provider_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "integrations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "integration_name" character varying NOT NULL, "external_provider_ref" character varying NOT NULL, "installation_config" jsonb NOT NULL, "user_settings" jsonb NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "integration_tenant_id" to table: "integrations"
 CREATE INDEX "integration_tenant_id" ON "integrations" ("tenant_id");
 -- create index "integration_tenant_id_integration_name" to table: "integrations"

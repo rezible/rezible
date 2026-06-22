@@ -90,6 +90,10 @@ func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
+func (ii *InstalledIntegration) DisplayName() string {
+	return "Slack Agent"
+}
+
 func (ii *InstalledIntegration) ProviderName() string {
 	return slackintegration.ProviderName
 }

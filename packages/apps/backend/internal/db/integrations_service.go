@@ -110,7 +110,6 @@ func (s *IntegrationsService) InstallNew(ctx context.Context, intgName string, p
 
 	setFn := func(m *ent.IntegrationMutation) {
 		m.SetIntegrationName(intgName)
-		m.SetDisplayName(params.DisplayName)
 		m.SetExternalProviderRef(externalRef)
 		m.SetInstallationConfig(params.InstallationConfig)
 		m.SetUserSettings(params.UserSettings)
@@ -134,12 +133,7 @@ func (s *IntegrationsService) UpdateInstalled(ctx context.Context, id uuid.UUID,
 	if settingsErr := p.ValidateUserSettings(params.UserSettings); settingsErr != nil {
 		return nil, fmt.Errorf("invalid user settings: %w", settingsErr)
 	}
-	displayName := params.DisplayName
-	if displayName == "" {
-		displayName = curr.DisplayName
-	}
 	setFn := func(m *ent.IntegrationMutation) {
-		m.SetDisplayName(displayName)
 		m.SetUserSettings(params.UserSettings)
 	}
 	intg, setErr := s.set(ctx, id, setFn)
@@ -465,7 +459,6 @@ func (s *IntegrationsService) installTargets(ctx context.Context, intgName strin
 	installed := make([]rez.InstalledIntegration, 0, len(options))
 	for _, option := range options {
 		params := rez.InstallIntegrationParams{
-			DisplayName:        option.DisplayName,
 			InstallationConfig: option.InstallationConfig,
 		}
 		ci, cfgErr := s.InstallNew(ctx, intgName, params)

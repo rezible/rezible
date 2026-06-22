@@ -2,9 +2,11 @@ import { Context } from "runed";
 
 import {
 	type ErrorModel,
+	type IntegrationEventSyncRun,
+	listIntegrationEventSyncRunsOptions,
 	requestIntegrationEventSyncMutation,
 } from "$lib/api";
-import { createMutation } from "@tanstack/svelte-query";
+import { createMutation, createQuery } from "@tanstack/svelte-query";
 import { useIntegrationsController } from "../../lib/integrationsController.svelte";
 
 type SyncStatusDisplay = {
@@ -22,6 +24,11 @@ const syncStatusDisplays: Record<string, SyncStatusDisplay> = {
 	failed: { label: "Failed", variant: "destructive" },
 	skipped: { label: "Skipped", variant: "outline" },
 };
+
+const formatSyncStatus = (status?: string): SyncStatusDisplay | undefined => {
+	if (!status) return undefined;
+	return syncStatusDisplays[status] ?? { label: status, variant: "outline" };
+}
 
 const pollAfterRequestMs = 10_000;
 const pollIntervalMs = 3_000;
@@ -41,15 +48,6 @@ export class IntegrationDataSyncController {
 	private syncRequestPolling = $state(false);
 	private syncPollTimeout: ReturnType<typeof setTimeout> | undefined;
 	private syncRequestError = $state<ErrorModel>();
-
-    syncStatusError = $derived(
-		(this.syncRequestError/* ?? this.syncStatusQuery.error*/) as ErrorModel | undefined
-	);
-    latestSyncStatusDisplay = $derived<SyncStatusDisplay | undefined>(
-		/*this.formatSyncStatus(this.latestSyncStatus)*/
-        undefined
-	);
-	isSyncing = $derived(false);
 
 	private requestDataSyncMutation = createMutation(() => ({
 		...requestIntegrationEventSyncMutation(),
@@ -71,7 +69,7 @@ export class IntegrationDataSyncController {
 	};
 
     disabled = $derived(this.requestDataSyncMutation.isPending);
-    /*
+    
 	private syncStatusQueryOptions = $derived(
 		listIntegrationEventSyncRunsOptions({
 			path: { id: this.id ?? "" },
@@ -79,24 +77,22 @@ export class IntegrationDataSyncController {
 	);
 	private syncStatusQuery = createQuery(() => ({
 		...this.syncStatusQueryOptions,
-		enabled: !!this.ctrl.name && this.ctrl.hasInstalled,
+		enabled: !!this.installation,
 		refetchInterval: this.syncRequestPolling ? pollIntervalMs : false,
 	}));
 
-	syncStatusRuns = $derived<IntegrationProviderDataSyncStatus[]>(this.syncStatusQuery.data?.data ?? []);
-	syncStatusError = $derived(
+	syncRuns = $derived<IntegrationEventSyncRun[]>(this.syncStatusQuery.data?.data ?? []);
+	syncRunsError = $derived(
 		(this.syncRequestError ?? this.syncStatusQuery.error) as ErrorModel | undefined
 	);
-	latestSyncStatus = $derived<string | undefined>(this.syncStatusRuns[0]?.attributes.status);
-	latestSyncStatusDisplay = $derived<SyncStatusDisplay | undefined>(
-		this.formatSyncStatus(this.latestSyncStatus)
-	);
-	isSyncing = $derived(this.requestDataSyncMutation.isPending || this.syncRequestPolling);
 
-	private formatSyncStatus(status?: string): SyncStatusDisplay | undefined {
-		if (!status) return undefined;
-		return syncStatusDisplays[status] ?? { label: status, variant: "outline" };
-	}
+	latestSyncRun = $derived<string | undefined>(this.syncRuns[0]?.attributes.status);
+	latestSyncRunDisplay = $derived<SyncStatusDisplay | undefined>(
+		formatSyncStatus(this.latestSyncRun)
+	);
+
+	isLoading = $derived(this.requestDataSyncMutation.isPending || this.syncRequestPolling);
+	isSyncing = $derived(this.latestSyncRun === "syncing");
 
 	private startSyncStatusPolling() {
 		this.syncRequestPolling = true;
@@ -113,7 +109,6 @@ export class IntegrationDataSyncController {
 		this.syncRequestError = undefined;
 		await this.syncStatusQuery.refetch();
 	}
-    */
 }
 
 const dataSyncCtx = new Context<IntegrationDataSyncController>("IntegrationDataSyncController");

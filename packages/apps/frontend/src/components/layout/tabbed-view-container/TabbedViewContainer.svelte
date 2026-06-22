@@ -25,13 +25,14 @@
 	type ResolveParams = Parameters<typeof resolve<Route>>;
 	const tabPaths = $derived<ResolvedPathname[]>(tabs.map(t => resolve(...([route, t.params] as ResolveParams))));
 	
-	const activeTab = $derived.by(() => {
+	const activeTabIndex = $derived.by(() => {
 		const currRoute = page.route.id;
 		const currPath = page.url.pathname;
 		if (!currRoute || currRoute !== route) return;
-		return tabs.find((t, i) => (currPath === tabPaths.at(i)));
+		return tabs.findIndex((t, i) => (currPath === tabPaths.at(i)));
 	});
 	
+	const activeTab = $derived(activeTabIndex !== undefined ? tabs[activeTabIndex] : undefined);
 	const ActiveComponent = $derived(activeTab?.component);
 </script>
 
@@ -39,12 +40,14 @@
 	<div class="w-full flex h-12 z-[1] justify-between">
 		<div class="flex gap-1 self-end">
 			{#each tabs as tab, i}
-				<a href="{tabPaths[i]}" data-active={(tab.label === activeTab?.label) ? true : undefined}
-					class="group inline-flex self-end h-12 p-4 py-3 text-lg border border-surface-100 border-b-0 rounded-t-lg relative text-muted-foreground data-active:bg-surface-200 data-active:text-foreground">
+				<a href="{tabPaths[i]}" 
+					data-active={(i === activeTabIndex) ? true : undefined}
+					class="group inline-flex self-end h-12 p-4 py-3 text-lg border border-b-0 rounded-t-lg relative text-muted-foreground data-active:bg-accent/50 data-active:text-foreground"
+				>
 					<span class="leading-none self-center">
 						{tab.label}
 					</span>
-					<div class="bottom-0 left-0 -mb-px w-full border-b border-surface-200 absolute hidden group-data-[active]:block"></div>
+					<div class="bottom-0 left-0 -mb-px w-full border-b absolute hidden group-data-[active]:block"></div>
 				</a>
 			{/each}
 		</div>

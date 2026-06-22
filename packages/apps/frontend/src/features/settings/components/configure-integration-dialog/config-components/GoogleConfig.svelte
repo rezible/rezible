@@ -13,15 +13,15 @@
 
 	let svcAccParseError = $state<string>();
 	let svcAccFileName = $state<string>();
-	let videoConferenceEnabled = $state(Boolean(ctrl.preferences.EnableVideoConference));
+	let videoConferenceEnabled = $state(Boolean(ctrl.userSettings.EnableVideoConference));
 
-	const updateVideoConferencePreference = (enabled: boolean) => {
+	const updateVideoConferenceSetting = (enabled: boolean) => {
 		videoConferenceEnabled = enabled;
-		ctrl.setPreferences({ EnableVideoConference: enabled });
+		ctrl.setUserSettings({ EnableVideoConference: enabled });
 	};
 
 	onMount(() => {
-		updateVideoConferencePreference(videoConferenceEnabled);
+		updateVideoConferenceSetting(videoConferenceEnabled);
 		if (ctrl.isInstallMode) {
 			ctrl.setInstallConfig({}, false);
 		}
@@ -111,7 +111,7 @@
 		<Switch
 			id="google-video-conference-toggle"
 			checked={videoConferenceEnabled}
-			onCheckedChange={(checked) => updateVideoConferencePreference(checked)}
+			onCheckedChange={(checked) => updateVideoConferenceSetting(checked)}
 		/>
 	</div>
 </div>

@@ -85,6 +85,10 @@ func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
+func (ii *InstalledIntegration) DisplayName() string {
+	return "Slack Incident Management"
+}
+
 func (ii *InstalledIntegration) ProviderName() string {
 	return slackintegration.ProviderName
 }

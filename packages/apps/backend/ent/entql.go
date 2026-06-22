@@ -656,7 +656,6 @@ var schemaGraph = func() *sqlgraph.Schema {
 			integration.FieldCreatedAt:           {Type: field.TypeTime, Column: integration.FieldCreatedAt},
 			integration.FieldUpdatedAt:           {Type: field.TypeTime, Column: integration.FieldUpdatedAt},
 			integration.FieldIntegrationName:     {Type: field.TypeString, Column: integration.FieldIntegrationName},
-			integration.FieldDisplayName:         {Type: field.TypeString, Column: integration.FieldDisplayName},
 			integration.FieldExternalProviderRef: {Type: field.TypeString, Column: integration.FieldExternalProviderRef},
 			integration.FieldInstallationConfig:  {Type: field.TypeJSON, Column: integration.FieldInstallationConfig},
 			integration.FieldUserSettings:        {Type: field.TypeJSON, Column: integration.FieldUserSettings},
@@ -8378,11 +8377,6 @@ func (f *IntegrationFilter) WhereUpdatedAt(p entql.TimeP) {
 // WhereIntegrationName applies the entql string predicate on the integration_name field.
 func (f *IntegrationFilter) WhereIntegrationName(p entql.StringP) {
 	f.Where(p.Field(integration.FieldIntegrationName))
-}
-
-// WhereDisplayName applies the entql string predicate on the display_name field.
-func (f *IntegrationFilter) WhereDisplayName(p entql.StringP) {
-	f.Where(p.Field(integration.FieldDisplayName))
 }
 
 // WhereExternalProviderRef applies the entql string predicate on the external_provider_ref field.

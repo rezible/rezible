@@ -68,6 +68,10 @@ func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
+func (ii *InstalledIntegration) DisplayName() string {
+	return "Demo Data"
+}
+
 func (ii *InstalledIntegration) ProviderName() string {
 	return providerName
 }

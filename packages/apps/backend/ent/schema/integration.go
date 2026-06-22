@@ -26,7 +26,6 @@ func (Integration) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.New()).Default(uuid.New),
 		field.String("integration_name"),
-		field.String("display_name"),
 		field.String("external_provider_ref"),
 		field.JSON("installation_config", map[string]any{}).
 			SchemaType(schemaTypeJsonB),

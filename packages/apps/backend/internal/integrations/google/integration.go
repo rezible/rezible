@@ -108,18 +108,16 @@ func (ii *InstalledIntegration) Integration() *ent.Integration {
 	return ii.intg
 }
 
+func (ii *InstalledIntegration) DisplayName() string {
+	return "Google"
+}
+
 func (ii *InstalledIntegration) ProviderName() string {
 	return providerName
 }
 
 func (ii *InstalledIntegration) SanitizedInstallationConfig() map[string]any {
 	return ii.intg.InstallationConfig
-}
-
-func (ii *InstalledIntegration) GetCapabilities() map[string]bool {
-	return map[string]bool{
-		"video_conference": ii.isVideoConferenceEnabled(),
-	}
 }
 
 type installationConfig struct {

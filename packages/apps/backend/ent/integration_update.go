@@ -64,20 +64,6 @@ func (_u *IntegrationUpdate) SetNillableIntegrationName(v *string) *IntegrationU
 	return _u
 }
 
-// SetDisplayName sets the "display_name" field.
-func (_u *IntegrationUpdate) SetDisplayName(v string) *IntegrationUpdate {
-	_u.mutation.SetDisplayName(v)
-	return _u
-}
-
-// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
-func (_u *IntegrationUpdate) SetNillableDisplayName(v *string) *IntegrationUpdate {
-	if v != nil {
-		_u.SetDisplayName(*v)
-	}
-	return _u
-}
-
 // SetExternalProviderRef sets the "external_provider_ref" field.
 func (_u *IntegrationUpdate) SetExternalProviderRef(v string) *IntegrationUpdate {
 	_u.mutation.SetExternalProviderRef(v)
@@ -186,9 +172,6 @@ func (_u *IntegrationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.IntegrationName(); ok {
 		_spec.SetField(integration.FieldIntegrationName, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.DisplayName(); ok {
-		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
-	}
 	if value, ok := _u.mutation.ExternalProviderRef(); ok {
 		_spec.SetField(integration.FieldExternalProviderRef, field.TypeString, value)
 	}
@@ -252,20 +235,6 @@ func (_u *IntegrationUpdateOne) SetIntegrationName(v string) *IntegrationUpdateO
 func (_u *IntegrationUpdateOne) SetNillableIntegrationName(v *string) *IntegrationUpdateOne {
 	if v != nil {
 		_u.SetIntegrationName(*v)
-	}
-	return _u
-}
-
-// SetDisplayName sets the "display_name" field.
-func (_u *IntegrationUpdateOne) SetDisplayName(v string) *IntegrationUpdateOne {
-	_u.mutation.SetDisplayName(v)
-	return _u
-}
-
-// SetNillableDisplayName sets the "display_name" field if the given value is not nil.
-func (_u *IntegrationUpdateOne) SetNillableDisplayName(v *string) *IntegrationUpdateOne {
-	if v != nil {
-		_u.SetDisplayName(*v)
 	}
 	return _u
 }
@@ -407,9 +376,6 @@ func (_u *IntegrationUpdateOne) sqlSave(ctx context.Context) (_node *Integration
 	}
 	if value, ok := _u.mutation.IntegrationName(); ok {
 		_spec.SetField(integration.FieldIntegrationName, field.TypeString, value)
-	}
-	if value, ok := _u.mutation.DisplayName(); ok {
-		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.ExternalProviderRef(); ok {
 		_spec.SetField(integration.FieldExternalProviderRef, field.TypeString, value)

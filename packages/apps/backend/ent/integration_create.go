@@ -65,12 +65,6 @@ func (_c *IntegrationCreate) SetIntegrationName(v string) *IntegrationCreate {
 	return _c
 }
 
-// SetDisplayName sets the "display_name" field.
-func (_c *IntegrationCreate) SetDisplayName(v string) *IntegrationCreate {
-	_c.mutation.SetDisplayName(v)
-	return _c
-}
-
 // SetExternalProviderRef sets the "external_provider_ref" field.
 func (_c *IntegrationCreate) SetExternalProviderRef(v string) *IntegrationCreate {
 	_c.mutation.SetExternalProviderRef(v)
@@ -183,9 +177,6 @@ func (_c *IntegrationCreate) check() error {
 	if _, ok := _c.mutation.IntegrationName(); !ok {
 		return &ValidationError{Name: "integration_name", err: errors.New(`ent: missing required field "Integration.integration_name"`)}
 	}
-	if _, ok := _c.mutation.DisplayName(); !ok {
-		return &ValidationError{Name: "display_name", err: errors.New(`ent: missing required field "Integration.display_name"`)}
-	}
 	if _, ok := _c.mutation.ExternalProviderRef(); !ok {
 		return &ValidationError{Name: "external_provider_ref", err: errors.New(`ent: missing required field "Integration.external_provider_ref"`)}
 	}
@@ -246,10 +237,6 @@ func (_c *IntegrationCreate) createSpec() (*Integration, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.IntegrationName(); ok {
 		_spec.SetField(integration.FieldIntegrationName, field.TypeString, value)
 		_node.IntegrationName = value
-	}
-	if value, ok := _c.mutation.DisplayName(); ok {
-		_spec.SetField(integration.FieldDisplayName, field.TypeString, value)
-		_node.DisplayName = value
 	}
 	if value, ok := _c.mutation.ExternalProviderRef(); ok {
 		_spec.SetField(integration.FieldExternalProviderRef, field.TypeString, value)
@@ -366,18 +353,6 @@ func (u *IntegrationUpsert) SetIntegrationName(v string) *IntegrationUpsert {
 // UpdateIntegrationName sets the "integration_name" field to the value that was provided on create.
 func (u *IntegrationUpsert) UpdateIntegrationName() *IntegrationUpsert {
 	u.SetExcluded(integration.FieldIntegrationName)
-	return u
-}
-
-// SetDisplayName sets the "display_name" field.
-func (u *IntegrationUpsert) SetDisplayName(v string) *IntegrationUpsert {
-	u.Set(integration.FieldDisplayName, v)
-	return u
-}
-
-// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *IntegrationUpsert) UpdateDisplayName() *IntegrationUpsert {
-	u.SetExcluded(integration.FieldDisplayName)
 	return u
 }
 
@@ -507,20 +482,6 @@ func (u *IntegrationUpsertOne) SetIntegrationName(v string) *IntegrationUpsertOn
 func (u *IntegrationUpsertOne) UpdateIntegrationName() *IntegrationUpsertOne {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.UpdateIntegrationName()
-	})
-}
-
-// SetDisplayName sets the "display_name" field.
-func (u *IntegrationUpsertOne) SetDisplayName(v string) *IntegrationUpsertOne {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.SetDisplayName(v)
-	})
-}
-
-// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *IntegrationUpsertOne) UpdateDisplayName() *IntegrationUpsertOne {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateDisplayName()
 	})
 }
 
@@ -823,20 +784,6 @@ func (u *IntegrationUpsertBulk) SetIntegrationName(v string) *IntegrationUpsertB
 func (u *IntegrationUpsertBulk) UpdateIntegrationName() *IntegrationUpsertBulk {
 	return u.Update(func(s *IntegrationUpsert) {
 		s.UpdateIntegrationName()
-	})
-}
-
-// SetDisplayName sets the "display_name" field.
-func (u *IntegrationUpsertBulk) SetDisplayName(v string) *IntegrationUpsertBulk {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.SetDisplayName(v)
-	})
-}
-
-// UpdateDisplayName sets the "display_name" field to the value that was provided on create.
-func (u *IntegrationUpsertBulk) UpdateDisplayName() *IntegrationUpsertBulk {
-	return u.Update(func(s *IntegrationUpsert) {
-		s.UpdateDisplayName()
 	})
 }
 

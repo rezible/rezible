@@ -411,8 +411,7 @@ export type CreateInstalledIntegrationRequestAttributes = {
     config: {
         [key: string]: unknown;
     };
-    displayName?: string;
-    preferences: {
+    userSettings: {
         [key: string]: unknown;
     };
 };
@@ -2655,8 +2654,7 @@ export type UpdateIncidentTypeResponseBody = {
 };
 
 export type UpdateInstalledIntegrationRequestAttributes = {
-    displayName?: string;
-    preferences: {
+    userSettings: {
         [key: string]: unknown;
     };
 };

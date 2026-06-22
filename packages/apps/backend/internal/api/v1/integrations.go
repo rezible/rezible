@@ -65,9 +65,8 @@ func (h *integrationsHandler) CreateInstalledIntegration(ctx context.Context, re
 
 	attr := req.Body.Attributes
 	params := rez.InstallIntegrationParams{
-		DisplayName:        attr.DisplayName,
 		InstallationConfig: attr.Config,
-		UserSettings:       attr.Preferences,
+		UserSettings:       attr.UserSettings,
 	}
 	intg, installErr := h.integrations.InstallNew(ctx, req.Name, params)
 	if installErr != nil {
@@ -83,8 +82,7 @@ func (h *integrationsHandler) UpdateInstalledIntegration(ctx context.Context, re
 
 	attr := req.Body.Attributes
 	params := rez.UpdateIntegrationParams{
-		DisplayName:  attr.DisplayName,
-		UserSettings: attr.Preferences,
+		UserSettings: attr.UserSettings,
 	}
 	intg, setErr := h.integrations.UpdateInstalled(ctx, req.Id, params)
 	if setErr != nil {

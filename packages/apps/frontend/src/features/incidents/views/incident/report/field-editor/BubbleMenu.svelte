@@ -100,14 +100,12 @@
 	};
 </script>
 
-<div>
-	<div
-		bind:this={bubbleMenuElement}
-		style="visibility: hidden"
-		class="flex flex-col gap-2 bg-surface-300 rounded-full border"
-	>
-		<Button onclick={onCommentButtonClicked}>comment</Button>
+<div
+	bind:this={bubbleMenuElement}
+	style="visibility: hidden"
+	class="flex flex-col gap-2 bg-surface-300 rounded-full border"
+>
+	<Button onclick={onCommentButtonClicked}>comment</Button>
 
-		<Button onclick={onAnnotateButtonClicked}>annotate</Button>
-	</div>
+	<Button onclick={onAnnotateButtonClicked}>annotate</Button>
 </div>

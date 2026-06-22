@@ -95,11 +95,11 @@
 	onfocus={onEditorContainerFocused}
 >
 	{#if editor}
-		<BubbleMenu
+		<!--BubbleMenu
 			{editor}
 			field={section.field}
 			onCreate={(t) => onCreateAnnotation(editor as Editor, t)}
-		/>
+		/-->
 		<TiptapEditor bind:editor />
 	{/if}
 </div>

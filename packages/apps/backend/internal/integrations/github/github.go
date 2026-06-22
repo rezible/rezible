@@ -106,6 +106,10 @@ func (ii *InstalledIntegration) ProviderName() string {
 	return providerName
 }
 
+func (ii *InstalledIntegration) DisplayName() string {
+	return "Github"
+}
+
 const (
 	configOrg            = "org"
 	configInstallationID = "installation_id"

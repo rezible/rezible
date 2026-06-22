@@ -25606,7 +25606,6 @@ type IntegrationMutation struct {
 	created_at            *time.Time
 	updated_at            *time.Time
 	integration_name      *string
-	display_name          *string
 	external_provider_ref *string
 	installation_config   *map[string]interface{}
 	user_settings         *map[string]interface{}
@@ -25866,42 +25865,6 @@ func (m *IntegrationMutation) ResetIntegrationName() {
 	m.integration_name = nil
 }
 
-// SetDisplayName sets the "display_name" field.
-func (m *IntegrationMutation) SetDisplayName(s string) {
-	m.display_name = &s
-}
-
-// DisplayName returns the value of the "display_name" field in the mutation.
-func (m *IntegrationMutation) DisplayName() (r string, exists bool) {
-	v := m.display_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDisplayName returns the old "display_name" field's value of the Integration entity.
-// If the Integration object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *IntegrationMutation) OldDisplayName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDisplayName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDisplayName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDisplayName: %w", err)
-	}
-	return oldValue.DisplayName, nil
-}
-
-// ResetDisplayName resets all changes to the "display_name" field.
-func (m *IntegrationMutation) ResetDisplayName() {
-	m.display_name = nil
-}
-
 // SetExternalProviderRef sets the "external_provider_ref" field.
 func (m *IntegrationMutation) SetExternalProviderRef(s string) {
 	m.external_provider_ref = &s
@@ -26071,7 +26034,7 @@ func (m *IntegrationMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *IntegrationMutation) Fields() []string {
-	fields := make([]string, 0, 8)
+	fields := make([]string, 0, 7)
 	if m.tenant != nil {
 		fields = append(fields, integration.FieldTenantID)
 	}
@@ -26083,9 +26046,6 @@ func (m *IntegrationMutation) Fields() []string {
 	}
 	if m.integration_name != nil {
 		fields = append(fields, integration.FieldIntegrationName)
-	}
-	if m.display_name != nil {
-		fields = append(fields, integration.FieldDisplayName)
 	}
 	if m.external_provider_ref != nil {
 		fields = append(fields, integration.FieldExternalProviderRef)
@@ -26112,8 +26072,6 @@ func (m *IntegrationMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case integration.FieldIntegrationName:
 		return m.IntegrationName()
-	case integration.FieldDisplayName:
-		return m.DisplayName()
 	case integration.FieldExternalProviderRef:
 		return m.ExternalProviderRef()
 	case integration.FieldInstallationConfig:
@@ -26137,8 +26095,6 @@ func (m *IntegrationMutation) OldField(ctx context.Context, name string) (ent.Va
 		return m.OldUpdatedAt(ctx)
 	case integration.FieldIntegrationName:
 		return m.OldIntegrationName(ctx)
-	case integration.FieldDisplayName:
-		return m.OldDisplayName(ctx)
 	case integration.FieldExternalProviderRef:
 		return m.OldExternalProviderRef(ctx)
 	case integration.FieldInstallationConfig:
@@ -26181,13 +26137,6 @@ func (m *IntegrationMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetIntegrationName(v)
-		return nil
-	case integration.FieldDisplayName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDisplayName(v)
 		return nil
 	case integration.FieldExternalProviderRef:
 		v, ok := value.(string)
@@ -26273,9 +26222,6 @@ func (m *IntegrationMutation) ResetField(name string) error {
 		return nil
 	case integration.FieldIntegrationName:
 		m.ResetIntegrationName()
-		return nil
-	case integration.FieldDisplayName:
-		m.ResetDisplayName()
 		return nil
 	case integration.FieldExternalProviderRef:
 		m.ResetExternalProviderRef()
