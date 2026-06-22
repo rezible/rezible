@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	mapset "github.com/deckarep/golang-set/v2"
+	"github.com/google/uuid"
 	"github.com/riverqueue/river"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"
@@ -46,33 +47,31 @@ func NewProviderEventPipelineService(ts rez.TelemetryService, db rez.Database, j
 }
 
 func (s *ProviderEventPipelineService) Ingest(ctx context.Context, ev rez.ProviderEvent) error {
-	res := s.ingest(ctx, ev)
-	s.telemetry.recordIngested(ctx, ev, res)
-	return res.error
+	duplicate, ingestErr := s.ingest(ctx, ev)
+	s.telemetry.recordIngested(ctx, ev, duplicate, ingestErr)
+	return ingestErr
 }
 
-type providerEventIngestResult struct {
-	duplicate bool
-	error     error
-}
+func (s *ProviderEventPipelineService) ingest(ctx context.Context, ev rez.ProviderEvent) (bool, error) {
+	if ev.Provider == "" {
+		return false, fmt.Errorf("event provider is required")
+	} else if ev.ProviderSource == "" {
+		return false, fmt.Errorf("event provider_source is required")
+	} else if ev.ProviderSubjectRef == "" {
+		return false, fmt.Errorf("event subject_ref is required")
+	} else if len(ev.Payload) == 0 {
+		return false, fmt.Errorf("event payload is required")
+	} else if ev.ProviderEventRef == "" {
+		return false, fmt.Errorf("event provider_delivery_ref is required")
+	}
 
-func (s *ProviderEventPipelineService) ingest(ctx context.Context, ev rez.ProviderEvent) providerEventIngestResult {
-	var res providerEventIngestResult
-	processArgs := processProviderEventArgs{Event: ev}
-	if validationErr := processArgs.validate(); validationErr != nil {
-		res.error = fmt.Errorf("invalid event: %w", validationErr)
-		return res
-	}
-	insertOpts := &river.InsertOpts{
-		UniqueOpts: river.UniqueOpts{ByArgs: true},
-	}
-	insertRes, insertErr := s.jobService.Insert(ctx, processArgs, insertOpts)
+	args := processProviderEventArgs{Event: ev}
+	insertOpts := &river.InsertOpts{UniqueOpts: river.UniqueOpts{ByArgs: true}}
+	insertRes, insertErr := s.jobService.Insert(ctx, args, insertOpts)
 	if insertErr != nil {
-		res.error = fmt.Errorf("could not insert provider event job: %w", insertErr)
-	} else {
-		res.duplicate = insertRes.UniqueSkippedAsDuplicate
+		return false, fmt.Errorf("could not insert provider event job: %w", insertErr)
 	}
-	return res
+	return insertRes.UniqueSkippedAsDuplicate, nil
 }
 
 type processProviderEventArgs struct {
@@ -81,25 +80,6 @@ type processProviderEventArgs struct {
 
 func (processProviderEventArgs) Kind() string {
 	return "process-provider-event"
-}
-
-func (a processProviderEventArgs) validate() error {
-	if a.Event.Provider == "" {
-		return fmt.Errorf("event provider is required")
-	}
-	if a.Event.ProviderSource == "" {
-		return fmt.Errorf("event provider_source is required")
-	}
-	if a.Event.ProviderSubjectRef == "" {
-		return fmt.Errorf("event subject_ref is required")
-	}
-	if len(a.Event.Payload) == 0 {
-		return fmt.Errorf("event payload is required")
-	}
-	if a.Event.ProviderEventRef == "" {
-		return fmt.Errorf("event provider_delivery_ref is required")
-	}
-	return nil
 }
 
 func (s *ProviderEventPipelineService) HandleProcessEventJob(ctx context.Context, args processProviderEventArgs) error {
@@ -111,19 +91,23 @@ func (s *ProviderEventPipelineService) HandleProcessEventJob(ctx context.Context
 func (s *ProviderEventPipelineService) HandleEventProjectionJob(ctx context.Context, args jobs.ProjectNormalizedEvent) error {
 	ev, queryErr := s.db.Client(ctx).NormalizedEvent.Get(ctx, args.EventId)
 	if queryErr != nil {
-		return fmt.Errorf("query normalized event: %w", queryErr)
+		return fmt.Errorf("query event: %w", queryErr)
 	}
 
-	res := s.projectNormalizedEvent(ctx, ev)
+	res, resErr := s.projectNormalizedEvent(ctx, ev)
+	if resErr != nil {
+		return fmt.Errorf("project event: %w", resErr)
+	}
 
-	for name, errs := range res.handlerErrors {
-		s.logger.WarnContext(ctx, "failed to update projection status",
-			"handler", name,
-			"errors", errors.Join(errs...),
+	retryableErrors, fatalErrors := res.errors()
+	for projName, err := range fatalErrors {
+		s.logger.ErrorContext(ctx, "fatal event projection error",
+			"error", err.Error(),
+			"name", projName,
+			"ref", ev.ProviderEventRef,
 		)
 	}
-
-	return res.retryableError()
+	return errors.Join(retryableErrors...)
 }
 
 func (s *ProviderEventPipelineService) SyncEvents(ctx context.Context, querier rez.ProviderEventQuerier, sourceCursors map[string]string) rez.ProviderEventSyncResult {
@@ -295,94 +279,130 @@ func (s *ProviderEventPipelineService) processProviderEvent(ctx context.Context,
 	return res
 }
 
-type projectNormalizedEventResult struct {
+func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) (*eventProjectionResult, error) {
+	res := eventProjectionResult{handlerErrors: make(map[string][]error)}
+
+	projStatuses, projStatusErr := s.getEventProjectionStatuses(ctx, ev.ID)
+	if projStatusErr != nil {
+		return nil, fmt.Errorf("query status: %w", projStatusErr)
+	}
+
+	for name, projector := range s.reg.GetEventProjectorsForKind(projections.SubjectKind(ev.SubjectKind)) {
+		currStatus, statusExists := projStatuses[name]
+		if statusExists && currStatus.state == neps.StatusSucceeded {
+			continue
+		}
+
+		status, setPendingErr := s.setEventProjectionStatusPending(ctx, currStatus.id, name, ev.ID)
+		if setPendingErr != nil {
+			res.addHandlerError(name, fmt.Errorf("set status pending: %w", setPendingErr))
+		}
+
+		projErr := s.runEventProjector(ctx, ev, projector)
+		if projErr != nil {
+			res.addHandlerError(name, projErr)
+		}
+
+		if resErr := s.setEventProjectionStatusResult(ctx, status.ID, projErr); resErr != nil {
+			res.addHandlerError(name, fmt.Errorf("set projection result status: %w", setPendingErr))
+		}
+	}
+
+	return &res, nil
+}
+
+func (s *ProviderEventPipelineService) runEventProjector(ctx context.Context, ev *ent.NormalizedEvent, projector rez.NormalizedEventProjector) error {
+	return s.db.WithTx(ctx, func(ctx context.Context, _ *ent.Client) (err error) {
+		defer func() {
+			if v := recover(); v != nil {
+				slog.WarnContext(ctx, "event projection panic",
+					"error", fmt.Sprintf("%+v", v),
+					"stack", string(debug.Stack()),
+					"event", ev.ID.String())
+				err = fmt.Errorf("projector panic: %v", v)
+			}
+		}()
+		return projector.HandleEventProjection(ctx, ev)
+	})
+}
+
+type eventProjectionResult struct {
 	handlerErrors map[string][]error
 }
 
-func (r projectNormalizedEventResult) retryableError() error {
-	errs := make([]error, 0, len(r.handlerErrors))
+func (r eventProjectionResult) errors() ([]error, map[string]error) {
+	retryable := make([]error, 0, len(r.handlerErrors))
+	fatal := make(map[string]error)
 	for name, handlerErrs := range r.handlerErrors {
 		for _, handlerErr := range handlerErrs {
 			if projections.IsRetryable(handlerErr) {
-				errs = append(errs, fmt.Errorf("%s: %w", name, handlerErr))
+				retryable = append(retryable, fmt.Errorf("%s: %w", name, handlerErr))
+			} else {
+				fatal[name] = errors.Join(fatal[name], handlerErr)
 			}
 		}
 	}
-	return errors.Join(errs...)
+	return retryable, fatal
 }
 
-func (s *ProviderEventPipelineService) projectNormalizedEvent(ctx context.Context, ev *ent.NormalizedEvent) projectNormalizedEventResult {
-	res := projectNormalizedEventResult{
-		handlerErrors: make(map[string][]error),
+func (r eventProjectionResult) addHandlerError(name string, err error) {
+	r.handlerErrors[name] = append(r.handlerErrors[name], err)
+}
+
+type eventProjectionStatus struct {
+	id    uuid.UUID
+	state neps.Status
+}
+
+func (s *ProviderEventPipelineService) getEventProjectionStatuses(ctx context.Context, eventId uuid.UUID) (map[string]eventProjectionStatus, error) {
+	queryStatuses := s.db.Client(ctx).NormalizedEventProjectionStatus.Query().Where(neps.NormalizedEventID(eventId))
+	statuses, queryStatusErr := queryStatuses.All(ctx)
+	if queryStatusErr != nil {
+		return nil, fmt.Errorf("query status: %w", queryStatusErr)
 	}
-	appendHandlerErr := func(name string, err error) {
-		res.handlerErrors[name] = append(res.handlerErrors[name], err)
+	projStatuses := map[string]eventProjectionStatus{}
+	for _, status := range statuses {
+		projStatuses[status.HandlerName] = eventProjectionStatus{id: status.ID, state: status.Status}
 	}
-	kind := projections.SubjectKind(ev.SubjectKind)
-	client := s.db.Client(ctx)
-	for name, projector := range s.reg.GetEventProjectorsForKind(kind) {
-		// query for existing projection status
-		queryStatus := client.NormalizedEventProjectionStatus.Query().
-			Where(neps.NormalizedEventID(ev.ID), neps.HandlerName(name))
-		status, statusErr := queryStatus.Only(ctx)
-		if statusErr != nil && !ent.IsNotFound(statusErr) {
-			appendHandlerErr(name, fmt.Errorf("query projection status: %w", statusErr))
-			continue
-		}
-		attemptedAt := time.Now().UTC()
-		var pendingMut ent.EntityMutator[*ent.NormalizedEventProjectionStatus, *ent.NormalizedEventProjectionStatusMutation]
-		if status != nil {
-			if status.Status == neps.StatusSucceeded {
-				continue
-			}
-			pendingMut = status.Update().
-				ClearFailedAt().
-				ClearLastError()
-		} else {
-			pendingMut = client.NormalizedEventProjectionStatus.Create().
-				SetNormalizedEventID(ev.ID).
-				SetHandlerName(name)
-		}
-		m := pendingMut.Mutation()
+	return projStatuses, nil
+}
+
+func (s *ProviderEventPipelineService) setEventProjectionStatusPending(ctx context.Context, statusId uuid.UUID, projName string, evId uuid.UUID) (*ent.NormalizedEventProjectionStatus, error) {
+	return s.setEventProjectionStatus(ctx, statusId, func(m *ent.NormalizedEventProjectionStatusMutation) {
+		m.ClearFailedAt()
+		m.ClearLastError()
+		m.SetNormalizedEventID(evId)
+		m.SetHandlerName(projName)
 		m.SetStatus(neps.StatusPending)
-		m.SetLastAttemptedAt(attemptedAt)
-		status, statusErr = pendingMut.Save(ctx)
-		if statusErr != nil {
-			appendHandlerErr(name, fmt.Errorf("mark projection pending: %w", statusErr))
-			continue
-		}
+		m.SetLastAttemptedAt(time.Now().UTC())
+	})
+}
 
-		projectionErr := s.db.WithTx(ctx, func(txCtx context.Context, _ *ent.Client) (err error) {
-			defer func() {
-				if v := recover(); v != nil {
-					slog.WarnContext(txCtx, "event projection panic",
-						"error", fmt.Sprintf("%+v", v),
-						"stack", string(debug.Stack()),
-						"event", ev.ID.String())
-					err = fmt.Errorf("projection panic: %v", v)
-				}
-			}()
-			return projector.HandleEventProjection(txCtx, ev)
-		})
-
-		update := status.Update()
-		if projectionErr == nil {
-			update.SetStatus(neps.StatusSucceeded).
-				SetSucceededAt(time.Now().UTC()).
-				ClearFailedAt().
-				ClearLastError()
+func (s *ProviderEventPipelineService) setEventProjectionStatusResult(ctx context.Context, statusId uuid.UUID, projErr error) error {
+	_, setErr := s.setEventProjectionStatus(ctx, statusId, func(m *ent.NormalizedEventProjectionStatusMutation) {
+		if projErr == nil {
+			m.ClearFailedAt()
+			m.ClearLastError()
+			m.SetStatus(neps.StatusSucceeded)
+			m.SetSucceededAt(time.Now().UTC())
 		} else {
-			appendHandlerErr(name, fmt.Errorf("save projection tx: %w", projectionErr))
-			update.SetStatus(neps.StatusFailed).
-				SetFailedAt(time.Now().UTC()).
-				SetLastError(projectionErr.Error())
+			m.SetStatus(neps.StatusFailed)
+			m.SetFailedAt(time.Now().UTC())
+			m.SetLastError(projErr.Error())
 		}
-		if statusErr = update.Exec(ctx); statusErr != nil {
-			appendHandlerErr(name, fmt.Errorf("update projection status: %w", statusErr))
-		}
-	}
+	})
+	return setErr
+}
 
-	return res
+func (s *ProviderEventPipelineService) setEventProjectionStatus(ctx context.Context, statusId uuid.UUID, setFn func(*ent.NormalizedEventProjectionStatusMutation)) (*ent.NormalizedEventProjectionStatus, error) {
+	var mutator ent.EntityMutator[*ent.NormalizedEventProjectionStatus, *ent.NormalizedEventProjectionStatusMutation]
+	if statusId != uuid.Nil {
+		mutator = s.db.Client(ctx).NormalizedEventProjectionStatus.UpdateOneID(statusId)
+	} else {
+		mutator = s.db.Client(ctx).NormalizedEventProjectionStatus.Create()
+	}
+	setFn(mutator.Mutation())
+	return mutator.Save(ctx)
 }
 
 type providerEventTelemetry struct {
@@ -415,17 +435,17 @@ func newProviderEventTelemetry(ts rez.TelemetryService, logger *slog.Logger) *pr
 	}
 }
 
-func (m *providerEventTelemetry) recordIngested(ctx context.Context, ev rez.ProviderEvent, res providerEventIngestResult) {
+func (m *providerEventTelemetry) recordIngested(ctx context.Context, ev rez.ProviderEvent, duplicate bool, err error) {
 	if m == nil {
 		return
 	}
 	m.ingested.Add(ctx, 1, metric.WithAttributes(
 		attribute.String("provider", ev.Provider),
 		attribute.String("provider_source", ev.ProviderSource),
-		attribute.Bool("success", res.error == nil),
-		attribute.Bool("duplicate", res.duplicate),
+		attribute.Bool("success", err == nil),
+		attribute.Bool("duplicate", duplicate),
 	))
-	if res.duplicate {
+	if duplicate {
 		m.logger.Info("skipped ingesting duplicate provider event",
 			"provider", ev.Provider,
 			"source", ev.ProviderSource,
