@@ -1,13 +1,11 @@
 import { navigating, page } from "$app/state";
 import {
-	type User,
 	getUserSessionOptions,
 	type ErrorModel,
-	type Organization,
 	type GetUserSessionResponseBody,
 	type UserSession,
 } from "$lib/api";
-import { parseAbsoluteToLocal, ZonedDateTime, now, getLocalTimeZone } from "@internationalized/date";
+import { parseAbsoluteToLocal, ZonedDateTime } from "@internationalized/date";
 import { createQuery, type CreateQueryResult } from "@tanstack/svelte-query";
 import { Context, watch } from "runed";
 import { onMount, tick } from "svelte";
@@ -56,15 +54,18 @@ const parseUserSessionQueryResponse = ({data: body, error}: AuthSessionQueryResu
 };
 
 const LoginRoute = resolve("/login");
-const SettingsRouteId = resolve("/settings");
+const InitialSetupRouteId = resolve("/settings/initial-setup");
+const ConnectRoutePrefix = resolve("/connect");
 const getAuthRedirect = (routeId: RouteId | null, isAuthenticated: boolean, isSetup: boolean) => {
 	if (!routeId) return null;
 
 	const isLoginRoute = routeId?.startsWith(LoginRoute);
 	if (!isAuthenticated) return isLoginRoute ? null : LoginRoute;
 
-	const isSettingsRoute = routeId?.startsWith(SettingsRouteId);
-	if (!isSetup) return isSettingsRoute ? null : SettingsRouteId;
+	const isInitialSetupRoute = routeId?.startsWith(InitialSetupRouteId);
+	const isConnectRoute = routeId?.startsWith(ConnectRoutePrefix);
+	if (!isSetup) return isInitialSetupRoute || isConnectRoute ? null : InitialSetupRouteId;
+	if (isSetup && isInitialSetupRoute) return "/settings";
 
 	return isLoginRoute ? "/" : null;
 }
@@ -87,12 +88,12 @@ export class UserSessionState {
 
 	constructor() {
 		this.startSessionExpiryCheck();
-		this.guardNavigation();
+		this.addNavigationGuards();
 	};
 
 	private redirectTo = $derived(this.loaded ? getAuthRedirect(page.route.id, this.isAuthenticated, this.isSetup) : undefined);
 
-	private guardNavigation() {
+	private addNavigationGuards() {
 		watch(() => this.redirectTo, route => {
 			if (!!route && route !== navigating.to?.route.id) {
 				goto(route);

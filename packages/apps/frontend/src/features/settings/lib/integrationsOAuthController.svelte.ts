@@ -1,27 +1,41 @@
 import {
 	startIntegrationOauthFlowMutation, 
-	completeIntegrationOauthFlowMutation,
 	type ErrorModel,
 	type IntegrationOAuthInstallResult,
 } from "$lib/api";
 
-import { page } from "$app/state";
-import { clearQueryParams } from "$lib/utils";
+import { browser } from "$app/environment";
 import { createMutation } from "@tanstack/svelte-query";
-import { watch } from "runed";
-import { tick } from "svelte";
+import { onDestroy } from "svelte";
+
+const OAuthMessageType = "rezible.integration-oauth-complete";
+
+type IntegrationOAuthMessage = {
+    type: typeof OAuthMessageType;
+    name: string;
+    result?: IntegrationOAuthInstallResult;
+    error?: ErrorModel;
+};
+
+export const postIntegrationOAuthCompleteMessage = (message: Omit<IntegrationOAuthMessage, "type">) => {
+    if (!browser || !window.opener) return false;
+    window.opener.postMessage({ type: OAuthMessageType, ...message }, window.location.origin);
+    return true;
+};
 
 export class IntegrationOAuthController {
     inFlowForName = $state<string>();
     error = $state<ErrorModel>();
+    popup = $state.raw<Window>();
 
     private onSuccess: (res: IntegrationOAuthInstallResult) => void;
 
     constructor(onSuccess: (res: IntegrationOAuthInstallResult) => void) {
         this.onSuccess = onSuccess;
-        watch(() => page.url.search, search => {
-            this.checkOAuthCallback(new URLSearchParams(search));
-        });
+        if (browser) {
+            window.addEventListener("message", this.handleOAuthMessage);
+            onDestroy(() => window.removeEventListener("message", this.handleOAuthMessage));
+        }
     }
 
     private setError(err: unknown) {
@@ -34,6 +48,7 @@ export class IntegrationOAuthController {
     clearFlow() {
         this.inFlowForName = undefined;
         this.error = undefined;
+        this.popup = undefined;
     }
 
     private startOAuthFlowMut = createMutation(() => ({
@@ -41,44 +56,45 @@ export class IntegrationOAuthController {
     }));
 
     async startFlowFor(name: string) {
+        if (!browser) return;
         this.inFlowForName = name;
-        const resp = await this.startOAuthFlowMut.mutateAsync({path: { name }});
-        window.location.assign(new URL(resp.data.flow_url));
-    }
+        this.error = undefined;
 
-    private completeOAuthFlowMut = createMutation(() => ({
-        ...completeIntegrationOauthFlowMutation({}),
-        onSuccess: async ({data}) => {
-            await tick();
-            this.onSuccess?.(data);
-        },
-    }));
+        const popup = window.open("about:blank", `rezible-oauth-${name}`, "popup,width=640,height=760");
+        if (!popup) {
+            this.setError(new Error("Popup blocked. Allow popups and try again."));
+            this.inFlowForName = undefined;
+            return;
+        }
 
-    private async checkOAuthCallback(params: URLSearchParams) {
-        const name = params.get("name");
-        const code = params.get("code");
-        const state = params.get("state");
-
-        if (this.completeOAuthFlowMut.isPending) return;
-        if (!name || !state || !code) return;
-
-        this.inFlowForName = name;
-
-        await clearQueryParams();
+        this.popup = popup;
 
         try {
-            const attributes = { state, code };
-            await this.completeOAuthFlowMut.mutateAsync({
-                path: { name },
-                body: { attributes },
-            });
-            this.error = undefined;
+            const resp = await this.startOAuthFlowMut.mutateAsync({path: { name }});
+            popup.location.assign(new URL(resp.data.flow_url));
         } catch (e) {
+            popup.close();
             this.setError(e);
-        } finally {
             this.inFlowForName = undefined;
+            this.popup = undefined;
         }
     }
 
-    inFlow = $derived(this.startOAuthFlowMut.isPending || this.completeOAuthFlowMut.isPending);
+    private handleOAuthMessage = (event: MessageEvent<IntegrationOAuthMessage>) => {
+        if (event.origin !== window.location.origin) return;
+        if (event.data?.type !== OAuthMessageType) return;
+        if (this.inFlowForName && event.data.name !== this.inFlowForName) return;
+
+        if (event.data.error) {
+            this.error = event.data.error;
+        } else if (event.data.result) {
+            this.error = undefined;
+            this.onSuccess?.(event.data.result);
+        }
+
+        this.popup = undefined;
+        this.inFlowForName = undefined;
+    }
+
+    inFlow = $derived(this.startOAuthFlowMut.isPending || !!this.inFlowForName);
 };

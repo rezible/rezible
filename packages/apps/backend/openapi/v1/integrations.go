@@ -13,45 +13,46 @@ import (
 )
 
 type IntegrationsHandler interface {
-	ListAvailableIntegrations(context.Context, *ListAvailableIntegrationsRequest) (*ListAvailableIntegrationsResponse, error)
+	GetInstallableIntegrations(context.Context, *GetInstallableIntegrationsRequest) (*GetInstallableIntegrationsResponse, error)
 
-	CreateInstalledIntegration(context.Context, *CreateInstalledIntegrationRequest) (*CreateInstalledIntegrationResponse, error)
-	ListIntegrationInstallTargets(context.Context, *ListIntegrationInstallTargetsRequest) (*ListIntegrationInstallTargetsResponse, error)
-	InstallIntegrationTargets(context.Context, *InstallIntegrationTargetsRequest) (*InstallIntegrationTargetsResponse, error)
-
-	ListInstalledIntegrations(context.Context, *ListInstalledIntegrationsRequest) (*ListInstalledIntegrationsResponse, error)
-	UpdateInstalledIntegration(context.Context, *UpdateInstalledIntegrationRequest) (*UpdateInstalledIntegrationResponse, error)
-	GetInstalledIntegration(context.Context, *GetInstalledIntegrationRequest) (*GetInstalledIntegrationResponse, error)
-	DeleteInstalledIntegration(context.Context, *DeleteInstalledIntegrationRequest) (*DeleteInstalledIntegrationResponse, error)
+	InstallIntegration(context.Context, *InstallIntegrationRequest) (*InstallIntegrationResponse, error)
 
 	StartIntegrationOAuthFlow(context.Context, *StartIntegrationOAuthFlowRequest) (*StartIntegrationOAuthFlowResponse, error)
 	CompleteIntegrationOAuthFlow(context.Context, *CompleteIntegrationOAuthFlowRequest) (*CompleteIntegrationOAuthFlowResponse, error)
+
+	ListIntegrationInstallTargets(context.Context, *ListIntegrationInstallTargetsRequest) (*ListIntegrationInstallTargetsResponse, error)
+	InstallIntegrationFromTargets(context.Context, *InstallIntegrationFromTargetsRequest) (*InstallIntegrationFromTargetsResponse, error)
+
+	ListIntegrationInstallations(context.Context, *ListIntegrationInstallationsRequest) (*ListIntegrationInstallationsResponse, error)
+	GetIntegrationInstallation(context.Context, *GetIntegrationInstallationRequest) (*GetIntegrationInstallationResponse, error)
+	UpdateIntegrationInstallation(context.Context, *UpdateIntegrationInstallationRequest) (*UpdateIntegrationInstallationResponse, error)
+	DeleteIntegrationInstallation(context.Context, *DeleteIntegrationInstallationRequest) (*DeleteIntegrationInstallationResponse, error)
 
 	RequestIntegrationEventSync(context.Context, *RequestIntegrationEventSyncRequest) (*RequestIntegrationEventSyncResponse, error)
 	ListIntegrationEventSyncRun(context.Context, *ListIntegrationEventSyncRunRequest) (*ListIntegrationEventSyncRunResponse, error)
 }
 
 func (o operations) RegisterIntegrations(api huma.API) {
-	huma.Register(api, ListAvailableIntegrations, o.ListAvailableIntegrations)
+	huma.Register(api, GetInstallableIntegrations, o.GetInstallableIntegrations)
 
-	huma.Register(api, CreateInstalledIntegration, o.CreateInstalledIntegration)
-	huma.Register(api, InstallIntegrationTargets, o.InstallIntegrationTargets)
+	huma.Register(api, InstallIntegration, o.InstallIntegration)
+	huma.Register(api, InstallIntegrationFromTargets, o.InstallIntegrationFromTargets)
 
 	huma.Register(api, StartIntegrationOAuthFlow, o.StartIntegrationOAuthFlow)
 	huma.Register(api, ListIntegrationInstallTargets, o.ListIntegrationInstallTargets)
 	huma.Register(api, CompleteIntegrationOAuthFlow, o.CompleteIntegrationOAuthFlow)
 
-	huma.Register(api, GetInstalledIntegration, o.GetInstalledIntegration)
-	huma.Register(api, ListInstalledIntegrations, o.ListInstalledIntegrations)
-	huma.Register(api, UpdateInstalledIntegration, o.UpdateInstalledIntegration)
-	huma.Register(api, DeleteInstalledIntegration, o.DeleteInstalledIntegration)
+	huma.Register(api, GetIntegrationInstallation, o.GetIntegrationInstallation)
+	huma.Register(api, ListIntegrationInstallations, o.ListIntegrationInstallations)
+	huma.Register(api, UpdateIntegrationInstallation, o.UpdateIntegrationInstallation)
+	huma.Register(api, DeleteIntegrationInstallation, o.DeleteIntegrationInstallation)
 
 	huma.Register(api, RequestIntegrationEventSync, o.RequestIntegrationEventSync)
 	huma.Register(api, ListIntegrationEventSyncRuns, o.ListIntegrationEventSyncRun)
 }
 
 type (
-	AvailableIntegration struct {
+	InstallableIntegration struct {
 		Name         string `json:"name"`
 		DisplayName  string `json:"displayName"`
 		Description  string `json:"description"`
@@ -60,12 +61,12 @@ type (
 		OAuthInstall bool   `json:"oauthInstall"`
 	}
 
-	InstalledIntegration struct {
-		Id         uuid.UUID                      `json:"id"`
-		Attributes InstalledIntegrationAttributes `json:"attributes"`
+	IntegrationInstallation struct {
+		Id         uuid.UUID                         `json:"id"`
+		Attributes IntegrationInstallationAttributes `json:"attributes"`
 	}
 
-	InstalledIntegrationAttributes struct {
+	IntegrationInstallationAttributes struct {
 		IntegrationName string         `json:"integrationName"`
 		ProviderName    string         `json:"providerName"`
 		DisplayName     string         `json:"displayName"`
@@ -76,7 +77,7 @@ type (
 
 	IntegrationOAuthInstallResult struct {
 		TargetSelectionRequired bool                       `json:"targetSelectionRequired"`
-		Installed               []InstalledIntegration     `json:"installed,omitempty"`
+		Installed               []IntegrationInstallation  `json:"installed,omitempty"`
 		InstallTargetOptions    []IntegrationInstallTarget `json:"installTargetOptions,omitempty"`
 	}
 
@@ -103,8 +104,8 @@ type (
 	}
 )
 
-func AvailableIntegrationFromPackage(p rez.IntegrationPackage) AvailableIntegration {
-	return AvailableIntegration{
+func InstallableIntegrationFromPackage(p rez.IntegrationPackage) InstallableIntegration {
+	return InstallableIntegration{
 		Name:         p.Name(),
 		DisplayName:  p.DisplayName(),
 		Description:  p.Description(),
@@ -114,9 +115,9 @@ func AvailableIntegrationFromPackage(p rez.IntegrationPackage) AvailableIntegrat
 	}
 }
 
-func InstalledIntegrationFromRez(ii rez.InstalledIntegration) InstalledIntegration {
+func IntegrationInstallationFromRez(ii rez.InstalledIntegration) IntegrationInstallation {
 	intg := ii.Integration()
-	attrs := InstalledIntegrationAttributes{
+	attrs := IntegrationInstallationAttributes{
 		IntegrationName: intg.IntegrationName,
 		ProviderName:    ii.ProviderName(),
 		DisplayName:     ii.DisplayName(),
@@ -124,7 +125,7 @@ func InstalledIntegrationFromRez(ii rez.InstalledIntegration) InstalledIntegrati
 		Settings:        intg.UserSettings,
 		Config:          ii.SanitizedInstallationConfig(),
 	}
-	return InstalledIntegration{Id: intg.ID, Attributes: attrs}
+	return IntegrationInstallation{Id: intg.ID, Attributes: attrs}
 }
 
 func IntegrationInstallTargetOptionsFromRez(intgName string, targets []rez.IntegrationInstallationTarget) []IntegrationInstallTarget {
@@ -146,9 +147,9 @@ func IntegrationOAuthFlowResultFromRez(intgName string, result *rez.CompleteInte
 	if res.TargetSelectionRequired {
 		res.InstallTargetOptions = IntegrationInstallTargetOptionsFromRez(intgName, result.InstallationTargetOptions)
 	} else {
-		res.Installed = make([]InstalledIntegration, len(result.Installed))
+		res.Installed = make([]IntegrationInstallation, len(result.Installed))
 		for i, ci := range result.Installed {
-			res.Installed[i] = InstalledIntegrationFromRez(ci)
+			res.Installed[i] = IntegrationInstallationFromRez(ci)
 		}
 	}
 	return res
@@ -165,39 +166,39 @@ func IntegrationEventSyncRunFromEnt(r *ent.IntegrationEventSyncRun) IntegrationE
 
 var integrationsTags = []string{"Integrations"}
 
-var ListAvailableIntegrations = huma.Operation{
-	OperationID: "list-available-integrations",
+var GetInstallableIntegrations = huma.Operation{
+	OperationID: "get-installable-integrations",
 	Method:      http.MethodGet,
-	Path:        "/integrations/providers",
-	Summary:     "List Available Integrations",
+	Path:        "/integrations",
+	Summary:     "Get Installable Integrations",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type ListAvailableIntegrationsRequest ListRequest
-type ListAvailableIntegrationsResponse ListResponse[AvailableIntegration]
+type GetInstallableIntegrationsRequest ListRequest
+type GetInstallableIntegrationsResponse ItemResponse[[]InstallableIntegration]
 
-var CreateInstalledIntegration = huma.Operation{
-	OperationID: "create-installed-integration",
+var InstallIntegration = huma.Operation{
+	OperationID: "install-integration",
 	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{name}/install",
+	Path:        "/integrations/install/{name}",
 	Summary:     "Install an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type CreateInstalledIntegrationRequestAttributes struct {
+type InstallIntegrationRequestAttributes struct {
 	Config       map[string]any `json:"config"`
 	UserSettings map[string]any `json:"userSettings"`
 }
-type CreateInstalledIntegrationRequest NameRequest[CreateInstalledIntegrationRequestAttributes]
-type CreateInstalledIntegrationResponse ItemResponse[InstalledIntegration]
+type InstallIntegrationRequest NameRequest[InstallIntegrationRequestAttributes]
+type InstallIntegrationResponse ItemResponse[IntegrationInstallation]
 
 var ListIntegrationInstallTargets = huma.Operation{
 	OperationID: "list-integration-install-targets",
 	Method:      http.MethodGet,
 	Path:        "/integrations/install_targets",
-	Summary:     "List current unselected integration installation targets",
+	Summary:     "List integration installation targets requiring selection",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
@@ -205,25 +206,25 @@ var ListIntegrationInstallTargets = huma.Operation{
 type ListIntegrationInstallTargetsRequest EmptyRequest
 type ListIntegrationInstallTargetsResponse ListResponse[IntegrationInstallTarget]
 
-var InstallIntegrationTargets = huma.Operation{
-	OperationID: "install-integration-targets",
+var InstallIntegrationFromTargets = huma.Operation{
+	OperationID: "install-integration-from-targets",
 	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{name}/install/targets",
+	Path:        "/integrations/install/{name}/targets",
 	Summary:     "Select installation targets for an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type InstallIntegrationTargetsRequestAttributes struct {
+type InstallIntegrationFromTargetsRequestAttributes struct {
 	ExternalRefs []string `json:"externalRefs"`
 }
-type InstallIntegrationTargetsRequest NameRequest[InstallIntegrationTargetsRequestAttributes]
-type InstallIntegrationTargetsResponse ListResponse[InstalledIntegration]
+type InstallIntegrationFromTargetsRequest NameRequest[InstallIntegrationFromTargetsRequestAttributes]
+type InstallIntegrationFromTargetsResponse ListResponse[IntegrationInstallation]
 
 var StartIntegrationOAuthFlow = huma.Operation{
 	OperationID: "start-integration-oauth-flow",
 	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{name}/oauth/start",
+	Path:        "/integrations/install/{name}/oauth/start",
 	Summary:     "Start OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
@@ -235,7 +236,7 @@ type StartIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthFlow]
 var CompleteIntegrationOAuthFlow = huma.Operation{
 	OperationID: "complete-integration-oauth-flow",
 	Method:      http.MethodPost,
-	Path:        "/integrations/providers/{name}/oauth/complete",
+	Path:        "/integrations/install/{name}/oauth/complete",
 	Summary:     "Complete OAuth flow for an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
@@ -249,61 +250,61 @@ type CompleteIntegrationOAuthFlowRequestAttributes struct {
 type CompleteIntegrationOAuthFlowRequest NameRequest[CompleteIntegrationOAuthFlowRequestAttributes]
 type CompleteIntegrationOAuthFlowResponse ItemResponse[IntegrationOAuthInstallResult]
 
-var ListInstalledIntegrations = huma.Operation{
-	OperationID: "list-installed-integrations",
+var ListIntegrationInstallations = huma.Operation{
+	OperationID: "list-integration-installations",
 	Method:      http.MethodGet,
-	Path:        "/integrations/installed",
+	Path:        "/integrations/installations",
 	Summary:     "List Installed Integrations",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type ListInstalledIntegrationsRequest ListRequest
-type ListInstalledIntegrationsResponse ListResponse[InstalledIntegration]
+type ListIntegrationInstallationsRequest ListRequest
+type ListIntegrationInstallationsResponse ListResponse[IntegrationInstallation]
 
-var GetInstalledIntegration = huma.Operation{
-	OperationID: "get-installed-integration",
+var GetIntegrationInstallation = huma.Operation{
+	OperationID: "get-integration-installation",
 	Method:      http.MethodGet,
-	Path:        "/integrations/installed/{id}",
+	Path:        "/integrations/installations/{id}",
 	Summary:     "Get an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetInstalledIntegrationRequest EmptyIdRequest
-type GetInstalledIntegrationResponse ItemResponse[InstalledIntegration]
+type GetIntegrationInstallationRequest EmptyIdRequest
+type GetIntegrationInstallationResponse ItemResponse[IntegrationInstallation]
 
-var UpdateInstalledIntegration = huma.Operation{
-	OperationID: "update-installed-integration",
+var UpdateIntegrationInstallation = huma.Operation{
+	OperationID: "update-integration-installation",
 	Method:      http.MethodPatch,
-	Path:        "/integrations/installed/{id}",
+	Path:        "/integrations/installations/{id}",
 	Summary:     "Update an installed Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type UpdateInstalledIntegrationRequestAttributes struct {
+type UpdateIntegrationInstallationRequestAttributes struct {
 	UserSettings map[string]any `json:"userSettings"`
 }
-type UpdateInstalledIntegrationRequest IdRequest[UpdateInstalledIntegrationRequestAttributes]
-type UpdateInstalledIntegrationResponse ItemResponse[InstalledIntegration]
+type UpdateIntegrationInstallationRequest IdRequest[UpdateIntegrationInstallationRequestAttributes]
+type UpdateIntegrationInstallationResponse ItemResponse[IntegrationInstallation]
 
-var DeleteInstalledIntegration = huma.Operation{
-	OperationID: "delete-installed-integration",
+var DeleteIntegrationInstallation = huma.Operation{
+	OperationID: "delete-integration-installation",
 	Method:      http.MethodDelete,
-	Path:        "/integrations/installed/{id}",
+	Path:        "/integrations/installations/{id}",
 	Summary:     "Delete an Integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
 }
 
-type DeleteInstalledIntegrationRequest EmptyIdRequest
-type DeleteInstalledIntegrationResponse EmptyResponse
+type DeleteIntegrationInstallationRequest EmptyIdRequest
+type DeleteIntegrationInstallationResponse EmptyResponse
 
 var RequestIntegrationEventSync = huma.Operation{
 	OperationID: "request-integration-event-sync",
 	Method:      http.MethodPost,
-	Path:        "/integrations/installed/{id}/sync",
+	Path:        "/integrations/installations/{id}/sync/start",
 	Summary:     "Request a manual event sync for an integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),
@@ -318,7 +319,7 @@ type RequestIntegrationEventSyncResponse EmptyResponse
 var ListIntegrationEventSyncRuns = huma.Operation{
 	OperationID: "list-integration-event-sync-runs",
 	Method:      http.MethodGet,
-	Path:        "/integrations/installed/{id}/sync",
+	Path:        "/integrations/installations/{id}/sync",
 	Summary:     "Get event sync runs for an integration",
 	Tags:        integrationsTags,
 	Errors:      ErrorCodes(),

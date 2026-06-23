@@ -1,47 +1,37 @@
-import { afterNavigate, beforeNavigate, goto } from "$app/navigation";
 import { page } from "$app/state";
-import { setPageBreadcrumbs } from "$lib/app-shell.svelte";
-import { useUserSessionState } from "$src/lib/user-session.svelte";
-import { convertSettingsViewParam, type SettingsViewParam } from "$src/params/settingsView";
+import { useAppShell } from "$lib/app-shell.svelte";
+import { useUserSessionState } from "$lib/user-session.svelte";
 import { initIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 import { Context } from "runed";
+import { onDestroy } from "svelte";
 
-const viewParamLabel = (p: SettingsViewParam): string => {
-    switch (p) {
-        case "incidents": return "Incidents"
-        case "integrations": return "Integrations"
-        default: return "General"
-    }
-}
+import RiPlugLine from "remixicon-svelte/icons/plug-line";
+import RiSettings3Line from "remixicon-svelte/icons/settings-3-line";
 
 export class SettingsViewController {
+    shell = useAppShell();
     session = useUserSessionState();
+    integrations = initIntegrationsController();
+
     showInitialSetup = $derived(!this.session.isSetup);
-    viewParam = $derived(convertSettingsViewParam(page.params.view));
+    provider = $derived(page.params.provider);
 
     constructor() {
-        initIntegrationsController();
+        this.shell.setChildSidebar({
+			search: { placeholder: "Search settings" },
+			groups: [
+				{
+					items: [
+						{ label: "General", href: "/settings", icon: RiSettings3Line },
+						{ label: "Integrations", href: "/settings/integrations", icon: RiPlugLine },
+					],
+				},
+			],
+		});
 
-        this.preventInitialSetupNavigation();
-        
-        setPageBreadcrumbs(() => ([
-            { label: "Settings", href: "/settings" },
-            { label: viewParamLabel(this.viewParam), href: `/settings/${this.viewParam ?? ""}` }
-        ]));
-    }
-
-    private preventInitialSetupNavigation() {
-        afterNavigate(nav => {
-            if (!this.showInitialSetup) return;
-            const routeId = nav.to?.route.id;
-            if (!!routeId && routeId !== "/settings" && !routeId.startsWith("/settings/integration-callback")) {
-                goto("/settings");
-            }
+        onDestroy(() => {
+            this.shell.clearChildSidebar();
         });
-        beforeNavigate(nav => {
-            if (nav.willUnload || !nav.to) return;
-            if (this.showInitialSetup) nav.cancel();
-        })
     }
 }
 

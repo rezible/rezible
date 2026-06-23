@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { useAppShell } from "$lib/app-shell.svelte";
-	import * as Sidebar from "$components/ui/sidebar";
 	import * as Breadcrumb from "$components/ui/breadcrumb";
 
 	const shell = useAppShell();
@@ -12,7 +11,7 @@
 </script>
 
 <div class="flex items-center gap-2 text-lg">
-    <Sidebar.Trigger size="icon-lg" />  
+    <!-- <Sidebar.Trigger size="icon-lg" />   -->
     <Breadcrumb.Root>
         <Breadcrumb.List>
             {#each pageBreadcrumbs as crumb, i}

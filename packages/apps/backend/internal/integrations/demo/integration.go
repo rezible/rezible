@@ -7,7 +7,7 @@ import (
 
 const (
 	integrationName = "demo"
-	providerName    = "rezible"
+	providerName    = "demo"
 )
 
 type Integration struct {

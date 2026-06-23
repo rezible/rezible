@@ -42,10 +42,9 @@ type (
 	}
 
 	IncidentAttributes struct {
-		Slug                   string                   `json:"slug"`
 		Title                  string                   `json:"title"`
 		Summary                string                   `json:"summary"`
-		Private                bool                     `json:"private"`
+		Slug                   string                   `json:"slug"`
 		CurrentStatus          string                   `json:"currentStatus" enum:"started,mitigated,resolved,closed"`
 		OpenedAt               time.Time                `json:"openedAt"`
 		ClosedAt               time.Time                `json:"closedAt"`

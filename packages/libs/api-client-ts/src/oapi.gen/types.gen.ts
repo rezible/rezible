@@ -153,15 +153,6 @@ export type AlertMetrics = {
     triggers: number;
 };
 
-export type AvailableIntegration = {
-    description: string;
-    displayName: string;
-    maxInstalls?: number;
-    name: string;
-    oauthInstall: boolean;
-    provider: string;
-};
-
 export type CompleteIntegrationOAuthFlowRequestAttributes = {
     client_verifier?: string;
     code: string;
@@ -405,31 +396,6 @@ export type CreateIncidentTypeResponseBody = {
      */
     readonly $schema?: string;
     data: IncidentType;
-};
-
-export type CreateInstalledIntegrationRequestAttributes = {
-    config: {
-        [key: string]: unknown;
-    };
-    userSettings: {
-        [key: string]: unknown;
-    };
-};
-
-export type CreateInstalledIntegrationRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: CreateInstalledIntegrationRequestAttributes;
-};
-
-export type CreateInstalledIntegrationResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: InstalledIntegration;
 };
 
 export type CreateMeetingScheduleAttributes = {
@@ -922,12 +888,20 @@ export type GetIncidentUserDebriefResponseBody = {
     data: IncidentDebrief;
 };
 
-export type GetInstalledIntegrationResponseBody = {
+export type GetInstallableIntegrationsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: InstalledIntegration;
+    data: Array<InstallableIntegration>;
+};
+
+export type GetIntegrationInstallationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IntegrationInstallation;
 };
 
 export type GetMeetingScheduleResponseBody = {
@@ -1135,7 +1109,6 @@ export type IncidentAttributes = {
     linkedIncidents: Array<IncidentLink>;
     openedAt: string;
     primaryVideoConference?: VideoConference;
-    private: boolean;
     retrospectiveId?: string;
     roles: Array<IncidentRoleAssignment>;
     severity: IncidentSeverity;
@@ -1474,43 +1447,59 @@ export type IncidentTypeAttributes = {
     name: string;
 };
 
-export type InstallIntegrationTargetsRequestAttributes = {
+export type InstallIntegrationFromTargetsRequestAttributes = {
     externalRefs: Array<string>;
 };
 
-export type InstallIntegrationTargetsRequestBody = {
+export type InstallIntegrationFromTargetsRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: InstallIntegrationTargetsRequestAttributes;
+    attributes: InstallIntegrationFromTargetsRequestAttributes;
 };
 
-export type InstallIntegrationTargetsResponseBody = {
+export type InstallIntegrationFromTargetsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<InstalledIntegration>;
+    data: Array<IntegrationInstallation>;
     pagination: ResponsePagination;
 };
 
-export type InstalledIntegration = {
-    attributes: InstalledIntegrationAttributes;
-    id: string;
-};
-
-export type InstalledIntegrationAttributes = {
+export type InstallIntegrationRequestAttributes = {
     config: {
         [key: string]: unknown;
     };
-    displayName: string;
-    externalRef: string;
-    integrationName: string;
-    providerName: string;
-    settings: {
+    userSettings: {
         [key: string]: unknown;
     };
+};
+
+export type InstallIntegrationRequestBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    attributes: InstallIntegrationRequestAttributes;
+};
+
+export type InstallIntegrationResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: IntegrationInstallation;
+};
+
+export type InstallableIntegration = {
+    description: string;
+    displayName: string;
+    maxInstalls?: number;
+    name: string;
+    oauthInstall: boolean;
+    provider: string;
 };
 
 export type IntegrationEventSyncRun = {
@@ -1530,13 +1519,31 @@ export type IntegrationInstallTarget = {
     integrationName: string;
 };
 
+export type IntegrationInstallation = {
+    attributes: IntegrationInstallationAttributes;
+    id: string;
+};
+
+export type IntegrationInstallationAttributes = {
+    config: {
+        [key: string]: unknown;
+    };
+    displayName: string;
+    externalRef: string;
+    integrationName: string;
+    providerName: string;
+    settings: {
+        [key: string]: unknown;
+    };
+};
+
 export type IntegrationOAuthFlow = {
     flow_url: string;
 };
 
 export type IntegrationOAuthInstallResult = {
     installTargetOptions?: Array<IntegrationInstallTarget>;
-    installed?: Array<InstalledIntegration>;
+    installed?: Array<IntegrationInstallation>;
     targetSelectionRequired: boolean;
 };
 
@@ -1573,15 +1580,6 @@ export type ListAlertsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<Alert>;
-    pagination: ResponsePagination;
-};
-
-export type ListAvailableIntegrationsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AvailableIntegration>;
     pagination: ResponsePagination;
 };
 
@@ -1711,15 +1709,6 @@ export type ListIncidentsResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type ListInstalledIntegrationsResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<InstalledIntegration>;
-    pagination: ResponsePagination;
-};
-
 export type ListIntegrationEventSyncRunResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
@@ -1735,6 +1724,15 @@ export type ListIntegrationInstallTargetsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<IntegrationInstallTarget>;
+    pagination: ResponsePagination;
+};
+
+export type ListIntegrationInstallationsResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<IntegrationInstallation>;
     pagination: ResponsePagination;
 };
 
@@ -2653,26 +2651,26 @@ export type UpdateIncidentTypeResponseBody = {
     data: IncidentType;
 };
 
-export type UpdateInstalledIntegrationRequestAttributes = {
+export type UpdateIntegrationInstallationRequestAttributes = {
     userSettings: {
         [key: string]: unknown;
     };
 };
 
-export type UpdateInstalledIntegrationRequestBody = {
+export type UpdateIntegrationInstallationRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: UpdateInstalledIntegrationRequestAttributes;
+    attributes: UpdateIntegrationInstallationRequestAttributes;
 };
 
-export type UpdateInstalledIntegrationResponseBody = {
+export type UpdateIntegrationInstallationResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: InstalledIntegration;
+    data: IntegrationInstallation;
 };
 
 export type UpdateMeetingScheduleAttributes = {
@@ -6402,52 +6400,7 @@ export type CreateIncidentTimelineEventResponses = {
 
 export type CreateIncidentTimelineEventResponse = CreateIncidentTimelineEventResponses[keyof CreateIncidentTimelineEventResponses];
 
-export type ListIntegrationInstallTargetsData = {
-    body?: never;
-    path?: never;
-    query?: never;
-    url: '/integrations/install_targets';
-};
-
-export type ListIntegrationInstallTargetsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIntegrationInstallTargetsError = ListIntegrationInstallTargetsErrors[keyof ListIntegrationInstallTargetsErrors];
-
-export type ListIntegrationInstallTargetsResponses = {
-    /**
-     * OK
-     */
-    200: ListIntegrationInstallTargetsResponseBody;
-};
-
-export type ListIntegrationInstallTargetsResponse = ListIntegrationInstallTargetsResponses[keyof ListIntegrationInstallTargetsResponses];
-
-export type ListInstalledIntegrationsData = {
+export type GetInstallableIntegrationsData = {
     body?: never;
     path?: never;
     query?: {
@@ -6456,10 +6409,10 @@ export type ListInstalledIntegrationsData = {
         search?: string;
         archived?: boolean;
     };
-    url: '/integrations/installed';
+    url: '/integrations';
 };
 
-export type ListInstalledIntegrationsErrors = {
+export type GetInstallableIntegrationsErrors = {
     /**
      * Bad Request
      */
@@ -6486,312 +6439,27 @@ export type ListInstalledIntegrationsErrors = {
     500: ErrorModel;
 };
 
-export type ListInstalledIntegrationsError = ListInstalledIntegrationsErrors[keyof ListInstalledIntegrationsErrors];
+export type GetInstallableIntegrationsError = GetInstallableIntegrationsErrors[keyof GetInstallableIntegrationsErrors];
 
-export type ListInstalledIntegrationsResponses = {
+export type GetInstallableIntegrationsResponses = {
     /**
      * OK
      */
-    200: ListInstalledIntegrationsResponseBody;
+    200: GetInstallableIntegrationsResponseBody;
 };
 
-export type ListInstalledIntegrationsResponse = ListInstalledIntegrationsResponses[keyof ListInstalledIntegrationsResponses];
+export type GetInstallableIntegrationsResponse = GetInstallableIntegrationsResponses[keyof GetInstallableIntegrationsResponses];
 
-export type DeleteInstalledIntegrationData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/integrations/installed/{id}';
-};
-
-export type DeleteInstalledIntegrationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type DeleteInstalledIntegrationError = DeleteInstalledIntegrationErrors[keyof DeleteInstalledIntegrationErrors];
-
-export type DeleteInstalledIntegrationResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type DeleteInstalledIntegrationResponse = DeleteInstalledIntegrationResponses[keyof DeleteInstalledIntegrationResponses];
-
-export type GetInstalledIntegrationData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/integrations/installed/{id}';
-};
-
-export type GetInstalledIntegrationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetInstalledIntegrationError = GetInstalledIntegrationErrors[keyof GetInstalledIntegrationErrors];
-
-export type GetInstalledIntegrationResponses = {
-    /**
-     * OK
-     */
-    200: GetInstalledIntegrationResponseBody;
-};
-
-export type GetInstalledIntegrationResponse = GetInstalledIntegrationResponses[keyof GetInstalledIntegrationResponses];
-
-export type UpdateInstalledIntegrationData = {
-    body: UpdateInstalledIntegrationRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/integrations/installed/{id}';
-};
-
-export type UpdateInstalledIntegrationErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type UpdateInstalledIntegrationError = UpdateInstalledIntegrationErrors[keyof UpdateInstalledIntegrationErrors];
-
-export type UpdateInstalledIntegrationResponses = {
-    /**
-     * OK
-     */
-    200: UpdateInstalledIntegrationResponseBody;
-};
-
-export type UpdateInstalledIntegrationResponse = UpdateInstalledIntegrationResponses[keyof UpdateInstalledIntegrationResponses];
-
-export type ListIntegrationEventSyncRunsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/integrations/installed/{id}/sync';
-};
-
-export type ListIntegrationEventSyncRunsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListIntegrationEventSyncRunsError = ListIntegrationEventSyncRunsErrors[keyof ListIntegrationEventSyncRunsErrors];
-
-export type ListIntegrationEventSyncRunsResponses = {
-    /**
-     * OK
-     */
-    200: ListIntegrationEventSyncRunResponseBody;
-};
-
-export type ListIntegrationEventSyncRunsResponse = ListIntegrationEventSyncRunsResponses[keyof ListIntegrationEventSyncRunsResponses];
-
-export type RequestIntegrationEventSyncData = {
-    body: RequestIntegrationEventSyncRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/integrations/installed/{id}/sync';
-};
-
-export type RequestIntegrationEventSyncErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type RequestIntegrationEventSyncError = RequestIntegrationEventSyncErrors[keyof RequestIntegrationEventSyncErrors];
-
-export type RequestIntegrationEventSyncResponses = {
-    /**
-     * No Content
-     */
-    204: void;
-};
-
-export type RequestIntegrationEventSyncResponse = RequestIntegrationEventSyncResponses[keyof RequestIntegrationEventSyncResponses];
-
-export type ListAvailableIntegrationsData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-    };
-    url: '/integrations/providers';
-};
-
-export type ListAvailableIntegrationsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListAvailableIntegrationsError = ListAvailableIntegrationsErrors[keyof ListAvailableIntegrationsErrors];
-
-export type ListAvailableIntegrationsResponses = {
-    /**
-     * OK
-     */
-    200: ListAvailableIntegrationsResponseBody;
-};
-
-export type ListAvailableIntegrationsResponse = ListAvailableIntegrationsResponses[keyof ListAvailableIntegrationsResponses];
-
-export type CreateInstalledIntegrationData = {
-    body: CreateInstalledIntegrationRequestBody;
+export type InstallIntegrationData = {
+    body: InstallIntegrationRequestBody;
     path: {
         name: string;
     };
     query?: never;
-    url: '/integrations/providers/{name}/install';
+    url: '/integrations/install/{name}';
 };
 
-export type CreateInstalledIntegrationErrors = {
+export type InstallIntegrationErrors = {
     /**
      * Bad Request
      */
@@ -6818,63 +6486,16 @@ export type CreateInstalledIntegrationErrors = {
     500: ErrorModel;
 };
 
-export type CreateInstalledIntegrationError = CreateInstalledIntegrationErrors[keyof CreateInstalledIntegrationErrors];
+export type InstallIntegrationError = InstallIntegrationErrors[keyof InstallIntegrationErrors];
 
-export type CreateInstalledIntegrationResponses = {
+export type InstallIntegrationResponses = {
     /**
      * OK
      */
-    200: CreateInstalledIntegrationResponseBody;
+    200: InstallIntegrationResponseBody;
 };
 
-export type CreateInstalledIntegrationResponse = CreateInstalledIntegrationResponses[keyof CreateInstalledIntegrationResponses];
-
-export type InstallIntegrationTargetsData = {
-    body: InstallIntegrationTargetsRequestBody;
-    path: {
-        name: string;
-    };
-    query?: never;
-    url: '/integrations/providers/{name}/install/targets';
-};
-
-export type InstallIntegrationTargetsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type InstallIntegrationTargetsError = InstallIntegrationTargetsErrors[keyof InstallIntegrationTargetsErrors];
-
-export type InstallIntegrationTargetsResponses = {
-    /**
-     * OK
-     */
-    200: InstallIntegrationTargetsResponseBody;
-};
-
-export type InstallIntegrationTargetsResponse = InstallIntegrationTargetsResponses[keyof InstallIntegrationTargetsResponses];
+export type InstallIntegrationResponse = InstallIntegrationResponses[keyof InstallIntegrationResponses];
 
 export type CompleteIntegrationOauthFlowData = {
     body: CompleteIntegrationOAuthFlowRequestBody;
@@ -6882,7 +6503,7 @@ export type CompleteIntegrationOauthFlowData = {
         name: string;
     };
     query?: never;
-    url: '/integrations/providers/{name}/oauth/complete';
+    url: '/integrations/install/{name}/oauth/complete';
 };
 
 export type CompleteIntegrationOauthFlowErrors = {
@@ -6929,7 +6550,7 @@ export type StartIntegrationOauthFlowData = {
         name: string;
     };
     query?: never;
-    url: '/integrations/providers/{name}/oauth/start';
+    url: '/integrations/install/{name}/oauth/start';
 };
 
 export type StartIntegrationOauthFlowErrors = {
@@ -6969,6 +6590,383 @@ export type StartIntegrationOauthFlowResponses = {
 };
 
 export type StartIntegrationOauthFlowResponse = StartIntegrationOauthFlowResponses[keyof StartIntegrationOauthFlowResponses];
+
+export type InstallIntegrationFromTargetsData = {
+    body: InstallIntegrationFromTargetsRequestBody;
+    path: {
+        name: string;
+    };
+    query?: never;
+    url: '/integrations/install/{name}/targets';
+};
+
+export type InstallIntegrationFromTargetsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type InstallIntegrationFromTargetsError = InstallIntegrationFromTargetsErrors[keyof InstallIntegrationFromTargetsErrors];
+
+export type InstallIntegrationFromTargetsResponses = {
+    /**
+     * OK
+     */
+    200: InstallIntegrationFromTargetsResponseBody;
+};
+
+export type InstallIntegrationFromTargetsResponse = InstallIntegrationFromTargetsResponses[keyof InstallIntegrationFromTargetsResponses];
+
+export type ListIntegrationInstallTargetsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/integrations/install_targets';
+};
+
+export type ListIntegrationInstallTargetsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIntegrationInstallTargetsError = ListIntegrationInstallTargetsErrors[keyof ListIntegrationInstallTargetsErrors];
+
+export type ListIntegrationInstallTargetsResponses = {
+    /**
+     * OK
+     */
+    200: ListIntegrationInstallTargetsResponseBody;
+};
+
+export type ListIntegrationInstallTargetsResponse = ListIntegrationInstallTargetsResponses[keyof ListIntegrationInstallTargetsResponses];
+
+export type ListIntegrationInstallationsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+    };
+    url: '/integrations/installations';
+};
+
+export type ListIntegrationInstallationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIntegrationInstallationsError = ListIntegrationInstallationsErrors[keyof ListIntegrationInstallationsErrors];
+
+export type ListIntegrationInstallationsResponses = {
+    /**
+     * OK
+     */
+    200: ListIntegrationInstallationsResponseBody;
+};
+
+export type ListIntegrationInstallationsResponse = ListIntegrationInstallationsResponses[keyof ListIntegrationInstallationsResponses];
+
+export type DeleteIntegrationInstallationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/integrations/installations/{id}';
+};
+
+export type DeleteIntegrationInstallationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type DeleteIntegrationInstallationError = DeleteIntegrationInstallationErrors[keyof DeleteIntegrationInstallationErrors];
+
+export type DeleteIntegrationInstallationResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type DeleteIntegrationInstallationResponse = DeleteIntegrationInstallationResponses[keyof DeleteIntegrationInstallationResponses];
+
+export type GetIntegrationInstallationData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/integrations/installations/{id}';
+};
+
+export type GetIntegrationInstallationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetIntegrationInstallationError = GetIntegrationInstallationErrors[keyof GetIntegrationInstallationErrors];
+
+export type GetIntegrationInstallationResponses = {
+    /**
+     * OK
+     */
+    200: GetIntegrationInstallationResponseBody;
+};
+
+export type GetIntegrationInstallationResponse = GetIntegrationInstallationResponses[keyof GetIntegrationInstallationResponses];
+
+export type UpdateIntegrationInstallationData = {
+    body: UpdateIntegrationInstallationRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/integrations/installations/{id}';
+};
+
+export type UpdateIntegrationInstallationErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type UpdateIntegrationInstallationError = UpdateIntegrationInstallationErrors[keyof UpdateIntegrationInstallationErrors];
+
+export type UpdateIntegrationInstallationResponses = {
+    /**
+     * OK
+     */
+    200: UpdateIntegrationInstallationResponseBody;
+};
+
+export type UpdateIntegrationInstallationResponse = UpdateIntegrationInstallationResponses[keyof UpdateIntegrationInstallationResponses];
+
+export type ListIntegrationEventSyncRunsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/integrations/installations/{id}/sync';
+};
+
+export type ListIntegrationEventSyncRunsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListIntegrationEventSyncRunsError = ListIntegrationEventSyncRunsErrors[keyof ListIntegrationEventSyncRunsErrors];
+
+export type ListIntegrationEventSyncRunsResponses = {
+    /**
+     * OK
+     */
+    200: ListIntegrationEventSyncRunResponseBody;
+};
+
+export type ListIntegrationEventSyncRunsResponse = ListIntegrationEventSyncRunsResponses[keyof ListIntegrationEventSyncRunsResponses];
+
+export type RequestIntegrationEventSyncData = {
+    body: RequestIntegrationEventSyncRequestBody;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/integrations/installations/{id}/sync/start';
+};
+
+export type RequestIntegrationEventSyncErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RequestIntegrationEventSyncError = RequestIntegrationEventSyncErrors[keyof RequestIntegrationEventSyncErrors];
+
+export type RequestIntegrationEventSyncResponses = {
+    /**
+     * No Content
+     */
+    204: void;
+};
+
+export type RequestIntegrationEventSyncResponse = RequestIntegrationEventSyncResponses[keyof RequestIntegrationEventSyncResponses];
 
 export type ListMeetingSchedulesData = {
     body?: never;

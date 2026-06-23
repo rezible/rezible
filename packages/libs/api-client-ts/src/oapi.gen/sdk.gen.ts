@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisEdgeData, AddSystemAnalysisEdgeErrors, AddSystemAnalysisEdgeResponses, AddSystemAnalysisNodeData, AddSystemAnalysisNodeErrors, AddSystemAnalysisNodeResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamResponses, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowErrors, CompleteIntegrationOauthFlowResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTimelineEventData, CreateIncidentTimelineEventErrors, CreateIncidentTimelineEventResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateInstalledIntegrationData, CreateInstalledIntegrationErrors, CreateInstalledIntegrationResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemTopologySnapshotData, CreateSystemTopologySnapshotErrors, CreateSystemTopologySnapshotResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamMembershipData, CreateTeamMembershipErrors, CreateTeamMembershipResponses, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIncidentTimelineEventData, DeleteIncidentTimelineEventErrors, DeleteIncidentTimelineEventResponses, DeleteInstalledIntegrationData, DeleteInstalledIntegrationErrors, DeleteInstalledIntegrationResponses, DeleteSystemAnalysisEdgeData, DeleteSystemAnalysisEdgeErrors, DeleteSystemAnalysisEdgeResponses, DeleteSystemAnalysisNodeData, DeleteSystemAnalysisNodeErrors, DeleteSystemAnalysisNodeResponses, DeleteTeamMembershipData, DeleteTeamMembershipErrors, DeleteTeamMembershipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAgentRunData, GetAgentRunErrors, GetAgentRunResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetDocumentSessionData, GetDocumentSessionErrors, GetDocumentSessionResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentContextPackData, GetIncidentContextPackErrors, GetIncidentContextPackResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentMetadataData, GetIncidentMetadataErrors, GetIncidentMetadataResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetInstalledIntegrationData, GetInstalledIntegrationErrors, GetInstalledIntegrationResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveResponses, GetSystemAnalysisData, GetSystemAnalysisEdgeData, GetSystemAnalysisEdgeErrors, GetSystemAnalysisEdgeResponses, GetSystemAnalysisErrors, GetSystemAnalysisNodeData, GetSystemAnalysisNodeErrors, GetSystemAnalysisNodeResponses, GetSystemAnalysisResponses, GetSystemTopologyEntityData, GetSystemTopologyEntityErrors, GetSystemTopologyEntityNeighborhoodData, GetSystemTopologyEntityNeighborhoodErrors, GetSystemTopologyEntityNeighborhoodResponses, GetSystemTopologyEntityResponses, GetSystemTopologySnapshotData, GetSystemTopologySnapshotErrors, GetSystemTopologySnapshotResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, GetUserSessionData, GetUserSessionErrors, GetUserSessionResponses, InstallIntegrationTargetsData, InstallIntegrationTargetsErrors, InstallIntegrationTargetsResponses, ListAgentRunArtifactsData, ListAgentRunArtifactsErrors, ListAgentRunArtifactsResponses, ListAgentRunsData, ListAgentRunsErrors, ListAgentRunsResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListAvailableIntegrationsData, ListAvailableIntegrationsErrors, ListAvailableIntegrationsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentImpactsData, ListIncidentImpactsErrors, ListIncidentImpactsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTimelineEventMetadataData, ListIncidentTimelineEventMetadataErrors, ListIncidentTimelineEventMetadataResponses, ListIncidentTimelineEventsData, ListIncidentTimelineEventsErrors, ListIncidentTimelineEventsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListInstalledIntegrationsData, ListInstalledIntegrationsErrors, ListInstalledIntegrationsResponses, ListIntegrationEventSyncRunsData, ListIntegrationEventSyncRunsErrors, ListIntegrationEventSyncRunsResponses, ListIntegrationInstallTargetsData, ListIntegrationInstallTargetsErrors, ListIntegrationInstallTargetsResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisEdgesData, ListSystemAnalysisEdgesErrors, ListSystemAnalysisEdgesResponses, ListSystemAnalysisNodesData, ListSystemAnalysisNodesErrors, ListSystemAnalysisNodesResponses, ListSystemTopologyEntitiesData, ListSystemTopologyEntitiesErrors, ListSystemTopologyEntitiesResponses, ListSystemTopologyRelationshipsData, ListSystemTopologyRelationshipsErrors, ListSystemTopologyRelationshipsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamMembershipsData, ListTeamMembershipsErrors, ListTeamMembershipsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, RequestDocumentSessionAuthData, RequestDocumentSessionAuthErrors, RequestDocumentSessionAuthResponses, RequestIncidentContextPackAgentRunData, RequestIncidentContextPackAgentRunErrors, RequestIncidentContextPackAgentRunResponses, RequestIntegrationEventSyncData, RequestIntegrationEventSyncErrors, RequestIntegrationEventSyncResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, SetIncidentImpactsData, SetIncidentImpactsErrors, SetIncidentImpactsResponses, StartIntegrationOauthFlowData, StartIntegrationOauthFlowErrors, StartIntegrationOauthFlowResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTimelineEventData, UpdateIncidentTimelineEventErrors, UpdateIncidentTimelineEventResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateInstalledIntegrationData, UpdateInstalledIntegrationErrors, UpdateInstalledIntegrationResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdateOrganizationPreferencesData, UpdateOrganizationPreferencesErrors, UpdateOrganizationPreferencesResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveData, UpdateRetrospectiveErrors, UpdateRetrospectiveResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisEdgeData, UpdateSystemAnalysisEdgeErrors, UpdateSystemAnalysisEdgeResponses, UpdateSystemAnalysisNodeData, UpdateSystemAnalysisNodeErrors, UpdateSystemAnalysisNodeResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamMembershipData, UpdateTeamMembershipErrors, UpdateTeamMembershipResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
+import type { AddIncidentDebriefUserMessageData, AddIncidentDebriefUserMessageErrors, AddIncidentDebriefUserMessageResponses, AddSystemAnalysisEdgeData, AddSystemAnalysisEdgeErrors, AddSystemAnalysisEdgeResponses, AddSystemAnalysisNodeData, AddSystemAnalysisNodeErrors, AddSystemAnalysisNodeResponses, AddWatchedOncallRosterData, AddWatchedOncallRosterErrors, AddWatchedOncallRosterResponses, ArchiveDebriefQuestionData, ArchiveDebriefQuestionErrors, ArchiveDebriefQuestionResponses, ArchiveIncidentData, ArchiveIncidentErrors, ArchiveIncidentFieldData, ArchiveIncidentFieldErrors, ArchiveIncidentFieldResponses, ArchiveIncidentResponses, ArchiveIncidentRoleData, ArchiveIncidentRoleErrors, ArchiveIncidentRoleResponses, ArchiveIncidentSeverityData, ArchiveIncidentSeverityErrors, ArchiveIncidentSeverityResponses, ArchiveIncidentTagData, ArchiveIncidentTagErrors, ArchiveIncidentTagResponses, ArchiveIncidentTypeData, ArchiveIncidentTypeErrors, ArchiveIncidentTypeResponses, ArchiveMeetingScheduleData, ArchiveMeetingScheduleErrors, ArchiveMeetingScheduleResponses, ArchiveMeetingSessionData, ArchiveMeetingSessionErrors, ArchiveMeetingSessionResponses, ArchiveOncallHandoverTemplateData, ArchiveOncallHandoverTemplateErrors, ArchiveOncallHandoverTemplateResponses, ArchivePlaybookData, ArchivePlaybookErrors, ArchivePlaybookResponses, ArchiveRetrospectiveReviewData, ArchiveRetrospectiveReviewErrors, ArchiveRetrospectiveReviewResponses, ArchiveTaskData, ArchiveTaskErrors, ArchiveTaskResponses, ArchiveTeamData, ArchiveTeamErrors, ArchiveTeamResponses, CompleteIntegrationOauthFlowData, CompleteIntegrationOauthFlowErrors, CompleteIntegrationOauthFlowResponses, CreateDebriefQuestionData, CreateDebriefQuestionErrors, CreateDebriefQuestionResponses, CreateEventAnnotationData, CreateEventAnnotationErrors, CreateEventAnnotationResponses, CreateIncidentData, CreateIncidentErrors, CreateIncidentFieldData, CreateIncidentFieldErrors, CreateIncidentFieldResponses, CreateIncidentMilestoneData, CreateIncidentMilestoneErrors, CreateIncidentMilestoneResponses, CreateIncidentResponses, CreateIncidentRoleData, CreateIncidentRoleErrors, CreateIncidentRoleResponses, CreateIncidentSeverityData, CreateIncidentSeverityErrors, CreateIncidentSeverityResponses, CreateIncidentTagData, CreateIncidentTagErrors, CreateIncidentTagResponses, CreateIncidentTimelineEventData, CreateIncidentTimelineEventErrors, CreateIncidentTimelineEventResponses, CreateIncidentTypeData, CreateIncidentTypeErrors, CreateIncidentTypeResponses, CreateMeetingScheduleData, CreateMeetingScheduleErrors, CreateMeetingScheduleResponses, CreateMeetingSessionData, CreateMeetingSessionErrors, CreateMeetingSessionResponses, CreateOncallHandoverTemplateData, CreateOncallHandoverTemplateErrors, CreateOncallHandoverTemplateResponses, CreatePlaybookData, CreatePlaybookErrors, CreatePlaybookResponses, CreateRetrospectiveCommentData, CreateRetrospectiveCommentErrors, CreateRetrospectiveCommentResponses, CreateRetrospectiveReviewData, CreateRetrospectiveReviewErrors, CreateRetrospectiveReviewResponses, CreateSystemTopologySnapshotData, CreateSystemTopologySnapshotErrors, CreateSystemTopologySnapshotResponses, CreateTaskData, CreateTaskErrors, CreateTaskResponses, CreateTeamData, CreateTeamErrors, CreateTeamMembershipData, CreateTeamMembershipErrors, CreateTeamMembershipResponses, CreateTeamResponses, DeleteEventAnnotationData, DeleteEventAnnotationErrors, DeleteEventAnnotationResponses, DeleteIncidentMilestoneData, DeleteIncidentMilestoneErrors, DeleteIncidentMilestoneResponses, DeleteIncidentTimelineEventData, DeleteIncidentTimelineEventErrors, DeleteIncidentTimelineEventResponses, DeleteIntegrationInstallationData, DeleteIntegrationInstallationErrors, DeleteIntegrationInstallationResponses, DeleteSystemAnalysisEdgeData, DeleteSystemAnalysisEdgeErrors, DeleteSystemAnalysisEdgeResponses, DeleteSystemAnalysisNodeData, DeleteSystemAnalysisNodeErrors, DeleteSystemAnalysisNodeResponses, DeleteTeamMembershipData, DeleteTeamMembershipErrors, DeleteTeamMembershipResponses, DeleteUserNotificationData, DeleteUserNotificationErrors, DeleteUserNotificationResponses, GetAdjacentOncallShiftsData, GetAdjacentOncallShiftsErrors, GetAdjacentOncallShiftsResponses, GetAgentRunData, GetAgentRunErrors, GetAgentRunResponses, GetAlertData, GetAlertErrors, GetAlertMetricsData, GetAlertMetricsErrors, GetAlertMetricsResponses, GetAlertResponses, GetDebriefQuestionData, GetDebriefQuestionErrors, GetDebriefQuestionResponses, GetDocumentSessionData, GetDocumentSessionErrors, GetDocumentSessionResponses, GetEventData, GetEventErrors, GetEventResponses, GetIncidentContextPackData, GetIncidentContextPackErrors, GetIncidentContextPackResponses, GetIncidentData, GetIncidentDebriefData, GetIncidentDebriefErrors, GetIncidentDebriefResponses, GetIncidentErrors, GetIncidentFieldData, GetIncidentFieldErrors, GetIncidentFieldResponses, GetIncidentMetadataData, GetIncidentMetadataErrors, GetIncidentMetadataResponses, GetIncidentResponses, GetIncidentRoleData, GetIncidentRoleErrors, GetIncidentRoleResponses, GetIncidentSeverityData, GetIncidentSeverityErrors, GetIncidentSeverityResponses, GetIncidentTagData, GetIncidentTagErrors, GetIncidentTagResponses, GetIncidentTypeData, GetIncidentTypeErrors, GetIncidentTypeResponses, GetIncidentUserDebriefData, GetIncidentUserDebriefErrors, GetIncidentUserDebriefResponses, GetInstallableIntegrationsData, GetInstallableIntegrationsErrors, GetInstallableIntegrationsResponses, GetIntegrationInstallationData, GetIntegrationInstallationErrors, GetIntegrationInstallationResponses, GetMeetingScheduleData, GetMeetingScheduleErrors, GetMeetingScheduleResponses, GetMeetingSessionData, GetMeetingSessionErrors, GetMeetingSessionResponses, GetOncallRosterData, GetOncallRosterErrors, GetOncallRosterMetricsData, GetOncallRosterMetricsErrors, GetOncallRosterMetricsResponses, GetOncallRosterResponses, GetOncallShiftBurdenMetricWeightsData, GetOncallShiftBurdenMetricWeightsErrors, GetOncallShiftBurdenMetricWeightsResponses, GetOncallShiftData, GetOncallShiftErrors, GetOncallShiftHandoverData, GetOncallShiftHandoverErrors, GetOncallShiftHandoverResponses, GetOncallShiftHandoverTemplateData, GetOncallShiftHandoverTemplateErrors, GetOncallShiftHandoverTemplateResponses, GetOncallShiftMetricsData, GetOncallShiftMetricsErrors, GetOncallShiftMetricsResponses, GetOncallShiftResponses, GetOrganizationData, GetOrganizationErrors, GetOrganizationResponses, GetPlaybookData, GetPlaybookErrors, GetPlaybookResponses, GetRetrospectiveCommentData, GetRetrospectiveCommentErrors, GetRetrospectiveCommentResponses, GetRetrospectiveData, GetRetrospectiveErrors, GetRetrospectiveResponses, GetSystemAnalysisData, GetSystemAnalysisEdgeData, GetSystemAnalysisEdgeErrors, GetSystemAnalysisEdgeResponses, GetSystemAnalysisErrors, GetSystemAnalysisNodeData, GetSystemAnalysisNodeErrors, GetSystemAnalysisNodeResponses, GetSystemAnalysisResponses, GetSystemTopologyEntityData, GetSystemTopologyEntityErrors, GetSystemTopologyEntityNeighborhoodData, GetSystemTopologyEntityNeighborhoodErrors, GetSystemTopologyEntityNeighborhoodResponses, GetSystemTopologyEntityResponses, GetSystemTopologySnapshotData, GetSystemTopologySnapshotErrors, GetSystemTopologySnapshotResponses, GetTaskData, GetTaskErrors, GetTaskResponses, GetTeamData, GetTeamErrors, GetTeamResponses, GetUserData, GetUserErrors, GetUserOncallInformationData, GetUserOncallInformationErrors, GetUserOncallInformationResponses, GetUserResponses, GetUserSessionData, GetUserSessionErrors, GetUserSessionResponses, InstallIntegrationData, InstallIntegrationErrors, InstallIntegrationFromTargetsData, InstallIntegrationFromTargetsErrors, InstallIntegrationFromTargetsResponses, InstallIntegrationResponses, ListAgentRunArtifactsData, ListAgentRunArtifactsErrors, ListAgentRunArtifactsResponses, ListAgentRunsData, ListAgentRunsErrors, ListAgentRunsResponses, ListAlertIncidentLinksData, ListAlertIncidentLinksErrors, ListAlertIncidentLinksResponses, ListAlertsData, ListAlertsErrors, ListAlertsResponses, ListDebriefMessagesData, ListDebriefMessagesErrors, ListDebriefMessagesResponses, ListDebriefQuestionsData, ListDebriefQuestionsErrors, ListDebriefQuestionsResponses, ListDebriefSuggestionsData, ListDebriefSuggestionsErrors, ListDebriefSuggestionsResponses, ListEventAnnotationsData, ListEventAnnotationsErrors, ListEventAnnotationsResponses, ListEventsData, ListEventsErrors, ListEventsResponses, ListIncidentFieldsData, ListIncidentFieldsErrors, ListIncidentFieldsResponses, ListIncidentImpactsData, ListIncidentImpactsErrors, ListIncidentImpactsResponses, ListIncidentMilestonesData, ListIncidentMilestonesErrors, ListIncidentMilestonesResponses, ListIncidentRolesData, ListIncidentRolesErrors, ListIncidentRolesResponses, ListIncidentsData, ListIncidentsErrors, ListIncidentSeveritiesData, ListIncidentSeveritiesErrors, ListIncidentSeveritiesResponses, ListIncidentsResponses, ListIncidentTagsData, ListIncidentTagsErrors, ListIncidentTagsResponses, ListIncidentTimelineEventMetadataData, ListIncidentTimelineEventMetadataErrors, ListIncidentTimelineEventMetadataResponses, ListIncidentTimelineEventsData, ListIncidentTimelineEventsErrors, ListIncidentTimelineEventsResponses, ListIncidentTypesData, ListIncidentTypesErrors, ListIncidentTypesResponses, ListIntegrationEventSyncRunsData, ListIntegrationEventSyncRunsErrors, ListIntegrationEventSyncRunsResponses, ListIntegrationInstallationsData, ListIntegrationInstallationsErrors, ListIntegrationInstallationsResponses, ListIntegrationInstallTargetsData, ListIntegrationInstallTargetsErrors, ListIntegrationInstallTargetsResponses, ListMeetingSchedulesData, ListMeetingSchedulesErrors, ListMeetingSchedulesResponses, ListMeetingSessionsData, ListMeetingSessionsErrors, ListMeetingSessionsResponses, ListOncallRostersData, ListOncallRostersErrors, ListOncallRostersResponses, ListOncallShiftsData, ListOncallShiftsErrors, ListOncallShiftsResponses, ListPlaybooksData, ListPlaybooksErrors, ListPlaybooksResponses, ListRetrospectiveCommentsData, ListRetrospectiveCommentsErrors, ListRetrospectiveCommentsResponses, ListRetrospectiveReviewsData, ListRetrospectiveReviewsErrors, ListRetrospectiveReviewsResponses, ListRetrospectivesData, ListRetrospectivesErrors, ListRetrospectivesResponses, ListSystemAnalysisEdgesData, ListSystemAnalysisEdgesErrors, ListSystemAnalysisEdgesResponses, ListSystemAnalysisNodesData, ListSystemAnalysisNodesErrors, ListSystemAnalysisNodesResponses, ListSystemTopologyEntitiesData, ListSystemTopologyEntitiesErrors, ListSystemTopologyEntitiesResponses, ListSystemTopologyRelationshipsData, ListSystemTopologyRelationshipsErrors, ListSystemTopologyRelationshipsResponses, ListTasksData, ListTasksErrors, ListTasksResponses, ListTeamMembershipsData, ListTeamMembershipsErrors, ListTeamMembershipsResponses, ListTeamsData, ListTeamsErrors, ListTeamsResponses, ListUserNotificationsData, ListUserNotificationsErrors, ListUserNotificationsResponses, ListUsersData, ListUsersErrors, ListUsersResponses, ListWatchedOncallRostersData, ListWatchedOncallRostersErrors, ListWatchedOncallRostersResponses, RemoveWatchedOncallRosterData, RemoveWatchedOncallRosterErrors, RemoveWatchedOncallRosterResponses, RequestDocumentSessionAuthData, RequestDocumentSessionAuthErrors, RequestDocumentSessionAuthResponses, RequestIncidentContextPackAgentRunData, RequestIncidentContextPackAgentRunErrors, RequestIncidentContextPackAgentRunResponses, RequestIntegrationEventSyncData, RequestIntegrationEventSyncErrors, RequestIntegrationEventSyncResponses, SendOncallShiftHandoverData, SendOncallShiftHandoverErrors, SendOncallShiftHandoverResponses, SetIncidentImpactsData, SetIncidentImpactsErrors, SetIncidentImpactsResponses, StartIntegrationOauthFlowData, StartIntegrationOauthFlowErrors, StartIntegrationOauthFlowResponses, UpdateDebriefQuestionData, UpdateDebriefQuestionErrors, UpdateDebriefQuestionResponses, UpdateEventAnnotationData, UpdateEventAnnotationErrors, UpdateEventAnnotationResponses, UpdateIncidentData, UpdateIncidentDebriefData, UpdateIncidentDebriefErrors, UpdateIncidentDebriefResponses, UpdateIncidentErrors, UpdateIncidentFieldData, UpdateIncidentFieldErrors, UpdateIncidentFieldResponses, UpdateIncidentMilestoneData, UpdateIncidentMilestoneErrors, UpdateIncidentMilestoneResponses, UpdateIncidentResponses, UpdateIncidentRoleData, UpdateIncidentRoleErrors, UpdateIncidentRoleResponses, UpdateIncidentSeverityData, UpdateIncidentSeverityErrors, UpdateIncidentSeverityResponses, UpdateIncidentTagData, UpdateIncidentTagErrors, UpdateIncidentTagResponses, UpdateIncidentTimelineEventData, UpdateIncidentTimelineEventErrors, UpdateIncidentTimelineEventResponses, UpdateIncidentTypeData, UpdateIncidentTypeErrors, UpdateIncidentTypeResponses, UpdateIntegrationInstallationData, UpdateIntegrationInstallationErrors, UpdateIntegrationInstallationResponses, UpdateMeetingScheduleData, UpdateMeetingScheduleErrors, UpdateMeetingScheduleResponses, UpdateMeetingSessionData, UpdateMeetingSessionErrors, UpdateMeetingSessionResponses, UpdateOncallHandoverTemplateData, UpdateOncallHandoverTemplateErrors, UpdateOncallHandoverTemplateResponses, UpdateOncallShiftHandoverData, UpdateOncallShiftHandoverErrors, UpdateOncallShiftHandoverResponses, UpdateOrganizationPreferencesData, UpdateOrganizationPreferencesErrors, UpdateOrganizationPreferencesResponses, UpdatePlaybookData, UpdatePlaybookErrors, UpdatePlaybookResponses, UpdateRetrospectiveCommentData, UpdateRetrospectiveCommentErrors, UpdateRetrospectiveCommentResponses, UpdateRetrospectiveData, UpdateRetrospectiveErrors, UpdateRetrospectiveResponses, UpdateRetrospectiveReviewData, UpdateRetrospectiveReviewErrors, UpdateRetrospectiveReviewResponses, UpdateSystemAnalysisEdgeData, UpdateSystemAnalysisEdgeErrors, UpdateSystemAnalysisEdgeResponses, UpdateSystemAnalysisNodeData, UpdateSystemAnalysisNodeErrors, UpdateSystemAnalysisNodeResponses, UpdateTaskData, UpdateTaskErrors, UpdateTaskResponses, UpdateTeamMembershipData, UpdateTeamMembershipErrors, UpdateTeamMembershipResponses, UpdateTeamsData, UpdateTeamsErrors, UpdateTeamsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -750,104 +750,20 @@ export const createIncidentTimelineEvent = <ThrowOnError extends boolean = false
 });
 
 /**
- * List current unselected integration installation targets
+ * Get Installable Integrations
  */
-export const listIntegrationInstallTargets = <ThrowOnError extends boolean = false>(options?: Options<ListIntegrationInstallTargetsData, ThrowOnError>) => (options?.client ?? client).get<ListIntegrationInstallTargetsResponses, ListIntegrationInstallTargetsErrors, ThrowOnError>({
+export const getInstallableIntegrations = <ThrowOnError extends boolean = false>(options?: Options<GetInstallableIntegrationsData, ThrowOnError>) => (options?.client ?? client).get<GetInstallableIntegrationsResponses, GetInstallableIntegrationsErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/install_targets',
-    ...options
-});
-
-/**
- * List Installed Integrations
- */
-export const listInstalledIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListInstalledIntegrationsData, ThrowOnError>) => (options?.client ?? client).get<ListInstalledIntegrationsResponses, ListInstalledIntegrationsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/installed',
-    ...options
-});
-
-/**
- * Delete an Integration
- */
-export const deleteInstalledIntegration = <ThrowOnError extends boolean = false>(options: Options<DeleteInstalledIntegrationData, ThrowOnError>) => (options.client ?? client).delete<DeleteInstalledIntegrationResponses, DeleteInstalledIntegrationErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/installed/{id}',
-    ...options
-});
-
-/**
- * Get an Integration
- */
-export const getInstalledIntegration = <ThrowOnError extends boolean = false>(options: Options<GetInstalledIntegrationData, ThrowOnError>) => (options.client ?? client).get<GetInstalledIntegrationResponses, GetInstalledIntegrationErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/installed/{id}',
-    ...options
-});
-
-/**
- * Update an installed Integration
- */
-export const updateInstalledIntegration = <ThrowOnError extends boolean = false>(options: Options<UpdateInstalledIntegrationData, ThrowOnError>) => (options.client ?? client).patch<UpdateInstalledIntegrationResponses, UpdateInstalledIntegrationErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/installed/{id}',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Get event sync runs for an integration
- */
-export const listIntegrationEventSyncRuns = <ThrowOnError extends boolean = false>(options: Options<ListIntegrationEventSyncRunsData, ThrowOnError>) => (options.client ?? client).get<ListIntegrationEventSyncRunsResponses, ListIntegrationEventSyncRunsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/installed/{id}/sync',
-    ...options
-});
-
-/**
- * Request a manual event sync for an integration
- */
-export const requestIntegrationEventSync = <ThrowOnError extends boolean = false>(options: Options<RequestIntegrationEventSyncData, ThrowOnError>) => (options.client ?? client).post<RequestIntegrationEventSyncResponses, RequestIntegrationEventSyncErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/installed/{id}/sync',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * List Available Integrations
- */
-export const listAvailableIntegrations = <ThrowOnError extends boolean = false>(options?: Options<ListAvailableIntegrationsData, ThrowOnError>) => (options?.client ?? client).get<ListAvailableIntegrationsResponses, ListAvailableIntegrationsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/providers',
+    url: '/integrations',
     ...options
 });
 
 /**
  * Install an Integration
  */
-export const createInstalledIntegration = <ThrowOnError extends boolean = false>(options: Options<CreateInstalledIntegrationData, ThrowOnError>) => (options.client ?? client).post<CreateInstalledIntegrationResponses, CreateInstalledIntegrationErrors, ThrowOnError>({
+export const installIntegration = <ThrowOnError extends boolean = false>(options: Options<InstallIntegrationData, ThrowOnError>) => (options.client ?? client).post<InstallIntegrationResponses, InstallIntegrationErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/providers/{name}/install',
-    ...options,
-    headers: {
-        'Content-Type': 'application/json',
-        ...options.headers
-    }
-});
-
-/**
- * Select installation targets for an Integration
- */
-export const installIntegrationTargets = <ThrowOnError extends boolean = false>(options: Options<InstallIntegrationTargetsData, ThrowOnError>) => (options.client ?? client).post<InstallIntegrationTargetsResponses, InstallIntegrationTargetsErrors, ThrowOnError>({
-    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/providers/{name}/install/targets',
+    url: '/integrations/install/{name}',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -860,7 +776,7 @@ export const installIntegrationTargets = <ThrowOnError extends boolean = false>(
  */
 export const completeIntegrationOauthFlow = <ThrowOnError extends boolean = false>(options: Options<CompleteIntegrationOauthFlowData, ThrowOnError>) => (options.client ?? client).post<CompleteIntegrationOauthFlowResponses, CompleteIntegrationOauthFlowErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/providers/{name}/oauth/complete',
+    url: '/integrations/install/{name}/oauth/complete',
     ...options,
     headers: {
         'Content-Type': 'application/json',
@@ -873,8 +789,92 @@ export const completeIntegrationOauthFlow = <ThrowOnError extends boolean = fals
  */
 export const startIntegrationOauthFlow = <ThrowOnError extends boolean = false>(options: Options<StartIntegrationOauthFlowData, ThrowOnError>) => (options.client ?? client).post<StartIntegrationOauthFlowResponses, StartIntegrationOauthFlowErrors, ThrowOnError>({
     security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
-    url: '/integrations/providers/{name}/oauth/start',
+    url: '/integrations/install/{name}/oauth/start',
     ...options
+});
+
+/**
+ * Select installation targets for an Integration
+ */
+export const installIntegrationFromTargets = <ThrowOnError extends boolean = false>(options: Options<InstallIntegrationFromTargetsData, ThrowOnError>) => (options.client ?? client).post<InstallIntegrationFromTargetsResponses, InstallIntegrationFromTargetsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/install/{name}/targets',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * List integration installation targets requiring selection
+ */
+export const listIntegrationInstallTargets = <ThrowOnError extends boolean = false>(options?: Options<ListIntegrationInstallTargetsData, ThrowOnError>) => (options?.client ?? client).get<ListIntegrationInstallTargetsResponses, ListIntegrationInstallTargetsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/install_targets',
+    ...options
+});
+
+/**
+ * List Installed Integrations
+ */
+export const listIntegrationInstallations = <ThrowOnError extends boolean = false>(options?: Options<ListIntegrationInstallationsData, ThrowOnError>) => (options?.client ?? client).get<ListIntegrationInstallationsResponses, ListIntegrationInstallationsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/installations',
+    ...options
+});
+
+/**
+ * Delete an Integration
+ */
+export const deleteIntegrationInstallation = <ThrowOnError extends boolean = false>(options: Options<DeleteIntegrationInstallationData, ThrowOnError>) => (options.client ?? client).delete<DeleteIntegrationInstallationResponses, DeleteIntegrationInstallationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/installations/{id}',
+    ...options
+});
+
+/**
+ * Get an Integration
+ */
+export const getIntegrationInstallation = <ThrowOnError extends boolean = false>(options: Options<GetIntegrationInstallationData, ThrowOnError>) => (options.client ?? client).get<GetIntegrationInstallationResponses, GetIntegrationInstallationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/installations/{id}',
+    ...options
+});
+
+/**
+ * Update an installed Integration
+ */
+export const updateIntegrationInstallation = <ThrowOnError extends boolean = false>(options: Options<UpdateIntegrationInstallationData, ThrowOnError>) => (options.client ?? client).patch<UpdateIntegrationInstallationResponses, UpdateIntegrationInstallationErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/installations/{id}',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
+});
+
+/**
+ * Get event sync runs for an integration
+ */
+export const listIntegrationEventSyncRuns = <ThrowOnError extends boolean = false>(options: Options<ListIntegrationEventSyncRunsData, ThrowOnError>) => (options.client ?? client).get<ListIntegrationEventSyncRunsResponses, ListIntegrationEventSyncRunsErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/installations/{id}/sync',
+    ...options
+});
+
+/**
+ * Request a manual event sync for an integration
+ */
+export const requestIntegrationEventSync = <ThrowOnError extends boolean = false>(options: Options<RequestIntegrationEventSyncData, ThrowOnError>) => (options.client ?? client).post<RequestIntegrationEventSyncResponses, RequestIntegrationEventSyncErrors, ThrowOnError>({
+    security: [{ scheme: 'bearer', type: 'http' }, { scheme: 'bearer', type: 'http' }],
+    url: '/integrations/installations/{id}/sync/start',
+    ...options,
+    headers: {
+        'Content-Type': 'application/json',
+        ...options.headers
+    }
 });
 
 /**

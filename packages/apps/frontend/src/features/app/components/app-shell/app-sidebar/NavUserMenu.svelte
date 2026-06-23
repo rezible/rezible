@@ -15,7 +15,7 @@
 </script>
 
 {#snippet userMenuContent()}
-	<DropdownMenu.Label class="p-0 font-normal">
+	<!-- <DropdownMenu.Label class="p-0 font-normal">
 		<div class="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
 			<Avatar.Root class="size-7 rounded-lg">
 				<UserAvatar kind="user" id={auth.user?.id || ""} size={28} />
@@ -25,15 +25,16 @@
 				<span class="truncate text-xs">{user?.attributes.email}</span>
 			</div>
 		</div>
-	</DropdownMenu.Label>
+	</DropdownMenu.Label> -->
 	
 	<DropdownMenu.Separator />
 
 	<DropdownMenu.Group>
-		<DropdownMenu.Item>
-			<RiUserSettingsLine />
-			Preferences
-		</DropdownMenu.Item>
+		<a href="/settings">
+			<DropdownMenu.Item>
+				<RiUserSettingsLine /> Settings
+			</DropdownMenu.Item>
+		</a>
 		<DropdownMenu.Item>
 			<RiNotification2 />
 			Notifications

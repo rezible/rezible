@@ -2,9 +2,10 @@ import { Context, watch, type Getter } from "runed";
 import type Avatar from "$components/common/entity-avatar/EntityAvatar.svelte";
 import type { Component, ComponentProps } from "svelte";
 import { page } from "$app/state";
-import { afterNavigate, onNavigate } from "$app/navigation";
+import { afterNavigate } from "$app/navigation";
 import type { Pathname } from "$app/types";
 import type { RouteId } from "$app/types";
+import type { SidebarModel } from "$features/app/components/app-shell/app-sidebar/controller.svelte";
 
 export type PageBreadcrumb = {
 	label?: string;
@@ -21,11 +22,11 @@ export type PageActions<PComponent extends Component<any>> = {
 
 export class AppShellController {
 	pageTitle = $state("Rezible")
+	childSidebar = $state.raw<SidebarModel>();
 
 	constructor() {
 		afterNavigate(nav => {
-			const newRoute = nav.to?.route.id;
-			this.checkPageActions(newRoute);
+			this.checkPageActions(nav.to?.route.id);
 		});
 	}
 
@@ -43,6 +44,14 @@ export class AppShellController {
 	breadcrumbs = $state<PageBreadcrumb[]>([]);
 	setPageBreadcrumbs(crumbsFn: Getter<PageBreadcrumb[]>) {
 		watch(crumbsFn, crumbs => {this.breadcrumbs = crumbs});
+	}
+
+	setChildSidebar(model: SidebarModel) {
+		this.childSidebar = model;
+	}
+
+	clearChildSidebar() {
+		this.childSidebar = undefined;
 	}
 }
 

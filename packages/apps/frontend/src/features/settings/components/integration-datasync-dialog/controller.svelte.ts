@@ -3,6 +3,7 @@ import { Context } from "runed";
 import {
 	type ErrorModel,
 	type IntegrationEventSyncRun,
+	type IntegrationInstallation,
 	listIntegrationEventSyncRunsOptions,
 	requestIntegrationEventSyncMutation,
 } from "$lib/api";
@@ -36,13 +37,13 @@ const pollIntervalMs = 3_000;
 export class IntegrationDataSyncController {
 	private ctrl = useIntegrationsController();
 
-	installation = $derived(this.ctrl.dataSyncDialogInstallation);
+	installation = $state.raw<IntegrationInstallation>();
 	isOpen = $derived(!!this.installation);
 
 	id = $derived(this.installation?.id);
 
 	setOpen(open: boolean) {
-		if (!open) this.ctrl.dataSyncDialogInstallation = undefined;
+		if (!open) this.installation = undefined;
 	}
 
 	private syncRequestPolling = $state(false);

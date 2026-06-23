@@ -36,7 +36,7 @@ type IntegrationsService struct {
 }
 
 func NewIntegrationsService(appCfg rez.AppConfig, db rez.Database, jobSvc rez.JobService, reg *integrations.PackageRegistry, pep rez.ProviderEventPipelineService) (*IntegrationsService, error) {
-	redirectUrl, redirectUrlErr := appCfg.GetFrontendUrl("/settings/integration-callback")
+	redirectUrl, redirectUrlErr := appCfg.GetFrontendUrl("/connect")
 	if redirectUrlErr != nil {
 		return nil, fmt.Errorf("invalid oauth callback url: %w", redirectUrlErr)
 	}

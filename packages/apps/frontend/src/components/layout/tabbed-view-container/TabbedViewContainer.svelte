@@ -22,8 +22,8 @@
 	};
 	const { route, tabs, infoBar, tabSidebar }: Props = $props();
 
-	type ResolveParams = Parameters<typeof resolve<Route>>;
-	const tabPaths = $derived<ResolvedPathname[]>(tabs.map(t => resolve(...([route, t.params] as ResolveParams))));
+	const resolveTabPath = resolve as unknown as (route: Route, params: Tab<Route>["params"]) => ResolvedPathname;
+	const tabPaths = $derived<ResolvedPathname[]>(tabs.map(t => resolveTabPath(route, t.params)));
 	
 	const activeTabIndex = $derived.by(() => {
 		const currRoute = page.route.id;
@@ -39,8 +39,8 @@
 <div class="flex-1 flex flex-col h-full max-h-full min-h-0 overflow-auto">
 	<div class="w-full flex h-12 z-[1] justify-between">
 		<div class="flex gap-1 self-end">
-			{#each tabs as tab, i}
-				<a href="{tabPaths[i]}" 
+			{#each tabs as tab, i (tab.label)}
+				<a href={resolve(route as any, tab.params as any)} 
 					data-active={(i === activeTabIndex) ? true : undefined}
 					class="group inline-flex self-end h-12 p-4 py-3 text-lg border border-b-0 rounded-t-lg relative text-muted-foreground data-active:bg-accent/50 data-active:text-foreground"
 				>

@@ -1,43 +1,24 @@
 import { Context, watch } from "runed";
 import { createMutation } from "@tanstack/svelte-query";
 
-import { updateOrganizationPreferencesMutation, type AvailableIntegration, type InstalledIntegration, type OrganizationPreferences } from "$lib/api";
+import { updateOrganizationPreferencesMutation, type IntegrationInstallation, type OrganizationPreferences } from "$lib/api";
 import { useUserSessionState } from "$src/lib/user-session.svelte";
-import { useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
+import { type IntegrationProvider, useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 
 import { StepperController } from "$components/layout/stepper/stepper.svelte";
 
-import OrganizationSetupStep from "./steps/OrganizationSetup.svelte";
-import InstallIntegrationsStep from "./steps/InstallIntegrations.svelte";
+import OrganizationDetailsStep from "./steps/org-details/OrganizationDetails.svelte";
+import InstallSuggestedIntegrationsStep from "./steps/suggested-integrations/SuggestedIntegrations.svelte";
 
-const chatIntegrations = new Set<string>(["slack_agent"]);
-const incidentManagementIntegrations = new Set<string>([]);
-const getAvailableNames = (av: AvailableIntegration[], names: Set<string>) => av.filter(a => names.has(a.name));
+const makeSuggestedIntegrations = (prefs: OrganizationPreferences, installed: IntegrationInstallation[]) => {
+	const suggestions = ["slack"];
 
-export type IntegrationCapabilitySuggestion = {
-	label: string;
-	available: AvailableIntegration[];
-};
+	if (!prefs.enableIncidentManagement) {
+		// suggestions.add();
+	};
 
-const makeSuggestedIntegrations = (prefs: OrganizationPreferences, available: AvailableIntegration[], installed: InstalledIntegration[]) => {
-	const suggestions: IntegrationCapabilitySuggestion[] = [];
 	const installedNames = new Set(installed.map(intg => intg.attributes.integrationName));
-
-	if (installedNames.isDisjointFrom(chatIntegrations)) {
-		suggestions.push({
-			label: "Chat",
-			available: getAvailableNames(available, chatIntegrations),
-		});
-	};
-
-	if (!prefs.enableIncidentManagement && installedNames.isDisjointFrom(incidentManagementIntegrations)) {
-		suggestions.push({
-			label: "Incident Management",
-			available: getAvailableNames(available, incidentManagementIntegrations),
-		});
-	};
-
-	return suggestions;
+	return new Map(suggestions.map(name => ([name, installedNames.has(name)])));
 }
 
 export type ConfigureOrganizationOptions = {
@@ -91,11 +72,17 @@ export class InitialSetupController {
 		})
 	};
 
-	integrationSuggestions = $derived(makeSuggestedIntegrations(this.orgPrefs, this.integrations.available, this.integrations.installed))
+	integrationSuggestions = $derived(makeSuggestedIntegrations(this.orgPrefs, this.integrations.installed));
+	anySuggestedInstalled = $derived(this.integrationSuggestions.values().some(Boolean));
+
+	configureProvider = $state.raw<IntegrationProvider>();
+	openIntegrationProviderDialog(name: string) {
+		this.configureProvider = this.integrations.providers.find(prov => prov.name === name);
+	}
 
 	canContinueIntegrations = $derived(true);
 	integrationsContinueButtonText = $derived(
-		this.integrationSuggestions.length === 0 ? "Finish setup" : "Skip for now"
+		this.anySuggestedInstalled ? "Finish setup" : "Install later"
 	);
 
 	canFinish = $derived(this.canContinueOrg && this.canContinueIntegrations);
@@ -112,14 +99,14 @@ export class InitialSetupController {
 			{
 				label: "Organization",
 				description: "Organization details and preferences",
-				component: OrganizationSetupStep,
+				component: OrganizationDetailsStep,
 				onNext: () => this.onOrgNext(),
 				canContinue: () => this.canContinueOrg,
 			},
 			{
 				label: "Integrations",
 				description: "Install recommended integrations",
-				component: InstallIntegrationsStep,
+				component: InstallSuggestedIntegrationsStep,
 				canContinue: () => this.canContinueIntegrations,
 			},
 		],

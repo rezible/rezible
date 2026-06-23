@@ -34,7 +34,7 @@
 		{/if}
 		<main class="antialiased flex flex-col flex-1 min-w-0 min-h-0 h-dvh overflow-hidden">
 			{#if sess.isSetup}
-				<div class="flex w-full justify-between items-center h-14 bg-surface-200 border-b px-1">
+				<div class="flex w-full justify-between items-center h-14 bg-surface-200 border-b px-2">
 					<PageHeader />
 				</div>
 			{/if}

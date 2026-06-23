@@ -1,30 +1,30 @@
 <script lang="ts">
+	import { resolve } from "$app/paths";
 	import * as Collapsible from "$components/ui/collapsible";
 	import * as Sidebar from "$components/ui/sidebar";
     import RiArrowRightSLine from 'remixicon-svelte/icons/arrow-right-s-line';
-	import { getActiveStatus, type SidebarItem } from "./sidebar";
-	import { page } from "$app/state";
+	import { useAppSidebarController, type SidebarItem } from "./controller.svelte";
 
     type Props = {
         item: SidebarItem;
     };
     const { item }: Props = $props();
 
-    const sidebar = Sidebar.useSidebar();
-    const status = $derived(getActiveStatus(page.route.id, item));
-    const anyActiveSubItems = $derived(status.subItemsActive.values().some(Boolean));
-    const isActive = $derived((status.active && !anyActiveSubItems) ? true : undefined);
+    const controller = useAppSidebarController();
+
+    const isActive= $derived(controller.activeStatus.deepestActiveItem === item.href);
+    const activeSubs = $derived(controller.activeStatus.activeSubItems.get(item.href));
 </script>
 
 {#if !item.subItems}
     <Sidebar.MenuItem>
         <Sidebar.MenuButton {isActive} tooltipContent={item.label}>
             {#snippet child({ props })}
-                <a href={item.route} {...props}>
+                <a href={resolve(item.href as any)} {...props}>
                     {#if !!item.icon && typeof item.icon === "function"}
                         <item.icon />
                     {/if}
-                    {#if sidebar.state !== "collapsed"}
+                    {#if !controller.collapsed}
                         {item.label}
                     {/if}
                 </a>
@@ -32,14 +32,14 @@
         </Sidebar.MenuButton>
     </Sidebar.MenuItem>
 {:else}
-    <Collapsible.Root open={status.active} class="group/collapsible">
+    <Collapsible.Root open={isActive} class="group/collapsible">
         {#snippet child({ props })}
             <Sidebar.MenuItem {...props}>
                 <Collapsible.Trigger>
                     {#snippet child({ props })}
                         <Sidebar.MenuButton {...props} {isActive} tooltipContent={item.label}>
                             {#snippet child({ props })}
-                                <a href={item.route} {...props}>
+                                <a href={resolve(item.href as any)} {...props}>
                                     {#if item.icon}
                                         <item.icon />
                                     {/if}
@@ -52,11 +52,11 @@
                 </Collapsible.Trigger>
                 <Collapsible.Content>
                     <Sidebar.MenuSub>
-                        {#each item.subItems as subItem, idx (subItem.label)}
+                        {#each item.subItems as subItem (subItem.label)}
                             <Sidebar.MenuSubItem>
-                                <Sidebar.MenuSubButton isActive={status.subItemsActive.get(idx)}>
+                                <Sidebar.MenuSubButton isActive={!!activeSubs && activeSubs.has(subItem.href)}>
                                     {#snippet child({ props })}
-                                        <a href={subItem.route} {...props}>
+                                        <a href={resolve(subItem.href as any)} {...props}>
                                             <span>{subItem.label}</span>
                                         </a>
                                     {/snippet}
