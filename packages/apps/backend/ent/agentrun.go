@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -11,8 +10,8 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentcase"
 	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agenttask"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -27,34 +26,18 @@ type AgentRun struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// AgentCaseID holds the value of the "agent_case_id" field.
-	AgentCaseID *uuid.UUID `json:"agent_case_id,omitempty"`
-	// WorkflowKind holds the value of the "workflow_kind" field.
-	WorkflowKind agentrun.WorkflowKind `json:"workflow_kind,omitempty"`
+	// AgentTaskID holds the value of the "agent_task_id" field.
+	AgentTaskID uuid.UUID `json:"agent_task_id,omitempty"`
+	// Attempt holds the value of the "attempt" field.
+	Attempt int `json:"attempt,omitempty"`
 	// Status holds the value of the "status" field.
 	Status agentrun.Status `json:"status,omitempty"`
-	// IdempotencyKey holds the value of the "idempotency_key" field.
-	IdempotencyKey string `json:"idempotency_key,omitempty"`
-	// SubjectKind holds the value of the "subject_kind" field.
-	SubjectKind string `json:"subject_kind,omitempty"`
-	// SubjectID holds the value of the "subject_id" field.
-	SubjectID *uuid.UUID `json:"subject_id,omitempty"`
-	// TriggerMetadata holds the value of the "trigger_metadata" field.
-	TriggerMetadata map[string]interface{} `json:"trigger_metadata,omitempty"`
-	// ModelMetadata holds the value of the "model_metadata" field.
-	ModelMetadata map[string]interface{} `json:"model_metadata,omitempty"`
-	// ErrorCode holds the value of the "error_code" field.
-	ErrorCode string `json:"error_code,omitempty"`
-	// ErrorMessage holds the value of the "error_message" field.
-	ErrorMessage string `json:"error_message,omitempty"`
-	// QueuedAt holds the value of the "queued_at" field.
-	QueuedAt time.Time `json:"queued_at,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
 	StartedAt *time.Time `json:"started_at,omitempty"`
-	// CompletedAt holds the value of the "completed_at" field.
-	CompletedAt *time.Time `json:"completed_at,omitempty"`
-	// FailedAt holds the value of the "failed_at" field.
-	FailedAt *time.Time `json:"failed_at,omitempty"`
+	// FinishedAt holds the value of the "finished_at" field.
+	FinishedAt *time.Time `json:"finished_at,omitempty"`
+	// ErrorMessage holds the value of the "error_message" field.
+	ErrorMessage string `json:"error_message,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentRunQuery when eager-loading is set.
 	Edges        AgentRunEdges `json:"edges"`
@@ -65,16 +48,16 @@ type AgentRun struct {
 type AgentRunEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AgentCase holds the value of the agent_case edge.
-	AgentCase *AgentCase `json:"agent_case,omitempty"`
-	// CaseSteps holds the value of the case_steps edge.
-	CaseSteps []*AgentCaseStep `json:"case_steps,omitempty"`
-	// CaseArtifacts holds the value of the case_artifacts edge.
-	CaseArtifacts []*AgentCaseArtifact `json:"case_artifacts,omitempty"`
-	// CaseConclusions holds the value of the case_conclusions edge.
-	CaseConclusions []*AgentCaseConclusion `json:"case_conclusions,omitempty"`
-	// Feedback holds the value of the feedback edge.
-	Feedback []*AgentRunFeedback `json:"feedback,omitempty"`
+	// AgentTask holds the value of the agent_task edge.
+	AgentTask *AgentTask `json:"agent_task,omitempty"`
+	// Citations holds the value of the citations edge.
+	Citations []*AgentRunCitation `json:"citations,omitempty"`
+	// Findings holds the value of the findings edge.
+	Findings []*AgentRunFinding `json:"findings,omitempty"`
+	// Result holds the value of the result edge.
+	Result []*AgentRunResult `json:"result,omitempty"`
+	// ToolCalls holds the value of the tool_calls edge.
+	ToolCalls []*AgentRunToolCall `json:"tool_calls,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [6]bool
@@ -91,51 +74,51 @@ func (e AgentRunEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AgentCaseOrErr returns the AgentCase value or an error if the edge
+// AgentTaskOrErr returns the AgentTask value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunEdges) AgentCaseOrErr() (*AgentCase, error) {
-	if e.AgentCase != nil {
-		return e.AgentCase, nil
+func (e AgentRunEdges) AgentTaskOrErr() (*AgentTask, error) {
+	if e.AgentTask != nil {
+		return e.AgentTask, nil
 	} else if e.loadedTypes[1] {
-		return nil, &NotFoundError{label: agentcase.Label}
+		return nil, &NotFoundError{label: agenttask.Label}
 	}
-	return nil, &NotLoadedError{edge: "agent_case"}
+	return nil, &NotLoadedError{edge: "agent_task"}
 }
 
-// CaseStepsOrErr returns the CaseSteps value or an error if the edge
+// CitationsOrErr returns the Citations value or an error if the edge
 // was not loaded in eager-loading.
-func (e AgentRunEdges) CaseStepsOrErr() ([]*AgentCaseStep, error) {
+func (e AgentRunEdges) CitationsOrErr() ([]*AgentRunCitation, error) {
 	if e.loadedTypes[2] {
-		return e.CaseSteps, nil
+		return e.Citations, nil
 	}
-	return nil, &NotLoadedError{edge: "case_steps"}
+	return nil, &NotLoadedError{edge: "citations"}
 }
 
-// CaseArtifactsOrErr returns the CaseArtifacts value or an error if the edge
+// FindingsOrErr returns the Findings value or an error if the edge
 // was not loaded in eager-loading.
-func (e AgentRunEdges) CaseArtifactsOrErr() ([]*AgentCaseArtifact, error) {
+func (e AgentRunEdges) FindingsOrErr() ([]*AgentRunFinding, error) {
 	if e.loadedTypes[3] {
-		return e.CaseArtifacts, nil
+		return e.Findings, nil
 	}
-	return nil, &NotLoadedError{edge: "case_artifacts"}
+	return nil, &NotLoadedError{edge: "findings"}
 }
 
-// CaseConclusionsOrErr returns the CaseConclusions value or an error if the edge
+// ResultOrErr returns the Result value or an error if the edge
 // was not loaded in eager-loading.
-func (e AgentRunEdges) CaseConclusionsOrErr() ([]*AgentCaseConclusion, error) {
+func (e AgentRunEdges) ResultOrErr() ([]*AgentRunResult, error) {
 	if e.loadedTypes[4] {
-		return e.CaseConclusions, nil
+		return e.Result, nil
 	}
-	return nil, &NotLoadedError{edge: "case_conclusions"}
+	return nil, &NotLoadedError{edge: "result"}
 }
 
-// FeedbackOrErr returns the Feedback value or an error if the edge
+// ToolCallsOrErr returns the ToolCalls value or an error if the edge
 // was not loaded in eager-loading.
-func (e AgentRunEdges) FeedbackOrErr() ([]*AgentRunFeedback, error) {
+func (e AgentRunEdges) ToolCallsOrErr() ([]*AgentRunToolCall, error) {
 	if e.loadedTypes[5] {
-		return e.Feedback, nil
+		return e.ToolCalls, nil
 	}
-	return nil, &NotLoadedError{edge: "feedback"}
+	return nil, &NotLoadedError{edge: "tool_calls"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -143,17 +126,13 @@ func (*AgentRun) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentrun.FieldAgentCaseID, agentrun.FieldSubjectID:
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case agentrun.FieldTriggerMetadata, agentrun.FieldModelMetadata:
-			values[i] = new([]byte)
-		case agentrun.FieldTenantID:
+		case agentrun.FieldTenantID, agentrun.FieldAttempt:
 			values[i] = new(sql.NullInt64)
-		case agentrun.FieldWorkflowKind, agentrun.FieldStatus, agentrun.FieldIdempotencyKey, agentrun.FieldSubjectKind, agentrun.FieldErrorCode, agentrun.FieldErrorMessage:
+		case agentrun.FieldStatus, agentrun.FieldErrorMessage:
 			values[i] = new(sql.NullString)
-		case agentrun.FieldCreatedAt, agentrun.FieldUpdatedAt, agentrun.FieldQueuedAt, agentrun.FieldStartedAt, agentrun.FieldCompletedAt, agentrun.FieldFailedAt:
+		case agentrun.FieldCreatedAt, agentrun.FieldUpdatedAt, agentrun.FieldStartedAt, agentrun.FieldFinishedAt:
 			values[i] = new(sql.NullTime)
-		case agentrun.FieldID:
+		case agentrun.FieldID, agentrun.FieldAgentTaskID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -194,77 +173,23 @@ func (_m *AgentRun) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case agentrun.FieldAgentCaseID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field agent_case_id", values[i])
-			} else if value.Valid {
-				_m.AgentCaseID = new(uuid.UUID)
-				*_m.AgentCaseID = *value.S.(*uuid.UUID)
+		case agentrun.FieldAgentTaskID:
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field agent_task_id", values[i])
+			} else if value != nil {
+				_m.AgentTaskID = *value
 			}
-		case agentrun.FieldWorkflowKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_kind", values[i])
+		case agentrun.FieldAttempt:
+			if value, ok := values[i].(*sql.NullInt64); !ok {
+				return fmt.Errorf("unexpected type %T for field attempt", values[i])
 			} else if value.Valid {
-				_m.WorkflowKind = agentrun.WorkflowKind(value.String)
+				_m.Attempt = int(value.Int64)
 			}
 		case agentrun.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field status", values[i])
 			} else if value.Valid {
 				_m.Status = agentrun.Status(value.String)
-			}
-		case agentrun.FieldIdempotencyKey:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field idempotency_key", values[i])
-			} else if value.Valid {
-				_m.IdempotencyKey = value.String
-			}
-		case agentrun.FieldSubjectKind:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field subject_kind", values[i])
-			} else if value.Valid {
-				_m.SubjectKind = value.String
-			}
-		case agentrun.FieldSubjectID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field subject_id", values[i])
-			} else if value.Valid {
-				_m.SubjectID = new(uuid.UUID)
-				*_m.SubjectID = *value.S.(*uuid.UUID)
-			}
-		case agentrun.FieldTriggerMetadata:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field trigger_metadata", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.TriggerMetadata); err != nil {
-					return fmt.Errorf("unmarshal field trigger_metadata: %w", err)
-				}
-			}
-		case agentrun.FieldModelMetadata:
-			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field model_metadata", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.ModelMetadata); err != nil {
-					return fmt.Errorf("unmarshal field model_metadata: %w", err)
-				}
-			}
-		case agentrun.FieldErrorCode:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field error_code", values[i])
-			} else if value.Valid {
-				_m.ErrorCode = value.String
-			}
-		case agentrun.FieldErrorMessage:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field error_message", values[i])
-			} else if value.Valid {
-				_m.ErrorMessage = value.String
-			}
-		case agentrun.FieldQueuedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field queued_at", values[i])
-			} else if value.Valid {
-				_m.QueuedAt = value.Time
 			}
 		case agentrun.FieldStartedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -273,19 +198,18 @@ func (_m *AgentRun) assignValues(columns []string, values []any) error {
 				_m.StartedAt = new(time.Time)
 				*_m.StartedAt = value.Time
 			}
-		case agentrun.FieldCompletedAt:
+		case agentrun.FieldFinishedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field completed_at", values[i])
+				return fmt.Errorf("unexpected type %T for field finished_at", values[i])
 			} else if value.Valid {
-				_m.CompletedAt = new(time.Time)
-				*_m.CompletedAt = value.Time
+				_m.FinishedAt = new(time.Time)
+				*_m.FinishedAt = value.Time
 			}
-		case agentrun.FieldFailedAt:
-			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field failed_at", values[i])
+		case agentrun.FieldErrorMessage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field error_message", values[i])
 			} else if value.Valid {
-				_m.FailedAt = new(time.Time)
-				*_m.FailedAt = value.Time
+				_m.ErrorMessage = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -305,29 +229,29 @@ func (_m *AgentRun) QueryTenant() *TenantQuery {
 	return NewAgentRunClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAgentCase queries the "agent_case" edge of the AgentRun entity.
-func (_m *AgentRun) QueryAgentCase() *AgentCaseQuery {
-	return NewAgentRunClient(_m.config).QueryAgentCase(_m)
+// QueryAgentTask queries the "agent_task" edge of the AgentRun entity.
+func (_m *AgentRun) QueryAgentTask() *AgentTaskQuery {
+	return NewAgentRunClient(_m.config).QueryAgentTask(_m)
 }
 
-// QueryCaseSteps queries the "case_steps" edge of the AgentRun entity.
-func (_m *AgentRun) QueryCaseSteps() *AgentCaseStepQuery {
-	return NewAgentRunClient(_m.config).QueryCaseSteps(_m)
+// QueryCitations queries the "citations" edge of the AgentRun entity.
+func (_m *AgentRun) QueryCitations() *AgentRunCitationQuery {
+	return NewAgentRunClient(_m.config).QueryCitations(_m)
 }
 
-// QueryCaseArtifacts queries the "case_artifacts" edge of the AgentRun entity.
-func (_m *AgentRun) QueryCaseArtifacts() *AgentCaseArtifactQuery {
-	return NewAgentRunClient(_m.config).QueryCaseArtifacts(_m)
+// QueryFindings queries the "findings" edge of the AgentRun entity.
+func (_m *AgentRun) QueryFindings() *AgentRunFindingQuery {
+	return NewAgentRunClient(_m.config).QueryFindings(_m)
 }
 
-// QueryCaseConclusions queries the "case_conclusions" edge of the AgentRun entity.
-func (_m *AgentRun) QueryCaseConclusions() *AgentCaseConclusionQuery {
-	return NewAgentRunClient(_m.config).QueryCaseConclusions(_m)
+// QueryResult queries the "result" edge of the AgentRun entity.
+func (_m *AgentRun) QueryResult() *AgentRunResultQuery {
+	return NewAgentRunClient(_m.config).QueryResult(_m)
 }
 
-// QueryFeedback queries the "feedback" edge of the AgentRun entity.
-func (_m *AgentRun) QueryFeedback() *AgentRunFeedbackQuery {
-	return NewAgentRunClient(_m.config).QueryFeedback(_m)
+// QueryToolCalls queries the "tool_calls" edge of the AgentRun entity.
+func (_m *AgentRun) QueryToolCalls() *AgentRunToolCallQuery {
+	return NewAgentRunClient(_m.config).QueryToolCalls(_m)
 }
 
 // Update returns a builder for updating this AgentRun.
@@ -362,57 +286,27 @@ func (_m *AgentRun) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	if v := _m.AgentCaseID; v != nil {
-		builder.WriteString("agent_case_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("agent_task_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.AgentTaskID))
 	builder.WriteString(", ")
-	builder.WriteString("workflow_kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkflowKind))
+	builder.WriteString("attempt=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Attempt))
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))
-	builder.WriteString(", ")
-	builder.WriteString("idempotency_key=")
-	builder.WriteString(_m.IdempotencyKey)
-	builder.WriteString(", ")
-	builder.WriteString("subject_kind=")
-	builder.WriteString(_m.SubjectKind)
-	builder.WriteString(", ")
-	if v := _m.SubjectID; v != nil {
-		builder.WriteString("subject_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
-	builder.WriteString(", ")
-	builder.WriteString("trigger_metadata=")
-	builder.WriteString(fmt.Sprintf("%v", _m.TriggerMetadata))
-	builder.WriteString(", ")
-	builder.WriteString("model_metadata=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ModelMetadata))
-	builder.WriteString(", ")
-	builder.WriteString("error_code=")
-	builder.WriteString(_m.ErrorCode)
-	builder.WriteString(", ")
-	builder.WriteString("error_message=")
-	builder.WriteString(_m.ErrorMessage)
-	builder.WriteString(", ")
-	builder.WriteString("queued_at=")
-	builder.WriteString(_m.QueuedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
 	if v := _m.StartedAt; v != nil {
 		builder.WriteString("started_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := _m.CompletedAt; v != nil {
-		builder.WriteString("completed_at=")
+	if v := _m.FinishedAt; v != nil {
+		builder.WriteString("finished_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := _m.FailedAt; v != nil {
-		builder.WriteString("failed_at=")
-		builder.WriteString(v.Format(time.ANSIC))
-	}
+	builder.WriteString("error_message=")
+	builder.WriteString(_m.ErrorMessage)
 	builder.WriteByte(')')
 	return builder.String()
 }

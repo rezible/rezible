@@ -4,38 +4,6 @@ package ent
 
 import "entgo.io/ent/dialect"
 
-func (c *AgentCaseClient) Debug() *AgentCaseClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentCaseClient{config: cfg}
-}
-
-func (c *AgentCaseArtifactClient) Debug() *AgentCaseArtifactClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentCaseArtifactClient{config: cfg}
-}
-
-func (c *AgentCaseConclusionClient) Debug() *AgentCaseConclusionClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentCaseConclusionClient{config: cfg}
-}
-
-func (c *AgentCaseStepClient) Debug() *AgentCaseStepClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentCaseStepClient{config: cfg}
-}
-
 func (c *AgentRunClient) Debug() *AgentRunClient {
 	if c.debug {
 		return c
@@ -44,12 +12,52 @@ func (c *AgentRunClient) Debug() *AgentRunClient {
 	return &AgentRunClient{config: cfg}
 }
 
-func (c *AgentRunFeedbackClient) Debug() *AgentRunFeedbackClient {
+func (c *AgentRunCitationClient) Debug() *AgentRunCitationClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentRunFeedbackClient{config: cfg}
+	return &AgentRunCitationClient{config: cfg}
+}
+
+func (c *AgentRunFindingClient) Debug() *AgentRunFindingClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentRunFindingClient{config: cfg}
+}
+
+func (c *AgentRunFindingCitationClient) Debug() *AgentRunFindingCitationClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentRunFindingCitationClient{config: cfg}
+}
+
+func (c *AgentRunResultClient) Debug() *AgentRunResultClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentRunResultClient{config: cfg}
+}
+
+func (c *AgentRunToolCallClient) Debug() *AgentRunToolCallClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentRunToolCallClient{config: cfg}
+}
+
+func (c *AgentTaskClient) Debug() *AgentTaskClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentTaskClient{config: cfg}
 }
 
 func (c *AlertClient) Debug() *AlertClient {

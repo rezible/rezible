@@ -4,7 +4,6 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent/agentcase"
 	"github.com/rezible/rezible/ent/agentrun"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
@@ -17,106 +16,57 @@ func newAgentsHandler(agents rez.AgentService) *agentsHandler {
 	return &agentsHandler{agents: agents}
 }
 
-func (h *agentsHandler) CreateAgentCase(ctx context.Context, req *oapi.CreateAgentCaseRequest) (*oapi.CreateAgentCaseResponse, error) {
-	var resp oapi.CreateAgentCaseResponse
+func (h *agentsHandler) CreateAgentTask(ctx context.Context, req *oapi.CreateAgentTaskRequest) (*oapi.CreateAgentTaskResponse, error) {
+	var resp oapi.CreateAgentTaskResponse
 	attr := req.Body.Attributes
-	c, createErr := h.agents.CreateCase(ctx, rez.AgentCaseRequest{
-		Title:           attr.Title,
-		Query:           attr.Query,
-		WorkflowKind:    agentrun.WorkflowKind(attr.WorkflowKind),
-		SubjectKind:     attr.SubjectKind,
-		SubjectID:       attr.SubjectId,
-		TriggerMetadata: attr.TriggerMetadata,
+	task, createErr := h.agents.CreateTask(ctx, rez.CreateAgentTaskRequest{
+		WorkflowKind:   rez.AgentWorkflowKind(attr.WorkflowKind),
+		WorkflowInput:  attr.WorkflowInput,
+		TriggerKind:    attr.TriggerKind,
+		TriggerPayload: attr.TriggerPayload,
 	})
 	if createErr != nil {
-		return nil, oapi.Error(ctx, "create agent case", createErr)
+		return nil, oapi.Error(ctx, "create agent task", createErr)
 	}
-	resp.Body.Data = oapi.AgentCaseFromEnt(c)
+	resp.Body.Data = oapi.AgentTaskFromEnt(task)
 	return &resp, nil
 }
 
-func (h *agentsHandler) ListAgentCases(ctx context.Context, req *oapi.ListAgentCasesRequest) (*oapi.ListAgentCasesResponse, error) {
-	var resp oapi.ListAgentCasesResponse
-	cases, listErr := h.agents.ListCases(ctx, rez.ListAgentCasesParams{
+func (h *agentsHandler) ListAgentTasks(ctx context.Context, req *oapi.ListAgentTasksRequest) (*oapi.ListAgentTasksResponse, error) {
+	var resp oapi.ListAgentTasksResponse
+	tasks, listErr := h.agents.ListTasks(ctx, rez.ListAgentTasksParams{
 		ListParams:   req.ListParams(),
-		Status:       agentcase.Status(req.Status),
-		WorkflowKind: agentrun.WorkflowKind(req.WorkflowKind),
-		SubjectKind:  req.SubjectKind,
+		WorkflowKind: rez.AgentWorkflowKind(req.WorkflowKind),
+		TriggerKind:  req.TriggerKind,
+		SubjectType:  req.SubjectType,
 		SubjectID:    req.SubjectId,
 	})
 	if listErr != nil {
-		return nil, oapi.Error(ctx, "list agent cases", listErr)
+		return nil, oapi.Error(ctx, "list agent tasks", listErr)
 	}
-	resp.Body.Data = make([]oapi.AgentCase, len(cases.Data))
-	for i, c := range cases.Data {
-		resp.Body.Data[i] = oapi.AgentCaseFromEnt(c)
+	resp.Body.Data = make([]oapi.AgentTask, len(tasks.Data))
+	for i, task := range tasks.Data {
+		resp.Body.Data[i] = oapi.AgentTaskFromEnt(task)
 	}
-	resp.Body.Pagination.Total = cases.Count
+	resp.Body.Pagination.Total = tasks.Count
 	return &resp, nil
 }
 
-func (h *agentsHandler) GetAgentCase(ctx context.Context, req *oapi.GetAgentCaseRequest) (*oapi.GetAgentCaseResponse, error) {
-	var resp oapi.GetAgentCaseResponse
-	c, getErr := h.agents.GetCase(ctx, req.Id)
+func (h *agentsHandler) GetAgentTask(ctx context.Context, req *oapi.GetAgentTaskRequest) (*oapi.GetAgentTaskResponse, error) {
+	var resp oapi.GetAgentTaskResponse
+	task, getErr := h.agents.GetTask(ctx, req.Id)
 	if getErr != nil {
-		return nil, oapi.Error(ctx, "get agent case", getErr)
+		return nil, oapi.Error(ctx, "get agent task", getErr)
 	}
-	resp.Body.Data = oapi.AgentCaseFromEnt(c)
+	resp.Body.Data = oapi.AgentTaskFromEnt(task)
 	return &resp, nil
 }
 
-func (h *agentsHandler) ListAgentCaseSteps(ctx context.Context, req *oapi.ListAgentCaseStepsRequest) (*oapi.ListAgentCaseStepsResponse, error) {
-	var resp oapi.ListAgentCaseStepsResponse
-	steps, listErr := h.agents.ListCaseSteps(ctx, req.Id)
-	if listErr != nil {
-		return nil, oapi.Error(ctx, "list agent case steps", listErr)
-	}
-	resp.Body.Data = make([]oapi.AgentCaseStep, len(steps))
-	for i, step := range steps {
-		resp.Body.Data[i] = oapi.AgentCaseStepFromEnt(step)
-	}
-	resp.Body.Pagination.Total = len(steps)
-	return &resp, nil
-}
-
-func (h *agentsHandler) ListAgentCaseArtifacts(ctx context.Context, req *oapi.ListAgentCaseArtifactsRequest) (*oapi.ListAgentCaseArtifactsResponse, error) {
-	var resp oapi.ListAgentCaseArtifactsResponse
-	artifacts, listErr := h.agents.ListCaseArtifacts(ctx, req.Id)
-	if listErr != nil {
-		return nil, oapi.Error(ctx, "list agent case artifacts", listErr)
-	}
-	resp.Body.Data = make([]oapi.AgentCaseArtifact, len(artifacts))
-	for i, artifact := range artifacts {
-		resp.Body.Data[i] = oapi.AgentCaseArtifactFromEnt(artifact)
-	}
-	resp.Body.Pagination.Total = len(artifacts)
-	return &resp, nil
-}
-
-func (h *agentsHandler) ListAgentCaseConclusions(ctx context.Context, req *oapi.ListAgentCaseConclusionsRequest) (*oapi.ListAgentCaseConclusionsResponse, error) {
-	var resp oapi.ListAgentCaseConclusionsResponse
-	conclusions, listErr := h.agents.ListCaseConclusions(ctx, req.Id)
-	if listErr != nil {
-		return nil, oapi.Error(ctx, "list agent case conclusions", listErr)
-	}
-	resp.Body.Data = make([]oapi.AgentCaseConclusion, len(conclusions))
-	for i, conclusion := range conclusions {
-		resp.Body.Data[i] = oapi.AgentCaseConclusionFromEnt(conclusion)
-	}
-	resp.Body.Pagination.Total = len(conclusions)
-	return &resp, nil
-}
-
-func (h *agentsHandler) RequestAgentCaseRun(ctx context.Context, req *oapi.RequestAgentCaseRunRequest) (*oapi.RequestAgentCaseRunResponse, error) {
-	var resp oapi.RequestAgentCaseRunResponse
-	attr := req.Body.Attributes
-	run, runErr := h.agents.RequestCaseRun(ctx, rez.AgentCaseRunRequest{
-		AgentCaseID:    req.Id,
-		IdempotencyKey: attr.IdempotencyKey,
-		Metadata:       attr.Metadata,
-	})
+func (h *agentsHandler) RequestAgentTaskRun(ctx context.Context, req *oapi.RequestAgentTaskRunRequest) (*oapi.RequestAgentTaskRunResponse, error) {
+	var resp oapi.RequestAgentTaskRunResponse
+	run, runErr := h.agents.RequestTaskRun(ctx, req.Id)
 	if runErr != nil {
-		return nil, oapi.Error(ctx, "request agent case run", runErr)
+		return nil, oapi.Error(ctx, "request agent task run", runErr)
 	}
 	resp.Body.Data = oapi.AgentRunFromEnt(run)
 	return &resp, nil
@@ -124,16 +74,12 @@ func (h *agentsHandler) RequestAgentCaseRun(ctx context.Context, req *oapi.Reque
 
 func (h *agentsHandler) ListAgentRuns(ctx context.Context, req *oapi.ListAgentRunsRequest) (*oapi.ListAgentRunsResponse, error) {
 	var resp oapi.ListAgentRunsResponse
-
-	params := rez.ListAgentRunsParams{
+	runs, listErr := h.agents.ListRuns(ctx, rez.ListAgentRunsParams{
 		ListParams:   req.ListParams(),
-		WorkflowKind: agentrun.WorkflowKind(req.WorkflowKind),
+		AgentTaskID:  req.AgentTaskId,
+		WorkflowKind: rez.AgentWorkflowKind(req.WorkflowKind),
 		Status:       agentrun.Status(req.Status),
-		AgentCaseID:  req.AgentCaseId,
-		SubjectKind:  req.SubjectKind,
-		SubjectID:    req.SubjectId,
-	}
-	runs, listErr := h.agents.ListRuns(ctx, params)
+	})
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent runs", listErr)
 	}
@@ -147,11 +93,62 @@ func (h *agentsHandler) ListAgentRuns(ctx context.Context, req *oapi.ListAgentRu
 
 func (h *agentsHandler) GetAgentRun(ctx context.Context, req *oapi.GetAgentRunRequest) (*oapi.GetAgentRunResponse, error) {
 	var resp oapi.GetAgentRunResponse
-
 	run, getErr := h.agents.GetRun(ctx, req.Id)
 	if getErr != nil {
 		return nil, oapi.Error(ctx, "get agent run", getErr)
 	}
 	resp.Body.Data = oapi.AgentRunFromEnt(run)
+	return &resp, nil
+}
+
+func (h *agentsHandler) ListAgentRunCitations(ctx context.Context, req *oapi.ListAgentRunCitationsRequest) (*oapi.ListAgentRunCitationsResponse, error) {
+	var resp oapi.ListAgentRunCitationsResponse
+	citations, listErr := h.agents.ListRunCitations(ctx, req.Id)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "list agent run citations", listErr)
+	}
+	resp.Body.Data = make([]oapi.AgentRunCitation, len(citations))
+	for i, citation := range citations {
+		resp.Body.Data[i] = oapi.AgentRunCitationFromEnt(citation)
+	}
+	resp.Body.Pagination.Total = len(citations)
+	return &resp, nil
+}
+
+func (h *agentsHandler) ListAgentRunFindings(ctx context.Context, req *oapi.ListAgentRunFindingsRequest) (*oapi.ListAgentRunFindingsResponse, error) {
+	var resp oapi.ListAgentRunFindingsResponse
+	findings, listErr := h.agents.ListRunFindings(ctx, req.Id)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "list agent run findings", listErr)
+	}
+	resp.Body.Data = make([]oapi.AgentRunFinding, len(findings))
+	for i, finding := range findings {
+		resp.Body.Data[i] = oapi.AgentRunFindingFromEnt(finding)
+	}
+	resp.Body.Pagination.Total = len(findings)
+	return &resp, nil
+}
+
+func (h *agentsHandler) GetAgentRunResult(ctx context.Context, req *oapi.GetAgentRunResultRequest) (*oapi.GetAgentRunResultResponse, error) {
+	var resp oapi.GetAgentRunResultResponse
+	result, getErr := h.agents.GetRunResult(ctx, req.Id)
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "get agent run result", getErr)
+	}
+	resp.Body.Data = oapi.AgentRunResultFromEnt(result)
+	return &resp, nil
+}
+
+func (h *agentsHandler) ListAgentRunToolCalls(ctx context.Context, req *oapi.ListAgentRunToolCallsRequest) (*oapi.ListAgentRunToolCallsResponse, error) {
+	var resp oapi.ListAgentRunToolCallsResponse
+	toolCalls, listErr := h.agents.ListRunToolCalls(ctx, req.Id)
+	if listErr != nil {
+		return nil, oapi.Error(ctx, "list agent run tool calls", listErr)
+	}
+	resp.Body.Data = make([]oapi.AgentRunToolCall, len(toolCalls))
+	for i, toolCall := range toolCalls {
+		resp.Body.Data[i] = oapi.AgentRunToolCallFromEnt(toolCall)
+	}
+	resp.Body.Pagination.Total = len(toolCalls)
 	return &resp, nil
 }

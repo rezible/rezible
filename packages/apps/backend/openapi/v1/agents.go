@@ -13,103 +13,45 @@ import (
 )
 
 type AgentsHandler interface {
-	CreateAgentCase(context.Context, *CreateAgentCaseRequest) (*CreateAgentCaseResponse, error)
-	ListAgentCases(context.Context, *ListAgentCasesRequest) (*ListAgentCasesResponse, error)
-	GetAgentCase(context.Context, *GetAgentCaseRequest) (*GetAgentCaseResponse, error)
-	ListAgentCaseSteps(context.Context, *ListAgentCaseStepsRequest) (*ListAgentCaseStepsResponse, error)
-	ListAgentCaseArtifacts(context.Context, *ListAgentCaseArtifactsRequest) (*ListAgentCaseArtifactsResponse, error)
-	ListAgentCaseConclusions(context.Context, *ListAgentCaseConclusionsRequest) (*ListAgentCaseConclusionsResponse, error)
-
-	RequestAgentCaseRun(context.Context, *RequestAgentCaseRunRequest) (*RequestAgentCaseRunResponse, error)
+	CreateAgentTask(context.Context, *CreateAgentTaskRequest) (*CreateAgentTaskResponse, error)
+	ListAgentTasks(context.Context, *ListAgentTasksRequest) (*ListAgentTasksResponse, error)
+	GetAgentTask(context.Context, *GetAgentTaskRequest) (*GetAgentTaskResponse, error)
+	RequestAgentTaskRun(context.Context, *RequestAgentTaskRunRequest) (*RequestAgentTaskRunResponse, error)
 	ListAgentRuns(context.Context, *ListAgentRunsRequest) (*ListAgentRunsResponse, error)
 	GetAgentRun(context.Context, *GetAgentRunRequest) (*GetAgentRunResponse, error)
+	ListAgentRunCitations(context.Context, *ListAgentRunCitationsRequest) (*ListAgentRunCitationsResponse, error)
+	ListAgentRunFindings(context.Context, *ListAgentRunFindingsRequest) (*ListAgentRunFindingsResponse, error)
+	GetAgentRunResult(context.Context, *GetAgentRunResultRequest) (*GetAgentRunResultResponse, error)
+	ListAgentRunToolCalls(context.Context, *ListAgentRunToolCallsRequest) (*ListAgentRunToolCallsResponse, error)
 }
 
 func (o operations) RegisterAgents(api huma.API) {
-	huma.Register(api, CreateAgentCase, o.CreateAgentCase)
-	huma.Register(api, ListAgentCases, o.ListAgentCases)
-	huma.Register(api, GetAgentCase, o.GetAgentCase)
-	huma.Register(api, ListAgentCaseSteps, o.ListAgentCaseSteps)
-	huma.Register(api, ListAgentCaseArtifacts, o.ListAgentCaseArtifacts)
-	huma.Register(api, ListAgentCaseConclusions, o.ListAgentCaseConclusions)
-	huma.Register(api, RequestAgentCaseRun, o.RequestAgentCaseRun)
+	huma.Register(api, CreateAgentTask, o.CreateAgentTask)
+	huma.Register(api, ListAgentTasks, o.ListAgentTasks)
+	huma.Register(api, GetAgentTask, o.GetAgentTask)
+	huma.Register(api, RequestAgentTaskRun, o.RequestAgentTaskRun)
 	huma.Register(api, ListAgentRuns, o.ListAgentRuns)
 	huma.Register(api, GetAgentRun, o.GetAgentRun)
+	huma.Register(api, ListAgentRunCitations, o.ListAgentRunCitations)
+	huma.Register(api, ListAgentRunFindings, o.ListAgentRunFindings)
+	huma.Register(api, GetAgentRunResult, o.GetAgentRunResult)
+	huma.Register(api, ListAgentRunToolCalls, o.ListAgentRunToolCalls)
 }
 
 type (
-	AgentCase struct {
+	AgentTask struct {
 		Id         uuid.UUID           `json:"id"`
-		Attributes AgentCaseAttributes `json:"attributes"`
+		Attributes AgentTaskAttributes `json:"attributes"`
 	}
 
-	AgentCaseAttributes struct {
-		Status          string         `json:"status"`
-		Title           string         `json:"title"`
-		Query           string         `json:"query,omitempty"`
-		WorkflowKind    string         `json:"workflowKind,omitempty"`
-		SubjectKind     string         `json:"subjectKind,omitempty"`
-		SubjectId       *uuid.UUID     `json:"subjectId,omitempty"`
-		TriggerMetadata map[string]any `json:"triggerMetadata,omitempty"`
-		Summary         string         `json:"summary,omitempty"`
-		ErrorCode       string         `json:"errorCode,omitempty"`
-		ErrorMessage    string         `json:"errorMessage,omitempty"`
-		CreatedAt       time.Time      `json:"createdAt"`
-		UpdatedAt       time.Time      `json:"updatedAt"`
-	}
-
-	AgentCaseStep struct {
-		Id         uuid.UUID               `json:"id"`
-		Attributes AgentCaseStepAttributes `json:"attributes"`
-	}
-
-	AgentCaseStepAttributes struct {
-		AgentCaseId uuid.UUID      `json:"agentCaseId"`
-		AgentRunId  *uuid.UUID     `json:"agentRunId,omitempty"`
-		Sequence    int            `json:"sequence"`
-		Kind        string         `json:"kind"`
-		Title       string         `json:"title"`
-		Summary     string         `json:"summary,omitempty"`
-		Input       map[string]any `json:"input,omitempty"`
-		Output      map[string]any `json:"output,omitempty"`
-		StartedAt   *time.Time     `json:"startedAt,omitempty"`
-		CompletedAt *time.Time     `json:"completedAt,omitempty"`
-		CreatedAt   time.Time      `json:"createdAt"`
-	}
-
-	AgentCaseArtifact struct {
-		Id         uuid.UUID                   `json:"id"`
-		Attributes AgentCaseArtifactAttributes `json:"attributes"`
-	}
-
-	AgentCaseArtifactAttributes struct {
-		AgentCaseId     uuid.UUID      `json:"agentCaseId"`
-		AgentCaseStepId *uuid.UUID     `json:"agentCaseStepId,omitempty"`
-		AgentRunId      *uuid.UUID     `json:"agentRunId,omitempty"`
-		Kind            string         `json:"kind"`
-		Role            string         `json:"role,omitempty"`
-		Name            string         `json:"name"`
-		Payload         map[string]any `json:"payload"`
-		Redacted        bool           `json:"redacted"`
-		CreatedAt       time.Time      `json:"createdAt"`
-	}
-
-	AgentCaseConclusion struct {
-		Id         uuid.UUID                     `json:"id"`
-		Attributes AgentCaseConclusionAttributes `json:"attributes"`
-	}
-
-	AgentCaseConclusionAttributes struct {
-		AgentCaseId        uuid.UUID      `json:"agentCaseId"`
-		AgentCaseStepId    *uuid.UUID     `json:"agentCaseStepId,omitempty"`
-		AgentRunId         *uuid.UUID     `json:"agentRunId,omitempty"`
-		Kind               string         `json:"kind"`
-		Summary            string         `json:"summary,omitempty"`
-		Confidence         string         `json:"confidence,omitempty"`
-		RecommendedActions []string       `json:"recommendedActions,omitempty"`
-		Limitations        []string       `json:"limitations,omitempty"`
-		Payload            map[string]any `json:"payload"`
-		CreatedAt          time.Time      `json:"createdAt"`
+	AgentTaskAttributes struct {
+		OwnerUserId    uuid.UUID      `json:"ownerUserId"`
+		WorkflowKind   string         `json:"workflowKind"`
+		WorkflowInput  map[string]any `json:"workflowInput"`
+		TriggerKind    string         `json:"triggerKind"`
+		TriggerPayload map[string]any `json:"triggerPayload"`
+		CreatedAt      time.Time      `json:"createdAt"`
+		UpdatedAt      time.Time      `json:"updatedAt"`
 	}
 
 	AgentRun struct {
@@ -118,225 +60,249 @@ type (
 	}
 
 	AgentRunAttributes struct {
-		AgentCaseId     *uuid.UUID     `json:"agentCaseId,omitempty"`
-		WorkflowKind    string         `json:"workflowKind"`
-		Status          string         `json:"status"`
-		IdempotencyKey  string         `json:"idempotencyKey"`
-		SubjectKind     string         `json:"subjectKind,omitempty"`
-		SubjectId       *uuid.UUID     `json:"subjectId,omitempty"`
-		TriggerMetadata map[string]any `json:"triggerMetadata,omitempty"`
-		ModelMetadata   map[string]any `json:"modelMetadata,omitempty"`
-		ErrorCode       string         `json:"errorCode,omitempty"`
-		ErrorMessage    string         `json:"errorMessage,omitempty"`
-		QueuedAt        time.Time      `json:"queuedAt"`
-		StartedAt       *time.Time     `json:"startedAt,omitempty"`
-		CompletedAt     *time.Time     `json:"completedAt,omitempty"`
-		FailedAt        *time.Time     `json:"failedAt,omitempty"`
+		AgentTaskId  uuid.UUID  `json:"agentTaskId"`
+		WorkflowKind string     `json:"workflowKind"`
+		Attempt      int        `json:"attempt"`
+		Status       string     `json:"status"`
+		ErrorMessage string     `json:"errorMessage,omitempty"`
+		StartedAt    *time.Time `json:"startedAt,omitempty"`
+		FinishedAt   *time.Time `json:"finishedAt,omitempty"`
+		CreatedAt    time.Time  `json:"createdAt"`
+		UpdatedAt    time.Time  `json:"updatedAt"`
+	}
+
+	AgentRunCitation struct {
+		Id         uuid.UUID                  `json:"id"`
+		Attributes AgentRunCitationAttributes `json:"attributes"`
+	}
+
+	AgentRunCitationAttributes struct {
+		AgentRunId              uuid.UUID      `json:"agentRunId"`
+		CitationKind            string         `json:"citationKind"`
+		DomainEntityType        string         `json:"domainEntityType,omitempty"`
+		DomainEntityId          *uuid.UUID     `json:"domainEntityId,omitempty"`
+		KnowledgeEntityId       *uuid.UUID     `json:"knowledgeEntityId,omitempty"`
+		KnowledgeRelationshipId *uuid.UUID     `json:"knowledgeRelationshipId,omitempty"`
+		KnowledgeEvidenceId     *uuid.UUID     `json:"knowledgeEvidenceId,omitempty"`
+		AgentTaskId             *uuid.UUID     `json:"agentTaskId,omitempty"`
+		AgentRunToolCallId      *uuid.UUID     `json:"agentRunToolCallId,omitempty"`
+		Summary                 string         `json:"summary"`
+		Snapshot                map[string]any `json:"snapshot,omitempty"`
+		CreatedAt               time.Time      `json:"createdAt"`
+		UpdatedAt               time.Time      `json:"updatedAt"`
+	}
+
+	AgentRunFinding struct {
+		Id         uuid.UUID                 `json:"id"`
+		Attributes AgentRunFindingAttributes `json:"attributes"`
+	}
+
+	AgentRunFindingAttributes struct {
+		AgentRunId  uuid.UUID `json:"agentRunId"`
+		Sequence    int       `json:"sequence"`
+		FindingKind string    `json:"findingKind"`
+		Content     string    `json:"content"`
+		CreatedAt   time.Time `json:"createdAt"`
+		UpdatedAt   time.Time `json:"updatedAt"`
+	}
+
+	AgentRunResult struct {
+		Id         uuid.UUID                `json:"id"`
+		Attributes AgentRunResultAttributes `json:"attributes"`
+	}
+
+	AgentRunResultAttributes struct {
+		AgentRunId uuid.UUID      `json:"agentRunId"`
+		Content    string         `json:"content"`
+		Data       map[string]any `json:"data,omitempty"`
+		CreatedAt  time.Time      `json:"createdAt"`
+		UpdatedAt  time.Time      `json:"updatedAt"`
+	}
+
+	AgentRunToolCall struct {
+		Id         uuid.UUID                  `json:"id"`
+		Attributes AgentRunToolCallAttributes `json:"attributes"`
+	}
+
+	AgentRunToolCallAttributes struct {
+		AgentRunId   uuid.UUID      `json:"agentRunId"`
+		ToolName     string         `json:"toolName"`
+		Status       string         `json:"status"`
+		ToolParams   map[string]any `json:"toolParams,omitempty"`
+		Result       map[string]any `json:"result,omitempty"`
+		ErrorMessage string         `json:"errorMessage,omitempty"`
+		StartedAt    *time.Time     `json:"startedAt,omitempty"`
+		FinishedAt   *time.Time     `json:"finishedAt,omitempty"`
+		CreatedAt    time.Time      `json:"createdAt"`
+		UpdatedAt    time.Time      `json:"updatedAt"`
 	}
 )
 
-func AgentCaseFromEnt(c *ent.AgentCase) AgentCase {
-	return AgentCase{
-		Id: c.ID,
-		Attributes: AgentCaseAttributes{
-			Status:          c.Status.String(),
-			Title:           c.Title,
-			Query:           c.Query,
-			WorkflowKind:    c.WorkflowKind.String(),
-			SubjectKind:     c.SubjectKind,
-			SubjectId:       c.SubjectID,
-			TriggerMetadata: c.TriggerMetadata,
-			Summary:         c.Summary,
-			ErrorCode:       c.ErrorCode,
-			ErrorMessage:    c.ErrorMessage,
-			CreatedAt:       c.CreatedAt,
-			UpdatedAt:       c.UpdatedAt,
-		},
-	}
-}
-
-func AgentCaseStepFromEnt(step *ent.AgentCaseStep) AgentCaseStep {
-	return AgentCaseStep{
-		Id: step.ID,
-		Attributes: AgentCaseStepAttributes{
-			AgentCaseId: step.AgentCaseID,
-			AgentRunId:  step.AgentRunID,
-			Sequence:    step.Sequence,
-			Kind:        step.Kind.String(),
-			Title:       step.Title,
-			Summary:     step.Summary,
-			Input:       step.Input,
-			Output:      step.Output,
-			StartedAt:   step.StartedAt,
-			CompletedAt: step.CompletedAt,
-			CreatedAt:   step.CreatedAt,
-		},
-	}
-}
-
-func AgentCaseArtifactFromEnt(artifact *ent.AgentCaseArtifact) AgentCaseArtifact {
-	return AgentCaseArtifact{
-		Id: artifact.ID,
-		Attributes: AgentCaseArtifactAttributes{
-			AgentCaseId:     artifact.AgentCaseID,
-			AgentCaseStepId: artifact.AgentCaseStepID,
-			AgentRunId:      artifact.AgentRunID,
-			Kind:            artifact.Kind.String(),
-			Role:            artifact.Role,
-			Name:            artifact.Name,
-			Payload:         artifact.Payload,
-			Redacted:        artifact.Redacted,
-			CreatedAt:       artifact.CreatedAt,
-		},
-	}
-}
-
-func AgentCaseConclusionFromEnt(conclusion *ent.AgentCaseConclusion) AgentCaseConclusion {
-	return AgentCaseConclusion{
-		Id: conclusion.ID,
-		Attributes: AgentCaseConclusionAttributes{
-			AgentCaseId:        conclusion.AgentCaseID,
-			AgentCaseStepId:    conclusion.AgentCaseStepID,
-			AgentRunId:         conclusion.AgentRunID,
-			Kind:               conclusion.Kind,
-			Summary:            conclusion.Summary,
-			Confidence:         conclusion.Confidence,
-			RecommendedActions: conclusion.RecommendedActions,
-			Limitations:        conclusion.Limitations,
-			Payload:            conclusion.Payload,
-			CreatedAt:          conclusion.CreatedAt,
+func AgentTaskFromEnt(task *ent.AgentTask) AgentTask {
+	return AgentTask{
+		Id: task.ID,
+		Attributes: AgentTaskAttributes{
+			OwnerUserId:    task.OwnerUserID,
+			WorkflowKind:   task.WorkflowKind,
+			WorkflowInput:  task.WorkflowInput,
+			TriggerKind:    task.TriggerKind,
+			TriggerPayload: task.TriggerPayload,
+			CreatedAt:      task.CreatedAt,
+			UpdatedAt:      task.UpdatedAt,
 		},
 	}
 }
 
 func AgentRunFromEnt(run *ent.AgentRun) AgentRun {
+	workflowKind := ""
+	if run.Edges.AgentTask != nil {
+		workflowKind = run.Edges.AgentTask.WorkflowKind
+	}
 	return AgentRun{
 		Id: run.ID,
 		Attributes: AgentRunAttributes{
-			AgentCaseId:     run.AgentCaseID,
-			WorkflowKind:    run.WorkflowKind.String(),
-			Status:          run.Status.String(),
-			IdempotencyKey:  run.IdempotencyKey,
-			SubjectKind:     run.SubjectKind,
-			SubjectId:       run.SubjectID,
-			TriggerMetadata: run.TriggerMetadata,
-			ModelMetadata:   run.ModelMetadata,
-			ErrorCode:       run.ErrorCode,
-			ErrorMessage:    run.ErrorMessage,
-			QueuedAt:        run.QueuedAt,
-			StartedAt:       run.StartedAt,
-			CompletedAt:     run.CompletedAt,
-			FailedAt:        run.FailedAt,
+			AgentTaskId:  run.AgentTaskID,
+			WorkflowKind: workflowKind,
+			Attempt:      run.Attempt,
+			Status:       run.Status.String(),
+			ErrorMessage: run.ErrorMessage,
+			StartedAt:    run.StartedAt,
+			FinishedAt:   run.FinishedAt,
+			CreatedAt:    run.CreatedAt,
+			UpdatedAt:    run.UpdatedAt,
+		},
+	}
+}
+
+func AgentRunCitationFromEnt(citation *ent.AgentRunCitation) AgentRunCitation {
+	return AgentRunCitation{
+		Id: citation.ID,
+		Attributes: AgentRunCitationAttributes{
+			AgentRunId:              citation.AgentRunID,
+			CitationKind:            citation.CitationKind,
+			DomainEntityType:        citation.DomainEntityType,
+			DomainEntityId:          citation.DomainEntityID,
+			KnowledgeEntityId:       citation.KnowledgeEntityID,
+			KnowledgeRelationshipId: citation.KnowledgeRelationshipID,
+			KnowledgeEvidenceId:     citation.KnowledgeEvidenceID,
+			AgentTaskId:             citation.AgentTaskID,
+			AgentRunToolCallId:      citation.AgentRunToolCallID,
+			Summary:                 citation.Summary,
+			Snapshot:                citation.Snapshot,
+			CreatedAt:               citation.CreatedAt,
+			UpdatedAt:               citation.UpdatedAt,
+		},
+	}
+}
+
+func AgentRunFindingFromEnt(finding *ent.AgentRunFinding) AgentRunFinding {
+	return AgentRunFinding{
+		Id: finding.ID,
+		Attributes: AgentRunFindingAttributes{
+			AgentRunId:  finding.AgentRunID,
+			Sequence:    finding.Sequence,
+			FindingKind: finding.FindingKind,
+			Content:     finding.Content,
+			CreatedAt:   finding.CreatedAt,
+			UpdatedAt:   finding.UpdatedAt,
+		},
+	}
+}
+
+func AgentRunResultFromEnt(result *ent.AgentRunResult) AgentRunResult {
+	return AgentRunResult{
+		Id: result.ID,
+		Attributes: AgentRunResultAttributes{
+			AgentRunId: result.AgentRunID,
+			Content:    result.Content,
+			Data:       result.Data,
+			CreatedAt:  result.CreatedAt,
+			UpdatedAt:  result.UpdatedAt,
+		},
+	}
+}
+
+func AgentRunToolCallFromEnt(toolCall *ent.AgentRunToolCall) AgentRunToolCall {
+	return AgentRunToolCall{
+		Id: toolCall.ID,
+		Attributes: AgentRunToolCallAttributes{
+			AgentRunId:   toolCall.AgentRunID,
+			ToolName:     toolCall.ToolName,
+			Status:       toolCall.Status.String(),
+			ToolParams:   toolCall.ToolParams,
+			Result:       toolCall.Result,
+			ErrorMessage: toolCall.ErrorMessage,
+			StartedAt:    toolCall.StartedAt,
+			FinishedAt:   toolCall.FinishedAt,
+			CreatedAt:    toolCall.CreatedAt,
+			UpdatedAt:    toolCall.UpdatedAt,
 		},
 	}
 }
 
 var agentsTags = []string{"Agents"}
 
-var CreateAgentCase = openapi.Operation{
-	OperationID: "create-agent-case",
+var CreateAgentTask = openapi.Operation{
+	OperationID: "create-agent-task",
 	Method:      http.MethodPost,
-	Path:        "/agents/cases",
-	Summary:     "Create Agent Case",
+	Path:        "/agents/tasks",
+	Summary:     "Create Agent Task",
 	Tags:        agentsTags,
 	Errors:      ErrorCodes(),
 }
 
-type CreateAgentCaseAttributes struct {
-	Title           string         `json:"title,omitempty"`
-	Query           string         `json:"query,omitempty"`
-	WorkflowKind    string         `json:"workflowKind"`
-	SubjectKind     string         `json:"subjectKind,omitempty"`
-	SubjectId       uuid.UUID      `json:"subjectId,omitempty"`
-	TriggerMetadata map[string]any `json:"triggerMetadata,omitempty"`
+type CreateAgentTaskAttributes struct {
+	WorkflowKind   string         `json:"workflowKind"`
+	WorkflowInput  map[string]any `json:"workflowInput"`
+	TriggerKind    string         `json:"triggerKind,omitempty"`
+	TriggerPayload map[string]any `json:"triggerPayload,omitempty"`
 }
-type CreateAgentCaseRequest RequestWithBodyAttributes[CreateAgentCaseAttributes]
-type CreateAgentCaseResponse ItemResponse[AgentCase]
+type CreateAgentTaskRequest RequestWithBodyAttributes[CreateAgentTaskAttributes]
+type CreateAgentTaskResponse ItemResponse[AgentTask]
 
-var ListAgentCases = openapi.Operation{
-	OperationID: "list-agent-cases",
+var ListAgentTasks = openapi.Operation{
+	OperationID: "list-agent-tasks",
 	Method:      http.MethodGet,
-	Path:        "/agents/cases",
-	Summary:     "List Agent Cases",
+	Path:        "/agents/tasks",
+	Summary:     "List Agent Tasks",
 	Tags:        agentsTags,
 	Errors:      ErrorCodes(),
 }
 
-type ListAgentCasesRequest struct {
+type ListAgentTasksRequest struct {
 	ListRequest
-	Status       string    `query:"status" required:"false"`
 	WorkflowKind string    `query:"workflowKind" required:"false"`
-	SubjectKind  string    `query:"subjectKind" required:"false"`
+	TriggerKind  string    `query:"triggerKind" required:"false"`
+	SubjectType  string    `query:"subjectType" required:"false"`
 	SubjectId    uuid.UUID `query:"subjectId" required:"false"`
 }
-type ListAgentCasesResponse ListResponse[AgentCase]
+type ListAgentTasksResponse ListResponse[AgentTask]
 
-var GetAgentCase = openapi.Operation{
-	OperationID: "get-agent-case",
+var GetAgentTask = openapi.Operation{
+	OperationID: "get-agent-task",
 	Method:      http.MethodGet,
-	Path:        "/agents/cases/{id}",
-	Summary:     "Get Agent Case",
+	Path:        "/agents/tasks/{id}",
+	Summary:     "Get Agent Task",
 	Tags:        agentsTags,
 	Errors:      ErrorCodes(),
 }
 
-type GetAgentCaseRequest EmptyIdRequest
-type GetAgentCaseResponse ItemResponse[AgentCase]
+type GetAgentTaskRequest EmptyIdRequest
+type GetAgentTaskResponse ItemResponse[AgentTask]
 
-var ListAgentCaseSteps = openapi.Operation{
-	OperationID: "list-agent-case-steps",
-	Method:      http.MethodGet,
-	Path:        "/agents/cases/{id}/steps",
-	Summary:     "List Agent Case Steps",
-	Tags:        agentsTags,
-	Errors:      ErrorCodes(),
-}
-
-type ListAgentCaseStepsRequest EmptyIdRequest
-type ListAgentCaseStepsResponse ListResponse[AgentCaseStep]
-
-var ListAgentCaseArtifacts = openapi.Operation{
-	OperationID: "list-agent-case-artifacts",
-	Method:      http.MethodGet,
-	Path:        "/agents/cases/{id}/artifacts",
-	Summary:     "List Agent Case Artifacts",
-	Tags:        agentsTags,
-	Errors:      ErrorCodes(),
-}
-
-type ListAgentCaseArtifactsRequest EmptyIdRequest
-type ListAgentCaseArtifactsResponse ListResponse[AgentCaseArtifact]
-
-var ListAgentCaseConclusions = openapi.Operation{
-	OperationID: "list-agent-case-conclusions",
-	Method:      http.MethodGet,
-	Path:        "/agents/cases/{id}/conclusions",
-	Summary:     "List Agent Case Conclusions",
-	Tags:        agentsTags,
-	Errors:      ErrorCodes(),
-}
-
-type ListAgentCaseConclusionsRequest EmptyIdRequest
-type ListAgentCaseConclusionsResponse ListResponse[AgentCaseConclusion]
-
-var RequestAgentCaseRun = openapi.Operation{
-	OperationID: "request-agent-case-run",
+var RequestAgentTaskRun = openapi.Operation{
+	OperationID: "request-agent-task-run",
 	Method:      http.MethodPost,
-	Path:        "/agents/cases/{id}/runs",
-	Summary:     "Request Agent Case Run",
+	Path:        "/agents/tasks/{id}/runs",
+	Summary:     "Request Agent Task Run",
 	Tags:        agentsTags,
 	Errors:      ErrorCodes(),
 }
 
-type RequestAgentCaseRunAttributes struct {
-	IdempotencyKey string         `json:"idempotencyKey,omitempty"`
-	Metadata       map[string]any `json:"metadata,omitempty"`
-}
-type RequestAgentCaseRunRequest struct {
+type RequestAgentTaskRunRequest struct {
 	EmptyIdRequest
-	RequestWithBodyAttributes[RequestAgentCaseRunAttributes]
 }
-type RequestAgentCaseRunResponse ItemResponse[AgentRun]
+type RequestAgentTaskRunResponse ItemResponse[AgentRun]
 
 var ListAgentRuns = openapi.Operation{
 	OperationID: "list-agent-runs",
@@ -349,11 +315,9 @@ var ListAgentRuns = openapi.Operation{
 
 type ListAgentRunsRequest struct {
 	ListRequest
+	AgentTaskId  uuid.UUID `query:"agentTaskId" required:"false"`
 	WorkflowKind string    `query:"workflowKind" required:"false"`
 	Status       string    `query:"status" required:"false"`
-	AgentCaseId  uuid.UUID `query:"agentCaseId" required:"false"`
-	SubjectKind  string    `query:"subjectKind" required:"false"`
-	SubjectId    uuid.UUID `query:"subjectId" required:"false"`
 }
 type ListAgentRunsResponse ListResponse[AgentRun]
 
@@ -368,3 +332,51 @@ var GetAgentRun = openapi.Operation{
 
 type GetAgentRunRequest EmptyIdRequest
 type GetAgentRunResponse ItemResponse[AgentRun]
+
+var ListAgentRunCitations = openapi.Operation{
+	OperationID: "list-agent-run-citations",
+	Method:      http.MethodGet,
+	Path:        "/agents/runs/{id}/citations",
+	Summary:     "List Agent Run Citations",
+	Tags:        agentsTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListAgentRunCitationsRequest EmptyIdRequest
+type ListAgentRunCitationsResponse ListResponse[AgentRunCitation]
+
+var ListAgentRunFindings = openapi.Operation{
+	OperationID: "list-agent-run-findings",
+	Method:      http.MethodGet,
+	Path:        "/agents/runs/{id}/findings",
+	Summary:     "List Agent Run Findings",
+	Tags:        agentsTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListAgentRunFindingsRequest EmptyIdRequest
+type ListAgentRunFindingsResponse ListResponse[AgentRunFinding]
+
+var GetAgentRunResult = openapi.Operation{
+	OperationID: "get-agent-run-result",
+	Method:      http.MethodGet,
+	Path:        "/agents/runs/{id}/result",
+	Summary:     "Get Agent Run Result",
+	Tags:        agentsTags,
+	Errors:      ErrorCodes(),
+}
+
+type GetAgentRunResultRequest EmptyIdRequest
+type GetAgentRunResultResponse ItemResponse[AgentRunResult]
+
+var ListAgentRunToolCalls = openapi.Operation{
+	OperationID: "list-agent-run-tool-calls",
+	Method:      http.MethodGet,
+	Path:        "/agents/runs/{id}/tool-calls",
+	Summary:     "List Agent Run Tool Calls",
+	Tags:        agentsTags,
+	Errors:      ErrorCodes(),
+}
+
+type ListAgentRunToolCallsRequest EmptyIdRequest
+type ListAgentRunToolCallsResponse ListResponse[AgentRunToolCall]

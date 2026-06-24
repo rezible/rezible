@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/integration"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/jobs"
@@ -102,18 +101,22 @@ var postAlertInvestigationUpdateJobOpts = &river.InsertOpts{
 }
 
 func (a *App) onAgentRunCompleted(ctx context.Context, ev *rez.EventOnAgentRunCompleted) error {
-	if ev.WorkflowKind != agentrun.WorkflowKindAlertInvestigation {
+	if ev.WorkflowKind != rez.AgentWorkflowKindAlertInvestigation {
 		return nil
 	}
 	run, runErr := a.agents.GetRun(ctx, ev.AgentRunID)
 	if runErr != nil {
 		return fmt.Errorf("get completed agent run: %w", runErr)
 	}
-	if run.SubjectKind != "alert" || run.SubjectID == nil {
+	if run.Edges.AgentTask == nil {
+		return nil
+	}
+	alertID := agentTaskSubject(run.Edges.AgentTask.WorkflowInput, "alert")
+	if alertID == uuid.Nil {
 		return nil
 	}
 	_, insertErr := a.jobs.Insert(ctx, jobs.PostAlertInvestigationUpdate{
-		AlertID:    *run.SubjectID,
+		AlertID:    alertID,
 		AgentRunID: run.ID,
 	}, postAlertInvestigationUpdateJobOpts)
 	if insertErr != nil {
@@ -148,14 +151,15 @@ func (a *App) handlePostAlertInvestigationUpdate(ctx context.Context, args jobs.
 	if runErr != nil {
 		return fmt.Errorf("get agent run: %w", runErr)
 	}
-	if run.AgentCaseID == nil {
-		return nil
+	result, resultErr := a.agents.GetRunResult(ctx, run.ID)
+	if resultErr != nil {
+		return fmt.Errorf("get agent run result: %w", resultErr)
 	}
-	conclusions, conclusionsErr := a.agents.ListCaseConclusions(ctx, *run.AgentCaseID)
-	if conclusionsErr != nil {
-		return fmt.Errorf("list agent case conclusions: %w", conclusionsErr)
+	findings, findingsErr := a.agents.ListRunFindings(ctx, run.ID)
+	if findingsErr != nil {
+		return fmt.Errorf("list agent run findings: %w", findingsErr)
 	}
-	message := buildAlertInvestigationThreadMessage(conclusions)
+	message := buildAlertInvestigationThreadMessage(result, findings)
 	if message == "" {
 		return nil
 	}
@@ -184,35 +188,22 @@ func (a *App) findMessageIdForAlertEvent(ctx context.Context, alertID uuid.UUID)
 	return "", nil
 }
 
-func buildAlertInvestigationThreadMessage(conclusions []*ent.AgentCaseConclusion) string {
-	var result map[string]any
-	for i := len(conclusions) - 1; i >= 0; i-- {
-		if conclusions[i].Kind == "alert_investigation" {
-			result = conclusions[i].Payload
-			if result == nil {
-				result = map[string]any{}
-			}
-			if conclusions[i].Summary != "" {
-				result["summary"] = conclusions[i].Summary
-			}
-			break
-		}
-	}
+func buildAlertInvestigationThreadMessage(result *ent.AgentRunResult, findings []*ent.AgentRunFinding) string {
 	if result == nil {
 		return ""
 	}
-	findings, _ := result["findings"].(map[string]any)
 	lines := []string{"*Rezible investigation findings*"}
-	if summary, ok := result["summary"].(string); ok && summary != "" {
-		lines = append(lines, summary)
+	if result.Content != "" {
+		lines = append(lines, result.Content)
 	}
-	if cause, ok := findings["likelyCause"].(string); ok && cause != "" {
+	resultFindings, _ := result.Data["findings"].(map[string]any)
+	if cause, ok := resultFindings["likelyCause"].(string); ok && cause != "" {
 		lines = append(lines, "*Current hypothesis:* "+cause)
 	}
-	if next, ok := findings["recommendedNext"].(string); ok && next != "" {
+	if next, ok := resultFindings["recommendedNext"].(string); ok && next != "" {
 		lines = append(lines, "*Recommended next:* "+next)
 	}
-	if checks, ok := findings["suggestedChecks"].([]any); ok && len(checks) > 0 {
+	if checks, ok := resultFindings["suggestedChecks"].([]any); ok && len(checks) > 0 {
 		lines = append(lines, "*Suggested checks:*")
 		for _, check := range checks {
 			if text, textOk := check.(string); textOk && text != "" {
@@ -220,5 +211,29 @@ func buildAlertInvestigationThreadMessage(conclusions []*ent.AgentCaseConclusion
 			}
 		}
 	}
+	if len(lines) == 2 {
+		for _, finding := range findings {
+			if finding.FindingKind == "recommendation" {
+				lines = append(lines, "*Recommended next:* "+finding.Content)
+				break
+			}
+		}
+	}
 	return strings.Join(lines, "\n")
+}
+
+func agentTaskSubject(input map[string]any, subjectType string) uuid.UUID {
+	subjects, _ := input["subjects"].([]any)
+	for _, item := range subjects {
+		obj, _ := item.(map[string]any)
+		if obj["type"] != subjectType {
+			continue
+		}
+		idText, _ := obj["id"].(string)
+		id, err := uuid.Parse(idText)
+		if err == nil {
+			return id
+		}
+	}
+	return uuid.Nil
 }

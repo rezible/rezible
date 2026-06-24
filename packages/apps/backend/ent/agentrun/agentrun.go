@@ -23,46 +23,30 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldAgentCaseID holds the string denoting the agent_case_id field in the database.
-	FieldAgentCaseID = "agent_case_id"
-	// FieldWorkflowKind holds the string denoting the workflow_kind field in the database.
-	FieldWorkflowKind = "workflow_kind"
+	// FieldAgentTaskID holds the string denoting the agent_task_id field in the database.
+	FieldAgentTaskID = "agent_task_id"
+	// FieldAttempt holds the string denoting the attempt field in the database.
+	FieldAttempt = "attempt"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// FieldIdempotencyKey holds the string denoting the idempotency_key field in the database.
-	FieldIdempotencyKey = "idempotency_key"
-	// FieldSubjectKind holds the string denoting the subject_kind field in the database.
-	FieldSubjectKind = "subject_kind"
-	// FieldSubjectID holds the string denoting the subject_id field in the database.
-	FieldSubjectID = "subject_id"
-	// FieldTriggerMetadata holds the string denoting the trigger_metadata field in the database.
-	FieldTriggerMetadata = "trigger_metadata"
-	// FieldModelMetadata holds the string denoting the model_metadata field in the database.
-	FieldModelMetadata = "model_metadata"
-	// FieldErrorCode holds the string denoting the error_code field in the database.
-	FieldErrorCode = "error_code"
-	// FieldErrorMessage holds the string denoting the error_message field in the database.
-	FieldErrorMessage = "error_message"
-	// FieldQueuedAt holds the string denoting the queued_at field in the database.
-	FieldQueuedAt = "queued_at"
 	// FieldStartedAt holds the string denoting the started_at field in the database.
 	FieldStartedAt = "started_at"
-	// FieldCompletedAt holds the string denoting the completed_at field in the database.
-	FieldCompletedAt = "completed_at"
-	// FieldFailedAt holds the string denoting the failed_at field in the database.
-	FieldFailedAt = "failed_at"
+	// FieldFinishedAt holds the string denoting the finished_at field in the database.
+	FieldFinishedAt = "finished_at"
+	// FieldErrorMessage holds the string denoting the error_message field in the database.
+	FieldErrorMessage = "error_message"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAgentCase holds the string denoting the agent_case edge name in mutations.
-	EdgeAgentCase = "agent_case"
-	// EdgeCaseSteps holds the string denoting the case_steps edge name in mutations.
-	EdgeCaseSteps = "case_steps"
-	// EdgeCaseArtifacts holds the string denoting the case_artifacts edge name in mutations.
-	EdgeCaseArtifacts = "case_artifacts"
-	// EdgeCaseConclusions holds the string denoting the case_conclusions edge name in mutations.
-	EdgeCaseConclusions = "case_conclusions"
-	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
-	EdgeFeedback = "feedback"
+	// EdgeAgentTask holds the string denoting the agent_task edge name in mutations.
+	EdgeAgentTask = "agent_task"
+	// EdgeCitations holds the string denoting the citations edge name in mutations.
+	EdgeCitations = "citations"
+	// EdgeFindings holds the string denoting the findings edge name in mutations.
+	EdgeFindings = "findings"
+	// EdgeResult holds the string denoting the result edge name in mutations.
+	EdgeResult = "result"
+	// EdgeToolCalls holds the string denoting the tool_calls edge name in mutations.
+	EdgeToolCalls = "tool_calls"
 	// Table holds the table name of the agentrun in the database.
 	Table = "agent_runs"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -72,41 +56,41 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AgentCaseTable is the table that holds the agent_case relation/edge.
-	AgentCaseTable = "agent_runs"
-	// AgentCaseInverseTable is the table name for the AgentCase entity.
-	// It exists in this package in order to avoid circular dependency with the "agentcase" package.
-	AgentCaseInverseTable = "agent_cases"
-	// AgentCaseColumn is the table column denoting the agent_case relation/edge.
-	AgentCaseColumn = "agent_case_id"
-	// CaseStepsTable is the table that holds the case_steps relation/edge.
-	CaseStepsTable = "agent_case_steps"
-	// CaseStepsInverseTable is the table name for the AgentCaseStep entity.
-	// It exists in this package in order to avoid circular dependency with the "agentcasestep" package.
-	CaseStepsInverseTable = "agent_case_steps"
-	// CaseStepsColumn is the table column denoting the case_steps relation/edge.
-	CaseStepsColumn = "agent_run_id"
-	// CaseArtifactsTable is the table that holds the case_artifacts relation/edge.
-	CaseArtifactsTable = "agent_case_artifacts"
-	// CaseArtifactsInverseTable is the table name for the AgentCaseArtifact entity.
-	// It exists in this package in order to avoid circular dependency with the "agentcaseartifact" package.
-	CaseArtifactsInverseTable = "agent_case_artifacts"
-	// CaseArtifactsColumn is the table column denoting the case_artifacts relation/edge.
-	CaseArtifactsColumn = "agent_run_id"
-	// CaseConclusionsTable is the table that holds the case_conclusions relation/edge.
-	CaseConclusionsTable = "agent_case_conclusions"
-	// CaseConclusionsInverseTable is the table name for the AgentCaseConclusion entity.
-	// It exists in this package in order to avoid circular dependency with the "agentcaseconclusion" package.
-	CaseConclusionsInverseTable = "agent_case_conclusions"
-	// CaseConclusionsColumn is the table column denoting the case_conclusions relation/edge.
-	CaseConclusionsColumn = "agent_run_id"
-	// FeedbackTable is the table that holds the feedback relation/edge.
-	FeedbackTable = "agent_run_feedbacks"
-	// FeedbackInverseTable is the table name for the AgentRunFeedback entity.
-	// It exists in this package in order to avoid circular dependency with the "agentrunfeedback" package.
-	FeedbackInverseTable = "agent_run_feedbacks"
-	// FeedbackColumn is the table column denoting the feedback relation/edge.
-	FeedbackColumn = "agent_run_id"
+	// AgentTaskTable is the table that holds the agent_task relation/edge.
+	AgentTaskTable = "agent_runs"
+	// AgentTaskInverseTable is the table name for the AgentTask entity.
+	// It exists in this package in order to avoid circular dependency with the "agenttask" package.
+	AgentTaskInverseTable = "agent_tasks"
+	// AgentTaskColumn is the table column denoting the agent_task relation/edge.
+	AgentTaskColumn = "agent_task_id"
+	// CitationsTable is the table that holds the citations relation/edge.
+	CitationsTable = "agent_run_citations"
+	// CitationsInverseTable is the table name for the AgentRunCitation entity.
+	// It exists in this package in order to avoid circular dependency with the "agentruncitation" package.
+	CitationsInverseTable = "agent_run_citations"
+	// CitationsColumn is the table column denoting the citations relation/edge.
+	CitationsColumn = "agent_run_id"
+	// FindingsTable is the table that holds the findings relation/edge.
+	FindingsTable = "agent_run_findings"
+	// FindingsInverseTable is the table name for the AgentRunFinding entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunfinding" package.
+	FindingsInverseTable = "agent_run_findings"
+	// FindingsColumn is the table column denoting the findings relation/edge.
+	FindingsColumn = "agent_run_id"
+	// ResultTable is the table that holds the result relation/edge.
+	ResultTable = "agent_run_results"
+	// ResultInverseTable is the table name for the AgentRunResult entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunresult" package.
+	ResultInverseTable = "agent_run_results"
+	// ResultColumn is the table column denoting the result relation/edge.
+	ResultColumn = "agent_run_id"
+	// ToolCallsTable is the table that holds the tool_calls relation/edge.
+	ToolCallsTable = "agent_run_tool_calls"
+	// ToolCallsInverseTable is the table name for the AgentRunToolCall entity.
+	// It exists in this package in order to avoid circular dependency with the "agentruntoolcall" package.
+	ToolCallsInverseTable = "agent_run_tool_calls"
+	// ToolCallsColumn is the table column denoting the tool_calls relation/edge.
+	ToolCallsColumn = "agent_run_id"
 )
 
 // Columns holds all SQL columns for agentrun fields.
@@ -115,20 +99,12 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldAgentCaseID,
-	FieldWorkflowKind,
+	FieldAgentTaskID,
+	FieldAttempt,
 	FieldStatus,
-	FieldIdempotencyKey,
-	FieldSubjectKind,
-	FieldSubjectID,
-	FieldTriggerMetadata,
-	FieldModelMetadata,
-	FieldErrorCode,
-	FieldErrorMessage,
-	FieldQueuedAt,
 	FieldStartedAt,
-	FieldCompletedAt,
-	FieldFailedAt,
+	FieldFinishedAt,
+	FieldErrorMessage,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -155,37 +131,11 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// IdempotencyKeyValidator is a validator for the "idempotency_key" field. It is called by the builders before save.
-	IdempotencyKeyValidator func(string) error
-	// DefaultQueuedAt holds the default value on creation for the "queued_at" field.
-	DefaultQueuedAt func() time.Time
+	// AttemptValidator is a validator for the "attempt" field. It is called by the builders before save.
+	AttemptValidator func(int) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
-
-// WorkflowKind defines the type for the "workflow_kind" enum field.
-type WorkflowKind string
-
-// WorkflowKind values.
-const (
-	WorkflowKindIncidentContextPack   WorkflowKind = "incident_context_pack"
-	WorkflowKindAlertInvestigation    WorkflowKind = "alert_investigation"
-	WorkflowKindRetrospectiveAnalysis WorkflowKind = "retrospective_analysis"
-)
-
-func (wk WorkflowKind) String() string {
-	return string(wk)
-}
-
-// WorkflowKindValidator is a validator for the "workflow_kind" field enum values. It is called by the builders before save.
-func WorkflowKindValidator(wk WorkflowKind) error {
-	switch wk {
-	case WorkflowKindIncidentContextPack, WorkflowKindAlertInvestigation, WorkflowKindRetrospectiveAnalysis:
-		return nil
-	default:
-		return fmt.Errorf("agentrun: invalid enum value for workflow_kind field: %q", wk)
-	}
-}
 
 // Status defines the type for the "status" enum field.
 type Status string
@@ -199,6 +149,7 @@ const (
 	StatusRunning   Status = "running"
 	StatusSucceeded Status = "succeeded"
 	StatusFailed    Status = "failed"
+	StatusCancelled Status = "cancelled"
 )
 
 func (s Status) String() string {
@@ -208,7 +159,7 @@ func (s Status) String() string {
 // StatusValidator is a validator for the "status" field enum values. It is called by the builders before save.
 func StatusValidator(s Status) error {
 	switch s {
-	case StatusQueued, StatusRunning, StatusSucceeded, StatusFailed:
+	case StatusQueued, StatusRunning, StatusSucceeded, StatusFailed, StatusCancelled:
 		return nil
 	default:
 		return fmt.Errorf("agentrun: invalid enum value for status field: %q", s)
@@ -238,14 +189,14 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByAgentCaseID orders the results by the agent_case_id field.
-func ByAgentCaseID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentCaseID, opts...).ToFunc()
+// ByAgentTaskID orders the results by the agent_task_id field.
+func ByAgentTaskID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAgentTaskID, opts...).ToFunc()
 }
 
-// ByWorkflowKind orders the results by the workflow_kind field.
-func ByWorkflowKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldWorkflowKind, opts...).ToFunc()
+// ByAttempt orders the results by the attempt field.
+func ByAttempt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAttempt, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.
@@ -253,49 +204,19 @@ func ByStatus(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
-// ByIdempotencyKey orders the results by the idempotency_key field.
-func ByIdempotencyKey(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIdempotencyKey, opts...).ToFunc()
-}
-
-// BySubjectKind orders the results by the subject_kind field.
-func BySubjectKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubjectKind, opts...).ToFunc()
-}
-
-// BySubjectID orders the results by the subject_id field.
-func BySubjectID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSubjectID, opts...).ToFunc()
-}
-
-// ByErrorCode orders the results by the error_code field.
-func ByErrorCode(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldErrorCode, opts...).ToFunc()
-}
-
-// ByErrorMessage orders the results by the error_message field.
-func ByErrorMessage(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldErrorMessage, opts...).ToFunc()
-}
-
-// ByQueuedAt orders the results by the queued_at field.
-func ByQueuedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldQueuedAt, opts...).ToFunc()
-}
-
 // ByStartedAt orders the results by the started_at field.
 func ByStartedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldStartedAt, opts...).ToFunc()
 }
 
-// ByCompletedAt orders the results by the completed_at field.
-func ByCompletedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCompletedAt, opts...).ToFunc()
+// ByFinishedAt orders the results by the finished_at field.
+func ByFinishedAt(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFinishedAt, opts...).ToFunc()
 }
 
-// ByFailedAt orders the results by the failed_at field.
-func ByFailedAt(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldFailedAt, opts...).ToFunc()
+// ByErrorMessage orders the results by the error_message field.
+func ByErrorMessage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldErrorMessage, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -305,66 +226,66 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAgentCaseField orders the results by agent_case field.
-func ByAgentCaseField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByAgentTaskField orders the results by agent_task field.
+func ByAgentTaskField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentCaseStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newAgentTaskStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByCaseStepsCount orders the results by case_steps count.
-func ByCaseStepsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByCitationsCount orders the results by citations count.
+func ByCitationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCaseStepsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newCitationsStep(), opts...)
 	}
 }
 
-// ByCaseSteps orders the results by case_steps terms.
-func ByCaseSteps(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByCitations orders the results by citations terms.
+func ByCitations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCaseStepsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newCitationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
-// ByCaseArtifactsCount orders the results by case_artifacts count.
-func ByCaseArtifactsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByFindingsCount orders the results by findings count.
+func ByFindingsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCaseArtifactsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newFindingsStep(), opts...)
 	}
 }
 
-// ByCaseArtifacts orders the results by case_artifacts terms.
-func ByCaseArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByFindings orders the results by findings terms.
+func ByFindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCaseArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newFindingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
-// ByCaseConclusionsCount orders the results by case_conclusions count.
-func ByCaseConclusionsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByResultCount orders the results by result count.
+func ByResultCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newCaseConclusionsStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newResultStep(), opts...)
 	}
 }
 
-// ByCaseConclusions orders the results by case_conclusions terms.
-func ByCaseConclusions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByResult orders the results by result terms.
+func ByResult(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newCaseConclusionsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newResultStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
-// ByFeedbackCount orders the results by feedback count.
-func ByFeedbackCount(opts ...sql.OrderTermOption) OrderOption {
+// ByToolCallsCount orders the results by tool_calls count.
+func ByToolCallsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFeedbackStep(), opts...)
+		sqlgraph.OrderByNeighborsCount(s, newToolCallsStep(), opts...)
 	}
 }
 
-// ByFeedback orders the results by feedback terms.
-func ByFeedback(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByToolCalls orders the results by tool_calls terms.
+func ByToolCalls(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFeedbackStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newToolCallsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -374,38 +295,38 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAgentCaseStep() *sqlgraph.Step {
+func newAgentTaskStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentCaseInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AgentCaseTable, AgentCaseColumn),
+		sqlgraph.To(AgentTaskInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AgentTaskTable, AgentTaskColumn),
 	)
 }
-func newCaseStepsStep() *sqlgraph.Step {
+func newCitationsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CaseStepsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CaseStepsTable, CaseStepsColumn),
+		sqlgraph.To(CitationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, CitationsTable, CitationsColumn),
 	)
 }
-func newCaseArtifactsStep() *sqlgraph.Step {
+func newFindingsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CaseArtifactsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CaseArtifactsTable, CaseArtifactsColumn),
+		sqlgraph.To(FindingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, FindingsTable, FindingsColumn),
 	)
 }
-func newCaseConclusionsStep() *sqlgraph.Step {
+func newResultStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(CaseConclusionsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, CaseConclusionsTable, CaseConclusionsColumn),
+		sqlgraph.To(ResultInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ResultTable, ResultColumn),
 	)
 }
-func newFeedbackStep() *sqlgraph.Step {
+func newToolCallsStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(FeedbackInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
+		sqlgraph.To(ToolCallsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, ToolCallsTable, ToolCallsColumn),
 	)
 }

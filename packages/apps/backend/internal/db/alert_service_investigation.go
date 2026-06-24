@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sort"
 	"time"
@@ -12,7 +11,6 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentcaseartifact"
 	"github.com/rezible/rezible/ent/alert"
 	ii "github.com/rezible/rezible/ent/incidentimpact"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
@@ -25,7 +23,7 @@ const (
 	investigationGuideLimit    = 5
 )
 
-func (s *AlertService) GetInvestigationArtifacts(ctx context.Context, alertID uuid.UUID) ([]rez.AgentCaseArtifactInput, error) {
+func (s *AlertService) GetInvestigationContext(ctx context.Context, alertID uuid.UUID) (*rez.AgentWorkflowContext, error) {
 	a, alertErr := s.db.Client(ctx).Alert.Query().
 		Where(alert.ID(alertID)).
 		WithKnowledgeEntity(func(q *ent.KnowledgeEntityQuery) {
@@ -37,57 +35,59 @@ func (s *AlertService) GetInvestigationArtifacts(ctx context.Context, alertID uu
 		return nil, fmt.Errorf("get alert: %w", alertErr)
 	}
 
-	limitations := make([]string, 0)
-	artifacts := []rez.AgentCaseArtifactInput{{
-		Kind: agentcaseartifact.KindContext,
-		Name: "retrieval_context",
-		Payload: map[string]any{
-			"alertId":         a.ID,
-			"generatedAt":     time.Now().UTC(),
-			"alertTitle":      a.Title,
-			"alertSummary":    a.Description,
-			"definition":      a.Definition,
-			"suggestedChecks": defaultAlertInvestigationChecks(a),
-			"limitations":     limitations,
+	result := &rez.AgentWorkflowContext{
+		GeneratedAt: time.Now().UTC(),
+		Context: map[string]any{
+			"alertId":      a.ID,
+			"alertTitle":   a.Title,
+			"alertSummary": a.Description,
+			"definition":   a.Definition,
 		},
-	}}
+		PromptSchema: "alert_investigation_context.v1",
+		Suggested:    defaultAlertInvestigationChecks(a),
+	}
+	result.Context["suggestedChecks"] = result.Suggested
+	addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+		CitationKind:     "primary_subject",
+		DomainEntityType: "alert",
+		DomainEntityID:   a.ID,
+		Summary:          a.Title,
+		Snapshot: map[string]any{
+			"title":       a.Title,
+			"description": a.Description,
+			"definition":  a.Definition,
+		},
+	})
 
 	alertEntity := a.Edges.KnowledgeEntity
 	if alertEntity == nil {
-		artifacts[0].Payload["limitations"] = append(limitations, "Alert has no knowledge entity yet.")
-		return artifacts, nil
+		result.Limitations = append(result.Limitations, "Alert has no knowledge entity yet.")
+		result.Context["limitations"] = result.Limitations
+		return result, nil
 	}
 
-	subjects, subjectIDs, subjectErr := s.resolveInvestigationSubjects(ctx, alertEntity)
+	subjectIDs, subjectErr := s.resolveInvestigationSubjects(ctx, result, alertEntity)
 	if subjectErr != nil {
 		return nil, subjectErr
 	}
-	artifacts = append(artifacts, subjects...)
 	if len(subjectIDs) == 0 {
-		limitations = append(limitations, "No related component entities were found for this alert.")
-		artifacts[0].Payload["limitations"] = limitations
+		result.Limitations = append(result.Limitations, "No related component entities were found for this alert.")
 		subjectIDs = []uuid.UUID{alertEntity.ID}
 	}
 
-	neighbors, neighborErr := s.getInvestigationNeighbors(ctx, subjectIDs)
-	if neighborErr != nil {
-		return nil, neighborErr
+	if err := s.addInvestigationNeighbors(ctx, result, subjectIDs); err != nil {
+		return nil, err
 	}
-	artifacts = append(artifacts, neighbors...)
-
-	signals, signalErr := s.getInvestigationSignals(ctx, append([]uuid.UUID{alertEntity.ID}, subjectIDs...))
-	if signalErr != nil {
-		return nil, signalErr
+	if err := s.addInvestigationSignals(ctx, result, append([]uuid.UUID{alertEntity.ID}, subjectIDs...)); err != nil {
+		return nil, err
 	}
-	artifacts = append(artifacts, signals...)
-
-	guides, guideErr := s.getInvestigationGuides(ctx, a, subjectIDs)
-	if guideErr != nil {
-		return nil, guideErr
+	if err := s.addInvestigationGuides(ctx, result, a, subjectIDs); err != nil {
+		return nil, err
 	}
-	artifacts = append(artifacts, guides...)
 
-	return artifacts, nil
+	result.Context["limitations"] = result.Limitations
+	result.Context["itemCounts"] = countContextItemsByRole(result.Items)
+	return result, nil
 }
 
 func defaultAlertInvestigationChecks(a *ent.Alert) []string {
@@ -102,7 +102,7 @@ func defaultAlertInvestigationChecks(a *ent.Alert) []string {
 	return checks
 }
 
-func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, alertEntity *ent.KnowledgeEntity) ([]rez.AgentCaseArtifactInput, []uuid.UUID, error) {
+func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, result *rez.AgentWorkflowContext, alertEntity *ent.KnowledgeEntity) ([]uuid.UUID, error) {
 	rels, relErr := s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.Or(knr.SourceEntityID(alertEntity.ID), knr.TargetEntityID(alertEntity.ID))).
 		WithSourceEntity(func(q *ent.KnowledgeEntityQuery) { q.WithAliases() }).
@@ -110,7 +110,7 @@ func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, alertEn
 		Limit(investigationNeighborLimit).
 		All(ctx)
 	if relErr != nil {
-		return nil, nil, fmt.Errorf("query alert relationships: %w", relErr)
+		return nil, fmt.Errorf("query alert relationships: %w", relErr)
 	}
 
 	type candidate struct {
@@ -132,30 +132,54 @@ func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, alertEn
 			entity: entity,
 			reason: "direct alert relationship: " + rel.Kind,
 		}
-	}
-
-	subjects := make([]rez.AgentCaseArtifactInput, 0, len(candidates))
-	subjectIDs := make([]uuid.UUID, 0, len(candidates))
-	for _, cand := range candidates {
-		subjectIDs = append(subjectIDs, cand.entity.ID)
-		subjects = append(subjects, rez.AgentCaseArtifactInput{
-			Kind: agentcaseartifact.KindEntityRef,
-			Role: "likely_subject",
-			Name: cand.entity.DisplayName,
-			Payload: agentArtifactPayload(rez.AgentEntityRef{
-				EntityID:    cand.entity.ID,
-				Kind:        cand.entity.Kind,
-				DisplayName: cand.entity.DisplayName,
-				Aliases:     investigationAliases(cand.entity),
-				Reason:      cand.reason,
-				Confidence:  "high",
-			}),
+		addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+			CitationKind:            "supporting_evidence",
+			KnowledgeRelationshipID: rel.ID,
+			Summary:                 "Direct alert relationship: " + rel.Kind,
+			Snapshot: map[string]any{
+				"kind":             rel.Kind,
+				"sourceEntityId":   rel.SourceEntityID,
+				"targetEntityId":   rel.TargetEntityID,
+				"lastObservedAt":   rel.LastObservedAt,
+				"relationshipName": rel.DisplayName,
+			},
 		})
 	}
-	sort.Slice(subjects, func(i, j int) bool {
-		return subjects[i].Name < subjects[j].Name
+
+	ids := make([]uuid.UUID, 0, len(candidates))
+	items := make([]rez.AgentWorkflowContextItem, 0, len(candidates))
+	for _, cand := range candidates {
+		ids = append(ids, cand.entity.ID)
+		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+			CitationKind:      "related_entity",
+			KnowledgeEntityID: cand.entity.ID,
+			Summary:           cand.entity.DisplayName,
+			Snapshot: map[string]any{
+				"kind":        cand.entity.Kind,
+				"displayName": cand.entity.DisplayName,
+				"description": cand.entity.Description,
+				"aliases":     investigationAliases(cand.entity),
+			},
+		})
+		items = append(items, rez.AgentWorkflowContextItem{
+			Kind:     "knowledge_entity",
+			Role:     "likely_subject",
+			Name:     cand.entity.DisplayName,
+			Citation: citation,
+			Payload: map[string]any{
+				"entityId":    cand.entity.ID,
+				"kind":        cand.entity.Kind,
+				"displayName": cand.entity.DisplayName,
+				"aliases":     investigationAliases(cand.entity),
+				"reason":      cand.reason,
+			},
+		})
+	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].Name < items[j].Name
 	})
-	return subjects, subjectIDs, nil
+	result.Items = append(result.Items, items...)
+	return ids, nil
 }
 
 func investigationAliases(entity *ent.KnowledgeEntity) []string {
@@ -170,7 +194,7 @@ func investigationAliases(entity *ent.KnowledgeEntity) []string {
 	return aliases
 }
 
-func (s *AlertService) getInvestigationNeighbors(ctx context.Context, entityIDs []uuid.UUID) ([]rez.AgentCaseArtifactInput, error) {
+func (s *AlertService) addInvestigationNeighbors(ctx context.Context, result *rez.AgentWorkflowContext, entityIDs []uuid.UUID) error {
 	rels, relErr := s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.Or(knr.SourceEntityIDIn(entityIDs...), knr.TargetEntityIDIn(entityIDs...))).
 		WithSourceEntity().
@@ -178,49 +202,49 @@ func (s *AlertService) getInvestigationNeighbors(ctx context.Context, entityIDs 
 		Limit(investigationNeighborLimit).
 		All(ctx)
 	if relErr != nil {
-		return nil, fmt.Errorf("query subject neighbors: %w", relErr)
+		return fmt.Errorf("query subject neighbors: %w", relErr)
 	}
 
 	entitySet := uuidSet(entityIDs)
-	neighbors := make([]rez.AgentCaseArtifactInput, 0, len(rels))
 	for _, rel := range rels {
+		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+			CitationKind:            "related_entity",
+			KnowledgeRelationshipID: rel.ID,
+			Summary:                 rel.Kind,
+			Snapshot: map[string]any{
+				"kind":           rel.Kind,
+				"sourceEntityId": rel.SourceEntityID,
+				"targetEntityId": rel.TargetEntityID,
+			},
+		})
 		if _, ok := entitySet[rel.SourceEntityID]; ok && rel.Edges.TargetEntity != nil {
-			neighbors = append(neighbors, rez.AgentCaseArtifactInput{
-				Kind: agentcaseartifact.KindRelationshipRef,
-				Role: "neighbor",
-				Name: rel.Edges.TargetEntity.DisplayName,
-				Payload: agentArtifactPayload(rez.AgentRelationshipRef{
-					RelationshipID:    rel.ID,
-					Kind:              rel.Kind,
-					Summary:           rel.Edges.TargetEntity.DisplayName,
-					Direction:         "outbound",
-					RelatedEntityID:   rel.TargetEntityID,
-					RelatedEntity:     rel.Edges.TargetEntity.DisplayName,
-					RelatedEntityKind: rel.Edges.TargetEntity.Kind,
-				}),
-			})
+			result.Items = append(result.Items, relationshipContextItem("outbound", rel, rel.Edges.TargetEntity, citation))
 		}
 		if _, ok := entitySet[rel.TargetEntityID]; ok && rel.Edges.SourceEntity != nil {
-			neighbors = append(neighbors, rez.AgentCaseArtifactInput{
-				Kind: agentcaseartifact.KindRelationshipRef,
-				Role: "neighbor",
-				Name: rel.Edges.SourceEntity.DisplayName,
-				Payload: agentArtifactPayload(rez.AgentRelationshipRef{
-					RelationshipID:    rel.ID,
-					Kind:              rel.Kind,
-					Summary:           rel.Edges.SourceEntity.DisplayName,
-					Direction:         "inbound",
-					RelatedEntityID:   rel.SourceEntityID,
-					RelatedEntity:     rel.Edges.SourceEntity.DisplayName,
-					RelatedEntityKind: rel.Edges.SourceEntity.Kind,
-				}),
-			})
+			result.Items = append(result.Items, relationshipContextItem("inbound", rel, rel.Edges.SourceEntity, citation))
 		}
 	}
-	return neighbors, nil
+	return nil
 }
 
-func (s *AlertService) getInvestigationSignals(ctx context.Context, entityIDs []uuid.UUID) ([]rez.AgentCaseArtifactInput, error) {
+func relationshipContextItem(direction string, rel *ent.KnowledgeRelationship, related *ent.KnowledgeEntity, citation int) rez.AgentWorkflowContextItem {
+	return rez.AgentWorkflowContextItem{
+		Kind:     "knowledge_relationship",
+		Role:     "neighbor",
+		Name:     related.DisplayName,
+		Citation: citation,
+		Payload: map[string]any{
+			"relationshipId":    rel.ID,
+			"kind":              rel.Kind,
+			"direction":         direction,
+			"relatedEntityId":   related.ID,
+			"relatedEntity":     related.DisplayName,
+			"relatedEntityKind": related.Kind,
+		},
+	}
+}
+
+func (s *AlertService) addInvestigationSignals(ctx context.Context, result *rez.AgentWorkflowContext, entityIDs []uuid.UUID) error {
 	evidence, evErr := s.db.Client(ctx).KnowledgeEvidence.Query().
 		Where(knev.EntityIDIn(entityIDs...)).
 		WithEvent().
@@ -228,10 +252,9 @@ func (s *AlertService) getInvestigationSignals(ctx context.Context, entityIDs []
 		Limit(investigationEvidenceLimit).
 		All(ctx)
 	if evErr != nil {
-		return nil, fmt.Errorf("query investigation signals: %w", evErr)
+		return fmt.Errorf("query investigation signals: %w", evErr)
 	}
 
-	signals := make([]rez.AgentCaseArtifactInput, 0, len(evidence))
 	for _, ev := range evidence {
 		source := "knowledge"
 		props := map[string]any{}
@@ -241,55 +264,70 @@ func (s *AlertService) getInvestigationSignals(ctx context.Context, entityIDs []
 			props["subjectKind"] = ev.Edges.Event.SubjectKind
 		}
 		summary := ev.Assertion + " (" + ev.EvidenceKind.String() + ")"
-		signals = append(signals, rez.AgentCaseArtifactInput{
-			Kind: agentcaseartifact.KindEvidenceRef,
-			Role: "recent_signal",
-			Name: summary,
-			Payload: agentArtifactPayload(rez.AgentEvidenceRef{
-				ID:         ev.ID,
-				EventID:    ev.EventID,
-				EntityID:   ev.EntityID,
-				Source:     source,
-				Kind:       ev.Assertion,
-				Summary:    summary,
-				ObservedAt: ev.ObservedAt,
-				Properties: props,
-			}),
+		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+			CitationKind:        "supporting_evidence",
+			KnowledgeEvidenceID: ev.ID,
+			Summary:             summary,
+			Snapshot: map[string]any{
+				"eventId":    ev.EventID,
+				"entityId":   ev.EntityID,
+				"source":     source,
+				"assertion":  ev.Assertion,
+				"observedAt": ev.ObservedAt,
+				"properties": props,
+			},
+		})
+		result.Items = append(result.Items, rez.AgentWorkflowContextItem{
+			Kind:     "knowledge_evidence",
+			Role:     "recent_signal",
+			Name:     summary,
+			Citation: citation,
+			Payload: map[string]any{
+				"id":         ev.ID,
+				"eventId":    ev.EventID,
+				"entityId":   ev.EntityID,
+				"source":     source,
+				"kind":       ev.Assertion,
+				"summary":    summary,
+				"observedAt": ev.ObservedAt,
+				"properties": props,
+			},
 		})
 	}
-	return signals, nil
+	return nil
 }
 
-func (s *AlertService) getInvestigationGuides(ctx context.Context, a *ent.Alert, entityIDs []uuid.UUID) ([]rez.AgentCaseArtifactInput, error) {
-	guides := make([]rez.AgentCaseArtifactInput, 0, investigationGuideLimit)
+func (s *AlertService) addInvestigationGuides(ctx context.Context, result *rez.AgentWorkflowContext, a *ent.Alert, entityIDs []uuid.UUID) error {
+	guides := 0
 	for _, playbook := range a.Edges.Playbooks {
-		if len(guides) >= investigationGuideLimit {
+		if guides >= investigationGuideLimit {
 			break
 		}
-		guides = append(guides, rez.AgentCaseArtifactInput{
-			Kind: agentcaseartifact.KindReferenceRef,
-			Role: "guide",
-			Name: playbook.Title,
-			Payload: agentArtifactPayload(rez.AgentReferenceRef{
-				ID:      playbook.ID,
-				Kind:    "playbook",
-				Title:   playbook.Title,
-				Summary: string(playbook.Content),
-				Source:  "linked_alert",
-			}),
+		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+			CitationKind:     "operational_guide",
+			DomainEntityType: "playbook",
+			DomainEntityID:   playbook.ID,
+			Summary:          playbook.Title,
+			Snapshot: map[string]any{
+				"title":   playbook.Title,
+				"summary": string(playbook.Content),
+				"source":  "linked_alert",
+			},
 		})
+		result.Items = append(result.Items, referenceContextItem("guide", "playbook", playbook.ID, playbook.Title, string(playbook.Content), "linked_alert", citation))
+		guides++
 	}
 
-	if len(guides) >= investigationGuideLimit || len(entityIDs) == 0 {
-		return guides, nil
+	if guides >= investigationGuideLimit || len(entityIDs) == 0 {
+		return nil
 	}
 	impacts, impactsErr := s.db.Client(ctx).IncidentImpact.Query().
 		Where(ii.KnowledgeEntityIDIn(entityIDs...)).
 		WithIncident().
-		Limit(investigationGuideLimit - len(guides)).
+		Limit(investigationGuideLimit - guides).
 		All(ctx)
 	if impactsErr != nil {
-		return nil, fmt.Errorf("query prior incident guides: %w", impactsErr)
+		return fmt.Errorf("query prior incident guides: %w", impactsErr)
 	}
 	seenIncidents := make(map[uuid.UUID]struct{})
 	for _, impact := range impacts {
@@ -301,33 +339,64 @@ func (s *AlertService) getInvestigationGuides(ctx context.Context, a *ent.Alert,
 			continue
 		}
 		seenIncidents[inc.ID] = struct{}{}
-		guides = append(guides, rez.AgentCaseArtifactInput{
-			Kind: agentcaseartifact.KindReferenceRef,
-			Role: "guide",
-			Name: inc.Title,
-			Payload: agentArtifactPayload(rez.AgentReferenceRef{
-				ID:      inc.ID,
-				Kind:    "prior_incident",
-				Title:   inc.Title,
-				Summary: inc.Summary,
-				Source:  "shared_impacted_component",
-			}),
+		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+			CitationKind:     "historical_example",
+			DomainEntityType: "incident",
+			DomainEntityID:   inc.ID,
+			Summary:          inc.Title,
+			Snapshot: map[string]any{
+				"title":   inc.Title,
+				"summary": inc.Summary,
+				"source":  "shared_impacted_component",
+			},
 		})
-		if len(guides) >= investigationGuideLimit {
+		result.Items = append(result.Items, referenceContextItem("guide", "prior_incident", inc.ID, inc.Title, inc.Summary, "shared_impacted_component", citation))
+		guides++
+		if guides >= investigationGuideLimit {
 			break
 		}
 	}
-	return guides, nil
+	return nil
 }
 
-func agentArtifactPayload(v any) map[string]any {
-	bytes, marshalErr := json.Marshal(v)
-	if marshalErr != nil {
-		return map[string]any{"error": marshalErr.Error()}
+func referenceContextItem(role, kind string, id uuid.UUID, title, summary, source string, citation int) rez.AgentWorkflowContextItem {
+	return rez.AgentWorkflowContextItem{
+		Kind:     "domain_reference",
+		Role:     role,
+		Name:     title,
+		Citation: citation,
+		Payload: map[string]any{
+			"id":      id,
+			"kind":    kind,
+			"title":   title,
+			"summary": summary,
+			"source":  source,
+		},
 	}
-	var payload map[string]any
-	if unmarshalErr := json.Unmarshal(bytes, &payload); unmarshalErr != nil {
-		return map[string]any{"error": unmarshalErr.Error()}
+}
+
+func addWorkflowContextCitation(ctx *rez.AgentWorkflowContext, input rez.AgentRunCitationInput) int {
+	if input.Snapshot == nil {
+		input.Snapshot = map[string]any{}
 	}
-	return payload
+	ctx.Citations = append(ctx.Citations, input)
+	return len(ctx.Citations)
+}
+
+func countContextItemsByRole(items []rez.AgentWorkflowContextItem) map[string]int {
+	counts := make(map[string]int)
+	for _, item := range items {
+		if item.Role != "" {
+			counts[item.Role]++
+		}
+	}
+	return counts
+}
+
+func uuidSet(ids []uuid.UUID) map[uuid.UUID]struct{} {
+	res := make(map[uuid.UUID]struct{}, len(ids))
+	for _, id := range ids {
+		res[id] = struct{}{}
+	}
+	return res
 }

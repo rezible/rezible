@@ -403,17 +403,17 @@ func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenc
 		Save(ctx)
 	s.Require().NoError(err)
 
-	artifacts, err := svc.GetIncidentContextArtifacts(ctx, inc.ID)
+	contextPack, err := svc.GetIncidentContext(ctx, inc.ID)
 	s.Require().NoError(err)
-	activeAlerts := make([]rez.AgentCaseArtifactInput, 0)
-	byID := map[string]rez.AgentCaseArtifactInput{}
-	for _, artifact := range artifacts {
-		if artifact.Role == "active_alert" {
-			activeAlerts = append(activeAlerts, artifact)
+	activeAlerts := make([]rez.AgentWorkflowContextItem, 0)
+	byID := map[string]rez.AgentWorkflowContextItem{}
+	for _, item := range contextPack.Items {
+		if item.Role == "active_alert" {
+			activeAlerts = append(activeAlerts, item)
 		}
-		if artifact.Role == "inferred_impact" {
-			if entityID, ok := artifact.Payload["entityId"].(string); ok {
-				byID[entityID] = artifact
+		if item.Role == "inferred_impact" {
+			if entityID, ok := workflowContextItemEntityID(item); ok {
+				byID[entityID] = item
 			}
 		}
 	}
@@ -423,4 +423,15 @@ func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenc
 	s.Contains(byID, functionalityEntity.ID.String())
 	s.Contains(byID[serviceEntity.ID.String()].Payload["reason"], "recent_alert_relationship")
 	s.Contains(byID[functionalityEntity.ID.String()].Payload["reason"], "functionality_dependency")
+}
+
+func workflowContextItemEntityID(item rez.AgentWorkflowContextItem) (string, bool) {
+	switch v := item.Payload["entityId"].(type) {
+	case string:
+		return v, true
+	case uuid.UUID:
+		return v.String(), true
+	default:
+		return "", false
+	}
 }

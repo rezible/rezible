@@ -9,54 +9,6 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-// The AgentCaseFunc type is an adapter to allow the use of ordinary
-// function as AgentCase mutator.
-type AgentCaseFunc func(context.Context, *ent.AgentCaseMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AgentCaseFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentCaseMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentCaseMutation", m)
-}
-
-// The AgentCaseArtifactFunc type is an adapter to allow the use of ordinary
-// function as AgentCaseArtifact mutator.
-type AgentCaseArtifactFunc func(context.Context, *ent.AgentCaseArtifactMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AgentCaseArtifactFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentCaseArtifactMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentCaseArtifactMutation", m)
-}
-
-// The AgentCaseConclusionFunc type is an adapter to allow the use of ordinary
-// function as AgentCaseConclusion mutator.
-type AgentCaseConclusionFunc func(context.Context, *ent.AgentCaseConclusionMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AgentCaseConclusionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentCaseConclusionMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentCaseConclusionMutation", m)
-}
-
-// The AgentCaseStepFunc type is an adapter to allow the use of ordinary
-// function as AgentCaseStep mutator.
-type AgentCaseStepFunc func(context.Context, *ent.AgentCaseStepMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f AgentCaseStepFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentCaseStepMutation); ok {
-		return f(ctx, mv)
-	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentCaseStepMutation", m)
-}
-
 // The AgentRunFunc type is an adapter to allow the use of ordinary
 // function as AgentRun mutator.
 type AgentRunFunc func(context.Context, *ent.AgentRunMutation) (ent.Value, error)
@@ -69,16 +21,76 @@ func (f AgentRunFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunMutation", m)
 }
 
-// The AgentRunFeedbackFunc type is an adapter to allow the use of ordinary
-// function as AgentRunFeedback mutator.
-type AgentRunFeedbackFunc func(context.Context, *ent.AgentRunFeedbackMutation) (ent.Value, error)
+// The AgentRunCitationFunc type is an adapter to allow the use of ordinary
+// function as AgentRunCitation mutator.
+type AgentRunCitationFunc func(context.Context, *ent.AgentRunCitationMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f AgentRunFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.AgentRunFeedbackMutation); ok {
+func (f AgentRunCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunCitationMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunFeedbackMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunCitationMutation", m)
+}
+
+// The AgentRunFindingFunc type is an adapter to allow the use of ordinary
+// function as AgentRunFinding mutator.
+type AgentRunFindingFunc func(context.Context, *ent.AgentRunFindingMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentRunFindingFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunFindingMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunFindingMutation", m)
+}
+
+// The AgentRunFindingCitationFunc type is an adapter to allow the use of ordinary
+// function as AgentRunFindingCitation mutator.
+type AgentRunFindingCitationFunc func(context.Context, *ent.AgentRunFindingCitationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentRunFindingCitationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunFindingCitationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunFindingCitationMutation", m)
+}
+
+// The AgentRunResultFunc type is an adapter to allow the use of ordinary
+// function as AgentRunResult mutator.
+type AgentRunResultFunc func(context.Context, *ent.AgentRunResultMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentRunResultFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunResultMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunResultMutation", m)
+}
+
+// The AgentRunToolCallFunc type is an adapter to allow the use of ordinary
+// function as AgentRunToolCall mutator.
+type AgentRunToolCallFunc func(context.Context, *ent.AgentRunToolCallMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentRunToolCallFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentRunToolCallMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentRunToolCallMutation", m)
+}
+
+// The AgentTaskFunc type is an adapter to allow the use of ordinary
+// function as AgentTask mutator.
+type AgentTaskFunc func(context.Context, *ent.AgentTaskMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentTaskMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTaskMutation", m)
 }
 
 // The AlertFunc type is an adapter to allow the use of ordinary

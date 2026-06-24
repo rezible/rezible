@@ -12,18 +12,20 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// AgentCase is the client for interacting with the AgentCase builders.
-	AgentCase *AgentCaseClient
-	// AgentCaseArtifact is the client for interacting with the AgentCaseArtifact builders.
-	AgentCaseArtifact *AgentCaseArtifactClient
-	// AgentCaseConclusion is the client for interacting with the AgentCaseConclusion builders.
-	AgentCaseConclusion *AgentCaseConclusionClient
-	// AgentCaseStep is the client for interacting with the AgentCaseStep builders.
-	AgentCaseStep *AgentCaseStepClient
 	// AgentRun is the client for interacting with the AgentRun builders.
 	AgentRun *AgentRunClient
-	// AgentRunFeedback is the client for interacting with the AgentRunFeedback builders.
-	AgentRunFeedback *AgentRunFeedbackClient
+	// AgentRunCitation is the client for interacting with the AgentRunCitation builders.
+	AgentRunCitation *AgentRunCitationClient
+	// AgentRunFinding is the client for interacting with the AgentRunFinding builders.
+	AgentRunFinding *AgentRunFindingClient
+	// AgentRunFindingCitation is the client for interacting with the AgentRunFindingCitation builders.
+	AgentRunFindingCitation *AgentRunFindingCitationClient
+	// AgentRunResult is the client for interacting with the AgentRunResult builders.
+	AgentRunResult *AgentRunResultClient
+	// AgentRunToolCall is the client for interacting with the AgentRunToolCall builders.
+	AgentRunToolCall *AgentRunToolCallClient
+	// AgentTask is the client for interacting with the AgentTask builders.
+	AgentTask *AgentTaskClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -289,12 +291,13 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.AgentCase = NewAgentCaseClient(tx.config)
-	tx.AgentCaseArtifact = NewAgentCaseArtifactClient(tx.config)
-	tx.AgentCaseConclusion = NewAgentCaseConclusionClient(tx.config)
-	tx.AgentCaseStep = NewAgentCaseStepClient(tx.config)
 	tx.AgentRun = NewAgentRunClient(tx.config)
-	tx.AgentRunFeedback = NewAgentRunFeedbackClient(tx.config)
+	tx.AgentRunCitation = NewAgentRunCitationClient(tx.config)
+	tx.AgentRunFinding = NewAgentRunFindingClient(tx.config)
+	tx.AgentRunFindingCitation = NewAgentRunFindingCitationClient(tx.config)
+	tx.AgentRunResult = NewAgentRunResultClient(tx.config)
+	tx.AgentRunToolCall = NewAgentRunToolCallClient(tx.config)
+	tx.AgentTask = NewAgentTaskClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
@@ -371,7 +374,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AgentCase.QueryXXX(), the query will be executed
+// applies a query, for example: AgentRun.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

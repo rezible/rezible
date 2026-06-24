@@ -8,9 +8,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentcaseartifact"
-	"github.com/rezible/rezible/ent/agentcasestep"
-	"github.com/rezible/rezible/ent/agentrun"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -29,13 +26,18 @@ func (s *AgentService) requestIncidentContextPackRun(ctx context.Context, incide
 		return nil
 	}
 	bucket := time.Now().UTC().Truncate(5 * time.Minute).Format(time.RFC3339)
-	_, reqErr := s.CreateCase(ctx, rez.AgentCaseRequest{
-		Title:        "Incident context pack",
-		Query:        "Build current triage context for the incident.",
-		WorkflowKind: agentrun.WorkflowKindIncidentContextPack,
-		SubjectKind:  "incident",
-		SubjectID:    incidentID,
-		TriggerMetadata: map[string]any{
+	_, reqErr := s.CreateTask(ctx, rez.CreateAgentTaskRequest{
+		WorkflowKind: rez.AgentWorkflowKindIncidentContextPack,
+		WorkflowInput: map[string]any{
+			"schema": "incident_context_pack.v1",
+			"subjects": []map[string]any{{
+				"type": "incident",
+				"id":   incidentID.String(),
+			}},
+			"objectives": []string{"build current triage context for the incident"},
+		},
+		TriggerKind: "event",
+		TriggerPayload: map[string]any{
 			"trigger": trigger,
 			"bucket":  bucket,
 		},
@@ -49,33 +51,23 @@ type incidentContextPackWorkflow struct {
 }
 
 type incidentContextPackSynthesis struct {
-	Summary         string                       `json:"summary"`
-	LikelyImpact    []incidentContextPackFinding `json:"likelyImpact"`
-	SuggestedChecks []string                     `json:"suggestedChecks"`
-	Limitations     []string                     `json:"limitations"`
-	Confidence      string                       `json:"confidence"`
+	Summary         string                      `json:"summary"`
+	LikelyImpact    []rez.IncidentImpactFinding `json:"likelyImpact"`
+	SuggestedChecks []string                    `json:"suggestedChecks"`
+	Limitations     []string                    `json:"limitations"`
+	Confidence      string                      `json:"confidence"`
 }
 
-type incidentContextPackFinding struct {
-	EntityID    string   `json:"entityId"`
-	DisplayName string   `json:"displayName"`
-	Rationale   string   `json:"rationale"`
-	EvidenceIDs []string `json:"evidenceIds"`
+func (w *incidentContextPackWorkflow) Kind() rez.AgentWorkflowKind {
+	return rez.AgentWorkflowKindIncidentContextPack
 }
 
-func (w *incidentContextPackWorkflow) Kind() agentrun.WorkflowKind {
-	return agentrun.WorkflowKindIncidentContextPack
-}
-
-func (w *incidentContextPackWorkflow) Validate(_ context.Context, run *ent.AgentRun) error {
-	if run.WorkflowKind != w.Kind() {
-		return fmt.Errorf("workflow/run kind mismatch: %s != %s", run.WorkflowKind, w.Kind())
+func (w *incidentContextPackWorkflow) Validate(_ context.Context, task *ent.AgentTask, _ *ent.AgentRun) error {
+	if rez.AgentWorkflowKind(task.WorkflowKind) != w.Kind() {
+		return fmt.Errorf("workflow/task kind mismatch: %s != %s", task.WorkflowKind, w.Kind())
 	}
-	if run.SubjectKind != "incident" {
-		return fmt.Errorf("incident context pack requires incident subject, got %q", run.SubjectKind)
-	}
-	if run.SubjectID == nil {
-		return fmt.Errorf("incident context pack requires subject id")
+	if workflowInputSubject(task.WorkflowInput, "incident") == uuid.Nil {
+		return fmt.Errorf("incident context pack requires incident subject")
 	}
 	if w.incidents == nil {
 		return fmt.Errorf("incident service is required")
@@ -83,8 +75,7 @@ func (w *incidentContextPackWorkflow) Validate(_ context.Context, run *ent.Agent
 	return nil
 }
 
-var (
-	incidentContextPackInstruction = strings.TrimSpace(`
+var incidentContextPackInstruction = strings.TrimSpace(`
 You are Rezible's live incident context-pack agent.
 Use only the supplied JSON context. Produce concise JSON with this schema:
 {
@@ -96,22 +87,34 @@ Use only the supplied JSON context. Produce concise JSON with this schema:
 }
 Do not invent systems, incidents, alerts, or evidence that are not present in the context.
 `)
-)
 
-func (w *incidentContextPackWorkflow) Run(ctx context.Context, run *ent.AgentRun) (*AgentWorkflowResult, error) {
-	inputArtifacts, artifactErr := w.incidents.GetIncidentContextArtifacts(ctx, *run.SubjectID)
-	if artifactErr != nil {
-		return nil, fmt.Errorf("get incident context artifacts: %w", artifactErr)
+func (w *incidentContextPackWorkflow) Run(ctx context.Context, recorder *WorkflowRecorder, task *ent.AgentTask, _ *ent.AgentRun) (*AgentWorkflowResult, error) {
+	incidentID := workflowInputSubject(task.WorkflowInput, "incident")
+	contextResult, contextErr := w.incidents.GetIncidentContext(ctx, incidentID)
+	toolResult := map[string]any{"incidentId": incidentID}
+	if contextResult != nil {
+		toolResult["context"] = contextResult.Context
+		toolResult["items"] = contextResult.Items
 	}
-	artifacts := caseArtifactsFromInputs(inputArtifacts)
-	packPayload := retrievalContextPayload(artifacts)
+	if _, recordErr := recorder.RecordToolCall(ctx, "incident.context_pack", map[string]any{"incidentId": incidentID}, toolResult, contextErr); recordErr != nil {
+		return nil, recordErr
+	}
+	if contextErr != nil {
+		return nil, fmt.Errorf("get incident context: %w", contextErr)
+	}
 
-	promptBytes, promptErr := json.MarshalIndent(inputArtifacts, "", "  ")
+	prompt, promptErr := encodePromptContext(contextResult)
 	if promptErr != nil {
 		return nil, fmt.Errorf("marshal context pack prompt: %w", promptErr)
 	}
-
-	out, runErr := runModelOnce(ctx, w.modelFactory, "incident-context-pack", incidentContextPackInstruction, string(promptBytes))
+	out, runErr := runModelOnce(ctx, w.modelFactory, "incident-context-pack", incidentContextPackInstruction, prompt)
+	modelResult := map[string]any{}
+	if out != nil {
+		modelResult["text"] = out.Text
+	}
+	if _, recordErr := recorder.RecordToolCall(ctx, "model.generate", map[string]any{"workflow": "incident_context_pack"}, modelResult, runErr); recordErr != nil {
+		return nil, recordErr
+	}
 	if runErr != nil {
 		return nil, fmt.Errorf("run context pack agent: %w", runErr)
 	}
@@ -120,103 +123,65 @@ func (w *incidentContextPackWorkflow) Run(ctx context.Context, run *ent.AgentRun
 	if parseErr := json.Unmarshal([]byte(extractJSON(out.Text)), &synthesis); parseErr != nil {
 		return nil, fmt.Errorf("parse context pack synthesis: %w", parseErr)
 	}
+	if len(synthesis.Limitations) == 0 {
+		synthesis.Limitations = contextResult.Limitations
+	}
+	if len(synthesis.SuggestedChecks) == 0 {
+		synthesis.SuggestedChecks = contextResult.Suggested
+	}
 
-	synthesisPayload, synthesisPayloadErr := toArtifactPayload(synthesis)
-	if synthesisPayloadErr != nil {
-		return nil, synthesisPayloadErr
-	}
-	conclusionPayload, conclusionPayloadErr := toArtifactPayload(rez.AgentCaseConclusionPayload[rez.IncidentTriageFindings]{
-		Summary: synthesis.Summary,
-		Findings: rez.IncidentTriageFindings{
-			LikelyImpact:    convertIncidentContextPackFindings(synthesis.LikelyImpact, artifacts),
-			SuggestedChecks: synthesis.SuggestedChecks,
-		},
-		Confidence:         synthesis.Confidence,
-		Limitations:        synthesis.Limitations,
-		RecommendedActions: synthesis.SuggestedChecks,
-	})
-	if conclusionPayloadErr != nil {
-		return nil, conclusionPayloadErr
-	}
 	return &AgentWorkflowResult{
-		Summary: synthesis.Summary,
-		Steps: []AgentCaseStep{
-			{
-				Kind:      agentcasestep.KindRetrieval,
-				Title:     "Retrieved incident context",
-				Summary:   fmt.Sprintf("Retrieved %d explicit impact(s), %d inferred impact(s), %d active alert(s), and %d related incident(s).", countArtifactsByRole(artifacts, "explicit_impact"), countArtifactsByRole(artifacts, "inferred_impact"), countArtifactsByRole(artifacts, "active_alert"), countArtifactsByRole(artifacts, "related_incident")),
-				Output:    packPayload,
-				Artifacts: artifacts,
-			},
-			{
-				Kind:    agentcasestep.KindConclusion,
-				Title:   "Incident triage conclusion",
-				Summary: synthesis.Summary,
-				Output:  synthesisPayload,
-				Conclusions: []AgentCaseConclusion{{
-					Kind:               "incident_triage",
-					Summary:            synthesis.Summary,
-					Confidence:         synthesis.Confidence,
-					RecommendedActions: synthesis.SuggestedChecks,
-					Limitations:        synthesis.Limitations,
-					Payload:            conclusionPayload,
-				}},
-			},
-		},
+		Content:   synthesis.Summary,
+		Data:      incidentContextPackData(synthesis),
+		Citations: contextResult.Citations,
+		Findings:  incidentContextPackFindings(synthesis, contextResult),
 	}, nil
 }
 
-func convertIncidentContextPackFindings(findings []incidentContextPackFinding, artifacts []AgentCaseArtifact) []rez.AgentEntityRef {
-	byID := make(map[string]rez.AgentEntityRef)
-	for _, artifact := range artifacts {
-		if artifact.Kind != agentcaseartifact.KindEntityRef {
-			continue
-		}
-		ref := rez.AgentEntityRef{}
-		bytes, marshalErr := json.Marshal(artifact.Payload)
-		if marshalErr != nil {
-			continue
-		}
-		if unmarshalErr := json.Unmarshal(bytes, &ref); unmarshalErr != nil {
-			continue
-		}
-		if ref.EntityID != uuid.Nil {
-			byID[ref.EntityID.String()] = ref
-		}
+func incidentContextPackData(s incidentContextPackSynthesis) map[string]any {
+	return map[string]any{
+		"schema": "incident_context_pack.v1",
+		"findings": rez.IncidentTriageFindings{
+			LikelyImpact:    s.LikelyImpact,
+			SuggestedChecks: s.SuggestedChecks,
+		},
+		"limitations":        s.Limitations,
+		"recommendedActions": s.SuggestedChecks,
 	}
-	result := make([]rez.AgentEntityRef, len(findings))
-	for i, finding := range findings {
-		if ref, ok := byID[finding.EntityID]; ok {
-			ref.Reason = finding.Rationale
-			result[i] = ref
-			continue
-		}
-		result[i] = rez.AgentEntityRef{
-			DisplayName: finding.DisplayName,
-			Reason:      finding.Rationale,
-		}
-	}
-	return result
 }
 
-func toArtifactPayload(v any) (map[string]any, error) {
-	bytes, marshalErr := json.Marshal(v)
-	if marshalErr != nil {
-		return nil, fmt.Errorf("marshal artifact payload: %w", marshalErr)
+func incidentContextPackFindings(s incidentContextPackSynthesis, contextResult *rez.AgentWorkflowContext) []rez.AgentRunFindingInput {
+	impactCitations := citationLinks(append(contextItemsWithRole(contextResult.Items, "explicit_impact"), contextItemsWithRole(contextResult.Items, "inferred_impact")...), "affected_entity")
+	alertCitations := citationLinks(contextItemsWithRole(contextResult.Items, "active_alert"), "supports")
+	evidenceCitations := citationLinks(contextItemsWithRole(contextResult.Items, "recent_evidence"), "supports")
+	findings := []rez.AgentRunFindingInput{{
+		FindingKind: "observation",
+		Content:     s.Summary,
+		Citations:   append(append(impactCitations, alertCitations...), evidenceCitations...),
+	}}
+	for _, impact := range s.LikelyImpact {
+		content := impact.DisplayName
+		if impact.Rationale != "" {
+			content += ": " + impact.Rationale
+		}
+		findings = append(findings, rez.AgentRunFindingInput{
+			FindingKind: "hypothesis",
+			Content:     content,
+			Citations:   impactCitations,
+		})
 	}
-	var payload map[string]any
-	if unmarshalErr := json.Unmarshal(bytes, &payload); unmarshalErr != nil {
-		return nil, fmt.Errorf("unmarshal artifact payload: %w", unmarshalErr)
+	for _, limitation := range s.Limitations {
+		findings = append(findings, rez.AgentRunFindingInput{
+			FindingKind: "limitation",
+			Content:     limitation,
+		})
 	}
-	return payload, nil
-}
-
-func extractJSON(text string) string {
-	trimmed := strings.TrimSpace(text)
-	if strings.HasPrefix(trimmed, "```") {
-		trimmed = strings.TrimPrefix(trimmed, "```json")
-		trimmed = strings.TrimPrefix(trimmed, "```")
-		trimmed = strings.TrimSuffix(trimmed, "```")
+	for _, check := range s.SuggestedChecks {
+		findings = append(findings, rez.AgentRunFindingInput{
+			FindingKind: "recommendation",
+			Content:     check,
+			Citations:   append(impactCitations, evidenceCitations...),
+		})
 	}
-	return strings.TrimSpace(trimmed)
+	return findings
 }

@@ -12,12 +12,13 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/rezible/rezible/ent/agentcase"
-	"github.com/rezible/rezible/ent/agentcaseartifact"
-	"github.com/rezible/rezible/ent/agentcaseconclusion"
-	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunfeedback"
+	"github.com/rezible/rezible/ent/agentruncitation"
+	"github.com/rezible/rezible/ent/agentrunfinding"
+	"github.com/rezible/rezible/ent/agentrunfindingcitation"
+	"github.com/rezible/rezible/ent/agentrunresult"
+	"github.com/rezible/rezible/ent/agentruntoolcall"
+	"github.com/rezible/rezible/ent/agenttask"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
@@ -145,12 +146,13 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			agentcase.Table:                               agentcase.ValidColumn,
-			agentcaseartifact.Table:                       agentcaseartifact.ValidColumn,
-			agentcaseconclusion.Table:                     agentcaseconclusion.ValidColumn,
-			agentcasestep.Table:                           agentcasestep.ValidColumn,
 			agentrun.Table:                                agentrun.ValidColumn,
-			agentrunfeedback.Table:                        agentrunfeedback.ValidColumn,
+			agentruncitation.Table:                        agentruncitation.ValidColumn,
+			agentrunfinding.Table:                         agentrunfinding.ValidColumn,
+			agentrunfindingcitation.Table:                 agentrunfindingcitation.ValidColumn,
+			agentrunresult.Table:                          agentrunresult.ValidColumn,
+			agentruntoolcall.Table:                        agentruntoolcall.ValidColumn,
+			agenttask.Table:                               agenttask.ValidColumn,
 			alert.Table:                                   alert.ValidColumn,
 			alertfeedback.Table:                           alertfeedback.ValidColumn,
 			alertmetrics.Table:                            alertmetrics.ValidColumn,

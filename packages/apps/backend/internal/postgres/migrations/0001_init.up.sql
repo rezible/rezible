@@ -1,67 +1,77 @@
--- create "agent_cases" table
-CREATE TABLE "agent_cases" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "status" character varying NOT NULL DEFAULT 'open', "title" character varying NOT NULL, "query" text NULL, "workflow_kind" character varying NULL, "subject_kind" character varying NULL, "subject_id" uuid NULL, "trigger_metadata" jsonb NULL, "summary" text NULL, "error_code" character varying NULL, "error_message" text NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
--- create index "agentcase_tenant_id" to table: "agent_cases"
-CREATE INDEX "agentcase_tenant_id" ON "agent_cases" ("tenant_id");
--- create index "agentcase_tenant_id_status_updated_at" to table: "agent_cases"
-CREATE INDEX "agentcase_tenant_id_status_updated_at" ON "agent_cases" ("tenant_id", "status", "updated_at");
--- create index "agentcase_tenant_id_workflow_kind_status" to table: "agent_cases"
-CREATE INDEX "agentcase_tenant_id_workflow_kind_status" ON "agent_cases" ("tenant_id", "workflow_kind", "status");
--- create index "agentcase_tenant_id_subject_kind_subject_id" to table: "agent_cases"
-CREATE INDEX "agentcase_tenant_id_subject_kind_subject_id" ON "agent_cases" ("tenant_id", "subject_kind", "subject_id");
--- create "agent_case_artifacts" table
-CREATE TABLE "agent_case_artifacts" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "role" character varying NULL, "name" character varying NOT NULL, "payload" jsonb NULL, "redacted" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, "agent_case_id" uuid NOT NULL, "agent_case_step_id" uuid NULL, "agent_run_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "agentcaseartifact_tenant_id" to table: "agent_case_artifacts"
-CREATE INDEX "agentcaseartifact_tenant_id" ON "agent_case_artifacts" ("tenant_id");
--- create index "agentcaseartifact_tenant_id_agent_case_id_kind" to table: "agent_case_artifacts"
-CREATE INDEX "agentcaseartifact_tenant_id_agent_case_id_kind" ON "agent_case_artifacts" ("tenant_id", "agent_case_id", "kind");
--- create index "agentcaseartifact_tenant_id_agent_case_id_role" to table: "agent_case_artifacts"
-CREATE INDEX "agentcaseartifact_tenant_id_agent_case_id_role" ON "agent_case_artifacts" ("tenant_id", "agent_case_id", "role");
--- create index "agentcaseartifact_tenant_id_agent_case_id_name" to table: "agent_case_artifacts"
-CREATE INDEX "agentcaseartifact_tenant_id_agent_case_id_name" ON "agent_case_artifacts" ("tenant_id", "agent_case_id", "name");
--- create index "agentcaseartifact_tenant_id_agent_case_step_id" to table: "agent_case_artifacts"
-CREATE INDEX "agentcaseartifact_tenant_id_agent_case_step_id" ON "agent_case_artifacts" ("tenant_id", "agent_case_step_id");
--- create index "agentcaseartifact_tenant_id_agent_run_id" to table: "agent_case_artifacts"
-CREATE INDEX "agentcaseartifact_tenant_id_agent_run_id" ON "agent_case_artifacts" ("tenant_id", "agent_run_id");
--- create "agent_case_conclusions" table
-CREATE TABLE "agent_case_conclusions" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "kind" character varying NOT NULL, "summary" text NULL, "confidence" character varying NULL, "recommended_actions" jsonb NULL, "limitations" jsonb NULL, "payload" jsonb NULL, "tenant_id" bigint NOT NULL, "agent_case_id" uuid NOT NULL, "agent_case_step_id" uuid NULL, "agent_run_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "agentcaseconclusion_tenant_id" to table: "agent_case_conclusions"
-CREATE INDEX "agentcaseconclusion_tenant_id" ON "agent_case_conclusions" ("tenant_id");
--- create index "agentcaseconclusion_tenant_id_agent_case_id_kind" to table: "agent_case_conclusions"
-CREATE INDEX "agentcaseconclusion_tenant_id_agent_case_id_kind" ON "agent_case_conclusions" ("tenant_id", "agent_case_id", "kind");
--- create index "agentcaseconclusion_tenant_id_agent_case_step_id" to table: "agent_case_conclusions"
-CREATE INDEX "agentcaseconclusion_tenant_id_agent_case_step_id" ON "agent_case_conclusions" ("tenant_id", "agent_case_step_id");
--- create index "agentcaseconclusion_tenant_id_agent_run_id" to table: "agent_case_conclusions"
-CREATE INDEX "agentcaseconclusion_tenant_id_agent_run_id" ON "agent_case_conclusions" ("tenant_id", "agent_run_id");
--- create "agent_case_steps" table
-CREATE TABLE "agent_case_steps" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "sequence" bigint NOT NULL, "kind" character varying NOT NULL, "title" character varying NOT NULL, "summary" text NULL, "input" jsonb NULL, "output" jsonb NULL, "started_at" timestamptz NULL, "completed_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "agent_case_id" uuid NOT NULL, "agent_run_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "agentcasestep_tenant_id" to table: "agent_case_steps"
-CREATE INDEX "agentcasestep_tenant_id" ON "agent_case_steps" ("tenant_id");
--- create index "agentcasestep_tenant_id_agent_case_id_sequence" to table: "agent_case_steps"
-CREATE UNIQUE INDEX "agentcasestep_tenant_id_agent_case_id_sequence" ON "agent_case_steps" ("tenant_id", "agent_case_id", "sequence");
--- create index "agentcasestep_tenant_id_agent_case_id_kind" to table: "agent_case_steps"
-CREATE INDEX "agentcasestep_tenant_id_agent_case_id_kind" ON "agent_case_steps" ("tenant_id", "agent_case_id", "kind");
--- create index "agentcasestep_tenant_id_agent_run_id" to table: "agent_case_steps"
-CREATE INDEX "agentcasestep_tenant_id_agent_run_id" ON "agent_case_steps" ("tenant_id", "agent_run_id");
 -- create "agent_runs" table
-CREATE TABLE "agent_runs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "workflow_kind" character varying NOT NULL, "status" character varying NOT NULL DEFAULT 'queued', "idempotency_key" character varying NOT NULL, "subject_kind" character varying NULL, "subject_id" uuid NULL, "trigger_metadata" jsonb NULL, "model_metadata" jsonb NULL, "error_code" character varying NULL, "error_message" text NULL, "queued_at" timestamptz NOT NULL, "started_at" timestamptz NULL, "completed_at" timestamptz NULL, "failed_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "agent_case_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "agent_runs" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "attempt" bigint NOT NULL, "status" character varying NOT NULL DEFAULT 'queued', "started_at" timestamptz NULL, "finished_at" timestamptz NULL, "error_message" text NULL, "tenant_id" bigint NOT NULL, "agent_task_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "agentrun_tenant_id" to table: "agent_runs"
 CREATE INDEX "agentrun_tenant_id" ON "agent_runs" ("tenant_id");
--- create index "agentrun_tenant_id_workflow_kind_idempotency_key" to table: "agent_runs"
-CREATE UNIQUE INDEX "agentrun_tenant_id_workflow_kind_idempotency_key" ON "agent_runs" ("tenant_id", "workflow_kind", "idempotency_key");
--- create index "agentrun_tenant_id_status_updated_at" to table: "agent_runs"
-CREATE INDEX "agentrun_tenant_id_status_updated_at" ON "agent_runs" ("tenant_id", "status", "updated_at");
--- create index "agentrun_tenant_id_subject_kind_subject_id" to table: "agent_runs"
-CREATE INDEX "agentrun_tenant_id_subject_kind_subject_id" ON "agent_runs" ("tenant_id", "subject_kind", "subject_id");
--- create index "agentrun_tenant_id_agent_case_id" to table: "agent_runs"
-CREATE INDEX "agentrun_tenant_id_agent_case_id" ON "agent_runs" ("tenant_id", "agent_case_id");
--- create "agent_run_feedbacks" table
-CREATE TABLE "agent_run_feedbacks" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "rating" bigint NULL, "comment" text NULL, "properties" jsonb NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, "user_id" uuid NULL, PRIMARY KEY ("id"));
--- create index "agentrunfeedback_tenant_id" to table: "agent_run_feedbacks"
-CREATE INDEX "agentrunfeedback_tenant_id" ON "agent_run_feedbacks" ("tenant_id");
--- create index "agentrunfeedback_tenant_id_agent_run_id" to table: "agent_run_feedbacks"
-CREATE INDEX "agentrunfeedback_tenant_id_agent_run_id" ON "agent_run_feedbacks" ("tenant_id", "agent_run_id");
--- create index "agentrunfeedback_tenant_id_user_id" to table: "agent_run_feedbacks"
-CREATE INDEX "agentrunfeedback_tenant_id_user_id" ON "agent_run_feedbacks" ("tenant_id", "user_id");
+-- create index "agentrun_tenant_id_agent_task_id_attempt" to table: "agent_runs"
+CREATE UNIQUE INDEX "agentrun_tenant_id_agent_task_id_attempt" ON "agent_runs" ("tenant_id", "agent_task_id", "attempt");
+-- create index "agentrun_tenant_id_status_created_at" to table: "agent_runs"
+CREATE INDEX "agentrun_tenant_id_status_created_at" ON "agent_runs" ("tenant_id", "status", "created_at");
+-- create index "agentrun_tenant_id_updated_at" to table: "agent_runs"
+CREATE INDEX "agentrun_tenant_id_updated_at" ON "agent_runs" ("tenant_id", "updated_at");
+-- create "agent_run_citations" table
+CREATE TABLE "agent_run_citations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "citation_kind" character varying NOT NULL, "domain_entity_type" character varying NULL, "domain_entity_id" uuid NULL, "summary" text NOT NULL, "snapshot" jsonb NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, "knowledge_entity_id" uuid NULL, "knowledge_relationship_id" uuid NULL, "knowledge_evidence_id" uuid NULL, "agent_task_id" uuid NULL, "agent_run_tool_call_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "agentruncitation_tenant_id" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id" ON "agent_run_citations" ("tenant_id");
+-- create index "agentruncitation_tenant_id_agent_run_id_created_at" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id_agent_run_id_created_at" ON "agent_run_citations" ("tenant_id", "agent_run_id", "created_at");
+-- create index "agentruncitation_tenant_id_citation_kind" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id_citation_kind" ON "agent_run_citations" ("tenant_id", "citation_kind");
+-- create index "agentruncitation_tenant_id_domain_entity_type_domain_entity_id" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id_domain_entity_type_domain_entity_id" ON "agent_run_citations" ("tenant_id", "domain_entity_type", "domain_entity_id");
+-- create index "agentruncitation_tenant_id_knowledge_entity_id" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id_knowledge_entity_id" ON "agent_run_citations" ("tenant_id", "knowledge_entity_id");
+-- create index "agentruncitation_tenant_id_knowledge_relationship_id" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id_knowledge_relationship_id" ON "agent_run_citations" ("tenant_id", "knowledge_relationship_id");
+-- create index "agentruncitation_tenant_id_knowledge_evidence_id" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id_knowledge_evidence_id" ON "agent_run_citations" ("tenant_id", "knowledge_evidence_id");
+-- create index "agentruncitation_tenant_id_agent_task_id" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id_agent_task_id" ON "agent_run_citations" ("tenant_id", "agent_task_id");
+-- create index "agentruncitation_tenant_id_agent_run_tool_call_id" to table: "agent_run_citations"
+CREATE INDEX "agentruncitation_tenant_id_agent_run_tool_call_id" ON "agent_run_citations" ("tenant_id", "agent_run_tool_call_id");
+-- create "agent_run_findings" table
+CREATE TABLE "agent_run_findings" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "sequence" bigint NOT NULL, "finding_kind" character varying NOT NULL, "content" text NOT NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "agentrunfinding_tenant_id" to table: "agent_run_findings"
+CREATE INDEX "agentrunfinding_tenant_id" ON "agent_run_findings" ("tenant_id");
+-- create index "agentrunfinding_tenant_id_agent_run_id_created_at" to table: "agent_run_findings"
+CREATE INDEX "agentrunfinding_tenant_id_agent_run_id_created_at" ON "agent_run_findings" ("tenant_id", "agent_run_id", "created_at");
+-- create index "agentrunfinding_tenant_id_agent_run_id_sequence" to table: "agent_run_findings"
+CREATE UNIQUE INDEX "agentrunfinding_tenant_id_agent_run_id_sequence" ON "agent_run_findings" ("tenant_id", "agent_run_id", "sequence");
+-- create index "agentrunfinding_tenant_id_finding_kind" to table: "agent_run_findings"
+CREATE INDEX "agentrunfinding_tenant_id_finding_kind" ON "agent_run_findings" ("tenant_id", "finding_kind");
+-- create "agent_run_finding_citations" table
+CREATE TABLE "agent_run_finding_citations" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "support_kind" character varying NOT NULL, "tenant_id" bigint NOT NULL, "agent_run_finding_id" uuid NOT NULL, "agent_run_citation_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "agentrunfindingcitation_tenant_id" to table: "agent_run_finding_citations"
+CREATE INDEX "agentrunfindingcitation_tenant_id" ON "agent_run_finding_citations" ("tenant_id");
+-- create index "agentrunfindingcitation_tenant_id_agent_run_finding_id" to table: "agent_run_finding_citations"
+CREATE INDEX "agentrunfindingcitation_tenant_id_agent_run_finding_id" ON "agent_run_finding_citations" ("tenant_id", "agent_run_finding_id");
+-- create index "agentrunfindingcitation_tenant_id_agent_run_citation_id" to table: "agent_run_finding_citations"
+CREATE INDEX "agentrunfindingcitation_tenant_id_agent_run_citation_id" ON "agent_run_finding_citations" ("tenant_id", "agent_run_citation_id");
+-- create index "agentrunfindingcitation_agent__043bc294dcf83a3b3084f97c43ceb39f" to table: "agent_run_finding_citations"
+CREATE UNIQUE INDEX "agentrunfindingcitation_agent__043bc294dcf83a3b3084f97c43ceb39f" ON "agent_run_finding_citations" ("agent_run_finding_id", "agent_run_citation_id", "support_kind");
+-- create "agent_run_results" table
+CREATE TABLE "agent_run_results" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "content" text NOT NULL, "data" jsonb NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "agentrunresult_tenant_id" to table: "agent_run_results"
+CREATE INDEX "agentrunresult_tenant_id" ON "agent_run_results" ("tenant_id");
+-- create index "agentrunresult_tenant_id_agent_run_id" to table: "agent_run_results"
+CREATE UNIQUE INDEX "agentrunresult_tenant_id_agent_run_id" ON "agent_run_results" ("tenant_id", "agent_run_id");
+-- create "agent_run_tool_calls" table
+CREATE TABLE "agent_run_tool_calls" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "tool_name" character varying NOT NULL, "status" character varying NOT NULL DEFAULT 'requested', "tool_params" jsonb NULL, "result" jsonb NULL, "error_message" text NULL, "started_at" timestamptz NULL, "finished_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "agent_run_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "agentruntoolcall_tenant_id" to table: "agent_run_tool_calls"
+CREATE INDEX "agentruntoolcall_tenant_id" ON "agent_run_tool_calls" ("tenant_id");
+-- create index "agentruntoolcall_tenant_id_agent_run_id_created_at" to table: "agent_run_tool_calls"
+CREATE INDEX "agentruntoolcall_tenant_id_agent_run_id_created_at" ON "agent_run_tool_calls" ("tenant_id", "agent_run_id", "created_at");
+-- create index "agentruntoolcall_tenant_id_tool_name_created_at" to table: "agent_run_tool_calls"
+CREATE INDEX "agentruntoolcall_tenant_id_tool_name_created_at" ON "agent_run_tool_calls" ("tenant_id", "tool_name", "created_at");
+-- create index "agentruntoolcall_tenant_id_status_created_at" to table: "agent_run_tool_calls"
+CREATE INDEX "agentruntoolcall_tenant_id_status_created_at" ON "agent_run_tool_calls" ("tenant_id", "status", "created_at");
+-- create "agent_tasks" table
+CREATE TABLE "agent_tasks" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "workflow_kind" character varying NOT NULL, "workflow_input" jsonb NULL, "trigger_kind" character varying NOT NULL, "trigger_payload" jsonb NULL, "tenant_id" bigint NOT NULL, "owner_user_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "agenttask_tenant_id" to table: "agent_tasks"
+CREATE INDEX "agenttask_tenant_id" ON "agent_tasks" ("tenant_id");
+-- create index "agenttask_tenant_id_owner_user_id_created_at" to table: "agent_tasks"
+CREATE INDEX "agenttask_tenant_id_owner_user_id_created_at" ON "agent_tasks" ("tenant_id", "owner_user_id", "created_at");
+-- create index "agenttask_tenant_id_workflow_kind_created_at" to table: "agent_tasks"
+CREATE INDEX "agenttask_tenant_id_workflow_kind_created_at" ON "agent_tasks" ("tenant_id", "workflow_kind", "created_at");
 -- create "alerts" table
 CREATE TABLE "alerts" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, "roster_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "alert_tenant_id" to table: "alerts"
@@ -490,18 +500,20 @@ CREATE TABLE "task_tickets" ("task_id" uuid NOT NULL, "ticket_id" uuid NOT NULL,
 CREATE TABLE "team_oncall_rosters" ("team_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("team_id", "oncall_roster_id"));
 -- create "user_watched_oncall_rosters" table
 CREATE TABLE "user_watched_oncall_rosters" ("user_id" uuid NOT NULL, "oncall_roster_id" uuid NOT NULL, PRIMARY KEY ("user_id", "oncall_roster_id"));
--- modify "agent_cases" table
-ALTER TABLE "agent_cases" ADD CONSTRAINT "agent_cases_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "agent_case_artifacts" table
-ALTER TABLE "agent_case_artifacts" ADD CONSTRAINT "agent_case_artifacts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_case_artifacts_agent_cases_agent_case" FOREIGN KEY ("agent_case_id") REFERENCES "agent_cases" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_case_artifacts_agent_case_steps_agent_case_step" FOREIGN KEY ("agent_case_step_id") REFERENCES "agent_case_steps" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_case_artifacts_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE SET NULL;
--- modify "agent_case_conclusions" table
-ALTER TABLE "agent_case_conclusions" ADD CONSTRAINT "agent_case_conclusions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_case_conclusions_agent_cases_agent_case" FOREIGN KEY ("agent_case_id") REFERENCES "agent_cases" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_case_conclusions_agent_case_steps_agent_case_step" FOREIGN KEY ("agent_case_step_id") REFERENCES "agent_case_steps" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_case_conclusions_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE SET NULL;
--- modify "agent_case_steps" table
-ALTER TABLE "agent_case_steps" ADD CONSTRAINT "agent_case_steps_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_case_steps_agent_cases_agent_case" FOREIGN KEY ("agent_case_id") REFERENCES "agent_cases" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_case_steps_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE SET NULL;
 -- modify "agent_runs" table
-ALTER TABLE "agent_runs" ADD CONSTRAINT "agent_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_runs_agent_cases_agent_case" FOREIGN KEY ("agent_case_id") REFERENCES "agent_cases" ("id") ON DELETE SET NULL;
--- modify "agent_run_feedbacks" table
-ALTER TABLE "agent_run_feedbacks" ADD CONSTRAINT "agent_run_feedbacks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_feedbacks_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_feedbacks_users_user" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE SET NULL;
+ALTER TABLE "agent_runs" ADD CONSTRAINT "agent_runs_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_runs_agent_tasks_agent_task" FOREIGN KEY ("agent_task_id") REFERENCES "agent_tasks" ("id") ON DELETE NO ACTION;
+-- modify "agent_run_citations" table
+ALTER TABLE "agent_run_citations" ADD CONSTRAINT "agent_run_citations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_citations_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_citations_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_run_citations_knowledge__2174aff27b8bc3fd37438d763b4bd03b" FOREIGN KEY ("knowledge_relationship_id") REFERENCES "knowledge_relationships" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_run_citations_knowledge_evidences_knowledge_evidence" FOREIGN KEY ("knowledge_evidence_id") REFERENCES "knowledge_evidences" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_run_citations_agent_tasks_agent_task" FOREIGN KEY ("agent_task_id") REFERENCES "agent_tasks" ("id") ON DELETE SET NULL, ADD CONSTRAINT "agent_run_citations_agent_run_tool_calls_agent_run_tool_call" FOREIGN KEY ("agent_run_tool_call_id") REFERENCES "agent_run_tool_calls" ("id") ON DELETE SET NULL;
+-- modify "agent_run_findings" table
+ALTER TABLE "agent_run_findings" ADD CONSTRAINT "agent_run_findings_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_findings_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION;
+-- modify "agent_run_finding_citations" table
+ALTER TABLE "agent_run_finding_citations" ADD CONSTRAINT "agent_run_finding_citations_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_finding_citations_ag_9a3b43a8d817a43c8de87f621827096a" FOREIGN KEY ("agent_run_finding_id") REFERENCES "agent_run_findings" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_finding_citations_ag_012686cc6fb703a2437581a00eaa6ea0" FOREIGN KEY ("agent_run_citation_id") REFERENCES "agent_run_citations" ("id") ON DELETE NO ACTION;
+-- modify "agent_run_results" table
+ALTER TABLE "agent_run_results" ADD CONSTRAINT "agent_run_results_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_results_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION;
+-- modify "agent_run_tool_calls" table
+ALTER TABLE "agent_run_tool_calls" ADD CONSTRAINT "agent_run_tool_calls_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_run_tool_calls_agent_runs_agent_run" FOREIGN KEY ("agent_run_id") REFERENCES "agent_runs" ("id") ON DELETE NO ACTION;
+-- modify "agent_tasks" table
+ALTER TABLE "agent_tasks" ADD CONSTRAINT "agent_tasks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_tasks_users_owner_user" FOREIGN KEY ("owner_user_id") REFERENCES "users" ("id") ON DELETE NO ACTION;
 -- modify "alerts" table
 ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "alerts_oncall_rosters_alerts" FOREIGN KEY ("roster_id") REFERENCES "oncall_rosters" ("id") ON DELETE SET NULL;
 -- modify "alert_feedbacks" table

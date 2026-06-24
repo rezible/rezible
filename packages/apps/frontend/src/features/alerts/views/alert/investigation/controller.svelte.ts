@@ -1,14 +1,14 @@
 import {
-	createAgentCaseMutation,
-	listAgentCaseArtifactsOptions,
-	listAgentCaseConclusionsOptions,
-	listAgentCasesOptions,
+	createAgentTaskMutation,
+	getAgentRunResultOptions,
+	listAgentRunToolCallsOptions,
 	listAgentRunsOptions,
-	requestAgentCaseRunMutation,
-	type AgentCase,
-	type AgentCaseArtifact,
-	type AgentCaseConclusion,
+	listAgentTasksOptions,
+	requestAgentTaskRunMutation,
 	type AgentRun,
+	type AgentRunResult,
+	type AgentRunToolCall,
+	type AgentTask,
 } from "$lib/api";
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context } from "runed";
@@ -22,41 +22,51 @@ type TitledItem = {
 	summary: string;
 };
 
+type ContextItem = {
+	id: string;
+	attributes: {
+		role: string;
+		name: string;
+		payload?: Record<string, unknown>;
+	};
+};
+
 export class AlertInvestigationController {
 	private view = useAlertViewController();
 	private queryClient = useQueryClient();
 
 	alertId = $derived(this.view.alertId);
 
-	private casesQueryOptions = $derived(
-		listAgentCasesOptions({
+	private tasksQueryOptions = $derived(
+		listAgentTasksOptions({
 			query: {
 				limit: 5,
 				workflowKind: "alert_investigation",
-				subjectKind: "alert",
+				subjectType: "alert",
 				subjectId: this.alertId,
 			},
 		})
 	);
-	casesQuery = createQuery(() => ({
-		...this.casesQueryOptions,
+	tasksQuery = createQuery(() => ({
+		...this.tasksQueryOptions,
 		enabled: !!this.alertId,
 		refetchInterval: 3000,
 	}));
-	latestCase: AgentCase | undefined = $derived(this.casesQuery.data?.data?.[0]);
-	latestCaseId = $derived(this.latestCase?.id ?? "");
+	casesQuery = this.tasksQuery;
+	latestTask: AgentTask | undefined = $derived(this.tasksQuery.data?.data?.[0]);
+	latestTaskId = $derived(this.latestTask?.id ?? "");
 
 	private runsQueryOptions = $derived(
 		listAgentRunsOptions({
 			query: {
 				limit: 5,
-				agentCaseId: this.latestCaseId,
+				agentTaskId: this.latestTaskId,
 			},
 		})
 	);
 	private runsQuery = createQuery(() => ({
 		...this.runsQueryOptions,
-		enabled: !!this.latestCaseId,
+		enabled: !!this.latestTaskId,
 		refetchInterval: 3000,
 	}));
 	latestRun: AgentRun | undefined = $derived(this.runsQuery.data?.data?.[0]);
@@ -64,57 +74,51 @@ export class AlertInvestigationController {
 		this.latestRun?.attributes.status === "queued" || this.latestRun?.attributes.status === "running"
 	);
 
-	private artifactsQueryOptions = $derived(
-		listAgentCaseArtifactsOptions({ path: { id: this.latestCaseId } })
+	private toolCallsQueryOptions = $derived(
+		listAgentRunToolCallsOptions({ path: { id: this.latestRun?.id ?? "" } })
 	);
-	private artifactsQuery = createQuery(() => ({
-		...this.artifactsQueryOptions,
-		enabled: !!this.latestCaseId,
+	private toolCallsQuery = createQuery(() => ({
+		...this.toolCallsQueryOptions,
+		enabled: !!this.latestRun?.id,
 		refetchInterval: this.latestRunActive ? 3000 : false,
 	}));
-	artifacts = $derived(this.artifactsQuery.data?.data ?? []);
+	private toolCalls: AgentRunToolCall[] = $derived(this.toolCallsQuery.data?.data ?? []);
 
-	private conclusionsQueryOptions = $derived(
-		listAgentCaseConclusionsOptions({ path: { id: this.latestCaseId } })
+	private resultQueryOptions = $derived(
+		getAgentRunResultOptions({ path: { id: this.latestRun?.id ?? "" } })
 	);
-	private conclusionsQuery = createQuery(() => ({
-		...this.conclusionsQueryOptions,
-		enabled: !!this.latestCaseId,
+	private resultQuery = createQuery(() => ({
+		...this.resultQueryOptions,
+		enabled: !!this.latestRun?.id && this.latestRun?.attributes.status === "succeeded",
 		refetchInterval: this.latestRunActive ? 3000 : false,
 	}));
 
-	contextArtifact: AgentCaseArtifact | undefined = $derived(
-		this.artifacts.find(
-			(artifact) =>
-				artifact.attributes.kind === "context" && artifact.attributes.name === "retrieval_context"
-		)
+	private contextToolCall: AgentRunToolCall | undefined = $derived(
+		this.toolCalls.find((call) => call.attributes.toolName === "alert.investigation_context")
 	);
-	context = $derived(this.contextArtifact?.attributes.payload);
-	resultConclusion: AgentCaseConclusion | undefined = $derived(
-		this.conclusionsQuery.data?.data.find(
-			(conclusion) => conclusion.attributes.kind === "alert_investigation"
-		)
-	);
-	resultPayload = $derived(this.resultConclusion?.attributes.payload);
+	context = $derived(this.recordField(this.contextToolCall?.attributes.result, "context"));
+	artifacts: ContextItem[] = $derived(this.contextItems(this.contextToolCall));
+	result: AgentRunResult | undefined = $derived(this.resultQuery.data?.data);
+	resultPayload = $derived(this.result?.attributes.data);
 	findingsPayload = $derived(this.recordField(this.resultPayload, "findings"));
 
-	private createCase = createMutation(() => ({
-		...createAgentCaseMutation(),
+	private createTask = createMutation(() => ({
+		...createAgentTaskMutation(),
 		onSuccess: async () => {
-			await this.queryClient.invalidateQueries(this.casesQueryOptions);
+			await this.queryClient.invalidateQueries(this.tasksQueryOptions);
 			await this.queryClient.invalidateQueries(this.runsQueryOptions);
 		},
 	}));
 	private requestRun = createMutation(() => ({
-		...requestAgentCaseRunMutation(),
+		...requestAgentTaskRunMutation(),
 		onSuccess: async () => {
 			await this.queryClient.invalidateQueries(this.runsQueryOptions);
-			await this.queryClient.invalidateQueries(this.artifactsQueryOptions);
-			await this.queryClient.invalidateQueries(this.conclusionsQueryOptions);
+			await this.queryClient.invalidateQueries(this.toolCallsQueryOptions);
+			await this.queryClient.invalidateQueries(this.resultQueryOptions);
 		},
 	}));
 
-	requestPending = $derived(this.createCase.isPending || this.requestRun.isPending);
+	requestPending = $derived(this.createTask.isPending || this.requestRun.isPending);
 	requestDisabled = $derived(this.requestPending || this.latestRunActive);
 
 	subjects = $derived(this.artifactsByRole("likely_subject"));
@@ -122,13 +126,9 @@ export class AlertInvestigationController {
 	suggestedChecks = $derived(this.stringList(this.context, "suggestedChecks"));
 	neighbors = $derived(this.artifactsByRole("neighbor"));
 	guides = $derived(this.artifactsByRole("guide"));
-	title = $derived(
-		this.stringField(this.context, "alertTitle") ||
-			this.latestCase?.attributes.title ||
-			this.statusLabel(this.latestRun)
-	);
+	title = $derived(this.stringField(this.context, "alertTitle") || "Alert investigation");
 	resultSummary = $derived(
-		this.stringField(this.resultPayload, "summary") || this.resultConclusion?.attributes.summary || ""
+		this.stringField(this.resultPayload, "summary") || this.result?.attributes.content || ""
 	);
 	likelyCause = $derived(this.stringField(this.findingsPayload, "likelyCause"));
 	findingSuggestedChecks = $derived(this.stringList(this.findingsPayload, "suggestedChecks"));
@@ -161,23 +161,24 @@ export class AlertInvestigationController {
 	guideItems = $derived(this.guides.map((guide): TitledItem => this.titledItem(guide)));
 
 	runInvestigation = () => {
-		if (this.latestCaseId) {
+		if (this.latestTaskId) {
 			this.requestRun.mutate({
-				path: { id: this.latestCaseId },
-				body: { attributes: { metadata: { trigger: "manual" } } },
+				path: { id: this.latestTaskId },
 			});
 			return;
 		}
 
-		this.createCase.mutate({
+		this.createTask.mutate({
 			body: {
 				attributes: {
-					title: "Alert investigation",
-					query: "Investigate alert and summarize findings for responders.",
 					workflowKind: "alert_investigation",
-					subjectKind: "alert",
-					subjectId: this.alertId,
-					triggerMetadata: { trigger: "manual" },
+					workflowInput: {
+						schema: "alert_investigation.v1",
+						subjects: [{ type: "alert", id: this.alertId }],
+						objectives: ["Investigate alert and summarize findings for responders."],
+					},
+					triggerKind: "manual",
+					triggerPayload: { trigger: "manual" },
 				},
 			},
 		});
@@ -200,7 +201,7 @@ export class AlertInvestigationController {
 		return Array.isArray(value) ? value.filter((item): item is string => typeof item === "string") : [];
 	}
 
-	private artifactString(artifact: AgentCaseArtifact, key: string) {
+	private artifactString(artifact: ContextItem, key: string) {
 		return this.stringField(artifact.attributes.payload, key);
 	}
 
@@ -213,12 +214,31 @@ export class AlertInvestigationController {
 		return this.artifacts.filter((artifact) => artifact.attributes.role === role);
 	}
 
-	private titledItem(artifact: AgentCaseArtifact): TitledItem {
+	private titledItem(artifact: ContextItem): TitledItem {
 		return {
 			id: artifact.id,
 			title: this.artifactString(artifact, "title") || artifact.attributes.name,
 			summary: this.artifactString(artifact, "summary"),
 		};
+	}
+
+	private contextItems(toolCall: AgentRunToolCall | undefined): ContextItem[] {
+		const result = toolCall?.attributes.result;
+		const rawItems = result?.items;
+		if (!Array.isArray(rawItems)) return [];
+		return rawItems
+			.filter((item): item is Record<string, unknown> => item !== null && typeof item === "object")
+			.map((item, index) => {
+				const payload = this.recordField(item as Payload, "payload");
+				return {
+					id: this.stringField(item as Payload, "id") || `${index}`,
+					attributes: {
+						role: this.stringField(item as Payload, "role"),
+						name: this.stringField(item as Payload, "name"),
+						payload,
+					},
+				};
+			});
 	}
 }
 

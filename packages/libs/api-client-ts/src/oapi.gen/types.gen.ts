@@ -77,111 +77,111 @@ export type AddWatchedOncallRosterResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type AgentCase = {
-    attributes: AgentCaseAttributes;
-    id: string;
-};
-
-export type AgentCaseArtifact = {
-    attributes: AgentCaseArtifactAttributes;
-    id: string;
-};
-
-export type AgentCaseArtifactAttributes = {
-    agentCaseId: string;
-    agentCaseStepId?: string;
-    agentRunId?: string;
-    createdAt: string;
-    kind: string;
-    name: string;
-    payload: {
-        [key: string]: unknown;
-    };
-    redacted: boolean;
-    role?: string;
-};
-
-export type AgentCaseAttributes = {
-    createdAt: string;
-    errorCode?: string;
-    errorMessage?: string;
-    query?: string;
-    status: string;
-    subjectId?: string;
-    subjectKind?: string;
-    summary?: string;
-    title: string;
-    triggerMetadata?: {
-        [key: string]: unknown;
-    };
-    updatedAt: string;
-    workflowKind?: string;
-};
-
-export type AgentCaseConclusion = {
-    attributes: AgentCaseConclusionAttributes;
-    id: string;
-};
-
-export type AgentCaseConclusionAttributes = {
-    agentCaseId: string;
-    agentCaseStepId?: string;
-    agentRunId?: string;
-    confidence?: string;
-    createdAt: string;
-    kind: string;
-    limitations?: Array<string>;
-    payload: {
-        [key: string]: unknown;
-    };
-    recommendedActions?: Array<string>;
-    summary?: string;
-};
-
-export type AgentCaseStep = {
-    attributes: AgentCaseStepAttributes;
-    id: string;
-};
-
-export type AgentCaseStepAttributes = {
-    agentCaseId: string;
-    agentRunId?: string;
-    completedAt?: string;
-    createdAt: string;
-    input?: {
-        [key: string]: unknown;
-    };
-    kind: string;
-    output?: {
-        [key: string]: unknown;
-    };
-    sequence: number;
-    startedAt?: string;
-    summary?: string;
-    title: string;
-};
-
 export type AgentRun = {
     attributes: AgentRunAttributes;
     id: string;
 };
 
 export type AgentRunAttributes = {
-    agentCaseId?: string;
-    completedAt?: string;
-    errorCode?: string;
+    agentTaskId: string;
+    attempt: number;
+    createdAt: string;
     errorMessage?: string;
-    failedAt?: string;
-    idempotencyKey: string;
-    modelMetadata?: {
-        [key: string]: unknown;
-    };
-    queuedAt: string;
+    finishedAt?: string;
     startedAt?: string;
     status: string;
-    subjectId?: string;
-    subjectKind?: string;
-    triggerMetadata?: {
+    updatedAt: string;
+    workflowKind: string;
+};
+
+export type AgentRunCitation = {
+    attributes: AgentRunCitationAttributes;
+    id: string;
+};
+
+export type AgentRunCitationAttributes = {
+    agentRunId: string;
+    agentRunToolCallId?: string;
+    agentTaskId?: string;
+    citationKind: string;
+    createdAt: string;
+    domainEntityId?: string;
+    domainEntityType?: string;
+    knowledgeEntityId?: string;
+    knowledgeEvidenceId?: string;
+    knowledgeRelationshipId?: string;
+    snapshot?: {
+        [key: string]: unknown;
+    };
+    summary: string;
+    updatedAt: string;
+};
+
+export type AgentRunFinding = {
+    attributes: AgentRunFindingAttributes;
+    id: string;
+};
+
+export type AgentRunFindingAttributes = {
+    agentRunId: string;
+    content: string;
+    createdAt: string;
+    findingKind: string;
+    sequence: number;
+    updatedAt: string;
+};
+
+export type AgentRunResult = {
+    attributes: AgentRunResultAttributes;
+    id: string;
+};
+
+export type AgentRunResultAttributes = {
+    agentRunId: string;
+    content: string;
+    createdAt: string;
+    data?: {
+        [key: string]: unknown;
+    };
+    updatedAt: string;
+};
+
+export type AgentRunToolCall = {
+    attributes: AgentRunToolCallAttributes;
+    id: string;
+};
+
+export type AgentRunToolCallAttributes = {
+    agentRunId: string;
+    createdAt: string;
+    errorMessage?: string;
+    finishedAt?: string;
+    result?: {
+        [key: string]: unknown;
+    };
+    startedAt?: string;
+    status: string;
+    toolName: string;
+    toolParams?: {
+        [key: string]: unknown;
+    };
+    updatedAt: string;
+};
+
+export type AgentTask = {
+    attributes: AgentTaskAttributes;
+    id: string;
+};
+
+export type AgentTaskAttributes = {
+    createdAt: string;
+    ownerUserId: string;
+    triggerKind: string;
+    triggerPayload: {
+        [key: string]: unknown;
+    };
+    updatedAt: string;
+    workflowInput: {
         [key: string]: unknown;
     };
     workflowKind: string;
@@ -245,31 +245,31 @@ export type CompleteIntegrationOAuthFlowResponseBody = {
     data: IntegrationOAuthInstallResult;
 };
 
-export type CreateAgentCaseAttributes = {
-    query?: string;
-    subjectId?: string;
-    subjectKind?: string;
-    title?: string;
-    triggerMetadata?: {
+export type CreateAgentTaskAttributes = {
+    triggerKind?: string;
+    triggerPayload?: {
+        [key: string]: unknown;
+    };
+    workflowInput: {
         [key: string]: unknown;
     };
     workflowKind: string;
 };
 
-export type CreateAgentCaseRequestBody = {
+export type CreateAgentTaskRequestBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    attributes: CreateAgentCaseAttributes;
+    attributes: CreateAgentTaskAttributes;
 };
 
-export type CreateAgentCaseResponseBody = {
+export type CreateAgentTaskResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: AgentCase;
+    data: AgentTask;
 };
 
 export type CreateEventAnnotationRequestAttributes = {
@@ -849,20 +849,28 @@ export type GetAdjacentOncallShiftsResponseBody = {
     data: OncallShiftsAdjacent;
 };
 
-export type GetAgentCaseResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: AgentCase;
-};
-
 export type GetAgentRunResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
     data: AgentRun;
+};
+
+export type GetAgentRunResultResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AgentRunResult;
+};
+
+export type GetAgentTaskResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: AgentTask;
 };
 
 export type GetAlertMetricsResponseBody = {
@@ -1592,39 +1600,30 @@ export type IntegrationOAuthInstallResult = {
     targetSelectionRequired: boolean;
 };
 
-export type ListAgentCaseArtifactsResponseBody = {
+export type ListAgentRunCitationsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AgentCaseArtifact>;
+    data: Array<AgentRunCitation>;
     pagination: ResponsePagination;
 };
 
-export type ListAgentCaseConclusionsResponseBody = {
+export type ListAgentRunFindingsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AgentCaseConclusion>;
+    data: Array<AgentRunFinding>;
     pagination: ResponsePagination;
 };
 
-export type ListAgentCaseStepsResponseBody = {
+export type ListAgentRunToolCallsResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
     readonly $schema?: string;
-    data: Array<AgentCaseStep>;
-    pagination: ResponsePagination;
-};
-
-export type ListAgentCasesResponseBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    data: Array<AgentCase>;
+    data: Array<AgentRunToolCall>;
     pagination: ResponsePagination;
 };
 
@@ -1634,6 +1633,15 @@ export type ListAgentRunsResponseBody = {
      */
     readonly $schema?: string;
     data: Array<AgentRun>;
+    pagination: ResponsePagination;
+};
+
+export type ListAgentTasksResponseBody = {
+    /**
+     * A URL to the JSON Schema for this object.
+     */
+    readonly $schema?: string;
+    data: Array<AgentTask>;
     pagination: ResponsePagination;
 };
 
@@ -2164,22 +2172,7 @@ export type RemoveWatchedOncallRosterResponseBody = {
     pagination: ResponsePagination;
 };
 
-export type RequestAgentCaseRunAttributes = {
-    idempotencyKey?: string;
-    metadata?: {
-        [key: string]: unknown;
-    };
-};
-
-export type RequestAgentCaseRunRequestBody = {
-    /**
-     * A URL to the JSON Schema for this object.
-     */
-    readonly $schema?: string;
-    attributes: RequestAgentCaseRunAttributes;
-};
-
-export type RequestAgentCaseRunResponseBody = {
+export type RequestAgentTaskRunResponseBody = {
     /**
      * A URL to the JSON Schema for this object.
      */
@@ -3097,340 +3090,6 @@ export type VideoConferenceAttributes = {
     status: string;
 };
 
-export type ListAgentCasesData = {
-    body?: never;
-    path?: never;
-    query?: {
-        limit?: number;
-        offset?: number;
-        search?: string;
-        archived?: boolean;
-        status?: string;
-        workflowKind?: string;
-        subjectKind?: string;
-        subjectId?: string;
-    };
-    url: '/agents/cases';
-};
-
-export type ListAgentCasesErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListAgentCasesError = ListAgentCasesErrors[keyof ListAgentCasesErrors];
-
-export type ListAgentCasesResponses = {
-    /**
-     * OK
-     */
-    200: ListAgentCasesResponseBody;
-};
-
-export type ListAgentCasesResponse = ListAgentCasesResponses[keyof ListAgentCasesResponses];
-
-export type CreateAgentCaseData = {
-    body: CreateAgentCaseRequestBody;
-    path?: never;
-    query?: never;
-    url: '/agents/cases';
-};
-
-export type CreateAgentCaseErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type CreateAgentCaseError = CreateAgentCaseErrors[keyof CreateAgentCaseErrors];
-
-export type CreateAgentCaseResponses = {
-    /**
-     * OK
-     */
-    200: CreateAgentCaseResponseBody;
-};
-
-export type CreateAgentCaseResponse = CreateAgentCaseResponses[keyof CreateAgentCaseResponses];
-
-export type GetAgentCaseData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/agents/cases/{id}';
-};
-
-export type GetAgentCaseErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type GetAgentCaseError = GetAgentCaseErrors[keyof GetAgentCaseErrors];
-
-export type GetAgentCaseResponses = {
-    /**
-     * OK
-     */
-    200: GetAgentCaseResponseBody;
-};
-
-export type GetAgentCaseResponse = GetAgentCaseResponses[keyof GetAgentCaseResponses];
-
-export type ListAgentCaseArtifactsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/agents/cases/{id}/artifacts';
-};
-
-export type ListAgentCaseArtifactsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListAgentCaseArtifactsError = ListAgentCaseArtifactsErrors[keyof ListAgentCaseArtifactsErrors];
-
-export type ListAgentCaseArtifactsResponses = {
-    /**
-     * OK
-     */
-    200: ListAgentCaseArtifactsResponseBody;
-};
-
-export type ListAgentCaseArtifactsResponse = ListAgentCaseArtifactsResponses[keyof ListAgentCaseArtifactsResponses];
-
-export type ListAgentCaseConclusionsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/agents/cases/{id}/conclusions';
-};
-
-export type ListAgentCaseConclusionsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListAgentCaseConclusionsError = ListAgentCaseConclusionsErrors[keyof ListAgentCaseConclusionsErrors];
-
-export type ListAgentCaseConclusionsResponses = {
-    /**
-     * OK
-     */
-    200: ListAgentCaseConclusionsResponseBody;
-};
-
-export type ListAgentCaseConclusionsResponse = ListAgentCaseConclusionsResponses[keyof ListAgentCaseConclusionsResponses];
-
-export type RequestAgentCaseRunData = {
-    body: RequestAgentCaseRunRequestBody;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/agents/cases/{id}/runs';
-};
-
-export type RequestAgentCaseRunErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type RequestAgentCaseRunError = RequestAgentCaseRunErrors[keyof RequestAgentCaseRunErrors];
-
-export type RequestAgentCaseRunResponses = {
-    /**
-     * OK
-     */
-    200: RequestAgentCaseRunResponseBody;
-};
-
-export type RequestAgentCaseRunResponse = RequestAgentCaseRunResponses[keyof RequestAgentCaseRunResponses];
-
-export type ListAgentCaseStepsData = {
-    body?: never;
-    path: {
-        id: string;
-    };
-    query?: never;
-    url: '/agents/cases/{id}/steps';
-};
-
-export type ListAgentCaseStepsErrors = {
-    /**
-     * Bad Request
-     */
-    400: ErrorModel;
-    /**
-     * Unauthorized
-     */
-    401: ErrorModel;
-    /**
-     * Forbidden
-     */
-    403: ErrorModel;
-    /**
-     * Not Found
-     */
-    404: ErrorModel;
-    /**
-     * Unprocessable Entity
-     */
-    422: ErrorModel;
-    /**
-     * Internal Server Error
-     */
-    500: ErrorModel;
-};
-
-export type ListAgentCaseStepsError = ListAgentCaseStepsErrors[keyof ListAgentCaseStepsErrors];
-
-export type ListAgentCaseStepsResponses = {
-    /**
-     * OK
-     */
-    200: ListAgentCaseStepsResponseBody;
-};
-
-export type ListAgentCaseStepsResponse = ListAgentCaseStepsResponses[keyof ListAgentCaseStepsResponses];
-
 export type ListAgentRunsData = {
     body?: never;
     path?: never;
@@ -3439,11 +3098,9 @@ export type ListAgentRunsData = {
         offset?: number;
         search?: string;
         archived?: boolean;
+        agentTaskId?: string;
         workflowKind?: string;
         status?: string;
-        agentCaseId?: string;
-        subjectKind?: string;
-        subjectId?: string;
     };
     url: '/agents/runs';
 };
@@ -3532,6 +3189,387 @@ export type GetAgentRunResponses = {
 };
 
 export type GetAgentRunResponse = GetAgentRunResponses[keyof GetAgentRunResponses];
+
+export type ListAgentRunCitationsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/agents/runs/{id}/citations';
+};
+
+export type ListAgentRunCitationsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentRunCitationsError = ListAgentRunCitationsErrors[keyof ListAgentRunCitationsErrors];
+
+export type ListAgentRunCitationsResponses = {
+    /**
+     * OK
+     */
+    200: ListAgentRunCitationsResponseBody;
+};
+
+export type ListAgentRunCitationsResponse = ListAgentRunCitationsResponses[keyof ListAgentRunCitationsResponses];
+
+export type ListAgentRunFindingsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/agents/runs/{id}/findings';
+};
+
+export type ListAgentRunFindingsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentRunFindingsError = ListAgentRunFindingsErrors[keyof ListAgentRunFindingsErrors];
+
+export type ListAgentRunFindingsResponses = {
+    /**
+     * OK
+     */
+    200: ListAgentRunFindingsResponseBody;
+};
+
+export type ListAgentRunFindingsResponse = ListAgentRunFindingsResponses[keyof ListAgentRunFindingsResponses];
+
+export type GetAgentRunResultData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/agents/runs/{id}/result';
+};
+
+export type GetAgentRunResultErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetAgentRunResultError = GetAgentRunResultErrors[keyof GetAgentRunResultErrors];
+
+export type GetAgentRunResultResponses = {
+    /**
+     * OK
+     */
+    200: GetAgentRunResultResponseBody;
+};
+
+export type GetAgentRunResultResponse = GetAgentRunResultResponses[keyof GetAgentRunResultResponses];
+
+export type ListAgentRunToolCallsData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/agents/runs/{id}/tool-calls';
+};
+
+export type ListAgentRunToolCallsErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentRunToolCallsError = ListAgentRunToolCallsErrors[keyof ListAgentRunToolCallsErrors];
+
+export type ListAgentRunToolCallsResponses = {
+    /**
+     * OK
+     */
+    200: ListAgentRunToolCallsResponseBody;
+};
+
+export type ListAgentRunToolCallsResponse = ListAgentRunToolCallsResponses[keyof ListAgentRunToolCallsResponses];
+
+export type ListAgentTasksData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+        offset?: number;
+        search?: string;
+        archived?: boolean;
+        workflowKind?: string;
+        triggerKind?: string;
+        subjectType?: string;
+        subjectId?: string;
+    };
+    url: '/agents/tasks';
+};
+
+export type ListAgentTasksErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type ListAgentTasksError = ListAgentTasksErrors[keyof ListAgentTasksErrors];
+
+export type ListAgentTasksResponses = {
+    /**
+     * OK
+     */
+    200: ListAgentTasksResponseBody;
+};
+
+export type ListAgentTasksResponse = ListAgentTasksResponses[keyof ListAgentTasksResponses];
+
+export type CreateAgentTaskData = {
+    body: CreateAgentTaskRequestBody;
+    path?: never;
+    query?: never;
+    url: '/agents/tasks';
+};
+
+export type CreateAgentTaskErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type CreateAgentTaskError = CreateAgentTaskErrors[keyof CreateAgentTaskErrors];
+
+export type CreateAgentTaskResponses = {
+    /**
+     * OK
+     */
+    200: CreateAgentTaskResponseBody;
+};
+
+export type CreateAgentTaskResponse = CreateAgentTaskResponses[keyof CreateAgentTaskResponses];
+
+export type GetAgentTaskData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/agents/tasks/{id}';
+};
+
+export type GetAgentTaskErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type GetAgentTaskError = GetAgentTaskErrors[keyof GetAgentTaskErrors];
+
+export type GetAgentTaskResponses = {
+    /**
+     * OK
+     */
+    200: GetAgentTaskResponseBody;
+};
+
+export type GetAgentTaskResponse = GetAgentTaskResponses[keyof GetAgentTaskResponses];
+
+export type RequestAgentTaskRunData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/agents/tasks/{id}/runs';
+};
+
+export type RequestAgentTaskRunErrors = {
+    /**
+     * Bad Request
+     */
+    400: ErrorModel;
+    /**
+     * Unauthorized
+     */
+    401: ErrorModel;
+    /**
+     * Forbidden
+     */
+    403: ErrorModel;
+    /**
+     * Not Found
+     */
+    404: ErrorModel;
+    /**
+     * Unprocessable Entity
+     */
+    422: ErrorModel;
+    /**
+     * Internal Server Error
+     */
+    500: ErrorModel;
+};
+
+export type RequestAgentTaskRunError = RequestAgentTaskRunErrors[keyof RequestAgentTaskRunErrors];
+
+export type RequestAgentTaskRunResponses = {
+    /**
+     * OK
+     */
+    200: RequestAgentTaskRunResponseBody;
+};
+
+export type RequestAgentTaskRunResponse = RequestAgentTaskRunResponses[keyof RequestAgentTaskRunResponses];
 
 export type ListAlertsData = {
     body?: never;

@@ -2,9 +2,11 @@ package eino
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
+	"strings"
 	"time"
 
 	"entgo.io/ent/dialect/sql"
@@ -13,51 +15,28 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentcase"
-	"github.com/rezible/rezible/ent/agentcaseartifact"
-	"github.com/rezible/rezible/ent/agentcaseconclusion"
-	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentruncitation"
+	"github.com/rezible/rezible/ent/agentrunfinding"
+	"github.com/rezible/rezible/ent/agentrunresult"
+	"github.com/rezible/rezible/ent/agentruntoolcall"
+	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/jobs"
 )
 
 type (
-	AgentCaseArtifact struct {
-		Kind     agentcaseartifact.Kind
-		Role     string
-		Name     string
-		Payload  map[string]any
-		Redacted bool
-	}
-
-	AgentCaseConclusion struct {
-		Kind               string
-		Summary            string
-		Confidence         string
-		RecommendedActions []string
-		Limitations        []string
-		Payload            map[string]any
-	}
-
-	AgentCaseStep struct {
-		Kind        agentcasestep.Kind
-		Title       string
-		Summary     string
-		Input       map[string]any
-		Output      map[string]any
-		Artifacts   []AgentCaseArtifact
-		Conclusions []AgentCaseConclusion
-	}
-
 	AgentWorkflowResult struct {
-		Summary string
-		Steps   []AgentCaseStep
+		Content   string
+		Data      map[string]any
+		Citations []rez.AgentRunCitationInput
+		Findings  []rez.AgentRunFindingInput
 	}
 
 	agentWorkflow interface {
-		Kind() agentrun.WorkflowKind
-		Validate(context.Context, *ent.AgentRun) error
-		Run(context.Context, *ent.AgentRun) (*AgentWorkflowResult, error)
+		Kind() rez.AgentWorkflowKind
+		Validate(context.Context, *ent.AgentTask, *ent.AgentRun) error
+		Run(context.Context, *WorkflowRecorder, *ent.AgentTask, *ent.AgentRun) (*AgentWorkflowResult, error)
 	}
 )
 
@@ -70,7 +49,7 @@ type AgentService struct {
 	incidents rez.IncidentService
 	alerts    rez.AlertService
 	modelProv ModelProvider
-	workflows map[agentrun.WorkflowKind]agentWorkflow
+	workflows map[rez.AgentWorkflowKind]agentWorkflow
 }
 
 func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, incidents rez.IncidentService, alerts rez.AlertService) (*AgentService, error) {
@@ -83,12 +62,11 @@ func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, 
 		incidents: incidents,
 		alerts:    alerts,
 		modelProv: newChatModelProvider(cfg.AI),
-		workflows: make(map[agentrun.WorkflowKind]agentWorkflow),
+		workflows: make(map[rez.AgentWorkflowKind]agentWorkflow),
 	}
 
 	s.registerWorkflow(&incidentContextPackWorkflow{incidents: incidents, modelFactory: s.modelProv})
 	s.registerWorkflow(&alertInvestigationWorkflow{alerts: alerts, modelFactory: s.modelProv, aiEnabled: cfg.AI.Enabled})
-	s.registerWorkflow(stubWorkflow{kind: agentrun.WorkflowKindRetrospectiveAnalysis})
 
 	jobs.RegisterWorkerFunc(func(ctx context.Context, args jobs.RunAgentWorkflow) error {
 		return s.RunWorkflow(ctx, args.AgentRunID)
@@ -113,72 +91,78 @@ func (s *AgentService) registerWorkflow(w agentWorkflow) {
 	s.workflows[w.Kind()] = w
 }
 
-func (s *AgentService) GetRun(ctx context.Context, id uuid.UUID) (*ent.AgentRun, error) {
-	return s.db.Client(ctx).AgentRun.Get(ctx, id)
+func (s *AgentService) GetTask(ctx context.Context, id uuid.UUID) (*ent.AgentTask, error) {
+	return s.db.Client(ctx).AgentTask.Get(ctx, id)
 }
 
-func (s *AgentService) GetCase(ctx context.Context, id uuid.UUID) (*ent.AgentCase, error) {
-	return s.db.Client(ctx).AgentCase.Get(ctx, id)
-}
-
-func (s *AgentService) ListCases(ctx context.Context, params rez.ListAgentCasesParams) (*ent.ListResult[ent.AgentCase], error) {
-	query := s.db.Client(ctx).AgentCase.Query().
-		Order(agentcase.ByUpdatedAt(sql.OrderDesc()))
-	if params.Status != "" {
-		query.Where(agentcase.StatusEQ(params.Status))
-	}
+func (s *AgentService) ListTasks(ctx context.Context, params rez.ListAgentTasksParams) (*ent.ListResult[ent.AgentTask], error) {
+	query := s.db.Client(ctx).AgentTask.Query().
+		Order(agenttask.ByUpdatedAt(sql.OrderDesc()))
 	if params.WorkflowKind != "" {
-		query.Where(agentcase.WorkflowKindEQ(agentcase.WorkflowKind(params.WorkflowKind)))
+		query.Where(agenttask.WorkflowKind(string(params.WorkflowKind)))
 	}
-	if params.SubjectKind != "" {
-		query.Where(agentcase.SubjectKind(params.SubjectKind))
+	if params.TriggerKind != "" {
+		query.Where(agenttask.TriggerKind(params.TriggerKind))
 	}
-	if params.SubjectID != uuid.Nil {
-		query.Where(agentcase.SubjectID(params.SubjectID))
+	if params.SubjectType != "" && params.SubjectID != uuid.Nil {
+		subjectFilter := fmt.Sprintf(`{"subjects":[{"type":%q,"id":%q}]}`, params.SubjectType, params.SubjectID.String())
+		query.Where(func(sel *sql.Selector) {
+			sel.Where(sql.P(func(b *sql.Builder) {
+				b.Ident(sel.C(agenttask.FieldWorkflowInput)).WriteString(" @> ").Arg(subjectFilter)
+			}))
+		})
 	}
-	return ent.DoListQuery[ent.AgentCase, *ent.AgentCaseQuery](ctx, query, params.ListParams)
+	return ent.DoListQuery[ent.AgentTask, *ent.AgentTaskQuery](ctx, query, params.ListParams)
 }
 
-func (s *AgentService) ListCaseSteps(ctx context.Context, id uuid.UUID) ([]*ent.AgentCaseStep, error) {
-	return s.db.Client(ctx).AgentCaseStep.Query().
-		Where(agentcasestep.AgentCaseID(id)).
-		Order(agentcasestep.BySequence(sql.OrderAsc())).
-		All(ctx)
-}
-
-func (s *AgentService) ListCaseArtifacts(ctx context.Context, id uuid.UUID) ([]*ent.AgentCaseArtifact, error) {
-	return s.db.Client(ctx).AgentCaseArtifact.Query().
-		Where(agentcaseartifact.AgentCaseID(id)).
-		Order(agentcaseartifact.ByCreatedAt(sql.OrderAsc())).
-		All(ctx)
-}
-
-func (s *AgentService) ListCaseConclusions(ctx context.Context, id uuid.UUID) ([]*ent.AgentCaseConclusion, error) {
-	return s.db.Client(ctx).AgentCaseConclusion.Query().
-		Where(agentcaseconclusion.AgentCaseID(id)).
-		Order(agentcaseconclusion.ByCreatedAt(sql.OrderAsc())).
-		All(ctx)
+func (s *AgentService) GetRun(ctx context.Context, id uuid.UUID) (*ent.AgentRun, error) {
+	return s.db.Client(ctx).AgentRun.Query().
+		Where(agentrun.ID(id)).
+		WithAgentTask().
+		Only(ctx)
 }
 
 func (s *AgentService) ListRuns(ctx context.Context, params rez.ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error) {
 	query := s.db.Client(ctx).AgentRun.Query().
+		WithAgentTask().
 		Order(agentrun.ByUpdatedAt(sql.OrderDesc()))
-	if params.WorkflowKind != "" {
-		query.Where(agentrun.WorkflowKindEQ(params.WorkflowKind))
+	if params.AgentTaskID != uuid.Nil {
+		query.Where(agentrun.AgentTaskID(params.AgentTaskID))
 	}
 	if params.Status != "" {
 		query.Where(agentrun.StatusEQ(params.Status))
 	}
-	if params.AgentCaseID != uuid.Nil {
-		query.Where(agentrun.AgentCaseID(params.AgentCaseID))
-	}
-	if params.SubjectKind != "" {
-		query.Where(agentrun.SubjectKind(params.SubjectKind))
-	}
-	if params.SubjectID != uuid.Nil {
-		query.Where(agentrun.SubjectID(params.SubjectID))
+	if params.WorkflowKind != "" {
+		query.Where(agentrun.HasAgentTaskWith(agenttask.WorkflowKind(string(params.WorkflowKind))))
 	}
 	return ent.DoListQuery[ent.AgentRun, *ent.AgentRunQuery](ctx, query, params.ListParams)
+}
+
+func (s *AgentService) ListRunCitations(ctx context.Context, runID uuid.UUID) ([]*ent.AgentRunCitation, error) {
+	return s.db.Client(ctx).AgentRunCitation.Query().
+		Where(agentruncitation.AgentRunID(runID)).
+		Order(agentruncitation.ByCreatedAt(), agentruncitation.ByID()).
+		All(ctx)
+}
+
+func (s *AgentService) ListRunFindings(ctx context.Context, runID uuid.UUID) ([]*ent.AgentRunFinding, error) {
+	return s.db.Client(ctx).AgentRunFinding.Query().
+		Where(agentrunfinding.AgentRunID(runID)).
+		Order(agentrunfinding.BySequence()).
+		All(ctx)
+}
+
+func (s *AgentService) ListRunToolCalls(ctx context.Context, runID uuid.UUID) ([]*ent.AgentRunToolCall, error) {
+	return s.db.Client(ctx).AgentRunToolCall.Query().
+		Where(agentruntoolcall.AgentRunID(runID)).
+		Order(agentruntoolcall.ByCreatedAt(), agentruntoolcall.ByID()).
+		All(ctx)
+}
+
+func (s *AgentService) GetRunResult(ctx context.Context, runID uuid.UUID) (*ent.AgentRunResult, error) {
+	return s.db.Client(ctx).AgentRunResult.Query().
+		Where(agentrunresult.AgentRunID(runID)).
+		Only(ctx)
 }
 
 var insertAgentRunRequestJobOpts = &river.InsertOpts{
@@ -188,167 +172,99 @@ var insertAgentRunRequestJobOpts = &river.InsertOpts{
 	},
 }
 
-func (s *AgentService) CreateCase(ctx context.Context, params rez.AgentCaseRequest) (*ent.AgentCase, error) {
+func (s *AgentService) CreateTask(ctx context.Context, params rez.CreateAgentTaskRequest) (*ent.AgentTask, error) {
 	if params.WorkflowKind == "" {
 		return nil, fmt.Errorf("missing agent workflow kind")
 	}
 	if _, ok := s.workflows[params.WorkflowKind]; !ok {
 		return nil, fmt.Errorf("unknown agent workflow kind %q", params.WorkflowKind)
 	}
-	if params.TriggerMetadata == nil {
-		params.TriggerMetadata = map[string]any{}
-	}
-	title := params.Title
-	if title == "" {
-		title = string(params.WorkflowKind)
-		if params.SubjectKind != "" {
-			title += " for " + params.SubjectKind
+	ownerID := params.OwnerUserID
+	if ownerID == uuid.Nil {
+		userID, userOK := execution.GetContext(ctx).UserID()
+		if !userOK {
+			return nil, fmt.Errorf("missing task owner user")
 		}
+		ownerID = userID
+	}
+	if params.WorkflowInput == nil {
+		params.WorkflowInput = map[string]any{}
+	}
+	if params.TriggerKind == "" {
+		params.TriggerKind = "manual"
+	}
+	if params.TriggerPayload == nil {
+		params.TriggerPayload = map[string]any{}
 	}
 
-	var created *ent.AgentCase
+	var created *ent.AgentTask
 	if err := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		create := tx.AgentCase.Create().
-			SetStatus(agentcase.StatusOpen).
-			SetTitle(title).
-			SetWorkflowKind(agentcase.WorkflowKind(params.WorkflowKind)).
-			SetTriggerMetadata(params.TriggerMetadata)
-		if params.Query != "" {
-			create.SetQuery(params.Query)
-		}
-		if params.SubjectKind != "" {
-			create.SetSubjectKind(params.SubjectKind)
-		}
-		if params.SubjectID != uuid.Nil {
-			create.SetSubjectID(params.SubjectID)
-		}
-		res, createErr := create.Save(ctx)
+		task, createErr := tx.AgentTask.Create().
+			SetOwnerUserID(ownerID).
+			SetWorkflowKind(string(params.WorkflowKind)).
+			SetWorkflowInput(redactJSON(params.WorkflowInput)).
+			SetTriggerKind(params.TriggerKind).
+			SetTriggerPayload(redactJSON(params.TriggerPayload)).
+			Save(ctx)
 		if createErr != nil {
-			return fmt.Errorf("create agent case: %w", createErr)
+			return fmt.Errorf("create agent task: %w", createErr)
 		}
-		created = res.Unwrap()
+		created = task.Unwrap()
 		return nil
 	}); err != nil {
 		return nil, err
 	}
 
-	if _, runErr := s.RequestCaseRun(ctx, rez.AgentCaseRunRequest{
-		AgentCaseID: created.ID,
-		Metadata:    params.TriggerMetadata,
-	}); runErr != nil {
+	if _, runErr := s.RequestTaskRun(ctx, created.ID); runErr != nil {
 		return nil, runErr
 	}
-	return s.GetCase(ctx, created.ID)
+	return s.GetTask(ctx, created.ID)
 }
 
-func (s *AgentService) RequestCaseRun(ctx context.Context, params rez.AgentCaseRunRequest) (*ent.AgentRun, error) {
-	if params.AgentCaseID == uuid.Nil {
-		return nil, fmt.Errorf("missing agent case id")
-	}
-	c, caseErr := s.GetCase(ctx, params.AgentCaseID)
-	if caseErr != nil {
-		return nil, fmt.Errorf("get agent case: %w", caseErr)
-	}
-	if c.WorkflowKind == "" {
-		return nil, fmt.Errorf("agent case has no workflow kind")
-	}
-	subjectID := uuid.Nil
-	if c.SubjectID != nil {
-		subjectID = *c.SubjectID
-	}
-	return s.RequestRun(ctx, rez.AgentRunRequest{
-		AgentCaseID:    c.ID,
-		WorkflowKind:   agentrun.WorkflowKind(c.WorkflowKind),
-		IdempotencyKey: params.IdempotencyKey,
-		SubjectKind:    c.SubjectKind,
-		SubjectID:      subjectID,
-		Metadata:       params.Metadata,
-	})
-}
-
-func (s *AgentService) RequestRun(ctx context.Context, params rez.AgentRunRequest) (*ent.AgentRun, error) {
-	if params.AgentCaseID == uuid.Nil {
-		return nil, fmt.Errorf("missing agent case id")
-	}
-	if _, ok := s.workflows[params.WorkflowKind]; !ok {
-		return nil, fmt.Errorf("unknown agent workflow kind %q", params.WorkflowKind)
-	}
-
-	runKey, keyErr := s.getRunRequestIdempotencyKey(params)
-	if keyErr != nil {
-		return nil, fmt.Errorf("invalid run request: %w", keyErr)
-	}
-
-	getOrCreateRunTx := func(ctx context.Context, tx *ent.Client) (*ent.AgentRun, error) {
-		queryExisting := tx.AgentRun.Query().
-			Where(agentrun.WorkflowKindEQ(params.WorkflowKind), agentrun.IdempotencyKey(runKey))
-		existing, queryErr := queryExisting.Only(ctx)
-		if queryErr != nil && !ent.IsNotFound(queryErr) {
-			return nil, fmt.Errorf("query existing agent run: %w", queryErr)
-		}
-		if existing != nil {
-			return existing, nil
-		}
-
-		create := tx.AgentRun.Create().
-			SetAgentCaseID(params.AgentCaseID).
-			SetWorkflowKind(params.WorkflowKind).
-			SetStatus(agentrun.StatusQueued).
-			SetIdempotencyKey(runKey).
-			SetTriggerMetadata(params.Metadata).
-			SetModelMetadata(s.modelProv.ModelMetadata()).
-			SetQueuedAt(time.Now().UTC())
-		if params.SubjectKind != "" {
-			create.SetSubjectKind(params.SubjectKind)
-		}
-		if params.SubjectID != uuid.Nil {
-			create.SetSubjectID(params.SubjectID)
-		}
-		created, createErr := create.Save(ctx)
-		if createErr != nil {
-			return nil, fmt.Errorf("create agent run: %w", createErr)
-		}
-
-		return created, nil
-	}
-
+func (s *AgentService) RequestTaskRun(ctx context.Context, taskId uuid.UUID) (*ent.AgentRun, error) {
 	var run *ent.AgentRun
-	return run, s.db.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
-		res, runErr := getOrCreateRunTx(ctx, client)
-		if runErr != nil {
-			return runErr
+	err := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		if lockErr := s.db.AcquireTxLocks(ctx, "agent_task_run_attempt", taskId.String()); lockErr != nil {
+			return lockErr
 		}
-		run = res.Unwrap()
-
-		_, jobErr := s.jobs.Insert(ctx, jobs.RunAgentWorkflow{AgentRunID: run.ID}, insertAgentRunRequestJobOpts)
-		if jobErr != nil {
+		task, taskErr := tx.AgentTask.Get(ctx, taskId)
+		if taskErr != nil {
+			return fmt.Errorf("get agent task: %w", taskErr)
+		}
+		if _, ok := s.workflows[rez.AgentWorkflowKind(task.WorkflowKind)]; !ok {
+			return fmt.Errorf("unknown agent workflow kind %q", task.WorkflowKind)
+		}
+		latest, latestErr := tx.AgentRun.Query().
+			Where(agentrun.AgentTaskIDEQ(taskId)).
+			Order(agentrun.ByStartedAt(sql.OrderDesc())).
+			First(ctx)
+		if latestErr != nil && !ent.IsNotFound(latestErr) {
+			return fmt.Errorf("query latest agent run: %w", latestErr)
+		}
+		attempt := 1
+		if latest != nil {
+			attempt = latest.Attempt + 1
+		}
+		created, createErr := tx.AgentRun.Create().
+			SetAgentTaskID(taskId).
+			SetAttempt(attempt).
+			SetStatus(agentrun.StatusQueued).
+			Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create agent run: %w", createErr)
+		}
+		run = created.Unwrap()
+		if _, jobErr := s.jobs.Insert(ctx, jobs.RunAgentWorkflow{AgentRunID: run.ID}, insertAgentRunRequestJobOpts); jobErr != nil {
 			return fmt.Errorf("enqueue agent workflow: %w", jobErr)
 		}
-
 		s.publishEvent(ctx, rez.EventOnAgentRunQueued{
 			AgentRunID:   run.ID,
-			WorkflowKind: run.WorkflowKind,
-			SubjectKind:  run.SubjectKind,
+			AgentTaskID:  task.ID,
+			WorkflowKind: rez.AgentWorkflowKind(task.WorkflowKind),
 		})
-
 		return nil
 	})
-}
-
-func (s *AgentService) getRunRequestIdempotencyKey(params rez.AgentRunRequest) (string, error) {
-	if params.WorkflowKind == "" {
-		return "", fmt.Errorf("missing agent workflow kind")
-	}
-	if params.IdempotencyKey != "" {
-		return params.IdempotencyKey, nil
-	}
-	if params.AgentCaseID != uuid.Nil {
-		return fmt.Sprintf("%s:%d", params.AgentCaseID, time.Now().UTC().UnixNano()), nil
-	}
-	if params.SubjectID == uuid.Nil {
-		return params.SubjectKind, nil
-	}
-	return fmt.Sprintf("%s:%s:%s", params.WorkflowKind, params.SubjectKind, params.SubjectID), nil
+	return run, err
 }
 
 func (s *AgentService) RunWorkflow(ctx context.Context, id uuid.UUID) error {
@@ -356,255 +272,276 @@ func (s *AgentService) RunWorkflow(ctx context.Context, id uuid.UUID) error {
 	if getErr != nil {
 		return fmt.Errorf("get agent run: %w", getErr)
 	}
-	return s.runWorkflow(ctx, run)
+	task := run.Edges.AgentTask
+	if task == nil {
+		return fmt.Errorf("agent run missing task")
+	}
+	runCtx := contextForTaskOwner(ctx, task)
+	return s.runWorkflow(runCtx, task, run)
 }
 
-func (s *AgentService) runWorkflow(ctx context.Context, run *ent.AgentRun) error {
+func (s *AgentService) runWorkflow(ctx context.Context, task *ent.AgentTask, run *ent.AgentRun) error {
 	if run.Status == agentrun.StatusSucceeded || run.Status == agentrun.StatusRunning {
 		return nil
 	}
-	w, ok := s.workflows[run.WorkflowKind]
+	w, ok := s.workflows[rez.AgentWorkflowKind(task.WorkflowKind)]
 	if !ok {
-		return s.failRun(ctx, run, "unknown_workflow", fmt.Errorf("unknown agent workflow kind %q", run.WorkflowKind))
+		return s.failRun(ctx, task, run, fmt.Errorf("unknown agent workflow kind %q", task.WorkflowKind))
 	}
-	if validationErr := w.Validate(ctx, run); validationErr != nil {
-		return s.failRun(ctx, run, "invalid_run", validationErr)
+	if validationErr := w.Validate(ctx, task, run); validationErr != nil {
+		return s.failRun(ctx, task, run, validationErr)
 	}
-	started, startErr := s.setRunStarted(ctx, run)
+	started, startErr := s.setRunStarted(ctx, task, run)
 	if startErr != nil {
-		return s.failRun(ctx, run, "set_run_started", startErr)
+		return s.failRun(ctx, task, run, startErr)
 	}
-	result, runErr := w.Run(ctx, started)
+	recorder := NewWorkflowRecorder(s.db, started.ID)
+	result, runErr := w.Run(ctx, recorder, task, started)
 	if runErr != nil {
-		return s.failRun(ctx, started, "workflow_error", runErr)
+		return s.failRun(ctx, task, started, runErr)
 	}
-	if completeErr := s.completeRun(ctx, started, result); completeErr != nil {
+	if completeErr := s.completeRun(ctx, task, started, result); completeErr != nil {
 		return completeErr
 	}
-
 	return nil
 }
 
-func (s *AgentService) setRunStarted(ctx context.Context, run *ent.AgentRun) (*ent.AgentRun, error) {
-	var started *ent.AgentRun
-	if err := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		update := tx.AgentRun.UpdateOneID(run.ID).
-			SetStatus(agentrun.StatusRunning).
-			SetStartedAt(time.Now().UTC()).
-			ClearCompletedAt().
-			ClearFailedAt().
-			ClearErrorCode().
-			ClearErrorMessage()
-		res, startErr := update.Save(ctx)
-		if startErr != nil {
-			return fmt.Errorf("mark agent run started: %w", startErr)
-		}
-		started = res.Unwrap()
-		if run.AgentCaseID != nil {
-			if _, caseErr := tx.AgentCase.UpdateOneID(*run.AgentCaseID).
-				SetStatus(agentcase.StatusRunning).
-				ClearErrorCode().
-				ClearErrorMessage().
-				Save(ctx); caseErr != nil {
-				return fmt.Errorf("mark agent case running: %w", caseErr)
-			}
-		}
-		return nil
-	}); err != nil {
-		return nil, err
+func (s *AgentService) setRunStarted(ctx context.Context, task *ent.AgentTask, run *ent.AgentRun) (*ent.AgentRun, error) {
+	started, err := s.db.Client(ctx).AgentRun.UpdateOneID(run.ID).
+		SetStatus(agentrun.StatusRunning).
+		SetStartedAt(time.Now().UTC()).
+		ClearFinishedAt().
+		ClearErrorMessage().
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("mark agent run started: %w", err)
 	}
-
 	s.publishEvent(ctx, rez.EventOnAgentRunStarted{
 		AgentRunID:   started.ID,
-		WorkflowKind: run.WorkflowKind,
+		AgentTaskID:  task.ID,
+		WorkflowKind: rez.AgentWorkflowKind(task.WorkflowKind),
 	})
-
 	return started, nil
 }
 
-func (s *AgentService) completeRun(ctx context.Context, run *ent.AgentRun, result *AgentWorkflowResult) error {
+func (s *AgentService) completeRun(ctx context.Context, task *ent.AgentTask, run *ent.AgentRun, result *AgentWorkflowResult) error {
 	if result == nil {
 		result = &AgentWorkflowResult{}
 	}
-
 	now := time.Now().UTC()
-	saveTx := func(txCtx context.Context, tx *ent.Client) error {
-		if run.AgentCaseID == nil {
-			return fmt.Errorf("agent run has no case id")
+	if err := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		citations, citationErr := createRunCitations(ctx, tx, run.ID, result.Citations)
+		if citationErr != nil {
+			return citationErr
 		}
-		nextSequence, seqErr := nextCaseStepSequence(txCtx, tx, *run.AgentCaseID)
-		if seqErr != nil {
-			return seqErr
+		if err := createRunFindings(ctx, tx, run.ID, result.Findings, citations); err != nil {
+			return err
 		}
-		steps := append([]AgentCaseStep{{
-			Kind:      agentcasestep.KindSystem,
-			Title:     "Model configuration",
-			Summary:   "Captured model configuration for this run.",
-			Artifacts: []AgentCaseArtifact{redactedModelCaseArtifact("model", s.cfg)},
-		}}, result.Steps...)
-		for _, step := range steps {
-			createdStep, stepErr := createCaseStep(txCtx, tx, *run.AgentCaseID, run.ID, nextSequence, now, step)
-			if stepErr != nil {
-				return stepErr
+		if strings.TrimSpace(result.Content) != "" {
+			if _, resultErr := tx.AgentRunResult.Create().
+				SetAgentRunID(run.ID).
+				SetContent(result.Content).
+				SetData(redactJSON(result.Data)).
+				Save(ctx); resultErr != nil {
+				return fmt.Errorf("create agent run result: %w", resultErr)
 			}
-			if err := createCaseStepArtifacts(txCtx, tx, *run.AgentCaseID, run.ID, createdStep.ID, step.Artifacts); err != nil {
-				return err
-			}
-			if err := createCaseStepConclusions(txCtx, tx, *run.AgentCaseID, run.ID, createdStep.ID, step.Conclusions); err != nil {
-				return err
-			}
-			nextSequence++
 		}
-
-		update := tx.AgentRun.UpdateOneID(run.ID).
+		if _, updateErr := tx.AgentRun.UpdateOneID(run.ID).
 			SetStatus(agentrun.StatusSucceeded).
-			SetCompletedAt(now).
-			ClearFailedAt().
-			ClearErrorCode().
-			ClearErrorMessage()
-		if _, updateErr := update.Save(txCtx); updateErr != nil {
-			return fmt.Errorf("mark agent run completed: %w", updateErr)
-		}
-		caseUpdate := tx.AgentCase.UpdateOneID(*run.AgentCaseID).
-			SetStatus(agentcase.StatusCompleted)
-		if result.Summary != "" {
-			caseUpdate.SetSummary(result.Summary)
-		}
-		if _, caseErr := caseUpdate.Save(txCtx); caseErr != nil {
-			return fmt.Errorf("mark agent case completed: %w", caseErr)
+			SetFinishedAt(now).
+			ClearErrorMessage().
+			Save(ctx); updateErr != nil {
+			return fmt.Errorf("mark agent run succeeded: %w", updateErr)
 		}
 		return nil
-	}
-	if txErr := s.db.WithTx(ctx, saveTx); txErr != nil {
-		return txErr
+	}); err != nil {
+		return err
 	}
 	s.publishEvent(ctx, rez.EventOnAgentRunCompleted{
 		AgentRunID:   run.ID,
-		WorkflowKind: run.WorkflowKind,
+		AgentTaskID:  task.ID,
+		WorkflowKind: rez.AgentWorkflowKind(task.WorkflowKind),
 	})
 	return nil
 }
 
-func (s *AgentService) failRun(ctx context.Context, run *ent.AgentRun, code string, err error) error {
+func (s *AgentService) failRun(ctx context.Context, task *ent.AgentTask, run *ent.AgentRun, err error) error {
 	errMsg := err.Error()
-	updateErr := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		update := tx.AgentRun.UpdateOneID(run.ID).
-			SetStatus(agentrun.StatusFailed).
-			SetFailedAt(time.Now().UTC()).
-			SetErrorCode(code).
-			SetErrorMessage(errMsg)
-		if _, saveErr := update.Save(ctx); saveErr != nil {
-			return fmt.Errorf("mark agent run failed: %w", saveErr)
-		}
-		if run.AgentCaseID != nil {
-			if _, caseErr := tx.AgentCase.UpdateOneID(*run.AgentCaseID).
-				SetStatus(agentcase.StatusFailed).
-				SetErrorCode(code).
-				SetErrorMessage(errMsg).
-				Save(ctx); caseErr != nil {
-				return fmt.Errorf("mark agent case failed: %w", caseErr)
-			}
-		}
-		return nil
-	})
+	_, updateErr := s.db.Client(ctx).AgentRun.UpdateOneID(run.ID).
+		SetStatus(agentrun.StatusFailed).
+		SetFinishedAt(time.Now().UTC()).
+		SetErrorMessage(errMsg).
+		Save(ctx)
 	if updateErr != nil {
-		return errors.Join(err, updateErr)
+		err = errors.Join(err, fmt.Errorf("mark agent run failed: %w", updateErr))
 	}
 	s.publishEvent(ctx, rez.EventOnAgentRunFailed{
 		AgentRunID:   run.ID,
-		WorkflowKind: run.WorkflowKind,
-		ErrorCode:    code,
+		AgentTaskID:  task.ID,
+		WorkflowKind: rez.AgentWorkflowKind(task.WorkflowKind),
 		ErrorMessage: errMsg,
 	})
 	return err
 }
 
-func nextCaseStepSequence(ctx context.Context, tx *ent.Client, caseID uuid.UUID) (int, error) {
-	latest, latestErr := tx.AgentCaseStep.Query().
-		Where(agentcasestep.AgentCaseID(caseID)).
-		Order(agentcasestep.BySequence(sql.OrderDesc())).
-		First(ctx)
-	if latestErr != nil {
-		if ent.IsNotFound(latestErr) {
-			return 1, nil
+func createRunCitations(ctx context.Context, tx *ent.Client, runID uuid.UUID, inputs []rez.AgentRunCitationInput) ([]*ent.AgentRunCitation, error) {
+	res := make([]*ent.AgentRunCitation, 0, len(inputs))
+	for _, input := range inputs {
+		if strings.TrimSpace(input.Summary) == "" {
+			continue
 		}
-		return 0, fmt.Errorf("query latest agent case step: %w", latestErr)
-	}
-	return latest.Sequence + 1, nil
-}
-
-func createCaseStep(ctx context.Context, tx *ent.Client, caseID, runID uuid.UUID, sequence int, now time.Time, step AgentCaseStep) (*ent.AgentCaseStep, error) {
-	create := tx.AgentCaseStep.Create().
-		SetAgentCaseID(caseID).
-		SetAgentRunID(runID).
-		SetSequence(sequence).
-		SetKind(step.Kind).
-		SetTitle(step.Title).
-		SetStartedAt(now).
-		SetCompletedAt(now)
-	if step.Summary != "" {
-		create.SetSummary(step.Summary)
-	}
-	if step.Input != nil {
-		create.SetInput(step.Input)
-	}
-	if step.Output != nil {
-		create.SetOutput(step.Output)
-	}
-	created, stepErr := create.Save(ctx)
-	if stepErr != nil {
-		return nil, fmt.Errorf("create agent case step: %w", stepErr)
-	}
-	return created, nil
-}
-
-func createCaseStepArtifacts(ctx context.Context, tx *ent.Client, caseID, runID, stepID uuid.UUID, artifacts []AgentCaseArtifact) error {
-	for _, artifact := range artifacts {
-		create := tx.AgentCaseArtifact.Create().
-			SetAgentCaseID(caseID).
-			SetAgentCaseStepID(stepID).
+		if err := validateCitationInput(runID, input); err != nil {
+			return nil, err
+		}
+		create := tx.AgentRunCitation.Create().
 			SetAgentRunID(runID).
-			SetKind(artifact.Kind).
-			SetName(artifact.Name).
-			SetPayload(artifact.Payload).
-			SetRedacted(artifact.Redacted)
-		if artifact.Role != "" {
-			create.SetRole(artifact.Role)
+			SetCitationKind(input.CitationKind).
+			SetSummary(input.Summary).
+			SetSnapshot(redactJSON(input.Snapshot))
+		if input.DomainEntityType != "" {
+			create.SetDomainEntityType(input.DomainEntityType)
 		}
-		if _, artifactErr := create.Save(ctx); artifactErr != nil {
-			return fmt.Errorf("create agent case artifact: %w", artifactErr)
+		if input.DomainEntityID != uuid.Nil {
+			create.SetDomainEntityID(input.DomainEntityID)
+		}
+		if input.KnowledgeEntityID != uuid.Nil {
+			create.SetKnowledgeEntityID(input.KnowledgeEntityID)
+		}
+		if input.KnowledgeRelationshipID != uuid.Nil {
+			create.SetKnowledgeRelationshipID(input.KnowledgeRelationshipID)
+		}
+		if input.KnowledgeEvidenceID != uuid.Nil {
+			create.SetKnowledgeEvidenceID(input.KnowledgeEvidenceID)
+		}
+		if input.AgentTaskID != uuid.Nil {
+			create.SetAgentTaskID(input.AgentTaskID)
+		}
+		if input.AgentRunToolCallID != uuid.Nil {
+			create.SetAgentRunToolCallID(input.AgentRunToolCallID)
+		}
+		citation, createErr := create.Save(ctx)
+		if createErr != nil {
+			return nil, fmt.Errorf("create agent run citation: %w", createErr)
+		}
+		res = append(res, citation)
+	}
+	return res, nil
+}
+
+func validateCitationInput(runID uuid.UUID, input rez.AgentRunCitationInput) error {
+	_ = runID
+	targets := 0
+	if input.DomainEntityType != "" || input.DomainEntityID != uuid.Nil {
+		if input.DomainEntityType == "" || input.DomainEntityID == uuid.Nil {
+			return fmt.Errorf("domain citation requires type and id")
+		}
+		targets++
+	}
+	for _, id := range []uuid.UUID{input.KnowledgeEntityID, input.KnowledgeRelationshipID, input.KnowledgeEvidenceID, input.AgentTaskID, input.AgentRunToolCallID} {
+		if id != uuid.Nil {
+			targets++
+		}
+	}
+	if targets != 1 {
+		return fmt.Errorf("agent citation requires exactly one target")
+	}
+	if input.CitationKind == "" {
+		return fmt.Errorf("agent citation kind is required")
+	}
+	return nil
+}
+
+func createRunFindings(ctx context.Context, tx *ent.Client, runID uuid.UUID, inputs []rez.AgentRunFindingInput, citations []*ent.AgentRunCitation) error {
+	for i, input := range inputs {
+		if strings.TrimSpace(input.Content) == "" {
+			continue
+		}
+		finding, createErr := tx.AgentRunFinding.Create().
+			SetAgentRunID(runID).
+			SetSequence(i + 1).
+			SetFindingKind(input.FindingKind).
+			SetContent(input.Content).
+			Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create agent run finding: %w", createErr)
+		}
+		for _, citation := range input.Citations {
+			if citation.CitationIndex <= 0 || citation.CitationIndex > len(citations) {
+				continue
+			}
+			if citation.SupportKind == "" {
+				citation.SupportKind = "supports"
+			}
+			if _, linkErr := tx.AgentRunFindingCitation.Create().
+				SetAgentRunFindingID(finding.ID).
+				SetAgentRunCitationID(citations[citation.CitationIndex-1].ID).
+				SetSupportKind(citation.SupportKind).
+				Save(ctx); linkErr != nil {
+				return fmt.Errorf("create agent run finding citation: %w", linkErr)
+			}
 		}
 	}
 	return nil
 }
 
-func createCaseStepConclusions(ctx context.Context, tx *ent.Client, caseID, runID, stepID uuid.UUID, conclusions []AgentCaseConclusion) error {
-	for _, conclusion := range conclusions {
-		create := tx.AgentCaseConclusion.Create().
-			SetAgentCaseID(caseID).
-			SetAgentCaseStepID(stepID).
-			SetAgentRunID(runID).
-			SetKind(conclusion.Kind)
-		if conclusion.Summary != "" {
-			create.SetSummary(conclusion.Summary)
+func contextForTaskOwner(ctx context.Context, task *ent.AgentTask) context.Context {
+	exec := execution.GetContext(ctx)
+	tenantID := task.TenantID
+	exec.ActorKind = execution.KindUser
+	exec.Auth.TenantID = &tenantID
+	exec.Auth.UserID = &task.OwnerUserID
+	return execution.SetContext(ctx, exec)
+}
+
+func redactJSON(input map[string]any) map[string]any {
+	if input == nil {
+		return map[string]any{}
+	}
+	out := make(map[string]any, len(input))
+	for key, value := range input {
+		lower := strings.ToLower(key)
+		if strings.Contains(lower, "token") || strings.Contains(lower, "secret") || strings.Contains(lower, "cookie") || strings.Contains(lower, "authorization") || strings.Contains(lower, "password") {
+			out[key] = "redacted"
+			continue
 		}
-		if conclusion.Confidence != "" {
-			create.SetConfidence(conclusion.Confidence)
-		}
-		if len(conclusion.RecommendedActions) > 0 {
-			create.SetRecommendedActions(conclusion.RecommendedActions)
-		}
-		if len(conclusion.Limitations) > 0 {
-			create.SetLimitations(conclusion.Limitations)
-		}
-		if conclusion.Payload != nil {
-			create.SetPayload(conclusion.Payload)
-		}
-		if _, conclusionErr := create.Save(ctx); conclusionErr != nil {
-			return fmt.Errorf("create agent case conclusion: %w", conclusionErr)
+		switch typed := value.(type) {
+		case map[string]any:
+			out[key] = redactJSON(typed)
+		default:
+			out[key] = value
 		}
 	}
-	return nil
+	return out
+}
+
+func workflowInputSubject(input map[string]any, subjectType string) uuid.UUID {
+	subjects, _ := input["subjects"].([]any)
+	for _, item := range subjects {
+		obj, _ := item.(map[string]any)
+		if obj["type"] != subjectType {
+			continue
+		}
+		idText, _ := obj["id"].(string)
+		id, err := uuid.Parse(idText)
+		if err == nil {
+			return id
+		}
+	}
+	return uuid.Nil
+}
+
+func encodePromptContext(ctx *rez.AgentWorkflowContext) (string, error) {
+	payload := map[string]any{
+		"schema":      ctx.PromptSchema,
+		"generatedAt": ctx.GeneratedAt,
+		"context":     ctx.Context,
+		"items":       ctx.Items,
+	}
+	bytes, err := json.MarshalIndent(payload, "", "  ")
+	if err != nil {
+		return "", err
+	}
+	return string(bytes), nil
 }
 
 func (s *AgentService) publishEvent(ctx context.Context, event any) {

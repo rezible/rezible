@@ -144,190 +144,6 @@ components:
         - data
         - pagination
       type: object
-    AgentCase:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/AgentCaseAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    AgentCaseArtifact:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/AgentCaseArtifactAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    AgentCaseArtifactAttributes:
-      additionalProperties: false
-      properties:
-        agentCaseId:
-          type: string
-        agentCaseStepId:
-          type: string
-        agentRunId:
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        kind:
-          type: string
-        name:
-          type: string
-        payload:
-          additionalProperties: {}
-          type: object
-        redacted:
-          type: boolean
-        role:
-          type: string
-      required:
-        - agentCaseId
-        - kind
-        - name
-        - payload
-        - redacted
-        - createdAt
-      type: object
-    AgentCaseAttributes:
-      additionalProperties: false
-      properties:
-        createdAt:
-          format: date-time
-          type: string
-        errorCode:
-          type: string
-        errorMessage:
-          type: string
-        query:
-          type: string
-        status:
-          type: string
-        subjectId:
-          type: string
-        subjectKind:
-          type: string
-        summary:
-          type: string
-        title:
-          type: string
-        triggerMetadata:
-          additionalProperties: {}
-          type: object
-        updatedAt:
-          format: date-time
-          type: string
-        workflowKind:
-          type: string
-      required:
-        - status
-        - title
-        - createdAt
-        - updatedAt
-      type: object
-    AgentCaseConclusion:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/AgentCaseConclusionAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    AgentCaseConclusionAttributes:
-      additionalProperties: false
-      properties:
-        agentCaseId:
-          type: string
-        agentCaseStepId:
-          type: string
-        agentRunId:
-          type: string
-        confidence:
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        kind:
-          type: string
-        limitations:
-          items:
-            type: string
-          type: array
-        payload:
-          additionalProperties: {}
-          type: object
-        recommendedActions:
-          items:
-            type: string
-          type: array
-        summary:
-          type: string
-      required:
-        - agentCaseId
-        - kind
-        - payload
-        - createdAt
-      type: object
-    AgentCaseStep:
-      additionalProperties: false
-      properties:
-        attributes:
-          $ref: "#/components/schemas/AgentCaseStepAttributes"
-        id:
-          type: string
-      required:
-        - id
-        - attributes
-      type: object
-    AgentCaseStepAttributes:
-      additionalProperties: false
-      properties:
-        agentCaseId:
-          type: string
-        agentRunId:
-          type: string
-        completedAt:
-          format: date-time
-          type: string
-        createdAt:
-          format: date-time
-          type: string
-        input:
-          additionalProperties: {}
-          type: object
-        kind:
-          type: string
-        output:
-          additionalProperties: {}
-          type: object
-        sequence:
-          format: int64
-          type: integer
-        startedAt:
-          format: date-time
-          type: string
-        summary:
-          type: string
-        title:
-          type: string
-      required:
-        - agentCaseId
-        - sequence
-        - kind
-        - title
-        - createdAt
-      type: object
     AgentRun:
       additionalProperties: false
       properties:
@@ -342,24 +158,17 @@ components:
     AgentRunAttributes:
       additionalProperties: false
       properties:
-        agentCaseId:
+        agentTaskId:
           type: string
-        completedAt:
+        attempt:
+          format: int64
+          type: integer
+        createdAt:
           format: date-time
-          type: string
-        errorCode:
           type: string
         errorMessage:
           type: string
-        failedAt:
-          format: date-time
-          type: string
-        idempotencyKey:
-          type: string
-        modelMetadata:
-          additionalProperties: {}
-          type: object
-        queuedAt:
+        finishedAt:
           format: date-time
           type: string
         startedAt:
@@ -367,20 +176,226 @@ components:
           type: string
         status:
           type: string
-        subjectId:
+        updatedAt:
+          format: date-time
           type: string
-        subjectKind:
+        workflowKind:
           type: string
-        triggerMetadata:
+      required:
+        - agentTaskId
+        - workflowKind
+        - attempt
+        - status
+        - createdAt
+        - updatedAt
+      type: object
+    AgentRunCitation:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/AgentRunCitationAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    AgentRunCitationAttributes:
+      additionalProperties: false
+      properties:
+        agentRunId:
+          type: string
+        agentRunToolCallId:
+          type: string
+        agentTaskId:
+          type: string
+        citationKind:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        domainEntityId:
+          type: string
+        domainEntityType:
+          type: string
+        knowledgeEntityId:
+          type: string
+        knowledgeEvidenceId:
+          type: string
+        knowledgeRelationshipId:
+          type: string
+        snapshot:
+          additionalProperties: {}
+          type: object
+        summary:
+          type: string
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - agentRunId
+        - citationKind
+        - summary
+        - createdAt
+        - updatedAt
+      type: object
+    AgentRunFinding:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/AgentRunFindingAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    AgentRunFindingAttributes:
+      additionalProperties: false
+      properties:
+        agentRunId:
+          type: string
+        content:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        findingKind:
+          type: string
+        sequence:
+          format: int64
+          type: integer
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - agentRunId
+        - sequence
+        - findingKind
+        - content
+        - createdAt
+        - updatedAt
+      type: object
+    AgentRunResult:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/AgentRunResultAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    AgentRunResultAttributes:
+      additionalProperties: false
+      properties:
+        agentRunId:
+          type: string
+        content:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        data:
+          additionalProperties: {}
+          type: object
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - agentRunId
+        - content
+        - createdAt
+        - updatedAt
+      type: object
+    AgentRunToolCall:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/AgentRunToolCallAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    AgentRunToolCallAttributes:
+      additionalProperties: false
+      properties:
+        agentRunId:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        errorMessage:
+          type: string
+        finishedAt:
+          format: date-time
+          type: string
+        result:
+          additionalProperties: {}
+          type: object
+        startedAt:
+          format: date-time
+          type: string
+        status:
+          type: string
+        toolName:
+          type: string
+        toolParams:
+          additionalProperties: {}
+          type: object
+        updatedAt:
+          format: date-time
+          type: string
+      required:
+        - agentRunId
+        - toolName
+        - status
+        - createdAt
+        - updatedAt
+      type: object
+    AgentTask:
+      additionalProperties: false
+      properties:
+        attributes:
+          $ref: "#/components/schemas/AgentTaskAttributes"
+        id:
+          type: string
+      required:
+        - id
+        - attributes
+      type: object
+    AgentTaskAttributes:
+      additionalProperties: false
+      properties:
+        createdAt:
+          format: date-time
+          type: string
+        ownerUserId:
+          type: string
+        triggerKind:
+          type: string
+        triggerPayload:
+          additionalProperties: {}
+          type: object
+        updatedAt:
+          format: date-time
+          type: string
+        workflowInput:
           additionalProperties: {}
           type: object
         workflowKind:
           type: string
       required:
+        - ownerUserId
         - workflowKind
-        - status
-        - idempotencyKey
-        - queuedAt
+        - workflowInput
+        - triggerKind
+        - triggerPayload
+        - createdAt
+        - updatedAt
       type: object
     Alert:
       additionalProperties: false
@@ -521,52 +536,50 @@ components:
       required:
         - data
       type: object
-    CreateAgentCaseAttributes:
+    CreateAgentTaskAttributes:
       additionalProperties: false
       properties:
-        query:
+        triggerKind:
           type: string
-        subjectId:
-          type: string
-        subjectKind:
-          type: string
-        title:
-          type: string
-        triggerMetadata:
+        triggerPayload:
+          additionalProperties: {}
+          type: object
+        workflowInput:
           additionalProperties: {}
           type: object
         workflowKind:
           type: string
       required:
         - workflowKind
+        - workflowInput
       type: object
-    CreateAgentCaseRequestBody:
+    CreateAgentTaskRequestBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/CreateAgentCaseRequestBody.json
+            - /v1/schemas/CreateAgentTaskRequestBody.json
           format: uri
           readOnly: true
           type: string
         attributes:
-          $ref: "#/components/schemas/CreateAgentCaseAttributes"
+          $ref: "#/components/schemas/CreateAgentTaskAttributes"
       required:
         - attributes
       type: object
-    CreateAgentCaseResponseBody:
+    CreateAgentTaskResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/CreateAgentCaseResponseBody.json
+            - /v1/schemas/CreateAgentTaskResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
-          $ref: "#/components/schemas/AgentCase"
+          $ref: "#/components/schemas/AgentTask"
       required:
         - data
       type: object
@@ -1760,21 +1773,6 @@ components:
       required:
         - data
       type: object
-    GetAgentCaseResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/GetAgentCaseResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          $ref: "#/components/schemas/AgentCase"
-      required:
-        - data
-      type: object
     GetAgentRunResponseBody:
       additionalProperties: false
       properties:
@@ -1787,6 +1785,36 @@ components:
           type: string
         data:
           $ref: "#/components/schemas/AgentRun"
+      required:
+        - data
+      type: object
+    GetAgentRunResultResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetAgentRunResultResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/AgentRunResult"
+      required:
+        - data
+      type: object
+    GetAgentTaskResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/GetAgentTaskResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          $ref: "#/components/schemas/AgentTask"
       required:
         - data
       type: object
@@ -3404,19 +3432,19 @@ components:
       required:
         - targetSelectionRequired
       type: object
-    ListAgentCaseArtifactsResponseBody:
+    ListAgentRunCitationsResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListAgentCaseArtifactsResponseBody.json
+            - /v1/schemas/ListAgentRunCitationsResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/AgentCaseArtifact"
+            $ref: "#/components/schemas/AgentRunCitation"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3424,19 +3452,19 @@ components:
         - data
         - pagination
       type: object
-    ListAgentCaseConclusionsResponseBody:
+    ListAgentRunFindingsResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListAgentCaseConclusionsResponseBody.json
+            - /v1/schemas/ListAgentRunFindingsResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/AgentCaseConclusion"
+            $ref: "#/components/schemas/AgentRunFinding"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3444,39 +3472,19 @@ components:
         - data
         - pagination
       type: object
-    ListAgentCaseStepsResponseBody:
+    ListAgentRunToolCallsResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/ListAgentCaseStepsResponseBody.json
+            - /v1/schemas/ListAgentRunToolCallsResponseBody.json
           format: uri
           readOnly: true
           type: string
         data:
           items:
-            $ref: "#/components/schemas/AgentCaseStep"
-          type: array
-        pagination:
-          $ref: "#/components/schemas/ResponsePagination"
-      required:
-        - data
-        - pagination
-      type: object
-    ListAgentCasesResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/ListAgentCasesResponseBody.json
-          format: uri
-          readOnly: true
-          type: string
-        data:
-          items:
-            $ref: "#/components/schemas/AgentCase"
+            $ref: "#/components/schemas/AgentRunToolCall"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -3497,6 +3505,26 @@ components:
         data:
           items:
             $ref: "#/components/schemas/AgentRun"
+          type: array
+        pagination:
+          $ref: "#/components/schemas/ResponsePagination"
+      required:
+        - data
+        - pagination
+      type: object
+    ListAgentTasksResponseBody:
+      additionalProperties: false
+      properties:
+        $schema:
+          description: A URL to the JSON Schema for this object.
+          examples:
+            - /v1/schemas/ListAgentTasksResponseBody.json
+          format: uri
+          readOnly: true
+          type: string
+        data:
+          items:
+            $ref: "#/components/schemas/AgentTask"
           type: array
         pagination:
           $ref: "#/components/schemas/ResponsePagination"
@@ -4750,37 +4778,13 @@ components:
         - data
         - pagination
       type: object
-    RequestAgentCaseRunAttributes:
-      additionalProperties: false
-      properties:
-        idempotencyKey:
-          type: string
-        metadata:
-          additionalProperties: {}
-          type: object
-      type: object
-    RequestAgentCaseRunRequestBody:
+    RequestAgentTaskRunResponseBody:
       additionalProperties: false
       properties:
         $schema:
           description: A URL to the JSON Schema for this object.
           examples:
-            - /v1/schemas/RequestAgentCaseRunRequestBody.json
-          format: uri
-          readOnly: true
-          type: string
-        attributes:
-          $ref: "#/components/schemas/RequestAgentCaseRunAttributes"
-      required:
-        - attributes
-      type: object
-    RequestAgentCaseRunResponseBody:
-      additionalProperties: false
-      properties:
-        $schema:
-          description: A URL to the JSON Schema for this object.
-          examples:
-            - /v1/schemas/RequestAgentCaseRunResponseBody.json
+            - /v1/schemas/RequestAgentTaskRunResponseBody.json
           format: uri
           readOnly: true
           type: string
@@ -6667,439 +6671,6 @@ info:
   version: 0.0.1
 openapi: 3.1.0
 paths:
-  /agents/cases:
-    get:
-      operationId: list-agent-cases
-      parameters:
-        - explode: false
-          in: query
-          name: limit
-          schema:
-            default: 10
-            format: int64
-            maximum: 50
-            minimum: 1
-            type: integer
-        - explode: false
-          in: query
-          name: offset
-          schema:
-            default: 0
-            format: int64
-            minimum: 0
-            type: integer
-        - explode: false
-          in: query
-          name: search
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: archived
-          schema:
-            default: false
-            type: boolean
-        - explode: false
-          in: query
-          name: status
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: workflowKind
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: subjectKind
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: subjectId
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListAgentCasesResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Agent Cases
-      tags:
-        - Agents
-    post:
-      operationId: create-agent-case
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CreateAgentCaseRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CreateAgentCaseResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Create Agent Case
-      tags:
-        - Agents
-  /agents/cases/{id}:
-    get:
-      operationId: get-agent-case
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/GetAgentCaseResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Get Agent Case
-      tags:
-        - Agents
-  /agents/cases/{id}/artifacts:
-    get:
-      operationId: list-agent-case-artifacts
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListAgentCaseArtifactsResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Agent Case Artifacts
-      tags:
-        - Agents
-  /agents/cases/{id}/conclusions:
-    get:
-      operationId: list-agent-case-conclusions
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListAgentCaseConclusionsResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Agent Case Conclusions
-      tags:
-        - Agents
-  /agents/cases/{id}/runs:
-    post:
-      operationId: request-agent-case-run
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RequestAgentCaseRunRequestBody"
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RequestAgentCaseRunResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: Request Agent Case Run
-      tags:
-        - Agents
-  /agents/cases/{id}/steps:
-    get:
-      operationId: list-agent-case-steps
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ListAgentCaseStepsResponseBody"
-          description: OK
-        "400":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Bad Request
-        "401":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unauthorized
-        "403":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Forbidden
-        "404":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Not Found
-        "422":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Unprocessable Entity
-        "500":
-          content:
-            application/problem+json:
-              schema:
-                $ref: "#/components/schemas/ErrorModel"
-          description: Internal Server Error
-      summary: List Agent Case Steps
-      tags:
-        - Agents
   /agents/runs:
     get:
       operationId: list-agent-runs
@@ -7134,27 +6705,17 @@ paths:
             type: boolean
         - explode: false
           in: query
+          name: agentTaskId
+          schema:
+            type: string
+        - explode: false
+          in: query
           name: workflowKind
           schema:
             type: string
         - explode: false
           in: query
           name: status
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: agentCaseId
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: subjectKind
-          schema:
-            type: string
-        - explode: false
-          in: query
-          name: subjectId
           schema:
             type: string
       responses:
@@ -7256,6 +6817,488 @@ paths:
                 $ref: "#/components/schemas/ErrorModel"
           description: Internal Server Error
       summary: Get Agent Run
+      tags:
+        - Agents
+  /agents/runs/{id}/citations:
+    get:
+      operationId: list-agent-run-citations
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAgentRunCitationsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Agent Run Citations
+      tags:
+        - Agents
+  /agents/runs/{id}/findings:
+    get:
+      operationId: list-agent-run-findings
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAgentRunFindingsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Agent Run Findings
+      tags:
+        - Agents
+  /agents/runs/{id}/result:
+    get:
+      operationId: get-agent-run-result
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetAgentRunResultResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Agent Run Result
+      tags:
+        - Agents
+  /agents/runs/{id}/tool-calls:
+    get:
+      operationId: list-agent-run-tool-calls
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAgentRunToolCallsResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Agent Run Tool Calls
+      tags:
+        - Agents
+  /agents/tasks:
+    get:
+      operationId: list-agent-tasks
+      parameters:
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 10
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+        - explode: false
+          in: query
+          name: offset
+          schema:
+            default: 0
+            format: int64
+            minimum: 0
+            type: integer
+        - explode: false
+          in: query
+          name: search
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: archived
+          schema:
+            default: false
+            type: boolean
+        - explode: false
+          in: query
+          name: workflowKind
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: triggerKind
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: subjectType
+          schema:
+            type: string
+        - explode: false
+          in: query
+          name: subjectId
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListAgentTasksResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: List Agent Tasks
+      tags:
+        - Agents
+    post:
+      operationId: create-agent-task
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAgentTaskRequestBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreateAgentTaskResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Create Agent Task
+      tags:
+        - Agents
+  /agents/tasks/{id}:
+    get:
+      operationId: get-agent-task
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetAgentTaskResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Get Agent Task
+      tags:
+        - Agents
+  /agents/tasks/{id}/runs:
+    post:
+      operationId: request-agent-task-run
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestAgentTaskRunResponseBody"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/ErrorModel"
+          description: Internal Server Error
+      summary: Request Agent Task Run
       tags:
         - Agents
   /alerts:
