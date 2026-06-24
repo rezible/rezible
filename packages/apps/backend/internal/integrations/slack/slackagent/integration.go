@@ -66,7 +66,7 @@ func (i *Integration) SupportedCapabilities() []string {
 	return supportedCapabilities
 }
 
-func (i *Integration) ValidateInstallationConfig(m map[string]any) (externalRef string, validationErr error) {
+func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {
 	return "", nil
 }
 
@@ -102,7 +102,7 @@ func (ii *InstalledIntegration) config() (*slackintegration.InstallationConfig, 
 	return slackintegration.DecodeInstallationConfig(ii.intg)
 }
 
-func (ii *InstalledIntegration) SanitizedInstallationConfig() map[string]any {
+func (ii *InstalledIntegration) GetSanitizedConfig() map[string]any {
 	return ii.intg.InstallationConfig
 }
 

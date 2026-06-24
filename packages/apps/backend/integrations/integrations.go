@@ -43,16 +43,16 @@ func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
 	return nil
 }
 
+func (r *PackageRegistry) GetAvailable() []rez.IntegrationPackage {
+	return r.availablePackages
+}
+
 func (r *PackageRegistry) GetPackage(name string) (rez.IntegrationPackage, error) {
 	p, valid := r.nameMap[name]
 	if !valid {
 		return nil, fmt.Errorf("unknown integration: %s", name)
 	}
 	return p, nil
-}
-
-func (r *PackageRegistry) GetAvailable() []rez.IntegrationPackage {
-	return r.availablePackages
 }
 
 func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {

@@ -66,7 +66,7 @@ func (s *IntegrationsService) ListInstalled(ctx context.Context, params rez.List
 	}
 	cfgIs := make([]rez.InstalledIntegration, len(intgs))
 	for i, intg := range intgs {
-		ci, ciErr := s.asInstalledIntegration(intg)
+		ci, ciErr := s.AsInstalledIntegration(intg)
 		if ciErr != nil {
 			return nil, fmt.Errorf("failed to list integrations: %w", ciErr)
 		}
@@ -75,35 +75,31 @@ func (s *IntegrationsService) ListInstalled(ctx context.Context, params rez.List
 	return cfgIs, nil
 }
 
-func (s *IntegrationsService) LookupByRef(ctx context.Context, name string, providerRef string) (*ent.Integration, error) {
-	query := s.db.Client(ctx).Integration.Query().
-		Where(in.And(in.IntegrationName(name), in.ExternalProviderRef(providerRef)))
-	res, resErr := query.Only(ctx)
-	if resErr != nil {
-		return nil, fmt.Errorf("failed to lookup integration: %w", resErr)
-	}
-	return res, nil
-}
-
-func (s *IntegrationsService) GetInstalled(ctx context.Context, id uuid.UUID) (rez.InstalledIntegration, error) {
-	intg, getErr := s.getById(ctx, id)
+func (s *IntegrationsService) GetInstalledIntegration(ctx context.Context, id uuid.UUID) (rez.InstalledIntegration, error) {
+	intg, getErr := s.LookupInstallation(ctx, in.ID(id))
 	if getErr != nil {
 		return nil, fmt.Errorf("failed to get integration: %w", getErr)
 	}
-	return s.asInstalledIntegration(intg)
+	return s.AsInstalledIntegration(intg)
 }
 
-func (s *IntegrationsService) InstallNew(ctx context.Context, intgName string, params rez.InstallIntegrationParams) (rez.InstalledIntegration, error) {
+func (s *IntegrationsService) LookupInstallation(ctx context.Context, pred predicate.Integration) (*ent.Integration, error) {
+	query := s.db.Client(ctx).Integration.Query().
+		Where(pred)
+	return query.Only(ctx)
+}
+
+func (s *IntegrationsService) InstallNew(ctx context.Context, intgName string, cfg, userSettings map[string]any) (rez.InstalledIntegration, error) {
 	p, pErr := s.reg.GetPackage(intgName)
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", intgName, pErr)
 	}
 
-	if settingsErr := p.ValidateUserSettings(params.UserSettings); settingsErr != nil {
+	if settingsErr := p.ValidateUserSettings(userSettings); settingsErr != nil {
 		return nil, fmt.Errorf("failed to validate user settings: %w", settingsErr)
 	}
 
-	externalRef, cfgErr := p.ValidateInstallationConfig(params.InstallationConfig)
+	externalRef, cfgErr := p.ValidateConfig(cfg)
 	if cfgErr != nil {
 		return nil, fmt.Errorf("invalid config: %w", cfgErr)
 	}
@@ -111,8 +107,8 @@ func (s *IntegrationsService) InstallNew(ctx context.Context, intgName string, p
 	setFn := func(m *ent.IntegrationMutation) {
 		m.SetIntegrationName(intgName)
 		m.SetExternalProviderRef(externalRef)
-		m.SetInstallationConfig(params.InstallationConfig)
-		m.SetUserSettings(params.UserSettings)
+		m.SetInstallationConfig(cfg)
+		m.SetUserSettings(userSettings)
 	}
 	intg, setErr := s.set(ctx, uuid.Nil, setFn)
 	if setErr != nil {
@@ -121,8 +117,8 @@ func (s *IntegrationsService) InstallNew(ctx context.Context, intgName string, p
 	return p.GetInstalledIntegration(intg), nil
 }
 
-func (s *IntegrationsService) UpdateInstalled(ctx context.Context, id uuid.UUID, params rez.UpdateIntegrationParams) (rez.InstalledIntegration, error) {
-	curr, currErr := s.getById(ctx, id)
+func (s *IntegrationsService) UpdateInstallation(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (rez.InstalledIntegration, error) {
+	curr, currErr := s.LookupInstallation(ctx, in.ID(id))
 	if currErr != nil {
 		return nil, fmt.Errorf("failed to get integration: %w", currErr)
 	}
@@ -130,12 +126,16 @@ func (s *IntegrationsService) UpdateInstalled(ctx context.Context, id uuid.UUID,
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get package for integration %s: %w", curr.IntegrationName, pErr)
 	}
-	if settingsErr := p.ValidateUserSettings(params.UserSettings); settingsErr != nil {
-		return nil, fmt.Errorf("invalid user settings: %w", settingsErr)
+
+	m := new(ent.IntegrationMutation)
+	setFn(m)
+
+	if userSettings, updatedSettings := m.UserSettings(); updatedSettings {
+		if settingsErr := p.ValidateUserSettings(userSettings); settingsErr != nil {
+			return nil, fmt.Errorf("invalid user settings: %w", settingsErr)
+		}
 	}
-	setFn := func(m *ent.IntegrationMutation) {
-		m.SetUserSettings(params.UserSettings)
-	}
+
 	intg, setErr := s.set(ctx, id, setFn)
 	if setErr != nil {
 		return nil, fmt.Errorf("failed to set integration: %w", setErr)
@@ -177,7 +177,7 @@ func (s *IntegrationsService) listQuery(ctx context.Context, p rez.ListIntegrati
 	return query
 }
 
-func (s *IntegrationsService) asInstalledIntegration(i *ent.Integration) (rez.InstalledIntegration, error) {
+func (s *IntegrationsService) AsInstalledIntegration(i *ent.Integration) (rez.InstalledIntegration, error) {
 	p, pErr := s.reg.GetPackage(i.IntegrationName)
 	if pErr != nil {
 		return nil, fmt.Errorf("failed to get integration package: %w", pErr)
@@ -192,10 +192,6 @@ func (s *IntegrationsService) listIntegrations(ctx context.Context, params rez.L
 		return nil, fmt.Errorf("failed to list integrations: %w", listErr)
 	}
 	return intgs, nil
-}
-
-func (s *IntegrationsService) getById(ctx context.Context, id uuid.UUID) (*ent.Integration, error) {
-	return s.db.Client(ctx).Integration.Get(ctx, id)
 }
 
 func (s *IntegrationsService) getByProviderExternalRef(ctx context.Context, integrationName, externalRef string) (*ent.Integration, error) {
@@ -213,7 +209,7 @@ func (s *IntegrationsService) getByProviderExternalRef(ctx context.Context, inte
 }
 
 func (s *IntegrationsService) set(ctx context.Context, id uuid.UUID, setFn func(*ent.IntegrationMutation)) (*ent.Integration, error) {
-	curr, getCurrErr := s.getById(ctx, id)
+	curr, getCurrErr := s.LookupInstallation(ctx, in.ID(id))
 	if getCurrErr != nil && !ent.IsNotFound(getCurrErr) {
 		return nil, fmt.Errorf("failed to get integration: %w", getCurrErr)
 	}
@@ -458,10 +454,7 @@ func (s *IntegrationsService) InstallFromUserInstallationTargets(ctx context.Con
 func (s *IntegrationsService) installTargets(ctx context.Context, intgName string, options []rez.IntegrationInstallationTarget) ([]rez.InstalledIntegration, error) {
 	installed := make([]rez.InstalledIntegration, 0, len(options))
 	for _, option := range options {
-		params := rez.InstallIntegrationParams{
-			InstallationConfig: option.InstallationConfig,
-		}
-		ci, cfgErr := s.InstallNew(ctx, intgName, params)
+		ci, cfgErr := s.InstallNew(ctx, intgName, option.InstallationConfig, nil)
 		if cfgErr != nil {
 			return nil, fmt.Errorf("install integration %s option %s: %w", intgName, option.DisplayName, cfgErr)
 		}
@@ -492,7 +485,7 @@ func (s *IntegrationsService) HandleSyncIntegrationEventsJob(ctx context.Context
 		return nil
 	}
 
-	intg, intgErr := s.GetInstalled(ctx, args.IntegrationId)
+	intg, intgErr := s.LookupInstallation(ctx, in.ID(args.IntegrationId))
 	if intgErr != nil {
 		slog.WarnContext(ctx, "failed to get installed integration")
 		if ent.IsNotFound(intgErr) {
@@ -501,7 +494,7 @@ func (s *IntegrationsService) HandleSyncIntegrationEventsJob(ctx context.Context
 		return fmt.Errorf("get installed integration: %w", intgErr)
 	}
 
-	querier, querierErr := s.reg.GetProviderEventQuerier(intg.Integration())
+	querier, querierErr := s.reg.GetProviderEventQuerier(intg)
 	if querierErr != nil || querier == nil {
 		slog.WarnContext(ctx, "failed to get integration event querier", "error", querierErr)
 		return nil

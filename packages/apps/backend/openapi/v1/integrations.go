@@ -123,7 +123,7 @@ func IntegrationInstallationFromRez(ii rez.InstalledIntegration) IntegrationInst
 		DisplayName:     ii.DisplayName(),
 		ExternalRef:     intg.ExternalProviderRef,
 		Settings:        intg.UserSettings,
-		Config:          ii.SanitizedInstallationConfig(),
+		Config:          ii.GetSanitizedConfig(),
 	}
 	return IntegrationInstallation{Id: intg.ID, Attributes: attrs}
 }

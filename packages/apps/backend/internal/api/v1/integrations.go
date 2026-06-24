@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/integration"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
 
@@ -32,11 +34,7 @@ func (h *integrationsHandler) InstallIntegration(ctx context.Context, req *oapi.
 	var resp oapi.InstallIntegrationResponse
 
 	attr := req.Body.Attributes
-	params := rez.InstallIntegrationParams{
-		InstallationConfig: attr.Config,
-		UserSettings:       attr.UserSettings,
-	}
-	intg, installErr := h.integrations.InstallNew(ctx, req.Name, params)
+	intg, installErr := h.integrations.InstallNew(ctx, req.Name, attr.Config, attr.UserSettings)
 	if installErr != nil {
 		return nil, oapi.Error(ctx, "failed to install integration", installErr)
 	}
@@ -68,11 +66,15 @@ func (h *integrationsHandler) ListIntegrationInstallations(ctx context.Context, 
 func (h *integrationsHandler) GetIntegrationInstallation(ctx context.Context, req *oapi.GetIntegrationInstallationRequest) (*oapi.GetIntegrationInstallationResponse, error) {
 	var resp oapi.GetIntegrationInstallationResponse
 
-	intg, getErr := h.integrations.GetInstalled(ctx, req.Id)
-	if getErr != nil {
-		return nil, oapi.Error(ctx, "failed to get integration", getErr)
+	intg, lookupErr := h.integrations.LookupInstallation(ctx, integration.ID(req.Id))
+	if lookupErr != nil {
+		return nil, oapi.Error(ctx, "failed to get integration", lookupErr)
 	}
-	resp.Body.Data = oapi.IntegrationInstallationFromRez(intg)
+	inst, instErr := h.integrations.AsInstalledIntegration(intg)
+	if instErr != nil {
+		return nil, oapi.Error(ctx, "failed to get integration", instErr)
+	}
+	resp.Body.Data = oapi.IntegrationInstallationFromRez(inst)
 
 	return &resp, nil
 }
@@ -80,11 +82,10 @@ func (h *integrationsHandler) GetIntegrationInstallation(ctx context.Context, re
 func (h *integrationsHandler) UpdateIntegrationInstallation(ctx context.Context, req *oapi.UpdateIntegrationInstallationRequest) (*oapi.UpdateIntegrationInstallationResponse, error) {
 	var resp oapi.UpdateIntegrationInstallationResponse
 
-	attr := req.Body.Attributes
-	params := rez.UpdateIntegrationParams{
-		UserSettings: attr.UserSettings,
+	setFn := func(m *ent.IntegrationMutation) {
+		m.SetUserSettings(req.Body.Attributes.UserSettings)
 	}
-	intg, setErr := h.integrations.UpdateInstalled(ctx, req.Id, params)
+	intg, setErr := h.integrations.UpdateInstallation(ctx, req.Id, setFn)
 	if setErr != nil {
 		return nil, oapi.Error(ctx, "failed to configure integration", setErr)
 	}

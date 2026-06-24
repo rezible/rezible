@@ -9,6 +9,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	in "github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/execution"
 	"github.com/slack-go/slack"
@@ -120,12 +121,12 @@ func (s *AppService[A]) RetrieveInstallationTargetOptions(ctx context.Context, t
 }
 
 func (s *AppService[A]) createInstallationContext(ctx context.Context, ids IntegrationInstallIds) (*ent.Integration, context.Context, error) {
-	intg, lookupErr := s.intgs.LookupByRef(execution.NewSystemContext(ctx), s.integrationName, ids.asRef())
+	lookupIntegrationsPred := in.And(in.IntegrationName(s.integrationName), in.ExternalProviderRef(ids.asRef()))
+	intg, lookupErr := s.intgs.LookupInstallation(execution.NewSystemContext(ctx), lookupIntegrationsPred)
 	if lookupErr != nil {
 		return nil, ctx, fmt.Errorf("listing configured integrations: %w", lookupErr)
 	}
-	ctx = execution.NewTenantContext(ctx, intg.TenantID)
-	return intg, ctx, nil
+	return intg, execution.NewTenantContext(ctx, intg.TenantID), nil
 }
 
 func (s *AppService[A]) handleEventsApiCallbackEvent(baseCtx context.Context, ev *handleEventsApiCallbackEvent) error {
