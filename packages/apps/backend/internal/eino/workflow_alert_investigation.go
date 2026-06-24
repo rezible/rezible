@@ -9,13 +9,15 @@ import (
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/agents"
 )
 
 type alertInvestigationWorkflow struct {
 	alerts       rez.AlertService
 	modelFactory ModelProvider
 	aiEnabled    bool
+	input        agents.AlertInvestigationInput
+	alertID      uuid.UUID
 }
 
 type alertInvestigationSynthesis struct {
@@ -26,23 +28,6 @@ type alertInvestigationSynthesis struct {
 	RecommendedNext string   `json:"recommendedNext"`
 	Limitations     []string `json:"limitations"`
 	Confidence      string   `json:"confidence"`
-}
-
-func (w *alertInvestigationWorkflow) Kind() rez.AgentWorkflowKind {
-	return rez.AgentWorkflowKindAlertInvestigation
-}
-
-func (w *alertInvestigationWorkflow) Validate(_ context.Context, task *ent.AgentTask, _ *ent.AgentRun) error {
-	if rez.AgentWorkflowKind(task.WorkflowKind) != w.Kind() {
-		return fmt.Errorf("workflow/task kind mismatch: %s != %s", task.WorkflowKind, w.Kind())
-	}
-	if workflowInputSubject(task.WorkflowInput, "alert") == uuid.Nil {
-		return fmt.Errorf("alert investigation requires alert subject")
-	}
-	if w.alerts == nil {
-		return fmt.Errorf("alert service is required")
-	}
-	return nil
 }
 
 var alertInvestigationInstruction = strings.TrimSpace(`
@@ -60,51 +45,42 @@ Use only the supplied JSON context. Produce concise JSON with this schema:
 Do not invent systems, incidents, alerts, or evidence that are not present in the context.
 `)
 
-func (w *alertInvestigationWorkflow) Run(ctx context.Context, recorder *WorkflowRecorder, task *ent.AgentTask, _ *ent.AgentRun) (*AgentWorkflowResult, error) {
-	alertID := workflowInputSubject(task.WorkflowInput, "alert")
-	contextResult, contextErr := w.alerts.GetInvestigationContext(ctx, alertID)
-	toolResult := map[string]any{"alertId": alertID}
-	if contextResult != nil {
-		toolResult["context"] = contextResult.Context
-		toolResult["items"] = contextResult.Items
+func (w *alertInvestigationWorkflow) Run(ctx context.Context) (*agents.RunResult, error) {
+	if w.alerts == nil {
+		return nil, fmt.Errorf("alert service is required")
 	}
-	if _, recordErr := recorder.RecordToolCall(ctx, "alert.investigation_context", map[string]any{"alertId": alertID}, toolResult, contextErr); recordErr != nil {
-		return nil, recordErr
-	}
+	contextResult, contextErr := w.alerts.GetInvestigationContext(ctx, w.alertID)
 	if contextErr != nil {
 		return nil, fmt.Errorf("get alert investigation context: %w", contextErr)
 	}
 
 	synthesis := fallbackAlertInvestigationSynthesis(contextResult)
 	if w.aiEnabled {
-		if modelSynthesis, modelErr := w.runModelSynthesis(ctx, recorder, contextResult); modelErr == nil {
+		if modelSynthesis, modelErr := w.runModelSynthesis(ctx, contextResult); modelErr == nil {
 			synthesis = modelSynthesis
 		} else {
 			synthesis.Limitations = append(synthesis.Limitations, "AI synthesis unavailable: "+modelErr.Error())
 		}
 	}
+	data, dataErr := alertInvestigationData(synthesis)
+	if dataErr != nil {
+		return nil, dataErr
+	}
 
-	return &AgentWorkflowResult{
+	return &agents.RunResult{
 		Content:   synthesis.Summary,
-		Data:      alertInvestigationData(synthesis),
+		Data:      data,
 		Citations: contextResult.Citations,
 		Findings:  alertInvestigationFindings(synthesis, contextResult),
 	}, nil
 }
 
-func (w *alertInvestigationWorkflow) runModelSynthesis(ctx context.Context, recorder *WorkflowRecorder, contextResult *rez.AgentWorkflowContext) (alertInvestigationSynthesis, error) {
-	prompt, promptErr := encodePromptContext(contextResult)
+func (w *alertInvestigationWorkflow) runModelSynthesis(ctx context.Context, contextResult *agents.WorkflowContext) (alertInvestigationSynthesis, error) {
+	prompt, promptErr := encodeWorkflowContext(contextResult)
 	if promptErr != nil {
 		return alertInvestigationSynthesis{}, fmt.Errorf("marshal investigation context prompt: %w", promptErr)
 	}
 	out, runErr := runModelOnce(ctx, w.modelFactory, "alert-investigation", alertInvestigationInstruction, prompt)
-	result := map[string]any{}
-	if out != nil {
-		result["text"] = out.Text
-	}
-	if _, recordErr := recorder.RecordToolCall(ctx, "model.generate", map[string]any{"workflow": "alert_investigation"}, result, runErr); recordErr != nil {
-		return alertInvestigationSynthesis{}, recordErr
-	}
 	if runErr != nil {
 		return alertInvestigationSynthesis{}, fmt.Errorf("run alert investigation agent: %w", runErr)
 	}
@@ -115,7 +91,7 @@ func (w *alertInvestigationWorkflow) runModelSynthesis(ctx context.Context, reco
 	return synthesis, nil
 }
 
-func fallbackAlertInvestigationSynthesis(contextResult *rez.AgentWorkflowContext) alertInvestigationSynthesis {
+func fallbackAlertInvestigationSynthesis(contextResult *agents.WorkflowContext) alertInvestigationSynthesis {
 	counts := countContextItemsByRole(contextResult.Items)
 	alertTitle, _ := contextResult.Context["alertTitle"].(string)
 	subjects := contextItemsWithRole(contextResult.Items, "likely_subject")
@@ -144,24 +120,23 @@ func fallbackAlertInvestigationSynthesis(contextResult *rez.AgentWorkflowContext
 	}
 }
 
-func alertInvestigationData(s alertInvestigationSynthesis) map[string]any {
-	return map[string]any{
-		"schema": "alert_investigation.v1",
-		"findings": rez.AlertInvestigationFindings{
+func alertInvestigationData(s alertInvestigationSynthesis) (map[string]any, error) {
+	return agents.EncodeOutput(agents.AlertInvestigationOutput{
+		Findings: agents.AlertInvestigationFindings{
 			LikelyCause:     s.LikelyCause,
 			AffectedSystems: s.AffectedSystems,
 			SuggestedChecks: s.SuggestedChecks,
 			RecommendedNext: s.RecommendedNext,
 		},
-		"limitations":        s.Limitations,
-		"recommendedActions": []string{s.RecommendedNext},
-	}
+		Limitations:        s.Limitations,
+		RecommendedActions: []string{s.RecommendedNext},
+	})
 }
 
-func alertInvestigationFindings(s alertInvestigationSynthesis, contextResult *rez.AgentWorkflowContext) []rez.AgentRunFindingInput {
+func alertInvestigationFindings(s alertInvestigationSynthesis, contextResult *agents.WorkflowContext) []agents.RunFindingInput {
 	signalCitations := citationLinks(contextItemsWithRole(contextResult.Items, "recent_signal"), "supports")
 	subjectCitations := citationLinks(contextItemsWithRole(contextResult.Items, "likely_subject"), "affected_entity")
-	findings := []rez.AgentRunFindingInput{{
+	findings := []agents.RunFindingInput{{
 		FindingKind: "observation",
 		Content:     s.Summary,
 		Citations:   append(subjectCitations, signalCitations...),
@@ -175,13 +150,13 @@ func alertInvestigationFindings(s alertInvestigationSynthesis, contextResult *re
 		Citations:   subjectCitations,
 	}}
 	for _, limitation := range s.Limitations {
-		findings = append(findings, rez.AgentRunFindingInput{
+		findings = append(findings, agents.RunFindingInput{
 			FindingKind: "limitation",
 			Content:     limitation,
 		})
 	}
 	for _, check := range s.SuggestedChecks {
-		findings = append(findings, rez.AgentRunFindingInput{
+		findings = append(findings, agents.RunFindingInput{
 			FindingKind: "recommendation",
 			Content:     check,
 			Citations:   append(subjectCitations, signalCitations...),
@@ -190,8 +165,8 @@ func alertInvestigationFindings(s alertInvestigationSynthesis, contextResult *re
 	return findings
 }
 
-func contextItemsWithRole(items []rez.AgentWorkflowContextItem, role string) []rez.AgentWorkflowContextItem {
-	result := make([]rez.AgentWorkflowContextItem, 0)
+func contextItemsWithRole(items []agents.WorkflowContextItem, role string) []agents.WorkflowContextItem {
+	result := make([]agents.WorkflowContextItem, 0)
 	for _, item := range items {
 		if item.Role == role {
 			result = append(result, item)
@@ -200,7 +175,7 @@ func contextItemsWithRole(items []rez.AgentWorkflowContextItem, role string) []r
 	return result
 }
 
-func countContextItemsByRole(items []rez.AgentWorkflowContextItem) map[string]int {
+func countContextItemsByRole(items []agents.WorkflowContextItem) map[string]int {
 	counts := make(map[string]int)
 	for _, item := range items {
 		if item.Role != "" {
@@ -210,8 +185,8 @@ func countContextItemsByRole(items []rez.AgentWorkflowContextItem) map[string]in
 	return counts
 }
 
-func citationLinks(items []rez.AgentWorkflowContextItem, supportKind string) []rez.AgentRunFindingCitationInput {
-	result := make([]rez.AgentRunFindingCitationInput, 0)
+func citationLinks(items []agents.WorkflowContextItem, supportKind string) []agents.RunFindingCitationInput {
+	result := make([]agents.RunFindingCitationInput, 0)
 	seen := make(map[int]struct{})
 	for _, item := range items {
 		if item.Citation <= 0 {
@@ -221,7 +196,7 @@ func citationLinks(items []rez.AgentWorkflowContextItem, supportKind string) []r
 			continue
 		}
 		seen[item.Citation] = struct{}{}
-		result = append(result, rez.AgentRunFindingCitationInput{
+		result = append(result, agents.RunFindingCitationInput{
 			CitationIndex: item.Citation,
 			SupportKind:   supportKind,
 		})
@@ -229,7 +204,7 @@ func citationLinks(items []rez.AgentWorkflowContextItem, supportKind string) []r
 	return result
 }
 
-func fallbackConfidence(subjects, signals, guides []rez.AgentWorkflowContextItem) string {
+func fallbackConfidence(subjects, signals, guides []agents.WorkflowContextItem) string {
 	if len(subjects) == 0 {
 		return "low"
 	}

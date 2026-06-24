@@ -9,7 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
-	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
 	ii "github.com/rezible/rezible/ent/incidentimpact"
@@ -23,7 +23,7 @@ const (
 	investigationGuideLimit    = 5
 )
 
-func (s *AlertService) GetInvestigationContext(ctx context.Context, alertID uuid.UUID) (*rez.AgentWorkflowContext, error) {
+func (s *AlertService) GetInvestigationContext(ctx context.Context, alertID uuid.UUID) (*agents.WorkflowContext, error) {
 	a, alertErr := s.db.Client(ctx).Alert.Query().
 		Where(alert.ID(alertID)).
 		WithKnowledgeEntity(func(q *ent.KnowledgeEntityQuery) {
@@ -35,7 +35,7 @@ func (s *AlertService) GetInvestigationContext(ctx context.Context, alertID uuid
 		return nil, fmt.Errorf("get alert: %w", alertErr)
 	}
 
-	result := &rez.AgentWorkflowContext{
+	result := &agents.WorkflowContext{
 		GeneratedAt: time.Now().UTC(),
 		Context: map[string]any{
 			"alertId":      a.ID,
@@ -43,11 +43,10 @@ func (s *AlertService) GetInvestigationContext(ctx context.Context, alertID uuid
 			"alertSummary": a.Description,
 			"definition":   a.Definition,
 		},
-		PromptSchema: "alert_investigation_context.v1",
-		Suggested:    defaultAlertInvestigationChecks(a),
+		Suggested: defaultAlertInvestigationChecks(a),
 	}
 	result.Context["suggestedChecks"] = result.Suggested
-	addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+	addWorkflowContextCitation(result, agents.RunCitationInput{
 		CitationKind:     "primary_subject",
 		DomainEntityType: "alert",
 		DomainEntityID:   a.ID,
@@ -102,7 +101,7 @@ func defaultAlertInvestigationChecks(a *ent.Alert) []string {
 	return checks
 }
 
-func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, result *rez.AgentWorkflowContext, alertEntity *ent.KnowledgeEntity) ([]uuid.UUID, error) {
+func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, result *agents.WorkflowContext, alertEntity *ent.KnowledgeEntity) ([]uuid.UUID, error) {
 	rels, relErr := s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.Or(knr.SourceEntityID(alertEntity.ID), knr.TargetEntityID(alertEntity.ID))).
 		WithSourceEntity(func(q *ent.KnowledgeEntityQuery) { q.WithAliases() }).
@@ -132,7 +131,7 @@ func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, result 
 			entity: entity,
 			reason: "direct alert relationship: " + rel.Kind,
 		}
-		addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+		addWorkflowContextCitation(result, agents.RunCitationInput{
 			CitationKind:            "supporting_evidence",
 			KnowledgeRelationshipID: rel.ID,
 			Summary:                 "Direct alert relationship: " + rel.Kind,
@@ -147,10 +146,10 @@ func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, result 
 	}
 
 	ids := make([]uuid.UUID, 0, len(candidates))
-	items := make([]rez.AgentWorkflowContextItem, 0, len(candidates))
+	items := make([]agents.WorkflowContextItem, 0, len(candidates))
 	for _, cand := range candidates {
 		ids = append(ids, cand.entity.ID)
-		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+		citation := addWorkflowContextCitation(result, agents.RunCitationInput{
 			CitationKind:      "related_entity",
 			KnowledgeEntityID: cand.entity.ID,
 			Summary:           cand.entity.DisplayName,
@@ -161,7 +160,7 @@ func (s *AlertService) resolveInvestigationSubjects(ctx context.Context, result 
 				"aliases":     investigationAliases(cand.entity),
 			},
 		})
-		items = append(items, rez.AgentWorkflowContextItem{
+		items = append(items, agents.WorkflowContextItem{
 			Kind:     "knowledge_entity",
 			Role:     "likely_subject",
 			Name:     cand.entity.DisplayName,
@@ -194,7 +193,7 @@ func investigationAliases(entity *ent.KnowledgeEntity) []string {
 	return aliases
 }
 
-func (s *AlertService) addInvestigationNeighbors(ctx context.Context, result *rez.AgentWorkflowContext, entityIDs []uuid.UUID) error {
+func (s *AlertService) addInvestigationNeighbors(ctx context.Context, result *agents.WorkflowContext, entityIDs []uuid.UUID) error {
 	rels, relErr := s.db.Client(ctx).KnowledgeRelationship.Query().
 		Where(knr.Or(knr.SourceEntityIDIn(entityIDs...), knr.TargetEntityIDIn(entityIDs...))).
 		WithSourceEntity().
@@ -207,7 +206,7 @@ func (s *AlertService) addInvestigationNeighbors(ctx context.Context, result *re
 
 	entitySet := uuidSet(entityIDs)
 	for _, rel := range rels {
-		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+		citation := addWorkflowContextCitation(result, agents.RunCitationInput{
 			CitationKind:            "related_entity",
 			KnowledgeRelationshipID: rel.ID,
 			Summary:                 rel.Kind,
@@ -227,8 +226,8 @@ func (s *AlertService) addInvestigationNeighbors(ctx context.Context, result *re
 	return nil
 }
 
-func relationshipContextItem(direction string, rel *ent.KnowledgeRelationship, related *ent.KnowledgeEntity, citation int) rez.AgentWorkflowContextItem {
-	return rez.AgentWorkflowContextItem{
+func relationshipContextItem(direction string, rel *ent.KnowledgeRelationship, related *ent.KnowledgeEntity, citation int) agents.WorkflowContextItem {
+	return agents.WorkflowContextItem{
 		Kind:     "knowledge_relationship",
 		Role:     "neighbor",
 		Name:     related.DisplayName,
@@ -244,7 +243,7 @@ func relationshipContextItem(direction string, rel *ent.KnowledgeRelationship, r
 	}
 }
 
-func (s *AlertService) addInvestigationSignals(ctx context.Context, result *rez.AgentWorkflowContext, entityIDs []uuid.UUID) error {
+func (s *AlertService) addInvestigationSignals(ctx context.Context, result *agents.WorkflowContext, entityIDs []uuid.UUID) error {
 	evidence, evErr := s.db.Client(ctx).KnowledgeEvidence.Query().
 		Where(knev.EntityIDIn(entityIDs...)).
 		WithEvent().
@@ -264,7 +263,7 @@ func (s *AlertService) addInvestigationSignals(ctx context.Context, result *rez.
 			props["subjectKind"] = ev.Edges.Event.SubjectKind
 		}
 		summary := ev.Assertion + " (" + ev.EvidenceKind.String() + ")"
-		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+		citation := addWorkflowContextCitation(result, agents.RunCitationInput{
 			CitationKind:        "supporting_evidence",
 			KnowledgeEvidenceID: ev.ID,
 			Summary:             summary,
@@ -277,7 +276,7 @@ func (s *AlertService) addInvestigationSignals(ctx context.Context, result *rez.
 				"properties": props,
 			},
 		})
-		result.Items = append(result.Items, rez.AgentWorkflowContextItem{
+		result.Items = append(result.Items, agents.WorkflowContextItem{
 			Kind:     "knowledge_evidence",
 			Role:     "recent_signal",
 			Name:     summary,
@@ -297,13 +296,13 @@ func (s *AlertService) addInvestigationSignals(ctx context.Context, result *rez.
 	return nil
 }
 
-func (s *AlertService) addInvestigationGuides(ctx context.Context, result *rez.AgentWorkflowContext, a *ent.Alert, entityIDs []uuid.UUID) error {
+func (s *AlertService) addInvestigationGuides(ctx context.Context, result *agents.WorkflowContext, a *ent.Alert, entityIDs []uuid.UUID) error {
 	guides := 0
 	for _, playbook := range a.Edges.Playbooks {
 		if guides >= investigationGuideLimit {
 			break
 		}
-		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+		citation := addWorkflowContextCitation(result, agents.RunCitationInput{
 			CitationKind:     "operational_guide",
 			DomainEntityType: "playbook",
 			DomainEntityID:   playbook.ID,
@@ -339,7 +338,7 @@ func (s *AlertService) addInvestigationGuides(ctx context.Context, result *rez.A
 			continue
 		}
 		seenIncidents[inc.ID] = struct{}{}
-		citation := addWorkflowContextCitation(result, rez.AgentRunCitationInput{
+		citation := addWorkflowContextCitation(result, agents.RunCitationInput{
 			CitationKind:     "historical_example",
 			DomainEntityType: "incident",
 			DomainEntityID:   inc.ID,
@@ -359,8 +358,8 @@ func (s *AlertService) addInvestigationGuides(ctx context.Context, result *rez.A
 	return nil
 }
 
-func referenceContextItem(role, kind string, id uuid.UUID, title, summary, source string, citation int) rez.AgentWorkflowContextItem {
-	return rez.AgentWorkflowContextItem{
+func referenceContextItem(role, kind string, id uuid.UUID, title, summary, source string, citation int) agents.WorkflowContextItem {
+	return agents.WorkflowContextItem{
 		Kind:     "domain_reference",
 		Role:     role,
 		Name:     title,
@@ -375,7 +374,7 @@ func referenceContextItem(role, kind string, id uuid.UUID, title, summary, sourc
 	}
 }
 
-func addWorkflowContextCitation(ctx *rez.AgentWorkflowContext, input rez.AgentRunCitationInput) int {
+func addWorkflowContextCitation(ctx *agents.WorkflowContext, input agents.RunCitationInput) int {
 	if input.Snapshot == nil {
 		input.Snapshot = map[string]any{}
 	}
@@ -383,7 +382,7 @@ func addWorkflowContextCitation(ctx *rez.AgentWorkflowContext, input rez.AgentRu
 	return len(ctx.Citations)
 }
 
-func countContextItemsByRole(items []rez.AgentWorkflowContextItem) map[string]int {
+func countContextItemsByRole(items []agents.WorkflowContextItem) map[string]int {
 	counts := make(map[string]int)
 	for _, item := range items {
 		if item.Role != "" {

@@ -10,14 +10,15 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
@@ -423,11 +424,9 @@ type (
 )
 
 type (
-	AgentWorkflowKind string
-
 	CreateAgentTaskRequest struct {
 		OwnerUserID    uuid.UUID
-		WorkflowKind   AgentWorkflowKind
+		WorkflowKind   agents.WorkflowKind
 		WorkflowInput  map[string]any
 		TriggerKind    string
 		TriggerPayload map[string]any
@@ -435,7 +434,7 @@ type (
 
 	ListAgentTasksParams struct {
 		ent.ListParams
-		WorkflowKind AgentWorkflowKind
+		WorkflowKind agents.WorkflowKind
 		TriggerKind  string
 		SubjectType  string
 		SubjectID    uuid.UUID
@@ -444,69 +443,8 @@ type (
 	ListAgentRunsParams struct {
 		ent.ListParams
 		AgentTaskID  uuid.UUID
-		WorkflowKind AgentWorkflowKind
+		WorkflowKind agents.WorkflowKind
 		Status       agentrun.Status
-	}
-
-	AgentRunCitationInput struct {
-		CitationKind            string
-		DomainEntityType        string
-		DomainEntityID          uuid.UUID
-		KnowledgeEntityID       uuid.UUID
-		KnowledgeRelationshipID uuid.UUID
-		KnowledgeEvidenceID     uuid.UUID
-		AgentTaskID             uuid.UUID
-		AgentRunToolCallID      uuid.UUID
-		Summary                 string
-		Snapshot                map[string]any
-	}
-
-	AgentRunFindingInput struct {
-		FindingKind string
-		Content     string
-		Citations   []AgentRunFindingCitationInput
-	}
-
-	AgentRunFindingCitationInput struct {
-		CitationIndex int
-		SupportKind   string
-	}
-
-	AgentWorkflowContextItem struct {
-		Kind     string         `json:"kind"`
-		Role     string         `json:"role,omitempty"`
-		Name     string         `json:"name"`
-		Payload  map[string]any `json:"payload,omitempty"`
-		Citation int            `json:"citation,omitempty"`
-	}
-
-	AgentWorkflowContext struct {
-		GeneratedAt  time.Time
-		Context      map[string]any
-		Items        []AgentWorkflowContextItem
-		Citations    []AgentRunCitationInput
-		Limitations  []string
-		Suggested    []string
-		PromptSchema string
-	}
-
-	AlertInvestigationFindings struct {
-		LikelyCause     string   `json:"likelyCause"`
-		AffectedSystems []string `json:"affectedSystems"`
-		SuggestedChecks []string `json:"suggestedChecks"`
-		RecommendedNext string   `json:"recommendedNext"`
-	}
-
-	IncidentImpactFinding struct {
-		EntityID    string   `json:"entityId"`
-		DisplayName string   `json:"displayName"`
-		Rationale   string   `json:"rationale"`
-		EvidenceIDs []string `json:"evidenceIds"`
-	}
-
-	IncidentTriageFindings struct {
-		LikelyImpact    []IncidentImpactFinding `json:"likelyImpact"`
-		SuggestedChecks []string                `json:"suggestedChecks"`
 	}
 
 	AgentService interface {
@@ -514,45 +452,35 @@ type (
 		GetTask(context.Context, uuid.UUID) (*ent.AgentTask, error)
 		ListTasks(context.Context, ListAgentTasksParams) (*ent.ListResult[ent.AgentTask], error)
 
-		RequestTaskRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
+		RequestNewTaskRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
 		GetRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
 		ListRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error)
-		ListRunCitations(context.Context, uuid.UUID) ([]*ent.AgentRunCitation, error)
-		ListRunFindings(context.Context, uuid.UUID) ([]*ent.AgentRunFinding, error)
-		ListRunToolCalls(context.Context, uuid.UUID) ([]*ent.AgentRunToolCall, error)
-		GetRunResult(context.Context, uuid.UUID) (*ent.AgentRunResult, error)
-		RunWorkflow(context.Context, uuid.UUID) error
 	}
 
-	EventOnAgentRunQueued struct {
+	AgentRunQueuedEvent struct {
 		AgentRunID   uuid.UUID
 		AgentTaskID  uuid.UUID
-		WorkflowKind AgentWorkflowKind
+		WorkflowKind agents.WorkflowKind
 	}
 
-	EventOnAgentRunStarted struct {
+	AgentRunStartedEvent struct {
 		AgentRunID   uuid.UUID
 		AgentTaskID  uuid.UUID
-		WorkflowKind AgentWorkflowKind
+		WorkflowKind agents.WorkflowKind
 	}
 
-	EventOnAgentRunCompleted struct {
+	AgentRunCompletedEvent struct {
 		AgentRunID   uuid.UUID
 		AgentTaskID  uuid.UUID
-		WorkflowKind AgentWorkflowKind
+		WorkflowKind agents.WorkflowKind
 	}
 
-	EventOnAgentRunFailed struct {
+	AgentRunFailedEvent struct {
 		AgentRunID   uuid.UUID
 		AgentTaskID  uuid.UUID
-		WorkflowKind AgentWorkflowKind
+		WorkflowKind agents.WorkflowKind
 		ErrorMessage string
 	}
-)
-
-const (
-	AgentWorkflowKindIncidentContextPack AgentWorkflowKind = "incident_context_pack"
-	AgentWorkflowKindAlertInvestigation  AgentWorkflowKind = "alert_investigation"
 )
 
 type (
@@ -570,7 +498,7 @@ type (
 	AlertService interface {
 		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
-		GetInvestigationContext(context.Context, uuid.UUID) (*AgentWorkflowContext, error)
+		GetInvestigationContext(context.Context, uuid.UUID) (*agents.WorkflowContext, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 		GetActiveAlertsForComponents(context.Context, []uuid.UUID) ([]*ent.Alert, error)
 	}
@@ -622,7 +550,7 @@ type (
 
 		ListIncidentImpacts(context.Context, uuid.UUID) ([]*ent.IncidentImpact, error)
 		SetIncidentImpacts(context.Context, uuid.UUID, []IncidentImpactInput) ([]*ent.IncidentImpact, error)
-		GetIncidentContext(context.Context, uuid.UUID) (*AgentWorkflowContext, error)
+		GetIncidentContext(context.Context, uuid.UUID) (*agents.WorkflowContext, error)
 
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)

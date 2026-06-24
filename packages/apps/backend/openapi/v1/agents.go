@@ -299,9 +299,7 @@ var RequestAgentTaskRun = openapi.Operation{
 	Errors:      ErrorCodes(),
 }
 
-type RequestAgentTaskRunRequest struct {
-	EmptyIdRequest
-}
+type RequestAgentTaskRunRequest EmptyIdRequest
 type RequestAgentTaskRunResponse ItemResponse[AgentRun]
 
 var ListAgentRuns = openapi.Operation{

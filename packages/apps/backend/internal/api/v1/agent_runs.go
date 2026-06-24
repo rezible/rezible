@@ -4,6 +4,7 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent/agentrun"
 	oapi "github.com/rezible/rezible/openapi/v1"
 )
@@ -20,7 +21,7 @@ func (h *agentsHandler) CreateAgentTask(ctx context.Context, req *oapi.CreateAge
 	var resp oapi.CreateAgentTaskResponse
 	attr := req.Body.Attributes
 	task, createErr := h.agents.CreateTask(ctx, rez.CreateAgentTaskRequest{
-		WorkflowKind:   rez.AgentWorkflowKind(attr.WorkflowKind),
+		WorkflowKind:   agents.WorkflowKind(attr.WorkflowKind),
 		WorkflowInput:  attr.WorkflowInput,
 		TriggerKind:    attr.TriggerKind,
 		TriggerPayload: attr.TriggerPayload,
@@ -36,7 +37,7 @@ func (h *agentsHandler) ListAgentTasks(ctx context.Context, req *oapi.ListAgentT
 	var resp oapi.ListAgentTasksResponse
 	tasks, listErr := h.agents.ListTasks(ctx, rez.ListAgentTasksParams{
 		ListParams:   req.ListParams(),
-		WorkflowKind: rez.AgentWorkflowKind(req.WorkflowKind),
+		WorkflowKind: agents.WorkflowKind(req.WorkflowKind),
 		TriggerKind:  req.TriggerKind,
 		SubjectType:  req.SubjectType,
 		SubjectID:    req.SubjectId,
@@ -64,7 +65,7 @@ func (h *agentsHandler) GetAgentTask(ctx context.Context, req *oapi.GetAgentTask
 
 func (h *agentsHandler) RequestAgentTaskRun(ctx context.Context, req *oapi.RequestAgentTaskRunRequest) (*oapi.RequestAgentTaskRunResponse, error) {
 	var resp oapi.RequestAgentTaskRunResponse
-	run, runErr := h.agents.RequestTaskRun(ctx, req.Id)
+	run, runErr := h.agents.RequestNewTaskRun(ctx, req.Id)
 	if runErr != nil {
 		return nil, oapi.Error(ctx, "request agent task run", runErr)
 	}
@@ -77,7 +78,7 @@ func (h *agentsHandler) ListAgentRuns(ctx context.Context, req *oapi.ListAgentRu
 	runs, listErr := h.agents.ListRuns(ctx, rez.ListAgentRunsParams{
 		ListParams:   req.ListParams(),
 		AgentTaskID:  req.AgentTaskId,
-		WorkflowKind: rez.AgentWorkflowKind(req.WorkflowKind),
+		WorkflowKind: agents.WorkflowKind(req.WorkflowKind),
 		Status:       agentrun.Status(req.Status),
 	})
 	if listErr != nil {
@@ -103,9 +104,13 @@ func (h *agentsHandler) GetAgentRun(ctx context.Context, req *oapi.GetAgentRunRe
 
 func (h *agentsHandler) ListAgentRunCitations(ctx context.Context, req *oapi.ListAgentRunCitationsRequest) (*oapi.ListAgentRunCitationsResponse, error) {
 	var resp oapi.ListAgentRunCitationsResponse
-	citations, listErr := h.agents.ListRunCitations(ctx, req.Id)
-	if listErr != nil {
-		return nil, oapi.Error(ctx, "list agent run citations", listErr)
+	run, runErr := h.agents.GetRun(ctx, req.Id)
+	if runErr != nil {
+		return nil, oapi.Error(ctx, "get agent run", runErr)
+	}
+	citations, citationsErr := run.QueryCitations().All(ctx)
+	if citationsErr != nil {
+		return nil, oapi.Error(ctx, "list agent run citations", citationsErr)
 	}
 	resp.Body.Data = make([]oapi.AgentRunCitation, len(citations))
 	for i, citation := range citations {
@@ -117,9 +122,13 @@ func (h *agentsHandler) ListAgentRunCitations(ctx context.Context, req *oapi.Lis
 
 func (h *agentsHandler) ListAgentRunFindings(ctx context.Context, req *oapi.ListAgentRunFindingsRequest) (*oapi.ListAgentRunFindingsResponse, error) {
 	var resp oapi.ListAgentRunFindingsResponse
-	findings, listErr := h.agents.ListRunFindings(ctx, req.Id)
-	if listErr != nil {
-		return nil, oapi.Error(ctx, "list agent run findings", listErr)
+	run, runErr := h.agents.GetRun(ctx, req.Id)
+	if runErr != nil {
+		return nil, oapi.Error(ctx, "get agent run", runErr)
+	}
+	findings, findingsErr := run.QueryFindings().All(ctx)
+	if findingsErr != nil {
+		return nil, oapi.Error(ctx, "list agent run findings", findingsErr)
 	}
 	resp.Body.Data = make([]oapi.AgentRunFinding, len(findings))
 	for i, finding := range findings {
@@ -129,26 +138,34 @@ func (h *agentsHandler) ListAgentRunFindings(ctx context.Context, req *oapi.List
 	return &resp, nil
 }
 
-func (h *agentsHandler) GetAgentRunResult(ctx context.Context, req *oapi.GetAgentRunResultRequest) (*oapi.GetAgentRunResultResponse, error) {
-	var resp oapi.GetAgentRunResultResponse
-	result, getErr := h.agents.GetRunResult(ctx, req.Id)
-	if getErr != nil {
-		return nil, oapi.Error(ctx, "get agent run result", getErr)
-	}
-	resp.Body.Data = oapi.AgentRunResultFromEnt(result)
-	return &resp, nil
-}
-
 func (h *agentsHandler) ListAgentRunToolCalls(ctx context.Context, req *oapi.ListAgentRunToolCallsRequest) (*oapi.ListAgentRunToolCallsResponse, error) {
 	var resp oapi.ListAgentRunToolCallsResponse
-	toolCalls, listErr := h.agents.ListRunToolCalls(ctx, req.Id)
-	if listErr != nil {
-		return nil, oapi.Error(ctx, "list agent run tool calls", listErr)
+	run, runErr := h.agents.GetRun(ctx, req.Id)
+	if runErr != nil {
+		return nil, oapi.Error(ctx, "get agent run", runErr)
+	}
+	toolCalls, toolCallsErr := run.QueryToolCalls().All(ctx)
+	if toolCallsErr != nil {
+		return nil, oapi.Error(ctx, "list agent run tool calls", toolCallsErr)
 	}
 	resp.Body.Data = make([]oapi.AgentRunToolCall, len(toolCalls))
 	for i, toolCall := range toolCalls {
 		resp.Body.Data[i] = oapi.AgentRunToolCallFromEnt(toolCall)
 	}
 	resp.Body.Pagination.Total = len(toolCalls)
+	return &resp, nil
+}
+
+func (h *agentsHandler) GetAgentRunResult(ctx context.Context, req *oapi.GetAgentRunResultRequest) (*oapi.GetAgentRunResultResponse, error) {
+	var resp oapi.GetAgentRunResultResponse
+	run, runErr := h.agents.GetRun(ctx, req.Id)
+	if runErr != nil {
+		return nil, oapi.Error(ctx, "get agent run", runErr)
+	}
+	result, getErr := run.QueryResult().Only(ctx)
+	if getErr != nil {
+		return nil, oapi.Error(ctx, "get agent run result", getErr)
+	}
+	resp.Body.Data = oapi.AgentRunResultFromEnt(result)
 	return &resp, nil
 }

@@ -80,6 +80,14 @@ func (RunAgentWorkflow) Kind() string {
 	return "run-agent-workflow"
 }
 
+type RequestAgentTaskRun struct {
+	AgentTaskID uuid.UUID `json:"agent_task_id"`
+}
+
+func (RequestAgentTaskRun) Kind() string {
+	return "request-agent-task-run"
+}
+
 type InvestigateAlert struct {
 	AlertID         uuid.UUID `json:"alert_id"`
 	AlertInstanceID uuid.UUID `json:"alert_instance_id,omitempty"`

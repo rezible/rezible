@@ -7,6 +7,7 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	ifo "github.com/rezible/rezible/ent/incidentfieldoption"
@@ -405,8 +406,8 @@ func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenc
 
 	contextPack, err := svc.GetIncidentContext(ctx, inc.ID)
 	s.Require().NoError(err)
-	activeAlerts := make([]rez.AgentWorkflowContextItem, 0)
-	byID := map[string]rez.AgentWorkflowContextItem{}
+	activeAlerts := make([]agents.WorkflowContextItem, 0)
+	byID := map[string]agents.WorkflowContextItem{}
 	for _, item := range contextPack.Items {
 		if item.Role == "active_alert" {
 			activeAlerts = append(activeAlerts, item)
@@ -425,7 +426,7 @@ func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenc
 	s.Contains(byID[functionalityEntity.ID.String()].Payload["reason"], "functionality_dependency")
 }
 
-func workflowContextItemEntityID(item rez.AgentWorkflowContextItem) (string, bool) {
+func workflowContextItemEntityID(item agents.WorkflowContextItem) (string, bool) {
 	switch v := item.Payload["entityId"].(type) {
 	case string:
 		return v, true

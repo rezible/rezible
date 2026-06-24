@@ -12,6 +12,7 @@ import (
 	"github.com/sourcegraph/conc/pool"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/integrations"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
@@ -146,6 +147,10 @@ func declareServices(ctx context.Context, i do.Injector) {
 
 	do.Provide(i, func(i do.Injector) (*integrations.PackageRegistry, error) {
 		return integrations.NewPackageRegistry(), nil
+	})
+
+	do.Provide(i, func(i do.Injector) (*agents.WorkflowRegistry, error) {
+		return agents.NewWorkflowRegistry(), nil
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {
@@ -422,16 +427,24 @@ var provideServices = do.Package(
 	}),
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
 
-	do.Lazy(func(i do.Injector) (*eino.AgentService, error) {
-		return eino.NewAgentService(
-			do.MustInvoke[rez.Config](i),
+	do.Lazy(func(i do.Injector) (*db.AgentTaskService, error) {
+		_ = do.MustInvoke[*eino.WorkflowRunner](i)
+		return db.NewAgentTaskService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[*agents.WorkflowRegistry](i),
+		)
+	}),
+	do.Bind[*db.AgentTaskService, rez.AgentService](),
+
+	do.Lazy(func(i do.Injector) (*eino.WorkflowRunner, error) {
+		return eino.NewWorkflowRunner(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[*agents.WorkflowRegistry](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.AlertService](i),
 		)
 	}),
-	do.Bind[*eino.AgentService, rez.AgentService](),
 )
