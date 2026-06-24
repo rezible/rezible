@@ -50,7 +50,7 @@ func (c *appAuthSessionCookie) set(w http.ResponseWriter, value string, maxAge i
 	})
 }
 
-func (s *Server) makeApiRequestAuthenticator(authSess rez.AuthSessionService, ac *appAuthSessionCookie) func(http.Handler) http.Handler {
+func (s *Server) makeApiRequestAuthMiddleware(authSess rez.AuthSessionService, ac *appAuthSessionCookie) func(http.Handler) http.Handler {
 	getRequestAuthSession := func(r *http.Request) (*ent.UserAuthSession, error) {
 		if rawSessId := ac.Get(r); rawSessId != "" {
 			sessId, idErr := uuid.Parse(rawSessId)

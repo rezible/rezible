@@ -11,11 +11,9 @@ import (
 )
 
 const (
-	integrationName = "github"
 	providerName    = "github"
+	integrationName = "github"
 )
-
-var supportedCapabilities = []string{"repositories", "change_events"}
 
 type Integration struct {
 	cfg            rez.IntegrationsConfigGithub
@@ -66,13 +64,15 @@ func (i *Integration) WebhookHandler() http.Handler {
 	return i.webhookHandler
 }
 
-func (i *Integration) SupportedCapabilities() []string {
-	return supportedCapabilities
+type installationConfig struct {
+	Org            string `mapstructure:"org"`
+	InstallationID int64  `mapstructure:"installation_id"`
 }
 
-type installationConfig struct {
-	Org            string
-	InstallationID int64
+func (ic *installationConfig) encode() (map[string]any, error) {
+	var cfg map[string]any
+	encErr := mapstructure.Decode(ic, &cfg)
+	return cfg, encErr
 }
 
 func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {
@@ -109,11 +109,6 @@ func (ii *InstalledIntegration) ProviderName() string {
 func (ii *InstalledIntegration) DisplayName() string {
 	return "Github"
 }
-
-const (
-	configOrg            = "org"
-	configInstallationID = "installation_id"
-)
 
 func (ii *InstalledIntegration) config() (*installationConfig, error) {
 	var cfg installationConfig

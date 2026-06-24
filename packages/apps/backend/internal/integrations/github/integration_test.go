@@ -33,6 +33,19 @@ func TestOAuth2Config(t *testing.T) {
 	assert.Contains(t, authURL, "state=state-value")
 }
 
+func TestEncodeDecodeInstallationConfig(t *testing.T) {
+	org := "foobar"
+	instId := int64(1)
+	expectedEnc := map[string]any{
+		"org":             org,
+		"installation_id": instId,
+	}
+	cfg := &installationConfig{Org: org, InstallationID: instId}
+	enc, encErr := cfg.encode()
+	require.NoError(t, encErr)
+	assert.Equal(t, expectedEnc, enc)
+}
+
 func TestExtractIntegrationOptionsFromToken(t *testing.T) {
 	intg := &Integration{
 		cfg: makeIntegrationConfig(),
@@ -47,13 +60,11 @@ func TestExtractIntegrationOptionsFromToken(t *testing.T) {
 	}
 
 	options, err := intg.makeInstallationTargetOptions(installations)
-
 	require.NoError(t, err)
 	require.Len(t, options, 1)
 	assert.Equal(t, "456", options[0].ExternalRef)
 	assert.Equal(t, "myorg", options[0].DisplayName)
-	assert.Equal(t, "myorg", options[0].InstallationConfig[configOrg])
-	assert.Equal(t, int64(456), options[0].InstallationConfig[configInstallationID])
+	assert.Equal(t, int64(456), options[0].InstallationConfig["installation_id"])
 }
 
 func TestExtractIntegrationOptionsFromToken_NoInstallations(t *testing.T) {

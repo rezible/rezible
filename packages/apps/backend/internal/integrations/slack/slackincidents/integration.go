@@ -2,6 +2,7 @@ package slackincidents
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/go-viper/mapstructure/v2"
@@ -13,12 +14,24 @@ import (
 
 const integrationName = "slack_incidents"
 
-func MakeIntegration(svc *slackintegration.AppService[*App]) (*Integration, error) {
+func MakeIntegration(app *App, msgs rez.MessageService, events rez.ProviderEventPipelineService) (*Integration, error) {
+	svc, svcErr := slackintegration.NewAppService(app, msgs, events)
+	if svcErr != nil {
+		return nil, fmt.Errorf("making slackintegration: %w", svcErr)
+	}
 	return &Integration{appSvc: svc}, nil
 }
 
 type Integration struct {
 	appSvc *slackintegration.AppService[*App]
+}
+
+func (i *Integration) Start(ctx context.Context) error {
+	return i.appSvc.Start(ctx)
+}
+
+func (i *Integration) Shutdown(ctx context.Context) error {
+	return i.appSvc.Shutdown(ctx)
 }
 
 func (i *Integration) Name() string {
@@ -59,10 +72,6 @@ func (i *Integration) MaxInstalls() *int {
 
 func (i *Integration) WebhookHandler() http.Handler {
 	return i.appSvc.WebhookHandler()
-}
-
-func (i *Integration) SupportedCapabilities() []string {
-	return nil
 }
 
 func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {

@@ -55,10 +55,11 @@ func (r *PackageRegistry) GetPackage(name string) (rez.IntegrationPackage, error
 	return p, nil
 }
 
+type IntegrationWithWebhookHandler interface {
+	WebhookHandler() http.Handler
+}
+
 func (r *PackageRegistry) GetWebhookHandlers() map[string]http.Handler {
-	type IntegrationWithWebhookHandler interface {
-		WebhookHandler() http.Handler
-	}
 	whs := make(map[string]http.Handler)
 	for _, pkg := range r.availablePackages {
 		if whPkg, hasWebhook := pkg.(IntegrationWithWebhookHandler); hasWebhook {

@@ -54,8 +54,10 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSession
 	handler.Get("/health", s.makeHealthCheckHandler())
 
 	webhooksHandler := chi.NewMux()
-	for route, wh := range webhookHandlers {
-		webhooksHandler.Mount(ensureSlashPrefix(route), wh)
+	for prefix, wh := range webhookHandlers {
+		route := ensureSlashPrefix(prefix)
+		slog.Debug("mounting webhook handler", "route", route)
+		webhooksHandler.Mount(route, wh)
 	}
 	handler.Mount("/webhooks", webhooksHandler)
 
@@ -69,7 +71,7 @@ func NewServer(cfg rez.Config, ts rez.TelemetryService, authSess rez.AuthSession
 
 	// api routes with auth check
 	handler.Group(func(ar chi.Router) {
-		ar.Use(s.makeApiRequestAuthenticator(authSess, asc))
+		ar.Use(s.makeApiRequestAuthMiddleware(authSess, asc))
 		ar.Mount(oapiv1.VersionPrefix, api.Adapter())
 		if documentsProxyUrl != nil {
 			ar.Handle("/documents", s.makeDocumentsProxyHandler(documentsProxyUrl))

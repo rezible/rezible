@@ -77,13 +77,18 @@ func (i *Integration) makeInstallationTargetOptions(installations []*gh.Installa
 
 	options := make([]rez.IntegrationInstallationTarget, 0, len(matches))
 	for _, installation := range matches {
+		cfg := &installationConfig{
+			Org:            installation.GetAccount().GetLogin(),
+			InstallationID: installation.GetID(),
+		}
+		instCfg, cfgErr := cfg.encode()
+		if cfgErr != nil {
+			return nil, fmt.Errorf("encode installation config: %w", cfgErr)
+		}
 		option := rez.IntegrationInstallationTarget{
-			ExternalRef: strconv.FormatInt(installation.GetID(), 10),
-			DisplayName: installation.GetAccount().GetLogin(),
-			InstallationConfig: map[string]any{
-				configOrg:            installation.GetAccount().GetLogin(),
-				configInstallationID: installation.GetID(),
-			},
+			ExternalRef:        strconv.FormatInt(installation.GetID(), 10),
+			DisplayName:        installation.GetAccount().GetLogin(),
+			InstallationConfig: instCfg,
 		}
 		options = append(options, option)
 	}

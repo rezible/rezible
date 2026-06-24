@@ -2,6 +2,7 @@ package slackagent
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	rez "github.com/rezible/rezible"
@@ -12,12 +13,24 @@ import (
 
 const integrationName = "slack_agent"
 
-func MakeIntegration(svc *slackintegration.AppService[*App]) (*Integration, error) {
+func MakeIntegration(app *App, msgs rez.MessageService, events rez.ProviderEventPipelineService) (*Integration, error) {
+	svc, svcErr := slackintegration.NewAppService(app, msgs, events)
+	if svcErr != nil {
+		return nil, fmt.Errorf("making slackintegration: %w", svcErr)
+	}
 	return &Integration{appSvc: svc}, nil
 }
 
 type Integration struct {
 	appSvc *slackintegration.AppService[*App]
+}
+
+func (i *Integration) Start(ctx context.Context) error {
+	return i.appSvc.Start(ctx)
+}
+
+func (i *Integration) Shutdown(ctx context.Context) error {
+	return i.appSvc.Shutdown(ctx)
 }
 
 func (i *Integration) Name() string {
@@ -58,12 +71,6 @@ func (i *Integration) OAuth2Config() *oauth2.Config {
 
 func (i *Integration) RetrieveInstallationTargetOptions(ctx context.Context, t *oauth2.Token) ([]rez.IntegrationInstallationTarget, error) {
 	return i.appSvc.RetrieveInstallationTargetOptions(ctx, t)
-}
-
-var supportedCapabilities = []string{"chat", "users"}
-
-func (i *Integration) SupportedCapabilities() []string {
-	return supportedCapabilities
 }
 
 func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {

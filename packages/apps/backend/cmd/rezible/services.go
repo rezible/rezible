@@ -20,7 +20,6 @@ import (
 	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/integrations/github"
 	"github.com/rezible/rezible/internal/integrations/google"
-	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/rezible/rezible/internal/integrations/slack/slackagent"
 	"github.com/rezible/rezible/internal/integrations/slack/slackincidents"
 	"github.com/rezible/rezible/internal/opentelemetry"
@@ -217,14 +216,19 @@ func declareServices(ctx context.Context, i do.Injector) {
 
 var provideIntegrations = do.Package(
 	do.Lazy(func(i do.Injector) (*demoprovider.Integration, error) {
-		return demoprovider.MakeIntegration(do.MustInvoke[rez.Config](i)), nil
+		return demoprovider.MakeIntegration(
+			do.MustInvoke[rez.Config](i),
+			do.MustInvoke[rez.ProviderEventPipelineService](i),
+		)
 	}),
+
 	do.Lazy(func(i do.Injector) (*github.Integration, error) {
 		return github.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),
+
 	do.Lazy(func(i do.Injector) (*google.Integration, error) {
 		return google.MakeIntegration(
 			do.MustInvoke[rez.Config](i),
@@ -236,7 +240,7 @@ var provideIntegrations = do.Package(
 		)
 	}),
 
-	do.Lazy(func(i do.Injector) (*slackintegration.AppService[*slackagent.App], error) {
+	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
 		app, appErr := slackagent.MakeApp(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
@@ -244,19 +248,16 @@ var provideIntegrations = do.Package(
 			do.MustInvoke[rez.EventsService](i),
 		)
 		if appErr != nil {
-			return nil, appErr
+			return nil, fmt.Errorf("making slackagent app: %w", appErr)
 		}
-		return slackintegration.NewAppService(
+		return slackagent.MakeIntegration(
 			app,
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
 	}),
-	do.Lazy(func(i do.Injector) (*slackagent.Integration, error) {
-		return slackagent.MakeIntegration(do.MustInvoke[*slackintegration.AppService[*slackagent.App]](i))
-	}),
 
-	do.Lazy(func(i do.Injector) (*slackintegration.AppService[*slackincidents.App], error) {
+	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
 		app, appErr := slackincidents.MakeApp(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
@@ -266,13 +267,11 @@ var provideIntegrations = do.Package(
 		if appErr != nil {
 			return nil, appErr
 		}
-		return slackintegration.NewAppService(app,
+		return slackincidents.MakeIntegration(
+			app,
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.ProviderEventPipelineService](i),
 		)
-	}),
-	do.Lazy(func(i do.Injector) (*slackincidents.Integration, error) {
-		return slackincidents.MakeIntegration(do.MustInvoke[*slackintegration.AppService[*slackincidents.App]](i))
 	}),
 )
 

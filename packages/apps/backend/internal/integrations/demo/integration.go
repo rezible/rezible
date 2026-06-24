@@ -1,6 +1,8 @@
 package demoprovider
 
 import (
+	"net/http"
+
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 )
@@ -11,13 +13,17 @@ const (
 )
 
 type Integration struct {
-	available bool
+	available      bool
+	webhookHandler http.Handler
 }
 
-func MakeIntegration(cfg rez.Config) *Integration {
-	return &Integration{
-		available: cfg.App.DebugMode,
+func MakeIntegration(cfg rez.Config, provEvents rez.ProviderEventPipelineService) (*Integration, error) {
+	i := &Integration{
+		available:      cfg.App.DebugMode,
+		webhookHandler: newWebhookHandler(provEvents),
 	}
+
+	return i, nil
 }
 
 func (i *Integration) Name() string {
@@ -46,6 +52,10 @@ func (i *Integration) IsAvailable() (bool, error) {
 
 func (i *Integration) OAuthInstallRequired() bool {
 	return false
+}
+
+func (i *Integration) WebhookHandler() http.Handler {
+	return i.webhookHandler
 }
 
 func (i *Integration) ValidateConfig(m map[string]any) (externalRef string, validationErr error) {
