@@ -10,8 +10,10 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent/agentcase"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
+	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/testkit"
 	"github.com/rezible/rezible/testkit/mocks"
@@ -61,17 +63,28 @@ func (s *AgentServiceSuite) TestRequestRunCreatesRunAndPreservesContextForEnqueu
 		PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
 
 	svc := s.newService(jobSvc, msgSvc)
+	agentCase, caseErr := s.Client(ctx).AgentCase.Create().
+		SetStatus(agentcase.StatusOpen).
+		SetTitle("Incident context pack").
+		SetWorkflowKind(agentcase.WorkflowKindIncidentContextPack).
+		SetSubjectKind("incident").
+		SetSubjectID(uuid.New()).
+		SetTriggerMetadata(map[string]any{"trigger": "test"}).
+		Save(ctx)
+	s.Require().NoError(caseErr)
 
 	runRequest := rez.AgentRunRequest{
+		AgentCaseID:    agentCase.ID,
 		WorkflowKind:   agentrun.WorkflowKindIncidentContextPack,
 		IdempotencyKey: "incident-context-pack:test",
 		SubjectKind:    "incident",
-		SubjectID:      uuid.New(),
+		SubjectID:      *agentCase.SubjectID,
 		Metadata:       map[string]any{"trigger": "test"},
 	}
 	run, err := svc.RequestRun(ctx, runRequest)
 	s.Require().NoError(err)
 	s.Equal(agentrun.StatusQueued, run.Status)
+	s.Equal(agentCase.ID, *run.AgentCaseID)
 	s.Equal(agentrun.WorkflowKindIncidentContextPack, run.WorkflowKind)
 	s.Equal(runRequest.SubjectID, *run.SubjectID)
 }
@@ -86,11 +99,22 @@ func (s *AgentServiceSuite) TestRequestRunReusesExistingRunForIdempotencyKey() {
 		PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
 
 	svc := s.newService(jobSvc, msgSvc)
+	agentCase, caseErr := s.Client(ctx).AgentCase.Create().
+		SetStatus(agentcase.StatusOpen).
+		SetTitle("Alert investigation").
+		SetWorkflowKind(agentcase.WorkflowKindAlertInvestigation).
+		SetSubjectKind("alert").
+		SetSubjectID(uuid.New()).
+		SetTriggerMetadata(map[string]any{"trigger": "test"}).
+		Save(ctx)
+	s.Require().NoError(caseErr)
+
 	params := rez.AgentRunRequest{
+		AgentCaseID:    agentCase.ID,
 		WorkflowKind:   agentrun.WorkflowKindAlertInvestigation,
 		IdempotencyKey: "alert-investigation:test",
 		SubjectKind:    "alert",
-		SubjectID:      uuid.New(),
+		SubjectID:      *agentCase.SubjectID,
 	}
 
 	first, firstErr := svc.RequestRun(ctx, params)
@@ -112,7 +136,18 @@ func (s *AgentServiceSuite) TestRunWorkflowCompletesStubAndPersistsArtifacts() {
 	svc := s.newService(jobSvc, msgSvc)
 	dbc := s.Client(ctx)
 
+	agentCase, caseErr := dbc.AgentCase.Create().
+		SetStatus(agentcase.StatusOpen).
+		SetTitle("Retrospective analysis").
+		SetWorkflowKind(agentcase.WorkflowKindRetrospectiveAnalysis).
+		SetSubjectKind("incident").
+		SetSubjectID(uuid.New()).
+		SetTriggerMetadata(map[string]any{"trigger": "test"}).
+		Save(ctx)
+	s.Require().NoError(caseErr)
+
 	createRun := dbc.AgentRun.Create().
+		SetAgentCaseID(agentCase.ID).
 		SetWorkflowKind(agentrun.WorkflowKindRetrospectiveAnalysis).
 		SetStatus(agentrun.StatusQueued).
 		SetIdempotencyKey("retrospective:test").
@@ -130,13 +165,25 @@ func (s *AgentServiceSuite) TestRunWorkflowCompletesStubAndPersistsArtifacts() {
 	s.NotNil(updated.StartedAt)
 	s.NotNil(updated.CompletedAt)
 
-	createArtifacts := dbc.AgentRunArtifact.Query().
-		Where(agentrunartifact.AgentRunID(run.ID))
-	artifacts, artifactsErr := createArtifacts.All(ctx)
+	updatedCase, caseUpdateErr := dbc.AgentCase.Get(ctx, agentCase.ID)
+	s.Require().NoError(caseUpdateErr)
+	s.Equal(agentcase.StatusCompleted, updatedCase.Status)
+
+	steps, stepsErr := dbc.AgentCaseStep.Query().
+		Where(agentcasestep.AgentCaseID(agentCase.ID)).
+		Order(agentcasestep.BySequence()).
+		All(ctx)
+	s.Require().NoError(stepsErr)
+	s.Len(steps, 2)
+	s.Equal(agentcasestep.KindSystem, steps[0].Kind)
+	s.Equal(agentcasestep.KindConclusion, steps[1].Kind)
+
+	artifacts, artifactsErr := dbc.AgentCaseArtifact.Query().
+		Where(agentcaseartifact.AgentCaseID(agentCase.ID)).
+		All(ctx)
 	s.Require().NoError(artifactsErr)
-	s.Len(artifacts, 2)
-	s.Contains([]agentrunartifact.Kind{artifacts[0].Kind, artifacts[1].Kind}, agentrunartifact.KindResult)
-	s.Contains([]agentrunartifact.Kind{artifacts[0].Kind, artifacts[1].Kind}, agentrunartifact.KindModel)
+	s.Len(artifacts, 1)
+	s.Equal(agentcaseartifact.KindModel, artifacts[0].Kind)
 }
 
 func (s *AgentServiceSuite) TestRunWorkflowMarksUnknownWorkflowFailed() {
@@ -147,8 +194,18 @@ func (s *AgentServiceSuite) TestRunWorkflowMarksUnknownWorkflowFailed() {
 		PublishEvent(mock.Anything, mock.Anything).Return(nil).Maybe()
 
 	dbc := s.Client(ctx)
+	agentCase, caseErr := dbc.AgentCase.Create().
+		SetStatus(agentcase.StatusOpen).
+		SetTitle("Alert investigation").
+		SetWorkflowKind(agentcase.WorkflowKindAlertInvestigation).
+		SetSubjectKind("alert").
+		SetSubjectID(uuid.New()).
+		SetTriggerMetadata(map[string]any{"trigger": "test"}).
+		Save(ctx)
+	s.Require().NoError(caseErr)
 
 	createRun := dbc.AgentRun.Create().
+		SetAgentCaseID(agentCase.ID).
 		SetWorkflowKind(agentrun.WorkflowKindAlertInvestigation).
 		SetStatus(agentrun.StatusQueued).
 		SetIdempotencyKey("missing:test")
@@ -167,4 +224,9 @@ func (s *AgentServiceSuite) TestRunWorkflowMarksUnknownWorkflowFailed() {
 	s.Equal("unknown_workflow", updated.ErrorCode)
 	s.NotEmpty(updated.ErrorMessage)
 	s.NotNil(updated.FailedAt)
+
+	updatedCase, caseUpdateErr := dbc.AgentCase.Get(ctx, agentCase.ID)
+	s.Require().NoError(caseUpdateErr)
+	s.Equal(agentcase.StatusFailed, updatedCase.Status)
+	s.Equal("unknown_workflow", updatedCase.ErrorCode)
 }

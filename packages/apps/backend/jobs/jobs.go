@@ -80,14 +80,6 @@ func (RunAgentWorkflow) Kind() string {
 	return "run-agent-workflow"
 }
 
-type CreateIncidentContextPack struct {
-	IncidentID uuid.UUID `json:"incident_id"`
-}
-
-func (CreateIncidentContextPack) Kind() string {
-	return "create-incident-context-pack"
-}
-
 type InvestigateAlert struct {
 	AlertID         uuid.UUID `json:"alert_id"`
 	AlertInstanceID uuid.UUID `json:"alert_instance_id,omitempty"`
@@ -95,6 +87,15 @@ type InvestigateAlert struct {
 
 func (InvestigateAlert) Kind() string {
 	return "investigate-alert"
+}
+
+type PostAlertInvestigationUpdate struct {
+	AlertID    uuid.UUID `json:"alert_id"`
+	AgentRunID uuid.UUID `json:"agent_run_id"`
+}
+
+func (PostAlertInvestigationUpdate) Kind() string {
+	return "post-alert-investigation-update"
 }
 
 type AnalyzeIncidentRetrospective struct {

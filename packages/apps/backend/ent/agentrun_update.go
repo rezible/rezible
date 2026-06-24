@@ -12,8 +12,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentcase"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
+	"github.com/rezible/rezible/ent/agentcaseconclusion"
+	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/rezible/rezible/ent/agentrunfeedback"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -50,6 +53,26 @@ func (_u *AgentRunUpdate) SetNillableCreatedAt(v *time.Time) *AgentRunUpdate {
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AgentRunUpdate) SetUpdatedAt(v time.Time) *AgentRunUpdate {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetAgentCaseID sets the "agent_case_id" field.
+func (_u *AgentRunUpdate) SetAgentCaseID(v uuid.UUID) *AgentRunUpdate {
+	_u.mutation.SetAgentCaseID(v)
+	return _u
+}
+
+// SetNillableAgentCaseID sets the "agent_case_id" field if the given value is not nil.
+func (_u *AgentRunUpdate) SetNillableAgentCaseID(v *uuid.UUID) *AgentRunUpdate {
+	if v != nil {
+		_u.SetAgentCaseID(*v)
+	}
+	return _u
+}
+
+// ClearAgentCaseID clears the value of the "agent_case_id" field.
+func (_u *AgentRunUpdate) ClearAgentCaseID() *AgentRunUpdate {
+	_u.mutation.ClearAgentCaseID()
 	return _u
 }
 
@@ -273,19 +296,54 @@ func (_u *AgentRunUpdate) ClearFailedAt() *AgentRunUpdate {
 	return _u
 }
 
-// AddArtifactIDs adds the "artifacts" edge to the AgentRunArtifact entity by IDs.
-func (_u *AgentRunUpdate) AddArtifactIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.AddArtifactIDs(ids...)
+// SetAgentCase sets the "agent_case" edge to the AgentCase entity.
+func (_u *AgentRunUpdate) SetAgentCase(v *AgentCase) *AgentRunUpdate {
+	return _u.SetAgentCaseID(v.ID)
+}
+
+// AddCaseStepIDs adds the "case_steps" edge to the AgentCaseStep entity by IDs.
+func (_u *AgentRunUpdate) AddCaseStepIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.AddCaseStepIDs(ids...)
 	return _u
 }
 
-// AddArtifacts adds the "artifacts" edges to the AgentRunArtifact entity.
-func (_u *AgentRunUpdate) AddArtifacts(v ...*AgentRunArtifact) *AgentRunUpdate {
+// AddCaseSteps adds the "case_steps" edges to the AgentCaseStep entity.
+func (_u *AgentRunUpdate) AddCaseSteps(v ...*AgentCaseStep) *AgentRunUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddArtifactIDs(ids...)
+	return _u.AddCaseStepIDs(ids...)
+}
+
+// AddCaseArtifactIDs adds the "case_artifacts" edge to the AgentCaseArtifact entity by IDs.
+func (_u *AgentRunUpdate) AddCaseArtifactIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.AddCaseArtifactIDs(ids...)
+	return _u
+}
+
+// AddCaseArtifacts adds the "case_artifacts" edges to the AgentCaseArtifact entity.
+func (_u *AgentRunUpdate) AddCaseArtifacts(v ...*AgentCaseArtifact) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCaseArtifactIDs(ids...)
+}
+
+// AddCaseConclusionIDs adds the "case_conclusions" edge to the AgentCaseConclusion entity by IDs.
+func (_u *AgentRunUpdate) AddCaseConclusionIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.AddCaseConclusionIDs(ids...)
+	return _u
+}
+
+// AddCaseConclusions adds the "case_conclusions" edges to the AgentCaseConclusion entity.
+func (_u *AgentRunUpdate) AddCaseConclusions(v ...*AgentCaseConclusion) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCaseConclusionIDs(ids...)
 }
 
 // AddFeedbackIDs adds the "feedback" edge to the AgentRunFeedback entity by IDs.
@@ -308,25 +366,73 @@ func (_u *AgentRunUpdate) Mutation() *AgentRunMutation {
 	return _u.mutation
 }
 
-// ClearArtifacts clears all "artifacts" edges to the AgentRunArtifact entity.
-func (_u *AgentRunUpdate) ClearArtifacts() *AgentRunUpdate {
-	_u.mutation.ClearArtifacts()
+// ClearAgentCase clears the "agent_case" edge to the AgentCase entity.
+func (_u *AgentRunUpdate) ClearAgentCase() *AgentRunUpdate {
+	_u.mutation.ClearAgentCase()
 	return _u
 }
 
-// RemoveArtifactIDs removes the "artifacts" edge to AgentRunArtifact entities by IDs.
-func (_u *AgentRunUpdate) RemoveArtifactIDs(ids ...uuid.UUID) *AgentRunUpdate {
-	_u.mutation.RemoveArtifactIDs(ids...)
+// ClearCaseSteps clears all "case_steps" edges to the AgentCaseStep entity.
+func (_u *AgentRunUpdate) ClearCaseSteps() *AgentRunUpdate {
+	_u.mutation.ClearCaseSteps()
 	return _u
 }
 
-// RemoveArtifacts removes "artifacts" edges to AgentRunArtifact entities.
-func (_u *AgentRunUpdate) RemoveArtifacts(v ...*AgentRunArtifact) *AgentRunUpdate {
+// RemoveCaseStepIDs removes the "case_steps" edge to AgentCaseStep entities by IDs.
+func (_u *AgentRunUpdate) RemoveCaseStepIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.RemoveCaseStepIDs(ids...)
+	return _u
+}
+
+// RemoveCaseSteps removes "case_steps" edges to AgentCaseStep entities.
+func (_u *AgentRunUpdate) RemoveCaseSteps(v ...*AgentCaseStep) *AgentRunUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveArtifactIDs(ids...)
+	return _u.RemoveCaseStepIDs(ids...)
+}
+
+// ClearCaseArtifacts clears all "case_artifacts" edges to the AgentCaseArtifact entity.
+func (_u *AgentRunUpdate) ClearCaseArtifacts() *AgentRunUpdate {
+	_u.mutation.ClearCaseArtifacts()
+	return _u
+}
+
+// RemoveCaseArtifactIDs removes the "case_artifacts" edge to AgentCaseArtifact entities by IDs.
+func (_u *AgentRunUpdate) RemoveCaseArtifactIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.RemoveCaseArtifactIDs(ids...)
+	return _u
+}
+
+// RemoveCaseArtifacts removes "case_artifacts" edges to AgentCaseArtifact entities.
+func (_u *AgentRunUpdate) RemoveCaseArtifacts(v ...*AgentCaseArtifact) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCaseArtifactIDs(ids...)
+}
+
+// ClearCaseConclusions clears all "case_conclusions" edges to the AgentCaseConclusion entity.
+func (_u *AgentRunUpdate) ClearCaseConclusions() *AgentRunUpdate {
+	_u.mutation.ClearCaseConclusions()
+	return _u
+}
+
+// RemoveCaseConclusionIDs removes the "case_conclusions" edge to AgentCaseConclusion entities by IDs.
+func (_u *AgentRunUpdate) RemoveCaseConclusionIDs(ids ...uuid.UUID) *AgentRunUpdate {
+	_u.mutation.RemoveCaseConclusionIDs(ids...)
+	return _u
+}
+
+// RemoveCaseConclusions removes "case_conclusions" edges to AgentCaseConclusion entities.
+func (_u *AgentRunUpdate) RemoveCaseConclusions(v ...*AgentCaseConclusion) *AgentRunUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCaseConclusionIDs(ids...)
 }
 
 // ClearFeedback clears all "feedback" edges to the AgentRunFeedback entity.
@@ -505,49 +611,176 @@ func (_u *AgentRunUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if _u.mutation.FailedAtCleared() {
 		_spec.ClearField(agentrun.FieldFailedAt, field.TypeTime)
 	}
-	if _u.mutation.ArtifactsCleared() {
+	if _u.mutation.AgentCaseCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ArtifactsTable,
-			Columns: []string{agentrun.ArtifactsColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.AgentCaseTable,
+			Columns: []string{agentrun.AgentCaseColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunartifact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentcase.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentRunArtifact
+		edge.Schema = _u.schemaConfig.AgentRun
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedArtifactsIDs(); len(nodes) > 0 && !_u.mutation.ArtifactsCleared() {
+	if nodes := _u.mutation.AgentCaseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.AgentCaseTable,
+			Columns: []string{agentrun.AgentCaseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcase.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRun
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CaseStepsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   agentrun.ArtifactsTable,
-			Columns: []string{agentrun.ArtifactsColumn},
+			Table:   agentrun.CaseStepsTable,
+			Columns: []string{agentrun.CaseStepsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunartifact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentcasestep.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentRunArtifact
+		edge.Schema = _u.schemaConfig.AgentCaseStep
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCaseStepsIDs(); len(nodes) > 0 && !_u.mutation.CaseStepsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseStepsTable,
+			Columns: []string{agentrun.CaseStepsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcasestep.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseStep
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ArtifactsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CaseStepsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   agentrun.ArtifactsTable,
-			Columns: []string{agentrun.ArtifactsColumn},
+			Table:   agentrun.CaseStepsTable,
+			Columns: []string{agentrun.CaseStepsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunartifact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentcasestep.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentRunArtifact
+		edge.Schema = _u.schemaConfig.AgentCaseStep
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CaseArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseArtifactsTable,
+			Columns: []string{agentrun.CaseArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseArtifact
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCaseArtifactsIDs(); len(nodes) > 0 && !_u.mutation.CaseArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseArtifactsTable,
+			Columns: []string{agentrun.CaseArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CaseArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseArtifactsTable,
+			Columns: []string{agentrun.CaseArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CaseConclusionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseConclusionsTable,
+			Columns: []string{agentrun.CaseConclusionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseconclusion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseConclusion
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCaseConclusionsIDs(); len(nodes) > 0 && !_u.mutation.CaseConclusionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseConclusionsTable,
+			Columns: []string{agentrun.CaseConclusionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseconclusion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseConclusion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CaseConclusionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseConclusionsTable,
+			Columns: []string{agentrun.CaseConclusionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseconclusion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseConclusion
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -642,6 +875,26 @@ func (_u *AgentRunUpdateOne) SetNillableCreatedAt(v *time.Time) *AgentRunUpdateO
 // SetUpdatedAt sets the "updated_at" field.
 func (_u *AgentRunUpdateOne) SetUpdatedAt(v time.Time) *AgentRunUpdateOne {
 	_u.mutation.SetUpdatedAt(v)
+	return _u
+}
+
+// SetAgentCaseID sets the "agent_case_id" field.
+func (_u *AgentRunUpdateOne) SetAgentCaseID(v uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.SetAgentCaseID(v)
+	return _u
+}
+
+// SetNillableAgentCaseID sets the "agent_case_id" field if the given value is not nil.
+func (_u *AgentRunUpdateOne) SetNillableAgentCaseID(v *uuid.UUID) *AgentRunUpdateOne {
+	if v != nil {
+		_u.SetAgentCaseID(*v)
+	}
+	return _u
+}
+
+// ClearAgentCaseID clears the value of the "agent_case_id" field.
+func (_u *AgentRunUpdateOne) ClearAgentCaseID() *AgentRunUpdateOne {
+	_u.mutation.ClearAgentCaseID()
 	return _u
 }
 
@@ -865,19 +1118,54 @@ func (_u *AgentRunUpdateOne) ClearFailedAt() *AgentRunUpdateOne {
 	return _u
 }
 
-// AddArtifactIDs adds the "artifacts" edge to the AgentRunArtifact entity by IDs.
-func (_u *AgentRunUpdateOne) AddArtifactIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.AddArtifactIDs(ids...)
+// SetAgentCase sets the "agent_case" edge to the AgentCase entity.
+func (_u *AgentRunUpdateOne) SetAgentCase(v *AgentCase) *AgentRunUpdateOne {
+	return _u.SetAgentCaseID(v.ID)
+}
+
+// AddCaseStepIDs adds the "case_steps" edge to the AgentCaseStep entity by IDs.
+func (_u *AgentRunUpdateOne) AddCaseStepIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.AddCaseStepIDs(ids...)
 	return _u
 }
 
-// AddArtifacts adds the "artifacts" edges to the AgentRunArtifact entity.
-func (_u *AgentRunUpdateOne) AddArtifacts(v ...*AgentRunArtifact) *AgentRunUpdateOne {
+// AddCaseSteps adds the "case_steps" edges to the AgentCaseStep entity.
+func (_u *AgentRunUpdateOne) AddCaseSteps(v ...*AgentCaseStep) *AgentRunUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddArtifactIDs(ids...)
+	return _u.AddCaseStepIDs(ids...)
+}
+
+// AddCaseArtifactIDs adds the "case_artifacts" edge to the AgentCaseArtifact entity by IDs.
+func (_u *AgentRunUpdateOne) AddCaseArtifactIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.AddCaseArtifactIDs(ids...)
+	return _u
+}
+
+// AddCaseArtifacts adds the "case_artifacts" edges to the AgentCaseArtifact entity.
+func (_u *AgentRunUpdateOne) AddCaseArtifacts(v ...*AgentCaseArtifact) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCaseArtifactIDs(ids...)
+}
+
+// AddCaseConclusionIDs adds the "case_conclusions" edge to the AgentCaseConclusion entity by IDs.
+func (_u *AgentRunUpdateOne) AddCaseConclusionIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.AddCaseConclusionIDs(ids...)
+	return _u
+}
+
+// AddCaseConclusions adds the "case_conclusions" edges to the AgentCaseConclusion entity.
+func (_u *AgentRunUpdateOne) AddCaseConclusions(v ...*AgentCaseConclusion) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCaseConclusionIDs(ids...)
 }
 
 // AddFeedbackIDs adds the "feedback" edge to the AgentRunFeedback entity by IDs.
@@ -900,25 +1188,73 @@ func (_u *AgentRunUpdateOne) Mutation() *AgentRunMutation {
 	return _u.mutation
 }
 
-// ClearArtifacts clears all "artifacts" edges to the AgentRunArtifact entity.
-func (_u *AgentRunUpdateOne) ClearArtifacts() *AgentRunUpdateOne {
-	_u.mutation.ClearArtifacts()
+// ClearAgentCase clears the "agent_case" edge to the AgentCase entity.
+func (_u *AgentRunUpdateOne) ClearAgentCase() *AgentRunUpdateOne {
+	_u.mutation.ClearAgentCase()
 	return _u
 }
 
-// RemoveArtifactIDs removes the "artifacts" edge to AgentRunArtifact entities by IDs.
-func (_u *AgentRunUpdateOne) RemoveArtifactIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
-	_u.mutation.RemoveArtifactIDs(ids...)
+// ClearCaseSteps clears all "case_steps" edges to the AgentCaseStep entity.
+func (_u *AgentRunUpdateOne) ClearCaseSteps() *AgentRunUpdateOne {
+	_u.mutation.ClearCaseSteps()
 	return _u
 }
 
-// RemoveArtifacts removes "artifacts" edges to AgentRunArtifact entities.
-func (_u *AgentRunUpdateOne) RemoveArtifacts(v ...*AgentRunArtifact) *AgentRunUpdateOne {
+// RemoveCaseStepIDs removes the "case_steps" edge to AgentCaseStep entities by IDs.
+func (_u *AgentRunUpdateOne) RemoveCaseStepIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.RemoveCaseStepIDs(ids...)
+	return _u
+}
+
+// RemoveCaseSteps removes "case_steps" edges to AgentCaseStep entities.
+func (_u *AgentRunUpdateOne) RemoveCaseSteps(v ...*AgentCaseStep) *AgentRunUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveArtifactIDs(ids...)
+	return _u.RemoveCaseStepIDs(ids...)
+}
+
+// ClearCaseArtifacts clears all "case_artifacts" edges to the AgentCaseArtifact entity.
+func (_u *AgentRunUpdateOne) ClearCaseArtifacts() *AgentRunUpdateOne {
+	_u.mutation.ClearCaseArtifacts()
+	return _u
+}
+
+// RemoveCaseArtifactIDs removes the "case_artifacts" edge to AgentCaseArtifact entities by IDs.
+func (_u *AgentRunUpdateOne) RemoveCaseArtifactIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.RemoveCaseArtifactIDs(ids...)
+	return _u
+}
+
+// RemoveCaseArtifacts removes "case_artifacts" edges to AgentCaseArtifact entities.
+func (_u *AgentRunUpdateOne) RemoveCaseArtifacts(v ...*AgentCaseArtifact) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCaseArtifactIDs(ids...)
+}
+
+// ClearCaseConclusions clears all "case_conclusions" edges to the AgentCaseConclusion entity.
+func (_u *AgentRunUpdateOne) ClearCaseConclusions() *AgentRunUpdateOne {
+	_u.mutation.ClearCaseConclusions()
+	return _u
+}
+
+// RemoveCaseConclusionIDs removes the "case_conclusions" edge to AgentCaseConclusion entities by IDs.
+func (_u *AgentRunUpdateOne) RemoveCaseConclusionIDs(ids ...uuid.UUID) *AgentRunUpdateOne {
+	_u.mutation.RemoveCaseConclusionIDs(ids...)
+	return _u
+}
+
+// RemoveCaseConclusions removes "case_conclusions" edges to AgentCaseConclusion entities.
+func (_u *AgentRunUpdateOne) RemoveCaseConclusions(v ...*AgentCaseConclusion) *AgentRunUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCaseConclusionIDs(ids...)
 }
 
 // ClearFeedback clears all "feedback" edges to the AgentRunFeedback entity.
@@ -1127,49 +1463,176 @@ func (_u *AgentRunUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun, err 
 	if _u.mutation.FailedAtCleared() {
 		_spec.ClearField(agentrun.FieldFailedAt, field.TypeTime)
 	}
-	if _u.mutation.ArtifactsCleared() {
+	if _u.mutation.AgentCaseCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ArtifactsTable,
-			Columns: []string{agentrun.ArtifactsColumn},
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.AgentCaseTable,
+			Columns: []string{agentrun.AgentCaseColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunartifact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentcase.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentRunArtifact
+		edge.Schema = _u.schemaConfig.AgentRun
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedArtifactsIDs(); len(nodes) > 0 && !_u.mutation.ArtifactsCleared() {
+	if nodes := _u.mutation.AgentCaseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.AgentCaseTable,
+			Columns: []string{agentrun.AgentCaseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcase.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRun
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CaseStepsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   agentrun.ArtifactsTable,
-			Columns: []string{agentrun.ArtifactsColumn},
+			Table:   agentrun.CaseStepsTable,
+			Columns: []string{agentrun.CaseStepsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunartifact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentcasestep.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentRunArtifact
+		edge.Schema = _u.schemaConfig.AgentCaseStep
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCaseStepsIDs(); len(nodes) > 0 && !_u.mutation.CaseStepsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseStepsTable,
+			Columns: []string{agentrun.CaseStepsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcasestep.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseStep
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.ArtifactsIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CaseStepsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   agentrun.ArtifactsTable,
-			Columns: []string{agentrun.ArtifactsColumn},
+			Table:   agentrun.CaseStepsTable,
+			Columns: []string{agentrun.CaseStepsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunartifact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentcasestep.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AgentRunArtifact
+		edge.Schema = _u.schemaConfig.AgentCaseStep
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CaseArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseArtifactsTable,
+			Columns: []string{agentrun.CaseArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseArtifact
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCaseArtifactsIDs(); len(nodes) > 0 && !_u.mutation.CaseArtifactsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseArtifactsTable,
+			Columns: []string{agentrun.CaseArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CaseArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseArtifactsTable,
+			Columns: []string{agentrun.CaseArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CaseConclusionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseConclusionsTable,
+			Columns: []string{agentrun.CaseConclusionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseconclusion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseConclusion
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCaseConclusionsIDs(); len(nodes) > 0 && !_u.mutation.CaseConclusionsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseConclusionsTable,
+			Columns: []string{agentrun.CaseConclusionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseconclusion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseConclusion
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CaseConclusionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseConclusionsTable,
+			Columns: []string{agentrun.CaseConclusionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseconclusion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentCaseConclusion
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

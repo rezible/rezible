@@ -72,6 +72,11 @@ func UpdatedAt(v time.Time) predicate.AgentRun {
 	return predicate.AgentRun(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
+// AgentCaseID applies equality check predicate on the "agent_case_id" field. It's identical to AgentCaseIDEQ.
+func AgentCaseID(v uuid.UUID) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldEQ(FieldAgentCaseID, v))
+}
+
 // IdempotencyKey applies equality check predicate on the "idempotency_key" field. It's identical to IdempotencyKeyEQ.
 func IdempotencyKey(v string) predicate.AgentRun {
 	return predicate.AgentRun(sql.FieldEQ(FieldIdempotencyKey, v))
@@ -215,6 +220,36 @@ func UpdatedAtLT(v time.Time) predicate.AgentRun {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.AgentRun {
 	return predicate.AgentRun(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// AgentCaseIDEQ applies the EQ predicate on the "agent_case_id" field.
+func AgentCaseIDEQ(v uuid.UUID) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldEQ(FieldAgentCaseID, v))
+}
+
+// AgentCaseIDNEQ applies the NEQ predicate on the "agent_case_id" field.
+func AgentCaseIDNEQ(v uuid.UUID) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldNEQ(FieldAgentCaseID, v))
+}
+
+// AgentCaseIDIn applies the In predicate on the "agent_case_id" field.
+func AgentCaseIDIn(vs ...uuid.UUID) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldIn(FieldAgentCaseID, vs...))
+}
+
+// AgentCaseIDNotIn applies the NotIn predicate on the "agent_case_id" field.
+func AgentCaseIDNotIn(vs ...uuid.UUID) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldNotIn(FieldAgentCaseID, vs...))
+}
+
+// AgentCaseIDIsNil applies the IsNil predicate on the "agent_case_id" field.
+func AgentCaseIDIsNil() predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldIsNull(FieldAgentCaseID))
+}
+
+// AgentCaseIDNotNil applies the NotNil predicate on the "agent_case_id" field.
+func AgentCaseIDNotNil() predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldNotNull(FieldAgentCaseID))
 }
 
 // WorkflowKindEQ applies the EQ predicate on the "workflow_kind" field.
@@ -836,27 +871,114 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AgentRun {
 	})
 }
 
-// HasArtifacts applies the HasEdge predicate on the "artifacts" edge.
-func HasArtifacts() predicate.AgentRun {
+// HasAgentCase applies the HasEdge predicate on the "agent_case" edge.
+func HasAgentCase() predicate.AgentRun {
 	return predicate.AgentRun(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ArtifactsTable, ArtifactsColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, AgentCaseTable, AgentCaseColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRunArtifact
-		step.Edge.Schema = schemaConfig.AgentRunArtifact
+		step.To.Schema = schemaConfig.AgentCase
+		step.Edge.Schema = schemaConfig.AgentRun
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasArtifactsWith applies the HasEdge predicate on the "artifacts" edge with a given conditions (other predicates).
-func HasArtifactsWith(preds ...predicate.AgentRunArtifact) predicate.AgentRun {
+// HasAgentCaseWith applies the HasEdge predicate on the "agent_case" edge with a given conditions (other predicates).
+func HasAgentCaseWith(preds ...predicate.AgentCase) predicate.AgentRun {
 	return predicate.AgentRun(func(s *sql.Selector) {
-		step := newArtifactsStep()
+		step := newAgentCaseStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRunArtifact
-		step.Edge.Schema = schemaConfig.AgentRunArtifact
+		step.To.Schema = schemaConfig.AgentCase
+		step.Edge.Schema = schemaConfig.AgentRun
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCaseSteps applies the HasEdge predicate on the "case_steps" edge.
+func HasCaseSteps() predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, CaseStepsTable, CaseStepsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentCaseStep
+		step.Edge.Schema = schemaConfig.AgentCaseStep
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCaseStepsWith applies the HasEdge predicate on the "case_steps" edge with a given conditions (other predicates).
+func HasCaseStepsWith(preds ...predicate.AgentCaseStep) predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := newCaseStepsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentCaseStep
+		step.Edge.Schema = schemaConfig.AgentCaseStep
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCaseArtifacts applies the HasEdge predicate on the "case_artifacts" edge.
+func HasCaseArtifacts() predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, CaseArtifactsTable, CaseArtifactsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentCaseArtifact
+		step.Edge.Schema = schemaConfig.AgentCaseArtifact
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCaseArtifactsWith applies the HasEdge predicate on the "case_artifacts" edge with a given conditions (other predicates).
+func HasCaseArtifactsWith(preds ...predicate.AgentCaseArtifact) predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := newCaseArtifactsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentCaseArtifact
+		step.Edge.Schema = schemaConfig.AgentCaseArtifact
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasCaseConclusions applies the HasEdge predicate on the "case_conclusions" edge.
+func HasCaseConclusions() predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, CaseConclusionsTable, CaseConclusionsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentCaseConclusion
+		step.Edge.Schema = schemaConfig.AgentCaseConclusion
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCaseConclusionsWith applies the HasEdge predicate on the "case_conclusions" edge with a given conditions (other predicates).
+func HasCaseConclusionsWith(preds ...predicate.AgentCaseConclusion) predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := newCaseConclusionsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentCaseConclusion
+		step.Edge.Schema = schemaConfig.AgentCaseConclusion
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

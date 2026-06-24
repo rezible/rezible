@@ -60,7 +60,9 @@ export class IntegrationsController {
 		if (!this.available || this.available.length === 0) return [];
 		const nameMap = new Map<string, Set<InstallableIntegration>>();
 		this.available.forEach(inst => {
-			nameMap.getOrInsert(inst.provider, new Set()).add(inst)
+			const instSet = nameMap.get(inst.provider) || new Set<InstallableIntegration>();
+			instSet.add(inst);
+			nameMap.set(inst.provider, instSet);
 		});
 		const provs = nameMap.entries().flatMap(([name, intgs]) => {
 			const knownDisp = providerDisplays.get(name);

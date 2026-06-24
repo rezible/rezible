@@ -7,8 +7,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentcase"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
+	"github.com/rezible/rezible/ent/agentcaseconclusion"
+	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/rezible/rezible/ent/agentrunfeedback"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
@@ -87,6 +90,138 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	agentcaseMixin := schema.AgentCase{}.Mixin()
+	agentcase.Policy = privacy.NewPolicies(agentcaseMixin[0], agentcaseMixin[1], schema.AgentCase{})
+	agentcase.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agentcase.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agentcaseMixinFields2 := agentcaseMixin[2].Fields()
+	_ = agentcaseMixinFields2
+	agentcaseFields := schema.AgentCase{}.Fields()
+	_ = agentcaseFields
+	// agentcaseDescCreatedAt is the schema descriptor for created_at field.
+	agentcaseDescCreatedAt := agentcaseMixinFields2[0].Descriptor()
+	// agentcase.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentcase.DefaultCreatedAt = agentcaseDescCreatedAt.Default.(func() time.Time)
+	// agentcaseDescUpdatedAt is the schema descriptor for updated_at field.
+	agentcaseDescUpdatedAt := agentcaseMixinFields2[1].Descriptor()
+	// agentcase.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentcase.DefaultUpdatedAt = agentcaseDescUpdatedAt.Default.(func() time.Time)
+	// agentcase.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentcase.UpdateDefaultUpdatedAt = agentcaseDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentcaseDescTitle is the schema descriptor for title field.
+	agentcaseDescTitle := agentcaseFields[2].Descriptor()
+	// agentcase.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	agentcase.TitleValidator = agentcaseDescTitle.Validators[0].(func(string) error)
+	// agentcaseDescID is the schema descriptor for id field.
+	agentcaseDescID := agentcaseFields[0].Descriptor()
+	// agentcase.DefaultID holds the default value on creation for the id field.
+	agentcase.DefaultID = agentcaseDescID.Default.(func() uuid.UUID)
+	agentcaseartifactMixin := schema.AgentCaseArtifact{}.Mixin()
+	agentcaseartifact.Policy = privacy.NewPolicies(agentcaseartifactMixin[0], agentcaseartifactMixin[1], schema.AgentCaseArtifact{})
+	agentcaseartifact.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agentcaseartifact.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agentcaseartifactMixinFields2 := agentcaseartifactMixin[2].Fields()
+	_ = agentcaseartifactMixinFields2
+	agentcaseartifactFields := schema.AgentCaseArtifact{}.Fields()
+	_ = agentcaseartifactFields
+	// agentcaseartifactDescCreatedAt is the schema descriptor for created_at field.
+	agentcaseartifactDescCreatedAt := agentcaseartifactMixinFields2[0].Descriptor()
+	// agentcaseartifact.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentcaseartifact.DefaultCreatedAt = agentcaseartifactDescCreatedAt.Default.(func() time.Time)
+	// agentcaseartifactDescUpdatedAt is the schema descriptor for updated_at field.
+	agentcaseartifactDescUpdatedAt := agentcaseartifactMixinFields2[1].Descriptor()
+	// agentcaseartifact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentcaseartifact.DefaultUpdatedAt = agentcaseartifactDescUpdatedAt.Default.(func() time.Time)
+	// agentcaseartifact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentcaseartifact.UpdateDefaultUpdatedAt = agentcaseartifactDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentcaseartifactDescName is the schema descriptor for name field.
+	agentcaseartifactDescName := agentcaseartifactFields[6].Descriptor()
+	// agentcaseartifact.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	agentcaseartifact.NameValidator = agentcaseartifactDescName.Validators[0].(func(string) error)
+	// agentcaseartifactDescRedacted is the schema descriptor for redacted field.
+	agentcaseartifactDescRedacted := agentcaseartifactFields[8].Descriptor()
+	// agentcaseartifact.DefaultRedacted holds the default value on creation for the redacted field.
+	agentcaseartifact.DefaultRedacted = agentcaseartifactDescRedacted.Default.(bool)
+	// agentcaseartifactDescID is the schema descriptor for id field.
+	agentcaseartifactDescID := agentcaseartifactFields[0].Descriptor()
+	// agentcaseartifact.DefaultID holds the default value on creation for the id field.
+	agentcaseartifact.DefaultID = agentcaseartifactDescID.Default.(func() uuid.UUID)
+	agentcaseconclusionMixin := schema.AgentCaseConclusion{}.Mixin()
+	agentcaseconclusion.Policy = privacy.NewPolicies(agentcaseconclusionMixin[0], agentcaseconclusionMixin[1], schema.AgentCaseConclusion{})
+	agentcaseconclusion.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agentcaseconclusion.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agentcaseconclusionMixinFields2 := agentcaseconclusionMixin[2].Fields()
+	_ = agentcaseconclusionMixinFields2
+	agentcaseconclusionFields := schema.AgentCaseConclusion{}.Fields()
+	_ = agentcaseconclusionFields
+	// agentcaseconclusionDescCreatedAt is the schema descriptor for created_at field.
+	agentcaseconclusionDescCreatedAt := agentcaseconclusionMixinFields2[0].Descriptor()
+	// agentcaseconclusion.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentcaseconclusion.DefaultCreatedAt = agentcaseconclusionDescCreatedAt.Default.(func() time.Time)
+	// agentcaseconclusionDescUpdatedAt is the schema descriptor for updated_at field.
+	agentcaseconclusionDescUpdatedAt := agentcaseconclusionMixinFields2[1].Descriptor()
+	// agentcaseconclusion.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentcaseconclusion.DefaultUpdatedAt = agentcaseconclusionDescUpdatedAt.Default.(func() time.Time)
+	// agentcaseconclusion.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentcaseconclusion.UpdateDefaultUpdatedAt = agentcaseconclusionDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentcaseconclusionDescKind is the schema descriptor for kind field.
+	agentcaseconclusionDescKind := agentcaseconclusionFields[4].Descriptor()
+	// agentcaseconclusion.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	agentcaseconclusion.KindValidator = agentcaseconclusionDescKind.Validators[0].(func(string) error)
+	// agentcaseconclusionDescID is the schema descriptor for id field.
+	agentcaseconclusionDescID := agentcaseconclusionFields[0].Descriptor()
+	// agentcaseconclusion.DefaultID holds the default value on creation for the id field.
+	agentcaseconclusion.DefaultID = agentcaseconclusionDescID.Default.(func() uuid.UUID)
+	agentcasestepMixin := schema.AgentCaseStep{}.Mixin()
+	agentcasestep.Policy = privacy.NewPolicies(agentcasestepMixin[0], agentcasestepMixin[1], schema.AgentCaseStep{})
+	agentcasestep.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agentcasestep.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agentcasestepMixinFields2 := agentcasestepMixin[2].Fields()
+	_ = agentcasestepMixinFields2
+	agentcasestepFields := schema.AgentCaseStep{}.Fields()
+	_ = agentcasestepFields
+	// agentcasestepDescCreatedAt is the schema descriptor for created_at field.
+	agentcasestepDescCreatedAt := agentcasestepMixinFields2[0].Descriptor()
+	// agentcasestep.DefaultCreatedAt holds the default value on creation for the created_at field.
+	agentcasestep.DefaultCreatedAt = agentcasestepDescCreatedAt.Default.(func() time.Time)
+	// agentcasestepDescUpdatedAt is the schema descriptor for updated_at field.
+	agentcasestepDescUpdatedAt := agentcasestepMixinFields2[1].Descriptor()
+	// agentcasestep.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	agentcasestep.DefaultUpdatedAt = agentcasestepDescUpdatedAt.Default.(func() time.Time)
+	// agentcasestep.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	agentcasestep.UpdateDefaultUpdatedAt = agentcasestepDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// agentcasestepDescTitle is the schema descriptor for title field.
+	agentcasestepDescTitle := agentcasestepFields[5].Descriptor()
+	// agentcasestep.TitleValidator is a validator for the "title" field. It is called by the builders before save.
+	agentcasestep.TitleValidator = agentcasestepDescTitle.Validators[0].(func(string) error)
+	// agentcasestepDescID is the schema descriptor for id field.
+	agentcasestepDescID := agentcasestepFields[0].Descriptor()
+	// agentcasestep.DefaultID holds the default value on creation for the id field.
+	agentcasestep.DefaultID = agentcasestepDescID.Default.(func() uuid.UUID)
 	agentrunMixin := schema.AgentRun{}.Mixin()
 	agentrun.Policy = privacy.NewPolicies(agentrunMixin[0], agentrunMixin[1], schema.AgentRun{})
 	agentrun.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -112,53 +247,17 @@ func init() {
 	// agentrun.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentrun.UpdateDefaultUpdatedAt = agentrunDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// agentrunDescIdempotencyKey is the schema descriptor for idempotency_key field.
-	agentrunDescIdempotencyKey := agentrunFields[3].Descriptor()
+	agentrunDescIdempotencyKey := agentrunFields[4].Descriptor()
 	// agentrun.IdempotencyKeyValidator is a validator for the "idempotency_key" field. It is called by the builders before save.
 	agentrun.IdempotencyKeyValidator = agentrunDescIdempotencyKey.Validators[0].(func(string) error)
 	// agentrunDescQueuedAt is the schema descriptor for queued_at field.
-	agentrunDescQueuedAt := agentrunFields[10].Descriptor()
+	agentrunDescQueuedAt := agentrunFields[11].Descriptor()
 	// agentrun.DefaultQueuedAt holds the default value on creation for the queued_at field.
 	agentrun.DefaultQueuedAt = agentrunDescQueuedAt.Default.(func() time.Time)
 	// agentrunDescID is the schema descriptor for id field.
 	agentrunDescID := agentrunFields[0].Descriptor()
 	// agentrun.DefaultID holds the default value on creation for the id field.
 	agentrun.DefaultID = agentrunDescID.Default.(func() uuid.UUID)
-	agentrunartifactMixin := schema.AgentRunArtifact{}.Mixin()
-	agentrunartifact.Policy = privacy.NewPolicies(agentrunartifactMixin[0], agentrunartifactMixin[1], schema.AgentRunArtifact{})
-	agentrunartifact.Hooks[0] = func(next ent.Mutator) ent.Mutator {
-		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := agentrunartifact.Policy.EvalMutation(ctx, m); err != nil {
-				return nil, err
-			}
-			return next.Mutate(ctx, m)
-		})
-	}
-	agentrunartifactMixinFields2 := agentrunartifactMixin[2].Fields()
-	_ = agentrunartifactMixinFields2
-	agentrunartifactFields := schema.AgentRunArtifact{}.Fields()
-	_ = agentrunartifactFields
-	// agentrunartifactDescCreatedAt is the schema descriptor for created_at field.
-	agentrunartifactDescCreatedAt := agentrunartifactMixinFields2[0].Descriptor()
-	// agentrunartifact.DefaultCreatedAt holds the default value on creation for the created_at field.
-	agentrunartifact.DefaultCreatedAt = agentrunartifactDescCreatedAt.Default.(func() time.Time)
-	// agentrunartifactDescUpdatedAt is the schema descriptor for updated_at field.
-	agentrunartifactDescUpdatedAt := agentrunartifactMixinFields2[1].Descriptor()
-	// agentrunartifact.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	agentrunartifact.DefaultUpdatedAt = agentrunartifactDescUpdatedAt.Default.(func() time.Time)
-	// agentrunartifact.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	agentrunartifact.UpdateDefaultUpdatedAt = agentrunartifactDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// agentrunartifactDescName is the schema descriptor for name field.
-	agentrunartifactDescName := agentrunartifactFields[3].Descriptor()
-	// agentrunartifact.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	agentrunartifact.NameValidator = agentrunartifactDescName.Validators[0].(func(string) error)
-	// agentrunartifactDescRedacted is the schema descriptor for redacted field.
-	agentrunartifactDescRedacted := agentrunartifactFields[5].Descriptor()
-	// agentrunartifact.DefaultRedacted holds the default value on creation for the redacted field.
-	agentrunartifact.DefaultRedacted = agentrunartifactDescRedacted.Default.(bool)
-	// agentrunartifactDescID is the schema descriptor for id field.
-	agentrunartifactDescID := agentrunartifactFields[0].Descriptor()
-	// agentrunartifact.DefaultID holds the default value on creation for the id field.
-	agentrunartifact.DefaultID = agentrunartifactDescID.Default.(func() uuid.UUID)
 	agentrunfeedbackMixin := schema.AgentRunFeedback{}.Mixin()
 	agentrunfeedback.Policy = privacy.NewPolicies(agentrunfeedbackMixin[0], agentrunfeedbackMixin[1], schema.AgentRunFeedback{})
 	agentrunfeedback.Hooks[0] = func(next ent.Mutator) ent.Mutator {

@@ -15,7 +15,7 @@ type Handler struct {
 	*incidentDebriefsHandler
 	*incidentTimelineHandler
 	*incidentMilestonesHandler
-	*agentRunsHandler
+	*agentsHandler
 	*integrationsHandler
 	*meetingsHandler
 	*eventsHandler
@@ -53,7 +53,7 @@ func NewHandler(
 ) *Handler {
 	return &Handler{
 		alertsHandler:             newAlertsHandler(alerts),
-		agentRunsHandler:          newAgentRunsHandler(agents),
+		agentsHandler:             newAgentsHandler(agents),
 		userSessionsHandler:       newUserSessionsHandler(orgs, users),
 		documentsHandler:          newDocumentsHandler(documents, users),
 		incidentDebriefsHandler:   newIncidentDebriefsHandler(db, users, debriefs),
@@ -61,7 +61,7 @@ func NewHandler(
 		incidentMetadataHandler:   newIncidentMetadataHandler(db, incidents),
 		incidentMilestonesHandler: newIncidentMilestonesHandler(db),
 		tasksHandler:              newTasksHandler(db),
-		incidentsHandler:          newIncidentsHandler(incidents, agents),
+		incidentsHandler:          newIncidentsHandler(incidents),
 		integrationsHandler:       newIntegrationsHandler(integrations),
 		meetingsHandler:           newMeetingsHandler(),
 		eventsHandler:             newEventsHandler(events),

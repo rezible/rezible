@@ -244,7 +244,9 @@ var provideIntegrations = do.Package(
 		app, appErr := slackagent.MakeApp(
 			do.MustInvoke[rez.Config](i),
 			do.MustInvoke[rez.Database](i),
+			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
+			do.MustInvoke[rez.AgentService](i),
 			do.MustInvoke[rez.EventsService](i),
 		)
 		if appErr != nil {
@@ -428,6 +430,7 @@ var provideServices = do.Package(
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
 			do.MustInvoke[rez.IncidentService](i),
+			do.MustInvoke[rez.AlertService](i),
 		)
 	}),
 	do.Bind[*eino.AgentService, rez.AgentService](),

@@ -6,11 +6,20 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
+// AgentCase is the predicate function for agentcase builders.
+type AgentCase func(*sql.Selector)
+
+// AgentCaseArtifact is the predicate function for agentcaseartifact builders.
+type AgentCaseArtifact func(*sql.Selector)
+
+// AgentCaseConclusion is the predicate function for agentcaseconclusion builders.
+type AgentCaseConclusion func(*sql.Selector)
+
+// AgentCaseStep is the predicate function for agentcasestep builders.
+type AgentCaseStep func(*sql.Selector)
+
 // AgentRun is the predicate function for agentrun builders.
 type AgentRun func(*sql.Selector)
-
-// AgentRunArtifact is the predicate function for agentrunartifact builders.
-type AgentRunArtifact func(*sql.Selector)
 
 // AgentRunFeedback is the predicate function for agentrunfeedback builders.
 type AgentRunFeedback func(*sql.Selector)

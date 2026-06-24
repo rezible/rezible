@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
+	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
@@ -28,12 +29,13 @@ func (s *AgentService) requestIncidentContextPackRun(ctx context.Context, incide
 		return nil
 	}
 	bucket := time.Now().UTC().Truncate(5 * time.Minute).Format(time.RFC3339)
-	_, reqErr := s.RequestRun(ctx, rez.AgentRunRequest{
-		WorkflowKind:   agentrun.WorkflowKindIncidentContextPack,
-		IdempotencyKey: fmt.Sprintf("incident-context-pack:auto:%s:%s", incidentID, bucket),
-		SubjectKind:    "incident",
-		SubjectID:      incidentID,
-		Metadata: map[string]any{
+	_, reqErr := s.CreateCase(ctx, rez.AgentCaseRequest{
+		Title:        "Incident context pack",
+		Query:        "Build current triage context for the incident.",
+		WorkflowKind: agentrun.WorkflowKindIncidentContextPack,
+		SubjectKind:  "incident",
+		SubjectID:    incidentID,
+		TriggerMetadata: map[string]any{
 			"trigger": trigger,
 			"bucket":  bucket,
 		},
@@ -97,24 +99,14 @@ Do not invent systems, incidents, alerts, or evidence that are not present in th
 )
 
 func (w *incidentContextPackWorkflow) Run(ctx context.Context, run *ent.AgentRun) (*AgentWorkflowResult, error) {
-	var artifacts []AgentRunArtifact
-
-	pack, packErr := w.incidents.GetIncidentContextPack(ctx, *run.SubjectID)
-	if packErr != nil {
-		return nil, fmt.Errorf("get incident context pack: %w", packErr)
+	inputArtifacts, artifactErr := w.incidents.GetIncidentContextArtifacts(ctx, *run.SubjectID)
+	if artifactErr != nil {
+		return nil, fmt.Errorf("get incident context artifacts: %w", artifactErr)
 	}
+	artifacts := caseArtifactsFromInputs(inputArtifacts)
+	packPayload := retrievalContextPayload(artifacts)
 
-	packPayload, packPayloadErr := toArtifactPayload(pack)
-	if packPayloadErr != nil {
-		return nil, packPayloadErr
-	}
-	artifacts = append(artifacts, AgentRunArtifact{
-		Kind:    agentrunartifact.KindContext,
-		Name:    "retrieval_context",
-		Payload: packPayload,
-	})
-
-	promptBytes, promptErr := json.MarshalIndent(pack, "", "  ")
+	promptBytes, promptErr := json.MarshalIndent(inputArtifacts, "", "  ")
 	if promptErr != nil {
 		return nil, fmt.Errorf("marshal context pack prompt: %w", promptErr)
 	}
@@ -133,13 +125,78 @@ func (w *incidentContextPackWorkflow) Run(ctx context.Context, run *ent.AgentRun
 	if synthesisPayloadErr != nil {
 		return nil, synthesisPayloadErr
 	}
-	artifacts = append(artifacts, AgentRunArtifact{
-		Kind:    agentrunartifact.KindResult,
-		Name:    "context_pack_synthesis",
-		Payload: synthesisPayload,
+	conclusionPayload, conclusionPayloadErr := toArtifactPayload(rez.AgentCaseConclusionPayload[rez.IncidentTriageFindings]{
+		Summary: synthesis.Summary,
+		Findings: rez.IncidentTriageFindings{
+			LikelyImpact:    convertIncidentContextPackFindings(synthesis.LikelyImpact, artifacts),
+			SuggestedChecks: synthesis.SuggestedChecks,
+		},
+		Confidence:         synthesis.Confidence,
+		Limitations:        synthesis.Limitations,
+		RecommendedActions: synthesis.SuggestedChecks,
 	})
+	if conclusionPayloadErr != nil {
+		return nil, conclusionPayloadErr
+	}
+	return &AgentWorkflowResult{
+		Summary: synthesis.Summary,
+		Steps: []AgentCaseStep{
+			{
+				Kind:      agentcasestep.KindRetrieval,
+				Title:     "Retrieved incident context",
+				Summary:   fmt.Sprintf("Retrieved %d explicit impact(s), %d inferred impact(s), %d active alert(s), and %d related incident(s).", countArtifactsByRole(artifacts, "explicit_impact"), countArtifactsByRole(artifacts, "inferred_impact"), countArtifactsByRole(artifacts, "active_alert"), countArtifactsByRole(artifacts, "related_incident")),
+				Output:    packPayload,
+				Artifacts: artifacts,
+			},
+			{
+				Kind:    agentcasestep.KindConclusion,
+				Title:   "Incident triage conclusion",
+				Summary: synthesis.Summary,
+				Output:  synthesisPayload,
+				Conclusions: []AgentCaseConclusion{{
+					Kind:               "incident_triage",
+					Summary:            synthesis.Summary,
+					Confidence:         synthesis.Confidence,
+					RecommendedActions: synthesis.SuggestedChecks,
+					Limitations:        synthesis.Limitations,
+					Payload:            conclusionPayload,
+				}},
+			},
+		},
+	}, nil
+}
 
-	return &AgentWorkflowResult{Artifacts: artifacts}, nil
+func convertIncidentContextPackFindings(findings []incidentContextPackFinding, artifacts []AgentCaseArtifact) []rez.AgentEntityRef {
+	byID := make(map[string]rez.AgentEntityRef)
+	for _, artifact := range artifacts {
+		if artifact.Kind != agentcaseartifact.KindEntityRef {
+			continue
+		}
+		ref := rez.AgentEntityRef{}
+		bytes, marshalErr := json.Marshal(artifact.Payload)
+		if marshalErr != nil {
+			continue
+		}
+		if unmarshalErr := json.Unmarshal(bytes, &ref); unmarshalErr != nil {
+			continue
+		}
+		if ref.EntityID != uuid.Nil {
+			byID[ref.EntityID.String()] = ref
+		}
+	}
+	result := make([]rez.AgentEntityRef, len(findings))
+	for i, finding := range findings {
+		if ref, ok := byID[finding.EntityID]; ok {
+			ref.Reason = finding.Rationale
+			result[i] = ref
+			continue
+		}
+		result[i] = rez.AgentEntityRef{
+			DisplayName: finding.DisplayName,
+			Reason:      finding.Rationale,
+		}
+	}
+	return result
 }
 
 func toArtifactPayload(v any) (map[string]any, error) {

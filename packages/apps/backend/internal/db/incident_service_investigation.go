@@ -12,6 +12,7 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/incident"
 	ii "github.com/rezible/rezible/ent/incidentimpact"
@@ -43,27 +44,27 @@ func (s *IncidentService) ListIncidentImpacts(ctx context.Context, incidentID uu
 	return impacts, nil
 }
 
-func (s *IncidentService) SetIncidentImpacts(ctx context.Context, params rez.SetIncidentImpactsParams) ([]*ent.IncidentImpact, error) {
-	if params.IncidentID == uuid.Nil {
+func (s *IncidentService) SetIncidentImpacts(ctx context.Context, id uuid.UUID, input []rez.IncidentImpactInput) ([]*ent.IncidentImpact, error) {
+	if id == uuid.Nil {
 		return nil, fmt.Errorf("incident id is required")
 	}
 
 	var impacts []*ent.IncidentImpact
 	txErr := s.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
-		if _, getErr := tx.Incident.Get(txCtx, params.IncidentID); getErr != nil {
+		if _, getErr := tx.Incident.Get(txCtx, id); getErr != nil {
 			return fmt.Errorf("get incident: %w", getErr)
 		}
 
-		entityIDs := make([]uuid.UUID, 0, len(params.Impacts))
-		for _, input := range params.Impacts {
-			entityID, resolveErr := s.resolveIncidentImpactEntity(txCtx, tx, input)
+		entityIDs := make([]uuid.UUID, 0, len(input))
+		for _, inputImpact := range input {
+			entityID, resolveErr := s.resolveIncidentImpactEntity(txCtx, tx, inputImpact)
 			if resolveErr != nil {
 				return resolveErr
 			}
 			entityIDs = append(entityIDs, entityID)
 
 			existing, queryErr := tx.IncidentImpact.Query().
-				Where(ii.IncidentID(params.IncidentID), ii.KnowledgeEntityID(entityID)).
+				Where(ii.IncidentID(id), ii.KnowledgeEntityID(entityID)).
 				Only(txCtx)
 			if queryErr != nil && !ent.IsNotFound(queryErr) {
 				return fmt.Errorf("query existing impact: %w", queryErr)
@@ -71,13 +72,13 @@ func (s *IncidentService) SetIncidentImpacts(ctx context.Context, params rez.Set
 
 			if existing == nil {
 				create := tx.IncidentImpact.Create().
-					SetIncidentID(params.IncidentID).
+					SetIncidentID(id).
 					SetKnowledgeEntityID(entityID)
-				if input.Source != "" {
-					create.SetSource(input.Source)
+				if inputImpact.Source != "" {
+					create.SetSource(inputImpact.Source)
 				}
-				if input.Note != "" {
-					create.SetNote(input.Note)
+				if inputImpact.Note != "" {
+					create.SetNote(inputImpact.Note)
 				}
 				if _, createErr := create.Save(txCtx); createErr != nil {
 					return fmt.Errorf("create incident impact: %w", createErr)
@@ -86,13 +87,13 @@ func (s *IncidentService) SetIncidentImpacts(ctx context.Context, params rez.Set
 			}
 
 			update := tx.IncidentImpact.UpdateOne(existing)
-			if input.Source != "" {
-				update.SetSource(input.Source)
+			if inputImpact.Source != "" {
+				update.SetSource(inputImpact.Source)
 			} else {
 				update.ClearSource()
 			}
-			if input.Note != "" {
-				update.SetNote(input.Note)
+			if inputImpact.Note != "" {
+				update.SetNote(inputImpact.Note)
 			} else {
 				update.ClearNote()
 			}
@@ -101,7 +102,7 @@ func (s *IncidentService) SetIncidentImpacts(ctx context.Context, params rez.Set
 			}
 		}
 
-		deleteQuery := tx.IncidentImpact.Delete().Where(ii.IncidentID(params.IncidentID))
+		deleteQuery := tx.IncidentImpact.Delete().Where(ii.IncidentID(id))
 		if len(entityIDs) > 0 {
 			deleteQuery.Where(ii.KnowledgeEntityIDNotIn(entityIDs...))
 		}
@@ -111,7 +112,7 @@ func (s *IncidentService) SetIncidentImpacts(ctx context.Context, params rez.Set
 
 		var listErr error
 		impacts, listErr = tx.IncidentImpact.Query().
-			Where(ii.IncidentID(params.IncidentID)).
+			Where(ii.IncidentID(id)).
 			WithKnowledgeEntity().
 			Order(ii.ByCreatedAt(sql.OrderAsc())).
 			All(txCtx)
@@ -124,7 +125,7 @@ func (s *IncidentService) SetIncidentImpacts(ctx context.Context, params rez.Set
 		return nil, txErr
 	}
 
-	if pubErr := s.msgs.PublishEvent(ctx, rez.EventOnIncidentImpactsUpdated{IncidentId: params.IncidentID}); pubErr != nil {
+	if pubErr := s.msgs.PublishEvent(ctx, rez.EventOnIncidentImpactsUpdated{IncidentId: id}); pubErr != nil {
 		slog.WarnContext(ctx, "failed to publish incident impacts update event", "error", pubErr)
 	}
 	return impacts, nil
@@ -170,29 +171,28 @@ type contextEntityCandidate struct {
 	entity   *ent.KnowledgeEntity
 	score    float64
 	signals  map[string]struct{}
-	evidence []rez.IncidentContextEvidenceRef
+	evidence []rez.AgentEvidenceRef
 }
 
-func (s *IncidentService) GetIncidentContextPack(ctx context.Context, incidentID uuid.UUID) (*rez.IncidentContextPack, error) {
+func (s *IncidentService) GetIncidentContextArtifacts(ctx context.Context, incidentID uuid.UUID) ([]rez.AgentCaseArtifactInput, error) {
 	inc, incErr := s.Get(ctx, incident.ID(incidentID))
 	if incErr != nil {
 		return nil, fmt.Errorf("get incident: %w", incErr)
 	}
 
 	now := time.Now().UTC()
-	pack := &rez.IncidentContextPack{
-		IncidentID:           inc.ID,
-		GeneratedAt:          now,
-		ExplicitImpacts:      make([]rez.IncidentContextEntity, 0),
-		InferredImpacts:      make([]rez.IncidentContextEntity, 0),
-		ActiveAlerts:         make([]rez.IncidentContextAlert, 0),
-		RecentEvidence:       make([]rez.IncidentContextEvidence, 0),
-		RelatedIncidents:     make([]rez.IncidentContextRelatedIncident, 0),
-		RetrievalLimitations: []string{"Active alerts are inferred from recent alert evidence until durable alert instance state is available."},
-	}
+	artifacts := []rez.AgentCaseArtifactInput{{
+		Kind: agentcaseartifact.KindContext,
+		Name: "retrieval_context",
+		Payload: map[string]any{
+			"incidentId":           inc.ID,
+			"generatedAt":          now,
+			"retrievalLimitations": []string{"Active alerts are inferred from recent alert evidence until durable alert instance state is available."},
+		},
+	}}
 
 	candidates := make(map[uuid.UUID]*contextEntityCandidate)
-	addCandidate := func(entity *ent.KnowledgeEntity, score float64, signal string, evidence rez.IncidentContextEvidenceRef) {
+	addCandidate := func(entity *ent.KnowledgeEntity, score float64, signal string, evidence rez.AgentEvidenceRef) {
 		if entity == nil {
 			return
 		}
@@ -219,7 +219,7 @@ func (s *IncidentService) GetIncidentContextPack(ctx context.Context, incidentID
 	}
 	for _, impact := range explicitImpacts {
 		entity := impact.Edges.KnowledgeEntity
-		ev := rez.IncidentContextEvidenceRef{
+		ev := rez.AgentEvidenceRef{
 			Kind:        "incident_impact",
 			ID:          impact.ID,
 			Description: impact.Note,
@@ -236,7 +236,7 @@ func (s *IncidentService) GetIncidentContextPack(ctx context.Context, incidentID
 	if alertErr != nil {
 		return nil, alertErr
 	}
-	pack.ActiveAlerts = alerts
+	artifacts = append(artifacts, alerts...)
 
 	if len(alertEntityIDs) > 0 {
 		relationships, relErr := s.db.Client(ctx).KnowledgeRelationship.Query().
@@ -259,7 +259,7 @@ func (s *IncidentService) GetIncidentContextPack(ctx context.Context, incidentID
 			if related == nil || related.Kind == knowledgeEntityKindAlert {
 				continue
 			}
-			addCandidate(related, 50, "recent_alert_relationship", rez.IncidentContextEvidenceRef{
+			addCandidate(related, 50, "recent_alert_relationship", rez.AgentEvidenceRef{
 				Kind:        "knowledge_relationship",
 				ID:          rel.ID,
 				Description: rel.DisplayName,
@@ -281,7 +281,7 @@ func (s *IncidentService) GetIncidentContextPack(ctx context.Context, incidentID
 			return nil, fmt.Errorf("query functionality dependencies: %w", relErr)
 		}
 		for _, rel := range funcRels {
-			addCandidate(rel.Edges.SourceEntity, 35, "functionality_dependency", rez.IncidentContextEvidenceRef{
+			addCandidate(rel.Edges.SourceEntity, 35, "functionality_dependency", rez.AgentEvidenceRef{
 				Kind:        "knowledge_relationship",
 				ID:          rel.ID,
 				Description: rel.DisplayName,
@@ -290,14 +290,18 @@ func (s *IncidentService) GetIncidentContextPack(ctx context.Context, incidentID
 		}
 	}
 
-	pack.ExplicitImpacts = s.contextEntitiesFromImpacts(explicitImpacts, candidates)
-	pack.InferredImpacts = contextEntitiesFromCandidates(candidates)
-	pack.RecentEvidence, _ = s.queryRecentContextEvidence(ctx, candidateIDs, now.Add(-contextPackEvidenceLookback))
-	pack.RelatedIncidents, _ = s.queryRelatedIncidents(ctx, inc, candidateIDs)
-	return pack, nil
+	artifacts = append(artifacts, s.contextEntitiesFromImpacts(explicitImpacts, candidates)...)
+	artifacts = append(artifacts, contextEntitiesFromCandidates(candidates)...)
+	if recentEvidence, evidenceErr := s.queryRecentContextEvidence(ctx, candidateIDs, now.Add(-contextPackEvidenceLookback)); evidenceErr == nil {
+		artifacts = append(artifacts, recentEvidence...)
+	}
+	if relatedIncidents, relatedErr := s.queryRelatedIncidents(ctx, inc, candidateIDs); relatedErr == nil {
+		artifacts = append(artifacts, relatedIncidents...)
+	}
+	return artifacts, nil
 }
 
-func (s *IncidentService) queryRecentAlertEvidence(ctx context.Context, since time.Time) ([]uuid.UUID, map[uuid.UUID][]rez.IncidentContextEvidenceRef, error) {
+func (s *IncidentService) queryRecentAlertEvidence(ctx context.Context, since time.Time) ([]uuid.UUID, map[uuid.UUID][]rez.AgentEvidenceRef, error) {
 	evidence, queryErr := s.db.Client(ctx).KnowledgeEvidence.Query().
 		Where(knev.Assertion(assertionAlertDefinitionObserved), knev.ObservedAtGTE(since)).
 		WithEntity().
@@ -310,7 +314,7 @@ func (s *IncidentService) queryRecentAlertEvidence(ctx context.Context, since ti
 
 	ids := make([]uuid.UUID, 0)
 	seen := make(map[uuid.UUID]struct{})
-	refsByEntityID := make(map[uuid.UUID][]rez.IncidentContextEvidenceRef)
+	refsByEntityID := make(map[uuid.UUID][]rez.AgentEvidenceRef)
 	for _, ev := range evidence {
 		entity := ev.Edges.Entity
 		if entity == nil || entity.Kind != knowledgeEntityKindAlert {
@@ -320,7 +324,7 @@ func (s *IncidentService) queryRecentAlertEvidence(ctx context.Context, since ti
 			seen[entity.ID] = struct{}{}
 			ids = append(ids, entity.ID)
 		}
-		refsByEntityID[entity.ID] = append(refsByEntityID[entity.ID], rez.IncidentContextEvidenceRef{
+		refsByEntityID[entity.ID] = append(refsByEntityID[entity.ID], rez.AgentEvidenceRef{
 			Kind:        "knowledge_evidence",
 			ID:          ev.ID,
 			Description: ev.Assertion,
@@ -330,9 +334,9 @@ func (s *IncidentService) queryRecentAlertEvidence(ctx context.Context, since ti
 	return ids, refsByEntityID, nil
 }
 
-func (s *IncidentService) contextAlertsFromEvidence(ctx context.Context, alertEntityIDs []uuid.UUID, refs map[uuid.UUID][]rez.IncidentContextEvidenceRef) ([]rez.IncidentContextAlert, error) {
+func (s *IncidentService) contextAlertsFromEvidence(ctx context.Context, alertEntityIDs []uuid.UUID, refs map[uuid.UUID][]rez.AgentEvidenceRef) ([]rez.AgentCaseArtifactInput, error) {
 	if len(alertEntityIDs) == 0 {
-		return []rez.IncidentContextAlert{}, nil
+		return []rez.AgentCaseArtifactInput{}, nil
 	}
 	alerts, queryErr := s.db.Client(ctx).Alert.Query().
 		Where(alert.KnowledgeEntityIDIn(alertEntityIDs...)).
@@ -345,20 +349,25 @@ func (s *IncidentService) contextAlertsFromEvidence(ctx context.Context, alertEn
 	if relErr != nil {
 		return nil, relErr
 	}
-	res := make([]rez.IncidentContextAlert, 0, len(alerts))
+	res := make([]rez.AgentCaseArtifactInput, 0, len(alerts))
 	for _, a := range alerts {
 		if a.KnowledgeEntityID == nil {
 			continue
 		}
 		evidence := refs[*a.KnowledgeEntityID]
-		res = append(res, rez.IncidentContextAlert{
-			ID:                a.ID,
-			KnowledgeEntityID: *a.KnowledgeEntityID,
-			Title:             a.Title,
-			Description:       a.Description,
-			ObservedAt:        latestEvidenceTime(evidence),
-			RelatedEntityIDs:  relatedIDsByAlertEntityID[*a.KnowledgeEntityID],
-			Evidence:          evidence,
+		res = append(res, rez.AgentCaseArtifactInput{
+			Kind: agentcaseartifact.KindReferenceRef,
+			Role: "active_alert",
+			Name: a.Title,
+			Payload: agentArtifactPayload(rez.AgentReferenceRef{
+				ID:        a.ID,
+				Kind:      "alert",
+				Title:     a.Title,
+				Summary:   a.Description,
+				Source:    "incident_context",
+				OpenedAt:  latestEvidenceTime(evidence),
+				EntityIDs: relatedIDsByAlertEntityID[*a.KnowledgeEntityID],
+			}),
 		})
 	}
 	return res, nil
@@ -387,52 +396,54 @@ func (s *IncidentService) relatedEntityIDsForAlertEntities(ctx context.Context, 
 	return res, nil
 }
 
-func (s *IncidentService) contextEntitiesFromImpacts(impacts []*ent.IncidentImpact, candidates map[uuid.UUID]*contextEntityCandidate) []rez.IncidentContextEntity {
-	res := make([]rez.IncidentContextEntity, 0, len(impacts))
+func (s *IncidentService) contextEntitiesFromImpacts(impacts []*ent.IncidentImpact, candidates map[uuid.UUID]*contextEntityCandidate) []rez.AgentCaseArtifactInput {
+	res := make([]rez.AgentCaseArtifactInput, 0, len(impacts))
 	for _, impact := range impacts {
 		candidate := candidates[impact.KnowledgeEntityID]
 		if candidate == nil {
 			continue
 		}
-		res = append(res, candidate.toContextEntity())
+		res = append(res, candidate.toArtifact("explicit_impact"))
 	}
 	return res
 }
 
-func contextEntitiesFromCandidates(candidates map[uuid.UUID]*contextEntityCandidate) []rez.IncidentContextEntity {
-	res := make([]rez.IncidentContextEntity, 0, len(candidates))
+func contextEntitiesFromCandidates(candidates map[uuid.UUID]*contextEntityCandidate) []rez.AgentCaseArtifactInput {
+	res := make([]rez.AgentCaseArtifactInput, 0, len(candidates))
 	for _, c := range candidates {
-		res = append(res, c.toContextEntity())
+		res = append(res, c.toArtifact("inferred_impact"))
 	}
 	sort.Slice(res, func(i, j int) bool {
-		if res[i].Score == res[j].Score {
-			return res[i].DisplayName < res[j].DisplayName
-		}
-		return res[i].Score > res[j].Score
+		return res[i].Name < res[j].Name
 	})
 	return res
 }
 
-func (c *contextEntityCandidate) toContextEntity() rez.IncidentContextEntity {
+func (c *contextEntityCandidate) toArtifact(role string) rez.AgentCaseArtifactInput {
 	signals := make([]string, 0, len(c.signals))
 	for signal := range c.signals {
 		signals = append(signals, signal)
 	}
 	sort.Strings(signals)
-	return rez.IncidentContextEntity{
-		ID:          c.entity.ID,
+	ref := rez.AgentEntityRef{
+		EntityID:    c.entity.ID,
 		Kind:        c.entity.Kind,
 		DisplayName: c.entity.DisplayName,
 		Description: c.entity.Description,
 		Score:       c.score,
-		Signals:     signals,
-		Evidence:    c.evidence,
+		Reason:      stringsFromSignals(signals),
+	}
+	return rez.AgentCaseArtifactInput{
+		Kind:    agentcaseartifact.KindEntityRef,
+		Role:    role,
+		Name:    c.entity.DisplayName,
+		Payload: agentArtifactPayload(ref),
 	}
 }
 
-func (s *IncidentService) queryRecentContextEvidence(ctx context.Context, entityIDs []uuid.UUID, since time.Time) ([]rez.IncidentContextEvidence, error) {
+func (s *IncidentService) queryRecentContextEvidence(ctx context.Context, entityIDs []uuid.UUID, since time.Time) ([]rez.AgentCaseArtifactInput, error) {
 	if len(entityIDs) == 0 {
-		return []rez.IncidentContextEvidence{}, nil
+		return []rez.AgentCaseArtifactInput{}, nil
 	}
 	evidence, queryErr := s.db.Client(ctx).KnowledgeEvidence.Query().
 		Where(knev.ObservedAtGTE(since), knev.Or(knev.EntityIDIn(entityIDs...), knev.HasRelationshipWith(knr.Or(knr.SourceEntityIDIn(entityIDs...), knr.TargetEntityIDIn(entityIDs...))))).
@@ -442,30 +453,37 @@ func (s *IncidentService) queryRecentContextEvidence(ctx context.Context, entity
 	if queryErr != nil {
 		return nil, fmt.Errorf("query recent context evidence: %w", queryErr)
 	}
-	res := make([]rez.IncidentContextEvidence, len(evidence))
+	res := make([]rez.AgentCaseArtifactInput, len(evidence))
 	for i, ev := range evidence {
-		res[i] = rez.IncidentContextEvidence{
-			ID:             ev.ID,
-			EventID:        ev.EventID,
-			EntityID:       ev.EntityID,
-			RelationshipID: ev.RelationshipID,
-			SubjectType:    ev.SubjectType.String(),
-			Assertion:      ev.Assertion,
-			EvidenceKind:   ev.EvidenceKind.String(),
-			ObservedAt:     ev.ObservedAt,
-			Description:    ev.Assertion,
+		res[i] = rez.AgentCaseArtifactInput{
+			Kind: agentcaseartifact.KindEvidenceRef,
+			Role: "recent_evidence",
+			Name: ev.Assertion,
+			Payload: agentArtifactPayload(rez.AgentEvidenceRef{
+				ID:             ev.ID,
+				EventID:        ev.EventID,
+				EntityID:       ev.EntityID,
+				RelationshipID: ev.RelationshipID,
+				Kind:           ev.EvidenceKind.String(),
+				Summary:        ev.Assertion,
+				Description:    ev.Assertion,
+				ObservedAt:     ev.ObservedAt,
+				Properties: map[string]any{
+					"subjectType": ev.SubjectType.String(),
+				},
+			}),
 		}
 	}
 	return res, nil
 }
 
-func (s *IncidentService) queryRelatedIncidents(ctx context.Context, inc *ent.Incident, entityIDs []uuid.UUID) ([]rez.IncidentContextRelatedIncident, error) {
+func (s *IncidentService) queryRelatedIncidents(ctx context.Context, inc *ent.Incident, entityIDs []uuid.UUID) ([]rez.AgentCaseArtifactInput, error) {
 	tagIDs := make([]uuid.UUID, 0, len(inc.Edges.TagAssignments))
 	for _, tag := range inc.Edges.TagAssignments {
 		tagIDs = append(tagIDs, tag.ID)
 	}
 	if len(entityIDs) == 0 && len(tagIDs) == 0 {
-		return []rez.IncidentContextRelatedIncident{}, nil
+		return []rez.AgentCaseArtifactInput{}, nil
 	}
 	query := s.db.Client(ctx).Incident.Query().
 		Where(incident.IDNEQ(inc.ID)).
@@ -487,19 +505,25 @@ func (s *IncidentService) queryRelatedIncidents(ctx context.Context, inc *ent.In
 	if queryErr != nil {
 		return nil, fmt.Errorf("query related incidents: %w", queryErr)
 	}
-	res := make([]rez.IncidentContextRelatedIncident, 0, len(incs))
+	res := make([]rez.AgentCaseArtifactInput, 0, len(incs))
 	for _, related := range incs {
 		entityIDs := make([]uuid.UUID, 0, len(related.Edges.Impacts))
 		for _, impact := range related.Edges.Impacts {
 			entityIDs = append(entityIDs, impact.KnowledgeEntityID)
 		}
-		res = append(res, rez.IncidentContextRelatedIncident{
-			ID:        related.ID,
-			Slug:      related.Slug,
-			Title:     related.Title,
-			OpenedAt:  related.OpenedAt,
-			Signals:   []string{"shared_impact_or_tag"},
-			EntityIDs: entityIDs,
+		res = append(res, rez.AgentCaseArtifactInput{
+			Kind: agentcaseartifact.KindReferenceRef,
+			Role: "related_incident",
+			Name: related.Title,
+			Payload: agentArtifactPayload(rez.AgentReferenceRef{
+				ID:        related.ID,
+				Kind:      "incident",
+				Title:     related.Title,
+				Summary:   "shared_impact_or_tag",
+				Source:    related.Slug,
+				OpenedAt:  related.OpenedAt,
+				EntityIDs: entityIDs,
+			}),
 		})
 	}
 	return res, nil
@@ -513,7 +537,7 @@ func uuidSet(ids []uuid.UUID) map[uuid.UUID]struct{} {
 	return res
 }
 
-func latestEvidenceTime(refs []rez.IncidentContextEvidenceRef) time.Time {
+func latestEvidenceTime(refs []rez.AgentEvidenceRef) time.Time {
 	var latest time.Time
 	for _, ref := range refs {
 		if ref.ObservedAt.After(latest) {
@@ -521,6 +545,17 @@ func latestEvidenceTime(refs []rez.IncidentContextEvidenceRef) time.Time {
 		}
 	}
 	return latest
+}
+
+func stringsFromSignals(signals []string) string {
+	result := ""
+	for i, signal := range signals {
+		if i > 0 {
+			result += "\n"
+		}
+		result += signal
+	}
+	return result
 }
 
 func derefTime(v *time.Time, fallback time.Time) time.Time {

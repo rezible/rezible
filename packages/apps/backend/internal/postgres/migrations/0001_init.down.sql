@@ -158,10 +158,16 @@ ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_normalized_events
 ALTER TABLE "alerts" DROP CONSTRAINT "alerts_oncall_rosters_alerts", DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
 -- reverse: modify "agent_run_feedbacks" table
 ALTER TABLE "agent_run_feedbacks" DROP CONSTRAINT "agent_run_feedbacks_users_user", DROP CONSTRAINT "agent_run_feedbacks_agent_runs_agent_run", DROP CONSTRAINT "agent_run_feedbacks_tenants_tenant";
--- reverse: modify "agent_run_artifacts" table
-ALTER TABLE "agent_run_artifacts" DROP CONSTRAINT "agent_run_artifacts_agent_runs_agent_run", DROP CONSTRAINT "agent_run_artifacts_tenants_tenant";
 -- reverse: modify "agent_runs" table
-ALTER TABLE "agent_runs" DROP CONSTRAINT "agent_runs_tenants_tenant";
+ALTER TABLE "agent_runs" DROP CONSTRAINT "agent_runs_agent_cases_agent_case", DROP CONSTRAINT "agent_runs_tenants_tenant";
+-- reverse: modify "agent_case_steps" table
+ALTER TABLE "agent_case_steps" DROP CONSTRAINT "agent_case_steps_agent_runs_agent_run", DROP CONSTRAINT "agent_case_steps_agent_cases_agent_case", DROP CONSTRAINT "agent_case_steps_tenants_tenant";
+-- reverse: modify "agent_case_conclusions" table
+ALTER TABLE "agent_case_conclusions" DROP CONSTRAINT "agent_case_conclusions_agent_runs_agent_run", DROP CONSTRAINT "agent_case_conclusions_agent_case_steps_agent_case_step", DROP CONSTRAINT "agent_case_conclusions_agent_cases_agent_case", DROP CONSTRAINT "agent_case_conclusions_tenants_tenant";
+-- reverse: modify "agent_case_artifacts" table
+ALTER TABLE "agent_case_artifacts" DROP CONSTRAINT "agent_case_artifacts_agent_runs_agent_run", DROP CONSTRAINT "agent_case_artifacts_agent_case_steps_agent_case_step", DROP CONSTRAINT "agent_case_artifacts_agent_cases_agent_case", DROP CONSTRAINT "agent_case_artifacts_tenants_tenant";
+-- reverse: modify "agent_cases" table
+ALTER TABLE "agent_cases" DROP CONSTRAINT "agent_cases_tenants_tenant";
 -- reverse: create "user_watched_oncall_rosters" table
 DROP TABLE "user_watched_oncall_rosters";
 -- reverse: create "team_oncall_rosters" table
@@ -598,14 +604,8 @@ DROP INDEX "agentrunfeedback_tenant_id_agent_run_id";
 DROP INDEX "agentrunfeedback_tenant_id";
 -- reverse: create "agent_run_feedbacks" table
 DROP TABLE "agent_run_feedbacks";
--- reverse: create index "agentrunartifact_tenant_id_agent_run_id_name" to table: "agent_run_artifacts"
-DROP INDEX "agentrunartifact_tenant_id_agent_run_id_name";
--- reverse: create index "agentrunartifact_tenant_id_agent_run_id_kind" to table: "agent_run_artifacts"
-DROP INDEX "agentrunartifact_tenant_id_agent_run_id_kind";
--- reverse: create index "agentrunartifact_tenant_id" to table: "agent_run_artifacts"
-DROP INDEX "agentrunartifact_tenant_id";
--- reverse: create "agent_run_artifacts" table
-DROP TABLE "agent_run_artifacts";
+-- reverse: create index "agentrun_tenant_id_agent_case_id" to table: "agent_runs"
+DROP INDEX "agentrun_tenant_id_agent_case_id";
 -- reverse: create index "agentrun_tenant_id_subject_kind_subject_id" to table: "agent_runs"
 DROP INDEX "agentrun_tenant_id_subject_kind_subject_id";
 -- reverse: create index "agentrun_tenant_id_status_updated_at" to table: "agent_runs"
@@ -616,3 +616,47 @@ DROP INDEX "agentrun_tenant_id_workflow_kind_idempotency_key";
 DROP INDEX "agentrun_tenant_id";
 -- reverse: create "agent_runs" table
 DROP TABLE "agent_runs";
+-- reverse: create index "agentcasestep_tenant_id_agent_run_id" to table: "agent_case_steps"
+DROP INDEX "agentcasestep_tenant_id_agent_run_id";
+-- reverse: create index "agentcasestep_tenant_id_agent_case_id_kind" to table: "agent_case_steps"
+DROP INDEX "agentcasestep_tenant_id_agent_case_id_kind";
+-- reverse: create index "agentcasestep_tenant_id_agent_case_id_sequence" to table: "agent_case_steps"
+DROP INDEX "agentcasestep_tenant_id_agent_case_id_sequence";
+-- reverse: create index "agentcasestep_tenant_id" to table: "agent_case_steps"
+DROP INDEX "agentcasestep_tenant_id";
+-- reverse: create "agent_case_steps" table
+DROP TABLE "agent_case_steps";
+-- reverse: create index "agentcaseconclusion_tenant_id_agent_run_id" to table: "agent_case_conclusions"
+DROP INDEX "agentcaseconclusion_tenant_id_agent_run_id";
+-- reverse: create index "agentcaseconclusion_tenant_id_agent_case_step_id" to table: "agent_case_conclusions"
+DROP INDEX "agentcaseconclusion_tenant_id_agent_case_step_id";
+-- reverse: create index "agentcaseconclusion_tenant_id_agent_case_id_kind" to table: "agent_case_conclusions"
+DROP INDEX "agentcaseconclusion_tenant_id_agent_case_id_kind";
+-- reverse: create index "agentcaseconclusion_tenant_id" to table: "agent_case_conclusions"
+DROP INDEX "agentcaseconclusion_tenant_id";
+-- reverse: create "agent_case_conclusions" table
+DROP TABLE "agent_case_conclusions";
+-- reverse: create index "agentcaseartifact_tenant_id_agent_run_id" to table: "agent_case_artifacts"
+DROP INDEX "agentcaseartifact_tenant_id_agent_run_id";
+-- reverse: create index "agentcaseartifact_tenant_id_agent_case_step_id" to table: "agent_case_artifacts"
+DROP INDEX "agentcaseartifact_tenant_id_agent_case_step_id";
+-- reverse: create index "agentcaseartifact_tenant_id_agent_case_id_name" to table: "agent_case_artifacts"
+DROP INDEX "agentcaseartifact_tenant_id_agent_case_id_name";
+-- reverse: create index "agentcaseartifact_tenant_id_agent_case_id_role" to table: "agent_case_artifacts"
+DROP INDEX "agentcaseartifact_tenant_id_agent_case_id_role";
+-- reverse: create index "agentcaseartifact_tenant_id_agent_case_id_kind" to table: "agent_case_artifacts"
+DROP INDEX "agentcaseartifact_tenant_id_agent_case_id_kind";
+-- reverse: create index "agentcaseartifact_tenant_id" to table: "agent_case_artifacts"
+DROP INDEX "agentcaseartifact_tenant_id";
+-- reverse: create "agent_case_artifacts" table
+DROP TABLE "agent_case_artifacts";
+-- reverse: create index "agentcase_tenant_id_subject_kind_subject_id" to table: "agent_cases"
+DROP INDEX "agentcase_tenant_id_subject_kind_subject_id";
+-- reverse: create index "agentcase_tenant_id_workflow_kind_status" to table: "agent_cases"
+DROP INDEX "agentcase_tenant_id_workflow_kind_status";
+-- reverse: create index "agentcase_tenant_id_status_updated_at" to table: "agent_cases"
+DROP INDEX "agentcase_tenant_id_status_updated_at";
+-- reverse: create index "agentcase_tenant_id" to table: "agent_cases"
+DROP INDEX "agentcase_tenant_id";
+-- reverse: create "agent_cases" table
+DROP TABLE "agent_cases";

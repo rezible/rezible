@@ -3,10 +3,11 @@
 	import * as Collapsible from "$components/ui/collapsible";
 	import * as Sidebar from "$components/ui/sidebar";
     import RiArrowRightSLine from 'remixicon-svelte/icons/arrow-right-s-line';
-	import { useAppSidebarController, type SidebarItem } from "./controller.svelte";
+	import { useAppSidebarController } from "./controller.svelte";
+	import type { AppSidebarItem } from "$lib/app-shell.svelte";
 
     type Props = {
-        item: SidebarItem;
+        item: AppSidebarItem;
     };
     const { item }: Props = $props();
 

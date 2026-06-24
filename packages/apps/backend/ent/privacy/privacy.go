@@ -111,6 +111,102 @@ func DenyMutationOperationRule(op ent.Op) MutationRule {
 	return OnMutationOperation(rule, op)
 }
 
+// The AgentCaseQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentCaseQueryRuleFunc func(context.Context, *ent.AgentCaseQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentCaseQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentCaseQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentCaseQuery", q)
+}
+
+// The AgentCaseMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentCaseMutationRuleFunc func(context.Context, *ent.AgentCaseMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentCaseMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentCaseMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentCaseMutation", m)
+}
+
+// The AgentCaseArtifactQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentCaseArtifactQueryRuleFunc func(context.Context, *ent.AgentCaseArtifactQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentCaseArtifactQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentCaseArtifactQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentCaseArtifactQuery", q)
+}
+
+// The AgentCaseArtifactMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentCaseArtifactMutationRuleFunc func(context.Context, *ent.AgentCaseArtifactMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentCaseArtifactMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentCaseArtifactMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentCaseArtifactMutation", m)
+}
+
+// The AgentCaseConclusionQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentCaseConclusionQueryRuleFunc func(context.Context, *ent.AgentCaseConclusionQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentCaseConclusionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentCaseConclusionQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentCaseConclusionQuery", q)
+}
+
+// The AgentCaseConclusionMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentCaseConclusionMutationRuleFunc func(context.Context, *ent.AgentCaseConclusionMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentCaseConclusionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentCaseConclusionMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentCaseConclusionMutation", m)
+}
+
+// The AgentCaseStepQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentCaseStepQueryRuleFunc func(context.Context, *ent.AgentCaseStepQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentCaseStepQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentCaseStepQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentCaseStepQuery", q)
+}
+
+// The AgentCaseStepMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentCaseStepMutationRuleFunc func(context.Context, *ent.AgentCaseStepMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentCaseStepMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentCaseStepMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentCaseStepMutation", m)
+}
+
 // The AgentRunQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AgentRunQueryRuleFunc func(context.Context, *ent.AgentRunQuery) error
@@ -133,30 +229,6 @@ func (f AgentRunMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutati
 		return f(ctx, m)
 	}
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentRunMutation", m)
-}
-
-// The AgentRunArtifactQueryRuleFunc type is an adapter to allow the use of ordinary
-// functions as a query rule.
-type AgentRunArtifactQueryRuleFunc func(context.Context, *ent.AgentRunArtifactQuery) error
-
-// EvalQuery return f(ctx, q).
-func (f AgentRunArtifactQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AgentRunArtifactQuery); ok {
-		return f(ctx, q)
-	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentRunArtifactQuery", q)
-}
-
-// The AgentRunArtifactMutationRuleFunc type is an adapter to allow the use of ordinary
-// functions as a mutation rule.
-type AgentRunArtifactMutationRuleFunc func(context.Context, *ent.AgentRunArtifactMutation) error
-
-// EvalMutation calls f(ctx, m).
-func (f AgentRunArtifactMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.AgentRunArtifactMutation); ok {
-		return f(ctx, m)
-	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentRunArtifactMutation", m)
 }
 
 // The AgentRunFeedbackQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1814,9 +1886,15 @@ var _ QueryMutationRule = FilterFunc(nil)
 
 func queryFilter(q ent.Query) (Filter, error) {
 	switch q := q.(type) {
-	case *ent.AgentRunQuery:
+	case *ent.AgentCaseQuery:
 		return q.Filter(), nil
-	case *ent.AgentRunArtifactQuery:
+	case *ent.AgentCaseArtifactQuery:
+		return q.Filter(), nil
+	case *ent.AgentCaseConclusionQuery:
+		return q.Filter(), nil
+	case *ent.AgentCaseStepQuery:
+		return q.Filter(), nil
+	case *ent.AgentRunQuery:
 		return q.Filter(), nil
 	case *ent.AgentRunFeedbackQuery:
 		return q.Filter(), nil
@@ -1961,9 +2039,15 @@ func queryFilter(q ent.Query) (Filter, error) {
 
 func mutationFilter(m ent.Mutation) (Filter, error) {
 	switch m := m.(type) {
-	case *ent.AgentRunMutation:
+	case *ent.AgentCaseMutation:
 		return m.Filter(), nil
-	case *ent.AgentRunArtifactMutation:
+	case *ent.AgentCaseArtifactMutation:
+		return m.Filter(), nil
+	case *ent.AgentCaseConclusionMutation:
+		return m.Filter(), nil
+	case *ent.AgentCaseStepMutation:
+		return m.Filter(), nil
+	case *ent.AgentRunMutation:
 		return m.Filter(), nil
 	case *ent.AgentRunFeedbackMutation:
 		return m.Filter(), nil

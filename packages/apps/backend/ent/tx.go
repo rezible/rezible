@@ -12,10 +12,16 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
+	// AgentCase is the client for interacting with the AgentCase builders.
+	AgentCase *AgentCaseClient
+	// AgentCaseArtifact is the client for interacting with the AgentCaseArtifact builders.
+	AgentCaseArtifact *AgentCaseArtifactClient
+	// AgentCaseConclusion is the client for interacting with the AgentCaseConclusion builders.
+	AgentCaseConclusion *AgentCaseConclusionClient
+	// AgentCaseStep is the client for interacting with the AgentCaseStep builders.
+	AgentCaseStep *AgentCaseStepClient
 	// AgentRun is the client for interacting with the AgentRun builders.
 	AgentRun *AgentRunClient
-	// AgentRunArtifact is the client for interacting with the AgentRunArtifact builders.
-	AgentRunArtifact *AgentRunArtifactClient
 	// AgentRunFeedback is the client for interacting with the AgentRunFeedback builders.
 	AgentRunFeedback *AgentRunFeedbackClient
 	// Alert is the client for interacting with the Alert builders.
@@ -283,8 +289,11 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
+	tx.AgentCase = NewAgentCaseClient(tx.config)
+	tx.AgentCaseArtifact = NewAgentCaseArtifactClient(tx.config)
+	tx.AgentCaseConclusion = NewAgentCaseConclusionClient(tx.config)
+	tx.AgentCaseStep = NewAgentCaseStepClient(tx.config)
 	tx.AgentRun = NewAgentRunClient(tx.config)
-	tx.AgentRunArtifact = NewAgentRunArtifactClient(tx.config)
 	tx.AgentRunFeedback = NewAgentRunFeedbackClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
@@ -362,7 +371,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: AgentRun.QueryXXX(), the query will be executed
+// applies a query, for example: AgentCase.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

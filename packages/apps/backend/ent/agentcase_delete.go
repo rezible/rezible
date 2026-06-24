@@ -8,31 +8,31 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/rezible/rezible/ent/agentrunartifact"
+	"github.com/rezible/rezible/ent/agentcase"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 )
 
-// AgentRunArtifactDelete is the builder for deleting a AgentRunArtifact entity.
-type AgentRunArtifactDelete struct {
+// AgentCaseDelete is the builder for deleting a AgentCase entity.
+type AgentCaseDelete struct {
 	config
 	hooks    []Hook
-	mutation *AgentRunArtifactMutation
+	mutation *AgentCaseMutation
 }
 
-// Where appends a list predicates to the AgentRunArtifactDelete builder.
-func (_d *AgentRunArtifactDelete) Where(ps ...predicate.AgentRunArtifact) *AgentRunArtifactDelete {
+// Where appends a list predicates to the AgentCaseDelete builder.
+func (_d *AgentCaseDelete) Where(ps ...predicate.AgentCase) *AgentCaseDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *AgentRunArtifactDelete) Exec(ctx context.Context) (int, error) {
+func (_d *AgentCaseDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AgentRunArtifactDelete) ExecX(ctx context.Context) int {
+func (_d *AgentCaseDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -40,9 +40,9 @@ func (_d *AgentRunArtifactDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *AgentRunArtifactDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(agentrunartifact.Table, sqlgraph.NewFieldSpec(agentrunartifact.FieldID, field.TypeUUID))
-	_spec.Node.Schema = _d.schemaConfig.AgentRunArtifact
+func (_d *AgentCaseDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(agentcase.Table, sqlgraph.NewFieldSpec(agentcase.FieldID, field.TypeUUID))
+	_spec.Node.Schema = _d.schemaConfig.AgentCase
 	ctx = internal.NewSchemaConfigContext(ctx, _d.schemaConfig)
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
@@ -59,32 +59,32 @@ func (_d *AgentRunArtifactDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// AgentRunArtifactDeleteOne is the builder for deleting a single AgentRunArtifact entity.
-type AgentRunArtifactDeleteOne struct {
-	_d *AgentRunArtifactDelete
+// AgentCaseDeleteOne is the builder for deleting a single AgentCase entity.
+type AgentCaseDeleteOne struct {
+	_d *AgentCaseDelete
 }
 
-// Where appends a list predicates to the AgentRunArtifactDelete builder.
-func (_d *AgentRunArtifactDeleteOne) Where(ps ...predicate.AgentRunArtifact) *AgentRunArtifactDeleteOne {
+// Where appends a list predicates to the AgentCaseDelete builder.
+func (_d *AgentCaseDeleteOne) Where(ps ...predicate.AgentCase) *AgentCaseDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *AgentRunArtifactDeleteOne) Exec(ctx context.Context) error {
+func (_d *AgentCaseDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{agentrunartifact.Label}
+		return &NotFoundError{agentcase.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *AgentRunArtifactDeleteOne) ExecX(ctx context.Context) {
+func (_d *AgentCaseDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

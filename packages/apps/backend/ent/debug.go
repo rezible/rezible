@@ -4,20 +4,44 @@ package ent
 
 import "entgo.io/ent/dialect"
 
+func (c *AgentCaseClient) Debug() *AgentCaseClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentCaseClient{config: cfg}
+}
+
+func (c *AgentCaseArtifactClient) Debug() *AgentCaseArtifactClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentCaseArtifactClient{config: cfg}
+}
+
+func (c *AgentCaseConclusionClient) Debug() *AgentCaseConclusionClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentCaseConclusionClient{config: cfg}
+}
+
+func (c *AgentCaseStepClient) Debug() *AgentCaseStepClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentCaseStepClient{config: cfg}
+}
+
 func (c *AgentRunClient) Debug() *AgentRunClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
 	return &AgentRunClient{config: cfg}
-}
-
-func (c *AgentRunArtifactClient) Debug() *AgentRunArtifactClient {
-	if c.debug {
-		return c
-	}
-	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &AgentRunArtifactClient{config: cfg}
 }
 
 func (c *AgentRunFeedbackClient) Debug() *AgentRunFeedbackClient {

@@ -10,6 +10,8 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentcase"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
@@ -425,7 +427,23 @@ type (
 type (
 	AgentWorkflowKind string
 
+	AgentCaseRequest struct {
+		Title           string
+		Query           string
+		WorkflowKind    agentrun.WorkflowKind
+		SubjectKind     string
+		SubjectID       uuid.UUID
+		TriggerMetadata map[string]any
+	}
+
+	AgentCaseRunRequest struct {
+		AgentCaseID    uuid.UUID
+		IdempotencyKey string
+		Metadata       map[string]any
+	}
+
 	AgentRunRequest struct {
+		AgentCaseID    uuid.UUID
 		WorkflowKind   agentrun.WorkflowKind
 		IdempotencyKey string
 		SubjectKind    string
@@ -437,15 +455,114 @@ type (
 		ent.ListParams
 		WorkflowKind agentrun.WorkflowKind
 		Status       agentrun.Status
+		AgentCaseID  uuid.UUID
 		SubjectKind  string
 		SubjectID    uuid.UUID
 	}
 
+	ListAgentCasesParams struct {
+		ent.ListParams
+		Status       agentcase.Status
+		WorkflowKind agentrun.WorkflowKind
+		SubjectKind  string
+		SubjectID    uuid.UUID
+	}
+
+	AgentCaseArtifactInput struct {
+		Kind     agentcaseartifact.Kind
+		Role     string
+		Name     string
+		Payload  map[string]any
+		Redacted bool
+	}
+
+	AgentCaseConclusionInput struct {
+		Kind               string
+		Summary            string
+		Confidence         string
+		RecommendedActions []string
+		Limitations        []string
+		Payload            map[string]any
+	}
+
+	AgentEntityRef struct {
+		EntityID    uuid.UUID `json:"entityId,omitempty"`
+		Kind        string    `json:"kind,omitempty"`
+		DisplayName string    `json:"displayName,omitempty"`
+		Description string    `json:"description,omitempty"`
+		Reason      string    `json:"reason,omitempty"`
+		Confidence  string    `json:"confidence,omitempty"`
+		Score       float64   `json:"score,omitempty"`
+		Aliases     []string  `json:"aliases,omitempty"`
+	}
+
+	AgentRelationshipRef struct {
+		RelationshipID    uuid.UUID `json:"relationshipId,omitempty"`
+		SourceEntityID    uuid.UUID `json:"sourceEntityId,omitempty"`
+		TargetEntityID    uuid.UUID `json:"targetEntityId,omitempty"`
+		Kind              string    `json:"kind,omitempty"`
+		Summary           string    `json:"summary,omitempty"`
+		Direction         string    `json:"direction,omitempty"`
+		RelatedEntityID   uuid.UUID `json:"relatedEntityId,omitempty"`
+		RelatedEntity     string    `json:"relatedEntity,omitempty"`
+		RelatedEntityKind string    `json:"relatedEntityKind,omitempty"`
+	}
+
+	AgentEvidenceRef struct {
+		ID             uuid.UUID      `json:"id,omitempty"`
+		EventID        uuid.UUID      `json:"eventId,omitempty"`
+		EntityID       *uuid.UUID     `json:"entityId,omitempty"`
+		RelationshipID *uuid.UUID     `json:"relationshipId,omitempty"`
+		Source         string         `json:"source,omitempty"`
+		Kind           string         `json:"kind,omitempty"`
+		Summary        string         `json:"summary,omitempty"`
+		Description    string         `json:"description,omitempty"`
+		ObservedAt     time.Time      `json:"observedAt,omitempty"`
+		Properties     map[string]any `json:"properties,omitempty"`
+	}
+
+	AgentReferenceRef struct {
+		ID        uuid.UUID   `json:"id,omitempty"`
+		Kind      string      `json:"kind,omitempty"`
+		Title     string      `json:"title,omitempty"`
+		Summary   string      `json:"summary,omitempty"`
+		Source    string      `json:"source,omitempty"`
+		URL       string      `json:"url,omitempty"`
+		OpenedAt  time.Time   `json:"openedAt,omitempty"`
+		EntityIDs []uuid.UUID `json:"entityIds,omitempty"`
+	}
+
+	AgentCaseConclusionPayload[T any] struct {
+		Summary            string   `json:"summary"`
+		Findings           T        `json:"findings"`
+		Confidence         string   `json:"confidence"`
+		Limitations        []string `json:"limitations,omitempty"`
+		RecommendedActions []string `json:"recommendedActions,omitempty"`
+	}
+
+	AlertInvestigationFindings struct {
+		LikelyCause     string   `json:"likelyCause"`
+		AffectedSystems []string `json:"affectedSystems"`
+		SuggestedChecks []string `json:"suggestedChecks"`
+		RecommendedNext string   `json:"recommendedNext"`
+	}
+
+	IncidentTriageFindings struct {
+		LikelyImpact    []AgentEntityRef `json:"likelyImpact"`
+		SuggestedChecks []string         `json:"suggestedChecks"`
+	}
+
 	AgentService interface {
+		CreateCase(context.Context, AgentCaseRequest) (*ent.AgentCase, error)
+		RequestCaseRun(context.Context, AgentCaseRunRequest) (*ent.AgentRun, error)
+		GetCase(context.Context, uuid.UUID) (*ent.AgentCase, error)
+		ListCases(context.Context, ListAgentCasesParams) (*ent.ListResult[ent.AgentCase], error)
+		ListCaseSteps(context.Context, uuid.UUID) ([]*ent.AgentCaseStep, error)
+		ListCaseArtifacts(context.Context, uuid.UUID) ([]*ent.AgentCaseArtifact, error)
+		ListCaseConclusions(context.Context, uuid.UUID) ([]*ent.AgentCaseConclusion, error)
 		RequestRun(context.Context, AgentRunRequest) (*ent.AgentRun, error)
 		GetRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
 		ListRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error)
-		ListRunArtifacts(context.Context, uuid.UUID) ([]*ent.AgentRunArtifact, error)
 		RunWorkflow(context.Context, uuid.UUID) error
 	}
 
@@ -488,6 +605,7 @@ type (
 	AlertService interface {
 		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
+		GetInvestigationArtifacts(context.Context, uuid.UUID) ([]AgentCaseArtifactInput, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 		GetActiveAlertsForComponents(context.Context, []uuid.UUID) ([]*ent.Alert, error)
 	}
@@ -530,70 +648,6 @@ type (
 		Note              string
 	}
 
-	SetIncidentImpactsParams struct {
-		IncidentID uuid.UUID
-		Impacts    []IncidentImpactInput
-	}
-
-	IncidentContextEvidenceRef struct {
-		Kind        string
-		ID          uuid.UUID
-		Description string
-		ObservedAt  time.Time
-	}
-
-	IncidentContextEntity struct {
-		ID          uuid.UUID
-		Kind        string
-		DisplayName string
-		Description string
-		Score       float64
-		Signals     []string
-		Evidence    []IncidentContextEvidenceRef
-	}
-
-	IncidentContextAlert struct {
-		ID                uuid.UUID
-		KnowledgeEntityID uuid.UUID
-		Title             string
-		Description       string
-		ObservedAt        time.Time
-		RelatedEntityIDs  []uuid.UUID
-		Evidence          []IncidentContextEvidenceRef
-	}
-
-	IncidentContextEvidence struct {
-		ID             uuid.UUID
-		EventID        uuid.UUID
-		EntityID       *uuid.UUID
-		RelationshipID *uuid.UUID
-		SubjectType    string
-		Assertion      string
-		EvidenceKind   string
-		ObservedAt     time.Time
-		Description    string
-	}
-
-	IncidentContextRelatedIncident struct {
-		ID        uuid.UUID
-		Slug      string
-		Title     string
-		OpenedAt  time.Time
-		Signals   []string
-		EntityIDs []uuid.UUID
-	}
-
-	IncidentContextPack struct {
-		IncidentID           uuid.UUID
-		GeneratedAt          time.Time
-		ExplicitImpacts      []IncidentContextEntity
-		InferredImpacts      []IncidentContextEntity
-		ActiveAlerts         []IncidentContextAlert
-		RecentEvidence       []IncidentContextEvidence
-		RelatedIncidents     []IncidentContextRelatedIncident
-		RetrievalLimitations []string
-	}
-
 	IncidentService interface {
 		ListIncidents(context.Context, ListIncidentsParams) (*ent.ListResult[ent.Incident], error)
 		Query(context.Context, predicate.Incident, func(*ent.IncidentQuery)) (*ent.Incident, error)
@@ -602,8 +656,8 @@ type (
 		Archive(context.Context, uuid.UUID) error
 
 		ListIncidentImpacts(context.Context, uuid.UUID) ([]*ent.IncidentImpact, error)
-		SetIncidentImpacts(context.Context, SetIncidentImpactsParams) ([]*ent.IncidentImpact, error)
-		GetIncidentContextPack(context.Context, uuid.UUID) (*IncidentContextPack, error)
+		SetIncidentImpacts(context.Context, uuid.UUID, []IncidentImpactInput) ([]*ent.IncidentImpact, error)
+		GetIncidentContextArtifacts(context.Context, uuid.UUID) ([]AgentCaseArtifactInput, error)
 
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)

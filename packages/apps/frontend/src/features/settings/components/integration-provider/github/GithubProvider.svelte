@@ -40,7 +40,7 @@
 	<div class="place-self-center">
 		<Button
 			onclick={() => {
-				ctrl.startOAuthFlow();
+				ctrl.startOAuthFlow("github");
 			}}
 			variant="ghost"
 			class="w-fit h-fit cursor-pointer p-0"

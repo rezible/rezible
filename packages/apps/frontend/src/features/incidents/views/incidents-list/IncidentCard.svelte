@@ -66,12 +66,6 @@
 				{#if typeName}
 					<Badge variant="outline">{typeName}</Badge>
 				{/if}
-				{#if attrs.private}
-					<Badge variant="outline" class="gap-1">
-						<Icon data={mdiLock} size={12} />
-						Private
-					</Badge>
-				{/if}
 			</div>
 
 			<div class="min-w-0">

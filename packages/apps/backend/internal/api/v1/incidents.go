@@ -2,13 +2,10 @@ package apiv1
 
 import (
 	"context"
-	"fmt"
-	"time"
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
 	oapi "github.com/rezible/rezible/openapi/v1"
@@ -16,11 +13,10 @@ import (
 
 type incidentsHandler struct {
 	incidents rez.IncidentService
-	agents    rez.AgentService
 }
 
-func newIncidentsHandler(incidents rez.IncidentService, agents rez.AgentService) *incidentsHandler {
-	return &incidentsHandler{incidents: incidents, agents: agents}
+func newIncidentsHandler(incidents rez.IncidentService) *incidentsHandler {
+	return &incidentsHandler{incidents: incidents}
 }
 
 func incidentIdPredicate(id oapi.FlexibleId) predicate.Incident {
@@ -171,21 +167,22 @@ func (h *incidentsHandler) SetIncidentImpacts(ctx context.Context, input *oapi.S
 	if incErr != nil {
 		return nil, oapi.Error(ctx, "get incident", incErr)
 	}
-	params := rez.SetIncidentImpactsParams{
-		IncidentID: inc.ID,
-		Impacts:    make([]rez.IncidentImpactInput, len(input.Body.Attributes.Impacts)),
-	}
+
+	impactsInput := make([]rez.IncidentImpactInput, len(input.Body.Attributes.Impacts))
 	for i, impact := range input.Body.Attributes.Impacts {
-		if impact.KnowledgeEntityId != nil {
-			params.Impacts[i].KnowledgeEntityID = *impact.KnowledgeEntityId
+		imp := rez.IncidentImpactInput{
+			Kind:        impact.Kind,
+			DisplayName: impact.DisplayName,
+			Description: impact.Description,
+			Source:      impact.Source,
+			Note:        impact.Note,
 		}
-		params.Impacts[i].Kind = impact.Kind
-		params.Impacts[i].DisplayName = impact.DisplayName
-		params.Impacts[i].Description = impact.Description
-		params.Impacts[i].Source = impact.Source
-		params.Impacts[i].Note = impact.Note
+		if impact.KnowledgeEntityId != nil {
+			imp.KnowledgeEntityID = *impact.KnowledgeEntityId
+		}
+		impactsInput[i] = imp
 	}
-	impacts, impactsErr := h.incidents.SetIncidentImpacts(ctx, params)
+	impacts, impactsErr := h.incidents.SetIncidentImpacts(ctx, inc.ID, impactsInput)
 	if impactsErr != nil {
 		return nil, oapi.Error(ctx, "set incident impacts", impactsErr)
 	}
@@ -194,43 +191,5 @@ func (h *incidentsHandler) SetIncidentImpacts(ctx context.Context, input *oapi.S
 		resp.Body.Data[i] = oapi.IncidentImpactFromEnt(impact)
 	}
 	resp.Body.Pagination.Total = len(impacts)
-	return &resp, nil
-}
-
-func (h *incidentsHandler) GetIncidentContextPack(ctx context.Context, input *oapi.GetIncidentContextPackRequest) (*oapi.GetIncidentContextPackResponse, error) {
-	var resp oapi.GetIncidentContextPackResponse
-
-	inc, incErr := h.incidents.Get(ctx, incidentIdPredicate(input.Id))
-	if incErr != nil {
-		return nil, oapi.Error(ctx, "get incident", incErr)
-	}
-	pack, packErr := h.incidents.GetIncidentContextPack(ctx, inc.ID)
-	if packErr != nil {
-		return nil, oapi.Error(ctx, "get incident context pack", packErr)
-	}
-	resp.Body.Data = oapi.IncidentContextPackFromDomain(pack)
-	return &resp, nil
-}
-
-func (h *incidentsHandler) RequestIncidentContextPackAgentRun(ctx context.Context, input *oapi.RequestIncidentContextPackAgentRunRequest) (*oapi.RequestIncidentContextPackAgentRunResponse, error) {
-	var resp oapi.RequestIncidentContextPackAgentRunResponse
-
-	inc, incErr := h.incidents.Get(ctx, incidentIdPredicate(input.Id))
-	if incErr != nil {
-		return nil, oapi.Error(ctx, "get incident", incErr)
-	}
-	run, runErr := h.agents.RequestRun(ctx, rez.AgentRunRequest{
-		WorkflowKind:   agentrun.WorkflowKindIncidentContextPack,
-		IdempotencyKey: fmt.Sprintf("incident-context-pack:manual:%s:%d", inc.ID, time.Now().UTC().UnixNano()),
-		SubjectKind:    "incident",
-		SubjectID:      inc.ID,
-		Metadata: map[string]any{
-			"trigger": "manual",
-		},
-	})
-	if runErr != nil {
-		return nil, oapi.Error(ctx, "request incident context pack agent run", runErr)
-	}
-	resp.Body.Data = oapi.AgentRunFromEnt(run)
 	return &resp, nil
 }

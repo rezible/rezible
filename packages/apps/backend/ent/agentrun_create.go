@@ -13,8 +13,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentcase"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
+	"github.com/rezible/rezible/ent/agentcaseconclusion"
+	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/rezible/rezible/ent/agentrunfeedback"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -57,6 +60,20 @@ func (_c *AgentRunCreate) SetUpdatedAt(v time.Time) *AgentRunCreate {
 func (_c *AgentRunCreate) SetNillableUpdatedAt(v *time.Time) *AgentRunCreate {
 	if v != nil {
 		_c.SetUpdatedAt(*v)
+	}
+	return _c
+}
+
+// SetAgentCaseID sets the "agent_case_id" field.
+func (_c *AgentRunCreate) SetAgentCaseID(v uuid.UUID) *AgentRunCreate {
+	_c.mutation.SetAgentCaseID(v)
+	return _c
+}
+
+// SetNillableAgentCaseID sets the "agent_case_id" field if the given value is not nil.
+func (_c *AgentRunCreate) SetNillableAgentCaseID(v *uuid.UUID) *AgentRunCreate {
+	if v != nil {
+		_c.SetAgentCaseID(*v)
 	}
 	return _c
 }
@@ -230,19 +247,54 @@ func (_c *AgentRunCreate) SetTenant(v *Tenant) *AgentRunCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// AddArtifactIDs adds the "artifacts" edge to the AgentRunArtifact entity by IDs.
-func (_c *AgentRunCreate) AddArtifactIDs(ids ...uuid.UUID) *AgentRunCreate {
-	_c.mutation.AddArtifactIDs(ids...)
+// SetAgentCase sets the "agent_case" edge to the AgentCase entity.
+func (_c *AgentRunCreate) SetAgentCase(v *AgentCase) *AgentRunCreate {
+	return _c.SetAgentCaseID(v.ID)
+}
+
+// AddCaseStepIDs adds the "case_steps" edge to the AgentCaseStep entity by IDs.
+func (_c *AgentRunCreate) AddCaseStepIDs(ids ...uuid.UUID) *AgentRunCreate {
+	_c.mutation.AddCaseStepIDs(ids...)
 	return _c
 }
 
-// AddArtifacts adds the "artifacts" edges to the AgentRunArtifact entity.
-func (_c *AgentRunCreate) AddArtifacts(v ...*AgentRunArtifact) *AgentRunCreate {
+// AddCaseSteps adds the "case_steps" edges to the AgentCaseStep entity.
+func (_c *AgentRunCreate) AddCaseSteps(v ...*AgentCaseStep) *AgentRunCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddArtifactIDs(ids...)
+	return _c.AddCaseStepIDs(ids...)
+}
+
+// AddCaseArtifactIDs adds the "case_artifacts" edge to the AgentCaseArtifact entity by IDs.
+func (_c *AgentRunCreate) AddCaseArtifactIDs(ids ...uuid.UUID) *AgentRunCreate {
+	_c.mutation.AddCaseArtifactIDs(ids...)
+	return _c
+}
+
+// AddCaseArtifacts adds the "case_artifacts" edges to the AgentCaseArtifact entity.
+func (_c *AgentRunCreate) AddCaseArtifacts(v ...*AgentCaseArtifact) *AgentRunCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCaseArtifactIDs(ids...)
+}
+
+// AddCaseConclusionIDs adds the "case_conclusions" edge to the AgentCaseConclusion entity by IDs.
+func (_c *AgentRunCreate) AddCaseConclusionIDs(ids ...uuid.UUID) *AgentRunCreate {
+	_c.mutation.AddCaseConclusionIDs(ids...)
+	return _c
+}
+
+// AddCaseConclusions adds the "case_conclusions" edges to the AgentCaseConclusion entity.
+func (_c *AgentRunCreate) AddCaseConclusions(v ...*AgentCaseConclusion) *AgentRunCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCaseConclusionIDs(ids...)
 }
 
 // AddFeedbackIDs adds the "feedback" edge to the AgentRunFeedback entity by IDs.
@@ -488,18 +540,70 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.ArtifactsIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.AgentCaseIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.AgentCaseTable,
+			Columns: []string{agentrun.AgentCaseColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcase.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRun
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.AgentCaseID = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CaseStepsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: true,
-			Table:   agentrun.ArtifactsTable,
-			Columns: []string{agentrun.ArtifactsColumn},
+			Table:   agentrun.CaseStepsTable,
+			Columns: []string{agentrun.CaseStepsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunartifact.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(agentcasestep.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AgentRunArtifact
+		edge.Schema = _c.schemaConfig.AgentCaseStep
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CaseArtifactsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseArtifactsTable,
+			Columns: []string{agentrun.CaseArtifactsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseartifact.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentCaseArtifact
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CaseConclusionsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agentrun.CaseConclusionsTable,
+			Columns: []string{agentrun.CaseConclusionsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentcaseconclusion.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentCaseConclusion
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -595,6 +699,24 @@ func (u *AgentRunUpsert) SetUpdatedAt(v time.Time) *AgentRunUpsert {
 // UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
 func (u *AgentRunUpsert) UpdateUpdatedAt() *AgentRunUpsert {
 	u.SetExcluded(agentrun.FieldUpdatedAt)
+	return u
+}
+
+// SetAgentCaseID sets the "agent_case_id" field.
+func (u *AgentRunUpsert) SetAgentCaseID(v uuid.UUID) *AgentRunUpsert {
+	u.Set(agentrun.FieldAgentCaseID, v)
+	return u
+}
+
+// UpdateAgentCaseID sets the "agent_case_id" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateAgentCaseID() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldAgentCaseID)
+	return u
+}
+
+// ClearAgentCaseID clears the value of the "agent_case_id" field.
+func (u *AgentRunUpsert) ClearAgentCaseID() *AgentRunUpsert {
+	u.SetNull(agentrun.FieldAgentCaseID)
 	return u
 }
 
@@ -884,6 +1006,27 @@ func (u *AgentRunUpsertOne) SetUpdatedAt(v time.Time) *AgentRunUpsertOne {
 func (u *AgentRunUpsertOne) UpdateUpdatedAt() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetAgentCaseID sets the "agent_case_id" field.
+func (u *AgentRunUpsertOne) SetAgentCaseID(v uuid.UUID) *AgentRunUpsertOne {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.SetAgentCaseID(v)
+	})
+}
+
+// UpdateAgentCaseID sets the "agent_case_id" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateAgentCaseID() *AgentRunUpsertOne {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.UpdateAgentCaseID()
+	})
+}
+
+// ClearAgentCaseID clears the value of the "agent_case_id" field.
+func (u *AgentRunUpsertOne) ClearAgentCaseID() *AgentRunUpsertOne {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.ClearAgentCaseID()
 	})
 }
 
@@ -1375,6 +1518,27 @@ func (u *AgentRunUpsertBulk) SetUpdatedAt(v time.Time) *AgentRunUpsertBulk {
 func (u *AgentRunUpsertBulk) UpdateUpdatedAt() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
 		s.UpdateUpdatedAt()
+	})
+}
+
+// SetAgentCaseID sets the "agent_case_id" field.
+func (u *AgentRunUpsertBulk) SetAgentCaseID(v uuid.UUID) *AgentRunUpsertBulk {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.SetAgentCaseID(v)
+	})
+}
+
+// UpdateAgentCaseID sets the "agent_case_id" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateAgentCaseID() *AgentRunUpsertBulk {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.UpdateAgentCaseID()
+	})
+}
+
+// ClearAgentCaseID clears the value of the "agent_case_id" field.
+func (u *AgentRunUpsertBulk) ClearAgentCaseID() *AgentRunUpsertBulk {
+	return u.Update(func(s *AgentRunUpsert) {
+		s.ClearAgentCaseID()
 	})
 }
 

@@ -213,61 +213,18 @@ func (s *IncidentServiceSuite) TestIncidentProjectionPublishesCreateChangeAndSki
 	s.Equal(1, typeCount)
 }
 
-func (s *IncidentServiceSuite) TestIncidentProjectionAcceptsLegacyEmptyOpenedAtObject() {
-	ctx := s.SeedTenantContext()
-	var events []rez.EventOnIncidentUpdated
-	svc := s.newServiceCapturingEvents(&events)
-	occurredAt := time.Date(2026, 5, 12, 9, 35, 0, 0, time.UTC)
-	ev, err := s.Client(ctx).NormalizedEvent.Create().
-		SetProvider("demo").
-		SetProviderSource("incidents").
-		SetProviderEventRef("demo:incidents:checkout-search-timeouts-observed").
-		SetProviderSubjectRef("demo:incident:checkout-search-timeouts").
-		SetActivityKind(ne.ActivityKindObserved).
-		SetSubjectKind(projections.SubjectKindIncident.String()).
-		SetOccurredAt(occurredAt).
-		SetReceivedAt(occurredAt).
-		SetAttributes(map[string]any{
-			"title":        "Checkout search lookups timing out",
-			"summary":      "Checkout requests that need product search enrichment are timing out for a subset of customers.",
-			"type_ref":     "Customer Impact",
-			"opened_at":    map[string]any{},
-			"severity_ref": "SEV-1",
-		}).
-		Save(ctx)
-	s.Require().NoError(err)
-
-	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
-	s.Require().Len(events, 1)
-
-	entityID, err := svc.knowledge.LookupEntityIDFromAliasRefs(ctx, ent.KnowledgeEntityAliasRef{
-		Provider:           "demo",
-		ProviderSubjectRef: "demo:incident:checkout-search-timeouts",
-	})
-	s.Require().NoError(err)
-	created, err := s.Client(ctx).Incident.Query().
-		Where(incident.KnowledgeEntityID(entityID)).
-		Only(ctx)
-	s.Require().NoError(err)
-	s.True(created.OpenedAt.Equal(occurredAt))
-	s.Contains(created.Slug, "260512-")
-}
-
 func (s *IncidentServiceSuite) TestSetIncidentImpactsSelectOrCreateAndReplacesLinks() {
 	ctx := s.SeedTenantContext()
 	svc := s.newService()
 	inc := s.createBasicIncident(ctx, svc, "Checkout outage")
 
-	impacts, err := svc.SetIncidentImpacts(ctx, rez.SetIncidentImpactsParams{
-		IncidentID: inc.ID,
-		Impacts: []rez.IncidentImpactInput{
-			{
-				Kind:        "functionality",
-				DisplayName: "order_checkout",
-				Description: "Customers cannot complete checkout.",
-				Source:      "responder",
-				Note:        "Reported by support.",
-			},
+	impacts, err := svc.SetIncidentImpacts(ctx, inc.ID, []rez.IncidentImpactInput{
+		{
+			Kind:        "functionality",
+			DisplayName: "order_checkout",
+			Description: "Customers cannot complete checkout.",
+			Source:      "responder",
+			Note:        "Reported by support.",
 		},
 	})
 	s.Require().NoError(err)
@@ -281,13 +238,10 @@ func (s *IncidentServiceSuite) TestSetIncidentImpactsSelectOrCreateAndReplacesLi
 		Save(ctx)
 	s.Require().NoError(err)
 
-	impacts, err = svc.SetIncidentImpacts(ctx, rez.SetIncidentImpactsParams{
-		IncidentID: inc.ID,
-		Impacts: []rez.IncidentImpactInput{
-			{
-				KnowledgeEntityID: serviceEntity.ID,
-				Source:            "responder",
-			},
+	impacts, err = svc.SetIncidentImpacts(ctx, inc.ID, []rez.IncidentImpactInput{
+		{
+			KnowledgeEntityID: serviceEntity.ID,
+			Source:            "responder",
 		},
 	})
 	s.Require().NoError(err)
@@ -449,18 +403,24 @@ func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenc
 		Save(ctx)
 	s.Require().NoError(err)
 
-	pack, err := svc.GetIncidentContextPack(ctx, inc.ID)
+	artifacts, err := svc.GetIncidentContextArtifacts(ctx, inc.ID)
 	s.Require().NoError(err)
-	s.Empty(pack.ExplicitImpacts)
-	s.Require().Len(pack.ActiveAlerts, 1)
-	s.Equal("Billing errors high", pack.ActiveAlerts[0].Title)
-
-	byID := map[uuid.UUID]rez.IncidentContextEntity{}
-	for _, entity := range pack.InferredImpacts {
-		byID[entity.ID] = entity
+	activeAlerts := make([]rez.AgentCaseArtifactInput, 0)
+	byID := map[string]rez.AgentCaseArtifactInput{}
+	for _, artifact := range artifacts {
+		if artifact.Role == "active_alert" {
+			activeAlerts = append(activeAlerts, artifact)
+		}
+		if artifact.Role == "inferred_impact" {
+			if entityID, ok := artifact.Payload["entityId"].(string); ok {
+				byID[entityID] = artifact
+			}
+		}
 	}
-	s.Contains(byID, serviceEntity.ID)
-	s.Contains(byID, functionalityEntity.ID)
-	s.Contains(byID[serviceEntity.ID].Signals, "recent_alert_relationship")
-	s.Contains(byID[functionalityEntity.ID].Signals, "functionality_dependency")
+	s.Require().Len(activeAlerts, 1)
+	s.Equal("Billing errors high", activeAlerts[0].Name)
+	s.Contains(byID, serviceEntity.ID.String())
+	s.Contains(byID, functionalityEntity.ID.String())
+	s.Contains(byID[serviceEntity.ID.String()].Payload["reason"], "recent_alert_relationship")
+	s.Contains(byID[functionalityEntity.ID.String()].Payload["reason"], "functionality_dependency")
 }

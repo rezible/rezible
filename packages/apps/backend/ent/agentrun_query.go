@@ -14,8 +14,11 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentcase"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
+	"github.com/rezible/rezible/ent/agentcaseconclusion"
+	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/rezible/rezible/ent/agentrunfeedback"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
@@ -25,14 +28,17 @@ import (
 // AgentRunQuery is the builder for querying AgentRun entities.
 type AgentRunQuery struct {
 	config
-	ctx           *QueryContext
-	order         []agentrun.OrderOption
-	inters        []Interceptor
-	predicates    []predicate.AgentRun
-	withTenant    *TenantQuery
-	withArtifacts *AgentRunArtifactQuery
-	withFeedback  *AgentRunFeedbackQuery
-	modifiers     []func(*sql.Selector)
+	ctx                 *QueryContext
+	order               []agentrun.OrderOption
+	inters              []Interceptor
+	predicates          []predicate.AgentRun
+	withTenant          *TenantQuery
+	withAgentCase       *AgentCaseQuery
+	withCaseSteps       *AgentCaseStepQuery
+	withCaseArtifacts   *AgentCaseArtifactQuery
+	withCaseConclusions *AgentCaseConclusionQuery
+	withFeedback        *AgentRunFeedbackQuery
+	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -94,9 +100,9 @@ func (_q *AgentRunQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryArtifacts chains the current query on the "artifacts" edge.
-func (_q *AgentRunQuery) QueryArtifacts() *AgentRunArtifactQuery {
-	query := (&AgentRunArtifactClient{config: _q.config}).Query()
+// QueryAgentCase chains the current query on the "agent_case" edge.
+func (_q *AgentRunQuery) QueryAgentCase() *AgentCaseQuery {
+	query := (&AgentCaseClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -107,12 +113,87 @@ func (_q *AgentRunQuery) QueryArtifacts() *AgentRunArtifactQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentrun.Table, agentrun.FieldID, selector),
-			sqlgraph.To(agentrunartifact.Table, agentrunartifact.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.ArtifactsTable, agentrun.ArtifactsColumn),
+			sqlgraph.To(agentcase.Table, agentcase.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrun.AgentCaseTable, agentrun.AgentCaseColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AgentRunArtifact
-		step.Edge.Schema = schemaConfig.AgentRunArtifact
+		step.To.Schema = schemaConfig.AgentCase
+		step.Edge.Schema = schemaConfig.AgentRun
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCaseSteps chains the current query on the "case_steps" edge.
+func (_q *AgentRunQuery) QueryCaseSteps() *AgentCaseStepQuery {
+	query := (&AgentCaseStepClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, selector),
+			sqlgraph.To(agentcasestep.Table, agentcasestep.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.CaseStepsTable, agentrun.CaseStepsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentCaseStep
+		step.Edge.Schema = schemaConfig.AgentCaseStep
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCaseArtifacts chains the current query on the "case_artifacts" edge.
+func (_q *AgentRunQuery) QueryCaseArtifacts() *AgentCaseArtifactQuery {
+	query := (&AgentCaseArtifactClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, selector),
+			sqlgraph.To(agentcaseartifact.Table, agentcaseartifact.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.CaseArtifactsTable, agentrun.CaseArtifactsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentCaseArtifact
+		step.Edge.Schema = schemaConfig.AgentCaseArtifact
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCaseConclusions chains the current query on the "case_conclusions" edge.
+func (_q *AgentRunQuery) QueryCaseConclusions() *AgentCaseConclusionQuery {
+	query := (&AgentCaseConclusionClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, selector),
+			sqlgraph.To(agentcaseconclusion.Table, agentcaseconclusion.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.CaseConclusionsTable, agentrun.CaseConclusionsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentCaseConclusion
+		step.Edge.Schema = schemaConfig.AgentCaseConclusion
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -331,14 +412,17 @@ func (_q *AgentRunQuery) Clone() *AgentRunQuery {
 		return nil
 	}
 	return &AgentRunQuery{
-		config:        _q.config,
-		ctx:           _q.ctx.Clone(),
-		order:         append([]agentrun.OrderOption{}, _q.order...),
-		inters:        append([]Interceptor{}, _q.inters...),
-		predicates:    append([]predicate.AgentRun{}, _q.predicates...),
-		withTenant:    _q.withTenant.Clone(),
-		withArtifacts: _q.withArtifacts.Clone(),
-		withFeedback:  _q.withFeedback.Clone(),
+		config:              _q.config,
+		ctx:                 _q.ctx.Clone(),
+		order:               append([]agentrun.OrderOption{}, _q.order...),
+		inters:              append([]Interceptor{}, _q.inters...),
+		predicates:          append([]predicate.AgentRun{}, _q.predicates...),
+		withTenant:          _q.withTenant.Clone(),
+		withAgentCase:       _q.withAgentCase.Clone(),
+		withCaseSteps:       _q.withCaseSteps.Clone(),
+		withCaseArtifacts:   _q.withCaseArtifacts.Clone(),
+		withCaseConclusions: _q.withCaseConclusions.Clone(),
+		withFeedback:        _q.withFeedback.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -357,14 +441,47 @@ func (_q *AgentRunQuery) WithTenant(opts ...func(*TenantQuery)) *AgentRunQuery {
 	return _q
 }
 
-// WithArtifacts tells the query-builder to eager-load the nodes that are connected to
-// the "artifacts" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentRunQuery) WithArtifacts(opts ...func(*AgentRunArtifactQuery)) *AgentRunQuery {
-	query := (&AgentRunArtifactClient{config: _q.config}).Query()
+// WithAgentCase tells the query-builder to eager-load the nodes that are connected to
+// the "agent_case" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunQuery) WithAgentCase(opts ...func(*AgentCaseQuery)) *AgentRunQuery {
+	query := (&AgentCaseClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withArtifacts = query
+	_q.withAgentCase = query
+	return _q
+}
+
+// WithCaseSteps tells the query-builder to eager-load the nodes that are connected to
+// the "case_steps" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunQuery) WithCaseSteps(opts ...func(*AgentCaseStepQuery)) *AgentRunQuery {
+	query := (&AgentCaseStepClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCaseSteps = query
+	return _q
+}
+
+// WithCaseArtifacts tells the query-builder to eager-load the nodes that are connected to
+// the "case_artifacts" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunQuery) WithCaseArtifacts(opts ...func(*AgentCaseArtifactQuery)) *AgentRunQuery {
+	query := (&AgentCaseArtifactClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCaseArtifacts = query
+	return _q
+}
+
+// WithCaseConclusions tells the query-builder to eager-load the nodes that are connected to
+// the "case_conclusions" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunQuery) WithCaseConclusions(opts ...func(*AgentCaseConclusionQuery)) *AgentRunQuery {
+	query := (&AgentCaseConclusionClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCaseConclusions = query
 	return _q
 }
 
@@ -463,9 +580,12 @@ func (_q *AgentRunQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Age
 	var (
 		nodes       = []*AgentRun{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [6]bool{
 			_q.withTenant != nil,
-			_q.withArtifacts != nil,
+			_q.withAgentCase != nil,
+			_q.withCaseSteps != nil,
+			_q.withCaseArtifacts != nil,
+			_q.withCaseConclusions != nil,
 			_q.withFeedback != nil,
 		}
 	)
@@ -498,10 +618,32 @@ func (_q *AgentRunQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Age
 			return nil, err
 		}
 	}
-	if query := _q.withArtifacts; query != nil {
-		if err := _q.loadArtifacts(ctx, query, nodes,
-			func(n *AgentRun) { n.Edges.Artifacts = []*AgentRunArtifact{} },
-			func(n *AgentRun, e *AgentRunArtifact) { n.Edges.Artifacts = append(n.Edges.Artifacts, e) }); err != nil {
+	if query := _q.withAgentCase; query != nil {
+		if err := _q.loadAgentCase(ctx, query, nodes, nil,
+			func(n *AgentRun, e *AgentCase) { n.Edges.AgentCase = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withCaseSteps; query != nil {
+		if err := _q.loadCaseSteps(ctx, query, nodes,
+			func(n *AgentRun) { n.Edges.CaseSteps = []*AgentCaseStep{} },
+			func(n *AgentRun, e *AgentCaseStep) { n.Edges.CaseSteps = append(n.Edges.CaseSteps, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withCaseArtifacts; query != nil {
+		if err := _q.loadCaseArtifacts(ctx, query, nodes,
+			func(n *AgentRun) { n.Edges.CaseArtifacts = []*AgentCaseArtifact{} },
+			func(n *AgentRun, e *AgentCaseArtifact) { n.Edges.CaseArtifacts = append(n.Edges.CaseArtifacts, e) }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withCaseConclusions; query != nil {
+		if err := _q.loadCaseConclusions(ctx, query, nodes,
+			func(n *AgentRun) { n.Edges.CaseConclusions = []*AgentCaseConclusion{} },
+			func(n *AgentRun, e *AgentCaseConclusion) {
+				n.Edges.CaseConclusions = append(n.Edges.CaseConclusions, e)
+			}); err != nil {
 			return nil, err
 		}
 	}
@@ -544,7 +686,39 @@ func (_q *AgentRunQuery) loadTenant(ctx context.Context, query *TenantQuery, nod
 	}
 	return nil
 }
-func (_q *AgentRunQuery) loadArtifacts(ctx context.Context, query *AgentRunArtifactQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentRunArtifact)) error {
+func (_q *AgentRunQuery) loadAgentCase(ctx context.Context, query *AgentCaseQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentCase)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AgentRun)
+	for i := range nodes {
+		if nodes[i].AgentCaseID == nil {
+			continue
+		}
+		fk := *nodes[i].AgentCaseID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(agentcase.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "agent_case_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *AgentRunQuery) loadCaseSteps(ctx context.Context, query *AgentCaseStepQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentCaseStep)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*AgentRun)
 	for i := range nodes {
@@ -555,10 +729,10 @@ func (_q *AgentRunQuery) loadArtifacts(ctx context.Context, query *AgentRunArtif
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(agentrunartifact.FieldAgentRunID)
+		query.ctx.AppendFieldOnce(agentcasestep.FieldAgentRunID)
 	}
-	query.Where(predicate.AgentRunArtifact(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(agentrun.ArtifactsColumn), fks...))
+	query.Where(predicate.AgentCaseStep(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentrun.CaseStepsColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -566,9 +740,78 @@ func (_q *AgentRunQuery) loadArtifacts(ctx context.Context, query *AgentRunArtif
 	}
 	for _, n := range neighbors {
 		fk := n.AgentRunID
-		node, ok := nodeids[fk]
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "agent_run_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "agent_run_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_run_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *AgentRunQuery) loadCaseArtifacts(ctx context.Context, query *AgentCaseArtifactQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentCaseArtifact)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AgentRun)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(agentcaseartifact.FieldAgentRunID)
+	}
+	query.Where(predicate.AgentCaseArtifact(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentrun.CaseArtifactsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AgentRunID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "agent_run_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_run_id" returned %v for node %v`, *fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
+func (_q *AgentRunQuery) loadCaseConclusions(ctx context.Context, query *AgentCaseConclusionQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentCaseConclusion)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AgentRun)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(agentcaseconclusion.FieldAgentRunID)
+	}
+	query.Where(predicate.AgentCaseConclusion(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agentrun.CaseConclusionsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.AgentRunID
+		if fk == nil {
+			return fmt.Errorf(`foreign-key "agent_run_id" is nil for node %v`, n.ID)
+		}
+		node, ok := nodeids[*fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "agent_run_id" returned %v for node %v`, *fk, n.ID)
 		}
 		assign(node, n)
 	}
@@ -637,6 +880,9 @@ func (_q *AgentRunQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(agentrun.FieldTenantID)
+		}
+		if _q.withAgentCase != nil {
+			_spec.Node.AddColumnOnce(agentrun.FieldAgentCaseID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

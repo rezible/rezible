@@ -13,21 +13,45 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentcase"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
+	"github.com/rezible/rezible/ent/agentcaseconclusion"
+	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/rezible/rezible/jobs"
 )
 
 type (
-	AgentRunArtifact struct {
-		Kind     agentrunartifact.Kind
+	AgentCaseArtifact struct {
+		Kind     agentcaseartifact.Kind
+		Role     string
 		Name     string
 		Payload  map[string]any
 		Redacted bool
 	}
 
+	AgentCaseConclusion struct {
+		Kind               string
+		Summary            string
+		Confidence         string
+		RecommendedActions []string
+		Limitations        []string
+		Payload            map[string]any
+	}
+
+	AgentCaseStep struct {
+		Kind        agentcasestep.Kind
+		Title       string
+		Summary     string
+		Input       map[string]any
+		Output      map[string]any
+		Artifacts   []AgentCaseArtifact
+		Conclusions []AgentCaseConclusion
+	}
+
 	AgentWorkflowResult struct {
-		Artifacts []AgentRunArtifact
+		Summary string
+		Steps   []AgentCaseStep
 	}
 
 	agentWorkflow interface {
@@ -44,11 +68,12 @@ type AgentService struct {
 	jobs      rez.JobService
 	msgs      rez.MessageService
 	incidents rez.IncidentService
+	alerts    rez.AlertService
 	modelProv ModelProvider
 	workflows map[agentrun.WorkflowKind]agentWorkflow
 }
 
-func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, incidents rez.IncidentService) (*AgentService, error) {
+func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, incidents rez.IncidentService, alerts rez.AlertService) (*AgentService, error) {
 	s := &AgentService{
 		cfg:       cfg.AI,
 		logger:    tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
@@ -56,12 +81,13 @@ func NewAgentService(cfg rez.Config, tel rez.TelemetryService, db rez.Database, 
 		jobs:      jobSvc,
 		msgs:      msgSvc,
 		incidents: incidents,
+		alerts:    alerts,
 		modelProv: newChatModelProvider(cfg.AI),
 		workflows: make(map[agentrun.WorkflowKind]agentWorkflow),
 	}
 
 	s.registerWorkflow(&incidentContextPackWorkflow{incidents: incidents, modelFactory: s.modelProv})
-	s.registerWorkflow(stubWorkflow{kind: agentrun.WorkflowKindAlertInvestigation})
+	s.registerWorkflow(&alertInvestigationWorkflow{alerts: alerts, modelFactory: s.modelProv, aiEnabled: cfg.AI.Enabled})
 	s.registerWorkflow(stubWorkflow{kind: agentrun.WorkflowKindRetrospectiveAnalysis})
 
 	jobs.RegisterWorkerFunc(func(ctx context.Context, args jobs.RunAgentWorkflow) error {
@@ -91,6 +117,49 @@ func (s *AgentService) GetRun(ctx context.Context, id uuid.UUID) (*ent.AgentRun,
 	return s.db.Client(ctx).AgentRun.Get(ctx, id)
 }
 
+func (s *AgentService) GetCase(ctx context.Context, id uuid.UUID) (*ent.AgentCase, error) {
+	return s.db.Client(ctx).AgentCase.Get(ctx, id)
+}
+
+func (s *AgentService) ListCases(ctx context.Context, params rez.ListAgentCasesParams) (*ent.ListResult[ent.AgentCase], error) {
+	query := s.db.Client(ctx).AgentCase.Query().
+		Order(agentcase.ByUpdatedAt(sql.OrderDesc()))
+	if params.Status != "" {
+		query.Where(agentcase.StatusEQ(params.Status))
+	}
+	if params.WorkflowKind != "" {
+		query.Where(agentcase.WorkflowKindEQ(agentcase.WorkflowKind(params.WorkflowKind)))
+	}
+	if params.SubjectKind != "" {
+		query.Where(agentcase.SubjectKind(params.SubjectKind))
+	}
+	if params.SubjectID != uuid.Nil {
+		query.Where(agentcase.SubjectID(params.SubjectID))
+	}
+	return ent.DoListQuery[ent.AgentCase, *ent.AgentCaseQuery](ctx, query, params.ListParams)
+}
+
+func (s *AgentService) ListCaseSteps(ctx context.Context, id uuid.UUID) ([]*ent.AgentCaseStep, error) {
+	return s.db.Client(ctx).AgentCaseStep.Query().
+		Where(agentcasestep.AgentCaseID(id)).
+		Order(agentcasestep.BySequence(sql.OrderAsc())).
+		All(ctx)
+}
+
+func (s *AgentService) ListCaseArtifacts(ctx context.Context, id uuid.UUID) ([]*ent.AgentCaseArtifact, error) {
+	return s.db.Client(ctx).AgentCaseArtifact.Query().
+		Where(agentcaseartifact.AgentCaseID(id)).
+		Order(agentcaseartifact.ByCreatedAt(sql.OrderAsc())).
+		All(ctx)
+}
+
+func (s *AgentService) ListCaseConclusions(ctx context.Context, id uuid.UUID) ([]*ent.AgentCaseConclusion, error) {
+	return s.db.Client(ctx).AgentCaseConclusion.Query().
+		Where(agentcaseconclusion.AgentCaseID(id)).
+		Order(agentcaseconclusion.ByCreatedAt(sql.OrderAsc())).
+		All(ctx)
+}
+
 func (s *AgentService) ListRuns(ctx context.Context, params rez.ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error) {
 	query := s.db.Client(ctx).AgentRun.Query().
 		Order(agentrun.ByUpdatedAt(sql.OrderDesc()))
@@ -99,6 +168,9 @@ func (s *AgentService) ListRuns(ctx context.Context, params rez.ListAgentRunsPar
 	}
 	if params.Status != "" {
 		query.Where(agentrun.StatusEQ(params.Status))
+	}
+	if params.AgentCaseID != uuid.Nil {
+		query.Where(agentrun.AgentCaseID(params.AgentCaseID))
 	}
 	if params.SubjectKind != "" {
 		query.Where(agentrun.SubjectKind(params.SubjectKind))
@@ -109,13 +181,6 @@ func (s *AgentService) ListRuns(ctx context.Context, params rez.ListAgentRunsPar
 	return ent.DoListQuery[ent.AgentRun, *ent.AgentRunQuery](ctx, query, params.ListParams)
 }
 
-func (s *AgentService) ListRunArtifacts(ctx context.Context, id uuid.UUID) ([]*ent.AgentRunArtifact, error) {
-	queryArtifacts := s.db.Client(ctx).AgentRunArtifact.Query().
-		Where(agentrunartifact.AgentRunID(id)).
-		Order(agentrunartifact.ByCreatedAt(sql.OrderAsc()))
-	return queryArtifacts.All(ctx)
-}
-
 var insertAgentRunRequestJobOpts = &river.InsertOpts{
 	UniqueOpts: river.UniqueOpts{
 		ByArgs:  true,
@@ -123,7 +188,88 @@ var insertAgentRunRequestJobOpts = &river.InsertOpts{
 	},
 }
 
+func (s *AgentService) CreateCase(ctx context.Context, params rez.AgentCaseRequest) (*ent.AgentCase, error) {
+	if params.WorkflowKind == "" {
+		return nil, fmt.Errorf("missing agent workflow kind")
+	}
+	if _, ok := s.workflows[params.WorkflowKind]; !ok {
+		return nil, fmt.Errorf("unknown agent workflow kind %q", params.WorkflowKind)
+	}
+	if params.TriggerMetadata == nil {
+		params.TriggerMetadata = map[string]any{}
+	}
+	title := params.Title
+	if title == "" {
+		title = string(params.WorkflowKind)
+		if params.SubjectKind != "" {
+			title += " for " + params.SubjectKind
+		}
+	}
+
+	var created *ent.AgentCase
+	if err := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		create := tx.AgentCase.Create().
+			SetStatus(agentcase.StatusOpen).
+			SetTitle(title).
+			SetWorkflowKind(agentcase.WorkflowKind(params.WorkflowKind)).
+			SetTriggerMetadata(params.TriggerMetadata)
+		if params.Query != "" {
+			create.SetQuery(params.Query)
+		}
+		if params.SubjectKind != "" {
+			create.SetSubjectKind(params.SubjectKind)
+		}
+		if params.SubjectID != uuid.Nil {
+			create.SetSubjectID(params.SubjectID)
+		}
+		res, createErr := create.Save(ctx)
+		if createErr != nil {
+			return fmt.Errorf("create agent case: %w", createErr)
+		}
+		created = res.Unwrap()
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	if _, runErr := s.RequestCaseRun(ctx, rez.AgentCaseRunRequest{
+		AgentCaseID: created.ID,
+		Metadata:    params.TriggerMetadata,
+	}); runErr != nil {
+		return nil, runErr
+	}
+	return s.GetCase(ctx, created.ID)
+}
+
+func (s *AgentService) RequestCaseRun(ctx context.Context, params rez.AgentCaseRunRequest) (*ent.AgentRun, error) {
+	if params.AgentCaseID == uuid.Nil {
+		return nil, fmt.Errorf("missing agent case id")
+	}
+	c, caseErr := s.GetCase(ctx, params.AgentCaseID)
+	if caseErr != nil {
+		return nil, fmt.Errorf("get agent case: %w", caseErr)
+	}
+	if c.WorkflowKind == "" {
+		return nil, fmt.Errorf("agent case has no workflow kind")
+	}
+	subjectID := uuid.Nil
+	if c.SubjectID != nil {
+		subjectID = *c.SubjectID
+	}
+	return s.RequestRun(ctx, rez.AgentRunRequest{
+		AgentCaseID:    c.ID,
+		WorkflowKind:   agentrun.WorkflowKind(c.WorkflowKind),
+		IdempotencyKey: params.IdempotencyKey,
+		SubjectKind:    c.SubjectKind,
+		SubjectID:      subjectID,
+		Metadata:       params.Metadata,
+	})
+}
+
 func (s *AgentService) RequestRun(ctx context.Context, params rez.AgentRunRequest) (*ent.AgentRun, error) {
+	if params.AgentCaseID == uuid.Nil {
+		return nil, fmt.Errorf("missing agent case id")
+	}
 	if _, ok := s.workflows[params.WorkflowKind]; !ok {
 		return nil, fmt.Errorf("unknown agent workflow kind %q", params.WorkflowKind)
 	}
@@ -145,6 +291,7 @@ func (s *AgentService) RequestRun(ctx context.Context, params rez.AgentRunReques
 		}
 
 		create := tx.AgentRun.Create().
+			SetAgentCaseID(params.AgentCaseID).
 			SetWorkflowKind(params.WorkflowKind).
 			SetStatus(agentrun.StatusQueued).
 			SetIdempotencyKey(runKey).
@@ -195,6 +342,9 @@ func (s *AgentService) getRunRequestIdempotencyKey(params rez.AgentRunRequest) (
 	if params.IdempotencyKey != "" {
 		return params.IdempotencyKey, nil
 	}
+	if params.AgentCaseID != uuid.Nil {
+		return fmt.Sprintf("%s:%d", params.AgentCaseID, time.Now().UTC().UnixNano()), nil
+	}
 	if params.SubjectID == uuid.Nil {
 		return params.SubjectKind, nil
 	}
@@ -236,16 +386,32 @@ func (s *AgentService) runWorkflow(ctx context.Context, run *ent.AgentRun) error
 }
 
 func (s *AgentService) setRunStarted(ctx context.Context, run *ent.AgentRun) (*ent.AgentRun, error) {
-	update := s.db.Client(ctx).AgentRun.UpdateOneID(run.ID).
-		SetStatus(agentrun.StatusRunning).
-		SetStartedAt(time.Now().UTC()).
-		ClearCompletedAt().
-		ClearFailedAt().
-		ClearErrorCode().
-		ClearErrorMessage()
-	started, startErr := update.Save(ctx)
-	if startErr != nil {
-		return nil, fmt.Errorf("mark agent run started: %w", startErr)
+	var started *ent.AgentRun
+	if err := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		update := tx.AgentRun.UpdateOneID(run.ID).
+			SetStatus(agentrun.StatusRunning).
+			SetStartedAt(time.Now().UTC()).
+			ClearCompletedAt().
+			ClearFailedAt().
+			ClearErrorCode().
+			ClearErrorMessage()
+		res, startErr := update.Save(ctx)
+		if startErr != nil {
+			return fmt.Errorf("mark agent run started: %w", startErr)
+		}
+		started = res.Unwrap()
+		if run.AgentCaseID != nil {
+			if _, caseErr := tx.AgentCase.UpdateOneID(*run.AgentCaseID).
+				SetStatus(agentcase.StatusRunning).
+				ClearErrorCode().
+				ClearErrorMessage().
+				Save(ctx); caseErr != nil {
+				return fmt.Errorf("mark agent case running: %w", caseErr)
+			}
+		}
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
 	s.publishEvent(ctx, rez.EventOnAgentRunStarted{
@@ -257,28 +423,37 @@ func (s *AgentService) setRunStarted(ctx context.Context, run *ent.AgentRun) (*e
 }
 
 func (s *AgentService) completeRun(ctx context.Context, run *ent.AgentRun, result *AgentWorkflowResult) error {
-	artifacts := []AgentRunArtifact{redactedModelArtifact("model", s.cfg)}
 	if result == nil {
 		result = &AgentWorkflowResult{}
 	}
-	artifacts = append(artifacts, result.Artifacts...)
 
 	now := time.Now().UTC()
 	saveTx := func(txCtx context.Context, tx *ent.Client) error {
-		if len(artifacts) > 0 {
-			builders := make([]*ent.AgentRunArtifactCreate, len(artifacts))
-			for i, artifact := range artifacts {
-				builders[i] = tx.AgentRunArtifact.Create().
-					SetAgentRunID(run.ID).
-					SetKind(artifact.Kind).
-					SetName(artifact.Name).
-					SetPayload(artifact.Payload).
-					SetRedacted(artifact.Redacted)
+		if run.AgentCaseID == nil {
+			return fmt.Errorf("agent run has no case id")
+		}
+		nextSequence, seqErr := nextCaseStepSequence(txCtx, tx, *run.AgentCaseID)
+		if seqErr != nil {
+			return seqErr
+		}
+		steps := append([]AgentCaseStep{{
+			Kind:      agentcasestep.KindSystem,
+			Title:     "Model configuration",
+			Summary:   "Captured model configuration for this run.",
+			Artifacts: []AgentCaseArtifact{redactedModelCaseArtifact("model", s.cfg)},
+		}}, result.Steps...)
+		for _, step := range steps {
+			createdStep, stepErr := createCaseStep(txCtx, tx, *run.AgentCaseID, run.ID, nextSequence, now, step)
+			if stepErr != nil {
+				return stepErr
 			}
-			createErr := tx.AgentRunArtifact.CreateBulk(builders...).Exec(txCtx)
-			if createErr != nil {
-				return fmt.Errorf("create agent run artifact: %w", createErr)
+			if err := createCaseStepArtifacts(txCtx, tx, *run.AgentCaseID, run.ID, createdStep.ID, step.Artifacts); err != nil {
+				return err
 			}
+			if err := createCaseStepConclusions(txCtx, tx, *run.AgentCaseID, run.ID, createdStep.ID, step.Conclusions); err != nil {
+				return err
+			}
+			nextSequence++
 		}
 
 		update := tx.AgentRun.UpdateOneID(run.ID).
@@ -289,6 +464,14 @@ func (s *AgentService) completeRun(ctx context.Context, run *ent.AgentRun, resul
 			ClearErrorMessage()
 		if _, updateErr := update.Save(txCtx); updateErr != nil {
 			return fmt.Errorf("mark agent run completed: %w", updateErr)
+		}
+		caseUpdate := tx.AgentCase.UpdateOneID(*run.AgentCaseID).
+			SetStatus(agentcase.StatusCompleted)
+		if result.Summary != "" {
+			caseUpdate.SetSummary(result.Summary)
+		}
+		if _, caseErr := caseUpdate.Save(txCtx); caseErr != nil {
+			return fmt.Errorf("mark agent case completed: %w", caseErr)
 		}
 		return nil
 	}
@@ -304,13 +487,28 @@ func (s *AgentService) completeRun(ctx context.Context, run *ent.AgentRun, resul
 
 func (s *AgentService) failRun(ctx context.Context, run *ent.AgentRun, code string, err error) error {
 	errMsg := err.Error()
-	update := s.db.Client(ctx).AgentRun.UpdateOneID(run.ID).
-		SetStatus(agentrun.StatusFailed).
-		SetFailedAt(time.Now().UTC()).
-		SetErrorCode(code).
-		SetErrorMessage(errMsg)
-	if _, updateErr := update.Save(ctx); updateErr != nil {
-		return errors.Join(err, fmt.Errorf("mark agent run failed: %w", updateErr))
+	updateErr := s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
+		update := tx.AgentRun.UpdateOneID(run.ID).
+			SetStatus(agentrun.StatusFailed).
+			SetFailedAt(time.Now().UTC()).
+			SetErrorCode(code).
+			SetErrorMessage(errMsg)
+		if _, saveErr := update.Save(ctx); saveErr != nil {
+			return fmt.Errorf("mark agent run failed: %w", saveErr)
+		}
+		if run.AgentCaseID != nil {
+			if _, caseErr := tx.AgentCase.UpdateOneID(*run.AgentCaseID).
+				SetStatus(agentcase.StatusFailed).
+				SetErrorCode(code).
+				SetErrorMessage(errMsg).
+				Save(ctx); caseErr != nil {
+				return fmt.Errorf("mark agent case failed: %w", caseErr)
+			}
+		}
+		return nil
+	})
+	if updateErr != nil {
+		return errors.Join(err, updateErr)
 	}
 	s.publishEvent(ctx, rez.EventOnAgentRunFailed{
 		AgentRunID:   run.ID,
@@ -319,6 +517,94 @@ func (s *AgentService) failRun(ctx context.Context, run *ent.AgentRun, code stri
 		ErrorMessage: errMsg,
 	})
 	return err
+}
+
+func nextCaseStepSequence(ctx context.Context, tx *ent.Client, caseID uuid.UUID) (int, error) {
+	latest, latestErr := tx.AgentCaseStep.Query().
+		Where(agentcasestep.AgentCaseID(caseID)).
+		Order(agentcasestep.BySequence(sql.OrderDesc())).
+		First(ctx)
+	if latestErr != nil {
+		if ent.IsNotFound(latestErr) {
+			return 1, nil
+		}
+		return 0, fmt.Errorf("query latest agent case step: %w", latestErr)
+	}
+	return latest.Sequence + 1, nil
+}
+
+func createCaseStep(ctx context.Context, tx *ent.Client, caseID, runID uuid.UUID, sequence int, now time.Time, step AgentCaseStep) (*ent.AgentCaseStep, error) {
+	create := tx.AgentCaseStep.Create().
+		SetAgentCaseID(caseID).
+		SetAgentRunID(runID).
+		SetSequence(sequence).
+		SetKind(step.Kind).
+		SetTitle(step.Title).
+		SetStartedAt(now).
+		SetCompletedAt(now)
+	if step.Summary != "" {
+		create.SetSummary(step.Summary)
+	}
+	if step.Input != nil {
+		create.SetInput(step.Input)
+	}
+	if step.Output != nil {
+		create.SetOutput(step.Output)
+	}
+	created, stepErr := create.Save(ctx)
+	if stepErr != nil {
+		return nil, fmt.Errorf("create agent case step: %w", stepErr)
+	}
+	return created, nil
+}
+
+func createCaseStepArtifacts(ctx context.Context, tx *ent.Client, caseID, runID, stepID uuid.UUID, artifacts []AgentCaseArtifact) error {
+	for _, artifact := range artifacts {
+		create := tx.AgentCaseArtifact.Create().
+			SetAgentCaseID(caseID).
+			SetAgentCaseStepID(stepID).
+			SetAgentRunID(runID).
+			SetKind(artifact.Kind).
+			SetName(artifact.Name).
+			SetPayload(artifact.Payload).
+			SetRedacted(artifact.Redacted)
+		if artifact.Role != "" {
+			create.SetRole(artifact.Role)
+		}
+		if _, artifactErr := create.Save(ctx); artifactErr != nil {
+			return fmt.Errorf("create agent case artifact: %w", artifactErr)
+		}
+	}
+	return nil
+}
+
+func createCaseStepConclusions(ctx context.Context, tx *ent.Client, caseID, runID, stepID uuid.UUID, conclusions []AgentCaseConclusion) error {
+	for _, conclusion := range conclusions {
+		create := tx.AgentCaseConclusion.Create().
+			SetAgentCaseID(caseID).
+			SetAgentCaseStepID(stepID).
+			SetAgentRunID(runID).
+			SetKind(conclusion.Kind)
+		if conclusion.Summary != "" {
+			create.SetSummary(conclusion.Summary)
+		}
+		if conclusion.Confidence != "" {
+			create.SetConfidence(conclusion.Confidence)
+		}
+		if len(conclusion.RecommendedActions) > 0 {
+			create.SetRecommendedActions(conclusion.RecommendedActions)
+		}
+		if len(conclusion.Limitations) > 0 {
+			create.SetLimitations(conclusion.Limitations)
+		}
+		if conclusion.Payload != nil {
+			create.SetPayload(conclusion.Payload)
+		}
+		if _, conclusionErr := create.Save(ctx); conclusionErr != nil {
+			return fmt.Errorf("create agent case conclusion: %w", conclusionErr)
+		}
+	}
+	return nil
 }
 
 func (s *AgentService) publishEvent(ctx context.Context, event any) {

@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/ent/agentcase"
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -26,6 +27,8 @@ type AgentRun struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// AgentCaseID holds the value of the "agent_case_id" field.
+	AgentCaseID *uuid.UUID `json:"agent_case_id,omitempty"`
 	// WorkflowKind holds the value of the "workflow_kind" field.
 	WorkflowKind agentrun.WorkflowKind `json:"workflow_kind,omitempty"`
 	// Status holds the value of the "status" field.
@@ -62,13 +65,19 @@ type AgentRun struct {
 type AgentRunEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// Artifacts holds the value of the artifacts edge.
-	Artifacts []*AgentRunArtifact `json:"artifacts,omitempty"`
+	// AgentCase holds the value of the agent_case edge.
+	AgentCase *AgentCase `json:"agent_case,omitempty"`
+	// CaseSteps holds the value of the case_steps edge.
+	CaseSteps []*AgentCaseStep `json:"case_steps,omitempty"`
+	// CaseArtifacts holds the value of the case_artifacts edge.
+	CaseArtifacts []*AgentCaseArtifact `json:"case_artifacts,omitempty"`
+	// CaseConclusions holds the value of the case_conclusions edge.
+	CaseConclusions []*AgentCaseConclusion `json:"case_conclusions,omitempty"`
 	// Feedback holds the value of the feedback edge.
 	Feedback []*AgentRunFeedback `json:"feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [6]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -82,19 +91,48 @@ func (e AgentRunEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// ArtifactsOrErr returns the Artifacts value or an error if the edge
-// was not loaded in eager-loading.
-func (e AgentRunEdges) ArtifactsOrErr() ([]*AgentRunArtifact, error) {
-	if e.loadedTypes[1] {
-		return e.Artifacts, nil
+// AgentCaseOrErr returns the AgentCase value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AgentRunEdges) AgentCaseOrErr() (*AgentCase, error) {
+	if e.AgentCase != nil {
+		return e.AgentCase, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: agentcase.Label}
 	}
-	return nil, &NotLoadedError{edge: "artifacts"}
+	return nil, &NotLoadedError{edge: "agent_case"}
+}
+
+// CaseStepsOrErr returns the CaseSteps value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentRunEdges) CaseStepsOrErr() ([]*AgentCaseStep, error) {
+	if e.loadedTypes[2] {
+		return e.CaseSteps, nil
+	}
+	return nil, &NotLoadedError{edge: "case_steps"}
+}
+
+// CaseArtifactsOrErr returns the CaseArtifacts value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentRunEdges) CaseArtifactsOrErr() ([]*AgentCaseArtifact, error) {
+	if e.loadedTypes[3] {
+		return e.CaseArtifacts, nil
+	}
+	return nil, &NotLoadedError{edge: "case_artifacts"}
+}
+
+// CaseConclusionsOrErr returns the CaseConclusions value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentRunEdges) CaseConclusionsOrErr() ([]*AgentCaseConclusion, error) {
+	if e.loadedTypes[4] {
+		return e.CaseConclusions, nil
+	}
+	return nil, &NotLoadedError{edge: "case_conclusions"}
 }
 
 // FeedbackOrErr returns the Feedback value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentRunEdges) FeedbackOrErr() ([]*AgentRunFeedback, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[5] {
 		return e.Feedback, nil
 	}
 	return nil, &NotLoadedError{edge: "feedback"}
@@ -105,7 +143,7 @@ func (*AgentRun) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentrun.FieldSubjectID:
+		case agentrun.FieldAgentCaseID, agentrun.FieldSubjectID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		case agentrun.FieldTriggerMetadata, agentrun.FieldModelMetadata:
 			values[i] = new([]byte)
@@ -155,6 +193,13 @@ func (_m *AgentRun) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
+			}
+		case agentrun.FieldAgentCaseID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field agent_case_id", values[i])
+			} else if value.Valid {
+				_m.AgentCaseID = new(uuid.UUID)
+				*_m.AgentCaseID = *value.S.(*uuid.UUID)
 			}
 		case agentrun.FieldWorkflowKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -260,9 +305,24 @@ func (_m *AgentRun) QueryTenant() *TenantQuery {
 	return NewAgentRunClient(_m.config).QueryTenant(_m)
 }
 
-// QueryArtifacts queries the "artifacts" edge of the AgentRun entity.
-func (_m *AgentRun) QueryArtifacts() *AgentRunArtifactQuery {
-	return NewAgentRunClient(_m.config).QueryArtifacts(_m)
+// QueryAgentCase queries the "agent_case" edge of the AgentRun entity.
+func (_m *AgentRun) QueryAgentCase() *AgentCaseQuery {
+	return NewAgentRunClient(_m.config).QueryAgentCase(_m)
+}
+
+// QueryCaseSteps queries the "case_steps" edge of the AgentRun entity.
+func (_m *AgentRun) QueryCaseSteps() *AgentCaseStepQuery {
+	return NewAgentRunClient(_m.config).QueryCaseSteps(_m)
+}
+
+// QueryCaseArtifacts queries the "case_artifacts" edge of the AgentRun entity.
+func (_m *AgentRun) QueryCaseArtifacts() *AgentCaseArtifactQuery {
+	return NewAgentRunClient(_m.config).QueryCaseArtifacts(_m)
+}
+
+// QueryCaseConclusions queries the "case_conclusions" edge of the AgentRun entity.
+func (_m *AgentRun) QueryCaseConclusions() *AgentCaseConclusionQuery {
+	return NewAgentRunClient(_m.config).QueryCaseConclusions(_m)
 }
 
 // QueryFeedback queries the "feedback" edge of the AgentRun entity.
@@ -301,6 +361,11 @@ func (_m *AgentRun) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", ")
+	if v := _m.AgentCaseID; v != nil {
+		builder.WriteString("agent_case_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
 	builder.WriteString(", ")
 	builder.WriteString("workflow_kind=")
 	builder.WriteString(fmt.Sprintf("%v", _m.WorkflowKind))

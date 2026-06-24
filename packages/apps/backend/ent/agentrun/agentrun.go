@@ -23,6 +23,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldAgentCaseID holds the string denoting the agent_case_id field in the database.
+	FieldAgentCaseID = "agent_case_id"
 	// FieldWorkflowKind holds the string denoting the workflow_kind field in the database.
 	FieldWorkflowKind = "workflow_kind"
 	// FieldStatus holds the string denoting the status field in the database.
@@ -51,8 +53,14 @@ const (
 	FieldFailedAt = "failed_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeArtifacts holds the string denoting the artifacts edge name in mutations.
-	EdgeArtifacts = "artifacts"
+	// EdgeAgentCase holds the string denoting the agent_case edge name in mutations.
+	EdgeAgentCase = "agent_case"
+	// EdgeCaseSteps holds the string denoting the case_steps edge name in mutations.
+	EdgeCaseSteps = "case_steps"
+	// EdgeCaseArtifacts holds the string denoting the case_artifacts edge name in mutations.
+	EdgeCaseArtifacts = "case_artifacts"
+	// EdgeCaseConclusions holds the string denoting the case_conclusions edge name in mutations.
+	EdgeCaseConclusions = "case_conclusions"
 	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
 	EdgeFeedback = "feedback"
 	// Table holds the table name of the agentrun in the database.
@@ -64,13 +72,34 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// ArtifactsTable is the table that holds the artifacts relation/edge.
-	ArtifactsTable = "agent_run_artifacts"
-	// ArtifactsInverseTable is the table name for the AgentRunArtifact entity.
-	// It exists in this package in order to avoid circular dependency with the "agentrunartifact" package.
-	ArtifactsInverseTable = "agent_run_artifacts"
-	// ArtifactsColumn is the table column denoting the artifacts relation/edge.
-	ArtifactsColumn = "agent_run_id"
+	// AgentCaseTable is the table that holds the agent_case relation/edge.
+	AgentCaseTable = "agent_runs"
+	// AgentCaseInverseTable is the table name for the AgentCase entity.
+	// It exists in this package in order to avoid circular dependency with the "agentcase" package.
+	AgentCaseInverseTable = "agent_cases"
+	// AgentCaseColumn is the table column denoting the agent_case relation/edge.
+	AgentCaseColumn = "agent_case_id"
+	// CaseStepsTable is the table that holds the case_steps relation/edge.
+	CaseStepsTable = "agent_case_steps"
+	// CaseStepsInverseTable is the table name for the AgentCaseStep entity.
+	// It exists in this package in order to avoid circular dependency with the "agentcasestep" package.
+	CaseStepsInverseTable = "agent_case_steps"
+	// CaseStepsColumn is the table column denoting the case_steps relation/edge.
+	CaseStepsColumn = "agent_run_id"
+	// CaseArtifactsTable is the table that holds the case_artifacts relation/edge.
+	CaseArtifactsTable = "agent_case_artifacts"
+	// CaseArtifactsInverseTable is the table name for the AgentCaseArtifact entity.
+	// It exists in this package in order to avoid circular dependency with the "agentcaseartifact" package.
+	CaseArtifactsInverseTable = "agent_case_artifacts"
+	// CaseArtifactsColumn is the table column denoting the case_artifacts relation/edge.
+	CaseArtifactsColumn = "agent_run_id"
+	// CaseConclusionsTable is the table that holds the case_conclusions relation/edge.
+	CaseConclusionsTable = "agent_case_conclusions"
+	// CaseConclusionsInverseTable is the table name for the AgentCaseConclusion entity.
+	// It exists in this package in order to avoid circular dependency with the "agentcaseconclusion" package.
+	CaseConclusionsInverseTable = "agent_case_conclusions"
+	// CaseConclusionsColumn is the table column denoting the case_conclusions relation/edge.
+	CaseConclusionsColumn = "agent_run_id"
 	// FeedbackTable is the table that holds the feedback relation/edge.
 	FeedbackTable = "agent_run_feedbacks"
 	// FeedbackInverseTable is the table name for the AgentRunFeedback entity.
@@ -86,6 +115,7 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldAgentCaseID,
 	FieldWorkflowKind,
 	FieldStatus,
 	FieldIdempotencyKey,
@@ -208,6 +238,11 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
+// ByAgentCaseID orders the results by the agent_case_id field.
+func ByAgentCaseID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldAgentCaseID, opts...).ToFunc()
+}
+
 // ByWorkflowKind orders the results by the workflow_kind field.
 func ByWorkflowKind(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldWorkflowKind, opts...).ToFunc()
@@ -270,17 +305,52 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByArtifactsCount orders the results by artifacts count.
-func ByArtifactsCount(opts ...sql.OrderTermOption) OrderOption {
+// ByAgentCaseField orders the results by agent_case field.
+func ByAgentCaseField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newArtifactsStep(), opts...)
+		sqlgraph.OrderByNeighborTerms(s, newAgentCaseStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByArtifacts orders the results by artifacts terms.
-func ByArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+// ByCaseStepsCount orders the results by case_steps count.
+func ByCaseStepsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborsCount(s, newCaseStepsStep(), opts...)
+	}
+}
+
+// ByCaseSteps orders the results by case_steps terms.
+func ByCaseSteps(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCaseStepsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCaseArtifactsCount orders the results by case_artifacts count.
+func ByCaseArtifactsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCaseArtifactsStep(), opts...)
+	}
+}
+
+// ByCaseArtifacts orders the results by case_artifacts terms.
+func ByCaseArtifacts(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCaseArtifactsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByCaseConclusionsCount orders the results by case_conclusions count.
+func ByCaseConclusionsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCaseConclusionsStep(), opts...)
+	}
+}
+
+// ByCaseConclusions orders the results by case_conclusions terms.
+func ByCaseConclusions(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCaseConclusionsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -304,11 +374,32 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newArtifactsStep() *sqlgraph.Step {
+func newAgentCaseStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(ArtifactsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, ArtifactsTable, ArtifactsColumn),
+		sqlgraph.To(AgentCaseInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, AgentCaseTable, AgentCaseColumn),
+	)
+}
+func newCaseStepsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CaseStepsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, CaseStepsTable, CaseStepsColumn),
+	)
+}
+func newCaseArtifactsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CaseArtifactsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, CaseArtifactsTable, CaseArtifactsColumn),
+	)
+}
+func newCaseConclusionsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CaseConclusionsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, CaseConclusionsTable, CaseConclusionsColumn),
 	)
 }
 func newFeedbackStep() *sqlgraph.Step {

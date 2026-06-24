@@ -9,7 +9,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/rezible/rezible"
-	"github.com/rezible/rezible/ent/agentrunartifact"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
 )
 
 type modelRunOutput struct {
@@ -43,7 +43,7 @@ func runModelOnce(ctx context.Context, modelFactory ModelProvider, name, instruc
 	return &modelRunOutput{Text: response.Content}, nil
 }
 
-func redactedModelArtifact(name string, cfg rez.AiConfig) AgentRunArtifact {
+func redactedModelCaseArtifact(name string, cfg rez.AiConfig) AgentCaseArtifact {
 	payload := map[string]any{
 		"provider": cfg.Provider,
 		"model":    cfg.Model,
@@ -51,8 +51,8 @@ func redactedModelArtifact(name string, cfg rez.AiConfig) AgentRunArtifact {
 	if !cfg.StoreRawModelPayloads {
 		payload["raw_payloads"] = "redacted"
 	}
-	return AgentRunArtifact{
-		Kind:     agentrunartifact.KindModel,
+	return AgentCaseArtifact{
+		Kind:     agentcaseartifact.KindModel,
 		Name:     name,
 		Payload:  payload,
 		Redacted: !cfg.StoreRawModelPayloads,

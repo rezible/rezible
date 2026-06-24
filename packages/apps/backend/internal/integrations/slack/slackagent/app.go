@@ -1,35 +1,53 @@
 package slackagent
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"strings"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/integration"
+	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/jobs"
+	"github.com/riverqueue/river"
 	"github.com/slack-go/slack/slackevents"
 )
 
 type App struct {
 	cfg      rez.Config
 	db       rez.Database
+	jobs     rez.JobService
 	messages rez.MessageService
+	agents   rez.AgentService
 	events   rez.EventsService
 }
 
-func MakeApp(cfg rez.Config, db rez.Database, msgs rez.MessageService, events rez.EventsService) (*App, error) {
+func MakeApp(cfg rez.Config, db rez.Database, jobSvc rez.JobService, msgs rez.MessageService, agents rez.AgentService, events rez.EventsService) (*App, error) {
 	h := &App{
 		cfg:      cfg,
 		db:       db,
+		jobs:     jobSvc,
 		messages: msgs,
+		agents:   agents,
 		events:   events,
 	}
 	if msgsErr := h.registerMessageHandlers(); msgsErr != nil {
 		return nil, fmt.Errorf("message handlers: %w", msgsErr)
 	}
+	jobs.RegisterWorkerFunc(h.handlePostAlertInvestigationUpdate)
 	return h, nil
 }
 
 func (a *App) registerMessageHandlers() error {
-	return errors.Join()
+	return errors.Join(
+		a.messages.AddEventHandlers(
+			rez.NewEventHandler("slack_agent.alert_investigation_completed", a.onAgentRunCompleted),
+		),
+	)
 }
 
 func (a *App) IntegrationName() string {
@@ -74,4 +92,133 @@ func (a *App) OAuthScopes() []string {
 		"channels:manage",
 		"channels:write.invites",
 	}
+}
+
+var postAlertInvestigationUpdateJobOpts = &river.InsertOpts{
+	UniqueOpts: river.UniqueOpts{
+		ByArgs:  true,
+		ByState: jobs.UniqueStateNonCompleted,
+	},
+}
+
+func (a *App) onAgentRunCompleted(ctx context.Context, ev *rez.EventOnAgentRunCompleted) error {
+	if ev.WorkflowKind != agentrun.WorkflowKindAlertInvestigation {
+		return nil
+	}
+	run, runErr := a.agents.GetRun(ctx, ev.AgentRunID)
+	if runErr != nil {
+		return fmt.Errorf("get completed agent run: %w", runErr)
+	}
+	if run.SubjectKind != "alert" || run.SubjectID == nil {
+		return nil
+	}
+	_, insertErr := a.jobs.Insert(ctx, jobs.PostAlertInvestigationUpdate{
+		AlertID:    *run.SubjectID,
+		AgentRunID: run.ID,
+	}, postAlertInvestigationUpdateJobOpts)
+	if insertErr != nil {
+		return fmt.Errorf("enqueue alert investigation slack update: %w", insertErr)
+	}
+	return nil
+}
+
+func (a *App) handlePostAlertInvestigationUpdate(ctx context.Context, args jobs.PostAlertInvestigationUpdate) error {
+	if args.AlertID == uuid.Nil || args.AgentRunID == uuid.Nil {
+		return nil
+	}
+	msgID, findErr := a.findMessageIdForAlertEvent(ctx, args.AlertID)
+	if findErr != nil {
+		return fmt.Errorf("find alert slack message: %w", findErr)
+	}
+	if msgID == "" {
+		return nil
+	}
+	channelID, threadTS, ok := strings.Cut(msgID.String(), "_")
+	if !ok || channelID == "" || threadTS == "" {
+		return fmt.Errorf("invalid slack message id %q", msgID.String())
+	}
+	client, clientErr := a.getEnabledIntegrationClient(ctx)
+	if clientErr != nil {
+		return fmt.Errorf("get slack agent client: %w", clientErr)
+	}
+	if client == nil {
+		return nil
+	}
+	run, runErr := a.agents.GetRun(ctx, args.AgentRunID)
+	if runErr != nil {
+		return fmt.Errorf("get agent run: %w", runErr)
+	}
+	if run.AgentCaseID == nil {
+		return nil
+	}
+	conclusions, conclusionsErr := a.agents.ListCaseConclusions(ctx, *run.AgentCaseID)
+	if conclusionsErr != nil {
+		return fmt.Errorf("list agent case conclusions: %w", conclusionsErr)
+	}
+	message := buildAlertInvestigationThreadMessage(conclusions)
+	if message == "" {
+		return nil
+	}
+	if _, postErr := client.SendReply(ctx, channelID, threadTS, message); postErr != nil {
+		return fmt.Errorf("post alert investigation reply: %w", postErr)
+	}
+	return nil
+}
+
+func (a *App) getEnabledIntegrationClient(ctx context.Context) (*slackintegration.ClientWrapper, error) {
+	intgs, intgErr := a.db.Client(ctx).Integration.Query().
+		Where(integration.IntegrationName(integrationName)).
+		All(ctx)
+	if intgErr != nil && !ent.IsNotFound(intgErr) {
+		return nil, fmt.Errorf("query slack agent integration: %w", intgErr)
+	}
+	if len(intgs) == 0 {
+		return nil, nil
+	}
+	return slackintegration.NewClientWrapper(intgs[0])
+}
+
+func (a *App) findMessageIdForAlertEvent(ctx context.Context, alertID uuid.UUID) (slackintegration.MessageId, error) {
+	_ = ctx
+	_ = alertID
+	return "", nil
+}
+
+func buildAlertInvestigationThreadMessage(conclusions []*ent.AgentCaseConclusion) string {
+	var result map[string]any
+	for i := len(conclusions) - 1; i >= 0; i-- {
+		if conclusions[i].Kind == "alert_investigation" {
+			result = conclusions[i].Payload
+			if result == nil {
+				result = map[string]any{}
+			}
+			if conclusions[i].Summary != "" {
+				result["summary"] = conclusions[i].Summary
+			}
+			break
+		}
+	}
+	if result == nil {
+		return ""
+	}
+	findings, _ := result["findings"].(map[string]any)
+	lines := []string{"*Rezible investigation findings*"}
+	if summary, ok := result["summary"].(string); ok && summary != "" {
+		lines = append(lines, summary)
+	}
+	if cause, ok := findings["likelyCause"].(string); ok && cause != "" {
+		lines = append(lines, "*Current hypothesis:* "+cause)
+	}
+	if next, ok := findings["recommendedNext"].(string); ok && next != "" {
+		lines = append(lines, "*Recommended next:* "+next)
+	}
+	if checks, ok := findings["suggestedChecks"].([]any); ok && len(checks) > 0 {
+		lines = append(lines, "*Suggested checks:*")
+		for _, check := range checks {
+			if text, textOk := check.(string); textOk && text != "" {
+				lines = append(lines, "- "+text)
+			}
+		}
+	}
+	return strings.Join(lines, "\n")
 }

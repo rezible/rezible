@@ -8,8 +8,11 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/ent/agentcase"
+	"github.com/rezible/rezible/ent/agentcaseartifact"
+	"github.com/rezible/rezible/ent/agentcaseconclusion"
+	"github.com/rezible/rezible/ent/agentcasestep"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/ent/agentrunartifact"
 	"github.com/rezible/rezible/ent/agentrunfeedback"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
@@ -137,6 +140,114 @@ func (f TraverseFunc) Traverse(ctx context.Context, q ent.Query) error {
 	return f(ctx, query)
 }
 
+// The AgentCaseFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentCaseFunc func(context.Context, *ent.AgentCaseQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentCaseFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentCaseQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentCaseQuery", q)
+}
+
+// The TraverseAgentCase type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentCase func(context.Context, *ent.AgentCaseQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentCase) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentCase) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentCaseQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentCaseQuery", q)
+}
+
+// The AgentCaseArtifactFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentCaseArtifactFunc func(context.Context, *ent.AgentCaseArtifactQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentCaseArtifactFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentCaseArtifactQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentCaseArtifactQuery", q)
+}
+
+// The TraverseAgentCaseArtifact type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentCaseArtifact func(context.Context, *ent.AgentCaseArtifactQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentCaseArtifact) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentCaseArtifact) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentCaseArtifactQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentCaseArtifactQuery", q)
+}
+
+// The AgentCaseConclusionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentCaseConclusionFunc func(context.Context, *ent.AgentCaseConclusionQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentCaseConclusionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentCaseConclusionQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentCaseConclusionQuery", q)
+}
+
+// The TraverseAgentCaseConclusion type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentCaseConclusion func(context.Context, *ent.AgentCaseConclusionQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentCaseConclusion) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentCaseConclusion) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentCaseConclusionQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentCaseConclusionQuery", q)
+}
+
+// The AgentCaseStepFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentCaseStepFunc func(context.Context, *ent.AgentCaseStepQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentCaseStepFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentCaseStepQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentCaseStepQuery", q)
+}
+
+// The TraverseAgentCaseStep type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentCaseStep func(context.Context, *ent.AgentCaseStepQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentCaseStep) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentCaseStep) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentCaseStepQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentCaseStepQuery", q)
+}
+
 // The AgentRunFunc type is an adapter to allow the use of ordinary function as a Querier.
 type AgentRunFunc func(context.Context, *ent.AgentRunQuery) (ent.Value, error)
 
@@ -162,33 +273,6 @@ func (f TraverseAgentRun) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunQuery", q)
-}
-
-// The AgentRunArtifactFunc type is an adapter to allow the use of ordinary function as a Querier.
-type AgentRunArtifactFunc func(context.Context, *ent.AgentRunArtifactQuery) (ent.Value, error)
-
-// Query calls f(ctx, q).
-func (f AgentRunArtifactFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.AgentRunArtifactQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentRunArtifactQuery", q)
-}
-
-// The TraverseAgentRunArtifact type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseAgentRunArtifact func(context.Context, *ent.AgentRunArtifactQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseAgentRunArtifact) Intercept(next ent.Querier) ent.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseAgentRunArtifact) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.AgentRunArtifactQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.AgentRunArtifactQuery", q)
 }
 
 // The AgentRunFeedbackFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2030,10 +2114,16 @@ func (f TraverseVideoConference) Traverse(ctx context.Context, q ent.Query) erro
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q ent.Query) (Query, error) {
 	switch q := q.(type) {
+	case *ent.AgentCaseQuery:
+		return &query[*ent.AgentCaseQuery, predicate.AgentCase, agentcase.OrderOption]{typ: ent.TypeAgentCase, tq: q}, nil
+	case *ent.AgentCaseArtifactQuery:
+		return &query[*ent.AgentCaseArtifactQuery, predicate.AgentCaseArtifact, agentcaseartifact.OrderOption]{typ: ent.TypeAgentCaseArtifact, tq: q}, nil
+	case *ent.AgentCaseConclusionQuery:
+		return &query[*ent.AgentCaseConclusionQuery, predicate.AgentCaseConclusion, agentcaseconclusion.OrderOption]{typ: ent.TypeAgentCaseConclusion, tq: q}, nil
+	case *ent.AgentCaseStepQuery:
+		return &query[*ent.AgentCaseStepQuery, predicate.AgentCaseStep, agentcasestep.OrderOption]{typ: ent.TypeAgentCaseStep, tq: q}, nil
 	case *ent.AgentRunQuery:
 		return &query[*ent.AgentRunQuery, predicate.AgentRun, agentrun.OrderOption]{typ: ent.TypeAgentRun, tq: q}, nil
-	case *ent.AgentRunArtifactQuery:
-		return &query[*ent.AgentRunArtifactQuery, predicate.AgentRunArtifact, agentrunartifact.OrderOption]{typ: ent.TypeAgentRunArtifact, tq: q}, nil
 	case *ent.AgentRunFeedbackQuery:
 		return &query[*ent.AgentRunFeedbackQuery, predicate.AgentRunFeedback, agentrunfeedback.OrderOption]{typ: ent.TypeAgentRunFeedback, tq: q}, nil
 	case *ent.AlertQuery:
