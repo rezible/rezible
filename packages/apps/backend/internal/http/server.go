@@ -13,12 +13,12 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/koding/websocketproxy"
 	"github.com/rezible/rezible/internal/http/oidc"
-	"github.com/rezible/rezible/openapi"
+	"github.com/rezible/rezible/pkg/openapi"
 	slogchi "github.com/samber/slog-chi"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/execution"
-	oapiv1 "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/pkg/execution"
+	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type Server struct {

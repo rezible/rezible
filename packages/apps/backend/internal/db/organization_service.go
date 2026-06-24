@@ -10,7 +10,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organizationpreferences"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type OrganizationService struct {

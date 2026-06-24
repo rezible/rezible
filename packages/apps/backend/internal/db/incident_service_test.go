@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	ifo "github.com/rezible/rezible/ent/incidentfieldoption"
@@ -16,19 +15,20 @@ import (
 	inctype "github.com/rezible/rezible/ent/incidenttype"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/projections"
-	"github.com/rezible/rezible/testkit"
-	"github.com/rezible/rezible/testkit/mocks"
+	"github.com/rezible/rezible/pkg/agents"
+	"github.com/rezible/rezible/pkg/projections"
+	"github.com/rezible/rezible/test"
+	"github.com/rezible/rezible/test/mocks"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
 
 type IncidentServiceSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestIncidentServiceSuite(t *testing.T) {
-	suite.Run(t, &IncidentServiceSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &IncidentServiceSuite{Suite: test.NewSuite()})
 }
 
 func (s *IncidentServiceSuite) newService() *IncidentService {

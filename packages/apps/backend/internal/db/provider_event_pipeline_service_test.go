@@ -14,10 +14,10 @@ import (
 	"github.com/rezible/rezible/ent/eventannotation"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	neps "github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
-	"github.com/rezible/rezible/jobs"
-	"github.com/rezible/rezible/projections"
-	"github.com/rezible/rezible/testkit"
-	"github.com/rezible/rezible/testkit/mocks"
+	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/rezible/rezible/pkg/projections"
+	"github.com/rezible/rezible/test"
+	"github.com/rezible/rezible/test/mocks"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/stretchr/testify/mock"
@@ -31,11 +31,11 @@ const (
 )
 
 type ProviderEventPipelineServiceSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestProviderEventPipelineServiceSuite(t *testing.T) {
-	suite.Run(t, &ProviderEventPipelineServiceSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &ProviderEventPipelineServiceSuite{Suite: test.NewSuite()})
 }
 
 func (s *ProviderEventPipelineServiceSuite) newPipelineService(jobSvc rez.JobService, projector rez.NormalizedEventProjector) *ProviderEventPipelineService {

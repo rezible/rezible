@@ -5,19 +5,19 @@ import (
 	"time"
 
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 
-	"github.com/rezible/rezible/testkit"
-	"github.com/rezible/rezible/testkit/mocks"
+	"github.com/rezible/rezible/test/mocks"
 )
 
 type OrganizationsServiceSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestOrganizationsServiceSuite(t *testing.T) {
-	suite.Run(t, &OrganizationsServiceSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &OrganizationsServiceSuite{Suite: test.NewSuite()})
 }
 
 func (s *OrganizationsServiceSuite) TestCompleteSetupEnqueuesSyncJobAndSetsTimestamp() {

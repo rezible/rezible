@@ -15,8 +15,8 @@ import (
 	"github.com/riverqueue/river/rivertype"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 const SchemaName = "river"

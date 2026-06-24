@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
-	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/pkg/execution"
 
 	"github.com/rezible/rezible/internal/integrations/slack"
 	"github.com/slack-go/slack"

@@ -8,7 +8,7 @@ import (
 	sa "github.com/rezible/rezible/ent/systemanalysis"
 	sate "github.com/rezible/rezible/ent/systemanalysistopologyedge"
 	satn "github.com/rezible/rezible/ent/systemanalysistopologynode"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type systemAnalysisHandler struct {

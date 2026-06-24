@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/openapi"
+	"github.com/rezible/rezible/pkg/openapi"
 )
 
 type AlertsHandler interface {

@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 )

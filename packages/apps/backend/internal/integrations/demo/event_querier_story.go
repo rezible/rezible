@@ -7,7 +7,7 @@ import (
 	"time"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 var demoObservedAt = time.Date(2026, 5, 12, 8, 0, 0, 0, time.UTC)

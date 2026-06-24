@@ -9,8 +9,8 @@ import (
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/integrations"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/integrations"
 	"github.com/slack-go/slack"
 )
 

@@ -3,18 +3,17 @@ package db
 import (
 	"testing"
 
-	"github.com/rezible/rezible/testkit/mocks"
+	"github.com/rezible/rezible/test"
+	"github.com/rezible/rezible/test/mocks"
 	"github.com/stretchr/testify/suite"
-
-	"github.com/rezible/rezible/testkit"
 )
 
 type UserServiceSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestUserServiceSuite(t *testing.T) {
-	suite.Run(t, &UserServiceSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &UserServiceSuite{Suite: test.NewSuite()})
 }
 
 func (s *UserServiceSuite) newUserService(jobs *mocks.MockJobService) *UserService {

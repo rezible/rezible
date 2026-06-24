@@ -6,7 +6,7 @@ import (
 	"iter"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 type demoTopologyEvent struct {

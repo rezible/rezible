@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/execution"
 	slackintegration "github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/slack-go/slack"
 
 	"github.com/rezible/rezible/ent"

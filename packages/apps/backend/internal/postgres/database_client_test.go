@@ -9,16 +9,16 @@ import (
 
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/testkit"
+	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
 )
 
 type DatabaseClientSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestDatabaseClientSuite(t *testing.T) {
-	suite.Run(t, &DatabaseClientSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &DatabaseClientSuite{Suite: test.NewSuite()})
 }
 
 func (s *DatabaseClientSuite) tenantCount(ctx context.Context) int {

@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 type webhookHandler struct {

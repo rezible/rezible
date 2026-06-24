@@ -10,7 +10,7 @@ import (
 	"github.com/rezible/rezible/ent/alert"
 	knea "github.com/rezible/rezible/ent/knowledgeentityalias"
 	"github.com/rezible/rezible/ent/playbook"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 type PlaybookService struct {

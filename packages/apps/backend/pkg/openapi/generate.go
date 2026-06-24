@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	oapiv1 "github.com/rezible/rezible/openapi/v1"
+	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 func main() {

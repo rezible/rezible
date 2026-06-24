@@ -13,7 +13,7 @@ import (
 	"github.com/rezible/rezible/ent/incidentdebrief"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/incidentroleassignment"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type DebriefService struct {

@@ -9,12 +9,12 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
-	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
 	ii "github.com/rezible/rezible/ent/incidentimpact"
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
+	"github.com/rezible/rezible/pkg/agents"
 )
 
 const (

@@ -10,7 +10,7 @@ import (
 	"github.com/ThreeDotsLabs/watermill/message/router/middleware"
 	wotelfloss "github.com/dentech-floss/watermill-opentelemetry-go-extra/pkg/opentelemetry"
 
-	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/pkg/execution"
 	wotel "github.com/voi-oss/watermill-opentelemetry/pkg/opentelemetry"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/metric"

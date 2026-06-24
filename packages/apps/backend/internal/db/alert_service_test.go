@@ -8,18 +8,18 @@ import (
 	"github.com/rezible/rezible/ent"
 	entalert "github.com/rezible/rezible/ent/alert"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/projections"
-	"github.com/rezible/rezible/testkit"
+	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/projections"
+	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
 )
 
 type AlertServiceSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestAlertServiceSuite(t *testing.T) {
-	suite.Run(t, &AlertServiceSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &AlertServiceSuite{Suite: test.NewSuite()})
 }
 
 func (s *AlertServiceSuite) createKnowledgeEntity(kind, name string) *ent.KnowledgeEntity {

@@ -13,7 +13,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	da "github.com/rezible/rezible/ent/documentaccess"
-	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
 type DocumentsService struct {

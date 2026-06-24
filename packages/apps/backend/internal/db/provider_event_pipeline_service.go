@@ -18,9 +18,9 @@ import (
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	neps "github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
-	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/jobs"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/jobs"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 type ProviderEventPipelineService struct {

@@ -12,13 +12,13 @@ import (
 	"github.com/riverqueue/river"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/agenttask"
-	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/pkg/agents"
+	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type AgentTaskService struct {

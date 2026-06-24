@@ -19,7 +19,7 @@ import (
 	ocs "github.com/rezible/rezible/ent/oncallshift"
 	"github.com/rezible/rezible/ent/oncallshifthandover"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type OncallShiftsService struct {

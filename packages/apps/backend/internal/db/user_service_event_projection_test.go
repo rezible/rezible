@@ -7,7 +7,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
 	entuser "github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 func (s *UserServiceSuite) createUserProjectionEvent(subjectRef string, attrs projections.UserSubjectAttributes) *ent.NormalizedEvent {

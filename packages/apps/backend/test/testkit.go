@@ -1,4 +1,4 @@
-package testkit
+package test
 
 import (
 	"cmp"
@@ -16,9 +16,9 @@ import (
 	"github.com/peterldowns/pgtestdb/migrators/golangmigrator"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/internal/koanf"
 	"github.com/rezible/rezible/internal/postgres"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
 type Suite struct {

@@ -12,7 +12,7 @@ import (
 	"github.com/rezible/rezible/ent/organization"
 	"github.com/rezible/rezible/ent/user"
 	uas "github.com/rezible/rezible/ent/userauthsession"
-	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
 type AuthSessionService struct {

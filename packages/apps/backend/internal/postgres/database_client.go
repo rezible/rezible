@@ -18,7 +18,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/entpgx"
 	_ "github.com/rezible/rezible/ent/runtime"
-	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
 type DatabaseClient struct {

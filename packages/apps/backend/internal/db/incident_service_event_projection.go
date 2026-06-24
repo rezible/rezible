@@ -11,7 +11,7 @@ import (
 	ii "github.com/rezible/rezible/ent/incidentimpact"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	"github.com/rezible/rezible/ent/incidenttype"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 const (

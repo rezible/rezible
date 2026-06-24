@@ -12,8 +12,6 @@ import (
 	"github.com/sourcegraph/conc/pool"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/agents"
-	"github.com/rezible/rezible/integrations"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
 	"github.com/rezible/rezible/internal/eino"
@@ -27,8 +25,10 @@ import (
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
-	oapiv1 "github.com/rezible/rezible/openapi/v1"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/agents"
+	"github.com/rezible/rezible/pkg/integrations"
+	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 type startable interface {

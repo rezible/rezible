@@ -14,19 +14,19 @@ import (
 	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/projections"
-	"github.com/rezible/rezible/testkit"
+	"github.com/rezible/rezible/pkg/projections"
+	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
 type KnowledgeServiceProjectionSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestKnowledgeServiceProjectionSuite(t *testing.T) {
-	suite.Run(t, &KnowledgeServiceProjectionSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &KnowledgeServiceProjectionSuite{Suite: test.NewSuite()})
 }
 
 func (s *KnowledgeServiceProjectionSuite) newKnowledgeService() *KnowledgeService {

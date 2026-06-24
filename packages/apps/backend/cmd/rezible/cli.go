@@ -9,10 +9,10 @@ import (
 	"syscall"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/internal/http"
 	"github.com/rezible/rezible/internal/koanf"
-	oapiv1 "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/pkg/execution"
+	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/samber/do/v2"
 	"github.com/urfave/cli/v3"
 )

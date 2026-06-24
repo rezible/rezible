@@ -8,7 +8,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
 	"github.com/rezible/rezible/ent/predicate"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type incidentsHandler struct {

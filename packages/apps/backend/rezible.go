@@ -16,10 +16,10 @@ import (
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/trace"
 
-	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/predicate"
+	"github.com/rezible/rezible/pkg/agents"
 )
 
 var (

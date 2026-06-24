@@ -3,7 +3,7 @@ package apiv1
 import (
 	"context"
 	"github.com/google/uuid"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 	"time"
 )
 

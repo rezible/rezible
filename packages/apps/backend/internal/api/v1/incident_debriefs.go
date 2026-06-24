@@ -8,8 +8,8 @@ import (
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incidentdebriefmessage"
 	"github.com/rezible/rezible/ent/schema"
-	"github.com/rezible/rezible/execution"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/pkg/execution"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type incidentDebriefsHandler struct {

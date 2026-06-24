@@ -10,20 +10,20 @@ import (
 	"github.com/stretchr/testify/suite"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunfinding"
-	"github.com/rezible/rezible/testkit"
-	"github.com/rezible/rezible/testkit/mocks"
+	"github.com/rezible/rezible/pkg/agents"
+	"github.com/rezible/rezible/test"
+	"github.com/rezible/rezible/test/mocks"
 )
 
 type AgentTaskServiceSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestAgentTaskServiceSuite(t *testing.T) {
-	suite.Run(t, &AgentTaskServiceSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &AgentTaskServiceSuite{Suite: test.NewSuite()})
 }
 
 func (s *AgentTaskServiceSuite) newAgentTaskService(jobSvc *mocks.MockJobService, msgSvc *mocks.MockMessageService) *AgentTaskService {

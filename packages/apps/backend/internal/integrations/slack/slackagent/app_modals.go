@@ -12,8 +12,8 @@ import (
 	"github.com/rezible/rezible/ent"
 	ea "github.com/rezible/rezible/ent/eventannotation"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/execution"
 	"github.com/rezible/rezible/internal/integrations/slack"
+	"github.com/rezible/rezible/pkg/execution"
 )
 
 const (

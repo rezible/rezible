@@ -8,8 +8,8 @@ import (
 	"github.com/google/uuid"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/agents"
 )
 
 type WorkflowRunner struct {

@@ -4,19 +4,19 @@ import (
 	"testing"
 
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
 
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/systemanalysis"
-	"github.com/rezible/rezible/testkit"
 )
 
 type RetrospectiveServiceSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestRetrospectiveServiceSuite(t *testing.T) {
-	suite.Run(t, &RetrospectiveServiceSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &RetrospectiveServiceSuite{Suite: test.NewSuite()})
 }
 
 func (s *RetrospectiveServiceSuite) createIncident() *ent.Incident {

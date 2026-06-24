@@ -10,7 +10,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/oncallshiftmetrics"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type OncallMetricsService struct {

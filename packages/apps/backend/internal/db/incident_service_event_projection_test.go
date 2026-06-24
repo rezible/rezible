@@ -7,7 +7,7 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/incident"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/projections"
+	"github.com/rezible/rezible/pkg/projections"
 )
 
 func (s *IncidentServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalogSearchEntity() {

@@ -21,9 +21,9 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	in "github.com/rezible/rezible/ent/integration"
-	"github.com/rezible/rezible/execution"
-	"github.com/rezible/rezible/integrations"
-	"github.com/rezible/rezible/jobs"
+	"github.com/rezible/rezible/pkg/execution"
+	"github.com/rezible/rezible/pkg/integrations"
+	"github.com/rezible/rezible/pkg/jobs"
 )
 
 type IntegrationsService struct {

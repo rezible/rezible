@@ -11,7 +11,7 @@ import (
 	"github.com/rezible/rezible/ent"
 	in "github.com/rezible/rezible/ent/integration"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/pkg/execution"
 	"github.com/slack-go/slack"
 	"github.com/slack-go/slack/slackevents"
 	"golang.org/x/oauth2"

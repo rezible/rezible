@@ -10,8 +10,8 @@ import (
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/execution"
-	oapiv1 "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/pkg/execution"
+	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type appAuthSessionCookie struct {

@@ -16,7 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/incidenttag"
 	"github.com/rezible/rezible/ent/incidenttype"
 	"github.com/rezible/rezible/ent/schema"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type incidentMetadataHandler struct {

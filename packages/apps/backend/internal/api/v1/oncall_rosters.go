@@ -6,11 +6,11 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/execution"
+	"github.com/rezible/rezible/pkg/execution"
 
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type oncallRostersHandler struct {

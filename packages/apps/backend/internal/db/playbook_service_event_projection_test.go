@@ -6,17 +6,17 @@ import (
 
 	"github.com/google/uuid"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/projections"
-	"github.com/rezible/rezible/testkit"
+	"github.com/rezible/rezible/pkg/projections"
+	"github.com/rezible/rezible/test"
 	"github.com/stretchr/testify/suite"
 )
 
 type PlaybookServiceProjectionSuite struct {
-	testkit.Suite
+	test.Suite
 }
 
 func TestPlaybookServiceProjectionSuite(t *testing.T) {
-	suite.Run(t, &PlaybookServiceProjectionSuite{Suite: testkit.NewSuite()})
+	suite.Run(t, &PlaybookServiceProjectionSuite{Suite: test.NewSuite()})
 }
 
 func (s *PlaybookServiceProjectionSuite) TestPlaybookProjectionUpsertsByTitleAndLinksAlerts() {

@@ -68,7 +68,7 @@ exclude_test_packages_pattern := "/ent/"
     go generate ./...
 
 @gen-api:
-    go generate ./openapi
+    go generate ./pkg/openapi
 
 @gen-schema:
     go generate ./ent

@@ -5,7 +5,7 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humago"
-	"github.com/rezible/rezible/openapi"
+	"github.com/rezible/rezible/pkg/openapi"
 )
 
 const VersionPrefix = "/v1"

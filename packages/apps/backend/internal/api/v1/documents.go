@@ -6,8 +6,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/user"
-	"github.com/rezible/rezible/execution"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/pkg/execution"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type documentsHandler struct {

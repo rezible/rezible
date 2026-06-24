@@ -4,9 +4,9 @@ import (
 	"context"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent/agentrun"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	"github.com/rezible/rezible/pkg/agents"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type agentsHandler struct {

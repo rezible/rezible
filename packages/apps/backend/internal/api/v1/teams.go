@@ -9,7 +9,7 @@ import (
 	"github.com/rezible/rezible/ent/schema"
 	entteam "github.com/rezible/rezible/ent/team"
 	"github.com/rezible/rezible/ent/teammembership"
-	oapi "github.com/rezible/rezible/openapi/v1"
+	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
 type teamsHandler struct {

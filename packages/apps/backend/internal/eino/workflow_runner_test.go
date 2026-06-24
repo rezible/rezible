@@ -8,8 +8,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	rez "github.com/rezible/rezible"
-	"github.com/rezible/rezible/agents"
 	"github.com/rezible/rezible/ent"
+	"github.com/rezible/rezible/pkg/agents"
 )
 
 func TestNewWorkflowRunnerRegistersRegistryHandlers(t *testing.T) {
