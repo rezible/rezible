@@ -68,9 +68,16 @@
 		{/each}
 	</Sidebar.Content>
 
-	{#if controller.isDefault}
-		<Sidebar.Footer>
+	<Sidebar.Footer>
+		{#if controller.model.footerItems && controller.model.footerItems.length > 0}
+			<Sidebar.Menu class={cn("gap-1 pt-1")}>
+				{#each controller.model.footerItems as item}
+					<NavMenuItem {item} />
+				{/each}
+			</Sidebar.Menu>
+		{/if}
+		{#if controller.showUserMenu}
 			<NavUserMenu />
-		</Sidebar.Footer>
-	{/if}
+		{/if}
+	</Sidebar.Footer>
 </Sidebar.Root>

@@ -5,7 +5,29 @@ import { page } from "$app/state";
 import { afterNavigate } from "$app/navigation";
 import type { Pathname } from "$app/types";
 import type { RouteId } from "$app/types";
-import type { SidebarModel } from "$features/app/components/app-shell/app-sidebar/controller.svelte";
+
+export type AppSidebarItem = {
+    label: string;
+    icon?: Component;
+    href: string;
+    subItems?: AppSidebarItem[];
+};
+
+export type AppSidebarGroup = {
+    label?: string;
+    items: AppSidebarItem[];
+};
+
+export type AppSidebarSearch = {
+    placeholder: string;
+};
+
+export type AppSidebarModel = {
+    isDefault?: boolean;
+    search?: AppSidebarSearch;
+    groups: AppSidebarGroup[];
+    footerItems?: AppSidebarItem[];
+};
 
 export type PageBreadcrumb = {
 	label?: string;
@@ -22,7 +44,7 @@ export type PageActions<PComponent extends Component<any>> = {
 
 export class AppShellController {
 	pageTitle = $state("Rezible")
-	childSidebar = $state.raw<SidebarModel>();
+	childSidebar = $state.raw<AppSidebarModel>();
 
 	constructor() {
 		afterNavigate(nav => {
@@ -46,7 +68,7 @@ export class AppShellController {
 		watch(crumbsFn, crumbs => {this.breadcrumbs = crumbs});
 	}
 
-	setChildSidebar(model: SidebarModel) {
+	setChildSidebar(model: AppSidebarModel) {
 		this.childSidebar = model;
 	}
 

@@ -1,12 +1,40 @@
 import { page } from "$app/state";
-import { useAppShell } from "$lib/app-shell.svelte";
+import { useAppShell, type AppSidebarModel, type AppSidebarGroup } from "$lib/app-shell.svelte";
 import { useUserSessionState } from "$lib/user-session.svelte";
 import { initIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
-import { Context } from "runed";
+import { Context, watch } from "runed";
 import { onDestroy } from "svelte";
 
 import RiPlugLine from "remixicon-svelte/icons/plug-line";
-import RiSettings3Line from "remixicon-svelte/icons/settings-3-line";
+import RiBuilding2Line from "remixicon-svelte/icons/building-2-line";
+import RiUserSettingsLine from "remixicon-svelte/icons/user-settings-line";
+
+const sidebarAdminGroups: AppSidebarGroup[] = [{
+    label: "Administration",
+    items: [
+        { label: "Organization", href: "/settings/organization", icon: RiBuilding2Line },
+    ],
+}];
+
+const makeSearchSidebar = (isAdmin: boolean): AppSidebarModel => ({
+    search: { placeholder: "Search settings" },
+    groups: [
+        {
+            label: "User",
+            items: [
+
+                { label: "Preferences", href: "/settings/user/preferences", icon: RiUserSettingsLine },
+            ]
+        },
+        {
+            label: "App",
+            items: [
+                { label: "Integrations", href: "/settings/integrations", icon: RiPlugLine },
+            ],
+        },
+        ...(isAdmin ? sidebarAdminGroups : []),
+    ],
+});
 
 export class SettingsViewController {
     shell = useAppShell();
@@ -16,19 +44,12 @@ export class SettingsViewController {
     showInitialSetup = $derived(!this.session.isSetup);
     provider = $derived(page.params.provider);
 
-    constructor() {
-        this.shell.setChildSidebar({
-			search: { placeholder: "Search settings" },
-			groups: [
-				{
-					items: [
-						{ label: "General", href: "/settings", icon: RiSettings3Line },
-						{ label: "Integrations", href: "/settings/integrations", icon: RiPlugLine },
-					],
-				},
-			],
-		});
+    sidebar = $derived(makeSearchSidebar(this.session.isAuthenticated))
 
+    constructor() {
+        watch(() => this.sidebar, sb => {
+            this.shell.setChildSidebar(sb);
+        });
         onDestroy(() => {
             this.shell.clearChildSidebar();
         });

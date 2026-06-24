@@ -1,62 +1,40 @@
 import { Context } from "runed";
-import type { Component } from "svelte";
-
 import { useSidebar } from "$components/ui/sidebar";
+import { useUserSessionState } from "$lib/user-session.svelte";
+import { useAppShell, type AppSidebarGroup, type AppSidebarItem, type AppSidebarModel } from "$lib/app-shell.svelte";
 
-import RiFire from "remixicon-svelte/icons/fire-fill";
-import RiHome from "remixicon-svelte/icons/home-2-fill";
+import RiFireLine from "remixicon-svelte/icons/fire-line";
+import RiHome2Line from "remixicon-svelte/icons/home-2-line";
 import RiSettings3Line from "remixicon-svelte/icons/settings-3-line";
-import { useUserSessionState } from "$src/lib/user-session.svelte";
-import { useAppShell } from "$src/lib/app-shell.svelte";
 import { page } from "$app/state";
-
-export type SidebarItem = {
-    label: string;
-    icon?: Component;
-    href: string;
-    subItems?: SidebarItem[];
-};
-
-export type SidebarGroup = {
-    label?: string;
-    items: SidebarItem[];
-};
-
-export type SidebarSearch = {
-    placeholder: string;
-};
-
-export type SidebarModel = {
-    isDefault?: boolean;
-    search?: SidebarSearch;
-    groups: SidebarGroup[];
-    footerItems?: SidebarItem[];
-};
 
 const isActive = (href: string, pathname: string) => {
     if (href === "/" || pathname === "/") return pathname === href;
     return pathname === href || (pathname.startsWith(`${href}/`));
 };
 
-export const makeActiveStatus = (groups: SidebarGroup[], pathname: string) => {
+const makeActiveStatus = (pathname: string, groups: AppSidebarGroup[], footerItems?: AppSidebarItem[]) => {
     let deepestActiveItem = "";
     let activeSubItems = new Map<string, Set<string>>();
-    groups.forEach(group => {
-       group.items.forEach(item => {
-            if (item.href.length > deepestActiveItem.length && isActive(item.href, pathname)) {
-                deepestActiveItem = item.href;
-            };
-            const subActive = new Set<string>();
-            item.subItems?.forEach(sub => {
-                if (isActive(sub.href, pathname)) subActive.add(sub.href);
-            });
-            activeSubItems.set(item.href, subActive);
-       });
-    });
+
+    const checkItemActive = (item: AppSidebarItem) => {
+        if (item.href.length > deepestActiveItem.length && isActive(item.href, pathname)) {
+            deepestActiveItem = item.href;
+        };
+        const subActive = new Set<string>();
+        item.subItems?.forEach(sub => {
+            if (isActive(sub.href, pathname)) subActive.add(sub.href);
+        });
+        activeSubItems.set(item.href, subActive);
+    }
+    
+    groups.forEach(group => {group.items.forEach(checkItemActive)});
+    footerItems?.forEach(checkItemActive);
+
     return { deepestActiveItem, activeSubItems };
 };
 
-const filterGroups = (groups: SidebarGroup[] | undefined, query?: string) => {
+const filterGroups = (groups: AppSidebarGroup[] | undefined, query?: string) => {
     if (!groups) return [];
     if (!query) return groups;
     return groups
@@ -75,17 +53,17 @@ const filterGroups = (groups: SidebarGroup[] | undefined, query?: string) => {
         .filter((group) => group.items.length > 0);
 };
 
-export const defaultSidebarModel: SidebarModel = {
+const defaultSidebarModel: AppSidebarModel = {
     groups: [
         {
             items: [
-                { label: "Home", href: "/", icon: RiHome }
+                { label: "Home", href: "/", icon: RiHome2Line }
             ]
         },
         {
             label: "System",
             items: [
-                { label: "Incidents", href: "/incidents", icon: RiFire },
+                { label: "Incidents", href: "/incidents", icon: RiFireLine },
             ],
         },
     ],
@@ -94,26 +72,29 @@ export const defaultSidebarModel: SidebarModel = {
     ],
 };
 
-export class AppSidebarController {
+class AppSidebarController {
     private shell = useAppShell();
-    private sidebarState = useSidebar();
+    
     private session = useUserSessionState();
+    preloadHome = $derived<"tap" | "hover">(this.session.error ? "tap" : "hover");
 
+    private sidebarState = useSidebar();
+    
     isOpen = $derived(this.sidebarState.open);
     collapsed = $derived(this.sidebarState.state === "collapsed");
 
     isDefault = $derived(!this.shell.childSidebar);
     model = $derived(!this.shell.childSidebar ? defaultSidebarModel : this.shell.childSidebar);
 
-    searchQuery = $state("");
-
-	private normalizedQuery = $derived(this.searchQuery.trim().toLowerCase());
+    showUserMenu = $derived(!!this.isDefault);
 
     showSearch = $derived(!!this.model.search);
-	groups = $derived(this.showSearch ? filterGroups(this.model.groups, this.normalizedQuery) : this.model.groups);
-    preloadHome = $derived<"tap" | "hover">(this.session.error ? "tap" : "hover");
+    searchQuery = $state("");
+	private normalizedQuery = $derived(this.searchQuery.trim().toLowerCase());
 
-    activeStatus = $derived(makeActiveStatus(this.groups, page.url.pathname)); 
+	groups = $derived(this.showSearch ? filterGroups(this.model.groups, this.normalizedQuery) : this.model.groups);
+
+    activeStatus = $derived(makeActiveStatus(page.url.pathname, this.groups, this.model.footerItems)); 
 }
 
 const ctx = new Context<AppSidebarController>("AppSidebarController");

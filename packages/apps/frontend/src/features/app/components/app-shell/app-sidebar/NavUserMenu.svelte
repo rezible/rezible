@@ -30,9 +30,9 @@
 	<DropdownMenu.Separator />
 
 	<DropdownMenu.Group>
-		<a href="/settings">
+		<a href="/settings/preferences">
 			<DropdownMenu.Item>
-				<RiUserSettingsLine /> Settings
+				<RiUserSettingsLine /> Preferences
 			</DropdownMenu.Item>
 		</a>
 		<DropdownMenu.Item>
