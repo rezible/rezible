@@ -8,6 +8,7 @@ export APP__SINGLETENANT__ENABLED := "true"
 export DOCUMENTS__PROXY__ENABLED := "false"
 
 export HTTP__PORT := env("BACKEND_PORT")
+export HTTP__BASE_PATH := ""
 export HTTP__AUTH__SESSION_SECRET := "superduuuuuuuuuuuuuuuuupersecret"
 export HTTP__AUTH__OIDC__ISSUER := env("AUTH_URL")
 export HTTP__AUTH__OIDC__CLIENT_ID := "test-client"
@@ -57,6 +58,11 @@ exclude_test_packages_pattern := "/ent/"
 
 @test-pattern PATTERN:
     just test $(go list ./... | grep -v '{{exclude_test_packages_pattern}}') -run {{PATTERN}}
+
+@send-demo-webhook KIND="alert":
+    curl -i -X POST "http://localhost:{{HTTP__PORT}}{{HTTP__BASE_PATH}}/webhooks/demo" \
+      -H "Content-Type: application/json" \
+      -d '{"kind": "{{KIND}}", "foo":"bar"}'
 
 @codegen:
     go generate ./...
