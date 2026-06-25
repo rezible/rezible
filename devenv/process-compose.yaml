@@ -32,6 +32,18 @@ processes:
         command: wget -q --spider "http://localhost:${GRAFANA_PORT}/api/health"
       period_seconds: 5
 
+  alertmanager:
+    command: just dev run-service alertmanager
+    is_daemon: true
+    disabled: ${ALERTMANAGER_DISABLED:-true}
+    availability:
+      restart: on_failure
+      max_restarts: 1
+    readiness_probe:
+      exec:
+        command: wget -q --spider "http://localhost:${ALERTMANAGER_PORT}/-/ready"
+      period_seconds: 5
+
   backend:
     command: just backend dev
     availability:

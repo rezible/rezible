@@ -1,0 +1,27 @@
+global:
+  resolve_timeout: 5m
+
+route:
+  receiver: rezible-dev
+  group_by: ["alertname", "service", "severity"]
+  group_wait: 5s
+  group_interval: 30s
+  repeat_interval: 5m
+
+receivers:
+  - name: rezible-dev
+    slack_configs:
+      - api_url_file: /run/secrets/slack-webhook-url
+        channel: "#alerts"
+        send_resolved: true
+        title: '{{ .CommonLabels.alertname }} ({{ .Status }})'
+        text: |-
+          {{ range .Alerts -}}
+          *{{ .Labels.alertname }}* {{ .Status }}
+          {{ with .Annotations.summary }}{{ . }}{{ end }}
+          {{ with .Annotations.description }}{{ . }}{{ end }}
+          {{ with .GeneratorURL }}{{ . }}{{ end }}
+          {{ end }}
+    webhook_configs:
+      - url: http://host.docker.internal:7001/webhooks/alertmanager
+        send_resolved: true

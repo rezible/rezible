@@ -3,6 +3,10 @@ name: "rezible"
 volumes:
   postgres-data:
 
+secrets:
+  slack_webhook_url:
+    environment: SLACK_WEBHOOK_URL
+
 services:
   postgres:
     image: postgres:17
@@ -44,3 +48,20 @@ services:
       - "${OTEL_HTTP_PORT:-4318}:4318"   # OpenTelemetry HTTP collector
     environment:
       ENABLE_LOGS_ALL: "false"
+
+  alertmanager:
+    profiles: ["alertmanager"]
+    image: quay.io/prometheus/alertmanager:v0.33.0
+    restart: on-failure:2
+    ports: ["${ALERTMANAGER_PORT:-7013}:9093"]
+    volumes:
+      - "./alertmanager/alertmanager.yaml:/etc/alertmanager/alertmanager.yaml:ro"
+    secrets:
+      - source: slack_webhook_url
+        target: slack-webhook-url
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yaml"
+      - "--storage.path=/alertmanager"
+      - "--cluster.listen-address="
