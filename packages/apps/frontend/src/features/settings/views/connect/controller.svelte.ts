@@ -2,6 +2,7 @@ import { page } from "$app/state";
 import {
 	completeIntegrationOauthFlowMutation,
 	type ErrorModel,
+	type IntegrationOAuthInstallResult,
 } from "$lib/api";
 import { createMutation } from "@tanstack/svelte-query";
 import { Context, watch, type Getter } from "runed";
@@ -9,13 +10,16 @@ import { onMount } from "svelte";
 
 import { postIntegrationOAuthCompleteMessage } from "$features/settings/lib/integrationsOAuthController.svelte";
 
+const missingParamsError: ErrorModel = {
+	title: "Integration Setup Failed",
+	detail: "The OAuth provider did not return the required code and state parameters.",
+	status: 400,
+};
+
 export class ConnectIntegrationController {
 	private completeMut = createMutation(() => completeIntegrationOauthFlowMutation({}));
-	private currentName = $state("");
+	private currentName = $state.raw("");
 
-	done = $state(false);
-	notifiedOpener = $state(false);
-	error = $state<ErrorModel>();
 	name = $derived(this.currentName);
 
 	constructor(nameFn: Getter<string>) {
@@ -27,22 +31,9 @@ export class ConnectIntegrationController {
 		});
 	}
 
-	private missingParamsError(): ErrorModel {
-		return {
-			title: "Integration Setup Failed",
-			detail: "The OAuth provider did not return the required code and state parameters.",
-			status: 400,
-		};
-	}
-
-	private notifyError(error: ErrorModel) {
-		this.error = error;
-		this.notifiedOpener = postIntegrationOAuthCompleteMessage({ name: this.name, error });
-	}
-
-	private finish() {
-		this.done = true;
-		setTimeout(() => window.close(), 750);
+	private finish(result?: IntegrationOAuthInstallResult, error?: ErrorModel) {
+		postIntegrationOAuthCompleteMessage({ name: this.name, result, error })
+		setTimeout(() => window.close(), 50);
 	}
 
 	async complete() {
@@ -50,8 +41,7 @@ export class ConnectIntegrationController {
 		const state = page.url.searchParams.get("state");
 
 		if (!code || !state) {
-			this.notifyError(this.missingParamsError());
-			this.finish();
+			this.finish(undefined, missingParamsError);
 			return;
 		}
 
@@ -60,12 +50,9 @@ export class ConnectIntegrationController {
 				path: { name: this.name },
 				body: { attributes: { code, state } },
 			});
-			this.notifiedOpener = postIntegrationOAuthCompleteMessage({
-				name: this.name,
-				result: resp.data,
-			});
+			this.finish(resp.data);
 		} catch (e) {
-			this.notifyError(e as ErrorModel);
+			this.finish(undefined, e as ErrorModel);
 		} finally {
 			this.finish();
 		}
