@@ -27,6 +27,9 @@ type AgentRunToolCall func(*sql.Selector)
 // AgentTask is the predicate function for agenttask builders.
 type AgentTask func(*sql.Selector)
 
+// AgentTaskSubject is the predicate function for agenttasksubject builders.
+type AgentTaskSubject func(*sql.Selector)
+
 // Alert is the predicate function for alert builders.
 type Alert func(*sql.Selector)
 

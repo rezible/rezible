@@ -34,12 +34,10 @@ type AgentRunCitation struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AgentRunID holds the value of the "agent_run_id" field.
 	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
-	// CitationKind holds the value of the "citation_kind" field.
-	CitationKind string `json:"citation_kind,omitempty"`
-	// DomainEntityType holds the value of the "domain_entity_type" field.
-	DomainEntityType string `json:"domain_entity_type,omitempty"`
-	// DomainEntityID holds the value of the "domain_entity_id" field.
-	DomainEntityID *uuid.UUID `json:"domain_entity_id,omitempty"`
+	// Kind holds the value of the "kind" field.
+	Kind string `json:"kind,omitempty"`
+	// Summary holds the value of the "summary" field.
+	Summary string `json:"summary,omitempty"`
 	// KnowledgeEntityID holds the value of the "knowledge_entity_id" field.
 	KnowledgeEntityID *uuid.UUID `json:"knowledge_entity_id,omitempty"`
 	// KnowledgeRelationshipID holds the value of the "knowledge_relationship_id" field.
@@ -50,10 +48,12 @@ type AgentRunCitation struct {
 	AgentTaskID *uuid.UUID `json:"agent_task_id,omitempty"`
 	// AgentRunToolCallID holds the value of the "agent_run_tool_call_id" field.
 	AgentRunToolCallID *uuid.UUID `json:"agent_run_tool_call_id,omitempty"`
-	// Summary holds the value of the "summary" field.
-	Summary string `json:"summary,omitempty"`
-	// Snapshot holds the value of the "snapshot" field.
-	Snapshot map[string]interface{} `json:"snapshot,omitempty"`
+	// DomainEntityType holds the value of the "domain_entity_type" field.
+	DomainEntityType string `json:"domain_entity_type,omitempty"`
+	// DomainEntityID holds the value of the "domain_entity_id" field.
+	DomainEntityID *uuid.UUID `json:"domain_entity_id,omitempty"`
+	// DomainEntitySnapshot holds the value of the "domain_entity_snapshot" field.
+	DomainEntitySnapshot map[string]interface{} `json:"domain_entity_snapshot,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentRunCitationQuery when eager-loading is set.
 	Edges        AgentRunCitationEdges `json:"edges"`
@@ -76,11 +76,13 @@ type AgentRunCitationEdges struct {
 	AgentTask *AgentTask `json:"agent_task,omitempty"`
 	// AgentRunToolCall holds the value of the agent_run_tool_call edge.
 	AgentRunToolCall *AgentRunToolCall `json:"agent_run_tool_call,omitempty"`
+	// Findings holds the value of the findings edge.
+	Findings []*AgentRunFinding `json:"findings,omitempty"`
 	// FindingCitations holds the value of the finding_citations edge.
 	FindingCitations []*AgentRunFindingCitation `json:"finding_citations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [8]bool
+	loadedTypes [9]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -160,10 +162,19 @@ func (e AgentRunCitationEdges) AgentRunToolCallOrErr() (*AgentRunToolCall, error
 	return nil, &NotLoadedError{edge: "agent_run_tool_call"}
 }
 
+// FindingsOrErr returns the Findings value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentRunCitationEdges) FindingsOrErr() ([]*AgentRunFinding, error) {
+	if e.loadedTypes[7] {
+		return e.Findings, nil
+	}
+	return nil, &NotLoadedError{edge: "findings"}
+}
+
 // FindingCitationsOrErr returns the FindingCitations value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentRunCitationEdges) FindingCitationsOrErr() ([]*AgentRunFindingCitation, error) {
-	if e.loadedTypes[7] {
+	if e.loadedTypes[8] {
 		return e.FindingCitations, nil
 	}
 	return nil, &NotLoadedError{edge: "finding_citations"}
@@ -174,13 +185,13 @@ func (*AgentRunCitation) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentruncitation.FieldDomainEntityID, agentruncitation.FieldKnowledgeEntityID, agentruncitation.FieldKnowledgeRelationshipID, agentruncitation.FieldKnowledgeEvidenceID, agentruncitation.FieldAgentTaskID, agentruncitation.FieldAgentRunToolCallID:
+		case agentruncitation.FieldKnowledgeEntityID, agentruncitation.FieldKnowledgeRelationshipID, agentruncitation.FieldKnowledgeEvidenceID, agentruncitation.FieldAgentTaskID, agentruncitation.FieldAgentRunToolCallID, agentruncitation.FieldDomainEntityID:
 			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
-		case agentruncitation.FieldSnapshot:
+		case agentruncitation.FieldDomainEntitySnapshot:
 			values[i] = new([]byte)
 		case agentruncitation.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agentruncitation.FieldCitationKind, agentruncitation.FieldDomainEntityType, agentruncitation.FieldSummary:
+		case agentruncitation.FieldKind, agentruncitation.FieldSummary, agentruncitation.FieldDomainEntityType:
 			values[i] = new(sql.NullString)
 		case agentruncitation.FieldCreatedAt, agentruncitation.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -231,24 +242,17 @@ func (_m *AgentRunCitation) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.AgentRunID = *value
 			}
-		case agentruncitation.FieldCitationKind:
+		case agentruncitation.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field citation_kind", values[i])
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				_m.CitationKind = value.String
+				_m.Kind = value.String
 			}
-		case agentruncitation.FieldDomainEntityType:
+		case agentruncitation.FieldSummary:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field domain_entity_type", values[i])
+				return fmt.Errorf("unexpected type %T for field summary", values[i])
 			} else if value.Valid {
-				_m.DomainEntityType = value.String
-			}
-		case agentruncitation.FieldDomainEntityID:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field domain_entity_id", values[i])
-			} else if value.Valid {
-				_m.DomainEntityID = new(uuid.UUID)
-				*_m.DomainEntityID = *value.S.(*uuid.UUID)
+				_m.Summary = value.String
 			}
 		case agentruncitation.FieldKnowledgeEntityID:
 			if value, ok := values[i].(*sql.NullScanner); !ok {
@@ -285,18 +289,25 @@ func (_m *AgentRunCitation) assignValues(columns []string, values []any) error {
 				_m.AgentRunToolCallID = new(uuid.UUID)
 				*_m.AgentRunToolCallID = *value.S.(*uuid.UUID)
 			}
-		case agentruncitation.FieldSummary:
+		case agentruncitation.FieldDomainEntityType:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field summary", values[i])
+				return fmt.Errorf("unexpected type %T for field domain_entity_type", values[i])
 			} else if value.Valid {
-				_m.Summary = value.String
+				_m.DomainEntityType = value.String
 			}
-		case agentruncitation.FieldSnapshot:
+		case agentruncitation.FieldDomainEntityID:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field domain_entity_id", values[i])
+			} else if value.Valid {
+				_m.DomainEntityID = new(uuid.UUID)
+				*_m.DomainEntityID = *value.S.(*uuid.UUID)
+			}
+		case agentruncitation.FieldDomainEntitySnapshot:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field snapshot", values[i])
+				return fmt.Errorf("unexpected type %T for field domain_entity_snapshot", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Snapshot); err != nil {
-					return fmt.Errorf("unmarshal field snapshot: %w", err)
+				if err := json.Unmarshal(*value, &_m.DomainEntitySnapshot); err != nil {
+					return fmt.Errorf("unmarshal field domain_entity_snapshot: %w", err)
 				}
 			}
 		default:
@@ -347,6 +358,11 @@ func (_m *AgentRunCitation) QueryAgentRunToolCall() *AgentRunToolCallQuery {
 	return NewAgentRunCitationClient(_m.config).QueryAgentRunToolCall(_m)
 }
 
+// QueryFindings queries the "findings" edge of the AgentRunCitation entity.
+func (_m *AgentRunCitation) QueryFindings() *AgentRunFindingQuery {
+	return NewAgentRunCitationClient(_m.config).QueryFindings(_m)
+}
+
 // QueryFindingCitations queries the "finding_citations" edge of the AgentRunCitation entity.
 func (_m *AgentRunCitation) QueryFindingCitations() *AgentRunFindingCitationQuery {
 	return NewAgentRunCitationClient(_m.config).QueryFindingCitations(_m)
@@ -387,16 +403,11 @@ func (_m *AgentRunCitation) String() string {
 	builder.WriteString("agent_run_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
 	builder.WriteString(", ")
-	builder.WriteString("citation_kind=")
-	builder.WriteString(_m.CitationKind)
+	builder.WriteString("kind=")
+	builder.WriteString(_m.Kind)
 	builder.WriteString(", ")
-	builder.WriteString("domain_entity_type=")
-	builder.WriteString(_m.DomainEntityType)
-	builder.WriteString(", ")
-	if v := _m.DomainEntityID; v != nil {
-		builder.WriteString("domain_entity_id=")
-		builder.WriteString(fmt.Sprintf("%v", *v))
-	}
+	builder.WriteString("summary=")
+	builder.WriteString(_m.Summary)
 	builder.WriteString(", ")
 	if v := _m.KnowledgeEntityID; v != nil {
 		builder.WriteString("knowledge_entity_id=")
@@ -423,11 +434,16 @@ func (_m *AgentRunCitation) String() string {
 		builder.WriteString(fmt.Sprintf("%v", *v))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("summary=")
-	builder.WriteString(_m.Summary)
+	builder.WriteString("domain_entity_type=")
+	builder.WriteString(_m.DomainEntityType)
 	builder.WriteString(", ")
-	builder.WriteString("snapshot=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Snapshot))
+	if v := _m.DomainEntityID; v != nil {
+		builder.WriteString("domain_entity_id=")
+		builder.WriteString(fmt.Sprintf("%v", *v))
+	}
+	builder.WriteString(", ")
+	builder.WriteString("domain_entity_snapshot=")
+	builder.WriteString(fmt.Sprintf("%v", _m.DomainEntitySnapshot))
 	builder.WriteByte(')')
 	return builder.String()
 }

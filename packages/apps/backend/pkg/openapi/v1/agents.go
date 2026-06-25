@@ -2,6 +2,8 @@ package v1
 
 import (
 	"context"
+	"encoding/json"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -45,13 +47,13 @@ type (
 	}
 
 	AgentTaskAttributes struct {
-		OwnerUserId    uuid.UUID      `json:"ownerUserId"`
-		WorkflowKind   string         `json:"workflowKind"`
-		WorkflowInput  map[string]any `json:"workflowInput"`
-		TriggerKind    string         `json:"triggerKind"`
-		TriggerPayload map[string]any `json:"triggerPayload"`
-		CreatedAt      time.Time      `json:"createdAt"`
-		UpdatedAt      time.Time      `json:"updatedAt"`
+		OwnerUserId     uuid.UUID      `json:"ownerUserId"`
+		Workflow        string         `json:"workflow"`
+		Input           map[string]any `json:"input"`
+		TriggerKind     string         `json:"triggerKind"`
+		TriggerMetadata map[string]any `json:"triggerMetadata"`
+		CreatedAt       time.Time      `json:"createdAt"`
+		UpdatedAt       time.Time      `json:"updatedAt"`
 	}
 
 	AgentRun struct {
@@ -60,15 +62,12 @@ type (
 	}
 
 	AgentRunAttributes struct {
-		AgentTaskId  uuid.UUID  `json:"agentTaskId"`
-		WorkflowKind string     `json:"workflowKind"`
-		Attempt      int        `json:"attempt"`
-		Status       string     `json:"status"`
-		ErrorMessage string     `json:"errorMessage,omitempty"`
-		StartedAt    *time.Time `json:"startedAt,omitempty"`
-		FinishedAt   *time.Time `json:"finishedAt,omitempty"`
-		CreatedAt    time.Time  `json:"createdAt"`
-		UpdatedAt    time.Time  `json:"updatedAt"`
+		AgentTaskId uuid.UUID       `json:"agentTaskId"`
+		Attempt     int             `json:"attempt"`
+		CreatedAt   time.Time       `json:"createdAt"`
+		UpdatedAt   time.Time       `json:"updatedAt"`
+		StartedAt   *time.Time      `json:"startedAt,omitempty"`
+		Result      *AgentRunResult `json:"result,omitempty"`
 	}
 
 	AgentRunCitation struct {
@@ -79,15 +78,15 @@ type (
 	AgentRunCitationAttributes struct {
 		AgentRunId              uuid.UUID      `json:"agentRunId"`
 		CitationKind            string         `json:"citationKind"`
-		DomainEntityType        string         `json:"domainEntityType,omitempty"`
-		DomainEntityId          *uuid.UUID     `json:"domainEntityId,omitempty"`
+		Summary                 string         `json:"summary"`
 		KnowledgeEntityId       *uuid.UUID     `json:"knowledgeEntityId,omitempty"`
 		KnowledgeRelationshipId *uuid.UUID     `json:"knowledgeRelationshipId,omitempty"`
 		KnowledgeEvidenceId     *uuid.UUID     `json:"knowledgeEvidenceId,omitempty"`
 		AgentTaskId             *uuid.UUID     `json:"agentTaskId,omitempty"`
 		AgentRunToolCallId      *uuid.UUID     `json:"agentRunToolCallId,omitempty"`
-		Summary                 string         `json:"summary"`
-		Snapshot                map[string]any `json:"snapshot,omitempty"`
+		DomainEntityType        string         `json:"domainEntityType,omitempty"`
+		DomainEntityId          *uuid.UUID     `json:"domainEntityId,omitempty"`
+		DomainEntitySnapshot    map[string]any `json:"snapshot,omitempty"`
 		CreatedAt               time.Time      `json:"createdAt"`
 		UpdatedAt               time.Time      `json:"updatedAt"`
 	}
@@ -112,11 +111,11 @@ type (
 	}
 
 	AgentRunResultAttributes struct {
-		AgentRunId uuid.UUID      `json:"agentRunId"`
-		Content    string         `json:"content"`
-		Data       map[string]any `json:"data,omitempty"`
-		CreatedAt  time.Time      `json:"createdAt"`
-		UpdatedAt  time.Time      `json:"updatedAt"`
+		AgentRunId   uuid.UUID      `json:"agentRunId"`
+		Output       map[string]any `json:"output,omitempty"`
+		ErrorMessage string         `json:"errorMessage,omitempty"`
+		CreatedAt    time.Time      `json:"createdAt"`
+		UpdatedAt    time.Time      `json:"updatedAt"`
 	}
 
 	AgentRunToolCall struct {
@@ -126,7 +125,7 @@ type (
 
 	AgentRunToolCallAttributes struct {
 		AgentRunId   uuid.UUID      `json:"agentRunId"`
-		ToolName     string         `json:"toolName"`
+		ToolId       string         `json:"toolId"`
 		Status       string         `json:"status"`
 		ToolParams   map[string]any `json:"toolParams,omitempty"`
 		Result       map[string]any `json:"result,omitempty"`
@@ -139,105 +138,92 @@ type (
 )
 
 func AgentTaskFromEnt(task *ent.AgentTask) AgentTask {
-	return AgentTask{
-		Id: task.ID,
-		Attributes: AgentTaskAttributes{
-			OwnerUserId:    task.OwnerUserID,
-			WorkflowKind:   task.WorkflowKind,
-			WorkflowInput:  task.WorkflowInput,
-			TriggerKind:    task.TriggerKind,
-			TriggerPayload: task.TriggerPayload,
-			CreatedAt:      task.CreatedAt,
-			UpdatedAt:      task.UpdatedAt,
-		},
+	attrs := AgentTaskAttributes{
+		OwnerUserId:     task.OwnerUserID,
+		Workflow:        task.Workflow,
+		TriggerKind:     task.TriggerKind,
+		TriggerMetadata: task.TriggerMetadata,
+		CreatedAt:       task.CreatedAt,
+		UpdatedAt:       task.UpdatedAt,
 	}
+	if jsonErr := json.Unmarshal(task.Input, &attrs.Input); jsonErr != nil {
+		slog.Error("failed to unmarshal task input", "error", jsonErr.Error())
+	}
+	return AgentTask{Id: task.ID, Attributes: attrs}
 }
 
 func AgentRunFromEnt(run *ent.AgentRun) AgentRun {
-	workflowKind := ""
-	if run.Edges.AgentTask != nil {
-		workflowKind = run.Edges.AgentTask.WorkflowKind
+	attrs := AgentRunAttributes{
+		AgentTaskId: run.AgentTaskID,
+		Attempt:     run.Attempt,
+		StartedAt:   run.StartedAt,
+		CreatedAt:   run.CreatedAt,
+		UpdatedAt:   run.UpdatedAt,
 	}
-	return AgentRun{
-		Id: run.ID,
-		Attributes: AgentRunAttributes{
-			AgentTaskId:  run.AgentTaskID,
-			WorkflowKind: workflowKind,
-			Attempt:      run.Attempt,
-			Status:       run.Status.String(),
-			ErrorMessage: run.ErrorMessage,
-			StartedAt:    run.StartedAt,
-			FinishedAt:   run.FinishedAt,
-			CreatedAt:    run.CreatedAt,
-			UpdatedAt:    run.UpdatedAt,
-		},
+	if run.Edges.Result != nil {
+		attrs.Result = new(AgentRunResultFromEnt(run.Edges.Result))
 	}
+	return AgentRun{Id: run.ID, Attributes: attrs}
 }
 
-func AgentRunCitationFromEnt(citation *ent.AgentRunCitation) AgentRunCitation {
-	return AgentRunCitation{
-		Id: citation.ID,
-		Attributes: AgentRunCitationAttributes{
-			AgentRunId:              citation.AgentRunID,
-			CitationKind:            citation.CitationKind,
-			DomainEntityType:        citation.DomainEntityType,
-			DomainEntityId:          citation.DomainEntityID,
-			KnowledgeEntityId:       citation.KnowledgeEntityID,
-			KnowledgeRelationshipId: citation.KnowledgeRelationshipID,
-			KnowledgeEvidenceId:     citation.KnowledgeEvidenceID,
-			AgentTaskId:             citation.AgentTaskID,
-			AgentRunToolCallId:      citation.AgentRunToolCallID,
-			Summary:                 citation.Summary,
-			Snapshot:                citation.Snapshot,
-			CreatedAt:               citation.CreatedAt,
-			UpdatedAt:               citation.UpdatedAt,
-		},
+func AgentRunToolCallFromEnt(c *ent.AgentRunToolCall) AgentRunToolCall {
+	attrs := AgentRunToolCallAttributes{
+		AgentRunId:   c.AgentRunID,
+		ToolId:       c.ToolID,
+		Status:       c.Status.String(),
+		ToolParams:   c.ToolParams,
+		Result:       c.Result,
+		ErrorMessage: c.ErrorMessage,
+		StartedAt:    c.StartedAt,
+		FinishedAt:   c.FinishedAt,
+		CreatedAt:    c.CreatedAt,
+		UpdatedAt:    c.UpdatedAt,
 	}
+	return AgentRunToolCall{Id: c.ID, Attributes: attrs}
 }
 
-func AgentRunFindingFromEnt(finding *ent.AgentRunFinding) AgentRunFinding {
-	return AgentRunFinding{
-		Id: finding.ID,
-		Attributes: AgentRunFindingAttributes{
-			AgentRunId:  finding.AgentRunID,
-			Sequence:    finding.Sequence,
-			FindingKind: finding.FindingKind,
-			Content:     finding.Content,
-			CreatedAt:   finding.CreatedAt,
-			UpdatedAt:   finding.UpdatedAt,
-		},
+func AgentRunCitationFromEnt(c *ent.AgentRunCitation) AgentRunCitation {
+	attrs := AgentRunCitationAttributes{
+		AgentRunId:              c.AgentRunID,
+		CitationKind:            c.Kind,
+		Summary:                 c.Summary,
+		KnowledgeEntityId:       c.KnowledgeEntityID,
+		KnowledgeRelationshipId: c.KnowledgeRelationshipID,
+		KnowledgeEvidenceId:     c.KnowledgeEvidenceID,
+		AgentTaskId:             c.AgentTaskID,
+		AgentRunToolCallId:      c.AgentRunToolCallID,
+		DomainEntityType:        c.DomainEntityType,
+		DomainEntityId:          c.DomainEntityID,
+		DomainEntitySnapshot:    c.DomainEntitySnapshot,
+		CreatedAt:               c.CreatedAt,
+		UpdatedAt:               c.UpdatedAt,
 	}
+	return AgentRunCitation{Id: c.ID, Attributes: attrs}
+}
+
+func AgentRunFindingFromEnt(f *ent.AgentRunFinding) AgentRunFinding {
+	attrs := AgentRunFindingAttributes{
+		AgentRunId:  f.AgentRunID,
+		Sequence:    f.Sequence,
+		FindingKind: f.FindingKind,
+		Content:     f.Content,
+		CreatedAt:   f.CreatedAt,
+		UpdatedAt:   f.UpdatedAt,
+	}
+	return AgentRunFinding{Id: f.ID, Attributes: attrs}
 }
 
 func AgentRunResultFromEnt(result *ent.AgentRunResult) AgentRunResult {
-	return AgentRunResult{
-		Id: result.ID,
-		Attributes: AgentRunResultAttributes{
-			AgentRunId: result.AgentRunID,
-			Content:    result.Content,
-			Data:       result.Data,
-			CreatedAt:  result.CreatedAt,
-			UpdatedAt:  result.UpdatedAt,
-		},
+	attrs := AgentRunResultAttributes{
+		AgentRunId:   result.AgentRunID,
+		ErrorMessage: result.ErrorMessage,
+		CreatedAt:    result.CreatedAt,
+		UpdatedAt:    result.UpdatedAt,
 	}
-}
-
-func AgentRunToolCallFromEnt(toolCall *ent.AgentRunToolCall) AgentRunToolCall {
-	return AgentRunToolCall{
-		Id: toolCall.ID,
-		Attributes: AgentRunToolCallAttributes{
-			AgentRunId:   toolCall.AgentRunID,
-			ToolName:     toolCall.ToolName,
-			Status:       toolCall.Status.String(),
-			ToolParams:   toolCall.ToolParams,
-			Result:       toolCall.Result,
-			ErrorMessage: toolCall.ErrorMessage,
-			StartedAt:    toolCall.StartedAt,
-			FinishedAt:   toolCall.FinishedAt,
-			CreatedAt:    toolCall.CreatedAt,
-			UpdatedAt:    toolCall.UpdatedAt,
-		},
+	if jsonErr := json.Unmarshal(result.Output, &attrs.Output); jsonErr != nil {
+		slog.Error("failed to unmarshal result output", "error", jsonErr.Error())
 	}
+	return AgentRunResult{Id: result.ID, Attributes: attrs}
 }
 
 var agentsTags = []string{"Agents"}
@@ -252,8 +238,8 @@ var CreateAgentTask = openapi.Operation{
 }
 
 type CreateAgentTaskAttributes struct {
-	WorkflowKind   string         `json:"workflowKind"`
-	WorkflowInput  map[string]any `json:"workflowInput"`
+	Workflow       string         `json:"workflow"`
+	Input          map[string]any `json:"input"`
 	TriggerKind    string         `json:"triggerKind,omitempty"`
 	TriggerPayload map[string]any `json:"triggerPayload,omitempty"`
 }
@@ -271,10 +257,10 @@ var ListAgentTasks = openapi.Operation{
 
 type ListAgentTasksRequest struct {
 	ListRequest
-	WorkflowKind string    `query:"workflowKind" required:"false"`
-	TriggerKind  string    `query:"triggerKind" required:"false"`
-	SubjectType  string    `query:"subjectType" required:"false"`
-	SubjectId    uuid.UUID `query:"subjectId" required:"false"`
+	Workflow       string    `query:"workflow" required:"false"`
+	TriggerKind    string    `query:"triggerKind" required:"false"`
+	SubjectKind    string    `query:"subjectKind" required:"false"`
+	DomainEntityId uuid.UUID `query:"domainEntityId" required:"false"`
 }
 type ListAgentTasksResponse ListResponse[AgentTask]
 
@@ -313,9 +299,10 @@ var ListAgentRuns = openapi.Operation{
 
 type ListAgentRunsRequest struct {
 	ListRequest
-	AgentTaskId  uuid.UUID `query:"agentTaskId" required:"false"`
-	WorkflowKind string    `query:"workflowKind" required:"false"`
-	Status       string    `query:"status" required:"false"`
+	AgentTaskId uuid.UUID           `query:"agentTaskId" required:"false"`
+	Workflow    string              `query:"workflow" required:"false"`
+	Started     OptionalParam[bool] `query:"status" required:"false"`
+	Resulted    OptionalParam[bool] `query:"resulted" required:"false"`
 }
 type ListAgentRunsResponse ListResponse[AgentRun]
 

@@ -86,12 +86,9 @@ export type AgentRunAttributes = {
     agentTaskId: string;
     attempt: number;
     createdAt: string;
-    errorMessage?: string;
-    finishedAt?: string;
+    result?: AgentRunResult;
     startedAt?: string;
-    status: string;
     updatedAt: string;
-    workflowKind: string;
 };
 
 export type AgentRunCitation = {
@@ -138,9 +135,9 @@ export type AgentRunResult = {
 
 export type AgentRunResultAttributes = {
     agentRunId: string;
-    content: string;
     createdAt: string;
-    data?: {
+    errorMessage?: string;
+    output?: {
         [key: string]: unknown;
     };
     updatedAt: string;
@@ -161,7 +158,7 @@ export type AgentRunToolCallAttributes = {
     };
     startedAt?: string;
     status: string;
-    toolName: string;
+    toolId: string;
     toolParams?: {
         [key: string]: unknown;
     };
@@ -175,16 +172,16 @@ export type AgentTask = {
 
 export type AgentTaskAttributes = {
     createdAt: string;
+    input: {
+        [key: string]: unknown;
+    };
     ownerUserId: string;
     triggerKind: string;
-    triggerPayload: {
+    triggerMetadata: {
         [key: string]: unknown;
     };
     updatedAt: string;
-    workflowInput: {
-        [key: string]: unknown;
-    };
-    workflowKind: string;
+    workflow: string;
 };
 
 export type Alert = {
@@ -246,14 +243,14 @@ export type CompleteIntegrationOAuthFlowResponseBody = {
 };
 
 export type CreateAgentTaskAttributes = {
+    input: {
+        [key: string]: unknown;
+    };
     triggerKind?: string;
     triggerPayload?: {
         [key: string]: unknown;
     };
-    workflowInput: {
-        [key: string]: unknown;
-    };
-    workflowKind: string;
+    workflow: string;
 };
 
 export type CreateAgentTaskRequestBody = {
@@ -3099,8 +3096,9 @@ export type ListAgentRunsData = {
         search?: string;
         archived?: boolean;
         agentTaskId?: string;
-        workflowKind?: string;
-        status?: string;
+        workflow?: string;
+        status?: boolean;
+        resulted?: boolean;
     };
     url: '/agents/runs';
 };
@@ -3386,10 +3384,10 @@ export type ListAgentTasksData = {
         offset?: number;
         search?: string;
         archived?: boolean;
-        workflowKind?: string;
+        workflow?: string;
         triggerKind?: string;
-        subjectType?: string;
-        subjectId?: string;
+        subjectKind?: string;
+        domainEntityId?: string;
     };
     url: '/agents/tasks';
 };

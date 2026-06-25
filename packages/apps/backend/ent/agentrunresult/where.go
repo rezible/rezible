@@ -77,9 +77,14 @@ func AgentRunID(v uuid.UUID) predicate.AgentRunResult {
 	return predicate.AgentRunResult(sql.FieldEQ(FieldAgentRunID, v))
 }
 
-// Content applies equality check predicate on the "content" field. It's identical to ContentEQ.
-func Content(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldEQ(FieldContent, v))
+// Output applies equality check predicate on the "output" field. It's identical to OutputEQ.
+func Output(v []byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldEQ(FieldOutput, v))
+}
+
+// ErrorMessage applies equality check predicate on the "error_message" field. It's identical to ErrorMessageEQ.
+func ErrorMessage(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldEQ(FieldErrorMessage, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -202,79 +207,119 @@ func AgentRunIDNotIn(vs ...uuid.UUID) predicate.AgentRunResult {
 	return predicate.AgentRunResult(sql.FieldNotIn(FieldAgentRunID, vs...))
 }
 
-// ContentEQ applies the EQ predicate on the "content" field.
-func ContentEQ(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldEQ(FieldContent, v))
+// OutputEQ applies the EQ predicate on the "output" field.
+func OutputEQ(v []byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldEQ(FieldOutput, v))
 }
 
-// ContentNEQ applies the NEQ predicate on the "content" field.
-func ContentNEQ(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldNEQ(FieldContent, v))
+// OutputNEQ applies the NEQ predicate on the "output" field.
+func OutputNEQ(v []byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldNEQ(FieldOutput, v))
 }
 
-// ContentIn applies the In predicate on the "content" field.
-func ContentIn(vs ...string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldIn(FieldContent, vs...))
+// OutputIn applies the In predicate on the "output" field.
+func OutputIn(vs ...[]byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldIn(FieldOutput, vs...))
 }
 
-// ContentNotIn applies the NotIn predicate on the "content" field.
-func ContentNotIn(vs ...string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldNotIn(FieldContent, vs...))
+// OutputNotIn applies the NotIn predicate on the "output" field.
+func OutputNotIn(vs ...[]byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldNotIn(FieldOutput, vs...))
 }
 
-// ContentGT applies the GT predicate on the "content" field.
-func ContentGT(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldGT(FieldContent, v))
+// OutputGT applies the GT predicate on the "output" field.
+func OutputGT(v []byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldGT(FieldOutput, v))
 }
 
-// ContentGTE applies the GTE predicate on the "content" field.
-func ContentGTE(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldGTE(FieldContent, v))
+// OutputGTE applies the GTE predicate on the "output" field.
+func OutputGTE(v []byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldGTE(FieldOutput, v))
 }
 
-// ContentLT applies the LT predicate on the "content" field.
-func ContentLT(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldLT(FieldContent, v))
+// OutputLT applies the LT predicate on the "output" field.
+func OutputLT(v []byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldLT(FieldOutput, v))
 }
 
-// ContentLTE applies the LTE predicate on the "content" field.
-func ContentLTE(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldLTE(FieldContent, v))
+// OutputLTE applies the LTE predicate on the "output" field.
+func OutputLTE(v []byte) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldLTE(FieldOutput, v))
 }
 
-// ContentContains applies the Contains predicate on the "content" field.
-func ContentContains(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldContains(FieldContent, v))
+// ErrorMessageEQ applies the EQ predicate on the "error_message" field.
+func ErrorMessageEQ(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldEQ(FieldErrorMessage, v))
 }
 
-// ContentHasPrefix applies the HasPrefix predicate on the "content" field.
-func ContentHasPrefix(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldHasPrefix(FieldContent, v))
+// ErrorMessageNEQ applies the NEQ predicate on the "error_message" field.
+func ErrorMessageNEQ(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldNEQ(FieldErrorMessage, v))
 }
 
-// ContentHasSuffix applies the HasSuffix predicate on the "content" field.
-func ContentHasSuffix(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldHasSuffix(FieldContent, v))
+// ErrorMessageIn applies the In predicate on the "error_message" field.
+func ErrorMessageIn(vs ...string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldIn(FieldErrorMessage, vs...))
 }
 
-// ContentEqualFold applies the EqualFold predicate on the "content" field.
-func ContentEqualFold(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldEqualFold(FieldContent, v))
+// ErrorMessageNotIn applies the NotIn predicate on the "error_message" field.
+func ErrorMessageNotIn(vs ...string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldNotIn(FieldErrorMessage, vs...))
 }
 
-// ContentContainsFold applies the ContainsFold predicate on the "content" field.
-func ContentContainsFold(v string) predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldContainsFold(FieldContent, v))
+// ErrorMessageGT applies the GT predicate on the "error_message" field.
+func ErrorMessageGT(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldGT(FieldErrorMessage, v))
 }
 
-// DataIsNil applies the IsNil predicate on the "data" field.
-func DataIsNil() predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldIsNull(FieldData))
+// ErrorMessageGTE applies the GTE predicate on the "error_message" field.
+func ErrorMessageGTE(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldGTE(FieldErrorMessage, v))
 }
 
-// DataNotNil applies the NotNil predicate on the "data" field.
-func DataNotNil() predicate.AgentRunResult {
-	return predicate.AgentRunResult(sql.FieldNotNull(FieldData))
+// ErrorMessageLT applies the LT predicate on the "error_message" field.
+func ErrorMessageLT(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldLT(FieldErrorMessage, v))
+}
+
+// ErrorMessageLTE applies the LTE predicate on the "error_message" field.
+func ErrorMessageLTE(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldLTE(FieldErrorMessage, v))
+}
+
+// ErrorMessageContains applies the Contains predicate on the "error_message" field.
+func ErrorMessageContains(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldContains(FieldErrorMessage, v))
+}
+
+// ErrorMessageHasPrefix applies the HasPrefix predicate on the "error_message" field.
+func ErrorMessageHasPrefix(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldHasPrefix(FieldErrorMessage, v))
+}
+
+// ErrorMessageHasSuffix applies the HasSuffix predicate on the "error_message" field.
+func ErrorMessageHasSuffix(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldHasSuffix(FieldErrorMessage, v))
+}
+
+// ErrorMessageIsNil applies the IsNil predicate on the "error_message" field.
+func ErrorMessageIsNil() predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldIsNull(FieldErrorMessage))
+}
+
+// ErrorMessageNotNil applies the NotNil predicate on the "error_message" field.
+func ErrorMessageNotNil() predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldNotNull(FieldErrorMessage))
+}
+
+// ErrorMessageEqualFold applies the EqualFold predicate on the "error_message" field.
+func ErrorMessageEqualFold(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldEqualFold(FieldErrorMessage, v))
+}
+
+// ErrorMessageContainsFold applies the ContainsFold predicate on the "error_message" field.
+func ErrorMessageContainsFold(v string) predicate.AgentRunResult {
+	return predicate.AgentRunResult(sql.FieldContainsFold(FieldErrorMessage, v))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.

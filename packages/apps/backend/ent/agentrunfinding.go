@@ -46,11 +46,13 @@ type AgentRunFindingEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// AgentRun holds the value of the agent_run edge.
 	AgentRun *AgentRun `json:"agent_run,omitempty"`
+	// Citations holds the value of the citations edge.
+	Citations []*AgentRunCitation `json:"citations,omitempty"`
 	// FindingCitations holds the value of the finding_citations edge.
 	FindingCitations []*AgentRunFindingCitation `json:"finding_citations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [3]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -75,10 +77,19 @@ func (e AgentRunFindingEdges) AgentRunOrErr() (*AgentRun, error) {
 	return nil, &NotLoadedError{edge: "agent_run"}
 }
 
+// CitationsOrErr returns the Citations value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentRunFindingEdges) CitationsOrErr() ([]*AgentRunCitation, error) {
+	if e.loadedTypes[2] {
+		return e.Citations, nil
+	}
+	return nil, &NotLoadedError{edge: "citations"}
+}
+
 // FindingCitationsOrErr returns the FindingCitations value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentRunFindingEdges) FindingCitationsOrErr() ([]*AgentRunFindingCitation, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.FindingCitations, nil
 	}
 	return nil, &NotLoadedError{edge: "finding_citations"}
@@ -181,6 +192,11 @@ func (_m *AgentRunFinding) QueryTenant() *TenantQuery {
 // QueryAgentRun queries the "agent_run" edge of the AgentRunFinding entity.
 func (_m *AgentRunFinding) QueryAgentRun() *AgentRunQuery {
 	return NewAgentRunFindingClient(_m.config).QueryAgentRun(_m)
+}
+
+// QueryCitations queries the "citations" edge of the AgentRunFinding entity.
+func (_m *AgentRunFinding) QueryCitations() *AgentRunCitationQuery {
+	return NewAgentRunFindingClient(_m.config).QueryCitations(_m)
 }
 
 // QueryFindingCitations queries the "finding_citations" edge of the AgentRunFinding entity.

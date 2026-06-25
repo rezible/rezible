@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
+	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
 	"github.com/rezible/rezible/ent/agentruntoolcall"
 	"github.com/rezible/rezible/ent/agenttask"
@@ -72,57 +73,31 @@ func (_u *AgentRunCitationUpdate) SetNillableAgentRunID(v *uuid.UUID) *AgentRunC
 	return _u
 }
 
-// SetCitationKind sets the "citation_kind" field.
-func (_u *AgentRunCitationUpdate) SetCitationKind(v string) *AgentRunCitationUpdate {
-	_u.mutation.SetCitationKind(v)
+// SetKind sets the "kind" field.
+func (_u *AgentRunCitationUpdate) SetKind(v string) *AgentRunCitationUpdate {
+	_u.mutation.SetKind(v)
 	return _u
 }
 
-// SetNillableCitationKind sets the "citation_kind" field if the given value is not nil.
-func (_u *AgentRunCitationUpdate) SetNillableCitationKind(v *string) *AgentRunCitationUpdate {
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_u *AgentRunCitationUpdate) SetNillableKind(v *string) *AgentRunCitationUpdate {
 	if v != nil {
-		_u.SetCitationKind(*v)
+		_u.SetKind(*v)
 	}
 	return _u
 }
 
-// SetDomainEntityType sets the "domain_entity_type" field.
-func (_u *AgentRunCitationUpdate) SetDomainEntityType(v string) *AgentRunCitationUpdate {
-	_u.mutation.SetDomainEntityType(v)
+// SetSummary sets the "summary" field.
+func (_u *AgentRunCitationUpdate) SetSummary(v string) *AgentRunCitationUpdate {
+	_u.mutation.SetSummary(v)
 	return _u
 }
 
-// SetNillableDomainEntityType sets the "domain_entity_type" field if the given value is not nil.
-func (_u *AgentRunCitationUpdate) SetNillableDomainEntityType(v *string) *AgentRunCitationUpdate {
+// SetNillableSummary sets the "summary" field if the given value is not nil.
+func (_u *AgentRunCitationUpdate) SetNillableSummary(v *string) *AgentRunCitationUpdate {
 	if v != nil {
-		_u.SetDomainEntityType(*v)
+		_u.SetSummary(*v)
 	}
-	return _u
-}
-
-// ClearDomainEntityType clears the value of the "domain_entity_type" field.
-func (_u *AgentRunCitationUpdate) ClearDomainEntityType() *AgentRunCitationUpdate {
-	_u.mutation.ClearDomainEntityType()
-	return _u
-}
-
-// SetDomainEntityID sets the "domain_entity_id" field.
-func (_u *AgentRunCitationUpdate) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpdate {
-	_u.mutation.SetDomainEntityID(v)
-	return _u
-}
-
-// SetNillableDomainEntityID sets the "domain_entity_id" field if the given value is not nil.
-func (_u *AgentRunCitationUpdate) SetNillableDomainEntityID(v *uuid.UUID) *AgentRunCitationUpdate {
-	if v != nil {
-		_u.SetDomainEntityID(*v)
-	}
-	return _u
-}
-
-// ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (_u *AgentRunCitationUpdate) ClearDomainEntityID() *AgentRunCitationUpdate {
-	_u.mutation.ClearDomainEntityID()
 	return _u
 }
 
@@ -226,29 +201,55 @@ func (_u *AgentRunCitationUpdate) ClearAgentRunToolCallID() *AgentRunCitationUpd
 	return _u
 }
 
-// SetSummary sets the "summary" field.
-func (_u *AgentRunCitationUpdate) SetSummary(v string) *AgentRunCitationUpdate {
-	_u.mutation.SetSummary(v)
+// SetDomainEntityType sets the "domain_entity_type" field.
+func (_u *AgentRunCitationUpdate) SetDomainEntityType(v string) *AgentRunCitationUpdate {
+	_u.mutation.SetDomainEntityType(v)
 	return _u
 }
 
-// SetNillableSummary sets the "summary" field if the given value is not nil.
-func (_u *AgentRunCitationUpdate) SetNillableSummary(v *string) *AgentRunCitationUpdate {
+// SetNillableDomainEntityType sets the "domain_entity_type" field if the given value is not nil.
+func (_u *AgentRunCitationUpdate) SetNillableDomainEntityType(v *string) *AgentRunCitationUpdate {
 	if v != nil {
-		_u.SetSummary(*v)
+		_u.SetDomainEntityType(*v)
 	}
 	return _u
 }
 
-// SetSnapshot sets the "snapshot" field.
-func (_u *AgentRunCitationUpdate) SetSnapshot(v map[string]interface{}) *AgentRunCitationUpdate {
-	_u.mutation.SetSnapshot(v)
+// ClearDomainEntityType clears the value of the "domain_entity_type" field.
+func (_u *AgentRunCitationUpdate) ClearDomainEntityType() *AgentRunCitationUpdate {
+	_u.mutation.ClearDomainEntityType()
 	return _u
 }
 
-// ClearSnapshot clears the value of the "snapshot" field.
-func (_u *AgentRunCitationUpdate) ClearSnapshot() *AgentRunCitationUpdate {
-	_u.mutation.ClearSnapshot()
+// SetDomainEntityID sets the "domain_entity_id" field.
+func (_u *AgentRunCitationUpdate) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpdate {
+	_u.mutation.SetDomainEntityID(v)
+	return _u
+}
+
+// SetNillableDomainEntityID sets the "domain_entity_id" field if the given value is not nil.
+func (_u *AgentRunCitationUpdate) SetNillableDomainEntityID(v *uuid.UUID) *AgentRunCitationUpdate {
+	if v != nil {
+		_u.SetDomainEntityID(*v)
+	}
+	return _u
+}
+
+// ClearDomainEntityID clears the value of the "domain_entity_id" field.
+func (_u *AgentRunCitationUpdate) ClearDomainEntityID() *AgentRunCitationUpdate {
+	_u.mutation.ClearDomainEntityID()
+	return _u
+}
+
+// SetDomainEntitySnapshot sets the "domain_entity_snapshot" field.
+func (_u *AgentRunCitationUpdate) SetDomainEntitySnapshot(v map[string]interface{}) *AgentRunCitationUpdate {
+	_u.mutation.SetDomainEntitySnapshot(v)
+	return _u
+}
+
+// ClearDomainEntitySnapshot clears the value of the "domain_entity_snapshot" field.
+func (_u *AgentRunCitationUpdate) ClearDomainEntitySnapshot() *AgentRunCitationUpdate {
+	_u.mutation.ClearDomainEntitySnapshot()
 	return _u
 }
 
@@ -280,6 +281,21 @@ func (_u *AgentRunCitationUpdate) SetAgentTask(v *AgentTask) *AgentRunCitationUp
 // SetAgentRunToolCall sets the "agent_run_tool_call" edge to the AgentRunToolCall entity.
 func (_u *AgentRunCitationUpdate) SetAgentRunToolCall(v *AgentRunToolCall) *AgentRunCitationUpdate {
 	return _u.SetAgentRunToolCallID(v.ID)
+}
+
+// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
+func (_u *AgentRunCitationUpdate) AddFindingIDs(ids ...uuid.UUID) *AgentRunCitationUpdate {
+	_u.mutation.AddFindingIDs(ids...)
+	return _u
+}
+
+// AddFindings adds the "findings" edges to the AgentRunFinding entity.
+func (_u *AgentRunCitationUpdate) AddFindings(v ...*AgentRunFinding) *AgentRunCitationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFindingIDs(ids...)
 }
 
 // AddFindingCitationIDs adds the "finding_citations" edge to the AgentRunFindingCitation entity by IDs.
@@ -336,6 +352,27 @@ func (_u *AgentRunCitationUpdate) ClearAgentTask() *AgentRunCitationUpdate {
 func (_u *AgentRunCitationUpdate) ClearAgentRunToolCall() *AgentRunCitationUpdate {
 	_u.mutation.ClearAgentRunToolCall()
 	return _u
+}
+
+// ClearFindings clears all "findings" edges to the AgentRunFinding entity.
+func (_u *AgentRunCitationUpdate) ClearFindings() *AgentRunCitationUpdate {
+	_u.mutation.ClearFindings()
+	return _u
+}
+
+// RemoveFindingIDs removes the "findings" edge to AgentRunFinding entities by IDs.
+func (_u *AgentRunCitationUpdate) RemoveFindingIDs(ids ...uuid.UUID) *AgentRunCitationUpdate {
+	_u.mutation.RemoveFindingIDs(ids...)
+	return _u
+}
+
+// RemoveFindings removes "findings" edges to AgentRunFinding entities.
+func (_u *AgentRunCitationUpdate) RemoveFindings(v ...*AgentRunFinding) *AgentRunCitationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFindingIDs(ids...)
 }
 
 // ClearFindingCitations clears all "finding_citations" edges to the AgentRunFindingCitation entity.
@@ -403,9 +440,9 @@ func (_u *AgentRunCitationUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunCitationUpdate) check() error {
-	if v, ok := _u.mutation.CitationKind(); ok {
-		if err := agentruncitation.CitationKindValidator(v); err != nil {
-			return &ValidationError{Name: "citation_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunCitation.citation_kind": %w`, err)}
+	if v, ok := _u.mutation.Kind(); ok {
+		if err := agentruncitation.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunCitation.kind": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Summary(); ok {
@@ -446,8 +483,11 @@ func (_u *AgentRunCitationUpdate) sqlSave(ctx context.Context) (_node int, err e
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentruncitation.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.CitationKind(); ok {
-		_spec.SetField(agentruncitation.FieldCitationKind, field.TypeString, value)
+	if value, ok := _u.mutation.Kind(); ok {
+		_spec.SetField(agentruncitation.FieldKind, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Summary(); ok {
+		_spec.SetField(agentruncitation.FieldSummary, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DomainEntityType(); ok {
 		_spec.SetField(agentruncitation.FieldDomainEntityType, field.TypeString, value)
@@ -461,14 +501,11 @@ func (_u *AgentRunCitationUpdate) sqlSave(ctx context.Context) (_node int, err e
 	if _u.mutation.DomainEntityIDCleared() {
 		_spec.ClearField(agentruncitation.FieldDomainEntityID, field.TypeUUID)
 	}
-	if value, ok := _u.mutation.Summary(); ok {
-		_spec.SetField(agentruncitation.FieldSummary, field.TypeString, value)
+	if value, ok := _u.mutation.DomainEntitySnapshot(); ok {
+		_spec.SetField(agentruncitation.FieldDomainEntitySnapshot, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.Snapshot(); ok {
-		_spec.SetField(agentruncitation.FieldSnapshot, field.TypeJSON, value)
-	}
-	if _u.mutation.SnapshotCleared() {
-		_spec.ClearField(agentruncitation.FieldSnapshot, field.TypeJSON)
+	if _u.mutation.DomainEntitySnapshotCleared() {
+		_spec.ClearField(agentruncitation.FieldDomainEntitySnapshot, field.TypeJSON)
 	}
 	if _u.mutation.AgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -653,6 +690,75 @@ func (_u *AgentRunCitationUpdate) sqlSave(ctx context.Context) (_node int, err e
 		edge.Schema = _u.schemaConfig.AgentRunCitation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   agentruncitation.FindingsTable,
+			Columns: agentruncitation.FindingsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   agentruncitation.FindingsTable,
+			Columns: agentruncitation.FindingsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   agentruncitation.FindingsTable,
+			Columns: agentruncitation.FindingsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -762,57 +868,31 @@ func (_u *AgentRunCitationUpdateOne) SetNillableAgentRunID(v *uuid.UUID) *AgentR
 	return _u
 }
 
-// SetCitationKind sets the "citation_kind" field.
-func (_u *AgentRunCitationUpdateOne) SetCitationKind(v string) *AgentRunCitationUpdateOne {
-	_u.mutation.SetCitationKind(v)
+// SetKind sets the "kind" field.
+func (_u *AgentRunCitationUpdateOne) SetKind(v string) *AgentRunCitationUpdateOne {
+	_u.mutation.SetKind(v)
 	return _u
 }
 
-// SetNillableCitationKind sets the "citation_kind" field if the given value is not nil.
-func (_u *AgentRunCitationUpdateOne) SetNillableCitationKind(v *string) *AgentRunCitationUpdateOne {
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_u *AgentRunCitationUpdateOne) SetNillableKind(v *string) *AgentRunCitationUpdateOne {
 	if v != nil {
-		_u.SetCitationKind(*v)
+		_u.SetKind(*v)
 	}
 	return _u
 }
 
-// SetDomainEntityType sets the "domain_entity_type" field.
-func (_u *AgentRunCitationUpdateOne) SetDomainEntityType(v string) *AgentRunCitationUpdateOne {
-	_u.mutation.SetDomainEntityType(v)
+// SetSummary sets the "summary" field.
+func (_u *AgentRunCitationUpdateOne) SetSummary(v string) *AgentRunCitationUpdateOne {
+	_u.mutation.SetSummary(v)
 	return _u
 }
 
-// SetNillableDomainEntityType sets the "domain_entity_type" field if the given value is not nil.
-func (_u *AgentRunCitationUpdateOne) SetNillableDomainEntityType(v *string) *AgentRunCitationUpdateOne {
+// SetNillableSummary sets the "summary" field if the given value is not nil.
+func (_u *AgentRunCitationUpdateOne) SetNillableSummary(v *string) *AgentRunCitationUpdateOne {
 	if v != nil {
-		_u.SetDomainEntityType(*v)
+		_u.SetSummary(*v)
 	}
-	return _u
-}
-
-// ClearDomainEntityType clears the value of the "domain_entity_type" field.
-func (_u *AgentRunCitationUpdateOne) ClearDomainEntityType() *AgentRunCitationUpdateOne {
-	_u.mutation.ClearDomainEntityType()
-	return _u
-}
-
-// SetDomainEntityID sets the "domain_entity_id" field.
-func (_u *AgentRunCitationUpdateOne) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpdateOne {
-	_u.mutation.SetDomainEntityID(v)
-	return _u
-}
-
-// SetNillableDomainEntityID sets the "domain_entity_id" field if the given value is not nil.
-func (_u *AgentRunCitationUpdateOne) SetNillableDomainEntityID(v *uuid.UUID) *AgentRunCitationUpdateOne {
-	if v != nil {
-		_u.SetDomainEntityID(*v)
-	}
-	return _u
-}
-
-// ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (_u *AgentRunCitationUpdateOne) ClearDomainEntityID() *AgentRunCitationUpdateOne {
-	_u.mutation.ClearDomainEntityID()
 	return _u
 }
 
@@ -916,29 +996,55 @@ func (_u *AgentRunCitationUpdateOne) ClearAgentRunToolCallID() *AgentRunCitation
 	return _u
 }
 
-// SetSummary sets the "summary" field.
-func (_u *AgentRunCitationUpdateOne) SetSummary(v string) *AgentRunCitationUpdateOne {
-	_u.mutation.SetSummary(v)
+// SetDomainEntityType sets the "domain_entity_type" field.
+func (_u *AgentRunCitationUpdateOne) SetDomainEntityType(v string) *AgentRunCitationUpdateOne {
+	_u.mutation.SetDomainEntityType(v)
 	return _u
 }
 
-// SetNillableSummary sets the "summary" field if the given value is not nil.
-func (_u *AgentRunCitationUpdateOne) SetNillableSummary(v *string) *AgentRunCitationUpdateOne {
+// SetNillableDomainEntityType sets the "domain_entity_type" field if the given value is not nil.
+func (_u *AgentRunCitationUpdateOne) SetNillableDomainEntityType(v *string) *AgentRunCitationUpdateOne {
 	if v != nil {
-		_u.SetSummary(*v)
+		_u.SetDomainEntityType(*v)
 	}
 	return _u
 }
 
-// SetSnapshot sets the "snapshot" field.
-func (_u *AgentRunCitationUpdateOne) SetSnapshot(v map[string]interface{}) *AgentRunCitationUpdateOne {
-	_u.mutation.SetSnapshot(v)
+// ClearDomainEntityType clears the value of the "domain_entity_type" field.
+func (_u *AgentRunCitationUpdateOne) ClearDomainEntityType() *AgentRunCitationUpdateOne {
+	_u.mutation.ClearDomainEntityType()
 	return _u
 }
 
-// ClearSnapshot clears the value of the "snapshot" field.
-func (_u *AgentRunCitationUpdateOne) ClearSnapshot() *AgentRunCitationUpdateOne {
-	_u.mutation.ClearSnapshot()
+// SetDomainEntityID sets the "domain_entity_id" field.
+func (_u *AgentRunCitationUpdateOne) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpdateOne {
+	_u.mutation.SetDomainEntityID(v)
+	return _u
+}
+
+// SetNillableDomainEntityID sets the "domain_entity_id" field if the given value is not nil.
+func (_u *AgentRunCitationUpdateOne) SetNillableDomainEntityID(v *uuid.UUID) *AgentRunCitationUpdateOne {
+	if v != nil {
+		_u.SetDomainEntityID(*v)
+	}
+	return _u
+}
+
+// ClearDomainEntityID clears the value of the "domain_entity_id" field.
+func (_u *AgentRunCitationUpdateOne) ClearDomainEntityID() *AgentRunCitationUpdateOne {
+	_u.mutation.ClearDomainEntityID()
+	return _u
+}
+
+// SetDomainEntitySnapshot sets the "domain_entity_snapshot" field.
+func (_u *AgentRunCitationUpdateOne) SetDomainEntitySnapshot(v map[string]interface{}) *AgentRunCitationUpdateOne {
+	_u.mutation.SetDomainEntitySnapshot(v)
+	return _u
+}
+
+// ClearDomainEntitySnapshot clears the value of the "domain_entity_snapshot" field.
+func (_u *AgentRunCitationUpdateOne) ClearDomainEntitySnapshot() *AgentRunCitationUpdateOne {
+	_u.mutation.ClearDomainEntitySnapshot()
 	return _u
 }
 
@@ -970,6 +1076,21 @@ func (_u *AgentRunCitationUpdateOne) SetAgentTask(v *AgentTask) *AgentRunCitatio
 // SetAgentRunToolCall sets the "agent_run_tool_call" edge to the AgentRunToolCall entity.
 func (_u *AgentRunCitationUpdateOne) SetAgentRunToolCall(v *AgentRunToolCall) *AgentRunCitationUpdateOne {
 	return _u.SetAgentRunToolCallID(v.ID)
+}
+
+// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
+func (_u *AgentRunCitationUpdateOne) AddFindingIDs(ids ...uuid.UUID) *AgentRunCitationUpdateOne {
+	_u.mutation.AddFindingIDs(ids...)
+	return _u
+}
+
+// AddFindings adds the "findings" edges to the AgentRunFinding entity.
+func (_u *AgentRunCitationUpdateOne) AddFindings(v ...*AgentRunFinding) *AgentRunCitationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddFindingIDs(ids...)
 }
 
 // AddFindingCitationIDs adds the "finding_citations" edge to the AgentRunFindingCitation entity by IDs.
@@ -1026,6 +1147,27 @@ func (_u *AgentRunCitationUpdateOne) ClearAgentTask() *AgentRunCitationUpdateOne
 func (_u *AgentRunCitationUpdateOne) ClearAgentRunToolCall() *AgentRunCitationUpdateOne {
 	_u.mutation.ClearAgentRunToolCall()
 	return _u
+}
+
+// ClearFindings clears all "findings" edges to the AgentRunFinding entity.
+func (_u *AgentRunCitationUpdateOne) ClearFindings() *AgentRunCitationUpdateOne {
+	_u.mutation.ClearFindings()
+	return _u
+}
+
+// RemoveFindingIDs removes the "findings" edge to AgentRunFinding entities by IDs.
+func (_u *AgentRunCitationUpdateOne) RemoveFindingIDs(ids ...uuid.UUID) *AgentRunCitationUpdateOne {
+	_u.mutation.RemoveFindingIDs(ids...)
+	return _u
+}
+
+// RemoveFindings removes "findings" edges to AgentRunFinding entities.
+func (_u *AgentRunCitationUpdateOne) RemoveFindings(v ...*AgentRunFinding) *AgentRunCitationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveFindingIDs(ids...)
 }
 
 // ClearFindingCitations clears all "finding_citations" edges to the AgentRunFindingCitation entity.
@@ -1106,9 +1248,9 @@ func (_u *AgentRunCitationUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunCitationUpdateOne) check() error {
-	if v, ok := _u.mutation.CitationKind(); ok {
-		if err := agentruncitation.CitationKindValidator(v); err != nil {
-			return &ValidationError{Name: "citation_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunCitation.citation_kind": %w`, err)}
+	if v, ok := _u.mutation.Kind(); ok {
+		if err := agentruncitation.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunCitation.kind": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Summary(); ok {
@@ -1166,8 +1308,11 @@ func (_u *AgentRunCitationUpdateOne) sqlSave(ctx context.Context) (_node *AgentR
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentruncitation.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.CitationKind(); ok {
-		_spec.SetField(agentruncitation.FieldCitationKind, field.TypeString, value)
+	if value, ok := _u.mutation.Kind(); ok {
+		_spec.SetField(agentruncitation.FieldKind, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Summary(); ok {
+		_spec.SetField(agentruncitation.FieldSummary, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.DomainEntityType(); ok {
 		_spec.SetField(agentruncitation.FieldDomainEntityType, field.TypeString, value)
@@ -1181,14 +1326,11 @@ func (_u *AgentRunCitationUpdateOne) sqlSave(ctx context.Context) (_node *AgentR
 	if _u.mutation.DomainEntityIDCleared() {
 		_spec.ClearField(agentruncitation.FieldDomainEntityID, field.TypeUUID)
 	}
-	if value, ok := _u.mutation.Summary(); ok {
-		_spec.SetField(agentruncitation.FieldSummary, field.TypeString, value)
+	if value, ok := _u.mutation.DomainEntitySnapshot(); ok {
+		_spec.SetField(agentruncitation.FieldDomainEntitySnapshot, field.TypeJSON, value)
 	}
-	if value, ok := _u.mutation.Snapshot(); ok {
-		_spec.SetField(agentruncitation.FieldSnapshot, field.TypeJSON, value)
-	}
-	if _u.mutation.SnapshotCleared() {
-		_spec.ClearField(agentruncitation.FieldSnapshot, field.TypeJSON)
+	if _u.mutation.DomainEntitySnapshotCleared() {
+		_spec.ClearField(agentruncitation.FieldDomainEntitySnapshot, field.TypeJSON)
 	}
 	if _u.mutation.AgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -1373,6 +1515,75 @@ func (_u *AgentRunCitationUpdateOne) sqlSave(ctx context.Context) (_node *AgentR
 		edge.Schema = _u.schemaConfig.AgentRunCitation
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   agentruncitation.FindingsTable,
+			Columns: agentruncitation.FindingsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedFindingsIDs(); len(nodes) > 0 && !_u.mutation.FindingsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   agentruncitation.FindingsTable,
+			Columns: agentruncitation.FindingsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   agentruncitation.FindingsTable,
+			Columns: agentruncitation.FindingsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}

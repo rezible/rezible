@@ -8,11 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	agentRunStatuses      = []string{"queued", "running", "succeeded", "failed", "cancelled"}
-	agentToolCallStatuses = []string{"requested", "running", "succeeded", "failed", "cancelled"}
-)
-
 type AgentTask struct {
 	ent.Schema
 }
@@ -29,11 +24,13 @@ func (AgentTask) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("owner_user_id", uuid.UUID{}),
-		field.String("workflow_kind").NotEmpty(),
-		field.JSON("workflow_input", map[string]any{}).SchemaType(schemaTypeJsonB).
-			Optional(),
-		field.String("trigger_kind").NotEmpty(),
-		field.JSON("trigger_payload", map[string]any{}).SchemaType(schemaTypeJsonB).
+		field.String("workflow").NotEmpty(),
+		field.Bytes("input").
+			NotEmpty(),
+		field.String("trigger_kind").
+			NotEmpty(),
+		field.JSON("trigger_metadata", map[string]any{}).
+			SchemaType(schemaTypeJsonB).
 			Optional(),
 	}
 }
@@ -44,8 +41,10 @@ func (AgentTask) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("owner_user_id"),
+		edge.From("subjects", AgentTaskSubject.Type).
+			Ref("task"),
 		edge.From("runs", AgentRun.Type).
-			Ref("agent_task"),
+			Ref("task"),
 		edge.From("citations", AgentRunCitation.Type).
 			Ref("agent_task"),
 	}
@@ -54,7 +53,45 @@ func (AgentTask) Edges() []ent.Edge {
 func (AgentTask) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "owner_user_id", "created_at"),
-		index.Fields("tenant_id", "workflow_kind", "created_at"),
+		index.Fields("tenant_id", "workflow", "created_at"),
+	}
+}
+
+type AgentTaskSubject struct {
+	ent.Schema
+}
+
+func (AgentTaskSubject) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (AgentTaskSubject) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("task_id", uuid.UUID{}),
+		field.String("subject_kind").NotEmpty(),
+		field.UUID("domain_entity_id", uuid.UUID{}).Optional().Nillable(),
+		field.JSON("subject_properties", map[string]any{}).
+			SchemaType(schemaTypeJsonB).
+			Optional(),
+	}
+}
+
+func (AgentTaskSubject) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("task", AgentTask.Type).
+			Required().
+			Unique().
+			Field("task_id"),
+	}
+}
+
+func (AgentTaskSubject) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "task_id"),
 	}
 }
 
@@ -75,24 +112,23 @@ func (AgentRun) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_task_id", uuid.UUID{}),
 		field.Int("attempt").Positive(),
-		field.Enum("status").Values(agentRunStatuses...).Default("queued"),
 		field.Time("started_at").Optional().Nillable(),
-		field.Time("finished_at").Optional().Nillable(),
-		field.Text("error_message").Optional(),
+		field.Time("cancelled_at").Optional().Nillable(),
 	}
 }
 
 func (AgentRun) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("agent_task", AgentTask.Type).
+		edge.To("task", AgentTask.Type).
 			Required().
 			Unique().
 			Field("agent_task_id"),
+		edge.To("result", AgentRunResult.Type).
+			Unique(),
+
 		edge.From("citations", AgentRunCitation.Type).
 			Ref("agent_run"),
 		edge.From("findings", AgentRunFinding.Type).
-			Ref("agent_run"),
-		edge.From("result", AgentRunResult.Type).
 			Ref("agent_run"),
 		edge.From("tool_calls", AgentRunToolCall.Type).
 			Ref("agent_run"),
@@ -102,8 +138,57 @@ func (AgentRun) Edges() []ent.Edge {
 func (AgentRun) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "agent_task_id", "attempt").Unique(),
+		index.Fields("tenant_id", "started_at"),
+	}
+}
+
+type AgentRunToolCall struct {
+	ent.Schema
+}
+
+func (AgentRunToolCall) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		TimestampsMixin{},
+	}
+}
+
+func (AgentRunToolCall) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("agent_run_id", uuid.UUID{}),
+		field.String("tool_id").NotEmpty(),
+		field.Enum("status").
+			Values("requested", "running", "succeeded", "failed", "cancelled"),
+		field.JSON("tool_params", map[string]any{}).
+			SchemaType(schemaTypeJsonB).
+			Optional(),
+		field.JSON("result", map[string]any{}).
+			SchemaType(schemaTypeJsonB).
+			Optional(),
+		field.Text("error_message").Optional(),
+		field.Time("started_at").Optional().Nillable(),
+		field.Time("finished_at").Optional().Nillable(),
+	}
+}
+
+func (AgentRunToolCall) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("agent_run", AgentRun.Type).
+			Required().
+			Unique().
+			Field("agent_run_id"),
+		edge.From("citations", AgentRunCitation.Type).
+			Ref("agent_run_tool_call"),
+	}
+}
+
+func (AgentRunToolCall) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "agent_run_id", "created_at"),
+		index.Fields("tenant_id", "tool_id", "created_at"),
 		index.Fields("tenant_id", "status", "created_at"),
-		index.Fields("tenant_id", "updated_at"),
 	}
 }
 
@@ -123,16 +208,17 @@ func (AgentRunCitation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_run_id", uuid.UUID{}),
-		field.String("citation_kind").NotEmpty(),
-		field.String("domain_entity_type").Optional(),
-		field.UUID("domain_entity_id", uuid.UUID{}).Optional().Nillable(),
+		field.String("kind").NotEmpty(),
+		field.Text("summary").NotEmpty(),
 		field.UUID("knowledge_entity_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("knowledge_relationship_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("knowledge_evidence_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("agent_task_id", uuid.UUID{}).Optional().Nillable(),
 		field.UUID("agent_run_tool_call_id", uuid.UUID{}).Optional().Nillable(),
-		field.Text("summary").NotEmpty(),
-		field.JSON("snapshot", map[string]any{}).SchemaType(schemaTypeJsonB).
+		field.String("domain_entity_type").Optional(),
+		field.UUID("domain_entity_id", uuid.UUID{}).Optional().Nillable(),
+		field.JSON("domain_entity_snapshot", map[string]any{}).
+			SchemaType(schemaTypeJsonB).
 			Optional(),
 	}
 }
@@ -158,15 +244,17 @@ func (AgentRunCitation) Edges() []ent.Edge {
 		edge.To("agent_run_tool_call", AgentRunToolCall.Type).
 			Unique().
 			Field("agent_run_tool_call_id"),
-		edge.From("finding_citations", AgentRunFindingCitation.Type).
-			Ref("agent_run_citation"),
+
+		edge.From("findings", AgentRunFinding.Type).
+			Through("finding_citations", AgentRunFindingCitation.Type).
+			Ref("citations"),
 	}
 }
 
 func (AgentRunCitation) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "agent_run_id", "created_at"),
-		index.Fields("tenant_id", "citation_kind"),
+		index.Fields("tenant_id", "kind"),
 		index.Fields("tenant_id", "domain_entity_type", "domain_entity_id"),
 		index.Fields("tenant_id", "knowledge_entity_id"),
 		index.Fields("tenant_id", "knowledge_relationship_id"),
@@ -204,16 +292,15 @@ func (AgentRunFinding) Edges() []ent.Edge {
 			Required().
 			Unique().
 			Field("agent_run_id"),
-		edge.From("finding_citations", AgentRunFindingCitation.Type).
-			Ref("agent_run_finding"),
+
+		edge.To("citations", AgentRunCitation.Type).
+			Through("finding_citations", AgentRunFindingCitation.Type),
 	}
 }
 
 func (AgentRunFinding) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "agent_run_id", "created_at"),
 		index.Fields("tenant_id", "agent_run_id", "sequence").Unique(),
-		index.Fields("tenant_id", "finding_kind"),
 	}
 }
 
@@ -232,30 +319,29 @@ func (AgentRunFindingCitation) Mixin() []ent.Mixin {
 func (AgentRunFindingCitation) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("agent_run_finding_id", uuid.UUID{}),
-		field.UUID("agent_run_citation_id", uuid.UUID{}),
+		field.UUID("finding_id", uuid.UUID{}),
+		field.UUID("citation_id", uuid.UUID{}),
 		field.String("support_kind").NotEmpty(),
 	}
 }
 
 func (AgentRunFindingCitation) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("agent_run_finding", AgentRunFinding.Type).
+		edge.To("finding", AgentRunFinding.Type).
 			Required().
 			Unique().
-			Field("agent_run_finding_id"),
-		edge.To("agent_run_citation", AgentRunCitation.Type).
+			Field("finding_id"),
+		edge.To("citation", AgentRunCitation.Type).
 			Required().
 			Unique().
-			Field("agent_run_citation_id"),
+			Field("citation_id"),
 	}
 }
 
 func (AgentRunFindingCitation) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "agent_run_finding_id"),
-		index.Fields("tenant_id", "agent_run_citation_id"),
-		index.Fields("agent_run_finding_id", "agent_run_citation_id", "support_kind").Unique(),
+		index.Fields("tenant_id", "finding_id"),
+		index.Fields("tenant_id", "citation_id"),
 	}
 }
 
@@ -275,9 +361,8 @@ func (AgentRunResult) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
 		field.UUID("agent_run_id", uuid.UUID{}),
-		field.Text("content").NotEmpty(),
-		field.JSON("data", map[string]any{}).SchemaType(schemaTypeJsonB).
-			Optional(),
+		field.Bytes("output"),
+		field.Text("error_message").Optional(),
 	}
 }
 
@@ -293,52 +378,5 @@ func (AgentRunResult) Edges() []ent.Edge {
 func (AgentRunResult) Indexes() []ent.Index {
 	return []ent.Index{
 		index.Fields("tenant_id", "agent_run_id").Unique(),
-	}
-}
-
-type AgentRunToolCall struct {
-	ent.Schema
-}
-
-func (AgentRunToolCall) Mixin() []ent.Mixin {
-	return []ent.Mixin{
-		BaseMixin{},
-		TenantMixin{},
-		TimestampsMixin{},
-	}
-}
-
-func (AgentRunToolCall) Fields() []ent.Field {
-	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("agent_run_id", uuid.UUID{}),
-		field.String("tool_name").NotEmpty(),
-		field.Enum("status").Values(agentToolCallStatuses...).Default("requested"),
-		field.JSON("tool_params", map[string]any{}).SchemaType(schemaTypeJsonB).
-			Optional(),
-		field.JSON("result", map[string]any{}).SchemaType(schemaTypeJsonB).
-			Optional(),
-		field.Text("error_message").Optional(),
-		field.Time("started_at").Optional().Nillable(),
-		field.Time("finished_at").Optional().Nillable(),
-	}
-}
-
-func (AgentRunToolCall) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("agent_run", AgentRun.Type).
-			Required().
-			Unique().
-			Field("agent_run_id"),
-		edge.From("citations", AgentRunCitation.Type).
-			Ref("agent_run_tool_call"),
-	}
-}
-
-func (AgentRunToolCall) Indexes() []ent.Index {
-	return []ent.Index{
-		index.Fields("tenant_id", "agent_run_id", "created_at"),
-		index.Fields("tenant_id", "tool_name", "created_at"),
-		index.Fields("tenant_id", "status", "created_at"),
 	}
 }

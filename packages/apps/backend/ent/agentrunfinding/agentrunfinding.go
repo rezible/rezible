@@ -34,6 +34,8 @@ const (
 	EdgeTenant = "tenant"
 	// EdgeAgentRun holds the string denoting the agent_run edge name in mutations.
 	EdgeAgentRun = "agent_run"
+	// EdgeCitations holds the string denoting the citations edge name in mutations.
+	EdgeCitations = "citations"
 	// EdgeFindingCitations holds the string denoting the finding_citations edge name in mutations.
 	EdgeFindingCitations = "finding_citations"
 	// Table holds the table name of the agentrunfinding in the database.
@@ -52,13 +54,18 @@ const (
 	AgentRunInverseTable = "agent_runs"
 	// AgentRunColumn is the table column denoting the agent_run relation/edge.
 	AgentRunColumn = "agent_run_id"
+	// CitationsTable is the table that holds the citations relation/edge. The primary key declared below.
+	CitationsTable = "agent_run_finding_citations"
+	// CitationsInverseTable is the table name for the AgentRunCitation entity.
+	// It exists in this package in order to avoid circular dependency with the "agentruncitation" package.
+	CitationsInverseTable = "agent_run_citations"
 	// FindingCitationsTable is the table that holds the finding_citations relation/edge.
 	FindingCitationsTable = "agent_run_finding_citations"
 	// FindingCitationsInverseTable is the table name for the AgentRunFindingCitation entity.
 	// It exists in this package in order to avoid circular dependency with the "agentrunfindingcitation" package.
 	FindingCitationsInverseTable = "agent_run_finding_citations"
 	// FindingCitationsColumn is the table column denoting the finding_citations relation/edge.
-	FindingCitationsColumn = "agent_run_finding_id"
+	FindingCitationsColumn = "finding_id"
 )
 
 // Columns holds all SQL columns for agentrunfinding fields.
@@ -72,6 +79,12 @@ var Columns = []string{
 	FieldFindingKind,
 	FieldContent,
 }
+
+var (
+	// CitationsPrimaryKey and CitationsColumn2 are the table columns denoting the
+	// primary key for the citations relation (M2M).
+	CitationsPrimaryKey = []string{"finding_id", "citation_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -164,6 +177,20 @@ func ByAgentRunField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
+// ByCitationsCount orders the results by citations count.
+func ByCitationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newCitationsStep(), opts...)
+	}
+}
+
+// ByCitations orders the results by citations terms.
+func ByCitations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newCitationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
 // ByFindingCitationsCount orders the results by finding_citations count.
 func ByFindingCitationsCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -189,6 +216,13 @@ func newAgentRunStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AgentRunInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunTable, AgentRunColumn),
+	)
+}
+func newCitationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(CitationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, false, CitationsTable, CitationsPrimaryKey...),
 	)
 }
 func newFindingCitationsStep() *sqlgraph.Step {

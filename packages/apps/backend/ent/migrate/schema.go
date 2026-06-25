@@ -14,12 +14,11 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "attempt", Type: field.TypeInt},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"queued", "running", "succeeded", "failed", "cancelled"}, Default: "queued"},
 		{Name: "started_at", Type: field.TypeTime, Nullable: true},
-		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
-		{Name: "error_message", Type: field.TypeString, Nullable: true, Size: 2147483647},
+		{Name: "cancelled_at", Type: field.TypeTime, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "agent_task_id", Type: field.TypeUUID},
+		{Name: "agent_run_result", Type: field.TypeUUID, Nullable: true},
 	}
 	// AgentRunsTable holds the schema information for the "agent_runs" table.
 	AgentRunsTable = &schema.Table{
@@ -29,37 +28,38 @@ var (
 		ForeignKeys: []*schema.ForeignKey{
 			{
 				Symbol:     "agent_runs_tenants_tenant",
-				Columns:    []*schema.Column{AgentRunsColumns[8]},
+				Columns:    []*schema.Column{AgentRunsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "agent_runs_agent_tasks_agent_task",
-				Columns:    []*schema.Column{AgentRunsColumns[9]},
+				Symbol:     "agent_runs_agent_tasks_task",
+				Columns:    []*schema.Column{AgentRunsColumns[7]},
 				RefColumns: []*schema.Column{AgentTasksColumns[0]},
 				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_runs_agent_run_results_result",
+				Columns:    []*schema.Column{AgentRunsColumns[8]},
+				RefColumns: []*schema.Column{AgentRunResultsColumns[0]},
+				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "agentrun_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[8]},
+				Columns: []*schema.Column{AgentRunsColumns[6]},
 			},
 			{
 				Name:    "agentrun_tenant_id_agent_task_id_attempt",
 				Unique:  true,
-				Columns: []*schema.Column{AgentRunsColumns[8], AgentRunsColumns[9], AgentRunsColumns[3]},
+				Columns: []*schema.Column{AgentRunsColumns[6], AgentRunsColumns[7], AgentRunsColumns[3]},
 			},
 			{
-				Name:    "agentrun_tenant_id_status_created_at",
+				Name:    "agentrun_tenant_id_started_at",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[8], AgentRunsColumns[4], AgentRunsColumns[1]},
-			},
-			{
-				Name:    "agentrun_tenant_id_updated_at",
-				Unique:  false,
-				Columns: []*schema.Column{AgentRunsColumns[8], AgentRunsColumns[2]},
+				Columns: []*schema.Column{AgentRunsColumns[6], AgentRunsColumns[4]},
 			},
 		},
 	}
@@ -68,11 +68,11 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "citation_kind", Type: field.TypeString},
+		{Name: "kind", Type: field.TypeString},
+		{Name: "summary", Type: field.TypeString, Size: 2147483647},
 		{Name: "domain_entity_type", Type: field.TypeString, Nullable: true},
 		{Name: "domain_entity_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "summary", Type: field.TypeString, Size: 2147483647},
-		{Name: "snapshot", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "domain_entity_snapshot", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "agent_run_id", Type: field.TypeUUID},
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
@@ -142,14 +142,14 @@ var (
 				Columns: []*schema.Column{AgentRunCitationsColumns[8], AgentRunCitationsColumns[9], AgentRunCitationsColumns[1]},
 			},
 			{
-				Name:    "agentruncitation_tenant_id_citation_kind",
+				Name:    "agentruncitation_tenant_id_kind",
 				Unique:  false,
 				Columns: []*schema.Column{AgentRunCitationsColumns[8], AgentRunCitationsColumns[3]},
 			},
 			{
 				Name:    "agentruncitation_tenant_id_domain_entity_type_domain_entity_id",
 				Unique:  false,
-				Columns: []*schema.Column{AgentRunCitationsColumns[8], AgentRunCitationsColumns[4], AgentRunCitationsColumns[5]},
+				Columns: []*schema.Column{AgentRunCitationsColumns[8], AgentRunCitationsColumns[5], AgentRunCitationsColumns[6]},
 			},
 			{
 				Name:    "agentruncitation_tenant_id_knowledge_entity_id",
@@ -215,19 +215,9 @@ var (
 				Columns: []*schema.Column{AgentRunFindingsColumns[6]},
 			},
 			{
-				Name:    "agentrunfinding_tenant_id_agent_run_id_created_at",
-				Unique:  false,
-				Columns: []*schema.Column{AgentRunFindingsColumns[6], AgentRunFindingsColumns[7], AgentRunFindingsColumns[1]},
-			},
-			{
 				Name:    "agentrunfinding_tenant_id_agent_run_id_sequence",
 				Unique:  true,
 				Columns: []*schema.Column{AgentRunFindingsColumns[6], AgentRunFindingsColumns[7], AgentRunFindingsColumns[3]},
-			},
-			{
-				Name:    "agentrunfinding_tenant_id_finding_kind",
-				Unique:  false,
-				Columns: []*schema.Column{AgentRunFindingsColumns[6], AgentRunFindingsColumns[4]},
 			},
 		},
 	}
@@ -238,8 +228,8 @@ var (
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "support_kind", Type: field.TypeString},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "agent_run_finding_id", Type: field.TypeUUID},
-		{Name: "agent_run_citation_id", Type: field.TypeUUID},
+		{Name: "finding_id", Type: field.TypeUUID},
+		{Name: "citation_id", Type: field.TypeUUID},
 	}
 	// AgentRunFindingCitationsTable holds the schema information for the "agent_run_finding_citations" table.
 	AgentRunFindingCitationsTable = &schema.Table{
@@ -254,13 +244,13 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "agent_run_finding_citations_agent_run_findings_agent_run_finding",
+				Symbol:     "agent_run_finding_citations_agent_run_findings_finding",
 				Columns:    []*schema.Column{AgentRunFindingCitationsColumns[5]},
 				RefColumns: []*schema.Column{AgentRunFindingsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "agent_run_finding_citations_agent_run_citations_agent_run_citation",
+				Symbol:     "agent_run_finding_citations_agent_run_citations_citation",
 				Columns:    []*schema.Column{AgentRunFindingCitationsColumns[6]},
 				RefColumns: []*schema.Column{AgentRunCitationsColumns[0]},
 				OnDelete:   schema.NoAction,
@@ -273,19 +263,19 @@ var (
 				Columns: []*schema.Column{AgentRunFindingCitationsColumns[4]},
 			},
 			{
-				Name:    "agentrunfindingcitation_tenant_id_agent_run_finding_id",
+				Name:    "agentrunfindingcitation_tenant_id_finding_id",
 				Unique:  false,
 				Columns: []*schema.Column{AgentRunFindingCitationsColumns[4], AgentRunFindingCitationsColumns[5]},
 			},
 			{
-				Name:    "agentrunfindingcitation_tenant_id_agent_run_citation_id",
+				Name:    "agentrunfindingcitation_tenant_id_citation_id",
 				Unique:  false,
 				Columns: []*schema.Column{AgentRunFindingCitationsColumns[4], AgentRunFindingCitationsColumns[6]},
 			},
 			{
-				Name:    "agentrunfindingcitation_agent_run_finding_id_agent_run_citation_id_support_kind",
+				Name:    "agentrunfindingcitation_finding_id_citation_id",
 				Unique:  true,
-				Columns: []*schema.Column{AgentRunFindingCitationsColumns[5], AgentRunFindingCitationsColumns[6], AgentRunFindingCitationsColumns[3]},
+				Columns: []*schema.Column{AgentRunFindingCitationsColumns[5], AgentRunFindingCitationsColumns[6]},
 			},
 		},
 	}
@@ -294,8 +284,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "content", Type: field.TypeString, Size: 2147483647},
-		{Name: "data", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "output", Type: field.TypeBytes},
+		{Name: "error_message", Type: field.TypeString, Nullable: true, Size: 2147483647},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "agent_run_id", Type: field.TypeUUID},
 	}
@@ -336,8 +326,8 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "tool_name", Type: field.TypeString},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"requested", "running", "succeeded", "failed", "cancelled"}, Default: "requested"},
+		{Name: "tool_id", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"requested", "running", "succeeded", "failed", "cancelled"}},
 		{Name: "tool_params", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "result", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "error_message", Type: field.TypeString, Nullable: true, Size: 2147483647},
@@ -377,7 +367,7 @@ var (
 				Columns: []*schema.Column{AgentRunToolCallsColumns[10], AgentRunToolCallsColumns[11], AgentRunToolCallsColumns[1]},
 			},
 			{
-				Name:    "agentruntoolcall_tenant_id_tool_name_created_at",
+				Name:    "agentruntoolcall_tenant_id_tool_id_created_at",
 				Unique:  false,
 				Columns: []*schema.Column{AgentRunToolCallsColumns[10], AgentRunToolCallsColumns[3], AgentRunToolCallsColumns[1]},
 			},
@@ -393,10 +383,10 @@ var (
 		{Name: "id", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "workflow_kind", Type: field.TypeString},
-		{Name: "workflow_input", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "workflow", Type: field.TypeString},
+		{Name: "input", Type: field.TypeBytes},
 		{Name: "trigger_kind", Type: field.TypeString},
-		{Name: "trigger_payload", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "trigger_metadata", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "owner_user_id", Type: field.TypeUUID},
 	}
@@ -431,9 +421,50 @@ var (
 				Columns: []*schema.Column{AgentTasksColumns[7], AgentTasksColumns[8], AgentTasksColumns[1]},
 			},
 			{
-				Name:    "agenttask_tenant_id_workflow_kind_created_at",
+				Name:    "agenttask_tenant_id_workflow_created_at",
 				Unique:  false,
 				Columns: []*schema.Column{AgentTasksColumns[7], AgentTasksColumns[3], AgentTasksColumns[1]},
+			},
+		},
+	}
+	// AgentTaskSubjectsColumns holds the columns for the "agent_task_subjects" table.
+	AgentTaskSubjectsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "subject_kind", Type: field.TypeString},
+		{Name: "domain_entity_id", Type: field.TypeUUID, Nullable: true},
+		{Name: "subject_properties", Type: field.TypeJSON, Nullable: true, SchemaType: map[string]string{"postgres": "jsonb"}},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "task_id", Type: field.TypeUUID},
+	}
+	// AgentTaskSubjectsTable holds the schema information for the "agent_task_subjects" table.
+	AgentTaskSubjectsTable = &schema.Table{
+		Name:       "agent_task_subjects",
+		Columns:    AgentTaskSubjectsColumns,
+		PrimaryKey: []*schema.Column{AgentTaskSubjectsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "agent_task_subjects_tenants_tenant",
+				Columns:    []*schema.Column{AgentTaskSubjectsColumns[4]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "agent_task_subjects_agent_tasks_task",
+				Columns:    []*schema.Column{AgentTaskSubjectsColumns[5]},
+				RefColumns: []*schema.Column{AgentTasksColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "agenttasksubject_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentTaskSubjectsColumns[4]},
+			},
+			{
+				Name:    "agenttasksubject_tenant_id_task_id",
+				Unique:  false,
+				Columns: []*schema.Column{AgentTaskSubjectsColumns[4], AgentTaskSubjectsColumns[5]},
 			},
 		},
 	}
@@ -3699,6 +3730,7 @@ var (
 		AgentRunResultsTable,
 		AgentRunToolCallsTable,
 		AgentTasksTable,
+		AgentTaskSubjectsTable,
 		AlertsTable,
 		AlertFeedbacksTable,
 		DocumentsTable,
@@ -3785,6 +3817,7 @@ var (
 func init() {
 	AgentRunsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentRunsTable.ForeignKeys[1].RefTable = AgentTasksTable
+	AgentRunsTable.ForeignKeys[2].RefTable = AgentRunResultsTable
 	AgentRunCitationsTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentRunCitationsTable.ForeignKeys[1].RefTable = AgentRunsTable
 	AgentRunCitationsTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
@@ -3803,6 +3836,8 @@ func init() {
 	AgentRunToolCallsTable.ForeignKeys[1].RefTable = AgentRunsTable
 	AgentTasksTable.ForeignKeys[0].RefTable = TenantsTable
 	AgentTasksTable.ForeignKeys[1].RefTable = UsersTable
+	AgentTaskSubjectsTable.ForeignKeys[0].RefTable = TenantsTable
+	AgentTaskSubjectsTable.ForeignKeys[1].RefTable = AgentTasksTable
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
 	AlertsTable.ForeignKeys[2].RefTable = OncallRostersTable

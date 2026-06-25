@@ -77,9 +77,14 @@ func OwnerUserID(v uuid.UUID) predicate.AgentTask {
 	return predicate.AgentTask(sql.FieldEQ(FieldOwnerUserID, v))
 }
 
-// WorkflowKind applies equality check predicate on the "workflow_kind" field. It's identical to WorkflowKindEQ.
-func WorkflowKind(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldEQ(FieldWorkflowKind, v))
+// Workflow applies equality check predicate on the "workflow" field. It's identical to WorkflowEQ.
+func Workflow(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldEQ(FieldWorkflow, v))
+}
+
+// Input applies equality check predicate on the "input" field. It's identical to InputEQ.
+func Input(v []byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldEQ(FieldInput, v))
 }
 
 // TriggerKind applies equality check predicate on the "trigger_kind" field. It's identical to TriggerKindEQ.
@@ -207,79 +212,109 @@ func OwnerUserIDNotIn(vs ...uuid.UUID) predicate.AgentTask {
 	return predicate.AgentTask(sql.FieldNotIn(FieldOwnerUserID, vs...))
 }
 
-// WorkflowKindEQ applies the EQ predicate on the "workflow_kind" field.
-func WorkflowKindEQ(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldEQ(FieldWorkflowKind, v))
+// WorkflowEQ applies the EQ predicate on the "workflow" field.
+func WorkflowEQ(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldEQ(FieldWorkflow, v))
 }
 
-// WorkflowKindNEQ applies the NEQ predicate on the "workflow_kind" field.
-func WorkflowKindNEQ(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldNEQ(FieldWorkflowKind, v))
+// WorkflowNEQ applies the NEQ predicate on the "workflow" field.
+func WorkflowNEQ(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldNEQ(FieldWorkflow, v))
 }
 
-// WorkflowKindIn applies the In predicate on the "workflow_kind" field.
-func WorkflowKindIn(vs ...string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldIn(FieldWorkflowKind, vs...))
+// WorkflowIn applies the In predicate on the "workflow" field.
+func WorkflowIn(vs ...string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldIn(FieldWorkflow, vs...))
 }
 
-// WorkflowKindNotIn applies the NotIn predicate on the "workflow_kind" field.
-func WorkflowKindNotIn(vs ...string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldNotIn(FieldWorkflowKind, vs...))
+// WorkflowNotIn applies the NotIn predicate on the "workflow" field.
+func WorkflowNotIn(vs ...string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldNotIn(FieldWorkflow, vs...))
 }
 
-// WorkflowKindGT applies the GT predicate on the "workflow_kind" field.
-func WorkflowKindGT(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldGT(FieldWorkflowKind, v))
+// WorkflowGT applies the GT predicate on the "workflow" field.
+func WorkflowGT(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldGT(FieldWorkflow, v))
 }
 
-// WorkflowKindGTE applies the GTE predicate on the "workflow_kind" field.
-func WorkflowKindGTE(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldGTE(FieldWorkflowKind, v))
+// WorkflowGTE applies the GTE predicate on the "workflow" field.
+func WorkflowGTE(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldGTE(FieldWorkflow, v))
 }
 
-// WorkflowKindLT applies the LT predicate on the "workflow_kind" field.
-func WorkflowKindLT(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldLT(FieldWorkflowKind, v))
+// WorkflowLT applies the LT predicate on the "workflow" field.
+func WorkflowLT(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldLT(FieldWorkflow, v))
 }
 
-// WorkflowKindLTE applies the LTE predicate on the "workflow_kind" field.
-func WorkflowKindLTE(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldLTE(FieldWorkflowKind, v))
+// WorkflowLTE applies the LTE predicate on the "workflow" field.
+func WorkflowLTE(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldLTE(FieldWorkflow, v))
 }
 
-// WorkflowKindContains applies the Contains predicate on the "workflow_kind" field.
-func WorkflowKindContains(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldContains(FieldWorkflowKind, v))
+// WorkflowContains applies the Contains predicate on the "workflow" field.
+func WorkflowContains(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldContains(FieldWorkflow, v))
 }
 
-// WorkflowKindHasPrefix applies the HasPrefix predicate on the "workflow_kind" field.
-func WorkflowKindHasPrefix(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldHasPrefix(FieldWorkflowKind, v))
+// WorkflowHasPrefix applies the HasPrefix predicate on the "workflow" field.
+func WorkflowHasPrefix(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldHasPrefix(FieldWorkflow, v))
 }
 
-// WorkflowKindHasSuffix applies the HasSuffix predicate on the "workflow_kind" field.
-func WorkflowKindHasSuffix(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldHasSuffix(FieldWorkflowKind, v))
+// WorkflowHasSuffix applies the HasSuffix predicate on the "workflow" field.
+func WorkflowHasSuffix(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldHasSuffix(FieldWorkflow, v))
 }
 
-// WorkflowKindEqualFold applies the EqualFold predicate on the "workflow_kind" field.
-func WorkflowKindEqualFold(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldEqualFold(FieldWorkflowKind, v))
+// WorkflowEqualFold applies the EqualFold predicate on the "workflow" field.
+func WorkflowEqualFold(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldEqualFold(FieldWorkflow, v))
 }
 
-// WorkflowKindContainsFold applies the ContainsFold predicate on the "workflow_kind" field.
-func WorkflowKindContainsFold(v string) predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldContainsFold(FieldWorkflowKind, v))
+// WorkflowContainsFold applies the ContainsFold predicate on the "workflow" field.
+func WorkflowContainsFold(v string) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldContainsFold(FieldWorkflow, v))
 }
 
-// WorkflowInputIsNil applies the IsNil predicate on the "workflow_input" field.
-func WorkflowInputIsNil() predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldIsNull(FieldWorkflowInput))
+// InputEQ applies the EQ predicate on the "input" field.
+func InputEQ(v []byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldEQ(FieldInput, v))
 }
 
-// WorkflowInputNotNil applies the NotNil predicate on the "workflow_input" field.
-func WorkflowInputNotNil() predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldNotNull(FieldWorkflowInput))
+// InputNEQ applies the NEQ predicate on the "input" field.
+func InputNEQ(v []byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldNEQ(FieldInput, v))
+}
+
+// InputIn applies the In predicate on the "input" field.
+func InputIn(vs ...[]byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldIn(FieldInput, vs...))
+}
+
+// InputNotIn applies the NotIn predicate on the "input" field.
+func InputNotIn(vs ...[]byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldNotIn(FieldInput, vs...))
+}
+
+// InputGT applies the GT predicate on the "input" field.
+func InputGT(v []byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldGT(FieldInput, v))
+}
+
+// InputGTE applies the GTE predicate on the "input" field.
+func InputGTE(v []byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldGTE(FieldInput, v))
+}
+
+// InputLT applies the LT predicate on the "input" field.
+func InputLT(v []byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldLT(FieldInput, v))
+}
+
+// InputLTE applies the LTE predicate on the "input" field.
+func InputLTE(v []byte) predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldLTE(FieldInput, v))
 }
 
 // TriggerKindEQ applies the EQ predicate on the "trigger_kind" field.
@@ -347,14 +382,14 @@ func TriggerKindContainsFold(v string) predicate.AgentTask {
 	return predicate.AgentTask(sql.FieldContainsFold(FieldTriggerKind, v))
 }
 
-// TriggerPayloadIsNil applies the IsNil predicate on the "trigger_payload" field.
-func TriggerPayloadIsNil() predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldIsNull(FieldTriggerPayload))
+// TriggerMetadataIsNil applies the IsNil predicate on the "trigger_metadata" field.
+func TriggerMetadataIsNil() predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldIsNull(FieldTriggerMetadata))
 }
 
-// TriggerPayloadNotNil applies the NotNil predicate on the "trigger_payload" field.
-func TriggerPayloadNotNil() predicate.AgentTask {
-	return predicate.AgentTask(sql.FieldNotNull(FieldTriggerPayload))
+// TriggerMetadataNotNil applies the NotNil predicate on the "trigger_metadata" field.
+func TriggerMetadataNotNil() predicate.AgentTask {
+	return predicate.AgentTask(sql.FieldNotNull(FieldTriggerMetadata))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -407,6 +442,35 @@ func HasOwnerUserWith(preds ...predicate.User) predicate.AgentTask {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.AgentTask
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasSubjects applies the HasEdge predicate on the "subjects" edge.
+func HasSubjects() predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, SubjectsTable, SubjectsColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentTaskSubject
+		step.Edge.Schema = schemaConfig.AgentTaskSubject
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasSubjectsWith applies the HasEdge predicate on the "subjects" edge with a given conditions (other predicates).
+func HasSubjectsWith(preds ...predicate.AgentTaskSubject) predicate.AgentTask {
+	return predicate.AgentTask(func(s *sql.Selector) {
+		step := newSubjectsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentTaskSubject
+		step.Edge.Schema = schemaConfig.AgentTaskSubject
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

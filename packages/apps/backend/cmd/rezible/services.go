@@ -36,7 +36,7 @@ type startable interface {
 }
 
 func runServicesFor[Entrypoint startable](ctx context.Context, i do.Injector) error {
-	if initErr := registerIntegrations(i); initErr != nil {
+	if initErr := doRegistrations(i); initErr != nil {
 		return fmt.Errorf("failed to initialize services: %w", initErr)
 	}
 
@@ -104,7 +104,11 @@ func shutdownServices(baseCtx context.Context, i do.Injector) error {
 	return shutdownErr
 }
 
-func registerIntegrations(i do.Injector) error {
+func doRegistrations(i do.Injector) error {
+	agentRunner := do.MustInvoke[rez.AgentWorkflowRunner](i)
+	agentWorkflowsReg := do.MustInvoke[*agents.WorkflowRegistry](i)
+	agentRunner.RegisterWorkflows(agentWorkflowsReg)
+
 	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
 	pipelineReg := do.MustInvoke[*projections.PipelineRegistry](i)
 
@@ -427,9 +431,9 @@ var provideServices = do.Package(
 	}),
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
 
-	do.Lazy(func(i do.Injector) (*db.AgentTaskService, error) {
-		_ = do.MustInvoke[*eino.WorkflowRunner](i)
-		return db.NewAgentTaskService(
+	do.Lazy(func(i do.Injector) (*db.AgentService, error) {
+		_ = do.MustInvoke[*eino.AgentRunner](i)
+		return db.NewAgentService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
@@ -437,14 +441,14 @@ var provideServices = do.Package(
 			do.MustInvoke[*agents.WorkflowRegistry](i),
 		)
 	}),
-	do.Bind[*db.AgentTaskService, rez.AgentService](),
+	do.Bind[*db.AgentService, rez.AgentService](),
 
-	do.Lazy(func(i do.Injector) (*eino.WorkflowRunner, error) {
-		return eino.NewWorkflowRunner(
+	do.Lazy(func(i do.Injector) (*eino.AgentRunner, error) {
+		return eino.NewAgentWorkflowRunner(
 			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[*agents.WorkflowRegistry](i),
 			do.MustInvoke[rez.IncidentService](i),
 			do.MustInvoke[rez.AlertService](i),
 		)
 	}),
+	do.Bind[*eino.AgentRunner, rez.AgentWorkflowRunner](),
 )

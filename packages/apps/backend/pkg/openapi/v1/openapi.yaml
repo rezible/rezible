@@ -166,26 +166,17 @@ components:
         createdAt:
           format: date-time
           type: string
-        errorMessage:
-          type: string
-        finishedAt:
-          format: date-time
-          type: string
+        result:
+          $ref: "#/components/schemas/AgentRunResult"
         startedAt:
           format: date-time
-          type: string
-        status:
           type: string
         updatedAt:
           format: date-time
           type: string
-        workflowKind:
-          type: string
       required:
         - agentTaskId
-        - workflowKind
         - attempt
-        - status
         - createdAt
         - updatedAt
       type: object
@@ -292,12 +283,12 @@ components:
       properties:
         agentRunId:
           type: string
-        content:
-          type: string
         createdAt:
           format: date-time
           type: string
-        data:
+        errorMessage:
+          type: string
+        output:
           additionalProperties: {}
           type: object
         updatedAt:
@@ -305,7 +296,6 @@ components:
           type: string
       required:
         - agentRunId
-        - content
         - createdAt
         - updatedAt
       type: object
@@ -341,7 +331,7 @@ components:
           type: string
         status:
           type: string
-        toolName:
+        toolId:
           type: string
         toolParams:
           additionalProperties: {}
@@ -351,7 +341,7 @@ components:
           type: string
       required:
         - agentRunId
-        - toolName
+        - toolId
         - status
         - createdAt
         - updatedAt
@@ -373,27 +363,27 @@ components:
         createdAt:
           format: date-time
           type: string
+        input:
+          additionalProperties: {}
+          type: object
         ownerUserId:
           type: string
         triggerKind:
           type: string
-        triggerPayload:
+        triggerMetadata:
           additionalProperties: {}
           type: object
         updatedAt:
           format: date-time
           type: string
-        workflowInput:
-          additionalProperties: {}
-          type: object
-        workflowKind:
+        workflow:
           type: string
       required:
         - ownerUserId
-        - workflowKind
-        - workflowInput
+        - workflow
+        - input
         - triggerKind
-        - triggerPayload
+        - triggerMetadata
         - createdAt
         - updatedAt
       type: object
@@ -539,19 +529,19 @@ components:
     CreateAgentTaskAttributes:
       additionalProperties: false
       properties:
+        input:
+          additionalProperties: {}
+          type: object
         triggerKind:
           type: string
         triggerPayload:
           additionalProperties: {}
           type: object
-        workflowInput:
-          additionalProperties: {}
-          type: object
-        workflowKind:
+        workflow:
           type: string
       required:
-        - workflowKind
-        - workflowInput
+        - workflow
+        - input
       type: object
     CreateAgentTaskRequestBody:
       additionalProperties: false
@@ -6710,14 +6700,19 @@ paths:
             type: string
         - explode: false
           in: query
-          name: workflowKind
+          name: workflow
           schema:
             type: string
         - explode: false
           in: query
           name: status
           schema:
-            type: string
+            type: boolean
+        - explode: false
+          in: query
+          name: resulted
+          schema:
+            type: boolean
       responses:
         "200":
           content:
@@ -7073,7 +7068,7 @@ paths:
             type: boolean
         - explode: false
           in: query
-          name: workflowKind
+          name: workflow
           schema:
             type: string
         - explode: false
@@ -7083,12 +7078,12 @@ paths:
             type: string
         - explode: false
           in: query
-          name: subjectType
+          name: subjectKind
           schema:
             type: string
         - explode: false
           in: query
-          name: subjectId
+          name: domainEntityId
           schema:
             type: string
       responses:

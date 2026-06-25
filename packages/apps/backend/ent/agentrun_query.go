@@ -33,11 +33,12 @@ type AgentRunQuery struct {
 	inters        []Interceptor
 	predicates    []predicate.AgentRun
 	withTenant    *TenantQuery
-	withAgentTask *AgentTaskQuery
+	withTask      *AgentTaskQuery
+	withResult    *AgentRunResultQuery
 	withCitations *AgentRunCitationQuery
 	withFindings  *AgentRunFindingQuery
-	withResult    *AgentRunResultQuery
 	withToolCalls *AgentRunToolCallQuery
+	withFKs       bool
 	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -100,8 +101,8 @@ func (_q *AgentRunQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryAgentTask chains the current query on the "agent_task" edge.
-func (_q *AgentRunQuery) QueryAgentTask() *AgentTaskQuery {
+// QueryTask chains the current query on the "task" edge.
+func (_q *AgentRunQuery) QueryTask() *AgentTaskQuery {
 	query := (&AgentTaskClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -114,10 +115,35 @@ func (_q *AgentRunQuery) QueryAgentTask() *AgentTaskQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentrun.Table, agentrun.FieldID, selector),
 			sqlgraph.To(agenttask.Table, agenttask.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentrun.AgentTaskTable, agentrun.AgentTaskColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrun.TaskTable, agentrun.TaskColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentTask
+		step.Edge.Schema = schemaConfig.AgentRun
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryResult chains the current query on the "result" edge.
+func (_q *AgentRunQuery) QueryResult() *AgentRunResultQuery {
+	query := (&AgentRunResultClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, selector),
+			sqlgraph.To(agentrunresult.Table, agentrunresult.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrun.ResultTable, agentrun.ResultColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunResult
 		step.Edge.Schema = schemaConfig.AgentRun
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -169,31 +195,6 @@ func (_q *AgentRunQuery) QueryFindings() *AgentRunFindingQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentRunFinding
 		step.Edge.Schema = schemaConfig.AgentRunFinding
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryResult chains the current query on the "result" edge.
-func (_q *AgentRunQuery) QueryResult() *AgentRunResultQuery {
-	query := (&AgentRunResultClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentrun.Table, agentrun.FieldID, selector),
-			sqlgraph.To(agentrunresult.Table, agentrunresult.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.ResultTable, agentrun.ResultColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AgentRunResult
-		step.Edge.Schema = schemaConfig.AgentRunResult
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -418,10 +419,10 @@ func (_q *AgentRunQuery) Clone() *AgentRunQuery {
 		inters:        append([]Interceptor{}, _q.inters...),
 		predicates:    append([]predicate.AgentRun{}, _q.predicates...),
 		withTenant:    _q.withTenant.Clone(),
-		withAgentTask: _q.withAgentTask.Clone(),
+		withTask:      _q.withTask.Clone(),
+		withResult:    _q.withResult.Clone(),
 		withCitations: _q.withCitations.Clone(),
 		withFindings:  _q.withFindings.Clone(),
-		withResult:    _q.withResult.Clone(),
 		withToolCalls: _q.withToolCalls.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -441,14 +442,25 @@ func (_q *AgentRunQuery) WithTenant(opts ...func(*TenantQuery)) *AgentRunQuery {
 	return _q
 }
 
-// WithAgentTask tells the query-builder to eager-load the nodes that are connected to
-// the "agent_task" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentRunQuery) WithAgentTask(opts ...func(*AgentTaskQuery)) *AgentRunQuery {
+// WithTask tells the query-builder to eager-load the nodes that are connected to
+// the "task" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunQuery) WithTask(opts ...func(*AgentTaskQuery)) *AgentRunQuery {
 	query := (&AgentTaskClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withAgentTask = query
+	_q.withTask = query
+	return _q
+}
+
+// WithResult tells the query-builder to eager-load the nodes that are connected to
+// the "result" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunQuery) WithResult(opts ...func(*AgentRunResultQuery)) *AgentRunQuery {
+	query := (&AgentRunResultClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withResult = query
 	return _q
 }
 
@@ -471,17 +483,6 @@ func (_q *AgentRunQuery) WithFindings(opts ...func(*AgentRunFindingQuery)) *Agen
 		opt(query)
 	}
 	_q.withFindings = query
-	return _q
-}
-
-// WithResult tells the query-builder to eager-load the nodes that are connected to
-// the "result" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentRunQuery) WithResult(opts ...func(*AgentRunResultQuery)) *AgentRunQuery {
-	query := (&AgentRunResultClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withResult = query
 	return _q
 }
 
@@ -579,16 +580,23 @@ func (_q *AgentRunQuery) prepareQuery(ctx context.Context) error {
 func (_q *AgentRunQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AgentRun, error) {
 	var (
 		nodes       = []*AgentRun{}
+		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
 		loadedTypes = [6]bool{
 			_q.withTenant != nil,
-			_q.withAgentTask != nil,
+			_q.withTask != nil,
+			_q.withResult != nil,
 			_q.withCitations != nil,
 			_q.withFindings != nil,
-			_q.withResult != nil,
 			_q.withToolCalls != nil,
 		}
 	)
+	if _q.withResult != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, agentrun.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*AgentRun).scanValues(nil, columns)
 	}
@@ -618,9 +626,15 @@ func (_q *AgentRunQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Age
 			return nil, err
 		}
 	}
-	if query := _q.withAgentTask; query != nil {
-		if err := _q.loadAgentTask(ctx, query, nodes, nil,
-			func(n *AgentRun, e *AgentTask) { n.Edges.AgentTask = e }); err != nil {
+	if query := _q.withTask; query != nil {
+		if err := _q.loadTask(ctx, query, nodes, nil,
+			func(n *AgentRun, e *AgentTask) { n.Edges.Task = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withResult; query != nil {
+		if err := _q.loadResult(ctx, query, nodes, nil,
+			func(n *AgentRun, e *AgentRunResult) { n.Edges.Result = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -635,13 +649,6 @@ func (_q *AgentRunQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Age
 		if err := _q.loadFindings(ctx, query, nodes,
 			func(n *AgentRun) { n.Edges.Findings = []*AgentRunFinding{} },
 			func(n *AgentRun, e *AgentRunFinding) { n.Edges.Findings = append(n.Edges.Findings, e) }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withResult; query != nil {
-		if err := _q.loadResult(ctx, query, nodes,
-			func(n *AgentRun) { n.Edges.Result = []*AgentRunResult{} },
-			func(n *AgentRun, e *AgentRunResult) { n.Edges.Result = append(n.Edges.Result, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -684,7 +691,7 @@ func (_q *AgentRunQuery) loadTenant(ctx context.Context, query *TenantQuery, nod
 	}
 	return nil
 }
-func (_q *AgentRunQuery) loadAgentTask(ctx context.Context, query *AgentTaskQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentTask)) error {
+func (_q *AgentRunQuery) loadTask(ctx context.Context, query *AgentTaskQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentTask)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AgentRun)
 	for i := range nodes {
@@ -706,6 +713,38 @@ func (_q *AgentRunQuery) loadAgentTask(ctx context.Context, query *AgentTaskQuer
 		nodes, ok := nodeids[n.ID]
 		if !ok {
 			return fmt.Errorf(`unexpected foreign-key "agent_task_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *AgentRunQuery) loadResult(ctx context.Context, query *AgentRunResultQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentRunResult)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*AgentRun)
+	for i := range nodes {
+		if nodes[i].agent_run_result == nil {
+			continue
+		}
+		fk := *nodes[i].agent_run_result
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(agentrunresult.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "agent_run_result" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -758,36 +797,6 @@ func (_q *AgentRunQuery) loadFindings(ctx context.Context, query *AgentRunFindin
 	}
 	query.Where(predicate.AgentRunFinding(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(agentrun.FindingsColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.AgentRunID
-		node, ok := nodeids[fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "agent_run_id" returned %v for node %v`, fk, n.ID)
-		}
-		assign(node, n)
-	}
-	return nil
-}
-func (_q *AgentRunQuery) loadResult(ctx context.Context, query *AgentRunResultQuery, nodes []*AgentRun, init func(*AgentRun), assign func(*AgentRun, *AgentRunResult)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*AgentRun)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(agentrunresult.FieldAgentRunID)
-	}
-	query.Where(predicate.AgentRunResult(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(agentrun.ResultColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -867,7 +876,7 @@ func (_q *AgentRunQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(agentrun.FieldTenantID)
 		}
-		if _q.withAgentTask != nil {
+		if _q.withTask != nil {
 			_spec.Node.AddColumnOnce(agentrun.FieldAgentTaskID)
 		}
 	}

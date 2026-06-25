@@ -93,6 +93,18 @@ func (f AgentTaskFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, e
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTaskMutation", m)
 }
 
+// The AgentTaskSubjectFunc type is an adapter to allow the use of ordinary
+// function as AgentTaskSubject mutator.
+type AgentTaskSubjectFunc func(context.Context, *ent.AgentTaskSubjectMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AgentTaskSubjectFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AgentTaskSubjectMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AgentTaskSubjectMutation", m)
+}
+
 // The AlertFunc type is an adapter to allow the use of ordinary
 // function as Alert mutator.
 type AlertFunc func(context.Context, *ent.AlertMutation) (ent.Value, error)

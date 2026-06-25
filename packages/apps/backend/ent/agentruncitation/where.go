@@ -77,19 +77,14 @@ func AgentRunID(v uuid.UUID) predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldEQ(FieldAgentRunID, v))
 }
 
-// CitationKind applies equality check predicate on the "citation_kind" field. It's identical to CitationKindEQ.
-func CitationKind(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldCitationKind, v))
+// Kind applies equality check predicate on the "kind" field. It's identical to KindEQ.
+func Kind(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEQ(FieldKind, v))
 }
 
-// DomainEntityType applies equality check predicate on the "domain_entity_type" field. It's identical to DomainEntityTypeEQ.
-func DomainEntityType(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityType, v))
-}
-
-// DomainEntityID applies equality check predicate on the "domain_entity_id" field. It's identical to DomainEntityIDEQ.
-func DomainEntityID(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityID, v))
+// Summary applies equality check predicate on the "summary" field. It's identical to SummaryEQ.
+func Summary(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEQ(FieldSummary, v))
 }
 
 // KnowledgeEntityID applies equality check predicate on the "knowledge_entity_id" field. It's identical to KnowledgeEntityIDEQ.
@@ -117,9 +112,14 @@ func AgentRunToolCallID(v uuid.UUID) predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldEQ(FieldAgentRunToolCallID, v))
 }
 
-// Summary applies equality check predicate on the "summary" field. It's identical to SummaryEQ.
-func Summary(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldSummary, v))
+// DomainEntityType applies equality check predicate on the "domain_entity_type" field. It's identical to DomainEntityTypeEQ.
+func DomainEntityType(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityType, v))
+}
+
+// DomainEntityID applies equality check predicate on the "domain_entity_id" field. It's identical to DomainEntityIDEQ.
+func DomainEntityID(v uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityID, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -242,194 +242,134 @@ func AgentRunIDNotIn(vs ...uuid.UUID) predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldNotIn(FieldAgentRunID, vs...))
 }
 
-// CitationKindEQ applies the EQ predicate on the "citation_kind" field.
-func CitationKindEQ(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldCitationKind, v))
+// KindEQ applies the EQ predicate on the "kind" field.
+func KindEQ(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEQ(FieldKind, v))
 }
 
-// CitationKindNEQ applies the NEQ predicate on the "citation_kind" field.
-func CitationKindNEQ(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNEQ(FieldCitationKind, v))
+// KindNEQ applies the NEQ predicate on the "kind" field.
+func KindNEQ(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNEQ(FieldKind, v))
 }
 
-// CitationKindIn applies the In predicate on the "citation_kind" field.
-func CitationKindIn(vs ...string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIn(FieldCitationKind, vs...))
+// KindIn applies the In predicate on the "kind" field.
+func KindIn(vs ...string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldIn(FieldKind, vs...))
 }
 
-// CitationKindNotIn applies the NotIn predicate on the "citation_kind" field.
-func CitationKindNotIn(vs ...string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotIn(FieldCitationKind, vs...))
+// KindNotIn applies the NotIn predicate on the "kind" field.
+func KindNotIn(vs ...string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNotIn(FieldKind, vs...))
 }
 
-// CitationKindGT applies the GT predicate on the "citation_kind" field.
-func CitationKindGT(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldGT(FieldCitationKind, v))
+// KindGT applies the GT predicate on the "kind" field.
+func KindGT(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldGT(FieldKind, v))
 }
 
-// CitationKindGTE applies the GTE predicate on the "citation_kind" field.
-func CitationKindGTE(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldGTE(FieldCitationKind, v))
+// KindGTE applies the GTE predicate on the "kind" field.
+func KindGTE(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldGTE(FieldKind, v))
 }
 
-// CitationKindLT applies the LT predicate on the "citation_kind" field.
-func CitationKindLT(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldLT(FieldCitationKind, v))
+// KindLT applies the LT predicate on the "kind" field.
+func KindLT(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldLT(FieldKind, v))
 }
 
-// CitationKindLTE applies the LTE predicate on the "citation_kind" field.
-func CitationKindLTE(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldLTE(FieldCitationKind, v))
+// KindLTE applies the LTE predicate on the "kind" field.
+func KindLTE(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldLTE(FieldKind, v))
 }
 
-// CitationKindContains applies the Contains predicate on the "citation_kind" field.
-func CitationKindContains(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldContains(FieldCitationKind, v))
+// KindContains applies the Contains predicate on the "kind" field.
+func KindContains(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldContains(FieldKind, v))
 }
 
-// CitationKindHasPrefix applies the HasPrefix predicate on the "citation_kind" field.
-func CitationKindHasPrefix(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldHasPrefix(FieldCitationKind, v))
+// KindHasPrefix applies the HasPrefix predicate on the "kind" field.
+func KindHasPrefix(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldHasPrefix(FieldKind, v))
 }
 
-// CitationKindHasSuffix applies the HasSuffix predicate on the "citation_kind" field.
-func CitationKindHasSuffix(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldHasSuffix(FieldCitationKind, v))
+// KindHasSuffix applies the HasSuffix predicate on the "kind" field.
+func KindHasSuffix(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldHasSuffix(FieldKind, v))
 }
 
-// CitationKindEqualFold applies the EqualFold predicate on the "citation_kind" field.
-func CitationKindEqualFold(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEqualFold(FieldCitationKind, v))
+// KindEqualFold applies the EqualFold predicate on the "kind" field.
+func KindEqualFold(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEqualFold(FieldKind, v))
 }
 
-// CitationKindContainsFold applies the ContainsFold predicate on the "citation_kind" field.
-func CitationKindContainsFold(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldContainsFold(FieldCitationKind, v))
+// KindContainsFold applies the ContainsFold predicate on the "kind" field.
+func KindContainsFold(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldContainsFold(FieldKind, v))
 }
 
-// DomainEntityTypeEQ applies the EQ predicate on the "domain_entity_type" field.
-func DomainEntityTypeEQ(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityType, v))
+// SummaryEQ applies the EQ predicate on the "summary" field.
+func SummaryEQ(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEQ(FieldSummary, v))
 }
 
-// DomainEntityTypeNEQ applies the NEQ predicate on the "domain_entity_type" field.
-func DomainEntityTypeNEQ(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNEQ(FieldDomainEntityType, v))
+// SummaryNEQ applies the NEQ predicate on the "summary" field.
+func SummaryNEQ(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNEQ(FieldSummary, v))
 }
 
-// DomainEntityTypeIn applies the In predicate on the "domain_entity_type" field.
-func DomainEntityTypeIn(vs ...string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIn(FieldDomainEntityType, vs...))
+// SummaryIn applies the In predicate on the "summary" field.
+func SummaryIn(vs ...string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldIn(FieldSummary, vs...))
 }
 
-// DomainEntityTypeNotIn applies the NotIn predicate on the "domain_entity_type" field.
-func DomainEntityTypeNotIn(vs ...string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotIn(FieldDomainEntityType, vs...))
+// SummaryNotIn applies the NotIn predicate on the "summary" field.
+func SummaryNotIn(vs ...string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNotIn(FieldSummary, vs...))
 }
 
-// DomainEntityTypeGT applies the GT predicate on the "domain_entity_type" field.
-func DomainEntityTypeGT(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldGT(FieldDomainEntityType, v))
+// SummaryGT applies the GT predicate on the "summary" field.
+func SummaryGT(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldGT(FieldSummary, v))
 }
 
-// DomainEntityTypeGTE applies the GTE predicate on the "domain_entity_type" field.
-func DomainEntityTypeGTE(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldGTE(FieldDomainEntityType, v))
+// SummaryGTE applies the GTE predicate on the "summary" field.
+func SummaryGTE(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldGTE(FieldSummary, v))
 }
 
-// DomainEntityTypeLT applies the LT predicate on the "domain_entity_type" field.
-func DomainEntityTypeLT(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldLT(FieldDomainEntityType, v))
+// SummaryLT applies the LT predicate on the "summary" field.
+func SummaryLT(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldLT(FieldSummary, v))
 }
 
-// DomainEntityTypeLTE applies the LTE predicate on the "domain_entity_type" field.
-func DomainEntityTypeLTE(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldLTE(FieldDomainEntityType, v))
+// SummaryLTE applies the LTE predicate on the "summary" field.
+func SummaryLTE(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldLTE(FieldSummary, v))
 }
 
-// DomainEntityTypeContains applies the Contains predicate on the "domain_entity_type" field.
-func DomainEntityTypeContains(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldContains(FieldDomainEntityType, v))
+// SummaryContains applies the Contains predicate on the "summary" field.
+func SummaryContains(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldContains(FieldSummary, v))
 }
 
-// DomainEntityTypeHasPrefix applies the HasPrefix predicate on the "domain_entity_type" field.
-func DomainEntityTypeHasPrefix(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldHasPrefix(FieldDomainEntityType, v))
+// SummaryHasPrefix applies the HasPrefix predicate on the "summary" field.
+func SummaryHasPrefix(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldHasPrefix(FieldSummary, v))
 }
 
-// DomainEntityTypeHasSuffix applies the HasSuffix predicate on the "domain_entity_type" field.
-func DomainEntityTypeHasSuffix(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldHasSuffix(FieldDomainEntityType, v))
+// SummaryHasSuffix applies the HasSuffix predicate on the "summary" field.
+func SummaryHasSuffix(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldHasSuffix(FieldSummary, v))
 }
 
-// DomainEntityTypeIsNil applies the IsNil predicate on the "domain_entity_type" field.
-func DomainEntityTypeIsNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIsNull(FieldDomainEntityType))
+// SummaryEqualFold applies the EqualFold predicate on the "summary" field.
+func SummaryEqualFold(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEqualFold(FieldSummary, v))
 }
 
-// DomainEntityTypeNotNil applies the NotNil predicate on the "domain_entity_type" field.
-func DomainEntityTypeNotNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotNull(FieldDomainEntityType))
-}
-
-// DomainEntityTypeEqualFold applies the EqualFold predicate on the "domain_entity_type" field.
-func DomainEntityTypeEqualFold(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEqualFold(FieldDomainEntityType, v))
-}
-
-// DomainEntityTypeContainsFold applies the ContainsFold predicate on the "domain_entity_type" field.
-func DomainEntityTypeContainsFold(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldContainsFold(FieldDomainEntityType, v))
-}
-
-// DomainEntityIDEQ applies the EQ predicate on the "domain_entity_id" field.
-func DomainEntityIDEQ(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityID, v))
-}
-
-// DomainEntityIDNEQ applies the NEQ predicate on the "domain_entity_id" field.
-func DomainEntityIDNEQ(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNEQ(FieldDomainEntityID, v))
-}
-
-// DomainEntityIDIn applies the In predicate on the "domain_entity_id" field.
-func DomainEntityIDIn(vs ...uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIn(FieldDomainEntityID, vs...))
-}
-
-// DomainEntityIDNotIn applies the NotIn predicate on the "domain_entity_id" field.
-func DomainEntityIDNotIn(vs ...uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotIn(FieldDomainEntityID, vs...))
-}
-
-// DomainEntityIDGT applies the GT predicate on the "domain_entity_id" field.
-func DomainEntityIDGT(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldGT(FieldDomainEntityID, v))
-}
-
-// DomainEntityIDGTE applies the GTE predicate on the "domain_entity_id" field.
-func DomainEntityIDGTE(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldGTE(FieldDomainEntityID, v))
-}
-
-// DomainEntityIDLT applies the LT predicate on the "domain_entity_id" field.
-func DomainEntityIDLT(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldLT(FieldDomainEntityID, v))
-}
-
-// DomainEntityIDLTE applies the LTE predicate on the "domain_entity_id" field.
-func DomainEntityIDLTE(v uuid.UUID) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldLTE(FieldDomainEntityID, v))
-}
-
-// DomainEntityIDIsNil applies the IsNil predicate on the "domain_entity_id" field.
-func DomainEntityIDIsNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIsNull(FieldDomainEntityID))
-}
-
-// DomainEntityIDNotNil applies the NotNil predicate on the "domain_entity_id" field.
-func DomainEntityIDNotNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotNull(FieldDomainEntityID))
+// SummaryContainsFold applies the ContainsFold predicate on the "summary" field.
+func SummaryContainsFold(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldContainsFold(FieldSummary, v))
 }
 
 // KnowledgeEntityIDEQ applies the EQ predicate on the "knowledge_entity_id" field.
@@ -582,79 +522,139 @@ func AgentRunToolCallIDNotNil() predicate.AgentRunCitation {
 	return predicate.AgentRunCitation(sql.FieldNotNull(FieldAgentRunToolCallID))
 }
 
-// SummaryEQ applies the EQ predicate on the "summary" field.
-func SummaryEQ(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEQ(FieldSummary, v))
+// DomainEntityTypeEQ applies the EQ predicate on the "domain_entity_type" field.
+func DomainEntityTypeEQ(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityType, v))
 }
 
-// SummaryNEQ applies the NEQ predicate on the "summary" field.
-func SummaryNEQ(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNEQ(FieldSummary, v))
+// DomainEntityTypeNEQ applies the NEQ predicate on the "domain_entity_type" field.
+func DomainEntityTypeNEQ(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNEQ(FieldDomainEntityType, v))
 }
 
-// SummaryIn applies the In predicate on the "summary" field.
-func SummaryIn(vs ...string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIn(FieldSummary, vs...))
+// DomainEntityTypeIn applies the In predicate on the "domain_entity_type" field.
+func DomainEntityTypeIn(vs ...string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldIn(FieldDomainEntityType, vs...))
 }
 
-// SummaryNotIn applies the NotIn predicate on the "summary" field.
-func SummaryNotIn(vs ...string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotIn(FieldSummary, vs...))
+// DomainEntityTypeNotIn applies the NotIn predicate on the "domain_entity_type" field.
+func DomainEntityTypeNotIn(vs ...string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNotIn(FieldDomainEntityType, vs...))
 }
 
-// SummaryGT applies the GT predicate on the "summary" field.
-func SummaryGT(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldGT(FieldSummary, v))
+// DomainEntityTypeGT applies the GT predicate on the "domain_entity_type" field.
+func DomainEntityTypeGT(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldGT(FieldDomainEntityType, v))
 }
 
-// SummaryGTE applies the GTE predicate on the "summary" field.
-func SummaryGTE(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldGTE(FieldSummary, v))
+// DomainEntityTypeGTE applies the GTE predicate on the "domain_entity_type" field.
+func DomainEntityTypeGTE(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldGTE(FieldDomainEntityType, v))
 }
 
-// SummaryLT applies the LT predicate on the "summary" field.
-func SummaryLT(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldLT(FieldSummary, v))
+// DomainEntityTypeLT applies the LT predicate on the "domain_entity_type" field.
+func DomainEntityTypeLT(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldLT(FieldDomainEntityType, v))
 }
 
-// SummaryLTE applies the LTE predicate on the "summary" field.
-func SummaryLTE(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldLTE(FieldSummary, v))
+// DomainEntityTypeLTE applies the LTE predicate on the "domain_entity_type" field.
+func DomainEntityTypeLTE(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldLTE(FieldDomainEntityType, v))
 }
 
-// SummaryContains applies the Contains predicate on the "summary" field.
-func SummaryContains(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldContains(FieldSummary, v))
+// DomainEntityTypeContains applies the Contains predicate on the "domain_entity_type" field.
+func DomainEntityTypeContains(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldContains(FieldDomainEntityType, v))
 }
 
-// SummaryHasPrefix applies the HasPrefix predicate on the "summary" field.
-func SummaryHasPrefix(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldHasPrefix(FieldSummary, v))
+// DomainEntityTypeHasPrefix applies the HasPrefix predicate on the "domain_entity_type" field.
+func DomainEntityTypeHasPrefix(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldHasPrefix(FieldDomainEntityType, v))
 }
 
-// SummaryHasSuffix applies the HasSuffix predicate on the "summary" field.
-func SummaryHasSuffix(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldHasSuffix(FieldSummary, v))
+// DomainEntityTypeHasSuffix applies the HasSuffix predicate on the "domain_entity_type" field.
+func DomainEntityTypeHasSuffix(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldHasSuffix(FieldDomainEntityType, v))
 }
 
-// SummaryEqualFold applies the EqualFold predicate on the "summary" field.
-func SummaryEqualFold(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldEqualFold(FieldSummary, v))
+// DomainEntityTypeIsNil applies the IsNil predicate on the "domain_entity_type" field.
+func DomainEntityTypeIsNil() predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldIsNull(FieldDomainEntityType))
 }
 
-// SummaryContainsFold applies the ContainsFold predicate on the "summary" field.
-func SummaryContainsFold(v string) predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldContainsFold(FieldSummary, v))
+// DomainEntityTypeNotNil applies the NotNil predicate on the "domain_entity_type" field.
+func DomainEntityTypeNotNil() predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNotNull(FieldDomainEntityType))
 }
 
-// SnapshotIsNil applies the IsNil predicate on the "snapshot" field.
-func SnapshotIsNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldIsNull(FieldSnapshot))
+// DomainEntityTypeEqualFold applies the EqualFold predicate on the "domain_entity_type" field.
+func DomainEntityTypeEqualFold(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEqualFold(FieldDomainEntityType, v))
 }
 
-// SnapshotNotNil applies the NotNil predicate on the "snapshot" field.
-func SnapshotNotNil() predicate.AgentRunCitation {
-	return predicate.AgentRunCitation(sql.FieldNotNull(FieldSnapshot))
+// DomainEntityTypeContainsFold applies the ContainsFold predicate on the "domain_entity_type" field.
+func DomainEntityTypeContainsFold(v string) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldContainsFold(FieldDomainEntityType, v))
+}
+
+// DomainEntityIDEQ applies the EQ predicate on the "domain_entity_id" field.
+func DomainEntityIDEQ(v uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldEQ(FieldDomainEntityID, v))
+}
+
+// DomainEntityIDNEQ applies the NEQ predicate on the "domain_entity_id" field.
+func DomainEntityIDNEQ(v uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNEQ(FieldDomainEntityID, v))
+}
+
+// DomainEntityIDIn applies the In predicate on the "domain_entity_id" field.
+func DomainEntityIDIn(vs ...uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldIn(FieldDomainEntityID, vs...))
+}
+
+// DomainEntityIDNotIn applies the NotIn predicate on the "domain_entity_id" field.
+func DomainEntityIDNotIn(vs ...uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNotIn(FieldDomainEntityID, vs...))
+}
+
+// DomainEntityIDGT applies the GT predicate on the "domain_entity_id" field.
+func DomainEntityIDGT(v uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldGT(FieldDomainEntityID, v))
+}
+
+// DomainEntityIDGTE applies the GTE predicate on the "domain_entity_id" field.
+func DomainEntityIDGTE(v uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldGTE(FieldDomainEntityID, v))
+}
+
+// DomainEntityIDLT applies the LT predicate on the "domain_entity_id" field.
+func DomainEntityIDLT(v uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldLT(FieldDomainEntityID, v))
+}
+
+// DomainEntityIDLTE applies the LTE predicate on the "domain_entity_id" field.
+func DomainEntityIDLTE(v uuid.UUID) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldLTE(FieldDomainEntityID, v))
+}
+
+// DomainEntityIDIsNil applies the IsNil predicate on the "domain_entity_id" field.
+func DomainEntityIDIsNil() predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldIsNull(FieldDomainEntityID))
+}
+
+// DomainEntityIDNotNil applies the NotNil predicate on the "domain_entity_id" field.
+func DomainEntityIDNotNil() predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNotNull(FieldDomainEntityID))
+}
+
+// DomainEntitySnapshotIsNil applies the IsNil predicate on the "domain_entity_snapshot" field.
+func DomainEntitySnapshotIsNil() predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldIsNull(FieldDomainEntitySnapshot))
+}
+
+// DomainEntitySnapshotNotNil applies the NotNil predicate on the "domain_entity_snapshot" field.
+func DomainEntitySnapshotNotNil() predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(sql.FieldNotNull(FieldDomainEntitySnapshot))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -852,6 +852,35 @@ func HasAgentRunToolCallWith(preds ...predicate.AgentRunToolCall) predicate.Agen
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunToolCall
 		step.Edge.Schema = schemaConfig.AgentRunCitation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasFindings applies the HasEdge predicate on the "findings" edge.
+func HasFindings() predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, FindingsTable, FindingsPrimaryKey...),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunFinding
+		step.Edge.Schema = schemaConfig.AgentRunFindingCitation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasFindingsWith applies the HasEdge predicate on the "findings" edge with a given conditions (other predicates).
+func HasFindingsWith(preds ...predicate.AgentRunFinding) predicate.AgentRunCitation {
+	return predicate.AgentRunCitation(func(s *sql.Selector) {
+		step := newFindingsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunFinding
+		step.Edge.Schema = schemaConfig.AgentRunFindingCitation
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

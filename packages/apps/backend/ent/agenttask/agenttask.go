@@ -24,18 +24,20 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldOwnerUserID holds the string denoting the owner_user_id field in the database.
 	FieldOwnerUserID = "owner_user_id"
-	// FieldWorkflowKind holds the string denoting the workflow_kind field in the database.
-	FieldWorkflowKind = "workflow_kind"
-	// FieldWorkflowInput holds the string denoting the workflow_input field in the database.
-	FieldWorkflowInput = "workflow_input"
+	// FieldWorkflow holds the string denoting the workflow field in the database.
+	FieldWorkflow = "workflow"
+	// FieldInput holds the string denoting the input field in the database.
+	FieldInput = "input"
 	// FieldTriggerKind holds the string denoting the trigger_kind field in the database.
 	FieldTriggerKind = "trigger_kind"
-	// FieldTriggerPayload holds the string denoting the trigger_payload field in the database.
-	FieldTriggerPayload = "trigger_payload"
+	// FieldTriggerMetadata holds the string denoting the trigger_metadata field in the database.
+	FieldTriggerMetadata = "trigger_metadata"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeOwnerUser holds the string denoting the owner_user edge name in mutations.
 	EdgeOwnerUser = "owner_user"
+	// EdgeSubjects holds the string denoting the subjects edge name in mutations.
+	EdgeSubjects = "subjects"
 	// EdgeRuns holds the string denoting the runs edge name in mutations.
 	EdgeRuns = "runs"
 	// EdgeCitations holds the string denoting the citations edge name in mutations.
@@ -56,6 +58,13 @@ const (
 	OwnerUserInverseTable = "users"
 	// OwnerUserColumn is the table column denoting the owner_user relation/edge.
 	OwnerUserColumn = "owner_user_id"
+	// SubjectsTable is the table that holds the subjects relation/edge.
+	SubjectsTable = "agent_task_subjects"
+	// SubjectsInverseTable is the table name for the AgentTaskSubject entity.
+	// It exists in this package in order to avoid circular dependency with the "agenttasksubject" package.
+	SubjectsInverseTable = "agent_task_subjects"
+	// SubjectsColumn is the table column denoting the subjects relation/edge.
+	SubjectsColumn = "task_id"
 	// RunsTable is the table that holds the runs relation/edge.
 	RunsTable = "agent_runs"
 	// RunsInverseTable is the table name for the AgentRun entity.
@@ -79,10 +88,10 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldOwnerUserID,
-	FieldWorkflowKind,
-	FieldWorkflowInput,
+	FieldWorkflow,
+	FieldInput,
 	FieldTriggerKind,
-	FieldTriggerPayload,
+	FieldTriggerMetadata,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -109,8 +118,10 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// WorkflowKindValidator is a validator for the "workflow_kind" field. It is called by the builders before save.
-	WorkflowKindValidator func(string) error
+	// WorkflowValidator is a validator for the "workflow" field. It is called by the builders before save.
+	WorkflowValidator func(string) error
+	// InputValidator is a validator for the "input" field. It is called by the builders before save.
+	InputValidator func([]byte) error
 	// TriggerKindValidator is a validator for the "trigger_kind" field. It is called by the builders before save.
 	TriggerKindValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -145,9 +156,9 @@ func ByOwnerUserID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldOwnerUserID, opts...).ToFunc()
 }
 
-// ByWorkflowKind orders the results by the workflow_kind field.
-func ByWorkflowKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldWorkflowKind, opts...).ToFunc()
+// ByWorkflow orders the results by the workflow field.
+func ByWorkflow(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldWorkflow, opts...).ToFunc()
 }
 
 // ByTriggerKind orders the results by the trigger_kind field.
@@ -166,6 +177,20 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByOwnerUserField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newOwnerUserStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// BySubjectsCount orders the results by subjects count.
+func BySubjectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newSubjectsStep(), opts...)
+	}
+}
+
+// BySubjects orders the results by subjects terms.
+func BySubjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newSubjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -208,6 +233,13 @@ func newOwnerUserStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(OwnerUserInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, OwnerUserTable, OwnerUserColumn),
+	)
+}
+func newSubjectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(SubjectsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, true, SubjectsTable, SubjectsColumn),
 	)
 }
 func newRunsStep() *sqlgraph.Step {

@@ -25,8 +25,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAgentRunID holds the string denoting the agent_run_id field in the database.
 	FieldAgentRunID = "agent_run_id"
-	// FieldToolName holds the string denoting the tool_name field in the database.
-	FieldToolName = "tool_name"
+	// FieldToolID holds the string denoting the tool_id field in the database.
+	FieldToolID = "tool_id"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldToolParams holds the string denoting the tool_params field in the database.
@@ -77,7 +77,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAgentRunID,
-	FieldToolName,
+	FieldToolID,
 	FieldStatus,
 	FieldToolParams,
 	FieldResult,
@@ -110,17 +110,14 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// ToolNameValidator is a validator for the "tool_name" field. It is called by the builders before save.
-	ToolNameValidator func(string) error
+	// ToolIDValidator is a validator for the "tool_id" field. It is called by the builders before save.
+	ToolIDValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
 
 // Status defines the type for the "status" enum field.
 type Status string
-
-// StatusRequested is the default value of the Status enum.
-const DefaultStatus = StatusRequested
 
 // Status values.
 const (
@@ -173,9 +170,9 @@ func ByAgentRunID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentRunID, opts...).ToFunc()
 }
 
-// ByToolName orders the results by the tool_name field.
-func ByToolName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldToolName, opts...).ToFunc()
+// ByToolID orders the results by the tool_id field.
+func ByToolID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldToolID, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

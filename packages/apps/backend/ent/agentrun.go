@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/agenttask"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -30,32 +31,29 @@ type AgentRun struct {
 	AgentTaskID uuid.UUID `json:"agent_task_id,omitempty"`
 	// Attempt holds the value of the "attempt" field.
 	Attempt int `json:"attempt,omitempty"`
-	// Status holds the value of the "status" field.
-	Status agentrun.Status `json:"status,omitempty"`
 	// StartedAt holds the value of the "started_at" field.
 	StartedAt *time.Time `json:"started_at,omitempty"`
-	// FinishedAt holds the value of the "finished_at" field.
-	FinishedAt *time.Time `json:"finished_at,omitempty"`
-	// ErrorMessage holds the value of the "error_message" field.
-	ErrorMessage string `json:"error_message,omitempty"`
+	// CancelledAt holds the value of the "cancelled_at" field.
+	CancelledAt *time.Time `json:"cancelled_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentRunQuery when eager-loading is set.
-	Edges        AgentRunEdges `json:"edges"`
-	selectValues sql.SelectValues
+	Edges            AgentRunEdges `json:"edges"`
+	agent_run_result *uuid.UUID
+	selectValues     sql.SelectValues
 }
 
 // AgentRunEdges holds the relations/edges for other nodes in the graph.
 type AgentRunEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AgentTask holds the value of the agent_task edge.
-	AgentTask *AgentTask `json:"agent_task,omitempty"`
+	// Task holds the value of the task edge.
+	Task *AgentTask `json:"task,omitempty"`
+	// Result holds the value of the result edge.
+	Result *AgentRunResult `json:"result,omitempty"`
 	// Citations holds the value of the citations edge.
 	Citations []*AgentRunCitation `json:"citations,omitempty"`
 	// Findings holds the value of the findings edge.
 	Findings []*AgentRunFinding `json:"findings,omitempty"`
-	// Result holds the value of the result edge.
-	Result []*AgentRunResult `json:"result,omitempty"`
 	// ToolCalls holds the value of the tool_calls edge.
 	ToolCalls []*AgentRunToolCall `json:"tool_calls,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -74,21 +72,32 @@ func (e AgentRunEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AgentTaskOrErr returns the AgentTask value or an error if the edge
+// TaskOrErr returns the Task value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunEdges) AgentTaskOrErr() (*AgentTask, error) {
-	if e.AgentTask != nil {
-		return e.AgentTask, nil
+func (e AgentRunEdges) TaskOrErr() (*AgentTask, error) {
+	if e.Task != nil {
+		return e.Task, nil
 	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: agenttask.Label}
 	}
-	return nil, &NotLoadedError{edge: "agent_task"}
+	return nil, &NotLoadedError{edge: "task"}
+}
+
+// ResultOrErr returns the Result value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e AgentRunEdges) ResultOrErr() (*AgentRunResult, error) {
+	if e.Result != nil {
+		return e.Result, nil
+	} else if e.loadedTypes[2] {
+		return nil, &NotFoundError{label: agentrunresult.Label}
+	}
+	return nil, &NotLoadedError{edge: "result"}
 }
 
 // CitationsOrErr returns the Citations value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentRunEdges) CitationsOrErr() ([]*AgentRunCitation, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Citations, nil
 	}
 	return nil, &NotLoadedError{edge: "citations"}
@@ -97,19 +106,10 @@ func (e AgentRunEdges) CitationsOrErr() ([]*AgentRunCitation, error) {
 // FindingsOrErr returns the Findings value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentRunEdges) FindingsOrErr() ([]*AgentRunFinding, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Findings, nil
 	}
 	return nil, &NotLoadedError{edge: "findings"}
-}
-
-// ResultOrErr returns the Result value or an error if the edge
-// was not loaded in eager-loading.
-func (e AgentRunEdges) ResultOrErr() ([]*AgentRunResult, error) {
-	if e.loadedTypes[4] {
-		return e.Result, nil
-	}
-	return nil, &NotLoadedError{edge: "result"}
 }
 
 // ToolCallsOrErr returns the ToolCalls value or an error if the edge
@@ -128,12 +128,12 @@ func (*AgentRun) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case agentrun.FieldTenantID, agentrun.FieldAttempt:
 			values[i] = new(sql.NullInt64)
-		case agentrun.FieldStatus, agentrun.FieldErrorMessage:
-			values[i] = new(sql.NullString)
-		case agentrun.FieldCreatedAt, agentrun.FieldUpdatedAt, agentrun.FieldStartedAt, agentrun.FieldFinishedAt:
+		case agentrun.FieldCreatedAt, agentrun.FieldUpdatedAt, agentrun.FieldStartedAt, agentrun.FieldCancelledAt:
 			values[i] = new(sql.NullTime)
 		case agentrun.FieldID, agentrun.FieldAgentTaskID:
 			values[i] = new(uuid.UUID)
+		case agentrun.ForeignKeys[0]: // agent_run_result
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -185,12 +185,6 @@ func (_m *AgentRun) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Attempt = int(value.Int64)
 			}
-		case agentrun.FieldStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field status", values[i])
-			} else if value.Valid {
-				_m.Status = agentrun.Status(value.String)
-			}
 		case agentrun.FieldStartedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field started_at", values[i])
@@ -198,18 +192,19 @@ func (_m *AgentRun) assignValues(columns []string, values []any) error {
 				_m.StartedAt = new(time.Time)
 				*_m.StartedAt = value.Time
 			}
-		case agentrun.FieldFinishedAt:
+		case agentrun.FieldCancelledAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
-				return fmt.Errorf("unexpected type %T for field finished_at", values[i])
+				return fmt.Errorf("unexpected type %T for field cancelled_at", values[i])
 			} else if value.Valid {
-				_m.FinishedAt = new(time.Time)
-				*_m.FinishedAt = value.Time
+				_m.CancelledAt = new(time.Time)
+				*_m.CancelledAt = value.Time
 			}
-		case agentrun.FieldErrorMessage:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field error_message", values[i])
+		case agentrun.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field agent_run_result", values[i])
 			} else if value.Valid {
-				_m.ErrorMessage = value.String
+				_m.agent_run_result = new(uuid.UUID)
+				*_m.agent_run_result = *value.S.(*uuid.UUID)
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -229,9 +224,14 @@ func (_m *AgentRun) QueryTenant() *TenantQuery {
 	return NewAgentRunClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAgentTask queries the "agent_task" edge of the AgentRun entity.
-func (_m *AgentRun) QueryAgentTask() *AgentTaskQuery {
-	return NewAgentRunClient(_m.config).QueryAgentTask(_m)
+// QueryTask queries the "task" edge of the AgentRun entity.
+func (_m *AgentRun) QueryTask() *AgentTaskQuery {
+	return NewAgentRunClient(_m.config).QueryTask(_m)
+}
+
+// QueryResult queries the "result" edge of the AgentRun entity.
+func (_m *AgentRun) QueryResult() *AgentRunResultQuery {
+	return NewAgentRunClient(_m.config).QueryResult(_m)
 }
 
 // QueryCitations queries the "citations" edge of the AgentRun entity.
@@ -242,11 +242,6 @@ func (_m *AgentRun) QueryCitations() *AgentRunCitationQuery {
 // QueryFindings queries the "findings" edge of the AgentRun entity.
 func (_m *AgentRun) QueryFindings() *AgentRunFindingQuery {
 	return NewAgentRunClient(_m.config).QueryFindings(_m)
-}
-
-// QueryResult queries the "result" edge of the AgentRun entity.
-func (_m *AgentRun) QueryResult() *AgentRunResultQuery {
-	return NewAgentRunClient(_m.config).QueryResult(_m)
 }
 
 // QueryToolCalls queries the "tool_calls" edge of the AgentRun entity.
@@ -292,21 +287,15 @@ func (_m *AgentRun) String() string {
 	builder.WriteString("attempt=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Attempt))
 	builder.WriteString(", ")
-	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Status))
-	builder.WriteString(", ")
 	if v := _m.StartedAt; v != nil {
 		builder.WriteString("started_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	if v := _m.FinishedAt; v != nil {
-		builder.WriteString("finished_at=")
+	if v := _m.CancelledAt; v != nil {
+		builder.WriteString("cancelled_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
-	builder.WriteString(", ")
-	builder.WriteString("error_message=")
-	builder.WriteString(_m.ErrorMessage)
 	builder.WriteByte(')')
 	return builder.String()
 }

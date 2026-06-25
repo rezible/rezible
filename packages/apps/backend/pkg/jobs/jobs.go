@@ -79,38 +79,3 @@ type RunAgentWorkflow struct {
 func (RunAgentWorkflow) Kind() string {
 	return "run-agent-workflow"
 }
-
-type RequestAgentTaskRun struct {
-	AgentTaskID uuid.UUID `json:"agent_task_id"`
-}
-
-func (RequestAgentTaskRun) Kind() string {
-	return "request-agent-task-run"
-}
-
-type InvestigateAlert struct {
-	AlertID         uuid.UUID `json:"alert_id"`
-	AlertInstanceID uuid.UUID `json:"alert_instance_id,omitempty"`
-}
-
-func (InvestigateAlert) Kind() string {
-	return "investigate-alert"
-}
-
-type PostAlertInvestigationUpdate struct {
-	AlertID    uuid.UUID `json:"alert_id"`
-	AgentRunID uuid.UUID `json:"agent_run_id"`
-}
-
-func (PostAlertInvestigationUpdate) Kind() string {
-	return "post-alert-investigation-update"
-}
-
-type AnalyzeIncidentRetrospective struct {
-	IncidentID      uuid.UUID `json:"incident_id"`
-	RetrospectiveID uuid.UUID `json:"retrospective_id,omitempty"`
-}
-
-func (AnalyzeIncidentRetrospective) Kind() string {
-	return "analyze-incident-retrospective"
-}

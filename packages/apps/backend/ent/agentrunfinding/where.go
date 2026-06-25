@@ -440,6 +440,35 @@ func HasAgentRunWith(preds ...predicate.AgentRun) predicate.AgentRunFinding {
 	})
 }
 
+// HasCitations applies the HasEdge predicate on the "citations" edge.
+func HasCitations() predicate.AgentRunFinding {
+	return predicate.AgentRunFinding(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, CitationsTable, CitationsPrimaryKey...),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunCitation
+		step.Edge.Schema = schemaConfig.AgentRunFindingCitation
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasCitationsWith applies the HasEdge predicate on the "citations" edge with a given conditions (other predicates).
+func HasCitationsWith(preds ...predicate.AgentRunCitation) predicate.AgentRunFinding {
+	return predicate.AgentRunFinding(func(s *sql.Selector) {
+		step := newCitationsStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunCitation
+		step.Edge.Schema = schemaConfig.AgentRunFindingCitation
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
 // HasFindingCitations applies the HasEdge predicate on the "finding_citations" edge.
 func HasFindingCitations() predicate.AgentRunFinding {
 	return predicate.AgentRunFinding(func(s *sql.Selector) {

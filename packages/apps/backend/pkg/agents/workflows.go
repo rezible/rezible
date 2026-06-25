@@ -1,109 +1,53 @@
 package agents
 
-import (
-	"fmt"
-	"time"
+type workflowDefinition[Input any, Output any] struct {
+	name   string
+	input  Input
+	output Output
+}
 
-	"github.com/google/uuid"
+func defineWorkflow[Input any, Output any](name string) workflowDefinition[Input, Output] {
+	return workflowDefinition[Input, Output]{name: name}
+}
+
+var WorkflowAlertInvestigation = defineWorkflow[AlertInvestigationInput, AlertInvestigationOutput]("alert_investigation")
+
+type (
+	AlertInvestigationInput struct {
+		Objectives []string `json:"objectives"`
+	}
+
+	AlertInvestigationOutput struct {
+		Limitations        []string `json:"limitations"`
+		RecommendedActions []string `json:"recommendedActions"`
+	}
+
+	AlertInvestigationFindings struct {
+		LikelyCause     string   `json:"likelyCause"`
+		AffectedSystems []string `json:"affectedSystems"`
+		SuggestedChecks []string `json:"suggestedChecks"`
+		RecommendedNext string   `json:"recommendedNext"`
+	}
 )
 
-type WorkflowKind string
+var WorkflowIncidentTriage = defineWorkflow[IncidentTriageInput, IncidentTriageOutput]("incident_triage")
 
-func (k WorkflowKind) String() string {
-	return string(k)
-}
+type (
+	IncidentTriageInput struct {
+		Objectives []string `json:"objectives"`
+	}
 
-const (
-	WorkflowKindIncidentContextPack WorkflowKind = "incident_context_pack"
-	WorkflowKindAlertInvestigation  WorkflowKind = "alert_investigation"
+	IncidentTriageOutput struct {
+		LikelyImpact       []IncidentImpactFinding `json:"likelyImpact"`
+		SuggestedChecks    []string                `json:"suggestedChecks"`
+		Limitations        []string                `json:"limitations"`
+		RecommendedActions []string                `json:"recommendedActions"`
+	}
+
+	IncidentImpactFinding struct {
+		EntityID    string   `json:"entityId"`
+		DisplayName string   `json:"displayName"`
+		Rationale   string   `json:"rationale"`
+		EvidenceIDs []string `json:"evidenceIds"`
+	}
 )
-
-type SubjectRef struct {
-	Type string    `json:"type" validate:"required"`
-	ID   uuid.UUID `json:"id" validate:"required"`
-}
-
-type IncidentContextPackInput struct {
-	Subjects   []SubjectRef `json:"subjects" validate:"required,dive"`
-	Objectives []string     `json:"objectives"`
-}
-
-type IncidentContextPackOutput struct {
-	Findings           IncidentTriageFindings `json:"findings"`
-	Limitations        []string               `json:"limitations"`
-	RecommendedActions []string               `json:"recommendedActions"`
-}
-
-type IncidentImpactFinding struct {
-	EntityID    string   `json:"entityId"`
-	DisplayName string   `json:"displayName"`
-	Rationale   string   `json:"rationale"`
-	EvidenceIDs []string `json:"evidenceIds"`
-}
-
-type IncidentTriageFindings struct {
-	LikelyImpact    []IncidentImpactFinding `json:"likelyImpact"`
-	SuggestedChecks []string                `json:"suggestedChecks"`
-}
-
-type AlertInvestigationInput struct {
-	Subjects   []SubjectRef `json:"subjects" validate:"required,dive"`
-	Objectives []string     `json:"objectives"`
-}
-
-type AlertInvestigationOutput struct {
-	Findings           AlertInvestigationFindings `json:"findings"`
-	Limitations        []string                   `json:"limitations"`
-	RecommendedActions []string                   `json:"recommendedActions"`
-}
-
-type AlertInvestigationFindings struct {
-	LikelyCause     string   `json:"likelyCause"`
-	AffectedSystems []string `json:"affectedSystems"`
-	SuggestedChecks []string `json:"suggestedChecks"`
-	RecommendedNext string   `json:"recommendedNext"`
-}
-
-type WorkflowContextItem struct {
-	Kind     string         `json:"kind"`
-	Role     string         `json:"role,omitempty"`
-	Name     string         `json:"name"`
-	Payload  map[string]any `json:"payload,omitempty"`
-	Citation int            `json:"citation,omitempty"`
-}
-
-type WorkflowContext struct {
-	GeneratedAt time.Time
-	Context     map[string]any
-	Items       []WorkflowContextItem
-	Citations   []RunCitationInput
-	Limitations []string
-	Suggested   []string
-}
-
-func ValidateWorkflowInput(kind WorkflowKind, input map[string]any) error {
-	if kind == "" {
-		return fmt.Errorf("missing agent workflow kind")
-	}
-	switch kind {
-	case WorkflowKindIncidentContextPack:
-		params, err := DecodeInput[IncidentContextPackInput](input)
-		if err != nil {
-			return fmt.Errorf("validate incident context pack input: %w", err)
-		}
-		if FindSubjectRefID(params.Subjects, "incident") == uuid.Nil {
-			return fmt.Errorf("%s requires incident subject", kind)
-		}
-	case WorkflowKindAlertInvestigation:
-		params, err := DecodeInput[AlertInvestigationInput](input)
-		if err != nil {
-			return fmt.Errorf("validate alert investigation input: %w", err)
-		}
-		if FindSubjectRefID(params.Subjects, "alert") == uuid.Nil {
-			return fmt.Errorf("%s requires alert subject", kind)
-		}
-	default:
-		return fmt.Errorf("unknown agent workflow kind %q", kind)
-	}
-	return nil
-}

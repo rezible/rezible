@@ -23,6 +23,7 @@ import (
 	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/agentruntoolcall"
 	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/document"
@@ -112,6 +113,8 @@ type Client struct {
 	AgentRunToolCall *AgentRunToolCallClient
 	// AgentTask is the client for interacting with the AgentTask builders.
 	AgentTask *AgentTaskClient
+	// AgentTaskSubject is the client for interacting with the AgentTaskSubject builders.
+	AgentTaskSubject *AgentTaskSubjectClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -264,6 +267,7 @@ func (c *Client) init() {
 	c.AgentRunResult = NewAgentRunResultClient(c.config)
 	c.AgentRunToolCall = NewAgentRunToolCallClient(c.config)
 	c.AgentTask = NewAgentTaskClient(c.config)
+	c.AgentTaskSubject = NewAgentTaskSubjectClient(c.config)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
@@ -433,6 +437,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AgentRunResult:                          NewAgentRunResultClient(cfg),
 		AgentRunToolCall:                        NewAgentRunToolCallClient(cfg),
 		AgentTask:                               NewAgentTaskClient(cfg),
+		AgentTaskSubject:                        NewAgentTaskSubjectClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
 		AlertFeedback:                           NewAlertFeedbackClient(cfg),
 		AlertMetrics:                            NewAlertMetricsClient(cfg),
@@ -526,6 +531,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AgentRunResult:                          NewAgentRunResultClient(cfg),
 		AgentRunToolCall:                        NewAgentRunToolCallClient(cfg),
 		AgentTask:                               NewAgentTaskClient(cfg),
+		AgentTaskSubject:                        NewAgentTaskSubjectClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
 		AlertFeedback:                           NewAlertFeedbackClient(cfg),
 		AlertMetrics:                            NewAlertMetricsClient(cfg),
@@ -623,9 +629,9 @@ func (c *Client) Close() error {
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AgentRun, c.AgentRunCitation, c.AgentRunFinding, c.AgentRunFindingCitation,
-		c.AgentRunResult, c.AgentRunToolCall, c.AgentTask, c.Alert, c.AlertFeedback,
-		c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident, c.IncidentDebrief,
-		c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
+		c.AgentRunResult, c.AgentRunToolCall, c.AgentTask, c.AgentTaskSubject, c.Alert,
+		c.AlertFeedback, c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident,
+		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
 		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
 		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
 		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
@@ -655,12 +661,12 @@ func (c *Client) Use(hooks ...Hook) {
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AgentRun, c.AgentRunCitation, c.AgentRunFinding, c.AgentRunFindingCitation,
-		c.AgentRunResult, c.AgentRunToolCall, c.AgentTask, c.Alert, c.AlertFeedback,
-		c.AlertMetrics, c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident,
-		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.AgentRunResult, c.AgentRunToolCall, c.AgentTask, c.AgentTaskSubject, c.Alert,
+		c.AlertFeedback, c.AlertMetrics, c.Document, c.DocumentAccess,
+		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
+		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
@@ -699,6 +705,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.AgentRunToolCall.mutate(ctx, m)
 	case *AgentTaskMutation:
 		return c.AgentTask.mutate(ctx, m)
+	case *AgentTaskSubjectMutation:
+		return c.AgentTaskSubject.mutate(ctx, m)
 	case *AlertMutation:
 		return c.Alert.mutate(ctx, m)
 	case *AlertFeedbackMutation:
@@ -963,18 +971,37 @@ func (c *AgentRunClient) QueryTenant(_m *AgentRun) *TenantQuery {
 	return query
 }
 
-// QueryAgentTask queries the agent_task edge of a AgentRun.
-func (c *AgentRunClient) QueryAgentTask(_m *AgentRun) *AgentTaskQuery {
+// QueryTask queries the task edge of a AgentRun.
+func (c *AgentRunClient) QueryTask(_m *AgentRun) *AgentTaskQuery {
 	query := (&AgentTaskClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
 			sqlgraph.To(agenttask.Table, agenttask.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentrun.AgentTaskTable, agentrun.AgentTaskColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrun.TaskTable, agentrun.TaskColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AgentTask
+		step.Edge.Schema = schemaConfig.AgentRun
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryResult queries the result edge of a AgentRun.
+func (c *AgentRunClient) QueryResult(_m *AgentRun) *AgentRunResultQuery {
+	query := (&AgentRunResultClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
+			sqlgraph.To(agentrunresult.Table, agentrunresult.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrun.ResultTable, agentrun.ResultColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunResult
 		step.Edge.Schema = schemaConfig.AgentRun
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -1014,25 +1041,6 @@ func (c *AgentRunClient) QueryFindings(_m *AgentRun) *AgentRunFindingQuery {
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AgentRunFinding
 		step.Edge.Schema = schemaConfig.AgentRunFinding
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryResult queries the result edge of a AgentRun.
-func (c *AgentRunClient) QueryResult(_m *AgentRun) *AgentRunResultQuery {
-	query := (&AgentRunResultClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(agentrun.Table, agentrun.FieldID, id),
-			sqlgraph.To(agentrunresult.Table, agentrunresult.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, agentrun.ResultTable, agentrun.ResultColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AgentRunResult
-		step.Edge.Schema = schemaConfig.AgentRunResult
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -1325,6 +1333,25 @@ func (c *AgentRunCitationClient) QueryAgentRunToolCall(_m *AgentRunCitation) *Ag
 	return query
 }
 
+// QueryFindings queries the findings edge of a AgentRunCitation.
+func (c *AgentRunCitationClient) QueryFindings(_m *AgentRunCitation) *AgentRunFindingQuery {
+	query := (&AgentRunFindingClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentruncitation.Table, agentruncitation.FieldID, id),
+			sqlgraph.To(agentrunfinding.Table, agentrunfinding.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, true, agentruncitation.FindingsTable, agentruncitation.FindingsPrimaryKey...),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunFinding
+		step.Edge.Schema = schemaConfig.AgentRunFindingCitation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryFindingCitations queries the finding_citations edge of a AgentRunCitation.
 func (c *AgentRunCitationClient) QueryFindingCitations(_m *AgentRunCitation) *AgentRunFindingCitationQuery {
 	query := (&AgentRunFindingCitationClient{config: c.config}).Query()
@@ -1516,6 +1543,25 @@ func (c *AgentRunFindingClient) QueryAgentRun(_m *AgentRunFinding) *AgentRunQuer
 	return query
 }
 
+// QueryCitations queries the citations edge of a AgentRunFinding.
+func (c *AgentRunFindingClient) QueryCitations(_m *AgentRunFinding) *AgentRunCitationQuery {
+	query := (&AgentRunCitationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunfinding.Table, agentrunfinding.FieldID, id),
+			sqlgraph.To(agentruncitation.Table, agentruncitation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, agentrunfinding.CitationsTable, agentrunfinding.CitationsPrimaryKey...),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunCitation
+		step.Edge.Schema = schemaConfig.AgentRunFindingCitation
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryFindingCitations queries the finding_citations edge of a AgentRunFinding.
 func (c *AgentRunFindingClient) QueryFindingCitations(_m *AgentRunFinding) *AgentRunFindingCitationQuery {
 	query := (&AgentRunFindingCitationClient{config: c.config}).Query()
@@ -1688,15 +1734,15 @@ func (c *AgentRunFindingCitationClient) QueryTenant(_m *AgentRunFindingCitation)
 	return query
 }
 
-// QueryAgentRunFinding queries the agent_run_finding edge of a AgentRunFindingCitation.
-func (c *AgentRunFindingCitationClient) QueryAgentRunFinding(_m *AgentRunFindingCitation) *AgentRunFindingQuery {
+// QueryFinding queries the finding edge of a AgentRunFindingCitation.
+func (c *AgentRunFindingCitationClient) QueryFinding(_m *AgentRunFindingCitation) *AgentRunFindingQuery {
 	query := (&AgentRunFindingClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentrunfindingcitation.Table, agentrunfindingcitation.FieldID, id),
 			sqlgraph.To(agentrunfinding.Table, agentrunfinding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfindingcitation.AgentRunFindingTable, agentrunfindingcitation.AgentRunFindingColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfindingcitation.FindingTable, agentrunfindingcitation.FindingColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AgentRunFinding
@@ -1707,15 +1753,15 @@ func (c *AgentRunFindingCitationClient) QueryAgentRunFinding(_m *AgentRunFinding
 	return query
 }
 
-// QueryAgentRunCitation queries the agent_run_citation edge of a AgentRunFindingCitation.
-func (c *AgentRunFindingCitationClient) QueryAgentRunCitation(_m *AgentRunFindingCitation) *AgentRunCitationQuery {
+// QueryCitation queries the citation edge of a AgentRunFindingCitation.
+func (c *AgentRunFindingCitationClient) QueryCitation(_m *AgentRunFindingCitation) *AgentRunCitationQuery {
 	query := (&AgentRunCitationClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentrunfindingcitation.Table, agentrunfindingcitation.FieldID, id),
 			sqlgraph.To(agentruncitation.Table, agentruncitation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfindingcitation.AgentRunCitationTable, agentrunfindingcitation.AgentRunCitationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfindingcitation.CitationTable, agentrunfindingcitation.CitationColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.AgentRunCitation
@@ -2261,6 +2307,25 @@ func (c *AgentTaskClient) QueryOwnerUser(_m *AgentTask) *UserQuery {
 	return query
 }
 
+// QuerySubjects queries the subjects edge of a AgentTask.
+func (c *AgentTaskClient) QuerySubjects(_m *AgentTask) *AgentTaskSubjectQuery {
+	query := (&AgentTaskSubjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttask.Table, agenttask.FieldID, id),
+			sqlgraph.To(agenttasksubject.Table, agenttasksubject.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agenttask.SubjectsTable, agenttask.SubjectsColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentTaskSubject
+		step.Edge.Schema = schemaConfig.AgentTaskSubject
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // QueryRuns queries the runs edge of a AgentTask.
 func (c *AgentTaskClient) QueryRuns(_m *AgentTask) *AgentRunQuery {
 	query := (&AgentRunClient{config: c.config}).Query()
@@ -2322,6 +2387,178 @@ func (c *AgentTaskClient) mutate(ctx context.Context, m *AgentTaskMutation) (Val
 		return (&AgentTaskDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AgentTask mutation op: %q", m.Op())
+	}
+}
+
+// AgentTaskSubjectClient is a client for the AgentTaskSubject schema.
+type AgentTaskSubjectClient struct {
+	config
+}
+
+// NewAgentTaskSubjectClient returns a client for the AgentTaskSubject from the given config.
+func NewAgentTaskSubjectClient(c config) *AgentTaskSubjectClient {
+	return &AgentTaskSubjectClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `agenttasksubject.Hooks(f(g(h())))`.
+func (c *AgentTaskSubjectClient) Use(hooks ...Hook) {
+	c.hooks.AgentTaskSubject = append(c.hooks.AgentTaskSubject, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `agenttasksubject.Intercept(f(g(h())))`.
+func (c *AgentTaskSubjectClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AgentTaskSubject = append(c.inters.AgentTaskSubject, interceptors...)
+}
+
+// Create returns a builder for creating a AgentTaskSubject entity.
+func (c *AgentTaskSubjectClient) Create() *AgentTaskSubjectCreate {
+	mutation := newAgentTaskSubjectMutation(c.config, OpCreate)
+	return &AgentTaskSubjectCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AgentTaskSubject entities.
+func (c *AgentTaskSubjectClient) CreateBulk(builders ...*AgentTaskSubjectCreate) *AgentTaskSubjectCreateBulk {
+	return &AgentTaskSubjectCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AgentTaskSubjectClient) MapCreateBulk(slice any, setFunc func(*AgentTaskSubjectCreate, int)) *AgentTaskSubjectCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AgentTaskSubjectCreateBulk{err: fmt.Errorf("calling to AgentTaskSubjectClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AgentTaskSubjectCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AgentTaskSubjectCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AgentTaskSubject.
+func (c *AgentTaskSubjectClient) Update() *AgentTaskSubjectUpdate {
+	mutation := newAgentTaskSubjectMutation(c.config, OpUpdate)
+	return &AgentTaskSubjectUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AgentTaskSubjectClient) UpdateOne(_m *AgentTaskSubject) *AgentTaskSubjectUpdateOne {
+	mutation := newAgentTaskSubjectMutation(c.config, OpUpdateOne, withAgentTaskSubject(_m))
+	return &AgentTaskSubjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AgentTaskSubjectClient) UpdateOneID(id uuid.UUID) *AgentTaskSubjectUpdateOne {
+	mutation := newAgentTaskSubjectMutation(c.config, OpUpdateOne, withAgentTaskSubjectID(id))
+	return &AgentTaskSubjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AgentTaskSubject.
+func (c *AgentTaskSubjectClient) Delete() *AgentTaskSubjectDelete {
+	mutation := newAgentTaskSubjectMutation(c.config, OpDelete)
+	return &AgentTaskSubjectDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AgentTaskSubjectClient) DeleteOne(_m *AgentTaskSubject) *AgentTaskSubjectDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AgentTaskSubjectClient) DeleteOneID(id uuid.UUID) *AgentTaskSubjectDeleteOne {
+	builder := c.Delete().Where(agenttasksubject.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AgentTaskSubjectDeleteOne{builder}
+}
+
+// Query returns a query builder for AgentTaskSubject.
+func (c *AgentTaskSubjectClient) Query() *AgentTaskSubjectQuery {
+	return &AgentTaskSubjectQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAgentTaskSubject},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AgentTaskSubject entity by its id.
+func (c *AgentTaskSubjectClient) Get(ctx context.Context, id uuid.UUID) (*AgentTaskSubject, error) {
+	return c.Query().Where(agenttasksubject.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AgentTaskSubjectClient) GetX(ctx context.Context, id uuid.UUID) *AgentTaskSubject {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a AgentTaskSubject.
+func (c *AgentTaskSubjectClient) QueryTenant(_m *AgentTaskSubject) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttasksubject.Table, agenttasksubject.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agenttasksubject.TenantTable, agenttasksubject.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AgentTaskSubject
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryTask queries the task edge of a AgentTaskSubject.
+func (c *AgentTaskSubjectClient) QueryTask(_m *AgentTaskSubject) *AgentTaskQuery {
+	query := (&AgentTaskClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttasksubject.Table, agenttasksubject.FieldID, id),
+			sqlgraph.To(agenttask.Table, agenttask.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, agenttasksubject.TaskTable, agenttasksubject.TaskColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AgentTask
+		step.Edge.Schema = schemaConfig.AgentTaskSubject
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AgentTaskSubjectClient) Hooks() []Hook {
+	hooks := c.hooks.AgentTaskSubject
+	return append(hooks[:len(hooks):len(hooks)], agenttasksubject.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AgentTaskSubjectClient) Interceptors() []Interceptor {
+	return c.inters.AgentTaskSubject
+}
+
+func (c *AgentTaskSubjectClient) mutate(ctx context.Context, m *AgentTaskSubjectMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AgentTaskSubjectCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AgentTaskSubjectUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AgentTaskSubjectUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AgentTaskSubjectDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AgentTaskSubject mutation op: %q", m.Op())
 	}
 }
 
@@ -16190,15 +16427,15 @@ func (c *VideoConferenceClient) mutate(ctx context.Context, m *VideoConferenceMu
 type (
 	hooks struct {
 		AgentRun, AgentRunCitation, AgentRunFinding, AgentRunFindingCitation,
-		AgentRunResult, AgentRunToolCall, AgentTask, Alert, AlertFeedback, Document,
-		DocumentAccess, EventAnnotation, Incident, IncidentDebrief,
-		IncidentDebriefMessage, IncidentDebriefQuestion, IncidentDebriefSuggestion,
-		IncidentField, IncidentFieldOption, IncidentImpact, IncidentLink,
-		IncidentMilestone, IncidentRole, IncidentRoleAssignment, IncidentSeverity,
-		IncidentTag, IncidentTimelineEvent, IncidentTimelineEventContext,
-		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
-		IncidentTimelineEventTopologyContext, IncidentType, Integration,
-		IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		AgentRunResult, AgentRunToolCall, AgentTask, AgentTaskSubject, Alert,
+		AlertFeedback, Document, DocumentAccess, EventAnnotation, Incident,
+		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
+		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
+		IncidentSeverity, IncidentTag, IncidentTimelineEvent,
+		IncidentTimelineEventContext, IncidentTimelineEventContributingFactor,
+		IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext,
+		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
 		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
 		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
@@ -16213,9 +16450,9 @@ type (
 	}
 	inters struct {
 		AgentRun, AgentRunCitation, AgentRunFinding, AgentRunFindingCitation,
-		AgentRunResult, AgentRunToolCall, AgentTask, Alert, AlertFeedback,
-		AlertMetrics, Document, DocumentAccess, EventAnnotation, Incident,
-		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
+		AgentRunResult, AgentRunToolCall, AgentTask, AgentTaskSubject, Alert,
+		AlertFeedback, AlertMetrics, Document, DocumentAccess, EventAnnotation,
+		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
 		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
 		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
 		IncidentSeverity, IncidentTag, IncidentTimelineEvent,
@@ -16246,6 +16483,7 @@ var (
 		AgentRunResult:                        tableSchemas[0],
 		AgentRunToolCall:                      tableSchemas[0],
 		AgentTask:                             tableSchemas[0],
+		AgentTaskSubject:                      tableSchemas[0],
 		Alert:                                 tableSchemas[0],
 		AlertFeedback:                         tableSchemas[0],
 		AlertMetrics:                          tableSchemas[0],

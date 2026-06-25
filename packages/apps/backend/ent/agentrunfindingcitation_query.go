@@ -24,14 +24,14 @@ import (
 // AgentRunFindingCitationQuery is the builder for querying AgentRunFindingCitation entities.
 type AgentRunFindingCitationQuery struct {
 	config
-	ctx                  *QueryContext
-	order                []agentrunfindingcitation.OrderOption
-	inters               []Interceptor
-	predicates           []predicate.AgentRunFindingCitation
-	withTenant           *TenantQuery
-	withAgentRunFinding  *AgentRunFindingQuery
-	withAgentRunCitation *AgentRunCitationQuery
-	modifiers            []func(*sql.Selector)
+	ctx          *QueryContext
+	order        []agentrunfindingcitation.OrderOption
+	inters       []Interceptor
+	predicates   []predicate.AgentRunFindingCitation
+	withTenant   *TenantQuery
+	withFinding  *AgentRunFindingQuery
+	withCitation *AgentRunCitationQuery
+	modifiers    []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -93,8 +93,8 @@ func (_q *AgentRunFindingCitationQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryAgentRunFinding chains the current query on the "agent_run_finding" edge.
-func (_q *AgentRunFindingCitationQuery) QueryAgentRunFinding() *AgentRunFindingQuery {
+// QueryFinding chains the current query on the "finding" edge.
+func (_q *AgentRunFindingCitationQuery) QueryFinding() *AgentRunFindingQuery {
 	query := (&AgentRunFindingClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -107,7 +107,7 @@ func (_q *AgentRunFindingCitationQuery) QueryAgentRunFinding() *AgentRunFindingQ
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentrunfindingcitation.Table, agentrunfindingcitation.FieldID, selector),
 			sqlgraph.To(agentrunfinding.Table, agentrunfinding.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfindingcitation.AgentRunFindingTable, agentrunfindingcitation.AgentRunFindingColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfindingcitation.FindingTable, agentrunfindingcitation.FindingColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentRunFinding
@@ -118,8 +118,8 @@ func (_q *AgentRunFindingCitationQuery) QueryAgentRunFinding() *AgentRunFindingQ
 	return query
 }
 
-// QueryAgentRunCitation chains the current query on the "agent_run_citation" edge.
-func (_q *AgentRunFindingCitationQuery) QueryAgentRunCitation() *AgentRunCitationQuery {
+// QueryCitation chains the current query on the "citation" edge.
+func (_q *AgentRunFindingCitationQuery) QueryCitation() *AgentRunCitationQuery {
 	query := (&AgentRunCitationClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -132,7 +132,7 @@ func (_q *AgentRunFindingCitationQuery) QueryAgentRunCitation() *AgentRunCitatio
 		step := sqlgraph.NewStep(
 			sqlgraph.From(agentrunfindingcitation.Table, agentrunfindingcitation.FieldID, selector),
 			sqlgraph.To(agentruncitation.Table, agentruncitation.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfindingcitation.AgentRunCitationTable, agentrunfindingcitation.AgentRunCitationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, agentrunfindingcitation.CitationTable, agentrunfindingcitation.CitationColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentRunCitation
@@ -330,14 +330,14 @@ func (_q *AgentRunFindingCitationQuery) Clone() *AgentRunFindingCitationQuery {
 		return nil
 	}
 	return &AgentRunFindingCitationQuery{
-		config:               _q.config,
-		ctx:                  _q.ctx.Clone(),
-		order:                append([]agentrunfindingcitation.OrderOption{}, _q.order...),
-		inters:               append([]Interceptor{}, _q.inters...),
-		predicates:           append([]predicate.AgentRunFindingCitation{}, _q.predicates...),
-		withTenant:           _q.withTenant.Clone(),
-		withAgentRunFinding:  _q.withAgentRunFinding.Clone(),
-		withAgentRunCitation: _q.withAgentRunCitation.Clone(),
+		config:       _q.config,
+		ctx:          _q.ctx.Clone(),
+		order:        append([]agentrunfindingcitation.OrderOption{}, _q.order...),
+		inters:       append([]Interceptor{}, _q.inters...),
+		predicates:   append([]predicate.AgentRunFindingCitation{}, _q.predicates...),
+		withTenant:   _q.withTenant.Clone(),
+		withFinding:  _q.withFinding.Clone(),
+		withCitation: _q.withCitation.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -356,25 +356,25 @@ func (_q *AgentRunFindingCitationQuery) WithTenant(opts ...func(*TenantQuery)) *
 	return _q
 }
 
-// WithAgentRunFinding tells the query-builder to eager-load the nodes that are connected to
-// the "agent_run_finding" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentRunFindingCitationQuery) WithAgentRunFinding(opts ...func(*AgentRunFindingQuery)) *AgentRunFindingCitationQuery {
+// WithFinding tells the query-builder to eager-load the nodes that are connected to
+// the "finding" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunFindingCitationQuery) WithFinding(opts ...func(*AgentRunFindingQuery)) *AgentRunFindingCitationQuery {
 	query := (&AgentRunFindingClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withAgentRunFinding = query
+	_q.withFinding = query
 	return _q
 }
 
-// WithAgentRunCitation tells the query-builder to eager-load the nodes that are connected to
-// the "agent_run_citation" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AgentRunFindingCitationQuery) WithAgentRunCitation(opts ...func(*AgentRunCitationQuery)) *AgentRunFindingCitationQuery {
+// WithCitation tells the query-builder to eager-load the nodes that are connected to
+// the "citation" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunFindingCitationQuery) WithCitation(opts ...func(*AgentRunCitationQuery)) *AgentRunFindingCitationQuery {
 	query := (&AgentRunCitationClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withAgentRunCitation = query
+	_q.withCitation = query
 	return _q
 }
 
@@ -464,8 +464,8 @@ func (_q *AgentRunFindingCitationQuery) sqlAll(ctx context.Context, hooks ...que
 		_spec       = _q.querySpec()
 		loadedTypes = [3]bool{
 			_q.withTenant != nil,
-			_q.withAgentRunFinding != nil,
-			_q.withAgentRunCitation != nil,
+			_q.withFinding != nil,
+			_q.withCitation != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -497,15 +497,15 @@ func (_q *AgentRunFindingCitationQuery) sqlAll(ctx context.Context, hooks ...que
 			return nil, err
 		}
 	}
-	if query := _q.withAgentRunFinding; query != nil {
-		if err := _q.loadAgentRunFinding(ctx, query, nodes, nil,
-			func(n *AgentRunFindingCitation, e *AgentRunFinding) { n.Edges.AgentRunFinding = e }); err != nil {
+	if query := _q.withFinding; query != nil {
+		if err := _q.loadFinding(ctx, query, nodes, nil,
+			func(n *AgentRunFindingCitation, e *AgentRunFinding) { n.Edges.Finding = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withAgentRunCitation; query != nil {
-		if err := _q.loadAgentRunCitation(ctx, query, nodes, nil,
-			func(n *AgentRunFindingCitation, e *AgentRunCitation) { n.Edges.AgentRunCitation = e }); err != nil {
+	if query := _q.withCitation; query != nil {
+		if err := _q.loadCitation(ctx, query, nodes, nil,
+			func(n *AgentRunFindingCitation, e *AgentRunCitation) { n.Edges.Citation = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -541,11 +541,11 @@ func (_q *AgentRunFindingCitationQuery) loadTenant(ctx context.Context, query *T
 	}
 	return nil
 }
-func (_q *AgentRunFindingCitationQuery) loadAgentRunFinding(ctx context.Context, query *AgentRunFindingQuery, nodes []*AgentRunFindingCitation, init func(*AgentRunFindingCitation), assign func(*AgentRunFindingCitation, *AgentRunFinding)) error {
+func (_q *AgentRunFindingCitationQuery) loadFinding(ctx context.Context, query *AgentRunFindingQuery, nodes []*AgentRunFindingCitation, init func(*AgentRunFindingCitation), assign func(*AgentRunFindingCitation, *AgentRunFinding)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AgentRunFindingCitation)
 	for i := range nodes {
-		fk := nodes[i].AgentRunFindingID
+		fk := nodes[i].FindingID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -562,7 +562,7 @@ func (_q *AgentRunFindingCitationQuery) loadAgentRunFinding(ctx context.Context,
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "agent_run_finding_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "finding_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -570,11 +570,11 @@ func (_q *AgentRunFindingCitationQuery) loadAgentRunFinding(ctx context.Context,
 	}
 	return nil
 }
-func (_q *AgentRunFindingCitationQuery) loadAgentRunCitation(ctx context.Context, query *AgentRunCitationQuery, nodes []*AgentRunFindingCitation, init func(*AgentRunFindingCitation), assign func(*AgentRunFindingCitation, *AgentRunCitation)) error {
+func (_q *AgentRunFindingCitationQuery) loadCitation(ctx context.Context, query *AgentRunCitationQuery, nodes []*AgentRunFindingCitation, init func(*AgentRunFindingCitation), assign func(*AgentRunFindingCitation, *AgentRunCitation)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AgentRunFindingCitation)
 	for i := range nodes {
-		fk := nodes[i].AgentRunCitationID
+		fk := nodes[i].CitationID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -591,7 +591,7 @@ func (_q *AgentRunFindingCitationQuery) loadAgentRunCitation(ctx context.Context
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "agent_run_citation_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "citation_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -633,11 +633,11 @@ func (_q *AgentRunFindingCitationQuery) querySpec() *sqlgraph.QuerySpec {
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(agentrunfindingcitation.FieldTenantID)
 		}
-		if _q.withAgentRunFinding != nil {
-			_spec.Node.AddColumnOnce(agentrunfindingcitation.FieldAgentRunFindingID)
+		if _q.withFinding != nil {
+			_spec.Node.AddColumnOnce(agentrunfindingcitation.FieldFindingID)
 		}
-		if _q.withAgentRunCitation != nil {
-			_spec.Node.AddColumnOnce(agentrunfindingcitation.FieldAgentRunCitationID)
+		if _q.withCitation != nil {
+			_spec.Node.AddColumnOnce(agentrunfindingcitation.FieldCitationID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

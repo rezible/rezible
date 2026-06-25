@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
 	"github.com/rezible/rezible/ent/internal"
@@ -121,6 +122,21 @@ func (_u *AgentRunFindingUpdate) SetAgentRun(v *AgentRun) *AgentRunFindingUpdate
 	return _u.SetAgentRunID(v.ID)
 }
 
+// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
+func (_u *AgentRunFindingUpdate) AddCitationIDs(ids ...uuid.UUID) *AgentRunFindingUpdate {
+	_u.mutation.AddCitationIDs(ids...)
+	return _u
+}
+
+// AddCitations adds the "citations" edges to the AgentRunCitation entity.
+func (_u *AgentRunFindingUpdate) AddCitations(v ...*AgentRunCitation) *AgentRunFindingUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCitationIDs(ids...)
+}
+
 // AddFindingCitationIDs adds the "finding_citations" edge to the AgentRunFindingCitation entity by IDs.
 func (_u *AgentRunFindingUpdate) AddFindingCitationIDs(ids ...uuid.UUID) *AgentRunFindingUpdate {
 	_u.mutation.AddFindingCitationIDs(ids...)
@@ -145,6 +161,27 @@ func (_u *AgentRunFindingUpdate) Mutation() *AgentRunFindingMutation {
 func (_u *AgentRunFindingUpdate) ClearAgentRun() *AgentRunFindingUpdate {
 	_u.mutation.ClearAgentRun()
 	return _u
+}
+
+// ClearCitations clears all "citations" edges to the AgentRunCitation entity.
+func (_u *AgentRunFindingUpdate) ClearCitations() *AgentRunFindingUpdate {
+	_u.mutation.ClearCitations()
+	return _u
+}
+
+// RemoveCitationIDs removes the "citations" edge to AgentRunCitation entities by IDs.
+func (_u *AgentRunFindingUpdate) RemoveCitationIDs(ids ...uuid.UUID) *AgentRunFindingUpdate {
+	_u.mutation.RemoveCitationIDs(ids...)
+	return _u
+}
+
+// RemoveCitations removes "citations" edges to AgentRunCitation entities.
+func (_u *AgentRunFindingUpdate) RemoveCitations(v ...*AgentRunCitation) *AgentRunFindingUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCitationIDs(ids...)
 }
 
 // ClearFindingCitations clears all "finding_citations" edges to the AgentRunFindingCitation entity.
@@ -300,6 +337,75 @@ func (_u *AgentRunFindingUpdate) sqlSave(ctx context.Context) (_node int, err er
 		edge.Schema = _u.schemaConfig.AgentRunFinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   agentrunfinding.CitationsTable,
+			Columns: agentrunfinding.CitationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCitationsIDs(); len(nodes) > 0 && !_u.mutation.CitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   agentrunfinding.CitationsTable,
+			Columns: agentrunfinding.CitationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   agentrunfinding.CitationsTable,
+			Columns: agentrunfinding.CitationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
@@ -463,6 +569,21 @@ func (_u *AgentRunFindingUpdateOne) SetAgentRun(v *AgentRun) *AgentRunFindingUpd
 	return _u.SetAgentRunID(v.ID)
 }
 
+// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
+func (_u *AgentRunFindingUpdateOne) AddCitationIDs(ids ...uuid.UUID) *AgentRunFindingUpdateOne {
+	_u.mutation.AddCitationIDs(ids...)
+	return _u
+}
+
+// AddCitations adds the "citations" edges to the AgentRunCitation entity.
+func (_u *AgentRunFindingUpdateOne) AddCitations(v ...*AgentRunCitation) *AgentRunFindingUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddCitationIDs(ids...)
+}
+
 // AddFindingCitationIDs adds the "finding_citations" edge to the AgentRunFindingCitation entity by IDs.
 func (_u *AgentRunFindingUpdateOne) AddFindingCitationIDs(ids ...uuid.UUID) *AgentRunFindingUpdateOne {
 	_u.mutation.AddFindingCitationIDs(ids...)
@@ -487,6 +608,27 @@ func (_u *AgentRunFindingUpdateOne) Mutation() *AgentRunFindingMutation {
 func (_u *AgentRunFindingUpdateOne) ClearAgentRun() *AgentRunFindingUpdateOne {
 	_u.mutation.ClearAgentRun()
 	return _u
+}
+
+// ClearCitations clears all "citations" edges to the AgentRunCitation entity.
+func (_u *AgentRunFindingUpdateOne) ClearCitations() *AgentRunFindingUpdateOne {
+	_u.mutation.ClearCitations()
+	return _u
+}
+
+// RemoveCitationIDs removes the "citations" edge to AgentRunCitation entities by IDs.
+func (_u *AgentRunFindingUpdateOne) RemoveCitationIDs(ids ...uuid.UUID) *AgentRunFindingUpdateOne {
+	_u.mutation.RemoveCitationIDs(ids...)
+	return _u
+}
+
+// RemoveCitations removes "citations" edges to AgentRunCitation entities.
+func (_u *AgentRunFindingUpdateOne) RemoveCitations(v ...*AgentRunCitation) *AgentRunFindingUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveCitationIDs(ids...)
 }
 
 // ClearFindingCitations clears all "finding_citations" edges to the AgentRunFindingCitation entity.
@@ -672,6 +814,75 @@ func (_u *AgentRunFindingUpdateOne) sqlSave(ctx context.Context) (_node *AgentRu
 		edge.Schema = _u.schemaConfig.AgentRunFinding
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.CitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   agentrunfinding.CitationsTable,
+			Columns: agentrunfinding.CitationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedCitationsIDs(); len(nodes) > 0 && !_u.mutation.CitationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   agentrunfinding.CitationsTable,
+			Columns: agentrunfinding.CitationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.CitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   agentrunfinding.CitationsTable,
+			Columns: agentrunfinding.CitationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _u.config, mutation: newAgentRunFindingCitationMutation(_u.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}

@@ -3,9 +3,12 @@ package apiv1
 import (
 	"context"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent/agentrun"
-	"github.com/rezible/rezible/pkg/agents"
+	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agenttasksubject"
+	"github.com/rezible/rezible/ent/predicate"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
 )
 
@@ -20,12 +23,13 @@ func newAgentsHandler(agents rez.AgentService) *agentsHandler {
 func (h *agentsHandler) CreateAgentTask(ctx context.Context, req *oapi.CreateAgentTaskRequest) (*oapi.CreateAgentTaskResponse, error) {
 	var resp oapi.CreateAgentTaskResponse
 	attr := req.Body.Attributes
-	task, createErr := h.agents.CreateTask(ctx, rez.CreateAgentTaskRequest{
-		WorkflowKind:   agents.WorkflowKind(attr.WorkflowKind),
-		WorkflowInput:  attr.WorkflowInput,
+	params := rez.CreateAgentTaskParams{
+		Workflow:       attr.Workflow,
+		WorkflowInput:  attr.Input,
 		TriggerKind:    attr.TriggerKind,
 		TriggerPayload: attr.TriggerPayload,
-	})
+	}
+	task, createErr := h.agents.CreateTask(ctx, params)
 	if createErr != nil {
 		return nil, oapi.Error(ctx, "create agent task", createErr)
 	}
@@ -35,13 +39,20 @@ func (h *agentsHandler) CreateAgentTask(ctx context.Context, req *oapi.CreateAge
 
 func (h *agentsHandler) ListAgentTasks(ctx context.Context, req *oapi.ListAgentTasksRequest) (*oapi.ListAgentTasksResponse, error) {
 	var resp oapi.ListAgentTasksResponse
-	tasks, listErr := h.agents.ListTasks(ctx, rez.ListAgentTasksParams{
-		ListParams:   req.ListParams(),
-		WorkflowKind: agents.WorkflowKind(req.WorkflowKind),
-		TriggerKind:  req.TriggerKind,
-		SubjectType:  req.SubjectType,
-		SubjectID:    req.SubjectId,
-	})
+	var subjectPreds []predicate.AgentTaskSubject
+	if req.SubjectKind != "" {
+		subjectPreds = append(subjectPreds, agenttasksubject.SubjectKind(req.SubjectKind))
+	}
+	if req.DomainEntityId != uuid.Nil {
+		subjectPreds = append(subjectPreds, agenttasksubject.DomainEntityID(req.DomainEntityId))
+	}
+	params := rez.ListAgentTasksParams{
+		ListParams:        req.ListParams(),
+		Workflow:          req.Workflow,
+		TriggerKind:       req.TriggerKind,
+		SubjectPredicates: subjectPreds,
+	}
+	tasks, listErr := h.agents.ListTasks(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent tasks", listErr)
 	}
@@ -75,12 +86,30 @@ func (h *agentsHandler) RequestAgentTaskRun(ctx context.Context, req *oapi.Reque
 
 func (h *agentsHandler) ListAgentRuns(ctx context.Context, req *oapi.ListAgentRunsRequest) (*oapi.ListAgentRunsResponse, error) {
 	var resp oapi.ListAgentRunsResponse
-	runs, listErr := h.agents.ListRuns(ctx, rez.ListAgentRunsParams{
-		ListParams:   req.ListParams(),
-		AgentTaskID:  req.AgentTaskId,
-		WorkflowKind: agents.WorkflowKind(req.WorkflowKind),
-		Status:       agentrun.Status(req.Status),
-	})
+	var predicates []predicate.AgentRun
+	if req.Workflow != "" {
+		predicates = append(predicates, agentrun.HasTaskWith(agenttask.Workflow(req.Workflow)))
+	}
+	if req.Started.IsSet {
+		p := agentrun.StartedAtIsNil()
+		if req.Started.Value {
+			p = agentrun.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	if req.Resulted.IsSet {
+		p := agentrun.HasResult()
+		if req.Resulted.Value {
+			p = agentrun.Not(p)
+		}
+		predicates = append(predicates, p)
+	}
+	params := rez.ListAgentRunsParams{
+		ListParams:  req.ListParams(),
+		AgentTaskID: req.AgentTaskId,
+		Predicates:  predicates,
+	}
+	runs, listErr := h.agents.ListRuns(ctx, params)
 	if listErr != nil {
 		return nil, oapi.Error(ctx, "list agent runs", listErr)
 	}

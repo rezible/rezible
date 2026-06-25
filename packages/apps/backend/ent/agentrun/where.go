@@ -87,14 +87,9 @@ func StartedAt(v time.Time) predicate.AgentRun {
 	return predicate.AgentRun(sql.FieldEQ(FieldStartedAt, v))
 }
 
-// FinishedAt applies equality check predicate on the "finished_at" field. It's identical to FinishedAtEQ.
-func FinishedAt(v time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldEQ(FieldFinishedAt, v))
-}
-
-// ErrorMessage applies equality check predicate on the "error_message" field. It's identical to ErrorMessageEQ.
-func ErrorMessage(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldEQ(FieldErrorMessage, v))
+// CancelledAt applies equality check predicate on the "cancelled_at" field. It's identical to CancelledAtEQ.
+func CancelledAt(v time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldEQ(FieldCancelledAt, v))
 }
 
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
@@ -257,26 +252,6 @@ func AttemptLTE(v int) predicate.AgentRun {
 	return predicate.AgentRun(sql.FieldLTE(FieldAttempt, v))
 }
 
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v Status) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldEQ(FieldStatus, v))
-}
-
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v Status) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNEQ(FieldStatus, v))
-}
-
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...Status) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldIn(FieldStatus, vs...))
-}
-
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...Status) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNotIn(FieldStatus, vs...))
-}
-
 // StartedAtEQ applies the EQ predicate on the "started_at" field.
 func StartedAtEQ(v time.Time) predicate.AgentRun {
 	return predicate.AgentRun(sql.FieldEQ(FieldStartedAt, v))
@@ -327,129 +302,54 @@ func StartedAtNotNil() predicate.AgentRun {
 	return predicate.AgentRun(sql.FieldNotNull(FieldStartedAt))
 }
 
-// FinishedAtEQ applies the EQ predicate on the "finished_at" field.
-func FinishedAtEQ(v time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldEQ(FieldFinishedAt, v))
+// CancelledAtEQ applies the EQ predicate on the "cancelled_at" field.
+func CancelledAtEQ(v time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldEQ(FieldCancelledAt, v))
 }
 
-// FinishedAtNEQ applies the NEQ predicate on the "finished_at" field.
-func FinishedAtNEQ(v time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNEQ(FieldFinishedAt, v))
+// CancelledAtNEQ applies the NEQ predicate on the "cancelled_at" field.
+func CancelledAtNEQ(v time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldNEQ(FieldCancelledAt, v))
 }
 
-// FinishedAtIn applies the In predicate on the "finished_at" field.
-func FinishedAtIn(vs ...time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldIn(FieldFinishedAt, vs...))
+// CancelledAtIn applies the In predicate on the "cancelled_at" field.
+func CancelledAtIn(vs ...time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldIn(FieldCancelledAt, vs...))
 }
 
-// FinishedAtNotIn applies the NotIn predicate on the "finished_at" field.
-func FinishedAtNotIn(vs ...time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNotIn(FieldFinishedAt, vs...))
+// CancelledAtNotIn applies the NotIn predicate on the "cancelled_at" field.
+func CancelledAtNotIn(vs ...time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldNotIn(FieldCancelledAt, vs...))
 }
 
-// FinishedAtGT applies the GT predicate on the "finished_at" field.
-func FinishedAtGT(v time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldGT(FieldFinishedAt, v))
+// CancelledAtGT applies the GT predicate on the "cancelled_at" field.
+func CancelledAtGT(v time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldGT(FieldCancelledAt, v))
 }
 
-// FinishedAtGTE applies the GTE predicate on the "finished_at" field.
-func FinishedAtGTE(v time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldGTE(FieldFinishedAt, v))
+// CancelledAtGTE applies the GTE predicate on the "cancelled_at" field.
+func CancelledAtGTE(v time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldGTE(FieldCancelledAt, v))
 }
 
-// FinishedAtLT applies the LT predicate on the "finished_at" field.
-func FinishedAtLT(v time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldLT(FieldFinishedAt, v))
+// CancelledAtLT applies the LT predicate on the "cancelled_at" field.
+func CancelledAtLT(v time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldLT(FieldCancelledAt, v))
 }
 
-// FinishedAtLTE applies the LTE predicate on the "finished_at" field.
-func FinishedAtLTE(v time.Time) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldLTE(FieldFinishedAt, v))
+// CancelledAtLTE applies the LTE predicate on the "cancelled_at" field.
+func CancelledAtLTE(v time.Time) predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldLTE(FieldCancelledAt, v))
 }
 
-// FinishedAtIsNil applies the IsNil predicate on the "finished_at" field.
-func FinishedAtIsNil() predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldIsNull(FieldFinishedAt))
+// CancelledAtIsNil applies the IsNil predicate on the "cancelled_at" field.
+func CancelledAtIsNil() predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldIsNull(FieldCancelledAt))
 }
 
-// FinishedAtNotNil applies the NotNil predicate on the "finished_at" field.
-func FinishedAtNotNil() predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNotNull(FieldFinishedAt))
-}
-
-// ErrorMessageEQ applies the EQ predicate on the "error_message" field.
-func ErrorMessageEQ(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldEQ(FieldErrorMessage, v))
-}
-
-// ErrorMessageNEQ applies the NEQ predicate on the "error_message" field.
-func ErrorMessageNEQ(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNEQ(FieldErrorMessage, v))
-}
-
-// ErrorMessageIn applies the In predicate on the "error_message" field.
-func ErrorMessageIn(vs ...string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldIn(FieldErrorMessage, vs...))
-}
-
-// ErrorMessageNotIn applies the NotIn predicate on the "error_message" field.
-func ErrorMessageNotIn(vs ...string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNotIn(FieldErrorMessage, vs...))
-}
-
-// ErrorMessageGT applies the GT predicate on the "error_message" field.
-func ErrorMessageGT(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldGT(FieldErrorMessage, v))
-}
-
-// ErrorMessageGTE applies the GTE predicate on the "error_message" field.
-func ErrorMessageGTE(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldGTE(FieldErrorMessage, v))
-}
-
-// ErrorMessageLT applies the LT predicate on the "error_message" field.
-func ErrorMessageLT(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldLT(FieldErrorMessage, v))
-}
-
-// ErrorMessageLTE applies the LTE predicate on the "error_message" field.
-func ErrorMessageLTE(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldLTE(FieldErrorMessage, v))
-}
-
-// ErrorMessageContains applies the Contains predicate on the "error_message" field.
-func ErrorMessageContains(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldContains(FieldErrorMessage, v))
-}
-
-// ErrorMessageHasPrefix applies the HasPrefix predicate on the "error_message" field.
-func ErrorMessageHasPrefix(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldHasPrefix(FieldErrorMessage, v))
-}
-
-// ErrorMessageHasSuffix applies the HasSuffix predicate on the "error_message" field.
-func ErrorMessageHasSuffix(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldHasSuffix(FieldErrorMessage, v))
-}
-
-// ErrorMessageIsNil applies the IsNil predicate on the "error_message" field.
-func ErrorMessageIsNil() predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldIsNull(FieldErrorMessage))
-}
-
-// ErrorMessageNotNil applies the NotNil predicate on the "error_message" field.
-func ErrorMessageNotNil() predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldNotNull(FieldErrorMessage))
-}
-
-// ErrorMessageEqualFold applies the EqualFold predicate on the "error_message" field.
-func ErrorMessageEqualFold(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldEqualFold(FieldErrorMessage, v))
-}
-
-// ErrorMessageContainsFold applies the ContainsFold predicate on the "error_message" field.
-func ErrorMessageContainsFold(v string) predicate.AgentRun {
-	return predicate.AgentRun(sql.FieldContainsFold(FieldErrorMessage, v))
+// CancelledAtNotNil applies the NotNil predicate on the "cancelled_at" field.
+func CancelledAtNotNil() predicate.AgentRun {
+	return predicate.AgentRun(sql.FieldNotNull(FieldCancelledAt))
 }
 
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
@@ -481,12 +381,12 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AgentRun {
 	})
 }
 
-// HasAgentTask applies the HasEdge predicate on the "agent_task" edge.
-func HasAgentTask() predicate.AgentRun {
+// HasTask applies the HasEdge predicate on the "task" edge.
+func HasTask() predicate.AgentRun {
 	return predicate.AgentRun(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AgentTaskTable, AgentTaskColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, TaskTable, TaskColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentTask
@@ -495,12 +395,41 @@ func HasAgentTask() predicate.AgentRun {
 	})
 }
 
-// HasAgentTaskWith applies the HasEdge predicate on the "agent_task" edge with a given conditions (other predicates).
-func HasAgentTaskWith(preds ...predicate.AgentTask) predicate.AgentRun {
+// HasTaskWith applies the HasEdge predicate on the "task" edge with a given conditions (other predicates).
+func HasTaskWith(preds ...predicate.AgentTask) predicate.AgentRun {
 	return predicate.AgentRun(func(s *sql.Selector) {
-		step := newAgentTaskStep()
+		step := newTaskStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentTask
+		step.Edge.Schema = schemaConfig.AgentRun
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasResult applies the HasEdge predicate on the "result" edge.
+func HasResult() predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, ResultTable, ResultColumn),
+		)
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunResult
+		step.Edge.Schema = schemaConfig.AgentRun
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasResultWith applies the HasEdge predicate on the "result" edge with a given conditions (other predicates).
+func HasResultWith(preds ...predicate.AgentRunResult) predicate.AgentRun {
+	return predicate.AgentRun(func(s *sql.Selector) {
+		step := newResultStep()
+		schemaConfig := internal.SchemaConfigFromContext(s.Context())
+		step.To.Schema = schemaConfig.AgentRunResult
 		step.Edge.Schema = schemaConfig.AgentRun
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
@@ -560,35 +489,6 @@ func HasFindingsWith(preds ...predicate.AgentRunFinding) predicate.AgentRun {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunFinding
 		step.Edge.Schema = schemaConfig.AgentRunFinding
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasResult applies the HasEdge predicate on the "result" edge.
-func HasResult() predicate.AgentRun {
-	return predicate.AgentRun(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, ResultTable, ResultColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRunResult
-		step.Edge.Schema = schemaConfig.AgentRunResult
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasResultWith applies the HasEdge predicate on the "result" edge with a given conditions (other predicates).
-func HasResultWith(preds ...predicate.AgentRunResult) predicate.AgentRun {
-	return predicate.AgentRun(func(s *sql.Selector) {
-		step := newResultStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AgentRunResult
-		step.Edge.Schema = schemaConfig.AgentRunResult
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

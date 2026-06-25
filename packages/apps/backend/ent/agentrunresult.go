@@ -3,7 +3,6 @@
 package ent
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -29,10 +28,10 @@ type AgentRunResult struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AgentRunID holds the value of the "agent_run_id" field.
 	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
-	// Content holds the value of the "content" field.
-	Content string `json:"content,omitempty"`
-	// Data holds the value of the "data" field.
-	Data map[string]interface{} `json:"data,omitempty"`
+	// Output holds the value of the "output" field.
+	Output []byte `json:"output,omitempty"`
+	// ErrorMessage holds the value of the "error_message" field.
+	ErrorMessage string `json:"error_message,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentRunResultQuery when eager-loading is set.
 	Edges        AgentRunResultEdges `json:"edges"`
@@ -77,11 +76,11 @@ func (*AgentRunResult) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agentrunresult.FieldData:
+		case agentrunresult.FieldOutput:
 			values[i] = new([]byte)
 		case agentrunresult.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agentrunresult.FieldContent:
+		case agentrunresult.FieldErrorMessage:
 			values[i] = new(sql.NullString)
 		case agentrunresult.FieldCreatedAt, agentrunresult.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -132,19 +131,17 @@ func (_m *AgentRunResult) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.AgentRunID = *value
 			}
-		case agentrunresult.FieldContent:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field content", values[i])
-			} else if value.Valid {
-				_m.Content = value.String
-			}
-		case agentrunresult.FieldData:
+		case agentrunresult.FieldOutput:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field data", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.Data); err != nil {
-					return fmt.Errorf("unmarshal field data: %w", err)
-				}
+				return fmt.Errorf("unexpected type %T for field output", values[i])
+			} else if value != nil {
+				_m.Output = *value
+			}
+		case agentrunresult.FieldErrorMessage:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field error_message", values[i])
+			} else if value.Valid {
+				_m.ErrorMessage = value.String
 			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
@@ -204,11 +201,11 @@ func (_m *AgentRunResult) String() string {
 	builder.WriteString("agent_run_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
 	builder.WriteString(", ")
-	builder.WriteString("content=")
-	builder.WriteString(_m.Content)
+	builder.WriteString("output=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Output))
 	builder.WriteString(", ")
-	builder.WriteString("data=")
-	builder.WriteString(fmt.Sprintf("%v", _m.Data))
+	builder.WriteString("error_message=")
+	builder.WriteString(_m.ErrorMessage)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -67,16 +67,16 @@ func (_u *AgentRunToolCallUpdate) SetNillableAgentRunID(v *uuid.UUID) *AgentRunT
 	return _u
 }
 
-// SetToolName sets the "tool_name" field.
-func (_u *AgentRunToolCallUpdate) SetToolName(v string) *AgentRunToolCallUpdate {
-	_u.mutation.SetToolName(v)
+// SetToolID sets the "tool_id" field.
+func (_u *AgentRunToolCallUpdate) SetToolID(v string) *AgentRunToolCallUpdate {
+	_u.mutation.SetToolID(v)
 	return _u
 }
 
-// SetNillableToolName sets the "tool_name" field if the given value is not nil.
-func (_u *AgentRunToolCallUpdate) SetNillableToolName(v *string) *AgentRunToolCallUpdate {
+// SetNillableToolID sets the "tool_id" field if the given value is not nil.
+func (_u *AgentRunToolCallUpdate) SetNillableToolID(v *string) *AgentRunToolCallUpdate {
 	if v != nil {
-		_u.SetToolName(*v)
+		_u.SetToolID(*v)
 	}
 	return _u
 }
@@ -275,9 +275,9 @@ func (_u *AgentRunToolCallUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunToolCallUpdate) check() error {
-	if v, ok := _u.mutation.ToolName(); ok {
-		if err := agentruntoolcall.ToolNameValidator(v); err != nil {
-			return &ValidationError{Name: "tool_name", err: fmt.Errorf(`ent: validator failed for field "AgentRunToolCall.tool_name": %w`, err)}
+	if v, ok := _u.mutation.ToolID(); ok {
+		if err := agentruntoolcall.ToolIDValidator(v); err != nil {
+			return &ValidationError{Name: "tool_id", err: fmt.Errorf(`ent: validator failed for field "AgentRunToolCall.tool_id": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Status(); ok {
@@ -318,8 +318,8 @@ func (_u *AgentRunToolCallUpdate) sqlSave(ctx context.Context) (_node int, err e
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentruntoolcall.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.ToolName(); ok {
-		_spec.SetField(agentruntoolcall.FieldToolName, field.TypeString, value)
+	if value, ok := _u.mutation.ToolID(); ok {
+		_spec.SetField(agentruntoolcall.FieldToolID, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(agentruntoolcall.FieldStatus, field.TypeEnum, value)
@@ -491,16 +491,16 @@ func (_u *AgentRunToolCallUpdateOne) SetNillableAgentRunID(v *uuid.UUID) *AgentR
 	return _u
 }
 
-// SetToolName sets the "tool_name" field.
-func (_u *AgentRunToolCallUpdateOne) SetToolName(v string) *AgentRunToolCallUpdateOne {
-	_u.mutation.SetToolName(v)
+// SetToolID sets the "tool_id" field.
+func (_u *AgentRunToolCallUpdateOne) SetToolID(v string) *AgentRunToolCallUpdateOne {
+	_u.mutation.SetToolID(v)
 	return _u
 }
 
-// SetNillableToolName sets the "tool_name" field if the given value is not nil.
-func (_u *AgentRunToolCallUpdateOne) SetNillableToolName(v *string) *AgentRunToolCallUpdateOne {
+// SetNillableToolID sets the "tool_id" field if the given value is not nil.
+func (_u *AgentRunToolCallUpdateOne) SetNillableToolID(v *string) *AgentRunToolCallUpdateOne {
 	if v != nil {
-		_u.SetToolName(*v)
+		_u.SetToolID(*v)
 	}
 	return _u
 }
@@ -712,9 +712,9 @@ func (_u *AgentRunToolCallUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunToolCallUpdateOne) check() error {
-	if v, ok := _u.mutation.ToolName(); ok {
-		if err := agentruntoolcall.ToolNameValidator(v); err != nil {
-			return &ValidationError{Name: "tool_name", err: fmt.Errorf(`ent: validator failed for field "AgentRunToolCall.tool_name": %w`, err)}
+	if v, ok := _u.mutation.ToolID(); ok {
+		if err := agentruntoolcall.ToolIDValidator(v); err != nil {
+			return &ValidationError{Name: "tool_id", err: fmt.Errorf(`ent: validator failed for field "AgentRunToolCall.tool_id": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Status(); ok {
@@ -772,8 +772,8 @@ func (_u *AgentRunToolCallUpdateOne) sqlSave(ctx context.Context) (_node *AgentR
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentruntoolcall.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.ToolName(); ok {
-		_spec.SetField(agentruntoolcall.FieldToolName, field.TypeString, value)
+	if value, ok := _u.mutation.ToolID(); ok {
+		_spec.SetField(agentruntoolcall.FieldToolID, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(agentruntoolcall.FieldStatus, field.TypeEnum, value)

@@ -72,14 +72,14 @@ func UpdatedAt(v time.Time) predicate.AgentRunFindingCitation {
 	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldUpdatedAt, v))
 }
 
-// AgentRunFindingID applies equality check predicate on the "agent_run_finding_id" field. It's identical to AgentRunFindingIDEQ.
-func AgentRunFindingID(v uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldAgentRunFindingID, v))
+// FindingID applies equality check predicate on the "finding_id" field. It's identical to FindingIDEQ.
+func FindingID(v uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldFindingID, v))
 }
 
-// AgentRunCitationID applies equality check predicate on the "agent_run_citation_id" field. It's identical to AgentRunCitationIDEQ.
-func AgentRunCitationID(v uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldAgentRunCitationID, v))
+// CitationID applies equality check predicate on the "citation_id" field. It's identical to CitationIDEQ.
+func CitationID(v uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldCitationID, v))
 }
 
 // SupportKind applies equality check predicate on the "support_kind" field. It's identical to SupportKindEQ.
@@ -187,44 +187,44 @@ func UpdatedAtLTE(v time.Time) predicate.AgentRunFindingCitation {
 	return predicate.AgentRunFindingCitation(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// AgentRunFindingIDEQ applies the EQ predicate on the "agent_run_finding_id" field.
-func AgentRunFindingIDEQ(v uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldAgentRunFindingID, v))
+// FindingIDEQ applies the EQ predicate on the "finding_id" field.
+func FindingIDEQ(v uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldFindingID, v))
 }
 
-// AgentRunFindingIDNEQ applies the NEQ predicate on the "agent_run_finding_id" field.
-func AgentRunFindingIDNEQ(v uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldNEQ(FieldAgentRunFindingID, v))
+// FindingIDNEQ applies the NEQ predicate on the "finding_id" field.
+func FindingIDNEQ(v uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldNEQ(FieldFindingID, v))
 }
 
-// AgentRunFindingIDIn applies the In predicate on the "agent_run_finding_id" field.
-func AgentRunFindingIDIn(vs ...uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldIn(FieldAgentRunFindingID, vs...))
+// FindingIDIn applies the In predicate on the "finding_id" field.
+func FindingIDIn(vs ...uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldIn(FieldFindingID, vs...))
 }
 
-// AgentRunFindingIDNotIn applies the NotIn predicate on the "agent_run_finding_id" field.
-func AgentRunFindingIDNotIn(vs ...uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldNotIn(FieldAgentRunFindingID, vs...))
+// FindingIDNotIn applies the NotIn predicate on the "finding_id" field.
+func FindingIDNotIn(vs ...uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldNotIn(FieldFindingID, vs...))
 }
 
-// AgentRunCitationIDEQ applies the EQ predicate on the "agent_run_citation_id" field.
-func AgentRunCitationIDEQ(v uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldAgentRunCitationID, v))
+// CitationIDEQ applies the EQ predicate on the "citation_id" field.
+func CitationIDEQ(v uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldEQ(FieldCitationID, v))
 }
 
-// AgentRunCitationIDNEQ applies the NEQ predicate on the "agent_run_citation_id" field.
-func AgentRunCitationIDNEQ(v uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldNEQ(FieldAgentRunCitationID, v))
+// CitationIDNEQ applies the NEQ predicate on the "citation_id" field.
+func CitationIDNEQ(v uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldNEQ(FieldCitationID, v))
 }
 
-// AgentRunCitationIDIn applies the In predicate on the "agent_run_citation_id" field.
-func AgentRunCitationIDIn(vs ...uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldIn(FieldAgentRunCitationID, vs...))
+// CitationIDIn applies the In predicate on the "citation_id" field.
+func CitationIDIn(vs ...uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldIn(FieldCitationID, vs...))
 }
 
-// AgentRunCitationIDNotIn applies the NotIn predicate on the "agent_run_citation_id" field.
-func AgentRunCitationIDNotIn(vs ...uuid.UUID) predicate.AgentRunFindingCitation {
-	return predicate.AgentRunFindingCitation(sql.FieldNotIn(FieldAgentRunCitationID, vs...))
+// CitationIDNotIn applies the NotIn predicate on the "citation_id" field.
+func CitationIDNotIn(vs ...uuid.UUID) predicate.AgentRunFindingCitation {
+	return predicate.AgentRunFindingCitation(sql.FieldNotIn(FieldCitationID, vs...))
 }
 
 // SupportKindEQ applies the EQ predicate on the "support_kind" field.
@@ -321,12 +321,12 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AgentRunFindingCitation 
 	})
 }
 
-// HasAgentRunFinding applies the HasEdge predicate on the "agent_run_finding" edge.
-func HasAgentRunFinding() predicate.AgentRunFindingCitation {
+// HasFinding applies the HasEdge predicate on the "finding" edge.
+func HasFinding() predicate.AgentRunFindingCitation {
 	return predicate.AgentRunFindingCitation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AgentRunFindingTable, AgentRunFindingColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, FindingTable, FindingColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunFinding
@@ -335,10 +335,10 @@ func HasAgentRunFinding() predicate.AgentRunFindingCitation {
 	})
 }
 
-// HasAgentRunFindingWith applies the HasEdge predicate on the "agent_run_finding" edge with a given conditions (other predicates).
-func HasAgentRunFindingWith(preds ...predicate.AgentRunFinding) predicate.AgentRunFindingCitation {
+// HasFindingWith applies the HasEdge predicate on the "finding" edge with a given conditions (other predicates).
+func HasFindingWith(preds ...predicate.AgentRunFinding) predicate.AgentRunFindingCitation {
 	return predicate.AgentRunFindingCitation(func(s *sql.Selector) {
-		step := newAgentRunFindingStep()
+		step := newFindingStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunFinding
 		step.Edge.Schema = schemaConfig.AgentRunFindingCitation
@@ -350,12 +350,12 @@ func HasAgentRunFindingWith(preds ...predicate.AgentRunFinding) predicate.AgentR
 	})
 }
 
-// HasAgentRunCitation applies the HasEdge predicate on the "agent_run_citation" edge.
-func HasAgentRunCitation() predicate.AgentRunFindingCitation {
+// HasCitation applies the HasEdge predicate on the "citation" edge.
+func HasCitation() predicate.AgentRunFindingCitation {
 	return predicate.AgentRunFindingCitation(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AgentRunCitationTable, AgentRunCitationColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, CitationTable, CitationColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunCitation
@@ -364,10 +364,10 @@ func HasAgentRunCitation() predicate.AgentRunFindingCitation {
 	})
 }
 
-// HasAgentRunCitationWith applies the HasEdge predicate on the "agent_run_citation" edge with a given conditions (other predicates).
-func HasAgentRunCitationWith(preds ...predicate.AgentRunCitation) predicate.AgentRunFindingCitation {
+// HasCitationWith applies the HasEdge predicate on the "citation" edge with a given conditions (other predicates).
+func HasCitationWith(preds ...predicate.AgentRunCitation) predicate.AgentRunFindingCitation {
 	return predicate.AgentRunFindingCitation(func(s *sql.Selector) {
-		step := newAgentRunCitationStep()
+		step := newCitationStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.AgentRunCitation
 		step.Edge.Schema = schemaConfig.AgentRunFindingCitation

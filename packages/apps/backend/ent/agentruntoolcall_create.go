@@ -67,23 +67,15 @@ func (_c *AgentRunToolCallCreate) SetAgentRunID(v uuid.UUID) *AgentRunToolCallCr
 	return _c
 }
 
-// SetToolName sets the "tool_name" field.
-func (_c *AgentRunToolCallCreate) SetToolName(v string) *AgentRunToolCallCreate {
-	_c.mutation.SetToolName(v)
+// SetToolID sets the "tool_id" field.
+func (_c *AgentRunToolCallCreate) SetToolID(v string) *AgentRunToolCallCreate {
+	_c.mutation.SetToolID(v)
 	return _c
 }
 
 // SetStatus sets the "status" field.
 func (_c *AgentRunToolCallCreate) SetStatus(v agentruntoolcall.Status) *AgentRunToolCallCreate {
 	_c.mutation.SetStatus(v)
-	return _c
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_c *AgentRunToolCallCreate) SetNillableStatus(v *agentruntoolcall.Status) *AgentRunToolCallCreate {
-	if v != nil {
-		_c.SetStatus(*v)
-	}
 	return _c
 }
 
@@ -231,10 +223,6 @@ func (_c *AgentRunToolCallCreate) defaults() error {
 		v := agentruntoolcall.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.Status(); !ok {
-		v := agentruntoolcall.DefaultStatus
-		_c.mutation.SetStatus(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if agentruntoolcall.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized agentruntoolcall.DefaultID (forgotten import ent/runtime?)")
@@ -259,12 +247,12 @@ func (_c *AgentRunToolCallCreate) check() error {
 	if _, ok := _c.mutation.AgentRunID(); !ok {
 		return &ValidationError{Name: "agent_run_id", err: errors.New(`ent: missing required field "AgentRunToolCall.agent_run_id"`)}
 	}
-	if _, ok := _c.mutation.ToolName(); !ok {
-		return &ValidationError{Name: "tool_name", err: errors.New(`ent: missing required field "AgentRunToolCall.tool_name"`)}
+	if _, ok := _c.mutation.ToolID(); !ok {
+		return &ValidationError{Name: "tool_id", err: errors.New(`ent: missing required field "AgentRunToolCall.tool_id"`)}
 	}
-	if v, ok := _c.mutation.ToolName(); ok {
-		if err := agentruntoolcall.ToolNameValidator(v); err != nil {
-			return &ValidationError{Name: "tool_name", err: fmt.Errorf(`ent: validator failed for field "AgentRunToolCall.tool_name": %w`, err)}
+	if v, ok := _c.mutation.ToolID(); ok {
+		if err := agentruntoolcall.ToolIDValidator(v); err != nil {
+			return &ValidationError{Name: "tool_id", err: fmt.Errorf(`ent: validator failed for field "AgentRunToolCall.tool_id": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Status(); !ok {
@@ -326,9 +314,9 @@ func (_c *AgentRunToolCallCreate) createSpec() (*AgentRunToolCall, *sqlgraph.Cre
 		_spec.SetField(agentruntoolcall.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.ToolName(); ok {
-		_spec.SetField(agentruntoolcall.FieldToolName, field.TypeString, value)
-		_node.ToolName = value
+	if value, ok := _c.mutation.ToolID(); ok {
+		_spec.SetField(agentruntoolcall.FieldToolID, field.TypeString, value)
+		_node.ToolID = value
 	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(agentruntoolcall.FieldStatus, field.TypeEnum, value)
@@ -495,15 +483,15 @@ func (u *AgentRunToolCallUpsert) UpdateAgentRunID() *AgentRunToolCallUpsert {
 	return u
 }
 
-// SetToolName sets the "tool_name" field.
-func (u *AgentRunToolCallUpsert) SetToolName(v string) *AgentRunToolCallUpsert {
-	u.Set(agentruntoolcall.FieldToolName, v)
+// SetToolID sets the "tool_id" field.
+func (u *AgentRunToolCallUpsert) SetToolID(v string) *AgentRunToolCallUpsert {
+	u.Set(agentruntoolcall.FieldToolID, v)
 	return u
 }
 
-// UpdateToolName sets the "tool_name" field to the value that was provided on create.
-func (u *AgentRunToolCallUpsert) UpdateToolName() *AgentRunToolCallUpsert {
-	u.SetExcluded(agentruntoolcall.FieldToolName)
+// UpdateToolID sets the "tool_id" field to the value that was provided on create.
+func (u *AgentRunToolCallUpsert) UpdateToolID() *AgentRunToolCallUpsert {
+	u.SetExcluded(agentruntoolcall.FieldToolID)
 	return u
 }
 
@@ -702,17 +690,17 @@ func (u *AgentRunToolCallUpsertOne) UpdateAgentRunID() *AgentRunToolCallUpsertOn
 	})
 }
 
-// SetToolName sets the "tool_name" field.
-func (u *AgentRunToolCallUpsertOne) SetToolName(v string) *AgentRunToolCallUpsertOne {
+// SetToolID sets the "tool_id" field.
+func (u *AgentRunToolCallUpsertOne) SetToolID(v string) *AgentRunToolCallUpsertOne {
 	return u.Update(func(s *AgentRunToolCallUpsert) {
-		s.SetToolName(v)
+		s.SetToolID(v)
 	})
 }
 
-// UpdateToolName sets the "tool_name" field to the value that was provided on create.
-func (u *AgentRunToolCallUpsertOne) UpdateToolName() *AgentRunToolCallUpsertOne {
+// UpdateToolID sets the "tool_id" field to the value that was provided on create.
+func (u *AgentRunToolCallUpsertOne) UpdateToolID() *AgentRunToolCallUpsertOne {
 	return u.Update(func(s *AgentRunToolCallUpsert) {
-		s.UpdateToolName()
+		s.UpdateToolID()
 	})
 }
 
@@ -1095,17 +1083,17 @@ func (u *AgentRunToolCallUpsertBulk) UpdateAgentRunID() *AgentRunToolCallUpsertB
 	})
 }
 
-// SetToolName sets the "tool_name" field.
-func (u *AgentRunToolCallUpsertBulk) SetToolName(v string) *AgentRunToolCallUpsertBulk {
+// SetToolID sets the "tool_id" field.
+func (u *AgentRunToolCallUpsertBulk) SetToolID(v string) *AgentRunToolCallUpsertBulk {
 	return u.Update(func(s *AgentRunToolCallUpsert) {
-		s.SetToolName(v)
+		s.SetToolID(v)
 	})
 }
 
-// UpdateToolName sets the "tool_name" field to the value that was provided on create.
-func (u *AgentRunToolCallUpsertBulk) UpdateToolName() *AgentRunToolCallUpsertBulk {
+// UpdateToolID sets the "tool_id" field to the value that was provided on create.
+func (u *AgentRunToolCallUpsertBulk) UpdateToolID() *AgentRunToolCallUpsertBulk {
 	return u.Update(func(s *AgentRunToolCallUpsert) {
-		s.UpdateToolName()
+		s.UpdateToolID()
 	})
 }
 

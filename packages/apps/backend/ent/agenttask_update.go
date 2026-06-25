@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/user"
@@ -68,29 +69,23 @@ func (_u *AgentTaskUpdate) SetNillableOwnerUserID(v *uuid.UUID) *AgentTaskUpdate
 	return _u
 }
 
-// SetWorkflowKind sets the "workflow_kind" field.
-func (_u *AgentTaskUpdate) SetWorkflowKind(v string) *AgentTaskUpdate {
-	_u.mutation.SetWorkflowKind(v)
+// SetWorkflow sets the "workflow" field.
+func (_u *AgentTaskUpdate) SetWorkflow(v string) *AgentTaskUpdate {
+	_u.mutation.SetWorkflow(v)
 	return _u
 }
 
-// SetNillableWorkflowKind sets the "workflow_kind" field if the given value is not nil.
-func (_u *AgentTaskUpdate) SetNillableWorkflowKind(v *string) *AgentTaskUpdate {
+// SetNillableWorkflow sets the "workflow" field if the given value is not nil.
+func (_u *AgentTaskUpdate) SetNillableWorkflow(v *string) *AgentTaskUpdate {
 	if v != nil {
-		_u.SetWorkflowKind(*v)
+		_u.SetWorkflow(*v)
 	}
 	return _u
 }
 
-// SetWorkflowInput sets the "workflow_input" field.
-func (_u *AgentTaskUpdate) SetWorkflowInput(v map[string]interface{}) *AgentTaskUpdate {
-	_u.mutation.SetWorkflowInput(v)
-	return _u
-}
-
-// ClearWorkflowInput clears the value of the "workflow_input" field.
-func (_u *AgentTaskUpdate) ClearWorkflowInput() *AgentTaskUpdate {
-	_u.mutation.ClearWorkflowInput()
+// SetInput sets the "input" field.
+func (_u *AgentTaskUpdate) SetInput(v []byte) *AgentTaskUpdate {
+	_u.mutation.SetInput(v)
 	return _u
 }
 
@@ -108,21 +103,36 @@ func (_u *AgentTaskUpdate) SetNillableTriggerKind(v *string) *AgentTaskUpdate {
 	return _u
 }
 
-// SetTriggerPayload sets the "trigger_payload" field.
-func (_u *AgentTaskUpdate) SetTriggerPayload(v map[string]interface{}) *AgentTaskUpdate {
-	_u.mutation.SetTriggerPayload(v)
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (_u *AgentTaskUpdate) SetTriggerMetadata(v map[string]interface{}) *AgentTaskUpdate {
+	_u.mutation.SetTriggerMetadata(v)
 	return _u
 }
 
-// ClearTriggerPayload clears the value of the "trigger_payload" field.
-func (_u *AgentTaskUpdate) ClearTriggerPayload() *AgentTaskUpdate {
-	_u.mutation.ClearTriggerPayload()
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (_u *AgentTaskUpdate) ClearTriggerMetadata() *AgentTaskUpdate {
+	_u.mutation.ClearTriggerMetadata()
 	return _u
 }
 
 // SetOwnerUser sets the "owner_user" edge to the User entity.
 func (_u *AgentTaskUpdate) SetOwnerUser(v *User) *AgentTaskUpdate {
 	return _u.SetOwnerUserID(v.ID)
+}
+
+// AddSubjectIDs adds the "subjects" edge to the AgentTaskSubject entity by IDs.
+func (_u *AgentTaskUpdate) AddSubjectIDs(ids ...uuid.UUID) *AgentTaskUpdate {
+	_u.mutation.AddSubjectIDs(ids...)
+	return _u
+}
+
+// AddSubjects adds the "subjects" edges to the AgentTaskSubject entity.
+func (_u *AgentTaskUpdate) AddSubjects(v ...*AgentTaskSubject) *AgentTaskUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSubjectIDs(ids...)
 }
 
 // AddRunIDs adds the "runs" edge to the AgentRun entity by IDs.
@@ -164,6 +174,27 @@ func (_u *AgentTaskUpdate) Mutation() *AgentTaskMutation {
 func (_u *AgentTaskUpdate) ClearOwnerUser() *AgentTaskUpdate {
 	_u.mutation.ClearOwnerUser()
 	return _u
+}
+
+// ClearSubjects clears all "subjects" edges to the AgentTaskSubject entity.
+func (_u *AgentTaskUpdate) ClearSubjects() *AgentTaskUpdate {
+	_u.mutation.ClearSubjects()
+	return _u
+}
+
+// RemoveSubjectIDs removes the "subjects" edge to AgentTaskSubject entities by IDs.
+func (_u *AgentTaskUpdate) RemoveSubjectIDs(ids ...uuid.UUID) *AgentTaskUpdate {
+	_u.mutation.RemoveSubjectIDs(ids...)
+	return _u
+}
+
+// RemoveSubjects removes "subjects" edges to AgentTaskSubject entities.
+func (_u *AgentTaskUpdate) RemoveSubjects(v ...*AgentTaskSubject) *AgentTaskUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSubjectIDs(ids...)
 }
 
 // ClearRuns clears all "runs" edges to the AgentRun entity.
@@ -252,9 +283,14 @@ func (_u *AgentTaskUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentTaskUpdate) check() error {
-	if v, ok := _u.mutation.WorkflowKind(); ok {
-		if err := agenttask.WorkflowKindValidator(v); err != nil {
-			return &ValidationError{Name: "workflow_kind", err: fmt.Errorf(`ent: validator failed for field "AgentTask.workflow_kind": %w`, err)}
+	if v, ok := _u.mutation.Workflow(); ok {
+		if err := agenttask.WorkflowValidator(v); err != nil {
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "AgentTask.workflow": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Input(); ok {
+		if err := agenttask.InputValidator(v); err != nil {
+			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentTask.input": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.TriggerKind(); ok {
@@ -295,23 +331,20 @@ func (_u *AgentTaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agenttask.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.WorkflowKind(); ok {
-		_spec.SetField(agenttask.FieldWorkflowKind, field.TypeString, value)
+	if value, ok := _u.mutation.Workflow(); ok {
+		_spec.SetField(agenttask.FieldWorkflow, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.WorkflowInput(); ok {
-		_spec.SetField(agenttask.FieldWorkflowInput, field.TypeJSON, value)
-	}
-	if _u.mutation.WorkflowInputCleared() {
-		_spec.ClearField(agenttask.FieldWorkflowInput, field.TypeJSON)
+	if value, ok := _u.mutation.Input(); ok {
+		_spec.SetField(agenttask.FieldInput, field.TypeBytes, value)
 	}
 	if value, ok := _u.mutation.TriggerKind(); ok {
 		_spec.SetField(agenttask.FieldTriggerKind, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.TriggerPayload(); ok {
-		_spec.SetField(agenttask.FieldTriggerPayload, field.TypeJSON, value)
+	if value, ok := _u.mutation.TriggerMetadata(); ok {
+		_spec.SetField(agenttask.FieldTriggerMetadata, field.TypeJSON, value)
 	}
-	if _u.mutation.TriggerPayloadCleared() {
-		_spec.ClearField(agenttask.FieldTriggerPayload, field.TypeJSON)
+	if _u.mutation.TriggerMetadataCleared() {
+		_spec.ClearField(agenttask.FieldTriggerMetadata, field.TypeJSON)
 	}
 	if _u.mutation.OwnerUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -339,6 +372,54 @@ func (_u *AgentTaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTask
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.SubjectsTable,
+			Columns: []string{agenttask.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agenttasksubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentTaskSubject
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSubjectsIDs(); len(nodes) > 0 && !_u.mutation.SubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.SubjectsTable,
+			Columns: []string{agenttask.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agenttasksubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentTaskSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.SubjectsTable,
+			Columns: []string{agenttask.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agenttasksubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentTaskSubject
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -498,29 +579,23 @@ func (_u *AgentTaskUpdateOne) SetNillableOwnerUserID(v *uuid.UUID) *AgentTaskUpd
 	return _u
 }
 
-// SetWorkflowKind sets the "workflow_kind" field.
-func (_u *AgentTaskUpdateOne) SetWorkflowKind(v string) *AgentTaskUpdateOne {
-	_u.mutation.SetWorkflowKind(v)
+// SetWorkflow sets the "workflow" field.
+func (_u *AgentTaskUpdateOne) SetWorkflow(v string) *AgentTaskUpdateOne {
+	_u.mutation.SetWorkflow(v)
 	return _u
 }
 
-// SetNillableWorkflowKind sets the "workflow_kind" field if the given value is not nil.
-func (_u *AgentTaskUpdateOne) SetNillableWorkflowKind(v *string) *AgentTaskUpdateOne {
+// SetNillableWorkflow sets the "workflow" field if the given value is not nil.
+func (_u *AgentTaskUpdateOne) SetNillableWorkflow(v *string) *AgentTaskUpdateOne {
 	if v != nil {
-		_u.SetWorkflowKind(*v)
+		_u.SetWorkflow(*v)
 	}
 	return _u
 }
 
-// SetWorkflowInput sets the "workflow_input" field.
-func (_u *AgentTaskUpdateOne) SetWorkflowInput(v map[string]interface{}) *AgentTaskUpdateOne {
-	_u.mutation.SetWorkflowInput(v)
-	return _u
-}
-
-// ClearWorkflowInput clears the value of the "workflow_input" field.
-func (_u *AgentTaskUpdateOne) ClearWorkflowInput() *AgentTaskUpdateOne {
-	_u.mutation.ClearWorkflowInput()
+// SetInput sets the "input" field.
+func (_u *AgentTaskUpdateOne) SetInput(v []byte) *AgentTaskUpdateOne {
+	_u.mutation.SetInput(v)
 	return _u
 }
 
@@ -538,21 +613,36 @@ func (_u *AgentTaskUpdateOne) SetNillableTriggerKind(v *string) *AgentTaskUpdate
 	return _u
 }
 
-// SetTriggerPayload sets the "trigger_payload" field.
-func (_u *AgentTaskUpdateOne) SetTriggerPayload(v map[string]interface{}) *AgentTaskUpdateOne {
-	_u.mutation.SetTriggerPayload(v)
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (_u *AgentTaskUpdateOne) SetTriggerMetadata(v map[string]interface{}) *AgentTaskUpdateOne {
+	_u.mutation.SetTriggerMetadata(v)
 	return _u
 }
 
-// ClearTriggerPayload clears the value of the "trigger_payload" field.
-func (_u *AgentTaskUpdateOne) ClearTriggerPayload() *AgentTaskUpdateOne {
-	_u.mutation.ClearTriggerPayload()
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (_u *AgentTaskUpdateOne) ClearTriggerMetadata() *AgentTaskUpdateOne {
+	_u.mutation.ClearTriggerMetadata()
 	return _u
 }
 
 // SetOwnerUser sets the "owner_user" edge to the User entity.
 func (_u *AgentTaskUpdateOne) SetOwnerUser(v *User) *AgentTaskUpdateOne {
 	return _u.SetOwnerUserID(v.ID)
+}
+
+// AddSubjectIDs adds the "subjects" edge to the AgentTaskSubject entity by IDs.
+func (_u *AgentTaskUpdateOne) AddSubjectIDs(ids ...uuid.UUID) *AgentTaskUpdateOne {
+	_u.mutation.AddSubjectIDs(ids...)
+	return _u
+}
+
+// AddSubjects adds the "subjects" edges to the AgentTaskSubject entity.
+func (_u *AgentTaskUpdateOne) AddSubjects(v ...*AgentTaskSubject) *AgentTaskUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddSubjectIDs(ids...)
 }
 
 // AddRunIDs adds the "runs" edge to the AgentRun entity by IDs.
@@ -594,6 +684,27 @@ func (_u *AgentTaskUpdateOne) Mutation() *AgentTaskMutation {
 func (_u *AgentTaskUpdateOne) ClearOwnerUser() *AgentTaskUpdateOne {
 	_u.mutation.ClearOwnerUser()
 	return _u
+}
+
+// ClearSubjects clears all "subjects" edges to the AgentTaskSubject entity.
+func (_u *AgentTaskUpdateOne) ClearSubjects() *AgentTaskUpdateOne {
+	_u.mutation.ClearSubjects()
+	return _u
+}
+
+// RemoveSubjectIDs removes the "subjects" edge to AgentTaskSubject entities by IDs.
+func (_u *AgentTaskUpdateOne) RemoveSubjectIDs(ids ...uuid.UUID) *AgentTaskUpdateOne {
+	_u.mutation.RemoveSubjectIDs(ids...)
+	return _u
+}
+
+// RemoveSubjects removes "subjects" edges to AgentTaskSubject entities.
+func (_u *AgentTaskUpdateOne) RemoveSubjects(v ...*AgentTaskSubject) *AgentTaskUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveSubjectIDs(ids...)
 }
 
 // ClearRuns clears all "runs" edges to the AgentRun entity.
@@ -695,9 +806,14 @@ func (_u *AgentTaskUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentTaskUpdateOne) check() error {
-	if v, ok := _u.mutation.WorkflowKind(); ok {
-		if err := agenttask.WorkflowKindValidator(v); err != nil {
-			return &ValidationError{Name: "workflow_kind", err: fmt.Errorf(`ent: validator failed for field "AgentTask.workflow_kind": %w`, err)}
+	if v, ok := _u.mutation.Workflow(); ok {
+		if err := agenttask.WorkflowValidator(v); err != nil {
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "AgentTask.workflow": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.Input(); ok {
+		if err := agenttask.InputValidator(v); err != nil {
+			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentTask.input": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.TriggerKind(); ok {
@@ -755,23 +871,20 @@ func (_u *AgentTaskUpdateOne) sqlSave(ctx context.Context) (_node *AgentTask, er
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agenttask.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.WorkflowKind(); ok {
-		_spec.SetField(agenttask.FieldWorkflowKind, field.TypeString, value)
+	if value, ok := _u.mutation.Workflow(); ok {
+		_spec.SetField(agenttask.FieldWorkflow, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.WorkflowInput(); ok {
-		_spec.SetField(agenttask.FieldWorkflowInput, field.TypeJSON, value)
-	}
-	if _u.mutation.WorkflowInputCleared() {
-		_spec.ClearField(agenttask.FieldWorkflowInput, field.TypeJSON)
+	if value, ok := _u.mutation.Input(); ok {
+		_spec.SetField(agenttask.FieldInput, field.TypeBytes, value)
 	}
 	if value, ok := _u.mutation.TriggerKind(); ok {
 		_spec.SetField(agenttask.FieldTriggerKind, field.TypeString, value)
 	}
-	if value, ok := _u.mutation.TriggerPayload(); ok {
-		_spec.SetField(agenttask.FieldTriggerPayload, field.TypeJSON, value)
+	if value, ok := _u.mutation.TriggerMetadata(); ok {
+		_spec.SetField(agenttask.FieldTriggerMetadata, field.TypeJSON, value)
 	}
-	if _u.mutation.TriggerPayloadCleared() {
-		_spec.ClearField(agenttask.FieldTriggerPayload, field.TypeJSON)
+	if _u.mutation.TriggerMetadataCleared() {
+		_spec.ClearField(agenttask.FieldTriggerMetadata, field.TypeJSON)
 	}
 	if _u.mutation.OwnerUserCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -799,6 +912,54 @@ func (_u *AgentTaskUpdateOne) sqlSave(ctx context.Context) (_node *AgentTask, er
 			},
 		}
 		edge.Schema = _u.schemaConfig.AgentTask
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.SubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.SubjectsTable,
+			Columns: []string{agenttask.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agenttasksubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentTaskSubject
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedSubjectsIDs(); len(nodes) > 0 && !_u.mutation.SubjectsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.SubjectsTable,
+			Columns: []string{agenttask.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agenttasksubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentTaskSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.SubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.SubjectsTable,
+			Columns: []string{agenttask.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agenttasksubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _u.schemaConfig.AgentTaskSubject
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

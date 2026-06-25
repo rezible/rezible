@@ -8,14 +8,17 @@ import (
 	"math/rand"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/gosimple/slug"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/incident"
+	ii "github.com/rezible/rezible/ent/incidentimpact"
 	im "github.com/rezible/rezible/ent/incidentmilestone"
 	imodel "github.com/rezible/rezible/ent/incidentmilestone"
 	ira "github.com/rezible/rezible/ent/incidentroleassignment"
+	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/retrospective"
 )
@@ -308,4 +311,136 @@ func (s *IncidentService) GetIncidentMetadata(ctx context.Context) (*rez.Inciden
 	}
 
 	return &md, nil
+}
+
+func (s *IncidentService) ListIncidentImpacts(ctx context.Context, incidentID uuid.UUID) ([]*ent.IncidentImpact, error) {
+	impacts, queryErr := s.db.Client(ctx).IncidentImpact.Query().
+		Where(ii.IncidentID(incidentID)).
+		WithKnowledgeEntity().
+		Order(ii.ByCreatedAt(sql.OrderAsc())).
+		All(ctx)
+	if queryErr != nil {
+		return nil, fmt.Errorf("query incident impacts: %w", queryErr)
+	}
+	return impacts, nil
+}
+
+// TODO: fix this slop
+func (s *IncidentService) SetIncidentImpacts(ctx context.Context, id uuid.UUID, input []rez.IncidentImpactInput) ([]*ent.IncidentImpact, error) {
+	var impacts []*ent.IncidentImpact
+	txErr := s.db.WithTx(ctx, func(txCtx context.Context, tx *ent.Client) error {
+		if _, getErr := tx.Incident.Get(txCtx, id); getErr != nil {
+			return fmt.Errorf("get incident: %w", getErr)
+		}
+
+		entityIDs := make([]uuid.UUID, 0, len(input))
+		for _, inputImpact := range input {
+			entityID, resolveErr := s.resolveIncidentImpactEntity(txCtx, tx, inputImpact)
+			if resolveErr != nil {
+				return resolveErr
+			}
+			entityIDs = append(entityIDs, entityID)
+
+			existing, queryErr := tx.IncidentImpact.Query().
+				Where(ii.IncidentID(id), ii.KnowledgeEntityID(entityID)).
+				Only(txCtx)
+			if queryErr != nil && !ent.IsNotFound(queryErr) {
+				return fmt.Errorf("query existing impact: %w", queryErr)
+			}
+
+			if existing == nil {
+				create := tx.IncidentImpact.Create().
+					SetIncidentID(id).
+					SetKnowledgeEntityID(entityID)
+				if inputImpact.Source != "" {
+					create.SetSource(inputImpact.Source)
+				}
+				if inputImpact.Note != "" {
+					create.SetNote(inputImpact.Note)
+				}
+				if _, createErr := create.Save(txCtx); createErr != nil {
+					return fmt.Errorf("create incident impact: %w", createErr)
+				}
+				continue
+			}
+
+			update := tx.IncidentImpact.UpdateOne(existing)
+			if inputImpact.Source != "" {
+				update.SetSource(inputImpact.Source)
+			} else {
+				update.ClearSource()
+			}
+			if inputImpact.Note != "" {
+				update.SetNote(inputImpact.Note)
+			} else {
+				update.ClearNote()
+			}
+			if _, updateErr := update.Save(txCtx); updateErr != nil {
+				return fmt.Errorf("update incident impact: %w", updateErr)
+			}
+		}
+
+		deleteQuery := tx.IncidentImpact.Delete().Where(ii.IncidentID(id))
+		if len(entityIDs) > 0 {
+			deleteQuery.Where(ii.KnowledgeEntityIDNotIn(entityIDs...))
+		}
+		if _, deleteErr := deleteQuery.Exec(txCtx); deleteErr != nil {
+			return fmt.Errorf("delete replaced incident impacts: %w", deleteErr)
+		}
+
+		var listErr error
+		impacts, listErr = tx.IncidentImpact.Query().
+			Where(ii.IncidentID(id)).
+			WithKnowledgeEntity().
+			Order(ii.ByCreatedAt(sql.OrderAsc())).
+			All(txCtx)
+		if listErr != nil {
+			return fmt.Errorf("reload impacts: %w", listErr)
+		}
+		return nil
+	})
+	if txErr != nil {
+		return nil, txErr
+	}
+
+	if pubErr := s.msgs.PublishEvent(ctx, rez.EventOnIncidentImpactsUpdated{IncidentId: id}); pubErr != nil {
+		slog.WarnContext(ctx, "failed to publish incident impacts update event", "error", pubErr)
+	}
+	return impacts, nil
+}
+
+func (s *IncidentService) resolveIncidentImpactEntity(ctx context.Context, tx *ent.Client, input rez.IncidentImpactInput) (uuid.UUID, error) {
+	if input.KnowledgeEntityID != uuid.Nil {
+		if _, getErr := tx.KnowledgeEntity.Get(ctx, input.KnowledgeEntityID); getErr != nil {
+			return uuid.Nil, fmt.Errorf("get impact knowledge entity: %w", getErr)
+		}
+		return input.KnowledgeEntityID, nil
+	}
+	if input.Kind == "" || input.DisplayName == "" {
+		return uuid.Nil, fmt.Errorf("impact requires knowledgeEntityId or kind/displayName")
+	}
+
+	existing, queryErr := tx.KnowledgeEntity.Query().
+		Where(kne.Kind(input.Kind), kne.DisplayName(input.DisplayName)).
+		Only(ctx)
+	if queryErr != nil && !ent.IsNotFound(queryErr) {
+		return uuid.Nil, fmt.Errorf("query impact knowledge entity: %w", queryErr)
+	}
+	if existing != nil {
+		return existing.ID, nil
+	}
+
+	create := tx.KnowledgeEntity.Create().
+		SetKind(input.Kind).
+		SetDisplayName(input.DisplayName).
+		SetFirstObservedAt(time.Now().UTC()).
+		SetLastObservedAt(time.Now().UTC())
+	if input.Description != "" {
+		create.SetDescription(input.Description)
+	}
+	created, createErr := create.Save(ctx)
+	if createErr != nil {
+		return uuid.Nil, fmt.Errorf("create impact knowledge entity: %w", createErr)
+	}
+	return created.ID, nil
 }

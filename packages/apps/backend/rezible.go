@@ -10,6 +10,7 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
+	"github.com/rezible/rezible/pkg/agents"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -17,9 +18,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 
 	"github.com/rezible/rezible/ent"
-	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/predicate"
-	"github.com/rezible/rezible/pkg/agents"
 )
 
 var (
@@ -424,9 +423,13 @@ type (
 )
 
 type (
-	CreateAgentTaskRequest struct {
+	AgentWorkflowRunner interface {
+		RegisterWorkflows(reg *agents.WorkflowRegistry)
+	}
+	
+	CreateAgentTaskParams struct {
 		OwnerUserID    uuid.UUID
-		WorkflowKind   agents.WorkflowKind
+		Workflow       string
 		WorkflowInput  map[string]any
 		TriggerKind    string
 		TriggerPayload map[string]any
@@ -434,21 +437,20 @@ type (
 
 	ListAgentTasksParams struct {
 		ent.ListParams
-		WorkflowKind agents.WorkflowKind
-		TriggerKind  string
-		SubjectType  string
-		SubjectID    uuid.UUID
+		Workflow          string
+		TriggerKind       string
+		SubjectPredicates []predicate.AgentTaskSubject
 	}
 
 	ListAgentRunsParams struct {
 		ent.ListParams
-		AgentTaskID  uuid.UUID
-		WorkflowKind agents.WorkflowKind
-		Status       agentrun.Status
+		AgentTaskID uuid.UUID
+		Workflow    string
+		Predicates  []predicate.AgentRun
 	}
 
 	AgentService interface {
-		CreateTask(context.Context, CreateAgentTaskRequest) (*ent.AgentTask, error)
+		CreateTask(context.Context, CreateAgentTaskParams) (*ent.AgentTask, error)
 		GetTask(context.Context, uuid.UUID) (*ent.AgentTask, error)
 		ListTasks(context.Context, ListAgentTasksParams) (*ent.ListResult[ent.AgentTask], error)
 
@@ -457,29 +459,10 @@ type (
 		ListRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error)
 	}
 
-	AgentRunQueuedEvent struct {
-		AgentRunID   uuid.UUID
-		AgentTaskID  uuid.UUID
-		WorkflowKind agents.WorkflowKind
-	}
-
-	AgentRunStartedEvent struct {
-		AgentRunID   uuid.UUID
-		AgentTaskID  uuid.UUID
-		WorkflowKind agents.WorkflowKind
-	}
-
-	AgentRunCompletedEvent struct {
-		AgentRunID   uuid.UUID
-		AgentTaskID  uuid.UUID
-		WorkflowKind agents.WorkflowKind
-	}
-
-	AgentRunFailedEvent struct {
-		AgentRunID   uuid.UUID
-		AgentTaskID  uuid.UUID
-		WorkflowKind agents.WorkflowKind
-		ErrorMessage string
+	AgentRunStatusChangeEvent struct {
+		AgentRunID  uuid.UUID
+		AgentTaskID uuid.UUID
+		Workflow    string
 	}
 )
 
@@ -498,7 +481,6 @@ type (
 	AlertService interface {
 		ListAlerts(context.Context, ListAlertsParams) ([]*ent.Alert, int, error)
 		GetAlert(context.Context, uuid.UUID) (*ent.Alert, error)
-		GetInvestigationContext(context.Context, uuid.UUID) (*agents.WorkflowContext, error)
 		GetAlertMetrics(context.Context, GetAlertMetricsParams) (*ent.AlertMetrics, error)
 		GetActiveAlertsForComponents(context.Context, []uuid.UUID) ([]*ent.Alert, error)
 	}
@@ -550,7 +532,6 @@ type (
 
 		ListIncidentImpacts(context.Context, uuid.UUID) ([]*ent.IncidentImpact, error)
 		SetIncidentImpacts(context.Context, uuid.UUID, []IncidentImpactInput) ([]*ent.IncidentImpact, error)
-		GetIncidentContext(context.Context, uuid.UUID) (*agents.WorkflowContext, error)
 
 		GetIncidentMilestone(context.Context, uuid.UUID) (*ent.IncidentMilestone, error)
 		SetIncidentMilestone(context.Context, uuid.UUID, func(*ent.IncidentMilestoneMutation)) (*ent.IncidentMilestone, error)

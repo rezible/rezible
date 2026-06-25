@@ -14,6 +14,7 @@ import (
 	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/agentruntoolcall"
 	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
@@ -147,12 +148,12 @@ func init() {
 	agentruncitation.DefaultUpdatedAt = agentruncitationDescUpdatedAt.Default.(func() time.Time)
 	// agentruncitation.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentruncitation.UpdateDefaultUpdatedAt = agentruncitationDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// agentruncitationDescCitationKind is the schema descriptor for citation_kind field.
-	agentruncitationDescCitationKind := agentruncitationFields[2].Descriptor()
-	// agentruncitation.CitationKindValidator is a validator for the "citation_kind" field. It is called by the builders before save.
-	agentruncitation.CitationKindValidator = agentruncitationDescCitationKind.Validators[0].(func(string) error)
+	// agentruncitationDescKind is the schema descriptor for kind field.
+	agentruncitationDescKind := agentruncitationFields[2].Descriptor()
+	// agentruncitation.KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	agentruncitation.KindValidator = agentruncitationDescKind.Validators[0].(func(string) error)
 	// agentruncitationDescSummary is the schema descriptor for summary field.
-	agentruncitationDescSummary := agentruncitationFields[10].Descriptor()
+	agentruncitationDescSummary := agentruncitationFields[3].Descriptor()
 	// agentruncitation.SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
 	agentruncitation.SummaryValidator = agentruncitationDescSummary.Validators[0].(func(string) error)
 	// agentruncitationDescID is the schema descriptor for id field.
@@ -255,10 +256,6 @@ func init() {
 	agentrunresult.DefaultUpdatedAt = agentrunresultDescUpdatedAt.Default.(func() time.Time)
 	// agentrunresult.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentrunresult.UpdateDefaultUpdatedAt = agentrunresultDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// agentrunresultDescContent is the schema descriptor for content field.
-	agentrunresultDescContent := agentrunresultFields[2].Descriptor()
-	// agentrunresult.ContentValidator is a validator for the "content" field. It is called by the builders before save.
-	agentrunresult.ContentValidator = agentrunresultDescContent.Validators[0].(func(string) error)
 	// agentrunresultDescID is the schema descriptor for id field.
 	agentrunresultDescID := agentrunresultFields[0].Descriptor()
 	// agentrunresult.DefaultID holds the default value on creation for the id field.
@@ -287,10 +284,10 @@ func init() {
 	agentruntoolcall.DefaultUpdatedAt = agentruntoolcallDescUpdatedAt.Default.(func() time.Time)
 	// agentruntoolcall.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agentruntoolcall.UpdateDefaultUpdatedAt = agentruntoolcallDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// agentruntoolcallDescToolName is the schema descriptor for tool_name field.
-	agentruntoolcallDescToolName := agentruntoolcallFields[2].Descriptor()
-	// agentruntoolcall.ToolNameValidator is a validator for the "tool_name" field. It is called by the builders before save.
-	agentruntoolcall.ToolNameValidator = agentruntoolcallDescToolName.Validators[0].(func(string) error)
+	// agentruntoolcallDescToolID is the schema descriptor for tool_id field.
+	agentruntoolcallDescToolID := agentruntoolcallFields[2].Descriptor()
+	// agentruntoolcall.ToolIDValidator is a validator for the "tool_id" field. It is called by the builders before save.
+	agentruntoolcall.ToolIDValidator = agentruntoolcallDescToolID.Validators[0].(func(string) error)
 	// agentruntoolcallDescID is the schema descriptor for id field.
 	agentruntoolcallDescID := agentruntoolcallFields[0].Descriptor()
 	// agentruntoolcall.DefaultID holds the default value on creation for the id field.
@@ -319,10 +316,14 @@ func init() {
 	agenttask.DefaultUpdatedAt = agenttaskDescUpdatedAt.Default.(func() time.Time)
 	// agenttask.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	agenttask.UpdateDefaultUpdatedAt = agenttaskDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// agenttaskDescWorkflowKind is the schema descriptor for workflow_kind field.
-	agenttaskDescWorkflowKind := agenttaskFields[2].Descriptor()
-	// agenttask.WorkflowKindValidator is a validator for the "workflow_kind" field. It is called by the builders before save.
-	agenttask.WorkflowKindValidator = agenttaskDescWorkflowKind.Validators[0].(func(string) error)
+	// agenttaskDescWorkflow is the schema descriptor for workflow field.
+	agenttaskDescWorkflow := agenttaskFields[2].Descriptor()
+	// agenttask.WorkflowValidator is a validator for the "workflow" field. It is called by the builders before save.
+	agenttask.WorkflowValidator = agenttaskDescWorkflow.Validators[0].(func(string) error)
+	// agenttaskDescInput is the schema descriptor for input field.
+	agenttaskDescInput := agenttaskFields[3].Descriptor()
+	// agenttask.InputValidator is a validator for the "input" field. It is called by the builders before save.
+	agenttask.InputValidator = agenttaskDescInput.Validators[0].(func([]byte) error)
 	// agenttaskDescTriggerKind is the schema descriptor for trigger_kind field.
 	agenttaskDescTriggerKind := agenttaskFields[4].Descriptor()
 	// agenttask.TriggerKindValidator is a validator for the "trigger_kind" field. It is called by the builders before save.
@@ -331,6 +332,26 @@ func init() {
 	agenttaskDescID := agenttaskFields[0].Descriptor()
 	// agenttask.DefaultID holds the default value on creation for the id field.
 	agenttask.DefaultID = agenttaskDescID.Default.(func() uuid.UUID)
+	agenttasksubjectMixin := schema.AgentTaskSubject{}.Mixin()
+	agenttasksubject.Policy = privacy.NewPolicies(agenttasksubjectMixin[0], agenttasksubjectMixin[1], schema.AgentTaskSubject{})
+	agenttasksubject.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := agenttasksubject.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	agenttasksubjectFields := schema.AgentTaskSubject{}.Fields()
+	_ = agenttasksubjectFields
+	// agenttasksubjectDescSubjectKind is the schema descriptor for subject_kind field.
+	agenttasksubjectDescSubjectKind := agenttasksubjectFields[2].Descriptor()
+	// agenttasksubject.SubjectKindValidator is a validator for the "subject_kind" field. It is called by the builders before save.
+	agenttasksubject.SubjectKindValidator = agenttasksubjectDescSubjectKind.Validators[0].(func(string) error)
+	// agenttasksubjectDescID is the schema descriptor for id field.
+	agenttasksubjectDescID := agenttasksubjectFields[0].Descriptor()
+	// agenttasksubject.DefaultID holds the default value on creation for the id field.
+	agenttasksubject.DefaultID = agenttasksubjectDescID.Default.(func() uuid.UUID)
 	alertMixin := schema.Alert{}.Mixin()
 	alert.Policy = privacy.NewPolicies(alertMixin[0], alertMixin[1], schema.Alert{})
 	alert.Hooks[0] = func(next ent.Mutator) ent.Mutator {

@@ -16,6 +16,7 @@ import (
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/tenant"
 	"github.com/rezible/rezible/ent/user"
 )
@@ -68,15 +69,15 @@ func (_c *AgentTaskCreate) SetOwnerUserID(v uuid.UUID) *AgentTaskCreate {
 	return _c
 }
 
-// SetWorkflowKind sets the "workflow_kind" field.
-func (_c *AgentTaskCreate) SetWorkflowKind(v string) *AgentTaskCreate {
-	_c.mutation.SetWorkflowKind(v)
+// SetWorkflow sets the "workflow" field.
+func (_c *AgentTaskCreate) SetWorkflow(v string) *AgentTaskCreate {
+	_c.mutation.SetWorkflow(v)
 	return _c
 }
 
-// SetWorkflowInput sets the "workflow_input" field.
-func (_c *AgentTaskCreate) SetWorkflowInput(v map[string]interface{}) *AgentTaskCreate {
-	_c.mutation.SetWorkflowInput(v)
+// SetInput sets the "input" field.
+func (_c *AgentTaskCreate) SetInput(v []byte) *AgentTaskCreate {
+	_c.mutation.SetInput(v)
 	return _c
 }
 
@@ -86,9 +87,9 @@ func (_c *AgentTaskCreate) SetTriggerKind(v string) *AgentTaskCreate {
 	return _c
 }
 
-// SetTriggerPayload sets the "trigger_payload" field.
-func (_c *AgentTaskCreate) SetTriggerPayload(v map[string]interface{}) *AgentTaskCreate {
-	_c.mutation.SetTriggerPayload(v)
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (_c *AgentTaskCreate) SetTriggerMetadata(v map[string]interface{}) *AgentTaskCreate {
+	_c.mutation.SetTriggerMetadata(v)
 	return _c
 }
 
@@ -114,6 +115,21 @@ func (_c *AgentTaskCreate) SetTenant(v *Tenant) *AgentTaskCreate {
 // SetOwnerUser sets the "owner_user" edge to the User entity.
 func (_c *AgentTaskCreate) SetOwnerUser(v *User) *AgentTaskCreate {
 	return _c.SetOwnerUserID(v.ID)
+}
+
+// AddSubjectIDs adds the "subjects" edge to the AgentTaskSubject entity by IDs.
+func (_c *AgentTaskCreate) AddSubjectIDs(ids ...uuid.UUID) *AgentTaskCreate {
+	_c.mutation.AddSubjectIDs(ids...)
+	return _c
+}
+
+// AddSubjects adds the "subjects" edges to the AgentTaskSubject entity.
+func (_c *AgentTaskCreate) AddSubjects(v ...*AgentTaskSubject) *AgentTaskCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddSubjectIDs(ids...)
 }
 
 // AddRunIDs adds the "runs" edge to the AgentRun entity by IDs.
@@ -221,12 +237,20 @@ func (_c *AgentTaskCreate) check() error {
 	if _, ok := _c.mutation.OwnerUserID(); !ok {
 		return &ValidationError{Name: "owner_user_id", err: errors.New(`ent: missing required field "AgentTask.owner_user_id"`)}
 	}
-	if _, ok := _c.mutation.WorkflowKind(); !ok {
-		return &ValidationError{Name: "workflow_kind", err: errors.New(`ent: missing required field "AgentTask.workflow_kind"`)}
+	if _, ok := _c.mutation.Workflow(); !ok {
+		return &ValidationError{Name: "workflow", err: errors.New(`ent: missing required field "AgentTask.workflow"`)}
 	}
-	if v, ok := _c.mutation.WorkflowKind(); ok {
-		if err := agenttask.WorkflowKindValidator(v); err != nil {
-			return &ValidationError{Name: "workflow_kind", err: fmt.Errorf(`ent: validator failed for field "AgentTask.workflow_kind": %w`, err)}
+	if v, ok := _c.mutation.Workflow(); ok {
+		if err := agenttask.WorkflowValidator(v); err != nil {
+			return &ValidationError{Name: "workflow", err: fmt.Errorf(`ent: validator failed for field "AgentTask.workflow": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Input(); !ok {
+		return &ValidationError{Name: "input", err: errors.New(`ent: missing required field "AgentTask.input"`)}
+	}
+	if v, ok := _c.mutation.Input(); ok {
+		if err := agenttask.InputValidator(v); err != nil {
+			return &ValidationError{Name: "input", err: fmt.Errorf(`ent: validator failed for field "AgentTask.input": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.TriggerKind(); !ok {
@@ -288,21 +312,21 @@ func (_c *AgentTaskCreate) createSpec() (*AgentTask, *sqlgraph.CreateSpec) {
 		_spec.SetField(agenttask.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.WorkflowKind(); ok {
-		_spec.SetField(agenttask.FieldWorkflowKind, field.TypeString, value)
-		_node.WorkflowKind = value
+	if value, ok := _c.mutation.Workflow(); ok {
+		_spec.SetField(agenttask.FieldWorkflow, field.TypeString, value)
+		_node.Workflow = value
 	}
-	if value, ok := _c.mutation.WorkflowInput(); ok {
-		_spec.SetField(agenttask.FieldWorkflowInput, field.TypeJSON, value)
-		_node.WorkflowInput = value
+	if value, ok := _c.mutation.Input(); ok {
+		_spec.SetField(agenttask.FieldInput, field.TypeBytes, value)
+		_node.Input = value
 	}
 	if value, ok := _c.mutation.TriggerKind(); ok {
 		_spec.SetField(agenttask.FieldTriggerKind, field.TypeString, value)
 		_node.TriggerKind = value
 	}
-	if value, ok := _c.mutation.TriggerPayload(); ok {
-		_spec.SetField(agenttask.FieldTriggerPayload, field.TypeJSON, value)
-		_node.TriggerPayload = value
+	if value, ok := _c.mutation.TriggerMetadata(); ok {
+		_spec.SetField(agenttask.FieldTriggerMetadata, field.TypeJSON, value)
+		_node.TriggerMetadata = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -338,6 +362,23 @@ func (_c *AgentTaskCreate) createSpec() (*AgentTask, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.OwnerUserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.SubjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: true,
+			Table:   agenttask.SubjectsTable,
+			Columns: []string{agenttask.SubjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agenttasksubject.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentTaskSubject
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.RunsIDs(); len(nodes) > 0 {
@@ -462,33 +503,27 @@ func (u *AgentTaskUpsert) UpdateOwnerUserID() *AgentTaskUpsert {
 	return u
 }
 
-// SetWorkflowKind sets the "workflow_kind" field.
-func (u *AgentTaskUpsert) SetWorkflowKind(v string) *AgentTaskUpsert {
-	u.Set(agenttask.FieldWorkflowKind, v)
+// SetWorkflow sets the "workflow" field.
+func (u *AgentTaskUpsert) SetWorkflow(v string) *AgentTaskUpsert {
+	u.Set(agenttask.FieldWorkflow, v)
 	return u
 }
 
-// UpdateWorkflowKind sets the "workflow_kind" field to the value that was provided on create.
-func (u *AgentTaskUpsert) UpdateWorkflowKind() *AgentTaskUpsert {
-	u.SetExcluded(agenttask.FieldWorkflowKind)
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *AgentTaskUpsert) UpdateWorkflow() *AgentTaskUpsert {
+	u.SetExcluded(agenttask.FieldWorkflow)
 	return u
 }
 
-// SetWorkflowInput sets the "workflow_input" field.
-func (u *AgentTaskUpsert) SetWorkflowInput(v map[string]interface{}) *AgentTaskUpsert {
-	u.Set(agenttask.FieldWorkflowInput, v)
+// SetInput sets the "input" field.
+func (u *AgentTaskUpsert) SetInput(v []byte) *AgentTaskUpsert {
+	u.Set(agenttask.FieldInput, v)
 	return u
 }
 
-// UpdateWorkflowInput sets the "workflow_input" field to the value that was provided on create.
-func (u *AgentTaskUpsert) UpdateWorkflowInput() *AgentTaskUpsert {
-	u.SetExcluded(agenttask.FieldWorkflowInput)
-	return u
-}
-
-// ClearWorkflowInput clears the value of the "workflow_input" field.
-func (u *AgentTaskUpsert) ClearWorkflowInput() *AgentTaskUpsert {
-	u.SetNull(agenttask.FieldWorkflowInput)
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentTaskUpsert) UpdateInput() *AgentTaskUpsert {
+	u.SetExcluded(agenttask.FieldInput)
 	return u
 }
 
@@ -504,21 +539,21 @@ func (u *AgentTaskUpsert) UpdateTriggerKind() *AgentTaskUpsert {
 	return u
 }
 
-// SetTriggerPayload sets the "trigger_payload" field.
-func (u *AgentTaskUpsert) SetTriggerPayload(v map[string]interface{}) *AgentTaskUpsert {
-	u.Set(agenttask.FieldTriggerPayload, v)
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (u *AgentTaskUpsert) SetTriggerMetadata(v map[string]interface{}) *AgentTaskUpsert {
+	u.Set(agenttask.FieldTriggerMetadata, v)
 	return u
 }
 
-// UpdateTriggerPayload sets the "trigger_payload" field to the value that was provided on create.
-func (u *AgentTaskUpsert) UpdateTriggerPayload() *AgentTaskUpsert {
-	u.SetExcluded(agenttask.FieldTriggerPayload)
+// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
+func (u *AgentTaskUpsert) UpdateTriggerMetadata() *AgentTaskUpsert {
+	u.SetExcluded(agenttask.FieldTriggerMetadata)
 	return u
 }
 
-// ClearTriggerPayload clears the value of the "trigger_payload" field.
-func (u *AgentTaskUpsert) ClearTriggerPayload() *AgentTaskUpsert {
-	u.SetNull(agenttask.FieldTriggerPayload)
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (u *AgentTaskUpsert) ClearTriggerMetadata() *AgentTaskUpsert {
+	u.SetNull(agenttask.FieldTriggerMetadata)
 	return u
 }
 
@@ -615,38 +650,31 @@ func (u *AgentTaskUpsertOne) UpdateOwnerUserID() *AgentTaskUpsertOne {
 	})
 }
 
-// SetWorkflowKind sets the "workflow_kind" field.
-func (u *AgentTaskUpsertOne) SetWorkflowKind(v string) *AgentTaskUpsertOne {
+// SetWorkflow sets the "workflow" field.
+func (u *AgentTaskUpsertOne) SetWorkflow(v string) *AgentTaskUpsertOne {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.SetWorkflowKind(v)
+		s.SetWorkflow(v)
 	})
 }
 
-// UpdateWorkflowKind sets the "workflow_kind" field to the value that was provided on create.
-func (u *AgentTaskUpsertOne) UpdateWorkflowKind() *AgentTaskUpsertOne {
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *AgentTaskUpsertOne) UpdateWorkflow() *AgentTaskUpsertOne {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.UpdateWorkflowKind()
+		s.UpdateWorkflow()
 	})
 }
 
-// SetWorkflowInput sets the "workflow_input" field.
-func (u *AgentTaskUpsertOne) SetWorkflowInput(v map[string]interface{}) *AgentTaskUpsertOne {
+// SetInput sets the "input" field.
+func (u *AgentTaskUpsertOne) SetInput(v []byte) *AgentTaskUpsertOne {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.SetWorkflowInput(v)
+		s.SetInput(v)
 	})
 }
 
-// UpdateWorkflowInput sets the "workflow_input" field to the value that was provided on create.
-func (u *AgentTaskUpsertOne) UpdateWorkflowInput() *AgentTaskUpsertOne {
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentTaskUpsertOne) UpdateInput() *AgentTaskUpsertOne {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.UpdateWorkflowInput()
-	})
-}
-
-// ClearWorkflowInput clears the value of the "workflow_input" field.
-func (u *AgentTaskUpsertOne) ClearWorkflowInput() *AgentTaskUpsertOne {
-	return u.Update(func(s *AgentTaskUpsert) {
-		s.ClearWorkflowInput()
+		s.UpdateInput()
 	})
 }
 
@@ -664,24 +692,24 @@ func (u *AgentTaskUpsertOne) UpdateTriggerKind() *AgentTaskUpsertOne {
 	})
 }
 
-// SetTriggerPayload sets the "trigger_payload" field.
-func (u *AgentTaskUpsertOne) SetTriggerPayload(v map[string]interface{}) *AgentTaskUpsertOne {
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (u *AgentTaskUpsertOne) SetTriggerMetadata(v map[string]interface{}) *AgentTaskUpsertOne {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.SetTriggerPayload(v)
+		s.SetTriggerMetadata(v)
 	})
 }
 
-// UpdateTriggerPayload sets the "trigger_payload" field to the value that was provided on create.
-func (u *AgentTaskUpsertOne) UpdateTriggerPayload() *AgentTaskUpsertOne {
+// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
+func (u *AgentTaskUpsertOne) UpdateTriggerMetadata() *AgentTaskUpsertOne {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.UpdateTriggerPayload()
+		s.UpdateTriggerMetadata()
 	})
 }
 
-// ClearTriggerPayload clears the value of the "trigger_payload" field.
-func (u *AgentTaskUpsertOne) ClearTriggerPayload() *AgentTaskUpsertOne {
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (u *AgentTaskUpsertOne) ClearTriggerMetadata() *AgentTaskUpsertOne {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.ClearTriggerPayload()
+		s.ClearTriggerMetadata()
 	})
 }
 
@@ -945,38 +973,31 @@ func (u *AgentTaskUpsertBulk) UpdateOwnerUserID() *AgentTaskUpsertBulk {
 	})
 }
 
-// SetWorkflowKind sets the "workflow_kind" field.
-func (u *AgentTaskUpsertBulk) SetWorkflowKind(v string) *AgentTaskUpsertBulk {
+// SetWorkflow sets the "workflow" field.
+func (u *AgentTaskUpsertBulk) SetWorkflow(v string) *AgentTaskUpsertBulk {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.SetWorkflowKind(v)
+		s.SetWorkflow(v)
 	})
 }
 
-// UpdateWorkflowKind sets the "workflow_kind" field to the value that was provided on create.
-func (u *AgentTaskUpsertBulk) UpdateWorkflowKind() *AgentTaskUpsertBulk {
+// UpdateWorkflow sets the "workflow" field to the value that was provided on create.
+func (u *AgentTaskUpsertBulk) UpdateWorkflow() *AgentTaskUpsertBulk {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.UpdateWorkflowKind()
+		s.UpdateWorkflow()
 	})
 }
 
-// SetWorkflowInput sets the "workflow_input" field.
-func (u *AgentTaskUpsertBulk) SetWorkflowInput(v map[string]interface{}) *AgentTaskUpsertBulk {
+// SetInput sets the "input" field.
+func (u *AgentTaskUpsertBulk) SetInput(v []byte) *AgentTaskUpsertBulk {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.SetWorkflowInput(v)
+		s.SetInput(v)
 	})
 }
 
-// UpdateWorkflowInput sets the "workflow_input" field to the value that was provided on create.
-func (u *AgentTaskUpsertBulk) UpdateWorkflowInput() *AgentTaskUpsertBulk {
+// UpdateInput sets the "input" field to the value that was provided on create.
+func (u *AgentTaskUpsertBulk) UpdateInput() *AgentTaskUpsertBulk {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.UpdateWorkflowInput()
-	})
-}
-
-// ClearWorkflowInput clears the value of the "workflow_input" field.
-func (u *AgentTaskUpsertBulk) ClearWorkflowInput() *AgentTaskUpsertBulk {
-	return u.Update(func(s *AgentTaskUpsert) {
-		s.ClearWorkflowInput()
+		s.UpdateInput()
 	})
 }
 
@@ -994,24 +1015,24 @@ func (u *AgentTaskUpsertBulk) UpdateTriggerKind() *AgentTaskUpsertBulk {
 	})
 }
 
-// SetTriggerPayload sets the "trigger_payload" field.
-func (u *AgentTaskUpsertBulk) SetTriggerPayload(v map[string]interface{}) *AgentTaskUpsertBulk {
+// SetTriggerMetadata sets the "trigger_metadata" field.
+func (u *AgentTaskUpsertBulk) SetTriggerMetadata(v map[string]interface{}) *AgentTaskUpsertBulk {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.SetTriggerPayload(v)
+		s.SetTriggerMetadata(v)
 	})
 }
 
-// UpdateTriggerPayload sets the "trigger_payload" field to the value that was provided on create.
-func (u *AgentTaskUpsertBulk) UpdateTriggerPayload() *AgentTaskUpsertBulk {
+// UpdateTriggerMetadata sets the "trigger_metadata" field to the value that was provided on create.
+func (u *AgentTaskUpsertBulk) UpdateTriggerMetadata() *AgentTaskUpsertBulk {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.UpdateTriggerPayload()
+		s.UpdateTriggerMetadata()
 	})
 }
 
-// ClearTriggerPayload clears the value of the "trigger_payload" field.
-func (u *AgentTaskUpsertBulk) ClearTriggerPayload() *AgentTaskUpsertBulk {
+// ClearTriggerMetadata clears the value of the "trigger_metadata" field.
+func (u *AgentTaskUpsertBulk) ClearTriggerMetadata() *AgentTaskUpsertBulk {
 	return u.Update(func(s *AgentTaskUpsert) {
-		s.ClearTriggerPayload()
+		s.ClearTriggerMetadata()
 	})
 }
 

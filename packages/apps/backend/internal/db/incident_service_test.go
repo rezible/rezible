@@ -13,9 +13,7 @@ import (
 	ii "github.com/rezible/rezible/ent/incidentimpact"
 	incsev "github.com/rezible/rezible/ent/incidentseverity"
 	inctype "github.com/rezible/rezible/ent/incidenttype"
-	knev "github.com/rezible/rezible/ent/knowledgeevidence"
 	ne "github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/pkg/agents"
 	"github.com/rezible/rezible/pkg/projections"
 	"github.com/rezible/rezible/test"
 	"github.com/rezible/rezible/test/mocks"
@@ -336,103 +334,4 @@ func (s *IncidentServiceSuite) TestIncidentImpactProjectionMissingIncidentAliasI
 	s.Require().Error(err)
 	s.True(projections.IsRetryable(err))
 	s.ErrorContains(err, "incident entity alias not found: demo:incident:missing")
-}
-
-func (s *IncidentServiceSuite) TestContextPackInfersImpactFromRecentAlertEvidenceAndFunctionalityDependencies() {
-	ctx := s.SeedTenantContext()
-	svc := s.newService()
-	inc := s.createBasicIncident(ctx, svc, "Checkout failures")
-	now := time.Now().UTC()
-
-	serviceEntity, err := s.Client(ctx).KnowledgeEntity.Create().
-		SetKind("service").
-		SetDisplayName("billing").
-		Save(ctx)
-	s.Require().NoError(err)
-	functionalityEntity, err := s.Client(ctx).KnowledgeEntity.Create().
-		SetKind("functionality").
-		SetDisplayName("order_checkout").
-		Save(ctx)
-	s.Require().NoError(err)
-	alertEntity, err := s.Client(ctx).KnowledgeEntity.Create().
-		SetKind(knowledgeEntityKindAlert).
-		SetDisplayName("Billing errors high").
-		Save(ctx)
-	s.Require().NoError(err)
-	_, err = s.Client(ctx).Alert.Create().
-		SetKnowledgeEntityID(alertEntity.ID).
-		SetTitle("Billing errors high").
-		SetDescription("5xx rate above threshold").
-		Save(ctx)
-	s.Require().NoError(err)
-	_, err = s.Client(ctx).KnowledgeRelationship.Create().
-		SetSourceEntityID(alertEntity.ID).
-		SetTargetEntityID(serviceEntity.ID).
-		SetKind("alerts_component").
-		SetDisplayName("alert targets service").
-		SetLastObservedAt(now).
-		Save(ctx)
-	s.Require().NoError(err)
-	_, err = s.Client(ctx).KnowledgeRelationship.Create().
-		SetSourceEntityID(functionalityEntity.ID).
-		SetTargetEntityID(serviceEntity.ID).
-		SetKind(relationshipFunctionalityDependsOnComponent).
-		SetDisplayName("checkout depends on billing").
-		SetLastObservedAt(now).
-		Save(ctx)
-	s.Require().NoError(err)
-
-	event, err := s.Client(ctx).NormalizedEvent.Create().
-		SetProvider("test").
-		SetProviderSource("alerts").
-		SetProviderEventRef("alert-" + uuid.NewString()).
-		SetProviderSubjectRef("billing-errors").
-		SetActivityKind(ne.ActivityKindObserved).
-		SetSubjectKind(projections.SubjectKindAlert.String()).
-		SetOccurredAt(now).
-		SetReceivedAt(now).
-		SetAttributes(map[string]any{}).
-		Save(ctx)
-	s.Require().NoError(err)
-	_, err = s.Client(ctx).KnowledgeEvidence.Create().
-		SetSubjectType(knev.SubjectTypeEntity).
-		SetEntityID(alertEntity.ID).
-		SetEventID(event.ID).
-		SetAssertion(assertionAlertDefinitionObserved).
-		SetEvidenceKind(knev.EvidenceKindObserved).
-		SetObservedAt(now).
-		Save(ctx)
-	s.Require().NoError(err)
-
-	contextPack, err := svc.GetIncidentContext(ctx, inc.ID)
-	s.Require().NoError(err)
-	activeAlerts := make([]agents.WorkflowContextItem, 0)
-	byID := map[string]agents.WorkflowContextItem{}
-	for _, item := range contextPack.Items {
-		if item.Role == "active_alert" {
-			activeAlerts = append(activeAlerts, item)
-		}
-		if item.Role == "inferred_impact" {
-			if entityID, ok := workflowContextItemEntityID(item); ok {
-				byID[entityID] = item
-			}
-		}
-	}
-	s.Require().Len(activeAlerts, 1)
-	s.Equal("Billing errors high", activeAlerts[0].Name)
-	s.Contains(byID, serviceEntity.ID.String())
-	s.Contains(byID, functionalityEntity.ID.String())
-	s.Contains(byID[serviceEntity.ID.String()].Payload["reason"], "recent_alert_relationship")
-	s.Contains(byID[functionalityEntity.ID.String()].Payload["reason"], "functionality_dependency")
-}
-
-func workflowContextItemEntityID(item agents.WorkflowContextItem) (string, bool) {
-	switch v := item.Payload["entityId"].(type) {
-	case string:
-		return v, true
-	case uuid.UUID:
-		return v.String(), true
-	default:
-		return "", false
-	}
 }

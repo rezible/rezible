@@ -22,18 +22,18 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// FieldAgentRunFindingID holds the string denoting the agent_run_finding_id field in the database.
-	FieldAgentRunFindingID = "agent_run_finding_id"
-	// FieldAgentRunCitationID holds the string denoting the agent_run_citation_id field in the database.
-	FieldAgentRunCitationID = "agent_run_citation_id"
+	// FieldFindingID holds the string denoting the finding_id field in the database.
+	FieldFindingID = "finding_id"
+	// FieldCitationID holds the string denoting the citation_id field in the database.
+	FieldCitationID = "citation_id"
 	// FieldSupportKind holds the string denoting the support_kind field in the database.
 	FieldSupportKind = "support_kind"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAgentRunFinding holds the string denoting the agent_run_finding edge name in mutations.
-	EdgeAgentRunFinding = "agent_run_finding"
-	// EdgeAgentRunCitation holds the string denoting the agent_run_citation edge name in mutations.
-	EdgeAgentRunCitation = "agent_run_citation"
+	// EdgeFinding holds the string denoting the finding edge name in mutations.
+	EdgeFinding = "finding"
+	// EdgeCitation holds the string denoting the citation edge name in mutations.
+	EdgeCitation = "citation"
 	// Table holds the table name of the agentrunfindingcitation in the database.
 	Table = "agent_run_finding_citations"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -43,20 +43,20 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AgentRunFindingTable is the table that holds the agent_run_finding relation/edge.
-	AgentRunFindingTable = "agent_run_finding_citations"
-	// AgentRunFindingInverseTable is the table name for the AgentRunFinding entity.
+	// FindingTable is the table that holds the finding relation/edge.
+	FindingTable = "agent_run_finding_citations"
+	// FindingInverseTable is the table name for the AgentRunFinding entity.
 	// It exists in this package in order to avoid circular dependency with the "agentrunfinding" package.
-	AgentRunFindingInverseTable = "agent_run_findings"
-	// AgentRunFindingColumn is the table column denoting the agent_run_finding relation/edge.
-	AgentRunFindingColumn = "agent_run_finding_id"
-	// AgentRunCitationTable is the table that holds the agent_run_citation relation/edge.
-	AgentRunCitationTable = "agent_run_finding_citations"
-	// AgentRunCitationInverseTable is the table name for the AgentRunCitation entity.
+	FindingInverseTable = "agent_run_findings"
+	// FindingColumn is the table column denoting the finding relation/edge.
+	FindingColumn = "finding_id"
+	// CitationTable is the table that holds the citation relation/edge.
+	CitationTable = "agent_run_finding_citations"
+	// CitationInverseTable is the table name for the AgentRunCitation entity.
 	// It exists in this package in order to avoid circular dependency with the "agentruncitation" package.
-	AgentRunCitationInverseTable = "agent_run_citations"
-	// AgentRunCitationColumn is the table column denoting the agent_run_citation relation/edge.
-	AgentRunCitationColumn = "agent_run_citation_id"
+	CitationInverseTable = "agent_run_citations"
+	// CitationColumn is the table column denoting the citation relation/edge.
+	CitationColumn = "citation_id"
 )
 
 // Columns holds all SQL columns for agentrunfindingcitation fields.
@@ -65,8 +65,8 @@ var Columns = []string{
 	FieldTenantID,
 	FieldCreatedAt,
 	FieldUpdatedAt,
-	FieldAgentRunFindingID,
-	FieldAgentRunCitationID,
+	FieldFindingID,
+	FieldCitationID,
 	FieldSupportKind,
 }
 
@@ -123,14 +123,14 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByAgentRunFindingID orders the results by the agent_run_finding_id field.
-func ByAgentRunFindingID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentRunFindingID, opts...).ToFunc()
+// ByFindingID orders the results by the finding_id field.
+func ByFindingID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldFindingID, opts...).ToFunc()
 }
 
-// ByAgentRunCitationID orders the results by the agent_run_citation_id field.
-func ByAgentRunCitationID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAgentRunCitationID, opts...).ToFunc()
+// ByCitationID orders the results by the citation_id field.
+func ByCitationID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCitationID, opts...).ToFunc()
 }
 
 // BySupportKind orders the results by the support_kind field.
@@ -145,17 +145,17 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	}
 }
 
-// ByAgentRunFindingField orders the results by agent_run_finding field.
-func ByAgentRunFindingField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByFindingField orders the results by finding field.
+func ByFindingField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentRunFindingStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newFindingStep(), sql.OrderByField(field, opts...))
 	}
 }
 
-// ByAgentRunCitationField orders the results by agent_run_citation field.
-func ByAgentRunCitationField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByCitationField orders the results by citation field.
+func ByCitationField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAgentRunCitationStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newCitationStep(), sql.OrderByField(field, opts...))
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -165,17 +165,17 @@ func newTenantStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
 	)
 }
-func newAgentRunFindingStep() *sqlgraph.Step {
+func newFindingStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentRunFindingInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunFindingTable, AgentRunFindingColumn),
+		sqlgraph.To(FindingInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, FindingTable, FindingColumn),
 	)
 }
-func newAgentRunCitationStep() *sqlgraph.Step {
+func newCitationStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AgentRunCitationInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunCitationTable, AgentRunCitationColumn),
+		sqlgraph.To(CitationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, false, CitationTable, CitationColumn),
 	)
 }

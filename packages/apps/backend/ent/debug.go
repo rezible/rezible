@@ -60,6 +60,14 @@ func (c *AgentTaskClient) Debug() *AgentTaskClient {
 	return &AgentTaskClient{config: cfg}
 }
 
+func (c *AgentTaskSubjectClient) Debug() *AgentTaskSubjectClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AgentTaskSubjectClient{config: cfg}
+}
+
 func (c *AlertClient) Debug() *AlertClient {
 	if c.debug {
 		return c

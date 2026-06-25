@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
 	"github.com/rezible/rezible/ent/internal"
@@ -31,6 +32,7 @@ type AgentRunFindingQuery struct {
 	predicates           []predicate.AgentRunFinding
 	withTenant           *TenantQuery
 	withAgentRun         *AgentRunQuery
+	withCitations        *AgentRunCitationQuery
 	withFindingCitations *AgentRunFindingCitationQuery
 	modifiers            []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
@@ -113,6 +115,31 @@ func (_q *AgentRunFindingQuery) QueryAgentRun() *AgentRunQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.AgentRun
 		step.Edge.Schema = schemaConfig.AgentRunFinding
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryCitations chains the current query on the "citations" edge.
+func (_q *AgentRunFindingQuery) QueryCitations() *AgentRunCitationQuery {
+	query := (&AgentRunCitationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agentrunfinding.Table, agentrunfinding.FieldID, selector),
+			sqlgraph.To(agentruncitation.Table, agentruncitation.FieldID),
+			sqlgraph.Edge(sqlgraph.M2M, false, agentrunfinding.CitationsTable, agentrunfinding.CitationsPrimaryKey...),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentRunCitation
+		step.Edge.Schema = schemaConfig.AgentRunFindingCitation
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -338,6 +365,7 @@ func (_q *AgentRunFindingQuery) Clone() *AgentRunFindingQuery {
 		predicates:           append([]predicate.AgentRunFinding{}, _q.predicates...),
 		withTenant:           _q.withTenant.Clone(),
 		withAgentRun:         _q.withAgentRun.Clone(),
+		withCitations:        _q.withCitations.Clone(),
 		withFindingCitations: _q.withFindingCitations.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -365,6 +393,17 @@ func (_q *AgentRunFindingQuery) WithAgentRun(opts ...func(*AgentRunQuery)) *Agen
 		opt(query)
 	}
 	_q.withAgentRun = query
+	return _q
+}
+
+// WithCitations tells the query-builder to eager-load the nodes that are connected to
+// the "citations" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentRunFindingQuery) WithCitations(opts ...func(*AgentRunCitationQuery)) *AgentRunFindingQuery {
+	query := (&AgentRunCitationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withCitations = query
 	return _q
 }
 
@@ -463,9 +502,10 @@ func (_q *AgentRunFindingQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*AgentRunFinding{}
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withAgentRun != nil,
+			_q.withCitations != nil,
 			_q.withFindingCitations != nil,
 		}
 	)
@@ -501,6 +541,13 @@ func (_q *AgentRunFindingQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if query := _q.withAgentRun; query != nil {
 		if err := _q.loadAgentRun(ctx, query, nodes, nil,
 			func(n *AgentRunFinding, e *AgentRun) { n.Edges.AgentRun = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withCitations; query != nil {
+		if err := _q.loadCitations(ctx, query, nodes,
+			func(n *AgentRunFinding) { n.Edges.Citations = []*AgentRunCitation{} },
+			func(n *AgentRunFinding, e *AgentRunCitation) { n.Edges.Citations = append(n.Edges.Citations, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -574,6 +621,68 @@ func (_q *AgentRunFindingQuery) loadAgentRun(ctx context.Context, query *AgentRu
 	}
 	return nil
 }
+func (_q *AgentRunFindingQuery) loadCitations(ctx context.Context, query *AgentRunCitationQuery, nodes []*AgentRunFinding, init func(*AgentRunFinding), assign func(*AgentRunFinding, *AgentRunCitation)) error {
+	edgeIDs := make([]driver.Value, len(nodes))
+	byID := make(map[uuid.UUID]*AgentRunFinding)
+	nids := make(map[uuid.UUID]map[*AgentRunFinding]struct{})
+	for i, node := range nodes {
+		edgeIDs[i] = node.ID
+		byID[node.ID] = node
+		if init != nil {
+			init(node)
+		}
+	}
+	query.Where(func(s *sql.Selector) {
+		joinT := sql.Table(agentrunfinding.CitationsTable)
+		joinT.Schema(_q.schemaConfig.AgentRunFindingCitation)
+		s.Join(joinT).On(s.C(agentruncitation.FieldID), joinT.C(agentrunfinding.CitationsPrimaryKey[1]))
+		s.Where(sql.InValues(joinT.C(agentrunfinding.CitationsPrimaryKey[0]), edgeIDs...))
+		columns := s.SelectedColumns()
+		s.Select(joinT.C(agentrunfinding.CitationsPrimaryKey[0]))
+		s.AppendSelect(columns...)
+		s.SetDistinct(false)
+	})
+	if err := query.prepareQuery(ctx); err != nil {
+		return err
+	}
+	qr := QuerierFunc(func(ctx context.Context, q Query) (Value, error) {
+		return query.sqlAll(ctx, func(_ context.Context, spec *sqlgraph.QuerySpec) {
+			assign := spec.Assign
+			values := spec.ScanValues
+			spec.ScanValues = func(columns []string) ([]any, error) {
+				values, err := values(columns[1:])
+				if err != nil {
+					return nil, err
+				}
+				return append([]any{new(uuid.UUID)}, values...), nil
+			}
+			spec.Assign = func(columns []string, values []any) error {
+				outValue := *values[0].(*uuid.UUID)
+				inValue := *values[1].(*uuid.UUID)
+				if nids[inValue] == nil {
+					nids[inValue] = map[*AgentRunFinding]struct{}{byID[outValue]: {}}
+					return assign(columns[1:], values[1:])
+				}
+				nids[inValue][byID[outValue]] = struct{}{}
+				return nil
+			}
+		})
+	})
+	neighbors, err := withInterceptors[[]*AgentRunCitation](ctx, query, qr, query.inters)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected "citations" node returned %v`, n.ID)
+		}
+		for kn := range nodes {
+			assign(kn, n)
+		}
+	}
+	return nil
+}
 func (_q *AgentRunFindingQuery) loadFindingCitations(ctx context.Context, query *AgentRunFindingCitationQuery, nodes []*AgentRunFinding, init func(*AgentRunFinding), assign func(*AgentRunFinding, *AgentRunFindingCitation)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*AgentRunFinding)
@@ -585,7 +694,7 @@ func (_q *AgentRunFindingQuery) loadFindingCitations(ctx context.Context, query 
 		}
 	}
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(agentrunfindingcitation.FieldAgentRunFindingID)
+		query.ctx.AppendFieldOnce(agentrunfindingcitation.FieldFindingID)
 	}
 	query.Where(predicate.AgentRunFindingCitation(func(s *sql.Selector) {
 		s.Where(sql.InValues(s.C(agentrunfinding.FindingCitationsColumn), fks...))
@@ -595,10 +704,10 @@ func (_q *AgentRunFindingQuery) loadFindingCitations(ctx context.Context, query 
 		return err
 	}
 	for _, n := range neighbors {
-		fk := n.AgentRunFindingID
+		fk := n.FindingID
 		node, ok := nodeids[fk]
 		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "agent_run_finding_id" returned %v for node %v`, fk, n.ID)
+			return fmt.Errorf(`unexpected referenced foreign-key "finding_id" returned %v for node %v`, fk, n.ID)
 		}
 		assign(node, n)
 	}

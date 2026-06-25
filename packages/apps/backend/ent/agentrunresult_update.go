@@ -66,29 +66,29 @@ func (_u *AgentRunResultUpdate) SetNillableAgentRunID(v *uuid.UUID) *AgentRunRes
 	return _u
 }
 
-// SetContent sets the "content" field.
-func (_u *AgentRunResultUpdate) SetContent(v string) *AgentRunResultUpdate {
-	_u.mutation.SetContent(v)
+// SetOutput sets the "output" field.
+func (_u *AgentRunResultUpdate) SetOutput(v []byte) *AgentRunResultUpdate {
+	_u.mutation.SetOutput(v)
 	return _u
 }
 
-// SetNillableContent sets the "content" field if the given value is not nil.
-func (_u *AgentRunResultUpdate) SetNillableContent(v *string) *AgentRunResultUpdate {
+// SetErrorMessage sets the "error_message" field.
+func (_u *AgentRunResultUpdate) SetErrorMessage(v string) *AgentRunResultUpdate {
+	_u.mutation.SetErrorMessage(v)
+	return _u
+}
+
+// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
+func (_u *AgentRunResultUpdate) SetNillableErrorMessage(v *string) *AgentRunResultUpdate {
 	if v != nil {
-		_u.SetContent(*v)
+		_u.SetErrorMessage(*v)
 	}
 	return _u
 }
 
-// SetData sets the "data" field.
-func (_u *AgentRunResultUpdate) SetData(v map[string]interface{}) *AgentRunResultUpdate {
-	_u.mutation.SetData(v)
-	return _u
-}
-
-// ClearData clears the value of the "data" field.
-func (_u *AgentRunResultUpdate) ClearData() *AgentRunResultUpdate {
-	_u.mutation.ClearData()
+// ClearErrorMessage clears the value of the "error_message" field.
+func (_u *AgentRunResultUpdate) ClearErrorMessage() *AgentRunResultUpdate {
+	_u.mutation.ClearErrorMessage()
 	return _u
 }
 
@@ -152,11 +152,6 @@ func (_u *AgentRunResultUpdate) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunResultUpdate) check() error {
-	if v, ok := _u.mutation.Content(); ok {
-		if err := agentrunresult.ContentValidator(v); err != nil {
-			return &ValidationError{Name: "content", err: fmt.Errorf(`ent: validator failed for field "AgentRunResult.content": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunResult.tenant"`)
 	}
@@ -190,14 +185,14 @@ func (_u *AgentRunResultUpdate) sqlSave(ctx context.Context) (_node int, err err
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentrunresult.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Content(); ok {
-		_spec.SetField(agentrunresult.FieldContent, field.TypeString, value)
+	if value, ok := _u.mutation.Output(); ok {
+		_spec.SetField(agentrunresult.FieldOutput, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.Data(); ok {
-		_spec.SetField(agentrunresult.FieldData, field.TypeJSON, value)
+	if value, ok := _u.mutation.ErrorMessage(); ok {
+		_spec.SetField(agentrunresult.FieldErrorMessage, field.TypeString, value)
 	}
-	if _u.mutation.DataCleared() {
-		_spec.ClearField(agentrunresult.FieldData, field.TypeJSON)
+	if _u.mutation.ErrorMessageCleared() {
+		_spec.ClearField(agentrunresult.FieldErrorMessage, field.TypeString)
 	}
 	if _u.mutation.AgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{
@@ -288,29 +283,29 @@ func (_u *AgentRunResultUpdateOne) SetNillableAgentRunID(v *uuid.UUID) *AgentRun
 	return _u
 }
 
-// SetContent sets the "content" field.
-func (_u *AgentRunResultUpdateOne) SetContent(v string) *AgentRunResultUpdateOne {
-	_u.mutation.SetContent(v)
+// SetOutput sets the "output" field.
+func (_u *AgentRunResultUpdateOne) SetOutput(v []byte) *AgentRunResultUpdateOne {
+	_u.mutation.SetOutput(v)
 	return _u
 }
 
-// SetNillableContent sets the "content" field if the given value is not nil.
-func (_u *AgentRunResultUpdateOne) SetNillableContent(v *string) *AgentRunResultUpdateOne {
+// SetErrorMessage sets the "error_message" field.
+func (_u *AgentRunResultUpdateOne) SetErrorMessage(v string) *AgentRunResultUpdateOne {
+	_u.mutation.SetErrorMessage(v)
+	return _u
+}
+
+// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
+func (_u *AgentRunResultUpdateOne) SetNillableErrorMessage(v *string) *AgentRunResultUpdateOne {
 	if v != nil {
-		_u.SetContent(*v)
+		_u.SetErrorMessage(*v)
 	}
 	return _u
 }
 
-// SetData sets the "data" field.
-func (_u *AgentRunResultUpdateOne) SetData(v map[string]interface{}) *AgentRunResultUpdateOne {
-	_u.mutation.SetData(v)
-	return _u
-}
-
-// ClearData clears the value of the "data" field.
-func (_u *AgentRunResultUpdateOne) ClearData() *AgentRunResultUpdateOne {
-	_u.mutation.ClearData()
+// ClearErrorMessage clears the value of the "error_message" field.
+func (_u *AgentRunResultUpdateOne) ClearErrorMessage() *AgentRunResultUpdateOne {
+	_u.mutation.ClearErrorMessage()
 	return _u
 }
 
@@ -387,11 +382,6 @@ func (_u *AgentRunResultUpdateOne) defaults() error {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *AgentRunResultUpdateOne) check() error {
-	if v, ok := _u.mutation.Content(); ok {
-		if err := agentrunresult.ContentValidator(v); err != nil {
-			return &ValidationError{Name: "content", err: fmt.Errorf(`ent: validator failed for field "AgentRunResult.content": %w`, err)}
-		}
-	}
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunResult.tenant"`)
 	}
@@ -442,14 +432,14 @@ func (_u *AgentRunResultUpdateOne) sqlSave(ctx context.Context) (_node *AgentRun
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(agentrunresult.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if value, ok := _u.mutation.Content(); ok {
-		_spec.SetField(agentrunresult.FieldContent, field.TypeString, value)
+	if value, ok := _u.mutation.Output(); ok {
+		_spec.SetField(agentrunresult.FieldOutput, field.TypeBytes, value)
 	}
-	if value, ok := _u.mutation.Data(); ok {
-		_spec.SetField(agentrunresult.FieldData, field.TypeJSON, value)
+	if value, ok := _u.mutation.ErrorMessage(); ok {
+		_spec.SetField(agentrunresult.FieldErrorMessage, field.TypeString, value)
 	}
-	if _u.mutation.DataCleared() {
-		_spec.ClearField(agentrunresult.FieldData, field.TypeJSON)
+	if _u.mutation.ErrorMessageCleared() {
+		_spec.ClearField(agentrunresult.FieldErrorMessage, field.TypeString)
 	}
 	if _u.mutation.AgentRunCleared() {
 		edge := &sqlgraph.EdgeSpec{

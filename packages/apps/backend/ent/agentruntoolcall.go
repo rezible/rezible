@@ -29,8 +29,8 @@ type AgentRunToolCall struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// AgentRunID holds the value of the "agent_run_id" field.
 	AgentRunID uuid.UUID `json:"agent_run_id,omitempty"`
-	// ToolName holds the value of the "tool_name" field.
-	ToolName string `json:"tool_name,omitempty"`
+	// ToolID holds the value of the "tool_id" field.
+	ToolID string `json:"tool_id,omitempty"`
 	// Status holds the value of the "status" field.
 	Status agentruntoolcall.Status `json:"status,omitempty"`
 	// ToolParams holds the value of the "tool_params" field.
@@ -102,7 +102,7 @@ func (*AgentRunToolCall) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case agentruntoolcall.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agentruntoolcall.FieldToolName, agentruntoolcall.FieldStatus, agentruntoolcall.FieldErrorMessage:
+		case agentruntoolcall.FieldToolID, agentruntoolcall.FieldStatus, agentruntoolcall.FieldErrorMessage:
 			values[i] = new(sql.NullString)
 		case agentruntoolcall.FieldCreatedAt, agentruntoolcall.FieldUpdatedAt, agentruntoolcall.FieldStartedAt, agentruntoolcall.FieldFinishedAt:
 			values[i] = new(sql.NullTime)
@@ -153,11 +153,11 @@ func (_m *AgentRunToolCall) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.AgentRunID = *value
 			}
-		case agentruntoolcall.FieldToolName:
+		case agentruntoolcall.FieldToolID:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field tool_name", values[i])
+				return fmt.Errorf("unexpected type %T for field tool_id", values[i])
 			} else if value.Valid {
-				_m.ToolName = value.String
+				_m.ToolID = value.String
 			}
 		case agentruntoolcall.FieldStatus:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -264,8 +264,8 @@ func (_m *AgentRunToolCall) String() string {
 	builder.WriteString("agent_run_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunID))
 	builder.WriteString(", ")
-	builder.WriteString("tool_name=")
-	builder.WriteString(_m.ToolName)
+	builder.WriteString("tool_id=")
+	builder.WriteString(_m.ToolID)
 	builder.WriteString(", ")
 	builder.WriteString("status=")
 	builder.WriteString(fmt.Sprintf("%v", _m.Status))

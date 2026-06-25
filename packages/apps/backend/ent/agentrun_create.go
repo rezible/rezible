@@ -76,20 +76,6 @@ func (_c *AgentRunCreate) SetAttempt(v int) *AgentRunCreate {
 	return _c
 }
 
-// SetStatus sets the "status" field.
-func (_c *AgentRunCreate) SetStatus(v agentrun.Status) *AgentRunCreate {
-	_c.mutation.SetStatus(v)
-	return _c
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (_c *AgentRunCreate) SetNillableStatus(v *agentrun.Status) *AgentRunCreate {
-	if v != nil {
-		_c.SetStatus(*v)
-	}
-	return _c
-}
-
 // SetStartedAt sets the "started_at" field.
 func (_c *AgentRunCreate) SetStartedAt(v time.Time) *AgentRunCreate {
 	_c.mutation.SetStartedAt(v)
@@ -104,30 +90,16 @@ func (_c *AgentRunCreate) SetNillableStartedAt(v *time.Time) *AgentRunCreate {
 	return _c
 }
 
-// SetFinishedAt sets the "finished_at" field.
-func (_c *AgentRunCreate) SetFinishedAt(v time.Time) *AgentRunCreate {
-	_c.mutation.SetFinishedAt(v)
+// SetCancelledAt sets the "cancelled_at" field.
+func (_c *AgentRunCreate) SetCancelledAt(v time.Time) *AgentRunCreate {
+	_c.mutation.SetCancelledAt(v)
 	return _c
 }
 
-// SetNillableFinishedAt sets the "finished_at" field if the given value is not nil.
-func (_c *AgentRunCreate) SetNillableFinishedAt(v *time.Time) *AgentRunCreate {
+// SetNillableCancelledAt sets the "cancelled_at" field if the given value is not nil.
+func (_c *AgentRunCreate) SetNillableCancelledAt(v *time.Time) *AgentRunCreate {
 	if v != nil {
-		_c.SetFinishedAt(*v)
-	}
-	return _c
-}
-
-// SetErrorMessage sets the "error_message" field.
-func (_c *AgentRunCreate) SetErrorMessage(v string) *AgentRunCreate {
-	_c.mutation.SetErrorMessage(v)
-	return _c
-}
-
-// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
-func (_c *AgentRunCreate) SetNillableErrorMessage(v *string) *AgentRunCreate {
-	if v != nil {
-		_c.SetErrorMessage(*v)
+		_c.SetCancelledAt(*v)
 	}
 	return _c
 }
@@ -151,9 +123,34 @@ func (_c *AgentRunCreate) SetTenant(v *Tenant) *AgentRunCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAgentTask sets the "agent_task" edge to the AgentTask entity.
-func (_c *AgentRunCreate) SetAgentTask(v *AgentTask) *AgentRunCreate {
-	return _c.SetAgentTaskID(v.ID)
+// SetTaskID sets the "task" edge to the AgentTask entity by ID.
+func (_c *AgentRunCreate) SetTaskID(id uuid.UUID) *AgentRunCreate {
+	_c.mutation.SetTaskID(id)
+	return _c
+}
+
+// SetTask sets the "task" edge to the AgentTask entity.
+func (_c *AgentRunCreate) SetTask(v *AgentTask) *AgentRunCreate {
+	return _c.SetTaskID(v.ID)
+}
+
+// SetResultID sets the "result" edge to the AgentRunResult entity by ID.
+func (_c *AgentRunCreate) SetResultID(id uuid.UUID) *AgentRunCreate {
+	_c.mutation.SetResultID(id)
+	return _c
+}
+
+// SetNillableResultID sets the "result" edge to the AgentRunResult entity by ID if the given value is not nil.
+func (_c *AgentRunCreate) SetNillableResultID(id *uuid.UUID) *AgentRunCreate {
+	if id != nil {
+		_c = _c.SetResultID(*id)
+	}
+	return _c
+}
+
+// SetResult sets the "result" edge to the AgentRunResult entity.
+func (_c *AgentRunCreate) SetResult(v *AgentRunResult) *AgentRunCreate {
+	return _c.SetResultID(v.ID)
 }
 
 // AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
@@ -184,21 +181,6 @@ func (_c *AgentRunCreate) AddFindings(v ...*AgentRunFinding) *AgentRunCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddFindingIDs(ids...)
-}
-
-// AddResultIDs adds the "result" edge to the AgentRunResult entity by IDs.
-func (_c *AgentRunCreate) AddResultIDs(ids ...uuid.UUID) *AgentRunCreate {
-	_c.mutation.AddResultIDs(ids...)
-	return _c
-}
-
-// AddResult adds the "result" edges to the AgentRunResult entity.
-func (_c *AgentRunCreate) AddResult(v ...*AgentRunResult) *AgentRunCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddResultIDs(ids...)
 }
 
 // AddToolCallIDs adds the "tool_calls" edge to the AgentRunToolCall entity by IDs.
@@ -267,10 +249,6 @@ func (_c *AgentRunCreate) defaults() error {
 		v := agentrun.DefaultUpdatedAt()
 		_c.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := _c.mutation.Status(); !ok {
-		v := agentrun.DefaultStatus
-		_c.mutation.SetStatus(v)
-	}
 	if _, ok := _c.mutation.ID(); !ok {
 		if agentrun.DefaultID == nil {
 			return fmt.Errorf("ent: uninitialized agentrun.DefaultID (forgotten import ent/runtime?)")
@@ -303,19 +281,11 @@ func (_c *AgentRunCreate) check() error {
 			return &ValidationError{Name: "attempt", err: fmt.Errorf(`ent: validator failed for field "AgentRun.attempt": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "AgentRun.status"`)}
-	}
-	if v, ok := _c.mutation.Status(); ok {
-		if err := agentrun.StatusValidator(v); err != nil {
-			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "AgentRun.status": %w`, err)}
-		}
-	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRun.tenant"`)}
 	}
-	if len(_c.mutation.AgentTaskIDs()) == 0 {
-		return &ValidationError{Name: "agent_task", err: errors.New(`ent: missing required edge "AgentRun.agent_task"`)}
+	if len(_c.mutation.TaskIDs()) == 0 {
+		return &ValidationError{Name: "task", err: errors.New(`ent: missing required edge "AgentRun.task"`)}
 	}
 	return nil
 }
@@ -366,21 +336,13 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 		_spec.SetField(agentrun.FieldAttempt, field.TypeInt, value)
 		_node.Attempt = value
 	}
-	if value, ok := _c.mutation.Status(); ok {
-		_spec.SetField(agentrun.FieldStatus, field.TypeEnum, value)
-		_node.Status = value
-	}
 	if value, ok := _c.mutation.StartedAt(); ok {
 		_spec.SetField(agentrun.FieldStartedAt, field.TypeTime, value)
 		_node.StartedAt = &value
 	}
-	if value, ok := _c.mutation.FinishedAt(); ok {
-		_spec.SetField(agentrun.FieldFinishedAt, field.TypeTime, value)
-		_node.FinishedAt = &value
-	}
-	if value, ok := _c.mutation.ErrorMessage(); ok {
-		_spec.SetField(agentrun.FieldErrorMessage, field.TypeString, value)
-		_node.ErrorMessage = value
+	if value, ok := _c.mutation.CancelledAt(); ok {
+		_spec.SetField(agentrun.FieldCancelledAt, field.TypeTime, value)
+		_node.CancelledAt = &value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -400,12 +362,12 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AgentTaskIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TaskIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrun.AgentTaskTable,
-			Columns: []string{agentrun.AgentTaskColumn},
+			Table:   agentrun.TaskTable,
+			Columns: []string{agentrun.TaskColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agenttask.FieldID, field.TypeUUID),
@@ -416,6 +378,24 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AgentTaskID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ResultIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: false,
+			Table:   agentrun.ResultTable,
+			Columns: []string{agentrun.ResultColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRun
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.agent_run_result = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.CitationsIDs(); len(nodes) > 0 {
@@ -447,23 +427,6 @@ func (_c *AgentRunCreate) createSpec() (*AgentRun, *sqlgraph.CreateSpec) {
 			},
 		}
 		edge.Schema = _c.schemaConfig.AgentRunFinding
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.ResultIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   agentrun.ResultTable,
-			Columns: []string{agentrun.ResultColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(agentrunresult.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AgentRunResult
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -592,18 +555,6 @@ func (u *AgentRunUpsert) AddAttempt(v int) *AgentRunUpsert {
 	return u
 }
 
-// SetStatus sets the "status" field.
-func (u *AgentRunUpsert) SetStatus(v agentrun.Status) *AgentRunUpsert {
-	u.Set(agentrun.FieldStatus, v)
-	return u
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateStatus() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldStatus)
-	return u
-}
-
 // SetStartedAt sets the "started_at" field.
 func (u *AgentRunUpsert) SetStartedAt(v time.Time) *AgentRunUpsert {
 	u.Set(agentrun.FieldStartedAt, v)
@@ -622,39 +573,21 @@ func (u *AgentRunUpsert) ClearStartedAt() *AgentRunUpsert {
 	return u
 }
 
-// SetFinishedAt sets the "finished_at" field.
-func (u *AgentRunUpsert) SetFinishedAt(v time.Time) *AgentRunUpsert {
-	u.Set(agentrun.FieldFinishedAt, v)
+// SetCancelledAt sets the "cancelled_at" field.
+func (u *AgentRunUpsert) SetCancelledAt(v time.Time) *AgentRunUpsert {
+	u.Set(agentrun.FieldCancelledAt, v)
 	return u
 }
 
-// UpdateFinishedAt sets the "finished_at" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateFinishedAt() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldFinishedAt)
+// UpdateCancelledAt sets the "cancelled_at" field to the value that was provided on create.
+func (u *AgentRunUpsert) UpdateCancelledAt() *AgentRunUpsert {
+	u.SetExcluded(agentrun.FieldCancelledAt)
 	return u
 }
 
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (u *AgentRunUpsert) ClearFinishedAt() *AgentRunUpsert {
-	u.SetNull(agentrun.FieldFinishedAt)
-	return u
-}
-
-// SetErrorMessage sets the "error_message" field.
-func (u *AgentRunUpsert) SetErrorMessage(v string) *AgentRunUpsert {
-	u.Set(agentrun.FieldErrorMessage, v)
-	return u
-}
-
-// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
-func (u *AgentRunUpsert) UpdateErrorMessage() *AgentRunUpsert {
-	u.SetExcluded(agentrun.FieldErrorMessage)
-	return u
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (u *AgentRunUpsert) ClearErrorMessage() *AgentRunUpsert {
-	u.SetNull(agentrun.FieldErrorMessage)
+// ClearCancelledAt clears the value of the "cancelled_at" field.
+func (u *AgentRunUpsert) ClearCancelledAt() *AgentRunUpsert {
+	u.SetNull(agentrun.FieldCancelledAt)
 	return u
 }
 
@@ -772,20 +705,6 @@ func (u *AgentRunUpsertOne) UpdateAttempt() *AgentRunUpsertOne {
 	})
 }
 
-// SetStatus sets the "status" field.
-func (u *AgentRunUpsertOne) SetStatus(v agentrun.Status) *AgentRunUpsertOne {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateStatus() *AgentRunUpsertOne {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateStatus()
-	})
-}
-
 // SetStartedAt sets the "started_at" field.
 func (u *AgentRunUpsertOne) SetStartedAt(v time.Time) *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
@@ -807,45 +726,24 @@ func (u *AgentRunUpsertOne) ClearStartedAt() *AgentRunUpsertOne {
 	})
 }
 
-// SetFinishedAt sets the "finished_at" field.
-func (u *AgentRunUpsertOne) SetFinishedAt(v time.Time) *AgentRunUpsertOne {
+// SetCancelledAt sets the "cancelled_at" field.
+func (u *AgentRunUpsertOne) SetCancelledAt(v time.Time) *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetFinishedAt(v)
+		s.SetCancelledAt(v)
 	})
 }
 
-// UpdateFinishedAt sets the "finished_at" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateFinishedAt() *AgentRunUpsertOne {
+// UpdateCancelledAt sets the "cancelled_at" field to the value that was provided on create.
+func (u *AgentRunUpsertOne) UpdateCancelledAt() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateFinishedAt()
+		s.UpdateCancelledAt()
 	})
 }
 
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (u *AgentRunUpsertOne) ClearFinishedAt() *AgentRunUpsertOne {
+// ClearCancelledAt clears the value of the "cancelled_at" field.
+func (u *AgentRunUpsertOne) ClearCancelledAt() *AgentRunUpsertOne {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearFinishedAt()
-	})
-}
-
-// SetErrorMessage sets the "error_message" field.
-func (u *AgentRunUpsertOne) SetErrorMessage(v string) *AgentRunUpsertOne {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.SetErrorMessage(v)
-	})
-}
-
-// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
-func (u *AgentRunUpsertOne) UpdateErrorMessage() *AgentRunUpsertOne {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateErrorMessage()
-	})
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (u *AgentRunUpsertOne) ClearErrorMessage() *AgentRunUpsertOne {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearErrorMessage()
+		s.ClearCancelledAt()
 	})
 }
 
@@ -1130,20 +1028,6 @@ func (u *AgentRunUpsertBulk) UpdateAttempt() *AgentRunUpsertBulk {
 	})
 }
 
-// SetStatus sets the "status" field.
-func (u *AgentRunUpsertBulk) SetStatus(v agentrun.Status) *AgentRunUpsertBulk {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateStatus() *AgentRunUpsertBulk {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateStatus()
-	})
-}
-
 // SetStartedAt sets the "started_at" field.
 func (u *AgentRunUpsertBulk) SetStartedAt(v time.Time) *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
@@ -1165,45 +1049,24 @@ func (u *AgentRunUpsertBulk) ClearStartedAt() *AgentRunUpsertBulk {
 	})
 }
 
-// SetFinishedAt sets the "finished_at" field.
-func (u *AgentRunUpsertBulk) SetFinishedAt(v time.Time) *AgentRunUpsertBulk {
+// SetCancelledAt sets the "cancelled_at" field.
+func (u *AgentRunUpsertBulk) SetCancelledAt(v time.Time) *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.SetFinishedAt(v)
+		s.SetCancelledAt(v)
 	})
 }
 
-// UpdateFinishedAt sets the "finished_at" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateFinishedAt() *AgentRunUpsertBulk {
+// UpdateCancelledAt sets the "cancelled_at" field to the value that was provided on create.
+func (u *AgentRunUpsertBulk) UpdateCancelledAt() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateFinishedAt()
+		s.UpdateCancelledAt()
 	})
 }
 
-// ClearFinishedAt clears the value of the "finished_at" field.
-func (u *AgentRunUpsertBulk) ClearFinishedAt() *AgentRunUpsertBulk {
+// ClearCancelledAt clears the value of the "cancelled_at" field.
+func (u *AgentRunUpsertBulk) ClearCancelledAt() *AgentRunUpsertBulk {
 	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearFinishedAt()
-	})
-}
-
-// SetErrorMessage sets the "error_message" field.
-func (u *AgentRunUpsertBulk) SetErrorMessage(v string) *AgentRunUpsertBulk {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.SetErrorMessage(v)
-	})
-}
-
-// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
-func (u *AgentRunUpsertBulk) UpdateErrorMessage() *AgentRunUpsertBulk {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.UpdateErrorMessage()
-	})
-}
-
-// ClearErrorMessage clears the value of the "error_message" field.
-func (u *AgentRunUpsertBulk) ClearErrorMessage() *AgentRunUpsertBulk {
-	return u.Update(func(s *AgentRunUpsert) {
-		s.ClearErrorMessage()
+		s.ClearCancelledAt()
 	})
 }
 

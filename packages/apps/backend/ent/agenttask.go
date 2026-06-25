@@ -29,14 +29,14 @@ type AgentTask struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// OwnerUserID holds the value of the "owner_user_id" field.
 	OwnerUserID uuid.UUID `json:"owner_user_id,omitempty"`
-	// WorkflowKind holds the value of the "workflow_kind" field.
-	WorkflowKind string `json:"workflow_kind,omitempty"`
-	// WorkflowInput holds the value of the "workflow_input" field.
-	WorkflowInput map[string]interface{} `json:"workflow_input,omitempty"`
+	// Workflow holds the value of the "workflow" field.
+	Workflow string `json:"workflow,omitempty"`
+	// Input holds the value of the "input" field.
+	Input []byte `json:"input,omitempty"`
 	// TriggerKind holds the value of the "trigger_kind" field.
 	TriggerKind string `json:"trigger_kind,omitempty"`
-	// TriggerPayload holds the value of the "trigger_payload" field.
-	TriggerPayload map[string]interface{} `json:"trigger_payload,omitempty"`
+	// TriggerMetadata holds the value of the "trigger_metadata" field.
+	TriggerMetadata map[string]interface{} `json:"trigger_metadata,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AgentTaskQuery when eager-loading is set.
 	Edges        AgentTaskEdges `json:"edges"`
@@ -49,13 +49,15 @@ type AgentTaskEdges struct {
 	Tenant *Tenant `json:"tenant,omitempty"`
 	// OwnerUser holds the value of the owner_user edge.
 	OwnerUser *User `json:"owner_user,omitempty"`
+	// Subjects holds the value of the subjects edge.
+	Subjects []*AgentTaskSubject `json:"subjects,omitempty"`
 	// Runs holds the value of the runs edge.
 	Runs []*AgentRun `json:"runs,omitempty"`
 	// Citations holds the value of the citations edge.
 	Citations []*AgentRunCitation `json:"citations,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [4]bool
+	loadedTypes [5]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -80,10 +82,19 @@ func (e AgentTaskEdges) OwnerUserOrErr() (*User, error) {
 	return nil, &NotLoadedError{edge: "owner_user"}
 }
 
+// SubjectsOrErr returns the Subjects value or an error if the edge
+// was not loaded in eager-loading.
+func (e AgentTaskEdges) SubjectsOrErr() ([]*AgentTaskSubject, error) {
+	if e.loadedTypes[2] {
+		return e.Subjects, nil
+	}
+	return nil, &NotLoadedError{edge: "subjects"}
+}
+
 // RunsOrErr returns the Runs value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentTaskEdges) RunsOrErr() ([]*AgentRun, error) {
-	if e.loadedTypes[2] {
+	if e.loadedTypes[3] {
 		return e.Runs, nil
 	}
 	return nil, &NotLoadedError{edge: "runs"}
@@ -92,7 +103,7 @@ func (e AgentTaskEdges) RunsOrErr() ([]*AgentRun, error) {
 // CitationsOrErr returns the Citations value or an error if the edge
 // was not loaded in eager-loading.
 func (e AgentTaskEdges) CitationsOrErr() ([]*AgentRunCitation, error) {
-	if e.loadedTypes[3] {
+	if e.loadedTypes[4] {
 		return e.Citations, nil
 	}
 	return nil, &NotLoadedError{edge: "citations"}
@@ -103,11 +114,11 @@ func (*AgentTask) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case agenttask.FieldWorkflowInput, agenttask.FieldTriggerPayload:
+		case agenttask.FieldInput, agenttask.FieldTriggerMetadata:
 			values[i] = new([]byte)
 		case agenttask.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case agenttask.FieldWorkflowKind, agenttask.FieldTriggerKind:
+		case agenttask.FieldWorkflow, agenttask.FieldTriggerKind:
 			values[i] = new(sql.NullString)
 		case agenttask.FieldCreatedAt, agenttask.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -158,19 +169,17 @@ func (_m *AgentTask) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				_m.OwnerUserID = *value
 			}
-		case agenttask.FieldWorkflowKind:
+		case agenttask.FieldWorkflow:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_kind", values[i])
+				return fmt.Errorf("unexpected type %T for field workflow", values[i])
 			} else if value.Valid {
-				_m.WorkflowKind = value.String
+				_m.Workflow = value.String
 			}
-		case agenttask.FieldWorkflowInput:
+		case agenttask.FieldInput:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field workflow_input", values[i])
-			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.WorkflowInput); err != nil {
-					return fmt.Errorf("unmarshal field workflow_input: %w", err)
-				}
+				return fmt.Errorf("unexpected type %T for field input", values[i])
+			} else if value != nil {
+				_m.Input = *value
 			}
 		case agenttask.FieldTriggerKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -178,12 +187,12 @@ func (_m *AgentTask) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TriggerKind = value.String
 			}
-		case agenttask.FieldTriggerPayload:
+		case agenttask.FieldTriggerMetadata:
 			if value, ok := values[i].(*[]byte); !ok {
-				return fmt.Errorf("unexpected type %T for field trigger_payload", values[i])
+				return fmt.Errorf("unexpected type %T for field trigger_metadata", values[i])
 			} else if value != nil && len(*value) > 0 {
-				if err := json.Unmarshal(*value, &_m.TriggerPayload); err != nil {
-					return fmt.Errorf("unmarshal field trigger_payload: %w", err)
+				if err := json.Unmarshal(*value, &_m.TriggerMetadata); err != nil {
+					return fmt.Errorf("unmarshal field trigger_metadata: %w", err)
 				}
 			}
 		default:
@@ -207,6 +216,11 @@ func (_m *AgentTask) QueryTenant() *TenantQuery {
 // QueryOwnerUser queries the "owner_user" edge of the AgentTask entity.
 func (_m *AgentTask) QueryOwnerUser() *UserQuery {
 	return NewAgentTaskClient(_m.config).QueryOwnerUser(_m)
+}
+
+// QuerySubjects queries the "subjects" edge of the AgentTask entity.
+func (_m *AgentTask) QuerySubjects() *AgentTaskSubjectQuery {
+	return NewAgentTaskClient(_m.config).QuerySubjects(_m)
 }
 
 // QueryRuns queries the "runs" edge of the AgentTask entity.
@@ -254,17 +268,17 @@ func (_m *AgentTask) String() string {
 	builder.WriteString("owner_user_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.OwnerUserID))
 	builder.WriteString(", ")
-	builder.WriteString("workflow_kind=")
-	builder.WriteString(_m.WorkflowKind)
+	builder.WriteString("workflow=")
+	builder.WriteString(_m.Workflow)
 	builder.WriteString(", ")
-	builder.WriteString("workflow_input=")
-	builder.WriteString(fmt.Sprintf("%v", _m.WorkflowInput))
+	builder.WriteString("input=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Input))
 	builder.WriteString(", ")
 	builder.WriteString("trigger_kind=")
 	builder.WriteString(_m.TriggerKind)
 	builder.WriteString(", ")
-	builder.WriteString("trigger_payload=")
-	builder.WriteString(fmt.Sprintf("%v", _m.TriggerPayload))
+	builder.WriteString("trigger_metadata=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TriggerMetadata))
 	builder.WriteByte(')')
 	return builder.String()
 }

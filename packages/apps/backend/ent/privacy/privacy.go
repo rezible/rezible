@@ -279,6 +279,30 @@ func (f AgentTaskMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutat
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentTaskMutation", m)
 }
 
+// The AgentTaskSubjectQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AgentTaskSubjectQueryRuleFunc func(context.Context, *ent.AgentTaskSubjectQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AgentTaskSubjectQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentTaskSubjectQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AgentTaskSubjectQuery", q)
+}
+
+// The AgentTaskSubjectMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AgentTaskSubjectMutationRuleFunc func(context.Context, *ent.AgentTaskSubjectMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AgentTaskSubjectMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AgentTaskSubjectMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AgentTaskSubjectMutation", m)
+}
+
 // The AlertQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AlertQueryRuleFunc func(context.Context, *ent.AlertQuery) error
@@ -1924,6 +1948,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AgentTaskQuery:
 		return q.Filter(), nil
+	case *ent.AgentTaskSubjectQuery:
+		return q.Filter(), nil
 	case *ent.AlertQuery:
 		return q.Filter(), nil
 	case *ent.AlertFeedbackQuery:
@@ -2078,6 +2104,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 	case *ent.AgentRunToolCallMutation:
 		return m.Filter(), nil
 	case *ent.AgentTaskMutation:
+		return m.Filter(), nil
+	case *ent.AgentTaskSubjectMutation:
 		return m.Filter(), nil
 	case *ent.AlertMutation:
 		return m.Filter(), nil

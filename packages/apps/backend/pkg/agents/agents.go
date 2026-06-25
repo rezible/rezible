@@ -2,7 +2,6 @@ package agents
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -14,110 +13,57 @@ import (
 	"github.com/rezible/rezible/ent"
 )
 
-type RunResult struct {
-	Content   string
-	Data      map[string]any
-	Citations []RunCitationInput
-	Findings  []RunFindingInput
+type WorkflowRunContext struct {
+	Task *ent.AgentTask
+	Run  *ent.AgentRun
 }
 
-type TaskRunnerFunc func(context.Context, *ent.AgentTask, *ent.AgentRun) (*RunResult, error)
-
-type RunCitationInput struct {
-	CitationKind            string
-	DomainEntityType        string
-	DomainEntityID          uuid.UUID
-	KnowledgeEntityID       uuid.UUID
-	KnowledgeRelationshipID uuid.UUID
-	KnowledgeEvidenceID     uuid.UUID
-	AgentTaskID             uuid.UUID
-	AgentRunToolCallID      uuid.UUID
-	Summary                 string
-	Snapshot                map[string]any
-}
-
-type RunFindingInput struct {
-	FindingKind string
-	Content     string
-	Citations   []RunFindingCitationInput
-}
-
-type RunFindingCitationInput struct {
-	CitationIndex int
-	SupportKind   string
-}
-
-func FindSubjectRefID(subjects []SubjectRef, subjectType string) uuid.UUID {
-	for _, subject := range subjects {
-		if subject.Type == subjectType {
-			return subject.ID
+func (wc WorkflowRunContext) GetSubjectEntityId(subjectKind string) (uuid.UUID, error) {
+	subjects, subjectsErr := wc.Task.Edges.SubjectsOrErr()
+	if subjectsErr != nil {
+		return uuid.Nil, subjectsErr
+	}
+	for _, sub := range subjects {
+		if sub.SubjectKind == subjectKind {
+			if sub.DomainEntityID == nil {
+				return uuid.Nil, fmt.Errorf("subject kind with nil domain entity id")
+			}
+			return *sub.DomainEntityID, nil
 		}
 	}
-	return uuid.Nil
+	return uuid.Nil, fmt.Errorf("subject kind %s not found", subjectKind)
 }
 
-func EncodeInput[T any](input T) (map[string]any, error) {
-	return encodePayload(input)
+type WorkflowRunnerResult[O any] struct {
+	Output   *O
+	Error    error
+	Metadata map[string]string
 }
 
-func DecodeInput[T any](payload map[string]any) (*T, error) {
-	return decodePayload[T](payload)
+type Redactable interface {
+	Redact() Redactable
 }
 
-func EncodeOutput[T any](output T) (map[string]any, error) {
-	return encodePayload(output)
+func redactPayloadEntry(key string, value any) any {
+	lower := strings.ToLower(key)
+	if strings.Contains(lower, "token") || strings.Contains(lower, "secret") || strings.Contains(lower, "cookie") || strings.Contains(lower, "authorization") || strings.Contains(lower, "password") {
+		return "redacted"
+	}
+	switch typed := value.(type) {
+	case map[string]any:
+		return redactMap(typed)
+	case []any:
+		return redactSlice(typed)
+	}
+	return value
 }
 
-func DecodeOutput[T any](payload map[string]any) (*T, error) {
-	return decodePayload[T](payload)
-}
-
-func ValidateRunCitationInput(input RunCitationInput) error {
-	if strings.TrimSpace(input.CitationKind) == "" {
-		return fmt.Errorf("agent citation kind is required")
+func redactMap(inp map[string]any) map[string]any {
+	redacted := make(map[string]any, len(inp))
+	for k, v := range inp {
+		redacted[k] = redactPayloadEntry(k, v)
 	}
-	if strings.TrimSpace(input.Summary) == "" {
-		return fmt.Errorf("agent citation summary is required")
-	}
-	targets := 0
-	if input.DomainEntityType != "" || input.DomainEntityID != uuid.Nil {
-		if input.DomainEntityType == "" || input.DomainEntityID == uuid.Nil {
-			return fmt.Errorf("domain citation requires type and id")
-		}
-		targets++
-	}
-	for _, id := range []uuid.UUID{input.KnowledgeEntityID, input.KnowledgeRelationshipID, input.KnowledgeEvidenceID, input.AgentTaskID, input.AgentRunToolCallID} {
-		if id != uuid.Nil {
-			targets++
-		}
-	}
-	if targets != 1 {
-		return fmt.Errorf("agent citation requires exactly one target")
-	}
-	return nil
-}
-
-func RedactPayload(input map[string]any) map[string]any {
-	if input == nil {
-		return map[string]any{}
-	}
-	out := make(map[string]any, len(input))
-	for key, value := range input {
-		lower := strings.ToLower(key)
-		if strings.Contains(lower, "token") || strings.Contains(lower, "secret") || strings.Contains(lower, "cookie") || strings.Contains(lower, "authorization") || strings.Contains(lower, "password") {
-			out[key] = "redacted"
-			continue
-		}
-		switch typed := value.(type) {
-		case map[string]any:
-			out[key] = RedactPayload(typed)
-		case []any:
-			out[key] = redactSlice(typed)
-		default:
-			out[key] = value
-		}
-	}
-	return out
+	return redacted
 }
 
 func redactSlice(input []any) []any {
@@ -125,7 +71,7 @@ func redactSlice(input []any) []any {
 	for i, value := range input {
 		switch typed := value.(type) {
 		case map[string]any:
-			out[i] = RedactPayload(typed)
+			out[i] = redactMap(typed)
 		case []any:
 			out[i] = redactSlice(typed)
 		default:
@@ -136,6 +82,35 @@ func redactSlice(input []any) []any {
 }
 
 var payloadValidator = newPayloadValidator()
+
+func newPayloadValidator() *validator.Validate {
+	validate := validator.New(validator.WithRequiredStructEnabled())
+	// validate based on json field name
+	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
+		name, _, found := strings.Cut(field.Tag.Get("json"), ",")
+		if found && name != "" && name != "-" {
+			return name
+		}
+		return field.Name
+	})
+	return validate
+}
+
+func validatePayload[T any](payload T) error {
+	validationErr := payloadValidator.Struct(payload)
+	if validationErr == nil {
+		return nil
+	}
+	errs, isValidationErr := errors.AsType[validator.ValidationErrors](validationErr)
+	if !isValidationErr || len(errs) == 0 {
+		return nil
+	}
+	msgs := make([]string, len(errs))
+	for i, verr := range errs {
+		msgs[i] = fmt.Sprintf("[%s:%s]", verr.Field(), verr.Error())
+	}
+	return fmt.Errorf("field: %s", strings.Join(msgs, " "))
+}
 
 func encodePayload[T any](payload T) (map[string]any, error) {
 	if validationErr := validatePayload(payload); validationErr != nil {
@@ -167,30 +142,4 @@ func decodePayload[T any](payload map[string]any) (*T, error) {
 		return nil, validationErr
 	}
 	return &decoded, nil
-}
-
-func newPayloadValidator() *validator.Validate {
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	validate.RegisterTagNameFunc(func(field reflect.StructField) string {
-		name, _, found := strings.Cut(field.Tag.Get("json"), ",")
-		if found && name != "" && name != "-" {
-			return name
-		}
-		return field.Name
-	})
-	return validate
-}
-
-func validatePayload[T any](payload T) error {
-	if validationErr := payloadValidator.Struct(payload); validationErr != nil {
-		if errs, ok := errors.AsType[validator.ValidationErrors](validationErr); ok && len(errs) > 0 {
-			msgs := make([]string, len(errs))
-			for i, verr := range errs {
-				msgs[i] = fmt.Sprintf("[%s:%s]", verr.Field(), verr.Error())
-			}
-			return fmt.Errorf("field: %s", strings.Join(msgs, " "))
-		}
-		return validationErr
-	}
-	return nil
 }

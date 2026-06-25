@@ -61,15 +61,15 @@ func (_c *AgentRunFindingCitationCreate) SetNillableUpdatedAt(v *time.Time) *Age
 	return _c
 }
 
-// SetAgentRunFindingID sets the "agent_run_finding_id" field.
-func (_c *AgentRunFindingCitationCreate) SetAgentRunFindingID(v uuid.UUID) *AgentRunFindingCitationCreate {
-	_c.mutation.SetAgentRunFindingID(v)
+// SetFindingID sets the "finding_id" field.
+func (_c *AgentRunFindingCitationCreate) SetFindingID(v uuid.UUID) *AgentRunFindingCitationCreate {
+	_c.mutation.SetFindingID(v)
 	return _c
 }
 
-// SetAgentRunCitationID sets the "agent_run_citation_id" field.
-func (_c *AgentRunFindingCitationCreate) SetAgentRunCitationID(v uuid.UUID) *AgentRunFindingCitationCreate {
-	_c.mutation.SetAgentRunCitationID(v)
+// SetCitationID sets the "citation_id" field.
+func (_c *AgentRunFindingCitationCreate) SetCitationID(v uuid.UUID) *AgentRunFindingCitationCreate {
+	_c.mutation.SetCitationID(v)
 	return _c
 }
 
@@ -98,14 +98,14 @@ func (_c *AgentRunFindingCitationCreate) SetTenant(v *Tenant) *AgentRunFindingCi
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAgentRunFinding sets the "agent_run_finding" edge to the AgentRunFinding entity.
-func (_c *AgentRunFindingCitationCreate) SetAgentRunFinding(v *AgentRunFinding) *AgentRunFindingCitationCreate {
-	return _c.SetAgentRunFindingID(v.ID)
+// SetFinding sets the "finding" edge to the AgentRunFinding entity.
+func (_c *AgentRunFindingCitationCreate) SetFinding(v *AgentRunFinding) *AgentRunFindingCitationCreate {
+	return _c.SetFindingID(v.ID)
 }
 
-// SetAgentRunCitation sets the "agent_run_citation" edge to the AgentRunCitation entity.
-func (_c *AgentRunFindingCitationCreate) SetAgentRunCitation(v *AgentRunCitation) *AgentRunFindingCitationCreate {
-	return _c.SetAgentRunCitationID(v.ID)
+// SetCitation sets the "citation" edge to the AgentRunCitation entity.
+func (_c *AgentRunFindingCitationCreate) SetCitation(v *AgentRunCitation) *AgentRunFindingCitationCreate {
+	return _c.SetCitationID(v.ID)
 }
 
 // Mutation returns the AgentRunFindingCitationMutation object of the builder.
@@ -180,11 +180,11 @@ func (_c *AgentRunFindingCitationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "AgentRunFindingCitation.updated_at"`)}
 	}
-	if _, ok := _c.mutation.AgentRunFindingID(); !ok {
-		return &ValidationError{Name: "agent_run_finding_id", err: errors.New(`ent: missing required field "AgentRunFindingCitation.agent_run_finding_id"`)}
+	if _, ok := _c.mutation.FindingID(); !ok {
+		return &ValidationError{Name: "finding_id", err: errors.New(`ent: missing required field "AgentRunFindingCitation.finding_id"`)}
 	}
-	if _, ok := _c.mutation.AgentRunCitationID(); !ok {
-		return &ValidationError{Name: "agent_run_citation_id", err: errors.New(`ent: missing required field "AgentRunFindingCitation.agent_run_citation_id"`)}
+	if _, ok := _c.mutation.CitationID(); !ok {
+		return &ValidationError{Name: "citation_id", err: errors.New(`ent: missing required field "AgentRunFindingCitation.citation_id"`)}
 	}
 	if _, ok := _c.mutation.SupportKind(); !ok {
 		return &ValidationError{Name: "support_kind", err: errors.New(`ent: missing required field "AgentRunFindingCitation.support_kind"`)}
@@ -197,11 +197,11 @@ func (_c *AgentRunFindingCitationCreate) check() error {
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRunFindingCitation.tenant"`)}
 	}
-	if len(_c.mutation.AgentRunFindingIDs()) == 0 {
-		return &ValidationError{Name: "agent_run_finding", err: errors.New(`ent: missing required edge "AgentRunFindingCitation.agent_run_finding"`)}
+	if len(_c.mutation.FindingIDs()) == 0 {
+		return &ValidationError{Name: "finding", err: errors.New(`ent: missing required edge "AgentRunFindingCitation.finding"`)}
 	}
-	if len(_c.mutation.AgentRunCitationIDs()) == 0 {
-		return &ValidationError{Name: "agent_run_citation", err: errors.New(`ent: missing required edge "AgentRunFindingCitation.agent_run_citation"`)}
+	if len(_c.mutation.CitationIDs()) == 0 {
+		return &ValidationError{Name: "citation", err: errors.New(`ent: missing required edge "AgentRunFindingCitation.citation"`)}
 	}
 	return nil
 }
@@ -270,12 +270,12 @@ func (_c *AgentRunFindingCitationCreate) createSpec() (*AgentRunFindingCitation,
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AgentRunFindingIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.FindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunFindingTable,
-			Columns: []string{agentrunfindingcitation.AgentRunFindingColumn},
+			Table:   agentrunfindingcitation.FindingTable,
+			Columns: []string{agentrunfindingcitation.FindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
@@ -285,15 +285,15 @@ func (_c *AgentRunFindingCitationCreate) createSpec() (*AgentRunFindingCitation,
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AgentRunFindingID = nodes[0]
+		_node.FindingID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AgentRunCitationIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.CitationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunCitationTable,
-			Columns: []string{agentrunfindingcitation.AgentRunCitationColumn},
+			Table:   agentrunfindingcitation.CitationTable,
+			Columns: []string{agentrunfindingcitation.CitationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
@@ -303,7 +303,7 @@ func (_c *AgentRunFindingCitationCreate) createSpec() (*AgentRunFindingCitation,
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.AgentRunCitationID = nodes[0]
+		_node.CitationID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
@@ -382,27 +382,27 @@ func (u *AgentRunFindingCitationUpsert) UpdateUpdatedAt() *AgentRunFindingCitati
 	return u
 }
 
-// SetAgentRunFindingID sets the "agent_run_finding_id" field.
-func (u *AgentRunFindingCitationUpsert) SetAgentRunFindingID(v uuid.UUID) *AgentRunFindingCitationUpsert {
-	u.Set(agentrunfindingcitation.FieldAgentRunFindingID, v)
+// SetFindingID sets the "finding_id" field.
+func (u *AgentRunFindingCitationUpsert) SetFindingID(v uuid.UUID) *AgentRunFindingCitationUpsert {
+	u.Set(agentrunfindingcitation.FieldFindingID, v)
 	return u
 }
 
-// UpdateAgentRunFindingID sets the "agent_run_finding_id" field to the value that was provided on create.
-func (u *AgentRunFindingCitationUpsert) UpdateAgentRunFindingID() *AgentRunFindingCitationUpsert {
-	u.SetExcluded(agentrunfindingcitation.FieldAgentRunFindingID)
+// UpdateFindingID sets the "finding_id" field to the value that was provided on create.
+func (u *AgentRunFindingCitationUpsert) UpdateFindingID() *AgentRunFindingCitationUpsert {
+	u.SetExcluded(agentrunfindingcitation.FieldFindingID)
 	return u
 }
 
-// SetAgentRunCitationID sets the "agent_run_citation_id" field.
-func (u *AgentRunFindingCitationUpsert) SetAgentRunCitationID(v uuid.UUID) *AgentRunFindingCitationUpsert {
-	u.Set(agentrunfindingcitation.FieldAgentRunCitationID, v)
+// SetCitationID sets the "citation_id" field.
+func (u *AgentRunFindingCitationUpsert) SetCitationID(v uuid.UUID) *AgentRunFindingCitationUpsert {
+	u.Set(agentrunfindingcitation.FieldCitationID, v)
 	return u
 }
 
-// UpdateAgentRunCitationID sets the "agent_run_citation_id" field to the value that was provided on create.
-func (u *AgentRunFindingCitationUpsert) UpdateAgentRunCitationID() *AgentRunFindingCitationUpsert {
-	u.SetExcluded(agentrunfindingcitation.FieldAgentRunCitationID)
+// UpdateCitationID sets the "citation_id" field to the value that was provided on create.
+func (u *AgentRunFindingCitationUpsert) UpdateCitationID() *AgentRunFindingCitationUpsert {
+	u.SetExcluded(agentrunfindingcitation.FieldCitationID)
 	return u
 }
 
@@ -497,31 +497,31 @@ func (u *AgentRunFindingCitationUpsertOne) UpdateUpdatedAt() *AgentRunFindingCit
 	})
 }
 
-// SetAgentRunFindingID sets the "agent_run_finding_id" field.
-func (u *AgentRunFindingCitationUpsertOne) SetAgentRunFindingID(v uuid.UUID) *AgentRunFindingCitationUpsertOne {
+// SetFindingID sets the "finding_id" field.
+func (u *AgentRunFindingCitationUpsertOne) SetFindingID(v uuid.UUID) *AgentRunFindingCitationUpsertOne {
 	return u.Update(func(s *AgentRunFindingCitationUpsert) {
-		s.SetAgentRunFindingID(v)
+		s.SetFindingID(v)
 	})
 }
 
-// UpdateAgentRunFindingID sets the "agent_run_finding_id" field to the value that was provided on create.
-func (u *AgentRunFindingCitationUpsertOne) UpdateAgentRunFindingID() *AgentRunFindingCitationUpsertOne {
+// UpdateFindingID sets the "finding_id" field to the value that was provided on create.
+func (u *AgentRunFindingCitationUpsertOne) UpdateFindingID() *AgentRunFindingCitationUpsertOne {
 	return u.Update(func(s *AgentRunFindingCitationUpsert) {
-		s.UpdateAgentRunFindingID()
+		s.UpdateFindingID()
 	})
 }
 
-// SetAgentRunCitationID sets the "agent_run_citation_id" field.
-func (u *AgentRunFindingCitationUpsertOne) SetAgentRunCitationID(v uuid.UUID) *AgentRunFindingCitationUpsertOne {
+// SetCitationID sets the "citation_id" field.
+func (u *AgentRunFindingCitationUpsertOne) SetCitationID(v uuid.UUID) *AgentRunFindingCitationUpsertOne {
 	return u.Update(func(s *AgentRunFindingCitationUpsert) {
-		s.SetAgentRunCitationID(v)
+		s.SetCitationID(v)
 	})
 }
 
-// UpdateAgentRunCitationID sets the "agent_run_citation_id" field to the value that was provided on create.
-func (u *AgentRunFindingCitationUpsertOne) UpdateAgentRunCitationID() *AgentRunFindingCitationUpsertOne {
+// UpdateCitationID sets the "citation_id" field to the value that was provided on create.
+func (u *AgentRunFindingCitationUpsertOne) UpdateCitationID() *AgentRunFindingCitationUpsertOne {
 	return u.Update(func(s *AgentRunFindingCitationUpsert) {
-		s.UpdateAgentRunCitationID()
+		s.UpdateCitationID()
 	})
 }
 
@@ -785,31 +785,31 @@ func (u *AgentRunFindingCitationUpsertBulk) UpdateUpdatedAt() *AgentRunFindingCi
 	})
 }
 
-// SetAgentRunFindingID sets the "agent_run_finding_id" field.
-func (u *AgentRunFindingCitationUpsertBulk) SetAgentRunFindingID(v uuid.UUID) *AgentRunFindingCitationUpsertBulk {
+// SetFindingID sets the "finding_id" field.
+func (u *AgentRunFindingCitationUpsertBulk) SetFindingID(v uuid.UUID) *AgentRunFindingCitationUpsertBulk {
 	return u.Update(func(s *AgentRunFindingCitationUpsert) {
-		s.SetAgentRunFindingID(v)
+		s.SetFindingID(v)
 	})
 }
 
-// UpdateAgentRunFindingID sets the "agent_run_finding_id" field to the value that was provided on create.
-func (u *AgentRunFindingCitationUpsertBulk) UpdateAgentRunFindingID() *AgentRunFindingCitationUpsertBulk {
+// UpdateFindingID sets the "finding_id" field to the value that was provided on create.
+func (u *AgentRunFindingCitationUpsertBulk) UpdateFindingID() *AgentRunFindingCitationUpsertBulk {
 	return u.Update(func(s *AgentRunFindingCitationUpsert) {
-		s.UpdateAgentRunFindingID()
+		s.UpdateFindingID()
 	})
 }
 
-// SetAgentRunCitationID sets the "agent_run_citation_id" field.
-func (u *AgentRunFindingCitationUpsertBulk) SetAgentRunCitationID(v uuid.UUID) *AgentRunFindingCitationUpsertBulk {
+// SetCitationID sets the "citation_id" field.
+func (u *AgentRunFindingCitationUpsertBulk) SetCitationID(v uuid.UUID) *AgentRunFindingCitationUpsertBulk {
 	return u.Update(func(s *AgentRunFindingCitationUpsert) {
-		s.SetAgentRunCitationID(v)
+		s.SetCitationID(v)
 	})
 }
 
-// UpdateAgentRunCitationID sets the "agent_run_citation_id" field to the value that was provided on create.
-func (u *AgentRunFindingCitationUpsertBulk) UpdateAgentRunCitationID() *AgentRunFindingCitationUpsertBulk {
+// UpdateCitationID sets the "citation_id" field to the value that was provided on create.
+func (u *AgentRunFindingCitationUpsertBulk) UpdateCitationID() *AgentRunFindingCitationUpsertBulk {
 	return u.Update(func(s *AgentRunFindingCitationUpsert) {
-		s.UpdateAgentRunCitationID()
+		s.UpdateCitationID()
 	})
 }
 

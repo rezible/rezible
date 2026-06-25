@@ -24,12 +24,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAgentRunID holds the string denoting the agent_run_id field in the database.
 	FieldAgentRunID = "agent_run_id"
-	// FieldCitationKind holds the string denoting the citation_kind field in the database.
-	FieldCitationKind = "citation_kind"
-	// FieldDomainEntityType holds the string denoting the domain_entity_type field in the database.
-	FieldDomainEntityType = "domain_entity_type"
-	// FieldDomainEntityID holds the string denoting the domain_entity_id field in the database.
-	FieldDomainEntityID = "domain_entity_id"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
+	// FieldSummary holds the string denoting the summary field in the database.
+	FieldSummary = "summary"
 	// FieldKnowledgeEntityID holds the string denoting the knowledge_entity_id field in the database.
 	FieldKnowledgeEntityID = "knowledge_entity_id"
 	// FieldKnowledgeRelationshipID holds the string denoting the knowledge_relationship_id field in the database.
@@ -40,10 +38,12 @@ const (
 	FieldAgentTaskID = "agent_task_id"
 	// FieldAgentRunToolCallID holds the string denoting the agent_run_tool_call_id field in the database.
 	FieldAgentRunToolCallID = "agent_run_tool_call_id"
-	// FieldSummary holds the string denoting the summary field in the database.
-	FieldSummary = "summary"
-	// FieldSnapshot holds the string denoting the snapshot field in the database.
-	FieldSnapshot = "snapshot"
+	// FieldDomainEntityType holds the string denoting the domain_entity_type field in the database.
+	FieldDomainEntityType = "domain_entity_type"
+	// FieldDomainEntityID holds the string denoting the domain_entity_id field in the database.
+	FieldDomainEntityID = "domain_entity_id"
+	// FieldDomainEntitySnapshot holds the string denoting the domain_entity_snapshot field in the database.
+	FieldDomainEntitySnapshot = "domain_entity_snapshot"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAgentRun holds the string denoting the agent_run edge name in mutations.
@@ -58,6 +58,8 @@ const (
 	EdgeAgentTask = "agent_task"
 	// EdgeAgentRunToolCall holds the string denoting the agent_run_tool_call edge name in mutations.
 	EdgeAgentRunToolCall = "agent_run_tool_call"
+	// EdgeFindings holds the string denoting the findings edge name in mutations.
+	EdgeFindings = "findings"
 	// EdgeFindingCitations holds the string denoting the finding_citations edge name in mutations.
 	EdgeFindingCitations = "finding_citations"
 	// Table holds the table name of the agentruncitation in the database.
@@ -111,13 +113,18 @@ const (
 	AgentRunToolCallInverseTable = "agent_run_tool_calls"
 	// AgentRunToolCallColumn is the table column denoting the agent_run_tool_call relation/edge.
 	AgentRunToolCallColumn = "agent_run_tool_call_id"
+	// FindingsTable is the table that holds the findings relation/edge. The primary key declared below.
+	FindingsTable = "agent_run_finding_citations"
+	// FindingsInverseTable is the table name for the AgentRunFinding entity.
+	// It exists in this package in order to avoid circular dependency with the "agentrunfinding" package.
+	FindingsInverseTable = "agent_run_findings"
 	// FindingCitationsTable is the table that holds the finding_citations relation/edge.
 	FindingCitationsTable = "agent_run_finding_citations"
 	// FindingCitationsInverseTable is the table name for the AgentRunFindingCitation entity.
 	// It exists in this package in order to avoid circular dependency with the "agentrunfindingcitation" package.
 	FindingCitationsInverseTable = "agent_run_finding_citations"
 	// FindingCitationsColumn is the table column denoting the finding_citations relation/edge.
-	FindingCitationsColumn = "agent_run_citation_id"
+	FindingCitationsColumn = "citation_id"
 )
 
 // Columns holds all SQL columns for agentruncitation fields.
@@ -127,17 +134,23 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAgentRunID,
-	FieldCitationKind,
-	FieldDomainEntityType,
-	FieldDomainEntityID,
+	FieldKind,
+	FieldSummary,
 	FieldKnowledgeEntityID,
 	FieldKnowledgeRelationshipID,
 	FieldKnowledgeEvidenceID,
 	FieldAgentTaskID,
 	FieldAgentRunToolCallID,
-	FieldSummary,
-	FieldSnapshot,
+	FieldDomainEntityType,
+	FieldDomainEntityID,
+	FieldDomainEntitySnapshot,
 }
+
+var (
+	// FindingsPrimaryKey and FindingsColumn2 are the table columns denoting the
+	// primary key for the findings relation (M2M).
+	FindingsPrimaryKey = []string{"finding_id", "citation_id"}
+)
 
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
@@ -163,8 +176,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// CitationKindValidator is a validator for the "citation_kind" field. It is called by the builders before save.
-	CitationKindValidator func(string) error
+	// KindValidator is a validator for the "kind" field. It is called by the builders before save.
+	KindValidator func(string) error
 	// SummaryValidator is a validator for the "summary" field. It is called by the builders before save.
 	SummaryValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
@@ -199,19 +212,14 @@ func ByAgentRunID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentRunID, opts...).ToFunc()
 }
 
-// ByCitationKind orders the results by the citation_kind field.
-func ByCitationKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCitationKind, opts...).ToFunc()
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
-// ByDomainEntityType orders the results by the domain_entity_type field.
-func ByDomainEntityType(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDomainEntityType, opts...).ToFunc()
-}
-
-// ByDomainEntityID orders the results by the domain_entity_id field.
-func ByDomainEntityID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDomainEntityID, opts...).ToFunc()
+// BySummary orders the results by the summary field.
+func BySummary(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldSummary, opts...).ToFunc()
 }
 
 // ByKnowledgeEntityID orders the results by the knowledge_entity_id field.
@@ -239,9 +247,14 @@ func ByAgentRunToolCallID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentRunToolCallID, opts...).ToFunc()
 }
 
-// BySummary orders the results by the summary field.
-func BySummary(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldSummary, opts...).ToFunc()
+// ByDomainEntityType orders the results by the domain_entity_type field.
+func ByDomainEntityType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDomainEntityType, opts...).ToFunc()
+}
+
+// ByDomainEntityID orders the results by the domain_entity_id field.
+func ByDomainEntityID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldDomainEntityID, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.
@@ -290,6 +303,20 @@ func ByAgentTaskField(field string, opts ...sql.OrderTermOption) OrderOption {
 func ByAgentRunToolCallField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
 		sqlgraph.OrderByNeighborTerms(s, newAgentRunToolCallStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByFindingsCount orders the results by findings count.
+func ByFindingsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newFindingsStep(), opts...)
+	}
+}
+
+// ByFindings orders the results by findings terms.
+func ByFindings(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newFindingsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 
@@ -353,6 +380,13 @@ func newAgentRunToolCallStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(AgentRunToolCallInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, AgentRunToolCallTable, AgentRunToolCallColumn),
+	)
+}
+func newFindingsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(FindingsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2M, true, FindingsTable, FindingsPrimaryKey...),
 	)
 }
 func newFindingCitationsStep() *sqlgraph.Step {

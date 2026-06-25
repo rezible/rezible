@@ -26,6 +26,8 @@ type Tx struct {
 	AgentRunToolCall *AgentRunToolCallClient
 	// AgentTask is the client for interacting with the AgentTask builders.
 	AgentTask *AgentTaskClient
+	// AgentTaskSubject is the client for interacting with the AgentTaskSubject builders.
+	AgentTaskSubject *AgentTaskSubjectClient
 	// Alert is the client for interacting with the Alert builders.
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
@@ -298,6 +300,7 @@ func (tx *Tx) init() {
 	tx.AgentRunResult = NewAgentRunResultClient(tx.config)
 	tx.AgentRunToolCall = NewAgentRunToolCallClient(tx.config)
 	tx.AgentTask = NewAgentTaskClient(tx.config)
+	tx.AgentTaskSubject = NewAgentTaskSubjectClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)

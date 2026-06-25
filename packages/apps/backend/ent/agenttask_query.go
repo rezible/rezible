@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -32,6 +33,7 @@ type AgentTaskQuery struct {
 	predicates    []predicate.AgentTask
 	withTenant    *TenantQuery
 	withOwnerUser *UserQuery
+	withSubjects  *AgentTaskSubjectQuery
 	withRuns      *AgentRunQuery
 	withCitations *AgentRunCitationQuery
 	modifiers     []func(*sql.Selector)
@@ -115,6 +117,31 @@ func (_q *AgentTaskQuery) QueryOwnerUser() *UserQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.User
 		step.Edge.Schema = schemaConfig.AgentTask
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QuerySubjects chains the current query on the "subjects" edge.
+func (_q *AgentTaskQuery) QuerySubjects() *AgentTaskSubjectQuery {
+	query := (&AgentTaskSubjectClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(agenttask.Table, agenttask.FieldID, selector),
+			sqlgraph.To(agenttasksubject.Table, agenttasksubject.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, agenttask.SubjectsTable, agenttask.SubjectsColumn),
+		)
+		schemaConfig := _q.schemaConfig
+		step.To.Schema = schemaConfig.AgentTaskSubject
+		step.Edge.Schema = schemaConfig.AgentTaskSubject
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -365,6 +392,7 @@ func (_q *AgentTaskQuery) Clone() *AgentTaskQuery {
 		predicates:    append([]predicate.AgentTask{}, _q.predicates...),
 		withTenant:    _q.withTenant.Clone(),
 		withOwnerUser: _q.withOwnerUser.Clone(),
+		withSubjects:  _q.withSubjects.Clone(),
 		withRuns:      _q.withRuns.Clone(),
 		withCitations: _q.withCitations.Clone(),
 		// clone intermediate query.
@@ -393,6 +421,17 @@ func (_q *AgentTaskQuery) WithOwnerUser(opts ...func(*UserQuery)) *AgentTaskQuer
 		opt(query)
 	}
 	_q.withOwnerUser = query
+	return _q
+}
+
+// WithSubjects tells the query-builder to eager-load the nodes that are connected to
+// the "subjects" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AgentTaskQuery) WithSubjects(opts ...func(*AgentTaskSubjectQuery)) *AgentTaskQuery {
+	query := (&AgentTaskSubjectClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withSubjects = query
 	return _q
 }
 
@@ -502,9 +541,10 @@ func (_q *AgentTaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ag
 	var (
 		nodes       = []*AgentTask{}
 		_spec       = _q.querySpec()
-		loadedTypes = [4]bool{
+		loadedTypes = [5]bool{
 			_q.withTenant != nil,
 			_q.withOwnerUser != nil,
+			_q.withSubjects != nil,
 			_q.withRuns != nil,
 			_q.withCitations != nil,
 		}
@@ -541,6 +581,13 @@ func (_q *AgentTaskQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Ag
 	if query := _q.withOwnerUser; query != nil {
 		if err := _q.loadOwnerUser(ctx, query, nodes, nil,
 			func(n *AgentTask, e *User) { n.Edges.OwnerUser = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withSubjects; query != nil {
+		if err := _q.loadSubjects(ctx, query, nodes,
+			func(n *AgentTask) { n.Edges.Subjects = []*AgentTaskSubject{} },
+			func(n *AgentTask, e *AgentTaskSubject) { n.Edges.Subjects = append(n.Edges.Subjects, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -619,6 +666,36 @@ func (_q *AgentTaskQuery) loadOwnerUser(ctx context.Context, query *UserQuery, n
 	}
 	return nil
 }
+func (_q *AgentTaskQuery) loadSubjects(ctx context.Context, query *AgentTaskSubjectQuery, nodes []*AgentTask, init func(*AgentTask), assign func(*AgentTask, *AgentTaskSubject)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*AgentTask)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(agenttasksubject.FieldTaskID)
+	}
+	query.Where(predicate.AgentTaskSubject(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(agenttask.SubjectsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.TaskID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "task_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
+}
 func (_q *AgentTaskQuery) loadRuns(ctx context.Context, query *AgentRunQuery, nodes []*AgentTask, init func(*AgentTask), assign func(*AgentTask, *AgentRun)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*AgentTask)
@@ -629,6 +706,7 @@ func (_q *AgentTaskQuery) loadRuns(ctx context.Context, query *AgentRunQuery, no
 			init(nodes[i])
 		}
 	}
+	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
 		query.ctx.AppendFieldOnce(agentrun.FieldAgentTaskID)
 	}

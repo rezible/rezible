@@ -6,13 +6,14 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/model/gemini"
 	einomodel "github.com/cloudwego/eino/components/model"
+	"github.com/cloudwego/eino/schema"
 	"google.golang.org/genai"
 
 	rez "github.com/rezible/rezible"
 )
 
 type ModelProvider interface {
-	Model(context.Context) (einomodel.BaseChatModel, error)
+	Model(context.Context) (einomodel.BaseModel[*schema.Message], error)
 	ModelMetadata() map[string]any
 }
 

@@ -10,10 +10,12 @@ type SchemaConfig struct {
 	AgentRun                                  string // AgentRun table.
 	AgentRunCitation                          string // AgentRunCitation table.
 	AgentRunFinding                           string // AgentRunFinding table.
+	AgentRunFindingCitations                  string // AgentRunFinding-citations->AgentRunCitation table.
 	AgentRunFindingCitation                   string // AgentRunFindingCitation table.
 	AgentRunResult                            string // AgentRunResult table.
 	AgentRunToolCall                          string // AgentRunToolCall table.
 	AgentTask                                 string // AgentTask table.
+	AgentTaskSubject                          string // AgentTaskSubject table.
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.
 	AlertMetrics                              string // AlertMetrics table.

@@ -24,10 +24,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldAgentRunID holds the string denoting the agent_run_id field in the database.
 	FieldAgentRunID = "agent_run_id"
-	// FieldContent holds the string denoting the content field in the database.
-	FieldContent = "content"
-	// FieldData holds the string denoting the data field in the database.
-	FieldData = "data"
+	// FieldOutput holds the string denoting the output field in the database.
+	FieldOutput = "output"
+	// FieldErrorMessage holds the string denoting the error_message field in the database.
+	FieldErrorMessage = "error_message"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeAgentRun holds the string denoting the agent_run edge name in mutations.
@@ -57,8 +57,8 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldAgentRunID,
-	FieldContent,
-	FieldData,
+	FieldOutput,
+	FieldErrorMessage,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -85,8 +85,6 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
-	// ContentValidator is a validator for the "content" field. It is called by the builders before save.
-	ContentValidator func(string) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )
@@ -119,9 +117,9 @@ func ByAgentRunID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAgentRunID, opts...).ToFunc()
 }
 
-// ByContent orders the results by the content field.
-func ByContent(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldContent, opts...).ToFunc()
+// ByErrorMessage orders the results by the error_message field.
+func ByErrorMessage(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldErrorMessage, opts...).ToFunc()
 }
 
 // ByTenantField orders the results by tenant field.

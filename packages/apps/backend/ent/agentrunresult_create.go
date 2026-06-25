@@ -66,15 +66,23 @@ func (_c *AgentRunResultCreate) SetAgentRunID(v uuid.UUID) *AgentRunResultCreate
 	return _c
 }
 
-// SetContent sets the "content" field.
-func (_c *AgentRunResultCreate) SetContent(v string) *AgentRunResultCreate {
-	_c.mutation.SetContent(v)
+// SetOutput sets the "output" field.
+func (_c *AgentRunResultCreate) SetOutput(v []byte) *AgentRunResultCreate {
+	_c.mutation.SetOutput(v)
 	return _c
 }
 
-// SetData sets the "data" field.
-func (_c *AgentRunResultCreate) SetData(v map[string]interface{}) *AgentRunResultCreate {
-	_c.mutation.SetData(v)
+// SetErrorMessage sets the "error_message" field.
+func (_c *AgentRunResultCreate) SetErrorMessage(v string) *AgentRunResultCreate {
+	_c.mutation.SetErrorMessage(v)
+	return _c
+}
+
+// SetNillableErrorMessage sets the "error_message" field if the given value is not nil.
+func (_c *AgentRunResultCreate) SetNillableErrorMessage(v *string) *AgentRunResultCreate {
+	if v != nil {
+		_c.SetErrorMessage(*v)
+	}
 	return _c
 }
 
@@ -177,13 +185,8 @@ func (_c *AgentRunResultCreate) check() error {
 	if _, ok := _c.mutation.AgentRunID(); !ok {
 		return &ValidationError{Name: "agent_run_id", err: errors.New(`ent: missing required field "AgentRunResult.agent_run_id"`)}
 	}
-	if _, ok := _c.mutation.Content(); !ok {
-		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "AgentRunResult.content"`)}
-	}
-	if v, ok := _c.mutation.Content(); ok {
-		if err := agentrunresult.ContentValidator(v); err != nil {
-			return &ValidationError{Name: "content", err: fmt.Errorf(`ent: validator failed for field "AgentRunResult.content": %w`, err)}
-		}
+	if _, ok := _c.mutation.Output(); !ok {
+		return &ValidationError{Name: "output", err: errors.New(`ent: missing required field "AgentRunResult.output"`)}
 	}
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AgentRunResult.tenant"`)}
@@ -236,13 +239,13 @@ func (_c *AgentRunResultCreate) createSpec() (*AgentRunResult, *sqlgraph.CreateS
 		_spec.SetField(agentrunresult.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.Content(); ok {
-		_spec.SetField(agentrunresult.FieldContent, field.TypeString, value)
-		_node.Content = value
+	if value, ok := _c.mutation.Output(); ok {
+		_spec.SetField(agentrunresult.FieldOutput, field.TypeBytes, value)
+		_node.Output = value
 	}
-	if value, ok := _c.mutation.Data(); ok {
-		_spec.SetField(agentrunresult.FieldData, field.TypeJSON, value)
-		_node.Data = value
+	if value, ok := _c.mutation.ErrorMessage(); ok {
+		_spec.SetField(agentrunresult.FieldErrorMessage, field.TypeString, value)
+		_node.ErrorMessage = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -368,33 +371,33 @@ func (u *AgentRunResultUpsert) UpdateAgentRunID() *AgentRunResultUpsert {
 	return u
 }
 
-// SetContent sets the "content" field.
-func (u *AgentRunResultUpsert) SetContent(v string) *AgentRunResultUpsert {
-	u.Set(agentrunresult.FieldContent, v)
+// SetOutput sets the "output" field.
+func (u *AgentRunResultUpsert) SetOutput(v []byte) *AgentRunResultUpsert {
+	u.Set(agentrunresult.FieldOutput, v)
 	return u
 }
 
-// UpdateContent sets the "content" field to the value that was provided on create.
-func (u *AgentRunResultUpsert) UpdateContent() *AgentRunResultUpsert {
-	u.SetExcluded(agentrunresult.FieldContent)
+// UpdateOutput sets the "output" field to the value that was provided on create.
+func (u *AgentRunResultUpsert) UpdateOutput() *AgentRunResultUpsert {
+	u.SetExcluded(agentrunresult.FieldOutput)
 	return u
 }
 
-// SetData sets the "data" field.
-func (u *AgentRunResultUpsert) SetData(v map[string]interface{}) *AgentRunResultUpsert {
-	u.Set(agentrunresult.FieldData, v)
+// SetErrorMessage sets the "error_message" field.
+func (u *AgentRunResultUpsert) SetErrorMessage(v string) *AgentRunResultUpsert {
+	u.Set(agentrunresult.FieldErrorMessage, v)
 	return u
 }
 
-// UpdateData sets the "data" field to the value that was provided on create.
-func (u *AgentRunResultUpsert) UpdateData() *AgentRunResultUpsert {
-	u.SetExcluded(agentrunresult.FieldData)
+// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
+func (u *AgentRunResultUpsert) UpdateErrorMessage() *AgentRunResultUpsert {
+	u.SetExcluded(agentrunresult.FieldErrorMessage)
 	return u
 }
 
-// ClearData clears the value of the "data" field.
-func (u *AgentRunResultUpsert) ClearData() *AgentRunResultUpsert {
-	u.SetNull(agentrunresult.FieldData)
+// ClearErrorMessage clears the value of the "error_message" field.
+func (u *AgentRunResultUpsert) ClearErrorMessage() *AgentRunResultUpsert {
+	u.SetNull(agentrunresult.FieldErrorMessage)
 	return u
 }
 
@@ -491,38 +494,38 @@ func (u *AgentRunResultUpsertOne) UpdateAgentRunID() *AgentRunResultUpsertOne {
 	})
 }
 
-// SetContent sets the "content" field.
-func (u *AgentRunResultUpsertOne) SetContent(v string) *AgentRunResultUpsertOne {
+// SetOutput sets the "output" field.
+func (u *AgentRunResultUpsertOne) SetOutput(v []byte) *AgentRunResultUpsertOne {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.SetContent(v)
+		s.SetOutput(v)
 	})
 }
 
-// UpdateContent sets the "content" field to the value that was provided on create.
-func (u *AgentRunResultUpsertOne) UpdateContent() *AgentRunResultUpsertOne {
+// UpdateOutput sets the "output" field to the value that was provided on create.
+func (u *AgentRunResultUpsertOne) UpdateOutput() *AgentRunResultUpsertOne {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.UpdateContent()
+		s.UpdateOutput()
 	})
 }
 
-// SetData sets the "data" field.
-func (u *AgentRunResultUpsertOne) SetData(v map[string]interface{}) *AgentRunResultUpsertOne {
+// SetErrorMessage sets the "error_message" field.
+func (u *AgentRunResultUpsertOne) SetErrorMessage(v string) *AgentRunResultUpsertOne {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.SetData(v)
+		s.SetErrorMessage(v)
 	})
 }
 
-// UpdateData sets the "data" field to the value that was provided on create.
-func (u *AgentRunResultUpsertOne) UpdateData() *AgentRunResultUpsertOne {
+// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
+func (u *AgentRunResultUpsertOne) UpdateErrorMessage() *AgentRunResultUpsertOne {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.UpdateData()
+		s.UpdateErrorMessage()
 	})
 }
 
-// ClearData clears the value of the "data" field.
-func (u *AgentRunResultUpsertOne) ClearData() *AgentRunResultUpsertOne {
+// ClearErrorMessage clears the value of the "error_message" field.
+func (u *AgentRunResultUpsertOne) ClearErrorMessage() *AgentRunResultUpsertOne {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.ClearData()
+		s.ClearErrorMessage()
 	})
 }
 
@@ -786,38 +789,38 @@ func (u *AgentRunResultUpsertBulk) UpdateAgentRunID() *AgentRunResultUpsertBulk 
 	})
 }
 
-// SetContent sets the "content" field.
-func (u *AgentRunResultUpsertBulk) SetContent(v string) *AgentRunResultUpsertBulk {
+// SetOutput sets the "output" field.
+func (u *AgentRunResultUpsertBulk) SetOutput(v []byte) *AgentRunResultUpsertBulk {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.SetContent(v)
+		s.SetOutput(v)
 	})
 }
 
-// UpdateContent sets the "content" field to the value that was provided on create.
-func (u *AgentRunResultUpsertBulk) UpdateContent() *AgentRunResultUpsertBulk {
+// UpdateOutput sets the "output" field to the value that was provided on create.
+func (u *AgentRunResultUpsertBulk) UpdateOutput() *AgentRunResultUpsertBulk {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.UpdateContent()
+		s.UpdateOutput()
 	})
 }
 
-// SetData sets the "data" field.
-func (u *AgentRunResultUpsertBulk) SetData(v map[string]interface{}) *AgentRunResultUpsertBulk {
+// SetErrorMessage sets the "error_message" field.
+func (u *AgentRunResultUpsertBulk) SetErrorMessage(v string) *AgentRunResultUpsertBulk {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.SetData(v)
+		s.SetErrorMessage(v)
 	})
 }
 
-// UpdateData sets the "data" field to the value that was provided on create.
-func (u *AgentRunResultUpsertBulk) UpdateData() *AgentRunResultUpsertBulk {
+// UpdateErrorMessage sets the "error_message" field to the value that was provided on create.
+func (u *AgentRunResultUpsertBulk) UpdateErrorMessage() *AgentRunResultUpsertBulk {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.UpdateData()
+		s.UpdateErrorMessage()
 	})
 }
 
-// ClearData clears the value of the "data" field.
-func (u *AgentRunResultUpsertBulk) ClearData() *AgentRunResultUpsertBulk {
+// ClearErrorMessage clears the value of the "error_message" field.
+func (u *AgentRunResultUpsertBulk) ClearErrorMessage() *AgentRunResultUpsertBulk {
 	return u.Update(func(s *AgentRunResultUpsert) {
-		s.ClearData()
+		s.ClearErrorMessage()
 	})
 }
 

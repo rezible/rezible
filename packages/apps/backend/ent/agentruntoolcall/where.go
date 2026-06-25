@@ -77,9 +77,9 @@ func AgentRunID(v uuid.UUID) predicate.AgentRunToolCall {
 	return predicate.AgentRunToolCall(sql.FieldEQ(FieldAgentRunID, v))
 }
 
-// ToolName applies equality check predicate on the "tool_name" field. It's identical to ToolNameEQ.
-func ToolName(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldEQ(FieldToolName, v))
+// ToolID applies equality check predicate on the "tool_id" field. It's identical to ToolIDEQ.
+func ToolID(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldEQ(FieldToolID, v))
 }
 
 // ErrorMessage applies equality check predicate on the "error_message" field. It's identical to ErrorMessageEQ.
@@ -217,69 +217,69 @@ func AgentRunIDNotIn(vs ...uuid.UUID) predicate.AgentRunToolCall {
 	return predicate.AgentRunToolCall(sql.FieldNotIn(FieldAgentRunID, vs...))
 }
 
-// ToolNameEQ applies the EQ predicate on the "tool_name" field.
-func ToolNameEQ(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldEQ(FieldToolName, v))
+// ToolIDEQ applies the EQ predicate on the "tool_id" field.
+func ToolIDEQ(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldEQ(FieldToolID, v))
 }
 
-// ToolNameNEQ applies the NEQ predicate on the "tool_name" field.
-func ToolNameNEQ(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldNEQ(FieldToolName, v))
+// ToolIDNEQ applies the NEQ predicate on the "tool_id" field.
+func ToolIDNEQ(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldNEQ(FieldToolID, v))
 }
 
-// ToolNameIn applies the In predicate on the "tool_name" field.
-func ToolNameIn(vs ...string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldIn(FieldToolName, vs...))
+// ToolIDIn applies the In predicate on the "tool_id" field.
+func ToolIDIn(vs ...string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldIn(FieldToolID, vs...))
 }
 
-// ToolNameNotIn applies the NotIn predicate on the "tool_name" field.
-func ToolNameNotIn(vs ...string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldNotIn(FieldToolName, vs...))
+// ToolIDNotIn applies the NotIn predicate on the "tool_id" field.
+func ToolIDNotIn(vs ...string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldNotIn(FieldToolID, vs...))
 }
 
-// ToolNameGT applies the GT predicate on the "tool_name" field.
-func ToolNameGT(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldGT(FieldToolName, v))
+// ToolIDGT applies the GT predicate on the "tool_id" field.
+func ToolIDGT(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldGT(FieldToolID, v))
 }
 
-// ToolNameGTE applies the GTE predicate on the "tool_name" field.
-func ToolNameGTE(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldGTE(FieldToolName, v))
+// ToolIDGTE applies the GTE predicate on the "tool_id" field.
+func ToolIDGTE(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldGTE(FieldToolID, v))
 }
 
-// ToolNameLT applies the LT predicate on the "tool_name" field.
-func ToolNameLT(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldLT(FieldToolName, v))
+// ToolIDLT applies the LT predicate on the "tool_id" field.
+func ToolIDLT(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldLT(FieldToolID, v))
 }
 
-// ToolNameLTE applies the LTE predicate on the "tool_name" field.
-func ToolNameLTE(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldLTE(FieldToolName, v))
+// ToolIDLTE applies the LTE predicate on the "tool_id" field.
+func ToolIDLTE(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldLTE(FieldToolID, v))
 }
 
-// ToolNameContains applies the Contains predicate on the "tool_name" field.
-func ToolNameContains(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldContains(FieldToolName, v))
+// ToolIDContains applies the Contains predicate on the "tool_id" field.
+func ToolIDContains(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldContains(FieldToolID, v))
 }
 
-// ToolNameHasPrefix applies the HasPrefix predicate on the "tool_name" field.
-func ToolNameHasPrefix(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldHasPrefix(FieldToolName, v))
+// ToolIDHasPrefix applies the HasPrefix predicate on the "tool_id" field.
+func ToolIDHasPrefix(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldHasPrefix(FieldToolID, v))
 }
 
-// ToolNameHasSuffix applies the HasSuffix predicate on the "tool_name" field.
-func ToolNameHasSuffix(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldHasSuffix(FieldToolName, v))
+// ToolIDHasSuffix applies the HasSuffix predicate on the "tool_id" field.
+func ToolIDHasSuffix(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldHasSuffix(FieldToolID, v))
 }
 
-// ToolNameEqualFold applies the EqualFold predicate on the "tool_name" field.
-func ToolNameEqualFold(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldEqualFold(FieldToolName, v))
+// ToolIDEqualFold applies the EqualFold predicate on the "tool_id" field.
+func ToolIDEqualFold(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldEqualFold(FieldToolID, v))
 }
 
-// ToolNameContainsFold applies the ContainsFold predicate on the "tool_name" field.
-func ToolNameContainsFold(v string) predicate.AgentRunToolCall {
-	return predicate.AgentRunToolCall(sql.FieldContainsFold(FieldToolName, v))
+// ToolIDContainsFold applies the ContainsFold predicate on the "tool_id" field.
+func ToolIDContainsFold(v string) predicate.AgentRunToolCall {
+	return predicate.AgentRunToolCall(sql.FieldContainsFold(FieldToolID, v))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

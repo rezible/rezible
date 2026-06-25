@@ -27,10 +27,10 @@ type AgentRunFindingCitation struct {
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// AgentRunFindingID holds the value of the "agent_run_finding_id" field.
-	AgentRunFindingID uuid.UUID `json:"agent_run_finding_id,omitempty"`
-	// AgentRunCitationID holds the value of the "agent_run_citation_id" field.
-	AgentRunCitationID uuid.UUID `json:"agent_run_citation_id,omitempty"`
+	// FindingID holds the value of the "finding_id" field.
+	FindingID uuid.UUID `json:"finding_id,omitempty"`
+	// CitationID holds the value of the "citation_id" field.
+	CitationID uuid.UUID `json:"citation_id,omitempty"`
 	// SupportKind holds the value of the "support_kind" field.
 	SupportKind string `json:"support_kind,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
@@ -43,10 +43,10 @@ type AgentRunFindingCitation struct {
 type AgentRunFindingCitationEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AgentRunFinding holds the value of the agent_run_finding edge.
-	AgentRunFinding *AgentRunFinding `json:"agent_run_finding,omitempty"`
-	// AgentRunCitation holds the value of the agent_run_citation edge.
-	AgentRunCitation *AgentRunCitation `json:"agent_run_citation,omitempty"`
+	// Finding holds the value of the finding edge.
+	Finding *AgentRunFinding `json:"finding,omitempty"`
+	// Citation holds the value of the citation edge.
+	Citation *AgentRunCitation `json:"citation,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [3]bool
@@ -63,26 +63,26 @@ func (e AgentRunFindingCitationEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AgentRunFindingOrErr returns the AgentRunFinding value or an error if the edge
+// FindingOrErr returns the Finding value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunFindingCitationEdges) AgentRunFindingOrErr() (*AgentRunFinding, error) {
-	if e.AgentRunFinding != nil {
-		return e.AgentRunFinding, nil
+func (e AgentRunFindingCitationEdges) FindingOrErr() (*AgentRunFinding, error) {
+	if e.Finding != nil {
+		return e.Finding, nil
 	} else if e.loadedTypes[1] {
 		return nil, &NotFoundError{label: agentrunfinding.Label}
 	}
-	return nil, &NotLoadedError{edge: "agent_run_finding"}
+	return nil, &NotLoadedError{edge: "finding"}
 }
 
-// AgentRunCitationOrErr returns the AgentRunCitation value or an error if the edge
+// CitationOrErr returns the Citation value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e AgentRunFindingCitationEdges) AgentRunCitationOrErr() (*AgentRunCitation, error) {
-	if e.AgentRunCitation != nil {
-		return e.AgentRunCitation, nil
+func (e AgentRunFindingCitationEdges) CitationOrErr() (*AgentRunCitation, error) {
+	if e.Citation != nil {
+		return e.Citation, nil
 	} else if e.loadedTypes[2] {
 		return nil, &NotFoundError{label: agentruncitation.Label}
 	}
-	return nil, &NotLoadedError{edge: "agent_run_citation"}
+	return nil, &NotLoadedError{edge: "citation"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -96,7 +96,7 @@ func (*AgentRunFindingCitation) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case agentrunfindingcitation.FieldCreatedAt, agentrunfindingcitation.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case agentrunfindingcitation.FieldID, agentrunfindingcitation.FieldAgentRunFindingID, agentrunfindingcitation.FieldAgentRunCitationID:
+		case agentrunfindingcitation.FieldID, agentrunfindingcitation.FieldFindingID, agentrunfindingcitation.FieldCitationID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -137,17 +137,17 @@ func (_m *AgentRunFindingCitation) assignValues(columns []string, values []any) 
 			} else if value.Valid {
 				_m.UpdatedAt = value.Time
 			}
-		case agentrunfindingcitation.FieldAgentRunFindingID:
+		case agentrunfindingcitation.FieldFindingID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field agent_run_finding_id", values[i])
+				return fmt.Errorf("unexpected type %T for field finding_id", values[i])
 			} else if value != nil {
-				_m.AgentRunFindingID = *value
+				_m.FindingID = *value
 			}
-		case agentrunfindingcitation.FieldAgentRunCitationID:
+		case agentrunfindingcitation.FieldCitationID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field agent_run_citation_id", values[i])
+				return fmt.Errorf("unexpected type %T for field citation_id", values[i])
 			} else if value != nil {
-				_m.AgentRunCitationID = *value
+				_m.CitationID = *value
 			}
 		case agentrunfindingcitation.FieldSupportKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -173,14 +173,14 @@ func (_m *AgentRunFindingCitation) QueryTenant() *TenantQuery {
 	return NewAgentRunFindingCitationClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAgentRunFinding queries the "agent_run_finding" edge of the AgentRunFindingCitation entity.
-func (_m *AgentRunFindingCitation) QueryAgentRunFinding() *AgentRunFindingQuery {
-	return NewAgentRunFindingCitationClient(_m.config).QueryAgentRunFinding(_m)
+// QueryFinding queries the "finding" edge of the AgentRunFindingCitation entity.
+func (_m *AgentRunFindingCitation) QueryFinding() *AgentRunFindingQuery {
+	return NewAgentRunFindingCitationClient(_m.config).QueryFinding(_m)
 }
 
-// QueryAgentRunCitation queries the "agent_run_citation" edge of the AgentRunFindingCitation entity.
-func (_m *AgentRunFindingCitation) QueryAgentRunCitation() *AgentRunCitationQuery {
-	return NewAgentRunFindingCitationClient(_m.config).QueryAgentRunCitation(_m)
+// QueryCitation queries the "citation" edge of the AgentRunFindingCitation entity.
+func (_m *AgentRunFindingCitation) QueryCitation() *AgentRunCitationQuery {
+	return NewAgentRunFindingCitationClient(_m.config).QueryCitation(_m)
 }
 
 // Update returns a builder for updating this AgentRunFindingCitation.
@@ -215,11 +215,11 @@ func (_m *AgentRunFindingCitation) String() string {
 	builder.WriteString("updated_at=")
 	builder.WriteString(_m.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", ")
-	builder.WriteString("agent_run_finding_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunFindingID))
+	builder.WriteString("finding_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.FindingID))
 	builder.WriteString(", ")
-	builder.WriteString("agent_run_citation_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.AgentRunCitationID))
+	builder.WriteString("citation_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.CitationID))
 	builder.WriteString(", ")
 	builder.WriteString("support_kind=")
 	builder.WriteString(_m.SupportKind)

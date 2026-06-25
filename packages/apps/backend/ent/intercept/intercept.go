@@ -15,6 +15,7 @@ import (
 	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/agentruntoolcall"
 	"github.com/rezible/rezible/ent/agenttask"
+	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/alertmetrics"
@@ -328,6 +329,33 @@ func (f TraverseAgentTask) Traverse(ctx context.Context, q ent.Query) error {
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AgentTaskQuery", q)
+}
+
+// The AgentTaskSubjectFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AgentTaskSubjectFunc func(context.Context, *ent.AgentTaskSubjectQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AgentTaskSubjectFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AgentTaskSubjectQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AgentTaskSubjectQuery", q)
+}
+
+// The TraverseAgentTaskSubject type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAgentTaskSubject func(context.Context, *ent.AgentTaskSubjectQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAgentTaskSubject) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAgentTaskSubject) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AgentTaskSubjectQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AgentTaskSubjectQuery", q)
 }
 
 // The AlertFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2156,6 +2184,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AgentRunToolCallQuery, predicate.AgentRunToolCall, agentruntoolcall.OrderOption]{typ: ent.TypeAgentRunToolCall, tq: q}, nil
 	case *ent.AgentTaskQuery:
 		return &query[*ent.AgentTaskQuery, predicate.AgentTask, agenttask.OrderOption]{typ: ent.TypeAgentTask, tq: q}, nil
+	case *ent.AgentTaskSubjectQuery:
+		return &query[*ent.AgentTaskSubjectQuery, predicate.AgentTaskSubject, agenttasksubject.OrderOption]{typ: ent.TypeAgentTaskSubject, tq: q}, nil
 	case *ent.AlertQuery:
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
 	case *ent.AlertFeedbackQuery:

@@ -53,30 +53,30 @@ func (_u *AgentRunFindingCitationUpdate) SetUpdatedAt(v time.Time) *AgentRunFind
 	return _u
 }
 
-// SetAgentRunFindingID sets the "agent_run_finding_id" field.
-func (_u *AgentRunFindingCitationUpdate) SetAgentRunFindingID(v uuid.UUID) *AgentRunFindingCitationUpdate {
-	_u.mutation.SetAgentRunFindingID(v)
+// SetFindingID sets the "finding_id" field.
+func (_u *AgentRunFindingCitationUpdate) SetFindingID(v uuid.UUID) *AgentRunFindingCitationUpdate {
+	_u.mutation.SetFindingID(v)
 	return _u
 }
 
-// SetNillableAgentRunFindingID sets the "agent_run_finding_id" field if the given value is not nil.
-func (_u *AgentRunFindingCitationUpdate) SetNillableAgentRunFindingID(v *uuid.UUID) *AgentRunFindingCitationUpdate {
+// SetNillableFindingID sets the "finding_id" field if the given value is not nil.
+func (_u *AgentRunFindingCitationUpdate) SetNillableFindingID(v *uuid.UUID) *AgentRunFindingCitationUpdate {
 	if v != nil {
-		_u.SetAgentRunFindingID(*v)
+		_u.SetFindingID(*v)
 	}
 	return _u
 }
 
-// SetAgentRunCitationID sets the "agent_run_citation_id" field.
-func (_u *AgentRunFindingCitationUpdate) SetAgentRunCitationID(v uuid.UUID) *AgentRunFindingCitationUpdate {
-	_u.mutation.SetAgentRunCitationID(v)
+// SetCitationID sets the "citation_id" field.
+func (_u *AgentRunFindingCitationUpdate) SetCitationID(v uuid.UUID) *AgentRunFindingCitationUpdate {
+	_u.mutation.SetCitationID(v)
 	return _u
 }
 
-// SetNillableAgentRunCitationID sets the "agent_run_citation_id" field if the given value is not nil.
-func (_u *AgentRunFindingCitationUpdate) SetNillableAgentRunCitationID(v *uuid.UUID) *AgentRunFindingCitationUpdate {
+// SetNillableCitationID sets the "citation_id" field if the given value is not nil.
+func (_u *AgentRunFindingCitationUpdate) SetNillableCitationID(v *uuid.UUID) *AgentRunFindingCitationUpdate {
 	if v != nil {
-		_u.SetAgentRunCitationID(*v)
+		_u.SetCitationID(*v)
 	}
 	return _u
 }
@@ -95,14 +95,14 @@ func (_u *AgentRunFindingCitationUpdate) SetNillableSupportKind(v *string) *Agen
 	return _u
 }
 
-// SetAgentRunFinding sets the "agent_run_finding" edge to the AgentRunFinding entity.
-func (_u *AgentRunFindingCitationUpdate) SetAgentRunFinding(v *AgentRunFinding) *AgentRunFindingCitationUpdate {
-	return _u.SetAgentRunFindingID(v.ID)
+// SetFinding sets the "finding" edge to the AgentRunFinding entity.
+func (_u *AgentRunFindingCitationUpdate) SetFinding(v *AgentRunFinding) *AgentRunFindingCitationUpdate {
+	return _u.SetFindingID(v.ID)
 }
 
-// SetAgentRunCitation sets the "agent_run_citation" edge to the AgentRunCitation entity.
-func (_u *AgentRunFindingCitationUpdate) SetAgentRunCitation(v *AgentRunCitation) *AgentRunFindingCitationUpdate {
-	return _u.SetAgentRunCitationID(v.ID)
+// SetCitation sets the "citation" edge to the AgentRunCitation entity.
+func (_u *AgentRunFindingCitationUpdate) SetCitation(v *AgentRunCitation) *AgentRunFindingCitationUpdate {
+	return _u.SetCitationID(v.ID)
 }
 
 // Mutation returns the AgentRunFindingCitationMutation object of the builder.
@@ -110,15 +110,15 @@ func (_u *AgentRunFindingCitationUpdate) Mutation() *AgentRunFindingCitationMuta
 	return _u.mutation
 }
 
-// ClearAgentRunFinding clears the "agent_run_finding" edge to the AgentRunFinding entity.
-func (_u *AgentRunFindingCitationUpdate) ClearAgentRunFinding() *AgentRunFindingCitationUpdate {
-	_u.mutation.ClearAgentRunFinding()
+// ClearFinding clears the "finding" edge to the AgentRunFinding entity.
+func (_u *AgentRunFindingCitationUpdate) ClearFinding() *AgentRunFindingCitationUpdate {
+	_u.mutation.ClearFinding()
 	return _u
 }
 
-// ClearAgentRunCitation clears the "agent_run_citation" edge to the AgentRunCitation entity.
-func (_u *AgentRunFindingCitationUpdate) ClearAgentRunCitation() *AgentRunFindingCitationUpdate {
-	_u.mutation.ClearAgentRunCitation()
+// ClearCitation clears the "citation" edge to the AgentRunCitation entity.
+func (_u *AgentRunFindingCitationUpdate) ClearCitation() *AgentRunFindingCitationUpdate {
+	_u.mutation.ClearCitation()
 	return _u
 }
 
@@ -174,11 +174,11 @@ func (_u *AgentRunFindingCitationUpdate) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.tenant"`)
 	}
-	if _u.mutation.AgentRunFindingCleared() && len(_u.mutation.AgentRunFindingIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.agent_run_finding"`)
+	if _u.mutation.FindingCleared() && len(_u.mutation.FindingIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.finding"`)
 	}
-	if _u.mutation.AgentRunCitationCleared() && len(_u.mutation.AgentRunCitationIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.agent_run_citation"`)
+	if _u.mutation.CitationCleared() && len(_u.mutation.CitationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.citation"`)
 	}
 	return nil
 }
@@ -210,12 +210,12 @@ func (_u *AgentRunFindingCitationUpdate) sqlSave(ctx context.Context) (_node int
 	if value, ok := _u.mutation.SupportKind(); ok {
 		_spec.SetField(agentrunfindingcitation.FieldSupportKind, field.TypeString, value)
 	}
-	if _u.mutation.AgentRunFindingCleared() {
+	if _u.mutation.FindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunFindingTable,
-			Columns: []string{agentrunfindingcitation.AgentRunFindingColumn},
+			Table:   agentrunfindingcitation.FindingTable,
+			Columns: []string{agentrunfindingcitation.FindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
@@ -224,12 +224,12 @@ func (_u *AgentRunFindingCitationUpdate) sqlSave(ctx context.Context) (_node int
 		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AgentRunFindingIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunFindingTable,
-			Columns: []string{agentrunfindingcitation.AgentRunFindingColumn},
+			Table:   agentrunfindingcitation.FindingTable,
+			Columns: []string{agentrunfindingcitation.FindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
@@ -241,12 +241,12 @@ func (_u *AgentRunFindingCitationUpdate) sqlSave(ctx context.Context) (_node int
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AgentRunCitationCleared() {
+	if _u.mutation.CitationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunCitationTable,
-			Columns: []string{agentrunfindingcitation.AgentRunCitationColumn},
+			Table:   agentrunfindingcitation.CitationTable,
+			Columns: []string{agentrunfindingcitation.CitationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
@@ -255,12 +255,12 @@ func (_u *AgentRunFindingCitationUpdate) sqlSave(ctx context.Context) (_node int
 		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AgentRunCitationIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CitationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunCitationTable,
-			Columns: []string{agentrunfindingcitation.AgentRunCitationColumn},
+			Table:   agentrunfindingcitation.CitationTable,
+			Columns: []string{agentrunfindingcitation.CitationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
@@ -316,30 +316,30 @@ func (_u *AgentRunFindingCitationUpdateOne) SetUpdatedAt(v time.Time) *AgentRunF
 	return _u
 }
 
-// SetAgentRunFindingID sets the "agent_run_finding_id" field.
-func (_u *AgentRunFindingCitationUpdateOne) SetAgentRunFindingID(v uuid.UUID) *AgentRunFindingCitationUpdateOne {
-	_u.mutation.SetAgentRunFindingID(v)
+// SetFindingID sets the "finding_id" field.
+func (_u *AgentRunFindingCitationUpdateOne) SetFindingID(v uuid.UUID) *AgentRunFindingCitationUpdateOne {
+	_u.mutation.SetFindingID(v)
 	return _u
 }
 
-// SetNillableAgentRunFindingID sets the "agent_run_finding_id" field if the given value is not nil.
-func (_u *AgentRunFindingCitationUpdateOne) SetNillableAgentRunFindingID(v *uuid.UUID) *AgentRunFindingCitationUpdateOne {
+// SetNillableFindingID sets the "finding_id" field if the given value is not nil.
+func (_u *AgentRunFindingCitationUpdateOne) SetNillableFindingID(v *uuid.UUID) *AgentRunFindingCitationUpdateOne {
 	if v != nil {
-		_u.SetAgentRunFindingID(*v)
+		_u.SetFindingID(*v)
 	}
 	return _u
 }
 
-// SetAgentRunCitationID sets the "agent_run_citation_id" field.
-func (_u *AgentRunFindingCitationUpdateOne) SetAgentRunCitationID(v uuid.UUID) *AgentRunFindingCitationUpdateOne {
-	_u.mutation.SetAgentRunCitationID(v)
+// SetCitationID sets the "citation_id" field.
+func (_u *AgentRunFindingCitationUpdateOne) SetCitationID(v uuid.UUID) *AgentRunFindingCitationUpdateOne {
+	_u.mutation.SetCitationID(v)
 	return _u
 }
 
-// SetNillableAgentRunCitationID sets the "agent_run_citation_id" field if the given value is not nil.
-func (_u *AgentRunFindingCitationUpdateOne) SetNillableAgentRunCitationID(v *uuid.UUID) *AgentRunFindingCitationUpdateOne {
+// SetNillableCitationID sets the "citation_id" field if the given value is not nil.
+func (_u *AgentRunFindingCitationUpdateOne) SetNillableCitationID(v *uuid.UUID) *AgentRunFindingCitationUpdateOne {
 	if v != nil {
-		_u.SetAgentRunCitationID(*v)
+		_u.SetCitationID(*v)
 	}
 	return _u
 }
@@ -358,14 +358,14 @@ func (_u *AgentRunFindingCitationUpdateOne) SetNillableSupportKind(v *string) *A
 	return _u
 }
 
-// SetAgentRunFinding sets the "agent_run_finding" edge to the AgentRunFinding entity.
-func (_u *AgentRunFindingCitationUpdateOne) SetAgentRunFinding(v *AgentRunFinding) *AgentRunFindingCitationUpdateOne {
-	return _u.SetAgentRunFindingID(v.ID)
+// SetFinding sets the "finding" edge to the AgentRunFinding entity.
+func (_u *AgentRunFindingCitationUpdateOne) SetFinding(v *AgentRunFinding) *AgentRunFindingCitationUpdateOne {
+	return _u.SetFindingID(v.ID)
 }
 
-// SetAgentRunCitation sets the "agent_run_citation" edge to the AgentRunCitation entity.
-func (_u *AgentRunFindingCitationUpdateOne) SetAgentRunCitation(v *AgentRunCitation) *AgentRunFindingCitationUpdateOne {
-	return _u.SetAgentRunCitationID(v.ID)
+// SetCitation sets the "citation" edge to the AgentRunCitation entity.
+func (_u *AgentRunFindingCitationUpdateOne) SetCitation(v *AgentRunCitation) *AgentRunFindingCitationUpdateOne {
+	return _u.SetCitationID(v.ID)
 }
 
 // Mutation returns the AgentRunFindingCitationMutation object of the builder.
@@ -373,15 +373,15 @@ func (_u *AgentRunFindingCitationUpdateOne) Mutation() *AgentRunFindingCitationM
 	return _u.mutation
 }
 
-// ClearAgentRunFinding clears the "agent_run_finding" edge to the AgentRunFinding entity.
-func (_u *AgentRunFindingCitationUpdateOne) ClearAgentRunFinding() *AgentRunFindingCitationUpdateOne {
-	_u.mutation.ClearAgentRunFinding()
+// ClearFinding clears the "finding" edge to the AgentRunFinding entity.
+func (_u *AgentRunFindingCitationUpdateOne) ClearFinding() *AgentRunFindingCitationUpdateOne {
+	_u.mutation.ClearFinding()
 	return _u
 }
 
-// ClearAgentRunCitation clears the "agent_run_citation" edge to the AgentRunCitation entity.
-func (_u *AgentRunFindingCitationUpdateOne) ClearAgentRunCitation() *AgentRunFindingCitationUpdateOne {
-	_u.mutation.ClearAgentRunCitation()
+// ClearCitation clears the "citation" edge to the AgentRunCitation entity.
+func (_u *AgentRunFindingCitationUpdateOne) ClearCitation() *AgentRunFindingCitationUpdateOne {
+	_u.mutation.ClearCitation()
 	return _u
 }
 
@@ -450,11 +450,11 @@ func (_u *AgentRunFindingCitationUpdateOne) check() error {
 	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
 		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.tenant"`)
 	}
-	if _u.mutation.AgentRunFindingCleared() && len(_u.mutation.AgentRunFindingIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.agent_run_finding"`)
+	if _u.mutation.FindingCleared() && len(_u.mutation.FindingIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.finding"`)
 	}
-	if _u.mutation.AgentRunCitationCleared() && len(_u.mutation.AgentRunCitationIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.agent_run_citation"`)
+	if _u.mutation.CitationCleared() && len(_u.mutation.CitationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "AgentRunFindingCitation.citation"`)
 	}
 	return nil
 }
@@ -503,12 +503,12 @@ func (_u *AgentRunFindingCitationUpdateOne) sqlSave(ctx context.Context) (_node 
 	if value, ok := _u.mutation.SupportKind(); ok {
 		_spec.SetField(agentrunfindingcitation.FieldSupportKind, field.TypeString, value)
 	}
-	if _u.mutation.AgentRunFindingCleared() {
+	if _u.mutation.FindingCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunFindingTable,
-			Columns: []string{agentrunfindingcitation.AgentRunFindingColumn},
+			Table:   agentrunfindingcitation.FindingTable,
+			Columns: []string{agentrunfindingcitation.FindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
@@ -517,12 +517,12 @@ func (_u *AgentRunFindingCitationUpdateOne) sqlSave(ctx context.Context) (_node 
 		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AgentRunFindingIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.FindingIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunFindingTable,
-			Columns: []string{agentrunfindingcitation.AgentRunFindingColumn},
+			Table:   agentrunfindingcitation.FindingTable,
+			Columns: []string{agentrunfindingcitation.FindingColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
@@ -534,12 +534,12 @@ func (_u *AgentRunFindingCitationUpdateOne) sqlSave(ctx context.Context) (_node 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.AgentRunCitationCleared() {
+	if _u.mutation.CitationCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunCitationTable,
-			Columns: []string{agentrunfindingcitation.AgentRunCitationColumn},
+			Table:   agentrunfindingcitation.CitationTable,
+			Columns: []string{agentrunfindingcitation.CitationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
@@ -548,12 +548,12 @@ func (_u *AgentRunFindingCitationUpdateOne) sqlSave(ctx context.Context) (_node 
 		edge.Schema = _u.schemaConfig.AgentRunFindingCitation
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.AgentRunCitationIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.CitationIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: false,
-			Table:   agentrunfindingcitation.AgentRunCitationTable,
-			Columns: []string{agentrunfindingcitation.AgentRunCitationColumn},
+			Table:   agentrunfindingcitation.CitationTable,
+			Columns: []string{agentrunfindingcitation.CitationColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),

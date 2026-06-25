@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
+	"github.com/rezible/rezible/ent/agentruncitation"
 	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
 	"github.com/rezible/rezible/ent/tenant"
@@ -107,6 +108,21 @@ func (_c *AgentRunFindingCreate) SetTenant(v *Tenant) *AgentRunFindingCreate {
 // SetAgentRun sets the "agent_run" edge to the AgentRun entity.
 func (_c *AgentRunFindingCreate) SetAgentRun(v *AgentRun) *AgentRunFindingCreate {
 	return _c.SetAgentRunID(v.ID)
+}
+
+// AddCitationIDs adds the "citations" edge to the AgentRunCitation entity by IDs.
+func (_c *AgentRunFindingCreate) AddCitationIDs(ids ...uuid.UUID) *AgentRunFindingCreate {
+	_c.mutation.AddCitationIDs(ids...)
+	return _c
+}
+
+// AddCitations adds the "citations" edges to the AgentRunCitation entity.
+func (_c *AgentRunFindingCreate) AddCitations(v ...*AgentRunCitation) *AgentRunFindingCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddCitationIDs(ids...)
 }
 
 // AddFindingCitationIDs adds the "finding_citations" edge to the AgentRunFindingCitation entity by IDs.
@@ -320,6 +336,30 @@ func (_c *AgentRunFindingCreate) createSpec() (*AgentRunFinding, *sqlgraph.Creat
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.AgentRunID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.CitationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: false,
+			Table:   agentrunfinding.CitationsTable,
+			Columns: agentrunfinding.CitationsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentruncitation.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _c.config, mutation: newAgentRunFindingCitationMutation(_c.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.FindingCitationsIDs(); len(nodes) > 0 {

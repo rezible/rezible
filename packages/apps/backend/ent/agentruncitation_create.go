@@ -15,6 +15,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentruncitation"
+	"github.com/rezible/rezible/ent/agentrunfinding"
 	"github.com/rezible/rezible/ent/agentrunfindingcitation"
 	"github.com/rezible/rezible/ent/agentruntoolcall"
 	"github.com/rezible/rezible/ent/agenttask"
@@ -72,37 +73,15 @@ func (_c *AgentRunCitationCreate) SetAgentRunID(v uuid.UUID) *AgentRunCitationCr
 	return _c
 }
 
-// SetCitationKind sets the "citation_kind" field.
-func (_c *AgentRunCitationCreate) SetCitationKind(v string) *AgentRunCitationCreate {
-	_c.mutation.SetCitationKind(v)
+// SetKind sets the "kind" field.
+func (_c *AgentRunCitationCreate) SetKind(v string) *AgentRunCitationCreate {
+	_c.mutation.SetKind(v)
 	return _c
 }
 
-// SetDomainEntityType sets the "domain_entity_type" field.
-func (_c *AgentRunCitationCreate) SetDomainEntityType(v string) *AgentRunCitationCreate {
-	_c.mutation.SetDomainEntityType(v)
-	return _c
-}
-
-// SetNillableDomainEntityType sets the "domain_entity_type" field if the given value is not nil.
-func (_c *AgentRunCitationCreate) SetNillableDomainEntityType(v *string) *AgentRunCitationCreate {
-	if v != nil {
-		_c.SetDomainEntityType(*v)
-	}
-	return _c
-}
-
-// SetDomainEntityID sets the "domain_entity_id" field.
-func (_c *AgentRunCitationCreate) SetDomainEntityID(v uuid.UUID) *AgentRunCitationCreate {
-	_c.mutation.SetDomainEntityID(v)
-	return _c
-}
-
-// SetNillableDomainEntityID sets the "domain_entity_id" field if the given value is not nil.
-func (_c *AgentRunCitationCreate) SetNillableDomainEntityID(v *uuid.UUID) *AgentRunCitationCreate {
-	if v != nil {
-		_c.SetDomainEntityID(*v)
-	}
+// SetSummary sets the "summary" field.
+func (_c *AgentRunCitationCreate) SetSummary(v string) *AgentRunCitationCreate {
+	_c.mutation.SetSummary(v)
 	return _c
 }
 
@@ -176,15 +155,37 @@ func (_c *AgentRunCitationCreate) SetNillableAgentRunToolCallID(v *uuid.UUID) *A
 	return _c
 }
 
-// SetSummary sets the "summary" field.
-func (_c *AgentRunCitationCreate) SetSummary(v string) *AgentRunCitationCreate {
-	_c.mutation.SetSummary(v)
+// SetDomainEntityType sets the "domain_entity_type" field.
+func (_c *AgentRunCitationCreate) SetDomainEntityType(v string) *AgentRunCitationCreate {
+	_c.mutation.SetDomainEntityType(v)
 	return _c
 }
 
-// SetSnapshot sets the "snapshot" field.
-func (_c *AgentRunCitationCreate) SetSnapshot(v map[string]interface{}) *AgentRunCitationCreate {
-	_c.mutation.SetSnapshot(v)
+// SetNillableDomainEntityType sets the "domain_entity_type" field if the given value is not nil.
+func (_c *AgentRunCitationCreate) SetNillableDomainEntityType(v *string) *AgentRunCitationCreate {
+	if v != nil {
+		_c.SetDomainEntityType(*v)
+	}
+	return _c
+}
+
+// SetDomainEntityID sets the "domain_entity_id" field.
+func (_c *AgentRunCitationCreate) SetDomainEntityID(v uuid.UUID) *AgentRunCitationCreate {
+	_c.mutation.SetDomainEntityID(v)
+	return _c
+}
+
+// SetNillableDomainEntityID sets the "domain_entity_id" field if the given value is not nil.
+func (_c *AgentRunCitationCreate) SetNillableDomainEntityID(v *uuid.UUID) *AgentRunCitationCreate {
+	if v != nil {
+		_c.SetDomainEntityID(*v)
+	}
+	return _c
+}
+
+// SetDomainEntitySnapshot sets the "domain_entity_snapshot" field.
+func (_c *AgentRunCitationCreate) SetDomainEntitySnapshot(v map[string]interface{}) *AgentRunCitationCreate {
+	_c.mutation.SetDomainEntitySnapshot(v)
 	return _c
 }
 
@@ -235,6 +236,21 @@ func (_c *AgentRunCitationCreate) SetAgentTask(v *AgentTask) *AgentRunCitationCr
 // SetAgentRunToolCall sets the "agent_run_tool_call" edge to the AgentRunToolCall entity.
 func (_c *AgentRunCitationCreate) SetAgentRunToolCall(v *AgentRunToolCall) *AgentRunCitationCreate {
 	return _c.SetAgentRunToolCallID(v.ID)
+}
+
+// AddFindingIDs adds the "findings" edge to the AgentRunFinding entity by IDs.
+func (_c *AgentRunCitationCreate) AddFindingIDs(ids ...uuid.UUID) *AgentRunCitationCreate {
+	_c.mutation.AddFindingIDs(ids...)
+	return _c
+}
+
+// AddFindings adds the "findings" edges to the AgentRunFinding entity.
+func (_c *AgentRunCitationCreate) AddFindings(v ...*AgentRunFinding) *AgentRunCitationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddFindingIDs(ids...)
 }
 
 // AddFindingCitationIDs adds the "finding_citations" edge to the AgentRunFindingCitation entity by IDs.
@@ -327,12 +343,12 @@ func (_c *AgentRunCitationCreate) check() error {
 	if _, ok := _c.mutation.AgentRunID(); !ok {
 		return &ValidationError{Name: "agent_run_id", err: errors.New(`ent: missing required field "AgentRunCitation.agent_run_id"`)}
 	}
-	if _, ok := _c.mutation.CitationKind(); !ok {
-		return &ValidationError{Name: "citation_kind", err: errors.New(`ent: missing required field "AgentRunCitation.citation_kind"`)}
+	if _, ok := _c.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "AgentRunCitation.kind"`)}
 	}
-	if v, ok := _c.mutation.CitationKind(); ok {
-		if err := agentruncitation.CitationKindValidator(v); err != nil {
-			return &ValidationError{Name: "citation_kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunCitation.citation_kind": %w`, err)}
+	if v, ok := _c.mutation.Kind(); ok {
+		if err := agentruncitation.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "AgentRunCitation.kind": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Summary(); !ok {
@@ -394,9 +410,13 @@ func (_c *AgentRunCitationCreate) createSpec() (*AgentRunCitation, *sqlgraph.Cre
 		_spec.SetField(agentruncitation.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if value, ok := _c.mutation.CitationKind(); ok {
-		_spec.SetField(agentruncitation.FieldCitationKind, field.TypeString, value)
-		_node.CitationKind = value
+	if value, ok := _c.mutation.Kind(); ok {
+		_spec.SetField(agentruncitation.FieldKind, field.TypeString, value)
+		_node.Kind = value
+	}
+	if value, ok := _c.mutation.Summary(); ok {
+		_spec.SetField(agentruncitation.FieldSummary, field.TypeString, value)
+		_node.Summary = value
 	}
 	if value, ok := _c.mutation.DomainEntityType(); ok {
 		_spec.SetField(agentruncitation.FieldDomainEntityType, field.TypeString, value)
@@ -406,13 +426,9 @@ func (_c *AgentRunCitationCreate) createSpec() (*AgentRunCitation, *sqlgraph.Cre
 		_spec.SetField(agentruncitation.FieldDomainEntityID, field.TypeUUID, value)
 		_node.DomainEntityID = &value
 	}
-	if value, ok := _c.mutation.Summary(); ok {
-		_spec.SetField(agentruncitation.FieldSummary, field.TypeString, value)
-		_node.Summary = value
-	}
-	if value, ok := _c.mutation.Snapshot(); ok {
-		_spec.SetField(agentruncitation.FieldSnapshot, field.TypeJSON, value)
-		_node.Snapshot = value
+	if value, ok := _c.mutation.DomainEntitySnapshot(); ok {
+		_spec.SetField(agentruncitation.FieldDomainEntitySnapshot, field.TypeJSON, value)
+		_node.DomainEntitySnapshot = value
 	}
 	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
@@ -540,6 +556,30 @@ func (_c *AgentRunCitationCreate) createSpec() (*AgentRunCitation, *sqlgraph.Cre
 		_node.AgentRunToolCallID = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
+	if nodes := _c.mutation.FindingsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2M,
+			Inverse: true,
+			Table:   agentruncitation.FindingsTable,
+			Columns: agentruncitation.FindingsPrimaryKey,
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(agentrunfinding.FieldID, field.TypeUUID),
+			},
+		}
+		edge.Schema = _c.schemaConfig.AgentRunFindingCitation
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		createE := &AgentRunFindingCitationCreate{config: _c.config, mutation: newAgentRunFindingCitationMutation(_c.config, OpCreate)}
+		_ = createE.defaults()
+		_, specE := createE.createSpec()
+		edge.Target.Fields = specE.Fields
+		if specE.ID.Value != nil {
+			edge.Target.Fields = append(edge.Target.Fields, specE.ID)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
 	if nodes := _c.mutation.FindingCitationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
@@ -645,51 +685,27 @@ func (u *AgentRunCitationUpsert) UpdateAgentRunID() *AgentRunCitationUpsert {
 	return u
 }
 
-// SetCitationKind sets the "citation_kind" field.
-func (u *AgentRunCitationUpsert) SetCitationKind(v string) *AgentRunCitationUpsert {
-	u.Set(agentruncitation.FieldCitationKind, v)
+// SetKind sets the "kind" field.
+func (u *AgentRunCitationUpsert) SetKind(v string) *AgentRunCitationUpsert {
+	u.Set(agentruncitation.FieldKind, v)
 	return u
 }
 
-// UpdateCitationKind sets the "citation_kind" field to the value that was provided on create.
-func (u *AgentRunCitationUpsert) UpdateCitationKind() *AgentRunCitationUpsert {
-	u.SetExcluded(agentruncitation.FieldCitationKind)
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *AgentRunCitationUpsert) UpdateKind() *AgentRunCitationUpsert {
+	u.SetExcluded(agentruncitation.FieldKind)
 	return u
 }
 
-// SetDomainEntityType sets the "domain_entity_type" field.
-func (u *AgentRunCitationUpsert) SetDomainEntityType(v string) *AgentRunCitationUpsert {
-	u.Set(agentruncitation.FieldDomainEntityType, v)
+// SetSummary sets the "summary" field.
+func (u *AgentRunCitationUpsert) SetSummary(v string) *AgentRunCitationUpsert {
+	u.Set(agentruncitation.FieldSummary, v)
 	return u
 }
 
-// UpdateDomainEntityType sets the "domain_entity_type" field to the value that was provided on create.
-func (u *AgentRunCitationUpsert) UpdateDomainEntityType() *AgentRunCitationUpsert {
-	u.SetExcluded(agentruncitation.FieldDomainEntityType)
-	return u
-}
-
-// ClearDomainEntityType clears the value of the "domain_entity_type" field.
-func (u *AgentRunCitationUpsert) ClearDomainEntityType() *AgentRunCitationUpsert {
-	u.SetNull(agentruncitation.FieldDomainEntityType)
-	return u
-}
-
-// SetDomainEntityID sets the "domain_entity_id" field.
-func (u *AgentRunCitationUpsert) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpsert {
-	u.Set(agentruncitation.FieldDomainEntityID, v)
-	return u
-}
-
-// UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsert) UpdateDomainEntityID() *AgentRunCitationUpsert {
-	u.SetExcluded(agentruncitation.FieldDomainEntityID)
-	return u
-}
-
-// ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (u *AgentRunCitationUpsert) ClearDomainEntityID() *AgentRunCitationUpsert {
-	u.SetNull(agentruncitation.FieldDomainEntityID)
+// UpdateSummary sets the "summary" field to the value that was provided on create.
+func (u *AgentRunCitationUpsert) UpdateSummary() *AgentRunCitationUpsert {
+	u.SetExcluded(agentruncitation.FieldSummary)
 	return u
 }
 
@@ -783,33 +799,57 @@ func (u *AgentRunCitationUpsert) ClearAgentRunToolCallID() *AgentRunCitationUpse
 	return u
 }
 
-// SetSummary sets the "summary" field.
-func (u *AgentRunCitationUpsert) SetSummary(v string) *AgentRunCitationUpsert {
-	u.Set(agentruncitation.FieldSummary, v)
+// SetDomainEntityType sets the "domain_entity_type" field.
+func (u *AgentRunCitationUpsert) SetDomainEntityType(v string) *AgentRunCitationUpsert {
+	u.Set(agentruncitation.FieldDomainEntityType, v)
 	return u
 }
 
-// UpdateSummary sets the "summary" field to the value that was provided on create.
-func (u *AgentRunCitationUpsert) UpdateSummary() *AgentRunCitationUpsert {
-	u.SetExcluded(agentruncitation.FieldSummary)
+// UpdateDomainEntityType sets the "domain_entity_type" field to the value that was provided on create.
+func (u *AgentRunCitationUpsert) UpdateDomainEntityType() *AgentRunCitationUpsert {
+	u.SetExcluded(agentruncitation.FieldDomainEntityType)
 	return u
 }
 
-// SetSnapshot sets the "snapshot" field.
-func (u *AgentRunCitationUpsert) SetSnapshot(v map[string]interface{}) *AgentRunCitationUpsert {
-	u.Set(agentruncitation.FieldSnapshot, v)
+// ClearDomainEntityType clears the value of the "domain_entity_type" field.
+func (u *AgentRunCitationUpsert) ClearDomainEntityType() *AgentRunCitationUpsert {
+	u.SetNull(agentruncitation.FieldDomainEntityType)
 	return u
 }
 
-// UpdateSnapshot sets the "snapshot" field to the value that was provided on create.
-func (u *AgentRunCitationUpsert) UpdateSnapshot() *AgentRunCitationUpsert {
-	u.SetExcluded(agentruncitation.FieldSnapshot)
+// SetDomainEntityID sets the "domain_entity_id" field.
+func (u *AgentRunCitationUpsert) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpsert {
+	u.Set(agentruncitation.FieldDomainEntityID, v)
 	return u
 }
 
-// ClearSnapshot clears the value of the "snapshot" field.
-func (u *AgentRunCitationUpsert) ClearSnapshot() *AgentRunCitationUpsert {
-	u.SetNull(agentruncitation.FieldSnapshot)
+// UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
+func (u *AgentRunCitationUpsert) UpdateDomainEntityID() *AgentRunCitationUpsert {
+	u.SetExcluded(agentruncitation.FieldDomainEntityID)
+	return u
+}
+
+// ClearDomainEntityID clears the value of the "domain_entity_id" field.
+func (u *AgentRunCitationUpsert) ClearDomainEntityID() *AgentRunCitationUpsert {
+	u.SetNull(agentruncitation.FieldDomainEntityID)
+	return u
+}
+
+// SetDomainEntitySnapshot sets the "domain_entity_snapshot" field.
+func (u *AgentRunCitationUpsert) SetDomainEntitySnapshot(v map[string]interface{}) *AgentRunCitationUpsert {
+	u.Set(agentruncitation.FieldDomainEntitySnapshot, v)
+	return u
+}
+
+// UpdateDomainEntitySnapshot sets the "domain_entity_snapshot" field to the value that was provided on create.
+func (u *AgentRunCitationUpsert) UpdateDomainEntitySnapshot() *AgentRunCitationUpsert {
+	u.SetExcluded(agentruncitation.FieldDomainEntitySnapshot)
+	return u
+}
+
+// ClearDomainEntitySnapshot clears the value of the "domain_entity_snapshot" field.
+func (u *AgentRunCitationUpsert) ClearDomainEntitySnapshot() *AgentRunCitationUpsert {
+	u.SetNull(agentruncitation.FieldDomainEntitySnapshot)
 	return u
 }
 
@@ -906,59 +946,31 @@ func (u *AgentRunCitationUpsertOne) UpdateAgentRunID() *AgentRunCitationUpsertOn
 	})
 }
 
-// SetCitationKind sets the "citation_kind" field.
-func (u *AgentRunCitationUpsertOne) SetCitationKind(v string) *AgentRunCitationUpsertOne {
+// SetKind sets the "kind" field.
+func (u *AgentRunCitationUpsertOne) SetKind(v string) *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetCitationKind(v)
+		s.SetKind(v)
 	})
 }
 
-// UpdateCitationKind sets the "citation_kind" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertOne) UpdateCitationKind() *AgentRunCitationUpsertOne {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertOne) UpdateKind() *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateCitationKind()
+		s.UpdateKind()
 	})
 }
 
-// SetDomainEntityType sets the "domain_entity_type" field.
-func (u *AgentRunCitationUpsertOne) SetDomainEntityType(v string) *AgentRunCitationUpsertOne {
+// SetSummary sets the "summary" field.
+func (u *AgentRunCitationUpsertOne) SetSummary(v string) *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetDomainEntityType(v)
+		s.SetSummary(v)
 	})
 }
 
-// UpdateDomainEntityType sets the "domain_entity_type" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertOne) UpdateDomainEntityType() *AgentRunCitationUpsertOne {
+// UpdateSummary sets the "summary" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertOne) UpdateSummary() *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateDomainEntityType()
-	})
-}
-
-// ClearDomainEntityType clears the value of the "domain_entity_type" field.
-func (u *AgentRunCitationUpsertOne) ClearDomainEntityType() *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearDomainEntityType()
-	})
-}
-
-// SetDomainEntityID sets the "domain_entity_id" field.
-func (u *AgentRunCitationUpsertOne) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetDomainEntityID(v)
-	})
-}
-
-// UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertOne) UpdateDomainEntityID() *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateDomainEntityID()
-	})
-}
-
-// ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (u *AgentRunCitationUpsertOne) ClearDomainEntityID() *AgentRunCitationUpsertOne {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearDomainEntityID()
+		s.UpdateSummary()
 	})
 }
 
@@ -1067,38 +1079,66 @@ func (u *AgentRunCitationUpsertOne) ClearAgentRunToolCallID() *AgentRunCitationU
 	})
 }
 
-// SetSummary sets the "summary" field.
-func (u *AgentRunCitationUpsertOne) SetSummary(v string) *AgentRunCitationUpsertOne {
+// SetDomainEntityType sets the "domain_entity_type" field.
+func (u *AgentRunCitationUpsertOne) SetDomainEntityType(v string) *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetSummary(v)
+		s.SetDomainEntityType(v)
 	})
 }
 
-// UpdateSummary sets the "summary" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertOne) UpdateSummary() *AgentRunCitationUpsertOne {
+// UpdateDomainEntityType sets the "domain_entity_type" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertOne) UpdateDomainEntityType() *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateSummary()
+		s.UpdateDomainEntityType()
 	})
 }
 
-// SetSnapshot sets the "snapshot" field.
-func (u *AgentRunCitationUpsertOne) SetSnapshot(v map[string]interface{}) *AgentRunCitationUpsertOne {
+// ClearDomainEntityType clears the value of the "domain_entity_type" field.
+func (u *AgentRunCitationUpsertOne) ClearDomainEntityType() *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetSnapshot(v)
+		s.ClearDomainEntityType()
 	})
 }
 
-// UpdateSnapshot sets the "snapshot" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertOne) UpdateSnapshot() *AgentRunCitationUpsertOne {
+// SetDomainEntityID sets the "domain_entity_id" field.
+func (u *AgentRunCitationUpsertOne) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateSnapshot()
+		s.SetDomainEntityID(v)
 	})
 }
 
-// ClearSnapshot clears the value of the "snapshot" field.
-func (u *AgentRunCitationUpsertOne) ClearSnapshot() *AgentRunCitationUpsertOne {
+// UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertOne) UpdateDomainEntityID() *AgentRunCitationUpsertOne {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearSnapshot()
+		s.UpdateDomainEntityID()
+	})
+}
+
+// ClearDomainEntityID clears the value of the "domain_entity_id" field.
+func (u *AgentRunCitationUpsertOne) ClearDomainEntityID() *AgentRunCitationUpsertOne {
+	return u.Update(func(s *AgentRunCitationUpsert) {
+		s.ClearDomainEntityID()
+	})
+}
+
+// SetDomainEntitySnapshot sets the "domain_entity_snapshot" field.
+func (u *AgentRunCitationUpsertOne) SetDomainEntitySnapshot(v map[string]interface{}) *AgentRunCitationUpsertOne {
+	return u.Update(func(s *AgentRunCitationUpsert) {
+		s.SetDomainEntitySnapshot(v)
+	})
+}
+
+// UpdateDomainEntitySnapshot sets the "domain_entity_snapshot" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertOne) UpdateDomainEntitySnapshot() *AgentRunCitationUpsertOne {
+	return u.Update(func(s *AgentRunCitationUpsert) {
+		s.UpdateDomainEntitySnapshot()
+	})
+}
+
+// ClearDomainEntitySnapshot clears the value of the "domain_entity_snapshot" field.
+func (u *AgentRunCitationUpsertOne) ClearDomainEntitySnapshot() *AgentRunCitationUpsertOne {
+	return u.Update(func(s *AgentRunCitationUpsert) {
+		s.ClearDomainEntitySnapshot()
 	})
 }
 
@@ -1362,59 +1402,31 @@ func (u *AgentRunCitationUpsertBulk) UpdateAgentRunID() *AgentRunCitationUpsertB
 	})
 }
 
-// SetCitationKind sets the "citation_kind" field.
-func (u *AgentRunCitationUpsertBulk) SetCitationKind(v string) *AgentRunCitationUpsertBulk {
+// SetKind sets the "kind" field.
+func (u *AgentRunCitationUpsertBulk) SetKind(v string) *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetCitationKind(v)
+		s.SetKind(v)
 	})
 }
 
-// UpdateCitationKind sets the "citation_kind" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertBulk) UpdateCitationKind() *AgentRunCitationUpsertBulk {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertBulk) UpdateKind() *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateCitationKind()
+		s.UpdateKind()
 	})
 }
 
-// SetDomainEntityType sets the "domain_entity_type" field.
-func (u *AgentRunCitationUpsertBulk) SetDomainEntityType(v string) *AgentRunCitationUpsertBulk {
+// SetSummary sets the "summary" field.
+func (u *AgentRunCitationUpsertBulk) SetSummary(v string) *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetDomainEntityType(v)
+		s.SetSummary(v)
 	})
 }
 
-// UpdateDomainEntityType sets the "domain_entity_type" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertBulk) UpdateDomainEntityType() *AgentRunCitationUpsertBulk {
+// UpdateSummary sets the "summary" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertBulk) UpdateSummary() *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateDomainEntityType()
-	})
-}
-
-// ClearDomainEntityType clears the value of the "domain_entity_type" field.
-func (u *AgentRunCitationUpsertBulk) ClearDomainEntityType() *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearDomainEntityType()
-	})
-}
-
-// SetDomainEntityID sets the "domain_entity_id" field.
-func (u *AgentRunCitationUpsertBulk) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetDomainEntityID(v)
-	})
-}
-
-// UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertBulk) UpdateDomainEntityID() *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateDomainEntityID()
-	})
-}
-
-// ClearDomainEntityID clears the value of the "domain_entity_id" field.
-func (u *AgentRunCitationUpsertBulk) ClearDomainEntityID() *AgentRunCitationUpsertBulk {
-	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearDomainEntityID()
+		s.UpdateSummary()
 	})
 }
 
@@ -1523,38 +1535,66 @@ func (u *AgentRunCitationUpsertBulk) ClearAgentRunToolCallID() *AgentRunCitation
 	})
 }
 
-// SetSummary sets the "summary" field.
-func (u *AgentRunCitationUpsertBulk) SetSummary(v string) *AgentRunCitationUpsertBulk {
+// SetDomainEntityType sets the "domain_entity_type" field.
+func (u *AgentRunCitationUpsertBulk) SetDomainEntityType(v string) *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetSummary(v)
+		s.SetDomainEntityType(v)
 	})
 }
 
-// UpdateSummary sets the "summary" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertBulk) UpdateSummary() *AgentRunCitationUpsertBulk {
+// UpdateDomainEntityType sets the "domain_entity_type" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertBulk) UpdateDomainEntityType() *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateSummary()
+		s.UpdateDomainEntityType()
 	})
 }
 
-// SetSnapshot sets the "snapshot" field.
-func (u *AgentRunCitationUpsertBulk) SetSnapshot(v map[string]interface{}) *AgentRunCitationUpsertBulk {
+// ClearDomainEntityType clears the value of the "domain_entity_type" field.
+func (u *AgentRunCitationUpsertBulk) ClearDomainEntityType() *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.SetSnapshot(v)
+		s.ClearDomainEntityType()
 	})
 }
 
-// UpdateSnapshot sets the "snapshot" field to the value that was provided on create.
-func (u *AgentRunCitationUpsertBulk) UpdateSnapshot() *AgentRunCitationUpsertBulk {
+// SetDomainEntityID sets the "domain_entity_id" field.
+func (u *AgentRunCitationUpsertBulk) SetDomainEntityID(v uuid.UUID) *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.UpdateSnapshot()
+		s.SetDomainEntityID(v)
 	})
 }
 
-// ClearSnapshot clears the value of the "snapshot" field.
-func (u *AgentRunCitationUpsertBulk) ClearSnapshot() *AgentRunCitationUpsertBulk {
+// UpdateDomainEntityID sets the "domain_entity_id" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertBulk) UpdateDomainEntityID() *AgentRunCitationUpsertBulk {
 	return u.Update(func(s *AgentRunCitationUpsert) {
-		s.ClearSnapshot()
+		s.UpdateDomainEntityID()
+	})
+}
+
+// ClearDomainEntityID clears the value of the "domain_entity_id" field.
+func (u *AgentRunCitationUpsertBulk) ClearDomainEntityID() *AgentRunCitationUpsertBulk {
+	return u.Update(func(s *AgentRunCitationUpsert) {
+		s.ClearDomainEntityID()
+	})
+}
+
+// SetDomainEntitySnapshot sets the "domain_entity_snapshot" field.
+func (u *AgentRunCitationUpsertBulk) SetDomainEntitySnapshot(v map[string]interface{}) *AgentRunCitationUpsertBulk {
+	return u.Update(func(s *AgentRunCitationUpsert) {
+		s.SetDomainEntitySnapshot(v)
+	})
+}
+
+// UpdateDomainEntitySnapshot sets the "domain_entity_snapshot" field to the value that was provided on create.
+func (u *AgentRunCitationUpsertBulk) UpdateDomainEntitySnapshot() *AgentRunCitationUpsertBulk {
+	return u.Update(func(s *AgentRunCitationUpsert) {
+		s.UpdateDomainEntitySnapshot()
+	})
+}
+
+// ClearDomainEntitySnapshot clears the value of the "domain_entity_snapshot" field.
+func (u *AgentRunCitationUpsertBulk) ClearDomainEntitySnapshot() *AgentRunCitationUpsertBulk {
+	return u.Update(func(s *AgentRunCitationUpsert) {
+		s.ClearDomainEntitySnapshot()
 	})
 }
 
