@@ -32,7 +32,7 @@ export class InitialSetupController {
 	orgName = $derived(this.session.org?.attributes.name);
 	private orgId = $derived(this.session.org?.id);
 
-	private currOrgPrefs = $derived(this.session.org?.attributes.preferences);
+	private currOrgPrefs = $derived(this.session.orgPreferences);
 	orgPrefs = $state<ConfigureOrganizationOptions>({enableIncidentManagement: false});
 	
 	constructor() {

@@ -25,9 +25,10 @@ func (o operations) RegisterUserSessions(api huma.API) {
 
 type (
 	UserSession struct {
-		User         User         `json:"user"`
-		Organization Organization `json:"organization"`
-		ExpiresAt    time.Time    `json:"expiresAt"`
+		User             User         `json:"user"`
+		Organization     Organization `json:"organization"`
+		OrganizationRole string       `json:"organizationRole" enum:"admin,member"`
+		ExpiresAt        time.Time    `json:"expiresAt"`
 	}
 
 	UserNotification struct {

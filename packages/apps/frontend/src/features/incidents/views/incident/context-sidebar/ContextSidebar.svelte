@@ -29,6 +29,7 @@
 
 	<div class="flex-1 min-h-0 overflow-x-hidden overflow-y-auto relative">
 		<IncidentContextPackPanel />
+		
 		{#if controller.drawerOpen}
 			<div
 				class="bg-surface-100 z-50 outline-none h-full w-full absolute transform top-0 left-2 border"

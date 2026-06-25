@@ -3065,6 +3065,7 @@ export type UserOncallInformation = {
 export type UserSession = {
     expiresAt: string;
     organization: Organization;
+    organizationRole: 'admin' | 'member';
     user: User;
 };
 

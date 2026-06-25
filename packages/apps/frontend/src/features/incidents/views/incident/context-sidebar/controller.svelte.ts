@@ -13,6 +13,7 @@ import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-qu
 import { Context } from "runed";
 import { useIncidentCollaboration } from "../collaboration.svelte";
 import { useIncidentView } from "../controller.svelte";
+import { getAgentRunStatus, isAgentRunActive } from "$src/lib/agents.svelte";
 
 type Drawer = "add-component";
 type Payload = Record<string, unknown> | undefined;
@@ -59,9 +60,9 @@ export class IncidentContextSidebarController {
 		listAgentTasksOptions({
 			query: {
 				limit: 5,
-				workflowKind: "incident_context_pack",
-				subjectType: "incident",
-				subjectId: this.incidentId,
+				workflow: "incident_context_pack",
+				subjectKind: "incident",
+				domainEntityId: this.incidentId,
 			},
 		})
 	);
@@ -88,9 +89,7 @@ export class IncidentContextSidebarController {
 		refetchInterval: 3000,
 	}));
 	latestRun: AgentRun | undefined = $derived(this.runsQuery.data?.data?.[0]);
-	private latestRunActive = $derived(
-		this.latestRun?.attributes.status === "queued" || this.latestRun?.attributes.status === "running"
-	);
+	private latestRunActive = $derived(!!this.latestRun && isAgentRunActive(this.latestRun));
 
 	private toolCallsQueryOptions = $derived(
 		listAgentRunToolCallsOptions({ path: { id: this.latestRun?.id ?? "" } })
@@ -102,7 +101,7 @@ export class IncidentContextSidebarController {
 	}));
 	private toolCalls: AgentRunToolCall[] = $derived(this.toolCallsQuery.data?.data ?? []);
 	private contextToolCall: AgentRunToolCall | undefined = $derived(
-		this.toolCalls.find((call) => call.attributes.toolName === "incident.context_pack")
+		this.toolCalls.find((call) => call.attributes.toolId === "incident.context_pack")
 	);
 	artifacts: ContextItem[] = $derived(this.contextItems(this.contextToolCall));
 	explicitImpacts = $derived(this.artifactsByRole("explicit_impact"));
@@ -110,7 +109,7 @@ export class IncidentContextSidebarController {
 	activeAlerts = $derived(this.artifactsByRole("active_alert"));
 	relatedIncidents = $derived(this.artifactsByRole("related_incident"));
 	impacts = $derived([...this.explicitImpacts, ...this.inferredImpacts]);
-	latestRunStatusLabel = $derived(this.latestRun?.attributes.status.replaceAll("_", " "));
+	latestRunStatusLabel = $derived(getAgentRunStatus(this.latestRun));
 	impactItems = $derived(
 		this.impacts.slice(0, 5).map((impact) => ({
 			id: impact.id,
@@ -163,8 +162,8 @@ export class IncidentContextSidebarController {
 		this.createTask.mutate({
 			body: {
 				attributes: {
-					workflowKind: "incident_context_pack",
-					workflowInput: {
+					workflow: "incident_context_pack",
+					input: {
 						schema: "incident_context_pack.v1",
 						subjects: [{ type: "incident", id: this.incidentId }],
 						objectives: ["Build current triage context for the incident."],

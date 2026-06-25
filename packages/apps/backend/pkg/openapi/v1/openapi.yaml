@@ -6597,11 +6597,17 @@ components:
           type: string
         organization:
           $ref: "#/components/schemas/Organization"
+        organizationRole:
+          enum:
+            - admin
+            - member
+          type: string
         user:
           $ref: "#/components/schemas/User"
       required:
         - user
         - organization
+        - organizationRole
         - expiresAt
       type: object
     VideoConference:

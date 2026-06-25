@@ -5,7 +5,9 @@ import (
 
 	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/organization"
+	"github.com/rezible/rezible/ent/organizationrole"
 	"github.com/rezible/rezible/ent/user"
 	"github.com/rezible/rezible/pkg/execution"
 	oapi "github.com/rezible/rezible/pkg/openapi/v1"
@@ -39,10 +41,20 @@ func (h *userSessionsHandler) GetUserSession(ctx context.Context, req *oapi.GetU
 		return nil, oapi.Error(ctx, "failed to get organization", orgErr)
 	}
 
+	orgRole := organizationrole.RoleMember.String()
+	role, roleErr := u.QueryOrganizationRole().Only(ctx)
+	if roleErr != nil && !ent.IsNotFound(roleErr) {
+		return nil, oapi.Error(ctx, "failed to get organization role", roleErr)
+	}
+	if roleErr == nil && role.OrganizationID == org.ID && role.Role == organizationrole.RoleAdmin {
+		orgRole = organizationrole.RoleAdmin.String()
+	}
+
 	resp.Body.Data = oapi.UserSession{
-		User:         oapi.UserFromEnt(u),
-		Organization: oapi.OrganizationFromEnt(org),
-		ExpiresAt:    exec.Auth.ExpiresAt,
+		User:             oapi.UserFromEnt(u),
+		Organization:     oapi.OrganizationFromEnt(org),
+		OrganizationRole: orgRole,
+		ExpiresAt:        exec.Auth.ExpiresAt,
 	}
 
 	return &resp, nil

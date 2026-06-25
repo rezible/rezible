@@ -47,6 +47,7 @@ const parseUserSessionQueryResponse = ({data: body, error}: AuthSessionQueryResu
 		res.session = {
 			user: body.data.user,
 			organization: body.data.organization,
+			organizationRole: body.data.organizationRole,
 			expiresAt: parseAbsoluteToLocal(body.data.expiresAt),
 		};
 	}
@@ -82,6 +83,8 @@ export class UserSessionState {
 	private sessionExpiresAt = $derived(!!this.session ? this.session.expiresAt.toDate() : null);
 	user = $derived(this.session?.user);
 	org = $derived(this.session?.organization);
+	orgPreferences = $derived(this.org?.attributes.preferences);
+	organizationRole = $derived(this.session?.organizationRole);
 
 	isAuthenticated = $derived(!!this.session && !this.error);
 	isSetup = $derived(this.isAuthenticated && !this.org?.attributes.setupRequired);

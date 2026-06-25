@@ -13,6 +13,7 @@ import {
 import { createMutation, createQuery, useQueryClient } from "@tanstack/svelte-query";
 import { Context } from "runed";
 import { useAlertViewController } from "../controller.svelte";
+import { getAgentRunStatus, isAgentRunActive } from "$src/lib/agents.svelte";
 
 type Payload = Record<string, unknown> | undefined;
 
@@ -41,9 +42,9 @@ export class AlertInvestigationController {
 		listAgentTasksOptions({
 			query: {
 				limit: 5,
-				workflowKind: "alert_investigation",
-				subjectType: "alert",
-				subjectId: this.alertId,
+				workflow: "alert_investigation",
+				subjectKind: "alert",
+				domainEntityId: this.alertId,
 			},
 		})
 	);
@@ -70,9 +71,7 @@ export class AlertInvestigationController {
 		refetchInterval: 3000,
 	}));
 	latestRun: AgentRun | undefined = $derived(this.runsQuery.data?.data?.[0]);
-	private latestRunActive = $derived(
-		this.latestRun?.attributes.status === "queued" || this.latestRun?.attributes.status === "running"
-	);
+	private latestRunActive = $derived(!!this.latestRun && isAgentRunActive(this.latestRun));
 
 	private toolCallsQueryOptions = $derived(
 		listAgentRunToolCallsOptions({ path: { id: this.latestRun?.id ?? "" } })
@@ -84,22 +83,13 @@ export class AlertInvestigationController {
 	}));
 	private toolCalls: AgentRunToolCall[] = $derived(this.toolCallsQuery.data?.data ?? []);
 
-	private resultQueryOptions = $derived(
-		getAgentRunResultOptions({ path: { id: this.latestRun?.id ?? "" } })
-	);
-	private resultQuery = createQuery(() => ({
-		...this.resultQueryOptions,
-		enabled: !!this.latestRun?.id && this.latestRun?.attributes.status === "succeeded",
-		refetchInterval: this.latestRunActive ? 3000 : false,
-	}));
-
 	private contextToolCall: AgentRunToolCall | undefined = $derived(
-		this.toolCalls.find((call) => call.attributes.toolName === "alert.investigation_context")
+		this.toolCalls.find((call) => call.attributes.toolId === "alert.investigation_context")
 	);
 	context = $derived(this.recordField(this.contextToolCall?.attributes.result, "context"));
 	artifacts: ContextItem[] = $derived(this.contextItems(this.contextToolCall));
-	result: AgentRunResult | undefined = $derived(this.resultQuery.data?.data);
-	resultPayload = $derived(this.result?.attributes.data);
+	result = $derived(this.latestRun?.attributes.result);
+	resultPayload = $derived(this.result?.attributes.output);
 	findingsPayload = $derived(this.recordField(this.resultPayload, "findings"));
 
 	private createTask = createMutation(() => ({
@@ -114,7 +104,6 @@ export class AlertInvestigationController {
 		onSuccess: async () => {
 			await this.queryClient.invalidateQueries(this.runsQueryOptions);
 			await this.queryClient.invalidateQueries(this.toolCallsQueryOptions);
-			await this.queryClient.invalidateQueries(this.resultQueryOptions);
 		},
 	}));
 
@@ -128,7 +117,7 @@ export class AlertInvestigationController {
 	guides = $derived(this.artifactsByRole("guide"));
 	title = $derived(this.stringField(this.context, "alertTitle") || "Alert investigation");
 	resultSummary = $derived(
-		this.stringField(this.resultPayload, "summary") || this.result?.attributes.content || ""
+		this.stringField(this.resultPayload, "summary") || ""
 	);
 	likelyCause = $derived(this.stringField(this.findingsPayload, "likelyCause"));
 	findingSuggestedChecks = $derived(this.stringList(this.findingsPayload, "suggestedChecks"));
@@ -171,8 +160,8 @@ export class AlertInvestigationController {
 		this.createTask.mutate({
 			body: {
 				attributes: {
-					workflowKind: "alert_investigation",
-					workflowInput: {
+					workflow: "alert_investigation",
+					input: {
 						schema: "alert_investigation.v1",
 						subjects: [{ type: "alert", id: this.alertId }],
 						objectives: ["Investigate alert and summarize findings for responders."],
@@ -207,7 +196,7 @@ export class AlertInvestigationController {
 
 	statusLabel(run: AgentRun | undefined) {
 		if (!run) return "No run yet";
-		return run.attributes.status.replaceAll("_", " ");
+		return getAgentRunStatus(run);
 	}
 
 	private artifactsByRole(role: string) {
