@@ -5,7 +5,7 @@ import { updateOrganizationPreferencesMutation, type IntegrationInstallation, ty
 import { useUserSessionState } from "$src/lib/user-session.svelte";
 import { type IntegrationProvider, useIntegrationsController } from "$features/settings/lib/integrationsController.svelte";
 
-import { StepperController } from "$components/layout/stepper/stepper.svelte";
+import { StepperController } from "$components/layout/stepper/controller.svelte";
 
 import OrganizationDetailsStep from "./steps/org-details/OrganizationDetails.svelte";
 import InstallSuggestedIntegrationsStep from "./steps/suggested-integrations/SuggestedIntegrations.svelte";

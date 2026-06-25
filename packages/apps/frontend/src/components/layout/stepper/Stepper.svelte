@@ -3,7 +3,7 @@
 	import { Progress } from "$components/ui/progress";
 	import { cn } from "$lib/utils";
 	import { Spinner } from "$src/components/ui/spinner";
-	import type { StepperController } from "./stepper.svelte";
+	import type { StepperController } from "./controller.svelte";
 
     type Props = {
         controller: StepperController;
