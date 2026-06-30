@@ -18,6 +18,7 @@ import (
 	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
@@ -53,7 +54,8 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
+	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -410,6 +412,33 @@ func (f TraverseAlertFeedback) Traverse(ctx context.Context, q ent.Query) error 
 		return f(ctx, q)
 	}
 	return fmt.Errorf("unexpected query type %T. expect *ent.AlertFeedbackQuery", q)
+}
+
+// The AlertInstanceFunc type is an adapter to allow the use of ordinary function as a Querier.
+type AlertInstanceFunc func(context.Context, *ent.AlertInstanceQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f AlertInstanceFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.AlertInstanceQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.AlertInstanceQuery", q)
+}
+
+// The TraverseAlertInstance type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseAlertInstance func(context.Context, *ent.AlertInstanceQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseAlertInstance) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseAlertInstance) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertInstanceQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.AlertInstanceQuery", q)
 }
 
 // The AlertMetricsFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -1357,31 +1386,58 @@ func (f TraverseNormalizedEvent) Traverse(ctx context.Context, q ent.Query) erro
 	return fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventQuery", q)
 }
 
-// The NormalizedEventProjectionStatusFunc type is an adapter to allow the use of ordinary function as a Querier.
-type NormalizedEventProjectionStatusFunc func(context.Context, *ent.NormalizedEventProjectionStatusQuery) (ent.Value, error)
+// The NormalizedEventProjectionFunc type is an adapter to allow the use of ordinary function as a Querier.
+type NormalizedEventProjectionFunc func(context.Context, *ent.NormalizedEventProjectionQuery) (ent.Value, error)
 
 // Query calls f(ctx, q).
-func (f NormalizedEventProjectionStatusFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
-	if q, ok := q.(*ent.NormalizedEventProjectionStatusQuery); ok {
+func (f NormalizedEventProjectionFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.NormalizedEventProjectionQuery); ok {
 		return f(ctx, q)
 	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventProjectionStatusQuery", q)
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventProjectionQuery", q)
 }
 
-// The TraverseNormalizedEventProjectionStatus type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseNormalizedEventProjectionStatus func(context.Context, *ent.NormalizedEventProjectionStatusQuery) error
+// The TraverseNormalizedEventProjection type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseNormalizedEventProjection func(context.Context, *ent.NormalizedEventProjectionQuery) error
 
 // Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseNormalizedEventProjectionStatus) Intercept(next ent.Querier) ent.Querier {
+func (f TraverseNormalizedEventProjection) Intercept(next ent.Querier) ent.Querier {
 	return next
 }
 
 // Traverse calls f(ctx, q).
-func (f TraverseNormalizedEventProjectionStatus) Traverse(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.NormalizedEventProjectionStatusQuery); ok {
+func (f TraverseNormalizedEventProjection) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.NormalizedEventProjectionQuery); ok {
 		return f(ctx, q)
 	}
-	return fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventProjectionStatusQuery", q)
+	return fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventProjectionQuery", q)
+}
+
+// The NormalizedEventProjectionEntityFunc type is an adapter to allow the use of ordinary function as a Querier.
+type NormalizedEventProjectionEntityFunc func(context.Context, *ent.NormalizedEventProjectionEntityQuery) (ent.Value, error)
+
+// Query calls f(ctx, q).
+func (f NormalizedEventProjectionEntityFunc) Query(ctx context.Context, q ent.Query) (ent.Value, error) {
+	if q, ok := q.(*ent.NormalizedEventProjectionEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventProjectionEntityQuery", q)
+}
+
+// The TraverseNormalizedEventProjectionEntity type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseNormalizedEventProjectionEntity func(context.Context, *ent.NormalizedEventProjectionEntityQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseNormalizedEventProjectionEntity) Intercept(next ent.Querier) ent.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseNormalizedEventProjectionEntity) Traverse(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.NormalizedEventProjectionEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *ent.NormalizedEventProjectionEntityQuery", q)
 }
 
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary function as a Querier.
@@ -2190,6 +2246,8 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.AlertQuery, predicate.Alert, alert.OrderOption]{typ: ent.TypeAlert, tq: q}, nil
 	case *ent.AlertFeedbackQuery:
 		return &query[*ent.AlertFeedbackQuery, predicate.AlertFeedback, alertfeedback.OrderOption]{typ: ent.TypeAlertFeedback, tq: q}, nil
+	case *ent.AlertInstanceQuery:
+		return &query[*ent.AlertInstanceQuery, predicate.AlertInstance, alertinstance.OrderOption]{typ: ent.TypeAlertInstance, tq: q}, nil
 	case *ent.AlertMetricsQuery:
 		return &query[*ent.AlertMetricsQuery, predicate.AlertMetrics, alertmetrics.OrderOption]{typ: ent.TypeAlertMetrics, tq: q}, nil
 	case *ent.DocumentQuery:
@@ -2260,8 +2318,10 @@ func NewQuery(q ent.Query) (Query, error) {
 		return &query[*ent.MeetingSessionQuery, predicate.MeetingSession, meetingsession.OrderOption]{typ: ent.TypeMeetingSession, tq: q}, nil
 	case *ent.NormalizedEventQuery:
 		return &query[*ent.NormalizedEventQuery, predicate.NormalizedEvent, normalizedevent.OrderOption]{typ: ent.TypeNormalizedEvent, tq: q}, nil
-	case *ent.NormalizedEventProjectionStatusQuery:
-		return &query[*ent.NormalizedEventProjectionStatusQuery, predicate.NormalizedEventProjectionStatus, normalizedeventprojectionstatus.OrderOption]{typ: ent.TypeNormalizedEventProjectionStatus, tq: q}, nil
+	case *ent.NormalizedEventProjectionQuery:
+		return &query[*ent.NormalizedEventProjectionQuery, predicate.NormalizedEventProjection, normalizedeventprojection.OrderOption]{typ: ent.TypeNormalizedEventProjection, tq: q}, nil
+	case *ent.NormalizedEventProjectionEntityQuery:
+		return &query[*ent.NormalizedEventProjectionEntityQuery, predicate.NormalizedEventProjectionEntity, normalizedeventprojectionentity.OrderOption]{typ: ent.TypeNormalizedEventProjectionEntity, tq: q}, nil
 	case *ent.OncallHandoverTemplateQuery:
 		return &query[*ent.OncallHandoverTemplateQuery, predicate.OncallHandoverTemplate, oncallhandovertemplate.OrderOption]{typ: ent.TypeOncallHandoverTemplate, tq: q}, nil
 	case *ent.OncallRosterQuery:

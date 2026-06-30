@@ -24,18 +24,14 @@ const (
 	FieldDescription = "description"
 	// FieldDefinition holds the string denoting the definition field in the database.
 	FieldDefinition = "definition"
-	// FieldRosterID holds the string denoting the roster_id field in the database.
-	FieldRosterID = "roster_id"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
 	// EdgeKnowledgeEntity holds the string denoting the knowledge_entity edge name in mutations.
 	EdgeKnowledgeEntity = "knowledge_entity"
 	// EdgePlaybooks holds the string denoting the playbooks edge name in mutations.
 	EdgePlaybooks = "playbooks"
-	// EdgeRoster holds the string denoting the roster edge name in mutations.
-	EdgeRoster = "roster"
-	// EdgeFeedback holds the string denoting the feedback edge name in mutations.
-	EdgeFeedback = "feedback"
+	// EdgeInstances holds the string denoting the instances edge name in mutations.
+	EdgeInstances = "instances"
 	// Table holds the table name of the alert in the database.
 	Table = "alerts"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -57,20 +53,13 @@ const (
 	// PlaybooksInverseTable is the table name for the Playbook entity.
 	// It exists in this package in order to avoid circular dependency with the "playbook" package.
 	PlaybooksInverseTable = "playbooks"
-	// RosterTable is the table that holds the roster relation/edge.
-	RosterTable = "alerts"
-	// RosterInverseTable is the table name for the OncallRoster entity.
-	// It exists in this package in order to avoid circular dependency with the "oncallroster" package.
-	RosterInverseTable = "oncall_rosters"
-	// RosterColumn is the table column denoting the roster relation/edge.
-	RosterColumn = "roster_id"
-	// FeedbackTable is the table that holds the feedback relation/edge.
-	FeedbackTable = "alert_feedbacks"
-	// FeedbackInverseTable is the table name for the AlertFeedback entity.
-	// It exists in this package in order to avoid circular dependency with the "alertfeedback" package.
-	FeedbackInverseTable = "alert_feedbacks"
-	// FeedbackColumn is the table column denoting the feedback relation/edge.
-	FeedbackColumn = "alert_id"
+	// InstancesTable is the table that holds the instances relation/edge.
+	InstancesTable = "alert_instances"
+	// InstancesInverseTable is the table name for the AlertInstance entity.
+	// It exists in this package in order to avoid circular dependency with the "alertinstance" package.
+	InstancesInverseTable = "alert_instances"
+	// InstancesColumn is the table column denoting the instances relation/edge.
+	InstancesColumn = "alert_id"
 )
 
 // Columns holds all SQL columns for alert fields.
@@ -81,7 +70,6 @@ var Columns = []string{
 	FieldTitle,
 	FieldDescription,
 	FieldDefinition,
-	FieldRosterID,
 }
 
 var (
@@ -145,11 +133,6 @@ func ByDefinition(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDefinition, opts...).ToFunc()
 }
 
-// ByRosterID orders the results by the roster_id field.
-func ByRosterID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldRosterID, opts...).ToFunc()
-}
-
 // ByTenantField orders the results by tenant field.
 func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
@@ -178,24 +161,17 @@ func ByPlaybooks(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	}
 }
 
-// ByRosterField orders the results by roster field.
-func ByRosterField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByInstancesCount orders the results by instances count.
+func ByInstancesCount(opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newRosterStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborsCount(s, newInstancesStep(), opts...)
 	}
 }
 
-// ByFeedbackCount orders the results by feedback count.
-func ByFeedbackCount(opts ...sql.OrderTermOption) OrderOption {
+// ByInstances orders the results by instances terms.
+func ByInstances(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newFeedbackStep(), opts...)
-	}
-}
-
-// ByFeedback orders the results by feedback terms.
-func ByFeedback(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newFeedbackStep(), append([]sql.OrderTerm{term}, terms...)...)
+		sqlgraph.OrderByNeighborTerms(s, newInstancesStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
 func newTenantStep() *sqlgraph.Step {
@@ -219,17 +195,10 @@ func newPlaybooksStep() *sqlgraph.Step {
 		sqlgraph.Edge(sqlgraph.M2M, true, PlaybooksTable, PlaybooksPrimaryKey...),
 	)
 }
-func newRosterStep() *sqlgraph.Step {
+func newInstancesStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(RosterInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, RosterTable, RosterColumn),
-	)
-}
-func newFeedbackStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(FeedbackInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
+		sqlgraph.To(InstancesInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
 	)
 }

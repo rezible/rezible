@@ -73,15 +73,21 @@ CREATE INDEX "agenttasksubject_tenant_id" ON "agent_task_subjects" ("tenant_id")
 -- create index "agenttasksubject_tenant_id_task_id" to table: "agent_task_subjects"
 CREATE INDEX "agenttasksubject_tenant_id_task_id" ON "agent_task_subjects" ("tenant_id", "task_id");
 -- create "alerts" table
-CREATE TABLE "alerts" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, "roster_id" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "alerts" ("id" uuid NOT NULL, "title" character varying NOT NULL, "description" character varying NULL, "definition" character varying NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
 -- create index "alert_tenant_id" to table: "alerts"
 CREATE INDEX "alert_tenant_id" ON "alerts" ("tenant_id");
 -- create index "alert_tenant_id_knowledge_entity_id" to table: "alerts"
 CREATE UNIQUE INDEX "alert_tenant_id_knowledge_entity_id" ON "alerts" ("tenant_id", "knowledge_entity_id");
 -- create "alert_feedbacks" table
-CREATE TABLE "alert_feedbacks" ("id" uuid NOT NULL, "actionable" boolean NOT NULL, "accurate" character varying NOT NULL, "documentation_available" boolean NOT NULL, "documentation_needs_update" boolean NOT NULL, "tenant_id" bigint NOT NULL, "alert_id" uuid NOT NULL, "alert_instance_id" uuid NULL, "normalized_event_alert_feedback" uuid NULL, PRIMARY KEY ("id"));
+CREATE TABLE "alert_feedbacks" ("id" uuid NOT NULL, "actionable" boolean NOT NULL, "accurate" character varying NOT NULL, "documentation_available" boolean NOT NULL, "documentation_needs_update" boolean NOT NULL, "tenant_id" bigint NOT NULL, "alert_instance_id" uuid NOT NULL, PRIMARY KEY ("id"));
 -- create index "alertfeedback_tenant_id" to table: "alert_feedbacks"
 CREATE INDEX "alertfeedback_tenant_id" ON "alert_feedbacks" ("tenant_id");
+-- create "alert_instances" table
+CREATE TABLE "alert_instances" ("id" uuid NOT NULL, "alert_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "knowledge_entity_id" uuid NULL, PRIMARY KEY ("id"));
+-- create index "alertinstance_tenant_id" to table: "alert_instances"
+CREATE INDEX "alertinstance_tenant_id" ON "alert_instances" ("tenant_id");
+-- create index "alertinstance_tenant_id_knowledge_entity_id" to table: "alert_instances"
+CREATE UNIQUE INDEX "alertinstance_tenant_id_knowledge_entity_id" ON "alert_instances" ("tenant_id", "knowledge_entity_id");
 -- create "documents" table
 CREATE TABLE "documents" ("id" uuid NOT NULL, "content" bytea NOT NULL, "access_restricted" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "document_tenant_id" to table: "documents"
@@ -285,21 +291,29 @@ CREATE TABLE "meeting_sessions" ("id" uuid NOT NULL, "title" character varying N
 -- create index "meetingsession_tenant_id" to table: "meeting_sessions"
 CREATE INDEX "meetingsession_tenant_id" ON "meeting_sessions" ("tenant_id");
 -- create "normalized_events" table
-CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "activity_kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
+CREATE TABLE "normalized_events" ("id" uuid NOT NULL, "kind" character varying NOT NULL, "provider" character varying NOT NULL, "provider_source" character varying NOT NULL, "provider_event_ref" character varying NOT NULL, "provider_subject_ref" character varying NOT NULL, "subject_kind" character varying NOT NULL, "attributes" jsonb NOT NULL, "created_at" timestamptz NOT NULL, "occurred_at" timestamptz NOT NULL, "received_at" timestamptz NOT NULL, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "normalizedevent_tenant_id" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id" ON "normalized_events" ("tenant_id");
 -- create index "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" to table: "normalized_events"
 CREATE UNIQUE INDEX "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" ON "normalized_events" ("tenant_id", "provider", "provider_source", "provider_event_ref", "provider_subject_ref");
 -- create index "normalizedevent_tenant_id_provider_provider_source_occurred_at" to table: "normalized_events"
 CREATE INDEX "normalizedevent_tenant_id_provider_provider_source_occurred_at" ON "normalized_events" ("tenant_id", "provider", "provider_source", "occurred_at");
--- create "normalized_event_projection_status" table
-CREATE TABLE "normalized_event_projection_status" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "handler_name" character varying NOT NULL, "status" character varying NOT NULL DEFAULT 'pending', "last_error" character varying NULL, "last_attempted_at" timestamptz NULL, "succeeded_at" timestamptz NULL, "failed_at" timestamptz NULL, "tenant_id" bigint NOT NULL, "normalized_event_id" uuid NOT NULL, PRIMARY KEY ("id"));
--- create index "normalizedeventprojectionstatus_tenant_id" to table: "normalized_event_projection_status"
-CREATE INDEX "normalizedeventprojectionstatus_tenant_id" ON "normalized_event_projection_status" ("tenant_id");
--- create index "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8" to table: "normalized_event_projection_status"
-CREATE UNIQUE INDEX "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8" ON "normalized_event_projection_status" ("tenant_id", "normalized_event_id", "handler_name");
--- create index "normalizedeventprojectionstatus_tenant_id_status_updated_at" to table: "normalized_event_projection_status"
-CREATE INDEX "normalizedeventprojectionstatus_tenant_id_status_updated_at" ON "normalized_event_projection_status" ("tenant_id", "status", "updated_at");
+-- create "normalized_event_projections" table
+CREATE TABLE "normalized_event_projections" ("id" uuid NOT NULL, "projector" character varying NOT NULL, "status" character varying NOT NULL, "started_at" timestamptz NOT NULL, "finished_at" timestamptz NULL, "error" character varying NULL, "tenant_id" bigint NOT NULL, "event_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "normalizedeventprojection_tenant_id" to table: "normalized_event_projections"
+CREATE INDEX "normalizedeventprojection_tenant_id" ON "normalized_event_projections" ("tenant_id");
+-- create index "normalizedeventprojection_tenant_id_event_id_projector" to table: "normalized_event_projections"
+CREATE UNIQUE INDEX "normalizedeventprojection_tenant_id_event_id_projector" ON "normalized_event_projections" ("tenant_id", "event_id", "projector");
+-- create index "normalizedeventprojection_tenant_id_status_started_at" to table: "normalized_event_projections"
+CREATE INDEX "normalizedeventprojection_tenant_id_status_started_at" ON "normalized_event_projections" ("tenant_id", "status", "started_at");
+-- create "normalized_event_projection_entities" table
+CREATE TABLE "normalized_event_projection_entities" ("id" uuid NOT NULL, "domain_entity_kind" character varying NOT NULL, "domain_entity_id" uuid NOT NULL, "tenant_id" bigint NOT NULL, "projection_id" uuid NOT NULL, PRIMARY KEY ("id"));
+-- create index "normalizedeventprojectionentity_tenant_id" to table: "normalized_event_projection_entities"
+CREATE INDEX "normalizedeventprojectionentity_tenant_id" ON "normalized_event_projection_entities" ("tenant_id");
+-- create index "normalizedeventprojectionentity_tenant_id_domain_entity_id" to table: "normalized_event_projection_entities"
+CREATE UNIQUE INDEX "normalizedeventprojectionentity_tenant_id_domain_entity_id" ON "normalized_event_projection_entities" ("tenant_id", "domain_entity_id");
+-- create index "normalizedeventprojectionentity_tenant_id_domain_entity_kind" to table: "normalized_event_projection_entities"
+CREATE INDEX "normalizedeventprojectionentity_tenant_id_domain_entity_kind" ON "normalized_event_projection_entities" ("tenant_id", "domain_entity_kind");
 -- create "oncall_handover_templates" table
 CREATE TABLE "oncall_handover_templates" ("id" uuid NOT NULL, "created_at" timestamptz NOT NULL, "updated_at" timestamptz NOT NULL, "contents" bytea NOT NULL, "is_default" boolean NOT NULL DEFAULT false, "tenant_id" bigint NOT NULL, PRIMARY KEY ("id"));
 -- create index "oncallhandovertemplate_tenant_id" to table: "oncall_handover_templates"
@@ -517,9 +531,11 @@ ALTER TABLE "agent_tasks" ADD CONSTRAINT "agent_tasks_tenants_tenant" FOREIGN KE
 -- modify "agent_task_subjects" table
 ALTER TABLE "agent_task_subjects" ADD CONSTRAINT "agent_task_subjects_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "agent_task_subjects_agent_tasks_task" FOREIGN KEY ("task_id") REFERENCES "agent_tasks" ("id") ON DELETE NO ACTION;
 -- modify "alerts" table
-ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL, ADD CONSTRAINT "alerts_oncall_rosters_alerts" FOREIGN KEY ("roster_id") REFERENCES "oncall_rosters" ("id") ON DELETE SET NULL;
+ALTER TABLE "alerts" ADD CONSTRAINT "alerts_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alerts_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "alert_feedbacks" table
-ALTER TABLE "alert_feedbacks" ADD CONSTRAINT "alert_feedbacks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_feedbacks_alerts_alert" FOREIGN KEY ("alert_id") REFERENCES "alerts" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_feedbacks_normalized_events_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "normalized_events" ("id") ON DELETE SET NULL, ADD CONSTRAINT "alert_feedbacks_normalized_events_alert_feedback" FOREIGN KEY ("normalized_event_alert_feedback") REFERENCES "normalized_events" ("id") ON DELETE SET NULL;
+ALTER TABLE "alert_feedbacks" ADD CONSTRAINT "alert_feedbacks_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_feedbacks_alert_instances_alert_instance" FOREIGN KEY ("alert_instance_id") REFERENCES "alert_instances" ("id") ON DELETE NO ACTION;
+-- modify "alert_instances" table
+ALTER TABLE "alert_instances" ADD CONSTRAINT "alert_instances_alerts_instances" FOREIGN KEY ("alert_id") REFERENCES "alerts" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "alert_instances_knowledge_entities_knowledge_entity" FOREIGN KEY ("knowledge_entity_id") REFERENCES "knowledge_entities" ("id") ON DELETE SET NULL;
 -- modify "documents" table
 ALTER TABLE "documents" ADD CONSTRAINT "documents_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "document_accesses" table
@@ -588,8 +604,10 @@ ALTER TABLE "meeting_schedules" ADD CONSTRAINT "meeting_schedules_tenants_tenant
 ALTER TABLE "meeting_sessions" ADD CONSTRAINT "meeting_sessions_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "meeting_sessions_meeting_schedules_schedule" FOREIGN KEY ("meeting_session_schedule") REFERENCES "meeting_schedules" ("id") ON DELETE SET NULL;
 -- modify "normalized_events" table
 ALTER TABLE "normalized_events" ADD CONSTRAINT "normalized_events_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
--- modify "normalized_event_projection_status" table
-ALTER TABLE "normalized_event_projection_status" ADD CONSTRAINT "normalized_event_projection_status_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "normalized_event_projection_st_57b31f9b9ba804f03db1c8815e863e31" FOREIGN KEY ("normalized_event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION;
+-- modify "normalized_event_projections" table
+ALTER TABLE "normalized_event_projections" ADD CONSTRAINT "normalized_event_projections_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "normalized_event_projections_normalized_events_event" FOREIGN KEY ("event_id") REFERENCES "normalized_events" ("id") ON DELETE NO ACTION;
+-- modify "normalized_event_projection_entities" table
+ALTER TABLE "normalized_event_projection_entities" ADD CONSTRAINT "normalized_event_projection_entities_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION, ADD CONSTRAINT "normalized_event_projection_en_d9d2365014bd43baede970b5b24d3664" FOREIGN KEY ("projection_id") REFERENCES "normalized_event_projections" ("id") ON DELETE NO ACTION;
 -- modify "oncall_handover_templates" table
 ALTER TABLE "oncall_handover_templates" ADD CONSTRAINT "oncall_handover_templates_tenants_tenant" FOREIGN KEY ("tenant_id") REFERENCES "tenants" ("id") ON DELETE NO ACTION;
 -- modify "oncall_rosters" table

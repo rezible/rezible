@@ -32,6 +32,8 @@ type Tx struct {
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
+	// AlertInstance is the client for interacting with the AlertInstance builders.
+	AlertInstance *AlertInstanceClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
@@ -102,8 +104,10 @@ type Tx struct {
 	MeetingSession *MeetingSessionClient
 	// NormalizedEvent is the client for interacting with the NormalizedEvent builders.
 	NormalizedEvent *NormalizedEventClient
-	// NormalizedEventProjectionStatus is the client for interacting with the NormalizedEventProjectionStatus builders.
-	NormalizedEventProjectionStatus *NormalizedEventProjectionStatusClient
+	// NormalizedEventProjection is the client for interacting with the NormalizedEventProjection builders.
+	NormalizedEventProjection *NormalizedEventProjectionClient
+	// NormalizedEventProjectionEntity is the client for interacting with the NormalizedEventProjectionEntity builders.
+	NormalizedEventProjectionEntity *NormalizedEventProjectionEntityClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -303,6 +307,7 @@ func (tx *Tx) init() {
 	tx.AgentTaskSubject = NewAgentTaskSubjectClient(tx.config)
 	tx.Alert = NewAlertClient(tx.config)
 	tx.AlertFeedback = NewAlertFeedbackClient(tx.config)
+	tx.AlertInstance = NewAlertInstanceClient(tx.config)
 	tx.AlertMetrics = NewAlertMetricsClient(tx.config)
 	tx.Document = NewDocumentClient(tx.config)
 	tx.DocumentAccess = NewDocumentAccessClient(tx.config)
@@ -338,7 +343,8 @@ func (tx *Tx) init() {
 	tx.MeetingSchedule = NewMeetingScheduleClient(tx.config)
 	tx.MeetingSession = NewMeetingSessionClient(tx.config)
 	tx.NormalizedEvent = NewNormalizedEventClient(tx.config)
-	tx.NormalizedEventProjectionStatus = NewNormalizedEventProjectionStatusClient(tx.config)
+	tx.NormalizedEventProjection = NewNormalizedEventProjectionClient(tx.config)
+	tx.NormalizedEventProjectionEntity = NewNormalizedEventProjectionEntityClient(tx.config)
 	tx.OncallHandoverTemplate = NewOncallHandoverTemplateClient(tx.config)
 	tx.OncallRoster = NewOncallRosterClient(tx.config)
 	tx.OncallRosterMetrics = NewOncallRosterMetricsClient(tx.config)

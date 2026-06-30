@@ -12,7 +12,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
@@ -186,21 +185,6 @@ func (_u *OncallRosterUpdate) SetHandoverTemplate(v *OncallHandoverTemplate) *On
 	return _u.SetHandoverTemplateID(v.ID)
 }
 
-// AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (_u *OncallRosterUpdate) AddAlertIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	_u.mutation.AddAlertIDs(ids...)
-	return _u
-}
-
-// AddAlerts adds the "alerts" edges to the Alert entity.
-func (_u *OncallRosterUpdate) AddAlerts(v ...*Alert) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAlertIDs(ids...)
-}
-
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
 func (_u *OncallRosterUpdate) AddTeamIDs(ids ...uuid.UUID) *OncallRosterUpdate {
 	_u.mutation.AddTeamIDs(ids...)
@@ -291,27 +275,6 @@ func (_u *OncallRosterUpdate) RemoveSchedules(v ...*OncallSchedule) *OncallRoste
 func (_u *OncallRosterUpdate) ClearHandoverTemplate() *OncallRosterUpdate {
 	_u.mutation.ClearHandoverTemplate()
 	return _u
-}
-
-// ClearAlerts clears all "alerts" edges to the Alert entity.
-func (_u *OncallRosterUpdate) ClearAlerts() *OncallRosterUpdate {
-	_u.mutation.ClearAlerts()
-	return _u
-}
-
-// RemoveAlertIDs removes the "alerts" edge to Alert entities by IDs.
-func (_u *OncallRosterUpdate) RemoveAlertIDs(ids ...uuid.UUID) *OncallRosterUpdate {
-	_u.mutation.RemoveAlertIDs(ids...)
-	return _u
-}
-
-// RemoveAlerts removes "alerts" edges to Alert entities.
-func (_u *OncallRosterUpdate) RemoveAlerts(v ...*Alert) *OncallRosterUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAlertIDs(ids...)
 }
 
 // ClearTeams clears all "teams" edges to the Team entity.
@@ -555,54 +518,6 @@ func (_u *OncallRosterUpdate) sqlSave(ctx context.Context) (_node int, err error
 			},
 		}
 		edge.Schema = _u.schemaConfig.OncallRoster
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !_u.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AlertsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -972,21 +887,6 @@ func (_u *OncallRosterUpdateOne) SetHandoverTemplate(v *OncallHandoverTemplate) 
 	return _u.SetHandoverTemplateID(v.ID)
 }
 
-// AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (_u *OncallRosterUpdateOne) AddAlertIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	_u.mutation.AddAlertIDs(ids...)
-	return _u
-}
-
-// AddAlerts adds the "alerts" edges to the Alert entity.
-func (_u *OncallRosterUpdateOne) AddAlerts(v ...*Alert) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAlertIDs(ids...)
-}
-
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
 func (_u *OncallRosterUpdateOne) AddTeamIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
 	_u.mutation.AddTeamIDs(ids...)
@@ -1077,27 +977,6 @@ func (_u *OncallRosterUpdateOne) RemoveSchedules(v ...*OncallSchedule) *OncallRo
 func (_u *OncallRosterUpdateOne) ClearHandoverTemplate() *OncallRosterUpdateOne {
 	_u.mutation.ClearHandoverTemplate()
 	return _u
-}
-
-// ClearAlerts clears all "alerts" edges to the Alert entity.
-func (_u *OncallRosterUpdateOne) ClearAlerts() *OncallRosterUpdateOne {
-	_u.mutation.ClearAlerts()
-	return _u
-}
-
-// RemoveAlertIDs removes the "alerts" edge to Alert entities by IDs.
-func (_u *OncallRosterUpdateOne) RemoveAlertIDs(ids ...uuid.UUID) *OncallRosterUpdateOne {
-	_u.mutation.RemoveAlertIDs(ids...)
-	return _u
-}
-
-// RemoveAlerts removes "alerts" edges to Alert entities.
-func (_u *OncallRosterUpdateOne) RemoveAlerts(v ...*Alert) *OncallRosterUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAlertIDs(ids...)
 }
 
 // ClearTeams clears all "teams" edges to the Team entity.
@@ -1371,54 +1250,6 @@ func (_u *OncallRosterUpdateOne) sqlSave(ctx context.Context) (_node *OncallRost
 			},
 		}
 		edge.Schema = _u.schemaConfig.OncallRoster
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAlertsIDs(); len(nodes) > 0 && !_u.mutation.AlertsCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AlertsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

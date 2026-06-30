@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
@@ -16,18 +17,19 @@ const (
 	knowledgeEntityKindAlert         = "alert"
 )
 
-func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
+func (s *AlertService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) (map[string][]uuid.UUID, error) {
 	if projections.SubjectKindAlert.Matches(event) {
 		observed, validationErr := projections.DecodeAlertEvent(event)
 		if validationErr != nil || observed == nil {
-			return fmt.Errorf("invalid event: %w", validationErr)
+			return nil, fmt.Errorf("invalid event: %w", validationErr)
 		}
 		return s.handleAlertEventProjection(ctx, observed)
 	}
-	return nil
+	return nil, nil
 }
 
-func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *projections.AlertEvent) error {
+func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *projections.AlertEvent) (map[string][]uuid.UUID, error) {
+	projIds := make(map[string][]uuid.UUID)
 	attrs := ae.Attributes
 	projKnowledgeEntity := rez.ProjectedKnowledgeEntity{
 		EvidenceAssertion: assertionAlertDefinitionObserved,
@@ -39,7 +41,7 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 	}
 	keId, saveKnowledgeErr := s.knowledge.ResolveProjectedEntity(ctx, ae.Event, projKnowledgeEntity)
 	if saveKnowledgeErr != nil {
-		return fmt.Errorf("save projected entity: %w", saveKnowledgeErr)
+		return nil, fmt.Errorf("save projected entity: %w", saveKnowledgeErr)
 	}
 
 	// TODO: use regular alert service update flow here instead
@@ -51,9 +53,11 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 		SetDefinition(attrs.Definition).
 		OnConflictColumns(alert.FieldTenantID, alert.FieldKnowledgeEntityID).
 		UpdateNewValues()
-	if _, saveErr := upsert.ID(ctx); saveErr != nil {
-		return fmt.Errorf("upsert alert: %w", saveErr)
+	alertId, saveErr := upsert.ID(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("upsert alert: %w", saveErr)
 	}
+	projIds["alert"] = append(projIds["alert"], alertId)
 
 	alertAlias := ae.Event.MakeEntityAliasRef()
 
@@ -71,7 +75,7 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 			IsPlaceholder:     true,
 		}
 		if _, entErr := s.knowledge.ResolveProjectedEntity(ctx, ae.Event, projRelatedEnt); entErr != nil {
-			return fmt.Errorf("resolve related entity: %w", entErr)
+			return nil, fmt.Errorf("resolve related entity: %w", entErr)
 		}
 		projRelatedRel := rez.ProjectedKnowledgeRelationship{
 			Kind:              relationshipKindRelatedTo,
@@ -84,9 +88,9 @@ func (s *AlertService) handleAlertEventProjection(ctx context.Context, ae *proje
 			ToAliasRef:   relatedAlias,
 		}
 		if _, relErr := s.knowledge.ResolveProjectedRelationship(ctx, ae.Event, projRelatedRel); relErr != nil {
-			return fmt.Errorf("resolve related relationship: %w", relErr)
+			return nil, fmt.Errorf("resolve related relationship: %w", relErr)
 		}
 	}
 
-	return nil
+	return projIds, nil
 }

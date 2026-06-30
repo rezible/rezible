@@ -75,7 +75,7 @@ func (p *eventProcessor) processPushEvent() (ent.NormalizedEvents, error) {
 		Provider:           integrationName,
 		ProviderSource:     sourcePushEvent,
 		ProviderEventRef:   p.event.ProviderEventRef,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindCodeChange.String(),
 		ProviderSubjectRef: ProviderSubjectRef,
 		OccurredAt:         occurredAt,
@@ -110,7 +110,7 @@ func (p *eventProcessor) processPullRequest() (ent.NormalizedEvents, error) {
 	result := &ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourcePullEvent,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindCodeChange.String(),
 		ProviderEventRef:   p.event.ProviderEventRef,
 		ProviderSubjectRef: ProviderSubjectRef,
@@ -154,7 +154,7 @@ func (p *eventProcessor) processRepoObserved() (ent.NormalizedEvents, error) {
 	result := &ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceRepositories,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindCodeForge.String(),
 		ProviderEventRef:   p.event.ProviderEventRef,
 		ProviderSubjectRef: repositoryRef,

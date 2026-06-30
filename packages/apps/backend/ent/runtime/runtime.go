@@ -17,6 +17,7 @@ import (
 	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
@@ -52,7 +53,8 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
+	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -384,6 +386,22 @@ func init() {
 	alertfeedbackDescID := alertfeedbackFields[0].Descriptor()
 	// alertfeedback.DefaultID holds the default value on creation for the id field.
 	alertfeedback.DefaultID = alertfeedbackDescID.Default.(func() uuid.UUID)
+	alertinstanceMixin := schema.AlertInstance{}.Mixin()
+	alertinstance.Policy = privacy.NewPolicies(alertinstanceMixin[0], alertinstanceMixin[1], schema.AlertInstance{})
+	alertinstance.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := alertinstance.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	alertinstanceFields := schema.AlertInstance{}.Fields()
+	_ = alertinstanceFields
+	// alertinstanceDescID is the schema descriptor for id field.
+	alertinstanceDescID := alertinstanceFields[0].Descriptor()
+	// alertinstance.DefaultID holds the default value on creation for the id field.
+	alertinstance.DefaultID = alertinstanceDescID.Default.(func() uuid.UUID)
 	alertmetricsMixin := schema.AlertMetrics{}.Mixin()
 	alertmetrics.Policy = privacy.NewPolicies(alertmetricsMixin[0], schema.AlertMetrics{})
 	alertmetrics.Hooks[0] = func(next ent.Mutator) ent.Mutator {
@@ -1241,38 +1259,42 @@ func init() {
 	normalizedeventDescID := normalizedeventFields[0].Descriptor()
 	// normalizedevent.DefaultID holds the default value on creation for the id field.
 	normalizedevent.DefaultID = normalizedeventDescID.Default.(func() uuid.UUID)
-	normalizedeventprojectionstatusMixin := schema.NormalizedEventProjectionStatus{}.Mixin()
-	normalizedeventprojectionstatus.Policy = privacy.NewPolicies(normalizedeventprojectionstatusMixin[0], normalizedeventprojectionstatusMixin[1], schema.NormalizedEventProjectionStatus{})
-	normalizedeventprojectionstatus.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+	normalizedeventprojectionMixin := schema.NormalizedEventProjection{}.Mixin()
+	normalizedeventprojection.Policy = privacy.NewPolicies(normalizedeventprojectionMixin[0], normalizedeventprojectionMixin[1], schema.NormalizedEventProjection{})
+	normalizedeventprojection.Hooks[0] = func(next ent.Mutator) ent.Mutator {
 		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-			if err := normalizedeventprojectionstatus.Policy.EvalMutation(ctx, m); err != nil {
+			if err := normalizedeventprojection.Policy.EvalMutation(ctx, m); err != nil {
 				return nil, err
 			}
 			return next.Mutate(ctx, m)
 		})
 	}
-	normalizedeventprojectionstatusMixinFields2 := normalizedeventprojectionstatusMixin[2].Fields()
-	_ = normalizedeventprojectionstatusMixinFields2
-	normalizedeventprojectionstatusFields := schema.NormalizedEventProjectionStatus{}.Fields()
-	_ = normalizedeventprojectionstatusFields
-	// normalizedeventprojectionstatusDescCreatedAt is the schema descriptor for created_at field.
-	normalizedeventprojectionstatusDescCreatedAt := normalizedeventprojectionstatusMixinFields2[0].Descriptor()
-	// normalizedeventprojectionstatus.DefaultCreatedAt holds the default value on creation for the created_at field.
-	normalizedeventprojectionstatus.DefaultCreatedAt = normalizedeventprojectionstatusDescCreatedAt.Default.(func() time.Time)
-	// normalizedeventprojectionstatusDescUpdatedAt is the schema descriptor for updated_at field.
-	normalizedeventprojectionstatusDescUpdatedAt := normalizedeventprojectionstatusMixinFields2[1].Descriptor()
-	// normalizedeventprojectionstatus.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	normalizedeventprojectionstatus.DefaultUpdatedAt = normalizedeventprojectionstatusDescUpdatedAt.Default.(func() time.Time)
-	// normalizedeventprojectionstatus.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	normalizedeventprojectionstatus.UpdateDefaultUpdatedAt = normalizedeventprojectionstatusDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// normalizedeventprojectionstatusDescHandlerName is the schema descriptor for handler_name field.
-	normalizedeventprojectionstatusDescHandlerName := normalizedeventprojectionstatusFields[2].Descriptor()
-	// normalizedeventprojectionstatus.HandlerNameValidator is a validator for the "handler_name" field. It is called by the builders before save.
-	normalizedeventprojectionstatus.HandlerNameValidator = normalizedeventprojectionstatusDescHandlerName.Validators[0].(func(string) error)
-	// normalizedeventprojectionstatusDescID is the schema descriptor for id field.
-	normalizedeventprojectionstatusDescID := normalizedeventprojectionstatusFields[0].Descriptor()
-	// normalizedeventprojectionstatus.DefaultID holds the default value on creation for the id field.
-	normalizedeventprojectionstatus.DefaultID = normalizedeventprojectionstatusDescID.Default.(func() uuid.UUID)
+	normalizedeventprojectionFields := schema.NormalizedEventProjection{}.Fields()
+	_ = normalizedeventprojectionFields
+	// normalizedeventprojectionDescProjector is the schema descriptor for projector field.
+	normalizedeventprojectionDescProjector := normalizedeventprojectionFields[2].Descriptor()
+	// normalizedeventprojection.ProjectorValidator is a validator for the "projector" field. It is called by the builders before save.
+	normalizedeventprojection.ProjectorValidator = normalizedeventprojectionDescProjector.Validators[0].(func(string) error)
+	// normalizedeventprojectionDescID is the schema descriptor for id field.
+	normalizedeventprojectionDescID := normalizedeventprojectionFields[0].Descriptor()
+	// normalizedeventprojection.DefaultID holds the default value on creation for the id field.
+	normalizedeventprojection.DefaultID = normalizedeventprojectionDescID.Default.(func() uuid.UUID)
+	normalizedeventprojectionentityMixin := schema.NormalizedEventProjectionEntity{}.Mixin()
+	normalizedeventprojectionentity.Policy = privacy.NewPolicies(normalizedeventprojectionentityMixin[0], normalizedeventprojectionentityMixin[1], schema.NormalizedEventProjectionEntity{})
+	normalizedeventprojectionentity.Hooks[0] = func(next ent.Mutator) ent.Mutator {
+		return ent.MutateFunc(func(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+			if err := normalizedeventprojectionentity.Policy.EvalMutation(ctx, m); err != nil {
+				return nil, err
+			}
+			return next.Mutate(ctx, m)
+		})
+	}
+	normalizedeventprojectionentityFields := schema.NormalizedEventProjectionEntity{}.Fields()
+	_ = normalizedeventprojectionentityFields
+	// normalizedeventprojectionentityDescID is the schema descriptor for id field.
+	normalizedeventprojectionentityDescID := normalizedeventprojectionentityFields[0].Descriptor()
+	// normalizedeventprojectionentity.DefaultID holds the default value on creation for the id field.
+	normalizedeventprojectionentity.DefaultID = normalizedeventprojectionentityDescID.Default.(func() uuid.UUID)
 	oncallhandovertemplateMixin := schema.OncallHandoverTemplate{}.Mixin()
 	oncallhandovertemplate.Policy = privacy.NewPolicies(oncallhandovertemplateMixin[0], oncallhandovertemplateMixin[1], schema.OncallHandoverTemplate{})
 	oncallhandovertemplate.Hooks[0] = func(next ent.Mutator) ent.Mutator {

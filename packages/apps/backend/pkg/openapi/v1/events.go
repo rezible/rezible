@@ -38,18 +38,9 @@ type (
 
 func EventFromEnt(e *ent.NormalizedEvent) Event {
 	attr := EventAttributes{
-		ActivityKind: e.ActivityKind.String(),
-		//Title:       e.Title,
-		//Description: e.Description,
-		Timestamp: e.OccurredAt,
+		ActivityKind: e.Kind.String(),
+		Timestamp:    e.OccurredAt,
 	}
-
-	//if e.Edges.Annotations != nil {
-	//	attr.Annotations = make([]EventAnnotation, len(e.Edges.Annotations))
-	//	for i, a := range e.Edges.Annotations {
-	//		attr.Annotations[i] = OncallAnnotationFromEnt(a)
-	//	}
-	//}
 
 	return Event{
 		Id:         e.ID,

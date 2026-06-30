@@ -4,7 +4,6 @@ package ent
 
 import (
 	"context"
-	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -14,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
@@ -24,13 +22,12 @@ import (
 // NormalizedEventQuery is the builder for querying NormalizedEvent entities.
 type NormalizedEventQuery struct {
 	config
-	ctx               *QueryContext
-	order             []normalizedevent.OrderOption
-	inters            []Interceptor
-	predicates        []predicate.NormalizedEvent
-	withTenant        *TenantQuery
-	withAlertFeedback *AlertFeedbackQuery
-	modifiers         []func(*sql.Selector)
+	ctx        *QueryContext
+	order      []normalizedevent.OrderOption
+	inters     []Interceptor
+	predicates []predicate.NormalizedEvent
+	withTenant *TenantQuery
+	modifiers  []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -86,31 +83,6 @@ func (_q *NormalizedEventQuery) QueryTenant() *TenantQuery {
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.NormalizedEvent
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryAlertFeedback chains the current query on the "alert_feedback" edge.
-func (_q *NormalizedEventQuery) QueryAlertFeedback() *AlertFeedbackQuery {
-	query := (&AlertFeedbackClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, selector),
-			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, normalizedevent.AlertFeedbackTable, normalizedevent.AlertFeedbackColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertFeedback
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -304,13 +276,12 @@ func (_q *NormalizedEventQuery) Clone() *NormalizedEventQuery {
 		return nil
 	}
 	return &NormalizedEventQuery{
-		config:            _q.config,
-		ctx:               _q.ctx.Clone(),
-		order:             append([]normalizedevent.OrderOption{}, _q.order...),
-		inters:            append([]Interceptor{}, _q.inters...),
-		predicates:        append([]predicate.NormalizedEvent{}, _q.predicates...),
-		withTenant:        _q.withTenant.Clone(),
-		withAlertFeedback: _q.withAlertFeedback.Clone(),
+		config:     _q.config,
+		ctx:        _q.ctx.Clone(),
+		order:      append([]normalizedevent.OrderOption{}, _q.order...),
+		inters:     append([]Interceptor{}, _q.inters...),
+		predicates: append([]predicate.NormalizedEvent{}, _q.predicates...),
+		withTenant: _q.withTenant.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -326,17 +297,6 @@ func (_q *NormalizedEventQuery) WithTenant(opts ...func(*TenantQuery)) *Normaliz
 		opt(query)
 	}
 	_q.withTenant = query
-	return _q
-}
-
-// WithAlertFeedback tells the query-builder to eager-load the nodes that are connected to
-// the "alert_feedback" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *NormalizedEventQuery) WithAlertFeedback(opts ...func(*AlertFeedbackQuery)) *NormalizedEventQuery {
-	query := (&AlertFeedbackClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAlertFeedback = query
 	return _q
 }
 
@@ -424,9 +384,8 @@ func (_q *NormalizedEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	var (
 		nodes       = []*NormalizedEvent{}
 		_spec       = _q.querySpec()
-		loadedTypes = [2]bool{
+		loadedTypes = [1]bool{
 			_q.withTenant != nil,
-			_q.withAlertFeedback != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -455,13 +414,6 @@ func (_q *NormalizedEventQuery) sqlAll(ctx context.Context, hooks ...queryHook) 
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
 			func(n *NormalizedEvent, e *Tenant) { n.Edges.Tenant = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withAlertFeedback; query != nil {
-		if err := _q.loadAlertFeedback(ctx, query, nodes,
-			func(n *NormalizedEvent) { n.Edges.AlertFeedback = []*AlertFeedback{} },
-			func(n *NormalizedEvent, e *AlertFeedback) { n.Edges.AlertFeedback = append(n.Edges.AlertFeedback, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -494,37 +446,6 @@ func (_q *NormalizedEventQuery) loadTenant(ctx context.Context, query *TenantQue
 		for i := range nodes {
 			assign(nodes[i], n)
 		}
-	}
-	return nil
-}
-func (_q *NormalizedEventQuery) loadAlertFeedback(ctx context.Context, query *AlertFeedbackQuery, nodes []*NormalizedEvent, init func(*NormalizedEvent), assign func(*NormalizedEvent, *AlertFeedback)) error {
-	fks := make([]driver.Value, 0, len(nodes))
-	nodeids := make(map[uuid.UUID]*NormalizedEvent)
-	for i := range nodes {
-		fks = append(fks, nodes[i].ID)
-		nodeids[nodes[i].ID] = nodes[i]
-		if init != nil {
-			init(nodes[i])
-		}
-	}
-	query.withFKs = true
-	query.Where(predicate.AlertFeedback(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(normalizedevent.AlertFeedbackColumn), fks...))
-	}))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		fk := n.normalized_event_alert_feedback
-		if fk == nil {
-			return fmt.Errorf(`foreign-key "normalized_event_alert_feedback" is nil for node %v`, n.ID)
-		}
-		node, ok := nodeids[*fk]
-		if !ok {
-			return fmt.Errorf(`unexpected referenced foreign-key "normalized_event_alert_feedback" returned %v for node %v`, *fk, n.ID)
-		}
-		assign(node, n)
 	}
 	return nil
 }

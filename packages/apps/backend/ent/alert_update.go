@@ -12,10 +12,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 )
@@ -108,26 +107,6 @@ func (_u *AlertUpdate) ClearDefinition() *AlertUpdate {
 	return _u
 }
 
-// SetRosterID sets the "roster_id" field.
-func (_u *AlertUpdate) SetRosterID(v uuid.UUID) *AlertUpdate {
-	_u.mutation.SetRosterID(v)
-	return _u
-}
-
-// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (_u *AlertUpdate) SetNillableRosterID(v *uuid.UUID) *AlertUpdate {
-	if v != nil {
-		_u.SetRosterID(*v)
-	}
-	return _u
-}
-
-// ClearRosterID clears the value of the "roster_id" field.
-func (_u *AlertUpdate) ClearRosterID() *AlertUpdate {
-	_u.mutation.ClearRosterID()
-	return _u
-}
-
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *AlertUpdate) SetKnowledgeEntity(v *KnowledgeEntity) *AlertUpdate {
 	return _u.SetKnowledgeEntityID(v.ID)
@@ -148,24 +127,19 @@ func (_u *AlertUpdate) AddPlaybooks(v ...*Playbook) *AlertUpdate {
 	return _u.AddPlaybookIDs(ids...)
 }
 
-// SetRoster sets the "roster" edge to the OncallRoster entity.
-func (_u *AlertUpdate) SetRoster(v *OncallRoster) *AlertUpdate {
-	return _u.SetRosterID(v.ID)
-}
-
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (_u *AlertUpdate) AddFeedbackIDs(ids ...uuid.UUID) *AlertUpdate {
-	_u.mutation.AddFeedbackIDs(ids...)
+// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
+func (_u *AlertUpdate) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
+	_u.mutation.AddInstanceIDs(ids...)
 	return _u
 }
 
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (_u *AlertUpdate) AddFeedback(v ...*AlertFeedback) *AlertUpdate {
+// AddInstances adds the "instances" edges to the AlertInstance entity.
+func (_u *AlertUpdate) AddInstances(v ...*AlertInstance) *AlertUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddFeedbackIDs(ids...)
+	return _u.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
@@ -200,31 +174,25 @@ func (_u *AlertUpdate) RemovePlaybooks(v ...*Playbook) *AlertUpdate {
 	return _u.RemovePlaybookIDs(ids...)
 }
 
-// ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (_u *AlertUpdate) ClearRoster() *AlertUpdate {
-	_u.mutation.ClearRoster()
+// ClearInstances clears all "instances" edges to the AlertInstance entity.
+func (_u *AlertUpdate) ClearInstances() *AlertUpdate {
+	_u.mutation.ClearInstances()
 	return _u
 }
 
-// ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
-func (_u *AlertUpdate) ClearFeedback() *AlertUpdate {
-	_u.mutation.ClearFeedback()
+// RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
+func (_u *AlertUpdate) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdate {
+	_u.mutation.RemoveInstanceIDs(ids...)
 	return _u
 }
 
-// RemoveFeedbackIDs removes the "feedback" edge to AlertFeedback entities by IDs.
-func (_u *AlertUpdate) RemoveFeedbackIDs(ids ...uuid.UUID) *AlertUpdate {
-	_u.mutation.RemoveFeedbackIDs(ids...)
-	return _u
-}
-
-// RemoveFeedback removes "feedback" edges to AlertFeedback entities.
-func (_u *AlertUpdate) RemoveFeedback(v ...*AlertFeedback) *AlertUpdate {
+// RemoveInstances removes "instances" edges to AlertInstance entities.
+func (_u *AlertUpdate) RemoveInstances(v ...*AlertInstance) *AlertUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveFeedbackIDs(ids...)
+	return _u.RemoveInstanceIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -374,80 +342,49 @@ func (_u *AlertUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.RosterCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alert.RosterTable,
-			Columns: []string{alert.RosterColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alert.RosterTable,
-			Columns: []string{alert.RosterColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.FeedbackCleared() {
+	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
+		edge.Schema = _u.schemaConfig.AlertInstance
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedFeedbackIDs(); len(nodes) > 0 && !_u.mutation.FeedbackCleared() {
+	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.FeedbackIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -551,26 +488,6 @@ func (_u *AlertUpdateOne) ClearDefinition() *AlertUpdateOne {
 	return _u
 }
 
-// SetRosterID sets the "roster_id" field.
-func (_u *AlertUpdateOne) SetRosterID(v uuid.UUID) *AlertUpdateOne {
-	_u.mutation.SetRosterID(v)
-	return _u
-}
-
-// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (_u *AlertUpdateOne) SetNillableRosterID(v *uuid.UUID) *AlertUpdateOne {
-	if v != nil {
-		_u.SetRosterID(*v)
-	}
-	return _u
-}
-
-// ClearRosterID clears the value of the "roster_id" field.
-func (_u *AlertUpdateOne) ClearRosterID() *AlertUpdateOne {
-	_u.mutation.ClearRosterID()
-	return _u
-}
-
 // SetKnowledgeEntity sets the "knowledge_entity" edge to the KnowledgeEntity entity.
 func (_u *AlertUpdateOne) SetKnowledgeEntity(v *KnowledgeEntity) *AlertUpdateOne {
 	return _u.SetKnowledgeEntityID(v.ID)
@@ -591,24 +508,19 @@ func (_u *AlertUpdateOne) AddPlaybooks(v ...*Playbook) *AlertUpdateOne {
 	return _u.AddPlaybookIDs(ids...)
 }
 
-// SetRoster sets the "roster" edge to the OncallRoster entity.
-func (_u *AlertUpdateOne) SetRoster(v *OncallRoster) *AlertUpdateOne {
-	return _u.SetRosterID(v.ID)
-}
-
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (_u *AlertUpdateOne) AddFeedbackIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	_u.mutation.AddFeedbackIDs(ids...)
+// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
+func (_u *AlertUpdateOne) AddInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	_u.mutation.AddInstanceIDs(ids...)
 	return _u
 }
 
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (_u *AlertUpdateOne) AddFeedback(v ...*AlertFeedback) *AlertUpdateOne {
+// AddInstances adds the "instances" edges to the AlertInstance entity.
+func (_u *AlertUpdateOne) AddInstances(v ...*AlertInstance) *AlertUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.AddFeedbackIDs(ids...)
+	return _u.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
@@ -643,31 +555,25 @@ func (_u *AlertUpdateOne) RemovePlaybooks(v ...*Playbook) *AlertUpdateOne {
 	return _u.RemovePlaybookIDs(ids...)
 }
 
-// ClearRoster clears the "roster" edge to the OncallRoster entity.
-func (_u *AlertUpdateOne) ClearRoster() *AlertUpdateOne {
-	_u.mutation.ClearRoster()
+// ClearInstances clears all "instances" edges to the AlertInstance entity.
+func (_u *AlertUpdateOne) ClearInstances() *AlertUpdateOne {
+	_u.mutation.ClearInstances()
 	return _u
 }
 
-// ClearFeedback clears all "feedback" edges to the AlertFeedback entity.
-func (_u *AlertUpdateOne) ClearFeedback() *AlertUpdateOne {
-	_u.mutation.ClearFeedback()
+// RemoveInstanceIDs removes the "instances" edge to AlertInstance entities by IDs.
+func (_u *AlertUpdateOne) RemoveInstanceIDs(ids ...uuid.UUID) *AlertUpdateOne {
+	_u.mutation.RemoveInstanceIDs(ids...)
 	return _u
 }
 
-// RemoveFeedbackIDs removes the "feedback" edge to AlertFeedback entities by IDs.
-func (_u *AlertUpdateOne) RemoveFeedbackIDs(ids ...uuid.UUID) *AlertUpdateOne {
-	_u.mutation.RemoveFeedbackIDs(ids...)
-	return _u
-}
-
-// RemoveFeedback removes "feedback" edges to AlertFeedback entities.
-func (_u *AlertUpdateOne) RemoveFeedback(v ...*AlertFeedback) *AlertUpdateOne {
+// RemoveInstances removes "instances" edges to AlertInstance entities.
+func (_u *AlertUpdateOne) RemoveInstances(v ...*AlertInstance) *AlertUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _u.RemoveFeedbackIDs(ids...)
+	return _u.RemoveInstanceIDs(ids...)
 }
 
 // Where appends a list predicates to the AlertUpdate builder.
@@ -847,80 +753,49 @@ func (_u *AlertUpdateOne) sqlSave(ctx context.Context) (_node *Alert, err error)
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	if _u.mutation.RosterCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alert.RosterTable,
-			Columns: []string{alert.RosterColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RosterIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alert.RosterTable,
-			Columns: []string{alert.RosterColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.Alert
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
-	if _u.mutation.FeedbackCleared() {
+	if _u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
+		edge.Schema = _u.schemaConfig.AlertInstance
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.RemovedFeedbackIDs(); len(nodes) > 0 && !_u.mutation.FeedbackCleared() {
+	if nodes := _u.mutation.RemovedInstancesIDs(); len(nodes) > 0 && !_u.mutation.InstancesCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.FeedbackIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
+		edge.Schema = _u.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}

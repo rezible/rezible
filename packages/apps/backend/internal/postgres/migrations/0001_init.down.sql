@@ -82,8 +82,10 @@ ALTER TABLE "oncall_roster_metrics" DROP CONSTRAINT "oncall_roster_metrics_oncal
 ALTER TABLE "oncall_rosters" DROP CONSTRAINT "oncall_rosters_tenants_tenant", DROP CONSTRAINT "oncall_rosters_oncall_handover_templates_roster";
 -- reverse: modify "oncall_handover_templates" table
 ALTER TABLE "oncall_handover_templates" DROP CONSTRAINT "oncall_handover_templates_tenants_tenant";
--- reverse: modify "normalized_event_projection_status" table
-ALTER TABLE "normalized_event_projection_status" DROP CONSTRAINT "normalized_event_projection_st_57b31f9b9ba804f03db1c8815e863e31", DROP CONSTRAINT "normalized_event_projection_status_tenants_tenant";
+-- reverse: modify "normalized_event_projection_entities" table
+ALTER TABLE "normalized_event_projection_entities" DROP CONSTRAINT "normalized_event_projection_en_d9d2365014bd43baede970b5b24d3664", DROP CONSTRAINT "normalized_event_projection_entities_tenants_tenant";
+-- reverse: modify "normalized_event_projections" table
+ALTER TABLE "normalized_event_projections" DROP CONSTRAINT "normalized_event_projections_normalized_events_event", DROP CONSTRAINT "normalized_event_projections_tenants_tenant";
 -- reverse: modify "normalized_events" table
 ALTER TABLE "normalized_events" DROP CONSTRAINT "normalized_events_tenants_tenant";
 -- reverse: modify "meeting_sessions" table
@@ -152,10 +154,12 @@ ALTER TABLE "event_annotations" DROP CONSTRAINT "event_annotations_users_creator
 ALTER TABLE "document_accesses" DROP CONSTRAINT "document_accesses_teams_team", DROP CONSTRAINT "document_accesses_users_user", DROP CONSTRAINT "document_accesses_documents_document", DROP CONSTRAINT "document_accesses_tenants_tenant";
 -- reverse: modify "documents" table
 ALTER TABLE "documents" DROP CONSTRAINT "documents_tenants_tenant";
+-- reverse: modify "alert_instances" table
+ALTER TABLE "alert_instances" DROP CONSTRAINT "alert_instances_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alert_instances_tenants_tenant", DROP CONSTRAINT "alert_instances_alerts_instances";
 -- reverse: modify "alert_feedbacks" table
-ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_normalized_events_alert_feedback", DROP CONSTRAINT "alert_feedbacks_normalized_events_alert_instance", DROP CONSTRAINT "alert_feedbacks_alerts_alert", DROP CONSTRAINT "alert_feedbacks_tenants_tenant";
+ALTER TABLE "alert_feedbacks" DROP CONSTRAINT "alert_feedbacks_alert_instances_alert_instance", DROP CONSTRAINT "alert_feedbacks_tenants_tenant";
 -- reverse: modify "alerts" table
-ALTER TABLE "alerts" DROP CONSTRAINT "alerts_oncall_rosters_alerts", DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
+ALTER TABLE "alerts" DROP CONSTRAINT "alerts_knowledge_entities_knowledge_entity", DROP CONSTRAINT "alerts_tenants_tenant";
 -- reverse: modify "agent_task_subjects" table
 ALTER TABLE "agent_task_subjects" DROP CONSTRAINT "agent_task_subjects_agent_tasks_task", DROP CONSTRAINT "agent_task_subjects_tenants_tenant";
 -- reverse: modify "agent_tasks" table
@@ -372,14 +376,22 @@ DROP TABLE "oncall_rosters";
 DROP INDEX "oncallhandovertemplate_tenant_id";
 -- reverse: create "oncall_handover_templates" table
 DROP TABLE "oncall_handover_templates";
--- reverse: create index "normalizedeventprojectionstatus_tenant_id_status_updated_at" to table: "normalized_event_projection_status"
-DROP INDEX "normalizedeventprojectionstatus_tenant_id_status_updated_at";
--- reverse: create index "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8" to table: "normalized_event_projection_status"
-DROP INDEX "normalizedeventprojectionstatu_26223016baedaca5556963f76f513be8";
--- reverse: create index "normalizedeventprojectionstatus_tenant_id" to table: "normalized_event_projection_status"
-DROP INDEX "normalizedeventprojectionstatus_tenant_id";
--- reverse: create "normalized_event_projection_status" table
-DROP TABLE "normalized_event_projection_status";
+-- reverse: create index "normalizedeventprojectionentity_tenant_id_domain_entity_kind" to table: "normalized_event_projection_entities"
+DROP INDEX "normalizedeventprojectionentity_tenant_id_domain_entity_kind";
+-- reverse: create index "normalizedeventprojectionentity_tenant_id_domain_entity_id" to table: "normalized_event_projection_entities"
+DROP INDEX "normalizedeventprojectionentity_tenant_id_domain_entity_id";
+-- reverse: create index "normalizedeventprojectionentity_tenant_id" to table: "normalized_event_projection_entities"
+DROP INDEX "normalizedeventprojectionentity_tenant_id";
+-- reverse: create "normalized_event_projection_entities" table
+DROP TABLE "normalized_event_projection_entities";
+-- reverse: create index "normalizedeventprojection_tenant_id_status_started_at" to table: "normalized_event_projections"
+DROP INDEX "normalizedeventprojection_tenant_id_status_started_at";
+-- reverse: create index "normalizedeventprojection_tenant_id_event_id_projector" to table: "normalized_event_projections"
+DROP INDEX "normalizedeventprojection_tenant_id_event_id_projector";
+-- reverse: create index "normalizedeventprojection_tenant_id" to table: "normalized_event_projections"
+DROP INDEX "normalizedeventprojection_tenant_id";
+-- reverse: create "normalized_event_projections" table
+DROP TABLE "normalized_event_projections";
 -- reverse: create index "normalizedevent_tenant_id_provider_provider_source_occurred_at" to table: "normalized_events"
 DROP INDEX "normalizedevent_tenant_id_provider_provider_source_occurred_at";
 -- reverse: create index "normalizedevent_tenant_id_prov_2fbcf05a5722a73691feb72471c5e433" to table: "normalized_events"
@@ -590,6 +602,12 @@ DROP TABLE "document_accesses";
 DROP INDEX "document_tenant_id";
 -- reverse: create "documents" table
 DROP TABLE "documents";
+-- reverse: create index "alertinstance_tenant_id_knowledge_entity_id" to table: "alert_instances"
+DROP INDEX "alertinstance_tenant_id_knowledge_entity_id";
+-- reverse: create index "alertinstance_tenant_id" to table: "alert_instances"
+DROP INDEX "alertinstance_tenant_id";
+-- reverse: create "alert_instances" table
+DROP TABLE "alert_instances";
 -- reverse: create index "alertfeedback_tenant_id" to table: "alert_feedbacks"
 DROP INDEX "alertfeedback_tenant_id";
 -- reverse: create "alert_feedbacks" table

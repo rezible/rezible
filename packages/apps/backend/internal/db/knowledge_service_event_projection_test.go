@@ -40,7 +40,7 @@ func (s *KnowledgeServiceProjectionSuite) createNormalizedEvent(subjectKind proj
 		SetProviderSource("projection").
 		SetProviderEventRef("event-" + uuid.NewString()).
 		SetProviderSubjectRef(providerSubjectRef).
-		SetActivityKind(ne.ActivityKindObserved).
+		SetKind(ne.KindObserved).
 		SetSubjectKind(subjectKind.String()).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt.Add(time.Minute)).
@@ -66,8 +66,11 @@ func (s *KnowledgeServiceProjectionSuite) TestCodeChangeProjectionPersistsEviden
 	})
 	ev := s.createNormalizedEvent(projections.SubjectKindCodeChange, "change-1", occurredAt, attrs)
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
-	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+	_, projErr := svc.HandleEventProjection(ctx, ev)
+	s.Require().NoError(projErr)
+
+	_, projErr = svc.HandleEventProjection(ctx, ev)
+	s.Require().NoError(projErr)
 
 	entities, err := s.Client(ctx).KnowledgeEntity.Query().
 		Where(kne.KindIn(knowledgeKindCodeChange, knowledgeKindCodeRepository)).
@@ -113,7 +116,9 @@ func (s *KnowledgeServiceProjectionSuite) TestEntityProjectionRecordsChangedEvid
 		URL:         "https://example.test/repo-2",
 	})
 	first := s.createNormalizedEvent(projections.SubjectKindCodeForge, subjectRef, firstAt, firstAttrs)
-	s.Require().NoError(svc.HandleEventProjection(ctx, first))
+
+	_, projErr := svc.HandleEventProjection(ctx, first)
+	s.Require().NoError(projErr)
 
 	secondAt := firstAt.Add(time.Hour)
 	secondAttrs := s.mustEncodeAttrs(projections.CodeForgeSubjectAttributes{
@@ -121,7 +126,9 @@ func (s *KnowledgeServiceProjectionSuite) TestEntityProjectionRecordsChangedEvid
 		URL:         "https://example.test/repo-2-renamed",
 	})
 	second := s.createNormalizedEvent(projections.SubjectKindCodeForge, subjectRef, secondAt, secondAttrs)
-	s.Require().NoError(svc.HandleEventProjection(ctx, second))
+
+	_, projSecondErr := svc.HandleEventProjection(ctx, second)
+	s.Require().NoError(projSecondErr)
 
 	dbc := s.Client(ctx)
 	queryAlias := dbc.KnowledgeEntityAlias.Query().
@@ -159,8 +166,11 @@ func (s *KnowledgeServiceProjectionSuite) TestPlaceholderRepositoryIsEnrichedByR
 		URL:         "https://example.test/repo-3",
 	}))
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, change))
-	s.Require().NoError(svc.HandleEventProjection(ctx, repo))
+	_, projChangeErr := svc.HandleEventProjection(ctx, change)
+	s.Require().NoError(projChangeErr)
+
+	_, projRepoErr := svc.HandleEventProjection(ctx, repo)
+	s.Require().NoError(projRepoErr)
 
 	alias, err := s.Client(ctx).KnowledgeEntityAlias.Query().
 		Where(knea.ProviderSubjectRef("repo-3")).

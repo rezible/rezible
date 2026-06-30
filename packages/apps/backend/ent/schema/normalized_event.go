@@ -25,7 +25,7 @@ func (NormalizedEvent) Mixin() []ent.Mixin {
 func (NormalizedEvent) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.Enum("activity_kind").Values("received", "observed", "deleted").
+		field.Enum("kind").Values("received", "observed", "deleted").
 			Comment("Kind of activity represented by the event."),
 		field.String("provider").NotEmpty().
 			Comment("Integration provider that produced the event, such as slack or github."),
@@ -47,9 +47,7 @@ func (NormalizedEvent) Fields() []ent.Field {
 }
 
 func (NormalizedEvent) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.To("alert_feedback", AlertFeedback.Type),
-	}
+	return []ent.Edge{}
 }
 
 func (NormalizedEvent) Indexes() []ent.Index {
@@ -60,44 +58,80 @@ func (NormalizedEvent) Indexes() []ent.Index {
 	}
 }
 
-type NormalizedEventProjectionStatus struct {
+type NormalizedEventProjection struct {
 	ent.Schema
 }
 
-func (NormalizedEventProjectionStatus) Mixin() []ent.Mixin {
+func (NormalizedEventProjection) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		BaseMixin{},
 		TenantMixin{},
-		TimestampsMixin{},
 	}
 }
 
-func (NormalizedEventProjectionStatus) Fields() []ent.Field {
+func (NormalizedEventProjection) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("normalized_event_id", uuid.UUID{}),
-		field.String("handler_name").NotEmpty(),
-		field.Enum("status").Values("pending", "succeeded", "failed").Default("pending"),
-		field.String("last_error").Optional(),
-		field.Time("last_attempted_at").Optional().Nillable(),
-		field.Time("succeeded_at").Optional().Nillable(),
-		field.Time("failed_at").Optional().Nillable(),
+		field.UUID("event_id", uuid.UUID{}),
+		field.String("projector").NotEmpty(),
+		field.Enum("status").Values("pending", "succeeded", "failed"),
+		field.Time("started_at"),
+		field.Time("finished_at").Optional(),
+		field.String("error").Optional(),
 	}
 }
 
-func (NormalizedEventProjectionStatus) Edges() []ent.Edge {
+func (NormalizedEventProjection) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("normalized_event", NormalizedEvent.Type).
+		edge.To("event", NormalizedEvent.Type).
 			Required().
 			Unique().
-			Field("normalized_event_id"),
+			Field("event_id"),
+		edge.From("projection_entities", NormalizedEventProjectionEntity.Type).
+			Ref("projection"),
 	}
 }
 
-func (NormalizedEventProjectionStatus) Indexes() []ent.Index {
+func (NormalizedEventProjection) Indexes() []ent.Index {
 	return []ent.Index{
-		index.Fields("tenant_id", "normalized_event_id", "handler_name").Unique(),
-		index.Fields("tenant_id", "status", "updated_at"),
+		index.Fields("tenant_id", "event_id", "projector").Unique(),
+		index.Fields("tenant_id", "status", "started_at"),
+	}
+}
+
+type NormalizedEventProjectionEntity struct {
+	ent.Schema
+}
+
+func (NormalizedEventProjectionEntity) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+	}
+}
+
+func (NormalizedEventProjectionEntity) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.UUID{}).Default(uuid.New),
+		field.UUID("projection_id", uuid.UUID{}),
+		field.String("domain_entity_kind"),
+		field.UUID("domain_entity_id", uuid.UUID{}),
+	}
+}
+
+func (NormalizedEventProjectionEntity) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.To("projection", NormalizedEventProjection.Type).
+			Unique().
+			Required().
+			Field("projection_id"),
+	}
+}
+
+func (NormalizedEventProjectionEntity) Indexes() []ent.Index {
+	return []ent.Index{
+		index.Fields("tenant_id", "domain_entity_id").Unique(),
+		index.Fields("tenant_id", "domain_entity_kind"),
 	}
 }
 

@@ -12,9 +12,8 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
-	"github.com/rezible/rezible/ent/normalizedevent"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -32,23 +31,9 @@ func (_c *AlertFeedbackCreate) SetTenantID(v int) *AlertFeedbackCreate {
 	return _c
 }
 
-// SetAlertID sets the "alert_id" field.
-func (_c *AlertFeedbackCreate) SetAlertID(v uuid.UUID) *AlertFeedbackCreate {
-	_c.mutation.SetAlertID(v)
-	return _c
-}
-
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (_c *AlertFeedbackCreate) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackCreate {
 	_c.mutation.SetAlertInstanceID(v)
-	return _c
-}
-
-// SetNillableAlertInstanceID sets the "alert_instance_id" field if the given value is not nil.
-func (_c *AlertFeedbackCreate) SetNillableAlertInstanceID(v *uuid.UUID) *AlertFeedbackCreate {
-	if v != nil {
-		_c.SetAlertInstanceID(*v)
-	}
 	return _c
 }
 
@@ -95,13 +80,8 @@ func (_c *AlertFeedbackCreate) SetTenant(v *Tenant) *AlertFeedbackCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// SetAlert sets the "alert" edge to the Alert entity.
-func (_c *AlertFeedbackCreate) SetAlert(v *Alert) *AlertFeedbackCreate {
-	return _c.SetAlertID(v.ID)
-}
-
-// SetAlertInstance sets the "alert_instance" edge to the NormalizedEvent entity.
-func (_c *AlertFeedbackCreate) SetAlertInstance(v *NormalizedEvent) *AlertFeedbackCreate {
+// SetAlertInstance sets the "alert_instance" edge to the AlertInstance entity.
+func (_c *AlertFeedbackCreate) SetAlertInstance(v *AlertInstance) *AlertFeedbackCreate {
 	return _c.SetAlertInstanceID(v.ID)
 }
 
@@ -157,8 +137,8 @@ func (_c *AlertFeedbackCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "AlertFeedback.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.AlertID(); !ok {
-		return &ValidationError{Name: "alert_id", err: errors.New(`ent: missing required field "AlertFeedback.alert_id"`)}
+	if _, ok := _c.mutation.AlertInstanceID(); !ok {
+		return &ValidationError{Name: "alert_instance_id", err: errors.New(`ent: missing required field "AlertFeedback.alert_instance_id"`)}
 	}
 	if _, ok := _c.mutation.Actionable(); !ok {
 		return &ValidationError{Name: "actionable", err: errors.New(`ent: missing required field "AlertFeedback.actionable"`)}
@@ -180,8 +160,8 @@ func (_c *AlertFeedbackCreate) check() error {
 	if len(_c.mutation.TenantIDs()) == 0 {
 		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "AlertFeedback.tenant"`)}
 	}
-	if len(_c.mutation.AlertIDs()) == 0 {
-		return &ValidationError{Name: "alert", err: errors.New(`ent: missing required edge "AlertFeedback.alert"`)}
+	if len(_c.mutation.AlertInstanceIDs()) == 0 {
+		return &ValidationError{Name: "alert_instance", err: errors.New(`ent: missing required edge "AlertFeedback.alert_instance"`)}
 	}
 	return nil
 }
@@ -254,24 +234,6 @@ func (_c *AlertFeedbackCreate) createSpec() (*AlertFeedback, *sqlgraph.CreateSpe
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AlertIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: false,
-			Table:   alertfeedback.AlertTable,
-			Columns: []string{alertfeedback.AlertColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AlertFeedback
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.AlertID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	if nodes := _c.mutation.AlertInstanceIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
@@ -280,7 +242,7 @@ func (_c *AlertFeedbackCreate) createSpec() (*AlertFeedback, *sqlgraph.CreateSpe
 			Columns: []string{alertfeedback.AlertInstanceColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(normalizedevent.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
 		edge.Schema = _c.schemaConfig.AlertFeedback
@@ -342,18 +304,6 @@ type (
 	}
 )
 
-// SetAlertID sets the "alert_id" field.
-func (u *AlertFeedbackUpsert) SetAlertID(v uuid.UUID) *AlertFeedbackUpsert {
-	u.Set(alertfeedback.FieldAlertID, v)
-	return u
-}
-
-// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
-func (u *AlertFeedbackUpsert) UpdateAlertID() *AlertFeedbackUpsert {
-	u.SetExcluded(alertfeedback.FieldAlertID)
-	return u
-}
-
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (u *AlertFeedbackUpsert) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackUpsert {
 	u.Set(alertfeedback.FieldAlertInstanceID, v)
@@ -363,12 +313,6 @@ func (u *AlertFeedbackUpsert) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackUpse
 // UpdateAlertInstanceID sets the "alert_instance_id" field to the value that was provided on create.
 func (u *AlertFeedbackUpsert) UpdateAlertInstanceID() *AlertFeedbackUpsert {
 	u.SetExcluded(alertfeedback.FieldAlertInstanceID)
-	return u
-}
-
-// ClearAlertInstanceID clears the value of the "alert_instance_id" field.
-func (u *AlertFeedbackUpsert) ClearAlertInstanceID() *AlertFeedbackUpsert {
-	u.SetNull(alertfeedback.FieldAlertInstanceID)
 	return u
 }
 
@@ -471,20 +415,6 @@ func (u *AlertFeedbackUpsertOne) Update(set func(*AlertFeedbackUpsert)) *AlertFe
 	return u
 }
 
-// SetAlertID sets the "alert_id" field.
-func (u *AlertFeedbackUpsertOne) SetAlertID(v uuid.UUID) *AlertFeedbackUpsertOne {
-	return u.Update(func(s *AlertFeedbackUpsert) {
-		s.SetAlertID(v)
-	})
-}
-
-// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
-func (u *AlertFeedbackUpsertOne) UpdateAlertID() *AlertFeedbackUpsertOne {
-	return u.Update(func(s *AlertFeedbackUpsert) {
-		s.UpdateAlertID()
-	})
-}
-
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (u *AlertFeedbackUpsertOne) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackUpsertOne {
 	return u.Update(func(s *AlertFeedbackUpsert) {
@@ -496,13 +426,6 @@ func (u *AlertFeedbackUpsertOne) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackU
 func (u *AlertFeedbackUpsertOne) UpdateAlertInstanceID() *AlertFeedbackUpsertOne {
 	return u.Update(func(s *AlertFeedbackUpsert) {
 		s.UpdateAlertInstanceID()
-	})
-}
-
-// ClearAlertInstanceID clears the value of the "alert_instance_id" field.
-func (u *AlertFeedbackUpsertOne) ClearAlertInstanceID() *AlertFeedbackUpsertOne {
-	return u.Update(func(s *AlertFeedbackUpsert) {
-		s.ClearAlertInstanceID()
 	})
 }
 
@@ -780,20 +703,6 @@ func (u *AlertFeedbackUpsertBulk) Update(set func(*AlertFeedbackUpsert)) *AlertF
 	return u
 }
 
-// SetAlertID sets the "alert_id" field.
-func (u *AlertFeedbackUpsertBulk) SetAlertID(v uuid.UUID) *AlertFeedbackUpsertBulk {
-	return u.Update(func(s *AlertFeedbackUpsert) {
-		s.SetAlertID(v)
-	})
-}
-
-// UpdateAlertID sets the "alert_id" field to the value that was provided on create.
-func (u *AlertFeedbackUpsertBulk) UpdateAlertID() *AlertFeedbackUpsertBulk {
-	return u.Update(func(s *AlertFeedbackUpsert) {
-		s.UpdateAlertID()
-	})
-}
-
 // SetAlertInstanceID sets the "alert_instance_id" field.
 func (u *AlertFeedbackUpsertBulk) SetAlertInstanceID(v uuid.UUID) *AlertFeedbackUpsertBulk {
 	return u.Update(func(s *AlertFeedbackUpsert) {
@@ -805,13 +714,6 @@ func (u *AlertFeedbackUpsertBulk) SetAlertInstanceID(v uuid.UUID) *AlertFeedback
 func (u *AlertFeedbackUpsertBulk) UpdateAlertInstanceID() *AlertFeedbackUpsertBulk {
 	return u.Update(func(s *AlertFeedbackUpsert) {
 		s.UpdateAlertInstanceID()
-	})
-}
-
-// ClearAlertInstanceID clears the value of the "alert_instance_id" field.
-func (u *AlertFeedbackUpsertBulk) ClearAlertInstanceID() *AlertFeedbackUpsertBulk {
-	return u.Update(func(s *AlertFeedbackUpsert) {
-		s.ClearAlertInstanceID()
 	})
 }
 

@@ -66,13 +66,14 @@ func (s *PlaybookService) SetPlaybook(ctx context.Context, playbook *ent.Playboo
 	return q.Save(ctx)
 }
 
-func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
+func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) (map[string][]uuid.UUID, error) {
 	if !projections.SubjectKindPlaybook.Matches(event) {
-		return nil
+		return nil, nil
 	}
+
 	decoded, validationErr := projections.DecodePlaybookEvent(event)
 	if validationErr != nil || decoded == nil {
-		return fmt.Errorf("invalid event: %w", validationErr)
+		return nil, fmt.Errorf("invalid event: %w", validationErr)
 	}
 	attrs := decoded.Attributes
 
@@ -82,7 +83,7 @@ func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.
 		Where(playbook.Title(attrs.Title))
 	existing, queryErr := queryExisting.Only(ctx)
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return fmt.Errorf("query playbook: %w", queryErr)
+		return nil, fmt.Errorf("query playbook: %w", queryErr)
 	}
 
 	alertIDs := make([]uuid.UUID, 0, len(attrs.RelatedAlerts))
@@ -92,7 +93,7 @@ func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.
 
 		alias, aliasErr := queryAlias.Only(ctx)
 		if aliasErr != nil && !ent.IsNotFound(aliasErr) {
-			return fmt.Errorf("query alert alias: %w", aliasErr)
+			return nil, fmt.Errorf("query alert alias: %w", aliasErr)
 		}
 		if alias == nil {
 			continue
@@ -101,7 +102,7 @@ func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.
 			Where(alert.KnowledgeEntityID(alias.EntityID))
 		a, alertErr := queryAlert.Only(ctx)
 		if alertErr != nil && !ent.IsNotFound(alertErr) {
-			return fmt.Errorf("query related alert: %w", alertErr)
+			return nil, fmt.Errorf("query related alert: %w", alertErr)
 		}
 		if a != nil {
 			alertIDs = append(alertIDs, a.ID)
@@ -122,8 +123,12 @@ func (s *PlaybookService) HandleEventProjection(ctx context.Context, event *ent.
 		m.AddAlertIDs(alertIDs...)
 	}
 
-	if _, saveErr := mutator.Save(ctx); saveErr != nil {
-		return fmt.Errorf("save playbook: %w", saveErr)
+	pb, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save playbook: %w", saveErr)
 	}
-	return nil
+	projIds := map[string][]uuid.UUID{
+		"playbook": {pb.ID},
+	}
+	return projIds, nil
 }

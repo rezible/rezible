@@ -36,6 +36,9 @@ type Alert func(*sql.Selector)
 // AlertFeedback is the predicate function for alertfeedback builders.
 type AlertFeedback func(*sql.Selector)
 
+// AlertInstance is the predicate function for alertinstance builders.
+type AlertInstance func(*sql.Selector)
+
 // AlertMetrics is the predicate function for alertmetrics builders.
 type AlertMetrics func(*sql.Selector)
 
@@ -141,8 +144,11 @@ type MeetingSession func(*sql.Selector)
 // NormalizedEvent is the predicate function for normalizedevent builders.
 type NormalizedEvent func(*sql.Selector)
 
-// NormalizedEventProjectionStatus is the predicate function for normalizedeventprojectionstatus builders.
-type NormalizedEventProjectionStatus func(*sql.Selector)
+// NormalizedEventProjection is the predicate function for normalizedeventprojection builders.
+type NormalizedEventProjection func(*sql.Selector)
+
+// NormalizedEventProjectionEntity is the predicate function for normalizedeventprojectionentity builders.
+type NormalizedEventProjectionEntity func(*sql.Selector)
 
 // OncallHandoverTemplate is the predicate function for oncallhandovertemplate builders.
 type OncallHandoverTemplate func(*sql.Selector)

@@ -66,7 +66,7 @@ func (s *IncidentServiceSuite) createIncidentProjectionEvent(subjectRef string, 
 		SetProviderSource("incidents").
 		SetProviderEventRef("incident-event-" + uuid.NewString()).
 		SetProviderSubjectRef(subjectRef).
-		SetActivityKind(ne.ActivityKindObserved).
+		SetKind(ne.KindObserved).
 		SetSubjectKind(projections.SubjectKindIncident.String()).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
@@ -180,7 +180,8 @@ func (s *IncidentServiceSuite) TestIncidentProjectionPublishesCreateChangeAndSki
 	}
 	first := s.createIncidentProjectionEvent("incident-1", openedAt, attrs)
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, first))
+	_, projErr := svc.HandleEventProjection(ctx, first)
+	s.Require().NoError(projErr)
 	s.Require().Len(events, 1)
 	s.True(events[0].Created)
 
@@ -191,12 +192,15 @@ func (s *IncidentServiceSuite) TestIncidentProjectionPublishesCreateChangeAndSki
 	s.True(created.OpenedAt.Equal(openedAt))
 	s.Contains(created.Slug, "260601-")
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, first))
+	_, projErr = svc.HandleEventProjection(ctx, first)
+	s.Require().NoError(projErr)
 	s.Len(events, 1)
 
 	attrs.Title = "Search outage updated"
 	second := s.createIncidentProjectionEvent("incident-1", openedAt.Add(time.Minute), attrs)
-	s.Require().NoError(svc.HandleEventProjection(ctx, second))
+
+	_, projSecondErr := svc.HandleEventProjection(ctx, second)
+	s.Require().NoError(projSecondErr)
 	s.Require().Len(events, 2)
 	s.False(events[1].Created)
 
@@ -266,7 +270,9 @@ func (s *IncidentServiceSuite) TestIncidentImpactProjectionLinksProjectedInciden
 		TypeRef:     "Customer Impact",
 		OpenedAt:    openedAt,
 	})
-	s.Require().NoError(svc.HandleEventProjection(ctx, incidentEvent))
+
+	_, projErr := svc.HandleEventProjection(ctx, incidentEvent)
+	s.Require().NoError(projErr)
 
 	encoded, err := projections.EncodeAttributes(projections.IncidentImpactSubjectAttributes{
 		IncidentExternalRef: "demo:incident:checkout-search-timeouts",
@@ -282,7 +288,7 @@ func (s *IncidentServiceSuite) TestIncidentImpactProjectionLinksProjectedInciden
 		SetProviderSource("incident_impacts").
 		SetProviderEventRef("impact-event-" + uuid.NewString()).
 		SetProviderSubjectRef("demo:incident_impact:checkout-search").
-		SetActivityKind(ne.ActivityKindObserved).
+		SetKind(ne.KindObserved).
 		SetSubjectKind(projections.SubjectKindIncidentImpact.String()).
 		SetOccurredAt(openedAt.Add(time.Minute)).
 		SetReceivedAt(openedAt.Add(time.Minute)).
@@ -290,8 +296,11 @@ func (s *IncidentServiceSuite) TestIncidentImpactProjectionLinksProjectedInciden
 		Save(ctx)
 	s.Require().NoError(err)
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, impactEvent))
-	s.Require().NoError(svc.HandleEventProjection(ctx, impactEvent))
+	_, proj1Err := svc.HandleEventProjection(ctx, impactEvent)
+	s.Require().NoError(proj1Err)
+
+	_, proj2Err := svc.HandleEventProjection(ctx, impactEvent)
+	s.Require().NoError(proj2Err)
 
 	impacts, err := s.Client(ctx).IncidentImpact.Query().
 		WithKnowledgeEntity().
@@ -322,7 +331,7 @@ func (s *IncidentServiceSuite) TestIncidentImpactProjectionMissingIncidentAliasI
 		SetProviderSource("incident_impacts").
 		SetProviderEventRef("impact-event-" + uuid.NewString()).
 		SetProviderSubjectRef("demo:incident_impact:checkout-search").
-		SetActivityKind(ne.ActivityKindObserved).
+		SetKind(ne.KindObserved).
 		SetSubjectKind(projections.SubjectKindIncidentImpact.String()).
 		SetOccurredAt(openedAt.Add(time.Minute)).
 		SetReceivedAt(openedAt.Add(time.Minute)).
@@ -330,7 +339,7 @@ func (s *IncidentServiceSuite) TestIncidentImpactProjectionMissingIncidentAliasI
 		Save(ctx)
 	s.Require().NoError(err)
 
-	err = svc.HandleEventProjection(ctx, impactEvent)
+	_, err = svc.HandleEventProjection(ctx, impactEvent)
 	s.Require().Error(err)
 	s.True(projections.IsRetryable(err))
 	s.ErrorContains(err, "incident entity alias not found: demo:incident:missing")

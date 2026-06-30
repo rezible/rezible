@@ -89,14 +89,6 @@ func AlertFromEnt(a *ent.Alert) Alert {
 		Definition:  a.Definition,
 	}
 
-	if a.Edges.Roster != nil {
-		r := OncallRosterFromEnt(a.Edges.Roster)
-		attrs.Roster = &Expandable[OncallRosterAttributes]{
-			Id:         a.RosterID,
-			Attributes: &r.Attributes,
-		}
-	}
-
 	return Alert{
 		Id:         a.ID,
 		Attributes: attrs,

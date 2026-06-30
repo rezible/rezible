@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -157,21 +156,6 @@ func (_c *OncallRosterCreate) AddSchedules(v ...*OncallSchedule) *OncallRosterCr
 // SetHandoverTemplate sets the "handover_template" edge to the OncallHandoverTemplate entity.
 func (_c *OncallRosterCreate) SetHandoverTemplate(v *OncallHandoverTemplate) *OncallRosterCreate {
 	return _c.SetHandoverTemplateID(v.ID)
-}
-
-// AddAlertIDs adds the "alerts" edge to the Alert entity by IDs.
-func (_c *OncallRosterCreate) AddAlertIDs(ids ...uuid.UUID) *OncallRosterCreate {
-	_c.mutation.AddAlertIDs(ids...)
-	return _c
-}
-
-// AddAlerts adds the "alerts" edges to the Alert entity.
-func (_c *OncallRosterCreate) AddAlerts(v ...*Alert) *OncallRosterCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAlertIDs(ids...)
 }
 
 // AddTeamIDs adds the "teams" edge to the Team entity by IDs.
@@ -407,23 +391,6 @@ func (_c *OncallRosterCreate) createSpec() (*OncallRoster, *sqlgraph.CreateSpec)
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_node.HandoverTemplateID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.AlertsIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   oncallroster.AlertsTable,
-			Columns: []string{oncallroster.AlertsColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alert.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Alert
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.TeamsIDs(); len(nodes) > 0 {

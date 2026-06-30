@@ -18,6 +18,7 @@ type SchemaConfig struct {
 	AgentTaskSubject                          string // AgentTaskSubject table.
 	Alert                                     string // Alert table.
 	AlertFeedback                             string // AlertFeedback table.
+	AlertInstance                             string // AlertInstance table.
 	AlertMetrics                              string // AlertMetrics table.
 	Document                                  string // Document table.
 	DocumentAccess                            string // DocumentAccess table.
@@ -63,7 +64,8 @@ type SchemaConfig struct {
 	MeetingScheduleOwningTeam                 string // MeetingSchedule-owning_team->Team table.
 	MeetingSession                            string // MeetingSession table.
 	NormalizedEvent                           string // NormalizedEvent table.
-	NormalizedEventProjectionStatus           string // NormalizedEventProjectionStatus table.
+	NormalizedEventProjection                 string // NormalizedEventProjection table.
+	NormalizedEventProjectionEntity           string // NormalizedEventProjectionEntity table.
 	OncallHandoverTemplate                    string // OncallHandoverTemplate table.
 	OncallRoster                              string // OncallRoster table.
 	OncallRosterMetrics                       string // OncallRosterMetrics table.

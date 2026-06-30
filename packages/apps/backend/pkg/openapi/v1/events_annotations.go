@@ -58,24 +58,12 @@ func EventAnnotationFromEnt(an *ent.EventAnnotation) EventAnnotation {
 		attr.Creator.Attributes = &usr.Attributes
 	}
 
-	//if fb := an.Edges.AlertFeedback; fb != nil {
-	//	attr.AlertFeedback = &AlertFeedbackInstance{
-	//		Accurate:                 fb.Accurate.String(),
-	//		Actionable:               fb.Actionable,
-	//		DocumentationAvailable:   fb.DocumentationAvailable,
-	//		DocumentationNeedsUpdate: fb.DocumentationNeedsUpdate,
-	//	}
-	//}
-
 	if an.Edges.Event != nil {
 		ev := EventFromEnt(an.Edges.Event)
 		attr.Event.Attributes = &ev.Attributes
 	}
 
-	return EventAnnotation{
-		Id:         an.ID,
-		Attributes: attr,
-	}
+	return EventAnnotation{Id: an.ID, Attributes: attr}
 }
 
 var EventAnnotationsTags = []string{"Event Annotations"}

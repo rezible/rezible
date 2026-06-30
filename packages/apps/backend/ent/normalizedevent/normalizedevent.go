@@ -19,8 +19,8 @@ const (
 	FieldID = "id"
 	// FieldTenantID holds the string denoting the tenant_id field in the database.
 	FieldTenantID = "tenant_id"
-	// FieldActivityKind holds the string denoting the activity_kind field in the database.
-	FieldActivityKind = "activity_kind"
+	// FieldKind holds the string denoting the kind field in the database.
+	FieldKind = "kind"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
 	// FieldProviderSource holds the string denoting the provider_source field in the database.
@@ -41,8 +41,6 @@ const (
 	FieldReceivedAt = "received_at"
 	// EdgeTenant holds the string denoting the tenant edge name in mutations.
 	EdgeTenant = "tenant"
-	// EdgeAlertFeedback holds the string denoting the alert_feedback edge name in mutations.
-	EdgeAlertFeedback = "alert_feedback"
 	// Table holds the table name of the normalizedevent in the database.
 	Table = "normalized_events"
 	// TenantTable is the table that holds the tenant relation/edge.
@@ -52,20 +50,13 @@ const (
 	TenantInverseTable = "tenants"
 	// TenantColumn is the table column denoting the tenant relation/edge.
 	TenantColumn = "tenant_id"
-	// AlertFeedbackTable is the table that holds the alert_feedback relation/edge.
-	AlertFeedbackTable = "alert_feedbacks"
-	// AlertFeedbackInverseTable is the table name for the AlertFeedback entity.
-	// It exists in this package in order to avoid circular dependency with the "alertfeedback" package.
-	AlertFeedbackInverseTable = "alert_feedbacks"
-	// AlertFeedbackColumn is the table column denoting the alert_feedback relation/edge.
-	AlertFeedbackColumn = "normalized_event_alert_feedback"
 )
 
 // Columns holds all SQL columns for normalizedevent fields.
 var Columns = []string{
 	FieldID,
 	FieldTenantID,
-	FieldActivityKind,
+	FieldKind,
 	FieldProvider,
 	FieldProviderSource,
 	FieldProviderEventRef,
@@ -109,27 +100,27 @@ var (
 	DefaultID func() uuid.UUID
 )
 
-// ActivityKind defines the type for the "activity_kind" enum field.
-type ActivityKind string
+// Kind defines the type for the "kind" enum field.
+type Kind string
 
-// ActivityKind values.
+// Kind values.
 const (
-	ActivityKindReceived ActivityKind = "received"
-	ActivityKindObserved ActivityKind = "observed"
-	ActivityKindDeleted  ActivityKind = "deleted"
+	KindReceived Kind = "received"
+	KindObserved Kind = "observed"
+	KindDeleted  Kind = "deleted"
 )
 
-func (ak ActivityKind) String() string {
-	return string(ak)
+func (k Kind) String() string {
+	return string(k)
 }
 
-// ActivityKindValidator is a validator for the "activity_kind" field enum values. It is called by the builders before save.
-func ActivityKindValidator(ak ActivityKind) error {
-	switch ak {
-	case ActivityKindReceived, ActivityKindObserved, ActivityKindDeleted:
+// KindValidator is a validator for the "kind" field enum values. It is called by the builders before save.
+func KindValidator(k Kind) error {
+	switch k {
+	case KindReceived, KindObserved, KindDeleted:
 		return nil
 	default:
-		return fmt.Errorf("normalizedevent: invalid enum value for activity_kind field: %q", ak)
+		return fmt.Errorf("normalizedevent: invalid enum value for kind field: %q", k)
 	}
 }
 
@@ -146,9 +137,9 @@ func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
-// ByActivityKind orders the results by the activity_kind field.
-func ByActivityKind(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldActivityKind, opts...).ToFunc()
+// ByKind orders the results by the kind field.
+func ByKind(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldKind, opts...).ToFunc()
 }
 
 // ByProvider orders the results by the provider field.
@@ -197,31 +188,10 @@ func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
 	}
 }
-
-// ByAlertFeedbackCount orders the results by alert_feedback count.
-func ByAlertFeedbackCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newAlertFeedbackStep(), opts...)
-	}
-}
-
-// ByAlertFeedback orders the results by alert_feedback terms.
-func ByAlertFeedback(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newAlertFeedbackStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
 func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(TenantInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.M2O, false, TenantTable, TenantColumn),
-	)
-}
-func newAlertFeedbackStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(AlertFeedbackInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, AlertFeedbackTable, AlertFeedbackColumn),
 	)
 }

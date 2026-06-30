@@ -36,7 +36,7 @@ func TestProcessAlertObservedEvent(t *testing.T) {
 	events := processPayload(t, payload)
 	require.Len(t, events, 1)
 	ev := events[0]
-	assert.Equal(t, ne.ActivityKindObserved, ev.ActivityKind)
+	assert.Equal(t, ne.KindObserved, ev.Kind)
 	assert.True(t, projections.SubjectKindAlert.Matches(ev))
 	assert.Equal(t, payload.getSubjectRef(), ev.ProviderSubjectRef)
 	assert.Equal(t, payload.OccurredAt, ev.OccurredAt)
@@ -109,7 +109,7 @@ func TestProcessChatMessageObservedEvent(t *testing.T) {
 	require.Len(t, events, 1)
 	ev := events[0]
 	assert.True(t, projections.SubjectKindChatMessage.Matches(ev))
-	assert.Equal(t, ne.ActivityKindReceived, ev.ActivityKind)
+	assert.Equal(t, ne.KindReceived, ev.Kind)
 
 	decoded, decodeErr := projections.DecodeChatMessageEvent(ev)
 	require.NoError(t, decodeErr)

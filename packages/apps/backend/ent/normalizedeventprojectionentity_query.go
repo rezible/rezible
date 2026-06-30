@@ -14,60 +14,60 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
+	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
-// NormalizedEventProjectionStatusQuery is the builder for querying NormalizedEventProjectionStatus entities.
-type NormalizedEventProjectionStatusQuery struct {
+// NormalizedEventProjectionEntityQuery is the builder for querying NormalizedEventProjectionEntity entities.
+type NormalizedEventProjectionEntityQuery struct {
 	config
-	ctx                 *QueryContext
-	order               []normalizedeventprojectionstatus.OrderOption
-	inters              []Interceptor
-	predicates          []predicate.NormalizedEventProjectionStatus
-	withTenant          *TenantQuery
-	withNormalizedEvent *NormalizedEventQuery
-	modifiers           []func(*sql.Selector)
+	ctx            *QueryContext
+	order          []normalizedeventprojectionentity.OrderOption
+	inters         []Interceptor
+	predicates     []predicate.NormalizedEventProjectionEntity
+	withTenant     *TenantQuery
+	withProjection *NormalizedEventProjectionQuery
+	modifiers      []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
 }
 
-// Where adds a new predicate for the NormalizedEventProjectionStatusQuery builder.
-func (_q *NormalizedEventProjectionStatusQuery) Where(ps ...predicate.NormalizedEventProjectionStatus) *NormalizedEventProjectionStatusQuery {
+// Where adds a new predicate for the NormalizedEventProjectionEntityQuery builder.
+func (_q *NormalizedEventProjectionEntityQuery) Where(ps ...predicate.NormalizedEventProjectionEntity) *NormalizedEventProjectionEntityQuery {
 	_q.predicates = append(_q.predicates, ps...)
 	return _q
 }
 
 // Limit the number of records to be returned by this query.
-func (_q *NormalizedEventProjectionStatusQuery) Limit(limit int) *NormalizedEventProjectionStatusQuery {
+func (_q *NormalizedEventProjectionEntityQuery) Limit(limit int) *NormalizedEventProjectionEntityQuery {
 	_q.ctx.Limit = &limit
 	return _q
 }
 
 // Offset to start from.
-func (_q *NormalizedEventProjectionStatusQuery) Offset(offset int) *NormalizedEventProjectionStatusQuery {
+func (_q *NormalizedEventProjectionEntityQuery) Offset(offset int) *NormalizedEventProjectionEntityQuery {
 	_q.ctx.Offset = &offset
 	return _q
 }
 
 // Unique configures the query builder to filter duplicate records on query.
 // By default, unique is set to true, and can be disabled using this method.
-func (_q *NormalizedEventProjectionStatusQuery) Unique(unique bool) *NormalizedEventProjectionStatusQuery {
+func (_q *NormalizedEventProjectionEntityQuery) Unique(unique bool) *NormalizedEventProjectionEntityQuery {
 	_q.ctx.Unique = &unique
 	return _q
 }
 
 // Order specifies how the records should be ordered.
-func (_q *NormalizedEventProjectionStatusQuery) Order(o ...normalizedeventprojectionstatus.OrderOption) *NormalizedEventProjectionStatusQuery {
+func (_q *NormalizedEventProjectionEntityQuery) Order(o ...normalizedeventprojectionentity.OrderOption) *NormalizedEventProjectionEntityQuery {
 	_q.order = append(_q.order, o...)
 	return _q
 }
 
 // QueryTenant chains the current query on the "tenant" edge.
-func (_q *NormalizedEventProjectionStatusQuery) QueryTenant() *TenantQuery {
+func (_q *NormalizedEventProjectionEntityQuery) QueryTenant() *TenantQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
@@ -78,22 +78,22 @@ func (_q *NormalizedEventProjectionStatusQuery) QueryTenant() *TenantQuery {
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(normalizedeventprojectionstatus.Table, normalizedeventprojectionstatus.FieldID, selector),
+			sqlgraph.From(normalizedeventprojectionentity.Table, normalizedeventprojectionentity.FieldID, selector),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionstatus.TenantTable, normalizedeventprojectionstatus.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionentity.TenantTable, normalizedeventprojectionentity.TenantColumn),
 		)
 		schemaConfig := _q.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.NormalizedEventProjectionStatus
+		step.Edge.Schema = schemaConfig.NormalizedEventProjectionEntity
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// QueryNormalizedEvent chains the current query on the "normalized_event" edge.
-func (_q *NormalizedEventProjectionStatusQuery) QueryNormalizedEvent() *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
+// QueryProjection chains the current query on the "projection" edge.
+func (_q *NormalizedEventProjectionEntityQuery) QueryProjection() *NormalizedEventProjectionQuery {
+	query := (&NormalizedEventProjectionClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -103,34 +103,34 @@ func (_q *NormalizedEventProjectionStatusQuery) QueryNormalizedEvent() *Normaliz
 			return nil, err
 		}
 		step := sqlgraph.NewStep(
-			sqlgraph.From(normalizedeventprojectionstatus.Table, normalizedeventprojectionstatus.FieldID, selector),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionstatus.NormalizedEventTable, normalizedeventprojectionstatus.NormalizedEventColumn),
+			sqlgraph.From(normalizedeventprojectionentity.Table, normalizedeventprojectionentity.FieldID, selector),
+			sqlgraph.To(normalizedeventprojection.Table, normalizedeventprojection.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionentity.ProjectionTable, normalizedeventprojectionentity.ProjectionColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
-		step.Edge.Schema = schemaConfig.NormalizedEventProjectionStatus
+		step.To.Schema = schemaConfig.NormalizedEventProjection
+		step.Edge.Schema = schemaConfig.NormalizedEventProjectionEntity
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
 	return query
 }
 
-// First returns the first NormalizedEventProjectionStatus entity from the query.
-// Returns a *NotFoundError when no NormalizedEventProjectionStatus was found.
-func (_q *NormalizedEventProjectionStatusQuery) First(ctx context.Context) (*NormalizedEventProjectionStatus, error) {
+// First returns the first NormalizedEventProjectionEntity entity from the query.
+// Returns a *NotFoundError when no NormalizedEventProjectionEntity was found.
+func (_q *NormalizedEventProjectionEntityQuery) First(ctx context.Context) (*NormalizedEventProjectionEntity, error) {
 	nodes, err := _q.Limit(1).All(setContextOp(ctx, _q.ctx, ent.OpQueryFirst))
 	if err != nil {
 		return nil, err
 	}
 	if len(nodes) == 0 {
-		return nil, &NotFoundError{normalizedeventprojectionstatus.Label}
+		return nil, &NotFoundError{normalizedeventprojectionentity.Label}
 	}
 	return nodes[0], nil
 }
 
 // FirstX is like First, but panics if an error occurs.
-func (_q *NormalizedEventProjectionStatusQuery) FirstX(ctx context.Context) *NormalizedEventProjectionStatus {
+func (_q *NormalizedEventProjectionEntityQuery) FirstX(ctx context.Context) *NormalizedEventProjectionEntity {
 	node, err := _q.First(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -138,22 +138,22 @@ func (_q *NormalizedEventProjectionStatusQuery) FirstX(ctx context.Context) *Nor
 	return node
 }
 
-// FirstID returns the first NormalizedEventProjectionStatus ID from the query.
-// Returns a *NotFoundError when no NormalizedEventProjectionStatus ID was found.
-func (_q *NormalizedEventProjectionStatusQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+// FirstID returns the first NormalizedEventProjectionEntity ID from the query.
+// Returns a *NotFoundError when no NormalizedEventProjectionEntity ID was found.
+func (_q *NormalizedEventProjectionEntityQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(1).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryFirstID)); err != nil {
 		return
 	}
 	if len(ids) == 0 {
-		err = &NotFoundError{normalizedeventprojectionstatus.Label}
+		err = &NotFoundError{normalizedeventprojectionentity.Label}
 		return
 	}
 	return ids[0], nil
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (_q *NormalizedEventProjectionStatusQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (_q *NormalizedEventProjectionEntityQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -161,10 +161,10 @@ func (_q *NormalizedEventProjectionStatusQuery) FirstIDX(ctx context.Context) uu
 	return id
 }
 
-// Only returns a single NormalizedEventProjectionStatus entity found by the query, ensuring it only returns one.
-// Returns a *NotSingularError when more than one NormalizedEventProjectionStatus entity is found.
-// Returns a *NotFoundError when no NormalizedEventProjectionStatus entities are found.
-func (_q *NormalizedEventProjectionStatusQuery) Only(ctx context.Context) (*NormalizedEventProjectionStatus, error) {
+// Only returns a single NormalizedEventProjectionEntity entity found by the query, ensuring it only returns one.
+// Returns a *NotSingularError when more than one NormalizedEventProjectionEntity entity is found.
+// Returns a *NotFoundError when no NormalizedEventProjectionEntity entities are found.
+func (_q *NormalizedEventProjectionEntityQuery) Only(ctx context.Context) (*NormalizedEventProjectionEntity, error) {
 	nodes, err := _q.Limit(2).All(setContextOp(ctx, _q.ctx, ent.OpQueryOnly))
 	if err != nil {
 		return nil, err
@@ -173,14 +173,14 @@ func (_q *NormalizedEventProjectionStatusQuery) Only(ctx context.Context) (*Norm
 	case 1:
 		return nodes[0], nil
 	case 0:
-		return nil, &NotFoundError{normalizedeventprojectionstatus.Label}
+		return nil, &NotFoundError{normalizedeventprojectionentity.Label}
 	default:
-		return nil, &NotSingularError{normalizedeventprojectionstatus.Label}
+		return nil, &NotSingularError{normalizedeventprojectionentity.Label}
 	}
 }
 
 // OnlyX is like Only, but panics if an error occurs.
-func (_q *NormalizedEventProjectionStatusQuery) OnlyX(ctx context.Context) *NormalizedEventProjectionStatus {
+func (_q *NormalizedEventProjectionEntityQuery) OnlyX(ctx context.Context) *NormalizedEventProjectionEntity {
 	node, err := _q.Only(ctx)
 	if err != nil {
 		panic(err)
@@ -188,10 +188,10 @@ func (_q *NormalizedEventProjectionStatusQuery) OnlyX(ctx context.Context) *Norm
 	return node
 }
 
-// OnlyID is like Only, but returns the only NormalizedEventProjectionStatus ID in the query.
-// Returns a *NotSingularError when more than one NormalizedEventProjectionStatus ID is found.
+// OnlyID is like Only, but returns the only NormalizedEventProjectionEntity ID in the query.
+// Returns a *NotSingularError when more than one NormalizedEventProjectionEntity ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (_q *NormalizedEventProjectionStatusQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+func (_q *NormalizedEventProjectionEntityQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 	var ids []uuid.UUID
 	if ids, err = _q.Limit(2).IDs(setContextOp(ctx, _q.ctx, ent.OpQueryOnlyID)); err != nil {
 		return
@@ -200,15 +200,15 @@ func (_q *NormalizedEventProjectionStatusQuery) OnlyID(ctx context.Context) (id 
 	case 1:
 		id = ids[0]
 	case 0:
-		err = &NotFoundError{normalizedeventprojectionstatus.Label}
+		err = &NotFoundError{normalizedeventprojectionentity.Label}
 	default:
-		err = &NotSingularError{normalizedeventprojectionstatus.Label}
+		err = &NotSingularError{normalizedeventprojectionentity.Label}
 	}
 	return
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (_q *NormalizedEventProjectionStatusQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (_q *NormalizedEventProjectionEntityQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := _q.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -216,18 +216,18 @@ func (_q *NormalizedEventProjectionStatusQuery) OnlyIDX(ctx context.Context) uui
 	return id
 }
 
-// All executes the query and returns a list of NormalizedEventProjectionStatusSlice.
-func (_q *NormalizedEventProjectionStatusQuery) All(ctx context.Context) ([]*NormalizedEventProjectionStatus, error) {
+// All executes the query and returns a list of NormalizedEventProjectionEntities.
+func (_q *NormalizedEventProjectionEntityQuery) All(ctx context.Context) ([]*NormalizedEventProjectionEntity, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryAll)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return nil, err
 	}
-	qr := querierAll[[]*NormalizedEventProjectionStatus, *NormalizedEventProjectionStatusQuery]()
-	return withInterceptors[[]*NormalizedEventProjectionStatus](ctx, _q, qr, _q.inters)
+	qr := querierAll[[]*NormalizedEventProjectionEntity, *NormalizedEventProjectionEntityQuery]()
+	return withInterceptors[[]*NormalizedEventProjectionEntity](ctx, _q, qr, _q.inters)
 }
 
 // AllX is like All, but panics if an error occurs.
-func (_q *NormalizedEventProjectionStatusQuery) AllX(ctx context.Context) []*NormalizedEventProjectionStatus {
+func (_q *NormalizedEventProjectionEntityQuery) AllX(ctx context.Context) []*NormalizedEventProjectionEntity {
 	nodes, err := _q.All(ctx)
 	if err != nil {
 		panic(err)
@@ -235,20 +235,20 @@ func (_q *NormalizedEventProjectionStatusQuery) AllX(ctx context.Context) []*Nor
 	return nodes
 }
 
-// IDs executes the query and returns a list of NormalizedEventProjectionStatus IDs.
-func (_q *NormalizedEventProjectionStatusQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
+// IDs executes the query and returns a list of NormalizedEventProjectionEntity IDs.
+func (_q *NormalizedEventProjectionEntityQuery) IDs(ctx context.Context) (ids []uuid.UUID, err error) {
 	if _q.ctx.Unique == nil && _q.path != nil {
 		_q.Unique(true)
 	}
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryIDs)
-	if err = _q.Select(normalizedeventprojectionstatus.FieldID).Scan(ctx, &ids); err != nil {
+	if err = _q.Select(normalizedeventprojectionentity.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
 	return ids, nil
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (_q *NormalizedEventProjectionStatusQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (_q *NormalizedEventProjectionEntityQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := _q.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -257,16 +257,16 @@ func (_q *NormalizedEventProjectionStatusQuery) IDsX(ctx context.Context) []uuid
 }
 
 // Count returns the count of the given query.
-func (_q *NormalizedEventProjectionStatusQuery) Count(ctx context.Context) (int, error) {
+func (_q *NormalizedEventProjectionEntityQuery) Count(ctx context.Context) (int, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryCount)
 	if err := _q.prepareQuery(ctx); err != nil {
 		return 0, err
 	}
-	return withInterceptors[int](ctx, _q, querierCount[*NormalizedEventProjectionStatusQuery](), _q.inters)
+	return withInterceptors[int](ctx, _q, querierCount[*NormalizedEventProjectionEntityQuery](), _q.inters)
 }
 
 // CountX is like Count, but panics if an error occurs.
-func (_q *NormalizedEventProjectionStatusQuery) CountX(ctx context.Context) int {
+func (_q *NormalizedEventProjectionEntityQuery) CountX(ctx context.Context) int {
 	count, err := _q.Count(ctx)
 	if err != nil {
 		panic(err)
@@ -275,7 +275,7 @@ func (_q *NormalizedEventProjectionStatusQuery) CountX(ctx context.Context) int 
 }
 
 // Exist returns true if the query has elements in the graph.
-func (_q *NormalizedEventProjectionStatusQuery) Exist(ctx context.Context) (bool, error) {
+func (_q *NormalizedEventProjectionEntityQuery) Exist(ctx context.Context) (bool, error) {
 	ctx = setContextOp(ctx, _q.ctx, ent.OpQueryExist)
 	switch _, err := _q.FirstID(ctx); {
 	case IsNotFound(err):
@@ -288,7 +288,7 @@ func (_q *NormalizedEventProjectionStatusQuery) Exist(ctx context.Context) (bool
 }
 
 // ExistX is like Exist, but panics if an error occurs.
-func (_q *NormalizedEventProjectionStatusQuery) ExistX(ctx context.Context) bool {
+func (_q *NormalizedEventProjectionEntityQuery) ExistX(ctx context.Context) bool {
 	exist, err := _q.Exist(ctx)
 	if err != nil {
 		panic(err)
@@ -296,20 +296,20 @@ func (_q *NormalizedEventProjectionStatusQuery) ExistX(ctx context.Context) bool
 	return exist
 }
 
-// Clone returns a duplicate of the NormalizedEventProjectionStatusQuery builder, including all associated steps. It can be
+// Clone returns a duplicate of the NormalizedEventProjectionEntityQuery builder, including all associated steps. It can be
 // used to prepare common query builders and use them differently after the clone is made.
-func (_q *NormalizedEventProjectionStatusQuery) Clone() *NormalizedEventProjectionStatusQuery {
+func (_q *NormalizedEventProjectionEntityQuery) Clone() *NormalizedEventProjectionEntityQuery {
 	if _q == nil {
 		return nil
 	}
-	return &NormalizedEventProjectionStatusQuery{
-		config:              _q.config,
-		ctx:                 _q.ctx.Clone(),
-		order:               append([]normalizedeventprojectionstatus.OrderOption{}, _q.order...),
-		inters:              append([]Interceptor{}, _q.inters...),
-		predicates:          append([]predicate.NormalizedEventProjectionStatus{}, _q.predicates...),
-		withTenant:          _q.withTenant.Clone(),
-		withNormalizedEvent: _q.withNormalizedEvent.Clone(),
+	return &NormalizedEventProjectionEntityQuery{
+		config:         _q.config,
+		ctx:            _q.ctx.Clone(),
+		order:          append([]normalizedeventprojectionentity.OrderOption{}, _q.order...),
+		inters:         append([]Interceptor{}, _q.inters...),
+		predicates:     append([]predicate.NormalizedEventProjectionEntity{}, _q.predicates...),
+		withTenant:     _q.withTenant.Clone(),
+		withProjection: _q.withProjection.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -319,7 +319,7 @@ func (_q *NormalizedEventProjectionStatusQuery) Clone() *NormalizedEventProjecti
 
 // WithTenant tells the query-builder to eager-load the nodes that are connected to
 // the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *NormalizedEventProjectionStatusQuery) WithTenant(opts ...func(*TenantQuery)) *NormalizedEventProjectionStatusQuery {
+func (_q *NormalizedEventProjectionEntityQuery) WithTenant(opts ...func(*TenantQuery)) *NormalizedEventProjectionEntityQuery {
 	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
@@ -328,14 +328,14 @@ func (_q *NormalizedEventProjectionStatusQuery) WithTenant(opts ...func(*TenantQ
 	return _q
 }
 
-// WithNormalizedEvent tells the query-builder to eager-load the nodes that are connected to
-// the "normalized_event" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *NormalizedEventProjectionStatusQuery) WithNormalizedEvent(opts ...func(*NormalizedEventQuery)) *NormalizedEventProjectionStatusQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
+// WithProjection tells the query-builder to eager-load the nodes that are connected to
+// the "projection" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *NormalizedEventProjectionEntityQuery) WithProjection(opts ...func(*NormalizedEventProjectionQuery)) *NormalizedEventProjectionEntityQuery {
+	query := (&NormalizedEventProjectionClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withNormalizedEvent = query
+	_q.withProjection = query
 	return _q
 }
 
@@ -349,15 +349,15 @@ func (_q *NormalizedEventProjectionStatusQuery) WithNormalizedEvent(opts ...func
 //		Count int `json:"count,omitempty"`
 //	}
 //
-//	client.NormalizedEventProjectionStatus.Query().
-//		GroupBy(normalizedeventprojectionstatus.FieldTenantID).
+//	client.NormalizedEventProjectionEntity.Query().
+//		GroupBy(normalizedeventprojectionentity.FieldTenantID).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
-func (_q *NormalizedEventProjectionStatusQuery) GroupBy(field string, fields ...string) *NormalizedEventProjectionStatusGroupBy {
+func (_q *NormalizedEventProjectionEntityQuery) GroupBy(field string, fields ...string) *NormalizedEventProjectionEntityGroupBy {
 	_q.ctx.Fields = append([]string{field}, fields...)
-	grbuild := &NormalizedEventProjectionStatusGroupBy{build: _q}
+	grbuild := &NormalizedEventProjectionEntityGroupBy{build: _q}
 	grbuild.flds = &_q.ctx.Fields
-	grbuild.label = normalizedeventprojectionstatus.Label
+	grbuild.label = normalizedeventprojectionentity.Label
 	grbuild.scan = grbuild.Scan
 	return grbuild
 }
@@ -371,23 +371,23 @@ func (_q *NormalizedEventProjectionStatusQuery) GroupBy(field string, fields ...
 //		TenantID int `json:"tenant_id,omitempty"`
 //	}
 //
-//	client.NormalizedEventProjectionStatus.Query().
-//		Select(normalizedeventprojectionstatus.FieldTenantID).
+//	client.NormalizedEventProjectionEntity.Query().
+//		Select(normalizedeventprojectionentity.FieldTenantID).
 //		Scan(ctx, &v)
-func (_q *NormalizedEventProjectionStatusQuery) Select(fields ...string) *NormalizedEventProjectionStatusSelect {
+func (_q *NormalizedEventProjectionEntityQuery) Select(fields ...string) *NormalizedEventProjectionEntitySelect {
 	_q.ctx.Fields = append(_q.ctx.Fields, fields...)
-	sbuild := &NormalizedEventProjectionStatusSelect{NormalizedEventProjectionStatusQuery: _q}
-	sbuild.label = normalizedeventprojectionstatus.Label
+	sbuild := &NormalizedEventProjectionEntitySelect{NormalizedEventProjectionEntityQuery: _q}
+	sbuild.label = normalizedeventprojectionentity.Label
 	sbuild.flds, sbuild.scan = &_q.ctx.Fields, sbuild.Scan
 	return sbuild
 }
 
-// Aggregate returns a NormalizedEventProjectionStatusSelect configured with the given aggregations.
-func (_q *NormalizedEventProjectionStatusQuery) Aggregate(fns ...AggregateFunc) *NormalizedEventProjectionStatusSelect {
+// Aggregate returns a NormalizedEventProjectionEntitySelect configured with the given aggregations.
+func (_q *NormalizedEventProjectionEntityQuery) Aggregate(fns ...AggregateFunc) *NormalizedEventProjectionEntitySelect {
 	return _q.Select().Aggregate(fns...)
 }
 
-func (_q *NormalizedEventProjectionStatusQuery) prepareQuery(ctx context.Context) error {
+func (_q *NormalizedEventProjectionEntityQuery) prepareQuery(ctx context.Context) error {
 	for _, inter := range _q.inters {
 		if inter == nil {
 			return fmt.Errorf("ent: uninitialized interceptor (forgotten import ent/runtime?)")
@@ -399,7 +399,7 @@ func (_q *NormalizedEventProjectionStatusQuery) prepareQuery(ctx context.Context
 		}
 	}
 	for _, f := range _q.ctx.Fields {
-		if !normalizedeventprojectionstatus.ValidColumn(f) {
+		if !normalizedeventprojectionentity.ValidColumn(f) {
 			return &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 		}
 	}
@@ -410,34 +410,34 @@ func (_q *NormalizedEventProjectionStatusQuery) prepareQuery(ctx context.Context
 		}
 		_q.sql = prev
 	}
-	if normalizedeventprojectionstatus.Policy == nil {
-		return errors.New("ent: uninitialized normalizedeventprojectionstatus.Policy (forgotten import ent/runtime?)")
+	if normalizedeventprojectionentity.Policy == nil {
+		return errors.New("ent: uninitialized normalizedeventprojectionentity.Policy (forgotten import ent/runtime?)")
 	}
-	if err := normalizedeventprojectionstatus.Policy.EvalQuery(ctx, _q); err != nil {
+	if err := normalizedeventprojectionentity.Policy.EvalQuery(ctx, _q); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (_q *NormalizedEventProjectionStatusQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NormalizedEventProjectionStatus, error) {
+func (_q *NormalizedEventProjectionEntityQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*NormalizedEventProjectionEntity, error) {
 	var (
-		nodes       = []*NormalizedEventProjectionStatus{}
+		nodes       = []*NormalizedEventProjectionEntity{}
 		_spec       = _q.querySpec()
 		loadedTypes = [2]bool{
 			_q.withTenant != nil,
-			_q.withNormalizedEvent != nil,
+			_q.withProjection != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
-		return (*NormalizedEventProjectionStatus).scanValues(nil, columns)
+		return (*NormalizedEventProjectionEntity).scanValues(nil, columns)
 	}
 	_spec.Assign = func(columns []string, values []any) error {
-		node := &NormalizedEventProjectionStatus{config: _q.config}
+		node := &NormalizedEventProjectionEntity{config: _q.config}
 		nodes = append(nodes, node)
 		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
-	_spec.Node.Schema = _q.schemaConfig.NormalizedEventProjectionStatus
+	_spec.Node.Schema = _q.schemaConfig.NormalizedEventProjectionEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -453,22 +453,22 @@ func (_q *NormalizedEventProjectionStatusQuery) sqlAll(ctx context.Context, hook
 	}
 	if query := _q.withTenant; query != nil {
 		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *NormalizedEventProjectionStatus, e *Tenant) { n.Edges.Tenant = e }); err != nil {
+			func(n *NormalizedEventProjectionEntity, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
-	if query := _q.withNormalizedEvent; query != nil {
-		if err := _q.loadNormalizedEvent(ctx, query, nodes, nil,
-			func(n *NormalizedEventProjectionStatus, e *NormalizedEvent) { n.Edges.NormalizedEvent = e }); err != nil {
+	if query := _q.withProjection; query != nil {
+		if err := _q.loadProjection(ctx, query, nodes, nil,
+			func(n *NormalizedEventProjectionEntity, e *NormalizedEventProjection) { n.Edges.Projection = e }); err != nil {
 			return nil, err
 		}
 	}
 	return nodes, nil
 }
 
-func (_q *NormalizedEventProjectionStatusQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*NormalizedEventProjectionStatus, init func(*NormalizedEventProjectionStatus), assign func(*NormalizedEventProjectionStatus, *Tenant)) error {
+func (_q *NormalizedEventProjectionEntityQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*NormalizedEventProjectionEntity, init func(*NormalizedEventProjectionEntity), assign func(*NormalizedEventProjectionEntity, *Tenant)) error {
 	ids := make([]int, 0, len(nodes))
-	nodeids := make(map[int][]*NormalizedEventProjectionStatus)
+	nodeids := make(map[int][]*NormalizedEventProjectionEntity)
 	for i := range nodes {
 		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
@@ -495,11 +495,11 @@ func (_q *NormalizedEventProjectionStatusQuery) loadTenant(ctx context.Context, 
 	}
 	return nil
 }
-func (_q *NormalizedEventProjectionStatusQuery) loadNormalizedEvent(ctx context.Context, query *NormalizedEventQuery, nodes []*NormalizedEventProjectionStatus, init func(*NormalizedEventProjectionStatus), assign func(*NormalizedEventProjectionStatus, *NormalizedEvent)) error {
+func (_q *NormalizedEventProjectionEntityQuery) loadProjection(ctx context.Context, query *NormalizedEventProjectionQuery, nodes []*NormalizedEventProjectionEntity, init func(*NormalizedEventProjectionEntity), assign func(*NormalizedEventProjectionEntity, *NormalizedEventProjection)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*NormalizedEventProjectionStatus)
+	nodeids := make(map[uuid.UUID][]*NormalizedEventProjectionEntity)
 	for i := range nodes {
-		fk := nodes[i].NormalizedEventID
+		fk := nodes[i].ProjectionID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -508,7 +508,7 @@ func (_q *NormalizedEventProjectionStatusQuery) loadNormalizedEvent(ctx context.
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(normalizedevent.IDIn(ids...))
+	query.Where(normalizedeventprojection.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -516,7 +516,7 @@ func (_q *NormalizedEventProjectionStatusQuery) loadNormalizedEvent(ctx context.
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "normalized_event_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "projection_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -525,9 +525,9 @@ func (_q *NormalizedEventProjectionStatusQuery) loadNormalizedEvent(ctx context.
 	return nil
 }
 
-func (_q *NormalizedEventProjectionStatusQuery) sqlCount(ctx context.Context) (int, error) {
+func (_q *NormalizedEventProjectionEntityQuery) sqlCount(ctx context.Context) (int, error) {
 	_spec := _q.querySpec()
-	_spec.Node.Schema = _q.schemaConfig.NormalizedEventProjectionStatus
+	_spec.Node.Schema = _q.schemaConfig.NormalizedEventProjectionEntity
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	if len(_q.modifiers) > 0 {
 		_spec.Modifiers = _q.modifiers
@@ -539,8 +539,8 @@ func (_q *NormalizedEventProjectionStatusQuery) sqlCount(ctx context.Context) (i
 	return sqlgraph.CountNodes(ctx, _q.driver, _spec)
 }
 
-func (_q *NormalizedEventProjectionStatusQuery) querySpec() *sqlgraph.QuerySpec {
-	_spec := sqlgraph.NewQuerySpec(normalizedeventprojectionstatus.Table, normalizedeventprojectionstatus.Columns, sqlgraph.NewFieldSpec(normalizedeventprojectionstatus.FieldID, field.TypeUUID))
+func (_q *NormalizedEventProjectionEntityQuery) querySpec() *sqlgraph.QuerySpec {
+	_spec := sqlgraph.NewQuerySpec(normalizedeventprojectionentity.Table, normalizedeventprojectionentity.Columns, sqlgraph.NewFieldSpec(normalizedeventprojectionentity.FieldID, field.TypeUUID))
 	_spec.From = _q.sql
 	if unique := _q.ctx.Unique; unique != nil {
 		_spec.Unique = *unique
@@ -549,17 +549,17 @@ func (_q *NormalizedEventProjectionStatusQuery) querySpec() *sqlgraph.QuerySpec 
 	}
 	if fields := _q.ctx.Fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, normalizedeventprojectionstatus.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, normalizedeventprojectionentity.FieldID)
 		for i := range fields {
-			if fields[i] != normalizedeventprojectionstatus.FieldID {
+			if fields[i] != normalizedeventprojectionentity.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
 		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(normalizedeventprojectionstatus.FieldTenantID)
+			_spec.Node.AddColumnOnce(normalizedeventprojectionentity.FieldTenantID)
 		}
-		if _q.withNormalizedEvent != nil {
-			_spec.Node.AddColumnOnce(normalizedeventprojectionstatus.FieldNormalizedEventID)
+		if _q.withProjection != nil {
+			_spec.Node.AddColumnOnce(normalizedeventprojectionentity.FieldProjectionID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {
@@ -585,12 +585,12 @@ func (_q *NormalizedEventProjectionStatusQuery) querySpec() *sqlgraph.QuerySpec 
 	return _spec
 }
 
-func (_q *NormalizedEventProjectionStatusQuery) sqlQuery(ctx context.Context) *sql.Selector {
+func (_q *NormalizedEventProjectionEntityQuery) sqlQuery(ctx context.Context) *sql.Selector {
 	builder := sql.Dialect(_q.driver.Dialect())
-	t1 := builder.Table(normalizedeventprojectionstatus.Table)
+	t1 := builder.Table(normalizedeventprojectionentity.Table)
 	columns := _q.ctx.Fields
 	if len(columns) == 0 {
-		columns = normalizedeventprojectionstatus.Columns
+		columns = normalizedeventprojectionentity.Columns
 	}
 	selector := builder.Select(t1.Columns(columns...)...).From(t1)
 	if _q.sql != nil {
@@ -600,7 +600,7 @@ func (_q *NormalizedEventProjectionStatusQuery) sqlQuery(ctx context.Context) *s
 	if _q.ctx.Unique != nil && *_q.ctx.Unique {
 		selector.Distinct()
 	}
-	t1.Schema(_q.schemaConfig.NormalizedEventProjectionStatus)
+	t1.Schema(_q.schemaConfig.NormalizedEventProjectionEntity)
 	ctx = internal.NewSchemaConfigContext(ctx, _q.schemaConfig)
 	selector.WithContext(ctx)
 	for _, m := range _q.modifiers {
@@ -624,33 +624,33 @@ func (_q *NormalizedEventProjectionStatusQuery) sqlQuery(ctx context.Context) *s
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_q *NormalizedEventProjectionStatusQuery) Modify(modifiers ...func(s *sql.Selector)) *NormalizedEventProjectionStatusSelect {
+func (_q *NormalizedEventProjectionEntityQuery) Modify(modifiers ...func(s *sql.Selector)) *NormalizedEventProjectionEntitySelect {
 	_q.modifiers = append(_q.modifiers, modifiers...)
 	return _q.Select()
 }
 
-// NormalizedEventProjectionStatusGroupBy is the group-by builder for NormalizedEventProjectionStatus entities.
-type NormalizedEventProjectionStatusGroupBy struct {
+// NormalizedEventProjectionEntityGroupBy is the group-by builder for NormalizedEventProjectionEntity entities.
+type NormalizedEventProjectionEntityGroupBy struct {
 	selector
-	build *NormalizedEventProjectionStatusQuery
+	build *NormalizedEventProjectionEntityQuery
 }
 
 // Aggregate adds the given aggregation functions to the group-by query.
-func (_g *NormalizedEventProjectionStatusGroupBy) Aggregate(fns ...AggregateFunc) *NormalizedEventProjectionStatusGroupBy {
+func (_g *NormalizedEventProjectionEntityGroupBy) Aggregate(fns ...AggregateFunc) *NormalizedEventProjectionEntityGroupBy {
 	_g.fns = append(_g.fns, fns...)
 	return _g
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_g *NormalizedEventProjectionStatusGroupBy) Scan(ctx context.Context, v any) error {
+func (_g *NormalizedEventProjectionEntityGroupBy) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _g.build.ctx, ent.OpQueryGroupBy)
 	if err := _g.build.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*NormalizedEventProjectionStatusQuery, *NormalizedEventProjectionStatusGroupBy](ctx, _g.build, _g, _g.build.inters, v)
+	return scanWithInterceptors[*NormalizedEventProjectionEntityQuery, *NormalizedEventProjectionEntityGroupBy](ctx, _g.build, _g, _g.build.inters, v)
 }
 
-func (_g *NormalizedEventProjectionStatusGroupBy) sqlScan(ctx context.Context, root *NormalizedEventProjectionStatusQuery, v any) error {
+func (_g *NormalizedEventProjectionEntityGroupBy) sqlScan(ctx context.Context, root *NormalizedEventProjectionEntityQuery, v any) error {
 	selector := root.sqlQuery(ctx).Select()
 	aggregation := make([]string, 0, len(_g.fns))
 	for _, fn := range _g.fns {
@@ -677,28 +677,28 @@ func (_g *NormalizedEventProjectionStatusGroupBy) sqlScan(ctx context.Context, r
 	return sql.ScanSlice(rows, v)
 }
 
-// NormalizedEventProjectionStatusSelect is the builder for selecting fields of NormalizedEventProjectionStatus entities.
-type NormalizedEventProjectionStatusSelect struct {
-	*NormalizedEventProjectionStatusQuery
+// NormalizedEventProjectionEntitySelect is the builder for selecting fields of NormalizedEventProjectionEntity entities.
+type NormalizedEventProjectionEntitySelect struct {
+	*NormalizedEventProjectionEntityQuery
 	selector
 }
 
 // Aggregate adds the given aggregation functions to the selector query.
-func (_s *NormalizedEventProjectionStatusSelect) Aggregate(fns ...AggregateFunc) *NormalizedEventProjectionStatusSelect {
+func (_s *NormalizedEventProjectionEntitySelect) Aggregate(fns ...AggregateFunc) *NormalizedEventProjectionEntitySelect {
 	_s.fns = append(_s.fns, fns...)
 	return _s
 }
 
 // Scan applies the selector query and scans the result into the given value.
-func (_s *NormalizedEventProjectionStatusSelect) Scan(ctx context.Context, v any) error {
+func (_s *NormalizedEventProjectionEntitySelect) Scan(ctx context.Context, v any) error {
 	ctx = setContextOp(ctx, _s.ctx, ent.OpQuerySelect)
 	if err := _s.prepareQuery(ctx); err != nil {
 		return err
 	}
-	return scanWithInterceptors[*NormalizedEventProjectionStatusQuery, *NormalizedEventProjectionStatusSelect](ctx, _s.NormalizedEventProjectionStatusQuery, _s, _s.inters, v)
+	return scanWithInterceptors[*NormalizedEventProjectionEntityQuery, *NormalizedEventProjectionEntitySelect](ctx, _s.NormalizedEventProjectionEntityQuery, _s, _s.inters, v)
 }
 
-func (_s *NormalizedEventProjectionStatusSelect) sqlScan(ctx context.Context, root *NormalizedEventProjectionStatusQuery, v any) error {
+func (_s *NormalizedEventProjectionEntitySelect) sqlScan(ctx context.Context, root *NormalizedEventProjectionEntityQuery, v any) error {
 	selector := root.sqlQuery(ctx)
 	aggregation := make([]string, 0, len(_s.fns))
 	for _, fn := range _s.fns {
@@ -720,7 +720,7 @@ func (_s *NormalizedEventProjectionStatusSelect) sqlScan(ctx context.Context, ro
 }
 
 // Modify adds a query modifier for attaching custom logic to queries.
-func (_s *NormalizedEventProjectionStatusSelect) Modify(modifiers ...func(s *sql.Selector)) *NormalizedEventProjectionStatusSelect {
+func (_s *NormalizedEventProjectionEntitySelect) Modify(modifiers ...func(s *sql.Selector)) *NormalizedEventProjectionEntitySelect {
 	_s.modifiers = append(_s.modifiers, modifiers...)
 	return _s
 }

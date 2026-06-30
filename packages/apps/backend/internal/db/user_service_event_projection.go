@@ -16,18 +16,18 @@ const (
 	knowledgeKindUser            = "user"
 )
 
-func (s *UserService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
+func (s *UserService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) (map[string][]uuid.UUID, error) {
 	if projections.SubjectKindUser.Matches(event) {
 		decoded, eventErr := projections.DecodeUserEvent(event)
 		if eventErr != nil || decoded == nil {
-			return fmt.Errorf("invalid event: %w", eventErr)
+			return nil, fmt.Errorf("invalid event: %w", eventErr)
 		}
 		return s.handleUserEventProjection(ctx, decoded)
 	}
-	return nil
+	return nil, nil
 }
 
-func (s *UserService) handleUserEventProjection(ctx context.Context, ue *projections.UserEvent) error {
+func (s *UserService) handleUserEventProjection(ctx context.Context, ue *projections.UserEvent) (map[string][]uuid.UUID, error) {
 	attrs := ue.Attributes
 	projKnowledgeEntity := rez.ProjectedKnowledgeEntity{
 		EvidenceAssertion: assertionUserProfileObserved,
@@ -39,7 +39,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 	}
 	keId, knowledgeErr := s.knowledge.ResolveProjectedEntity(ctx, ue.Event, projKnowledgeEntity)
 	if knowledgeErr != nil {
-		return fmt.Errorf("resolve user knowledge entity: %w", knowledgeErr)
+		return nil, fmt.Errorf("resolve user knowledge entity: %w", knowledgeErr)
 	}
 
 	// TODO: use regular user service update flow here instead
@@ -48,7 +48,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 		Where(user.KnowledgeEntityID(keId))
 	linked, linkedErr := queryLinked.Only(ctx)
 	if linkedErr != nil && !ent.IsNotFound(linkedErr) {
-		return fmt.Errorf("query linked user: %w", linkedErr)
+		return nil, fmt.Errorf("query linked user: %w", linkedErr)
 	}
 
 	var emailUser *ent.User
@@ -58,7 +58,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 			Where(user.Email(attrs.Email)).
 			Only(ctx)
 		if emailErr != nil && !ent.IsNotFound(emailErr) {
-			return fmt.Errorf("query email user: %w", emailErr)
+			return nil, fmt.Errorf("query email user: %w", emailErr)
 		}
 	}
 
@@ -68,7 +68,7 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 	}
 	if emailUser != nil {
 		if userID != uuid.Nil && userID != emailUser.ID {
-			return fmt.Errorf("knowledge entity %s is linked to user %s but email %q belongs to user %s",
+			return nil, fmt.Errorf("knowledge entity %s is linked to user %s but email %q belongs to user %s",
 				keId,
 				userID,
 				attrs.Email,
@@ -78,21 +78,27 @@ func (s *UserService) handleUserEventProjection(ctx context.Context, ue *project
 		userID = emailUser.ID
 	}
 
-	var mut *ent.UserMutation
+	var mutator ent.EntityMutator[*ent.User, *ent.UserMutation]
 	if userID == uuid.Nil {
-		mut = s.db.Client(ctx).User.Create().Mutation()
+		mutator = s.db.Client(ctx).User.Create()
 	} else {
-		mut = s.db.Client(ctx).User.UpdateOneID(userID).Mutation()
-	}
-	mut.SetKnowledgeEntityID(keId)
-	mut.SetName(attrs.Name)
-	mut.SetEmail(attrs.Email)
-	mut.SetChatID(attrs.ChatId)
-	mut.SetTimezone(attrs.Timezone)
-
-	if _, saveErr := s.db.Client(ctx).Mutate(ctx, mut); saveErr != nil {
-		return fmt.Errorf("save user: %w", saveErr)
+		mutator = s.db.Client(ctx).User.UpdateOneID(userID)
 	}
 
-	return nil
+	m := mutator.Mutation()
+	m.SetKnowledgeEntityID(keId)
+	m.SetName(attrs.Name)
+	m.SetEmail(attrs.Email)
+	m.SetChatID(attrs.ChatId)
+	m.SetTimezone(attrs.Timezone)
+
+	saved, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save user: %w", saveErr)
+	}
+	projIds := map[string][]uuid.UUID{
+		"user": {saved.ID},
+	}
+
+	return projIds, nil
 }

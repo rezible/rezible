@@ -13,9 +13,8 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -82,20 +81,6 @@ func (_c *AlertCreate) SetNillableDefinition(v *string) *AlertCreate {
 	return _c
 }
 
-// SetRosterID sets the "roster_id" field.
-func (_c *AlertCreate) SetRosterID(v uuid.UUID) *AlertCreate {
-	_c.mutation.SetRosterID(v)
-	return _c
-}
-
-// SetNillableRosterID sets the "roster_id" field if the given value is not nil.
-func (_c *AlertCreate) SetNillableRosterID(v *uuid.UUID) *AlertCreate {
-	if v != nil {
-		_c.SetRosterID(*v)
-	}
-	return _c
-}
-
 // SetID sets the "id" field.
 func (_c *AlertCreate) SetID(v uuid.UUID) *AlertCreate {
 	_c.mutation.SetID(v)
@@ -135,24 +120,19 @@ func (_c *AlertCreate) AddPlaybooks(v ...*Playbook) *AlertCreate {
 	return _c.AddPlaybookIDs(ids...)
 }
 
-// SetRoster sets the "roster" edge to the OncallRoster entity.
-func (_c *AlertCreate) SetRoster(v *OncallRoster) *AlertCreate {
-	return _c.SetRosterID(v.ID)
-}
-
-// AddFeedbackIDs adds the "feedback" edge to the AlertFeedback entity by IDs.
-func (_c *AlertCreate) AddFeedbackIDs(ids ...uuid.UUID) *AlertCreate {
-	_c.mutation.AddFeedbackIDs(ids...)
+// AddInstanceIDs adds the "instances" edge to the AlertInstance entity by IDs.
+func (_c *AlertCreate) AddInstanceIDs(ids ...uuid.UUID) *AlertCreate {
+	_c.mutation.AddInstanceIDs(ids...)
 	return _c
 }
 
-// AddFeedback adds the "feedback" edges to the AlertFeedback entity.
-func (_c *AlertCreate) AddFeedback(v ...*AlertFeedback) *AlertCreate {
+// AddInstances adds the "instances" edges to the AlertInstance entity.
+func (_c *AlertCreate) AddInstances(v ...*AlertInstance) *AlertCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
 	}
-	return _c.AddFeedbackIDs(ids...)
+	return _c.AddInstanceIDs(ids...)
 }
 
 // Mutation returns the AlertMutation object of the builder.
@@ -315,36 +295,18 @@ func (_c *AlertCreate) createSpec() (*Alert, *sqlgraph.CreateSpec) {
 		}
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.RosterIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   alert.RosterTable,
-			Columns: []string{alert.RosterColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(oncallroster.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.Alert
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.RosterID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
-	}
-	if nodes := _c.mutation.FeedbackIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.InstancesIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
-			Inverse: true,
-			Table:   alert.FeedbackTable,
-			Columns: []string{alert.FeedbackColumn},
+			Inverse: false,
+			Table:   alert.InstancesTable,
+			Columns: []string{alert.InstancesColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(alertinstance.FieldID, field.TypeUUID),
 			},
 		}
-		edge.Schema = _c.schemaConfig.AlertFeedback
+		edge.Schema = _c.schemaConfig.AlertInstance
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
@@ -465,24 +427,6 @@ func (u *AlertUpsert) UpdateDefinition() *AlertUpsert {
 // ClearDefinition clears the value of the "definition" field.
 func (u *AlertUpsert) ClearDefinition() *AlertUpsert {
 	u.SetNull(alert.FieldDefinition)
-	return u
-}
-
-// SetRosterID sets the "roster_id" field.
-func (u *AlertUpsert) SetRosterID(v uuid.UUID) *AlertUpsert {
-	u.Set(alert.FieldRosterID, v)
-	return u
-}
-
-// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
-func (u *AlertUpsert) UpdateRosterID() *AlertUpsert {
-	u.SetExcluded(alert.FieldRosterID)
-	return u
-}
-
-// ClearRosterID clears the value of the "roster_id" field.
-func (u *AlertUpsert) ClearRosterID() *AlertUpsert {
-	u.SetNull(alert.FieldRosterID)
 	return u
 }
 
@@ -611,27 +555,6 @@ func (u *AlertUpsertOne) UpdateDefinition() *AlertUpsertOne {
 func (u *AlertUpsertOne) ClearDefinition() *AlertUpsertOne {
 	return u.Update(func(s *AlertUpsert) {
 		s.ClearDefinition()
-	})
-}
-
-// SetRosterID sets the "roster_id" field.
-func (u *AlertUpsertOne) SetRosterID(v uuid.UUID) *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
-		s.SetRosterID(v)
-	})
-}
-
-// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
-func (u *AlertUpsertOne) UpdateRosterID() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
-		s.UpdateRosterID()
-	})
-}
-
-// ClearRosterID clears the value of the "roster_id" field.
-func (u *AlertUpsertOne) ClearRosterID() *AlertUpsertOne {
-	return u.Update(func(s *AlertUpsert) {
-		s.ClearRosterID()
 	})
 }
 
@@ -927,27 +850,6 @@ func (u *AlertUpsertBulk) UpdateDefinition() *AlertUpsertBulk {
 func (u *AlertUpsertBulk) ClearDefinition() *AlertUpsertBulk {
 	return u.Update(func(s *AlertUpsert) {
 		s.ClearDefinition()
-	})
-}
-
-// SetRosterID sets the "roster_id" field.
-func (u *AlertUpsertBulk) SetRosterID(v uuid.UUID) *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
-		s.SetRosterID(v)
-	})
-}
-
-// UpdateRosterID sets the "roster_id" field to the value that was provided on create.
-func (u *AlertUpsertBulk) UpdateRosterID() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
-		s.UpdateRosterID()
-	})
-}
-
-// ClearRosterID clears the value of the "roster_id" field.
-func (u *AlertUpsertBulk) ClearRosterID() *AlertUpsertBulk {
-	return u.Update(func(s *AlertUpsert) {
-		s.ClearRosterID()
 	})
 }
 

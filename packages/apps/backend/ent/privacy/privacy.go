@@ -351,6 +351,30 @@ func (f AlertFeedbackMutationRuleFunc) EvalMutation(ctx context.Context, m ent.M
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertFeedbackMutation", m)
 }
 
+// The AlertInstanceQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type AlertInstanceQueryRuleFunc func(context.Context, *ent.AlertInstanceQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f AlertInstanceQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.AlertInstanceQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.AlertInstanceQuery", q)
+}
+
+// The AlertInstanceMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type AlertInstanceMutationRuleFunc func(context.Context, *ent.AlertInstanceMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f AlertInstanceMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.AlertInstanceMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.AlertInstanceMutation", m)
+}
+
 // The AlertMetricsQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
 type AlertMetricsQueryRuleFunc func(context.Context, *ent.AlertMetricsQuery) error
@@ -1179,28 +1203,52 @@ func (f NormalizedEventMutationRuleFunc) EvalMutation(ctx context.Context, m ent
 	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.NormalizedEventMutation", m)
 }
 
-// The NormalizedEventProjectionStatusQueryRuleFunc type is an adapter to allow the use of ordinary
+// The NormalizedEventProjectionQueryRuleFunc type is an adapter to allow the use of ordinary
 // functions as a query rule.
-type NormalizedEventProjectionStatusQueryRuleFunc func(context.Context, *ent.NormalizedEventProjectionStatusQuery) error
+type NormalizedEventProjectionQueryRuleFunc func(context.Context, *ent.NormalizedEventProjectionQuery) error
 
 // EvalQuery return f(ctx, q).
-func (f NormalizedEventProjectionStatusQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
-	if q, ok := q.(*ent.NormalizedEventProjectionStatusQuery); ok {
+func (f NormalizedEventProjectionQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.NormalizedEventProjectionQuery); ok {
 		return f(ctx, q)
 	}
-	return Denyf("ent/privacy: unexpected query type %T, expect *ent.NormalizedEventProjectionStatusQuery", q)
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.NormalizedEventProjectionQuery", q)
 }
 
-// The NormalizedEventProjectionStatusMutationRuleFunc type is an adapter to allow the use of ordinary
+// The NormalizedEventProjectionMutationRuleFunc type is an adapter to allow the use of ordinary
 // functions as a mutation rule.
-type NormalizedEventProjectionStatusMutationRuleFunc func(context.Context, *ent.NormalizedEventProjectionStatusMutation) error
+type NormalizedEventProjectionMutationRuleFunc func(context.Context, *ent.NormalizedEventProjectionMutation) error
 
 // EvalMutation calls f(ctx, m).
-func (f NormalizedEventProjectionStatusMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
-	if m, ok := m.(*ent.NormalizedEventProjectionStatusMutation); ok {
+func (f NormalizedEventProjectionMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.NormalizedEventProjectionMutation); ok {
 		return f(ctx, m)
 	}
-	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.NormalizedEventProjectionStatusMutation", m)
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.NormalizedEventProjectionMutation", m)
+}
+
+// The NormalizedEventProjectionEntityQueryRuleFunc type is an adapter to allow the use of ordinary
+// functions as a query rule.
+type NormalizedEventProjectionEntityQueryRuleFunc func(context.Context, *ent.NormalizedEventProjectionEntityQuery) error
+
+// EvalQuery return f(ctx, q).
+func (f NormalizedEventProjectionEntityQueryRuleFunc) EvalQuery(ctx context.Context, q ent.Query) error {
+	if q, ok := q.(*ent.NormalizedEventProjectionEntityQuery); ok {
+		return f(ctx, q)
+	}
+	return Denyf("ent/privacy: unexpected query type %T, expect *ent.NormalizedEventProjectionEntityQuery", q)
+}
+
+// The NormalizedEventProjectionEntityMutationRuleFunc type is an adapter to allow the use of ordinary
+// functions as a mutation rule.
+type NormalizedEventProjectionEntityMutationRuleFunc func(context.Context, *ent.NormalizedEventProjectionEntityMutation) error
+
+// EvalMutation calls f(ctx, m).
+func (f NormalizedEventProjectionEntityMutationRuleFunc) EvalMutation(ctx context.Context, m ent.Mutation) error {
+	if m, ok := m.(*ent.NormalizedEventProjectionEntityMutation); ok {
+		return f(ctx, m)
+	}
+	return Denyf("ent/privacy: unexpected mutation type %T, expect *ent.NormalizedEventProjectionEntityMutation", m)
 }
 
 // The OncallHandoverTemplateQueryRuleFunc type is an adapter to allow the use of ordinary
@@ -1954,6 +2002,8 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.AlertFeedbackQuery:
 		return q.Filter(), nil
+	case *ent.AlertInstanceQuery:
+		return q.Filter(), nil
 	case *ent.AlertMetricsQuery:
 		return q.Filter(), nil
 	case *ent.DocumentQuery:
@@ -2024,7 +2074,9 @@ func queryFilter(q ent.Query) (Filter, error) {
 		return q.Filter(), nil
 	case *ent.NormalizedEventQuery:
 		return q.Filter(), nil
-	case *ent.NormalizedEventProjectionStatusQuery:
+	case *ent.NormalizedEventProjectionQuery:
+		return q.Filter(), nil
+	case *ent.NormalizedEventProjectionEntityQuery:
 		return q.Filter(), nil
 	case *ent.OncallHandoverTemplateQuery:
 		return q.Filter(), nil
@@ -2111,6 +2163,8 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.AlertFeedbackMutation:
 		return m.Filter(), nil
+	case *ent.AlertInstanceMutation:
+		return m.Filter(), nil
 	case *ent.DocumentMutation:
 		return m.Filter(), nil
 	case *ent.DocumentAccessMutation:
@@ -2179,7 +2233,9 @@ func mutationFilter(m ent.Mutation) (Filter, error) {
 		return m.Filter(), nil
 	case *ent.NormalizedEventMutation:
 		return m.Filter(), nil
-	case *ent.NormalizedEventProjectionStatusMutation:
+	case *ent.NormalizedEventProjectionMutation:
+		return m.Filter(), nil
+	case *ent.NormalizedEventProjectionEntityMutation:
 		return m.Filter(), nil
 	case *ent.OncallHandoverTemplateMutation:
 		return m.Filter(), nil

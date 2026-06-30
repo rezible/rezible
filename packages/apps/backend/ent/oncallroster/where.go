@@ -639,35 +639,6 @@ func HasHandoverTemplateWith(preds ...predicate.OncallHandoverTemplate) predicat
 	})
 }
 
-// HasAlerts applies the HasEdge predicate on the "alerts" edge.
-func HasAlerts() predicate.OncallRoster {
-	return predicate.OncallRoster(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AlertsTable, AlertsColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.Alert
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAlertsWith applies the HasEdge predicate on the "alerts" edge with a given conditions (other predicates).
-func HasAlertsWith(preds ...predicate.Alert) predicate.OncallRoster {
-	return predicate.OncallRoster(func(s *sql.Selector) {
-		step := newAlertsStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.Alert
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasTeams applies the HasEdge predicate on the "teams" edge.
 func HasTeams() predicate.OncallRoster {
 	return predicate.OncallRoster(func(s *sql.Selector) {

@@ -80,11 +80,6 @@ func Definition(v string) predicate.Alert {
 	return predicate.Alert(sql.FieldEQ(FieldDefinition, v))
 }
 
-// RosterID applies equality check predicate on the "roster_id" field. It's identical to RosterIDEQ.
-func RosterID(v uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldRosterID, v))
-}
-
 // TenantIDEQ applies the EQ predicate on the "tenant_id" field.
 func TenantIDEQ(v int) predicate.Alert {
 	return predicate.Alert(sql.FieldEQ(FieldTenantID, v))
@@ -350,36 +345,6 @@ func DefinitionContainsFold(v string) predicate.Alert {
 	return predicate.Alert(sql.FieldContainsFold(FieldDefinition, v))
 }
 
-// RosterIDEQ applies the EQ predicate on the "roster_id" field.
-func RosterIDEQ(v uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldEQ(FieldRosterID, v))
-}
-
-// RosterIDNEQ applies the NEQ predicate on the "roster_id" field.
-func RosterIDNEQ(v uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldNEQ(FieldRosterID, v))
-}
-
-// RosterIDIn applies the In predicate on the "roster_id" field.
-func RosterIDIn(vs ...uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldIn(FieldRosterID, vs...))
-}
-
-// RosterIDNotIn applies the NotIn predicate on the "roster_id" field.
-func RosterIDNotIn(vs ...uuid.UUID) predicate.Alert {
-	return predicate.Alert(sql.FieldNotIn(FieldRosterID, vs...))
-}
-
-// RosterIDIsNil applies the IsNil predicate on the "roster_id" field.
-func RosterIDIsNil() predicate.Alert {
-	return predicate.Alert(sql.FieldIsNull(FieldRosterID))
-}
-
-// RosterIDNotNil applies the NotNil predicate on the "roster_id" field.
-func RosterIDNotNil() predicate.Alert {
-	return predicate.Alert(sql.FieldNotNull(FieldRosterID))
-}
-
 // HasTenant applies the HasEdge predicate on the "tenant" edge.
 func HasTenant() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
@@ -467,56 +432,27 @@ func HasPlaybooksWith(preds ...predicate.Playbook) predicate.Alert {
 	})
 }
 
-// HasRoster applies the HasEdge predicate on the "roster" edge.
-func HasRoster() predicate.Alert {
+// HasInstances applies the HasEdge predicate on the "instances" edge.
+func HasInstances() predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, RosterTable, RosterColumn),
+			sqlgraph.Edge(sqlgraph.O2M, false, InstancesTable, InstancesColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.OncallRoster
-		step.Edge.Schema = schemaConfig.Alert
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertInstance
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasRosterWith applies the HasEdge predicate on the "roster" edge with a given conditions (other predicates).
-func HasRosterWith(preds ...predicate.OncallRoster) predicate.Alert {
+// HasInstancesWith applies the HasEdge predicate on the "instances" edge with a given conditions (other predicates).
+func HasInstancesWith(preds ...predicate.AlertInstance) predicate.Alert {
 	return predicate.Alert(func(s *sql.Selector) {
-		step := newRosterStep()
+		step := newInstancesStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.OncallRoster
-		step.Edge.Schema = schemaConfig.Alert
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasFeedback applies the HasEdge predicate on the "feedback" edge.
-func HasFeedback() predicate.Alert {
-	return predicate.Alert(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, FeedbackTable, FeedbackColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertFeedback
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasFeedbackWith applies the HasEdge predicate on the "feedback" edge with a given conditions (other predicates).
-func HasFeedbackWith(preds ...predicate.AlertFeedback) predicate.Alert {
-	return predicate.Alert(func(s *sql.Selector) {
-		step := newFeedbackStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertFeedback
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertInstance
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

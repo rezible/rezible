@@ -9,10 +9,8 @@ import (
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/ent/alert"
-	afb "github.com/rezible/rezible/ent/alertfeedback"
 	kne "github.com/rezible/rezible/ent/knowledgeentity"
 	knr "github.com/rezible/rezible/ent/knowledgerelationship"
-	ne "github.com/rezible/rezible/ent/normalizedevent"
 )
 
 type AlertService struct {
@@ -49,54 +47,11 @@ func (s *AlertService) ListAlerts(ctx context.Context, params rez.ListAlertsPara
 }
 
 func (s *AlertService) GetAlert(ctx context.Context, id uuid.UUID) (*ent.Alert, error) {
-	return s.db.Client(ctx).Alert.Query().Where(alert.ID(id)).WithRoster().Only(ctx)
+	return s.db.Client(ctx).Alert.Query().Where(alert.ID(id)).Only(ctx)
 }
 
 func (s *AlertService) GetAlertMetrics(ctx context.Context, params rez.GetAlertMetricsParams) (*ent.AlertMetrics, error) {
-	query := s.db.Client(ctx).Alert.Query().Where(alert.ID(params.AlertId)).
-		WithFeedback(func(afbq *ent.AlertFeedbackQuery) {
-			afbq.WithAlertInstance(func(neq *ent.NormalizedEventQuery) {
-				neq.Where(ne.Or(ne.OccurredAtGTE(params.From), ne.OccurredAtLTE(params.To)))
-			})
-		})
-	a, alertErr := query.Only(ctx)
-	if alertErr != nil {
-		return nil, fmt.Errorf("get alert: %w", alertErr)
-	}
-
-	metrics := &ent.AlertMetrics{}
-
-	for _, fb := range a.Edges.Feedback {
-		if ev := fb.Edges.AlertInstance; ev != nil {
-			// metrics.EventCount++
-			//if _, insErr := projections.DecodeAlertObserved(ev); insErr == nil {
-			//if !ins.AcknowledgedAt.IsZero() {
-			//	hour := ins.AcknowledgedAt.Hour()
-			//	if hour > 18 || hour < 9 {
-			//		metrics.NightInterruptCount++
-			//	}
-			//}
-			//}
-		}
-		metrics.FeedbackCount++
-		if fb.Actionable {
-			metrics.FeedbackActionable++
-		}
-		if fb.DocumentationAvailable {
-			metrics.FeedbackDocsAvailable++
-		}
-		if fb.DocumentationAvailable {
-			metrics.FeedbackDocsNeedUpdate++
-		}
-		if fb.Accurate == afb.AccurateYes {
-			metrics.FeedbackAccurate++
-		}
-		if fb.Accurate == afb.AccurateUnknown {
-			metrics.FeedbackAccurateUnknown++
-		}
-	}
-
-	return metrics, nil
+	return &ent.AlertMetrics{}, nil
 }
 
 func (s *AlertService) GetActiveAlertsForComponents(ctx context.Context, componentIDs []uuid.UUID) ([]*ent.Alert, error) {

@@ -124,8 +124,10 @@ type (
 		SourceCursorAfter *string
 	}
 
+	ProviderEventQuerySourceCursors map[string]string
+
 	ProviderEventQuerier interface {
-		QueryProviderEvents(ctx context.Context, sourceCursors map[string]string) iter.Seq2[*ProviderEventQueryResult, error]
+		QueryProviderEvents(ctx context.Context, sourceCursors ProviderEventQuerySourceCursors) iter.Seq2[*ProviderEventQueryResult, error]
 	}
 
 	ProviderEventProcessor interface {
@@ -133,12 +135,12 @@ type (
 	}
 
 	NormalizedEventProjector interface {
-		HandleEventProjection(context.Context, *ent.NormalizedEvent) error
+		HandleEventProjection(context.Context, *ent.NormalizedEvent) (map[string][]uuid.UUID, error)
 	}
 
 	ProviderEventSyncResult struct {
 		SyncErrors         []error
-		SourceCursorsAfter map[string]string
+		SourceCursorsAfter ProviderEventQuerySourceCursors
 		EventsPulled       int
 		EventsIngested     int
 		NumDuplicates      int
@@ -146,7 +148,7 @@ type (
 
 	ProviderEventPipelineService interface {
 		Ingest(context.Context, ProviderEvent) error
-		SyncEvents(ctx context.Context, q ProviderEventQuerier, sourceCursors map[string]string) ProviderEventSyncResult
+		SyncEvents(context.Context, ProviderEventQuerier, ProviderEventQuerySourceCursors) ProviderEventSyncResult
 	}
 )
 
@@ -426,7 +428,7 @@ type (
 	AgentWorkflowRunner interface {
 		RegisterWorkflows(reg *agents.WorkflowRegistry)
 	}
-	
+
 	CreateAgentTaskParams struct {
 		OwnerUserID    uuid.UUID
 		Workflow       string

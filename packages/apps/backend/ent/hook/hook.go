@@ -129,6 +129,18 @@ func (f AlertFeedbackFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Valu
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertFeedbackMutation", m)
 }
 
+// The AlertInstanceFunc type is an adapter to allow the use of ordinary
+// function as AlertInstance mutator.
+type AlertInstanceFunc func(context.Context, *ent.AlertInstanceMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f AlertInstanceFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.AlertInstanceMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.AlertInstanceMutation", m)
+}
+
 // The DocumentFunc type is an adapter to allow the use of ordinary
 // function as Document mutator.
 type DocumentFunc func(context.Context, *ent.DocumentMutation) (ent.Value, error)
@@ -537,16 +549,28 @@ func (f NormalizedEventFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Va
 	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NormalizedEventMutation", m)
 }
 
-// The NormalizedEventProjectionStatusFunc type is an adapter to allow the use of ordinary
-// function as NormalizedEventProjectionStatus mutator.
-type NormalizedEventProjectionStatusFunc func(context.Context, *ent.NormalizedEventProjectionStatusMutation) (ent.Value, error)
+// The NormalizedEventProjectionFunc type is an adapter to allow the use of ordinary
+// function as NormalizedEventProjection mutator.
+type NormalizedEventProjectionFunc func(context.Context, *ent.NormalizedEventProjectionMutation) (ent.Value, error)
 
 // Mutate calls f(ctx, m).
-func (f NormalizedEventProjectionStatusFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	if mv, ok := m.(*ent.NormalizedEventProjectionStatusMutation); ok {
+func (f NormalizedEventProjectionFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NormalizedEventProjectionMutation); ok {
 		return f(ctx, mv)
 	}
-	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NormalizedEventProjectionStatusMutation", m)
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NormalizedEventProjectionMutation", m)
+}
+
+// The NormalizedEventProjectionEntityFunc type is an adapter to allow the use of ordinary
+// function as NormalizedEventProjectionEntity mutator.
+type NormalizedEventProjectionEntityFunc func(context.Context, *ent.NormalizedEventProjectionEntityMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f NormalizedEventProjectionEntityFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.NormalizedEventProjectionEntityMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.NormalizedEventProjectionEntityMutation", m)
 }
 
 // The OncallHandoverTemplateFunc type is an adapter to allow the use of ordinary

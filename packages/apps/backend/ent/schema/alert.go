@@ -25,7 +25,6 @@ func (Alert) Fields() []ent.Field {
 		field.String("title"),
 		field.String("description").Optional(),
 		field.String("definition").Optional(),
-		field.UUID("roster_id", uuid.UUID{}).Optional(),
 	}
 }
 
@@ -33,8 +32,37 @@ func (Alert) Fields() []ent.Field {
 func (Alert) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.From("playbooks", Playbook.Type).Ref("alerts"),
-		edge.From("roster", OncallRoster.Type).Ref("alerts").Unique().Field("roster_id"),
-		edge.From("feedback", AlertFeedback.Type).Ref("alert"),
+		edge.To("instances", AlertInstance.Type),
+	}
+}
+
+type AlertInstance struct {
+	ent.Schema
+}
+
+func (AlertInstance) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		BaseMixin{},
+		TenantMixin{},
+		KnowledgeEntityLinkMixin{},
+	}
+}
+
+func (AlertInstance) Fields() []ent.Field {
+	return []ent.Field{
+		field.UUID("id", uuid.New()).Default(uuid.New),
+		field.UUID("alert_id", uuid.UUID{}),
+	}
+}
+
+func (AlertInstance) Edges() []ent.Edge {
+	return []ent.Edge{
+		edge.From("alert", Alert.Type).
+			Required().Unique().
+			Field("alert_id").
+			Ref("instances"),
+		edge.From("feedback", AlertFeedback.Type).
+			Ref("alert_instance"),
 	}
 }
 
@@ -52,8 +80,7 @@ func (AlertFeedback) Mixin() []ent.Mixin {
 func (AlertFeedback) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(uuid.New),
-		field.UUID("alert_id", uuid.UUID{}),
-		field.UUID("alert_instance_id", uuid.UUID{}).Optional(),
+		field.UUID("alert_instance_id", uuid.UUID{}),
 		field.Bool("actionable"),
 		field.Enum("accurate").Values("yes", "no", "unknown"),
 		field.Bool("documentation_available"),
@@ -63,11 +90,9 @@ func (AlertFeedback) Fields() []ent.Field {
 
 func (AlertFeedback) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.To("alert", Alert.Type).
-			Required().
+		edge.To("alert_instance", AlertInstance.Type).
 			Unique().
-			Field("alert_id"),
-		edge.To("alert_instance", NormalizedEvent.Type).Unique().
+			Required().
 			Field("alert_instance_id"),
 	}
 }

@@ -13,10 +13,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
-	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -29,9 +28,7 @@ type AlertFeedbackQuery struct {
 	inters            []Interceptor
 	predicates        []predicate.AlertFeedback
 	withTenant        *TenantQuery
-	withAlert         *AlertQuery
-	withAlertInstance *NormalizedEventQuery
-	withFKs           bool
+	withAlertInstance *AlertInstanceQuery
 	modifiers         []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -94,34 +91,9 @@ func (_q *AlertFeedbackQuery) QueryTenant() *TenantQuery {
 	return query
 }
 
-// QueryAlert chains the current query on the "alert" edge.
-func (_q *AlertFeedbackQuery) QueryAlert() *AlertQuery {
-	query := (&AlertClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, selector),
-			sqlgraph.To(alert.Table, alert.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.AlertTable, alertfeedback.AlertColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.AlertFeedback
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
 // QueryAlertInstance chains the current query on the "alert_instance" edge.
-func (_q *AlertFeedbackQuery) QueryAlertInstance() *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
+func (_q *AlertFeedbackQuery) QueryAlertInstance() *AlertInstanceQuery {
+	query := (&AlertInstanceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -132,11 +104,11 @@ func (_q *AlertFeedbackQuery) QueryAlertInstance() *NormalizedEventQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, selector),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.AlertInstanceTable, alertfeedback.AlertInstanceColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.AlertInstance
 		step.Edge.Schema = schemaConfig.AlertFeedback
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -337,7 +309,6 @@ func (_q *AlertFeedbackQuery) Clone() *AlertFeedbackQuery {
 		inters:            append([]Interceptor{}, _q.inters...),
 		predicates:        append([]predicate.AlertFeedback{}, _q.predicates...),
 		withTenant:        _q.withTenant.Clone(),
-		withAlert:         _q.withAlert.Clone(),
 		withAlertInstance: _q.withAlertInstance.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
@@ -357,21 +328,10 @@ func (_q *AlertFeedbackQuery) WithTenant(opts ...func(*TenantQuery)) *AlertFeedb
 	return _q
 }
 
-// WithAlert tells the query-builder to eager-load the nodes that are connected to
-// the "alert" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertFeedbackQuery) WithAlert(opts ...func(*AlertQuery)) *AlertFeedbackQuery {
-	query := (&AlertClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withAlert = query
-	return _q
-}
-
 // WithAlertInstance tells the query-builder to eager-load the nodes that are connected to
 // the "alert_instance" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertFeedbackQuery) WithAlertInstance(opts ...func(*NormalizedEventQuery)) *AlertFeedbackQuery {
-	query := (&NormalizedEventClient{config: _q.config}).Query()
+func (_q *AlertFeedbackQuery) WithAlertInstance(opts ...func(*AlertInstanceQuery)) *AlertFeedbackQuery {
+	query := (&AlertInstanceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
@@ -462,17 +422,12 @@ func (_q *AlertFeedbackQuery) prepareQuery(ctx context.Context) error {
 func (_q *AlertFeedbackQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*AlertFeedback, error) {
 	var (
 		nodes       = []*AlertFeedback{}
-		withFKs     = _q.withFKs
 		_spec       = _q.querySpec()
-		loadedTypes = [3]bool{
+		loadedTypes = [2]bool{
 			_q.withTenant != nil,
-			_q.withAlert != nil,
 			_q.withAlertInstance != nil,
 		}
 	)
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, alertfeedback.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*AlertFeedback).scanValues(nil, columns)
 	}
@@ -502,15 +457,9 @@ func (_q *AlertFeedbackQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 			return nil, err
 		}
 	}
-	if query := _q.withAlert; query != nil {
-		if err := _q.loadAlert(ctx, query, nodes, nil,
-			func(n *AlertFeedback, e *Alert) { n.Edges.Alert = e }); err != nil {
-			return nil, err
-		}
-	}
 	if query := _q.withAlertInstance; query != nil {
 		if err := _q.loadAlertInstance(ctx, query, nodes, nil,
-			func(n *AlertFeedback, e *NormalizedEvent) { n.Edges.AlertInstance = e }); err != nil {
+			func(n *AlertFeedback, e *AlertInstance) { n.Edges.AlertInstance = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -546,36 +495,7 @@ func (_q *AlertFeedbackQuery) loadTenant(ctx context.Context, query *TenantQuery
 	}
 	return nil
 }
-func (_q *AlertFeedbackQuery) loadAlert(ctx context.Context, query *AlertQuery, nodes []*AlertFeedback, init func(*AlertFeedback), assign func(*AlertFeedback, *Alert)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*AlertFeedback)
-	for i := range nodes {
-		fk := nodes[i].AlertID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(alert.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "alert_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *AlertFeedbackQuery) loadAlertInstance(ctx context.Context, query *NormalizedEventQuery, nodes []*AlertFeedback, init func(*AlertFeedback), assign func(*AlertFeedback, *NormalizedEvent)) error {
+func (_q *AlertFeedbackQuery) loadAlertInstance(ctx context.Context, query *AlertInstanceQuery, nodes []*AlertFeedback, init func(*AlertFeedback), assign func(*AlertFeedback, *AlertInstance)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*AlertFeedback)
 	for i := range nodes {
@@ -588,7 +508,7 @@ func (_q *AlertFeedbackQuery) loadAlertInstance(ctx context.Context, query *Norm
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(normalizedevent.IDIn(ids...))
+	query.Where(alertinstance.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -637,9 +557,6 @@ func (_q *AlertFeedbackQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withTenant != nil {
 			_spec.Node.AddColumnOnce(alertfeedback.FieldTenantID)
-		}
-		if _q.withAlert != nil {
-			_spec.Node.AddColumnOnce(alertfeedback.FieldAlertID)
 		}
 		if _q.withAlertInstance != nil {
 			_spec.Node.AddColumnOnce(alertfeedback.FieldAlertInstanceID)

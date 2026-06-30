@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/google/uuid"
 	rez "github.com/rezible/rezible"
 	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/projections"
@@ -28,19 +29,19 @@ const (
 	relationshipKindRelatedTo   = "related_to"
 )
 
-func (s *KnowledgeService) HandleEventProjection(ctx context.Context, ev *ent.NormalizedEvent) error {
+func (s *KnowledgeService) HandleEventProjection(ctx context.Context, ev *ent.NormalizedEvent) (map[string][]uuid.UUID, error) {
 	proj := newKnowledgeEntityEventProjector(ev, s)
 
 	result, eventErr := proj.projectEvent(ev)
 	if eventErr != nil {
-		return fmt.Errorf("project event: %w", eventErr)
+		return nil, fmt.Errorf("project event: %w", eventErr)
 	}
 	if result != nil {
 		if saveErr := proj.saveProjection(ctx, result); saveErr != nil {
-			return fmt.Errorf("save projection result: %w", saveErr)
+			return nil, fmt.Errorf("save projection result: %w", saveErr)
 		}
 	}
-	return nil
+	return nil, nil
 }
 
 type knowledgeEntityEventProjector struct {

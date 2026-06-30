@@ -23,7 +23,7 @@ type NormalizedEvent struct {
 	// TenantID holds the value of the "tenant_id" field.
 	TenantID int `json:"tenant_id,omitempty"`
 	// Kind of activity represented by the event.
-	ActivityKind normalizedevent.ActivityKind `json:"activity_kind,omitempty"`
+	Kind normalizedevent.Kind `json:"kind,omitempty"`
 	// Integration provider that produced the event, such as slack or github.
 	Provider string `json:"provider,omitempty"`
 	// Provider-specific event stream or webhook source the event came from.
@@ -52,11 +52,9 @@ type NormalizedEvent struct {
 type NormalizedEventEdges struct {
 	// Tenant holds the value of the tenant edge.
 	Tenant *Tenant `json:"tenant,omitempty"`
-	// AlertFeedback holds the value of the alert_feedback edge.
-	AlertFeedback []*AlertFeedback `json:"alert_feedback,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
+	loadedTypes [1]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -70,15 +68,6 @@ func (e NormalizedEventEdges) TenantOrErr() (*Tenant, error) {
 	return nil, &NotLoadedError{edge: "tenant"}
 }
 
-// AlertFeedbackOrErr returns the AlertFeedback value or an error if the edge
-// was not loaded in eager-loading.
-func (e NormalizedEventEdges) AlertFeedbackOrErr() ([]*AlertFeedback, error) {
-	if e.loadedTypes[1] {
-		return e.AlertFeedback, nil
-	}
-	return nil, &NotLoadedError{edge: "alert_feedback"}
-}
-
 // scanValues returns the types for scanning values from sql.Rows.
 func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
@@ -88,7 +77,7 @@ func (*NormalizedEvent) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case normalizedevent.FieldTenantID:
 			values[i] = new(sql.NullInt64)
-		case normalizedevent.FieldActivityKind, normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldProviderSubjectRef, normalizedevent.FieldSubjectKind:
+		case normalizedevent.FieldKind, normalizedevent.FieldProvider, normalizedevent.FieldProviderSource, normalizedevent.FieldProviderEventRef, normalizedevent.FieldProviderSubjectRef, normalizedevent.FieldSubjectKind:
 			values[i] = new(sql.NullString)
 		case normalizedevent.FieldCreatedAt, normalizedevent.FieldOccurredAt, normalizedevent.FieldReceivedAt:
 			values[i] = new(sql.NullTime)
@@ -121,11 +110,11 @@ func (_m *NormalizedEvent) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TenantID = int(value.Int64)
 			}
-		case normalizedevent.FieldActivityKind:
+		case normalizedevent.FieldKind:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field activity_kind", values[i])
+				return fmt.Errorf("unexpected type %T for field kind", values[i])
 			} else if value.Valid {
-				_m.ActivityKind = normalizedevent.ActivityKind(value.String)
+				_m.Kind = normalizedevent.Kind(value.String)
 			}
 		case normalizedevent.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -201,11 +190,6 @@ func (_m *NormalizedEvent) QueryTenant() *TenantQuery {
 	return NewNormalizedEventClient(_m.config).QueryTenant(_m)
 }
 
-// QueryAlertFeedback queries the "alert_feedback" edge of the NormalizedEvent entity.
-func (_m *NormalizedEvent) QueryAlertFeedback() *AlertFeedbackQuery {
-	return NewNormalizedEventClient(_m.config).QueryAlertFeedback(_m)
-}
-
 // Update returns a builder for updating this NormalizedEvent.
 // Note that you need to call NormalizedEvent.Unwrap() before calling this method if this NormalizedEvent
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -232,8 +216,8 @@ func (_m *NormalizedEvent) String() string {
 	builder.WriteString("tenant_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
-	builder.WriteString("activity_kind=")
-	builder.WriteString(fmt.Sprintf("%v", _m.ActivityKind))
+	builder.WriteString("kind=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Kind))
 	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(_m.Provider)

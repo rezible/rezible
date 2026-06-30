@@ -86,7 +86,7 @@ func (p *eventProcessor) processAlert() (ent.NormalizedEvents, error) {
 	result := &ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceAlerts,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindAlert.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
@@ -129,7 +129,7 @@ func (p *eventProcessor) processUser() (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{&ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceUsers,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindUser.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
@@ -165,7 +165,7 @@ func (p *eventProcessor) processCodeRepository() (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{&ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceCodeRepos,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindCodeForge.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
@@ -202,7 +202,7 @@ func (p *eventProcessor) processCodeChange() (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{&ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceCodeChanges,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindCodeChange.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
@@ -241,7 +241,7 @@ func (p *eventProcessor) processChatMessage() (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{&ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceChatMessages,
-		ActivityKind:       ne.ActivityKindReceived,
+		Kind:               ne.KindReceived,
 		SubjectKind:        projections.SubjectKindChatMessage.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
@@ -278,7 +278,7 @@ func (p *eventProcessor) processPlaybook() (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{&ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourcePlaybooks,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindPlaybook.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
@@ -318,7 +318,7 @@ func (p *eventProcessor) processIncidentImpact() (ent.NormalizedEvents, error) {
 	return ent.NormalizedEvents{&ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceIncidentImpacts,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindIncidentImpact.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
@@ -358,7 +358,7 @@ func (p *eventProcessor) processIncident() (ent.NormalizedEvents, error) {
 		Provider:           integrationName,
 		ProviderSource:     sourceIncidents,
 		ProviderEventRef:   p.event.ProviderEventRef,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindIncident.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		OccurredAt:         occurredAt,
@@ -378,7 +378,7 @@ func (p *eventProcessor) processTopology() (ent.NormalizedEvents, error) {
 		ProviderSource:     sourceTopology,
 		ProviderEventRef:   p.event.ProviderEventRef,
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		ReceivedAt:         p.event.ReceivedAt,
 		OccurredAt:         p.event.ReceivedAt,
 	}

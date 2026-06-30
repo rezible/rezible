@@ -60,7 +60,7 @@ func (p *eventProcessor) processUserObserved() (ent.NormalizedEvents, error) {
 	result := &ent.NormalizedEvent{
 		Provider:           integrationName,
 		ProviderSource:     sourceUsers,
-		ActivityKind:       ne.ActivityKindObserved,
+		Kind:               ne.KindObserved,
 		SubjectKind:        projections.SubjectKindUser.String(),
 		ProviderSubjectRef: p.event.ProviderSubjectRef,
 		ProviderEventRef:   p.event.ProviderEventRef,
@@ -139,7 +139,7 @@ func (p *eventProcessor) processEventsApiCallback() (ent.NormalizedEvents, error
 		Provider:           integrationName,
 		ProviderSource:     sourceEventsApiCallback,
 		ProviderEventRef:   providerEventRef,
-		ActivityKind:       ne.ActivityKindReceived,
+		Kind:               ne.KindReceived,
 		SubjectKind:        projections.SubjectKindChatMessage.String(),
 		ProviderSubjectRef: ProviderSubjectRef,
 		OccurredAt:         occurredAt,

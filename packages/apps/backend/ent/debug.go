@@ -84,6 +84,14 @@ func (c *AlertFeedbackClient) Debug() *AlertFeedbackClient {
 	return &AlertFeedbackClient{config: cfg}
 }
 
+func (c *AlertInstanceClient) Debug() *AlertInstanceClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &AlertInstanceClient{config: cfg}
+}
+
 func (c *AlertMetricsClient) Debug() *AlertMetricsClient {
 	if c.debug {
 		return c
@@ -364,12 +372,20 @@ func (c *NormalizedEventClient) Debug() *NormalizedEventClient {
 	return &NormalizedEventClient{config: cfg}
 }
 
-func (c *NormalizedEventProjectionStatusClient) Debug() *NormalizedEventProjectionStatusClient {
+func (c *NormalizedEventProjectionClient) Debug() *NormalizedEventProjectionClient {
 	if c.debug {
 		return c
 	}
 	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
-	return &NormalizedEventProjectionStatusClient{config: cfg}
+	return &NormalizedEventProjectionClient{config: cfg}
+}
+
+func (c *NormalizedEventProjectionEntityClient) Debug() *NormalizedEventProjectionEntityClient {
+	if c.debug {
+		return c
+	}
+	cfg := config{driver: dialect.Debug(c.driver, c.log), log: c.log, debug: true, hooks: c.hooks, inters: c.inters}
+	return &NormalizedEventProjectionEntityClient{config: cfg}
 }
 
 func (c *OncallHandoverTemplateClient) Debug() *OncallHandoverTemplateClient {

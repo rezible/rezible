@@ -11,8 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/predicate"
@@ -32,16 +30,16 @@ func (_u *NormalizedEventUpdate) Where(ps ...predicate.NormalizedEvent) *Normali
 	return _u
 }
 
-// SetActivityKind sets the "activity_kind" field.
-func (_u *NormalizedEventUpdate) SetActivityKind(v normalizedevent.ActivityKind) *NormalizedEventUpdate {
-	_u.mutation.SetActivityKind(v)
+// SetKind sets the "kind" field.
+func (_u *NormalizedEventUpdate) SetKind(v normalizedevent.Kind) *NormalizedEventUpdate {
+	_u.mutation.SetKind(v)
 	return _u
 }
 
-// SetNillableActivityKind sets the "activity_kind" field if the given value is not nil.
-func (_u *NormalizedEventUpdate) SetNillableActivityKind(v *normalizedevent.ActivityKind) *NormalizedEventUpdate {
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_u *NormalizedEventUpdate) SetNillableKind(v *normalizedevent.Kind) *NormalizedEventUpdate {
 	if v != nil {
-		_u.SetActivityKind(*v)
+		_u.SetKind(*v)
 	}
 	return _u
 }
@@ -164,45 +162,9 @@ func (_u *NormalizedEventUpdate) SetNillableReceivedAt(v *time.Time) *Normalized
 	return _u
 }
 
-// AddAlertFeedbackIDs adds the "alert_feedback" edge to the AlertFeedback entity by IDs.
-func (_u *NormalizedEventUpdate) AddAlertFeedbackIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
-	_u.mutation.AddAlertFeedbackIDs(ids...)
-	return _u
-}
-
-// AddAlertFeedback adds the "alert_feedback" edges to the AlertFeedback entity.
-func (_u *NormalizedEventUpdate) AddAlertFeedback(v ...*AlertFeedback) *NormalizedEventUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAlertFeedbackIDs(ids...)
-}
-
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_u *NormalizedEventUpdate) Mutation() *NormalizedEventMutation {
 	return _u.mutation
-}
-
-// ClearAlertFeedback clears all "alert_feedback" edges to the AlertFeedback entity.
-func (_u *NormalizedEventUpdate) ClearAlertFeedback() *NormalizedEventUpdate {
-	_u.mutation.ClearAlertFeedback()
-	return _u
-}
-
-// RemoveAlertFeedbackIDs removes the "alert_feedback" edge to AlertFeedback entities by IDs.
-func (_u *NormalizedEventUpdate) RemoveAlertFeedbackIDs(ids ...uuid.UUID) *NormalizedEventUpdate {
-	_u.mutation.RemoveAlertFeedbackIDs(ids...)
-	return _u
-}
-
-// RemoveAlertFeedback removes "alert_feedback" edges to AlertFeedback entities.
-func (_u *NormalizedEventUpdate) RemoveAlertFeedback(v ...*AlertFeedback) *NormalizedEventUpdate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAlertFeedbackIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -234,9 +196,9 @@ func (_u *NormalizedEventUpdate) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *NormalizedEventUpdate) check() error {
-	if v, ok := _u.mutation.ActivityKind(); ok {
-		if err := normalizedevent.ActivityKindValidator(v); err != nil {
-			return &ValidationError{Name: "activity_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.activity_kind": %w`, err)}
+	if v, ok := _u.mutation.Kind(); ok {
+		if err := normalizedevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Provider(); ok {
@@ -283,8 +245,8 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 			}
 		}
 	}
-	if value, ok := _u.mutation.ActivityKind(); ok {
-		_spec.SetField(normalizedevent.FieldActivityKind, field.TypeEnum, value)
+	if value, ok := _u.mutation.Kind(); ok {
+		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
@@ -313,54 +275,6 @@ func (_u *NormalizedEventUpdate) sqlSave(ctx context.Context) (_node int, err er
 	if value, ok := _u.mutation.ReceivedAt(); ok {
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
 	}
-	if _u.mutation.AlertFeedbackCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   normalizedevent.AlertFeedbackTable,
-			Columns: []string{normalizedevent.AlertFeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAlertFeedbackIDs(); len(nodes) > 0 && !_u.mutation.AlertFeedbackCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   normalizedevent.AlertFeedbackTable,
-			Columns: []string{normalizedevent.AlertFeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AlertFeedbackIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   normalizedevent.AlertFeedbackTable,
-			Columns: []string{normalizedevent.AlertFeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
-	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)
 	_spec.AddModifiers(_u.modifiers...)
@@ -385,16 +299,16 @@ type NormalizedEventUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetActivityKind sets the "activity_kind" field.
-func (_u *NormalizedEventUpdateOne) SetActivityKind(v normalizedevent.ActivityKind) *NormalizedEventUpdateOne {
-	_u.mutation.SetActivityKind(v)
+// SetKind sets the "kind" field.
+func (_u *NormalizedEventUpdateOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpdateOne {
+	_u.mutation.SetKind(v)
 	return _u
 }
 
-// SetNillableActivityKind sets the "activity_kind" field if the given value is not nil.
-func (_u *NormalizedEventUpdateOne) SetNillableActivityKind(v *normalizedevent.ActivityKind) *NormalizedEventUpdateOne {
+// SetNillableKind sets the "kind" field if the given value is not nil.
+func (_u *NormalizedEventUpdateOne) SetNillableKind(v *normalizedevent.Kind) *NormalizedEventUpdateOne {
 	if v != nil {
-		_u.SetActivityKind(*v)
+		_u.SetKind(*v)
 	}
 	return _u
 }
@@ -517,45 +431,9 @@ func (_u *NormalizedEventUpdateOne) SetNillableReceivedAt(v *time.Time) *Normali
 	return _u
 }
 
-// AddAlertFeedbackIDs adds the "alert_feedback" edge to the AlertFeedback entity by IDs.
-func (_u *NormalizedEventUpdateOne) AddAlertFeedbackIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
-	_u.mutation.AddAlertFeedbackIDs(ids...)
-	return _u
-}
-
-// AddAlertFeedback adds the "alert_feedback" edges to the AlertFeedback entity.
-func (_u *NormalizedEventUpdateOne) AddAlertFeedback(v ...*AlertFeedback) *NormalizedEventUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.AddAlertFeedbackIDs(ids...)
-}
-
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_u *NormalizedEventUpdateOne) Mutation() *NormalizedEventMutation {
 	return _u.mutation
-}
-
-// ClearAlertFeedback clears all "alert_feedback" edges to the AlertFeedback entity.
-func (_u *NormalizedEventUpdateOne) ClearAlertFeedback() *NormalizedEventUpdateOne {
-	_u.mutation.ClearAlertFeedback()
-	return _u
-}
-
-// RemoveAlertFeedbackIDs removes the "alert_feedback" edge to AlertFeedback entities by IDs.
-func (_u *NormalizedEventUpdateOne) RemoveAlertFeedbackIDs(ids ...uuid.UUID) *NormalizedEventUpdateOne {
-	_u.mutation.RemoveAlertFeedbackIDs(ids...)
-	return _u
-}
-
-// RemoveAlertFeedback removes "alert_feedback" edges to AlertFeedback entities.
-func (_u *NormalizedEventUpdateOne) RemoveAlertFeedback(v ...*AlertFeedback) *NormalizedEventUpdateOne {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _u.RemoveAlertFeedbackIDs(ids...)
 }
 
 // Where appends a list predicates to the NormalizedEventUpdate builder.
@@ -600,9 +478,9 @@ func (_u *NormalizedEventUpdateOne) ExecX(ctx context.Context) {
 
 // check runs all checks and user-defined validators on the builder.
 func (_u *NormalizedEventUpdateOne) check() error {
-	if v, ok := _u.mutation.ActivityKind(); ok {
-		if err := normalizedevent.ActivityKindValidator(v); err != nil {
-			return &ValidationError{Name: "activity_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.activity_kind": %w`, err)}
+	if v, ok := _u.mutation.Kind(); ok {
+		if err := normalizedevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Provider(); ok {
@@ -666,8 +544,8 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 			}
 		}
 	}
-	if value, ok := _u.mutation.ActivityKind(); ok {
-		_spec.SetField(normalizedevent.FieldActivityKind, field.TypeEnum, value)
+	if value, ok := _u.mutation.Kind(); ok {
+		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
 	}
 	if value, ok := _u.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
@@ -695,54 +573,6 @@ func (_u *NormalizedEventUpdateOne) sqlSave(ctx context.Context) (_node *Normali
 	}
 	if value, ok := _u.mutation.ReceivedAt(); ok {
 		_spec.SetField(normalizedevent.FieldReceivedAt, field.TypeTime, value)
-	}
-	if _u.mutation.AlertFeedbackCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   normalizedevent.AlertFeedbackTable,
-			Columns: []string{normalizedevent.AlertFeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.RemovedAlertFeedbackIDs(); len(nodes) > 0 && !_u.mutation.AlertFeedbackCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   normalizedevent.AlertFeedbackTable,
-			Columns: []string{normalizedevent.AlertFeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.AlertFeedbackIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   normalizedevent.AlertFeedbackTable,
-			Columns: []string{normalizedevent.AlertFeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _u.schemaConfig.AlertFeedback
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.Node.Schema = _u.schemaConfig.NormalizedEvent
 	ctx = internal.NewSchemaConfigContext(ctx, _u.schemaConfig)

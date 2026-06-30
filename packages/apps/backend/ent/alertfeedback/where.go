@@ -60,11 +60,6 @@ func TenantID(v int) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldTenantID, v))
 }
 
-// AlertID applies equality check predicate on the "alert_id" field. It's identical to AlertIDEQ.
-func AlertID(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertID, v))
-}
-
 // AlertInstanceID applies equality check predicate on the "alert_instance_id" field. It's identical to AlertInstanceIDEQ.
 func AlertInstanceID(v uuid.UUID) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertInstanceID, v))
@@ -105,26 +100,6 @@ func TenantIDNotIn(vs ...int) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// AlertIDEQ applies the EQ predicate on the "alert_id" field.
-func AlertIDEQ(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertID, v))
-}
-
-// AlertIDNEQ applies the NEQ predicate on the "alert_id" field.
-func AlertIDNEQ(v uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldNEQ(FieldAlertID, v))
-}
-
-// AlertIDIn applies the In predicate on the "alert_id" field.
-func AlertIDIn(vs ...uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldIn(FieldAlertID, vs...))
-}
-
-// AlertIDNotIn applies the NotIn predicate on the "alert_id" field.
-func AlertIDNotIn(vs ...uuid.UUID) predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldNotIn(FieldAlertID, vs...))
-}
-
 // AlertInstanceIDEQ applies the EQ predicate on the "alert_instance_id" field.
 func AlertInstanceIDEQ(v uuid.UUID) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldEQ(FieldAlertInstanceID, v))
@@ -143,16 +118,6 @@ func AlertInstanceIDIn(vs ...uuid.UUID) predicate.AlertFeedback {
 // AlertInstanceIDNotIn applies the NotIn predicate on the "alert_instance_id" field.
 func AlertInstanceIDNotIn(vs ...uuid.UUID) predicate.AlertFeedback {
 	return predicate.AlertFeedback(sql.FieldNotIn(FieldAlertInstanceID, vs...))
-}
-
-// AlertInstanceIDIsNil applies the IsNil predicate on the "alert_instance_id" field.
-func AlertInstanceIDIsNil() predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldIsNull(FieldAlertInstanceID))
-}
-
-// AlertInstanceIDNotNil applies the NotNil predicate on the "alert_instance_id" field.
-func AlertInstanceIDNotNil() predicate.AlertFeedback {
-	return predicate.AlertFeedback(sql.FieldNotNull(FieldAlertInstanceID))
 }
 
 // ActionableEQ applies the EQ predicate on the "actionable" field.
@@ -234,35 +199,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.AlertFeedback {
 	})
 }
 
-// HasAlert applies the HasEdge predicate on the "alert" edge.
-func HasAlert() predicate.AlertFeedback {
-	return predicate.AlertFeedback(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, AlertTable, AlertColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.AlertFeedback
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAlertWith applies the HasEdge predicate on the "alert" edge with a given conditions (other predicates).
-func HasAlertWith(preds ...predicate.Alert) predicate.AlertFeedback {
-	return predicate.AlertFeedback(func(s *sql.Selector) {
-		step := newAlertStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.AlertFeedback
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
 // HasAlertInstance applies the HasEdge predicate on the "alert_instance" edge.
 func HasAlertInstance() predicate.AlertFeedback {
 	return predicate.AlertFeedback(func(s *sql.Selector) {
@@ -271,18 +207,18 @@ func HasAlertInstance() predicate.AlertFeedback {
 			sqlgraph.Edge(sqlgraph.M2O, false, AlertInstanceTable, AlertInstanceColumn),
 		)
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.AlertInstance
 		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
 // HasAlertInstanceWith applies the HasEdge predicate on the "alert_instance" edge with a given conditions (other predicates).
-func HasAlertInstanceWith(preds ...predicate.NormalizedEvent) predicate.AlertFeedback {
+func HasAlertInstanceWith(preds ...predicate.AlertInstance) predicate.AlertFeedback {
 	return predicate.AlertFeedback(func(s *sql.Selector) {
 		step := newAlertInstanceStep()
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.AlertInstance
 		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

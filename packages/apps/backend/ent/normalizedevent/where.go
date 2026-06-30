@@ -122,24 +122,24 @@ func TenantIDNotIn(vs ...int) predicate.NormalizedEvent {
 	return predicate.NormalizedEvent(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
-// ActivityKindEQ applies the EQ predicate on the "activity_kind" field.
-func ActivityKindEQ(v ActivityKind) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldEQ(FieldActivityKind, v))
+// KindEQ applies the EQ predicate on the "kind" field.
+func KindEQ(v Kind) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldEQ(FieldKind, v))
 }
 
-// ActivityKindNEQ applies the NEQ predicate on the "activity_kind" field.
-func ActivityKindNEQ(v ActivityKind) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNEQ(FieldActivityKind, v))
+// KindNEQ applies the NEQ predicate on the "kind" field.
+func KindNEQ(v Kind) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNEQ(FieldKind, v))
 }
 
-// ActivityKindIn applies the In predicate on the "activity_kind" field.
-func ActivityKindIn(vs ...ActivityKind) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldIn(FieldActivityKind, vs...))
+// KindIn applies the In predicate on the "kind" field.
+func KindIn(vs ...Kind) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldIn(FieldKind, vs...))
 }
 
-// ActivityKindNotIn applies the NotIn predicate on the "activity_kind" field.
-func ActivityKindNotIn(vs ...ActivityKind) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(sql.FieldNotIn(FieldActivityKind, vs...))
+// KindNotIn applies the NotIn predicate on the "kind" field.
+func KindNotIn(vs ...Kind) predicate.NormalizedEvent {
+	return predicate.NormalizedEvent(sql.FieldNotIn(FieldKind, vs...))
 }
 
 // ProviderEQ applies the EQ predicate on the "provider" field.
@@ -608,35 +608,6 @@ func HasTenantWith(preds ...predicate.Tenant) predicate.NormalizedEvent {
 		schemaConfig := internal.SchemaConfigFromContext(s.Context())
 		step.To.Schema = schemaConfig.Tenant
 		step.Edge.Schema = schemaConfig.NormalizedEvent
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
-	})
-}
-
-// HasAlertFeedback applies the HasEdge predicate on the "alert_feedback" edge.
-func HasAlertFeedback() predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, AlertFeedbackTable, AlertFeedbackColumn),
-		)
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertFeedback
-		sqlgraph.HasNeighbors(s, step)
-	})
-}
-
-// HasAlertFeedbackWith applies the HasEdge predicate on the "alert_feedback" edge with a given conditions (other predicates).
-func HasAlertFeedbackWith(preds ...predicate.AlertFeedback) predicate.NormalizedEvent {
-	return predicate.NormalizedEvent(func(s *sql.Selector) {
-		step := newAlertFeedbackStep()
-		schemaConfig := internal.SchemaConfigFromContext(s.Context())
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertFeedback
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

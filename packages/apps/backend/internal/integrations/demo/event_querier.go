@@ -25,7 +25,7 @@ func newEventQuerier(ci *InstalledIntegration) *eventQuerier {
 	return &eventQuerier{ii: ci}
 }
 
-func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors map[string]string) iter.Seq2[*rez.ProviderEventQueryResult, error] {
+func (q *eventQuerier) QueryProviderEvents(ctx context.Context, cursors rez.ProviderEventQuerySourceCursors) iter.Seq2[*rez.ProviderEventQueryResult, error] {
 	return func(yield func(*rez.ProviderEventQueryResult, error) bool) {
 		if cursor, shouldQuery := integrations.GetSourceQueryCursor(cursors, sourceTopology); shouldQuery {
 			for ev, evErr := range q.pullTopologyEvents(cursor) {

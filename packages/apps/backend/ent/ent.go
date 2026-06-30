@@ -22,6 +22,7 @@ import (
 	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/alertmetrics"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
@@ -57,7 +58,8 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
+	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -157,6 +159,7 @@ func checkColumn(t, c string) error {
 			agenttasksubject.Table:                        agenttasksubject.ValidColumn,
 			alert.Table:                                   alert.ValidColumn,
 			alertfeedback.Table:                           alertfeedback.ValidColumn,
+			alertinstance.Table:                           alertinstance.ValidColumn,
 			alertmetrics.Table:                            alertmetrics.ValidColumn,
 			document.Table:                                document.ValidColumn,
 			documentaccess.Table:                          documentaccess.ValidColumn,
@@ -192,7 +195,8 @@ func checkColumn(t, c string) error {
 			meetingschedule.Table:                         meetingschedule.ValidColumn,
 			meetingsession.Table:                          meetingsession.ValidColumn,
 			normalizedevent.Table:                         normalizedevent.ValidColumn,
-			normalizedeventprojectionstatus.Table:         normalizedeventprojectionstatus.ValidColumn,
+			normalizedeventprojection.Table:               normalizedeventprojection.ValidColumn,
+			normalizedeventprojectionentity.Table:         normalizedeventprojectionentity.ValidColumn,
 			oncallhandovertemplate.Table:                  oncallhandovertemplate.ValidColumn,
 			oncallroster.Table:                            oncallroster.ValidColumn,
 			oncallrostermetrics.Table:                     oncallrostermetrics.ValidColumn,

@@ -11,7 +11,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/tenant"
 )
 
@@ -30,8 +29,6 @@ type Alert struct {
 	Description string `json:"description,omitempty"`
 	// Definition holds the value of the "definition" field.
 	Definition string `json:"definition,omitempty"`
-	// RosterID holds the value of the "roster_id" field.
-	RosterID uuid.UUID `json:"roster_id,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the AlertQuery when eager-loading is set.
 	Edges        AlertEdges `json:"edges"`
@@ -46,13 +43,11 @@ type AlertEdges struct {
 	KnowledgeEntity *KnowledgeEntity `json:"knowledge_entity,omitempty"`
 	// Playbooks holds the value of the playbooks edge.
 	Playbooks []*Playbook `json:"playbooks,omitempty"`
-	// Roster holds the value of the roster edge.
-	Roster *OncallRoster `json:"roster,omitempty"`
-	// Feedback holds the value of the feedback edge.
-	Feedback []*AlertFeedback `json:"feedback,omitempty"`
+	// Instances holds the value of the instances edge.
+	Instances []*AlertInstance `json:"instances,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [5]bool
+	loadedTypes [4]bool
 }
 
 // TenantOrErr returns the Tenant value or an error if the edge
@@ -86,24 +81,13 @@ func (e AlertEdges) PlaybooksOrErr() ([]*Playbook, error) {
 	return nil, &NotLoadedError{edge: "playbooks"}
 }
 
-// RosterOrErr returns the Roster value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e AlertEdges) RosterOrErr() (*OncallRoster, error) {
-	if e.Roster != nil {
-		return e.Roster, nil
-	} else if e.loadedTypes[3] {
-		return nil, &NotFoundError{label: oncallroster.Label}
-	}
-	return nil, &NotLoadedError{edge: "roster"}
-}
-
-// FeedbackOrErr returns the Feedback value or an error if the edge
+// InstancesOrErr returns the Instances value or an error if the edge
 // was not loaded in eager-loading.
-func (e AlertEdges) FeedbackOrErr() ([]*AlertFeedback, error) {
-	if e.loadedTypes[4] {
-		return e.Feedback, nil
+func (e AlertEdges) InstancesOrErr() ([]*AlertInstance, error) {
+	if e.loadedTypes[3] {
+		return e.Instances, nil
 	}
-	return nil, &NotLoadedError{edge: "feedback"}
+	return nil, &NotLoadedError{edge: "instances"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -117,7 +101,7 @@ func (*Alert) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullInt64)
 		case alert.FieldTitle, alert.FieldDescription, alert.FieldDefinition:
 			values[i] = new(sql.NullString)
-		case alert.FieldID, alert.FieldRosterID:
+		case alert.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -171,12 +155,6 @@ func (_m *Alert) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Definition = value.String
 			}
-		case alert.FieldRosterID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field roster_id", values[i])
-			} else if value != nil {
-				_m.RosterID = *value
-			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -205,14 +183,9 @@ func (_m *Alert) QueryPlaybooks() *PlaybookQuery {
 	return NewAlertClient(_m.config).QueryPlaybooks(_m)
 }
 
-// QueryRoster queries the "roster" edge of the Alert entity.
-func (_m *Alert) QueryRoster() *OncallRosterQuery {
-	return NewAlertClient(_m.config).QueryRoster(_m)
-}
-
-// QueryFeedback queries the "feedback" edge of the Alert entity.
-func (_m *Alert) QueryFeedback() *AlertFeedbackQuery {
-	return NewAlertClient(_m.config).QueryFeedback(_m)
+// QueryInstances queries the "instances" edge of the Alert entity.
+func (_m *Alert) QueryInstances() *AlertInstanceQuery {
+	return NewAlertClient(_m.config).QueryInstances(_m)
 }
 
 // Update returns a builder for updating this Alert.
@@ -254,9 +227,6 @@ func (_m *Alert) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("definition=")
 	builder.WriteString(_m.Definition)
-	builder.WriteString(", ")
-	builder.WriteString("roster_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.RosterID))
 	builder.WriteByte(')')
 	return builder.String()
 }

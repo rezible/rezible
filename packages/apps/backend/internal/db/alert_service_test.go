@@ -53,7 +53,7 @@ func (s *AlertServiceSuite) createAlertProjectionEvent(subjectRef string, attrs 
 		SetProviderSource("alerts").
 		SetProviderEventRef("alert-event-" + uuid.NewString()).
 		SetProviderSubjectRef(subjectRef).
-		SetActivityKind(ne.ActivityKindObserved).
+		SetKind(ne.KindObserved).
 		SetSubjectKind(projections.SubjectKindAlert.String()).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
@@ -74,8 +74,11 @@ func (s *AlertServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvidence(
 	}
 	first := s.createAlertProjectionEvent("alert-1", attrs)
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, first))
-	s.Require().NoError(svc.HandleEventProjection(ctx, first))
+	_, err = svc.HandleEventProjection(ctx, first)
+	s.Require().NoError(err, "first projection")
+
+	_, err = svc.HandleEventProjection(ctx, first)
+	s.Require().NoError(err, "second projection")
 
 	alerts, err := s.Client(ctx).Alert.Query().All(ctx)
 	s.Require().NoError(err)
@@ -85,7 +88,9 @@ func (s *AlertServiceSuite) TestAlertProjectionCreatesUpdatesAndRecordsEvidence(
 
 	attrs.Title = "Search latency critical"
 	second := s.createAlertProjectionEvent("alert-1", attrs)
-	s.Require().NoError(svc.HandleEventProjection(ctx, second))
+
+	_, projErr := svc.HandleEventProjection(ctx, second)
+	s.Require().NoError(projErr)
 
 	updated, err := s.Client(ctx).Alert.Query().
 		Where(entalert.KnowledgeEntityID(*alerts[0].KnowledgeEntityID)).
@@ -117,7 +122,8 @@ func (s *AlertServiceSuite) TestAlertProjectionLinksRelatedEntities() {
 	}
 	ev := s.createAlertProjectionEvent("demo:alert:search-api-latency", attrs)
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+	_, projErr := svc.HandleEventProjection(ctx, ev)
+	s.Require().NoError(projErr)
 
 	relationships, err := s.Client(ctx).KnowledgeRelationship.Query().
 		Where().

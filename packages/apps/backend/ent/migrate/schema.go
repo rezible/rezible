@@ -476,7 +476,6 @@ var (
 		{Name: "definition", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
 		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "roster_id", Type: field.TypeUUID, Nullable: true},
 	}
 	// AlertsTable holds the schema information for the "alerts" table.
 	AlertsTable = &schema.Table{
@@ -494,12 +493,6 @@ var (
 				Symbol:     "alerts_knowledge_entities_knowledge_entity",
 				Columns:    []*schema.Column{AlertsColumns[5]},
 				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "alerts_oncall_rosters_alerts",
-				Columns:    []*schema.Column{AlertsColumns[6]},
-				RefColumns: []*schema.Column{OncallRostersColumns[0]},
 				OnDelete:   schema.SetNull,
 			},
 		},
@@ -524,9 +517,7 @@ var (
 		{Name: "documentation_available", Type: field.TypeBool},
 		{Name: "documentation_needs_update", Type: field.TypeBool},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "alert_id", Type: field.TypeUUID},
-		{Name: "alert_instance_id", Type: field.TypeUUID, Nullable: true},
-		{Name: "normalized_event_alert_feedback", Type: field.TypeUUID, Nullable: true},
+		{Name: "alert_instance_id", Type: field.TypeUUID},
 	}
 	// AlertFeedbacksTable holds the schema information for the "alert_feedbacks" table.
 	AlertFeedbacksTable = &schema.Table{
@@ -541,22 +532,10 @@ var (
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "alert_feedbacks_alerts_alert",
+				Symbol:     "alert_feedbacks_alert_instances_alert_instance",
 				Columns:    []*schema.Column{AlertFeedbacksColumns[6]},
-				RefColumns: []*schema.Column{AlertsColumns[0]},
+				RefColumns: []*schema.Column{AlertInstancesColumns[0]},
 				OnDelete:   schema.NoAction,
-			},
-			{
-				Symbol:     "alert_feedbacks_normalized_events_alert_instance",
-				Columns:    []*schema.Column{AlertFeedbacksColumns[7]},
-				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-			{
-				Symbol:     "alert_feedbacks_normalized_events_alert_feedback",
-				Columns:    []*schema.Column{AlertFeedbacksColumns[8]},
-				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
-				OnDelete:   schema.SetNull,
 			},
 		},
 		Indexes: []*schema.Index{
@@ -564,6 +543,51 @@ var (
 				Name:    "alertfeedback_tenant_id",
 				Unique:  false,
 				Columns: []*schema.Column{AlertFeedbacksColumns[5]},
+			},
+		},
+	}
+	// AlertInstancesColumns holds the columns for the "alert_instances" table.
+	AlertInstancesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "alert_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "knowledge_entity_id", Type: field.TypeUUID, Nullable: true},
+	}
+	// AlertInstancesTable holds the schema information for the "alert_instances" table.
+	AlertInstancesTable = &schema.Table{
+		Name:       "alert_instances",
+		Columns:    AlertInstancesColumns,
+		PrimaryKey: []*schema.Column{AlertInstancesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "alert_instances_alerts_instances",
+				Columns:    []*schema.Column{AlertInstancesColumns[1]},
+				RefColumns: []*schema.Column{AlertsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "alert_instances_tenants_tenant",
+				Columns:    []*schema.Column{AlertInstancesColumns[2]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "alert_instances_knowledge_entities_knowledge_entity",
+				Columns:    []*schema.Column{AlertInstancesColumns[3]},
+				RefColumns: []*schema.Column{KnowledgeEntitiesColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "alertinstance_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{AlertInstancesColumns[2]},
+			},
+			{
+				Name:    "alertinstance_tenant_id_knowledge_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{AlertInstancesColumns[2], AlertInstancesColumns[3]},
 			},
 		},
 	}
@@ -2035,7 +2059,7 @@ var (
 	// NormalizedEventsColumns holds the columns for the "normalized_events" table.
 	NormalizedEventsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "activity_kind", Type: field.TypeEnum, Enums: []string{"received", "observed", "deleted"}},
+		{Name: "kind", Type: field.TypeEnum, Enums: []string{"received", "observed", "deleted"}},
 		{Name: "provider", Type: field.TypeString},
 		{Name: "provider_source", Type: field.TypeString},
 		{Name: "provider_event_ref", Type: field.TypeString},
@@ -2078,54 +2102,96 @@ var (
 			},
 		},
 	}
-	// NormalizedEventProjectionStatusColumns holds the columns for the "normalized_event_projection_status" table.
-	NormalizedEventProjectionStatusColumns = []*schema.Column{
+	// NormalizedEventProjectionsColumns holds the columns for the "normalized_event_projections" table.
+	NormalizedEventProjectionsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "handler_name", Type: field.TypeString},
-		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "succeeded", "failed"}, Default: "pending"},
-		{Name: "last_error", Type: field.TypeString, Nullable: true},
-		{Name: "last_attempted_at", Type: field.TypeTime, Nullable: true},
-		{Name: "succeeded_at", Type: field.TypeTime, Nullable: true},
-		{Name: "failed_at", Type: field.TypeTime, Nullable: true},
+		{Name: "projector", Type: field.TypeString},
+		{Name: "status", Type: field.TypeEnum, Enums: []string{"pending", "succeeded", "failed"}},
+		{Name: "started_at", Type: field.TypeTime},
+		{Name: "finished_at", Type: field.TypeTime, Nullable: true},
+		{Name: "error", Type: field.TypeString, Nullable: true},
 		{Name: "tenant_id", Type: field.TypeInt},
-		{Name: "normalized_event_id", Type: field.TypeUUID},
+		{Name: "event_id", Type: field.TypeUUID},
 	}
-	// NormalizedEventProjectionStatusTable holds the schema information for the "normalized_event_projection_status" table.
-	NormalizedEventProjectionStatusTable = &schema.Table{
-		Name:       "normalized_event_projection_status",
-		Columns:    NormalizedEventProjectionStatusColumns,
-		PrimaryKey: []*schema.Column{NormalizedEventProjectionStatusColumns[0]},
+	// NormalizedEventProjectionsTable holds the schema information for the "normalized_event_projections" table.
+	NormalizedEventProjectionsTable = &schema.Table{
+		Name:       "normalized_event_projections",
+		Columns:    NormalizedEventProjectionsColumns,
+		PrimaryKey: []*schema.Column{NormalizedEventProjectionsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "normalized_event_projection_status_tenants_tenant",
-				Columns:    []*schema.Column{NormalizedEventProjectionStatusColumns[9]},
+				Symbol:     "normalized_event_projections_tenants_tenant",
+				Columns:    []*schema.Column{NormalizedEventProjectionsColumns[6]},
 				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 			{
-				Symbol:     "normalized_event_projection_status_normalized_events_normalized_event",
-				Columns:    []*schema.Column{NormalizedEventProjectionStatusColumns[10]},
+				Symbol:     "normalized_event_projections_normalized_events_event",
+				Columns:    []*schema.Column{NormalizedEventProjectionsColumns[7]},
 				RefColumns: []*schema.Column{NormalizedEventsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
 		Indexes: []*schema.Index{
 			{
-				Name:    "normalizedeventprojectionstatus_tenant_id",
+				Name:    "normalizedeventprojection_tenant_id",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventProjectionStatusColumns[9]},
+				Columns: []*schema.Column{NormalizedEventProjectionsColumns[6]},
 			},
 			{
-				Name:    "normalizedeventprojectionstatus_tenant_id_normalized_event_id_handler_name",
+				Name:    "normalizedeventprojection_tenant_id_event_id_projector",
 				Unique:  true,
-				Columns: []*schema.Column{NormalizedEventProjectionStatusColumns[9], NormalizedEventProjectionStatusColumns[10], NormalizedEventProjectionStatusColumns[3]},
+				Columns: []*schema.Column{NormalizedEventProjectionsColumns[6], NormalizedEventProjectionsColumns[7], NormalizedEventProjectionsColumns[1]},
 			},
 			{
-				Name:    "normalizedeventprojectionstatus_tenant_id_status_updated_at",
+				Name:    "normalizedeventprojection_tenant_id_status_started_at",
 				Unique:  false,
-				Columns: []*schema.Column{NormalizedEventProjectionStatusColumns[9], NormalizedEventProjectionStatusColumns[4], NormalizedEventProjectionStatusColumns[2]},
+				Columns: []*schema.Column{NormalizedEventProjectionsColumns[6], NormalizedEventProjectionsColumns[2], NormalizedEventProjectionsColumns[3]},
+			},
+		},
+	}
+	// NormalizedEventProjectionEntitiesColumns holds the columns for the "normalized_event_projection_entities" table.
+	NormalizedEventProjectionEntitiesColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "domain_entity_kind", Type: field.TypeString},
+		{Name: "domain_entity_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeInt},
+		{Name: "projection_id", Type: field.TypeUUID},
+	}
+	// NormalizedEventProjectionEntitiesTable holds the schema information for the "normalized_event_projection_entities" table.
+	NormalizedEventProjectionEntitiesTable = &schema.Table{
+		Name:       "normalized_event_projection_entities",
+		Columns:    NormalizedEventProjectionEntitiesColumns,
+		PrimaryKey: []*schema.Column{NormalizedEventProjectionEntitiesColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "normalized_event_projection_entities_tenants_tenant",
+				Columns:    []*schema.Column{NormalizedEventProjectionEntitiesColumns[3]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "normalized_event_projection_entities_normalized_event_projections_projection",
+				Columns:    []*schema.Column{NormalizedEventProjectionEntitiesColumns[4]},
+				RefColumns: []*schema.Column{NormalizedEventProjectionsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "normalizedeventprojectionentity_tenant_id",
+				Unique:  false,
+				Columns: []*schema.Column{NormalizedEventProjectionEntitiesColumns[3]},
+			},
+			{
+				Name:    "normalizedeventprojectionentity_tenant_id_domain_entity_id",
+				Unique:  true,
+				Columns: []*schema.Column{NormalizedEventProjectionEntitiesColumns[3], NormalizedEventProjectionEntitiesColumns[2]},
+			},
+			{
+				Name:    "normalizedeventprojectionentity_tenant_id_domain_entity_kind",
+				Unique:  false,
+				Columns: []*schema.Column{NormalizedEventProjectionEntitiesColumns[3], NormalizedEventProjectionEntitiesColumns[1]},
 			},
 		},
 	}
@@ -3733,6 +3799,7 @@ var (
 		AgentTaskSubjectsTable,
 		AlertsTable,
 		AlertFeedbacksTable,
+		AlertInstancesTable,
 		DocumentsTable,
 		DocumentAccessesTable,
 		EventAnnotationsTable,
@@ -3767,7 +3834,8 @@ var (
 		MeetingSchedulesTable,
 		MeetingSessionsTable,
 		NormalizedEventsTable,
-		NormalizedEventProjectionStatusTable,
+		NormalizedEventProjectionsTable,
+		NormalizedEventProjectionEntitiesTable,
 		OncallHandoverTemplatesTable,
 		OncallRostersTable,
 		OncallRosterMetricsTable,
@@ -3840,11 +3908,11 @@ func init() {
 	AgentTaskSubjectsTable.ForeignKeys[1].RefTable = AgentTasksTable
 	AlertsTable.ForeignKeys[0].RefTable = TenantsTable
 	AlertsTable.ForeignKeys[1].RefTable = KnowledgeEntitiesTable
-	AlertsTable.ForeignKeys[2].RefTable = OncallRostersTable
 	AlertFeedbacksTable.ForeignKeys[0].RefTable = TenantsTable
-	AlertFeedbacksTable.ForeignKeys[1].RefTable = AlertsTable
-	AlertFeedbacksTable.ForeignKeys[2].RefTable = NormalizedEventsTable
-	AlertFeedbacksTable.ForeignKeys[3].RefTable = NormalizedEventsTable
+	AlertFeedbacksTable.ForeignKeys[1].RefTable = AlertInstancesTable
+	AlertInstancesTable.ForeignKeys[0].RefTable = AlertsTable
+	AlertInstancesTable.ForeignKeys[1].RefTable = TenantsTable
+	AlertInstancesTable.ForeignKeys[2].RefTable = KnowledgeEntitiesTable
 	DocumentsTable.ForeignKeys[0].RefTable = TenantsTable
 	DocumentAccessesTable.ForeignKeys[0].RefTable = TenantsTable
 	DocumentAccessesTable.ForeignKeys[1].RefTable = DocumentsTable
@@ -3921,8 +3989,10 @@ func init() {
 	MeetingSessionsTable.ForeignKeys[0].RefTable = TenantsTable
 	MeetingSessionsTable.ForeignKeys[1].RefTable = MeetingSchedulesTable
 	NormalizedEventsTable.ForeignKeys[0].RefTable = TenantsTable
-	NormalizedEventProjectionStatusTable.ForeignKeys[0].RefTable = TenantsTable
-	NormalizedEventProjectionStatusTable.ForeignKeys[1].RefTable = NormalizedEventsTable
+	NormalizedEventProjectionsTable.ForeignKeys[0].RefTable = TenantsTable
+	NormalizedEventProjectionsTable.ForeignKeys[1].RefTable = NormalizedEventsTable
+	NormalizedEventProjectionEntitiesTable.ForeignKeys[0].RefTable = TenantsTable
+	NormalizedEventProjectionEntitiesTable.ForeignKeys[1].RefTable = NormalizedEventProjectionsTable
 	OncallHandoverTemplatesTable.ForeignKeys[0].RefTable = TenantsTable
 	OncallRostersTable.ForeignKeys[0].RefTable = OncallHandoverTemplatesTable
 	OncallRostersTable.ForeignKeys[1].RefTable = TenantsTable

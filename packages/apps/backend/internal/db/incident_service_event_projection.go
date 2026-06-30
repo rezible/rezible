@@ -19,25 +19,25 @@ const (
 	knowledgeKindIncident     = "incident"
 )
 
-func (s *IncidentService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) error {
+func (s *IncidentService) HandleEventProjection(ctx context.Context, event *ent.NormalizedEvent) (map[string][]uuid.UUID, error) {
 	if projections.SubjectKindIncident.Matches(event) {
 		decoded, validationErr := projections.DecodeIncidentEvent(event)
 		if validationErr != nil || decoded == nil {
-			return fmt.Errorf("invalid event: %w", validationErr)
+			return nil, fmt.Errorf("invalid event: %w", validationErr)
 		}
 		return s.handleIncidentEventProjection(ctx, decoded)
 	}
 	if projections.SubjectKindIncidentImpact.Matches(event) {
 		decoded, validationErr := projections.DecodeIncidentImpactEvent(event)
 		if validationErr != nil || decoded == nil {
-			return fmt.Errorf("invalid event: %w", validationErr)
+			return nil, fmt.Errorf("invalid event: %w", validationErr)
 		}
 		return s.handleIncidentImpactEventProjection(ctx, decoded)
 	}
-	return nil
+	return nil, nil
 }
 
-func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie *projections.IncidentEvent) error {
+func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie *projections.IncidentEvent) (map[string][]uuid.UUID, error) {
 	attrs := ie.Attributes
 	openedAt := attrs.OpenedAt
 	if openedAt.IsZero() {
@@ -50,7 +50,9 @@ func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie 
 		EvidenceAssertion: assertionIncidentObserved,
 		AliasRefs:         []ent.KnowledgeEntityAliasRef{ie.Event.MakeEntityAliasRef()},
 	}
-	return s.db.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
+
+	projIds := make(map[string][]uuid.UUID)
+	return projIds, s.db.WithTx(ctx, func(ctx context.Context, client *ent.Client) error {
 		knowledgeEntityId, knowledgeErr := s.knowledge.ResolveProjectedEntity(ctx, ie.Event, knowledgeEntity)
 		if knowledgeErr != nil {
 			return fmt.Errorf("resolve incident knowledge entity: %w", knowledgeErr)
@@ -95,15 +97,17 @@ func (s *IncidentService) handleIncidentEventProjection(ctx context.Context, ie 
 				m.SetOpenedAt(openedAt)
 			}
 		}
-		if _, setErr := s.Set(ctx, id, setFn); setErr != nil {
+		inc, setErr := s.Set(ctx, id, setFn)
+		if setErr != nil {
 			return fmt.Errorf("set incident: %w", setErr)
 		}
+		projIds["incident"] = append(projIds["incident"], inc.ID)
 
 		return nil
 	})
 }
 
-func (s *IncidentService) handleIncidentImpactEventProjection(ctx context.Context, ie *projections.IncidentImpactEvent) error {
+func (s *IncidentService) handleIncidentImpactEventProjection(ctx context.Context, ie *projections.IncidentImpactEvent) (map[string][]uuid.UUID, error) {
 	attrs := ie.Attributes
 	incidentAliasRef := ent.KnowledgeEntityAliasRef{
 		Provider:           ie.Event.Provider,
@@ -111,17 +115,17 @@ func (s *IncidentService) handleIncidentImpactEventProjection(ctx context.Contex
 	}
 	incidentID, incidentLookupErr := s.knowledge.LookupEntityIDFromAliasRefs(ctx, incidentAliasRef)
 	if incidentLookupErr != nil {
-		return projections.Retryable(fmt.Errorf("lookup incident entity alias: %w", incidentLookupErr))
+		return nil, projections.Retryable(fmt.Errorf("lookup incident entity alias: %w", incidentLookupErr))
 	}
 	if incidentID == uuid.Nil {
-		return projections.Retryable(fmt.Errorf("incident entity alias not found: %s", attrs.IncidentExternalRef))
+		return nil, projections.Retryable(fmt.Errorf("incident entity alias not found: %s", attrs.IncidentExternalRef))
 	}
 
 	queryIncident := s.db.Client(ctx).Incident.Query().
 		Where(incident.KnowledgeEntityID(incidentID))
 	inc, incErr := queryIncident.Only(ctx)
 	if incErr != nil {
-		return projections.Retryable(fmt.Errorf("query incident for impact: %w", incErr))
+		return nil, projections.Retryable(fmt.Errorf("query incident for impact: %w", incErr))
 	}
 
 	projEnt := rez.ProjectedKnowledgeEntity{
@@ -137,14 +141,14 @@ func (s *IncidentService) handleIncidentImpactEventProjection(ctx context.Contex
 	}
 	entityID, entityErr := s.knowledge.ResolveProjectedEntity(ctx, ie.Event, projEnt)
 	if entityErr != nil {
-		return fmt.Errorf("resolve impact entity: %w", entityErr)
+		return nil, fmt.Errorf("resolve impact entity: %w", entityErr)
 	}
 
 	queryExisting := s.db.Client(ctx).IncidentImpact.Query().
 		Where(ii.IncidentID(inc.ID), ii.KnowledgeEntityID(entityID))
 	existing, queryErr := queryExisting.Only(ctx)
 	if queryErr != nil && !ent.IsNotFound(queryErr) {
-		return fmt.Errorf("query existing incident impact: %w", queryErr)
+		return nil, fmt.Errorf("query existing incident impact: %w", queryErr)
 	}
 
 	var mutator ent.EntityMutator[*ent.IncidentImpact, *ent.IncidentImpactMutation]
@@ -163,10 +167,11 @@ func (s *IncidentService) handleIncidentImpactEventProjection(ctx context.Contex
 	if attrs.Note != "" {
 		m.SetNote(attrs.Note)
 	}
-	if _, saveErr := mutator.Save(ctx); saveErr != nil {
-		return fmt.Errorf("save incident impact: %w", saveErr)
+	imp, saveErr := mutator.Save(ctx)
+	if saveErr != nil {
+		return nil, fmt.Errorf("save incident impact: %w", saveErr)
 	}
-	return nil
+	return map[string][]uuid.UUID{"incident_impact": {imp.ID}}, nil
 }
 
 func (s *IncidentService) saveProjectedIncidentSeverity(ctx context.Context, attrs projections.IncidentSubjectAttributes) (uuid.UUID, error) {

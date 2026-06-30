@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/ent/alertfeedback"
 	"github.com/rezible/rezible/ent/normalizedevent"
 	"github.com/rezible/rezible/ent/tenant"
 )
@@ -32,9 +31,9 @@ func (_c *NormalizedEventCreate) SetTenantID(v int) *NormalizedEventCreate {
 	return _c
 }
 
-// SetActivityKind sets the "activity_kind" field.
-func (_c *NormalizedEventCreate) SetActivityKind(v normalizedevent.ActivityKind) *NormalizedEventCreate {
-	_c.mutation.SetActivityKind(v)
+// SetKind sets the "kind" field.
+func (_c *NormalizedEventCreate) SetKind(v normalizedevent.Kind) *NormalizedEventCreate {
+	_c.mutation.SetKind(v)
 	return _c
 }
 
@@ -119,21 +118,6 @@ func (_c *NormalizedEventCreate) SetTenant(v *Tenant) *NormalizedEventCreate {
 	return _c.SetTenantID(v.ID)
 }
 
-// AddAlertFeedbackIDs adds the "alert_feedback" edge to the AlertFeedback entity by IDs.
-func (_c *NormalizedEventCreate) AddAlertFeedbackIDs(ids ...uuid.UUID) *NormalizedEventCreate {
-	_c.mutation.AddAlertFeedbackIDs(ids...)
-	return _c
-}
-
-// AddAlertFeedback adds the "alert_feedback" edges to the AlertFeedback entity.
-func (_c *NormalizedEventCreate) AddAlertFeedback(v ...*AlertFeedback) *NormalizedEventCreate {
-	ids := make([]uuid.UUID, len(v))
-	for i := range v {
-		ids[i] = v[i].ID
-	}
-	return _c.AddAlertFeedbackIDs(ids...)
-}
-
 // Mutation returns the NormalizedEventMutation object of the builder.
 func (_c *NormalizedEventCreate) Mutation() *NormalizedEventMutation {
 	return _c.mutation
@@ -193,12 +177,12 @@ func (_c *NormalizedEventCreate) check() error {
 	if _, ok := _c.mutation.TenantID(); !ok {
 		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "NormalizedEvent.tenant_id"`)}
 	}
-	if _, ok := _c.mutation.ActivityKind(); !ok {
-		return &ValidationError{Name: "activity_kind", err: errors.New(`ent: missing required field "NormalizedEvent.activity_kind"`)}
+	if _, ok := _c.mutation.Kind(); !ok {
+		return &ValidationError{Name: "kind", err: errors.New(`ent: missing required field "NormalizedEvent.kind"`)}
 	}
-	if v, ok := _c.mutation.ActivityKind(); ok {
-		if err := normalizedevent.ActivityKindValidator(v); err != nil {
-			return &ValidationError{Name: "activity_kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.activity_kind": %w`, err)}
+	if v, ok := _c.mutation.Kind(); ok {
+		if err := normalizedevent.KindValidator(v); err != nil {
+			return &ValidationError{Name: "kind", err: fmt.Errorf(`ent: validator failed for field "NormalizedEvent.kind": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Provider(); !ok {
@@ -288,9 +272,9 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.ActivityKind(); ok {
-		_spec.SetField(normalizedevent.FieldActivityKind, field.TypeEnum, value)
-		_node.ActivityKind = value
+	if value, ok := _c.mutation.Kind(); ok {
+		_spec.SetField(normalizedevent.FieldKind, field.TypeEnum, value)
+		_node.Kind = value
 	}
 	if value, ok := _c.mutation.Provider(); ok {
 		_spec.SetField(normalizedevent.FieldProvider, field.TypeString, value)
@@ -346,23 +330,6 @@ func (_c *NormalizedEventCreate) createSpec() (*NormalizedEvent, *sqlgraph.Creat
 		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
-	if nodes := _c.mutation.AlertFeedbackIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   normalizedevent.AlertFeedbackTable,
-			Columns: []string{normalizedevent.AlertFeedbackColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(alertfeedback.FieldID, field.TypeUUID),
-			},
-		}
-		edge.Schema = _c.schemaConfig.AlertFeedback
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
-	}
 	return _node, _spec
 }
 
@@ -415,15 +382,15 @@ type (
 	}
 )
 
-// SetActivityKind sets the "activity_kind" field.
-func (u *NormalizedEventUpsert) SetActivityKind(v normalizedevent.ActivityKind) *NormalizedEventUpsert {
-	u.Set(normalizedevent.FieldActivityKind, v)
+// SetKind sets the "kind" field.
+func (u *NormalizedEventUpsert) SetKind(v normalizedevent.Kind) *NormalizedEventUpsert {
+	u.Set(normalizedevent.FieldKind, v)
 	return u
 }
 
-// UpdateActivityKind sets the "activity_kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsert) UpdateActivityKind() *NormalizedEventUpsert {
-	u.SetExcluded(normalizedevent.FieldActivityKind)
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *NormalizedEventUpsert) UpdateKind() *NormalizedEventUpsert {
+	u.SetExcluded(normalizedevent.FieldKind)
 	return u
 }
 
@@ -586,17 +553,17 @@ func (u *NormalizedEventUpsertOne) Update(set func(*NormalizedEventUpsert)) *Nor
 	return u
 }
 
-// SetActivityKind sets the "activity_kind" field.
-func (u *NormalizedEventUpsertOne) SetActivityKind(v normalizedevent.ActivityKind) *NormalizedEventUpsertOne {
+// SetKind sets the "kind" field.
+func (u *NormalizedEventUpsertOne) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetActivityKind(v)
+		s.SetKind(v)
 	})
 }
 
-// UpdateActivityKind sets the "activity_kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsertOne) UpdateActivityKind() *NormalizedEventUpsertOne {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *NormalizedEventUpsertOne) UpdateKind() *NormalizedEventUpsertOne {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateActivityKind()
+		s.UpdateKind()
 	})
 }
 
@@ -944,17 +911,17 @@ func (u *NormalizedEventUpsertBulk) Update(set func(*NormalizedEventUpsert)) *No
 	return u
 }
 
-// SetActivityKind sets the "activity_kind" field.
-func (u *NormalizedEventUpsertBulk) SetActivityKind(v normalizedevent.ActivityKind) *NormalizedEventUpsertBulk {
+// SetKind sets the "kind" field.
+func (u *NormalizedEventUpsertBulk) SetKind(v normalizedevent.Kind) *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.SetActivityKind(v)
+		s.SetKind(v)
 	})
 }
 
-// UpdateActivityKind sets the "activity_kind" field to the value that was provided on create.
-func (u *NormalizedEventUpsertBulk) UpdateActivityKind() *NormalizedEventUpsertBulk {
+// UpdateKind sets the "kind" field to the value that was provided on create.
+func (u *NormalizedEventUpsertBulk) UpdateKind() *NormalizedEventUpsertBulk {
 	return u.Update(func(s *NormalizedEventUpsert) {
-		s.UpdateActivityKind()
+		s.UpdateKind()
 	})
 }
 

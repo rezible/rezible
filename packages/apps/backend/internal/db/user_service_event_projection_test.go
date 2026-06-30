@@ -20,7 +20,7 @@ func (s *UserServiceSuite) createUserProjectionEvent(subjectRef string, attrs pr
 		SetProviderSource("users").
 		SetProviderEventRef("user-event-" + uuid.NewString()).
 		SetProviderSubjectRef(subjectRef).
-		SetActivityKind(ne.ActivityKindObserved).
+		SetKind(ne.KindObserved).
 		SetSubjectKind(projections.SubjectKindUser.String()).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
@@ -40,7 +40,8 @@ func (s *UserServiceSuite) TestUserProjectionCreatesAndLinksKnowledgeEntity() {
 		Timezone: "Australia/Perth",
 	})
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+	_, projErr := svc.HandleEventProjection(ctx, ev)
+	s.Require().NoError(projErr)
 
 	created, err := s.Client(ctx).User.Query().
 		Where(entuser.Email(ev.Attributes["email"].(string))).
@@ -65,7 +66,8 @@ func (s *UserServiceSuite) TestUserProjectionReusesExistingEmailUser() {
 		Email: email,
 	})
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+	_, projErr := svc.HandleEventProjection(ctx, ev)
+	s.Require().NoError(projErr)
 
 	users, err := s.Client(ctx).User.Query().
 		Where(entuser.Email(email)).
@@ -85,7 +87,9 @@ func (s *UserServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflictsWith
 		Name:  "Linked User",
 		Email: firstEmail,
 	})
-	s.Require().NoError(svc.HandleEventProjection(ctx, first))
+
+	_, projErr := svc.HandleEventProjection(ctx, first)
+	s.Require().NoError(projErr)
 
 	conflictEmail := "conflict+" + uuid.NewString() + "@example.com"
 	_, err := s.Client(ctx).User.Create().
@@ -98,5 +102,6 @@ func (s *UserServiceSuite) TestUserProjectionFailsWhenKnowledgeLinkConflictsWith
 		Email: conflictEmail,
 	})
 
-	s.Require().Error(svc.HandleEventProjection(ctx, conflict))
+	_, projConfErr := svc.HandleEventProjection(ctx, conflict)
+	s.Require().Error(projConfErr)
 }

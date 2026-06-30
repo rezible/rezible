@@ -26,6 +26,7 @@ import (
 	"github.com/rezible/rezible/ent/agenttasksubject"
 	"github.com/rezible/rezible/ent/alert"
 	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/document"
 	"github.com/rezible/rezible/ent/documentaccess"
 	"github.com/rezible/rezible/ent/eventannotation"
@@ -60,7 +61,8 @@ import (
 	"github.com/rezible/rezible/ent/meetingschedule"
 	"github.com/rezible/rezible/ent/meetingsession"
 	"github.com/rezible/rezible/ent/normalizedevent"
-	"github.com/rezible/rezible/ent/normalizedeventprojectionstatus"
+	"github.com/rezible/rezible/ent/normalizedeventprojection"
+	"github.com/rezible/rezible/ent/normalizedeventprojectionentity"
 	"github.com/rezible/rezible/ent/oncallhandovertemplate"
 	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/oncallrostermetrics"
@@ -119,6 +121,8 @@ type Client struct {
 	Alert *AlertClient
 	// AlertFeedback is the client for interacting with the AlertFeedback builders.
 	AlertFeedback *AlertFeedbackClient
+	// AlertInstance is the client for interacting with the AlertInstance builders.
+	AlertInstance *AlertInstanceClient
 	// AlertMetrics is the client for interacting with the AlertMetrics builders.
 	AlertMetrics *AlertMetricsClient
 	// Document is the client for interacting with the Document builders.
@@ -189,8 +193,10 @@ type Client struct {
 	MeetingSession *MeetingSessionClient
 	// NormalizedEvent is the client for interacting with the NormalizedEvent builders.
 	NormalizedEvent *NormalizedEventClient
-	// NormalizedEventProjectionStatus is the client for interacting with the NormalizedEventProjectionStatus builders.
-	NormalizedEventProjectionStatus *NormalizedEventProjectionStatusClient
+	// NormalizedEventProjection is the client for interacting with the NormalizedEventProjection builders.
+	NormalizedEventProjection *NormalizedEventProjectionClient
+	// NormalizedEventProjectionEntity is the client for interacting with the NormalizedEventProjectionEntity builders.
+	NormalizedEventProjectionEntity *NormalizedEventProjectionEntityClient
 	// OncallHandoverTemplate is the client for interacting with the OncallHandoverTemplate builders.
 	OncallHandoverTemplate *OncallHandoverTemplateClient
 	// OncallRoster is the client for interacting with the OncallRoster builders.
@@ -270,6 +276,7 @@ func (c *Client) init() {
 	c.AgentTaskSubject = NewAgentTaskSubjectClient(c.config)
 	c.Alert = NewAlertClient(c.config)
 	c.AlertFeedback = NewAlertFeedbackClient(c.config)
+	c.AlertInstance = NewAlertInstanceClient(c.config)
 	c.AlertMetrics = NewAlertMetricsClient(c.config)
 	c.Document = NewDocumentClient(c.config)
 	c.DocumentAccess = NewDocumentAccessClient(c.config)
@@ -305,7 +312,8 @@ func (c *Client) init() {
 	c.MeetingSchedule = NewMeetingScheduleClient(c.config)
 	c.MeetingSession = NewMeetingSessionClient(c.config)
 	c.NormalizedEvent = NewNormalizedEventClient(c.config)
-	c.NormalizedEventProjectionStatus = NewNormalizedEventProjectionStatusClient(c.config)
+	c.NormalizedEventProjection = NewNormalizedEventProjectionClient(c.config)
+	c.NormalizedEventProjectionEntity = NewNormalizedEventProjectionEntityClient(c.config)
 	c.OncallHandoverTemplate = NewOncallHandoverTemplateClient(c.config)
 	c.OncallRoster = NewOncallRosterClient(c.config)
 	c.OncallRosterMetrics = NewOncallRosterMetricsClient(c.config)
@@ -440,6 +448,7 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		AgentTaskSubject:                        NewAgentTaskSubjectClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
 		AlertFeedback:                           NewAlertFeedbackClient(cfg),
+		AlertInstance:                           NewAlertInstanceClient(cfg),
 		AlertMetrics:                            NewAlertMetricsClient(cfg),
 		Document:                                NewDocumentClient(cfg),
 		DocumentAccess:                          NewDocumentAccessClient(cfg),
@@ -475,7 +484,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		MeetingSchedule:                         NewMeetingScheduleClient(cfg),
 		MeetingSession:                          NewMeetingSessionClient(cfg),
 		NormalizedEvent:                         NewNormalizedEventClient(cfg),
-		NormalizedEventProjectionStatus:         NewNormalizedEventProjectionStatusClient(cfg),
+		NormalizedEventProjection:               NewNormalizedEventProjectionClient(cfg),
+		NormalizedEventProjectionEntity:         NewNormalizedEventProjectionEntityClient(cfg),
 		OncallHandoverTemplate:                  NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                            NewOncallRosterClient(cfg),
 		OncallRosterMetrics:                     NewOncallRosterMetricsClient(cfg),
@@ -534,6 +544,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		AgentTaskSubject:                        NewAgentTaskSubjectClient(cfg),
 		Alert:                                   NewAlertClient(cfg),
 		AlertFeedback:                           NewAlertFeedbackClient(cfg),
+		AlertInstance:                           NewAlertInstanceClient(cfg),
 		AlertMetrics:                            NewAlertMetricsClient(cfg),
 		Document:                                NewDocumentClient(cfg),
 		DocumentAccess:                          NewDocumentAccessClient(cfg),
@@ -569,7 +580,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		MeetingSchedule:                         NewMeetingScheduleClient(cfg),
 		MeetingSession:                          NewMeetingSessionClient(cfg),
 		NormalizedEvent:                         NewNormalizedEventClient(cfg),
-		NormalizedEventProjectionStatus:         NewNormalizedEventProjectionStatusClient(cfg),
+		NormalizedEventProjection:               NewNormalizedEventProjectionClient(cfg),
+		NormalizedEventProjectionEntity:         NewNormalizedEventProjectionEntityClient(cfg),
 		OncallHandoverTemplate:                  NewOncallHandoverTemplateClient(cfg),
 		OncallRoster:                            NewOncallRosterClient(cfg),
 		OncallRosterMetrics:                     NewOncallRosterMetricsClient(cfg),
@@ -630,21 +642,21 @@ func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
 		c.AgentRun, c.AgentRunCitation, c.AgentRunFinding, c.AgentRunFindingCitation,
 		c.AgentRunResult, c.AgentRunToolCall, c.AgentTask, c.AgentTaskSubject, c.Alert,
-		c.AlertFeedback, c.Document, c.DocumentAccess, c.EventAnnotation, c.Incident,
-		c.IncidentDebrief, c.IncidentDebriefMessage, c.IncidentDebriefQuestion,
-		c.IncidentDebriefSuggestion, c.IncidentField, c.IncidentFieldOption,
-		c.IncidentImpact, c.IncidentLink, c.IncidentMilestone, c.IncidentRole,
-		c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
+		c.AlertFeedback, c.AlertInstance, c.Document, c.DocumentAccess,
+		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
+		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
+		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
+		c.IncidentRole, c.IncidentRoleAssignment, c.IncidentSeverity, c.IncidentTag,
 		c.IncidentTimelineEvent, c.IncidentTimelineEventContext,
 		c.IncidentTimelineEventContributingFactor, c.IncidentTimelineEventEvidence,
 		c.IncidentTimelineEventTopologyContext, c.IncidentType, c.Integration,
 		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
 		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
+		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
@@ -662,7 +674,7 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
 		c.AgentRun, c.AgentRunCitation, c.AgentRunFinding, c.AgentRunFindingCitation,
 		c.AgentRunResult, c.AgentRunToolCall, c.AgentTask, c.AgentTaskSubject, c.Alert,
-		c.AlertFeedback, c.AlertMetrics, c.Document, c.DocumentAccess,
+		c.AlertFeedback, c.AlertInstance, c.AlertMetrics, c.Document, c.DocumentAccess,
 		c.EventAnnotation, c.Incident, c.IncidentDebrief, c.IncidentDebriefMessage,
 		c.IncidentDebriefQuestion, c.IncidentDebriefSuggestion, c.IncidentField,
 		c.IncidentFieldOption, c.IncidentImpact, c.IncidentLink, c.IncidentMilestone,
@@ -673,10 +685,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 		c.IntegrationEventSyncCursor, c.IntegrationEventSyncRun,
 		c.IntegrationUserInstallState, c.KnowledgeEntity, c.KnowledgeEntityAlias,
 		c.KnowledgeEvidence, c.KnowledgeRelationship, c.MeetingSchedule,
-		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjectionStatus,
-		c.OncallHandoverTemplate, c.OncallRoster, c.OncallRosterMetrics,
-		c.OncallSchedule, c.OncallScheduleParticipant, c.OncallShift,
-		c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
+		c.MeetingSession, c.NormalizedEvent, c.NormalizedEventProjection,
+		c.NormalizedEventProjectionEntity, c.OncallHandoverTemplate, c.OncallRoster,
+		c.OncallRosterMetrics, c.OncallSchedule, c.OncallScheduleParticipant,
+		c.OncallShift, c.OncallShiftHandover, c.OncallShiftMetrics, c.Organization,
 		c.OrganizationPreferences, c.OrganizationRole, c.Playbook, c.Retrospective,
 		c.RetrospectiveComment, c.RetrospectiveReview, c.SystemAnalysis,
 		c.SystemAnalysisTopologyEdge, c.SystemAnalysisTopologyNode,
@@ -711,6 +723,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Alert.mutate(ctx, m)
 	case *AlertFeedbackMutation:
 		return c.AlertFeedback.mutate(ctx, m)
+	case *AlertInstanceMutation:
+		return c.AlertInstance.mutate(ctx, m)
 	case *DocumentMutation:
 		return c.Document.mutate(ctx, m)
 	case *DocumentAccessMutation:
@@ -779,8 +793,10 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.MeetingSession.mutate(ctx, m)
 	case *NormalizedEventMutation:
 		return c.NormalizedEvent.mutate(ctx, m)
-	case *NormalizedEventProjectionStatusMutation:
-		return c.NormalizedEventProjectionStatus.mutate(ctx, m)
+	case *NormalizedEventProjectionMutation:
+		return c.NormalizedEventProjection.mutate(ctx, m)
+	case *NormalizedEventProjectionEntityMutation:
+		return c.NormalizedEventProjectionEntity.mutate(ctx, m)
 	case *OncallHandoverTemplateMutation:
 		return c.OncallHandoverTemplate.mutate(ctx, m)
 	case *OncallRosterMutation:
@@ -2727,38 +2743,19 @@ func (c *AlertClient) QueryPlaybooks(_m *Alert) *PlaybookQuery {
 	return query
 }
 
-// QueryRoster queries the roster edge of a Alert.
-func (c *AlertClient) QueryRoster(_m *Alert) *OncallRosterQuery {
-	query := (&OncallRosterClient{config: c.config}).Query()
+// QueryInstances queries the instances edge of a Alert.
+func (c *AlertClient) QueryInstances(_m *Alert) *AlertInstanceQuery {
+	query := (&AlertInstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alert.Table, alert.FieldID, id),
-			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, alert.RosterTable, alert.RosterColumn),
+			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, alert.InstancesTable, alert.InstancesColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.OncallRoster
-		step.Edge.Schema = schemaConfig.Alert
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryFeedback queries the feedback edge of a Alert.
-func (c *AlertClient) QueryFeedback(_m *Alert) *AlertFeedbackQuery {
-	query := (&AlertFeedbackClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, id),
-			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alert.FeedbackTable, alert.FeedbackColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertFeedback
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertInstance
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -2918,37 +2915,18 @@ func (c *AlertFeedbackClient) QueryTenant(_m *AlertFeedback) *TenantQuery {
 	return query
 }
 
-// QueryAlert queries the alert edge of a AlertFeedback.
-func (c *AlertFeedbackClient) QueryAlert(_m *AlertFeedback) *AlertQuery {
-	query := (&AlertClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, id),
-			sqlgraph.To(alert.Table, alert.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.AlertTable, alertfeedback.AlertColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.AlertFeedback
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // QueryAlertInstance queries the alert_instance edge of a AlertFeedback.
-func (c *AlertFeedbackClient) QueryAlertInstance(_m *AlertFeedback) *NormalizedEventQuery {
-	query := (&NormalizedEventClient{config: c.config}).Query()
+func (c *AlertFeedbackClient) QueryAlertInstance(_m *AlertFeedback) *AlertInstanceQuery {
+	query := (&AlertInstanceClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alertfeedback.Table, alertfeedback.FieldID, id),
-			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
+			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
 			sqlgraph.Edge(sqlgraph.M2O, false, alertfeedback.AlertInstanceTable, alertfeedback.AlertInstanceColumn),
 		)
 		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.NormalizedEvent
+		step.To.Schema = schemaConfig.AlertInstance
 		step.Edge.Schema = schemaConfig.AlertFeedback
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -2979,6 +2957,216 @@ func (c *AlertFeedbackClient) mutate(ctx context.Context, m *AlertFeedbackMutati
 		return (&AlertFeedbackDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown AlertFeedback mutation op: %q", m.Op())
+	}
+}
+
+// AlertInstanceClient is a client for the AlertInstance schema.
+type AlertInstanceClient struct {
+	config
+}
+
+// NewAlertInstanceClient returns a client for the AlertInstance from the given config.
+func NewAlertInstanceClient(c config) *AlertInstanceClient {
+	return &AlertInstanceClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `alertinstance.Hooks(f(g(h())))`.
+func (c *AlertInstanceClient) Use(hooks ...Hook) {
+	c.hooks.AlertInstance = append(c.hooks.AlertInstance, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `alertinstance.Intercept(f(g(h())))`.
+func (c *AlertInstanceClient) Intercept(interceptors ...Interceptor) {
+	c.inters.AlertInstance = append(c.inters.AlertInstance, interceptors...)
+}
+
+// Create returns a builder for creating a AlertInstance entity.
+func (c *AlertInstanceClient) Create() *AlertInstanceCreate {
+	mutation := newAlertInstanceMutation(c.config, OpCreate)
+	return &AlertInstanceCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of AlertInstance entities.
+func (c *AlertInstanceClient) CreateBulk(builders ...*AlertInstanceCreate) *AlertInstanceCreateBulk {
+	return &AlertInstanceCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *AlertInstanceClient) MapCreateBulk(slice any, setFunc func(*AlertInstanceCreate, int)) *AlertInstanceCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &AlertInstanceCreateBulk{err: fmt.Errorf("calling to AlertInstanceClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*AlertInstanceCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &AlertInstanceCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for AlertInstance.
+func (c *AlertInstanceClient) Update() *AlertInstanceUpdate {
+	mutation := newAlertInstanceMutation(c.config, OpUpdate)
+	return &AlertInstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *AlertInstanceClient) UpdateOne(_m *AlertInstance) *AlertInstanceUpdateOne {
+	mutation := newAlertInstanceMutation(c.config, OpUpdateOne, withAlertInstance(_m))
+	return &AlertInstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *AlertInstanceClient) UpdateOneID(id uuid.UUID) *AlertInstanceUpdateOne {
+	mutation := newAlertInstanceMutation(c.config, OpUpdateOne, withAlertInstanceID(id))
+	return &AlertInstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for AlertInstance.
+func (c *AlertInstanceClient) Delete() *AlertInstanceDelete {
+	mutation := newAlertInstanceMutation(c.config, OpDelete)
+	return &AlertInstanceDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *AlertInstanceClient) DeleteOne(_m *AlertInstance) *AlertInstanceDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *AlertInstanceClient) DeleteOneID(id uuid.UUID) *AlertInstanceDeleteOne {
+	builder := c.Delete().Where(alertinstance.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &AlertInstanceDeleteOne{builder}
+}
+
+// Query returns a query builder for AlertInstance.
+func (c *AlertInstanceClient) Query() *AlertInstanceQuery {
+	return &AlertInstanceQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeAlertInstance},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a AlertInstance entity by its id.
+func (c *AlertInstanceClient) Get(ctx context.Context, id uuid.UUID) (*AlertInstance, error) {
+	return c.Query().Where(alertinstance.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *AlertInstanceClient) GetX(ctx context.Context, id uuid.UUID) *AlertInstance {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a AlertInstance.
+func (c *AlertInstanceClient) QueryTenant(_m *AlertInstance) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.TenantTable, alertinstance.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.AlertInstance
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryKnowledgeEntity queries the knowledge_entity edge of a AlertInstance.
+func (c *AlertInstanceClient) QueryKnowledgeEntity(_m *AlertInstance) *KnowledgeEntityQuery {
+	query := (&KnowledgeEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
+			sqlgraph.To(knowledgeentity.Table, knowledgeentity.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, alertinstance.KnowledgeEntityTable, alertinstance.KnowledgeEntityColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.KnowledgeEntity
+		step.Edge.Schema = schemaConfig.AlertInstance
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryAlert queries the alert edge of a AlertInstance.
+func (c *AlertInstanceClient) QueryAlert(_m *AlertInstance) *AlertQuery {
+	query := (&AlertClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
+			sqlgraph.To(alert.Table, alert.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, alertinstance.AlertTable, alertinstance.AlertColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Alert
+		step.Edge.Schema = schemaConfig.AlertInstance
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryFeedback queries the feedback edge of a AlertInstance.
+func (c *AlertInstanceClient) QueryFeedback(_m *AlertInstance) *AlertFeedbackQuery {
+	query := (&AlertFeedbackClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(alertinstance.Table, alertinstance.FieldID, id),
+			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, alertinstance.FeedbackTable, alertinstance.FeedbackColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.AlertFeedback
+		step.Edge.Schema = schemaConfig.AlertFeedback
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *AlertInstanceClient) Hooks() []Hook {
+	hooks := c.hooks.AlertInstance
+	return append(hooks[:len(hooks):len(hooks)], alertinstance.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *AlertInstanceClient) Interceptors() []Interceptor {
+	return c.inters.AlertInstance
+}
+
+func (c *AlertInstanceClient) mutate(ctx context.Context, m *AlertInstanceMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&AlertInstanceCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&AlertInstanceUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&AlertInstanceUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&AlertInstanceDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown AlertInstance mutation op: %q", m.Op())
 	}
 }
 
@@ -9962,25 +10150,6 @@ func (c *NormalizedEventClient) QueryTenant(_m *NormalizedEvent) *TenantQuery {
 	return query
 }
 
-// QueryAlertFeedback queries the alert_feedback edge of a NormalizedEvent.
-func (c *NormalizedEventClient) QueryAlertFeedback(_m *NormalizedEvent) *AlertFeedbackQuery {
-	query := (&AlertFeedbackClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(normalizedevent.Table, normalizedevent.FieldID, id),
-			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, normalizedevent.AlertFeedbackTable, normalizedevent.AlertFeedbackColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertFeedback
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
 // Hooks returns the client hooks.
 func (c *NormalizedEventClient) Hooks() []Hook {
 	hooks := c.hooks.NormalizedEvent
@@ -10007,107 +10176,107 @@ func (c *NormalizedEventClient) mutate(ctx context.Context, m *NormalizedEventMu
 	}
 }
 
-// NormalizedEventProjectionStatusClient is a client for the NormalizedEventProjectionStatus schema.
-type NormalizedEventProjectionStatusClient struct {
+// NormalizedEventProjectionClient is a client for the NormalizedEventProjection schema.
+type NormalizedEventProjectionClient struct {
 	config
 }
 
-// NewNormalizedEventProjectionStatusClient returns a client for the NormalizedEventProjectionStatus from the given config.
-func NewNormalizedEventProjectionStatusClient(c config) *NormalizedEventProjectionStatusClient {
-	return &NormalizedEventProjectionStatusClient{config: c}
+// NewNormalizedEventProjectionClient returns a client for the NormalizedEventProjection from the given config.
+func NewNormalizedEventProjectionClient(c config) *NormalizedEventProjectionClient {
+	return &NormalizedEventProjectionClient{config: c}
 }
 
 // Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `normalizedeventprojectionstatus.Hooks(f(g(h())))`.
-func (c *NormalizedEventProjectionStatusClient) Use(hooks ...Hook) {
-	c.hooks.NormalizedEventProjectionStatus = append(c.hooks.NormalizedEventProjectionStatus, hooks...)
+// A call to `Use(f, g, h)` equals to `normalizedeventprojection.Hooks(f(g(h())))`.
+func (c *NormalizedEventProjectionClient) Use(hooks ...Hook) {
+	c.hooks.NormalizedEventProjection = append(c.hooks.NormalizedEventProjection, hooks...)
 }
 
 // Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `normalizedeventprojectionstatus.Intercept(f(g(h())))`.
-func (c *NormalizedEventProjectionStatusClient) Intercept(interceptors ...Interceptor) {
-	c.inters.NormalizedEventProjectionStatus = append(c.inters.NormalizedEventProjectionStatus, interceptors...)
+// A call to `Intercept(f, g, h)` equals to `normalizedeventprojection.Intercept(f(g(h())))`.
+func (c *NormalizedEventProjectionClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NormalizedEventProjection = append(c.inters.NormalizedEventProjection, interceptors...)
 }
 
-// Create returns a builder for creating a NormalizedEventProjectionStatus entity.
-func (c *NormalizedEventProjectionStatusClient) Create() *NormalizedEventProjectionStatusCreate {
-	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpCreate)
-	return &NormalizedEventProjectionStatusCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Create returns a builder for creating a NormalizedEventProjection entity.
+func (c *NormalizedEventProjectionClient) Create() *NormalizedEventProjectionCreate {
+	mutation := newNormalizedEventProjectionMutation(c.config, OpCreate)
+	return &NormalizedEventProjectionCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// CreateBulk returns a builder for creating a bulk of NormalizedEventProjectionStatus entities.
-func (c *NormalizedEventProjectionStatusClient) CreateBulk(builders ...*NormalizedEventProjectionStatusCreate) *NormalizedEventProjectionStatusCreateBulk {
-	return &NormalizedEventProjectionStatusCreateBulk{config: c.config, builders: builders}
+// CreateBulk returns a builder for creating a bulk of NormalizedEventProjection entities.
+func (c *NormalizedEventProjectionClient) CreateBulk(builders ...*NormalizedEventProjectionCreate) *NormalizedEventProjectionCreateBulk {
+	return &NormalizedEventProjectionCreateBulk{config: c.config, builders: builders}
 }
 
 // MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
 // a builder and applies setFunc on it.
-func (c *NormalizedEventProjectionStatusClient) MapCreateBulk(slice any, setFunc func(*NormalizedEventProjectionStatusCreate, int)) *NormalizedEventProjectionStatusCreateBulk {
+func (c *NormalizedEventProjectionClient) MapCreateBulk(slice any, setFunc func(*NormalizedEventProjectionCreate, int)) *NormalizedEventProjectionCreateBulk {
 	rv := reflect.ValueOf(slice)
 	if rv.Kind() != reflect.Slice {
-		return &NormalizedEventProjectionStatusCreateBulk{err: fmt.Errorf("calling to NormalizedEventProjectionStatusClient.MapCreateBulk with wrong type %T, need slice", slice)}
+		return &NormalizedEventProjectionCreateBulk{err: fmt.Errorf("calling to NormalizedEventProjectionClient.MapCreateBulk with wrong type %T, need slice", slice)}
 	}
-	builders := make([]*NormalizedEventProjectionStatusCreate, rv.Len())
+	builders := make([]*NormalizedEventProjectionCreate, rv.Len())
 	for i := 0; i < rv.Len(); i++ {
 		builders[i] = c.Create()
 		setFunc(builders[i], i)
 	}
-	return &NormalizedEventProjectionStatusCreateBulk{config: c.config, builders: builders}
+	return &NormalizedEventProjectionCreateBulk{config: c.config, builders: builders}
 }
 
-// Update returns an update builder for NormalizedEventProjectionStatus.
-func (c *NormalizedEventProjectionStatusClient) Update() *NormalizedEventProjectionStatusUpdate {
-	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpUpdate)
-	return &NormalizedEventProjectionStatusUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Update returns an update builder for NormalizedEventProjection.
+func (c *NormalizedEventProjectionClient) Update() *NormalizedEventProjectionUpdate {
+	mutation := newNormalizedEventProjectionMutation(c.config, OpUpdate)
+	return &NormalizedEventProjectionUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOne returns an update builder for the given entity.
-func (c *NormalizedEventProjectionStatusClient) UpdateOne(_m *NormalizedEventProjectionStatus) *NormalizedEventProjectionStatusUpdateOne {
-	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpUpdateOne, withNormalizedEventProjectionStatus(_m))
-	return &NormalizedEventProjectionStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *NormalizedEventProjectionClient) UpdateOne(_m *NormalizedEventProjection) *NormalizedEventProjectionUpdateOne {
+	mutation := newNormalizedEventProjectionMutation(c.config, OpUpdateOne, withNormalizedEventProjection(_m))
+	return &NormalizedEventProjectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *NormalizedEventProjectionStatusClient) UpdateOneID(id uuid.UUID) *NormalizedEventProjectionStatusUpdateOne {
-	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpUpdateOne, withNormalizedEventProjectionStatusID(id))
-	return &NormalizedEventProjectionStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+func (c *NormalizedEventProjectionClient) UpdateOneID(id uuid.UUID) *NormalizedEventProjectionUpdateOne {
+	mutation := newNormalizedEventProjectionMutation(c.config, OpUpdateOne, withNormalizedEventProjectionID(id))
+	return &NormalizedEventProjectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
-// Delete returns a delete builder for NormalizedEventProjectionStatus.
-func (c *NormalizedEventProjectionStatusClient) Delete() *NormalizedEventProjectionStatusDelete {
-	mutation := newNormalizedEventProjectionStatusMutation(c.config, OpDelete)
-	return &NormalizedEventProjectionStatusDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+// Delete returns a delete builder for NormalizedEventProjection.
+func (c *NormalizedEventProjectionClient) Delete() *NormalizedEventProjectionDelete {
+	mutation := newNormalizedEventProjectionMutation(c.config, OpDelete)
+	return &NormalizedEventProjectionDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
 
 // DeleteOne returns a builder for deleting the given entity.
-func (c *NormalizedEventProjectionStatusClient) DeleteOne(_m *NormalizedEventProjectionStatus) *NormalizedEventProjectionStatusDeleteOne {
+func (c *NormalizedEventProjectionClient) DeleteOne(_m *NormalizedEventProjection) *NormalizedEventProjectionDeleteOne {
 	return c.DeleteOneID(_m.ID)
 }
 
 // DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *NormalizedEventProjectionStatusClient) DeleteOneID(id uuid.UUID) *NormalizedEventProjectionStatusDeleteOne {
-	builder := c.Delete().Where(normalizedeventprojectionstatus.ID(id))
+func (c *NormalizedEventProjectionClient) DeleteOneID(id uuid.UUID) *NormalizedEventProjectionDeleteOne {
+	builder := c.Delete().Where(normalizedeventprojection.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
-	return &NormalizedEventProjectionStatusDeleteOne{builder}
+	return &NormalizedEventProjectionDeleteOne{builder}
 }
 
-// Query returns a query builder for NormalizedEventProjectionStatus.
-func (c *NormalizedEventProjectionStatusClient) Query() *NormalizedEventProjectionStatusQuery {
-	return &NormalizedEventProjectionStatusQuery{
+// Query returns a query builder for NormalizedEventProjection.
+func (c *NormalizedEventProjectionClient) Query() *NormalizedEventProjectionQuery {
+	return &NormalizedEventProjectionQuery{
 		config: c.config,
-		ctx:    &QueryContext{Type: TypeNormalizedEventProjectionStatus},
+		ctx:    &QueryContext{Type: TypeNormalizedEventProjection},
 		inters: c.Interceptors(),
 	}
 }
 
-// Get returns a NormalizedEventProjectionStatus entity by its id.
-func (c *NormalizedEventProjectionStatusClient) Get(ctx context.Context, id uuid.UUID) (*NormalizedEventProjectionStatus, error) {
-	return c.Query().Where(normalizedeventprojectionstatus.ID(id)).Only(ctx)
+// Get returns a NormalizedEventProjection entity by its id.
+func (c *NormalizedEventProjectionClient) Get(ctx context.Context, id uuid.UUID) (*NormalizedEventProjection, error) {
+	return c.Query().Where(normalizedeventprojection.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *NormalizedEventProjectionStatusClient) GetX(ctx context.Context, id uuid.UUID) *NormalizedEventProjectionStatus {
+func (c *NormalizedEventProjectionClient) GetX(ctx context.Context, id uuid.UUID) *NormalizedEventProjection {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)
@@ -10115,38 +10284,57 @@ func (c *NormalizedEventProjectionStatusClient) GetX(ctx context.Context, id uui
 	return obj
 }
 
-// QueryTenant queries the tenant edge of a NormalizedEventProjectionStatus.
-func (c *NormalizedEventProjectionStatusClient) QueryTenant(_m *NormalizedEventProjectionStatus) *TenantQuery {
+// QueryTenant queries the tenant edge of a NormalizedEventProjection.
+func (c *NormalizedEventProjectionClient) QueryTenant(_m *NormalizedEventProjection) *TenantQuery {
 	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(normalizedeventprojectionstatus.Table, normalizedeventprojectionstatus.FieldID, id),
+			sqlgraph.From(normalizedeventprojection.Table, normalizedeventprojection.FieldID, id),
 			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionstatus.TenantTable, normalizedeventprojectionstatus.TenantColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojection.TenantTable, normalizedeventprojection.TenantColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.Tenant
-		step.Edge.Schema = schemaConfig.NormalizedEventProjectionStatus
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
 	return query
 }
 
-// QueryNormalizedEvent queries the normalized_event edge of a NormalizedEventProjectionStatus.
-func (c *NormalizedEventProjectionStatusClient) QueryNormalizedEvent(_m *NormalizedEventProjectionStatus) *NormalizedEventQuery {
+// QueryEvent queries the event edge of a NormalizedEventProjection.
+func (c *NormalizedEventProjectionClient) QueryEvent(_m *NormalizedEventProjection) *NormalizedEventQuery {
 	query := (&NormalizedEventClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
-			sqlgraph.From(normalizedeventprojectionstatus.Table, normalizedeventprojectionstatus.FieldID, id),
+			sqlgraph.From(normalizedeventprojection.Table, normalizedeventprojection.FieldID, id),
 			sqlgraph.To(normalizedevent.Table, normalizedevent.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionstatus.NormalizedEventTable, normalizedeventprojectionstatus.NormalizedEventColumn),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojection.EventTable, normalizedeventprojection.EventColumn),
 		)
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.NormalizedEvent
-		step.Edge.Schema = schemaConfig.NormalizedEventProjectionStatus
+		step.Edge.Schema = schemaConfig.NormalizedEventProjection
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectionEntities queries the projection_entities edge of a NormalizedEventProjection.
+func (c *NormalizedEventProjectionClient) QueryProjectionEntities(_m *NormalizedEventProjection) *NormalizedEventProjectionEntityQuery {
+	query := (&NormalizedEventProjectionEntityClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedeventprojection.Table, normalizedeventprojection.FieldID, id),
+			sqlgraph.To(normalizedeventprojectionentity.Table, normalizedeventprojectionentity.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, true, normalizedeventprojection.ProjectionEntitiesTable, normalizedeventprojection.ProjectionEntitiesColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEventProjectionEntity
+		step.Edge.Schema = schemaConfig.NormalizedEventProjectionEntity
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -10154,28 +10342,200 @@ func (c *NormalizedEventProjectionStatusClient) QueryNormalizedEvent(_m *Normali
 }
 
 // Hooks returns the client hooks.
-func (c *NormalizedEventProjectionStatusClient) Hooks() []Hook {
-	hooks := c.hooks.NormalizedEventProjectionStatus
-	return append(hooks[:len(hooks):len(hooks)], normalizedeventprojectionstatus.Hooks[:]...)
+func (c *NormalizedEventProjectionClient) Hooks() []Hook {
+	hooks := c.hooks.NormalizedEventProjection
+	return append(hooks[:len(hooks):len(hooks)], normalizedeventprojection.Hooks[:]...)
 }
 
 // Interceptors returns the client interceptors.
-func (c *NormalizedEventProjectionStatusClient) Interceptors() []Interceptor {
-	return c.inters.NormalizedEventProjectionStatus
+func (c *NormalizedEventProjectionClient) Interceptors() []Interceptor {
+	return c.inters.NormalizedEventProjection
 }
 
-func (c *NormalizedEventProjectionStatusClient) mutate(ctx context.Context, m *NormalizedEventProjectionStatusMutation) (Value, error) {
+func (c *NormalizedEventProjectionClient) mutate(ctx context.Context, m *NormalizedEventProjectionMutation) (Value, error) {
 	switch m.Op() {
 	case OpCreate:
-		return (&NormalizedEventProjectionStatusCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&NormalizedEventProjectionCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdate:
-		return (&NormalizedEventProjectionStatusUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&NormalizedEventProjectionUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpUpdateOne:
-		return (&NormalizedEventProjectionStatusUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+		return (&NormalizedEventProjectionUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
 	case OpDelete, OpDeleteOne:
-		return (&NormalizedEventProjectionStatusDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+		return (&NormalizedEventProjectionDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
-		return nil, fmt.Errorf("ent: unknown NormalizedEventProjectionStatus mutation op: %q", m.Op())
+		return nil, fmt.Errorf("ent: unknown NormalizedEventProjection mutation op: %q", m.Op())
+	}
+}
+
+// NormalizedEventProjectionEntityClient is a client for the NormalizedEventProjectionEntity schema.
+type NormalizedEventProjectionEntityClient struct {
+	config
+}
+
+// NewNormalizedEventProjectionEntityClient returns a client for the NormalizedEventProjectionEntity from the given config.
+func NewNormalizedEventProjectionEntityClient(c config) *NormalizedEventProjectionEntityClient {
+	return &NormalizedEventProjectionEntityClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `normalizedeventprojectionentity.Hooks(f(g(h())))`.
+func (c *NormalizedEventProjectionEntityClient) Use(hooks ...Hook) {
+	c.hooks.NormalizedEventProjectionEntity = append(c.hooks.NormalizedEventProjectionEntity, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `normalizedeventprojectionentity.Intercept(f(g(h())))`.
+func (c *NormalizedEventProjectionEntityClient) Intercept(interceptors ...Interceptor) {
+	c.inters.NormalizedEventProjectionEntity = append(c.inters.NormalizedEventProjectionEntity, interceptors...)
+}
+
+// Create returns a builder for creating a NormalizedEventProjectionEntity entity.
+func (c *NormalizedEventProjectionEntityClient) Create() *NormalizedEventProjectionEntityCreate {
+	mutation := newNormalizedEventProjectionEntityMutation(c.config, OpCreate)
+	return &NormalizedEventProjectionEntityCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of NormalizedEventProjectionEntity entities.
+func (c *NormalizedEventProjectionEntityClient) CreateBulk(builders ...*NormalizedEventProjectionEntityCreate) *NormalizedEventProjectionEntityCreateBulk {
+	return &NormalizedEventProjectionEntityCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *NormalizedEventProjectionEntityClient) MapCreateBulk(slice any, setFunc func(*NormalizedEventProjectionEntityCreate, int)) *NormalizedEventProjectionEntityCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &NormalizedEventProjectionEntityCreateBulk{err: fmt.Errorf("calling to NormalizedEventProjectionEntityClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*NormalizedEventProjectionEntityCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &NormalizedEventProjectionEntityCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for NormalizedEventProjectionEntity.
+func (c *NormalizedEventProjectionEntityClient) Update() *NormalizedEventProjectionEntityUpdate {
+	mutation := newNormalizedEventProjectionEntityMutation(c.config, OpUpdate)
+	return &NormalizedEventProjectionEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *NormalizedEventProjectionEntityClient) UpdateOne(_m *NormalizedEventProjectionEntity) *NormalizedEventProjectionEntityUpdateOne {
+	mutation := newNormalizedEventProjectionEntityMutation(c.config, OpUpdateOne, withNormalizedEventProjectionEntity(_m))
+	return &NormalizedEventProjectionEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *NormalizedEventProjectionEntityClient) UpdateOneID(id uuid.UUID) *NormalizedEventProjectionEntityUpdateOne {
+	mutation := newNormalizedEventProjectionEntityMutation(c.config, OpUpdateOne, withNormalizedEventProjectionEntityID(id))
+	return &NormalizedEventProjectionEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for NormalizedEventProjectionEntity.
+func (c *NormalizedEventProjectionEntityClient) Delete() *NormalizedEventProjectionEntityDelete {
+	mutation := newNormalizedEventProjectionEntityMutation(c.config, OpDelete)
+	return &NormalizedEventProjectionEntityDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *NormalizedEventProjectionEntityClient) DeleteOne(_m *NormalizedEventProjectionEntity) *NormalizedEventProjectionEntityDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *NormalizedEventProjectionEntityClient) DeleteOneID(id uuid.UUID) *NormalizedEventProjectionEntityDeleteOne {
+	builder := c.Delete().Where(normalizedeventprojectionentity.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &NormalizedEventProjectionEntityDeleteOne{builder}
+}
+
+// Query returns a query builder for NormalizedEventProjectionEntity.
+func (c *NormalizedEventProjectionEntityClient) Query() *NormalizedEventProjectionEntityQuery {
+	return &NormalizedEventProjectionEntityQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeNormalizedEventProjectionEntity},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a NormalizedEventProjectionEntity entity by its id.
+func (c *NormalizedEventProjectionEntityClient) Get(ctx context.Context, id uuid.UUID) (*NormalizedEventProjectionEntity, error) {
+	return c.Query().Where(normalizedeventprojectionentity.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *NormalizedEventProjectionEntityClient) GetX(ctx context.Context, id uuid.UUID) *NormalizedEventProjectionEntity {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryTenant queries the tenant edge of a NormalizedEventProjectionEntity.
+func (c *NormalizedEventProjectionEntityClient) QueryTenant(_m *NormalizedEventProjectionEntity) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedeventprojectionentity.Table, normalizedeventprojectionentity.FieldID, id),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionentity.TenantTable, normalizedeventprojectionentity.TenantColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.Tenant
+		step.Edge.Schema = schemaConfig.NormalizedEventProjectionEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjection queries the projection edge of a NormalizedEventProjectionEntity.
+func (c *NormalizedEventProjectionEntityClient) QueryProjection(_m *NormalizedEventProjectionEntity) *NormalizedEventProjectionQuery {
+	query := (&NormalizedEventProjectionClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(normalizedeventprojectionentity.Table, normalizedeventprojectionentity.FieldID, id),
+			sqlgraph.To(normalizedeventprojection.Table, normalizedeventprojection.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, false, normalizedeventprojectionentity.ProjectionTable, normalizedeventprojectionentity.ProjectionColumn),
+		)
+		schemaConfig := _m.schemaConfig
+		step.To.Schema = schemaConfig.NormalizedEventProjection
+		step.Edge.Schema = schemaConfig.NormalizedEventProjectionEntity
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *NormalizedEventProjectionEntityClient) Hooks() []Hook {
+	hooks := c.hooks.NormalizedEventProjectionEntity
+	return append(hooks[:len(hooks):len(hooks)], normalizedeventprojectionentity.Hooks[:]...)
+}
+
+// Interceptors returns the client interceptors.
+func (c *NormalizedEventProjectionEntityClient) Interceptors() []Interceptor {
+	return c.inters.NormalizedEventProjectionEntity
+}
+
+func (c *NormalizedEventProjectionEntityClient) mutate(ctx context.Context, m *NormalizedEventProjectionEntityMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&NormalizedEventProjectionEntityCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&NormalizedEventProjectionEntityUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&NormalizedEventProjectionEntityUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&NormalizedEventProjectionEntityDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown NormalizedEventProjectionEntity mutation op: %q", m.Op())
 	}
 }
 
@@ -10510,25 +10870,6 @@ func (c *OncallRosterClient) QueryHandoverTemplate(_m *OncallRoster) *OncallHand
 		schemaConfig := _m.schemaConfig
 		step.To.Schema = schemaConfig.OncallHandoverTemplate
 		step.Edge.Schema = schemaConfig.OncallRoster
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// QueryAlerts queries the alerts edge of a OncallRoster.
-func (c *OncallRosterClient) QueryAlerts(_m *OncallRoster) *AlertQuery {
-	query := (&AlertClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(oncallroster.Table, oncallroster.FieldID, id),
-			sqlgraph.To(alert.Table, alert.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, oncallroster.AlertsTable, oncallroster.AlertsColumn),
-		)
-		schemaConfig := _m.schemaConfig
-		step.To.Schema = schemaConfig.Alert
-		step.Edge.Schema = schemaConfig.Alert
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
 	}
@@ -16428,30 +16769,7 @@ type (
 	hooks struct {
 		AgentRun, AgentRunCitation, AgentRunFinding, AgentRunFindingCitation,
 		AgentRunResult, AgentRunToolCall, AgentTask, AgentTaskSubject, Alert,
-		AlertFeedback, Document, DocumentAccess, EventAnnotation, Incident,
-		IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
-		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
-		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
-		IncidentSeverity, IncidentTag, IncidentTimelineEvent,
-		IncidentTimelineEventContext, IncidentTimelineEventContributingFactor,
-		IncidentTimelineEventEvidence, IncidentTimelineEventTopologyContext,
-		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
-		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
-		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
-		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
-		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
-		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
-		OrganizationPreferences, OrganizationRole, Playbook, Retrospective,
-		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
-		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
-		TeamMembership, Tenant, Ticket, User, UserAuthSession,
-		VideoConference []ent.Hook
-	}
-	inters struct {
-		AgentRun, AgentRunCitation, AgentRunFinding, AgentRunFindingCitation,
-		AgentRunResult, AgentRunToolCall, AgentTask, AgentTaskSubject, Alert,
-		AlertFeedback, AlertMetrics, Document, DocumentAccess, EventAnnotation,
+		AlertFeedback, AlertInstance, Document, DocumentAccess, EventAnnotation,
 		Incident, IncidentDebrief, IncidentDebriefMessage, IncidentDebriefQuestion,
 		IncidentDebriefSuggestion, IncidentField, IncidentFieldOption, IncidentImpact,
 		IncidentLink, IncidentMilestone, IncidentRole, IncidentRoleAssignment,
@@ -16461,15 +16779,39 @@ type (
 		IncidentType, Integration, IntegrationEventSyncCursor, IntegrationEventSyncRun,
 		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
 		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
-		NormalizedEvent, NormalizedEventProjectionStatus, OncallHandoverTemplate,
-		OncallRoster, OncallRosterMetrics, OncallSchedule, OncallScheduleParticipant,
-		OncallShift, OncallShiftHandover, OncallShiftMetrics, Organization,
-		OrganizationPreferences, OrganizationRole, Playbook, Retrospective,
-		RetrospectiveComment, RetrospectiveReview, SystemAnalysis,
-		SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode, SystemTopologySnapshot,
-		SystemTopologySnapshotEntity, SystemTopologySnapshotRelationship, Task, Team,
-		TeamMembership, Tenant, Ticket, User, UserAuthSession,
-		VideoConference []ent.Interceptor
+		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
+		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode,
+		SystemTopologySnapshot, SystemTopologySnapshotEntity,
+		SystemTopologySnapshotRelationship, Task, Team, TeamMembership, Tenant, Ticket,
+		User, UserAuthSession, VideoConference []ent.Hook
+	}
+	inters struct {
+		AgentRun, AgentRunCitation, AgentRunFinding, AgentRunFindingCitation,
+		AgentRunResult, AgentRunToolCall, AgentTask, AgentTaskSubject, Alert,
+		AlertFeedback, AlertInstance, AlertMetrics, Document, DocumentAccess,
+		EventAnnotation, Incident, IncidentDebrief, IncidentDebriefMessage,
+		IncidentDebriefQuestion, IncidentDebriefSuggestion, IncidentField,
+		IncidentFieldOption, IncidentImpact, IncidentLink, IncidentMilestone,
+		IncidentRole, IncidentRoleAssignment, IncidentSeverity, IncidentTag,
+		IncidentTimelineEvent, IncidentTimelineEventContext,
+		IncidentTimelineEventContributingFactor, IncidentTimelineEventEvidence,
+		IncidentTimelineEventTopologyContext, IncidentType, Integration,
+		IntegrationEventSyncCursor, IntegrationEventSyncRun,
+		IntegrationUserInstallState, KnowledgeEntity, KnowledgeEntityAlias,
+		KnowledgeEvidence, KnowledgeRelationship, MeetingSchedule, MeetingSession,
+		NormalizedEvent, NormalizedEventProjection, NormalizedEventProjectionEntity,
+		OncallHandoverTemplate, OncallRoster, OncallRosterMetrics, OncallSchedule,
+		OncallScheduleParticipant, OncallShift, OncallShiftHandover,
+		OncallShiftMetrics, Organization, OrganizationPreferences, OrganizationRole,
+		Playbook, Retrospective, RetrospectiveComment, RetrospectiveReview,
+		SystemAnalysis, SystemAnalysisTopologyEdge, SystemAnalysisTopologyNode,
+		SystemTopologySnapshot, SystemTopologySnapshotEntity,
+		SystemTopologySnapshotRelationship, Task, Team, TeamMembership, Tenant, Ticket,
+		User, UserAuthSession, VideoConference []ent.Interceptor
 	}
 )
 
@@ -16486,6 +16828,7 @@ var (
 		AgentTaskSubject:                      tableSchemas[0],
 		Alert:                                 tableSchemas[0],
 		AlertFeedback:                         tableSchemas[0],
+		AlertInstance:                         tableSchemas[0],
 		AlertMetrics:                          tableSchemas[0],
 		Document:                              tableSchemas[0],
 		DocumentAccess:                        tableSchemas[0],
@@ -16530,7 +16873,8 @@ var (
 		MeetingScheduleOwningTeam:                 tableSchemas[0],
 		MeetingSession:                            tableSchemas[0],
 		NormalizedEvent:                           tableSchemas[0],
-		NormalizedEventProjectionStatus:           tableSchemas[0],
+		NormalizedEventProjection:                 tableSchemas[0],
+		NormalizedEventProjectionEntity:           tableSchemas[0],
 		OncallHandoverTemplate:                    tableSchemas[0],
 		OncallRoster:                              tableSchemas[0],
 		OncallRosterMetrics:                       tableSchemas[0],

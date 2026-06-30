@@ -55,7 +55,7 @@ func (s *PlaybookServiceProjectionSuite) TestPlaybookProjectionUpsertsByTitleAnd
 		SetProviderSource("playbooks").
 		SetProviderEventRef("playbook-event-" + uuid.NewString()).
 		SetProviderSubjectRef("demo:playbook:checkout-search-latency").
-		SetActivityKind(ne.ActivityKindObserved).
+		SetKind(ne.KindObserved).
 		SetSubjectKind(projections.SubjectKindPlaybook.String()).
 		SetOccurredAt(occurredAt).
 		SetReceivedAt(occurredAt).
@@ -63,8 +63,11 @@ func (s *PlaybookServiceProjectionSuite) TestPlaybookProjectionUpsertsByTitleAnd
 		Save(ctx)
 	s.Require().NoError(err)
 
-	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
-	s.Require().NoError(svc.HandleEventProjection(ctx, ev))
+	_, projErr := svc.HandleEventProjection(ctx, ev)
+	s.Require().NoError(projErr)
+
+	_, proj2Err := svc.HandleEventProjection(ctx, ev)
+	s.Require().NoError(proj2Err)
 
 	playbooks, err := s.Client(ctx).Playbook.Query().
 		WithAlerts().

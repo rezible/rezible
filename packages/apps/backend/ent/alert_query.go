@@ -15,10 +15,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 	"github.com/rezible/rezible/ent/alert"
-	"github.com/rezible/rezible/ent/alertfeedback"
+	"github.com/rezible/rezible/ent/alertinstance"
 	"github.com/rezible/rezible/ent/internal"
 	"github.com/rezible/rezible/ent/knowledgeentity"
-	"github.com/rezible/rezible/ent/oncallroster"
 	"github.com/rezible/rezible/ent/playbook"
 	"github.com/rezible/rezible/ent/predicate"
 	"github.com/rezible/rezible/ent/tenant"
@@ -34,8 +33,7 @@ type AlertQuery struct {
 	withTenant          *TenantQuery
 	withKnowledgeEntity *KnowledgeEntityQuery
 	withPlaybooks       *PlaybookQuery
-	withRoster          *OncallRosterQuery
-	withFeedback        *AlertFeedbackQuery
+	withInstances       *AlertInstanceQuery
 	modifiers           []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
@@ -148,9 +146,9 @@ func (_q *AlertQuery) QueryPlaybooks() *PlaybookQuery {
 	return query
 }
 
-// QueryRoster chains the current query on the "roster" edge.
-func (_q *AlertQuery) QueryRoster() *OncallRosterQuery {
-	query := (&OncallRosterClient{config: _q.config}).Query()
+// QueryInstances chains the current query on the "instances" edge.
+func (_q *AlertQuery) QueryInstances() *AlertInstanceQuery {
+	query := (&AlertInstanceClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -161,37 +159,12 @@ func (_q *AlertQuery) QueryRoster() *OncallRosterQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(alert.Table, alert.FieldID, selector),
-			sqlgraph.To(oncallroster.Table, oncallroster.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, alert.RosterTable, alert.RosterColumn),
+			sqlgraph.To(alertinstance.Table, alertinstance.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, alert.InstancesTable, alert.InstancesColumn),
 		)
 		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.OncallRoster
-		step.Edge.Schema = schemaConfig.Alert
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
-}
-
-// QueryFeedback chains the current query on the "feedback" edge.
-func (_q *AlertQuery) QueryFeedback() *AlertFeedbackQuery {
-	query := (&AlertFeedbackClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(alert.Table, alert.FieldID, selector),
-			sqlgraph.To(alertfeedback.Table, alertfeedback.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, true, alert.FeedbackTable, alert.FeedbackColumn),
-		)
-		schemaConfig := _q.schemaConfig
-		step.To.Schema = schemaConfig.AlertFeedback
-		step.Edge.Schema = schemaConfig.AlertFeedback
+		step.To.Schema = schemaConfig.AlertInstance
+		step.Edge.Schema = schemaConfig.AlertInstance
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
 	}
@@ -393,8 +366,7 @@ func (_q *AlertQuery) Clone() *AlertQuery {
 		withTenant:          _q.withTenant.Clone(),
 		withKnowledgeEntity: _q.withKnowledgeEntity.Clone(),
 		withPlaybooks:       _q.withPlaybooks.Clone(),
-		withRoster:          _q.withRoster.Clone(),
-		withFeedback:        _q.withFeedback.Clone(),
+		withInstances:       _q.withInstances.Clone(),
 		// clone intermediate query.
 		sql:       _q.sql.Clone(),
 		path:      _q.path,
@@ -435,25 +407,14 @@ func (_q *AlertQuery) WithPlaybooks(opts ...func(*PlaybookQuery)) *AlertQuery {
 	return _q
 }
 
-// WithRoster tells the query-builder to eager-load the nodes that are connected to
-// the "roster" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertQuery) WithRoster(opts ...func(*OncallRosterQuery)) *AlertQuery {
-	query := (&OncallRosterClient{config: _q.config}).Query()
+// WithInstances tells the query-builder to eager-load the nodes that are connected to
+// the "instances" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *AlertQuery) WithInstances(opts ...func(*AlertInstanceQuery)) *AlertQuery {
+	query := (&AlertInstanceClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withRoster = query
-	return _q
-}
-
-// WithFeedback tells the query-builder to eager-load the nodes that are connected to
-// the "feedback" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *AlertQuery) WithFeedback(opts ...func(*AlertFeedbackQuery)) *AlertQuery {
-	query := (&AlertFeedbackClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withFeedback = query
+	_q.withInstances = query
 	return _q
 }
 
@@ -541,12 +502,11 @@ func (_q *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 	var (
 		nodes       = []*Alert{}
 		_spec       = _q.querySpec()
-		loadedTypes = [5]bool{
+		loadedTypes = [4]bool{
 			_q.withTenant != nil,
 			_q.withKnowledgeEntity != nil,
 			_q.withPlaybooks != nil,
-			_q.withRoster != nil,
-			_q.withFeedback != nil,
+			_q.withInstances != nil,
 		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
@@ -591,16 +551,10 @@ func (_q *AlertQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Alert,
 			return nil, err
 		}
 	}
-	if query := _q.withRoster; query != nil {
-		if err := _q.loadRoster(ctx, query, nodes, nil,
-			func(n *Alert, e *OncallRoster) { n.Edges.Roster = e }); err != nil {
-			return nil, err
-		}
-	}
-	if query := _q.withFeedback; query != nil {
-		if err := _q.loadFeedback(ctx, query, nodes,
-			func(n *Alert) { n.Edges.Feedback = []*AlertFeedback{} },
-			func(n *Alert, e *AlertFeedback) { n.Edges.Feedback = append(n.Edges.Feedback, e) }); err != nil {
+	if query := _q.withInstances; query != nil {
+		if err := _q.loadInstances(ctx, query, nodes,
+			func(n *Alert) { n.Edges.Instances = []*AlertInstance{} },
+			func(n *Alert, e *AlertInstance) { n.Edges.Instances = append(n.Edges.Instances, e) }); err != nil {
 			return nil, err
 		}
 	}
@@ -730,36 +684,7 @@ func (_q *AlertQuery) loadPlaybooks(ctx context.Context, query *PlaybookQuery, n
 	}
 	return nil
 }
-func (_q *AlertQuery) loadRoster(ctx context.Context, query *OncallRosterQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *OncallRoster)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Alert)
-	for i := range nodes {
-		fk := nodes[i].RosterID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(oncallroster.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "roster_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
-}
-func (_q *AlertQuery) loadFeedback(ctx context.Context, query *AlertFeedbackQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *AlertFeedback)) error {
+func (_q *AlertQuery) loadInstances(ctx context.Context, query *AlertInstanceQuery, nodes []*Alert, init func(*Alert), assign func(*Alert, *AlertInstance)) error {
 	fks := make([]driver.Value, 0, len(nodes))
 	nodeids := make(map[uuid.UUID]*Alert)
 	for i := range nodes {
@@ -769,12 +694,11 @@ func (_q *AlertQuery) loadFeedback(ctx context.Context, query *AlertFeedbackQuer
 			init(nodes[i])
 		}
 	}
-	query.withFKs = true
 	if len(query.ctx.Fields) > 0 {
-		query.ctx.AppendFieldOnce(alertfeedback.FieldAlertID)
+		query.ctx.AppendFieldOnce(alertinstance.FieldAlertID)
 	}
-	query.Where(predicate.AlertFeedback(func(s *sql.Selector) {
-		s.Where(sql.InValues(s.C(alert.FeedbackColumn), fks...))
+	query.Where(predicate.AlertInstance(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(alert.InstancesColumn), fks...))
 	}))
 	neighbors, err := query.All(ctx)
 	if err != nil {
@@ -826,9 +750,6 @@ func (_q *AlertQuery) querySpec() *sqlgraph.QuerySpec {
 		}
 		if _q.withKnowledgeEntity != nil {
 			_spec.Node.AddColumnOnce(alert.FieldKnowledgeEntityID)
-		}
-		if _q.withRoster != nil {
-			_spec.Node.AddColumnOnce(alert.FieldRosterID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

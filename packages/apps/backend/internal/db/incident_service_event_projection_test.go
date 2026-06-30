@@ -20,7 +20,7 @@ func (s *IncidentServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalogS
 	occurredAt := time.Date(2026, 4, 18, 2, 30, 0, 0, time.UTC)
 	ev, err := s.Client(ctx).NormalizedEvent.Create().
 		SetID(eventID).
-		SetActivityKind(ne.ActivityKindObserved).
+		SetKind(ne.KindObserved).
 		SetProvider("demo").
 		SetProviderSource("incidents").
 		SetProviderEventRef("demo:incidents:catalog-search-stale-results-observed").
@@ -41,7 +41,7 @@ func (s *IncidentServiceSuite) TestIncidentProjectionDoesNotPanicForDemoCatalogS
 
 	var projectionErr error
 	s.Require().NotPanics(func() {
-		projectionErr = svc.HandleEventProjection(ctx, ev)
+		_, projectionErr = svc.HandleEventProjection(ctx, ev)
 	})
 	s.Require().NoError(projectionErr)
 
