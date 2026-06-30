@@ -45,8 +45,8 @@
 
 	<PaginatedListBox>
 		<LoadingQueryWrapper query={controller.incidentsQuery}>
-			{#snippet view(_: Incident[])}
-				{#each controller.incidents as incident (incident.id)}
+			{#snippet view(incidents: Incident[])}
+				{#each incidents as incident (incident.id)}
 					<IncidentCard {incident} />
 				{:else}
 					<div class="grid place-items-center min-h-48 rounded-lg border border-dashed">

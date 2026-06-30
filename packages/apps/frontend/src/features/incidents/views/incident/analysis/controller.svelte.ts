@@ -28,8 +28,6 @@ export class IncidentAnalysisController {
 	view = useIncidentView();
 	analysisId = $derived(this.view.systemAnalysisId || "");
 
-	contextMenu = $state<ContextMenuProps>({});
-
 	queryClient = $state.raw<QueryClient>();
 
 	constructor() {
@@ -110,6 +108,16 @@ export class IncidentAnalysisController {
 	}));
 	async removeEdge(id: string) {
 		return this.removeEdgeMut.mutate({ path: { id }});
+	}
+
+	contextMenu = $state.raw<ContextMenuProps>({});
+
+	setContextMenu(props: ContextMenuProps) {
+		this.contextMenu = props;
+	}
+
+	clearContextMenu() {
+		this.contextMenu = {};
 	}
 }
 

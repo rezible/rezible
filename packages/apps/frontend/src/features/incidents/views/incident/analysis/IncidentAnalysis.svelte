@@ -19,7 +19,7 @@
 		{@render floatingTimelineToggleButton(false)}
 	</div>
 
-	<div class="relative grow" class:hidden={hideTimeline}>
+	<div class="relative h-[40%]" class:hidden={hideTimeline}>
 		<IncidentTimeline />
 		{@render floatingTimelineToggleButton(true)}
 	</div>

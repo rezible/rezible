@@ -14,7 +14,7 @@
 	const { filters, header = defaultHeader, children }: Props = $props();
 </script>
 
-<div class="flex gap-3 h-full max-h-full">
+<div class="flex gap-3 h-full max-h-full flex-1">
 	<div class="w-full h-full max-h-full overflow-y-auto max-w-md flex flex-col gap-1">
 		{@render header()}
 		<div class="flex flex-col gap-4 border p-2 rounded overflow-x-hidden overflow-y-auto">

@@ -3,13 +3,12 @@
 	import type { IncidentViewRouteParam } from "$params/incidentView";
 	import { initIncidentViewController } from "./controller.svelte";
 
-	import TabbedViewContainer from "$src/components/layout/tabbed-view-container/TabbedViewContainer.svelte";
-	import PageActions from "./PageActions.svelte";
-	import ContextSidebar from "./context-sidebar/ContextSidebar.svelte";
+	import TabbedViewContainer from "$components/layout/tabbed-view-container/TabbedViewContainer.svelte";
+	import IncidentPageActions from "./PageActions.svelte";
+	import IncidentSidebar from "./sidebar/IncidentSidebar.svelte";
 	import IncidentOverview from "./overview/IncidentOverview.svelte";
 	import IncidentAnalysis from "./analysis/IncidentAnalysis.svelte";
 	import IncidentReport from "./report/IncidentReport.svelte";
-	import { initIncidentCollaborationController } from "./collaboration.svelte";
 
 	type Props = {
 		slug: string;
@@ -18,7 +17,6 @@
 	const { slug, param }: Props = $props();
 
 	const controller = initIncidentViewController(() => slug);
-	initIncidentCollaborationController(() => controller.documentId);
 
 	const incidentTitle = $derived(controller.incident?.attributes.title);
 
@@ -29,16 +27,16 @@
 
 	const appShell = useAppShell();
 	appShell.setPageBreadcrumbs(() => breadcrumbs);
-	appShell.setPageActions(PageActions, true);
+	appShell.setPageActions(IncidentPageActions, true);
 </script>
 
 <TabbedViewContainer 
 	route="/incidents/[slug]/[[view=incidentView]]"
 	tabs={[
 		{label: "Overview", component: IncidentOverview, params: {slug}},
-		{label: "System Analysis", component: IncidentAnalysis, params: {slug, view: "analysis"}},
+		{label: "Analysis", component: IncidentAnalysis, params: {slug, view: "analysis"}},
 		{label: "Report", component: IncidentReport, params: {slug, view: "report"}},
 	]}
 />
 
-<ContextSidebar />
+<IncidentSidebar />

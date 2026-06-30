@@ -4,19 +4,19 @@
 	import Icon from "$components/common/icon/Icon.svelte";
 	import ComponentSelector from "./add-component-drawer/ComponentSelector.svelte";
 	import Header from "$src/components/layout/header/Header.svelte";
-	import IncidentContextPackPanel from "./IncidentContextPackPanel.svelte";
-	import { initIncidentContextSidebarController } from "./controller.svelte";
 
-	const controller = initIncidentContextSidebarController();
+	import { initIncidentSidebarController } from "./controller.svelte";
+
+	const controller = initIncidentSidebarController();
 </script>
 
-<div class="w-64 border-l flex flex-col relative">
+<div class="w-64 flex flex-col relative border p-2 ml-2">
 	<!-- <div class="absolute w-full h-full bg-surface-300/20 z-1" class:hidden={!drawerOpen}></div> -->
 
-	<Header classes={{ root: "p-2" }}>
+	<Header>
 		{#snippet title()}
-			<span class="text-xl flex gap-1 items-center">
-				Context
+			<span class="flex text-lg gap-1 items-center">
+				Collaboration
 				<Icon data={mdiCircleMedium} classes={{ root: "opacity-70", path: controller.ctxColor }} />
 			</span>
 		{/snippet}
@@ -28,7 +28,7 @@
 	</Header>
 
 	<div class="flex-1 min-h-0 overflow-x-hidden overflow-y-auto relative">
-		<IncidentContextPackPanel />
+		
 		
 		{#if controller.drawerOpen}
 			<div

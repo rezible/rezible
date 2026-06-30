@@ -22,10 +22,6 @@
 	let containerRef = $state<HTMLElement>(null!);
 	watch(() => containerRef, ref => {controller.mountTimeline(ref)});
 
-	const closeContextMenu = () => {
-		analysis.contextMenu = {};
-	};
-
 	const onContextMenu = (e: MouseEvent | PointerEvent) => {
 		e.preventDefault();
 
@@ -57,7 +53,7 @@
 
 		const timestamp = fromAbsolute(timestampMs, controller.view.timezone);
 
-		analysis.contextMenu = {
+		analysis.setContextMenu({
 			timeline: {
 				clickPos,
 				timestamp,
@@ -65,8 +61,12 @@
 				containerRect,
 				close: closeContextMenu,
 			}
-		};
+		});
 	}
+
+	const closeContextMenu = () => {
+		analysis.clearContextMenu();
+	};
 </script>
 
 <div
@@ -78,11 +78,11 @@
 >
 	<div 
 		class="w-full"
-		style="height: 90%"
+		style="height: 95%"
 		bind:this={containerRef}></div>
 	<div
 		class="w-full border-t"
-		style="height: 10%">
+		style="height: 5%">
 		<IncidentTimelineMinimap />
 	</div>
 </div>

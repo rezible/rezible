@@ -42,7 +42,7 @@
 			{#each tabs as tab, i (tab.label)}
 				<a href={resolve(route as any, tab.params as any)} 
 					data-active={(i === activeTabIndex) ? true : undefined}
-					class="group inline-flex self-end h-12 p-4 py-3 text-lg border border-b-0 rounded-t-lg relative text-muted-foreground data-active:bg-accent/50 data-active:text-foreground"
+					class="group inline-flex self-end h-12 p-4 py-3 text-lg border border-b-0 relative text-muted-foreground data-active:bg-accent/50 data-active:text-foreground"
 				>
 					<span class="leading-none self-center">
 						{tab.label}
@@ -59,7 +59,7 @@
 		{/if}
 	</div>
 
-	<div class="flex-1 flex border border-surface-100 rounded-b-lg rounded-tr-lg bg-surface-200 overflow-y-auto">
+	<div class="flex-1 flex border border-surface-100 bg-surface-200 overflow-y-auto">
 		<div class="flex-1 min-h-0 max-h-full overflow-y-auto p-2">
 			<ActiveComponent />
 		</div>

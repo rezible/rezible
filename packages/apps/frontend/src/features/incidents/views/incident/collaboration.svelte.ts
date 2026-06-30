@@ -27,7 +27,6 @@ export class IncidentCollaborationController {
 	}
 
 	private createProvider({serverUrl, token, name}: DocumentSessionAuth) {
-		console.log("creating collaboration provider");
 		this.provider = new HocuspocusProvider({
 			url: serverUrl,
 			token: token,
@@ -39,7 +38,6 @@ export class IncidentCollaborationController {
 				this.status = status;
 			},
 			onAuthenticated: () => {
-				console.log("authed");
 				this.error = undefined;
 			},
 			onAuthenticationFailed: ({reason}) => {

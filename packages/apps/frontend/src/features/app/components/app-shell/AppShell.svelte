@@ -34,12 +34,12 @@
 		{/if}
 		<main class="antialiased flex flex-col flex-1 min-w-0 min-h-0 h-dvh overflow-hidden">
 			{#if sess.isSetup}
-				<div class="flex w-full justify-between items-center h-14 bg-surface-200 border-b px-2">
+				<div class="flex w-full justify-between items-center h-14 bg-surface-200 border-b px-3">
 					<PageHeader />
 				</div>
 			{/if}
 
-			<div id="scroll-body" class="flex-1 flex min-h-0 overflow-y-auto p-2">
+			<div id="scroll-body" class="flex-1 flex min-h-0 overflow-y-auto p-3">
 				{@render children()}
 			</div>
 		</main>

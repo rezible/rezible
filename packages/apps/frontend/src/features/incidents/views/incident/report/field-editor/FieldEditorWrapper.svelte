@@ -89,7 +89,7 @@
 </div>
 
 <div
-	class="border border-surface-content/15 bg-surface-content/5 p-2 px-3 rounded-lg mt-1"
+	class="border border-surface-content/15 bg-surface-content/5 p-2 px-3 mt-1"
 	tabindex="-1"
 	spellcheck="false"
 	onfocus={onEditorContainerFocused}

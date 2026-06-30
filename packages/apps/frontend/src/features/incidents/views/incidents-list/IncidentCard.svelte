@@ -52,10 +52,10 @@
 
 <a
 	{href}
-	class="group grid min-h-28 grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-lg border bg-card px-4 py-3 text-card-foreground shadow-sm transition hover:border-primary/40 hover:bg-muted/30 hover:shadow-md"
+	class="group grid grid-cols-[minmax(0,1fr)_auto] gap-3 rounded-lg border bg-card px-4 py-3 text-card-foreground shadow-sm transition hover:border-primary/40 hover:bg-muted/30 hover:shadow-md"
 >
 	<div class="flex min-w-0 flex-col gap-3">
-		<div class="flex min-w-0 flex-col gap-2">
+		<div class="flex min-h-0 h-fit min-w-0 flex-col gap-2">
 			<div class="flex flex-wrap items-center gap-2">
 				<Badge variant="outline" class={statusClasses[status]}>
 					{statusLabels[status]}
