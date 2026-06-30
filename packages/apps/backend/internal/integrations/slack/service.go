@@ -25,7 +25,7 @@ type (
 
 type App interface {
 	IntegrationName() string
-	AppConfig() rez.IntegrationsConfigSlackApp
+	Config() rez.IntegrationsConfigSlackApp
 	OAuthScopes() []string
 
 	EventsApiHandler() EventsApiHandler
@@ -55,7 +55,7 @@ type AppService[A App] struct {
 }
 
 func NewAppService[A App](app A, msgs rez.MessageService, eventPipeline rez.ProviderEventPipelineService) (*AppService[A], error) {
-	cfg := app.AppConfig()
+	cfg := app.Config()
 	s := &AppService[A]{
 		app:                         app,
 		integrationName:             app.IntegrationName(),

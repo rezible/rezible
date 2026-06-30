@@ -8,6 +8,7 @@
 	};
 
 	const { name }: Props = $props();
+
 	initConnectIntegrationController(() => name);
 </script>
 

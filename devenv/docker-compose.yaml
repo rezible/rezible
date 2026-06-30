@@ -31,7 +31,7 @@ services:
     restart: on-failure:2
     ports: ["${AUTH_PORT}:7011"]
     volumes:
-      - "./dex-config.yaml:/etc/dex/config.yaml:ro"
+      - "./configs/dex.yaml:/etc/dex/config.yaml:ro"
       - "./localias-ca.crt:/etc/ssl/localias.crt:ro"
     command: ["dex", "serve", "/etc/dex/config.yaml"]
     environment:
@@ -55,7 +55,7 @@ services:
     restart: on-failure:2
     ports: ["${ALERTMANAGER_PORT:-7013}:9093"]
     volumes:
-      - "./alertmanager/alertmanager.yaml:/etc/alertmanager/alertmanager.yaml:ro"
+      - "./configs/alertmanager.yaml:/etc/alertmanager/alertmanager.yaml:ro"
     secrets:
       - source: slack_webhook_url
         target: slack-webhook-url

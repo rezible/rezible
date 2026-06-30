@@ -55,10 +55,10 @@ func DefaultConfig() Config {
 				},
 			},
 			Tracing: TracingConfig{
-				Enabled: true,
+				Enabled: false,
 			},
 			Metrics: MetricsConfig{
-				Enabled:  true,
+				Enabled:  false,
 				Interval: 30 * time.Second,
 			},
 		},

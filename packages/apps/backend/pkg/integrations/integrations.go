@@ -3,6 +3,7 @@ package integrations
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"sync"
 
@@ -34,6 +35,11 @@ func (r *PackageRegistry) RegisterPackage(pkg rez.IntegrationPackage) error {
 	defer r.pkgsMu.Unlock()
 
 	available, configErr := pkg.IsAvailable()
+	slog.Debug("register integration package",
+		"name", pkg.Name(),
+		"available", available,
+		"error", configErr,
+	)
 	if !available {
 		return configErr
 	}

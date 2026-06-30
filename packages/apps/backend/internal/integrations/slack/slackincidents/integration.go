@@ -51,7 +51,7 @@ func (i *Integration) Provider() string {
 }
 
 func (i *Integration) IsAvailable() (bool, error) {
-	return i.appSvc.App().AppConfig().Enabled, nil
+	return i.appSvc.App().Config().Enabled, nil
 }
 
 func (i *Integration) OAuthInstallRequired() bool {

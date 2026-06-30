@@ -16,7 +16,7 @@ const sidebarAdminGroups: AppSidebarGroup[] = [{
     ],
 }];
 
-const makeSearchSidebar = (isAdmin: boolean): AppSidebarModel => ({
+const makeSettingsSidebar = (isAdmin: boolean): AppSidebarModel => ({
     search: { placeholder: "Search settings" },
     groups: [
         {
@@ -39,12 +39,13 @@ const makeSearchSidebar = (isAdmin: boolean): AppSidebarModel => ({
 export class SettingsViewController {
     shell = useAppShell();
     session = useUserSessionState();
+
     integrations = initIntegrationsController();
 
     showInitialSetup = $derived(!this.session.isSetup);
     provider = $derived(page.params.provider);
 
-    sidebar = $derived(makeSearchSidebar(this.session.isAuthenticated))
+    sidebar = $derived(makeSettingsSidebar(this.session.isAuthenticated))
 
     constructor() {
         watch(() => this.sidebar, sb => {

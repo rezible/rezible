@@ -45,7 +45,7 @@ func (a *App) IntegrationName() string {
 	return integrationName
 }
 
-func (a *App) AppConfig() rez.IntegrationsConfigSlackApp {
+func (a *App) Config() rez.IntegrationsConfigSlackApp {
 	return a.cfg.Integrations.Slack.Agent
 }
 

@@ -23,7 +23,7 @@ processes:
   telemetry:
     command: just dev run-service telemetry
     is_daemon: true
-    disabled: false
+    disabled: ${DEV_TELEMETRY_DISABLED:-true}
     availability:
       restart: on_failure
       max_restarts: 1
@@ -35,7 +35,7 @@ processes:
   alertmanager:
     command: just dev run-service alertmanager
     is_daemon: true
-    disabled: ${ALERTMANAGER_DISABLED:-true}
+    disabled: ${DEV_ALERTMANAGER_DISABLED:-true}
     availability:
       restart: on_failure
       max_restarts: 1
@@ -51,8 +51,6 @@ processes:
     depends_on:
       postgres:
         condition: process_healthy
-      telemetry:
-        condition: process_healthy
 
   frontend:
     command: just frontend dev
@@ -60,7 +58,6 @@ processes:
       restart: always
 
   documents-server:
-    disabled: false
     command: just documents-server dev
     availability:
       restart: on_failure
