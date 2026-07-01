@@ -10,7 +10,6 @@ import (
 
 	"github.com/ThreeDotsLabs/watermill/components/cqrs"
 	"github.com/google/uuid"
-	"github.com/rezible/rezible/pkg/agents"
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 	"github.com/texm/prosemirror-go"
@@ -425,8 +424,14 @@ type (
 )
 
 type (
-	AgentWorkflowRunner interface {
-		RegisterWorkflows(reg *agents.WorkflowRegistry)
+	WorkflowAgent interface {
+		WorkflowName() string
+		RunTask(context.Context, *ent.AgentTask) (string, error)
+		GetStatus(context.Context, uuid.UUID) (string, error)
+	}
+
+	AgentRegistry interface {
+		GetWorkflowAgent(string) (WorkflowAgent, bool)
 	}
 
 	CreateAgentTaskParams struct {
@@ -459,12 +464,6 @@ type (
 		RequestNewTaskRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
 		GetRun(context.Context, uuid.UUID) (*ent.AgentRun, error)
 		ListRuns(context.Context, ListAgentRunsParams) (*ent.ListResult[ent.AgentRun], error)
-	}
-
-	AgentRunStatusChangeEvent struct {
-		AgentRunID  uuid.UUID
-		AgentTaskID uuid.UUID
-		Workflow    string
 	}
 )
 

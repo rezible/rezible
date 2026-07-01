@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
@@ -15,7 +14,6 @@ import (
 	"github.com/rezible/rezible/ent/agentrun"
 	"github.com/rezible/rezible/ent/agentrunresult"
 	"github.com/rezible/rezible/ent/agenttask"
-	"github.com/rezible/rezible/pkg/agents"
 	"github.com/rezible/rezible/pkg/execution"
 	"github.com/rezible/rezible/pkg/jobs"
 )
@@ -25,16 +23,16 @@ type AgentService struct {
 	db     rez.Database
 	jobs   rez.JobService
 	msgs   rez.MessageService
-	reg    *agents.WorkflowRegistry
+	agents rez.AgentRegistry
 }
 
-func NewAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, reg *agents.WorkflowRegistry) (*AgentService, error) {
+func NewAgentService(tel rez.TelemetryService, db rez.Database, jobSvc rez.JobService, msgSvc rez.MessageService, agents rez.AgentRegistry) (*AgentService, error) {
 	s := &AgentService{
 		logger: tel.NewLogger(rez.NewLoggerOptions{PackageName: "agent_service"}),
 		db:     db,
 		jobs:   jobSvc,
 		msgs:   msgSvc,
-		reg:    reg,
+		agents: agents,
 	}
 	jobs.RegisterWorkerFunc(s.handleRunAgentWorkflow)
 	return s, nil
@@ -104,10 +102,11 @@ var runAgentWorkflowJobOpts = &river.InsertOpts{
 }
 
 func (s *AgentService) CreateTask(ctx context.Context, params rez.CreateAgentTaskParams) (*ent.AgentTask, error) {
-	input, validationErr := s.reg.ValidateAndEncodeTaskInput(params.Workflow, params.WorkflowInput)
-	if validationErr != nil {
-		return nil, fmt.Errorf("validation: %w", validationErr)
-	}
+	//input, validationErr := s.reg.ValidateAndEncodeTaskInput(params.Workflow, params.WorkflowInput)
+	//if validationErr != nil {
+	//	return nil, fmt.Errorf("validation: %w", validationErr)
+	//}
+	input := []byte("{}")
 	ownerID := params.OwnerUserID
 	if ownerID == uuid.Nil {
 		userID, userOK := execution.GetContext(ctx).UserID()
@@ -241,23 +240,25 @@ func (s *AgentService) runWorkflow(ctx context.Context, task *ent.AgentTask, run
 		return nil
 	}
 
-	runnerFn, runnerErr := s.reg.GetWorkflowRunner(task.Workflow)
-	if runnerErr != nil {
-		return fmt.Errorf("get workflow runner: %w", runnerErr)
-	}
+	/*
+		runnerFn, runnerErr := s.reg.GetWorkflowRunner(task.Workflow)
+		if runnerErr != nil {
+			return fmt.Errorf("get workflow runner: %w", runnerErr)
+		}
 
-	startedRun, startErr := s.updateRun(ctx, run.ID, func(m *ent.AgentRunMutation) {
-		m.SetStartedAt(time.Now().UTC())
-	})
-	if startErr != nil {
-		return fmt.Errorf("set agent run startedAt: %w", startErr)
-	}
+		startedRun, startErr := s.updateRun(ctx, run.ID, func(m *ent.AgentRunMutation) {
+			m.SetStartedAt(time.Now().UTC())
+		})
+		if startErr != nil {
+			return fmt.Errorf("set agent run startedAt: %w", startErr)
+		}
 
-	res := runnerFn(ctx, task, startedRun)
-	if resErr := s.recordRunResult(ctx, startedRun, res); resErr != nil {
-		slog.ErrorContext(ctx, "failed to record run result", "err", resErr)
-		// TODO: retry?
-	}
+		res := runnerFn(ctx, task, startedRun)
+		if resErr := s.recordRunResult(ctx, startedRun, res); resErr != nil {
+			slog.ErrorContext(ctx, "failed to record run result", "err", resErr)
+			// TODO: retry?
+		}
+	*/
 	return nil
 }
 
@@ -281,23 +282,6 @@ func (s *AgentService) updateRun(ctx context.Context, id uuid.UUID, setFn func(*
 		}
 		// s.publishRunUpdated(ctx, task, updated, params)
 
-		return nil
-	})
-}
-
-func (s *AgentService) recordRunResult(ctx context.Context, run *ent.AgentRun, res agents.RunWorkflowResult) error {
-	var errMsg *string
-	if res.Error != nil {
-		errMsg = new(res.Error.Error())
-	}
-	return s.db.WithTx(ctx, func(ctx context.Context, tx *ent.Client) error {
-		create := tx.AgentRunResult.Create().
-			SetAgentRun(run).
-			SetOutput(res.EncodedOutput).
-			SetNillableErrorMessage(errMsg)
-		if saveErr := create.Exec(ctx); saveErr != nil {
-			return saveErr
-		}
 		return nil
 	})
 }

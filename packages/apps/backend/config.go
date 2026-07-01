@@ -19,12 +19,7 @@ func DefaultConfig() Config {
 				OrgName: "Default",
 			},
 		},
-		AI: AiConfig{
-			Enabled:               false,
-			Provider:              "gemini",
-			Model:                 "gemini-2.5-flash",
-			StoreRawModelPayloads: false,
-		},
+		AI: AiConfig{},
 		HttpServer: HttpServerConfig{
 			Host:     cmp.Or(os.Getenv("HOST"), "0.0.0.0"),
 			Port:     cmp.Or(os.Getenv("PORT"), "7002"),
@@ -100,14 +95,11 @@ func (a AppConfig) GetFrontendUrl(paths ...string) (*url.URL, error) {
 
 type (
 	AiConfig struct {
-		Enabled               bool           `cfg:"enabled"`
-		Provider              string         `cfg:"provider"`
-		Model                 string         `cfg:"model"`
-		StoreRawModelPayloads bool           `cfg:"store_raw_model_payloads"`
-		Gemini                AiConfigGemini `cfg:"gemini"`
+		Gemini AiConfigGemini `cfg:"gemini"`
 	}
 	AiConfigGemini struct {
-		APIKey string `cfg:"api_key"`
+		Enabled bool   `cfg:"enabled"`
+		APIKey  string `cfg:"api_key"`
 	}
 )
 

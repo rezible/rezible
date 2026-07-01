@@ -1,25 +1,35 @@
 package agents
 
-type workflowDefinition[Input any, Output any] struct {
-	name   string
-	input  Input
-	output Output
+import "github.com/google/uuid"
+
+type Workflow[State any, Output any] struct {
+	name        string
+	description string
 }
 
-func defineWorkflow[Input any, Output any](name string) workflowDefinition[Input, Output] {
-	return workflowDefinition[Input, Output]{name: name}
+func (w Workflow[S, O]) Name() string {
+	return w.name
 }
 
-var WorkflowAlertInvestigation = defineWorkflow[AlertInvestigationInput, AlertInvestigationOutput]("alert_investigation")
+func (w Workflow[S, O]) Description() string {
+	return w.description
+}
+
+func defineWorkflow[State any, Output any](name string) Workflow[State, Output] {
+	return Workflow[State, Output]{name: name, description: "TODO"}
+}
+
+var WorkflowAlertInvestigation = defineWorkflow[AlertInvestigationState, AlertInvestigationOutput]("alert_investigation")
 
 type (
-	AlertInvestigationInput struct {
-		Objectives []string `json:"objectives"`
+	AlertInvestigationState struct {
+		AlertID uuid.UUID
 	}
 
 	AlertInvestigationOutput struct {
-		Limitations        []string `json:"limitations"`
-		RecommendedActions []string `json:"recommendedActions"`
+		Limitations        []string                   `json:"limitations"`
+		RecommendedActions []string                   `json:"recommendedActions"`
+		Findings           AlertInvestigationFindings `json:"findings"`
 	}
 
 	AlertInvestigationFindings struct {
@@ -27,27 +37,5 @@ type (
 		AffectedSystems []string `json:"affectedSystems"`
 		SuggestedChecks []string `json:"suggestedChecks"`
 		RecommendedNext string   `json:"recommendedNext"`
-	}
-)
-
-var WorkflowIncidentTriage = defineWorkflow[IncidentTriageInput, IncidentTriageOutput]("incident_triage")
-
-type (
-	IncidentTriageInput struct {
-		Objectives []string `json:"objectives"`
-	}
-
-	IncidentTriageOutput struct {
-		LikelyImpact       []IncidentImpactFinding `json:"likelyImpact"`
-		SuggestedChecks    []string                `json:"suggestedChecks"`
-		Limitations        []string                `json:"limitations"`
-		RecommendedActions []string                `json:"recommendedActions"`
-	}
-
-	IncidentImpactFinding struct {
-		EntityID    string   `json:"entityId"`
-		DisplayName string   `json:"displayName"`
-		Rationale   string   `json:"rationale"`
-		EvidenceIDs []string `json:"evidenceIds"`
 	}
 )

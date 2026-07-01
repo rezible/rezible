@@ -1,4 +1,4 @@
-package eino
+package genkit
 
 import (
 	"context"
@@ -6,17 +6,29 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/firebase/genkit/go/ai"
+	aix "github.com/firebase/genkit/go/ai/exp"
 	"github.com/google/uuid"
-
 	rez "github.com/rezible/rezible"
+	"github.com/rezible/rezible/ent"
 	"github.com/rezible/rezible/pkg/agents"
 )
 
-type alertInvestigationWorkflow struct {
-	alerts       rez.AlertService
-	modelFactory ModelProvider
-	input        agents.AlertInvestigationInput
-	alertID      uuid.UUID
+type alertInvestigationAgent struct {
+	alerts rez.AlertService
+}
+
+func newAlertInvestigationAgent(alerts rez.AlertService) *alertInvestigationAgent {
+	return &alertInvestigationAgent{alerts: alerts}
+}
+
+func (a *alertInvestigationAgent) workflow() agents.Workflow[agents.AlertInvestigationState, agents.AlertInvestigationOutput] {
+	return agents.WorkflowAlertInvestigation
+}
+
+func (a *alertInvestigationAgent) makeInitialMessage(task *ent.AgentTask) (*ai.Message, error) {
+	inp := ai.NewUserTextMessage("foo bar")
+	return inp, nil
 }
 
 type alertInvestigationSynthesis struct {
@@ -44,14 +56,16 @@ Use only the supplied JSON context. Produce concise JSON with this schema:
 Do not invent systems, incidents, alerts, or evidence that are not present in the context.
 `)
 
-func (w *alertInvestigationWorkflow) run(ctx context.Context) (*agents.AlertInvestigationOutput, error) {
-	alrt, alrtErr := w.alerts.GetAlert(ctx, w.alertID)
-	if alrtErr != nil {
-		return nil, fmt.Errorf("get alert: %w", alrtErr)
+func (a *alertInvestigationAgent) agentFunc() aix.AgentFunc[agents.AlertInvestigationState] {
+	return func(ctx context.Context, resp aix.Responder, sess *aix.SessionRunner[agents.AlertInvestigationState]) (*aix.AgentResult, error) {
+		alrt, alrtErr := a.alerts.GetAlert(ctx, uuid.Nil)
+		if alrtErr != nil {
+			return nil, fmt.Errorf("get alert: %w", alrtErr)
+		}
+
+		slog.DebugContext(ctx, "agent alert investigation", "title", alrt.Title)
+		_ = &agents.AlertInvestigationOutput{}
+
+		return nil, fmt.Errorf("not implemented")
 	}
-
-	slog.DebugContext(ctx, "agent alert investigation", "title", alrt.Title)
-	//out := &agents.AlertInvestigationOutput{}
-
-	return nil, fmt.Errorf("workflow not implemented")
 }

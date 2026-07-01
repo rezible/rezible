@@ -8,13 +8,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rezible/rezible/internal/genkit"
 	"github.com/samber/do/v2"
 	"github.com/sourcegraph/conc/pool"
 
 	rez "github.com/rezible/rezible"
 	apiv1 "github.com/rezible/rezible/internal/api/v1"
 	"github.com/rezible/rezible/internal/db"
-	"github.com/rezible/rezible/internal/eino"
 	"github.com/rezible/rezible/internal/http"
 	demoprovider "github.com/rezible/rezible/internal/integrations/demo"
 	"github.com/rezible/rezible/internal/integrations/github"
@@ -25,7 +25,6 @@ import (
 	"github.com/rezible/rezible/internal/postgres"
 	"github.com/rezible/rezible/internal/postgres/river"
 	"github.com/rezible/rezible/internal/watermill"
-	"github.com/rezible/rezible/pkg/agents"
 	"github.com/rezible/rezible/pkg/integrations"
 	oapiv1 "github.com/rezible/rezible/pkg/openapi/v1"
 	"github.com/rezible/rezible/pkg/projections"
@@ -105,9 +104,9 @@ func shutdownServices(baseCtx context.Context, i do.Injector) error {
 }
 
 func doRegistrations(i do.Injector) error {
-	agentRunner := do.MustInvoke[rez.AgentWorkflowRunner](i)
-	agentWorkflowsReg := do.MustInvoke[*agents.WorkflowRegistry](i)
-	agentRunner.RegisterWorkflows(agentWorkflowsReg)
+	//agentRunner := do.MustInvoke[rez.AgentWorkflowRunner](i)
+	//agentWorkflowsReg := do.MustInvoke[*agents.WorkflowRegistry](i)
+	//agentRunner.RegisterWorkflows(agentWorkflowsReg)
 
 	intgReg := do.MustInvoke[*integrations.PackageRegistry](i)
 	pipelineReg := do.MustInvoke[*projections.PipelineRegistry](i)
@@ -153,8 +152,8 @@ func declareServices(ctx context.Context, i do.Injector) {
 		return integrations.NewPackageRegistry(), nil
 	})
 
-	do.Provide(i, func(i do.Injector) (*agents.WorkflowRegistry, error) {
-		return agents.NewWorkflowRegistry(), nil
+	do.Provide(i, func(i do.Injector) (rez.AgentRegistry, error) {
+		return genkit.NewAgentRegistry(ctx, do.MustInvoke[rez.Config](i))
 	})
 
 	do.Provide(i, func(i do.Injector) (rez.MigrationService, error) {
@@ -432,23 +431,13 @@ var provideServices = do.Package(
 	do.Bind[*db.DocumentsService, rez.DocumentsService](),
 
 	do.Lazy(func(i do.Injector) (*db.AgentService, error) {
-		_ = do.MustInvoke[*eino.AgentRunner](i)
 		return db.NewAgentService(
 			do.MustInvoke[rez.TelemetryService](i),
 			do.MustInvoke[rez.Database](i),
 			do.MustInvoke[rez.JobService](i),
 			do.MustInvoke[rez.MessageService](i),
-			do.MustInvoke[*agents.WorkflowRegistry](i),
+			do.MustInvoke[rez.AgentRegistry](i),
 		)
 	}),
 	do.Bind[*db.AgentService, rez.AgentService](),
-
-	do.Lazy(func(i do.Injector) (*eino.AgentRunner, error) {
-		return eino.NewAgentWorkflowRunner(
-			do.MustInvoke[rez.Config](i),
-			do.MustInvoke[rez.IncidentService](i),
-			do.MustInvoke[rez.AlertService](i),
-		)
-	}),
-	do.Bind[*eino.AgentRunner, rez.AgentWorkflowRunner](),
 )
